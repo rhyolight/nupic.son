@@ -241,13 +241,15 @@ class RequestData(RequestData):
 
     return applied
 
-  def isPossibleMentorForProposal(self):
+  def isPossibleMentorForProposal(self, mentor_profile=None):
     """Checks if the user is a possible mentor for the proposal in the data.
     """
     assert isSet(self.profile)
     assert isSet(self.proposal)
 
-    return self.profile.key() in self.proposal.possible_mentors
+    profile = mentor_profile if mentor_profile else self.profile
+
+    return profile.key() in self.proposal.possible_mentors
 
   def populate(self, redirect, request, args, kwargs):
     """Populates the fields in the RequestData object.
