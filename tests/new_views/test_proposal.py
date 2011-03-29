@@ -95,7 +95,7 @@ class ProposalTest(DjangoTestCase):
     # test score POST
     from soc.modules.gsoc.models.score import GSoCScore
     url = '/gsoc/proposal/score/' + suffix
-    override = {'author': self.data.profile, 'parent': proposal}
+    override = {'author': self.data.profile, 'parent': proposal, 'value': 1}
     response, properties = self.modelPost(url, GSoCScore, override)
     self.assertResponseOK(response)
 

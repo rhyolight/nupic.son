@@ -268,7 +268,8 @@ class DjangoTestCase(TestCase):
     properties = {'scope': self.gsoc}
     self.org_app = self.seed(OrgAppSurvey, properties)
 
-    properties = {'scope': self.gsoc, 'status': 'active'}
+    properties = {'scope': self.gsoc, 'status': 'active',
+                  'scoring_disabled': False, 'max_score': 5}
     self.org = self.seed(GSoCOrganization, properties)
 
     self.timeline = TimelineHelper(self.gsoc.timeline, self.org_app)
