@@ -119,7 +119,7 @@ class Dashboard(RequestHandler):
     # Add all the proposals of this current user
     components = [MyProposalsComponent(self.request, self.data)]
 
-    project = project_logic.getOneForFields({}, ancestors=[self.data.profile])
+    project = project_logic.getOneForFields({'student': self.data.profile})
     if project:
       # Add a component to show all the projects
       components.append(MyProjectsComponent(self.request, self.data))
