@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Madhusudan C.S." <madhusudancs@gmail.com>',
   '"Daniel Hans" <daniel.m.hans@gmail.com>',
   ]
 
@@ -30,10 +31,10 @@ from django.conf.urls.defaults import url
 from soc.logic import cleaning
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import BadRequest
+from soc.models.user import User
 from soc.views import forms
 from soc.views.helper.access_checker import isSet
-
-from soc.models.user import User
+from soc.views.template import Template
 
 from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -42,6 +43,31 @@ from soc.modules.gsoc.models.score import GSoCScore
 
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+
+
+def getMentorsChoicesForProposal(proposal):
+  """Returns a list of tuple containing the mentor key and mentor name.
+
+  This is the list of mentors who have shown interest in mentoring a proposal.
+
+  Args:
+    proposal: entity for which the possible mentors should be obtained.
+  """
+  mentors = db.get(proposal.possible_mentors)
+  cur_men = proposal.mentor
+  choices = []
+  for m in mentors:
+    m_key = m.key()
+    choice = {
+        'key': m_key,
+        'name': m.name(),
+        }
+    if cur_men and m_key == cur_men.key():
+      choice['selected'] = True
+
+    choices.append(choice)
+
+  return choices
 
 
 class CommentForm(forms.ModelForm):
