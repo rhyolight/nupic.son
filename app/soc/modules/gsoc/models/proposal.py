@@ -66,7 +66,9 @@ class GSoCProposal(soc.models.base.ModelWithFieldAttributes):
   is_publicly_visible.help_text = ugettext(
       'If you check here, the content of your proposal will be visible '
       'for others. Please note that they still will not be able to see '
-      'any public comments and reviews of the proposal.')
+      'any public comments and reviews of the proposal. '
+      'Also note that your proposal is always visible to the organization '
+      'that you are applying to, regardless of whether you check this box.')
 
   #: A property containing which mentor has assigned himself to this proposal.
   #: Only a proposal with an assigned mentor can be turned into
