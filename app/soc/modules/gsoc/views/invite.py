@@ -237,6 +237,7 @@ class ShowInvite(RequestHandler):
   ACTIONS = {
       'accept': 'Accept',
       'reject': 'Reject',
+      'resubmit': 'Resubmit',
       'withdraw': 'Withdraw',
       }
 
@@ -267,6 +268,8 @@ class ShowInvite(RequestHandler):
         self.check.canRespondToInvite()
       elif self.data.action == self.ACTIONS['reject']:
         self.check.canRespondToInvite()
+      elif self.data.action == self.ACTIONS['resubmit']:
+        self.check.canResubmitInvite()
     else:
       self.check.canViewInvite()
 
@@ -283,6 +286,8 @@ class ShowInvite(RequestHandler):
 
     show_actions = self.data.invite.status == 'pending'
     if self.data.can_respond and self.data.invite.status == 'rejected':
+      show_actions = True
+    if not self.data.can_respond and self.data.invite.status == 'withdrawn':
       show_actions = True
 
     return {
@@ -308,6 +313,8 @@ class ShowInvite(RequestHandler):
       self._acceptInvitation()
     elif self.data.action == self.ACTIONS['reject']:
       self._rejectInvitation()
+    elif self.data.action == self.ACTIONS['resubmit']:
+      self._resubmitInvitation()
     elif self.data.action == self.ACTIONS['withdraw']:
       self._withdrawInvitation()
 
@@ -339,6 +346,13 @@ class ShowInvite(RequestHandler):
     """
 
     self.data.invite.status = 'rejected'
+    self.data.invite.put()
+
+  def _resubmitInvitation(self):
+    """Resubmits a invitation. 
+    """
+
+    self.data.invite.status = 'pending'
     self.data.invite.put()
 
   def _withdrawInvitation(self):
