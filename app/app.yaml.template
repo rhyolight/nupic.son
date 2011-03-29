@@ -38,7 +38,7 @@ handlers:
 - url: /soc/content/(.*?)/(.*)
   static_files: soc/content/\2
   upload: soc/content/(.*)
-  expiration: 1d
+  expiration: 30d
 
 - url: /js/(.*?)/jlinq/(.*)
   static_files: jlinq/\2
