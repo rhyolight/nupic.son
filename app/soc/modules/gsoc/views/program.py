@@ -29,8 +29,19 @@ from soc.logic.models.document import logic as document_logic
 from soc.views.forms import ModelForm
 
 from soc.modules.gsoc.models.program import GSoCProgram
+from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+
+
+class TimelineForm(ModelForm):
+  """Django form to edit timeline settings.
+  """
+
+  class Meta:
+    css_prefix = 'timeline_form'
+    model = GSoCTimeline
+    exclude = ['link_id', 'scope', 'scope_path']
 
 
 class ProgramForm(ModelForm):
@@ -105,5 +116,51 @@ class ProgramPage(RequestHandler):
     if self.validate():
       self.redirect.program()
       self.redirect.to('edit_gsoc_program', validated=True)
+    else:
+      self.get()
+
+
+class TimelinePage(RequestHandler):
+  """View for the participant profile.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'^gsoc/timeline/%s$' % url_patterns.PROGRAM, self,
+            name='edit_gsoc_timeline'),
+        url(r'^gsoc/timeline/edit/%s$' % url_patterns.PROGRAM, self),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/timeline/base.html'
+
+  def context(self):
+    timeline_form = TimelineForm(self.data.POST or None,
+                                 instance=self.data.program_timeline)
+    return {
+        'page_name': 'Edit program timeline',
+        'forms': [timeline_form],
+        'error': timeline_form.errors,
+    }
+
+  def validate(self):
+    timeline_form = TimelineForm(self.data.POST,
+                                instance=self.data.program_timeline)
+
+    if not timeline_form.is_valid():
+      return False
+
+    timeline_form.save()
+    return True
+
+  def post(self):
+    """Handler for HTTP POST request.
+    """
+    if self.validate():
+      self.redirect.program()
+      self.redirect.to('edit_gsoc_timeline', validated=True)
     else:
       self.get()
