@@ -436,6 +436,9 @@
 #footer .footer-meta img {
     vertical-align: bottom;
 }
+#footer .footer-meta .version {
+  font-size: 10px;
+}
 #footer .footer-menu {
   /*menu in footer*/
 
