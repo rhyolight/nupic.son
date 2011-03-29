@@ -599,3 +599,25 @@
 #form .row.button-row input:hover {
   cursor: pointer;
 }
+
+#form.form-assign-mentor
+{
+  padding-bottom: 20px;
+}
+#form.form-assign-mentor input {
+  background: url(../../../images/v2/gsoc/form-submit-bg.png) 0 0 repeat;
+  border: 0;
+  color: #fff;
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  height: 28px;
+  line-height: 28px;
+  padding: 0 15px;
+  text-transform: uppercase;
+  position: relative;
+  top: 3px;
+}
+#form.form-assign-mentor input:hover {
+  cursor: pointer;
+}
