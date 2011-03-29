@@ -27,6 +27,7 @@ from google.appengine.ext import db
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
 
+from soc.logic import cleaning
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import BadRequest
 from soc.views import forms
@@ -54,7 +55,9 @@ class CommentForm(forms.ModelForm):
     #css_prefix = 'gsoc_comment'
     fields = ['content']
 
-    
+  clean_content = cleaning.clean_html_content('content')
+
+
 class PrivateCommentForm(CommentForm):
   """Django form for the comment.
   """
