@@ -221,7 +221,7 @@ class OrgHome(RequestHandler):
     }
 
     if organization.ideas:
-      context['ideas_link'] =  organization.ideas,
+      context['ideas_link'] = organization.ideas
       context['ideas_link_trimmed'] = trim_url_to(organization.ideas, 50)
 
     if self.data.orgAdminFor(organization):
