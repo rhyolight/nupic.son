@@ -197,6 +197,11 @@ class ReviewProposal(RequestHandler):
     possible_mentors = db.get(self.data.proposal.possible_mentors)
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
 
+    scoring_visible = not self.data.proposal_org.scoring_disabled
+
+    if self.data.orgAdminFor(self.data.proposal_org):
+      scoring_visible = True
+
     context.update({
         'comment_box': comment_box,
         'max_score': self.data.proposal_org.max_score,
@@ -207,7 +212,7 @@ class ReviewProposal(RequestHandler):
         'public_comments_visible': self.data.public_comments_visible,
         'private_comments': private_comments,
         'private_comments_visible': self.data.private_comments_visible,
-        'scoring_visible': not self.data.proposal_org.scoring_disabled,
+        'scoring_visible': scoring_visible,
         'scores': scores,
         'score_action': score_action,
         'user_is_proposer': user_is_proposer,
@@ -322,10 +327,12 @@ class PostScore(RequestHandler):
     if not self.data.proposal:
       raise NotFound('Requested proposal does not exist')
 
-    if self.data.proposal_org.scoring_disabled:
+    org = self.data.proposal.org
+
+    if not self.data.orgAdminFor(org) and org.scoring_disabled:
       raise BadRequest('Scoring is disabled for this organization')
 
-    self.check.isMentorForOrganization(self.data.proposal.org)
+    self.check.isMentorForOrganization(org)
 
   def createOrUpdateScore(self, value):
     """Creates a new score or updates a score if there is already one
