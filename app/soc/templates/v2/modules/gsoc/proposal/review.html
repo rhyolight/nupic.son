@@ -117,7 +117,9 @@ limitations under the License.
   [
   dep.uniform,
   null,
+  {% if scoring_visible %}
   dep.raty,
+  {% endif %}
   function () {
     /* Apply Uniform CSS to form fields. */
     jQuery("select, input:radio, input:file, input:checkbox").uniform();
@@ -125,6 +127,7 @@ limitations under the License.
     {% if public_comments_visible %}
       tinyMCE.init(melange.tinyMceConfig(["content"]));
     {% endif %}
+    {% if scoring_visible %}
     var initialTotal = {{ scores.total }};
     var initialNumber = {{ scores.number }};
     var userInitialScore = {{ scores.user_score }};
@@ -205,6 +208,7 @@ limitations under the License.
         starOn:     'proposal-rate-star-on.png',
         hintList:   ['bad', 'poor', 'regular', 'good', 'great'] 
     });
+    {% endif %}
   }
   ]
 {% endblock dependencies %}
