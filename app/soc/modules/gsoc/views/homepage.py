@@ -29,6 +29,7 @@ from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
 
 from soc.logic import dicts
+from soc.logic import system as soc_system
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic.models.student_project import logic as sp_logic
@@ -47,15 +48,20 @@ class Timeline(Template):
 
   def context(self):
     if self.current_timeline == 'kickoff_period':
-      img_url = "/soc/content/images/v2/gsoc/image-map-kickoff.png"
+      img_url = ("/soc/content/%s/images/v2/gsoc/image-map-kickoff.png"
+                 % soc_system.app_version)
     elif self.current_timeline in ['org_signup_period', 'orgs_announced_period']:
-      img_url = "/soc/content/images/v2/gsoc/image-map-org-apps.png"
+      img_url = ("/soc/content/%s/images/v2/gsoc/image-map-org-apps.png"
+                 % soc_system.app_version)
     elif self.current_timeline == 'student_signup_period':
-      img_url = "/soc/content/images/v2/gsoc/image-map-student-apps.png"
+      img_url = ("/soc/content/%s/images/v2/gsoc/image-map-student-apps.png"
+                % soc_system.app_version)
     elif self.current_timeline == 'coding_period':
-      img_url = "/soc/content/images/v2/gsoc/image-map-on-season.png"
+      img_url = ("/soc/content/%s/images/v2/gsoc/image-map-on-season.png"
+                 % soc_system.app_version)
     else:
-      img_url = "/soc/content/images/v2/gsoc/image-map-off-season.png"
+      img_url = ("/soc/content/%s/images/v2/gsoc/image-map-off-season.png"
+                 % soc_system.app_version)
 
     return {
         'img_url': img_url

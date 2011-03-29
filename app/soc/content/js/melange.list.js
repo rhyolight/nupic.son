@@ -1011,7 +1011,7 @@
 
       // Show Loading message, after substituting it with an animated image
       jQuery("#load_" + _self.jqgrid.id).closest("div").css("line-height","100%");
-      jQuery("#load_" + _self.jqgrid.id).html("<img src='/soc/content/images/jqgrid_loading.gif'></img>");
+      jQuery("#load_" + _self.jqgrid.id).html("<img src='/soc/content/" + melange.config.app_version + "/images/jqgrid_loading.gif'></img>");
       jQuery("#load_" + _self.jqgrid.id).show();
 
       _self.jqgrid.object = jQuery("#" + _self.jqgrid.id);

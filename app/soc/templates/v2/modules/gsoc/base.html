@@ -19,12 +19,12 @@ limitations under the License.
   <title>{{ page_name|default:"No Page Name Present, Bug a Developer!" }}</title>
 
   {% block stylesheets %}
-    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/css/{{ app_version }}/v2/gsoc/reset.css" />
-    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/css/{{ app_version }}/v2/gsoc/960.css" />
-    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/css/{{ app_version }}/v2/gsoc/global.css" />
-    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/css/{{ app_version }}/v2/gsoc/typography.css" />
-    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/css/{{ app_version }}/v2/gsoc/structure.css" />
-    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/css/{{ app_version }}/v2/gsoc/menu.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/reset.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/960.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/global.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/typography.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/structure.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/menu.css" />
   {% endblock stylesheets %}
 </head>
 <body>
@@ -84,7 +84,7 @@ limitations under the License.
       {% else %}
       .script("https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js").wait()
       {% endif %}
-      .script("/soc/content/js/{{ app_version }}/melange.js").wait(
+      .script("/soc/content/{{ app_version }}/js/melange.js").wait(
         function () {
           // set global configuration
           melange.init({
@@ -100,7 +100,7 @@ limitations under the License.
           });
         }
       )
-      .script("/soc/content/js/{{ app_version }}/melange.dependency.js").wait(
+      .script("/soc/content/{{ app_version }}/js/melange.dependency.js").wait(
         function () {
           // Shortcuts facilities for children Django templates
           var dep = melange.dependency.s;

@@ -47,7 +47,7 @@
     var student_icon = new google.maps.Icon(base_icon);
     student_icon.image = "http://www.google.com/mapfiles/marker.png";
     var mentor_icon = new google.maps.Icon(base_icon);
-    mentor_icon.image = "/soc/content/images/mentor-marker.png";
+    mentor_icon.image = "/soc/content/" + melange.config.app_version + "/images/mentor-marker.png";
 
     if (google.maps.BrowserIsCompatible()) {
       // Create the map and add small controls

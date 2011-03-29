@@ -15,7 +15,7 @@ limitations under the License.
 
 {% block stylesheets %}
   {{ block.super }}
-  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/css/{{ app_version }}/v2/gsoc/forms.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/forms.css" />
 {% endblock stylesheets %}
 
 {% block page_content %}
@@ -143,7 +143,7 @@ limitations under the License.
         readOnly:   true,
         start:      {{ scores.average }},
         half:	    true,
-        path:       '/soc/content/images/v2/gsoc',
+        path:       '/soc/content/' + melange.config.app_version + '/images/v2/gsoc',
         starHalf:   'proposal-rate-star-half.png',
         starOff:    'proposal-rate-star-off.png',
         starOn:     'proposal-rate-star-on.png',
@@ -178,7 +178,7 @@ limitations under the License.
             successHandler(value)
         },
         half:		false,
-        path:       '/soc/content/images/v2/gsoc',
+        path:       '/soc/content/' + melange.config.app_version + '/images/v2/gsoc',
         start:      {{ scores.user_score }},
         starHalf:   'proposal-rate-star-half.png',
         starOff:    'proposal-rate-star-off.png',

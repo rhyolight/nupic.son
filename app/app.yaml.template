@@ -35,18 +35,9 @@ handlers:
 - url: /tiny_mce/.*
   script: $PYTHON_LIB/google/appengine/ext/zipserve
 
-- url: /soc/content/js/(.*?)/(.*)
-  static_files: soc/content/js.min/\2
-  upload: soc/content/js/(.*)
-  expiration: 30d
-
-- url: /soc/content/css/(.*?)/(.*)
-  static_files: soc/content/css/\2
-  upload: soc/content/css/(.*)
-  expiration: 30d
-
-- url: /soc/content
-  static_dir: soc/content
+- url: /soc/content/(.*?)/(.*)
+  static_files: soc/content/\2
+  upload: soc/content/(.*)
   expiration: 1d
 
 - url: /js/(.*?)/jlinq/(.*)

@@ -54,9 +54,9 @@
 
     var SURVEY_PREFIX = 'survey__';
     var del_el = ["<a class='delete'><img ",
-                  "src='/soc/content/images/minus.gif'/></a>"].join("");
+                  "src='/soc/content/" + melange.config.app_version + "/images/minus.gif'/></a>"].join("");
     var del_li = ["<a class='delete_item' id='del_",
-                  "' ><img src='/soc/content/images/minus.gif'/></a> "];
+                  "' ><img src='/soc/content/" + melange.config.app_version + "/images/minus.gif'/></a> "];
 
     var survey_html = $('form').find("#id_survey_html").attr('value');
 
@@ -456,7 +456,7 @@
   $(function () {
     var del_li = [
       "<a class='delete_item' id='del_",
-      "' ><img src='/soc/content/images/minus.gif'/></a> "
+      "' ><img src='/soc/content/" + melange.config.app_version + "/images/minus.gif'/></a> "
     ];
 
     // Confirmation dialog for deleting list/choice-field item from survey
@@ -537,9 +537,9 @@
     //  Dialog for adding new question to survey
     var SURVEY_PREFIX = 'survey__';
     var del_el = ["<a class='delete'><img ",
-              "src='/soc/content/images/minus.gif'/></a>"].join("");
+              "src='/soc/content/" + melange.config.app_version + "/images/minus.gif'/></a>"].join("");
     var del_li = ["<a class='delete_item' id='del_",
-                  "' ><img src='/soc/content/images/minus.gif'/></a> "];
+                  "' ><img src='/soc/content/" + melange.config.app_version + "/images/minus.gif'/></a> "];
 
 
     var widget = $('div#survey_widget');

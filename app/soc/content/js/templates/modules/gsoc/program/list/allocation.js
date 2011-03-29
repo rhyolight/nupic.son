@@ -32,7 +32,7 @@
   var tooltip = [
     "<div class='tooltip'>",
     "<div class='tooltip-body'>",
-    "<img src='/soc/content/images/purrInfo.png' alt='' />",
+    "<img src='/soc/content/" + melange.config.app_version + "/images/purrInfo.png' alt='' />",
     "<h3>Slots</h3>",
     "<p id='p_assigned_slots'></p>",
     "<p id='p_remaining_slots'></p>",

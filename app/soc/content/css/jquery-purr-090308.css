@@ -19,13 +19,13 @@
   width: 18px;
   height: 17px;
   text-indent: -9999px;
-  background: url('/soc/content/images/purrClose.png') no-repeat 0 10px;
+  background: url('../images/purrClose.png') no-repeat 0 10px;
 }
 
 .tooltip-body {
   min-height: 50px;
   padding: 22px 22px 0 22px;
-  background: url('/soc/content/images/purrTop.png') no-repeat left top;
+  background: url('../images/purrTop.png') no-repeat left top;
   color: #f9f9f9;
 }
 
@@ -48,5 +48,5 @@
 
 .tooltip-bottom {
   height: 22px;
-  background: url('/soc/content/images/purrBottom.png') no-repeat left top;
+  background: url('../images/purrBottom.png') no-repeat left top;
 }

@@ -45,7 +45,7 @@
     var tooltip = [
       "<div class='tooltip'>",
       "  <div class='tooltip-body'>",
-      "    <img src='/soc/content/images/purrInfo.png' alt='' />",
+      "    <img src='/soc/content/" + melange.config.app_version + "images/purrInfo.png' alt='' />",
       "    <h3>Info</h3>",
       "    <p>",
       text,

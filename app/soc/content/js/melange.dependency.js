@@ -62,10 +62,10 @@
   var tpjs = "/js/" + melange.config.app_version + "/";
 
   // Melange packages URL prefix
-  var mpjs = "/soc/content/js/" + melange.config.app_version + "/";
+  var mpjs = "/soc/content/" + melange.config.app_version + "/js/";
 
   // Melange CSS URL prefix
-  var mcss = "/soc/content/css/" + melange.config.app_version + "/";
+  var mcss = "/soc/content/" + melange.config.app_version + "/css/";
 
   if (melange.config.google_api_key !== undefined) {
     s.google = [

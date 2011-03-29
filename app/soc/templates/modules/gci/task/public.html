@@ -97,8 +97,8 @@ limitations under the License.
     }
   });
 
-  nosubscribe = '/soc/content/images/star-white.png'
-  subscribe = '/soc/content/images/star-gold.png';
+  nosubscribe = '/soc/content/' + melange.config.app_version + '/images/star-white.png'
+  subscribe = '/soc/content/' + melange.config.app_version + '/images/star-gold.png';
 
   $.get('/gci/task_subscription/subscribe', 
       { key_name: '{{ entity_key_name }}',
@@ -145,7 +145,7 @@ limitations under the License.
 
 {% block header_title %}
 {% if account %}
-<img id="subscribe" src="/soc/content/images/star-white.png" />
+<img id="subscribe" src="/soc/content/{{ app_version }}/images/star-white.png" />
 {% endif %}
 Title: {{ entity.title }}
 
