@@ -79,9 +79,6 @@ class ListConfiguration(object):
 
   Public fields are:
     description: The description as shown to the end user.
-    row_num: The number of rows that should be shown on a page on default.
-    row_list: List of integers which is the allowed pagination size a user can
-              can choose from.
     autowidth: Whether the width of the columns should be automatically set.
     height: Whether the height of the list should be automatically set.
     multiselect: If true then the list will have a column with checkboxes which
@@ -98,8 +95,8 @@ class ListConfiguration(object):
     self._col_names = []
     self._col_model = []
     self._col_functions = {}
-    self.row_num = 50
-    self.row_list = [5, 10, 20, 50, 100, 500, 1000]
+    self._row_num = 50
+    self._row_list = [5, 10, 20, 50, 100, 500, 1000]
     self.autowidth = True
     self._sortname = ''
     self._sortorder = 'asc'
@@ -125,6 +122,27 @@ class ListConfiguration(object):
     """
     func = lambda e, *args: e.key().id_or_name()
     self.addColumn('key', 'Key', func, hidden=True)
+
+  def setDefaultPagination(self, row_num, row_list=None):
+    """Sets the default pagination.
+
+    If row_num is False then pagination is disabled, and the row_list
+    argument is ignored.
+
+    Args:
+        row_num: The number of rows that should be shown on a page on default.
+        row_list: List of integers which is the allowed pagination size a user
+                  can can choose from.
+    """
+    if not row_num:
+      self._row_num = -1
+      self._row_list = []
+      return
+
+    self._row_num = row_num
+
+    if row_list:
+      self.row_list = row_list
 
   def addColumn(self, id, name, func, resizable=True, hidden=False):
     """Adds a column to the end of the list.
@@ -347,8 +365,8 @@ class ListConfigurationResponse(Template):
         'colNames': self._config._col_names,
         'colModel': self._config._col_model,
         'height': self._config.height,
-        'rowList': self._config.row_list,
-        'rowNum': max(1, self._config.row_num),
+        'rowList': self._config._row_list,
+        'rowNum': self._config._row_num,
         'sortname': self._config._sortname,
         'sortorder': self._config._sortorder,
         'multiselect': False if self._config._row_operation else \
