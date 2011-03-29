@@ -40,6 +40,8 @@ from soc.modules.gsoc.views.helper import url_patterns
 def trim_url_to(url, limit):
   """Returns a version of url at most limit long.
   """
+  if not url:
+    return url
   if len(url) > limit:
     return '%s...' % url[:max(0, limit - 3)]
   return url
