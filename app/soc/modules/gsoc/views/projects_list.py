@@ -56,7 +56,7 @@ class ProjectList(Template):
 
   def context(self):
     list = lists.ListConfigurationResponse(
-        self._list_config, idx=0,
+        self.data, self._list_config, idx=0,
         description='List of projects accepted into %s' % (
             self.data.program.name))
 
