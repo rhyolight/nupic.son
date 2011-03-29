@@ -49,13 +49,14 @@ class ProgramForm(ModelForm):
 
 
 class ProgramPage(RequestHandler):
-  """View for the participant profile.
+  """View for the program profile.
   """
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/program/edit/%s$' % url_patterns.PROGRAM, self,
+        url(r'^gsoc/program/%s$' % url_patterns.PROGRAM, self,
             name='edit_gsoc_program'),
+        url(r'^gsoc/program/edit/%s$' % url_patterns.PROGRAM, self),
     ]
 
   def jsonContext(self):
@@ -96,12 +97,13 @@ class ProgramPage(RequestHandler):
       return False
 
     program_form.save()
+    return True
 
   def post(self):
     """Handler for HTTP POST request.
     """
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_program_settings')
+      self.redirect.to('edit_gsoc_program', validated=True)
     else:
       self.get()
