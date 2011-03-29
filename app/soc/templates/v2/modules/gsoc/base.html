@@ -26,6 +26,11 @@ limitations under the License.
     <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/structure.css" />
     <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/menu.css" />
   {% endblock stylesheets %}
+
+  <!-- Include analytics tracking -->
+  {% if ga_tracking_num %}
+    {% include 'soc/site/ga.html' %}
+  {% endif %}
 </head>
 <body>
   {% block extra_header %}
@@ -63,12 +68,6 @@ limitations under the License.
   </div>
   <!-- #bg -->
 
-  {% block extra_footer %}
-    <!-- Include analytics tracking -->
-    {% if ga_tracking_num %}
-      {% include 'soc/site/ga.html' %}
-    {% endif %}
-  {% endblock extra_footer %}
   {% block scripts %}
   {% block synchronous_scripts %}
   <script type="text/javascript">
