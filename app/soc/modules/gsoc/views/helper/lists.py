@@ -306,21 +306,23 @@ class ListConfigurationResponse(Template):
   """Class that builds the template for configuring a list.
   """
 
-  def __init__(self, config, idx, description=''):
+  def __init__(self, data, config, idx, description=''):
     """Initializes the configuration.
 
     Args:
+      data: a RequestData object
       config: A ListConfiguration object.
       idx: A number uniquely identifying this list. ValueError will be raised if
            not an int.
       description: The description of this list, as should be shown to the
                    user.
     """
+    self._data = data
     self._config = config
     self._idx = int(idx)
     self._description = description
 
-    super(ListConfigurationResponse, self).__init__()
+    super(ListConfigurationResponse, self).__init__(data)
 
   def context(self):
     """Returns the context for the current template.

@@ -25,9 +25,15 @@ __authors__ = [
 from django.template import loader
 
 
+from soc.views.helper import context as context_helper
+
+
 class Template(object):
   """Template class that facilitates the rendering of templates.
   """
+
+  def __init__(self, data):
+    self.data = data
 
   def render(self):
     """Renders the template to a string.
@@ -35,15 +41,14 @@ class Template(object):
     Uses the context method to retrieve the appropriate context, uses the
     self.templatePath() method to retrieve the template that should be used.
     """
-
-    context = self.context()
+    context = context_helper.default(self.data)
+    context.update(self.context())
     rendered = loader.render_to_string(self.templatePath(), dictionary=context)
     return rendered
 
   def context(self):
     """Returns the context for the current template.
     """
-
     return {}
 
   def templatePath(self):

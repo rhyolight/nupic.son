@@ -35,8 +35,8 @@ from soc.logic.exceptions import LoginRequest
 from soc.logic.exceptions import RedirectRequest
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import Error
-from soc.logic.helper import xsrfutil
 from soc.logic.models.site import logic as site
+from soc.views.helper import context as context_helper
 from soc.views.helper.request_data import RequestData
 
 
@@ -214,34 +214,20 @@ class RequestHandler(object):
     self.error(401, "checkAccess in base RequestHandler has not been changed "
                "to grant access")
 
-  def render(self, context):
+  def render(self, render_context):
     """Renders the page using the specified context.
 
     The page is rendered using the template specified in self.templatePath()
     and is written to the response object.
 
-    The context object is extended with the following values:
-      app_version: the current version of the application, used e.g. in URL
-                   patterns to avoid JS caching issues.
-      is_local: Whether the application is running locally.
-      posted: Whether render is called after a POST is request.
-      xsrf_token: The xsrf token for the current user.
+    The context object is extended with the values from helper.context.default.
 
     Args:
-      context: the context that should be used
+      render_context: the context that should be used
     """
 
-    context['app_version'] = os.environ.get('CURRENT_VERSION_ID', '').split('.')[0]
-    context['is_local'] = system.isLocal()
-    context['posted'] = self.posted
-    xsrf_secret_key = site.getXsrfSecretKey(self.data.site)
-    context['xsrf_token'] = xsrfutil.getGeneratedTokenForCurrentUser(xsrf_secret_key)
-    context['ga_tracking_num'] = self.data.site.ga_tracking_num
-    if system.isSecondaryHostname(self.request):
-      context['google_api_key'] = self.data.site.secondary_google_api_key
-    else:
-      context['google_api_key'] = self.data.site.google_api_key
-
+    context = context_helper.default(self.data)
+    context.update(render_context)
     rendered = loader.render_to_string(self.templatePath(), dictionary=context)
     self.response.write(rendered)
 
@@ -303,8 +289,6 @@ class RequestHandler(object):
     self.kwargs = kwargs
 
     self.response = Response()
-
-    self.posted = request.POST or 'validated' in request.GET
 
     try:
       self.init(request, args, kwargs)

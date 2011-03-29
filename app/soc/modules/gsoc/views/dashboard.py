@@ -230,7 +230,8 @@ class MyOrgApplicationsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self._list_config, idx=0, description='List of your Organization Applications')
+        self.data, self._list_config, idx=0,
+        description='List of your Organization Applications')
 
     return {
         'name': 'org_applications',
@@ -288,7 +289,8 @@ class MyProposalsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self._list_config, idx=1, description=MyProposalsComponent.DESCRIPTION)
+        self.data, self._list_config, idx=1,
+        description=MyProposalsComponent.DESCRIPTION)
     return {
         'name': 'proposals',
         'title': 'PROPOSALS',
@@ -358,7 +360,8 @@ class MyProjectsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self._list_config, idx=2, description='List of my student projects')
+        self.data, self._list_config, idx=2,
+        description='List of my student projects')
     return {
         'name': 'projects',
         'title': 'PROJECTS',
@@ -407,7 +410,8 @@ class MyEvaluationsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self._list_config, idx=3, description='List of my evaluations')
+        self.data, self._list_config, idx=3,
+        description='List of my evaluations')
 
     return {
         'name': 'evaluations',
@@ -451,7 +455,7 @@ class SubmittedProposalsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self._list_config, idx=4,
+        self.data, self._list_config, idx=4,
         description=SubmittedProposalsComponent.DESCRIPTION)
     return {
         'name': 'proposals_submitted',
@@ -520,7 +524,8 @@ class ProjectsIMentorComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self._list_config, idx=5, description='List of projects I mentor')
+        self.data, self._list_config, idx=5,
+        description='List of projects I mentor')
 
     return {
         'name': 'mentoring_projects',
@@ -575,7 +580,8 @@ class OrganizationsIParticipateInComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self._list_config, idx=6, description='Organizations I am an admin for')
+        self.data, self._list_config, idx=6,
+        description='Organizations I am an admin for')
 
     return {
         'name': 'adminning_organizations',
@@ -632,7 +638,7 @@ class RequestComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self._list_config, idx=self.idx)
+        self.data, self._list_config, idx=self.idx)
 
     if self.for_admin:
       title = 'REQUESTS FOR PROJECTS I AM AN ADMIN FOR'
@@ -743,7 +749,7 @@ class ParticipantsComponent(Component):
 
   def context(self):
     list = lists.ListConfigurationResponse(
-        self._list_config, idx=9)
+        self.data, self._list_config, idx=9)
 
     return {
         'name': 'participants',

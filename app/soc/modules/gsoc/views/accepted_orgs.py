@@ -62,7 +62,8 @@ class AcceptedOrgsList(Template):
     description = 'List of organizations accepted into %s' % (
             self.data.program.name)
 
-    list = lists.ListConfigurationResponse(self._list_config, 0, description)
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, description)
 
     return {
         'lists': [list],
