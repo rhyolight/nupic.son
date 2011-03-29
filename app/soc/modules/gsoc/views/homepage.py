@@ -85,6 +85,8 @@ class Apply(Template):
     if self.data.timeline.orgsAnnounced():
       r = self.data.redirect.program()
       accepted_orgs = r.urlOf('gsoc_accepted_orgs')
+      nr_orgs = self.data.program.nr_accepted_orgs
+      context['nr_accepted_orgs'] = nr_orgs if nr_orgs else ""
       context['accepted_orgs_link'] = accepted_orgs
       context['apache_home_link'] = r.orgHomepage('asf').url()
       context['mozilla_home_link'] = r.orgHomepage('mozilla').url()

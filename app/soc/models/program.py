@@ -76,6 +76,12 @@ class Program(soc.models.presence.Presence):
       ' each mentoring organization below.</tt><br><br>'
       '<small><i>(rich text formatting is supported)</i></small>')
 
+  #: Number of accepted organizations
+  nr_accepted_orgs = db.IntegerProperty(
+      required=False, verbose_name=ugettext('#accepted orgs'))
+  nr_accepted_orgs.help_text = ugettext(
+      'The number of accepted organizations.')
+
   #: Property that contains the minimum age of a student allowed to
   #: participate
   student_min_age = db.IntegerProperty(
