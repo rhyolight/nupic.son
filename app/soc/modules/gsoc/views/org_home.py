@@ -38,6 +38,14 @@ from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 
 
+def trim_url_to(url, limit):
+  """Returns a version of url at most limit long.
+  """
+  if len(url) > limit:
+    return '%s...' % url[:max(0, limit - 3)]
+  return url
+
+
 class Apply(Template):
   """Apply template.
   """
@@ -206,6 +214,8 @@ class OrgHome(RequestHandler):
     context = {
         'page_name': '%s - Homepage' % organization.short_name,
         'organization': organization,
+        'ideas_link': organization.ideas,
+        'ideas_link_trimmed': trim_url_to(organization.ideas, 50),
         'contact': Contact(self.data),
         'tags': organization.tags_string(organization.org_tag),
         'apply': Apply(self.data, current_timeline),
