@@ -505,3 +505,82 @@ class WishToMentor(RequestHandler):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
     self.error(405)
+
+
+class AssignMentor(RequestHandler):
+  """View which handles assigning mentor to a proposal.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'^gsoc/proposal/assign_mentor/%s$' % url_patterns.REVIEW,
+         self, name='gsoc_proposal_assign_mentor'),
+    ]
+
+  def checkAccess(self):
+    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
+
+    if not self.data.proposal:
+      raise NotFound('Requested proposal does not exist')
+
+    self.check.isOrgAdminForOrganization(self.data.proposal.org)
+
+  def assignMentor(self, mentor_entity):
+    """Assigns the mentor to the proposal.
+
+    Args:
+      mentor_entity: The entity of the mentor profile which needs to assigned
+          to the proposal.
+    """
+    assert isSet(self.data.proposal)
+
+    proposal = self.data.proposal
+
+    # do not do an update on the entity if the request is for same mentor
+    if proposal.mentor and proposal.mentor.key() == mentor_entity.key():
+      return
+
+    proposal.mentor = mentor_entity
+
+    db.put(proposal)
+
+  def unassignMentor(self):
+    """Removes the mentor assigned to the proposal.
+    """
+    assert isSet(self.data.proposal)
+
+    proposal = self.data.proposal
+    proposal.mentor = None
+    db.put(proposal)
+
+  def validate(self):
+    mentor_key = self.data.POST.get('assign_mentor')
+    if mentor_key:
+      mentor_entity = db.get(mentor_key)
+
+      if mentor_entity and self.data.isPossibleMentorForProposal(mentor_entity):
+        return mentor_entity
+      else:
+        BadRequest("Invalid post data.")
+
+    return None
+
+  def post(self):
+    assert isSet(self.data.proposal)
+
+    mentor_entity= self.validate()
+    if mentor_entity:
+      self.assignMentor(mentor_entity)
+    else:
+      self.unassignMentor()
+
+    self.data.proposer = self.data.proposal.parent()
+
+    self.redirect.review(self.data.proposal.key().id(),
+                         self.data.proposer.link_id)
+    self.redirect.to('review_gsoc_proposal')
+
+  def get(self):
+    """Special Handler for HTTP GET request since this view only handles POST.
+    """
+    self.error(405)
