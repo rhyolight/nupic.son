@@ -27,7 +27,6 @@ from django.core.urlresolvers import reverse
 
 from soc.logic import dicts
 from soc.logic.exceptions import AccessViolation
-from soc.logic.helper import timeline as timeline_helper
 from soc.views.template import Template
 from soc.views.helper.access_checker import isSet
 

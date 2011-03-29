@@ -309,7 +309,7 @@ class PostComment(RequestHandler):
     if not self.data.proposal:
       raise NotFound('Proposal does not exist')
 
-    self.data.proposer = self.data.proposal.parent() 
+    self.data.proposer = self.data.proposal.parent()
 
     # check if the comment is given by the author of the proposal
     if self.data.proposer.key() == self.data.profile.key():
@@ -442,7 +442,7 @@ class PostScore(RequestHandler):
 
 
 class WishToMentor(RequestHandler):
-  """View which handles posting scores.
+  """View handling wishing to mentor requests.
   """
 
   def djangoURLPatterns(self):
@@ -474,7 +474,7 @@ class WishToMentor(RequestHandler):
     if value == 'request' and self.data.isPossibleMentorForProposal():
         raise BadRequest("Invalid post data.")
     if value == 'withdraw' and not self.data.isPossibleMentorForProposal():
-       raise BadRequest("Invalid post data.")
+        raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
     profile_key = self.data.profile.key()

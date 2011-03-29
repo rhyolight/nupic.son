@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   ]
 
@@ -32,7 +33,6 @@ from django.conf.urls.defaults import url
 from soc.logic import cleaning
 from soc.logic import dicts
 from soc.views import forms
-from soc.views.template import Template
 
 from soc.models.user import User
 
@@ -299,10 +299,12 @@ class ProfilePage(RequestHandler):
     return profile_form, profile
 
   def validateStudent(self, dirty, profile):
-    if not (self.data.student_info or self.data.kwargs.get('role') == 'student'):
+    if not (self.data.student_info or
+        self.data.kwargs.get('role') == 'student'):
       return EmptyForm(self.data.POST)
 
-    student_form = StudentInfoForm(self.data.POST, instance=self.data.student_info)
+    student_form = StudentInfoForm(
+        self.data.POST, instance=self.data.student_info)
 
     if not(profile and student_form.is_valid()):
       return student_form
@@ -312,7 +314,8 @@ class ProfilePage(RequestHandler):
     if self.data.student_info:
       student_info = student_form.save(commit=False)
     else:
-      student_info = student_form.create(commit=False, key_name=key_name, parent=profile)
+      student_info = student_form.create(
+          commit=False, key_name=key_name, parent=profile)
       profile.student_info = student_info
 
     dirty.append(student_info)
@@ -327,7 +330,8 @@ class ProfilePage(RequestHandler):
     profile_form, profile = self.validateProfile(dirty)
     student_form = self.validateStudent(dirty, profile)
 
-    if user_form.is_valid() and profile_form.is_valid() and student_form.is_valid():
+    if (user_form.is_valid() and profile_form.is_valid()
+        and student_form.is_valid()):
       db.run_in_transaction(db.put, dirty)
       return True
     else:
