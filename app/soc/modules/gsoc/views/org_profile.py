@@ -26,6 +26,7 @@ from soc.views import forms
 
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
+from django import forms as django_forms
 
 from soc.logic import cleaning
 from soc.logic import dicts
@@ -46,8 +47,7 @@ class OrgProfileForm(forms.ModelForm):
     model = GSoCOrganization
     css_prefix = 'gsoc_org_page'
     exclude = ['status', 'scope', 'scope_path', 'founder', 'founder', 'slots',
-               'slots_calculated', 'nr_applications', 'nr_mentors',
-               'scoring_disabled', 'link_id']
+               'slots_calculated', 'nr_applications', 'nr_mentors', 'link_id']
     widgets = forms.choiceWidgets(GSoCOrganization,
         ['contact_country', 'shipping_country'])
 
@@ -58,6 +58,13 @@ class OrgProfileForm(forms.ModelForm):
   clean_blog = cleaning.clean_url('blog')
   clean_pub_mailing_list = cleaning.clean_mailto('pub_mailing_list')
   clean_irc_channel = cleaning.clean_irc('irc_channel')
+
+  def clean_max_score(self):
+    max_score = self.cleaned_data['max_score']
+    if 1 <= max_score <= 12:
+      return max_score
+    raise django_forms.ValidationError("Specify a value between 1 and 12.")
+
 
 
 class OrgCreateProfileForm(OrgProfileForm):

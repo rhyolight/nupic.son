@@ -56,13 +56,13 @@ limitations under the License.
 {{ proposal.content|safe }}
 </div>
 
-{% if private_comments_visible %}
+{% if scoring_visible %}
 <div class="score">
   <div class="score-average">
     <strong>Average score:</strong>
     <div id="score-average-stars" class="stars"></div>
     <div id="score-average-desc">
-      <em>{{ scores.average }}/5 out of {{ scores.number }} users</em>
+      <em>{{ scores.average }}/{{ max_score }} out of {{ scores.number }} users</em>
     </div>
   </div>
   <div class="score-add">
@@ -118,6 +118,7 @@ limitations under the License.
     var initialTotal = {{ scores.total }};
     var initialNumber = {{ scores.number }};
     var userInitialScore = {{ scores.user_score }};
+    var maxScore = {{ max_score }};
 
     var successHandler = function (userScore) {
       userScore = parseInt(userScore);
@@ -139,7 +140,7 @@ limitations under the License.
         newMessage = 'No scores yet';
       } else {
         newAverage = (initialTotal - userInitialScore + userScore) / newNumber;
-        newMessage = newAverage + '/5 out of ' + newNumber + ' users';
+        newMessage = newAverage + '/' + maxScore + ' out of ' + newNumber + ' users';
       }
       jQuery.fn.raty.start(newAverage, '#score-average-stars');
       jQuery('#score-average-desc em').html(newMessage);
@@ -147,6 +148,7 @@ limitations under the License.
 
     jQuery(document).ready(function() {
       jQuery('#score-average-stars').raty({
+        number: maxScore,
         readOnly:   true,
         start:      {{ scores.average }},
         half:	    true,
@@ -186,6 +188,7 @@ limitations under the License.
         },
         half:		false,
         path:       '/soc/content/' + melange.config.app_version + '/images/v2/gsoc',
+        number: maxScore,
         start:      {{ scores.user_score }},
         starHalf:   'proposal-rate-star-half.png',
         starOff:    'proposal-rate-star-off.png',

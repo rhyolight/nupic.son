@@ -118,7 +118,14 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
   nr_mentors.help_text = ugettext(
       'The amount of mentors assigned to a proposal by this organization.')
 
-  scoring_disabled = db.BooleanProperty(required=False, default=False)
+  max_score = db.IntegerProperty(required=False, default=5,
+      verbose_name=ugettext('Maximum score'))
+  max_score.help_text = ugettext(
+      'The maximum amount of stars that can be given to a proposal.')
+  max_score.group = ugettext("4. Organization Preferences")
+
+  scoring_disabled = db.BooleanProperty(required=False, default=False,
+      verbose_name=ugettext("Scoring disabled"))
   scoring_disabled.help_text = ugettext(
       'Check this field if you want to disable private reviews for '
       'student proposals which have been sent to your organization.')

@@ -109,6 +109,7 @@ class ReviewProposal(RequestHandler):
     """Gets all the scores for the proposal.
     """
     assert isSet(self.data.private_comments_visible)
+    assert isSet(self.data.proposal_org)
     assert isSet(self.data.proposal)
 
     if not self.data.private_comments_visible:
@@ -198,6 +199,7 @@ class ReviewProposal(RequestHandler):
 
     context.update({
         'comment_box': comment_box,
+        'max_score': self.data.proposal_org.max_score,
         'proposal': self.data.proposal,
         'mentor': self.data.proposal.mentor,
         'possible_mentors': possible_mentors_names,
@@ -205,6 +207,7 @@ class ReviewProposal(RequestHandler):
         'public_comments_visible': self.data.public_comments_visible,
         'private_comments': private_comments,
         'private_comments_visible': self.data.private_comments_visible,
+        'scoring_visible': not self.data.proposal_org.scoring_disabled,
         'scores': scores,
         'score_action': score_action,
         'user_is_proposer': user_is_proposer,
@@ -319,6 +322,9 @@ class PostScore(RequestHandler):
     if not self.data.proposal:
       raise NotFound('Requested proposal does not exist')
 
+    if self.data.proposal_org.scoring_disabled:
+      raise BadRequest('Scoring is disabled for this organization')
+
     self.check.isMentorForOrganization(self.data.proposal.org)
 
   def createOrUpdateScore(self, value):
@@ -335,6 +341,11 @@ class PostScore(RequestHandler):
       The score entity that was created/updated or None if value is 0.
     """
     assert isSet(self.data.proposal)
+
+    max_score = self.data.proposal.org.max_score
+
+    if value < 1 or value > max_score:
+      raise BadRequest("Score should be between 1 and %d" % max_score)
 
     query = db.Query(GSoCScore)
     query.filter('author = ', self.data.profile)
