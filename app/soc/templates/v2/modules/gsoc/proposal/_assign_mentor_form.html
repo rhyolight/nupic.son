@@ -1,0 +1,12 @@
+<form action="{{ action }}" method="post" id="form" class="form-assign-mentor">
+  <div id="form_fields_assign_mentor">
+    <select name="assign_mentor" id="id_assign_mentor">
+      <option value="">Assign a mentor</option>
+      {% for m in possible_mentors %}
+        <option value="{{ m.key }}" {% if m.selected %}selected="selected"{% endif %}>{{ m.name }}</option>
+      {% endfor %}
+    </select>
+    <input id="form-project-assign-mentor-submit" type="submit" value="Assign"/>
+    <span class="note">Select a mentor from the drop-down list to assign to this proposal</span>
+  </div>
+</form>

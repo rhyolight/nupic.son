@@ -93,6 +93,25 @@ class PrivateCommentForm(CommentForm):
     fields = CommentForm.Meta.fields + ['is_private']
 
 
+class AssignMentorFields(Template):
+  """Template to render the fields necessary to assign a mentor to a proposal.
+  """
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    context = {
+        'possible_mentors': getMentorsChoicesForProposal(
+            self.data.proposal),
+        'action': self.data.redirect.review(
+            ).urlOf('gsoc_proposal_assign_mentor'),
+        }
+    return context
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/proposal/_assign_mentor_form.html'
+
+
 class ReviewProposal(RequestHandler):
   """View for the Propsal Review page.
   """
@@ -205,6 +224,10 @@ class ReviewProposal(RequestHandler):
         context['wish_to_mentor'] = 'request'
       context['wish_to_mentor_link'] = self.data.redirect.review(
           ).urlOf('gsoc_proposal_wish_to_mentor')
+
+      if self.data.orgAdminFor(self.data.proposal.org):
+        # only org admins can assign mentors to proposals
+        context['assign_mentor'] = AssignMentorFields(self.data)
 
       form = PrivateCommentForm()
     else:
