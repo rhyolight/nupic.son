@@ -70,6 +70,39 @@ class EditUserForm(forms.ModelForm):
     fields = ['name']
 
 
+class StudentNotificationForm(forms.ModelForm):
+  """Django form for student notification settings.
+  """
+
+  class Meta:
+    model = GSoCProfile
+    css_prefix = 'gsoc_profile'
+    fields = ['notify_public_comments']
+
+
+class AdminNotificationForm(forms.ModelForm):
+  """Django form for mentor notification settings.
+  """
+
+  class Meta:
+    model = GSoCProfile
+    css_prefix = 'gsoc_profile'
+    fields = ['notify_public_comments', 'notify_new_requests',
+              'notify_new_proposals', 'notify_proposal_updates',
+              'notify_private_comments']
+
+
+class MentorNotificationForm(forms.ModelForm):
+  """Django form for mentor notification settings.
+  """
+
+  class Meta:
+    model = GSoCProfile
+    css_prefix = 'gsoc_profile'
+    fields = ['notify_public_comments', 'notify_new_proposals',
+              'notify_proposal_updates', 'notify_private_comments']
+
+
 class ProfileForm(forms.ModelForm):
   """Django form for profile page.
   """
@@ -79,10 +112,14 @@ class ProfileForm(forms.ModelForm):
     css_prefix = 'gsoc_profile'
     exclude = ['link_id', 'user', 'scope', 'mentor_for', 'org_admin_for',
                'student_info', 'agreed_to_tos_on', 'scope_path', 'status',
-               'name_on_documents', 'agreed_to_tos']
+               'name_on_documents', 'agreed_to_tos', 'notify_new_requests',
+               'notify_new_proposals', 'notify_proposal_updates',
+               'notify_public_comments', 'notify_private_comments']
+
     widgets = forms.choiceWidgets(GSoCProfile,
         ['res_country', 'ship_country',
          'tshirt_style', 'tshirt_size', 'gender'])
+
 
   clean_given_name = cleaning.clean_valid_shipping_chars('given_name')
   clean_surname = cleaning.clean_valid_shipping_chars('surname')
@@ -147,7 +184,6 @@ class CreateProfileForm(ProfileForm):
           "You cannot register without agreeing to the Terms of Service"]
 
     return value
-
 
 
 class StudentInfoForm(forms.ModelForm):
@@ -240,10 +276,16 @@ class ProfilePage(RequestHandler):
       profile_form = CreateProfileForm(tos_content, self.data.POST or None)
     error = user_form.errors or profile_form.errors or student_info_form.errors
 
+    form = self.notificationForm()
+    notification_form = form(self.data.POST or None,
+                             instance=self.data.profile)
+
+    forms = [user_form, profile_form, notification_form, student_info_form]
+
     context = {
         'page_name': page_name,
         'form_top_msg': LoggedInMsg(self.data, apply_role=True),
-        'forms': [user_form, profile_form, student_info_form],
+        'forms': forms,
         'error': error,
     }
 
@@ -298,6 +340,32 @@ class ProfilePage(RequestHandler):
 
     return profile_form, profile
 
+  def notificationForm(self):
+    if self.data.student_info:
+      return StudentNotificationForm
+
+    if self.data.org_admin_for:
+      return AdminNotificationForm
+
+    return MentorNotificationForm
+
+  def validateNotifications(self, dirty, profile):
+    if not profile:
+      return EmptyForm(self.data.POST)
+
+    form = self.notificationForm()
+
+    notification_form = form(self.data.POST, instance=profile)
+
+    if not notification_form.is_valid():
+      return notification_form
+
+    notification_form.save(commit=False)
+    if profile not in dirty:
+      dirty.append(profile)
+
+    return notification_form
+
   def validateStudent(self, dirty, profile):
     if not (self.data.student_info or
         self.data.kwargs.get('role') == 'student'):
@@ -328,10 +396,13 @@ class ProfilePage(RequestHandler):
     if not user_form.is_valid():
       return False
     profile_form, profile = self.validateProfile(dirty)
+
+    notification_form = self.validateNotifications(dirty, profile)
+
     student_form = self.validateStudent(dirty, profile)
 
-    if (user_form.is_valid() and profile_form.is_valid()
-        and student_form.is_valid()):
+    if (user_form.is_valid() and profile_form.is_valid() and
+        notification_form.is_valid() and student_form.is_valid()):
       db.run_in_transaction(db.put, dirty)
       return True
     else:
