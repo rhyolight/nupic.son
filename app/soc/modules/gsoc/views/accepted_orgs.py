@@ -55,6 +55,7 @@ class AcceptedOrgsList(Template):
         'ideas', 'Ideas',
         (lambda e, *args: lists.urlize(e.ideas, name="[ideas page]")),
         hidden=True)
+    list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
 
     self._list_config = list_config
