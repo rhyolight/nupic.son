@@ -91,10 +91,10 @@
   /*read more link in block*/
 
   background: #dedede;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: bold;
   line-height: 25px;
-  padding-left: 9px;
+  padding: 3px 0 3px 9px;
 }
 #main .block .readmore a {
   color: #d5620e;
