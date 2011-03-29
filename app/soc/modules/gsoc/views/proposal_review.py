@@ -197,7 +197,8 @@ class ReviewProposal(RequestHandler):
     possible_mentors = db.get(self.data.proposal.possible_mentors)
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
 
-    scoring_visible = not self.data.proposal_org.scoring_disabled
+    scoring_visible = self.data.private_comments_visible and (
+        not self.data.proposal_org.scoring_disabled)
 
     if self.data.orgAdminFor(self.data.proposal_org):
       scoring_visible = True
