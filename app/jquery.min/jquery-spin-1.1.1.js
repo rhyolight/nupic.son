@@ -41,7 +41,7 @@
   };
   $.extend({
     spin: {
-      imageBasePath: '/soc/content/images/',
+      imageBasePath: '/soc/content/' + melange.config.app_version + 'images/',
       spinBtnImage: 'spin-button.png',
       spinUpImage: 'spin-up.png',
       spinDownImage: 'spin-down.png',
