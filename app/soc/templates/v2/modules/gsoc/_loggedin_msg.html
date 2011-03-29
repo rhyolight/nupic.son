@@ -17,7 +17,7 @@ limitations under the License.
     <strong>You are logged in as <em>{{ user_email }}</em>{{ link_id }}.</strong>
     <a href="{{ logout_link }}">(Not you?)</a>
   </p>
-  {% if not has_profile %}
+  {% if role and not has_profile %}
     <p>Before you can apply to be a {{ role }} with an organization in Google Summer of Code, <br/>
        you must fill out this form in order create a profile. </p>
   {% endif %}
