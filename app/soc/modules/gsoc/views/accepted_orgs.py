@@ -44,7 +44,8 @@ class AcceptedOrgsList(Template):
     r = data.redirect
 
     list_config = lists.ListConfiguration()
-    list_config.addSimpleColumn('name', 'Name')
+    list_config.addColumn('name', 'Name',
+        lambda e, *args: e.name.strip())
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
     list_config.setRowAction(
         lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
