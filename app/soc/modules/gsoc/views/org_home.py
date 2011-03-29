@@ -213,12 +213,14 @@ class OrgHome(RequestHandler):
     context = {
         'page_name': '%s - Homepage' % organization.short_name,
         'organization': organization,
-        'ideas_link': organization.ideas,
-        'ideas_link_trimmed': trim_url_to(organization.ideas, 50),
         'contact': Contact(self.data),
         'tags': organization.tags_string(organization.org_tag),
         'apply': Apply(self.data, current_timeline),
     }
+
+    if organization.ideas:
+      context['ideas_link'] =  organization.ideas,
+      context['ideas_link_trimmed'] = trim_url_to(organization.ideas, 50)
 
     if self.data.orgAdminFor(organization):
       r = self.redirect

@@ -46,7 +46,11 @@ limitations under the License.
       <p>{{ organization.description|safe }}</p>
     </div>
     <div id="block-organization-description-readmore" class="readmore">
-      <a href="{{ ideas_link}}">Ideas page: {{ ideas_link_trimmed }}</a>
+      {% if ideas_link %}
+        <a href="{{ ideas_link}}">Ideas page: {{ ideas_link_trimmed }}</a>
+      {% else %}
+        No ideas page URL given
+      {% endif %}
     </div>
   </div>
   <!-- end block -->
