@@ -18,11 +18,15 @@
 """
 
 __authors__ = [
+    '"Madhusudan.C.S" <madhusudancs@gmail.com',
     '"Daniel Hans" <daniel.m.hans@gmail.com>',
     '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
 
+import datetime
+
+from google.appengine.api import memcache
 from google.appengine.ext import db
 
 from soc.logic import tags
@@ -104,5 +108,44 @@ class Logic(organization.Logic):
       db.delete(entity)
 
     db.run_in_transaction(org_delete_txn, entity)
+
+  def getParticipatingOrgs(self, program):
+    """Return a list of organizations to display on program homepage.
+
+    Args:
+      program: program entity for which the orgs need to be fetched.
+    """
+    # expiry time to fetch the new organization entities
+    # the current expiry time is 30 minutes.
+    expiry_time = datetime.timedelta(seconds=1800)
+
+    batch_size = 5
+
+    properties = {
+        'scope': program,
+        'status': 'active',
+        }
+
+    q = self.getQueryForFields(properties)
+
+    # the cache stores a 3-tuple in the order list of org entities,
+    # cursor and the last time the cache was updated
+    po_cache = memcache.get('participating_orgs')
+
+    if po_cache:
+      if not datetime.datetime.now() > po_cache[2] + expiry_time:
+        return po_cache[0]
+      else:
+        q.with_cursor(po_cache[1])
+        if q.count() < batch_size:
+          q = self.getQueryForFields(properties)
+
+    orgs = q.fetch(batch_size)
+    new_cursor = q.cursor()
+    memcache.set(
+      key='participating_orgs',
+      value=(orgs, new_cursor, datetime.datetime.now()))
+
+    return orgs
 
 logic = Logic()
