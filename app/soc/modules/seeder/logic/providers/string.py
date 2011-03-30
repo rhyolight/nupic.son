@@ -93,6 +93,14 @@ class LinkIDProvider(StringProvider):
     return "m" + link_id_provider.getValue()
 
 
+class NextLinkIDProvider(FixedLengthAscendingNumericStringProvider):
+  """Data provider that returns a string suitable for use as link_id.
+  """
+
+  def getValue(self):
+    return "m" + super(NextLinkIDProvider, self).getValue()
+
+
 class KeyNameProvider(StringProvider):
   """Data proider that returns a key_name.
   """
