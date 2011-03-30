@@ -744,11 +744,10 @@ class ParticipantsComponent(Component):
     q = GSoCProfile.all()
 
     if idx == 9:
-      # TODO(srabbelier): Use or remove?
-      fields = {'mentor_for': self.data.user}
+      prefetcher = lists.modelPrefetcher(GSoCProfile, ['user'])
       response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, q, starter,
-          ender=ender, skipper=skipper, prefetch=['user'])
+          ender=ender, skipper=skipper, prefetcher=prefetcher)
       return response_builder.build()
     else:
       return None

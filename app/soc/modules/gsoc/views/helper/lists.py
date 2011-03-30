@@ -501,13 +501,11 @@ def prefetchFields(model, fields, data):
     if not prop:
       logging.exception("Model %s does not have attribute %s" %
                         (model.kind(), field))
-      diaf
       return
 
     if not isinstance(prop, db.ReferenceProperty):
       logging.exception("Property %s of %s is not a ReferenceProperty but a %s" %
                         (field, model.kind(), prop.__class__.__name__))
-      diaf
       return
 
   for field in fields:
