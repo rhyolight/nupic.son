@@ -17,13 +17,7 @@ limitations under the License.
     <h4 id="title-section-participating-orgs">Participating Organizations</h4>
     <div id="block-participants-content" class="block-content">
       {% for org in participating_orgs %}
-        <a href="{{ org.link }}">
-          {% if org.logo %}
-            <img src="{{ org.logo }}" class="particpating-orgs" alt="{{ org.name }}" />
-          {% else %}
-            {{ org.name }}
-          {% endif %}
-        </a>&nbsp;
+        <a href="{{ org.link }}"><img src="{{ org.logo }}" class="particpating-orgs" alt="{{ org.name }}" /></a>
       {% endfor %}
     </div>
     <div id="block-participants-readmore" class="readmore">
