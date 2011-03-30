@@ -840,6 +840,9 @@ def main(args):
   from soc.modules.gsoc.models.program import GSoCProgram
   from soc.modules.gsoc.models.organization import GSoCOrganization
   from soc.modules.gsoc.models.student import GSoCStudent
+  from soc.modules.gsoc.models.profile import GSoCProfile
+  from soc.modules.gsoc.models.proposal import GSoCProposal
+  from soc.modules.gsoc.models.project import GSoCProject
   from soc.modules.gsoc.models.mentor import GSoCMentor
   from soc.modules.gsoc.models import org_admin
   from soc.modules.gsoc.models.student_proposal import StudentProposal
@@ -888,6 +891,9 @@ def main(args):
       'SRequest': StudentKeyRequest,
       'GCIStudent': GCIStudent,
       'GCIOrganization': GCIOrganization,
+      'GSoCProfile': GSoCProfile,
+      'GSoCProposal': GSoCProposal,
+      'GSoCProject': GSoCProject,
       'gci_tasks': gci_tasks,
       'StudentProject': StudentProject,
       'StudentProposal': StudentProposal,
