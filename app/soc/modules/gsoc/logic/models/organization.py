@@ -141,6 +141,7 @@ class Logic(organization.Logic):
     properties = {
         'scope': program,
         'status': 'active',
+        'logo >=': '',
         }
 
     q = self.getQueryForFields(properties)
