@@ -581,17 +581,18 @@ class OrganizationsIParticipateInComponent(Component):
     """
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=6,
-        description='Organizations I am an admin for')
+        description='Organizations you are an admin for')
 
     return {
         'name': 'adminning_organizations',
-        'title': 'ORGANIZATIONS THAT I AM AN ADMIN/MENTOR FOR',
+        'title': 'MY ORGANIZATIONS',
         'lists': [list],
     }
 
 
 class RequestComponent(Component):
-  """Component for listing all the Projects mentored by the current user.
+  """Component for listing all the requests for orgs of which the user is an
+  admin.
   """
 
   def __init__(self, request, data, for_admin):
@@ -641,7 +642,7 @@ class RequestComponent(Component):
         self.data, self._list_config, idx=self.idx)
 
     if self.for_admin:
-      title = 'REQUESTS FOR PROJECTS I AM AN ADMIN FOR'
+      title = 'REQUESTS FOR MY ORGANIZATIONS'
     else:
       title = 'MY REQUESTS'
 
@@ -661,7 +662,6 @@ class ParticipantsComponent(Component):
     """
     self.data = data
     orgs = data.org_admin_for
-    r = data.redirect
     list_config = lists.ListConfiguration()
     list_config.addColumn(
         'name', 'Name', lambda ent, *args: ent.name())
@@ -739,6 +739,7 @@ class ParticipantsComponent(Component):
     q = GSoCProfile.all()
 
     if idx == 9:
+      # TODO(srabbelier): Use or remove?
       fields = {'mentor_for': self.data.user}
       response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, q, starter,
@@ -753,6 +754,6 @@ class ParticipantsComponent(Component):
 
     return {
         'name': 'participants',
-        'title': 'MENTORS AND ADMINS FOR ORGANIZATIONS I AM AN ADMIN FOR',
+        'title': 'MEMBERS OF ORGANIZATIONS I ADMIN',
         'lists': [list],
     }
