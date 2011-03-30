@@ -398,9 +398,16 @@ class Logic(object):
          "age": RandomUniformDistributionIntegerProvider(min=0, max=80)}
     """
     result = []
+    import sys
+    debug = lambda x: sys.stderr.write(x) if n > 100 else None
     for _ in xrange(n):
-      data = self.seed(model_class, properties, recurse)
+      debug("!")
+      data = self.seed(model_class, properties, recurse, commit=False)
       result.append(data)
+
+    debug("\nsaving...\n")
+    db.put(result)
+    debug("saved...\n")
     return result
 
   def _seedProperty(self, model_class, properties, prop, prop_name, recurse):
@@ -485,7 +492,7 @@ class Logic(object):
 
     return properties
 
-  def seed(self, model_class, properties=None, recurse=True):
+  def seed(self, model_class, properties=None, recurse=True, commit=True):
     """Seeds a model_class entity.
 
     Any number of properties can be specified either with their values or
@@ -503,7 +510,8 @@ class Logic(object):
     """
     properties = self.seed_properties(model_class, properties, recurse)
     data = model_class(**properties)
-    data.put()
+    if commit:
+      data.put()
     return data
 
   def genRandomValueForPropertyClass(self, property_class):
