@@ -146,6 +146,12 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
   blog.help_text = ugettext("URL of the Blog of your Organization")
   blog.group = ugettext("1. Public Info")
 
+  logo_url = db.LinkProperty(
+      required=False, verbose_name=ugettext("Logo URL"))
+  logo_url.help_text = ugettext("URL to the Logo of your organization. Please "
+  "link to an image that is smaller than 70px in height and 90px in width.")
+  logo_url.group = ugettext("1. Public Info")
+
   org_tag = tag_property('org_tag')
 
   def __init__(self, parent=None, key_name=None, app=None, **entity_values):
