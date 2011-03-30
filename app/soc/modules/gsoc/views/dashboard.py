@@ -669,6 +669,7 @@ class ParticipantsComponent(Component):
     list_config = lists.ListConfiguration()
     list_config.addColumn(
         'name', 'Name', lambda ent, *args: ent.name())
+    list_config.addSimpleColumn('email', "Email")
     list_config.addColumn(
         'mentor_for', 'Mentor for',
         lambda ent, *args: ', '.join(
