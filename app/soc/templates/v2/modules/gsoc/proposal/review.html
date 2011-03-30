@@ -189,6 +189,12 @@ limitations under the License.
         });
       });
     });
+
+    hintList = [];
+    for(var i = 0; i < maxScore; i++) {
+      hintList[i] = '' + (i + 1) + ' star(s)';
+    }
+
     $('#score-add-stars').raty({
         cancel: true,
         cancelPlace:'right',
@@ -206,7 +212,7 @@ limitations under the License.
         starHalf:   'proposal-rate-star-half.png',
         starOff:    'proposal-rate-star-off.png',
         starOn:     'proposal-rate-star-on.png',
-        hintList:   ['bad', 'poor', 'regular', 'good', 'great'] 
+        hintList:   hintList
     });
     {% endif %}
   }
