@@ -103,6 +103,9 @@ class ProposalTest(DjangoTestCase):
     score = GSoCScore.all().get()
     self.assertPropertiesEqual(properties, score)
 
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(1, proposal.score)
+
   def testSubmitProposalWhenInactive(self):
     """Test the submission of student proposals during the student signup
     period is not active.
