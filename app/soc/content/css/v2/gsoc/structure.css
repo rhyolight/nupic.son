@@ -223,6 +223,8 @@
 #main .content_column_1 .block-participants img {
   margin: 0 10px 0 0;
   vertical-align: middle;
+  max-height: 70px;
+  max-width: 90px;
 }
 #main .content_column_1 .block-mentors {
   /*mentors apply now block*/
