@@ -26,7 +26,6 @@ __authors__ = [
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
-# TODO: Should this go in it's own module?
 class GSoCProfileHelper(object):
   """Helper class to aid in manipulating profile data.
   """
@@ -43,6 +42,12 @@ class GSoCProfileHelper(object):
     self.profile = None
     self.dev_test = dev_test
 
+  def seed(self, model, properties):
+    return seeder_logic.seed(model, properties, recurse=False)
+
+  def seedn(self, model, properties, n):
+    return seeder_logic.seedn(model, n, properties, recurse=False)
+
   def createUser(self):
     """Creates a user entity for the current user.
     """
@@ -52,7 +57,7 @@ class GSoCProfileHelper(object):
     from soc.modules.seeder.logic.providers.user import CurrentUserProvider
     properties = {'account': CurrentUserProvider(),
                   'status': 'valid', 'is_developer': self.dev_test}
-    self.user = seeder_logic.seed(User, properties=properties)
+    self.user = self.seed(User, properties=properties)
     return self.user
 
   def createDeveloper(self):
@@ -69,7 +74,7 @@ class GSoCProfileHelper(object):
     from soc.models.user import User
     from soc.modules.seeder.logic.providers.user import FixedUserProvider
     properties = {'account': FixedUserProvider(value=email), 'status': 'valid'}
-    self.user = seeder_logic.seed(User, properties=properties)
+    self.user = self.seed(User, properties=properties)
     return self
 
   def createProfile(self):
@@ -81,7 +86,7 @@ class GSoCProfileHelper(object):
     user = self.createUser()
     properties = {'link_id': user.link_id, 'student_info': None, 'user': user,
                   'parent': user, 'scope': self.program, 'status': 'active'}
-    self.profile = seeder_logic.seed(GSoCProfile, properties)
+    self.profile = self.seed(GSoCProfile, properties)
     return self.profile
 
   def createStudent(self):
@@ -91,30 +96,38 @@ class GSoCProfileHelper(object):
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
                   'school': None,}
-    self.profile.student_info = seeder_logic.seed(GSoCStudentInfo, properties)
+    self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.put()
     return self.profile
 
   def createStudentWithProposal(self, org, mentor):
+    return self.createStudentWithProposals(org, mentor, 1)
+
+  def createStudentWithProposals(self, org, mentor, n):
     """Sets the current user to be a student with a proposal for the current program.
     """
     self.createStudent()
     from soc.modules.gsoc.models.proposal import GSoCProposal
-    properties = {'link_id': self.profile.link_id, 'scope': self.profile,
+    properties = {'scope': self.profile,
                   'parent': self.profile, 'status': 'new',
                   'program': self.program, 'org': org, 'mentor': mentor}
-    seeder_logic.seed(GSoCProposal, properties)
+    self.seedn(GSoCProposal, properties, n)
     return self.profile
 
   def createStudentWithProject(self, org, mentor):
+    return self.createStudentWithProjects(org, mentor, 1)
+
+  def createStudentWithProjects(self, org, mentor, n):
     """Sets the current user to be a student with a project for the current program.
     """
-    self.createStudentWithProposal(org, mentor)
+    self.createStudent()
     from soc.modules.gsoc.models.student_project import StudentProject
-    properties = {'link_id': self.profile.link_id, 'program': self.program,
-                  'scope': org, 'student': self.profile, 'status': 'accepted',
-                  'mentor': mentor}
-    seeder_logic.seed(StudentProject, properties)
+    from soc.modules.seeder.logic.providers.string import NextLinkIDProvider
+    properties = {'program': self.program, 'scope': org,
+                  'student': self.profile, 'status': 'accepted',
+                  'mentor': mentor,
+                  'link_id': NextLinkIDProvider(start=-1)}
+    self.seedn(StudentProject, properties, n)
     return self.profile
 
   def createHost(self):
@@ -148,5 +161,5 @@ class GSoCProfileHelper(object):
     from soc.modules.gsoc.models.student_project import StudentProject
     properties = {'mentor': self.profile, 'program': self.program,
                   'student': student, 'scope': org}
-    seeder_logic.seed(StudentProject, properties)
+    self.seed(StudentProject, properties)
     return self.profile
