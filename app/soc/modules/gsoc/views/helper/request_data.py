@@ -201,6 +201,8 @@ class RequestData(RequestData):
 
     Organization may either be a key or an organization instance.
     """
+    if self.is_host:
+      return True
     if isinstance(organization, db.Model):
       organization = organization.key()
     return organization in [i.key() for i in self.org_admin_for]
@@ -210,6 +212,8 @@ class RequestData(RequestData):
 
     Organization may either be a key or an organization instance.
     """
+    if self.is_host:
+      return True
     if isinstance(organization, db.Model):
       organization = organization.key()
     return organization in [i.key() for i in self.mentor_for]
