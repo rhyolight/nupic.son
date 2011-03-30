@@ -62,7 +62,8 @@ class ProposalTest(DjangoTestCase):
     self.assertProposalTemplatesUsed(response)
 
     # test proposal POST
-    override = {'program': self.gsoc, 'score': 0, 'mentor': None, 'org': self.org, 'status': 'new'}
+    override = {'program': self.gsoc, 'score': 0, 'mentor': None,
+                'org': self.org, 'status': 'new', 'accepted_as_project': False}
     response, properties = self.modelPost(url, GSoCProposal, override)
     self.assertResponseRedirect(response)
 
