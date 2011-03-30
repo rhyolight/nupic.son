@@ -67,7 +67,7 @@ limitations under the License.
     <strong>Average score:</strong>
     <div id="score-average-stars" class="stars"></div>
     <div id="score-average-desc">
-      <em>{{ scores.average }}/{{ max_score }} out of {{ scores.number }} users</em>
+      <em>{{ scores.average }}/{{ max_score }} out of {{ scores.number }} users, total: {{ scores.total }}</em>
     </div>
   </div>
   <div class="score-add">
@@ -135,6 +135,7 @@ limitations under the License.
 
     var successHandler = function (userScore) {
       userScore = parseInt(userScore);
+      var newTotal = (initialTotal - userInitialScore + userScore);
 
       var newNumber = initialNumber;
       /* the user did not score */
@@ -152,8 +153,8 @@ limitations under the License.
         newAverage = 0;
         newMessage = 'No scores yet';
       } else {
-        newAverage = (initialTotal - userInitialScore + userScore) / newNumber;
-        newMessage = newAverage + '/' + maxScore + ' out of ' + newNumber + ' users';
+        newAverage = newTotal / newNumber;
+        newMessage = newAverage + '/' + maxScore + ' out of ' + newNumber + ' users, total: ' + newTotal;
       }
       jQuery.fn.raty.start(newAverage, '#score-average-stars');
       jQuery('#score-average-desc em').html(newMessage);
