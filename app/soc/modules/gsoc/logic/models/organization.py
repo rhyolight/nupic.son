@@ -148,7 +148,9 @@ class Logic(organization.Logic):
 
     # the cache stores a 3-tuple in the order list of org entities,
     # cursor and the last time the cache was updated
-    po_cache = memcache.get('participating_orgs')
+
+    key = 'participating_orgs_for' + self.program.key().name()
+    po_cache = memcache.get(key)
 
     if po_cache:
       cached_orgs, cached_cursor, cached_time = po_cache
@@ -170,9 +172,7 @@ class Logic(organization.Logic):
           orgs.append(org)
 
     new_cursor = q.cursor()
-    memcache.set(
-      key='participating_orgs',
-      value=(orgs, new_cursor, datetime.datetime.now()))
+    memcache.set(key, value=(orgs, new_cursor, datetime.datetime.now()))
 
     return orgs
 
