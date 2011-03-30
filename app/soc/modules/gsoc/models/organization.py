@@ -149,7 +149,7 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
   logo_url = db.LinkProperty(
       required=False, verbose_name=ugettext("Logo URL"))
   logo_url.help_text = ugettext("URL to the Logo of your organization. Please "
-  "ensure that the image you provide is smaller than 70px70px.")
+  "ensure that the image you provide is smaller than 65px65px.")
   logo_url.group = ugettext("1. Public Info")
 
   org_tag = tag_property('org_tag')
