@@ -24,6 +24,8 @@ __authors__ = [
 
 import logging
 
+from google.appengine.ext import db
+
 from django.utils import simplejson
 
 from soc.views.template import Template
@@ -467,6 +469,67 @@ class ListContentResponse(object):
             'next': self.next}
 
 
+def collectKeys(prop, data):
+  """Collects all keys for the specified property.
+  """
+  keys = [prop.get_value_for_datastore(i) for i in data]
+  return [i for i in keys if i]
+
+
+def distributeKeys(prop, data, prefetched_dict):
+  """Distributes the keys for the specified property.
+  """
+  for i in data:
+    key = prop.get_value_for_datastore(i)
+    #key = str(key)
+
+    if key not in prefetched_dict:
+      continue
+
+    value = prefetched_dict[key]
+    setattr(i, prop.name, value)
+
+
+def prefetchFields(model, fields, data):
+  """Prefetches the specified fields in data.
+  """
+  keys = []
+
+  for field in fields:
+    prop = getattr(model, field, None)
+
+    if not prop:
+      logging.exception("Model %s does not have attribute %s" %
+                        (model.kind(), field))
+      diaf
+      return
+
+    if not isinstance(prop, db.ReferenceProperty):
+      logging.exception("Property %s of %s is not a ReferenceProperty but a %s" %
+                        (field, model.kind(), prop.__class__.__name__))
+      diaf
+      return
+
+  for field in fields:
+    prop = getattr(model, field)
+    keys += collectKeys(prop, data)
+
+  prefetched_entities = db.get(keys)
+  prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
+
+  for field in fields:
+    prop = getattr(model, field)
+    distributeKeys(prop, data, prefetched_dict)
+
+
+def modelPrefetcher(model, fields):
+  """Returns a prefetcher for the specified model and fields.
+  """
+  def prefetcher(entities):
+    prefetchFields(model, fields, entities)
+  return prefetcher
+
+
 def keyModelStarter(model):
   """Returns a starter for the specified key-based model.
   """
@@ -487,7 +550,7 @@ class RawQueryContentResponseBuilder(object):
   """
 
   def __init__(self, request, config, query, starter,
-               ender=None, skipper=None, prefetch=None):
+               ender=None, skipper=None, prefetcher=None):
     """Initializes the fields needed to built a response.
 
     Args:
@@ -506,6 +569,8 @@ class RawQueryContentResponseBuilder(object):
           "done" if is_last else entity.key().id_or_name())
     if not skipper:
       skipper = lambda entity, start: False
+    if not prefetcher:
+      prefetcher = lambda entitites: None
 
     self._request = request
     self._config = config
@@ -513,7 +578,7 @@ class RawQueryContentResponseBuilder(object):
     self._starter = starter
     self._ender = ender
     self._skipper = skipper
-    self._prefetch = prefetch
+    self._prefetcher = prefetcher
 
   def build(self, *args, **kwargs):
     """Returns a ListContentResponse containing the data as indicated by the
@@ -546,7 +611,7 @@ class RawQueryContentResponseBuilder(object):
 
     is_last = len(entities) != count
 
-    # TODO(SRabbelier): prefetch
+    self._prefetcher(entities)
 
     for entity in entities:
       if self._skipper(entity, start):
@@ -583,5 +648,9 @@ class QueryContentResponseBuilder(RawQueryContentResponseBuilder):
     query = logic.getQueryForFields(
         filter=fields, ancestors=ancestors)
 
+    prefetcher = None
+    if prefetch:
+      prefetcher = modelPrefetcher(logic.getModel(), prefetch)
+
     super(QueryContentResponseBuilder, self).__init__(
-        request, config, query, starter, prefetch=prefetch)
+        request, config, query, starter, prefetcher=prefetcher)

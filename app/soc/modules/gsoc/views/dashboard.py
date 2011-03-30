@@ -310,9 +310,10 @@ class MyProposalsComponent(Component):
       q.ancestor(self.data.profile)
 
       starter = lists.keyModelStarter(GSoCProposal)
+      prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'])
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, starter, prefetch=['org'])
+          self.request, self._list_config, q, starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
       return None
@@ -477,9 +478,10 @@ class SubmittedProposalsComponent(Component):
       q.filter('org IN', self.data.mentor_for)
 
       starter = lists.keyModelStarter(GSoCProposal)
+      prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'])
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, starter, prefetch=['org'])
+          self.request, self._list_config, q, starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
       return None
