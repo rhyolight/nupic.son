@@ -324,10 +324,35 @@ class DjangoTestCase(TestCase):
     """
     return self.client.get(url + '?fmt=json&marker=1')
 
-  def getListResponse(self, url, idx):
+  def getListResponse(self, url, idx, start=None, limit=None):
     """Returns the list reponse for the specified url and index.
     """
-    return self.client.get(url + '?fmt=json&marker=1&idx=' + str(idx))
+    url = [url,'?fmt=json&marker=1&&idx=', str(idx)]
+    if limit:
+      url += ["&limit=", str(limit)]
+    if start:
+      url += ['&start=', start]
+    return self.client.get(''.join(url))
+
+  def getListData(self, url, idx):
+    """Returns all data from a list view.
+    """
+    result = []
+    start = ''
+
+    i = 0
+    import sys
+
+    while start != 'done':
+      i += 1
+      sys.stderr.write("batch: %d\n" % i)
+      response = self.getListResponse(url, idx, start, 1000)
+      data = response.context['data'][start]
+      self.assertIsJsonResponse(response)
+      result += data
+      start = response.context['next']
+
+    return result
 
   def assertErrorTemplatesUsed(self, response):
     """Assert that all the error templates were used.
