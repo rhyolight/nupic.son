@@ -61,6 +61,7 @@ class GSoCProfileHelper(object):
     self.createUser()
     self.user.is_developer = True
     self.user.put()
+    return self.user
 
   def createOtherUser(self, email):
     """Creates a user entity for the specified email.
@@ -69,7 +70,7 @@ class GSoCProfileHelper(object):
     from soc.modules.seeder.logic.providers.user import FixedUserProvider
     properties = {'account': FixedUserProvider(value=email), 'status': 'valid'}
     self.user = seeder_logic.seed(User, properties=properties)
-    return self.user
+    return self
 
   def createProfile(self):
     """Creates a profile for the current user.
@@ -81,33 +82,40 @@ class GSoCProfileHelper(object):
     properties = {'link_id': user.link_id, 'student_info': None, 'user': user,
                   'parent': user, 'scope': self.program, 'status': 'active'}
     self.profile = seeder_logic.seed(GSoCProfile, properties)
+    return self.profile
 
   def createStudent(self):
     """Sets the current suer to be a student for the current program.
     """
     self.createProfile()
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
-    properties = {'key_name': self.profile.key().name(), 'parent': self.profile}
+    properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
+                  'school': None,}
     self.profile.student_info = seeder_logic.seed(GSoCStudentInfo, properties)
     self.profile.put()
+    return self.profile
 
-  def createStudentWithProposal(self):
+  def createStudentWithProposal(self, org, mentor):
     """Sets the current user to be a student with a proposal for the current program.
     """
     self.createStudent()
     from soc.modules.gsoc.models.proposal import GSoCProposal
     properties = {'link_id': self.profile.link_id, 'scope': self.profile,
-                  'parent': self.profile, 'status': 'new'}
+                  'parent': self.profile, 'status': 'new',
+                  'program': self.program, 'org': org, 'mentor': mentor}
     seeder_logic.seed(GSoCProposal, properties)
+    return self.profile
 
-  def createStudentWithProject(self):
+  def createStudentWithProject(self, org, mentor):
     """Sets the current user to be a student with a project for the current program.
     """
-    self.createStudentWithProposal()
+    self.createStudentWithProposal(org, mentor)
     from soc.modules.gsoc.models.student_project import StudentProject
-    properties = {'link_id': self.profile.link_id, 'scope': self.profile,
-                  'student': self.profile, 'parent': self.profile}
+    properties = {'link_id': self.profile.link_id, 'program': self.program,
+                  'scope': org, 'student': self.profile, 'status': 'accepted',
+                  'mentor': mentor}
     seeder_logic.seed(StudentProject, properties)
+    return self.profile
 
   def createHost(self):
     """Sets the current user to be a host for the current program.
@@ -115,6 +123,7 @@ class GSoCProfileHelper(object):
     self.createUser()
     self.user.host_for = [self.program.scope.key()]
     self.user.put()
+    return self.user
 
   def createOrgAdmin(self, org):
     """Creates an org admin profile for the current user.
@@ -122,6 +131,7 @@ class GSoCProfileHelper(object):
     self.createProfile()
     self.profile.org_admin_for = [org.key()]
     self.profile.put()
+    return self.profile
 
   def createMentor(self, org):
     """Creates an mentor profile for the current user.
@@ -129,11 +139,14 @@ class GSoCProfileHelper(object):
     self.createProfile()
     self.profile.mentor_for = [org.key()]
     self.profile.put()
+    return self.profile
 
-  def createMentorWithProject(self, org):
+  def createMentorWithProject(self, org, student):
     """Creates an mentor profile with a project for the current user.
     """
     self.createMentor(org)
     from soc.modules.gsoc.models.student_project import StudentProject
-    properties = {'mentor': self.profile}
+    properties = {'mentor': self.profile, 'program': self.program,
+                  'student': student, 'scope': org}
     seeder_logic.seed(StudentProject, properties)
+    return self.profile

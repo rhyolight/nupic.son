@@ -194,13 +194,13 @@ class DjangoTestCase(TestCase):
     """Returns a instance of model, seeded with properties.
     """
     from soc.modules.seeder.logic.seeder import logic as seeder_logic
-    return seeder_logic.seed(model, properties)
+    return seeder_logic.seed(model, properties, recurse=False)
 
   def seedProperties(self, model, properties):
     """Returns seeded properties for the specified model.
     """
     from soc.modules.seeder.logic.seeder import logic as seeder_logic
-    return seeder_logic.seed_properties(model, properties)
+    return seeder_logic.seed_properties(model, properties, recurse=False)
 
   def post(self, url, postdata):
     """Performs a post to the specified url with postdata.
@@ -232,7 +232,9 @@ class DjangoTestCase(TestCase):
       timeline: a TimelineHelper instance
       data: a GSoCProfileHelper instance
     """
+    from soc.models.user import User
     from soc.models.site import Site
+    from soc.models.sponsor import Sponsor
     from soc.models.document import Document
     from soc.modules.gsoc.models.program import GSoCProgram
     from soc.modules.gsoc.models.timeline import GSoCTimeline
@@ -244,13 +246,29 @@ class DjangoTestCase(TestCase):
 
     self.dev_test = 'DEV_TEST' in os.environ
 
-    properties = {'timeline': self.seed(GSoCTimeline, {}),
-                  'status': 'visible', 'apps_tasks_limit': 20}
+    properties = {}
+    self.founder = self.seed(User, properties)
+
+    properties = {'founder': self.founder, 'home': None}
+    self.sponsor = self.seed(Sponsor, properties)
+
+    properties = {'scope': self.sponsor}
+    self.program_timeline = self.seed(GSoCTimeline, properties)
+
+    properties = {'timeline': self.program_timeline,
+                  'status': 'visible', 'apps_tasks_limit': 20,
+                  'scope': self.sponsor,
+                  'student_agreement': None, 'events_page': None,
+                  'help_page': None, 'connect_with_us_page': None,
+                  'mentor_agreement': None, 'org_admin_agreement': None,
+                  'privacy_policy': None, 'home': None, 'about_page': None}
     self.gsoc = self.seed(GSoCProgram, properties)
 
     properties = {
         'prefix': 'gsoc_program', 'scope': self.gsoc,
         'read_access': 'public', 'key_name': DocumentKeyNameProvider(),
+        'modified_by': self.founder, 'author': self.founder,
+        'home_for': None,
     }
     document = self.seed(Document, properties=properties)
 
@@ -265,11 +283,15 @@ class DjangoTestCase(TestCase):
                      active_program=self.gsoc)
     self.site.put()
 
-    properties = {'scope': self.gsoc}
+    properties = {'scope': self.gsoc, 'modified_by': self.founder,
+                  'author': self.founder,
+                  'survey_content': None,}
     self.org_app = self.seed(OrgAppSurvey, properties)
 
     properties = {'scope': self.gsoc, 'status': 'active',
-                  'scoring_disabled': False, 'max_score': 5}
+                  'scoring_disabled': False, 'max_score': 5,
+                  'founder': self.founder,
+                  'home': None,}
     self.org = self.seed(GSoCOrganization, properties)
 
     self.timeline = TimelineHelper(self.gsoc.timeline, self.org_app)

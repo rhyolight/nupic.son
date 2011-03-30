@@ -42,8 +42,12 @@ class EditProgramTest(DjangoTestCase):
 
   def setUp(self):
     self.init()
+    self.data.createUser()
 
     properties = {
+        'modified_by': self.data.user,
+        'author': self.data.user,
+        'home_for': None,
         'prefix': 'site',
         'scope': self.site,
         'read_access': 'public',

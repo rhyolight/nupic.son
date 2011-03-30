@@ -44,7 +44,7 @@ class RequestTest(DjangoTestCase):
   def createInvitation(self):
     """Creates and returns an accepted invitation for the current user.
     """
-    properties = {'role': 'mentor', 'user': self.data.user,
+    properties = {'role': 'mentor', 'user': self.data.user, 'group': self.org,
                   'status': 'pending', 'type': 'Request'}
     return seeder_logic.seed(Request, properties=properties)
 

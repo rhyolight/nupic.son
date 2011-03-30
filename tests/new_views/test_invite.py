@@ -44,7 +44,7 @@ class InviteTest(DjangoTestCase):
   def createInvitation(self):
     """Creates and returns an accepted invitation for the current user.
     """
-    properties = {'role': 'mentor', 'user': self.data.user,
+    properties = {'role': 'mentor', 'user': self.data.user, 'group': self.org,
                   'status': 'pending', 'type': 'Invitation'}
     return seeder_logic.seed(Request, properties=properties)
 
@@ -69,8 +69,9 @@ class InviteTest(DjangoTestCase):
 
     # create other user to send invite to
     other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
-    other_user = other_data.createOtherUser('to_be_admin@example.com')
+    other_data.createOtherUser('to_be_admin@example.com')
     other_data.createProfile()
+    other_user = other_data.user
 
     # test POST
     override = {'link_id': other_user.link_id, 'status': 'pending',

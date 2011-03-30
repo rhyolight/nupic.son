@@ -41,8 +41,13 @@ class OrgHomeViewTest(DjangoTestCase):
     from soc.modules.gsoc.models.student_project import StudentProject
 
     self.init()
+    student = self.data.createStudent()
 
-    properties = {'scope': self.org, 'program': self.gsoc}
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test).createOtherUser(
+        'mentor@example.com').createMentor(self.org)
+
+    properties = {'scope': self.org, 'program': self.gsoc,
+                  'student': student, 'mentor': mentor}
     self.student_projects = seeder_logic.seedn(StudentProject, 2, properties)
 
   def assertOrgHomeTemplatesUsedBeforeStudentProjectsAnnounced(self, response):

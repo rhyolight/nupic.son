@@ -68,6 +68,12 @@ class SeedingError(Error):
   pass
 
 
+class RecurseError(Error):
+  """Raised when needing to recurse while recurse=False.
+  """
+  pass
+
+
 class Logic(object):
   """Contains logic for data seeding operations.
   """
@@ -374,7 +380,7 @@ class Logic(object):
                   }
     return scopes_dict.get(model_name, None)
 
-  def seedn(self, model_class, n=1, properties=None):
+  def seedn(self, model_class, n=1, properties=None, recurse=True):
     """Seeds n model_class entities.
 
     Any number of properties can be specified either with their values or
@@ -393,11 +399,11 @@ class Logic(object):
     """
     result = []
     for _ in xrange(n):
-      data = self.seed(model_class, properties)
+      data = self.seed(model_class, properties, recurse)
       result.append(data)
     return result
 
-  def _seedProperty(self, model_class, properties, prop, prop_name):
+  def _seedProperty(self, model_class, properties, prop, prop_name, recurse):
     """Seeds one property.
     """
     result = properties.get(prop_name)
@@ -433,6 +439,9 @@ class Logic(object):
         reference_class = prop.reference_class
       if reference_class:
         # Seed ReferenceProperty recursively
+        if not recurse:
+          raise RecurseError("Recursing a %s on %s:%s" % (
+              reference_class.__name__, model_class.__name__, prop_name))
         result = self.seed(reference_class)
       return result
 
@@ -444,7 +453,7 @@ class Logic(object):
     # automatically
     return self.genRandomValueForPropertyClass(prop.__class__)
 
-  def seed_properties(self, model_class, properties=None):
+  def seed_properties(self, model_class, properties=None, recurse=True):
     """Seeds the properties for a model_class entity.
 
     Any number of properties can be specified either with their values or
@@ -472,11 +481,11 @@ class Logic(object):
     # Produce all properties of model_class
     for prop_name, prop in items:
       properties[prop_name] = self._seedProperty(model_class, properties,
-                                                 prop, prop_name)
+                                                 prop, prop_name, recurse)
 
     return properties
 
-  def seed(self, model_class, properties=None):
+  def seed(self, model_class, properties=None, recurse=True):
     """Seeds a model_class entity.
 
     Any number of properties can be specified either with their values or
@@ -492,7 +501,7 @@ class Logic(object):
         {"name": "John Smith",
          "age": RandomUniformDistributionIntegerProvider(min=0, max=80)}
     """
-    properties = self.seed_properties(model_class, properties)
+    properties = self.seed_properties(model_class, properties, recurse)
     data = model_class(**properties)
     data.put()
     return data

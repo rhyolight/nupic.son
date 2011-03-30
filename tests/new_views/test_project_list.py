@@ -47,21 +47,6 @@ class ProjectListTest(DjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/projects_list/_project_list.html')
 
   def testListProjects(self):
-    self.go()
-
-  def testListProjects1(self):
-    self.go()
-
-  def testListProjects2(self):
-    self.go()
-
-  def testListProjects3(self):
-    self.go()
-
-  def testListProjects4(self):
-    self.go()
-
-  def go(self):
     url = '/gsoc/list_projects/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertProjectTemplatesUsed(response)

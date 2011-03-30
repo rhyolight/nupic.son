@@ -135,7 +135,9 @@ class ProposalTest(DjangoTestCase):
   def testUpdateProposal(self):
     """Test update proposals.
     """
-    self.data.createStudentWithProposal()
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test).createOtherUser(
+        'mentor@example.com').createMentor(self.org)
+    self.data.createStudentWithProposal(self.org, mentor)
     self.timeline.studentSignup()
 
     proposal = GSoCProposal.all().get()
