@@ -436,11 +436,13 @@ class SubmittedProposalsComponent(Component):
     list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
         ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
+    list_config.addSimpleColumn('score', 'Score')
     list_config.addColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args, **kwargs: 
         r.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
+    list_config.setDefaultSort('score', 'desc')
     self._list_config = list_config
 
     super(SubmittedProposalsComponent, self).__init__(request, data)
@@ -459,7 +461,7 @@ class SubmittedProposalsComponent(Component):
         description=SubmittedProposalsComponent.DESCRIPTION)
     return {
         'name': 'proposals_submitted',
-        'title': 'PROPOSALS SUBMITTED TO ORGS I AM MENTOR/ADMIN FOR',
+        'title': 'PROPOSALS SUBMITTED TO MY ORGS',
         'lists': [list],
         }
 
@@ -754,6 +756,6 @@ class ParticipantsComponent(Component):
 
     return {
         'name': 'participants',
-        'title': 'MEMBERS OF ORGANIZATIONS I ADMIN',
+        'title': 'MEMBERS OF MY ORGANIZATIONS',
         'lists': [list],
     }
