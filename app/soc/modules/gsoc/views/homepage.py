@@ -32,6 +32,7 @@ from soc.logic import dicts
 from soc.logic import system
 from soc.views.template import Template
 
+from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.logic.models.student_project import logic as sp_logic
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -88,11 +89,15 @@ class Apply(Template):
       nr_orgs = self.data.program.nr_accepted_orgs
       context['nr_accepted_orgs'] = nr_orgs if nr_orgs else ""
       context['accepted_orgs_link'] = accepted_orgs
-      context['apache_home_link'] = r.orgHomepage('asf').url()
-      context['mozilla_home_link'] = r.orgHomepage('mozilla').url()
-      context['melange_home_link'] = r.orgHomepage('melange').url()
-      context['wikimedia_home_link'] = r.orgHomepage('wikimedia').url()
-      context['drupal_home_link'] = r.orgHomepage('drupal').url()
+      participating_orgs = []
+      current_orgs = org_logic.getParticipatingOrgs(self.data.program)
+      for org in current_orgs:
+        participating_orgs.append({
+            'link': r.orgHomepage(org.link_id).url(),
+            'logo': org.logo_url,
+            'name': org.short_name,
+            })
+      context['participating_orgs'] = participating_orgs
 
     context['org_signup'] = self.data.timeline.orgSignup()  
     context['student_signup'] = self.data.timeline.studentSignup()

@@ -16,11 +16,15 @@ limitations under the License.
   <div id="participants" class="block block-participants">
     <h4 id="title-section-participating-orgs">Participating Organizations</h4>
     <div id="block-participants-content" class="block-content">
-      <a href="{{ apache_home_link }}"><img src="/soc/content/{{ app_version }}/images/v2/gsoc/participant-apache.png" height="40" width="90" alt="Apache Software Foundation" /></a>
-      <a href="{{ mozilla_home_link }}"><img src="/soc/content/{{ app_version }}/images/v2/gsoc/participant-mozilla.png" height="57" width="60" alt="Mozilla Foundation" /></a>
-      <a href="{{ melange_home_link }}"><img src="/soc/content/{{ app_version }}/images/v2/gsoc/participating-melange.png" height="22" width="75" alt="Mozilla Foundation" /></a>
-      <a href="{{ wikimedia_home_link }}"><img src="/soc/content/{{ app_version }}/images/v2/gsoc/participant-wikimedia.png" height="63" width="62" alt="Wikimedia Foundation" /></a>
-      <a href="{{ drupal_home_link }}"><img src="/soc/content/{{ app_version }}/images/v2/gsoc/participant-drupal.png" height="68" width="50" alt="Drupal" /></a>
+      {% for org in participating_orgs %}
+        <a href="{{ org.link }}">
+          {% if org.logo %}
+            <img src="{{ org.logo }}" class="particpating-orgs" alt="{{ org.name }}" />
+          {% else %}
+            {{ org.name }}
+          {% endif %}
+        </a>&nbsp;
+      {% endfor %}
     </div>
     <div id="block-participants-readmore" class="readmore">
       <a href="{{ accepted_orgs_link }}">See all {{ nr_accepted_orgs }} participating organizations</a>
