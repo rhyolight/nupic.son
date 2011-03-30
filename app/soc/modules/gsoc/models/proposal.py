@@ -85,6 +85,11 @@ class GSoCProposal(soc.models.base.ModelWithFieldAttributes):
   #: should be assigned a project slot.
   score = db.IntegerProperty(required=True, default=0)
 
+  #: Whether the org admin has decided that this proposal should be accepted.
+  #: Whether or not the proposal is actually converted into a project depends
+  #: on the amount of slots the organization has available.
+  accept_as_project = db.BooleanProperty(default=False)
+
   #: the status of this proposal
   #: new : the proposal has not been ranked/scored yet
   #: pending: the proposal is in the process of being ranked/scored
