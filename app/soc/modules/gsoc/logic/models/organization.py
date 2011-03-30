@@ -160,7 +160,13 @@ class Logic(organization.Logic):
 
     if len(orgs) < batch_size:
       q = self.getQueryForFields(properties)
-      orgs.extend(self._getOrgWithLogoForQuery(q, batch_size - len(orgs)))
+      extra_orgs = self._getOrgWithLogoForQuery(q, batch_size - len(orgs))
+
+      # add only those orgs which are not already in the list
+      orgs_keys = [o.key() for o in orgs]
+      for org in extra_orgs:
+        if org.key() not in orgs_keys:
+          orgs.append(org)
 
     new_cursor = q.cursor()
     memcache.set(
