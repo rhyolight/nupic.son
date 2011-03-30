@@ -109,6 +109,23 @@ class Logic(organization.Logic):
 
     db.run_in_transaction(org_delete_txn, entity)
 
+  def _getOrgWithLogoForQuery(self, query, batch_size=5):
+    """Return the org entities for the given query and batch size which have
+    Logo URL set.
+
+    Args:
+      query: Appengine query for which the entities must be fetched
+      batch_size: number of entities that needs to be fetched
+    """
+    orgs = []
+    for org in query:
+      if org.logo_url:
+        orgs.append(org)
+        if len(orgs) == batch_size:
+          break
+
+    return orgs
+
   def getParticipatingOrgs(self, program):
     """Return a list of organizations to display on program homepage.
 
@@ -133,14 +150,18 @@ class Logic(organization.Logic):
     po_cache = memcache.get('participating_orgs')
 
     if po_cache:
-      if not datetime.datetime.now() > po_cache[2] + expiry_time:
-        return po_cache[0]
+      cached_orgs, cached_cursor, cached_time = po_cache
+      if not datetime.datetime.now() > cached_time + expiry_time:
+        return cached_orgs
       else:
-        q.with_cursor(po_cache[1])
-        if q.count() < batch_size:
-          q = self.getQueryForFields(properties)
+        q.with_cursor(cached_cursor)
 
-    orgs = q.fetch(batch_size)
+    orgs = self._getOrgWithLogoForQuery(q, batch_size)
+
+    if len(orgs) < batch_size:
+      q = self.getQueryForFields(properties)
+      orgs.extend(self._getOrgWithLogoForQuery(q, batch_size - len(orgs)))
+
     new_cursor = q.cursor()
     memcache.set(
       key='participating_orgs',
