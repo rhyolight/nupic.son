@@ -630,6 +630,9 @@
       var start = "";
       var current_loop = 0;
 
+      // Show Loading message
+      jQuery("#load_" + _self.jqgrid.id).show();
+
       var server_loop = function () {
         // Preserve current query string
         var ampersand_question = "?";
@@ -1009,10 +1012,9 @@
         {searchOnEnter: false}
       );
 
-      // Show Loading message, after substituting it with an animated image
+      // Prepare the Loading message, substituting it with an animated image
       jQuery("#load_" + _self.jqgrid.id).closest("div").css("line-height","100%");
       jQuery("#load_" + _self.jqgrid.id).html("<img src='/soc/content/" + melange.config.app_version + "/images/jqgrid_loading.gif'></img>");
-      jQuery("#load_" + _self.jqgrid.id).show();
 
       _self.jqgrid.object = jQuery("#" + _self.jqgrid.id);
     };
