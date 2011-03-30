@@ -184,7 +184,9 @@ class OrgHome(RequestHandler):
         url(r'^gsoc/org/%s$' % url_patterns.ORG, self,
             name='gsoc_org_home'),
         url(r'^gsoc/org/show/%s$' % url_patterns.ORG, self),
+        url(r'^gsoc/org/home/%s$' % url_patterns.ORG, self),
         url(r'^org/show/%s$' % url_patterns.ORG, self),
+        url(r'^org/home/%s$' % url_patterns.ORG, self),
     ]
 
   def checkAccess(self):
