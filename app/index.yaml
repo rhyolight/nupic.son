@@ -77,6 +77,13 @@ indexes:
   - name: status
   - name: slots
 
+# used to determine whether a logo has been set
+- kind: GSoCOrganization
+  properties:
+  - name: scope
+  - name: status
+  - name: logo_url
+
 # used to order GCIComments under a GCITask with that GCITask being
 # its ancestor entity in the entity group.
 - kind: GCIComment
