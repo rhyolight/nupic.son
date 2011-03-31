@@ -105,7 +105,7 @@ class Dashboard(RequestHandler):
 
     if self.data.student_info:
       components += self._getStudentComponents()
-    elif self.data.mentor_for or self.data.org_admin_for:
+    elif self.data.is_host or self.data.mentor_for or self.data.org_admin_for:
       components.append(RequestComponent(self.request, self.data, False))
       components += self._getOrgMemberComponents()
     else:
