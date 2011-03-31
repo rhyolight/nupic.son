@@ -670,14 +670,20 @@ class ParticipantsComponent(Component):
     list_config.addColumn(
         'name', 'Name', lambda ent, *args: ent.name())
     list_config.addSimpleColumn('email', "Email")
+
+    if self.data.is_host:
+      get = lambda i, orgs: orgs[i].link_id
+    else:
+      get = lambda i, orgs: orgs[i].name
+
     list_config.addColumn(
         'mentor_for', 'Mentor for',
-        lambda ent, *args: ', '.join(
-            [i.name for i in orgs if i.key() in ent.mentor_for + ent.org_admin_for]))
+        lambda ent, orgs, *args: ', '.join(
+            [get(i, orgs) for i in set(ent.mentor_for + ent.org_admin_for) if data.orgAdminFor(i)]))
     list_config.addColumn(
         'admin_for', 'Organization admin for',
-        lambda ent, *args: ', '.join(
-            [i.name for i in orgs if i.key() in ent.org_admin_for]))
+        lambda ent, orgs, *args: ', '.join(
+            [get(i, orgs) for i in ent.org_admin_for if data.orgAdminFor(i)]))
     self._list_config = list_config
 
     super(ParticipantsComponent, self).__init__(request, data)
@@ -688,9 +694,13 @@ class ParticipantsComponent(Component):
   def getListData(self):
     idx = lists.getListIndex(self.request)
 
+    if idx != 9:
+      return None
+
     def starter(start_key, q):
+      filter = lambda k, v: q.filter(k, v) if not self.data.is_host else None
       if not start_key:
-        q.filter('org_admin_for IN', self.data.org_admin_for)
+        filter('org_admin_for IN', self.data.org_admin_for)
         return True
 
       split = start_key.split(':', 1)
@@ -700,9 +710,9 @@ class ParticipantsComponent(Component):
       cls, start_key = split
 
       if cls == 'org_admin':
-        q.filter('org_admin_for IN', self.data.org_admin_for)
+        filter('org_admin_for IN', self.data.org_admin_for)
       elif cls == 'mentor':
-        q.filter('mentor_for IN', self.data.org_admin_for)
+        filter('mentor_for IN', self.data.org_admin_for)
       else:
         return False
 
@@ -743,14 +753,17 @@ class ParticipantsComponent(Component):
 
     q = GSoCProfile.all()
 
-    if idx == 9:
-      prefetcher = lists.modelPrefetcher(GSoCProfile, ['user'])
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, starter,
-          ender=ender, skipper=skipper, prefetcher=prefetcher)
-      return response_builder.build()
+    if self.data.is_host:
+      prefetcher = lists.listPrefetcher(
+          GSoCProfile, ['mentor_for', 'org_admin_for'])
     else:
-      return None
+      prefetcher = lambda entities: (
+          [dict((i.key(), i) for i in self.data.mentor_for)], {})
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter,
+        ender=ender, skipper=skipper, prefetcher=prefetcher)
+    return response_builder.build()
 
   def context(self):
     list = lists.ListConfigurationResponse(
