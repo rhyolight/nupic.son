@@ -566,19 +566,16 @@ def listPrefetcher(model, fields):
   return prefetcher
 
 
-def keyModelStarter(model):
+def keyStarter(start, q):
   """Returns a starter for the specified key-based model.
   """
-
-  def starter(start, q):
-    if not start:
-      return True
-    start_entity = model.get_by_key_name(start)
-    if not start_entity:
-      return False
-    q.filter('__key__ >=', start_entity.key())
+  if not start:
     return True
-  return starter
+  start_entity = db.get(start)
+  if not start_entity:
+    return False
+  q.filter('__key__ >=', start_entity.key())
+  return True
 
 
 class RawQueryContentResponseBuilder(object):
@@ -602,7 +599,7 @@ class RawQueryContentResponseBuilder(object):
     """
     if not ender:
       ender = lambda entity, is_last, start: (
-          "done" if is_last else entity.key().id_or_name())
+          "done" if is_last else str(entity.key()))
     if not skipper:
       skipper = lambda entity, start: False
     if not prefetcher:
@@ -681,8 +678,6 @@ class QueryContentResponseBuilder(RawQueryContentResponseBuilder):
       prefetch: The fields that need to be prefetched for increased
                 performance.
     """
-    starter = keyModelStarter(logic.getModel())
-
     query = logic.getQueryForFields(
         filter=fields, ancestors=ancestors)
 
@@ -691,4 +686,4 @@ class QueryContentResponseBuilder(RawQueryContentResponseBuilder):
       prefetcher = modelPrefetcher(logic.getModel(), prefetch)
 
     super(QueryContentResponseBuilder, self).__init__(
-        request, config, query, starter, prefetcher=prefetcher)
+        request, config, query, keyStarter, prefetcher=prefetcher)

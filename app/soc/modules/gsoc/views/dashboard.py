@@ -309,7 +309,7 @@ class MyProposalsComponent(Component):
       q.filter('program', self.data.program)
       q.ancestor(self.data.profile)
 
-      starter = lists.keyModelStarter(GSoCProposal)
+      starter = lists.keyStarter
       prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'])
 
       response_builder = lists.RawQueryContentResponseBuilder(
@@ -482,7 +482,7 @@ class SubmittedProposalsComponent(Component):
     else:
       q.filter('program', self.data.program)
 
-    starter = lists.keyModelStarter(GSoCProposal)
+    starter = lists.keyStarter
     prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
