@@ -227,13 +227,9 @@
   ];
 
   s.melange.datetimepicker = [
-    s.jqueryui.core,
+    s.jqueryui.datepicker,
     null,
-    tpjs + "jquery-ui.datetimepicker.js",
-    null,
-    mpjs + "datetimepicker.js",
-    null,
-    mpjs + "datetime-loader.js"
+    mpjs + "melange.datetimepicker.js"
   ];
 
   s.melange.duplicates = [
