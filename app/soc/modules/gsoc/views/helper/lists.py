@@ -603,7 +603,7 @@ class RawQueryContentResponseBuilder(object):
     if not skipper:
       skipper = lambda entity, start: False
     if not prefetcher:
-      prefetcher = lambda entitites: [], {}
+      prefetcher = lambda entitites: ([], {})
 
     self._request = request
     self._config = config
@@ -644,9 +644,9 @@ class RawQueryContentResponseBuilder(object):
 
     is_last = len(entities) != count
 
-    #extra_args, extra_kwargs = self._prefetcher(entities)
-    #args = list(args) + list(extra_args)
-    #kwargs.update(extra_kwargs)
+    extra_args, extra_kwargs = self._prefetcher(entities)
+    args = list(args) + list(extra_args)
+    kwargs.update(extra_kwargs)
 
     for entity in entities:
       if self._skipper(entity, start):
