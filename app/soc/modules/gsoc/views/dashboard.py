@@ -443,7 +443,7 @@ class SubmittedProposalsComponent(Component):
     list_config.setRowAction(lambda e, *args, **kwargs: 
         r.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
-    list_config.setDefaultSort('score', 'desc')
+    #list_config.setDefaultSort('score', 'desc')
     self._list_config = list_config
 
     super(SubmittedProposalsComponent, self).__init__(request, data)
