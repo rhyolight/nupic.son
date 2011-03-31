@@ -134,15 +134,16 @@ class InviteForm(forms.ModelForm):
              "You cannot invite them until they create a profile.")
       raise djangoforms.ValidationError(msg % self.request_data.program.name)
 
+    if profile.student_info:
+      raise djangoforms.ValidationError("That user is a student")
+
     if self.request_data.kwargs['role'] == 'org_admin':
-      role_for = profile.org_admin_for
+      role_for = set(profile.org_admin_for + profile.mentor_for)
     else:
       role_for = profile.mentor_for
 
-    for key in role_for:
-      if key == self.request_data.organization.key():
-        raise djangoforms.ValidationError(
-            'The user already has this role.')
+    if self.request_data.organization.key() in role_for:
+      raise djangoforms.ValidationError('That user already has this role.')
 
     
 class InvitePage(RequestHandler):
