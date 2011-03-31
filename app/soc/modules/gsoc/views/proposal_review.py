@@ -411,14 +411,17 @@ class PostScore(RequestHandler):
     score = query.get()
 
     if not score:
+      old_value = 0
       score = GSoCScore(
           parent=self.data.proposal,
           author=self.data.profile,
           value=value)
     else:
+      old_value = score.value
       score.value = value
 
     proposal_key = self.data.proposal.key()
+
     def update_score_trx(score):
       if score and not score.value:
         score.delete()
@@ -426,7 +429,7 @@ class PostScore(RequestHandler):
         score.put()
       # update total score for the proposal
       proposal = db.get(proposal_key)
-      proposal.score += (value - (score.value if score else 0))
+      proposal.score += value - old_value
       proposal.put()
 
     db.run_in_transaction(update_score_trx, score)
