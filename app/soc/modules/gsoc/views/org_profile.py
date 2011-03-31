@@ -24,6 +24,7 @@ __authors__ = [
 
 from soc.views import forms
 
+from django import forms as djangoforms
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
 from django import forms as django_forms
@@ -34,6 +35,7 @@ from soc.logic.exceptions import NotFound
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 
+from soc.modules.gsoc.logic import cleaning as gsoc_cleaning
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
@@ -43,6 +45,10 @@ class OrgProfileForm(forms.ModelForm):
   """Django form for the organization profile.
   """
 
+  def __init__(self, *args, **kwargs):
+    super(OrgProfileForm, self).__init__(*args, **kwargs)
+    self.fields['tags'].group = '1. Public Info'
+
   class Meta:
     model = GSoCOrganization
     css_prefix = 'gsoc_org_page'
@@ -51,6 +57,9 @@ class OrgProfileForm(forms.ModelForm):
     widgets = forms.choiceWidgets(GSoCOrganization,
         ['contact_country', 'shipping_country'])
 
+  tags = djangoforms.CharField(label='Tags')
+  clean_tags = gsoc_cleaning.cleanTagsList(
+      'tags', gsoc_cleaning.COMMA_SEPARATOR)
   clean_description = cleaning.clean_html_content('description')
   clean_contrib_template = cleaning.clean_html_content('contrib_template')
   clean_facebook = cleaning.clean_url('facebook')
@@ -124,6 +133,10 @@ class OrgProfilePage(RequestHandler):
     else:
       form = OrgProfileForm(self.data.POST or None, instance=self.data.org)
 
+    if self.data.org.org_tag:
+      tags = self.data.org.tags_string(self.data.org.org_tag)
+      form.fields['tags'].initial = tags
+
     return {
         'page_name': "Organization profile",
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
@@ -138,6 +151,16 @@ class OrgProfilePage(RequestHandler):
       self.redirect.to('edit_gsoc_org_profile', validated=True)
     else:
       self.get()
+
+  def putWithOrgTags(self, form, entity):
+    fields = form.cleaned_data
+
+    entity.org_tag = {
+        'tags': fields['tags'],
+        'scope': entity.scope if entity else fields['scope']
+    }
+
+    entity.put()
 
   def createOrgProfileFromForm(self):
     """Creates a new organization based on the data inserted in the form.
@@ -162,10 +185,12 @@ class OrgProfilePage(RequestHandler):
           self.data.program.key().name(),
           form.cleaned_data['link_id']
           )
-      entity = form.create(commit=True, key_name=key_name)
+      entity = form.create(commit=False, key_name=key_name)
+      self.putWithOrgTags(form, entity)
       self.data.profile.org_admin_for.append(entity.key())
       self.data.profile.put()
     else:
-      entity = form.save(commit=True)
+      entity = form.save(commit=False)
+      self.putWithOrgTags(form, entity)
 
     return entity
