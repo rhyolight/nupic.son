@@ -479,6 +479,8 @@ class SubmittedProposalsComponent(Component):
     q = GSoCProposal.all()
     if not self.data.is_host:
       q.filter('org IN', self.data.mentor_for)
+    else:
+      q.filter('program', self.data.program)
 
     starter = lists.keyModelStarter(GSoCProposal)
     prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'])
@@ -756,6 +758,7 @@ class ParticipantsComponent(Component):
     q = GSoCProfile.all()
 
     if self.data.is_host:
+      q.filter('scope', self.data.program)
       prefetcher = lists.listPrefetcher(
           GSoCProfile, ['mentor_for', 'org_admin_for'])
     else:
