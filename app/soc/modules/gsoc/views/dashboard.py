@@ -682,12 +682,14 @@ class ParticipantsComponent(Component):
 
     list_config.addColumn(
         'mentor_for', 'Mentor for',
-        lambda ent, orgs, *args: ', '.join(
-            [get(i, orgs) for i in set(ent.mentor_for + ent.org_admin_for) if data.orgAdminFor(i)]))
+        lambda ent, *args: ', '.join(
+            [get(i, orgs) for i, v in enumerate(
+            set(ent.mentor_for + ent.org_admin_for)) if data.orgAdminFor(i)]))
     list_config.addColumn(
         'admin_for', 'Organization admin for',
-        lambda ent, orgs, *args: ', '.join(
-            [get(i, orgs) for i in ent.org_admin_for if data.orgAdminFor(i)]))
+        lambda ent, *args: ', '.join(
+            [get(i, orgs) for i, v in 
+             enumerate(ent.org_admin_for) if data.orgAdminFor(i)]))
     self._list_config = list_config
 
     super(ParticipantsComponent, self).__init__(request, data)
