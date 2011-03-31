@@ -16,6 +16,7 @@ limitations under the License.
 {% block dependencies %}
   [
     dep.jqueryui.datepicker,
+    // dep.melange.datetimepicker,
     null,
     function () {
       var config = {
@@ -34,6 +35,7 @@ limitations under the License.
         "#student_application_matched_deadline",
         "#accepted_students_announced_deadline"
       ].join(",");
+      // jQuery(fields_to_enhance).datetimepicker(config);
       jQuery(fields_to_enhance).datepicker(config);
     }
   ]
