@@ -408,31 +408,31 @@ class PostScore(RequestHandler):
     query.filter('author = ', self.data.profile)
     query.ancestor(self.data.proposal)
 
-    score = query.get()
-
-    if not score:
-      old_value = 0
-      score = GSoCScore(
-          parent=self.data.proposal,
-          author=self.data.profile,
-          value=value)
-    else:
-      old_value = score.value
-      score.value = value
-
-    proposal_key = self.data.proposal.key()
-
-    def update_score_trx(score):
-      if score and not score.value:
-        score.delete()
-      else:
+    def update_score_trx():
+      
+      # update score entity
+      score = query.get()
+      if not score:
+        old_value = 0
+        score = GSoCScore(
+            parent=self.data.proposal,
+            author=self.data.profile,
+            value=value)
         score.put()
+      else:
+        old_value = score.value
+        if not value:
+          score.delete()
+        else:
+          score.value = value
+          score.put()
+
       # update total score for the proposal
-      proposal = db.get(proposal_key)
+      proposal = db.get(self.data.proposal.key())
       proposal.score += value - old_value
       proposal.put()
 
-    db.run_in_transaction(update_score_trx, score)
+    db.run_in_transaction(update_score_trx)
 
   def post(self):
     value = int(self.data.POST['value'])
