@@ -525,6 +525,44 @@ def modelPrefetcher(model, fields):
   """
   def prefetcher(entities):
     prefetchFields(model, fields, entities)
+    return [], {}
+  return prefetcher
+
+
+def prefetchListFields(model, fields, data):
+  """Prefetches the specified list fields in data.
+  """
+  for field in fields:
+    prop = getattr(model, field, None)
+
+    if not prop:
+      logging.exception("Model %s does not have attribute %s" %
+                        (model.kind(), field))
+      return
+
+    if not isinstance(prop, db.ListProperty):
+      logging.exception("Property %s of %s is not a ReferenceProperty but a %s" %
+                        (field, model.kind(), prop.__class__.__name__))
+      return
+
+  keys = []
+
+  for field in fields:
+    for i in data:
+      keys += getattr(i, field)
+
+  prefetched_entities = db.get(keys)
+  prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
+
+  return prefetched_dict
+
+
+def listPrefetcher(model, fields):
+  """Returns ap refetcher for the specified models and list fields.
+  """
+  def prefetcher(entities):
+    prefetched_entities = prefetchListFields(model, fields, entities)
+    return [prefetched_entities], {}
   return prefetcher
 
 
@@ -568,7 +606,7 @@ class RawQueryContentResponseBuilder(object):
     if not skipper:
       skipper = lambda entity, start: False
     if not prefetcher:
-      prefetcher = lambda entitites: None
+      prefetcher = lambda entitites: [], {}
 
     self._request = request
     self._config = config
@@ -609,7 +647,9 @@ class RawQueryContentResponseBuilder(object):
 
     is_last = len(entities) != count
 
-    self._prefetcher(entities)
+    extra_args, extra_kwargs = self._prefetcher(entities)
+    args = list(args) + list(extra_args)
+    kwargs.update(extra_kwargs)
 
     for entity in entities:
       if self._skipper(entity, start):
