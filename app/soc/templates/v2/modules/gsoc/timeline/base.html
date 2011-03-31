@@ -24,14 +24,17 @@ limitations under the License.
         dateFormat: "yy-mm-dd",
         showButtonPanel: true,
       }
-      jQuery("#program_start").datepicker(config);
-      jQuery("#program_end").datepicker(config);
-      jQuery("#accepted_organization_announced_deadline").datepicker(config);
-      jQuery("#student_signup_start").datepicker(config);
-      jQuery("#student_signup_end").datepicker(config);
-      jQuery("#application_review_deadline").datepicker(config);
-      jQuery("#student_application_matched_deadline").datepicker(config);
-      jQuery("#accepted_students_announced_deadline").datepicker(config);
+      var fields_to_enhance = [
+        "#program_start",
+        "#program_end",
+        "#accepted_organization_announced_deadline",
+        "#student_signup_start",
+        "#student_signup_end",
+        "#application_review_deadline",
+        "#student_application_matched_deadline",
+        "#accepted_students_announced_deadline"
+      ].join(",");
+      jQuery(fields_to_enhance).datepicker(config);
     }
   ]
 {% endblock dependencies %}
