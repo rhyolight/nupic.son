@@ -105,7 +105,7 @@ class Dashboard(RequestHandler):
 
     if self.data.student_info:
       components += self._getStudentComponents()
-    elif self.data.is_host or self.data.mentor_for or self.data.org_admin_for:
+    elif self.data.is_mentor:
       components.append(RequestComponent(self.request, self.data, False))
       components += self._getOrgMemberComponents()
     else:
@@ -134,7 +134,7 @@ class Dashboard(RequestHandler):
     """
     components = []
 
-    if self.data.mentor_for:
+    if self.data.is_mentor:
       if timeline_helper.isAfterEvent(
           self.data.program_timeline, 'accepted_students_announced_deadline'):
         # add a component to show all projects a user is mentoring
@@ -149,7 +149,7 @@ class Dashboard(RequestHandler):
 
     components.append(OrganizationsIParticipateInComponent(self.request, self.data))
 
-    if self.data.org_admin_for:
+    if self.data.is_org_admin:
       # add a component for all organization that this user administers
       components.append(RequestComponent(self.request, self.data, True))
       components.append(ParticipantsComponent(self.request, self.data))

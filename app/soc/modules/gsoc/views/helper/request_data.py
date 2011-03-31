@@ -170,6 +170,8 @@ class RequestData(RequestData):
     program_timeline: The GSoCTimeline entity
     timeline: A TimelineHelper entity
     is_host: is the current user a host of the program
+    is_mentor: is the current user a mentor in the program
+    is_org_admin: is the current user an org admin in the program
     org_admin_for: the organizations the current user is an admin for
     mentor_for: the organizations the current user is a mentor for
     student_info: the StudentInfo for the current user and program
@@ -190,6 +192,8 @@ class RequestData(RequestData):
     # user profile specific fields
     self.profile = None
     self.is_host = False
+    self.is_mentor = False
+    self.is_org_admin = False
     self.mentor_for = []
     self.org_admin_for = []
     self.applied_to = []
@@ -299,6 +303,9 @@ class RequestData(RequestData):
       self.mentor_for = org_map.values()
       self.org_admin_for = [org_map[i] for i in self.profile.org_admin_for]
       self.student_info = self.profile.student_info
+
+    self.is_org_admin = self.is_host or bool(self.org_admin_for)
+    self.is_mentor = self.is_org_admin or bool(self.mentor_for)
 
 
 class RedirectHelper(object):
