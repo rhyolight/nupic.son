@@ -42,6 +42,7 @@ from soc.modules.gsoc.models.org_admin import GSoCOrgAdmin
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.student import GSoCStudent
+from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.student_project import StudentProject
 from soc.modules.gsoc.models.student_proposal import StudentProposal
 
@@ -189,7 +190,7 @@ class RoleUpdater(object):
         properties[prop] = getattr(entity, prop)
 
       key_name = profile.key().name()
-      student_info = StudentInfo(key_name=key_name,
+      student_info = GSoCStudentInfo(key_name=key_name,
           parent=profile, **properties)
       profile.student_info = student_info
       to_put.append(student_info)
