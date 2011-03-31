@@ -473,18 +473,20 @@ class SubmittedProposalsComponent(Component):
     returned.
     """
     idx = lists.getListIndex(self.request)
-    if idx == 4:
-      q = GSoCProposal.all()
+    if idx != 4:
+      return None
+
+    q = GSoCProposal.all()
+    if not self.data.is_host:
       q.filter('org IN', self.data.mentor_for)
 
-      starter = lists.keyModelStarter(GSoCProposal)
-      prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'])
+    starter = lists.keyModelStarter(GSoCProposal)
+    prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'])
 
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, starter, prefetcher=prefetcher)
-      return response_builder.build()
-    else:
-      return None
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+    return response_builder.build()
+
 
 class ProjectsIMentorComponent(Component):
   """Component for listing all the Projects mentored by the current user.
