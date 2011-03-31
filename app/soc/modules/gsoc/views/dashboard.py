@@ -109,6 +109,7 @@ class Dashboard(RequestHandler):
       components.append(RequestComponent(self.request, self.data, False))
       components += self._getOrgMemberComponents()
     else:
+      components.append(RequestComponent(self.request, self.data, False))
       components += self._getLoneUserComponents()
 
     return components
