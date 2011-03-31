@@ -151,6 +151,8 @@ DEF_NOT_PUBLIC_DOCUMENT = ugettext(
 DEF_NO_DOCUMENT = ugettext(
     'The document was not found')
 
+DEF_CANNOT_UPDATE_PROPOSAL = ugettext(
+    'This proposal cannot be updated.')
 
 unset = object()
 
@@ -565,13 +567,6 @@ class AccessChecker(BaseAccessChecker):
     # check if the timeline allows updating proposals
     self.studentSignupActive()
 
-    if self.data.proposal.status == 'invalid':
-      error_msg = DEF_ID_BASED_ENTITY_INVALID_MSG_FMT % {
-          'model': 'GSoCProposal',
-          'id': id,
-          }
-      raise AccessViolation(error_msg)
-
     # check if the proposal belongs to the current user
     expected_profile = self.data.proposal.parent()
     if expected_profile.key().name() != self.data.profile.key().name():
@@ -579,6 +574,17 @@ class AccessChecker(BaseAccessChecker):
           'model': 'GSoCProposal'
           }
       raise AccessViolation(error_msg)
+
+    # check if the status allows the proposal to be updated
+    status = self.data.proposal.status
+    if self.data.proposal.status in ['invalid', 'accepted', 'rejected']:
+      raise AccessViolation(DEF_CANNOT_UPDATE_PROPOSAL)
+
+    # determine what can be done with the proposal
+    if status == 'new' or status == 'pending':
+      self.data.is_pending = True
+    elif status == 'withdrawn':
+      self.data.is_pending = False
 
   def _isIdBasedEntityPresent(self, entity, id, model_name):
     """Checks if the entity is not None.

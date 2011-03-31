@@ -24,9 +24,11 @@ __authors__ = [
 
 from google.appengine.ext import db
 
+from django.utils.translation import ugettext
 from django.conf.urls.defaults import url
 
 from soc.logic import cleaning
+from soc.logic.exceptions import AccessViolation
 from soc.views import forms
 
 from soc.modules.gsoc.models.proposal import GSoCProposal
@@ -67,6 +69,9 @@ class ProposalPage(RequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/base.html'
 
+  def buttonsTemplate(self):
+    return 'v2/modules/gsoc/proposal/_buttons_create.html'
+
   def context(self):
     if self.data.POST:
       proposal_form = ProposalForm(self.data.POST)
@@ -79,6 +84,7 @@ class ProposalPage(RequestHandler):
         'form_header_message': 'Submit proposal to %s' % (
             self.data.organization.name),
         'proposal_form': proposal_form,
+        'buttons_template': self.buttonsTemplate()
         }
 
   def createFromForm(self):
@@ -121,8 +127,14 @@ class ProposalPage(RequestHandler):
 
 
 class UpdateProposal(RequestHandler):
-  """View for the update propsal page.
+  """View for the update proposal page.
   """
+
+  ACTIONS = {
+      'resubmit': 'Resubmit',
+      'update': 'Update',
+      'withdraw': 'Withdraw',
+      }
 
   def djangoURLPatterns(self):
     return [
@@ -139,8 +151,27 @@ class UpdateProposal(RequestHandler):
 
     self.check.canStudentUpdateProposal()
 
+    if self.data.POST:
+      action = self.data.POST['action']
+
+      status = self.data.proposal.status
+      if (status == 'pending' or status == 'new') and \
+          action == self.ACTIONS['resubmit']:
+        error_msg = ugettext('You cannot resubmit a pending proposal')
+        raise AccessViolation(error_msg)
+      if status == 'withdrawn' and action == self.ACTIONS['withdraw']:
+        error_msg = ugettext('This proposal has already been withdrawn')
+        raise AccessViolation(error_msg)
+      if status == 'withdrawn' and action == self.ACTIONS['update']:
+        error_msg = ugettext('This proposal has been withdrawn')
+        raise AccessViolation(error_msg)
+      self.data.action = action
+
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/base.html'
+
+  def buttonsTemplate(self):
+    return 'v2/modules/gsoc/proposal/_buttons_update.html'
 
   def context(self):
     proposal = self.data.proposal
@@ -152,9 +183,11 @@ class UpdateProposal(RequestHandler):
         'page_name': 'Update proposal',
         'form_header_message': 'Update proposal to %s' % (proposal.org.name),
         'proposal_form': proposal_form,
+        'is_pending': self.data.is_pending,
+        'buttons_template': self.buttonsTemplate(),
         }
 
-  def updateFromForm(self):
+  def _updateFromForm(self):
     """Updates a proposal based on the data inserted in the form.
 
     Returns:
@@ -168,14 +201,33 @@ class UpdateProposal(RequestHandler):
 
     return proposal_form.save(commit=True)
 
+  def _withdraw(self):
+    """Withdraws a proposal.
+    """
+
+    self.data.proposal.status = 'withdrawn'
+    self.data.proposal.put()
+    
+  def _resubmit(self):
+    """Resubmits a proposal.
+    """
+
+    self.data.proposal.status = 'pending'
+    self.data.proposal.put()
+
   def post(self):
     """Handler for HTTP POST request.
     """
 
-    proposal = self.updateFromForm()
-    if proposal:
-      self.redirect.review(proposal.key().id(),
-                           self.data.user.link_id)
-      self.redirect.to('review_gsoc_proposal')
-    else:
-      self.get()
+    if self.data.action == self.ACTIONS['update']:
+      proposal = self._updateFromForm()
+      if not proposal:
+        self.get()
+        return
+    elif self.data.action == self.ACTIONS['withdraw']:
+      self._withdraw()
+    elif self.data.action == self.ACTIONS['resubmit']:
+      self._resubmit()
+
+    self.redirect.review(self.data.proposal.key().id(), self.data.user.link_id)
+    self.redirect.to('review_gsoc_proposal')

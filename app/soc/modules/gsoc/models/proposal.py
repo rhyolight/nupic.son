@@ -96,8 +96,9 @@ class GSoCProposal(soc.models.base.ModelWithFieldAttributes):
   #: accepted: the proposal has been assigned a project slot
   #: rejected: the proposal has not been assigned a slot
   #: invalid: the student or org admin marked this as an invalid proposal.
-  status = db.StringProperty(required=True, default='new',
-      choices=['new', 'pending', 'accepted', 'rejected', 'invalid'])
+  status = db.StringProperty(required=True, default='pending',
+      choices=['new', 'pending', 'accepted', 'rejected', 'invalid',
+               'withdrawn'])
 
   #: organization to which this proposal is directed
   org = db.ReferenceProperty(
