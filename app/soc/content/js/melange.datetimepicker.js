@@ -44,12 +44,12 @@
   jQuery.fn.datetimepicker = function (config) {
     return this.each(function (config) {
       return function () {
-       var _self = jQuery(this);
+        var _self = jQuery(this);
 
-       var regular_expression = /^(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
-       var tokens = _self.val().match(regular_expression);
+        var regular_expression = /^(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
+        var tokens = _self.val().match(regular_expression);
  
-       if (tokens !== null) {
+        if (tokens !== null) {
           _self.val(tokens[1]);
         }
 
