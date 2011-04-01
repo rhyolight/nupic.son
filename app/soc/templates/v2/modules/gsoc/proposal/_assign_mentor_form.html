@@ -2,12 +2,25 @@
   <div id="form_fields_assign_mentor">
     <select name="assign_mentor" id="id_assign_mentor">
       <option value="">Assign a mentor</option>
-      {% for m in possible_mentors %}
-        <option value="{{ m.key }}" {% if m.selected %}selected="selected"{% endif %}>{{ m.name }}</option>
-      {% endfor %}
+      {% if possible_mentors %}
+        <optgroup label="Possible Mentors">
+          {% for m in possible_mentors %}
+            <option value="{{ m.key }}" {% if m.selected %}selected="selected"{% endif %}>{{ m.name }}</option>
+          {% endfor %}
+        </optgroup>
+      {% endif %}
+      {% if all_mentors %}
+        <optgroup label="All Mentors">
+          {% for m in all_mentors %}
+            <option value="{{ m.key }}" {% if m.selected %}selected="selected"{% endif %}>{{ m.name }}</option>
+          {% endfor %}
+        </optgroup>
+      {% endif %}
     </select>
     <input id="form-project-assign-mentor-submit" type="submit" value="Assign"/>
     <span class="note">Select a mentor from the drop-down list to assign to this proposal. <br/>
-    Note that only mentors that have clicked the "I wish to mentor this project" button can be selected.</span>
+    {% if not all_mentors %}
+      Note that only mentors that have clicked the "I wish to mentor this project" button can be selected.</span>
+    {% endif %}
   </div>
 </form>
