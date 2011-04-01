@@ -63,7 +63,7 @@ class ProposalTest(DjangoTestCase):
 
     # test proposal POST
     override = {'program': self.gsoc, 'score': 0, 'mentor': None,
-                'org': self.org, 'status': 'new', 'accept_as_project': False}
+                'org': self.org, 'status': 'pending', 'accept_as_project': False}
     response, properties = self.modelPost(url, GSoCProposal, override)
     self.assertResponseRedirect(response)
 
@@ -151,6 +151,7 @@ class ProposalTest(DjangoTestCase):
     response = self.client.get(url)
     self.assertProposalTemplatesUsed(response)
 
-    override = {'program': self.gsoc, 'score': 0, 'mentor': None, 'org': self.org, 'status': 'new'}
+    override = {'program': self.gsoc, 'score': 0, 'mentor': None,
+                'org': self.org, 'status': 'new', 'action': 'update'}
     response, properties = self.modelPost(url, GSoCProposal, override)
     self.assertResponseRedirect(response)
