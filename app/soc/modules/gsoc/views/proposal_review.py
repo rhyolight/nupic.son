@@ -45,21 +45,22 @@ from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
 
 
-def queryAllMentorsForOrg(org):
+def queryAllMentorsForOrg(org, limit=1000):
   """Returns a list of keys of all the mentors for the organization
 
   Args:
     org: the organization entity for which we need to get all the mentors
+    limit: the maximum number of entities that must be fetched
   """
   # get all mentors keys first
   query = GSoCProfile.all(keys_only=True)
   query.filter('mentor_for', org)
-  mentors_keys = query.fetch(limit=1000)
+  mentors_keys = query.fetch(limit=limit)
 
   # get all org admins keys first
   query = GSoCProfile.all(keys_only=True)
   query.filter('org_admin_for', org)
-  oa_keys = query.fetch(limit=1000)
+  oa_keys = query.fetch(limit=limit)
 
   return mentors_keys + oa_keys
 
