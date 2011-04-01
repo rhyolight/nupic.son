@@ -69,6 +69,7 @@ import logging
 from django.template import loader
 
 from google.appengine.api import mail
+from google.appengine.ext import db
 
 from soc.logic import dicts
 from soc.logic import system
@@ -121,7 +122,9 @@ def sendMail(context):
   if not system.isLocal() and system.isDebug():
     return
 
-  mailer.spawnMailTask(context)
+  txn = mailer.spawnMailTask(context)
+  db.RunInTransaction(txn)
+
 
 def getDefaultMailSender():
   """Returns the sender that currently can be used to send emails.

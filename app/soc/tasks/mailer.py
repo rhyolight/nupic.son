@@ -45,10 +45,10 @@ def getDjangoURLPatterns():
   return patterns
 
 
-def spawnMailTask(context):
+def getSpawnMailTaskTxn(context, parent=None):
   """Spawns a new Task that sends out an email with the given dictionary.
   """
-  mail_entity = email.Email(context=simplejson.dumps(context))
+  mail_entity = email.Email(context=simplejson.dumps(context), parent=parent)
 
   def txn():
     """Transaction to ensure that a task get enqueued for each mail stored.
@@ -62,7 +62,7 @@ def spawnMailTask(context):
                               countdown=5)
     new_task.add(queue_name='mail', transactional=True)
 
-  db.RunInTransaction(txn)
+  return txn
 
 
 def sendMail(request):
