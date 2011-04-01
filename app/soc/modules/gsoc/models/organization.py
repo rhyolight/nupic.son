@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Daniel Hans" <daniel.m.hans@gmail.com>',
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
 ]
@@ -130,6 +131,15 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
       'Check this field if you want to disable private reviews for '
       'student proposals which have been sent to your organization.')
   scoring_disabled.group = ugettext("4. Organization Preferences")
+
+  list_all_mentors = db.BooleanProperty(required=False, default=False,
+      verbose_name=ugettext('List all mentors while assigning mentors '
+      'to proposal'))
+  list_all_mentors.help_text = ugettext(
+      'Check this field if you want to list all the mentors (in addition '
+      'to the mentors who have shown interest towards the proposal) in '
+      'the select box to assign a mentor on the proposal review page.')
+  list_all_mentors.group = ugettext('4. Organization Preferences')
 
   facebook = db.LinkProperty(
       required=False, verbose_name=ugettext("Facebook URL"))
