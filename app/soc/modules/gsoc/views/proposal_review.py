@@ -147,9 +147,11 @@ class AssignMentorFields(Template):
     self.data = data
 
   def context(self):
+    possible_mentors, all_mentors = getMentorsChoicesToAssign(
+        self.data.proposal)
     context = {
-        'possible_mentors': getMentorsChoicesForProposal(
-            self.data.proposal),
+        'possible_mentors': possible_mentors,
+        'all_mentors': all_mentors,
         'action': self.data.redirect.review(
             ).urlOf('gsoc_proposal_assign_mentor'),
         }
@@ -607,8 +609,11 @@ class AssignMentor(RequestHandler):
     mentor_key = self.data.POST.get('assign_mentor')
     if mentor_key:
       mentor_entity = db.get(mentor_key)
+      org = self.data.proposal.org
 
-      if mentor_entity and self.data.isPossibleMentorForProposal(mentor_entity):
+      if mentor_entity and self.data.isPossibleMentorForProposal(
+          mentor_entity) or (org.list_all_mentors
+          and db.Key(mentor_key) in queryAllMentorsForOrg(org)):
         return mentor_entity
       else:
         BadRequest("Invalid post data.")
