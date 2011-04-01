@@ -84,6 +84,12 @@ indexes:
   - name: status
   - name: logo_url
 
+# used to get the proposal comments in the order of the date of submission
+- kind: GSoCComment
+  ancestor: yes
+  properties:
+  - name: created
+
 # used to order GCIComments under a GCITask with that GCITask being
 # its ancestor entity in the entity group.
 - kind: GCIComment

@@ -229,7 +229,7 @@ class ReviewProposal(RequestHandler):
         'user_score': user_score,
         }
 
-  def getComments(self):
+  def getComments(self, limit=1000):
     """Gets all the comments for the proposal visible by the current user.
     """
     assert isSet(self.data.private_comments_visible)
@@ -239,7 +239,10 @@ class ReviewProposal(RequestHandler):
     private_comments = []
 
     query = db.Query(GSoCComment).ancestor(self.data.proposal)
-    for comment in query:
+    query.order('created')
+    all_comments = query.fetch(limit=limit)
+
+    for comment in all_comments:
       if not comment.is_private:
         public_comments.append(comment)
       elif self.data.private_comments_visible:
