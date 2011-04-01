@@ -129,7 +129,7 @@
           .append(seconds_elements.label)
           .append(seconds_elements.select);
 
-        var form = _self.parents("form:first");
+        var form = _self.closest("form");
 
         form.submit(function () {
           var trimmed_value = jQuery.trim(_self.val());
