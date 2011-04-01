@@ -129,6 +129,21 @@
           .append(seconds_elements.label)
           .append(seconds_elements.select);
 
+        var form = _self.parents("form:first");
+
+        form.submit(function () {
+          var trimmed_value = jQuery.trim(_self.val());
+          if (trimmed_value !== "") {
+            _self.val([
+              trimmed_value,
+              " ",
+              hours_elements.select.val(),":",
+              minutes_elements.select.val(),":",
+              seconds_elements.select.val()
+            ].join(''));
+          }
+        });
+
         return _self;
       }
     }(config));
