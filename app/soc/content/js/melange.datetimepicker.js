@@ -79,12 +79,14 @@
             _self.attr("id"),'_',select
           ].join("");
 
-          var html = [
+          var label_html = [
             '<label for = "',
             new_select_id,
             '" style="display:inline;">',
             selects[select]["label"],
-            '</label>',
+            '</label>'
+          ].join("");
+          var select_html = [
             '<select id = "',
             new_select_id,
             '" style="margin-top: 3px;">'
@@ -103,18 +105,29 @@
               value = "0" + ("" + i);
             }
             value = "" + value;
-            html += [
+            select_html += [
               '<option value = "', value, '" ',selected,'>',
               value,
               '</option>'
             ].join('');
           }
-          html += "</select>";
-          return html;
+          select_html += "</select>";
+          return {
+            "label": jQuery(label_html),
+            "select": jQuery(select_html)
+          };
         }
-        var hours_select = _self.parent().append(create_selects("hour"));
-        var minutes_select = hours_select.append(create_selects("minute"));
-        var seconds_select = minutes_select.append(create_selects("second"));
+        var hours_elements = create_selects("hour");
+        var minutes_elements = create_selects("minute");
+        var seconds_elements = create_selects("second");
+
+        _self.parent()
+          .append(hours_elements.label)
+          .append(hours_elements.select)
+          .append(minutes_elements.label)
+          .append(minutes_elements.select)
+          .append(seconds_elements.label)
+          .append(seconds_elements.select);
 
         return _self;
       }
