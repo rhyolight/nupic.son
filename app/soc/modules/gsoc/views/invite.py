@@ -138,9 +138,9 @@ class InviteForm(forms.ModelForm):
       raise djangoforms.ValidationError("That user is a student")
 
     if self.request_data.kwargs['role'] == 'org_admin':
-      role_for = set(profile.org_admin_for + profile.mentor_for)
+      role_for = profile.org_admin_for
     else:
-      role_for = profile.mentor_for
+      role_for = set(profile.org_admin_for + profile.mentor_for)
 
     if self.request_data.organization.key() in role_for:
       raise djangoforms.ValidationError('That user already has this role.')
