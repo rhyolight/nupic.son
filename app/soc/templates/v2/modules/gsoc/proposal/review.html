@@ -128,49 +128,52 @@ limitations under the License.
       tinyMCE.init(melange.tinyMceConfig(["content"]));
     {% endif %}
     {% if scoring_visible %}
-    var initialTotal = {{ scores.total }};
-    var initialNumber = {{ scores.number }};
-    var userInitialScore = {{ scores.user_score }};
-    var maxScore = {{ max_score }};
+      var initialTotal = {{ scores.total }};
+      var initialNumber = {{ scores.number }};
+      var userInitialScore = {{ scores.user_score }};
+      var maxScore = {{ max_score }};
 
-    var successHandler = function (userScore) {
-      userScore = parseInt(userScore);
-      var newTotal = (initialTotal - userInitialScore + userScore);
+      var successHandler = function (userScore) {
+        userScore = parseInt(userScore);
+        var newTotal = (initialTotal - userInitialScore + userScore);
 
-      var newNumber = initialNumber;
-      /* the user did not score */
-      if (!userInitialScore && userScore) {
-        newNumber++;
-      }
-      /* the user removed his or her score */
-      if (userInitialScore && !userScore) {
-        newNumber--;
-      }
+        var newNumber = initialNumber;
+        /* the user did not score */
+        if (!userInitialScore && userScore) {
+          newNumber++;
+        }
+        /* the user removed his or her score */
+        if (userInitialScore && !userScore) {
+          newNumber--;
+        }
 
-      var newAverage;
-      var newMessage;
-      if (!newNumber) {
-        newAverage = 0;
-        newMessage = 'No scores yet';
-      } else {
-        newAverage = newTotal / newNumber;
-        newMessage = newAverage + '/' + maxScore + ' out of ' + newNumber + ' users, total: ' + newTotal;
-      }
-      jQuery.fn.raty.start(newAverage, '#score-average-stars');
-      jQuery('#score-average-desc em').html(newMessage);
-    };
+        var newAverage;
+        var newMessage;
+        if (!newNumber) {
+          newAverage = 0;
+          newMessage = 'No scores yet';
+        } else {
+          newAverage = newTotal / newNumber;
+          newMessage = newAverage + '/' + maxScore + ' out of ' + newNumber + ' users, total: ' + newTotal;
+        }
+        jQuery.fn.raty.start(newAverage, '#score-average-stars');
+        jQuery('#score-average-desc em').html(newMessage);
+      };
+    {% endif %}
 
     jQuery(document).ready(function() {
-      jQuery('#score-average-stars').raty({
-        number: maxScore,
-        readOnly:   true,
-        start:      {{ scores.average }},
-        half:	    true,
-        path:       '/soc/content/' + melange.config.app_version + '/images/v2/gsoc',
-        starHalf:   'proposal-rate-star-half.png',
-        starOff:    'proposal-rate-star-off.png',
-        starOn:     'proposal-rate-star-on.png',
-      });
+      {% if scoring_visible %}
+        jQuery('#score-average-stars').raty({
+          number: maxScore,
+          readOnly:   true,
+          start:      {{ scores.average }},
+          half:	    true,
+          path:       '/soc/content/' + melange.config.app_version + '/images/v2/gsoc',
+          starHalf:   'proposal-rate-star-half.png',
+          starOff:    'proposal-rate-star-off.png',
+          starOn:     'proposal-rate-star-on.png',
+        });
+      {% endif %}
 
       /* Make the wish to mentor link post using ajax */
       var wish_to_mentor = "{{ wish_to_mentor }}";
@@ -191,30 +194,31 @@ limitations under the License.
       });
     });
 
-    hintList = [];
-    for(var i = 0; i < maxScore; i++) {
-      hintList[i] = '' + (i + 1) + ' star(s)';
-    }
+    {% if scoring_visible %}
+      hintList = [];
+      for(var i = 0; i < maxScore; i++) {
+        hintList[i] = '' + (i + 1) + ' star(s)';
+      }
 
-    $('#score-add-stars').raty({
-        cancel: true,
-        cancelPlace:'right',
-        cancelOff: 'proposal-rate-cancel-off.png',
-        cancelOn: 'proposal-rate-cancel-on.png',
-        cancelHint: 'Remove my rating',
-        click: function (value) {
-            jQuery.post("{{ score_action }}", {value: value, xsrf_token: window.xsrf_token});
-            successHandler(value)
-        },
-        half:		false,
-        path:       '/soc/content/' + melange.config.app_version + '/images/v2/gsoc',
-        number: maxScore,
-        start:      {{ scores.user_score }},
-        starHalf:   'proposal-rate-star-half.png',
-        starOff:    'proposal-rate-star-off.png',
-        starOn:     'proposal-rate-star-on.png',
-        hintList:   hintList
-    });
+      $('#score-add-stars').raty({
+          cancel: true,
+          cancelPlace:'right',
+          cancelOff: 'proposal-rate-cancel-off.png',
+          cancelOn: 'proposal-rate-cancel-on.png',
+          cancelHint: 'Remove my rating',
+          click: function (value) {
+              jQuery.post("{{ score_action }}", {value: value, xsrf_token: window.xsrf_token});
+              successHandler(value)
+          },
+          half:		false,
+          path:       '/soc/content/' + melange.config.app_version + '/images/v2/gsoc',
+          number: maxScore,
+          start:      {{ scores.user_score }},
+          starHalf:   'proposal-rate-star-half.png',
+          starOff:    'proposal-rate-star-off.png',
+          starOn:     'proposal-rate-star-on.png',
+          hintList:   hintList
+      });
     {% endif %}
   }
   ]
