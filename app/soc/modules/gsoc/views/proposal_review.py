@@ -616,7 +616,7 @@ class AssignMentor(RequestHandler):
           and db.Key(mentor_key) in queryAllMentorsForOrg(org)):
         return mentor_entity
       else:
-        BadRequest("Invalid post data.")
+        raise BadRequest("Invalid post data.")
 
     return None
 

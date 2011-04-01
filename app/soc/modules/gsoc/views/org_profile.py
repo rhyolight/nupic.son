@@ -25,12 +25,10 @@ __authors__ = [
 from soc.views import forms
 
 from django import forms as djangoforms
-from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
 from django import forms as django_forms
 
 from soc.logic import cleaning
-from soc.logic import dicts
 from soc.logic.exceptions import NotFound
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
@@ -80,17 +78,17 @@ class OrgProfileForm(forms.ModelForm):
 class OrgCreateProfileForm(OrgProfileForm):
   """Django form to create the organization profile.
   """
-  
+
   class Meta:
     model = GSoCOrganization
     css_prefix = 'gsoc_org_page'
     exclude = ['status', 'scope', 'scope_path', 'founder', 'founder', 'slots',
                'slots_calculated', 'nr_applications', 'nr_mentors',
                'scoring_disabled']
-    
+
     widgets = forms.choiceWidgets(GSoCOrganization,
         ['contact_country', 'shipping_country'])
-    
+
 
 class OrgProfilePage(RequestHandler):
   """View for the Organization Profile page.

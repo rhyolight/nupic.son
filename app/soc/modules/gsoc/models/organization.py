@@ -126,7 +126,7 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
   max_score.group = ugettext("4. Organization Preferences")
 
   scoring_disabled = db.BooleanProperty(required=False, default=False,
-      verbose_name=ugettext("Scoring disabled"))
+      verbose_name=ugettext('Scoring disabled'))
   scoring_disabled.help_text = ugettext(
       'Check this field if you want to disable private reviews for '
       'student proposals which have been sent to your organization.')
