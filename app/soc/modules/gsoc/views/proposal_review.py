@@ -45,7 +45,26 @@ from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
 
 
-def getMentorsChoicesForProposal(proposal):
+def queryAllMentorsForOrg(org):
+  """Returns a list of keys of all the mentors for the organization
+
+  Args:
+    org: the organization entity for which we need to get all the mentors
+  """
+  # get all mentors keys first
+  query = GSoCProfile.all(keys_only=True)
+  query.filter('mentor_for', org)
+  mentors_keys = query.fetch(limit=1000)
+
+  # get all org admins keys first
+  query = GSoCProfile.all(keys_only=True)
+  query.filter('org_admin_for', org)
+  oa_keys = query.fetch(limit=1000)
+
+  return mentors_keys + oa_keys
+
+
+def getMentorsChoicesToAssign(proposal):
   """Returns a list of tuple containing the mentor key and mentor name.
 
   This is the list of mentors who have shown interest in mentoring a proposal.
@@ -53,10 +72,14 @@ def getMentorsChoicesForProposal(proposal):
   Args:
     proposal: entity for which the possible mentors should be obtained.
   """
-  mentors = db.get(proposal.possible_mentors)
+  org = proposal.org
+  possible_mentors = db.get(proposal.possible_mentors)
   cur_men = proposal.mentor
-  choices = []
-  for m in mentors:
+
+  # construct a choice list for all the mentors in possible mentors list
+  possible_mentors_choices = []
+  possible_mentors_keys = []
+  for m in possible_mentors:
     m_key = m.key()
     choice = {
         'key': m_key,
@@ -65,9 +88,33 @@ def getMentorsChoicesForProposal(proposal):
     if cur_men and m_key == cur_men.key():
       choice['selected'] = True
 
-    choices.append(choice)
+    possible_mentors_choices.append(choice)
+    possible_mentors_keys.append(m_key)
 
-  return choices
+
+  # construct the choice list for all the mentors
+  all_mentors_choices = []
+  if org.list_all_mentors:
+    all_mentors_keys = queryAllMentorsForOrg(org)
+
+    # remove all those mentors or org admins already in possible
+    # mentors list
+    remaining_mentors_keys = set(all_mentors_keys) - set(possible_mentors_keys)
+    remaining_mentors = db.get(remaining_mentors_keys)
+
+    # construct the actual choice list for only these remaining mentors
+    for m in remaining_mentors:
+      m_key = m.key()
+      choice = {
+          'key': m_key,
+          'name': m.name(),
+          }
+      if cur_men and m_key == cur_men.key():
+        choice['selected'] = True
+
+      all_mentors_choices.append(choice)
+
+  return possible_mentors_choices, all_mentors_choices
 
 
 class CommentForm(forms.ModelForm):
