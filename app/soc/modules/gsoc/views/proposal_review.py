@@ -472,12 +472,12 @@ class WishToMentor(RequestHandler):
     assert isSet(self.data.proposal)
 
     if value != 'request' and value != 'withdraw':
-      BadRequest("Invalid post data.")
+      raise BadRequest("Invalid post data.")
 
     if value == 'request' and self.data.isPossibleMentorForProposal():
-        raise BadRequest("Invalid post data.")
+      raise BadRequest("Invalid post data.")
     if value == 'withdraw' and not self.data.isPossibleMentorForProposal():
-        raise BadRequest("Invalid post data.")
+      raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
     profile_key = self.data.profile.key()
