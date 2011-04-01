@@ -98,7 +98,7 @@
             if (i === parseInt(selects[select]["current"], 10)) {
               selected = 'selected = "selected"';
             }
-            var value = i
+            var value = i;
             if (i < 10) {
               value = "0" + ("" + i);
             }
