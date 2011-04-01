@@ -74,6 +74,14 @@ DEF_2_LETTER_STATE_FMT = ugettext(
     "State should be 2-letter field since country is '%s'.")
 
 
+DEF_INVALID_SHIPPING_CHARS_MSG = ugettext(
+    'Invalid characters, only A-z, 0-9, - and whitespace are allowed. '
+    'See also <a href="http://code.google.com/p/soc/issues/detail?id=903">'
+    'Issue 903</a>, in particular <a href="'
+    'http://code.google.com/p/soc/issues/detail?id=903#c16">comment 16</a>. '
+    'Please <em>do not</em> create a new issue about this.')
+
+
 DEF_ROLE_TARGET_COUNTRY = "United States"
 
 DEF_ROLE_COUNTRY_PAIRS = [("res_country", "res_state"),
@@ -337,8 +345,7 @@ def clean_valid_shipping_chars(field_name):
     value = self.cleaned_data.get(field_name)
 
     if value and not DEF_VALID_SHIPPING_CHARS.match(value):
-      raise forms.ValidationError(
-          'Invalid characters, only A-z, 0-9, - and whitespace are allowed.')
+      raise forms.ValidationError(DEF_INVALID_SHIPPING_CHARS_MSG)
 
     return value
   return wrapper
