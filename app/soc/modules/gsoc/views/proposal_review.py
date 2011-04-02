@@ -37,6 +37,7 @@ from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 
 from soc.modules.gsoc.models.comment import GSoCComment
+from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.score import GSoCScore
@@ -144,8 +145,6 @@ class PrivateCommentForm(CommentForm):
 class AssignMentorFields(Template):
   """Template to render the fields necessary to assign a mentor to a proposal.
   """
-  def __init__(self, data):
-    self.data = data
 
   def context(self):
     possible_mentors, all_mentors = getMentorsChoicesToAssign(
@@ -161,6 +160,46 @@ class AssignMentorFields(Template):
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/_assign_mentor_form.html'
 
+
+class Duplicate(Template):
+  """Template for showing a duplicates to the org admin.
+  """
+
+  def __init__(self, data, duplicate):
+    """Instantiates the template for rendering duplicates for a single
+    proposal.
+
+    Args:
+      data: RequestData object
+      duplicate: GSoCProposalDuplicate entity to render.
+    """
+    self.duplicate = duplicate
+    super(Duplicate, self).__init__(data)
+
+  def context(self):
+    """The context for this template used in render().
+    """
+    r = self.data.redirect
+
+    orgs = []
+    for org in db.get(self.duplicate.orgs):
+      q = GSoCProfile.all()
+      q.filter('org_admin_for', org)
+      q.filter('status', 'active')
+      admins = q.fetch(1000)
+
+      data = {'name': org.name,
+              'link': r.organization(org).urlOf('gsoc_org_home'),
+              'admins': admins}
+
+      orgs.append(data)
+
+    context = {'orgs': orgs}
+
+    return context
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/duplicates/proposal_duplicate_review.html'
 
 class ReviewProposal(RequestHandler):
   """View for the Propsal Review page.
@@ -305,8 +344,17 @@ class ReviewProposal(RequestHandler):
     if self.data.orgAdminFor(self.data.proposal_org):
       scoring_visible = True
 
+    duplicate = None
+    if self.data.program.duplicates_visible and self.data.orgAdminFor(self.data.proposal_org):
+      q = GSoCProposalDuplicate.all()
+      q.filter('duplicates', self.data.proposal)
+      q.filter('is_duplicate', True)
+      dup_entity = q.get()
+      duplicate = Duplicate(self.data, dup_entity) if dup_entity else None
+
     context.update({
         'comment_box': comment_box,
+        'duplicate': duplicate,
         'max_score': self.data.proposal_org.max_score,
         'proposal': self.data.proposal,
         'mentor': self.data.proposal.mentor,

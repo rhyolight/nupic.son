@@ -47,6 +47,9 @@ limitations under the License.
 
 {{ assign_mentor.render }}
 
+{% if duplicate %}
+  {{ duplicate.render }}
+{% endif %}
 
 <div class="project-short">
   <p class="project-mentor"><strong>Email:</strong> {{ student_email }}</p>
