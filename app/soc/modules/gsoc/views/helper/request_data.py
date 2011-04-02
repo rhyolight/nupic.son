@@ -33,6 +33,7 @@ from google.appengine.ext import db
 from django.core.urlresolvers import reverse
 
 from soc.models import role
+from soc.logic import system
 from soc.logic.models.host import logic as host_logic
 from soc.logic.models.site import logic as site_logic
 from soc.logic.models.user import logic as user_logic
@@ -404,7 +405,7 @@ class RedirectHelper(object):
     self._url_name = 'show_gsoc_document'
     return self
 
-  def urlOf(self, name):
+  def urlOf(self, name, full=False):
     """Returns the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -415,17 +416,29 @@ class RedirectHelper(object):
       url = reverse(name, kwargs=self.kwargs)
     else:
       url = reverse(name)
-    return url
 
-  def url(self):
+    return self._fullUrl(url, full)
+
+  def url(self, full=False):
     """Returns the url of the current state.
     """
     if self._no_url:
       return None
     assert self._url or self._url_name
     if self._url:
-      return self._url
+      return self._fullUrl(self._url, full)
     return self.urlOf(self._url_name)
+
+  def _fullUrl(self, url, full):
+    """Returns the full version of the url iff full.
+
+    The full version starts with http:// and includes getHostname().
+    """
+    if not full:
+      return url
+
+    # TODO(SRabbelier): when should we link to https:// ?
+    return 'http://%s%s' % (system.getHostname(), url)
 
   def to(self, name=None, validated=False):
     """Redirects to the resolved url for name.
