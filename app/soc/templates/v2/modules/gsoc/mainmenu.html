@@ -5,9 +5,6 @@
       {% if home_link %}
       <li id="menu-home"><a href="{{ home_link }}">Home</a></li>
       {% endif %}
-      {% if search_link %}
-      <li id="menu-search"><a href="{{ search_link }}">Search</a></li>
-      {% endif %}
       {% if login_link %}
       <li id="menu-login"><a href="{{ login_link }}">Login</a></li>
       {% endif %}
@@ -31,6 +28,9 @@
       {% endif %}
       {% if connect_link %}
       <li id="menu-connect"><a href="{{ connect_link }}">Connect With Us</a></li>
+      {% endif %}
+      {% if search_link %}
+      <li id="menu-search"><a href="{{ search_link }}">Search</a></li>
       {% endif %}
       {% if help_link %}
       <li id="menu-help"><a href="{{ help_link }}">Help</a></li>
