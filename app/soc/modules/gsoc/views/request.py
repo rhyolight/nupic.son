@@ -204,14 +204,30 @@ class ShowRequest(RequestHandler):
     assert isSet(self.data.organization)
     assert isSet(self.data.requester)
 
-    show_actions = self.data.request_entity.status in ['pending', 'withdrawn']
-    if self.data.can_respond and self.data.request_entity.status == 'rejected':
-      show_actions = True
+    # This code is dupcliated between request and invite
+    status = self.data.request_entity.status
+
+    can_accept = can_reject = can_withdraw = can_resubmit = False
+
+    if self.data.can_respond:
+      # admin speaking
+      if status == 'pending':
+        can_accept = True
+        can_reject = True
+      if status == 'rejected':
+        can_accept = True
+    else:
+      # requester speaking
+      if status == 'withdrawn':
+        can_resubmit = True
+      if status == 'pending':
+        can_withdraw = True
+
+    show_actions = can_accept or can_reject or can_withdraw or can_resubmit
 
     org_key = self.data.organization.key()
     status_msg = None
 
-    # This code is dupcliated between request and invite
     if self.data.requester_profile.key() == self.data.profile.key():
       if org_key in self.data.requester_profile.org_admin_for:
         status_msg = "You are now an organization administrator for this organization."
@@ -234,7 +250,10 @@ class ShowRequest(RequestHandler):
         'user_email': accounts.denormalizeAccount(
             self.data.requester.account).email(),
         'show_actions': show_actions,
-        'can_respond': self.data.can_respond,
+        'can_accept': can_accept,
+        'can_reject': can_reject,
+        'can_withdraw': can_withdraw,
+        'can_resubmit': can_resubmit,
         }
 
   def post(self):

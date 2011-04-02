@@ -297,16 +297,30 @@ class ShowInvite(RequestHandler):
     assert isSet(self.data.invited_profile)
     assert self.data.invited_profile
 
-    show_actions = self.data.invite.status == 'pending'
-    if self.data.can_respond and self.data.invite.status == 'rejected':
-      show_actions = True
-    if not self.data.can_respond and self.data.invite.status == 'withdrawn':
-      show_actions = True
+    # This code is dupcliated between request and invite
+    status = self.data.invite.status
+
+    can_accept = can_reject = can_withdraw = can_resubmit = False
+
+    if self.data.can_respond:
+      # invitee speaking
+      if status == 'pending':
+        can_accept = True
+        can_reject = True
+      if status == 'rejected':
+        can_accept = True
+    else:
+      # admin speaking
+      if status == 'withdrawn':
+        can_resubmit = True
+      if status == 'pending':
+        can_withdraw = True
+
+    show_actions = can_accept or can_reject or can_withdraw or can_resubmit
 
     org_key = self.data.organization.key()
     status_msg = None
 
-    # This code is dupcliated between request and invite
     if self.data.invited_profile.key() == self.data.profile.key():
       if org_key in self.data.invited_profile.org_admin_for:
         status_msg = "You are now an organization administrator for this organization."
@@ -329,7 +343,10 @@ class ShowInvite(RequestHandler):
         'user_email': accounts.denormalizeAccount(
             self.data.invited_user.account).email(),
         'show_actions': show_actions,
-        'can_respond': self.data.can_respond,
+        'can_accept': can_accept,
+        'can_reject': can_reject,
+        'can_withdraw': can_withdraw,
+        'can_resubmit': can_resubmit,
         } 
 
   def post(self):

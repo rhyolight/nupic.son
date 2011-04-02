@@ -38,17 +38,17 @@ limitations under the License.
   <div class="request-response">
     <form action="{{ response_action }}" method="post" id="form" class="form-project-comment">
       <div id="request-respond-button-row" class="row button-row">
-        {% if can_respond %}
-        {% if request.status == 'pending' %}
-        <input id="request-respond-accept-submit" name="action" type="submit" value="{{ actions.accept }}" class="submit"/>
-        <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.reject }}" class="submit"/>
+        {% if can_accept %}
+          <input id="request-respond-accept-submit" name="action" type="submit" value="{{ actions.accept }}" class="submit"/>
         {% endif %}
-        {% else %}
-        {% if request.status == 'pending' %}
-        <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.withdraw }}" class="submit"/>
-        {% else %}
-        <input id="request-respond-resubmit-submit" name="action" type="submit" value="{{ actions.resubmit }}" class="submit"/>
+        {% if can_reject %}
+          <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.reject }}" class="submit"/>
         {% endif %}
+        {% if can_withdraw %}
+          <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.withdraw }}" class="submit"/>
+        {% endif %}
+        {% if can_resubmit %}
+          <input id="request-respond-resubmit-submit" name="action" type="submit" value="{{ actions.resubmit }}" class="submit"/>
         {% endif %}
       </div>
     </form>
