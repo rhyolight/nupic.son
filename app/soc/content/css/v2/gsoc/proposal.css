@@ -1,0 +1,21 @@
+/*//////////////////////////////////////
+
+    Proposal edit and review styling
+
+/////////////////////////////////////*/
+.duplicate-message {
+    /* duplicate proposal indication banner */
+    font-weight: bold;
+    left: 0;
+    padding: 10px 5px 8px 10px;
+    position: relative;
+    width: auto;
+    border-width: 2px;
+    border-style: solid;
+    background: no-repeat 10px 50% #E73939;
+    color: #FFF;
+    border-color: #990000;
+}
+.duplicate-message p {
+    margin-bottom: 0;
+}

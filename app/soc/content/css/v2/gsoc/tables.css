@@ -104,3 +104,43 @@
 .table-projects tbody tr:hover {
   background: #E0EDF5;
 }
+
+/*///////////////////////
+
+  Proposal Duplicates
+
+////////////////////////*/
+
+table.proposal-duplicates {
+  /* table used in the proposal duplicate */
+
+  border: 1px solid #e7e7e7;
+  width: 100%;
+}
+table.proposal-duplicates th {
+  /*header cells*/
+
+  background: #e7e7e7;
+  color: #000;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: normal;
+  padding: 4px;
+  text-align: left;
+  padding-right: 20px;
+  border: 1px solid #d7d7d7;
+}
+table.proposal-duplicates tbody {
+  /*table body*/
+
+}
+table.proposal-duplicates tbody td {
+  font-size: 12px;
+  padding: 2px 4px;
+  border: 1px solid #e7e7e7;
+}
+table.proposal-duplicates tbody td a {
+  color: #188dd0;
+  font-weight: bold;
+  text-decoration: none;
+}
