@@ -45,7 +45,16 @@ class OrgProfileForm(forms.ModelForm):
 
   def __init__(self, *args, **kwargs):
     super(OrgProfileForm, self).__init__(*args, **kwargs)
-    self.fields['tags'].group = '1. Public Info'
+
+    fields = ['tags', 'name', 'feed_url', 'home_page', 'pub_mailing_list',
+              'description', 'ideas', 'contrib_template',
+              'facebook', 'twitter', 'blog']
+
+    for field in fields:
+      self.fields[field].group = '1. Homepage Info (displayed on org homepage)'
+
+    feed_url = self.fields.pop('feed_url')
+    self.fields.insert(len(self.fields), 'feed_url', feed_url)
 
   class Meta:
     model = GSoCOrganization
