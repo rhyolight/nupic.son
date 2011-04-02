@@ -500,9 +500,7 @@ class RedirectHelper(object):
   def searchpage(self):
     """Sets the _url_name for the searchpage of the current GSOC program.
     """
-    self.program()
-    self.args = []
-    self.kwargs = {}
+    self._clear()
     self._url_name = 'search_gsoc'
     return self
 
