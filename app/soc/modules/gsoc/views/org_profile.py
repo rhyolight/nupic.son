@@ -64,6 +64,7 @@ class OrgProfileForm(forms.ModelForm):
   clean_twitter = cleaning.clean_url('twitter')
   clean_blog = cleaning.clean_url('blog')
   clean_logo_url = cleaning.clean_url('logo_url')
+  clean_ideas = cleaning.clean_url('ideas')
   clean_pub_mailing_list = cleaning.clean_mailto('pub_mailing_list')
   clean_irc_channel = cleaning.clean_irc('irc_channel')
 
