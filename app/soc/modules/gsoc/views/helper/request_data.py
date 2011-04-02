@@ -473,6 +473,15 @@ class RedirectHelper(object):
     self._url_name = 'gsoc_homepage'
     return self
 
+  def searchpage(self):
+    """Sets the _url_name for the searchpage of the current GSOC program.
+    """
+    self.program()
+    self.args = []
+    self.kwargs = {}
+    self._url_name = 'search_gsoc'
+    return self
+
   def orgHomepage(self, link_id):
     """Sets the _url_name for the specified org homepage
     """
