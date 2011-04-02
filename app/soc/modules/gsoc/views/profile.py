@@ -55,19 +55,9 @@ class UserForm(forms.ModelForm):
   class Meta:
     model = User
     css_prefix = 'user'
-    fields = ['link_id', 'name']
+    fields = ['link_id']
 
   clean_link_id = cleaning.clean_user_not_exist('link_id')
-
-
-class EditUserForm(forms.ModelForm):
-  """Django form for the user profile.
-  """
-
-  class Meta:
-    model = User
-    css_prefix = 'user'
-    fields = ['name']
 
 
 class StudentNotificationForm(forms.ModelForm):
@@ -121,6 +111,12 @@ class ProfileForm(forms.ModelForm):
         ['res_country', 'ship_country',
          'tshirt_style', 'tshirt_size', 'gender'])
 
+  def __init__(self, *args, **kwargs):
+    super(ProfileForm, self).__init__(*args, **kwargs)
+    self.fields['given_name'].group = "2. Contact Info (Private)"
+    self.fields['surname'].group = "2. Contact Info (Private)"
+
+  public_name = fields.CharField(required=True)
 
   clean_given_name = cleaning.clean_valid_shipping_chars('given_name')
   clean_surname = cleaning.clean_valid_shipping_chars('surname')
@@ -271,9 +267,10 @@ class ProfilePage(RequestHandler):
 
     tos_content = self._getTOSContent()
 
-    form = EditUserForm if self.data.user else UserForm
+    form = EmptyForm if self.data.user else UserForm
     user_form = form(self.data.POST or None, instance=self.data.user)
     if self.data.profile:
+      self.data.profile._fix_name()
       profile_form = ProfileForm(self.data.POST or None,
                                  instance=self.data.profile)
     else:
@@ -297,7 +294,7 @@ class ProfilePage(RequestHandler):
 
   def validateUser(self, dirty):
     if self.data.user:
-      user_form = EditUserForm(self.data.POST, instance=self.data.user)
+      user_form = EmptyForm()
     else:
       user_form = UserForm(self.data.POST)
 
