@@ -53,7 +53,7 @@ def getMailContext(to, subject, body, sender=None):
     sender = system.getApplicationNoReplyEmail()
 
   return {
-      'to:' to,
+      'to': to,
       'subject': subject,
       'body': body,
       'sender': sender,
