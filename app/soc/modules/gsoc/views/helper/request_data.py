@@ -373,6 +373,8 @@ class RedirectHelper(object):
     return self
 
   def invite(self, role=None):
+    """Sets args for an url_patterns.INVITE redirect.
+    """
     if not role:
       assert 'role' in self._data.kwargs
       role = self._data.kwargs['role']

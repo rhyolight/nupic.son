@@ -77,6 +77,7 @@ _document = ''.join([
     ')',
     captureLinkId('document'),
 ])
+_mentor_role = r'(?P<role>%s)/' % ("org_admin|mentor")
 
 ID        = namedIdBasedPattern(['sponsor', 'program'])
 SPONSOR   = namedLinkIdPattern(['sponsor'])
@@ -90,6 +91,7 @@ REVIEW    = namedIdBasedPattern(['sponsor', 'program', 'student'])
 MENTOR    = namedLinkIdPattern(['sponsor', 'program',
                                 'organization', 'mentor'])
 ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
+INVITE    = _mentor_role + ORG
 ORG_ADMIN = namedLinkIdPattern(['sponsor', 'program', 'organization',
                                 'org_admin'])
 PROJECT   = namedLinkIdPattern(['sponsor', 'program', 'organization',

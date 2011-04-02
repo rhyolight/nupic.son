@@ -155,7 +155,7 @@ class InvitePage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/invite/(?P<role>org_admin|mentor)/%s$' % url_patterns.ORG,
+        url(r'^gsoc/invite/%s$' % url_patterns.INVITE,
             self, name='gsoc_invite')
     ]
 
