@@ -235,7 +235,6 @@ class ReviewProposal(RequestHandler):
     self.check.canAccessProposalEntity()
     self.mutator.commentVisible()
 
-
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/review.html'
 
