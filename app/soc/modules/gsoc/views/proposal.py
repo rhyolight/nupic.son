@@ -155,8 +155,7 @@ class UpdateProposal(RequestHandler):
       action = self.data.POST['action']
 
       status = self.data.proposal.status
-      if (status == 'pending' or status == 'new') and \
-          action == self.ACTIONS['resubmit']:
+      if status == 'pending' and action == self.ACTIONS['resubmit']:
         error_msg = ugettext('You cannot resubmit a pending proposal')
         raise AccessViolation(error_msg)
       if status == 'withdrawn' and action == self.ACTIONS['withdraw']:
