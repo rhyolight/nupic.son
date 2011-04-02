@@ -283,6 +283,7 @@ class ShowRequest(RequestHandler):
     assert isSet(self.data.requester_profile)
 
     self.data.request_entity.status = 'accepted'
+    self.data.requester_profile.is_mentor = True
     self.data.requester_profile.mentor_for.append(self.data.organization.key())
 
     self.data.requester_profile.put()
