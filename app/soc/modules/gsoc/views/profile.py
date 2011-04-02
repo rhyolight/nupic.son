@@ -105,7 +105,7 @@ class ProfileForm(forms.ModelForm):
                'name_on_documents', 'agreed_to_tos', 'notify_new_requests',
                'notify_new_proposals', 'notify_proposal_updates',
                'notify_public_comments', 'notify_private_comments',
-               'is_mentor', 'is_org_admin']
+               'is_student', 'is_mentor', 'is_org_admin']
 
     widgets = forms.choiceWidgets(GSoCProfile,
         ['res_country', 'ship_country',
@@ -385,6 +385,7 @@ class ProfilePage(RequestHandler):
     else:
       student_info = student_form.create(
           commit=False, key_name=key_name, parent=profile)
+      profile.is_student = True
       profile.student_info = student_info
 
     dirty.append(student_info)

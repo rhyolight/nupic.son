@@ -489,6 +489,10 @@ class Role(soc.models.linkable.Linkable):
   #specific roles information
   #====================================================================
 
+  #: field storing whether the User is a student
+  is_student = db.BooleanProperty(required=False, default=False,
+      verbose_name=ugettext('Is student'))
+
   #: field storing whether the User is a mentor
   is_mentor = db.BooleanProperty(required=False, default=False,
       verbose_name=ugettext('Is Mentor'))
