@@ -132,6 +132,15 @@ class Role(soc.models.linkable.Linkable):
   user = db.ReferenceProperty(reference_class=soc.models.user.User,
                               required=True, collection_name='roles')
 
+  #: Required field storing publicly-displayed name.  Can be a real name
+  #: (though this is not recommended), or a nick name or some other public
+  #: alias.  Public names can be any valid UTF-8 text.
+  public_name = db.StringProperty(required=False,
+      verbose_name=ugettext('Public name'))
+  public_name.help_text = ugettext(
+      'Human-readable name (UTF-8) that will be displayed publicly on the'
+      ' site.')
+  public_name.group = ugettext("1. Public Info")
 
   #====================================================================
   #  (public) name information
@@ -501,10 +510,20 @@ class Role(soc.models.linkable.Linkable):
   student_info = db.ReferenceProperty(required=False, default=None,
       reference_class=StudentInfo)
 
+  def _fix_name(self):
+    """Retrieves the name property from the parent user.
+    """
+    if self.public_name:
+      return
+    self.public_name = self.user.name
+    # same entity group, safe to call put
+    self.put()
+
   def name(self):
     """Property as 'name' for use in common templates.
     """
-    return '%s %s' % (self.given_name, self.surname)
+    self._fix_name()
+    return self.public_name
 
   def document_name(self):
     """Property as 'document_name' used on for example award certificates.
