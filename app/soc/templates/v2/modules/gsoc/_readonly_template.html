@@ -1,0 +1,15 @@
+{% for group, fields in model %}
+  <div id="{{ css_prefix }}-{{ group }}" class="block block-{{css_prefix}}-{{ group }}">
+    <h4 id="title-section-{{ css_prefix }}-{{ group }}">{{ group }}</h4>
+    <div id="block-{{ css_prefix }}-{{ group }}-content" class="block-content">
+      {% for name, field in fields %}
+        <div id="{{ css_prefix }}-{{ group }}-{{ name }}" class="show-details">
+          <label>{{ name }}</label>
+          <span class="content">
+            {% if field %}{{ field }}{% else %}N/A{% endif %}
+          </span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endfor %}
