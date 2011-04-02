@@ -44,12 +44,12 @@ class ProjectList(Template):
 
     list_config = lists.ListConfiguration()
     list_config.addColumn('student', 'Student',
-                          lambda entity, *args: entity.student.user.name)
+                          lambda entity, *args: entity.student.name())
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
                           lambda entity, *args: entity.scope.name)
     list_config.addColumn('mentor', 'Mentor',
-                          lambda entity, *args: entity.mentor.user.name)
+                          lambda entity, *args: entity.mentor.name())
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
     self._list_config = list_config
