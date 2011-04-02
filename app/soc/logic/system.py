@@ -28,17 +28,39 @@ import settings
 from soc.logic.models import site
 
 
+def getApplicationId():
+  """Returns the current application id.
+  """
+  return os.environ.get('APPLICATION_ID', '')
+
+
+def getApplicationEmail(name):
+  """Returns the applications email address.
+
+  Args:
+    name: the before-the-@ component.
+  """
+  app_id = getApplicationId()
+  assert app_id
+
+  return "%s@%s.appspotmail.com" % (name, app_id)
+
+
+def getApplicationNoReplyEmail():
+  """Returns the applications no-reply email address.
+  """
+  return getApplicationEmail('no-reply')
+
+
 def getRawHostname():
   """Returns the actual hostname.
   """
-
   return os.environ.get('HTTP_HOST', '')
 
 
 def getHostname():
   """Returns the hostname, taking in account site hostname settings.
   """
-
   site_settings = site.logic.getSingleton()
 
   if site_settings.hostname:
@@ -46,10 +68,10 @@ def getHostname():
 
   return getRawHostname()
 
+
 def isSecondaryHostname(request):
   """Returns if the current request is from the secondary hostname.
   """
-
   site_settings = site.logic.getSingleton()
 
   if not site_settings.hostname:
@@ -57,17 +79,16 @@ def isSecondaryHostname(request):
 
   return getRawHostname().find(site_settings.hostname) >= 0
 
+
 def getAppVersion():
   """Returns the Google App Engine "version" of the running instance.
   """
-
   return os.environ.get('CURRENT_VERSION_ID')
 
 
 def getMelangeVersion():
   """Returns the Melange part of the GAE version.
   """
-
   return getAppVersion().split('.', 1)[0]
 
 
@@ -77,7 +98,6 @@ def isLocal():
   "Local mode" is currently determined from settings.DEBUG but may become
   more sophisticated in the future.
   """
-
   return settings.DEBUG
 
 
@@ -87,5 +107,4 @@ def isDebug():
   "Debug mode" is currently enabled if running locally or if the
   current Melange version is 'devvin'.
   """
-
   return isLocal() or getMelangeVersion() == 'devvin'
