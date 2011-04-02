@@ -1,8 +1,9 @@
 indexes:
 
-# used to list proposal in descending order of their score
-- kind: StudentProposal
+# used to figure out which proposals to accept
+- kind: GSoCProposal
   properties:
+  - name: accept_as_project
   - name: org
   - name: status
   - name: score
@@ -20,20 +21,6 @@ indexes:
   properties:
   - name: scope
   - name: name_on_documents
-
-# used to determine which proposals have a mentor assigned
-- kind: StudentProposal
-  properties:
-  - name: org
-  - name: status
-  - name: mentor
-
-# used to determine which proposals will be accepted
-- kind: StudentProposal
-  properties:
-  - name: org
-  - name: status
-  - name: __key__
 
 # used for the bulk mailing of students
 - kind: Student
