@@ -166,7 +166,10 @@ class CreateProfileForm(ProfileForm):
     css_prefix = ProfileForm.Meta.css_prefix
     exclude = ['link_id', 'user', 'scope', 'mentor_for', 'org_admin_for',
                'student_info', 'agreed_to_tos_on', 'scope_path', 'status',
-               'name_on_documents']
+               'name_on_documents', 'notify_new_requests',
+               'notify_new_proposals', 'notify_proposal_updates',
+               'notify_public_comments', 'notify_private_comments',
+               'is_mentor', 'is_org_admin']
     widgets = ProfileForm.Meta.widgets
 
   def __init__(self, tos_content, *args, **kwargs):
