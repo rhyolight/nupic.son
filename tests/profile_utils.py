@@ -109,7 +109,7 @@ class GSoCProfileHelper(object):
     self.createStudent()
     from soc.modules.gsoc.models.proposal import GSoCProposal
     properties = {'scope': self.profile,
-                  'parent': self.profile, 'status': 'new',
+                  'parent': self.profile, 'status': 'pending',
                   'program': self.program, 'org': org, 'mentor': mentor}
     self.seedn(GSoCProposal, properties, n)
     return self.profile
