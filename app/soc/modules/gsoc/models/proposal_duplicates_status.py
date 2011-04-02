@@ -29,7 +29,7 @@ import soc.models.base
 import soc.modules.gsoc.models.program
 
 
-class ProposalDuplicatesStatus(soc.models.base.ModelWithFieldAttributes):
+class GSoCProposalDuplicatesStatus(soc.models.base.ModelWithFieldAttributes):
   """Model used to store the status of the duplicate proposals stored
   in the corresponding ProposalDuplicate model.
   """

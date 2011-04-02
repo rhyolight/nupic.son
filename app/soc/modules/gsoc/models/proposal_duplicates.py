@@ -27,11 +27,11 @@ from google.appengine.ext import db
 
 import soc.models.base
 
+import soc.modules.gsoc.models.profile
 import soc.modules.gsoc.models.program
-import soc.modules.gsoc.models.student
 
 
-class ProposalDuplicate(soc.models.base.ModelWithFieldAttributes):
+class GSoCProposalDuplicate(soc.models.base.ModelWithFieldAttributes):
   """Model used to store the duplicate proposals for a student
      in a Project-Based Program.
   """
@@ -43,7 +43,7 @@ class ProposalDuplicate(soc.models.base.ModelWithFieldAttributes):
 
   #: Student who has these duplicates
   student = db.ReferenceProperty(
-      reference_class=soc.modules.gsoc.models.student.GSoCStudent,
+      reference_class=soc.modules.gsoc.models.profile.GSoCProfile,
       required=True, collection_name='students_duplicates')
 
   #: List of organizations to which the proposals belong to

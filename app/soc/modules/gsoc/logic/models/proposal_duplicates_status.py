@@ -29,10 +29,10 @@ from soc.modules.gsoc.models import proposal_duplicates_status as pd_status
 
 
 class Logic(base.Logic):
-  """Logic methods for the Role model.
+  """Logic methods for the GSoCProposalDuplicatesStatus model.
   """
 
-  def __init__(self, model=pd_status.ProposalDuplicatesStatus,
+  def __init__(self, model=pd_status.GSoCProposalDuplicatesStatus,
                base_model=None, id_based=True):
     """Defines the name, key_name and model for this entity.
     """

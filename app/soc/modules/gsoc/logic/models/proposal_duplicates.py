@@ -27,14 +27,14 @@ from google.appengine.ext import db
 
 from soc.logic.models import base
 
-from soc.modules.gsoc.models.proposal_duplicates import ProposalDuplicate
+from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 
 
 class Logic(base.Logic):
-  """Logic methods for the Role model.
+  """Logic methods for the GSoCProposalDuplicate model.
   """
 
-  def __init__(self, model=ProposalDuplicate, base_model=None, id_based=True):
+  def __init__(self, model=GSoCProposalDuplicate, base_model=None, id_based=True):
     """Defines the name, key_name and model for this entity.
     """
 
