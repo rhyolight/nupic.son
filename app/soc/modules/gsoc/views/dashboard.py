@@ -91,7 +91,7 @@ class Dashboard(RequestHandler):
 
     return {
         'page_name': self.data.program.name,
-        'user': self.data.user,
+        'user_name': self.data.profile.name() if self.data.profile else None,
         'logged_in_msg': LoggedInMsg(self.data),
     # TODO(ljvderijk): Implement code for setting dashboard messages.
     #   'alert_msg': 'Default <strong>alert</strong> goes here',
