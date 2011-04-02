@@ -511,14 +511,15 @@ class Role(soc.models.linkable.Linkable):
   student_info = db.ReferenceProperty(required=False, default=None,
       reference_class=StudentInfo)
 
-  def _fix_name(self):
+  def _fix_name(self, commit=True):
     """Retrieves the name property from the parent user.
     """
     if self.public_name:
       return
     self.public_name = self.user.name
     # same entity group, safe to call put
-    self.put()
+    if commit:
+      self.put()
 
   def name(self):
     """Property as 'name' for use in common templates.
