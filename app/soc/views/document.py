@@ -35,8 +35,6 @@ class Document(Template):
     return {
         'content': self.entity.content,
         'title': self.entity.title,
-        'modified_by': self.entity.modified_by.name,
-        'modified_on': self.entity.modified,
     }
 
   def templatePath(self):
