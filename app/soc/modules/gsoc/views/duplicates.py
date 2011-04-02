@@ -117,6 +117,8 @@ class Duplicate(Template):
   def context(self):
     """Returns the context for the current template.
     """
+    r = self.data.redirect
+
     context = {'duplicate': self.duplicate}
     orgs = db.get(self.duplicate.orgs)
     proposals = db.get(self.duplicate.duplicates)
@@ -124,7 +126,8 @@ class Duplicate(Template):
     orgs_details = {}
     for org in orgs:
       orgs_details[org.key().id_or_name()] = {
-          'name': org.name
+          'name': org.name,
+          'link': r.organization(org).urlOf('gsoc_org_home')
           }
       q = GSoCProfile.all()
       q.filter('org_admin_for', org)
@@ -144,6 +147,9 @@ class Duplicate(Template):
           orgs_details[org.key().id_or_name()]['proposals'].append({
               'key': proposal.key().id_or_name(),
               'title': proposal.title,
+              'link': r.review(proposal.key().id_or_name(),
+                               proposal.parent().link_id).urlOf(
+                                   'review_gsoc_proposal')
               })
 
     context['orgs'] = orgs_details
