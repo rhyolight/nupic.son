@@ -178,6 +178,7 @@ class Mutator(object):
     self.data.can_respond = unset
     self.data.document = unset
     self.data.invited_user = unset
+    self.data.invited_profile = unset
     self.data.invite = unset
     self.data.key_name = unset
     self.data.organization = unset
