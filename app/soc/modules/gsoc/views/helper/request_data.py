@@ -382,6 +382,15 @@ class RedirectHelper(object):
     self.kwargs['role'] = role
     return self
 
+  def survey(self, survey=None):
+    """Sets kwargs for an url_patterns.SURVEY redirect.
+    """
+    if not survey:
+      assert 'survey' in self._data.kwargs
+      survey = self._data.kwargs['survey']
+    self.organization()
+    self.kwargs['survey'] = survey
+
   def document(self, document):
     """Sets args for an url_patterns.DOCUMENT redirect.
 
