@@ -1,0 +1,7 @@
+mapreduce:
+- name: ConvertProfile
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.convert_profile.process
+    params:
+    - entity_kind: soc.modules.gsoc.models.profile.GSoCProfile
