@@ -26,7 +26,7 @@ limitations under the License.
 <div class="request-summary">
   <p class="request-requester"><strong>
       {% if request.type == 'Request' %}From:{% else %}To:{% endif %}
-  </strong> {{ user_name }}</p>
+  </strong> {{ user_name }} (link_id: {{ user_link_id }})</p>
   <p class="request-contact-info"><strong>Email:</strong> {{ user_email }}</p>
   <p class="request-status"><strong>Status:</strong> {{ request.statusMessage }}</p>
   <p class="request-sent-on"><strong>Sent on:</strong> {{ request.created_on }}</p>

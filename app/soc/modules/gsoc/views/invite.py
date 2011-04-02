@@ -297,6 +297,7 @@ class ShowInvite(RequestHandler):
         'org': self.data.organization,
         'actions': self.ACTIONS,
         'user_name': self.data.invited_user.name,
+        'user_link_id': self.data.invited_user.link_id,
         'user_email': accounts.denormalizeAccount(
             self.data.invited_user.account).email(),
         'show_actions': show_actions,

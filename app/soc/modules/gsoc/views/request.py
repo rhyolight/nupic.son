@@ -214,6 +214,7 @@ class ShowRequest(RequestHandler):
         'org': self.data.organization,
         'actions': self.ACTIONS,
         'user_name': self.data.requester.name,
+        'user_link_id': self.data.requester.link_id,
         'user_email': accounts.denormalizeAccount(
             self.data.requester.account).email(),
         'show_actions': show_actions,
