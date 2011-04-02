@@ -78,7 +78,8 @@ class GSoCProgram(soc.models.program.Program):
   duplicates_visible = db.BooleanProperty(default=False,
       verbose_name=ugettext('Duplicate proposals visible'))
   duplicates_visible.help_text = ugettext(
-      'Field used to indicate if the duplicate proposal should be visible.')
+      'Field used to indicate if duplicate proposals should be made visible '
+      'to org admins.')
 
   #: The document entity which contains the "About" page for the program
   about_page = db.ReferenceProperty(
