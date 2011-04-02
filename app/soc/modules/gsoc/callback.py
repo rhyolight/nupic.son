@@ -28,8 +28,6 @@ from soc.modules.gsoc.tasks import accept_proposals
 from soc.modules.gsoc.tasks import org_app_survey as org_app_survey_tasks
 from soc.modules.gsoc.tasks import program_freezer
 from soc.modules.gsoc.tasks import slot_assignment
-from soc.modules.gsoc.tasks import proposal_duplicates as \
-    proposal_duplicates_tasks
 from soc.modules.gsoc.tasks import proposal_review
 from soc.modules.gsoc.views.models import grading_project_survey as \
     grading_survey
@@ -65,6 +63,7 @@ class Callback(object):
     """
     from soc.modules.gsoc.views import dashboard
     from soc.modules.gsoc.views import document
+    from soc.modules.gsoc.views import duplicates
     from soc.modules.gsoc.views import homepage
     from soc.modules.gsoc.views import invite
     from soc.modules.gsoc.views import org_app
@@ -83,6 +82,7 @@ class Callback(object):
     self.views.append(document.EditDocumentPage())
     self.views.append(document.DocumentPage())
     self.views.append(document.EventsPage())
+    self.views.append(duplicates.DuplicatesPage())
     self.views.append(homepage.Homepage())
     self.views.append(org_app.OrgApp())
     self.views.append(org_home.OrgHome())
@@ -104,6 +104,11 @@ class Callback(object):
     self.views.append(accepted_orgs.AcceptedOrgsPage())
     self.views.append(org_profile.OrgProfilePage())
     self.views.append(search.SearchGsocPage())
+
+    # Appengine Task related views
+    from soc.modules.gsoc.tasks.proposal_duplicates import \
+        ProposalDuplicatesTask
+    self.views.append(ProposalDuplicatesTask())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.
@@ -137,8 +142,6 @@ class Callback(object):
     # register the GSoC Tasks
     self.core.registerSitemapEntry(org_app_survey_tasks.getDjangoURLPatterns())
     self.core.registerSitemapEntry(program_freezer.getDjangoURLPatterns())
-    self.core.registerSitemapEntry(
-        proposal_duplicates_tasks.getDjangoURLPatterns())
     self.core.registerSitemapEntry(accept_proposals.getDjangoURLPatterns())
     self.core.registerSitemapEntry(proposal_review.getDjangoURLPatterns())
     self.core.registerSitemapEntry(slot_assignment.getDjangoURLPatterns())
