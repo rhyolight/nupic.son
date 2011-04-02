@@ -114,7 +114,8 @@ class ProfileForm(forms.ModelForm):
                'student_info', 'agreed_to_tos_on', 'scope_path', 'status',
                'name_on_documents', 'agreed_to_tos', 'notify_new_requests',
                'notify_new_proposals', 'notify_proposal_updates',
-               'notify_public_comments', 'notify_private_comments']
+               'notify_public_comments', 'notify_private_comments',
+               'is_mentor', 'is_org_admin']
 
     widgets = forms.choiceWidgets(GSoCProfile,
         ['res_country', 'ship_country',
