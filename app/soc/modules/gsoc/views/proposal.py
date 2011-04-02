@@ -192,7 +192,6 @@ class UpdateProposal(RequestHandler):
     Returns:
       an updated proposal entity or None
     """
-
     proposal_form = ProposalForm(self.data.POST, instance=self.data.proposal)
 
     if not proposal_form.is_valid():
@@ -203,21 +202,18 @@ class UpdateProposal(RequestHandler):
   def _withdraw(self):
     """Withdraws a proposal.
     """
-
     self.data.proposal.status = 'withdrawn'
     self.data.proposal.put()
-    
+
   def _resubmit(self):
     """Resubmits a proposal.
     """
-
     self.data.proposal.status = 'pending'
     self.data.proposal.put()
 
   def post(self):
     """Handler for HTTP POST request.
     """
-
     if self.data.action == self.ACTIONS['update']:
       proposal = self._updateFromForm()
       if not proposal:
