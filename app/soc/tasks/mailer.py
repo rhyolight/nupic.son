@@ -31,6 +31,7 @@ from google.appengine.runtime.apiproxy_errors import OverQuotaError
 
 from django.utils import simplejson
 
+from soc.logic import system
 from soc.models import email
 from soc.tasks import responses
 from soc.tasks.helper import error_handler
@@ -43,6 +44,20 @@ def getDjangoURLPatterns():
   """
   patterns = [(r'tasks/mail/send_mail$', 'soc.tasks.mailer.sendMail')]
   return patterns
+
+
+def getMailContext(to, subject, body, sender=None):
+  """Constructs a mail context for the specified arguments.
+  """
+  if not sender:
+    sender = system.getApplicationNoReplyEmail()
+
+  return {
+      'to:' to,
+      'subject': subject,
+      'body': body,
+      'sender': sender,
+  }
 
 
 def getSpawnMailTaskTxn(context, parent=None):
