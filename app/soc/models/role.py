@@ -479,6 +479,14 @@ class Role(soc.models.linkable.Linkable):
   #specific roles information
   #====================================================================
 
+  #: field storing whether the User is a mentor
+  is_mentor = db.BooleanProperty(required=False, default=False,
+      verbose_name=ugettext('Is Mentor'))
+
+  #: field storing whether the User is an org amdin
+  is_org_admin = db.BooleanProperty(required=False, default=False,
+      verbose_name=ugettext('Is Organization Administrator'))
+
   #: List of organizations that the user with the role is a mentor for
   mentor_for = db.ListProperty(item_type=db.Key, default=[])
   mentor_for.help_text = ugettext('List of organizations for which the user '
