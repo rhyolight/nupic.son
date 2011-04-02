@@ -533,6 +533,8 @@ class RedirectHelper(object):
     return self
 
   def request(self, request):
+    """Sets the _url_name for a request.
+    """
     assert request
     self.id(request.key().id())
     if request.type == 'Request':
@@ -540,6 +542,14 @@ class RedirectHelper(object):
     else:
       self._url_name = 'gsoc_invitation'
     return self
+
+  def comment(self, comment):
+    """Creates a direct link to a comment.
+    """
+    review = comment.parent()
+    self.review(review.key().id_or_name(), review.parent().link_id)
+    url= self.urlOf('review_gsoc_proposal')
+    return "%s#c%s" % (url, comment.key().id())
 
   def projectDetails(self, student_project):
     """Returns the URL to the Student Project.
