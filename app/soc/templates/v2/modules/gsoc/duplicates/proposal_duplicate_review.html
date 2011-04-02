@@ -12,12 +12,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
-This student is likely to be accepted by one or more other organizations, please contact them using the information below to resolve this situation.<br/>
-
-{% for org in orgs %}
-  <strong>Organization:</strong> <a href="{{ org.link }}">{{ org.name }}</a><br/>
-  <strong>Org Admins:</strong>
-  {% for admin in org.admins %}
-    <a href="mailto:{{ admin.email }}">"{{ admin.name }}" &lt;{{ admin.email }}&gt;</a>{% if not forloop.last %}, {% endif %}
+<div class="duplicate-message">
+  <p>
+    This student is likely to be accepted by
+    {% if orgs|length == 1 %}
+      another organization.
+    {% else %}{% if orgs|length > 1 %}
+      other organizations.
+    {% endif %}{% endif %}
+    Please use the contact information of the
+    {% if orgs|length == 1 %}
+      corresponding organization
+    {% else %}{% if orgs|length > 1 %}
+      respective organizations
+    {% endif %}{% endif %}
+    in the table given below to resolve this situation.
+  </p>
+</div>
+<table id="duplicate-orgs" class="proposal-duplicates">
+  <tr>
+    <th><strong>Organization Name</strong></th>
+    <th><strong>Organization Administrators</strong></th>
+  </tr>
+  {% for org in orgs %}
+    <tr>
+      <td><a href="{{ org.link }}">{{ org.name }}</a></td>
+      <td>
+        {% for admin in org.admins %}
+          <a href="mailto:{{ admin.email }}">"{{ admin.name }}" &lt;{{ admin.email }}&gt;</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      </td>
+    </tr>
   {% endfor %}
-{% endfor %}
+</table>
+<br />
