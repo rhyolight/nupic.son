@@ -384,6 +384,7 @@ class ShowInvite(RequestHandler):
     if self.data.invite.role == 'mentor':
       self.data.profile.mentor_for.append(self.data.organization.key())
     else:
+      self.data.profile.mentor_for.append(self.data.organization.key())
       self.data.profile.org_admin_for.append(self.data.organization.key())
 
     self.data.invite.put()
