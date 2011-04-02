@@ -276,6 +276,16 @@ class ShowInvite(RequestHandler):
 
     self.mutator.canRespondForUser()
 
+    if self.data.user.key() == self.data.invited_user.key():
+      self.data.invited_profile = self.data.profile
+      return
+
+    key_name = '/'.join([
+        self.data.program.key().name(),
+        self.data.requester.link_id])
+    self.data.invited_profile = GSoCProfile.get_by_key_name(
+        key_name, parent=self.data.requester)
+
   def context(self):
     """Handler to for GSoC Show Invitation Page HTTP get request.
     """
@@ -284,6 +294,8 @@ class ShowInvite(RequestHandler):
     assert isSet(self.data.can_respond)
     assert isSet(self.data.organization)
     assert isSet(self.data.invited_user)
+    assert isSet(self.data.invited_profile)
+    assert self.data.invited_profile
 
     show_actions = self.data.invite.status == 'pending'
     if self.data.can_respond and self.data.invite.status == 'rejected':
@@ -291,11 +303,27 @@ class ShowInvite(RequestHandler):
     if not self.data.can_respond and self.data.invite.status == 'withdrawn':
       show_actions = True
 
+    org_key = self.data.organization.key()
+    status_msg = None
+
+    # This code is dupcliated between request and invite
+    if self.data.invited_profile.key() == self.data.profile.key():
+      if org_key in self.data.invited_profile.org_admin_for:
+        status_msg = "You are now an organization administrator for this organization."
+      elif org_key in self.data.invited_profile.mentor_for:
+        status_msg = "You are now a mentor for this organization."
+    else:
+      if org_key in self.data.invited_profile.org_admin_for:
+        status_msg = "This user is now an organization administrator with your organization."
+      elif org_key in self.data.invited_profile.mentor_for:
+        status_msg = "This user is now a mentor with your organization."
+
     return {
         'request': self.data.invite,
         'page_name': "Invite",
         'org': self.data.organization,
         'actions': self.ACTIONS,
+        'status_msg': status_msg,
         'user_name': self.data.invited_user.name,
         'user_link_id': self.data.invited_user.link_id,
         'user_email': accounts.denormalizeAccount(

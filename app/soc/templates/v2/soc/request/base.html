@@ -29,6 +29,7 @@ limitations under the License.
   </strong> {{ user_name }} (link_id: {{ user_link_id }})</p>
   <p class="request-contact-info"><strong>Email:</strong> {{ user_email }}</p>
   <p class="request-status"><strong>Status:</strong> {{ request.statusMessage }}</p>
+  {% if status_msg %}<p class="request-status-msg">{{ status_msg }}</p>{% endif %}
   <p class="request-sent-on"><strong>Sent on:</strong> {{ request.created_on }}</p>
   <p class="request-organization"><strong>Organization:</strong> {{ org.name }}</p>
   <br>

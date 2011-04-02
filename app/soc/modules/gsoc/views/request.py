@@ -208,11 +208,27 @@ class ShowRequest(RequestHandler):
     if self.data.can_respond and self.data.request_entity.status == 'rejected':
       show_actions = True
 
+    org_key = self.data.organization.key()
+    status_msg = None
+
+    # This code is dupcliated between request and invite
+    if self.data.requester_profile.key() == self.data.profile.key():
+      if org_key in self.data.requester_profile.org_admin_for:
+        status_msg = "You are now an organization administrator for this organization."
+      elif org_key in self.data.requester_profile.mentor_for:
+        status_msg = "You are now a mentor for this organization."
+    else:
+      if org_key in self.data.requester_profile.org_admin_for:
+        status_msg = "This user is now an organization administrator with your organization."
+      elif org_key in self.data.requester_profile.mentor_for:
+        status_msg = "This user is now a mentor with your organization."
+
     return {
         'page_name': "Request to become a mentor",
         'request': self.data.request_entity,
         'org': self.data.organization,
         'actions': self.ACTIONS,
+        'status_msg': status_msg,
         'user_name': self.data.requester.name,
         'user_link_id': self.data.requester.link_id,
         'user_email': accounts.denormalizeAccount(
