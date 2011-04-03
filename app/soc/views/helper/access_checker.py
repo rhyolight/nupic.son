@@ -27,8 +27,6 @@ from django.utils.translation import ugettext
 
 from google.appengine.api import users
 
-from soc.logic.models.user import logic as user_logic
-
 from soc.logic.exceptions import LoginRequest
 from soc.logic.exceptions import RedirectRequest
 from soc.logic.exceptions import BadRequest
