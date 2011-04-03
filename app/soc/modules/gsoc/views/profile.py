@@ -165,7 +165,7 @@ class CreateProfileForm(ProfileForm):
                'name_on_documents', 'notify_new_requests',
                'notify_new_proposals', 'notify_proposal_updates',
                'notify_public_comments', 'notify_private_comments',
-               'is_mentor', 'is_org_admin']
+               'is_mentor', 'is_org_admin', 'is_student']
     widgets = ProfileForm.Meta.widgets
 
   def __init__(self, tos_content, *args, **kwargs):
