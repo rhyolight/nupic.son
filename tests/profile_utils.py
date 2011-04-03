@@ -84,8 +84,12 @@ class GSoCProfileHelper(object):
       return
     from soc.modules.gsoc.models.profile import GSoCProfile
     user = self.createUser()
-    properties = {'link_id': user.link_id, 'student_info': None, 'user': user,
-                  'parent': user, 'scope': self.program, 'status': 'active'}
+    properties = {
+        'link_id': user.link_id, 'student_info': None, 'user': user,
+        'parent': user, 'scope': self.program, 'status': 'active',
+        'mentor_for': [], 'org_admin_for': [],
+        'is_org_admin': False, 'is_mentor': False, 'is_student': False
+    }
     self.profile = self.seed(GSoCProfile, properties)
     return self.profile
 
