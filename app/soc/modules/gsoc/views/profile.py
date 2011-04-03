@@ -74,6 +74,12 @@ class StudentNotificationForm(forms.ModelForm):
     fields = ['notify_public_comments']
 
 
+MENTOR_FIELDS = [
+    'notify_rejection', 'notify_new_invites',
+    'notify_new_proposals', 'notify_proposal_updates',
+    'notify_public_comments', 'notify_private_comments',
+]
+
 class AdminNotificationForm(forms.ModelForm):
   """Django form for mentor notification settings.
   """
@@ -81,9 +87,7 @@ class AdminNotificationForm(forms.ModelForm):
   class Meta:
     model = GSoCProfile
     css_prefix = 'gsoc_profile'
-    fields = ['notify_public_comments', 'notify_new_requests',
-              'notify_new_proposals', 'notify_proposal_updates',
-              'notify_private_comments']
+    fields = ['notify_new_requests'] + MENTOR_FIELDS
 
 
 class MentorNotificationForm(forms.ModelForm):
@@ -93,15 +97,14 @@ class MentorNotificationForm(forms.ModelForm):
   class Meta:
     model = GSoCProfile
     css_prefix = 'gsoc_profile'
-    fields = ['notify_public_comments', 'notify_new_proposals',
-              'notify_proposal_updates', 'notify_private_comments']
+    fields = MENTOR_FIELDS
 
 
 PROFILE_EXCLUDE = [
     'link_id', 'user', 'scope', 'scope_path', 'status',
     'agreed_to_tos_on', 'name_on_documents',
     # notifications
-    'notify_new_requests', 'notify_new_invites',
+    'notify_new_requests', 'notify_new_invites', 'notify_rejection',
     'notify_new_proposals', 'notify_proposal_updates',
     'notify_public_comments', 'notify_private_comments',
     # role data
