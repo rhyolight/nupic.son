@@ -75,7 +75,7 @@ class StudentNotificationForm(forms.ModelForm):
 
 
 MENTOR_FIELDS = [
-    'notify_rejection', 'notify_new_invites',
+    'notify_rejection', 'notify_withdrawn', 'notify_new_invites',
     'notify_new_proposals', 'notify_proposal_updates',
     'notify_public_comments', 'notify_private_comments',
 ]
@@ -104,7 +104,8 @@ PROFILE_EXCLUDE = [
     'link_id', 'user', 'scope', 'scope_path', 'status',
     'agreed_to_tos_on', 'name_on_documents',
     # notifications
-    'notify_new_requests', 'notify_new_invites', 'notify_rejection',
+    'notify_new_requests', 'notify_new_invites',
+    'notify_withdrawn', 'notify_rejection',
     'notify_new_proposals', 'notify_proposal_updates',
     'notify_public_comments', 'notify_private_comments',
     # role data
