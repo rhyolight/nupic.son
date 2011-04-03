@@ -422,7 +422,7 @@ class ProfilePage(RequestHandler):
     link_id = self.data.GET.get('org')
     if link_id:
       key_name = '%s/%s' % (
-          self.data.program.name, link_id
+          self.data.program.key().name(), link_id
           )
       organization = GSoCOrganization.get_by_key_name(key_name)
     else:
