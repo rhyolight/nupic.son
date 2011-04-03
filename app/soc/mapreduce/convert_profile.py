@@ -21,6 +21,8 @@ __authors__ = [
   ]
 
 
+import logging
+
 from google.appengine.ext import db
 from google.appengine.ext.mapreduce import operation
 
@@ -32,8 +34,8 @@ def process(profile_key):
   def convert_profile_txn():
     profile = db.get(profile_key)
     if not profile:
-      print "Missing profile for key ''." % profile_key
-      return
+      logging.error("Missing profile for key ''." % profile_key)
+      return False
     profile._fix_name(commit=False)
     profile.is_student = bool(profile.student_info)
     profile.org_admin_for = list(set(profile.org_admin_for))
@@ -43,17 +45,23 @@ def process(profile_key):
     profile.put()
     return (profile.is_student, profile.is_org_admin, profile.is_mentor)
 
-  student, admin, mentor = db.run_in_transaction(convert_profile_txn)
+  result = db.run_in_transaction(convert_profile_txn)
 
-  if student:
+  if not result:
+    yield operation.counters.Increment("missing_profile")
+    return
+
+  is_student, is_admin, is_mentor = result
+
+  if is_student:
     yield operation.counters.Increment("student_profiles_converted")
 
-  if admin:
+  if is_admin:
     yield operation.counters.Increment("admin_profiles_converted")
-  elif mentor:
+  elif is_mentor:
     yield operation.counters.Increment("mentor_profiles_converted")
 
-  if mentor:
+  if is_mentor:
     yield operation.counters.Increment("only_mentor_profiles_converted")
 
   yield operation.counters.Increment("profiles_converted")
