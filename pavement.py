@@ -48,7 +48,7 @@ options(
         app_build = PROJECT_DIR / 'build',
         app_folder = PROJECT_DIR / 'app',
         app_files = ['app.yaml', 'index.yaml', 'queue.yaml', 'cron.yaml',
-                     'main.py', 'settings.py', 'urls.py',
+                     'mapreduce.yaml', 'main.py', 'settings.py', 'urls.py',
                      'gae_django.py', 'profiler.py', 'appengine_config.py'],
         app_dirs =  ["soc", "feedparser", "python25src",
                      "jquery.min", "ranklist", "shell", "json.min", "jlinq",
