@@ -346,7 +346,7 @@ class ProfilePage(RequestHandler):
     return profile_form, profile
 
   def notificationForm(self):
-    if self.data.student_info:
+    if self.data.student_info or self.data.kwargs.get('role') == 'student':
       return StudentNotificationForm
 
     if self.data.org_admin_for:
