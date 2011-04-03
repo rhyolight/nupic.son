@@ -477,7 +477,7 @@ class PostScore(RequestHandler):
     if not self.data.proposal:
       raise NotFound('Requested proposal does not exist')
 
-    org = self.data.proposal.org
+    self.data.proposal_org = self.data.proposal.org
 
     if not self.data.orgAdminFor(org) and org.scoring_disabled:
       raise BadRequest('Scoring is disabled for this organization')
@@ -498,8 +498,9 @@ class PostScore(RequestHandler):
       The score entity that was created/updated or None if value is 0.
     """
     assert isSet(self.data.proposal)
+    assert isSet(self.data.proposal_org)
 
-    max_score = self.data.proposal.org.max_score
+    max_score = self.data.proposal_org.max_score
 
     if value > max_score:
       raise BadRequest("Score must not be higher than %d" % max_score)
