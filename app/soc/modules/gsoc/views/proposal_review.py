@@ -33,6 +33,7 @@ from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import BadRequest
 from soc.models.user import User
 from soc.views import forms
+from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 
@@ -351,7 +352,11 @@ class ReviewProposal(RequestHandler):
       dup_entity = q.get()
       duplicate = Duplicate(self.data, dup_entity) if dup_entity else None
 
+    additional_info = self.data.proposal.additional_info
+
     context.update({
+        'additional_info': url_helper.trim_url_to(additional_info, 50),
+        'additional_info_link': additional_info,
         'comment_box': comment_box,
         'duplicate': duplicate,
         'max_score': self.data.proposal_org.max_score,
