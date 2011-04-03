@@ -476,6 +476,13 @@ def collectKeys(prop, data):
   return [i for i in keys if i]
 
 
+def collectParentKeys(data):
+  """Collects all parent keys for the specified data.
+  """
+  keys = [i.parent_key() for i in data]
+  return [i for i in keys if i]
+
+
 def distributeKeys(prop, data, prefetched_dict):
   """Distributes the keys for the specified property.
   """
@@ -490,7 +497,27 @@ def distributeKeys(prop, data, prefetched_dict):
     setattr(i, prop.name, value)
 
 
-def prefetchFields(model, fields, data):
+def distributeParentKeys(data, prefetched_dict):
+  """Distributes the keys for the parent property.
+
+  Uses an AppEngine internal api (the _parent property). See also:
+  https://groups.google.com/forum/#!topic/google-appengine-python/eBAzvJRAvH8
+  """
+  for i in data:
+    key = i.parent_key()
+
+    if key not in prefetched_dict:
+      continue
+
+    value = prefetched_dict[key]
+    try:
+      # BAD BAD BAD
+      i._parent = value
+    except Exception, e:
+      logging.exception(e)
+
+
+def prefetchFields(model, fields, data, parent):
   """Prefetches the specified fields in data.
   """
   keys = []
@@ -512,6 +539,9 @@ def prefetchFields(model, fields, data):
     prop = getattr(model, field)
     keys += collectKeys(prop, data)
 
+  if parent:
+    keys += collectParentKeys(data)
+
   prefetched_entities = db.get(keys)
   prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
 
@@ -519,12 +549,15 @@ def prefetchFields(model, fields, data):
     prop = getattr(model, field)
     distributeKeys(prop, data, prefetched_dict)
 
+  if parent:
+    distributeParentKeys(data, prefetched_dict)
 
-def modelPrefetcher(model, fields):
+
+def modelPrefetcher(model, fields, parent=False):
   """Returns a prefetcher for the specified model and fields.
   """
   def prefetcher(entities):
-    prefetchFields(model, fields, entities)
+    prefetchFields(model, fields, entities, parent)
     return [], {}
   return prefetcher
 
