@@ -518,17 +518,11 @@ class Role(soc.models.linkable.Linkable):
   def _fix_name(self, commit=True):
     """Retrieves the name property from the parent user.
     """
-    if self.public_name:
-      return
-    self.public_name = self.user.name
-    # same entity group, safe to call put
-    if commit:
-      self.put()
+    pass
 
   def name(self):
     """Property as 'name' for use in common templates.
     """
-    self._fix_name()
     return self.public_name
 
   def document_name(self):
