@@ -28,6 +28,7 @@ from django.core.urlresolvers import reverse
 from soc.logic import dicts
 from soc.logic.exceptions import AccessViolation
 from soc.views.template import Template
+from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.logic.models.timeline import logic as timeline_logic
@@ -35,16 +36,6 @@ from soc.modules.gsoc.logic.models.student_project import logic as sp_logic
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
-
-
-def trim_url_to(url, limit):
-  """Returns a version of url at most limit long.
-  """
-  if not url:
-    return url
-  if len(url) > limit:
-    return '%s...' % url[:max(0, limit - 3)]
-  return url
 
 
 class Apply(Template):
@@ -222,9 +213,11 @@ class OrgHome(RequestHandler):
         'apply': Apply(self.data, current_timeline),
     }
 
+    ideas = organization.ideas
+
     if organization.ideas:
-      context['ideas_link'] = organization.ideas
-      context['ideas_link_trimmed'] = trim_url_to(organization.ideas, 50)
+      context['ideas_link'] = ideas
+      context['ideas_link_trimmed'] = url_helper.trim_url_to(ideas, 50)
 
     if self.data.orgAdminFor(organization):
       r = self.redirect

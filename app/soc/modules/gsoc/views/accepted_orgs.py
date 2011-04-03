@@ -26,12 +26,12 @@ from django.conf.urls.defaults import url
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.template import Template
+from soc.views.helper import url as url_helper
 
+from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
-
-from soc.modules.gsoc.logic.models.organization import logic as org_logic
 
 
 class AcceptedOrgsList(Template):
@@ -53,7 +53,7 @@ class AcceptedOrgsList(Template):
                           lambda e, *args: e.tags_string(e.org_tag))
     list_config.addColumn(
         'ideas', 'Ideas',
-        (lambda e, *args: lists.urlize(e.ideas, name="[ideas page]")),
+        (lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]")),
         hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
