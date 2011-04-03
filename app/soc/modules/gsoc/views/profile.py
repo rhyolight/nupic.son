@@ -97,6 +97,19 @@ class MentorNotificationForm(forms.ModelForm):
               'notify_proposal_updates', 'notify_private_comments']
 
 
+PROFILE_EXCLUDE = [
+    'link_id', 'user', 'scope', 'scope_path', 'status',
+    'agreed_to_tos_on', 'name_on_documents',
+    # notifications
+    'notify_new_requests', 'notify_new_invites',
+    'notify_new_proposals', 'notify_proposal_updates',
+    'notify_public_comments', 'notify_private_comments',
+    # role data
+    'student_info', 'mentor_for', 'org_admin_for',
+    'is_student', 'is_mentor', 'is_org_admin',
+]
+
+
 class ProfileForm(forms.ModelForm):
   """Django form for profile page.
   """
@@ -104,13 +117,7 @@ class ProfileForm(forms.ModelForm):
   class Meta:
     model = GSoCProfile
     css_prefix = 'gsoc_profile'
-    exclude = ['link_id', 'user', 'scope', 'mentor_for', 'org_admin_for',
-               'student_info', 'agreed_to_tos_on', 'scope_path', 'status',
-               'name_on_documents', 'agreed_to_tos', 'notify_new_requests',
-               'notify_new_proposals', 'notify_proposal_updates',
-               'notify_public_comments', 'notify_private_comments',
-               'is_student', 'is_mentor', 'is_org_admin']
-
+    exclude = PROFILE_EXCLUDE + ['agreed_to_tos']
     widgets = forms.choiceWidgets(GSoCProfile,
         ['res_country', 'ship_country',
          'tshirt_style', 'tshirt_size', 'gender'])
@@ -164,12 +171,7 @@ class CreateProfileForm(ProfileForm):
   class Meta:
     model = ProfileForm.Meta.model
     css_prefix = ProfileForm.Meta.css_prefix
-    exclude = ['link_id', 'user', 'scope', 'mentor_for', 'org_admin_for',
-               'student_info', 'agreed_to_tos_on', 'scope_path', 'status',
-               'name_on_documents', 'notify_new_requests',
-               'notify_new_proposals', 'notify_proposal_updates',
-               'notify_public_comments', 'notify_private_comments',
-               'is_mentor', 'is_org_admin', 'is_student']
+    exclude = PROFILE_EXCLUDE
     widgets = ProfileForm.Meta.widgets
 
   def __init__(self, tos_content, *args, **kwargs):
