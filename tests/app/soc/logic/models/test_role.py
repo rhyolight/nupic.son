@@ -65,6 +65,7 @@ class RoleTest(unittest.TestCase):
     phone = '01234567'
     birth_date = db.DateProperty.now()
     properties = {
+        'public_name': "Some name",
         'link_id': user.link_id,
         'scope_path': 'google',
         'user': user,

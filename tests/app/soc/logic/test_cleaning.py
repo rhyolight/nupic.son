@@ -437,12 +437,6 @@ class CleaningTest(unittest.TestCase):
     self.form.cleaned_data = {field_name: field_value}
     self.form.fields = {field_name: forms.URLField()}
     self.assertEqual(clean_field(self.form), field_value) 
-    # Test that the value of the url field will be normalized and returned 
-    # if it is a valid but not a normalized url
-    field_value = 'exampleabc.com'
-    self.form.cleaned_data = {field_name: field_value}
-    self.form.fields = {field_name: forms.URLField()}
-    self.assertEqual(clean_field(self.form), 'http://'+field_value+'/') 
     # Test that None will be returned if the value of the url field 
     # is an empty string
     field_value = ''
