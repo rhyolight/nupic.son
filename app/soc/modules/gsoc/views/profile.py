@@ -45,7 +45,11 @@ from soc.modules.gsoc.views.helper import url_patterns
 
 
 class EmptyForm(forms.ModelForm):
-  pass
+  """Empty form that is always valid.
+  """
+
+  def is_valid(self):
+    return True
 
 
 class UserForm(forms.ModelForm):
@@ -302,8 +306,6 @@ class ProfilePage(RequestHandler):
       return user_form
 
     if self.data.user:
-      user_form.save(commit=False)
-      dirty.append(self.data.user)
       return user_form
 
     key_name = user_form.cleaned_data['link_id']
