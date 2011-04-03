@@ -38,6 +38,12 @@ class GSoCProfile(soc.models.role.Profile):
       'Whether to send an email notification when new requests are submitted.')
   notify_new_requests.group = ugettext("6. Notification settings")
 
+  notify_new_invites = db.BooleanProperty(required=False, default=True,
+      verbose_name=ugettext('Notify of new invites'))
+  notify_new_invites.help_text = ugettext(
+      'Whether to send an email notification when you receive a new invites.')
+  notify_new_invites.group = ugettext("6. Notification settings")
+
   notify_new_proposals = db.BooleanProperty(required=False, default=True,
       verbose_name=ugettext('Notify of new proposals'))
   notify_new_proposals.help_text = ugettext(
