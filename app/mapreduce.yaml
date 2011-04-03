@@ -1,7 +1,8 @@
 mapreduce:
 - name: ConvertProfile
   mapper:
-    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreKeyInputReader
     handler: soc.mapreduce.convert_profile.process
     params:
-    - entity_kind: soc.modules.gsoc.models.profile.GSoCProfile
+    - name: entity_kind
+      value: soc.modules.gsoc.models.profile.GSoCProfile

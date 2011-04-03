@@ -24,8 +24,11 @@ __authors__ = [
 from google.appengine.ext import db
 from google.appengine.ext.mapreduce import operation
 
+from soc.models.user import User
+from soc.modules.gsoc.models.profile import GSoCProfile
 
-def process(profile_key)
+
+def process(profile_key):
   def convert_profile_txn():
     profile = db.get(profile_key)
     if not profile:
@@ -38,7 +41,7 @@ def process(profile_key)
     profile.is_org_admin = bool(profile.org_admin_for)
     profile.is_mentor = bool(profile.mentor_for)
     profile.put()
-    return (profile_is_student, profile.is_org_admin, profile.is_mentor)
+    return (profile.is_student, profile.is_org_admin, profile.is_mentor)
 
   student, admin, mentor = db.run_in_transaction(convert_profile_txn)
 
