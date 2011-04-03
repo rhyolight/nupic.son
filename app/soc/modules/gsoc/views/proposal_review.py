@@ -502,7 +502,7 @@ class PostScore(RequestHandler):
 
     max_score = self.data.proposal_org.max_score
 
-    if value > max_score:
+    if value < 0 or value > max_score:
       raise BadRequest("Score must not be higher than %d" % max_score)
 
     query = db.Query(GSoCScore)
