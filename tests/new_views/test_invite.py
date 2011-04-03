@@ -24,6 +24,8 @@ __authors__ = [
 
 import httplib
 
+from google.appengine.ext import db
+
 from soc.models.request import Request
 
 from tests.profile_utils import GSoCProfileHelper
@@ -115,3 +117,25 @@ class InviteTest(DjangoTestCase):
     postdata = {'action': 'Accept'}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
+
+    profile = db.get(self.data.profile.key())
+    self.assertEqual(1, profile.mentor_for.count(self.org.key()))
+    self.assertTrue(profile.is_mentor)
+    self.assertFalse(profile.is_student)
+    self.assertFalse(profile.is_org_admin)
+    self.assertFalse(profile.org_admin_for)
+
+    # test admin invite
+    invitation.status = 'pending'
+    invitation.role = 'org_admin'
+    invitation.put()
+
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(response)
+
+    profile = db.get(self.data.profile.key())
+    self.assertEqual(1, profile.mentor_for.count(self.org.key()))
+    self.assertEqual(1, profile.org_admin_for.count(self.org.key()))
+    self.assertFalse(profile.is_student)
+    self.assertTrue(profile.is_mentor)
+    self.assertTrue(profile.is_org_admin)

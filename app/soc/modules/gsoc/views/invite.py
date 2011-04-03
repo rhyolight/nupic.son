@@ -385,7 +385,7 @@ class ShowInvite(RequestHandler):
     invite.status = 'accepted'
 
     if invite.role != 'mentor':
-      profile.is_admin = True
+      profile.is_org_admin = True
       profile.org_admin_for.append(self.data.organization.key())
       profile.org_admin_for = list(set(profile.org_admin_for))
 
