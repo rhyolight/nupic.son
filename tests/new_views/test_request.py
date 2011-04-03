@@ -24,6 +24,8 @@ __authors__ = [
 
 import httplib
 
+from google.appengine.ext import db
+
 from soc.models.request import Request
 
 from tests.profile_utils import GSoCProfileHelper
@@ -41,12 +43,19 @@ class RequestTest(DjangoTestCase):
   def setUp(self):
     self.init()
 
-  def createInvitation(self):
+  def createRequest(self):
     """Creates and returns an accepted invitation for the current user.
     """
-    properties = {'role': 'mentor', 'user': self.data.user, 'group': self.org,
+    # create other user to send invite to
+    other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
+    other_data.createOtherUser('to_be_mentor@example.com')
+    other_data.createProfile()
+    other_user = other_data.user
+
+    properties = {'role': 'mentor', 'user': other_user, 'group': self.org,
                   'status': 'pending', 'type': 'Request'}
-    return seeder_logic.seed(Request, properties=properties)
+    request = seeder_logic.seed(Request, properties=properties)
+    return (other_data.profile, request)
 
   def assertRequestTemplatesUsed(self, response):
     """Asserts that all the request templates were used.
@@ -70,10 +79,28 @@ class RequestTest(DjangoTestCase):
     request = Request.all().get()
     self.assertPropertiesEqual(properties, request)
 
-  def testViewRequest(self):
+  def testAcceptRequest(self):
     self.data.createOrgAdmin(self.org)
-    request = self.createInvitation()
+    other_profile, request = self.createRequest()
     url = '/gsoc/request/%s/%s' % (self.gsoc.key().name(), request.key().id())
     response = self.client.get(url)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/soc/request/base.html')
+
+    postdata = {'action': 'Reject'}
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(response)
+    invitation = Request.all().get()
+    self.assertEqual('rejected', invitation.status)
+
+    # test that you can change after the fact
+    postdata = {'action': 'Accept'}
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(response)
+
+    profile = db.get(other_profile.key())
+    self.assertEqual(1, profile.mentor_for.count(self.org.key()))
+    self.assertTrue(profile.is_mentor)
+    self.assertFalse(profile.is_student)
+    self.assertFalse(profile.is_org_admin)
+    self.assertFalse(profile.org_admin_for)
