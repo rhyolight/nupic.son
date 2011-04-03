@@ -477,7 +477,7 @@ class PostScore(RequestHandler):
     if not self.data.proposal:
       raise NotFound('Requested proposal does not exist')
 
-    self.data.proposal_org = self.data.proposal.org
+    org = self.data.proposal_org = self.data.proposal.org
 
     if not self.data.orgAdminFor(org) and org.scoring_disabled:
       raise BadRequest('Scoring is disabled for this organization')
