@@ -714,7 +714,7 @@ class ParticipantsComponent(Component):
           GSoCProfile, ['mentor_for', 'org_admin_for'])
     else:
       org_dict = dict((i.key(), i) for i in self.data.mentor_for)
-      q.filter('mentor_for IN', org_dict.keys())
+      q.filter('mentor_for IN', self.data.profile.org_admin_for)
       prefetcher = lambda entities: ([org_dict], {})
 
     starter = lists.keyStarter
