@@ -501,8 +501,8 @@ class PostScore(RequestHandler):
 
     max_score = self.data.proposal.org.max_score
 
-    if value < 1 or value > max_score:
-      raise BadRequest("Score should be between 1 and %d" % max_score)
+    if value > max_score:
+      raise BadRequest("Score must not be higher than %d" % max_score)
 
     query = db.Query(GSoCScore)
     query.filter('author = ', self.data.profile)
