@@ -27,7 +27,6 @@ from google.appengine.ext import db
 
 from soc.cache import sidebar
 from soc.logic import accounts
-from soc.logic.helper import notifications
 from soc.logic.models import base
 from soc.logic.models.site import logic as site_logic
 
@@ -287,8 +286,6 @@ class Logic(base.Logic):
   def _onCreate(self, entity):
     """Send out a message to welcome the new user.
     """
-
-    notifications.sendWelcomeMessage(entity)
 
     super(Logic, self)._onCreate(entity)
 
