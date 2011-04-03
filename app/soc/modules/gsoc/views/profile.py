@@ -352,7 +352,7 @@ class ProfilePage(RequestHandler):
     if self.data.student_info or self.data.kwargs.get('role') == 'student':
       return StudentNotificationForm
 
-    if self.data.org_admin_for:
+    if self.data.is_org_admin or self.data.kwargs.get('role') == 'org_admin':
       return AdminNotificationForm
 
     return MentorNotificationForm
