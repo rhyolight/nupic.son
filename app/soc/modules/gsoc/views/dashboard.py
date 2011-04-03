@@ -438,13 +438,16 @@ class SubmittedProposalsComponent(Component):
     list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
         ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
-    #list_config.addSimpleColumn('score', 'Score')
+    list_config.addSimpleColumn('score', 'Score')
+    list_config.addColumn(
+        'student', 'Student',
+        lambda ent, *args: ent.parent().name())
     list_config.addColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args, **kwargs: 
         r.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
-    #list_config.setDefaultSort('score', 'desc')
+    list_config.setDefaultSort('score', 'desc')
     self._list_config = list_config
 
     super(SubmittedProposalsComponent, self).__init__(request, data)
@@ -484,7 +487,7 @@ class SubmittedProposalsComponent(Component):
       q.filter('program', self.data.program)
 
     starter = lists.keyStarter
-    prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'])
+    prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter, prefetcher=prefetcher)
