@@ -702,73 +702,23 @@ class ParticipantsComponent(Component):
     if idx != 9:
       return None
 
-    def starter(start_key, q):
-      filter = lambda k, v: q.filter(k, v) if not self.data.is_host else None
-      if not start_key:
-        filter('org_admin_for IN', self.data.org_admin_for)
-        return True
-
-      split = start_key.split(':', 1)
-      if len(split) != 2:
-        return False
-
-      cls, start_key = split
-
-      if cls == 'org_admin':
-        filter('org_admin_for IN', self.data.org_admin_for)
-      elif cls == 'mentor':
-        filter('mentor_for IN', self.data.org_admin_for)
-      else:
-        return False
-
-      if not start_key:
-        return True
-
-      start_entity = db.get(start_key)
-
-      if not start_entity:
-        return False
-
-      q.filter('__key__ >=', start_entity.key())
-      return True
-
-    def ender(entity, is_last, start):
-      if not start:
-        if is_last:
-          return 'mentor:'
-        else:
-          return 'org_admin:' + str(entity.key())
-
-      split = start.split(':', 1)
-      if len(split) != 2:
-        return False
-
-      cls, _ = split
-
-      if is_last:
-        return 'done'
-
-      return '%s:%s' % (cls, str(entity.key()))
-
-    def skipper(entity, start):
-      if start.startswith('mentor:'):
-        return False
-
-      return any(self.data.orgAdminFor(i) for i in entity.mentor_for)
-
     q = GSoCProfile.all()
 
     if self.data.is_host:
       q.filter('scope', self.data.program)
+      q.filter('is_mentor', True)
       prefetcher = lists.listPrefetcher(
           GSoCProfile, ['mentor_for', 'org_admin_for'])
     else:
-      prefetcher = lambda entities: (
-          [dict((i.key(), i) for i in self.data.mentor_for)], {})
+      org_dict = dict((i.key(), i) for i in self.data.mentor_for)
+      q.filter('mentor_for IN', self.data.org_dict.keys())
+      prefetcher = lambda entities: ([org_dict], {})
+
+    starter = lists.keyStarter
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter,
-        ender=ender, skipper=skipper, prefetcher=prefetcher)
+        prefetcher=prefetcher)
     return response_builder.build()
 
   def context(self):
