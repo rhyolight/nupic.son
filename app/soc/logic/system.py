@@ -58,10 +58,11 @@ def getRawHostname():
   return os.environ.get('HTTP_HOST', '')
 
 
-def getHostname():
+def getHostname(site_settings=None):
   """Returns the hostname, taking in account site hostname settings.
   """
-  site_settings = site.logic.getSingleton()
+  if not site_settings:
+    site_settings = site.logic.getSingleton()
 
   if site_settings.hostname:
     return site_settings.hostname
