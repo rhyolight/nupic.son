@@ -283,9 +283,9 @@ class ShowInvite(RequestHandler):
 
     key_name = '/'.join([
         self.data.program.key().name(),
-        self.data.requester.link_id])
+        self.data.invited_user.link_id])
     self.data.invited_profile = GSoCProfile.get_by_key_name(
-        key_name, parent=self.data.requester)
+        key_name, parent=self.data.invited_user)
 
   def context(self):
     """Handler to for GSoC Show Invitation Page HTTP get request.
@@ -339,7 +339,7 @@ class ShowInvite(RequestHandler):
         'org': self.data.organization,
         'actions': self.ACTIONS,
         'status_msg': status_msg,
-        'user_name': self.data.invited_profile.name,
+        'user_name': self.data.invited_profile.name(),
         'user_link_id': self.data.invited_user.link_id,
         'user_email': accounts.denormalizeAccount(
             self.data.invited_user.account).email(),
@@ -381,13 +381,12 @@ class ShowInvite(RequestHandler):
 
     self.data.invite.status = 'accepted'
 
-    if self.data.invite.role == 'mentor':
-      self.data.profile.is_mentor = True
-      self.data.profile.mentor_for.append(self.data.organization.key())
-    else:
+    if self.data.invite.role != 'mentor':
       self.data.profile.is_admin = True
-      self.data.profile.mentor_for.append(self.data.organization.key())
       self.data.profile.org_admin_for.append(self.data.organization.key())
+
+    self.data.profile.is_mentor = True
+    self.data.profile.mentor_for.append(self.data.organization.key())
 
     self.data.invite.put()
     self.data.profile.put()
