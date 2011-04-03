@@ -282,12 +282,16 @@ class ShowRequest(RequestHandler):
     assert isSet(self.data.organization)
     assert isSet(self.data.requester_profile)
 
-    self.data.request_entity.status = 'accepted'
-    self.data.requester_profile.is_mentor = True
-    self.data.requester_profile.mentor_for.append(self.data.organization.key())
+    request = self.data.request_entity
+    profile = self.data.requester_profile
 
-    self.data.requester_profile.put()
-    self.data.request_entity.put()
+    request.status = 'accepted'
+    profile.is_mentor = True
+    profile.mentor_for.append(self.data.organization.key())
+    profile.mentor_for = list(set(profile.mentor_for))
+
+    profile.put()
+    request.put()
 
   def _rejectRequest(self):
     """Rejects a request. 

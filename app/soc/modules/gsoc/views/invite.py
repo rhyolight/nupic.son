@@ -375,21 +375,26 @@ class ShowInvite(RequestHandler):
 
     assert isSet(self.data.organization)
 
-    if not self.data.profile:
+    invite = self.data.invite
+    profile = self.data.profile
+
+    if not profile:
       self.redirect.program()
       self.redirect.to('edit_gsoc_profile')
 
-    self.data.invite.status = 'accepted'
+    invite.status = 'accepted'
 
-    if self.data.invite.role != 'mentor':
-      self.data.profile.is_admin = True
-      self.data.profile.org_admin_for.append(self.data.organization.key())
+    if invite.role != 'mentor':
+      profile.is_admin = True
+      profile.org_admin_for.append(self.data.organization.key())
+      profile.org_admin_for = list(set(profile.org_admin_for))
 
-    self.data.profile.is_mentor = True
-    self.data.profile.mentor_for.append(self.data.organization.key())
+    profile.is_mentor = True
+    profile.mentor_for.append(self.data.organization.key())
+    profile.mentor_for = list(set(profile.mentor_for))
 
-    self.data.invite.put()
-    self.data.profile.put()
+    invite.put()
+    profile.put()
 
   def _rejectInvitation(self):
     """Rejects a invitation. 
