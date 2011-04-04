@@ -41,9 +41,9 @@ from nose import plugins
 
 import logging
 # Disable the messy logging information
-logging.disable(90)
+logging.disable(logging.INFO)
 log =  logging.getLogger('nose.plugins.cover')
-logging.disable(90)
+logging.disable(logging.INFO)
 
 
 def begin(self):
