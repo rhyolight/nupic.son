@@ -440,6 +440,13 @@ class SubmittedProposalsComponent(Component):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addSimpleColumn('score', 'Score')
     list_config.addColumn(
+        'last_modified_on', 'Last modified',
+        lambda ent, *args: str(ent.last_modified_on))
+    list_config.addColumn(
+        'created_on', 'Created on',
+        (lambda ent, *args: str(ent.created_on)),
+        hidden=True)
+    list_config.addColumn(
         'student', 'Student',
         lambda ent, *args: ent.parent().name())
 
@@ -457,7 +464,7 @@ class SubmittedProposalsComponent(Component):
     list_config.setRowAction(lambda e, *args, **kwargs: 
         r.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
-    list_config.setDefaultSort('score', 'desc')
+    list_config.setDefaultSort('last_modified_on', 'desc')
     self._list_config = list_config
 
     super(SubmittedProposalsComponent, self).__init__(request, data)
