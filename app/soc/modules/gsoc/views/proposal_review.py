@@ -31,11 +31,13 @@ from django.conf.urls.defaults import url
 from soc.logic import cleaning
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import BadRequest
+from soc.logic.helper import notifications
 from soc.models.user import User
 from soc.views import forms
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
+from soc.tasks import mailer
 
 from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
@@ -445,8 +447,21 @@ class PostComment(RequestHandler):
 
     comment_form.cleaned_data['author'] = self.data.profile
 
+    q = GSoCProfile.all().filter('mentor_for', self.data.proposal.org)
+    q = q.filter('status', 'active')
+    if comment_form.cleaned_data.get('is_private'):
+      q.filter('notify_private_comments', True)
+    else:
+      q.filter('notify_public_comments', True)
+    mentors = q.fetch(1000)
+
+    to_emails = [i.email for i in mentors]
+
     def create_comment_txn():
       comment = comment_form.create(commit=True, parent=self.data.proposal)
+      context = notifications.newCommentContext(self.data, comment, to_emails)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=comment)
+      sub_txn()
       return comment
 
     return db.run_in_transaction(create_comment_txn)

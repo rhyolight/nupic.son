@@ -26,6 +26,7 @@ import httplib
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
+from tests.test_utils import MailTestCase
 from tests.timeline_utils import TimelineHelper
 
 # TODO: perhaps we should move this out?
@@ -33,11 +34,12 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
-class ProposalTest(DjangoTestCase):
+class ProposalTest(MailTestCase, DjangoTestCase):
   """Tests proposal page.
   """
 
   def setUp(self):
+    super(ProposalTest, self).setUp()
     self.init()
 
   def assertProposalTemplatesUsed(self, response):
@@ -55,6 +57,17 @@ class ProposalTest(DjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/_comment_form.html')
 
   def testSubmitProposal(self):
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com')
+    mentor.createMentor(self.org)
+    mentor.notificationSettings(
+        new_proposals=True, public_comments=True, private_comments=True)
+
+    other_mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    other_mentor.createOtherUser('other_mentor@example.com')
+    other_mentor.createMentor(self.org)
+    other_mentor.notificationSettings()
+
     self.data.createStudent()
     self.timeline.studentSignup()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
@@ -66,6 +79,9 @@ class ProposalTest(DjangoTestCase):
                 'org': self.org, 'status': 'pending', 'accept_as_project': False}
     response, properties = self.modelPost(url, GSoCProposal, override)
     self.assertResponseRedirect(response)
+
+    self.assertEmailSent(to=mentor.profile.email, n=1)
+    self.assertEmailNotSent(to=other_mentor.profile.email)
 
     proposal = GSoCProposal.all().get()
     self.assertPropertiesEqual(properties, proposal)
@@ -89,6 +105,9 @@ class ProposalTest(DjangoTestCase):
 
     comment = GSoCComment.all().get()
     self.assertPropertiesEqual(properties, comment)
+
+    self.assertEmailSent(to=mentor.profile.email, n=1)
+    self.assertEmailNotSent(to=self.data.profile.email)
 
     # Hacky
     self.data.createMentor(self.org)

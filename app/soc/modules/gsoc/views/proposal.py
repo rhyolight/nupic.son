@@ -29,9 +29,12 @@ from django.conf.urls.defaults import url
 
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
+from soc.logic.helper import notifications
 from soc.views import forms
+from soc.tasks import mailer
 
 from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models.profile import GSoCProfile
 
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
@@ -105,11 +108,25 @@ class ProposalPage(RequestHandler):
 
     student_info_key = self.data.student_info.key()
 
+    q = GSoCProfile.all().filter('mentor_for', self.data.organization)
+    q = q.filter('status', 'active')
+    q.filter('notify_new_proposals', True)
+    mentors = q.fetch(1000)
+
+    to_emails = [i.email for i in mentors]
+
     def create_proposal_trx():
       student_info = db.get(student_info_key)
       student_info.number_of_proposals += 1
       student_info.put()
-      return proposal_form.create(commit=True, parent=self.data.profile)
+
+      proposal = proposal_form.create(commit=True, parent=self.data.profile)
+
+      context = notifications.newProposalContext(self.data, proposal, to_emails)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=proposal)
+      sub_txn()
+
+      return proposal
 
     return db.run_in_transaction(create_proposal_trx)
 
