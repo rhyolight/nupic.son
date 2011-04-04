@@ -26,6 +26,7 @@ __authors__ = [
 from google.appengine.ext import db
 
 from django.conf.urls.defaults import url
+from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation
@@ -46,6 +47,8 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 
+
+DATETIME_FORMAT = 'g:i A jS M, Y'
 
 class Dashboard(RequestHandler):
   """View for the participant dashboard.
@@ -441,10 +444,10 @@ class SubmittedProposalsComponent(Component):
     list_config.addSimpleColumn('score', 'Score')
     list_config.addColumn(
         'last_modified_on', 'Last modified',
-        lambda ent, *args: str(ent.last_modified_on))
+        lambda ent, *args: format(ent.last_modified_on, DATETIME_FORMAT))
     list_config.addColumn(
         'created_on', 'Created on',
-        (lambda ent, *args: str(ent.created_on)),
+        (lambda ent, *args: format(ent.created_on, DATETIME_FORMAT)),
         hidden=True)
     list_config.addColumn(
         'student', 'Student',
