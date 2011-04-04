@@ -305,35 +305,38 @@ class ShowRequest(RequestHandler):
   def _rejectRequest(self):
     """Rejects a request. 
     """
+    assert isSet(self.data.request_entity)
     request_key = self.data.request_entity.key()
 
     def reject_request_txn():
-      request_entity = db.get(request_key)
-      request_entity.status = 'rejected'
-      request_entity.put()
+      request = db.get(request_key)
+      request.status = 'rejected'
+      request.put()
 
     db.run_in_transaction(reject_request_txn)
 
   def _resubmitRequest(self):
     """Resubmits a request.
     """
+    assert isSet(self.data.request_entity)
     request_key = self.data.request_entity.key()
 
     def resubmit_request_txn():
-      request_entity = db.get(request_key)
-      request_entity.status = 'pending'
-      request_entity.put()
+      request = db.get(request_key)
+      request.status = 'pending'
+      request.put()
 
     db.run_in_transaction(resubmit_request_txn)
 
   def _withdrawRequest(self):
     """Withdraws an invitation.
     """
+    assert isSet(self.data.request_entity)
     request_key = self.data.request_entity.key()
 
     def withdraw_request_txn():
-      request_entity = db.get(request_key)
-      request_entity.status = 'withdrawn'
-      request_entity.put()
+      request = db.get(request_key)
+      request.status = 'withdrawn'
+      request.put()
 
     db.run_in_transaction(withdraw_request_txn)
