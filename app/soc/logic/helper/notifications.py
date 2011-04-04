@@ -29,401 +29,291 @@ from django.template import loader
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
 
-# We cannot import soc.logic.models notification nor user here
-# due to cyclic imports
 from soc.logic import accounts
 from soc.logic import dicts
-from soc.logic import mail_dispatcher
-from soc.logic import system
-from soc.views.helper import redirects
+from soc.tasks import mailer
+from soc.views.helper.access_checker import isSet
 
-
-DEF_NEW_NOTIFICATION_MSG_SUBJECT_FMT = ugettext(
-    'New Notification: %s')
 
 DEF_INVITATION_MSG_FMT = ugettext(
-    'Invitation to become a %(role_verbose)s for %(group)s.')
+    '[%(group)s] Invitation to become a %(role_verbose)s.')
 
 DEF_NEW_REQUEST_MSG_FMT = ugettext(
-    'New Request Received from %(requester)s to become a %(role_verbose)s '
-    'for %(group)s')
+    '[%(group)s] New request from %(requester)s to become a %(role_verbose)s')
 
 DEF_NEW_ORG_MSG_FMT = ugettext(
-    'Your Organization Application for %(group_name)s has been accepted.')
+    '[%(group)s] Your organization application has been accepted.')
+
+DEF_NEW_PROPOSAL_SUBJECT_FMT = ugettext(
+    '[%(group)s] New proposal: %(proposal_name)s')
 
 DEF_NEW_REVIEW_SUBJECT_FMT = ugettext(
-    'New %s Review on %s')
+    '[%(group)s] New %(review_visibility)s review on %(reviewer_name)s')
 
-DEF_REJECTED_REQUEST_SUBJECT_FMT = ugettext(
-    'Request to become a %(role_verbose)s for %(group)s has been rejected')
+DEF_HANDLED_REQUEST_SUBJECT_FMT = ugettext(
+    '[%(group)s] Request to become a %(role_verbose)s has been %(action)s')
 
-DEF_WITHDRAWN_INVITE_SUBJECT_FMT = ugettext(
-    'Invite to become a %(role_verbose)s for %(group)s has been withdrawn')
+DEF_HANDLED_INVITE_SUBJECT_FMT = ugettext(
+    '[%(group)s] Invitation to become a %(role_verbose)s has been %(action)s')
 
-DEF_WELCOME_MSG_FMT = ugettext('Welcome to %(site_name)s, %(name)s,')
+DEF_GROUP_INVITE_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/invitation.html'
 
-DEF_GROUP_INVITE_NOTIFICATION_TEMPLATE = 'soc/notification/messages/' \
-    'invitation.html'
+DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/new_request.html'
 
-DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = 'soc/notification/messages/' \
-    'new_request.html'
+DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/new_proposal.html'
 
-DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE = 'soc/notification/messages/' \
-    'new_review.html'
+DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/new_review.html'
 
-DEF_NEW_ORG_TEMPLATE = 'soc/organization/messages/accepted.html'
+DEF_NEW_ORG_TEMPLATE = \
+    'v2/soc/notifications/org_accepted.html'
 
-DEF_REJECTED_REQUEST_NOTIFICATION_TEMPLATE = 'soc/notification/messages/' \
-    'rejected_request.html'
+DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/handled_request.html'
 
-DEF_WITHDRAWN_INVITE_NOTIFICATION_TEMPLATE = 'soc/notification/messages/' \
-    'withdrawn_invite.html'
+DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/handled_invite.html'
 
 
-def sendInviteNotification(entity):
+def inviteContext(data, invite):
   """Sends out an invite notification to the user the request is for.
 
   Args:
-    entity : A request containing the information needed to create the message
+    data: a RequestData object with 'invite' and 'invite_profile' set
   """
 
-  from soc.logic.models.user import logic as user_logic
-  from soc.views.models.role import ROLE_VIEWS
+  assert isSet(data.invite_profile)
 
-  invitation_url = 'http://%(host)s%(index)s' % {
-      'host' : system.getHostname(),
-      'index': redirects.getInviteProcessRedirect(entity, None),
-      }
+  # do not send notifications if the user has opted out
+  if not data.invite_profile.notify_new_invites:
+    return {}
 
-  role_params = ROLE_VIEWS[entity.role].getParams()
+  invitation_url = data.redirect.request(invite).url(full=True)
 
   message_properties = {
-      'role_verbose' : role_params['name'],
-      'group': entity.group.name,
+      'role_verbose' : invite.roleName(),
+      'group': invite.group.name,
       'invitation_url': invitation_url,
-      }
+  }
 
-  subject = DEF_INVITATION_MSG_FMT % {
-      'role_verbose' : role_params['name'],
-      'group' : entity.group.name
-      }
+  subject = DEF_INVITATION_MSG_FMT % message_properties
 
   template = DEF_GROUP_INVITE_NOTIFICATION_TEMPLATE
 
-  from_user = user_logic.getCurrentUser()
+  to_email = data.invite_profile.email
 
-  sendNotification(entity.user, from_user, message_properties, subject, template)
+  return getContext(data, [to_email], message_properties, subject, template)
 
 
-def sendNewRequestNotification(request_entity):
+def requestContext(data, request, admin_emails):
   """Sends out a notification to the persons who can process this Request.
 
   Args:
     request_entity: an instance of Request model
   """
 
+  assert isSet(data.organization)
+
   from soc.logic.helper import notifications
-  from soc.logic.models.role import ROLE_LOGICS
-  from soc.views.models.role import ROLE_VIEWS
 
   # get the users who should get the notification
   to_users = []
 
-  # retrieve the Role Logics which we should query on
-  role_logic = ROLE_LOGICS[request_entity.role]
-  role_logics_to_notify = role_logic.getRoleLogicsToNotifyUponNewRequest()
-
-  # the scope of the roles is the same as the scope of the Request entity
-  fields = {'scope': request_entity.group,
-            'status': 'active'}
-
-  for role_logic in role_logics_to_notify:
-    roles = role_logic.getForFields(fields)
-
-    for role_entity in roles:
-      # TODO: this might lead to double notifications
-      to_users.append(role_entity.user)
-
-  # get the user the request is from
-  user_entity = request_entity.user
-
-  role_params = ROLE_VIEWS[request_entity.role].getParams()
-
-  request_url = 'http://%(host)s%(redirect)s' % {
-      'host': system.getHostname(),
-      'redirect': redirects.getProcessRequestRedirect(request_entity, None),
-      }
+  request_url = data.redirect.request(request).url(full=True)
 
   message_properties = {
-      'requester': user_entity.name,
-      'role_verbose': role_params['name'],
-      'group': request_entity.group.name,
-      'request_url': request_url
+      'requester': data.profile.name(),
+      'role_verbose': request.roleName(),
+      'group': request.group.name,
+      'request_url': request_url,
       }
 
-  subject = DEF_NEW_REQUEST_MSG_FMT % {
-      'requester': user_entity.name,
-      'role_verbose' : role_params['name'],
-      'group' : request_entity.group.name
-      }
+  subject = DEF_NEW_REQUEST_MSG_FMT % message_properties
 
   template = DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE
 
-  for to_user in to_users:
-    notifications.sendNotification(to_user, None, message_properties,
-                                   subject, template)
+  return getContext(data, admin_emails, message_properties, subject, template)
 
 
-def sendRejectedRequestNotification(entity):
-  """Sends a message that the request to get a role has been rejected.
+def handledRequestContext(data):
+  """Sends a message that the request to get a role has been handled.
 
   Args:
-    entity : A request containing the information needed to create the message
+    data: a RequestData object
   """
-  from soc.views.models.role import ROLE_VIEWS
 
-  role_params = ROLE_VIEWS[entity.role].getParams()
+  assert isSet(data.request_entity)
+  assert isSet(data.requester_profile)
+
+  # do not send notifications if the user has opted out
+  if not data.requester_profile.notify_request_handled:
+    return {}
 
   message_properties = {
-      'role_verbose' : role_params['name'],
-      'group': entity.group.name,
+      'role_verbose' : data.request_entity.roleName(),
+      'group': data.request_entity.group.name,
+      'action': data.request_entity.status,
       }
 
-  subject = DEF_REJECTED_REQUEST_SUBJECT_FMT % {
-      'role_verbose' : role_params['name'],
-      'group' : entity.group.name
-      }
+  subject = DEF_HANDLED_REQUEST_SUBJECT_FMT % message_properties
 
-  template = DEF_REJECTED_REQUEST_NOTIFICATION_TEMPLATE
+  template = DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE
+
+  to_email = data.requester_profile.email
 
   # from user set to None to not leak who rejected it.
-  sendNotification(entity.user, None, message_properties, subject, template)
+  return getContext(data, [to_email], message_properties, subject, template)
 
 
-def sendWithdrawnInviteNotification(entity):
-  """Sends a message that the invite to obtain a role has been withdrawn.
+def handledInviteContext(data):
+  """Sends a message that the invite to obtain a role has been handled.
 
   Args:
-    entity : A request containing the information needed to create the message
+    data: a RequestData object
   """
-  from soc.views.models.role import ROLE_VIEWS
 
-  role_params = ROLE_VIEWS[entity.role].getParams()
+  assert isSet(data.invite)
+  assert isSet(data.invited_profile)
+
+  logging.warning("hIC:enter")
+
+  # do not send notifications if the user has opted out
+  if not data.invited_profile.notify_invite_handled:
+    logging.warning("hIC:abort")
+    return {}
+
+  status = data.invite.status
+  action = 'resubmitted' if status == 'pending' else status
 
   message_properties = {
-      'role_verbose' : role_params['name'],
-      'group': entity.group.name,
+      'role_verbose' : data.invite.roleName(),
+      'group': data.invite.group.name,
+      'action': action,
       }
 
-  subject = DEF_WITHDRAWN_INVITE_SUBJECT_FMT % {
-      'role_verbose' : role_params['name'],
-      'group' : entity.group.name
-      }
+  subject = DEF_HANDLED_INVITE_SUBJECT_FMT % message_properties
 
-  template = DEF_WITHDRAWN_INVITE_NOTIFICATION_TEMPLATE
+  template = DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE
+
+  to_email = data.invited_profile.email
 
   # from user set to None to not leak who rejected it.
-  sendNotification(entity.user, None, message_properties, subject, template)
+  return getContext(data, [to_email], message_properties, subject, template)
 
-def sendNewOrganizationNotification(entity, module_name):
+
+def newOrganizationContext(data):
   """Sends out an invite notification to the applicant of the Organization.
 
   Args:
-    entity : An accepted OrgAppRecord
+    data: a RequestData object
   """
 
-  program_entity = entity.survey.scope
-
-  url = 'http://%(host)s%(redirect)s' % {
-      'redirect': redirects.getApplicantRedirect(entity,
-      {'url_name': '%s/org' % module_name,
-       'program': program_entity}),
-      'host': system.getHostname(),
-      }
+  url = data.redirect.survey().urlOf('gsoc_org_app_apply', full=True)
 
   message_properties = {
-      'org_name': entity.name,
-      'program_name': program_entity.name,
-      'url': url
-      }
+      'url': url,
+      'program_name': data.program.name,
+      'group': data.organization.name,
+  }
 
-  subject = DEF_NEW_ORG_MSG_FMT % {
-      'group_name': entity.name,
-      }
+  subject = DEF_NEW_ORG_MSG_FMT % message_properties
 
   template = DEF_NEW_ORG_TEMPLATE
 
-  for to in [entity.main_admin, entity.backup_admin]:
-    if not to:
-      continue
+  roles = [entity.main_admin, entity.backup_admin]
 
-    sendNotification(to, None, message_properties, subject, template)
+  emails = [i.email for i in roles if i]
+
+  return getContext(data, emails, message_properties, subject, template)
 
 
-def sendNewReviewNotification(to_user, review, reviewed_name, redirect_url):
-  """Sends out a notification to alert the user of a new Review.
+def newProposalContext(data, proposal, to_emails):
+  """Sends out a notification to alert the user of a new comment.
 
   Args:
-    to_user: The user who should receive a notification
-    review: The review which triggers this notification
-    reviewed_name: Name of the entity reviewed
-    redirect_url: URL to which the follower should be sent for more information
+    data: a RequestData object
   """
-  review_notification_url = 'http://%(host)s%(redirect_url)s' % {
-      'host' : system.getHostname(),
-      'redirect_url': redirect_url}
+  data.redirect.review(proposal.key().id(), data.user.link_id)
+  proposal_notification_url = data.redirect.to('review_gsoc_proposal')
   
-  message_properties = {'review_notification_url': review_notification_url,
-      'reviewer_name': review.author_name(),
+  proposal_name = proposal.title
+
+  message_properties = {
+      'proposal_notification_url': proposal_notification_url,
+      'proposer_name': data.profile.name(),
+      'proposal_name': proposal.title,
+      'proposal_content': proposal.content,
+      'group': proposal.org.name,
+  }
+
+  # determine the subject
+  subject = DEF_NEW_PROPOSAL_SUBJECT_FMT % message_properties
+
+  template = DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE
+
+  return getContext(data, to_emails, message_properties, subject, template)
+
+
+def newCommentContext(data, comment, to_emails):
+  """Sends out a notification to alert the user of a new comment.
+
+  Args:
+    data: a RequestData object
+  """
+  assert isSet(data.proposal)
+  assert isSet(data.proposer)
+
+  review_notification_url = data.redirect.comment(comment)
+  
+  review_type = 'private' if comment.is_private else 'public'
+  reviewed_name = data.proposal.title
+
+  message_properties = {
+      'review_notification_url': review_notification_url,
+      'reviewer_name': comment.author.name(),
       'reviewed_name': reviewed_name,
-      'review_content': review.content,
-      'review_visibility': 'public' if review.is_public else 'private',
+      'review_content': comment.content,
+      'review_visibility': review_type,
+      'group': data.proposal.org.name,
       }
 
   # determine the subject
-  review_type = 'public' if review.is_public else 'private'
-  subject = DEF_NEW_REVIEW_SUBJECT_FMT % (review_type, reviewed_name)
+  subject = DEF_NEW_REVIEW_SUBJECT_FMT % message_properties
 
   template = DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE
 
-  # send the notification from the system
-  # TODO(srabbelier): do this in a task instead
-  sendNotification(to_user, None, message_properties, subject, template)
+  if data.proposer.notify_public_comments and not comment.is_private:
+    to_emails.append(data.proposer.email)
+
+  return getContext(data, to_emails, message_properties, subject, template)
 
 
-def sendNotification(to_user, from_user, message_properties, subject, template):
+def getContext(data, receivers, message_properties, subject, template):
   """Sends out a notification to the specified user.
 
   Args:
-    to_user : user to which the notification will be send
-    from_user: user from who sends the notifications (None iff sent by site)
+    receivers: email addresses to which the notification should be sent
     message_properties : message properties
     subject : subject of notification email
     template : template used for generating notification
   """
 
-  from soc.logic.models.notification import logic as notification_logic
-  from soc.logic.models.site import logic as site_logic
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
 
-  if from_user:
-    sender_name = from_user.name
+  message_properties['sender_name'] = 'The %s Team' % (data.site.site_name)
+  message_properties['program_name'] = data.program.name
+  message_properties['profile_edit_link'] = edit_link
+
+  body = loader.render_to_string(template, dictionary=message_properties)
+
+  if len(receivers) == 1:
+    to = receivers[0]
+    bcc = []
   else:
-    site_entity = site_logic.getSingleton()
-    sender_name = 'The %s Team' % (site_entity.site_name)
+    to = []
+    bcc = receivers
 
-  new_message_properties = {
-      'sender_name': sender_name,
-      'to_name': to_user.name,
-      }
-
-  message_properties = dicts.merge(message_properties, new_message_properties)
-
-  message = loader.render_to_string(template, dictionary=message_properties)
-
-  fields = {
-      'from_user': from_user,
-      'subject': subject,
-      'message': message,
-      'scope': to_user,
-      'link_id': 't%i' % (int(time.time()*100)),
-      'scope_path': to_user.link_id
-  }
-
-  key_name = notification_logic.getKeyNameFromFields(fields)
-
-  # create and put a new notification in the datastore
-  notification_logic.updateOrCreateFromKeyName(fields, key_name)
-
-
-def sendNewNotificationMessage(notification_entity):
-  """Sends an email to a user about a new notification.
-
-    Args:
-      notification_entity: Notification about which the message should be sent
-  """
-
-  from soc.logic.models.site import logic as site_logic
-  from soc.views.models.notification import view as notification_view
-
-  # create the url to show this notification
-  notification_url = 'http://%(host)s%(index)s' % {
-      'host' : system.getHostname(),
-      'index': redirects.getPublicRedirect(notification_entity,
-          notification_view.getParams())}
-
-  sender = mail_dispatcher.getDefaultMailSender()
-  site_entity = site_logic.getSingleton()
-  site_name = site_entity.site_name
-
-  # get the default mail sender
-  default_sender = mail_dispatcher.getDefaultMailSender()
-
-  if not default_sender:
-    # no valid sender found, abort
-    logging.error('No default sender')
-    return
-  else:
-    (sender_name, sender) = default_sender
-
-  to = accounts.denormalizeAccount(notification_entity.scope.account).email()
-  subject = DEF_NEW_NOTIFICATION_MSG_SUBJECT_FMT % notification_entity.subject
-
-  # create the message contents
-  messageProperties = {
-      'to_name': notification_entity.scope.name,
-      'sender_name': sender_name,
-      'to': to,
-      'sender': sender,
-      'site_name': site_name,
-      'subject': force_unicode(subject),
-      'notification' : notification_entity,
-      'notification_url' : notification_url
-      }
-
-  # send out the message using the default new notification template
-  mail_dispatcher.sendMailFromTemplate('soc/mail/new_notification.html',
-                                       messageProperties)
-
-
-def sendWelcomeMessage(user_entity):
-  """Sends out a welcome message to a user.
-
-    Args:
-      user_entity: User entity which the message should be send to
-  """
-
-  from soc.logic.models.site import logic as site_logic
-
-  # get site name
-  site_entity = site_logic.getSingleton()
-  site_name = site_entity.site_name
-
-  # get the default mail sender
-  default_sender = mail_dispatcher.getDefaultMailSender()
-
-  if not default_sender:
-    # no valid sender found, should not happen but abort anyway
-    logging.error('No default sender')
-    return
-  else:
-    sender_name, sender = default_sender
-
-  to = accounts.denormalizeAccount(user_entity.account).email()
-
-  # create the message contents
-  messageProperties = {
-      'to_name': user_entity.name,
-      'sender_name': sender_name,
-      'to': to,
-      'sender': sender,
-      'subject': DEF_WELCOME_MSG_FMT % {
-          'site_name': site_name,
-          'name': user_entity.name
-          },
-      'site_name': site_name,
-      'site_location': 'http://%s' % system.getHostname(),
-      }
-
-  # send out the message using the default welcome template
-  mail_dispatcher.sendMailFromTemplate('soc/mail/welcome.html',
-                                       messageProperties)
+  return mailer.getMailContext(to, subject, body, bcc=bcc)
