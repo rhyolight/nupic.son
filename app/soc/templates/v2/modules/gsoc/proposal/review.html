@@ -30,6 +30,10 @@ limitations under the License.
 </h1>
 <h2 id="project-page-student-name">{{ student_name }}</h2>
 
+{% if duplicate %}
+  {{ duplicate.render }}
+{% endif %}
+
 {% if wish_to_mentor %}
   <h2 id="project-page-student-name">
     <span class="action-link">
@@ -46,10 +50,6 @@ limitations under the License.
 
 
 {{ assign_mentor.render }}
-
-{% if duplicate %}
-  {{ duplicate.render }}
-{% endif %}
 
 <div class="project-short">
   <p class="project-mentor"><strong>Email:</strong> {{ student_email }}</p>
