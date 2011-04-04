@@ -96,14 +96,14 @@ class GSoCProfileHelper(object):
 
   def notificationSettings(
       self, new_requests=False, new_invites=False,
-      withdrawn=False, handled=False,
+      invite_handled=False, request_handled=False,
       new_proposals=False, proposal_updates=False,
       public_comments=False, private_comments=False):
     self.createProfile()
     self.profile.notify_new_requests = new_requests
     self.profile.notify_new_invites = new_invites
-    self.profile.notify_withdrawn = withdrawn
-    self.profile.notify_handled = handled
+    self.profile.notify_invite_handled = invite_handled
+    self.profile.notify_request_handled = request_handled
     self.profile.notify_new_proposals = new_proposals
     self.profile.notify_proposal_updates = proposal_updates
     self.profile.notify_public_comments = public_comments

@@ -38,17 +38,17 @@ class GSoCProfile(soc.models.role.Profile):
       'Whether to send an email notification when new requests are submitted.')
   notify_new_requests.group = ugettext("6. Notification settings")
 
-  notify_withdrawn = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of withdrawn invitations'))
-  notify_withdrawn.help_text = ugettext(
-      'Whether to send an email notification when an invite is withdrawn.')
-  notify_withdrawn.group = ugettext("6. Notification settings")
+  notify_invite_handled = db.BooleanProperty(required=False, default=True,
+      verbose_name=ugettext('Notify of handled invitations'))
+  notify_invite_handled.help_text = ugettext(
+      'Whether to send an email notification when an invite is handled.')
+  notify_invite_handled.group = ugettext("6. Notification settings")
 
-  notify_handled = db.BooleanProperty(required=False, default=True,
+  notify_request_handled = db.BooleanProperty(required=False, default=True,
       verbose_name=ugettext('Notify of handled requests'))
-  notify_handled.help_text = ugettext(
+  notify_request_handled.help_text = ugettext(
       'Whether to send an email notification when your request is handled.')
-  notify_handled.group = ugettext("6. Notification settings")
+  notify_request_handled.group = ugettext("6. Notification settings")
 
   notify_new_invites = db.BooleanProperty(required=False, default=True,
       verbose_name=ugettext('Notify of new invites'))
