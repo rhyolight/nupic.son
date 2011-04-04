@@ -87,6 +87,7 @@ class GSoCProfileHelper(object):
     properties = {
         'link_id': user.link_id, 'student_info': None, 'user': user,
         'parent': user, 'scope': self.program, 'status': 'active',
+        'email': self.user.account.email(),
         'mentor_for': [], 'org_admin_for': [],
         'is_org_admin': False, 'is_mentor': False, 'is_student': False
     }
