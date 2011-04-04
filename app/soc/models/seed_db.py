@@ -246,6 +246,7 @@ def seed(request, *args, **kwargs):
   role_properties = {
       'key_name': 'google/test',
       'link_id': 'test',
+      'public_name': 'test',
       'scope': google,
       'scope_path': 'google',
       'user': current_user,
@@ -426,6 +427,7 @@ def seed(request, *args, **kwargs):
       'scope': gsoc2009,
       'program': gsoc2009,
       'user': current_user,
+      'public_name': 'test',
       'given_name': 'test',
       'surname': 'test',
       'birth_date': db.DateProperty.now(),
