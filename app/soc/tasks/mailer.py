@@ -46,7 +46,7 @@ def getDjangoURLPatterns():
   return patterns
 
 
-def getMailContext(to, subject, body, sender=None):
+def getMailContext(to, subject, body, sender=None, bcc=None):
   """Constructs a mail context for the specified arguments.
   """
   if not sender:
@@ -54,6 +54,7 @@ def getMailContext(to, subject, body, sender=None):
 
   return {
       'to': to,
+      'bcc': bcc,
       'subject': subject,
       'body': body,
       'sender': sender,
