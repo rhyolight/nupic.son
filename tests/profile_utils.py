@@ -146,6 +146,7 @@ class GSoCProfileHelper(object):
     """Creates an org admin profile for the current user.
     """
     self.createProfile()
+    self.profile.mentor_for = [org.key()]
     self.profile.org_admin_for = [org.key()]
     self.profile.put()
     return self.profile
