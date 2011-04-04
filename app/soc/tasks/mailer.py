@@ -72,7 +72,7 @@ def getSpawnMailTaskTxn(context, parent=None):
     """
     mail_entity.put()
 
-    task_params = {'mail_key': mail_entity.key()}
+    task_params = {'mail_key': str(mail_entity.key())}
     # Setting a countdown because the mail_entity might not be stored to
     # all the replicas yet.
     new_task = taskqueue.Task(params=task_params, url=SEND_MAIL_URL,
@@ -107,11 +107,11 @@ class MailerTask(object):
     if not mail_key:
       return error_handler.logErrorAndReturnOK('No email key specified')
 
-    mail_entity = email.Email.get(mail_key)
+    mail_entity = db.get(mail_key)
 
     if not mail_entity:
       return error_handler.logErrorAndReturnOK(
-          'No email entity found for key %s' %mail_key)
+          'No email entity found for key %s' % mail_key)
 
     # construct the EmailMessage from the given context
     loaded_context = simplejson.loads(mail_entity.context)
