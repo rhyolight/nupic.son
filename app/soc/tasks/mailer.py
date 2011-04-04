@@ -65,6 +65,12 @@ def getMailContext(to, subject, body, sender=None, bcc=None):
 def getSpawnMailTaskTxn(context, parent=None):
   """Spawns a new Task that sends out an email with the given dictionary.
   """
+  if not (context.get('to') or context.get('bcc')):
+    context['body'] = context.get('body', '')[:10]
+    logging.debug("Not sending email: '%s'" % context)
+    # no-one cares :(
+    return lambda: None
+
   mail_entity = email.Email(context=simplejson.dumps(context), parent=parent)
 
   def txn():
