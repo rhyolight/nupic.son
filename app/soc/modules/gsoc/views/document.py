@@ -155,5 +155,5 @@ class EventsPage(RequestHandler):
     return {
         'document': self.data.program.events_page,
         'frame_url': self.data.program.events_frame_url,
-        'page_name': 'Document',
+        'page_name': 'Events and Timeline',
     }
