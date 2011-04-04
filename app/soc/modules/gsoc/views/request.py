@@ -282,34 +282,58 @@ class ShowRequest(RequestHandler):
     assert isSet(self.data.organization)
     assert isSet(self.data.requester_profile)
 
-    request = self.data.request_entity
-    profile = self.data.requester_profile
+    request_key = self.data.request_entity.key()
+    profile_key = self.data.requester_profile.key()
+    organization_key = self.data.organization.key()
 
-    request.status = 'accepted'
-    profile.is_mentor = True
-    profile.mentor_for.append(self.data.organization.key())
-    profile.mentor_for = list(set(profile.mentor_for))
+    def accept_request_txn():
+      request = db.get(request_key)
+      profile = db.get(profile_key)
 
-    profile.put()
-    request.put()
+      request.status = 'accepted'
+      profile.is_mentor = True
+      profile.mentor_for.append(organization_key)
+      profile.mentor_for = list(set(profile.mentor_for))
+
+      profile.put()
+      request.put()
+
+    accept_request_txn()
+    # TODO(SRabbelier): run in txn as soon as we make User Request's parent
+    # db.run_in_transaction(accept_request_txn)
 
   def _rejectRequest(self):
     """Rejects a request. 
     """
+    request_key = self.data.request_entity.key()
 
-    self.data.request_entity.status = 'rejected'
-    self.data.request_entity.put()
+    def reject_request_txn():
+      request_entity = db.get(request_key)
+      request_entity.status = 'rejected'
+      request_entity.put()
+
+    db.run_in_transaction(reject_request_txn)
 
   def _resubmitRequest(self):
     """Resubmits a request.
     """
+    request_key = self.data.request_entity.key()
 
-    self.data.request_entity.status = 'pending'
-    self.data.request_entity.put()
+    def resubmit_request_txn():
+      request_entity = db.get(request_key)
+      request_entity.status = 'pending'
+      request_entity.put()
+
+    db.run_in_transaction(resubmit_request_txn)
 
   def _withdrawRequest(self):
     """Withdraws an invitation.
     """
+    request_key = self.data.request_entity.key()
 
-    self.data.request_entity.status = 'withdrawn'
-    self.data.request_entity.put()
+    def withdraw_request_txn():
+      request_entity = db.get(request_key)
+      request_entity.status = 'withdrawn'
+      request_entity.put()
+
+    db.run_in_transaction(withdraw_request_txn)

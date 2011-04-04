@@ -52,8 +52,12 @@ class RequestTest(DjangoTestCase):
     other_data.createProfile()
     other_user = other_data.user
 
-    properties = {'role': 'mentor', 'user': other_user, 'group': self.org,
-                  'status': 'pending', 'type': 'Request'}
+    properties = {
+        'role': 'mentor', 'user': other_user, 'group': self.org,
+        'status': 'pending', 'type': 'Request',
+        # TODO(SRabbelier): add this as soon as we make User Request's parent
+        # 'parent': other_user,
+    }
     request = seeder_logic.seed(Request, properties=properties)
     return (other_data.profile, request)
 
