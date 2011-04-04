@@ -442,6 +442,16 @@ class SubmittedProposalsComponent(Component):
     list_config.addColumn(
         'student', 'Student',
         lambda ent, *args: ent.parent().name())
+
+    def mentor_key(ent, *args):
+      key = GSoCProposal.mentor.get_value_for_datastore(ent)
+      if not key:
+        return None
+      split_name = key.name().split('/')
+      return split_name[-1]
+
+    list_config.addColumn('mentor', 'Assigned mentor link_id',
+                          mentor_key, hidden=True)
     list_config.addColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args, **kwargs: 
@@ -451,7 +461,6 @@ class SubmittedProposalsComponent(Component):
     self._list_config = list_config
 
     super(SubmittedProposalsComponent, self).__init__(request, data)
-
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
