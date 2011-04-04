@@ -481,13 +481,14 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
     super(MailTestCase, self).setUp()
 
   def assertEmailSent(self, to=None, sender=None, subject=None,
-                      body=None, html=None, n=None):
+                      body=None, html=None, n=None, fullbody=False):
     """Override gaetestbed.mail.MailTestCase.assertEmailSent method.
 
     Difference:
     * It prints out all sent messages to facilitate debug in case of failure.
     * It accepts an optional argument n which is used to assert exactly n
     messages satisfying the criteria are sent out.
+    * Clips textbody to the first 50 characters, unless fullbody is True.
     """
 
     # Run all mail tasks first so that all mails will be sent out
@@ -527,6 +528,8 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
       if all_messages:
         failure_message += '\n'
         for message in all_messages:
+          if not fullbody:
+            message.set_textbody(message.textbody()[:50])
           failure_message += str(message)
       else:
         failure_message += 'None'
