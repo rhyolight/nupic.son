@@ -29,6 +29,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from google.appengine.runtime.apiproxy_errors import OverQuotaError
 
+from django.conf.urls.defaults import url
 from django.utils import simplejson
 
 from soc.logic import system
@@ -38,12 +39,6 @@ from soc.tasks.helper import error_handler
 
 
 SEND_MAIL_URL = '/tasks/mail/send_mail'
-
-def getDjangoURLPatterns():
-  """Returns the URL patterns for the tasks in this module.
-  """
-  patterns = [(r'tasks/mail/send_mail$', 'soc.tasks.mailer.sendMail')]
-  return patterns
 
 
 def getMailContext(to, subject, body, sender=None, bcc=None):
@@ -81,59 +76,71 @@ def getSpawnMailTaskTxn(context, parent=None):
   return txn
 
 
-def sendMail(request):
-  """Sends out an email that is stored in the datastore.
-
-  The POST request should contain the following entries:
-    mail_key: Datastore key for an Email entity.
+class MailerTask(object):
+  """Request handler for mailer.
   """
-  post_dict = request.POST
 
-  mail_key = post_dict.get('mail_key', None)
-
-  if not mail_key:
-    return error_handler.logErrorAndReturnOK('No email key specified')
-
-  mail_entity = email.Email.get(mail_key)
-
-  if not mail_entity:
-    return error_handler.logErrorAndReturnOK(
-        'No email entity found for key %s' %mail_key)
-
-  # construct the EmailMessage from the given context
-  loaded_context = simplejson.loads(mail_entity.context)
-
-  context = {}
-  for key, value in loaded_context.iteritems():
-    # If we don't do this python will complain about kwargs not being
-    # strings.
-    context[str(key)] = value
-
-  logging.info('Sending %s' %context)
-  message = mail.EmailMessage(**context)
-
-  try:
-    message.check_initialized()
-  except:
-    logging.error('This message was not properly initialized')
-    mail_entity.delete()
-    return responses.terminateTask()
-
-  def txn():
-    """Transaction that ensures the deletion of the Email entity only if
-    the mail has been successfully sent.
+  def djangoURLPatterns(self):
+    """Returns the URL patterns for the tasks in this module.
     """
-    mail_entity.delete()
-    message.send()
+    return [
+        url(r'tasks/mail/send_mail$', self.sendMail,
+            name='send_email_task'),
+    ]
 
-  try:
-    db.RunInTransaction(txn)
-  except mail.Error, exception:
-    # shouldn't happen because validate has been called, keeping the Email
-    # entity for study purposes.
-    return error_handler.logErrorAndReturnOK(exception)
-  except OverQuotaError:
-    return responses.repeatTask()
+  def sendMail(self, request):
+    """Sends out an email that is stored in the datastore.
 
-  # mail successfully sent
-  return responses.terminateTask()
+    The POST request should contain the following entries:
+      mail_key: Datastore key for an Email entity.
+    """
+    post_dict = request.POST
+
+    mail_key = post_dict.get('mail_key', None)
+
+    if not mail_key:
+      return error_handler.logErrorAndReturnOK('No email key specified')
+
+    mail_entity = email.Email.get(mail_key)
+
+    if not mail_entity:
+      return error_handler.logErrorAndReturnOK(
+          'No email entity found for key %s' %mail_key)
+
+    # construct the EmailMessage from the given context
+    loaded_context = simplejson.loads(mail_entity.context)
+
+    context = {}
+    for key, value in loaded_context.iteritems():
+      # If we don't do this python will complain about kwargs not being
+      # strings.
+      context[str(key)] = value
+
+    logging.info('Sending %s' %context)
+    message = mail.EmailMessage(**context)
+
+    try:
+      message.check_initialized()
+    except:
+      logging.error('This message was not properly initialized')
+      mail_entity.delete()
+      return responses.terminateTask()
+
+    def txn():
+      """Transaction that ensures the deletion of the Email entity only if
+      the mail has been successfully sent.
+      """
+      mail_entity.delete()
+      message.send()
+
+    try:
+      db.RunInTransaction(txn)
+    except mail.Error, exception:
+      # shouldn't happen because validate has been called, keeping the Email
+      # entity for study purposes.
+      return error_handler.logErrorAndReturnOK(exception)
+    except OverQuotaError:
+      return responses.repeatTask()
+
+    # mail successfully sent
+    return responses.terminateTask()

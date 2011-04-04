@@ -72,10 +72,12 @@ class Callback(object):
     """
     from soc.views import legacy
     from soc.views import site
+    from soc.tasks import mailer
 
     self.views.append(legacy.Legacy())
     self.views.append(site.EditSitePage())
     self.views.append(site.SiteHomepage())
+    self.views.append(mailer.MailerTask())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.
