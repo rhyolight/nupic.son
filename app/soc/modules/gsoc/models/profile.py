@@ -44,11 +44,11 @@ class GSoCProfile(soc.models.role.Profile):
       'Whether to send an email notification when an invite is withdrawn.')
   notify_withdrawn.group = ugettext("6. Notification settings")
 
-  notify_rejection = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of rejection'))
-  notify_rejection.help_text = ugettext(
-      'Whether to send an email notification when your request is rejected.')
-  notify_rejection.group = ugettext("6. Notification settings")
+  notify_handled = db.BooleanProperty(required=False, default=True,
+      verbose_name=ugettext('Notify of handled requests'))
+  notify_handled.help_text = ugettext(
+      'Whether to send an email notification when your request is handled.')
+  notify_handled.group = ugettext("6. Notification settings")
 
   notify_new_invites = db.BooleanProperty(required=False, default=True,
       verbose_name=ugettext('Notify of new invites'))
