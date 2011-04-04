@@ -127,8 +127,10 @@ class MailerTask(object):
 
     try:
       message.check_initialized()
-    except:
-      logging.error('This message was not properly initialized')
+    except Exception, e:
+      logging.exception(e)
+      context['body'] = context.get('body', '')[:10]
+      logging.error('This message was not properly initialized: "%s"' % context)
       mail_entity.delete()
       return responses.terminateTask()
 
