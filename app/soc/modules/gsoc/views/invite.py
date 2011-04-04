@@ -220,7 +220,11 @@ class InvitePage(RequestHandler):
     invite_form.cleaned_data['role'] = self.data.kwargs['role']
     invite_form.cleaned_data['type'] = 'Invitation'
 
-    return invite_form.create(commit=True)
+    def create_invite_txn():
+      invite = invite_form.create(commit=True)
+      return invite
+
+    return db.run_in_transaction(create_invite_txn)
 
   def post(self):
     """Handler to for GSoC Invitation Page HTTP post request.

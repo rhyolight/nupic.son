@@ -445,7 +445,11 @@ class PostComment(RequestHandler):
 
     comment_form.cleaned_data['author'] = self.data.profile
 
-    return comment_form.create(commit=True, parent=self.data.proposal)
+    def create_comment_txn():
+      comment = comment_form.create(commit=True, parent=self.data.proposal)
+      return comment
+
+    return db.run_in_transaction(create_comment_txn)
 
   def post(self):
     assert isSet(self.data.proposer)

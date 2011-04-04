@@ -139,7 +139,11 @@ class RequestPage(RequestHandler):
     request_form.cleaned_data['role'] = 'mentor'
     request_form.cleaned_data['type'] = 'Request'
 
-    return request_form.create(commit=True)
+    def create_request_txn():
+      request = request_form.create(commit=True)
+      return request
+
+    return db.run_in_transaction(create_request_txn)
 
 
 class ShowRequest(RequestHandler):
