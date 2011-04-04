@@ -47,13 +47,19 @@ def getMailContext(to, subject, body, sender=None, bcc=None):
   if not sender:
     sender = system.getApplicationNoReplyEmail()
 
-  return {
-      'to': to,
-      'bcc': bcc,
+  context = {
       'subject': subject,
       'body': body,
       'sender': sender,
   }
+
+  if to:
+    context['to'] = to
+
+  if bcc:
+    context['bcc'] = bcc
+
+  return context
 
 
 def getSpawnMailTaskTxn(context, parent=None):
