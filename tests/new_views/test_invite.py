@@ -30,17 +30,19 @@ from soc.models.request import Request
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
+from tests.test_utils import MailTestCase
 from tests.timeline_utils import TimelineHelper
 
 # TODO: perhaps we should move this out?
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
-class InviteTest(DjangoTestCase):
+class InviteTest(MailTestCase, DjangoTestCase):
   """Tests invite page.
   """
 
   def setUp(self):
+    super(InviteTest, self).setUp()
     self.init()
 
   def createInvitation(self):
@@ -73,6 +75,7 @@ class InviteTest(DjangoTestCase):
     other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
     other_data.createOtherUser('to_be_admin@example.com')
     other_data.createProfile()
+    other_data.notificationSettings(new_invites=True)
     other_user = other_data.user
 
     # test POST
@@ -84,6 +87,7 @@ class InviteTest(DjangoTestCase):
         # 'parent': other_user,
     }
     response, properties = self.modelPost(url, Request, override)
+    self.assertEmailSent(to=other_data.profile.email, n=1)
 
     invitation = Request.all().get()
     properties.pop('link_id')
@@ -91,7 +95,9 @@ class InviteTest(DjangoTestCase):
 
     invitation.delete()
     override['link_id'] = 'to_be_admin@example.com'
+    other_data.notificationSettings()
     response, properties = self.modelPost(url, Request, override)
+    self.assertEmailSent(to=other_data.profile.email, n=1)
 
     invitation = Request.all().get()
     properties.pop('link_id')
@@ -100,11 +106,14 @@ class InviteTest(DjangoTestCase):
     # test withdraw/resubmit invite
     url = '/gsoc/invitation/%s/%s' % (self.gsoc.key().name(), invitation.key().id())
 
+    other_data.notificationSettings(invite_handled=True)
+
     postdata = {'action': 'Withdraw'}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
     invite = Request.all().get()
     self.assertEqual('withdrawn', invite.status)
+    self.assertEmailSent(to=other_data.profile.email, n=2)
 
     # test that you can resubmit
     postdata = {'action': 'Resubmit'}
@@ -112,6 +121,7 @@ class InviteTest(DjangoTestCase):
     self.assertResponseRedirect(response)
     invite = Request.all().get()
     self.assertEqual('pending', invite.status)
+    self.assertEmailSent(to=other_data.profile.email, n=3)
 
   def testInviteMentor(self):
     self.data.createOrgAdmin(self.org)

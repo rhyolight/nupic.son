@@ -36,10 +36,12 @@ from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import dicts
 from soc.logic.exceptions import NotFound
+from soc.logic.helper import notifications
 from soc.models.request import Request
 from soc.models.user import User
 from soc.views import forms
 from soc.views.helper.access_checker import isSet
+from soc.tasks import mailer
 
 from soc.modules.gsoc.views.base import RequestHandler
 
@@ -222,6 +224,9 @@ class InvitePage(RequestHandler):
 
     def create_invite_txn():
       invite = invite_form.create(commit=True)
+      context = notifications.inviteContext(self.data, invite)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
+      sub_txn()
       return invite
 
     return db.run_in_transaction(create_invite_txn)
@@ -434,6 +439,10 @@ class ShowInvite(RequestHandler):
       invite.status = 'pending'
       invite.put()
 
+      context = notifications.handledInviteContext(self.data)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
+      sub_txn()
+
     db.run_in_transaction(resubmit_invite_txn)
 
   def _withdrawInvitation(self):
@@ -446,5 +455,9 @@ class ShowInvite(RequestHandler):
       invite = db.get(invite_key)
       invite.status = 'withdrawn'
       invite.put()
+
+      context = notifications.handledInviteContext(self.data)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
+      sub_txn()
 
     db.run_in_transaction(withdraw_invite_txn)

@@ -30,17 +30,19 @@ from soc.models.request import Request
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
+from tests.test_utils import MailTestCase
 from tests.timeline_utils import TimelineHelper
 
 # TODO: perhaps we should move this out?
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
-class RequestTest(DjangoTestCase):
+class RequestTest(MailTestCase, DjangoTestCase):
   """Tests request page.
   """
 
   def setUp(self):
+    super(RequestTest, self).setUp()
     self.init()
 
   def createRequest(self):
@@ -59,7 +61,7 @@ class RequestTest(DjangoTestCase):
         # 'parent': other_user,
     }
     request = seeder_logic.seed(Request, properties=properties)
-    return (other_data.profile, request)
+    return (other_data, request)
 
   def assertRequestTemplatesUsed(self, response):
     """Asserts that all the request templates were used.
@@ -69,6 +71,16 @@ class RequestTest(DjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
 
   def testRequestMentor(self):
+    admin = GSoCProfileHelper(self.gsoc, self.dev_test)
+    admin.createOtherUser('admin@example.com')
+    admin.createOrgAdmin(self.org)
+    admin.notificationSettings(new_requests=True)
+
+    other_admin = GSoCProfileHelper(self.gsoc, self.dev_test)
+    other_admin.createOtherUser('other_admin@example.com')
+    other_admin.createOrgAdmin(self.org)
+    other_admin.notificationSettings()
+
     # test GET
     self.data.createProfile()
     url = '/gsoc/request/' + self.org.key().name()
@@ -82,6 +94,9 @@ class RequestTest(DjangoTestCase):
 
     request = Request.all().get()
     self.assertPropertiesEqual(properties, request)
+
+    self.assertEmailSent(to=admin.profile.email, n=1)
+    self.assertEmailNotSent(to=other_admin.profile.email)
 
     # test withdrawing a request
     url = '/gsoc/request/%s/%s' % (self.gsoc.key().name(), request.key().id())
@@ -101,7 +116,8 @@ class RequestTest(DjangoTestCase):
 
   def testAcceptRequest(self):
     self.data.createOrgAdmin(self.org)
-    other_profile, request = self.createRequest()
+    other_data, request = self.createRequest()
+    other_data.notificationSettings(request_handled=True)
     url = '/gsoc/request/%s/%s' % (self.gsoc.key().name(), request.key().id())
     response = self.client.get(url)
     self.assertGSoCTemplatesUsed(response)
@@ -113,16 +129,33 @@ class RequestTest(DjangoTestCase):
     request = Request.all().get()
     self.assertEqual('rejected', request.status)
 
+    self.assertEmailSent(to=other_data.profile.email, n=1)
+
     # test that you can change after the fact
     postdata = {'action': 'Accept'}
     response = self.post(url, postdata)
-    self.assertResponseRedirect(response)
-    request = Request.all().get()
-    self.assertEqual('accepted', request.status)
 
-    profile = db.get(other_profile.key())
-    self.assertEqual(1, profile.mentor_for.count(self.org.key()))
-    self.assertTrue(profile.is_mentor)
-    self.assertFalse(profile.is_student)
-    self.assertFalse(profile.is_org_admin)
-    self.assertFalse(profile.org_admin_for)
+    def checkPostAccept():
+      self.assertResponseRedirect(response)
+      request = Request.all().get()
+      self.assertEqual('accepted', request.status)
+
+      profile = db.get(other_data.profile.key())
+      self.assertEqual(1, profile.mentor_for.count(self.org.key()))
+      self.assertTrue(profile.is_mentor)
+      self.assertFalse(profile.is_student)
+      self.assertFalse(profile.is_org_admin)
+      self.assertFalse(profile.org_admin_for)
+
+    checkPostAccept()
+
+    self.assertEmailSent(to=other_data.profile.email, n=2)
+
+    request.status = 'pending'
+    request.put()
+    other_data.notificationSettings()
+
+    response = self.post(url, postdata)
+
+    checkPostAccept()
+    self.assertEmailSent(to=other_data.profile.email, n=2)

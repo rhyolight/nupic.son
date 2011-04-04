@@ -33,9 +33,11 @@ from soc.logic import dicts
 from soc.logic import accounts
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
+from soc.logic.helper import notifications
 from soc.models.request import Request
 from soc.views import forms
 from soc.views.helper.access_checker import isSet
+from soc.tasks import mailer
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -139,8 +141,18 @@ class RequestPage(RequestHandler):
     request_form.cleaned_data['role'] = 'mentor'
     request_form.cleaned_data['type'] = 'Request'
 
+    to = accounts.denormalizeAccount(self.data.user.account).email()
+
+    q = GSoCProfile.all().filter('org_admin_for', self.data.organization)
+    q = q.filter('status', 'active').filter('notify_new_requests', True)
+    admins = q.fetch(1000)
+    admin_emails = [i.email for i in admins]
+
     def create_request_txn():
       request = request_form.create(commit=True)
+      context = notifications.requestContext(self.data, request, admin_emails)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
+      sub_txn()
       return request
 
     return db.run_in_transaction(create_request_txn)
@@ -302,6 +314,11 @@ class ShowRequest(RequestHandler):
       profile.put()
       request.put()
 
+      context = notifications.handledRequestContext(self.data)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
+      # TODO(SRabbelier): just call as soon as we make User Request's parent
+      db.run_in_transaction(sub_txn)
+
     accept_request_txn()
     # TODO(SRabbelier): run in txn as soon as we make User Request's parent
     # db.run_in_transaction(accept_request_txn)
@@ -316,6 +333,10 @@ class ShowRequest(RequestHandler):
       request = db.get(request_key)
       request.status = 'rejected'
       request.put()
+
+      context = notifications.handledRequestContext(self.data)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
+      sub_txn()
 
     db.run_in_transaction(reject_request_txn)
 
