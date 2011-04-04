@@ -79,6 +79,22 @@ class RequestTest(DjangoTestCase):
     request = Request.all().get()
     self.assertPropertiesEqual(properties, request)
 
+    # test withdrawing a request
+    url = '/gsoc/request/%s/%s' % (self.gsoc.key().name(), request.key().id())
+
+    postdata = {'action': 'Withdraw'}
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(response)
+    request = Request.all().get()
+    self.assertEqual('withdrawn', request.status)
+
+    # test that you can resubmit
+    postdata = {'action': 'Resubmit'}
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(response)
+    request = Request.all().get()
+    self.assertEqual('pending', request.status)
+
   def testAcceptRequest(self):
     self.data.createOrgAdmin(self.org)
     other_profile, request = self.createRequest()
@@ -90,13 +106,15 @@ class RequestTest(DjangoTestCase):
     postdata = {'action': 'Reject'}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
-    invitation = Request.all().get()
-    self.assertEqual('rejected', invitation.status)
+    request = Request.all().get()
+    self.assertEqual('rejected', request.status)
 
     # test that you can change after the fact
     postdata = {'action': 'Accept'}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
+    request = Request.all().get()
+    self.assertEqual('accepted', request.status)
 
     profile = db.get(other_profile.key())
     self.assertEqual(1, profile.mentor_for.count(self.org.key()))
