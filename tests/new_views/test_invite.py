@@ -76,9 +76,13 @@ class InviteTest(DjangoTestCase):
     other_user = other_data.user
 
     # test POST
-    override = {'link_id': other_user.link_id, 'status': 'pending',
-                'role': 'org_admin', 'user': other_user, 'group': self.org,
-                'type': 'Invitation'}
+    override = {
+        'link_id': other_user.link_id, 'status': 'pending',
+        'role': 'org_admin', 'user': other_user, 'group': self.org,
+        'type': 'Invitation',
+        # TODO(SRabbelier): add this as soon as we make User Request's parent
+        # 'parent': other_user,
+    }
     response, properties = self.modelPost(url, Request, override)
 
     invitation = Request.all().get()
@@ -92,6 +96,22 @@ class InviteTest(DjangoTestCase):
     invitation = Request.all().get()
     properties.pop('link_id')
     self.assertPropertiesEqual(properties, invitation)
+
+    # test withdraw/resubmit invite
+    url = '/gsoc/invitation/%s/%s' % (self.gsoc.key().name(), invitation.key().id())
+
+    postdata = {'action': 'Withdraw'}
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(response)
+    invite = Request.all().get()
+    self.assertEqual('withdrawn', invite.status)
+
+    # test that you can resubmit
+    postdata = {'action': 'Resubmit'}
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(response)
+    invite = Request.all().get()
+    self.assertEqual('pending', invite.status)
 
   def testInviteMentor(self):
     self.data.createOrgAdmin(self.org)

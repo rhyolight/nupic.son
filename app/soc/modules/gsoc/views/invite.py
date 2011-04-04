@@ -211,6 +211,7 @@ class InvitePage(RequestHandler):
     if not invite_form.is_valid():
       return None
 
+    assert isSet(self.data.invited_user)
     assert self.data.invited_user
 
     # create a new invitation entity
@@ -375,44 +376,71 @@ class ShowInvite(RequestHandler):
 
     assert isSet(self.data.organization)
 
-    invite = self.data.invite
-    profile = self.data.profile
-
-    if not profile:
+    if not self.data.profile:
       self.redirect.program()
       self.redirect.to('edit_gsoc_profile')
 
-    invite.status = 'accepted'
+    invite_key = self.data.invite.key()
+    profile_key = self.data.profile.key()
+    organization_key = self.data.organization.key()
 
-    if invite.role != 'mentor':
-      profile.is_org_admin = True
-      profile.org_admin_for.append(self.data.organization.key())
-      profile.org_admin_for = list(set(profile.org_admin_for))
+    def accept_invitation_txn():
+      invite = db.get(invite_key)
+      profile = db.get(profile_key)
 
-    profile.is_mentor = True
-    profile.mentor_for.append(self.data.organization.key())
-    profile.mentor_for = list(set(profile.mentor_for))
+      invite.status = 'accepted'
 
-    invite.put()
-    profile.put()
+      if invite.role != 'mentor':
+        profile.is_org_admin = True
+        profile.org_admin_for.append(organization_key)
+        profile.org_admin_for = list(set(profile.org_admin_for))
+
+      profile.is_mentor = True
+      profile.mentor_for.append(organization_key)
+      profile.mentor_for = list(set(profile.mentor_for))
+
+      invite.put()
+      profile.put()
+
+    accept_invitation_txn()
+    # TODO(SRabbelier): run in txn as soon as we make User Request's parent
+    # db.run_in_transaction(accept_invitation_txn)
 
   def _rejectInvitation(self):
     """Rejects a invitation. 
     """
+    assert isSet(self.data.invite)
+    invite_key = self.data.invite.key()
 
-    self.data.invite.status = 'rejected'
-    self.data.invite.put()
+    def reject_invite_txn():
+      invite = db.get(invite_key)
+      invite.status = 'rejected'
+      invite.put()
+
+    db.run_in_transaction(reject_invite_txn)
 
   def _resubmitInvitation(self):
     """Resubmits a invitation. 
     """
+    assert isSet(self.data.invite)
+    invite_key = self.data.invite.key()
 
-    self.data.invite.status = 'pending'
-    self.data.invite.put()
+    def resubmit_invite_txn():
+      invite = db.get(invite_key)
+      invite.status = 'pending'
+      invite.put()
+
+    db.run_in_transaction(resubmit_invite_txn)
 
   def _withdrawInvitation(self):
     """Withdraws an invitation.
     """
+    assert isSet(self.data.invite)
+    invite_key = self.data.invite.key()
 
-    self.data.invite.status = 'withdrawn'
-    self.data.invite.put()
+    def withdraw_invite_txn():
+      invite = db.get(invite_key)
+      invite.status = 'withdrawn'
+      invite.put()
+
+    db.run_in_transaction(withdraw_invite_txn)
