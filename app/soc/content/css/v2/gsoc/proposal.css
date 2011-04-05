@@ -5,6 +5,8 @@
 /////////////////////////////////////*/
 .duplicate-message {
     /* duplicate proposal indication banner */
+    /* TODO: Remove in favor of alert message banners after getting EchoDitto
+       reviews about the CSS. */
     font-weight: bold;
     left: 0;
     padding: 10px 5px 8px 10px;
