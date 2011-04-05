@@ -145,6 +145,46 @@
   };
 
   (function () {
+    /** @lends melange.cookie */
+
+    /** Package that handles melange cookies
+      * @namespace melange.cookie
+      */
+    melange.cookie = window.melange.cookie = function () {
+      return new melange.cookie();
+    };
+
+    /** Shortcut to current package.
+      * @property
+      * @private
+      */
+    var $m = melange.cookie;
+
+    $m.MELANGE_USER_PREFERENCES = "melange_user_preferences";
+
+    $m.getCookie = function (cookie_name) {
+      var default_cookie = {
+        lists_configuration: {}
+      };
+
+      var cookie = jQuery.cookie(cookie_name);
+      cookie_content = JSON.parse(cookie);
+
+      if (cookie_content === null) {
+        cookie_content = default_cookie;
+      }
+
+      return cookie_content;
+    };
+
+    $m.saveCookie = function (cookie_name, cookie_content, cookie_expires, cookie_path) {
+      jQuery.cookie(cookie_name,JSON.stringify(cookie_content),{expires: cookie_expires, path: cookie_path});
+    };
+
+  }());
+
+
+  (function () {
     /** @lends melange.error */
 
     /** Package that handles melange errors
