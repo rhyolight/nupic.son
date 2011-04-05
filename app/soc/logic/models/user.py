@@ -77,7 +77,7 @@ class Logic(base.Logic):
 
     user = self.getForAccount(account)
 
-    if user and not user.user_id:
+    if user and not user.user_id and account.user_id():
       # update the user id that was added to GAE after Melange was launched
       self.updateEntityProperties(user, {'user_id': account.user_id()})
 
