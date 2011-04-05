@@ -48,7 +48,8 @@ DEF_NEW_PROPOSAL_SUBJECT_FMT = ugettext(
     '[%(group)s] New proposal: %(proposal_name)s')
 
 DEF_NEW_REVIEW_SUBJECT_FMT = ugettext(
-    '[%(group)s] New %(review_visibility)s review on %(reviewer_name)s')
+    '[%(group)s] New %(review_visibility)s review on %(reviewed_name)s '
+    'by %(reviewer_name)s')
 
 DEF_HANDLED_REQUEST_SUBJECT_FMT = ugettext(
     '[%(group)s] Request to become a %(role_verbose)s has been %(action)s')
