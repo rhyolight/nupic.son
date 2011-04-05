@@ -41,7 +41,7 @@ from soc.tasks.helper import error_handler
 SEND_MAIL_URL = '/tasks/mail/send_mail'
 
 
-def getMailContext(to, subject, body, sender=None, bcc=None):
+def getMailContext(to, subject, html, sender=None, bcc=None):
   """Constructs a mail context for the specified arguments.
   """
   if not sender:
@@ -49,7 +49,7 @@ def getMailContext(to, subject, body, sender=None, bcc=None):
 
   context = {
       'subject': subject,
-      'body': body,
+      'html': html,
       'sender': sender,
   }
 
