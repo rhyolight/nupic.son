@@ -52,7 +52,9 @@ limitations under the License.
 {{ assign_mentor.render }}
 
 <div class="project-short">
-  <p class="project-mentor"><strong>Email:</strong> {{ student_email }}</p>
+  {% if public_comments_visible %}
+    <p class="project-mentor"><strong>Email:</strong> {{ student_email }}</p>
+  {% endif %}
   {% if private_comments_visible %}
   <p class="project-mentor"><strong>Mentor:</strong> {{ mentor.name|default:"No mentor assigned" }}</p>
   <p class="project-possible-mentor"><strong>Possible mentors: </strong>{{ possible_mentors|default:"None" }}</p>
