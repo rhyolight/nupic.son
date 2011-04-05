@@ -49,6 +49,16 @@ limitations under the License.
         {{ mainmenu.render }}
         <div class="grid_9">
           <div class="content">
+               {% if ds_write_disabled %}
+                <div class="alert-message">
+                  <p>Google Appengine datastore write capability has been
+                  disabled at the moment. You will not be able to save your
+                  changes now. We are sorry for the inconvenience caused.
+                  Please visit <a href="http://code.google.com/status/appengine">
+                  http://code.google.com/status/appengine</a> to check the
+                  Appengine datastore status.</p>
+                </div>
+              {% endif %}
             {% block page_content %}
               {{ tmpl.render }}
             {% endblock page_content %}

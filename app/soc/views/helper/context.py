@@ -42,6 +42,14 @@ def default(data):
   """
   posted = data.request.POST or 'validated' in data.request.GET
 
+  ds_write_disabled = False
+  try:
+    get_status = data.request.GET.get('dsw_disabled', '')
+    if int(get_status) == 1:
+      ds_write_disabled = True
+  except ValueError:
+    pass
+
   xsrf_secret_key = site_logic.getXsrfSecretKey(data.site)
   xsrf_token = xsrfutil.getGeneratedTokenForCurrentUser(xsrf_secret_key)
 
@@ -57,4 +65,5 @@ def default(data):
       'xsrf_token': xsrf_token,
       'google_api_key': google_api_key,
       'ga_tracking_num': data.site.ga_tracking_num,
+      'ds_write_disabled': ds_write_disabled,
   }

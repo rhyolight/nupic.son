@@ -25,6 +25,9 @@ __authors__ = [
   ]
 
 import os
+import urllib
+
+from google.appengine.ext import db
 
 from django import http
 from django.utils import simplejson
@@ -252,7 +255,13 @@ class RequestHandler(object):
       else:
         self.get()
     elif self.request.method == 'POST':
-      self.post()
+      if db.WRITE_CAPABILITY.is_enabled():
+        self.post()
+      else:
+        referrer = self.request.META.get('HTTP_REFERER', '')
+        params = urllib.urlencode({'dsw_disabled': 1})
+        url_with_params = '%s?%s' % (referrer, params)
+        self.redirect.toUrl(url_with_params)
     elif self.request.method == 'HEAD':
       self.head()
     elif self.request.method == 'OPTIONS':
