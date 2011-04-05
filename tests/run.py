@@ -123,21 +123,25 @@ def main():
   from google.appengine.api import mail_stub
   from google.appengine.api import user_service_stub
   from google.appengine.api import urlfetch_stub
+  from google.appengine.api.capabilities import capability_stub
   from google.appengine.api.memcache import memcache_stub
   from google.appengine.api.taskqueue import taskqueue_stub
   apiproxy_stub_map.apiproxy = apiproxy_stub_map.APIProxyStubMap()
-  apiproxy_stub_map.apiproxy.RegisterStub('urlfetch',
-                                          urlfetch_stub.URLFetchServiceStub())
-  apiproxy_stub_map.apiproxy.RegisterStub('user',
-                                          user_service_stub.UserServiceStub())
+  apiproxy_stub_map.apiproxy.RegisterStub(
+      'urlfetch', urlfetch_stub.URLFetchServiceStub())
+  apiproxy_stub_map.apiproxy.RegisterStub(
+      'user', user_service_stub.UserServiceStub())
   apiproxy_stub_map.apiproxy.RegisterStub('datastore',
     datastore_file_stub.DatastoreFileStub('test-app-run', None, None))
-  apiproxy_stub_map.apiproxy.RegisterStub('memcache',
-    memcache_stub.MemcacheServiceStub())
+  apiproxy_stub_map.apiproxy.RegisterStub(
+      'memcache', memcache_stub.MemcacheServiceStub())
   apiproxy_stub_map.apiproxy.RegisterStub('mail', mail_stub.MailServiceStub())
   yaml_location = os.path.join(HERE, 'app')
   apiproxy_stub_map.apiproxy.RegisterStub(
       'taskqueue', taskqueue_stub.TaskQueueServiceStub(root_path=yaml_location))
+  apiproxy_stub_map.apiproxy.RegisterStub(
+      'capability_service', capability_stub.CapabilityServiceStub())
+
   import django.test.utils
   django.test.utils.setup_test_environment()
 
