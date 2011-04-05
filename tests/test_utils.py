@@ -530,6 +530,7 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
         for message in all_messages:
           if not fullbody:
             message.set_textbody(message.textbody()[:50])
+            message.set_htmlbody(message.htmlbody()[:50])
           failure_message += str(message)
       else:
         failure_message += 'None'
