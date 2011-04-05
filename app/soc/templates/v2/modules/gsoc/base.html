@@ -25,6 +25,7 @@ limitations under the License.
     <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/typography.css" />
     <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/structure.css" />
     <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/menu.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/user-messages.css" />
   {% endblock stylesheets %}
 
   <!-- Include analytics tracking -->
@@ -50,13 +51,14 @@ limitations under the License.
         <div class="grid_9">
           <div class="content">
                {% if ds_write_disabled %}
-                <div class="alert-message">
-                  <p>Google Appengine datastore write capability has been
-                  disabled at the moment. You will not be able to save your
-                  changes now. We are sorry for the inconvenience caused.
-                  Please visit <a href="http://code.google.com/status/appengine">
-                  http://code.google.com/status/appengine</a> to check the
-                  Appengine datastore status.</p>
+                <div id="user-message" class="error">
+                  <strong>ALERT: </strong>Google Appengine datastore write
+                  capability has been disabled at the moment. You will
+                  <strong>NOT</strong> be able to save your changes at this
+                  time. We are sorry for the inconvenience caused. Please visit
+                  <a href="http://code.google.com/status/appengine">
+                  http://code.google.com/status/appengine</a> to check
+                  Appengine datastore status.
                 </div>
               {% endif %}
             {% block page_content %}
