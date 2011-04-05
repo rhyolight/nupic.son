@@ -222,6 +222,7 @@
 
   s.melange.main = [
     s.google,
+    s.cookie,
     null,
     mpjs + "melange.js"
   ];
