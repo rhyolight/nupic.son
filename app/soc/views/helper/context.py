@@ -44,6 +44,7 @@ def default(data):
   """
   posted = data.request.POST or 'validated' in data.request.GET
 
+  ds_write_disabled = False
   if data.request.method == 'GET':
     get_status = data.request.GET.get('dsw_disabled', '')
 
