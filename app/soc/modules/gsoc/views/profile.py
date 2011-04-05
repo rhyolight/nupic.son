@@ -56,6 +56,10 @@ class UserForm(forms.ModelForm):
   """Django form for the user profile.
   """
 
+  def __init__(self, *args, **kwargs):
+    super(UserForm, self).__init__(*args, **kwargs)
+    self.fields['link_id'].label = "Username"
+
   class Meta:
     model = User
     css_prefix = 'user'
