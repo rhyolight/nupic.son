@@ -45,7 +45,10 @@ DEF_NEW_ORG_MSG_FMT = ugettext(
     '[%(group)s] Your organization application has been accepted.')
 
 DEF_NEW_PROPOSAL_SUBJECT_FMT = ugettext(
-    '[%(group)s] New proposal: %(proposal_name)s')
+    '[%(group)s] New proposal by %(proposer_name)s: %(proposal_name)s')
+
+DEF_UPDATED_PROPOSAL_SUBJECT_FMT = ugettext(
+    '[%(group)s] Update by %(proposer_name)s to proposal: %(proposal_name)s')
 
 DEF_NEW_REVIEW_SUBJECT_FMT = ugettext(
     '[%(group)s] New %(review_visibility)s review on %(reviewed_name)s '
