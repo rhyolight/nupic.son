@@ -93,6 +93,7 @@ limitations under the License.
       {% else %}
       .script("https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js").wait()
       {% endif %}
+      .script("/js/{{ app_version }}/jquery/jquery-cookie.js").wait()
       .script("/soc/content/{{ app_version }}/js/melange.js").wait(
         function () {
           // set global configuration
