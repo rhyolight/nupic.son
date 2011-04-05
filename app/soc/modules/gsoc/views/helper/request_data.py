@@ -455,10 +455,11 @@ class RedirectHelper(object):
       url = url + '?validated'
     self.toUrl(url, full=full)
 
-  def toUrl(self, url):
+  def toUrl(self, url, full=False):
     """Redirects to the specified url.
     """
     from django.utils.encoding import iri_to_uri
+    url = self._fullUrl(url, full)
     self._response.set_status(302)
     self._response["Location"] = iri_to_uri(url)
 
