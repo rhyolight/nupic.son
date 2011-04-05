@@ -956,7 +956,47 @@
       fetchDataFromServer();
     }
 
+    var cookie_service = new function() {
+      var setTableColumns = function (colModel) {
+        var columns_configuration = {
+          hidden_columns: {}
+        };
+
+        jQuery.each(colModel, function(index, column) {
+          columns_configuration.hidden_columns[column.name] = column.hidden;
+        });
+
+        return columns_configuration;
+      };
+
+      this.saveCurrentTableConfiguration = function () {
+        var previous_configuration = melange.cookie.getCookie(melange.cookie.MELANGE_USER_PREFERENCES);
+        var colModel = _self.jqgrid.object.jqGrid('getGridParam', 'colModel');
+        var configuration_to_save = setTableColumns(colModel);
+        var new_configuration = {
+          lists_configuration: {}
+        };
+        new_configuration.lists_configuration[idx] = configuration_to_save;
+        new_configuration.lists_configuration = jQuery.extend(previous_configuration.lists_configuration, new_configuration.lists_configuration);
+        melange.cookie.saveCookie(melange.cookie.MELANGE_USER_PREFERENCES, new_configuration, 14, window.location.pathname);
+      };
+
+      this.getPreviousTableConfiguration = function (configuration) {
+        var previous_configuration = melange.cookie.getCookie(melange.cookie.MELANGE_USER_PREFERENCES);
+        var colModel = configuration.colModel;
+        if (previous_configuration["lists_configuration"][idx]) {
+          var this_list_preferences = previous_configuration["lists_configuration"][idx];
+          jQuery.each(this_list_preferences.hidden_columns, function (column_name, is_hidden) {
+            (jLinq.from(colModel).equals("name",column_name).select()[0]).hidden = is_hidden;
+          });
+        }
+        return configuration;
+      };
+    };
+
     var initJQGrid = function () {
+      _self.configuration = cookie_service.getPreviousTableConfiguration(_self.configuration);
+
       var final_jqgrid_configuration = jQuery.extend(
         _self.configuration,
         {
@@ -975,7 +1015,8 @@
           jQuery("#" + _self.jqgrid.id).setColumns({
             colnameview: false,
             jqModal: true,
-            ShrinkToFit: true
+            ShrinkToFit: true,
+            afterSubmitForm: cookie_service.saveCurrentTableConfiguration
           });
           return false;
         },
