@@ -237,7 +237,7 @@ def newProposalContext(data, proposal, to_emails):
     data: a RequestData object
   """
   data.redirect.review(proposal.key().id(), data.user.link_id)
-  proposal_notification_url = data.redirect.to('review_gsoc_proposal')
+  proposal_notification_url = data.redirect.to('review_gsoc_proposal', full=True)
   
   proposal_name = proposal.title
 
@@ -266,7 +266,7 @@ def newCommentContext(data, comment, to_emails):
   assert isSet(data.proposal)
   assert isSet(data.proposer)
 
-  review_notification_url = data.redirect.comment(comment)
+  review_notification_url = data.redirect.comment(comment, full=True)
   
   review_type = 'private' if comment.is_private else 'public'
   reviewed_name = data.proposal.title

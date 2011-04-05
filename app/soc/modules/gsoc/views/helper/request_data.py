@@ -440,7 +440,7 @@ class RedirectHelper(object):
     # TODO(SRabbelier): when should we link to https:// ?
     return 'http://%s%s' % (system.getHostname(self._data.site), url)
 
-  def to(self, name=None, validated=False):
+  def to(self, name=None, validated=False, full=False):
     """Redirects to the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -453,7 +453,7 @@ class RedirectHelper(object):
 
     if validated:
       url = url + '?validated'
-    self.toUrl(url)
+    self.toUrl(url, full=full)
 
   def toUrl(self, url):
     """Redirects to the specified url.
@@ -541,12 +541,12 @@ class RedirectHelper(object):
       self._url_name = 'gsoc_invitation'
     return self
 
-  def comment(self, comment):
+  def comment(self, comment, full=False):
     """Creates a direct link to a comment.
     """
     review = comment.parent()
     self.review(review.key().id_or_name(), review.parent().link_id)
-    url= self.urlOf('review_gsoc_proposal')
+    url= self.urlOf('review_gsoc_proposal', full=full)
     return "%s#c%s" % (url, comment.key().id())
 
   def projectDetails(self, student_project):
