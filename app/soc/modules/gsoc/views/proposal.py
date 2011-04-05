@@ -165,6 +165,7 @@ class UpdateProposal(RequestHandler):
 
     self.data.proposal = GSoCProposal.get_by_id(
         int(self.data.kwargs['id']), parent=self.data.profile)
+    self.data.organization = self.data.proposal.org
 
     self.check.canStudentUpdateProposal()
 
@@ -214,19 +215,51 @@ class UpdateProposal(RequestHandler):
     if not proposal_form.is_valid():
       return None
 
-    return proposal_form.save(commit=True)
+    q = GSoCProfile.all().filter('mentor_for', self.data.proposal.org)
+    q = q.filter('status', 'active')
+    q.filter('notify_proposal_updates', True)
+    mentors = q.fetch(1000)
+
+    to_emails = [i.email for i in mentors]
+
+    proposal_key = self.data.proposal.key()
+
+    def update_proposal_txn():
+      proposal = db.get(proposal_key)
+      proposal_form.instance = proposal
+      proposal = proposal_form.save(commit=True)
+
+      context = notifications.updatedProposalContext(self.data, proposal, to_emails)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=proposal)
+      sub_txn()
+
+      return proposal
+
+    return db.run_in_transaction(update_proposal_txn)
 
   def _withdraw(self):
     """Withdraws a proposal.
     """
-    self.data.proposal.status = 'withdrawn'
-    self.data.proposal.put()
+    proposal_key = self.data.proposal.key()
+
+    def withdraw_proposal_txn():
+      proposal = db.get(proposal_key)
+      proposal.status = 'withdrawn'
+      proposal.put()
+
+    db.run_in_transaction(withdraw_proposal_txn)
 
   def _resubmit(self):
     """Resubmits a proposal.
     """
-    self.data.proposal.status = 'pending'
-    self.data.proposal.put()
+    proposal_key = self.data.proposal.key()
+
+    def resubmit_proposal_txn():
+      proposal = db.get(proposal_key)
+      proposal.status = 'pending'
+      proposal.put()
+
+    db.run_in_transaction(resubmit_proposal_txn)
 
   def post(self):
     """Handler for HTTP POST request.

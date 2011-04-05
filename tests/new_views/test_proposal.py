@@ -69,6 +69,7 @@ class ProposalTest(MailTestCase, DjangoTestCase):
     other_mentor.notificationSettings()
 
     self.data.createStudent()
+    self.data.notificationSettings()
     self.timeline.studentSignup()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.client.get(url)
@@ -106,7 +107,7 @@ class ProposalTest(MailTestCase, DjangoTestCase):
     comment = GSoCComment.all().get()
     self.assertPropertiesEqual(properties, comment)
 
-    self.assertEmailSent(to=mentor.profile.email, n=1)
+    self.assertEmailSent(to=mentor.profile.email, n=2)
     self.assertEmailNotSent(to=self.data.profile.email)
 
     # Hacky
@@ -158,9 +159,13 @@ class ProposalTest(MailTestCase, DjangoTestCase):
   def testUpdateProposal(self):
     """Test update proposals.
     """
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test).createOtherUser(
-        'mentor@example.com').createMentor(self.org)
-    self.data.createStudentWithProposal(self.org, mentor)
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com')
+    mentor.createMentor(self.org)
+    mentor.notificationSettings(proposal_updates=True)
+
+    self.data.createStudentWithProposal(self.org, mentor.profile)
+    self.data.notificationSettings()
     self.timeline.studentSignup()
 
     proposal = GSoCProposal.all().get()
@@ -170,7 +175,15 @@ class ProposalTest(MailTestCase, DjangoTestCase):
     response = self.client.get(url)
     self.assertProposalTemplatesUsed(response)
 
-    override = {'program': self.gsoc, 'score': 0, 'mentor': None,
-                'org': self.org, 'status': 'new', 'action': 'update'}
+    override = {'program': self.gsoc, 'score': 0, 'mentor': mentor.profile,
+                'org': self.org, 'status': 'pending', 'action': 'Update',
+                'is_publicly_visible': False, 'accept_as_project': False,}
     response, properties = self.modelPost(url, GSoCProposal, override)
     self.assertResponseRedirect(response)
+
+    properties.pop('action')
+
+    proposal = GSoCProposal.all().get()
+    self.assertPropertiesEqual(properties, proposal)
+
+    self.assertEmailSent(to=mentor.profile.email, n=1)

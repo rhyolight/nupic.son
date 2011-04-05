@@ -69,6 +69,9 @@ DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
 DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/new_proposal.html'
 
+DEF_UPDATED_PROPOSAL_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/updated_proposal.html'
+
 DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/new_review.html'
 
@@ -257,6 +260,35 @@ def newProposalContext(data, proposal, to_emails):
   subject = DEF_NEW_PROPOSAL_SUBJECT_FMT % message_properties
 
   template = DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE
+
+  return getContext(data, to_emails, message_properties, subject, template)
+
+
+def updatedProposalContext(data, proposal, to_emails):
+  """Sends out a notification to alert the user of an updated proposal.
+
+  Args:
+    data: a RequestData object
+  """
+  assert isSet(data.organization)
+
+  data.redirect.review(proposal.key().id(), data.user.link_id)
+  proposal_notification_url = data.redirect.to('review_gsoc_proposal', full=True)
+
+  proposal_name = proposal.title
+
+  message_properties = {
+      'proposal_notification_url': proposal_notification_url,
+      'proposer_name': data.profile.name(),
+      'proposal_name': proposal.title,
+      'proposal_content': proposal.content,
+      'group': data.organization.name,
+  }
+
+  # determine the subject
+  subject = DEF_UPDATED_PROPOSAL_SUBJECT_FMT % message_properties
+
+  template = DEF_UPDATED_PROPOSAL_NOTIFICATION_TEMPLATE
 
   return getContext(data, to_emails, message_properties, subject, template)
 
