@@ -24,6 +24,8 @@ __authors__ = [
 
 import os
 
+from google.appengine.ext import db
+
 from soc.logic import system
 from soc.logic.helper import xsrfutil
 from soc.logic.models.site import logic as site_logic
@@ -42,11 +44,14 @@ def default(data):
   """
   posted = data.request.POST or 'validated' in data.request.GET
 
-  get_status = data.request.GET.get('dsw_disabled', '')
-  if get_status.isdigit() and int(get_status) == 1:
-    ds_write_disabled = True
-  else:
-    ds_write_disabled = False
+  if data.request.method == 'GET':
+    get_status = data.request.GET.get('dsw_disabled', '')
+
+    if not db.WRITE_CAPABILITY.is_enabled() or (get_status.isdigit()
+        and int(get_status) == 1):
+      ds_write_disabled = True
+    else:
+      ds_write_disabled = False
 
   xsrf_secret_key = site_logic.getXsrfSecretKey(data.site)
   xsrf_token = xsrfutil.getGeneratedTokenForCurrentUser(xsrf_secret_key)
