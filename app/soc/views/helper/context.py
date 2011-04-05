@@ -42,13 +42,11 @@ def default(data):
   """
   posted = data.request.POST or 'validated' in data.request.GET
 
-  ds_write_disabled = False
-  try:
-    get_status = data.request.GET.get('dsw_disabled', '')
-    if int(get_status) == 1:
-      ds_write_disabled = True
-  except ValueError:
-    pass
+  get_status = data.request.GET.get('dsw_disabled', '')
+  if get_status.isdigit() and int(get_status) == 1:
+    ds_write_disabled = True
+  else:
+    ds_write_disabled = False
 
   xsrf_secret_key = site_logic.getXsrfSecretKey(data.site)
   xsrf_token = xsrfutil.getGeneratedTokenForCurrentUser(xsrf_secret_key)
