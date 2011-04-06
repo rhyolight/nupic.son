@@ -41,11 +41,10 @@ class SearchGsocPage(RequestHandler):
     ]
 
   def context(self):
-    site = site_logic.getSingleton()
     return {
         'app_version': os.environ.get('CURRENT_VERSION_ID', '').split('.')[0],
         'page_name': 'Search GSoC',
-        'cse_key':  site.cse_key
+        'cse_key':  self.data.site.cse_key
     }
 
   def templatePath(self):
