@@ -41,7 +41,7 @@ from soc.logic.models.user import logic as user_logic
 from soc.views.helper.access_checker import isSet
 from soc.views.helper.request_data import RequestData
 
-from soc.modules.gsoc.models import profile
+from soc.modules.gsoc.models.profile import GSoCProfile
 
 from soc.modules.gsoc.logic.models.mentor import logic as mentor_logic
 from soc.modules.gsoc.logic.models.organization import logic as org_logic
@@ -297,7 +297,7 @@ class RequestData(RequestData):
 
     if self.user:
       key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
-      self.profile = profile.GSoCProfile.get_by_key_name(
+      self.profile = GSoCProfile.get_by_key_name(
           key_name, parent=self.user)
 
       from soc.modules.gsoc.models.program import GSoCProgram
@@ -305,12 +305,20 @@ class RequestData(RequestData):
       self.is_host = host_key in self.user.host_for
 
     if self.profile:
-      orgs = set(self.profile.mentor_for + self.profile.org_admin_for)
-      org_map = dict((i.key(), i) for i in db.get(orgs))
+      org_keys = set(self.profile.mentor_for + self.profile.org_admin_for)
 
-      self.mentor_for = org_map.values()
-      self.org_admin_for = [org_map[i] for i in self.profile.org_admin_for]
-      self.student_info = self.profile.student_info
+      prop = GSoCProfile.student_info
+      student_info_key = prop.get_value_for_datastore(self.profile)
+
+      if student_info_key:
+        self.student_info = db.get(student_info_key)
+      else:
+        orgs = db.get(org_keys)
+
+        org_map = dict((i.key(), i) for i in orgs)
+
+        self.mentor_for = org_map.values()
+        self.org_admin_for = [org_map[i] for i in self.profile.org_admin_for]
 
     self.is_org_admin = self.is_host or bool(self.org_admin_for)
     self.is_mentor = self.is_org_admin or bool(self.mentor_for)
