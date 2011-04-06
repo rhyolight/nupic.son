@@ -468,14 +468,14 @@ class RedirectHelper(object):
     """Sets the _url to the login url.
     """
     self._clear()
-    self._url = users.create_login_url(self._data.full_path)
+    self._url = self._data.login_url
     return self
 
   def logout(self):
     """Sets the _url to the logout url.
     """
     self._clear()
-    self._url = users.create_logout_url(self._data.full_path)
+    self._url = self._data.logout_url
     return self
 
   def acceptedOrgs(self):
