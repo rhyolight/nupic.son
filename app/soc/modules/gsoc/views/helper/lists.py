@@ -114,7 +114,8 @@ class ListConfiguration(object):
     if row_list:
       self.row_list = row_list
 
-  def addColumn(self, id, name, func, resizable=True, hidden=False):
+  def addColumn(self, id, name, func,
+                resizable=True, hidden=False, options=None):
     """Adds a column to the end of the list.
 
     Args:
@@ -127,6 +128,7 @@ class ListConfiguration(object):
       resizable: Whether the width of the column should be resizable by the
                  end user.
       hidden: Whether the column should be displayed by default.
+      options: an array of (regexp, display_value) tuples
     """
     if self._col_functions.get(id):
       logging.warning('Column with id %s is already defined' %id)
@@ -134,16 +136,24 @@ class ListConfiguration(object):
     if not callable(func):
       raise TypeError('Given function is not callable')
 
-    self._col_model.append({
+    model = {
         'name': id,
         'index': id,
         'resizable': resizable,
         'hidden': hidden,
-        })
+    }
+
+    if options:
+      values = ";".join("%s:%s" % i for i in options)
+
+      model["stype"] = "select"
+      model["editoptions"] = dict(value=values)
+
+    self._col_model.append(model)
     self._col_names.append(name)
     self._col_functions[id] = func
 
-  def addSimpleColumn(self, id, name, resizable=True, hidden=False):
+  def addSimpleColumn(self, id, name, **kwargs):
     """Adds a column to the end of the list which uses the id of the column as
     attribute name of the entity to get the data from.
 
@@ -154,12 +164,10 @@ class ListConfiguration(object):
       id: A unique identifier of this column and name of the field to get the
           data from.
       name: The header of the column that is shown to the user.
-      resizable: Whether the width of the column should be resizable by the
-                 end user.
-      hidden: Whether the column should be displayed by default.
+      **kwargs: passed on to addColumn
     """
     func = lambda ent, *args: getattr(ent, id)
-    self.addColumn(id, name, func, resizable=resizable, hidden=hidden)
+    self.addColumn(id, name, func, **kwargs)
 
   def __addButton(self, id, caption, bounds, type, parameters):
     """Internal method for adding buttons so that the uniqueness of the id can
