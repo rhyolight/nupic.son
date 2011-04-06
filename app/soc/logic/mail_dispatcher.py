@@ -122,7 +122,7 @@ def sendMail(context):
   if not system.isLocal() and system.isDebug():
     return
 
-  txn = mailer.spawnMailTask(context)
+  txn = mailer.getSpawnMailTask(context)
   db.RunInTransaction(txn)
 
 
