@@ -78,7 +78,7 @@ class Logic(base.Logic):
     user = self.getForAccount(account)
 
     if user and not user.user_id and account.user_id():
-      from google.appengine.runtime.apiproxy_errors.py import CapabilityDisabledError
+      from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
       # update the user id that was added to GAE after Melange was launched
       try:
         self.updateEntityProperties(user, {'user_id': account.user_id()})
