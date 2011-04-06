@@ -969,10 +969,29 @@
         return columns_configuration;
       };
 
+      var setTableOrder = function (sortname, sortorder) {
+        return {
+          sort_settings : {
+            "sortname": sortname,
+            "sortorder": sortorder
+          }
+        }
+      };
+
       this.saveCurrentTableConfiguration = function () {
+        //TODO(Mario): insulate all the functions better.
+        if (!_self.jqgrid.object) {
+          //TODO(Mario): check this in a better fashion.
+          // The list is not created yet, this is likely to be fired by gridComplete
+          // but it's not yet necessary to catch that.
+          return;
+        }
         var previous_configuration = melange.cookie.getCookie(melange.cookie.MELANGE_USER_PREFERENCES);
         var colModel = _self.jqgrid.object.jqGrid('getGridParam', 'colModel');
+        var sortCol = _self.jqgrid.object.jqGrid('getGridParam', 'sortname');
+        var sortOrder = _self.jqgrid.object.jqGrid('getGridParam', 'sortorder');
         var configuration_to_save = setTableColumns(colModel);
+        configuration_to_save = jQuery.extend(setTableOrder(sortCol, sortOrder), configuration_to_save);
         var new_configuration = {
           lists_configuration: {}
         };
@@ -984,11 +1003,15 @@
       this.getPreviousTableConfiguration = function (configuration) {
         var previous_configuration = melange.cookie.getCookie(melange.cookie.MELANGE_USER_PREFERENCES);
         var colModel = configuration.colModel;
-        if (previous_configuration["lists_configuration"][idx]) {
+        if (previous_configuration["lists_configuration"][idx] !== undefined) {
           var this_list_preferences = previous_configuration["lists_configuration"][idx];
           jQuery.each(this_list_preferences.hidden_columns, function (column_name, is_hidden) {
             (jLinq.from(colModel).equals("name",column_name).select()[0]).hidden = is_hidden;
           });
+          if (previous_configuration["lists_configuration"][idx].sort_settings !== undefined) {
+            configuration.sortname = previous_configuration.lists_configuration[idx].sort_settings.sortname;
+            configuration.sortorder = previous_configuration.lists_configuration[idx].sort_settings.sortorder;
+          }
         }
         return configuration;
       };
@@ -1004,7 +1027,9 @@
           postData: {my_index: idx},
           // Disable or enable button depending on how many rows are selected
           onSelectAll: jqgrid_functions.enableDisableButtons,
-          onSelectRow: jqgrid_functions.enableDisableButtons
+          onSelectRow: jqgrid_functions.enableDisableButtons,
+          // When something changes in the list, update the cookie
+          gridComplete: cookie_service.saveCurrentTableConfiguration
         }
       );
 
