@@ -572,6 +572,8 @@ def keyStarter(start, q):
   """
   if not start:
     return True
+  if '/' in start:
+    return False
   start_entity = db.get(start)
   if not start_entity:
     return False
