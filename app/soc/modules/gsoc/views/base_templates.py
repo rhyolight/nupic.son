@@ -32,13 +32,18 @@ def siteMenuContext(data):
   """Generates URL links for the hard-coded GSoC site menu items.
   """
   redirect = data.redirect
+  program = data.program
+
+  from soc.modules.gsoc.models.program import GSoCProgram
+  about_page = GSoCProgram.about_page.get_value_for_datastore(program)
+  connect = GSoCProgram.connect_with_us_page.get_value_for_datastore(program)
+  help_page = GSoCProgram.help_page.get_value_for_datastore(program)
 
   context = {
-      'about_link': redirect.document(data.program.about_page).url(),
+      'about_link': redirect.document(about_page).url(),
       'events_link': redirect.events().url(),
-      'connect_link': redirect.document(
-          data.program.connect_with_us_page).url(),
-      'help_link': redirect.document(data.program.help_page).url(),
+      'connect_link': redirect.document(connect).url(),
+      'help_link': redirect.document(help_page).url(),
   }
 
   if users.get_current_user():

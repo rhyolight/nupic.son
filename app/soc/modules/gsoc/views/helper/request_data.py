@@ -402,7 +402,16 @@ class RedirectHelper(object):
     if not document:
       self._no_url = True
       return self
-    self.args = [document.prefix, document.scope_path + '/', document.link_id]
+
+    if isinstance(document, db.Model):
+      key = document.key()
+    else:
+      key = document
+
+    prefix, rest = key.name().split('/', 1)
+    scope_path, link_id = rest.rsplit('/', 1)
+
+    self.args = [prefix, scope_path + '/', link_id]
     self._url_name = 'show_gsoc_document'
     return self
 
@@ -524,10 +533,14 @@ class RedirectHelper(object):
   def events(self):
     """Sets the _url_name for the events page, if it is set.
     """
-    if not self._data.program.events_page:
+    from soc.modules.gsoc.models.program import GSoCProgram
+    key = GSoCProgram.events_page.get_value_for_datastore(self._data.program)
+
+    if not key:
       self._clear()
       self._no_url = True
       return self
+
     self.program()
     self._url_name = 'gsoc_events'
     return self
