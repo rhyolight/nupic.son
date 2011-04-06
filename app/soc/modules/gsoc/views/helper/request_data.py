@@ -441,7 +441,7 @@ class RedirectHelper(object):
     assert self._url or self._url_name
     if self._url:
       return self._fullUrl(self._url, full)
-    return self.urlOf(self._url_name)
+    return self.urlOf(self._url_name, full=full)
 
   def _fullUrl(self, url, full):
     """Returns the full version of the url iff full.
