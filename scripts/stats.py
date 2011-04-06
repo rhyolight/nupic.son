@@ -859,6 +859,9 @@ def main(args):
     org.nr_applications = value
   def rawSaver(org, value):
     org.slots_calculated = value
+  def getGSoC2011Profile(link_id):
+    program = GSoCProgram.get_by_key_name('google/gsoc2011')
+    return GSoCProfile.all().filter('scope', program).filter('link_id', link_id).get()
 
   context = {
       'load': loadPickle,
@@ -880,6 +883,7 @@ def main(args):
       'setOrganizationInSurveyRecords': setOrganizationInSurveyRecords,
       'convertProposals': convertProposals,
       'addFollower': addFollower,
+      'p': getGSoC2011Profile,
       'GSoCOrganization': GSoCOrganization,
       'User': User,
       'GSoCStudent': GSoCStudent,
