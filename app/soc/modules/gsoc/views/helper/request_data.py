@@ -33,6 +33,7 @@ from google.appengine.ext import db
 from django.core.urlresolvers import reverse
 
 from soc.models import role
+from soc.models.org_app_survey import OrgAppSurvey
 from soc.logic import system
 from soc.logic.models.host import logic as host_logic
 from soc.logic.models.site import logic as site_logic
@@ -45,7 +46,6 @@ from soc.modules.gsoc.models import profile
 from soc.modules.gsoc.logic.models.mentor import logic as mentor_logic
 from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.logic.models.org_admin import logic as org_admin_logic
-from soc.modules.gsoc.logic.models.org_app_survey import logic as org_app_logic
 from soc.modules.gsoc.logic.models.program import logic as program_logic
 from soc.modules.gsoc.logic.models.student import logic as student_logic
 
@@ -278,8 +278,9 @@ class RequestData(RequestData):
 
     self.program_timeline = self.program.timeline
 
-    org_app_fields = {'scope': self.program}
-    self.org_app = org_app_logic.getOneForFields(org_app_fields)
+    key_name = 'gsoc_program/%s/orgapp' % self.program.key().name()
+
+    self.org_app = OrgAppSurvey.get_by_key_name(key_name)
 
     self.timeline = TimelineHelper(self.program_timeline, self.org_app)
 
