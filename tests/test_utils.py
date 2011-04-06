@@ -207,7 +207,7 @@ class DjangoTestCase(TestCase):
 
     Takes care of setting the xsrf_token.
     """
-    postdata['xsrf_token'] = self.getXsrfToken(url)
+    postdata['xsrf_token'] = self.getXsrfToken(url, site=self.site)
     response = self.client.post(url, postdata)
     postdata.pop('xsrf_token')
     return response
@@ -298,7 +298,7 @@ class DjangoTestCase(TestCase):
     self.data = GSoCProfileHelper(self.gsoc, self.dev_test)
 
   @classmethod
-  def getXsrfToken(cls, path=None, method='POST', data={}, **extra):
+  def getXsrfToken(cls, path=None, method='POST', data={}, site=None, **extra):
     """Returns an XSRF token for request context.
 
     It is signed by Melange XSRF middleware.
@@ -312,7 +312,11 @@ class DjangoTestCase(TestCase):
     request.method = method
     """
     # request is currently not used in _getSecretKey
-    request = None
+    class SiteContainingRequest(object):
+      def __init__(self, site):
+        if site:
+          self.site = site
+    request = SiteContainingRequest(site)
     xsrf = XsrfMiddleware()
     key = xsrf._getSecretKey(request)
     user_id = xsrfutil._getCurrentUserId()

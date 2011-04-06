@@ -117,7 +117,10 @@ class RequestData(object):
     self.POST = request.POST
     self.path = request.path.encode('utf-8')
     self.full_path = request.get_full_path().encode('utf-8')
-    self.site = site_logic.getSingleton()
+    # XSRF middleware already retrieved it for us
+    if not hasattr(request, 'site'):
+      request.site = site_logic.getSingleton()
+    self.site = request.site
     self.user = user_logic.getCurrentUser()
     if users.is_current_user_admin():
       self.is_developer = True
