@@ -273,7 +273,8 @@ class RequestData(RequestData):
       program_key_name = "%s/%s" % (kwargs['sponsor'], kwargs['program'])
       program_key = db.Key.from_path('GSoCProgram', program_key_name)
     else:
-      program_key = Site.active_program.get_value_for_datastore(site)
+      from soc.models.site import Site
+      program_key = Site.active_program.get_value_for_datastore(self.site)
       program_key_name = program_key.name()
 
     timeline_key = db.Key.from_path('GSoCTimeline', program_key_name)
