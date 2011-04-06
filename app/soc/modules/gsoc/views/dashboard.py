@@ -48,7 +48,7 @@ from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 
 
-DATETIME_FORMAT = 'g:i A jS M, Y'
+DATETIME_FORMAT = 'Y-m-d H:i:s'
 
 class Dashboard(RequestHandler):
   """View for the participant dashboard.
