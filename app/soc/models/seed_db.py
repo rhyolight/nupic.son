@@ -284,7 +284,7 @@ def seed(request, *args, **kwargs):
       'scope': google,
       'program_start': before,
       'program_end': after,
-      'accepted_organization_announced_deadline': after,
+      'accepted_organization_announced_deadline': before,
       'student_signup_start': before,
       'student_signup_end': after,
   }
