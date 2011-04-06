@@ -452,6 +452,13 @@ class SubmittedProposalsComponent(Component):
     list_config.addColumn(
         'student', 'Student',
         lambda ent, *args: ent.parent().name())
+    options = [
+        ('(pending|accepted|rejected)', 'Valid'),
+        ('', 'All'),
+        ('(invalid|withdrawn)', 'Invalid'),
+    ]
+    list_config.addSimpleColumn('status', 'Status',
+                                hidden=True, options=options)
 
     def mentor_key(ent, *args):
       key = GSoCProposal.mentor.get_value_for_datastore(ent)
@@ -640,8 +647,14 @@ class RequestComponent(Component):
           ent.user.name, ent.user.link_id))
     list_config.addColumn('role_name', 'Role',
                           lambda ent, *args: ent.roleName())
-    list_config.addColumn('status', 'Status',
-                          lambda ent, *args: ent.statusMessage())
+
+    options = [
+        ('pending', 'Needs action'),
+        ('', 'All'),
+        ('(rejected|accepted)', 'Handled'),
+        ('(withdrawn|invalid)', 'Removed'),
+    ]
+    list_config.addSimpleColumn('status', 'Status', options=options)
     list_config.addColumn('org_name', 'Organization',
                           lambda ent, *args: ent.group.name)
     list_config.setRowAction(
