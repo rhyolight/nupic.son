@@ -109,10 +109,13 @@ class Footer(Template):
   def context(self):
     context = siteMenuContext(self.data)
     redirect = self.data.redirect
-
     program = self.data.program
+
+    from soc.modules.gsoc.models.program import GSoCProgram
+    policy = GSoCProgram.privacy_policy.get_value_for_datastore(program)
+
     context.update({
-        'privacy_policy_url': redirect.document(program.privacy_policy).url(),
+        'privacy_policy_url': redirect.document(policy).url(),
         'facebook_url': program.facebook,
         'twitter_url': program.twitter,
         'blogger_url': program.blogger,
