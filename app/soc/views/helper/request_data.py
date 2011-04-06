@@ -25,6 +25,8 @@ __authors__ = [
 
 from google.appengine.api import users
 
+from django.utils.functional import lazy
+
 from soc.logic.models.site import logic as site_logic
 from soc.logic.models.user import logic as user_logic
 
@@ -58,6 +60,7 @@ class RequestData(object):
     self.POST = None
     self.is_developer = False
     self.gae_user = None
+    self.ds_write_disabled = False
 
   def populate(self, redirect, request, args, kwargs):
     """Populates the fields in the RequestData object.
@@ -81,3 +84,12 @@ class RequestData(object):
     if self.user and self.user.is_developer:
       self.is_developer = True
     self.gae_user = users.get_current_user()
+
+    if data.request.method == 'GET':
+      val= request.GET.get('dsw_disabled', '')
+
+      if val.isdigit() and int(val) == 1:
+        self.ds_write_disabled = True
+
+    if not self.ds_write_disabled:
+      self.ds_write_disabled = db.WRITE_CAPABILITY.is_enabled()

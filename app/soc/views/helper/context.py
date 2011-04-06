@@ -41,18 +41,9 @@ def default(data):
       xsrf_token: the xstrf_token for this request
       google_api_key: the google api key for this website
       ga_tracking_num: the google tracking number for this website
+      ds_write_disabled: if datastore writes are disabled
   """
   posted = data.request.POST or 'validated' in data.request.GET
-
-  ds_write_disabled = False
-  if data.request.method == 'GET':
-    get_status = data.request.GET.get('dsw_disabled', '')
-
-    if not db.WRITE_CAPABILITY.is_enabled() or (get_status.isdigit()
-        and int(get_status) == 1):
-      ds_write_disabled = True
-    else:
-      ds_write_disabled = False
 
   xsrf_secret_key = site_logic.getXsrfSecretKey(data.site)
   xsrf_token = xsrfutil.getGeneratedTokenForCurrentUser(xsrf_secret_key)
@@ -69,5 +60,5 @@ def default(data):
       'xsrf_token': xsrf_token,
       'google_api_key': google_api_key,
       'ga_tracking_num': data.site.ga_tracking_num,
-      'ds_write_disabled': ds_write_disabled,
+      'ds_write_disabled': data.ds_write_disabled,
   }
