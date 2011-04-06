@@ -314,7 +314,7 @@ class MyProposalsComponent(Component):
       q.ancestor(self.data.profile)
 
       starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'])
+      prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, q, starter, prefetcher=prefetcher)
