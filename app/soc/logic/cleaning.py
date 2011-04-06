@@ -444,15 +444,21 @@ def clean_html_content(field_name):
 
     try:
       cleaner = HtmlSanitizer.Cleaner()
-      cleaner.string = content.encode("utf-8")
+      try:
+        cleaner.string = content.encode("utf-8")
+      except Exception, e:
+        raise forms.ValidationError(str(e))
       cleaner.clean()
     except (HTMLParseError, safe_html.IllegalHTML), msg:
       raise forms.ValidationError(msg)
 
     content = cleaner.string
-    content = content.strip().replace('\r\n', '\n')
 
-    content = content.decode("utf-8")
+    try:
+      content = content.decode("utf-8")
+    except Exception, e:
+      raise forms.ValidationError(str(e))
+
     return content
 
   return wrapped
