@@ -80,9 +80,7 @@ class EditProgramTest(DjangoTestCase):
         'write_access': 'admin', 'read_access': 'public',
     }
     properties = seeder_logic.seed_properties(Document, properties=override)
-    postdata = properties.copy()
-    postdata['xsrf_token'] = self.getXsrfToken(url)
-    response = self.client.post(url, postdata)
+    response = self.post(url, properties)
     self.assertResponseRedirect(response, url)
 
     key_name = properties['key_name']
