@@ -35,6 +35,7 @@ from django.core.urlresolvers import reverse
 from soc.models import role
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.logic import system
+from soc.logic.exceptions import NotFound
 from soc.logic.models.host import logic as host_logic
 from soc.logic.models.site import logic as site_logic
 from soc.logic.models.user import logic as user_logic
@@ -285,6 +286,9 @@ class RequestData(RequestData):
     keys = [program_key, timeline_key, org_app_key]
 
     self.program, self.program_timeline, self.org_app = db.get(keys)
+
+    if not self.program:
+      raise NotFound("There is no program for url '%s'" % program_key_name)
 
     self.timeline = TimelineHelper(self.program_timeline, self.org_app)
 
