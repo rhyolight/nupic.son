@@ -193,7 +193,7 @@ class InvitePage(RequestHandler):
     invite_form = InviteForm(self.data, self.data.POST or None)
 
     return {
-        'logout_link': users.create_logout_url(self.data.full_path),
+        'logout_link': self.data.redirect.logout(),
         'page_name': 'Invite a new %s' % role,
         'program': self.data.program,
         'invite_form': invite_form
