@@ -42,6 +42,8 @@ class RequestData(object):
     kwargs: the request kwargs (as provided by django)
     path: the url of the current query, encoded as utf-8 string
     full_path: same as path, but including any GET args
+    login_url: login url that redirects to the current path
+    logout_url: logout url that redirects to the current path
     GET: the GET dictionary (from the request object)
     POST: the POST dictionary (from the request object)
     is_developer: is the current user a developer
@@ -58,6 +60,10 @@ class RequestData(object):
     self.kwargs = {}
     self.GET = None
     self.POST = None
+    self.path = None
+    self.full_path = None
+    self.login_url = None
+    self.logout_url = None
     self.is_developer = False
     self.gae_user = None
     self.ds_write_disabled = False
@@ -77,6 +83,8 @@ class RequestData(object):
     self.POST = request.POST
     self.path = request.path.encode('utf-8')
     self.full_path = request.get_full_path().encode('utf-8')
+    self.login_url = users.create_login_url(self.full_path)
+    self.logout_url = users.create_logout_url(self.full_path)
     self.site = site_logic.getSingleton()
     self.user = user_logic.getCurrentUser()
     if users.is_current_user_admin():
