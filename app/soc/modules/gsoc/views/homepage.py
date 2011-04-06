@@ -108,7 +108,7 @@ class Apply(Template):
         ) or self.data.timeline.mentorSignup()
 
     if signup and not self.data.gae_user:
-      context['login_link'] = self.data.redirect.login()
+      context['login_link'] = self.data.redirect.login().url()
     if signup and not self.data.profile:
       kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
       if self.data.timeline.orgSignup():
