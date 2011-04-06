@@ -145,7 +145,7 @@ def requestContext(data, request, admin_emails):
   return getContext(data, admin_emails, message_properties, subject, template)
 
 
-def handledRequestContext(data):
+def handledRequestContext(data, status):
   """Sends a message that the request to get a role has been handled.
 
   Args:
@@ -162,7 +162,7 @@ def handledRequestContext(data):
   message_properties = {
       'role_verbose' : data.request_entity.roleName(),
       'group': data.request_entity.group.name,
-      'action': data.request_entity.status,
+      'action': status,
       }
 
   subject = DEF_HANDLED_REQUEST_SUBJECT_FMT % message_properties

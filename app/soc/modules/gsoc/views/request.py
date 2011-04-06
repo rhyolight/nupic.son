@@ -314,7 +314,7 @@ class ShowRequest(RequestHandler):
       profile.put()
       request.put()
 
-      context = notifications.handledRequestContext(self.data)
+      context = notifications.handledRequestContext(self.data, request.status)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
       # TODO(SRabbelier): just call as soon as we make User Request's parent
       db.run_in_transaction(sub_txn)
@@ -334,7 +334,7 @@ class ShowRequest(RequestHandler):
       request.status = 'rejected'
       request.put()
 
-      context = notifications.handledRequestContext(self.data)
+      context = notifications.handledRequestContext(self.data, request.status)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
       sub_txn()
 
