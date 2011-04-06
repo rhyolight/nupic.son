@@ -112,6 +112,8 @@ class ProposalTest(MailTestCase, DjangoTestCase):
 
     # Hacky
     self.data.createMentor(self.org)
+    self.data.profile.student_info = None
+    self.data.profile.put()
 
     # test score POST
     from soc.modules.gsoc.models.score import GSoCScore
