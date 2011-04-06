@@ -99,7 +99,7 @@ class RequestData(object):
         self._ds_write_disabled = True
         return True
 
-    self._ds_write_disabled = db.WRITE_CAPABILITY.is_enabled()
+    self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
     return self._ds_write_disabled
 
   def populate(self, redirect, request, args, kwargs):
