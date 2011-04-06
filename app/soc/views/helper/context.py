@@ -48,7 +48,7 @@ def default(data):
   xsrf_secret_key = site_logic.getXsrfSecretKey(data.site)
   xsrf_token = xsrfutil.getGeneratedTokenForCurrentUser(xsrf_secret_key)
 
-  if system.isSecondaryHostname(data.request):
+  if system.isSecondaryHostname(data):
     google_api_key = data.site.secondary_google_api_key
   else:
     google_api_key = data.site.google_api_key

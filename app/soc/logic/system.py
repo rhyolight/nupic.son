@@ -25,8 +25,6 @@ __authors__ = [
 import os
 import settings
 
-from soc.logic.models import site
-
 
 def getApplicationId():
   """Returns the current application id.
@@ -58,27 +56,26 @@ def getRawHostname():
   return os.environ.get('HTTP_HOST', '')
 
 
-def getHostname(site_settings=None):
+def getHostname(data=None):
   """Returns the hostname, taking in account site hostname settings.
   """
-  if not site_settings:
-    site_settings = site.logic.getSingleton()
+  site = data.site if data else site.logic.getSingleton()
 
-  if site_settings.hostname:
-    return site_settings.hostname
+  if site.hostname:
+    return site.hostname
 
   return getRawHostname()
 
 
-def isSecondaryHostname(request):
+def isSecondaryHostname(data=None):
   """Returns if the current request is from the secondary hostname.
   """
-  site_settings = site.logic.getSingleton()
+  site = data.site if data else site.logic.getSingleton()
 
-  if not site_settings.hostname:
+  if not site.hostname:
     return False
 
-  return getRawHostname().find(site_settings.hostname) >= 0
+  return getRawHostname().find(site.hostname) >= 0
 
 
 def getAppVersion():

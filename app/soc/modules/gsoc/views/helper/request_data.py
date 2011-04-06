@@ -439,7 +439,7 @@ class RedirectHelper(object):
       return url
 
     # TODO(SRabbelier): when should we link to https:// ?
-    return 'http://%s%s' % (system.getHostname(self._data.site), url)
+    return 'http://%s%s' % (system.getHostname(self._data), url)
 
   def to(self, name=None, validated=False, full=False):
     """Redirects to the resolved url for name.
