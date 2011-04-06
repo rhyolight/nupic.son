@@ -106,6 +106,7 @@ options(
                       '--disable=E1103',
                       ],
         pylint_args = [],
+        with_module = None,
         ignore = False,
         **options.build
     ),
