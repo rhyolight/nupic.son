@@ -244,7 +244,7 @@ def newProposalContext(data, proposal, to_emails):
     data: a RequestData object
   """
   data.redirect.review(proposal.key().id(), data.user.link_id)
-  proposal_notification_url = data.redirect.to('review_gsoc_proposal', full=True)
+  proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
   
   proposal_name = proposal.title
 
@@ -273,7 +273,7 @@ def updatedProposalContext(data, proposal, to_emails):
   assert isSet(data.organization)
 
   data.redirect.review(proposal.key().id(), data.user.link_id)
-  proposal_notification_url = data.redirect.to('review_gsoc_proposal', full=True)
+  proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
 
   proposal_name = proposal.title
 
