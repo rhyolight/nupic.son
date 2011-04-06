@@ -319,7 +319,7 @@ class RequestHandler(object):
       self.args = None
       self.kwargs = None
       self.data = None
-      self.checker = None
+      self.check = None
       self.mutator = None
       self.redirect = None
 
