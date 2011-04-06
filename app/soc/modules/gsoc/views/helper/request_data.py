@@ -270,17 +270,20 @@ class RequestData(RequestData):
     super(RequestData, self).populate(redirect, request, args, kwargs)
 
     if kwargs.get('sponsor') and kwargs.get('program'):
-      program_keyfields = {'link_id': kwargs['program'],
-                           'scope_path': kwargs['sponsor']}
-      self.program = program_logic.getFromKeyFieldsOr404(program_keyfields)
+      program_key_name = "%s/%s" % (kwargs['sponsor'], kwargs['program'])
+      program_key = db.Key.from_path('GSoCProgram', program_key_name)
     else:
-      self.program =  self.site.active_program
+      program_key = Site.active_program.get_value_for_datastore(site)
+      program_key_name = program_key.name()
 
-    self.program_timeline = self.program.timeline
+    timeline_key = db.Key.from_path('GSoCTimeline', program_key_name)
 
-    key_name = 'gsoc_program/%s/orgapp' % self.program.key().name()
+    org_app_key_name = 'gsoc_program/%s/orgapp' % program_key_name
+    org_app_key = db.Key.from_path('OrgAppSurvey', org_app_key_name)
 
-    self.org_app = OrgAppSurvey.get_by_key_name(key_name)
+    keys = [program_key, timeline_key, org_app_key]
+
+    self.program, self.program_timeline, self.org_app = db.get(keys)
 
     self.timeline = TimelineHelper(self.program_timeline, self.org_app)
 
