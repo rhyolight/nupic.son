@@ -24,6 +24,7 @@ __authors__ = [
 
 
 from google.appengine.api import users
+from google.appengine.ext import db
 
 from django.utils.functional import lazy
 
@@ -62,11 +63,44 @@ class RequestData(object):
     self.POST = None
     self.path = None
     self.full_path = None
-    self.login_url = None
-    self.logout_url = None
     self.is_developer = False
     self.gae_user = None
-    self.ds_write_disabled = False
+    self._login_url = None
+    self._logout_url = None
+    self._ds_write_disabled = None
+
+  @property
+  def login_url(self):
+    """Memoizes and returns the login_url for the current path.
+    """
+    if not self._login_url:
+      self._login_url = users.create_login_url(self.full_path)
+    return self._login_url
+
+  @property
+  def logout_url(self):
+    """Memoizes and returns the logout_url for the current path.
+    """
+    if not self._logout_url:
+      self._logout_url = users.create_logout_url(self.full_path)
+    return self._logout_url
+
+  @property
+  def ds_write_disabled(self):
+    """Memoizes and returns whether datastore writes are disabled.
+    """
+    if self._ds_write_disabled is not None:
+      return self._ds_write_disabled
+
+    if self.request.method == 'GET':
+      val= self.request.GET.get('dsw_disabled', '')
+
+      if val.isdigit() and int(val) == 1:
+        self._ds_write_disabled = True
+        return True
+
+    self._ds_write_disabled = db.WRITE_CAPABILITY.is_enabled()
+    return self._ds_write_disabled
 
   def populate(self, redirect, request, args, kwargs):
     """Populates the fields in the RequestData object.
@@ -83,8 +117,6 @@ class RequestData(object):
     self.POST = request.POST
     self.path = request.path.encode('utf-8')
     self.full_path = request.get_full_path().encode('utf-8')
-    self.login_url = users.create_login_url(self.full_path)
-    self.logout_url = users.create_logout_url(self.full_path)
     self.site = site_logic.getSingleton()
     self.user = user_logic.getCurrentUser()
     if users.is_current_user_admin():
@@ -92,12 +124,3 @@ class RequestData(object):
     if self.user and self.user.is_developer:
       self.is_developer = True
     self.gae_user = users.get_current_user()
-
-    if data.request.method == 'GET':
-      val= request.GET.get('dsw_disabled', '')
-
-      if val.isdigit() and int(val) == 1:
-        self.ds_write_disabled = True
-
-    if not self.ds_write_disabled:
-      self.ds_write_disabled = db.WRITE_CAPABILITY.is_enabled()
