@@ -1,5 +1,17 @@
 indexes:
 
+# used to retrieve User entities
+- kind: User
+  properties:
+  - name: account
+  - name: status
+
+# used to retrieve User entities
+- kind: User
+  properties:
+  - name: user_id
+  - name: status
+
 # used to figure out which proposals to accept
 - kind: GSoCProposal
   properties:
