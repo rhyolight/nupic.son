@@ -341,6 +341,23 @@ class BaseAccessChecker(object):
 
     raise AccessViolation(DEF_ROLE_INACTIVE_MSG)
 
+  def _isIdBasedEntityPresent(self, entity, id, model_name):
+    """Checks if the entity is not None.
+    """
+    if entity is not None:
+      return
+
+    error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
+        'model': model_name,
+        'id': id,
+        }
+    raise AccessViolation(error_msg)
+
+  def isRequestPresent(self, entity, id):
+    """Checks if the specified Request entity is not None.
+    """
+    self._isIdBasedEntityPresent(entity, id, 'Request')
+
 
 class DeveloperAccessChecker(BaseAccessChecker):
   """Helper class for access checking.
@@ -584,23 +601,6 @@ class AccessChecker(BaseAccessChecker):
       self.data.is_pending = True
     elif status == 'withdrawn':
       self.data.is_pending = False
-
-  def _isIdBasedEntityPresent(self, entity, id, model_name):
-    """Checks if the entity is not None.
-    """
-    if entity is not None:
-      return
-
-    error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
-        'model': model_name,
-        'id': id,
-        }
-    raise AccessViolation(error_msg)
-
-  def isRequestPresent(self, entity, id):
-    """Checks if the specified Request entity is not None.
-    """
-    self._isIdBasedEntityPresent(entity, id, 'Request')
 
   def canRespondToInvite(self):
     """Checks if the current user can accept/reject the invitation.
