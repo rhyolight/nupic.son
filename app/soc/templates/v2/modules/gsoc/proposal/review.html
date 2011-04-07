@@ -60,6 +60,7 @@ limitations under the License.
   <p class="project-possible-mentor"><strong>Possible mentors: </strong>{{ possible_mentors|default:"None" }}</p>
   {% endif %}
   <p class="description"><strong>Short description:</strong> {{ proposal.abstract }}</p>
+  <p class="status"><strong>Status:</strong> {{ proposal.status }}</p>
   {% if additional_info %}
   <p class="description"><strong>Additional info:</strong>
     <a href="{{ additional_info_link }}"> {{ additional_info }}</a>
