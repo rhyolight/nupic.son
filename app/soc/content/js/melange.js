@@ -168,13 +168,18 @@
       };
 
       var cookie = jQuery.cookie(cookie_name);
-      cookie_content = JSON.parse(cookie);
 
-      if (cookie_content === null) {
-        cookie_content = default_cookie;
+      try {
+        cookie = JSON.parse(cookie);
+        if (cookie === null) {
+          throw "null_cookie";
+        }
+      }
+      catch(e) {
+        cookie = default_cookie;
       }
 
-      return cookie_content;
+      return cookie;
     };
 
     $m.saveCookie = function (cookie_name, cookie_content, cookie_expires, cookie_path) {
