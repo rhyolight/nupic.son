@@ -470,9 +470,9 @@ class SubmittedProposalsComponent(Component):
     list_config.addColumn('mentor', 'Assigned mentor link_id',
                           mentor_key, hidden=True)
     options = ([('', 'All')] +
-        [("^%s$" % i.link_id, i.short_name) for i in data.mentor_for])
+        [("^%s$" % i.short_name, i.short_name) for i in data.mentor_for])
     list_config.addColumn(
-        'org', 'Organization', (lambda ent, *args: ent.org.name),
+        'org', 'Organization', (lambda ent, *args: ent.org.short_name),
         options=options, hidden=True)
     list_config.setRowAction(lambda e, *args, **kwargs: 
         r.review(e.key().id_or_name(), e.parent().link_id).
