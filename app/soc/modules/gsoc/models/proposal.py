@@ -115,4 +115,4 @@ class GSoCProposal(soc.models.base.ModelWithFieldAttributes):
   created_on = db.DateTimeProperty(required=True, auto_now_add=True)
 
   #: date when the proposal was last modified, should be set manually on edit
-  last_modified_on = db.DateTimeProperty(required=True, auto_now_add=True)
+  last_modified_on = db.DateTimeProperty(required=True, auto_now=True)
