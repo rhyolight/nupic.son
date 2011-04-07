@@ -188,4 +188,8 @@ class ProposalTest(MailTestCase, DjangoTestCase):
     proposal = GSoCProposal.all().get()
     self.assertPropertiesEqual(properties, proposal)
 
+    # after update last_modified_on should be updated which is not equal
+    # to created_on
+    self.assertNotEqual(proposal.created_on, proposal.last_modified_on)
+
     self.assertEmailSent(to=mentor.profile.email, n=1)
