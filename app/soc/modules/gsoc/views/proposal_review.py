@@ -880,3 +880,61 @@ class ProposalModificationPostDeadline(RequestHandler):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
     self.error(405)
+
+
+class AcceptProposal(RequestHandler):
+  """View allowing org admins to directly accept the proposal.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'^gsoc/proposal/accept/%s$' % url_patterns.REVIEW,
+         self, name='gsoc_proposal_accept'),
+    ]
+
+  def checkAccess(self):
+    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
+
+    if not self.data.proposal:
+      raise NotFound('Requested proposal does not exist')
+
+    self.check.isOrgAdminForOrganization(self.data.proposal.org)
+
+  def toggleStatus(self, value):
+    """Toggles the the application state between accept and pending.
+
+    Args:
+      value: can be either "accept" or "revert".
+    """
+    assert isSet(self.data.proposal)
+
+    if value != 'accept' and value != 'revert':
+      raise BadRequest("Invalid post data.")
+
+    if value == 'accept' and self.data.proposal.status == 'accepted':
+      raise BadRequest("Invalid post data.")
+    if value == 'revert' and not self.data.proposal.status == 'accepted':
+      raise BadRequest("Invalid post data.")
+
+    proposal_key = self.data.proposal.key()
+
+    def update_status_txn():
+      # transactionally get latest version of the proposal
+      proposal = db.get(proposal_key)
+      if value == 'accept':
+        proposal.status = 'accepted'
+      elif value == 'revert':
+        proposal.status = 'pending'
+
+      db.put(proposal)
+
+    db.run_in_transaction(update_status_txn)
+
+  def post(self):
+    value = self.data.POST.get('value')
+    self.toggleStatus(value)
+
+  def get(self):
+    """Special Handler for HTTP GET request since this view only handles POST.
+    """
+    self.error(405)

@@ -91,6 +91,7 @@ class Callback(object):
     self.views.append(profile_show.ProfileShowPage())
     self.views.append(proposal.ProposalPage())
     self.views.append(proposal.UpdateProposal())
+    self.views.append(proposal_review.AcceptProposal())
     self.views.append(proposal_review.AssignMentor())
     self.views.append(proposal_review.IgnoreProposal())
     self.views.append(proposal_review.PostComment())

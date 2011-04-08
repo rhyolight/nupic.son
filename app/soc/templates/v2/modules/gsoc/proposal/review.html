@@ -267,24 +267,24 @@ limitations under the License.
         });
       {% endif %}
 
-
-      /* Make allow proposal modifications button, post using ajax. */
-      var proposal_modification = "{{ proposal_modification }}";
-      jQuery("#proposal-modification-link").click(function() {
-        jQuery.post("{{ proposal_modification_link }}",
-            {value: proposal_modification, xsrf_token: window.xsrf_token},
+      /* Make the accept proposal button, post using ajax. */
+      var accept_proposal = "{{ accept_proposal }}";
+      jQuery("#accept-proposal-link").click(function() {
+        jQuery.post("{{ accept_proposal_link }}",
+            {value: accept_proposal, xsrf_token: window.xsrf_token},
             function(data) {
-          if (proposal_modification == "allow") {
-            jQuery("#proposal-modification-link").html(
-                "Disallow proposal modification");
-            proposal_modification = "disallow";
-          } else if (proposal_modification == "disallow") {
-            jQuery("#proposal-modification-link").html(
-                "Allow proposal modification");
-            proposal_modification = "allow";
+          if (accept_proposal == "accept") {
+            jQuery("#accept-proposal-link").html(
+                "Revert to pending");
+            accept_proposal = "revert";
+          } else if (accept_proposal == "revert") {
+            jQuery("#accept-proposal-link").html(
+                "Accept proposal");
+            accept_proposal = "accept";
           }
         });
       });
+
 
       /* Make the ignore proposal button, post using ajax. */
       var ignore_proposal = "{{ ignore_proposal }}";
@@ -318,6 +318,24 @@ limitations under the License.
             jQuery("#wish-to-mentor-link").html(
                 "I wish to mentor this project");
             wish_to_mentor = "request";
+          }
+        });
+      });
+
+      /* Make allow proposal modifications button, post using ajax. */
+      var proposal_modification = "{{ proposal_modification }}";
+      jQuery("#proposal-modification-link").click(function() {
+        jQuery.post("{{ proposal_modification_link }}",
+            {value: proposal_modification, xsrf_token: window.xsrf_token},
+            function(data) {
+          if (proposal_modification == "allow") {
+            jQuery("#proposal-modification-link").html(
+                "Disallow proposal modification");
+            proposal_modification = "disallow";
+          } else if (proposal_modification == "disallow") {
+            jQuery("#proposal-modification-link").html(
+                "Allow proposal modification");
+            proposal_modification = "allow";
           }
         });
       });
