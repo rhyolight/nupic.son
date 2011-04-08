@@ -76,9 +76,9 @@ DEF_PROPOSAL_MODIFICATION_REQUEST_MSG = ugettext(
     'proposal.')
 
 DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
-    'Your organization administrators have flagged this proposal to be '
-    'ignored. If you think this is incorrect, contact your organization '
-    'administrators to resolve the situation.')
+    'An organization administrator has flagged this proposal to be '
+    'ignored. If you think this is incorrect, contact an organization '
+    'administrator to resolve the situation.')
 
 DEF_PAGE_INACTIVE_BEFORE_MSG_FMT = ugettext(
     'This page is inactive before %s')
