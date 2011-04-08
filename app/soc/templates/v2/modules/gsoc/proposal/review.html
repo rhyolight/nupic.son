@@ -22,7 +22,7 @@ limitations under the License.
 {% block page_content %}
 <h1 id="project-page-title">
   {{ proposal.title }}
-  {% if user_is_proposer %}
+  {% if update_link %}
     <span class="action-link">
       <a href="{{ update_link }}">Update</a>
     </span>

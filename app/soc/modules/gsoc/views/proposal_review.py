@@ -354,10 +354,18 @@ class ReviewProposal(RequestHandler):
         'form': form,
     }
 
-    # TODO: timeline check to see if you are allowed to edit
+    # to keep the blocks as simple as possible, the if branches have
+    # been broken down into several if blocks
     user_is_proposer = self.data.user and \
         (self.data.user.key() == self.data.proposer_user.key())
-    update_link = self.data.redirect.id().urlOf('update_gsoc_proposal')
+    if user_is_proposer:
+      # we will check if the student is allowed to modify the proposal
+      # after the student proposal deadline
+      is_editable = self.data.timeline.afterStudentSignupEnd() and \
+          self.data.proposal.is_editable_post_deadline
+      if self.data.timeline.studentSignup() or is_editable:
+        context['update_link'] = self.data.redirect.id().urlOf(
+            'update_gsoc_proposal')
 
     possible_mentors = db.get(self.data.proposal.possible_mentors)
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
@@ -397,9 +405,6 @@ class ReviewProposal(RequestHandler):
         'scoring_visible': scoring_visible,
         'student_email': self.data.proposer_profile.email,
         'student_name': self.data.proposer_profile.name(),
-        'title': self.data.proposal.title,
-        'update_link': update_link,
-        'user_is_proposer': user_is_proposer,
         })
 
     return context
