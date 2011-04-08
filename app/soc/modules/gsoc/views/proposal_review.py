@@ -223,6 +223,9 @@ class ReviewProposal(RequestHandler):
   def checkAccess(self):
     self.data.proposer_user = User.get_by_key_name(self.data.kwargs['student'])
 
+    if not self.data.proposer_user:
+      raise NotFound('Requested user does not exist')
+
     fields = ['sponsor', 'program', 'student']
     key_name = '/'.join(self.data.kwargs[i] for i in fields)
 
