@@ -320,7 +320,14 @@ class ReviewProposal(RequestHandler):
           ).urlOf('gsoc_proposal_wish_to_mentor')
 
       if self.data.orgAdminFor(self.data.proposal.org):
-        # only org admins can assign mentors to proposals
+        # only org admins can ignore the proposal, assign mentors to proposals
+        if self.data.proposal.status in ['pending', 'withdrawn']:
+          context['ignore_proposal'] = 'ignore'
+        elif self.data.proposal.status == 'ignored':
+          context['ignore_proposal'] = 'reaccept'
+        context['ignore_proposal_link'] = self.data.redirect.review(
+          ).urlOf('gsoc_proposal_ignore')
+
         context['assign_mentor'] = AssignMentorFields(self.data)
 
       form = PrivateCommentForm()
