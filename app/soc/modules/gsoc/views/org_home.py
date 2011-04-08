@@ -71,8 +71,9 @@ class Apply(Template):
       kwargs_org = dicts.filter(self.data.kwargs,
                                 ['sponsor', 'program', 'organization'])
       if self.data.student_info:
-        context['submit_proposal_link'] = reverse('submit_gsoc_proposal',
-                                                  kwargs=kwargs_org)
+        if self.data.timeline.studentSignup():
+          context['submit_proposal_link'] = reverse('submit_gsoc_proposal',
+                                                    kwargs=kwargs_org)
       elif self.data.orgAdminFor(organization):
         context['mentor_applied'] = True
         context['role'] = 'an administrator'
