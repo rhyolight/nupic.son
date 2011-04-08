@@ -204,7 +204,25 @@ limitations under the License.
         });
       {% endif %}
 
-      /* Make the wish to mentor link post using ajax */
+      /* Make the ignore proposal link post using ajax. */
+      var ignore_proposal = "{{ ignore_proposal }}";
+      jQuery("#ignore-proposal-link").click(function() {
+        jQuery.post("{{ ignore_proposal_link }}",
+            {value: ignore_proposal, xsrf_token: window.xsrf_token},
+            function(data) {
+          if (ignore_proposal == "ignore") {
+            jQuery("#ignore-proposal-link").html(
+                "Re-accept this proposal");
+            ignore_proposal = "reaccept";
+          } else if (ignore_proposal == "reaccept") {
+            jQuery("#ignore-proposal-link").html(
+                "Ignore this proposal");
+            ignore_proposal = "ignore";
+          }
+        });
+      });
+
+      /* Make the wish to mentor link post using ajax. */
       var wish_to_mentor = "{{ wish_to_mentor }}";
       jQuery("#wish-to-mentor-link").click(function() {
         jQuery.post("{{ wish_to_mentor_link }}",

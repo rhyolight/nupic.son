@@ -722,3 +722,67 @@ class AssignMentor(RequestHandler):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
     self.error(405)
+
+
+class IgnoreProposal(RequestHandler):
+  """View which allows org admins to ignore a proposal.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'^gsoc/proposal/ignore/%s$' % url_patterns.REVIEW,
+         self, name='gsoc_proposal_ignore'),
+    ]
+
+  def checkAccess(self):
+    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
+
+    if not self.data.proposal:
+      raise NotFound('Requested proposal does not exist')
+
+    self.check.isOrgAdminForOrganization(self.data.proposal.org)
+
+  def toggleIgnoreProposal(self, value):
+    """Toggles the ignore status of the proposal.
+
+    Args:
+      value: can be either "ignore" or "reaccept".
+    """
+    assert isSet(self.data.proposal)
+
+    if value != 'ignore' and value != 'reaccept':
+      raise BadRequest("Invalid post data.")
+
+    if value == 'ignore' and self.data.proposal.status not in [
+        'pending', 'withdrawn']:
+      raise BadRequest("Invalid post data.")
+    if value == 'reaccept' and self.data.proposal.status != 'ignored':
+      raise BadRequest("Invalid post data.")
+
+    proposal_key = self.data.proposal.key()
+
+    def update_status_trx():
+      # transactionally get latest version of the proposal
+      proposal = db.get(proposal_key)
+      if value == 'ignore':
+        # proposal is already ignored
+        if proposal.status == 'ignored':
+          return
+        proposal.status = 'ignored'
+      else:
+        # proposal is already reaccepted
+        if proposal.status in ['pending', 'withdrawn']:
+          return
+        proposal.status = 'pending'
+      db.put(proposal)
+
+    db.run_in_transaction(update_status_trx)
+
+  def post(self):
+    value = self.data.POST.get('value')
+    self.toggleIgnoreProposal(value)
+
+  def get(self):
+    """Special Handler for HTTP GET request since this view only handles POST.
+    """
+    self.error(405)
