@@ -352,6 +352,14 @@ class ReviewProposal(RequestHandler):
           ).urlOf('gsoc_proposal_ignore')
 
         if not proposal_ignored:
+          if self.data.proposal.status == 'pending':
+            context['accept_proposal'] = 'accept'
+          elif self.data.proposal.status == 'accepted':
+            context['accept_proposal'] = 'revert'
+
+          context['accept_proposal_link'] = self.data.redirect.review(
+              ).urlOf('gsoc_proposal_accept')
+
           context['assign_mentor'] = AssignMentorFields(self.data)
 
       form = PrivateCommentForm()

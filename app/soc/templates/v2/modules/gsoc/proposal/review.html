@@ -73,22 +73,47 @@ limitations under the License.
   {{ duplicate.render }}
 {% endif %}
 
-
 {% if ignore_proposal %}
-  <h2 id="project-page-student-name">
-    <span class="action-link">
-      <a href="#" id="ignore-proposal-link">
-        {% if ignore_proposal == "ignore" %}
-          Ignore this proposal
-        {% else %}{% if ignore_proposal == "unignore" %}
-          Unignore this proposal
-        {% endif %}{% endif %}
-      </a>
-    </span>
-  </h2>
+  <span class="action-link">
+    <a href="#" id="ignore-proposal-link">
+      {% if ignore_proposal == "ignore" %}
+        Ignore this proposal
+      {% else %}{% if ignore_proposal == "unignore" %}
+        Unignore this proposal
+      {% endif %}{% endif %}
+    </a>
+  </span>
+  <span>&nbsp;</span>
+{% endif %}
+
+{% if accept_proposal %}
+  <span class="action-link">
+    <a href="#" id="accept-proposal-link">
+      {% if accept_proposal == "accept" %}
+        Accept proposal
+      {% else %}{% if accept_proposal == "revert" %}
+        Revert to pending
+      {% endif %}{% endif %}
+    </a>
+  </span>
+  <span>&nbsp;</span>
+{% endif %}
+
+{% if proposal_modification %}
+  <span class="action-link">
+    <a href="#" id="proposal-modification-link">
+      {% if proposal_modification == "allow" %}
+        Allow proposal modifications
+      {% else %}{% if proposal_modification == "disallow" %}
+        Disallow proposal modifications
+      {% endif %}{% endif %}
+    </a>
+  </span>
+  <span>&nbsp;</span>
 {% endif %}
 
 {% if wish_to_mentor %}
+  <br /><br />
   <h2 id="project-page-student-name">
     <span class="action-link">
       <a href="#" id="wish-to-mentor-link">
@@ -101,22 +126,6 @@ limitations under the License.
     </span>
   </h2>
 {% endif %}
-
-
-{% if proposal_modification %}
-  <h2 id="project-page-student-name">
-    <span class="action-link">
-      <a href="#" id="proposal-modification-link">
-        {% if proposal_modification == "allow" %}
-          Allow proposal modifications
-        {% else %}{% if proposal_modification == "disallow" %}
-          Disallow proposal modifications
-        {% endif %}{% endif %}
-      </a>
-    </span>
-  </h2>
-{% endif %}
-
 
 {{ assign_mentor.render }}
 
