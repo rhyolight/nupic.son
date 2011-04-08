@@ -5,7 +5,7 @@
   {% endif %}
   >
     {% if group %}
-      <legend><span>{{ group }}<span></legend>
+      <legend><span>{{ group }}</span></legend>
     {% endif %}
     {% for field in fields %}
       <div id="form_row_{{ field.name }}" class="row {{ field.div_class }}">
