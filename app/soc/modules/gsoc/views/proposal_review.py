@@ -317,10 +317,7 @@ class ReviewProposal(RequestHandler):
     # TODO: check if it is possible to post a comment
     comment_action = reverse('comment_gsoc_proposal', kwargs=self.data.kwargs)
 
-    proposal_ignored = False
-
-    if self.data.proposal.status == 'ignored':
-      proposal_ignored = True
+    proposal_ignored = self.data.proposal.status == 'ignored'
 
     if self.data.private_comments_visible:
       context['user_role'] = 'mentor'
