@@ -149,6 +149,11 @@ class AssignMentorFields(Template):
   """Template to render the fields necessary to assign a mentor to a proposal.
   """
 
+  def __init__(self, data):
+    """Instantiates the template for Assign mentor buttons for org admin.
+    """
+    super(AssignMentorFields, self).__init__(data)
+
   def context(self):
     possible_mentors, all_mentors = getMentorsChoicesToAssign(
         self.data.proposal)
@@ -203,6 +208,7 @@ class Duplicate(Template):
 
   def templatePath(self):
     return 'v2/modules/gsoc/duplicates/proposal_duplicate_review.html'
+
 
 class ReviewProposal(RequestHandler):
   """View for the Propsal Review page.
