@@ -34,6 +34,21 @@ limitations under the License.
   {{ duplicate.render }}
 {% endif %}
 
+
+{% if ignore_proposal %}
+  <h2 id="project-page-student-name">
+    <span class="action-link">
+      <a href="#" id="ignore-proposal-link">
+        {% if ignore_proposal == "ignore" %}
+          Ignore this proposal
+        {% else %}{% if ignore_proposal == "reaccept" %}
+          Reaccept this proposal
+        {% endif %}{% endif %}
+      </a>
+    </span>
+  </h2>
+{% endif %}
+
 {% if wish_to_mentor %}
   <h2 id="project-page-student-name">
     <span class="action-link">
@@ -50,6 +65,7 @@ limitations under the License.
 
 
 {{ assign_mentor.render }}
+
 
 <div class="project-short">
   {% if public_comments_visible %}
