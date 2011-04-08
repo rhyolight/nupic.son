@@ -48,7 +48,7 @@ class GSoCComment(soc.models.base.ModelWithFieldAttributes):
   content = db.TextProperty(verbose_name='')
 
   #: Indicated if the comment should be visible to the appropriate student
-  is_private = db.BooleanProperty(default=False,
+  is_private = db.BooleanProperty(default=True,
       verbose_name=ugettext('Private'))
   is_private.help_text = ugettext(
       'Whether this comment will only be seen by admins and mentors')
