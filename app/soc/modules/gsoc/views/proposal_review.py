@@ -330,7 +330,7 @@ class ReviewProposal(RequestHandler):
         if self.data.proposal.status in ['pending', 'withdrawn']:
           context['ignore_proposal'] = 'ignore'
         elif self.data.proposal.status == 'ignored':
-          context['ignore_proposal'] = 'reaccept'
+          context['ignore_proposal'] = 'unignore'
         context['ignore_proposal_link'] = self.data.redirect.review(
           ).urlOf('gsoc_proposal_ignore')
 
@@ -752,17 +752,17 @@ class IgnoreProposal(RequestHandler):
     """Toggles the ignore status of the proposal.
 
     Args:
-      value: can be either "ignore" or "reaccept".
+      value: can be either "ignore" or "unignore".
     """
     assert isSet(self.data.proposal)
 
-    if value != 'ignore' and value != 'reaccept':
+    if value != 'ignore' and value != 'unignore':
       raise BadRequest("Invalid post data.")
 
     if value == 'ignore' and self.data.proposal.status not in [
         'pending', 'withdrawn']:
       raise BadRequest("Invalid post data.")
-    if value == 'reaccept' and self.data.proposal.status != 'ignored':
+    if value == 'unignore' and self.data.proposal.status != 'ignored':
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
@@ -772,7 +772,7 @@ class IgnoreProposal(RequestHandler):
       proposal = db.get(proposal_key)
       if value == 'ignore':
         proposal.status = 'ignored'
-      elif value == 'reaccept':
+      elif value == 'unignore':
         proposal.status = 'pending'
 
       db.put(proposal)

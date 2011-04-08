@@ -41,8 +41,8 @@ limitations under the License.
       <a href="#" id="ignore-proposal-link">
         {% if ignore_proposal == "ignore" %}
           Ignore this proposal
-        {% else %}{% if ignore_proposal == "reaccept" %}
-          Reaccept this proposal
+        {% else %}{% if ignore_proposal == "unignore" %}
+          Unignore this proposal
         {% endif %}{% endif %}
       </a>
     </span>
@@ -212,9 +212,9 @@ limitations under the License.
             function(data) {
           if (ignore_proposal == "ignore") {
             jQuery("#ignore-proposal-link").html(
-                "Re-accept this proposal");
-            ignore_proposal = "reaccept";
-          } else if (ignore_proposal == "reaccept") {
+                "Unignore this proposal");
+            ignore_proposal = "unignore";
+          } else if (ignore_proposal == "unignore") {
             jQuery("#ignore-proposal-link").html(
                 "Ignore this proposal");
             ignore_proposal = "ignore";
