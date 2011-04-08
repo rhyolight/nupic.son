@@ -105,7 +105,7 @@ class Apply(Template):
 
     signup = self.data.timeline.orgSignup(
         ) or self.data.timeline.studentSignup(
-        ) or self.data.timeline.mentorSignup()
+        ) or (self.data.timeline.mentorSignup() and not self.data.student_info)
 
     if signup and not self.data.gae_user:
       context['login_link'] = self.data.redirect.login().url()
