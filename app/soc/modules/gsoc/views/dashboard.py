@@ -469,7 +469,7 @@ class SubmittedProposalsComponent(Component):
 
     list_config.addColumn('mentor', 'Assigned mentor link_id',
                           mentor_key, hidden=True)
-    if not self.data.is_host:
+    if not data.is_host:
       options = ([('', 'All')] +
           [("^%s$" % i.short_name, i.short_name) for i in data.mentor_for])
     else:
