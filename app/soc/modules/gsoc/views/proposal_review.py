@@ -492,6 +492,8 @@ class PostComment(RequestHandler):
     if not comment_form.is_valid():
       return None
 
+    if self.data.public_only:
+      comment_form.cleaned_data['is_private'] = False
     comment_form.cleaned_data['author'] = self.data.profile
 
     q = GSoCProfile.all().filter('mentor_for', self.data.proposal.org)
