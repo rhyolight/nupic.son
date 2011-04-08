@@ -70,6 +70,11 @@ DEF_PROGRAM_INACTIVE_MSG_FMT = ugettext(
 DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT = ugettext(
     'This page is inactive before %s and after %s.')
 
+DEF_PROPOSAL_MODIFICATION_REQUEST_MSG = ugettext(
+    'If you would like to update this proposal, request your organization '
+    'to which this proposal belongs, to grant permission to modify the '
+    'proposal.')
+
 DEF_PAGE_INACTIVE_BEFORE_MSG_FMT = ugettext(
     'This page is inactive before %s')
 
@@ -572,6 +577,20 @@ class AccessChecker(BaseAccessChecker):
     raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT %
         self.data.timeline.studentsSignupBetween())
 
+  def canStudentUpdateProposalPostSignup(self):
+    """Checks if the student signup deadline has passed.
+    """
+    self.isProgramActive()
+
+    if (self.data.timeline.afterStudentSignupEnd() and
+        self.data.proposal.is_editable_post_deadline):
+      return
+
+    violation_message = '%s %s'% ((DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT %
+        self.data.timeline.studentsSignupBetween()),
+        DEF_PROPOSAL_MODIFICATION_REQUEST_MSG)
+    raise AccessViolation(violation_message)
+
   def canStudentUpdateProposal(self):
     """Checks if the student is eligible to submit a proposal.
     """
@@ -581,7 +600,10 @@ class AccessChecker(BaseAccessChecker):
     self.isProposalInURLValid()
 
     # check if the timeline allows updating proposals
-    self.studentSignupActive()
+    try:
+      self.studentSignupActive()
+    except AccessViolation:
+      self.canStudentUpdateProposalPostSignup()
 
     # check if the proposal belongs to the current user
     expected_profile = self.data.proposal.parent()
@@ -593,7 +615,8 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the status allows the proposal to be updated
     status = self.data.proposal.status
-    if self.data.proposal.status in ['invalid', 'accepted', 'rejected']:
+    if self.data.proposal.status in ['ignored', 'invalid',
+                                     'accepted', 'rejected']:
       raise AccessViolation(DEF_CANNOT_UPDATE_PROPOSAL)
 
     # determine what can be done with the proposal
