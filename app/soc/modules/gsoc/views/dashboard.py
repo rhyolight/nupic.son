@@ -469,8 +469,11 @@ class SubmittedProposalsComponent(Component):
 
     list_config.addColumn('mentor', 'Assigned mentor link_id',
                           mentor_key, hidden=True)
-    options = ([('', 'All')] +
-        [("^%s$" % i.short_name, i.short_name) for i in data.mentor_for])
+    if not self.data.is_host:
+      options = ([('', 'All')] +
+          [("^%s$" % i.short_name, i.short_name) for i in data.mentor_for])
+    else:
+      options = None
     list_config.addColumn(
         'org', 'Organization', (lambda ent, *args: ent.org.short_name),
         options=options, hidden=True)
