@@ -463,7 +463,7 @@ class SubmittedProposalsComponent(Component):
     def mentor_key(ent, *args):
       key = GSoCProposal.mentor.get_value_for_datastore(ent)
       if not key:
-        return None
+        return ""
       split_name = key.name().split('/')
       return split_name[-1]
 
