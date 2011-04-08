@@ -796,3 +796,62 @@ class IgnoreProposal(RequestHandler):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
     self.error(405)
+
+
+class ProposalModificationPostDeadline(RequestHandler):
+  """View allowing mentors to allow students to modify the proposal.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'^gsoc/proposal/modification/%s$' % url_patterns.REVIEW,
+         self, name='gsoc_proposal_modification'),
+    ]
+
+  def checkAccess(self):
+    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
+
+    if not self.data.proposal:
+      raise NotFound('Requested proposal does not exist')
+
+    self.check.isMentorForOrganization(self.data.proposal.org)
+
+  def toggleModificationPermission(self, value):
+    """Toggles the permission to modify the proposal after proposal deadline.
+
+    Args:
+      value: can be either "allow" or "disallow".
+    """
+    assert isSet(self.data.proposal)
+
+    if value != 'allow' and value != 'disallow':
+      raise BadRequest("Invalid post data.")
+
+    if value == 'allow' and self.data.proposal.is_editable_post_deadline:
+      raise BadRequest("Invalid post data.")
+    if (value == 'disallow' and not
+        self.data.proposal.is_editable_post_deadline):
+      raise BadRequest("Invalid post data.")
+
+    proposal_key = self.data.proposal.key()
+
+    def update_modification_perm_txn():
+      # transactionally get latest version of the proposal
+      proposal = db.get(proposal_key)
+      if value == 'allow':
+        proposal.is_editable_post_deadline = True
+      elif value == 'disallow':
+        proposal.is_editable_post_deadline = False
+
+      db.put(proposal)
+
+    db.run_in_transaction(update_modification_perm_txn)
+
+  def post(self):
+    value = self.data.POST.get('value')
+    self.toggleModificationPermission(value)
+
+  def get(self):
+    """Special Handler for HTTP GET request since this view only handles POST.
+    """
+    self.error(405)

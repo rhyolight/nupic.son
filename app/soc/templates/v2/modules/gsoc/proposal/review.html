@@ -219,7 +219,26 @@ limitations under the License.
         });
       {% endif %}
 
-      /* Make the ignore proposal link post using ajax. */
+
+      /* Make allow proposal modifications button, post using ajax. */
+      var proposal_modification = "{{ proposal_modification }}";
+      jQuery("#proposal-modification-link").click(function() {
+        jQuery.post("{{ proposal_modification_link }}",
+            {value: proposal_modification, xsrf_token: window.xsrf_token},
+            function(data) {
+          if (proposal_modification == "allow") {
+            jQuery("#proposal-modification-link").html(
+                "Disallow proposal modification");
+            proposal_modification = "disallow";
+          } else if (proposal_modification == "disallow") {
+            jQuery("#proposal-modification-link").html(
+                "Allow proposal modification");
+            proposal_modification = "allow";
+          }
+        });
+      });
+
+      /* Make the ignore proposal button, post using ajax. */
       var ignore_proposal = "{{ ignore_proposal }}";
       jQuery("#ignore-proposal-link").click(function() {
         jQuery.post("{{ ignore_proposal_link }}",
