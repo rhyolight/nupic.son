@@ -61,7 +61,7 @@ limitations under the License.
 
 <h1 id="project-page-title">
   {{ proposal.title }}
-  {% if update_link %}
+  {% if update_link and not proposal_ignored %}
     <span class="action-link">
       <a href="{{ update_link }}">Update</a>
     </span>
