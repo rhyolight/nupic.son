@@ -113,6 +113,14 @@ class GSoCProposal(soc.models.base.ModelWithFieldAttributes):
       required=True,
       collection_name='proposals')
 
+  #: indicates whether the proposal's content may be publicly seen or not
+  is_editable_post_deadline = db.BooleanProperty(
+      required=False, default=False,
+      verbose_name=ugettext('Publicly visible'))
+  is_editable_post_deadline.help_text = ugettext(
+      'Clicking this button enables the student to modify this proposal '
+      'irrespective of the proposal submission deadline.')
+
   #: date when the proposal was created
   created_on = db.DateTimeProperty(required=True, auto_now_add=True)
 
