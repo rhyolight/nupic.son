@@ -767,22 +767,17 @@ class IgnoreProposal(RequestHandler):
 
     proposal_key = self.data.proposal.key()
 
-    def update_status_trx():
+    def update_status_txn():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
       if value == 'ignore':
-        # proposal is already ignored
-        if proposal.status == 'ignored':
-          return
         proposal.status = 'ignored'
-      else:
-        # proposal is already reaccepted
-        if proposal.status in ['pending', 'withdrawn']:
-          return
+      elif value == 'reaccept':
         proposal.status = 'pending'
+
       db.put(proposal)
 
-    db.run_in_transaction(update_status_trx)
+    db.run_in_transaction(update_status_txn)
 
   def post(self):
     value = self.data.POST.get('value')
