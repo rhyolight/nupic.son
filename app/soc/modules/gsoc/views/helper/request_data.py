@@ -120,6 +120,9 @@ class TimelineHelper(object):
   def studentSignupStart(self):
     return self.timeline.student_signup_start
 
+  def studentSignupEnd(self):
+    return self.timeline.student_signup_end
+
   def studentsSignupBetween(self):
     return (self.timeline.student_signup_start,
             self.timeline.student_signup_end)
@@ -152,6 +155,9 @@ class TimelineHelper(object):
   def studentSignup(self):
     start, end = self.studentsSignupBetween()
     return isBetween(start, end)
+
+  def afterStudentSignupEnd(self):
+    return isAfter(self.studentSignupEnd())
 
   def studentsAnnounced(self):
     return isAfter(self.studentsAnnouncedOn())
