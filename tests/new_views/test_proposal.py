@@ -76,9 +76,11 @@ class ProposalTest(MailTestCase, DjangoTestCase):
     self.assertProposalTemplatesUsed(response)
 
     # test proposal POST
-    override = {'program': self.gsoc, 'score': 0, 'mentor': None,
-                'org': self.org, 'status': 'pending', 'accept_as_project': False,
-                'is_editable_post_deadline': False}
+    override = {
+        'program': self.gsoc, 'score': 0, 'nr_scores': 0, 'mentor': None,
+        'org': self.org, 'status': 'pending', 'accept_as_project': False,
+        'is_editable_post_deadline': False
+    }
     response, properties = self.modelPost(url, GSoCProposal, override)
     self.assertResponseRedirect(response)
 
@@ -178,10 +180,12 @@ class ProposalTest(MailTestCase, DjangoTestCase):
     response = self.client.get(url)
     self.assertProposalTemplatesUsed(response)
 
-    override = {'program': self.gsoc, 'score': 0, 'mentor': mentor.profile,
-                'org': self.org, 'status': 'pending', 'action': 'Update',
-                'is_publicly_visible': False, 'accept_as_project': False,
-                'is_editable_post_deadline': False}
+    override = {
+        'program': self.gsoc, 'score': 0, 'nr_scores': 0,
+        'mentor': mentor.profile, 'org': self.org, 'status': 'pending',
+        'action': 'Update', 'is_publicly_visible': False,
+        'accept_as_project': False, 'is_editable_post_deadline': False
+    }
     response, properties = self.modelPost(url, GSoCProposal, override)
     self.assertResponseRedirect(response)
 

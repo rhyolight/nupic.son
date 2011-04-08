@@ -85,6 +85,9 @@ class GSoCProposal(soc.models.base.ModelWithFieldAttributes):
   #: should be assigned a project slot.
   score = db.IntegerProperty(required=True, default=0)
 
+  #: the amount of score of this proposal has had
+  nr_scores = db.IntegerProperty(required=True, default=0)
+
   #: Whether the org admin has decided that this proposal should be accepted.
   #: Whether or not the proposal is actually converted into a project depends
   #: on the amount of slots the organization has available.

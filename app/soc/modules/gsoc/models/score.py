@@ -32,8 +32,7 @@ class GSoCScore(soc.models.base.ModelWithFieldAttributes):
   """
 
   #: the value associated with the score
-  value = db.IntegerProperty(required=True,
-                             validator=lambda v: v >= 1 and v <= 5)
+  value = db.IntegerProperty(required=True)
 
   #: reference to the profile of a user who has given the score
   author = db.ReferenceProperty(
