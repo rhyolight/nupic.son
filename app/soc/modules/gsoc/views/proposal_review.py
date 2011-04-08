@@ -325,6 +325,15 @@ class ReviewProposal(RequestHandler):
       context['wish_to_mentor_link'] = self.data.redirect.review(
           ).urlOf('gsoc_proposal_wish_to_mentor')
 
+      if self.data.timeline.afterStudentSignupEnd():
+        if self.data.proposal.is_editable_post_deadline:
+          context['proposal_modification'] = 'disallow'
+        else:
+          context['proposal_modification'] = 'allow'
+
+        context['proposal_modification_link'] = self.data.redirect.review(
+            ).urlOf('gsoc_proposal_modification')
+
       if self.data.orgAdminFor(self.data.proposal.org):
         # only org admins can ignore the proposal, assign mentors to proposals
         if self.data.proposal.status in ['pending', 'withdrawn']:

@@ -64,6 +64,21 @@ limitations under the License.
 {% endif %}
 
 
+{% if proposal_modification %}
+  <h2 id="project-page-student-name">
+    <span class="action-link">
+      <a href="#" id="proposal-modification-link">
+        {% if proposal_modification == "allow" %}
+          Allow proposal modifications
+        {% else %}{% if proposal_modification == "disallow" %}
+          Disallow proposal modifications
+        {% endif %}{% endif %}
+      </a>
+    </span>
+  </h2>
+{% endif %}
+
+
 {{ assign_mentor.render }}
 
 
