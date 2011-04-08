@@ -317,24 +317,32 @@ class ReviewProposal(RequestHandler):
     # TODO: check if it is possible to post a comment
     comment_action = reverse('comment_gsoc_proposal', kwargs=self.data.kwargs)
 
+    proposal_ignored = False
+
+    if self.data.proposal.status == 'ignored':
+      proposal_ignored = True
+
     if self.data.private_comments_visible:
-      if self.data.isPossibleMentorForProposal():
-        context['wish_to_mentor'] = 'withdraw'
-      else:
-        context['wish_to_mentor'] = 'request'
-      context['wish_to_mentor_link'] = self.data.redirect.review(
-          ).urlOf('gsoc_proposal_wish_to_mentor')
-
-      if self.data.timeline.afterStudentSignupEnd():
-        if self.data.proposal.is_editable_post_deadline:
-          context['proposal_modification'] = 'disallow'
+      context['user_role'] = 'mentor'
+      if not proposal_ignored:
+        if self.data.isPossibleMentorForProposal():
+          context['wish_to_mentor'] = 'withdraw'
         else:
-          context['proposal_modification'] = 'allow'
+          context['wish_to_mentor'] = 'request'
+        context['wish_to_mentor_link'] = self.data.redirect.review(
+            ).urlOf('gsoc_proposal_wish_to_mentor')
 
-        context['proposal_modification_link'] = self.data.redirect.review(
-            ).urlOf('gsoc_proposal_modification')
+        if self.data.timeline.afterStudentSignupEnd():
+          if self.data.proposal.is_editable_post_deadline:
+            context['proposal_modification'] = 'disallow'
+          else:
+            context['proposal_modification'] = 'allow'
+
+          context['proposal_modification_link'] = self.data.redirect.review(
+              ).urlOf('gsoc_proposal_modification')
 
       if self.data.orgAdminFor(self.data.proposal.org):
+        context['user_role'] = 'org_admin'
         # only org admins can ignore the proposal, assign mentors to proposals
         if self.data.proposal.status in ['pending', 'withdrawn']:
           context['ignore_proposal'] = 'ignore'
@@ -343,7 +351,8 @@ class ReviewProposal(RequestHandler):
         context['ignore_proposal_link'] = self.data.redirect.review(
           ).urlOf('gsoc_proposal_ignore')
 
-        context['assign_mentor'] = AssignMentorFields(self.data)
+        if not proposal_ignored:
+          context['assign_mentor'] = AssignMentorFields(self.data)
 
       form = PrivateCommentForm()
     else:
@@ -359,6 +368,8 @@ class ReviewProposal(RequestHandler):
     user_is_proposer = self.data.user and \
         (self.data.user.key() == self.data.proposer_user.key())
     if user_is_proposer:
+      context['user_role'] = 'proposer'
+
       # we will check if the student is allowed to modify the proposal
       # after the student proposal deadline
       is_editable = self.data.timeline.afterStudentSignupEnd() and \
@@ -405,6 +416,7 @@ class ReviewProposal(RequestHandler):
         'scoring_visible': scoring_visible,
         'student_email': self.data.proposer_profile.email,
         'student_name': self.data.proposer_profile.name(),
+        'proposal_ignored': proposal_ignored,
         })
 
     return context

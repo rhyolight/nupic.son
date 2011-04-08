@@ -20,6 +20,45 @@ limitations under the License.
 {% endblock stylesheets %}
 
 {% block page_content %}
+
+{% if proposal_ignored %}
+  <div id="user-message" class="error">
+    <strong>ALERT:</strong> This proposal has been flagged as
+    <strong>ignored</strong> by
+    {% if user_role == 'proposer' %}
+      the organization administrators. You will <strong>NOT</strong> be
+      allowed to update or withdraw the proposal now. If you think this is
+      incorrect, contact your organization administrators to resolve this
+      situation.
+    {% else %}{% if user_role == 'mentor' %}
+      the organization administrators. You will <strong>NOT</strong> be
+      allowed to perform any action on this proposal now. If you think this
+      is incorrect, contact your organization administrators to resolve this
+      situation.
+    {% else %}{% if user_role == 'org_admin' %}
+      you or one of the other administrators of your organization. Neither
+      will the student be able to update or withdraw this proposal nor the
+      mentors of your organization will be able to perform any action on
+      this proposal. If you think this is incorrect, please click the
+      <strong>Unignore</strong> button below to resolve this situation.
+      <strong>NOTE:</strong> You will need to refresh this page after
+      clicking the Unignore button, to perform any further actions on this
+      proposal.
+    {% endif %}{% endif %}{% endif %}
+  </div>
+{% endif %}
+
+
+<!--  TODO: Remove the following if block once the JS magic to remove
+      the buttons of action is in place -->
+{% if not proposal_ignored and user_role == 'org_admin '%}
+  <div id="user-message" class="error">
+    <strong>NOTE:</strong>If you click the <strong>Ignore</strong> button,
+    please be sure to refresh the page before performing any further action
+    on this proposal.
+  </div>
+{% endif %}
+
 <h1 id="project-page-title">
   {{ proposal.title }}
   {% if update_link %}
