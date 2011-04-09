@@ -12,10 +12,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
-{% if apply_block %}
+{% if student_apply_block or mentor_apply_block%}
   <div id="apply-students" class="block block-students">
     <img src="/soc/content/{{ app_version }}/images/v2/gsoc/students-apply-now.jpg" height="107" width="429" alt="" id="block-apply-students-image" />
-    {% if student_profile_link or submit_proposal_link %}
+    {% if student_apply_block %}
       <h3 id="title-section-apply-students">Students: Apply!</h3>
       <p id="block-apply-students-text-action" class="action">
         {% if student_profile_link %}
@@ -41,18 +41,25 @@ limitations under the License.
       {% endif %}
     {% endif %}
 
-    {% if mentor_applied or mentor_request_link %}
+    {% if mentor_apply_block %}
       <h3 id="title-section-apply-mentors">Mentors: Apply!</h3>
       <p id="block-apply-mentors-text-action" class="action">
         {% if mentor_request_link %}
           <a href="{{ mentor_request_link }}">Request</a>
-          </p>
-          <p id="block-apply-mentors-text-small" class="small">to become mentor for {{ organization.name }}.</p>
+        {% endif %}
+        {% if role %}
+          <p>You are already {{ role }} for this organization</p>
+        {% endif %}
+        {% if invited_role %}
+          <p>You have already been invited to be a {{ invited_role }} for this organization</p>
         {% endif %}
         {% if mentor_applied %}
-          <p>You are already {{ role }} for this organization</p>
-          </p>
+          <p>You have already applied to be a mentor for this organization</p>
         {% endif %}
+      </p>
+      {% if mentor_request_link %}
+        <p id="block-apply-mentors-text-small" class="small">to become mentor for {{ organization.name }}.</p>
+      {% endif %}
     {% endif %}
   </div>
 {% endif %}

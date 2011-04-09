@@ -48,47 +48,65 @@ class Apply(Template):
 
   def context(self):
     organization = self.data.organization
+    r = self.data.redirect
 
     context = {
         'request_data': self.data,
         'current_timeline': self.current_timeline,
         'organization': organization,
     }
-    context['apply_block'] = True
 
     if not self.data.profile:
-      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
       suffix = '?org=' + self.data.organization.link_id
 
-      if self.data.timeline.studentSignup():
-        kwargs['role'] = 'student'
-        context['student_profile_link'] = reverse('create_gsoc_profile',
-                                                  kwargs=kwargs) + suffix
-      kwargs['role'] = 'mentor'
-      context['mentor_profile_link'] = reverse('create_gsoc_profile',
-                                               kwargs=kwargs) + suffix
-    else:
-      kwargs_org = dicts.filter(self.data.kwargs,
-                                ['sponsor', 'program', 'organization'])
-      if self.data.student_info:
-        if self.data.timeline.studentSignup():
-          context['submit_proposal_link'] = reverse('submit_gsoc_proposal',
-                                                    kwargs=kwargs_org)
-      elif self.data.orgAdminFor(organization):
-        context['mentor_applied'] = True
-        context['role'] = 'an administrator'
-      elif self.data.mentorFor(organization):
-        context['mentor_applied'] = True
-        context['role'] = 'a mentor'
-      elif not self.data.mentorFor(organization):
-        if self.data.appliedTo(organization):
-          context['mentor_applied'] = True
-        else:
-          context['mentor_request_link'] = reverse('gsoc_request',
-                                                   kwargs=kwargs_org)
-      else:
-        context['apply_block'] = False
+      if self.data.timeline.studentsAnnounced():
+        return context
 
+      if self.data.timeline.studentSignup():
+        context['student_apply_block'] = True
+        profile_link = r.profile('student').urlOf('create_gsoc_profile')
+        context['student_profile_link'] = profile_link + suffix
+      else:
+        context['mentor_apply_block'] = True
+
+      profile_link = r.profile('mentor').urlOf('create_gsoc_profile')
+      context['mentor_profile_link'] = profile_link + suffix
+      return context
+
+    if self.data.student_info:
+      if self.data.timeline.studentSignup():
+        context['student_apply_block'] = True
+        submit_proposal_link = r.organization().urlOf('submit_gsoc_proposal')
+        context['submit_proposal_link'] = submit_proposal_link
+
+      return context
+
+    context['mentor_apply_block'] = True
+
+    if self.data.orgAdminFor(organization):
+      context['role'] = 'an administrator'
+      return context
+
+    if self.data.mentorFor(organization):
+      context['role'] = 'a mentor'
+      return context
+
+    if self.data.appliedTo(organization):
+      context['mentor_applied'] = True
+      return context
+
+    invited_role = self.data.invitedTo(organization)
+
+    if invited_role == 'mentor':
+      context['invited_role'] = 'a mentor'
+      return context
+
+    if invited_role == 'org_admin':
+      context['invited_role'] = 'an administrator'
+      return context
+
+    request_mentor_link = r.organization().urlOf('gsoc_request')
+    context['mentor_request_link'] = request_mentor_link
     return context
 
   def templatePath(self):

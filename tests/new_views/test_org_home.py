@@ -29,45 +29,38 @@ from tests.timeline_utils import TimelineHelper
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
 
-# TODO: perhaps we should move this out?
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-
-class OrgHomeViewTest(DjangoTestCase):
+class OrgHomeProjectListTest(DjangoTestCase):
   """Tests organization homepage views.
   """
 
   def setUp(self):
-    from soc.modules.gsoc.models.student_project import StudentProject
-
     self.init()
-    student = self.data.createStudent()
 
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test).createOtherUser(
-        'mentor@example.com').createMentor(self.org)
+  def createStudentProjects(self):
+    """Creates two student projects.
+    """
+    from soc.modules.gsoc.models.student_project import StudentProject
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com').createMentor(self.org)
 
-    properties = {'scope': self.org, 'program': self.gsoc,
-                  'student': student, 'mentor': mentor}
-    self.student_projects = seeder_logic.seedn(StudentProject, 2, properties)
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student.createStudentWithProjects(self.org, mentor.profile, 2)
 
-  def assertOrgHomeTemplatesUsedBeforeStudentProjectsAnnounced(self, response):
-    """Asserts that all the templates except the one that lists the projects
-    of the organization from the org homepage view were used.
+  def assertOrgHomeTemplatesUsed(self, response, show_project_list):
+    """Asserts that all the org home templates were used.
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_connect_with_us.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/org_home/base.html')
-    self.assertTemplateNotUsed(response,
-                            'v2/modules/gsoc/org_home/_project_list.html')
 
-  def assertOrgHomeTemplatesUsedAfterStudentProjectsAnnounced(self, response):
-    """Asserts that all the templates from the org homepage view were used.
-    """
-    self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_connect_with_us.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/org_home/base.html')
-    self.assertTemplateUsed(response,
-                            'v2/modules/gsoc/org_home/_project_list.html')
+    if show_project_list:
+      self.assertTemplateUsed(
+          response, 'v2/modules/gsoc/org_home/_project_list.html')
+    else:
+      self.assertTemplateNotUsed(
+          response, 'v2/modules/gsoc/org_home/_project_list.html')
 
   def testOrgHomeDuringOrgSignup(self):
     """Tests the the org home page during the organization signup period.
@@ -75,7 +68,7 @@ class OrgHomeViewTest(DjangoTestCase):
     self.timeline.orgSignup()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.client.get(url)
-    self.assertOrgHomeTemplatesUsedBeforeStudentProjectsAnnounced(response)
+    self.assertOrgHomeTemplatesUsed(response, False)
 
   def testOrgHomeDuringStudentSignup(self):
     """Tests the the org home page during the student signup period.
@@ -83,24 +76,196 @@ class OrgHomeViewTest(DjangoTestCase):
     self.timeline.studentSignup()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.client.get(url)
-    self.assertOrgHomeTemplatesUsedBeforeStudentProjectsAnnounced(response)
+    self.assertOrgHomeTemplatesUsed(response, False)
 
   def testOrgHomeAfterStudentProjectsAnnounced(self):
     """Tests the the org home page after announcing accepted student projects.
     """
     self.timeline.studentsAnnounced()
+    self.createStudentProjects()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.client.get(url)
-    self.assertOrgHomeTemplatesUsedAfterStudentProjectsAnnounced(response)
-    response = self.getListResponse(url, 0)
-    self.assertIsJsonResponse(response)
+    self.assertOrgHomeTemplatesUsed(response, True)
+    data = self.getListData(url, 0)
+    self.assertEqual(2, len(data))
 
   def testOrgHomeDuringOffseason(self):
     """Tests the the org home page after GSoC is over.
     """
     self.timeline.offSeason()
+    self.createStudentProjects()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.client.get(url)
-    self.assertOrgHomeTemplatesUsedAfterStudentProjectsAnnounced(response)
-    response = self.getListResponse(url, 0)
-    self.assertIsJsonResponse(response)
+    self.assertOrgHomeTemplatesUsed(response, True)
+    data = self.getListData(url, 0)
+    self.assertEqual(2, len(data))
+
+
+class OrgHomeApplyTest(DjangoTestCase):
+  """Tests organization homepage views.
+  """
+
+  def setUp(self):
+    self.init()
+
+  def homepageContext(self):
+    url = '/gsoc/org/' + self.org.key().name()
+    response = self.client.get(url)
+    self.assertResponseOK(response)
+    return response.context
+
+  def assertNoStudent(self, context):
+    self.assertFalse('student_apply_block' in context)
+    self.assertFalse('student_profile_link' in context)
+    self.assertFalse('submit_proposal_link' in context)
+
+  def assertNoMentor(self, context):
+    self.assertFalse('mentor_apply_block' in context)
+    self.assertFalse('mentor_profile_link' in context)
+    self.assertFalse('role' in context)
+    self.assertFalse('mentor_applied' in context)
+    self.assertFalse('invited_role' in context)
+    self.assertFalse('mentor_request_link' in context)
+
+  def assertMentor(self):
+    self.data.createMentor(self.org)
+    context = self.homepageContext()
+    self.assertNoStudent(context)
+
+    self.assertTrue('mentor_apply_block' in context)
+    self.assertFalse('mentor_profile_link' in context)
+    self.assertEqual('a mentor', context['role'])
+    self.assertFalse('mentor_applied' in context)
+    self.assertFalse('invited_role' in context)
+    self.assertFalse('mentor_request_link' in context)
+
+  def testAnonymousPreSignup(self):
+    self.timeline.orgSignup()
+    context = self.homepageContext()
+    self.assertNoStudent(context)
+
+    self.assertTrue('mentor_apply_block' in context)
+    self.assertTrue('mentor_profile_link' in context)
+    self.assertFalse('role' in context)
+    self.assertFalse('mentor_applied' in context)
+    self.assertFalse('invited_role' in context)
+    self.assertFalse('mentor_request_link' in context)
+
+  def testAnonymousDuringSignup(self):
+    self.timeline.studentSignup()
+    context = self.homepageContext()
+    self.assertTrue('student_apply_block' in context)
+    self.assertTrue('student_profile_link' in context)
+    self.assertFalse('submit_proposal_link' in context)
+
+    self.assertFalse('mentor_apply_block' in context)
+    self.assertTrue('mentor_profile_link' in context)
+    self.assertFalse('role' in context)
+    self.assertFalse('mentor_applied' in context)
+    self.assertFalse('invited_role' in context)
+    self.assertFalse('mentor_request_link' in context)
+
+  def testAnonymousPostSignup(self):
+    self.timeline.postSignup()
+    context = self.homepageContext()
+    self.assertNoStudent(context)
+
+    self.assertTrue('mentor_apply_block' in context)
+    self.assertTrue('mentor_profile_link' in context)
+    self.assertFalse('role' in context)
+    self.assertFalse('mentor_applied' in context)
+    self.assertFalse('invited_role' in context)
+    self.assertFalse('mentor_request_link' in context)
+
+  def testAnonymousStudentsAnnounced(self):
+    self.timeline.studentsAnnounced()
+    context = self.homepageContext()
+    self.assertNoStudent(context)
+
+    self.assertFalse('mentor_apply_block' in context)
+    self.assertFalse('mentor_profile_link' in context)
+    self.assertFalse('role' in context)
+    self.assertFalse('mentor_applied' in context)
+    self.assertFalse('invited_role' in context)
+    self.assertFalse('mentor_request_link' in context)
+
+  def testMentorPreSignup(self):
+    self.timeline.orgSignup()
+    self.assertMentor()
+
+  def testMentorDuringSignup(self):
+    self.timeline.studentSignup()
+    self.assertMentor()
+
+  def testMentorPostSignup(self):
+    self.timeline.postSignup()
+    self.assertMentor()
+
+  def testMentorStudentsAnnounced(self):
+    self.timeline.studentsAnnounced()
+    self.assertMentor()
+
+  def testOrgAdmin(self):
+    self.data.createOrgAdmin(self.org)
+    context = self.homepageContext()
+    self.assertNoStudent(context)
+
+    self.assertTrue('mentor_apply_block' in context)
+    self.assertFalse('mentor_profile_link' in context)
+    self.assertEqual('an administrator', context['role'])
+    self.assertFalse('mentor_applied' in context)
+    self.assertFalse('invited_role' in context)
+    self.assertFalse('mentor_request_link' in context)
+
+  def testAppliedMentor(self):
+    self.data.createMentorRequest(self.org)
+    context = self.homepageContext()
+    self.assertNoStudent(context)
+
+    print context
+    self.assertTrue('mentor_apply_block' in context)
+    self.assertFalse('mentor_profile_link' in context)
+    self.assertFalse('role' in context)
+    self.assertTrue('mentor_applied' in context)
+    self.assertFalse('invited_role' in context)
+    self.assertFalse('mentor_request_link' in context)
+
+  def testInvitedMentor(self):
+    self.data.createInvitation(self.org, 'mentor')
+    context = self.homepageContext()
+    self.assertNoStudent(context)
+
+    self.assertTrue('mentor_apply_block' in context)
+    self.assertFalse('mentor_profile_link' in context)
+    self.assertFalse('role' in context)
+    self.assertFalse('mentor_applied' in context)
+    self.assertEqual('a mentor', context['invited_role'])
+    self.assertFalse('mentor_request_link' in context)
+
+  def testInvitedOrgAdmin(self):
+    self.data.createInvitation(self.org, 'org_admin')
+    context = self.homepageContext()
+    self.assertNoStudent(context)
+
+    self.assertTrue('mentor_apply_block' in context)
+    self.assertFalse('mentor_profile_link' in context)
+    self.assertFalse('role' in context)
+    self.assertFalse('mentor_applied' in context)
+    self.assertEqual('an administrator', context['invited_role'])
+    self.assertFalse('mentor_request_link' in context)
+
+  def testStudentDuringSignup(self):
+    self.timeline.studentSignup()
+    self.data.createStudent()
+    context = self.homepageContext()
+    self.assertTrue('student_apply_block' in context)
+    self.assertFalse('student_profile_link' in context)
+    self.assertTrue('submit_proposal_link' in context)
+    self.assertNoMentor(context)
+
+  def testStudentPostSignup(self):
+    self.timeline.postSignup()
+    self.data.createStudent()
+    context = self.homepageContext()
+    self.assertNoStudent(context)
+    self.assertNoStudent(context)
