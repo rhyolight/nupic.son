@@ -6,3 +6,11 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.profile.GSoCProfile
+
+- name: ConvertProposal
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.convert_proposal.process
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.proposal.GSoCProposal
