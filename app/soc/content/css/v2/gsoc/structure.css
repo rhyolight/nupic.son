@@ -531,7 +531,7 @@
   line-height: 1.6em;
   margin: 0;
 }
-.project-short p .project-possible-mentor {
+.project-short p.project-possible-mentor {
   margin: 0 0 10px 0;
 }
 .score {
@@ -635,21 +635,21 @@
   line-height: 1.6em;
   margin: 0 0 8px 0;
 }
-.project-comment-container .project-comment-box .project-comment-single p .comment-reply-link {
+.project-comment-container .project-comment-box .project-comment-single p.comment-reply-link {
   display: block;
   float: right;
   font-size: 11px;
   line-height: 1em;
   margin: 0;
 }
-.project-comment-container .project-comment-box .project-comment-single p .comment-reply-link a {
+.project-comment-container .project-comment-box .project-comment-single p.comment-reply-link a {
   display: block;
   color: #208ad3;
   text-decoration: none;
   text-transform: uppercase;
   padding: 5px 7px 5px 7px;
 }
-.project-comment-container .project-comment-box .project-comment-single p .comment-reply-link .active a {
+.project-comment-container .project-comment-box .project-comment-single p.comment-reply-link.active a {
   background: #cde5f5;
 }
 .project-comment-container .project-comment-box .project-comment-single-reply {
