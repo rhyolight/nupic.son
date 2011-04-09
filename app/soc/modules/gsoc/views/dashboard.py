@@ -454,7 +454,7 @@ class SubmittedProposalsComponent(Component):
       # not showing duplicates or proposal doesn't have an interesting state
       return proposal.status
     options = [
-        ('(pending|accepted|rejected)', 'Valid'),
+        ('(pending|accepted|rejected|duplicate)', 'Valid'),
         ('', 'All'),
         ('(invalid|withdrawn|ignored)', 'Invalid'),
     ]
