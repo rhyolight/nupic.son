@@ -115,7 +115,8 @@ class ListConfiguration(object):
       self.row_list = row_list
 
   def addColumn(self, id, name, func,
-                resizable=True, hidden=False, options=None):
+                resizable=True, hidden=False, editable=False,
+                options=None, extra=None):
     """Adds a column to the end of the list.
 
     Args:
@@ -128,7 +129,9 @@ class ListConfiguration(object):
       resizable: Whether the width of the column should be resizable by the
                  end user.
       hidden: Whether the column should be displayed by default.
-      options: an array of (regexp, display_value) tuples
+      editable: Whether the column should be editable.
+      options: An array of (regexp, display_value) tuples.
+      extra: A dictionary with arbitrary extra values.
     """
     if self._col_functions.get(id):
       logging.warning('Column with id %s is already defined' %id)
@@ -136,11 +139,16 @@ class ListConfiguration(object):
     if not callable(func):
       raise TypeError('Given function is not callable')
 
+    if not extra:
+      extra = {}
+
     model = {
         'name': id,
         'index': id,
         'resizable': resizable,
+        'editable': editable,
         'hidden': hidden,
+        'extra': extra,
     }
 
     if options:
