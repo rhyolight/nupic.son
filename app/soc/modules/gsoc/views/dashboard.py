@@ -456,7 +456,7 @@ class SubmittedProposalsComponent(Component):
     options = [
         ('(pending|accepted|rejected)', 'Valid'),
         ('', 'All'),
-        ('(invalid|withdrawn)', 'Invalid'),
+        ('(invalid|withdrawn|ignored)', 'Invalid'),
     ]
     list_config.addColumn('status', 'Status', getStatusOnDashboard, options=options)
 
