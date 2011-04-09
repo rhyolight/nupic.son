@@ -23,8 +23,6 @@ __authors__ = [
   ]
 
 
-from google.appengine.ext import db
-
 from django.conf.urls.defaults import url
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
@@ -711,7 +709,6 @@ class ParticipantsComponent(Component):
     """Initializes this component.
     """
     self.data = data
-    orgs = data.org_admin_for
     list_config = lists.ListConfiguration()
     list_config.addColumn(
         'name', 'Name', lambda ent, *args: ent.name())
