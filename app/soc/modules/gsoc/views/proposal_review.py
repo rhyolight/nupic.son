@@ -301,6 +301,27 @@ class ReviewProposal(RequestHandler):
 
     return public_comments, private_comments
 
+  def sanitizePossibleMentors(self, possible_mentors):
+    """Removes possible mentors that are no longer mentors
+    """
+    changed = False
+
+    result = []
+
+    for mentor in possible_mentors:
+      if self.data.proposal_org.key() in mentor.mentor_for:
+        result.append(mentor)
+        continue
+
+      changed = True
+      self.data.proposal.possible_mentors.remove(mentor.key())
+
+    #if changed:
+    #  self.data.proposal.put()
+    # TODO: enable when there is test coverage for willing to mentor
+
+    return result
+
   def context(self):
     assert isSet(self.data.public_comments_visible)
     assert isSet(self.data.private_comments_visible)
@@ -387,6 +408,7 @@ class ReviewProposal(RequestHandler):
             'update_gsoc_proposal')
 
     possible_mentors = db.get(self.data.proposal.possible_mentors)
+    possible_mentors = self.sanitizePossibleMentors(possible_mentors)
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
 
     scoring_visible = self.data.private_comments_visible and (
