@@ -38,7 +38,9 @@ from soc.modules.gsoc.logic.models.student_project import logic as \
     project_logic
 from soc.modules.gsoc.logic.models.survey import project_logic as \
     ps_logic
+from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -440,6 +442,24 @@ class SubmittedProposalsComponent(Component):
         ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
     list_config.addSimpleColumn('score', 'Score')
+
+    def getStatusOnDashboard(proposal, accepted, duplicates):
+      """Method for determining which status to show on the dashboard.
+      """
+      if proposal.status == 'pending' and self.data.program.duplicates_visible:
+          if proposal.key() in duplicates:
+            return """<strong><font color="red">Duplicate</font></strong>"""
+          elif proposal.key() in accepted:
+            return """<strong><font color="green">Pending acceptance</font><strong>"""
+      # not showing duplicates or proposal doesn't have an interesting state
+      return proposal.status
+    options = [
+        ('(pending|accepted|rejected)', 'Valid'),
+        ('', 'All'),
+        ('(invalid|withdrawn)', 'Invalid'),
+    ]
+    list_config.addColumn('status', 'Status', getStatusOnDashboard, options=options)
+
     list_config.addColumn(
         'last_modified_on', 'Last modified',
         lambda ent, *args: format(ent.last_modified_on, DATETIME_FORMAT))
@@ -450,13 +470,6 @@ class SubmittedProposalsComponent(Component):
     list_config.addColumn(
         'student', 'Student',
         lambda ent, *args: ent.parent().name())
-    options = [
-        ('(pending|accepted|rejected)', 'Valid'),
-        ('', 'All'),
-        ('(invalid|withdrawn)', 'Invalid'),
-    ]
-    list_config.addSimpleColumn('status', 'Status',
-                                hidden=True, options=options)
 
     def mentor_key(ent, *args):
       key = GSoCProposal.mentor.get_value_for_datastore(ent)
@@ -510,18 +523,37 @@ class SubmittedProposalsComponent(Component):
     if idx != 4:
       return None
 
+    # Hold all the accepted projects for orgs where this user is a member of
+    accepted = []
+    # Hold all duplicates for either the entire program or the orgs of the user.
+    duplicates = []
+    dupQ = GSoCProposalDuplicate.all()
+
     q = GSoCProposal.all()
     if not self.data.is_host:
       q.filter('org IN', self.data.mentor_for)
+      dupQ.filter('orgs IN', self.data.mentor_for)
+
+      # Only fetch the data if we will display it
+      if self.data.program.duplicates_visible:
+        for org in self.data.mentor_for:
+          accepted.extend([p.key() for p in getProposalsToBeAcceptedForOrg(org)])
     else:
       q.filter('program', self.data.program)
+      dupQ.filter('program', self.data.program)
+
+    # Only fetch the data if it is going to be displayed
+    if self.data.program.duplicates_visible:
+      duplicate_entities = dupQ.fetch(1000)
+      for dup in duplicate_entities:
+        duplicates.extend(dup.duplicates)
 
     starter = lists.keyStarter
     prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter, prefetcher=prefetcher)
-    return response_builder.build()
+    return response_builder.build(accepted, duplicates)
 
 
 class ProjectsIMentorComponent(Component):
