@@ -137,7 +137,7 @@ class TimelineHelper(object):
     self.timeline.put()
     self.org_appl.put()
 
-  def postSignup(self):
+  def postStudentSignup(self):
     """Sets the current period to after the signup phase.
     """
     self._empty()

@@ -166,7 +166,7 @@ class OrgHomeApplyTest(DjangoTestCase):
     self.assertFalse('mentor_request_link' in context)
 
   def testAnonymousPostSignup(self):
-    self.timeline.postSignup()
+    self.timeline.postStudentSignup()
     context = self.homepageContext()
     self.assertNoStudent(context)
 
@@ -198,7 +198,7 @@ class OrgHomeApplyTest(DjangoTestCase):
     self.assertMentor()
 
   def testMentorPostSignup(self):
-    self.timeline.postSignup()
+    self.timeline.postStudentSignup()
     self.assertMentor()
 
   def testMentorStudentsAnnounced(self):
@@ -264,7 +264,7 @@ class OrgHomeApplyTest(DjangoTestCase):
     self.assertNoMentor(context)
 
   def testStudentPostSignup(self):
-    self.timeline.postSignup()
+    self.timeline.postStudentSignup()
     self.data.createStudent()
     context = self.homepageContext()
     self.assertNoStudent(context)
