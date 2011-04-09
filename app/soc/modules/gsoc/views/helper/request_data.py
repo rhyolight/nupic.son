@@ -402,6 +402,13 @@ class RedirectHelper(object):
     self.kwargs['student'] = student
     return self
 
+  def profile(self, role):
+    """Sets args for an url_patterns.PROFILE redirect.
+    """
+    self.program()
+    self.kwargs['role'] = role
+    return self
+
   def invite(self, role=None):
     """Sets args for an url_patterns.INVITE redirect.
     """
