@@ -62,6 +62,7 @@ from soc.modules.gsoc.logic.models.ranker_root import logic as ranker_root_logic
 from soc.modules.gsoc.models import student_proposal
 from soc.modules.gsoc.models.mentor import GSoCMentor
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.org_admin import GSoCOrgAdmin
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
@@ -419,22 +420,33 @@ def seed(request, *args, **kwargs):
   melange_mentor = GCIMentor(**role_properties)
   #melange_mentor.put()
 
-  student_id = 'test'
+  user_properties = {
+      'key_name': 'student',
+      'link_id': 'student',
+      'account': users.User(email='student@example.com'),
+      'name': 'Student',
+      }
+
+  student_user = User(**user_properties)
+  student_user.put()
+
+  student_id = 'student'
   student_properties = {
       'key_name': gsoc2009.key().name() + "/" + student_id,
       'link_id': student_id, 
       'scope_path': gsoc2009.key().name(),
+      'parent': student_user,
       'scope': gsoc2009,
       'program': gsoc2009,
-      'user': current_user,
-      'public_name': 'test',
-      'given_name': 'test',
-      'surname': 'test',
+      'user': student_user,
+      'public_name': 'Student',
+      'given_name': 'Student',
+      'surname': 'Student',
       'birth_date': db.DateProperty.now(),
-      'email': 'test@email.com',
-      'im_handle': 'test_im_handle',
+      'email': 'student@email.com',
+      'im_handle': 'student_im_handle',
       'major': 'test major',
-      'name_on_documents': 'test',
+      'name_on_documents': 'Student',
       'res_country': 'United States',
       'res_city': 'city',
       'res_street': 'test street',
@@ -444,9 +456,6 @@ def seed(request, *args, **kwargs):
       'home_page': 'http://www.homepage.com/',
       'photo_url': 'http://www.photosite.com/thumbnail.png',
       'ship_state': None,
-      'expected_graduation': 2009,
-      'school_country': 'United States',
-      'school_name': 'Test School', 
       'tshirt_size': 'XS',
       'tshirt_style': 'male',
       'degree': 'Undergraduate',
@@ -455,17 +464,44 @@ def seed(request, *args, **kwargs):
       'program_knowledge': 'I heard about this program through a friend.'
       }
 
-  melange_student = GSoCStudent(**student_properties)
+  melange_student = GSoCProfile(**student_properties)
+
+  student_info_properties = {
+      'key_name': melange_student.key().name(),
+      'parent': melange_student,
+      'expected_graduation': 2009,
+      'school_country': 'United States',
+      'school_name': 'Test School',
+      'school_home_page': 'http://www.example.com',
+  }
+  student_info = GSoCStudentInfo(**student_info_properties)
+  student_info.put()
+
+  melange_student.student_info = student_info
   melange_student.put()
 
-  student_id = 'test2'
+  user_properties = {
+      'key_name': 'student2',
+      'link_id': 'student2',
+      'account': users.User(email='student@example.com'),
+      'name': 'Student 2',
+      }
+
+  student_user2 = User(**user_properties)
+  student_user2.put()
+  student_id = 'student2'
   student_properties.update({
       'key_name': gsoc2009.key().name() + "/" + student_id,
       'link_id': student_id,
-      'user': current_user 
-      })
+      'user': student_user2,
+      'parent': student_user2,
+  })
+  student_info_properties.update({
+      'key_name': gsoc2009.key().name() + "/" + student_id,
+      'link_id': student_id,
+  })
 
-  melange_student2 = GSoCStudent(**student_properties)
+  melange_student2 = GSoCProfile(**student_properties)
   melange_student2.put()
                                        
   project_id = 'test_project'
@@ -494,6 +530,10 @@ def seed(request, *args, **kwargs):
       'title': 'test project2'
       })
       
+  student_info2 = GSoCStudentInfo(**student_info_properties)
+  student_info2.put()
+
+  melange_student2.student_info = student_info2
   melange_project2 = StudentProject(**project_properties)
   melange_project2.put()
     
