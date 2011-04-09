@@ -24,11 +24,6 @@
 
 ////////////////*/
 
-#bg {
-    background:url(../../../images/v2/gsoc/main-bg.png) top center repeat-y;
-    display: block;
-    overflow: hidden;
-}
 #page-header {/*logo and globe*/
     background: #fff url(../../../images/v2/gsoc/header-bg.png) bottom left repeat-x;
     height: 156px;
@@ -89,10 +84,10 @@
         }
         .readmore {/*read more link in block*/
             background: #dedede;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
             line-height: 25px;
-            padding-left: 9px;
+            padding: 3px 0 3px 9px;
             a {
                 color: @orange;
                 text-decoration: none;
@@ -153,6 +148,9 @@
                 font-size: 14px;
                 font-weight: bold;
                 margin: 10px 0 0 0;
+                padding-right: 10px;
+                text-align: justify;
+
             }
     }
     
@@ -220,6 +218,8 @@
             img {
                 margin: 0 10px 0 0;
                 vertical-align: middle;
+                max-height: 65px;
+                max-width: 65px;
             }
         }
         
@@ -414,6 +414,20 @@
             }
         }
     }
+
+    .action-link {
+        background: #EFAC4C;
+        padding: 3px 7px;
+
+        a {
+            color: white;
+            text-decoration: none;
+        }
+        a:link {
+            color: white;
+            text-decoration: none;
+        }
+    }
 }
 
 /*////////////////
@@ -436,14 +450,19 @@
     
     .footer-meta {/*powered by/empowered by*/
         color: #4496ce;
-        
+
         a {
             color: #4496ce;
             text-decoration: none;
         }
-        
         .powered {
             padding-right: 15px;
+        }
+        img {
+            vertical-align: bottom;
+        }
+        .version {
+            font-size: 10px;
         }
     }
     .footer-menu {/*menu in footer*/
@@ -521,3 +540,238 @@
 
     
 }
+/*////////////////
+
+  Projects pages
+
+////////////////*/
+.project-long {
+    padding: 15px 15px 0 15px;
+
+    p {
+        line-height: 1.6em;
+        margin: 0 0 10px 0;
+    }
+}
+
+.project-short {
+    background: #fff;
+    border: 1px solid #ebebeb;
+    padding: 15px;
+
+    p {
+        line-height: 1.6em;
+        margin: 0;
+
+        .project-possible-mentor {
+            margin: 0 0 10px 0;
+        }
+    }
+}
+
+.score {
+    display: block;
+    overflow: hidden;
+    padding: 0 0 0 18px;
+
+    .score-average {
+        float: left;
+
+        em {
+            color: #989898;
+            font-size: 11px;
+            font-weight: bold;
+        }
+    }
+    .score-add {
+        float: left;
+        margin-left: 50px;
+    }
+    .stars img {
+        vertical-align: text-bottom;
+    }
+}
+.project-meta {
+    color: #238bd2;
+    display: block;
+    font-size: 11px;
+    line-height: 1em;
+    margin: 15px 0 10px 0;
+    overflow: hidden;
+
+    a {
+        color: #238bd2;
+        font-weight: bold;
+        padding: 0 3px;
+        text-decoration: none;
+        text-transform: uppercase;
+    }
+    .comment-link {
+        float: left;
+        padding-left: 18px;
+        width: 410px;
+    }
+    .subscribe-link {
+        float: right;
+        padding-right: 10px;
+        text-align: right;
+        width: 200px;
+    }
+}
+/*////////////////
+
+  Comments
+
+////////////////*/
+.project-comment-container {
+    background: #e1edf5;
+    margin: 20px auto 30px auto;
+    padding: 20px 0;
+    width: 570px;
+
+    .project-comment-box {
+        background: #cde5f5;
+        display: block;
+        margin: 0 auto 16px auto;
+        overflow: hidden;
+        padding: 0;
+        width: 524px;
+
+        h3 {
+            color: #799EB8;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+            padding: 10px 0 0 10px;
+            text-transform: uppercase;
+        }
+        .project-comment-single {
+            background: #f0f7fc;
+            display: block;
+            margin: 0 0 15px 0;
+            overflow: hidden;
+            padding: 15px;
+
+            .project-comment-meta {
+                margin: 0 0 3px 0;
+
+                strong {
+                    color: #4d4d4d;
+                    font-style: italic;
+                    padding-right: 5px;
+                }
+                a {
+                    color: #208ad3;
+                    text-decoration: none;
+                }
+                span {
+                    color: #919191;
+                    font-style: italic;
+                    padding-left: 4px;
+                }
+            }
+            p {
+                line-height: 1.6em;
+                margin: 0 0 8px 0;
+
+                .comment-reply-link {
+                    display: block;
+                    float: right;
+                    font-size: 11px;
+                    line-height: 1em;
+                    margin: 0;
+
+                    a {
+                        display: block;
+                        color: #208ad3;
+                        text-decoration: none;
+                        text-transform: uppercase;
+                        padding: 5px 7px 5px 7px;
+                    }
+                    .active a {
+                        background: #cde5f5;
+                    }
+                }
+            }
+        }
+        .project-comment-single-reply {
+            display: block;
+            clear: both;
+            overflow: hidden;
+            padding: 15px 0 0 0;
+        }
+        .comment-reply {
+            background: #cde5f5;
+            clear: both;
+            display: block;
+            padding: 10px 12px;
+        }
+    }
+    .project-comment-private-container {
+        background: #dddddd;
+
+        h3 {
+            color: #666;
+        }
+        .project-comment-single {
+            background: #f5f5f5;
+        }
+    }
+}
+
+p.reply-logged-in {
+    color: #666;
+    font-style: italic;
+    font-weight: bold;
+    margin: 0 0 3px 0;
+
+    a {
+        font-style: normal;
+        font-weight: normal;
+    }
+}
+/*////////////////
+
+  Requests
+
+////////////////*/
+.request-message {
+    p {
+        line-height: 1.6em;
+        margin: 0 0 10px 0;
+    }
+}
+
+.request-summary {
+    background: #fff;
+    border: 1px solid #ebebeb;
+    padding: 15px;
+
+    p {
+        line-height: 1.6em;
+        margin: 0;
+    }
+}
+
+.request-response {
+    padding: 20px 0 0 0;
+}
+/*////////////////
+
+  User Login
+
+////////////////*/
+#user-login {
+    margin: 0 0 10px 0;
+    text-align: right;
+    p {
+        color: #989898;
+        font-style: italic;
+        margin: 0;
+    }
+    a {
+        font-style: normal;
+        font-weight: normal;
+    }
+}
+

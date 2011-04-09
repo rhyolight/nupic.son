@@ -394,7 +394,11 @@
   background: #EFAC4C;
   padding: 3px 7px;
 }
-#main .action-link a, .action-link a:link {
+#main .action-link a {
+  color: white;
+  text-decoration: none;
+}
+#main .action-link a:link {
   color: white;
   text-decoration: none;
 }
@@ -431,7 +435,7 @@
   padding-right: 15px;
 }
 #footer .footer-meta img {
-    vertical-align: bottom;
+  vertical-align: bottom;
 }
 #footer .footer-meta .version {
   font-size: 10px;
@@ -511,7 +515,10 @@
   Projects pages
 
 ////////////////*/
-.project-short p, .project-long p {
+.project-long {
+  padding: 15px 15px 0 15px;
+}
+.project-long p {
   line-height: 1.6em;
   margin: 0 0 10px 0;
 }
@@ -521,13 +528,11 @@
   padding: 15px;
 }
 .project-short p {
+  line-height: 1.6em;
   margin: 0;
 }
-.project-short p.project-possible-mentor {
+.project-short p .project-possible-mentor {
   margin: 0 0 10px 0;
-}
-.project-long {
-  padding: 15px 15px 0 15px;
 }
 .score {
   display: block;
@@ -630,21 +635,21 @@
   line-height: 1.6em;
   margin: 0 0 8px 0;
 }
-.project-comment-container .project-comment-box .project-comment-single p.comment-reply-link {
+.project-comment-container .project-comment-box .project-comment-single p .comment-reply-link {
   display: block;
   float: right;
   font-size: 11px;
   line-height: 1em;
   margin: 0;
 }
-.project-comment-container .project-comment-box .project-comment-single p.comment-reply-link a {
+.project-comment-container .project-comment-box .project-comment-single p .comment-reply-link a {
   display: block;
   color: #208ad3;
   text-decoration: none;
   text-transform: uppercase;
   padding: 5px 7px 5px 7px;
 }
-.project-comment-container .project-comment-box .project-comment-single p.comment-reply-link.active a {
+.project-comment-container .project-comment-box .project-comment-single p .comment-reply-link .active a {
   background: #cde5f5;
 }
 .project-comment-container .project-comment-box .project-comment-single-reply {
@@ -683,7 +688,7 @@ p.reply-logged-in a {
   Requests
 
 ////////////////*/
-.request-summary p, .request-message p {
+.request-message p {
   line-height: 1.6em;
   margin: 0 0 10px 0;
 }
@@ -693,10 +698,11 @@ p.reply-logged-in a {
   padding: 15px;
 }
 .request-summary p {
+  line-height: 1.6em;
   margin: 0;
 }
 .request-response {
-  padding: 20px 0 0 0
+  padding: 20px 0 0 0;
 }
 /*////////////////
 
@@ -704,15 +710,15 @@ p.reply-logged-in a {
 
 ////////////////*/
 #user-login {
-    margin: 0 0 10px 0;
-    text-align: right;
+  margin: 0 0 10px 0;
+  text-align: right;
 }
-    #user-login p {
-        color: #989898;
-        font-style: italic;
-        margin: 0;
-    }
-    #user-login a {
-        font-style: normal;
-        font-weight: normal;
-    }
+#user-login p {
+  color: #989898;
+  font-style: italic;
+  margin: 0;
+}
+#user-login a {
+  font-style: normal;
+  font-weight: normal;
+}
