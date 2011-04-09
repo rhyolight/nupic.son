@@ -234,8 +234,7 @@ class MyOrgApplicationsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=0,
-        description='List of your Organization Applications')
+        self.data, self._list_config, idx=0)
 
     return {
         'name': 'org_applications',
@@ -365,8 +364,7 @@ class MyProjectsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=2,
-        description='List of my student projects')
+        self.data, self._list_config, idx=2)
     return {
         'name': 'projects',
         'title': 'PROJECTS',
@@ -415,8 +413,7 @@ class MyEvaluationsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=3,
-        description='List of my evaluations')
+        self.data, self._list_config, idx=3)
 
     return {
         'name': 'evaluations',
@@ -431,7 +428,7 @@ class SubmittedProposalsComponent(Component):
   """
 
   DESCRIPTION = ugettext(
-      'Click on a proposal to leave comments and give a score')
+      'Click on a proposal to leave comments and give a score.')
 
   def __init__(self, request, data):
     """Initializes this component.
@@ -504,9 +501,15 @@ class SubmittedProposalsComponent(Component):
   def context(self):
     """Returns the context of this component.
     """
+    description = SubmittedProposalsComponent.DESCRIPTION
+
+    if self.data.program.allocations_visible:
+      for org in self.data.mentor_for:
+        description = '%s %i slots have been assigned to %s.'%(
+            description, org.slots, org.name)
+
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=4,
-        description=SubmittedProposalsComponent.DESCRIPTION)
+        self.data, self._list_config, idx=4, description=description)
     return {
         'name': 'proposals_submitted',
         'title': 'PROPOSALS SUBMITTED TO MY ORGS',
@@ -598,8 +601,7 @@ class ProjectsIMentorComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=5,
-        description='List of projects I mentor')
+        self.data, self._list_config, idx=5)
 
     return {
         'name': 'mentoring_projects',
@@ -654,8 +656,7 @@ class OrganizationsIParticipateInComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=6,
-        description='Organizations you are an admin for')
+        self.data, self._list_config, idx=6)
 
     return {
         'name': 'adminning_organizations',
