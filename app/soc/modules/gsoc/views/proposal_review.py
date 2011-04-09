@@ -605,7 +605,8 @@ class PostScore(RequestHandler):
     query.ancestor(self.data.proposal)
 
     def update_score_trx():
-      
+      delta = 0
+
       # update score entity
       score = query.get()
       if not score:
@@ -615,9 +616,11 @@ class PostScore(RequestHandler):
             author=self.data.profile,
             value=value)
         score.put()
+        delta = 1
       else:
         old_value = score.value
         if not value:
+          delta = -1
           score.delete()
         else:
           score.value = value
@@ -626,6 +629,7 @@ class PostScore(RequestHandler):
       # update total score for the proposal
       proposal = db.get(self.data.proposal.key())
       proposal.score += value - old_value
+      proposal.nr_scores += delta
       proposal.put()
 
     db.run_in_transaction(update_score_trx)

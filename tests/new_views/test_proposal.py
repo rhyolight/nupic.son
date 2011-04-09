@@ -128,6 +128,25 @@ class ProposalTest(MailTestCase, DjangoTestCase):
 
     proposal = GSoCProposal.all().get()
     self.assertEqual(1, proposal.score)
+    self.assertEqual(1, proposal.nr_scores)
+
+    # test updating score
+    override['value'] = 4
+    response, properties = self.modelPost(url, GSoCScore, override)
+    self.assertResponseOK(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(4, proposal.score)
+    self.assertEqual(1, proposal.nr_scores)
+
+    # test removing score
+    override['value'] = 0
+    response, properties = self.modelPost(url, GSoCScore, override)
+    self.assertResponseOK(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(0, proposal.score)
+    self.assertEqual(0, proposal.nr_scores)
 
   def testSubmitProposalWhenInactive(self):
     """Test the submission of student proposals during the student signup
