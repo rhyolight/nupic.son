@@ -345,11 +345,9 @@ class DjangoTestCase(TestCase):
     start = ''
 
     i = 0
-    import sys
 
     while start != 'done':
       i += 1
-      sys.stderr.write("batch: %d\n" % i)
       response = self.getListResponse(url, idx, start, 1000)
       data = response.context['data'][start]
       self.assertIsJsonResponse(response)
