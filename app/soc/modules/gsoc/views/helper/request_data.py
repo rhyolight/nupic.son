@@ -204,8 +204,6 @@ class RequestData(RequestData):
     self.is_org_admin = False
     self.mentor_for = []
     self.org_admin_for = []
-    self.applied_to = []
-    self.not_applied_to = []
     self.student_info = None
 
   def orgAdminFor(self, organization):
@@ -230,32 +228,38 @@ class RequestData(RequestData):
       organization = organization.key()
     return organization in [i.key() for i in self.mentor_for]
 
+  def _requestQuery(self, organization):
+    """Returns a query to retrieve a Request for this user.
+    """
+    if isinstance(organization, db.Model):
+      organization = organization.key()
+
+    from soc.models.request import Request
+    query = Request.all()
+    query.filter('user', self.user)
+    query.filter('group', organization)
+
+    return query
+
   def appliedTo(self, organization):
     """Returns true iff the user has applied for the specified organization.
 
     Organization may either be a key or an organization instance.
     """
-    if isinstance(organization, db.Model):
-      organization = organization.key()
+    query = self._requestQuery(organization)
+    query.filter('type', 'Request')
+    return bool(query.get())
 
-    if organization in self.applied_to:
-      return True
-    if organization in self.not_applied_to:
-      return False
+  def invitedTo(self, organization):
+    """Returns the role the user has bene invoted to,.
 
-    from soc.models.request import Request
-    query = db.Query(Request, keys_only=True)
-    query.filter('user = ', self.user)
-    query.filter('group = ', organization)
-
-    applied = bool(query.get())
-
-    if applied:
-      self.applied_to.append(organization)
-    else:
-      self.not_applied_to.append(organization)
-
-    return applied
+    Organization may either be a key or an organization instance.
+    Returns None if no invite was sent.
+    """
+    query = self._requestQuery(organization)
+    query.filter('type', 'Invitation')
+    invite = query.get()
+    return invite.role if invite else None
 
   def isPossibleMentorForProposal(self, mentor_profile=None):
     """Checks if the user is a possible mentor for the proposal in the data.
