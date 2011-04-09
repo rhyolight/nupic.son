@@ -172,6 +172,30 @@ class GSoCProfileHelper(object):
     self.profile.put()
     return self.profile
 
+  def createMentorRequest(self, org):
+    """Creates a mentor request.
+    """
+    from soc.models.request import Request
+    self.createProfile()
+    properties = {
+        'role': 'mentor', 'user': self.user, 'group': org,
+        'status': 'pending', 'type': 'Request',
+        # TODO(SRabbelier): add this as soon as we make User Request's parent
+        # 'parent': self.user,
+    }
+    return seeder_logic.seed(Request, properties=properties)
+
+  def createInvitation(self, org, role):
+    from soc.models.request import Request
+    self.createProfile()
+    properties = {
+        'role': role, 'user': self.user, 'group': org,
+        'status': 'pending', 'type': 'Invitation'
+        # TODO(SRabbelier): add this as soon as we make User Request's parent
+        # 'parent': self.user,
+    }
+    return seeder_logic.seed(Request, properties=properties)
+
   def createMentor(self, org):
     """Creates an mentor profile for the current user.
     """

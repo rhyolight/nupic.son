@@ -48,9 +48,7 @@ class InviteTest(MailTestCase, DjangoTestCase):
   def createInvitation(self):
     """Creates and returns an accepted invitation for the current user.
     """
-    properties = {'role': 'mentor', 'user': self.data.user, 'group': self.org,
-                  'status': 'pending', 'type': 'Invitation'}
-    return seeder_logic.seed(Request, properties=properties)
+    return self.data.createInvitation(self.org, 'mentor')
 
   def assertInviteTemplatesUsed(self, response):
     """Asserts that all the templates from the dashboard were used.
