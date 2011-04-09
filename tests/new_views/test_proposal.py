@@ -29,9 +29,7 @@ from tests.test_utils import DjangoTestCase
 from tests.test_utils import MailTestCase
 from tests.timeline_utils import TimelineHelper
 
-# TODO: perhaps we should move this out?
 from soc.modules.gsoc.models.proposal import GSoCProposal
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 class ProposalTest(MailTestCase, DjangoTestCase):
