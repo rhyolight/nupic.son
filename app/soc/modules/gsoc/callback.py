@@ -61,6 +61,7 @@ class Callback(object):
   def registerViews(self):
     """Instantiates all view objects.
     """
+    from soc.modules.gsoc.views import accepted_orgs
     from soc.modules.gsoc.views import dashboard
     from soc.modules.gsoc.views import document
     from soc.modules.gsoc.views import duplicates
@@ -68,29 +69,34 @@ class Callback(object):
     from soc.modules.gsoc.views import invite
     from soc.modules.gsoc.views import org_app
     from soc.modules.gsoc.views import org_home
+    from soc.modules.gsoc.views import org_profile
     from soc.modules.gsoc.views import profile
     from soc.modules.gsoc.views import profile_show
-    from soc.modules.gsoc.views import proposal
-    from soc.modules.gsoc.views import proposal_review
     from soc.modules.gsoc.views import program
     from soc.modules.gsoc.views import projects_list
+    from soc.modules.gsoc.views import proposal
+    from soc.modules.gsoc.views import proposal_review
     from soc.modules.gsoc.views import request
-    from soc.modules.gsoc.views import accepted_orgs
-    from soc.modules.gsoc.views import org_profile
     from soc.modules.gsoc.views import search
 
+    self.views.append(accepted_orgs.AcceptedOrgsPage())
     self.views.append(dashboard.Dashboard())
-    self.views.append(document.EditDocumentPage())
     self.views.append(document.DocumentPage())
+    self.views.append(document.EditDocumentPage())
     self.views.append(document.EventsPage())
     self.views.append(duplicates.DuplicatesPage())
     self.views.append(homepage.Homepage())
+    self.views.append(invite.InvitePage())
+    self.views.append(invite.ShowInvite())
     self.views.append(org_app.OrgApp())
     self.views.append(org_home.OrgHome())
+    self.views.append(org_profile.OrgProfilePage())
     self.views.append(profile.ProfilePage())
     self.views.append(profile_show.ProfileShowPage())
+    self.views.append(program.ProgramPage())
+    self.views.append(program.TimelinePage())
+    self.views.append(projects_list.ListProjects())
     self.views.append(proposal.ProposalPage())
-    self.views.append(proposal.UpdateProposal())
     self.views.append(proposal_review.AcceptProposal())
     self.views.append(proposal_review.AssignMentor())
     self.views.append(proposal_review.IgnoreProposal())
@@ -99,15 +105,9 @@ class Callback(object):
     self.views.append(proposal_review.ProposalModificationPostDeadline())
     self.views.append(proposal_review.ReviewProposal())
     self.views.append(proposal_review.WishToMentor())
-    self.views.append(program.ProgramPage())
-    self.views.append(program.TimelinePage())
-    self.views.append(projects_list.ListProjects())
-    self.views.append(invite.InvitePage())
-    self.views.append(invite.ShowInvite())
+    self.views.append(proposal.UpdateProposal())
     self.views.append(request.RequestPage())
     self.views.append(request.ShowRequest())
-    self.views.append(accepted_orgs.AcceptedOrgsPage())
-    self.views.append(org_profile.OrgProfilePage())
     self.views.append(search.SearchGsocPage())
 
     # Appengine Task related views
