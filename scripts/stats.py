@@ -862,6 +862,9 @@ def main(args):
   def getGSoC2011Profile(link_id):
     program = GSoCProgram.get_by_key_name('google/gsoc2011')
     return GSoCProfile.all().filter('scope', program).filter('link_id', link_id).get()
+  def getGSoC2011Proposal(link_id, id):
+    profile = getGSoC2011Profile(link_id)
+    return GSoCProposal.get_by_id(id, profile)
 
   context = {
       'load': loadPickle,
@@ -884,6 +887,7 @@ def main(args):
       'convertProposals': convertProposals,
       'addFollower': addFollower,
       'p': getGSoC2011Profile,
+      'o': getGSoC2011Proposal,
       'GSoCOrganization': GSoCOrganization,
       'User': User,
       'GSoCStudent': GSoCStudent,
