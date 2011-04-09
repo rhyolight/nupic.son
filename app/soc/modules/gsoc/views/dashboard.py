@@ -50,6 +50,7 @@ from soc.modules.gsoc.views.helper import url_patterns
 
 DATETIME_FORMAT = 'Y-m-d H:i:s'
 
+
 class Dashboard(RequestHandler):
   """View for the participant dashboard.
   """
@@ -569,7 +570,7 @@ class ProjectsIMentorComponent(Component):
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org_name', 'Organization',
-                          lambda ent, *args: ent.scope.name)
+                          lambda ent, *args: ent.scope.short_name)
     list_config.setDefaultSort('title')
     self._list_config = list_config
 
