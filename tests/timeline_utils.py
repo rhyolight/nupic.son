@@ -137,6 +137,21 @@ class TimelineHelper(object):
     self.timeline.put()
     self.org_appl.put()
 
+  def postSignup(self):
+    """Sets the current period to after the signup phase.
+    """
+    self._empty()
+    self.timeline.program_start = past()
+    self.timeline.program_end = future()
+    self.org_appl.survey_start = past()
+    self.org_appl.survey_end = past()
+    self.timeline.accepted_organization_announced_deadline = past()
+    self.timeline.student_signup_start = past()
+    self.timeline.student_signup_end = past()
+    self.timeline.accepted_students_announced_deadline = future()
+    self.timeline.put()
+    self.org_appl.put()
+
   def studentsAnnounced(self):
     """Sets the current period to be future accepted students announced phase.
     """
