@@ -57,6 +57,11 @@ class ListConfiguration(object):
              should be present.
   """
 
+  VALID_EDIT_TYPES = [
+      'text', 'textarea', 'select', 'checkbox', 'password',
+      'button', 'image', 'file'
+  ]
+
   def __init__(self, add_key_column=True):
     """Initializes the configuration.
 
@@ -116,8 +121,7 @@ class ListConfiguration(object):
       self.row_list = row_list
 
   def addColumn(self, col_id, name, func,
-                resizable=True, hidden=False, editable=False,
-                options=None, extra=None):
+                resizable=True, hidden=False, options=None):
     """Adds a column to the end of the list.
 
     Args:
@@ -130,9 +134,7 @@ class ListConfiguration(object):
       resizable: Whether the width of the column should be resizable by the
                  end user.
       hidden: Whether the column should be displayed by default.
-      editable: Whether the column should be editable.
       options: An array of (regexp, display_value) tuples.
-      extra: A dictionary with arbitrary extra values.
     """
     if self._col_functions.get(col_id):
       logging.warning('Column with id %s is already defined' % col_id)
@@ -140,16 +142,11 @@ class ListConfiguration(object):
     if not callable(func):
       raise TypeError('Given function is not callable')
 
-    if not extra:
-      extra = {}
-
     model = {
         'name': col_id,
         'index': col_id,
         'resizable': resizable,
-        'editable': editable,
         'hidden': hidden,
-        'extra': extra,
     }
 
     if options:
@@ -193,6 +190,47 @@ class ListConfiguration(object):
         'type': col_type,
         'parameters': parameters
     }
+
+  def setColumnEditable(self, col_id, editable, edittype, editoptions):
+    """Sets the editability for the specified column.
+
+    Args:
+      editable: A boolean indicating whether the column should be editable.
+      edittype: A string indicating the type of values that should be entered,
+          see VALID_EDIT_TYPES for a list of valid values.
+      editoptions: A dictionary with options for the edit field.
+    """
+    model = self._col_map.get(col_id)
+
+    if not model:
+      raise ValueError('Id %s is not a defined column (Known columns %s)'
+                       % (col_id, self._col_map.keys()))
+
+    if edittype and edittype not in self.VALID_EDIT_TYPES:
+      raise ValueError("Invalid edit type '%s', known edit types: %s" % (
+          edittype, self.VALID_EDIT_TYPES))
+
+    model['editable'] = editable
+    model['edittype'] = edittype if edittype else ''
+    model['editoptions'] = editoptions
+
+  def setColumnExtra(self, col_id, **kwargs):
+    """Sets the column 'extra' field.
+
+    Args:
+      col_id: The unique identifier of the column.
+      **kwargs: the contents of the 'extra' field.
+    """
+    model = self._col_map.get(col_id)
+
+    if not model:
+      raise ValueError('Id %s is not a defined column (Known columns %s)'
+                       % (col_id, self._col_map.keys()))
+
+    if model.get('extra'):
+      logging.warning('Column with id %s already has extra defined' % col_id)
+
+    model['extra'] = kwargs
 
   def addSimpleRedirectButton(self, button_id, caption, url, new_window=True):
     """Adds a button to the list that simply opens a URL.
