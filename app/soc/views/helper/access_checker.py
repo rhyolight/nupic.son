@@ -293,7 +293,7 @@ class Mutator(object):
     self.data.proposal_org = self.data.getOrganization(org_key)
 
     parent_key = self.data.proposal.parent_key()
-    if parent_key == self.data.profile.key():
+    if self.data.profile and parent_key == self.data.profile.key():
       self.data.proposer = self.data.profile
     else:
       self.data.proposer = self.data.proposal.parent

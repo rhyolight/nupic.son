@@ -178,4 +178,5 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     # test review GET
     url = '/gsoc/proposal/review/' + suffix
     response = self.client.get(url)
-    self.assertReviewTemplateUsed(response)
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/review.html')
