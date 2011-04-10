@@ -114,13 +114,13 @@ class ListConfiguration(object):
     if row_list:
       self.row_list = row_list
 
-  def addColumn(self, id, name, func,
+  def addColumn(self, col_id, name, func,
                 resizable=True, hidden=False, editable=False,
                 options=None, extra=None):
     """Adds a column to the end of the list.
 
     Args:
-      id: A unique identifier of this column.
+      col_id: A unique identifier of this column.
       name: The header of the column that is shown to the user.
       func: The function to be called when rendering this column for
             a single entity. This function should take an entity as first
@@ -133,8 +133,8 @@ class ListConfiguration(object):
       options: An array of (regexp, display_value) tuples.
       extra: A dictionary with arbitrary extra values.
     """
-    if self._col_functions.get(id):
-      logging.warning('Column with id %s is already defined' %id)
+    if self._col_functions.get(col_id):
+      logging.warning('Column with id %s is already defined' % col_id)
 
     if not callable(func):
       raise TypeError('Given function is not callable')
@@ -143,8 +143,8 @@ class ListConfiguration(object):
       extra = {}
 
     model = {
-        'name': id,
-        'index': id,
+        'name': col_id,
+        'index': col_id,
         'resizable': resizable,
         'editable': editable,
         'hidden': hidden,
@@ -159,9 +159,9 @@ class ListConfiguration(object):
 
     self._col_model.append(model)
     self._col_names.append(name)
-    self._col_functions[id] = func
+    self._col_functions[col_id] = func
 
-  def addSimpleColumn(self, id, name, **kwargs):
+  def addSimpleColumn(self, col_id, name, **kwargs):
     """Adds a column to the end of the list which uses the id of the column as
     attribute name of the entity to get the data from.
 
@@ -169,34 +169,34 @@ class ListConfiguration(object):
     lambda ent, *args: getattr(ent, id).
 
     Args:
-      id: A unique identifier of this column and name of the field to get the
-          data from.
+      col_id: A unique identifier of this column and name of the field to get
+          the data from.
       name: The header of the column that is shown to the user.
       **kwargs: passed on to addColumn
     """
-    func = lambda ent, *args: getattr(ent, id)
-    self.addColumn(id, name, func, **kwargs)
+    func = lambda ent, *args: getattr(ent, col_id)
+    self.addColumn(col_id, name, func, **kwargs)
 
-  def __addButton(self, id, caption, bounds, type, parameters):
+  def __addButton(self, col_id, caption, bounds, col_type, parameters):
     """Internal method for adding buttons so that the uniqueness of the id can
     be checked.
     """
-    if self._buttons.get(id):
-      logging.warning('Button with id %s is already defined' %id)
+    if self._buttons.get(col_id):
+      logging.warning('Button with id %s is already defined' % col_id)
 
-    self._buttons[id] = {
-        'id': id,
+    self._buttons[col_id] = {
+        'id': col_id,
         'caption': caption,
         'bounds': bounds,
-        'type': type,
+        'type': col_type,
         'parameters': parameters
     }
 
-  def addSimpleRedirectButton(self, id, caption, url, new_window=True):
+  def addSimpleRedirectButton(self, button_id, caption, url, new_window=True):
     """Adds a button to the list that simply opens a URL.
 
     Args:
-      id: The unique id the button.
+      button_id: The unique id the button.
       caption: The display string shown to the end user.
       url: The url to redirect the user to.
       new_window: Boolean indicating whether the url should open in a new
@@ -206,14 +206,15 @@ class ListConfiguration(object):
         'link': url,
         'new_window': new_window
     }
+    bounds = [0, 'all']
     # add a simple redirect button that is always active.
-    self.__addButton(id, caption, [0, 'all'], 'redirect_simple', parameters)
+    self.__addButton(button_id, caption, bounds, 'redirect_simple', parameters)
 
-  def addCustomRedirectButton(self, id, caption, func, new_window=True):
+  def addCustomRedirectButton(self, button_id, caption, func, new_window=True):
     """Adds a button to the list that simply opens a URL.
 
     Args:
-      id: The unique id of the button.
+      button_id: The unique id of the button.
       caption: The display string shown to the end user.
       func: The function to generate a url to redirect the user to.
             This function should take an entity as first argument and args and
@@ -232,13 +233,13 @@ class ListConfiguration(object):
     self.__addButton(id, caption, [1, 1], 'redirect_custom', parameters)
     self._button_functions[id] = func
 
-  def addPostButton(self, id, caption, url, bounds, keys, refresh='current',
-                    redirect=False):
+  def addPostButton(self, button_id, caption, url, bounds, keys,
+                    refresh='current', redirect=False):
     """This button is used when there is something to send to the backend in a
     POST request.
 
     Args:
-      id: The unique id of the button.
+      button_id: The unique id of the button.
       caption: The display string shown to the end user.
       url: The URL to make the POST request to.
       bounds: An array of size two with integers or of an integer and the
@@ -259,7 +260,7 @@ class ListConfiguration(object):
         'refresh': refresh,
         'redirect': redirect,
     }
-    self.__addButton(id, caption, bounds, 'post', parameters)
+    self.__addButton(button_id, caption, bounds, 'post', parameters)
 
   def setRowAction(self, func, new_window=True):
     """The redirects the user to a URL when clicking on a row in the list.
@@ -285,7 +286,7 @@ class ListConfiguration(object):
         }
     self._row_operation_func = func
 
-  def setDefaultSort(self, id, order='asc'):
+  def setDefaultSort(self, col_id, order='asc'):
     """Sets the default sort order for the list.
 
     Args:
@@ -295,14 +296,14 @@ class ListConfiguration(object):
              The default value is 'asc'.
     """
     col_ids = [item.get('name') for item in self._col_model]
-    if id and not id in col_ids:
+    if col_id and col_id not in col_ids:
       raise ValueError('Id %s is not a defined column (Known columns %s)'
-                       %(id, col_ids))
+                       % (col_id, col_ids))
 
     if order not in ['asc', 'desc']:
-      raise ValueError('%s is not a valid order' %order)
+      raise ValueError('%s is not a valid order' % order)
 
-    self._sortname = id if id else ''
+    self._sortname = col_id if col_id else ''
     self._sortorder = order
 
 
@@ -418,8 +419,8 @@ class ListContentResponse(object):
       kwargs: The kwargs passed to the render functions defined in the config.
     """
     columns = {}
-    for id, func in self._config._col_functions.iteritems():
-      columns[id] = func(entity, *args, **kwargs)
+    for col_id, func in self._config._col_functions.iteritems():
+      columns[col_id] = func(entity, *args, **kwargs)
 
     row = {}
     buttons= {}
@@ -428,10 +429,10 @@ class ListContentResponse(object):
       # perform the row operation function to retrieve the link
       row['link'] = self._config._row_operation_func(entity, *args, **kwargs)
 
-    for id, func in self._config._button_functions.iteritems():
+    for button_id, func in self._config._button_functions.iteritems():
       # The function called here should return a dictionary with 'link' and
       # an optional 'caption' as keys.
-      buttons[id] = func(entity, *args, **kwargs)
+      buttons[button_id] = func(entity, *args, **kwargs)
 
     operations = {
         'row': row,
