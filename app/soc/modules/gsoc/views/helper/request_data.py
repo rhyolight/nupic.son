@@ -180,6 +180,7 @@ class RequestData(RequestData):
     is_host: is the current user a host of the program
     is_mentor: is the current user a mentor in the program
     is_org_admin: is the current user an org admin in the program
+    org_map: map of retrieved organizations
     org_admin_for: the organizations the current user is an admin for
     mentor_for: the organizations the current user is a mentor for
     student_info: the StudentInfo for the current user and program
@@ -202,9 +203,19 @@ class RequestData(RequestData):
     self.is_host = False
     self.is_mentor = False
     self.is_org_admin = False
+    self.org_map = {}
     self.mentor_for = []
     self.org_admin_for = []
     self.student_info = None
+
+  def getOrganization(self, org_key):
+    """Retrieves the specified organization.
+    """
+    if org_key not in self.org_map:
+      org = db.get(org_key)
+      self.org_map[org_key] = org
+
+    return self.org_map[org_key]
 
   def orgAdminFor(self, organization):
     """Returns true iff the user is admin for the specified organization.
@@ -329,7 +340,7 @@ class RequestData(RequestData):
       else:
         orgs = db.get(org_keys)
 
-        org_map = dict((i.key(), i) for i in orgs)
+        org_map = self.org_map = dict((i.key(), i) for i in orgs)
 
         self.mentor_for = org_map.values()
         self.org_admin_for = [org_map[i] for i in self.profile.org_admin_for]
