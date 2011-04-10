@@ -26,15 +26,18 @@ __authors__ = [
 from django.utils.translation import ugettext
 
 from google.appengine.api import users
+from google.appengine.ext import db
 
 from soc.logic.exceptions import LoginRequest
 from soc.logic.exceptions import RedirectRequest
 from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import AccessViolation
+from soc.models.user import User
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models.profile import GSoCProfile
 
 
 DEF_AGREE_TO_TOS_MSG_FMT = ugettext(
@@ -193,12 +196,13 @@ class Mutator(object):
     self.data.private_comments_visible = unset
     self.data.proposal = unset
     self.data.proposer = unset
-    self.data.proposer_user = unset
     self.data.public_comments_visible = unset
     self.data.public_only = unset
     self.data.request_entity = unset
     self.data.requester = unset
     self.data.scope_path = unset
+    self.data.url_profile = unset
+    self.data.url_user = unset
 
   def organizationFromKwargs(self):
     # kwargs which defines an organization
@@ -252,9 +256,47 @@ class Mutator(object):
     self.data.key_name = '/'.join(fields)
     self.data.document = Document.get_by_key_name(self.data.key_name)
 
+  def profileFromKwargs(self):
+    key_name = self.data.kwargs['user']
+    self.data.url_user = User.get_by_key_name(key_name)
+
+    if not self.data.url_user:
+      raise NotFound('Requested user does not exist')
+
+    fields = ['sponsor', 'program', 'user']
+    key_name = '/'.join(self.data.kwargs[i] for i in fields)
+
+    self.data.url_profile = GSoCProfile.get_by_key_name(
+        key_name, parent=self.data.url_user)
+
+    if not self.data.url_profile:
+      raise NotFound('Requested user does not have a profile')
+
   def proposalFromKwargs(self):
-    id = int(self.data.kwargs['id'])
-    self.data.proposal = GSoCProposal.get_by_id(id, parent=self.data.profile)
+    self.profileFromKwargs()
+    assert isSet(self.data.url_profile)
+
+    # can safely call int, since regexp guarnatees a number
+    proposal_id = int(self.data.kwargs['id'])
+
+    if not proposal_id:
+      raise NotFound('Proposal id must be a positive number')
+
+    self.data.proposal = GSoCProposal.get_by_id(
+        proposal_id, parent=self.data.url_profile)
+
+    if not self.data.proposal:
+      raise NotFound('Requested proposal does not exist')
+
+    org_key = GSoCProposal.org.get_value_for_datastore(self.data.proposal)
+
+    self.data.proposal_org = self.data.getOrganization(org_key)
+
+    parent_key = self.data.proposal.parent_key()
+    if parent_key == self.data.profile.key():
+      self.data.proposer = self.data.profile
+    else:
+      self.data.proposer = self.data.proposal.parent
 
   def canRespondForUser(self):
     assert isSet(self.data.invited_user)
@@ -268,7 +310,7 @@ class Mutator(object):
       self.data.can_respond = self.data.invite.type == 'Invitation'
 
   def commentVisible(self):
-    assert isSet(self.data.proposer_user)
+    assert isSet(self.data.url_user)
 
     self.data.public_comments_visible = False
     self.data.private_comments_visible = False
@@ -278,7 +320,7 @@ class Mutator(object):
       return
 
     # if the current user is the proposer, he or she may access public comments
-    if self.data.user.key() == self.data.proposer_user.key():
+    if self.data.user.key() == self.data.url_user.key():
       self.data.public_comments_visible = True
       return
 
@@ -762,7 +804,7 @@ class AccessChecker(BaseAccessChecker):
 
     assert isSet(self.data.proposal)
     assert isSet(self.data.proposal_org)
-    assert isSet(self.data.proposer_user)
+    assert isSet(self.data.url_user)
 
     # if the proposal is public, everyone may access it
     if self.data.proposal.is_publicly_visible:
@@ -773,7 +815,7 @@ class AccessChecker(BaseAccessChecker):
 
     self.isProfileActive()
     # if the current user is the proposer, he or she may access it
-    if self.data.user.key() == self.data.proposer_user.key():
+    if self.data.user.key() == self.data.url_user.key():
       return
 
     # all the mentors and org admins from the organization may access it

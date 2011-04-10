@@ -342,29 +342,7 @@ class ReviewProposal(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.data.proposer_user = User.get_by_key_name(self.data.kwargs['student'])
-
-    if not self.data.proposer_user:
-      raise NotFound('Requested user does not exist')
-
-    fields = ['sponsor', 'program', 'student']
-    key_name = '/'.join(self.data.kwargs[i] for i in fields)
-
-    self.data.proposer_profile = GSoCProfile.get_by_key_name(
-        key_name, parent=self.data.proposer_user)
-
-    if not self.data.proposer_profile:
-      raise NotFound('Requested user does not exist')
-
-    self.data.proposal = GSoCProposal.get_by_id(
-        int(self.data.kwargs['id']),
-        parent=self.data.proposer_profile)
-
-    if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
-
-    self.data.proposal_org = self.data.proposal.org
-
+    self.mutator.proposalFromKwargs()
     self.check.canAccessProposalEntity()
     self.mutator.commentVisible()
 
@@ -445,7 +423,8 @@ class ReviewProposal(RequestHandler):
   def context(self):
     assert isSet(self.data.public_comments_visible)
     assert isSet(self.data.private_comments_visible)
-    assert isSet(self.data.proposer_profile)
+    assert isSet(self.data.url_profile)
+    assert isSet(self.data.url_user)
     assert isSet(self.data.proposal)
 
     context = {}
@@ -536,7 +515,7 @@ class ReviewProposal(RequestHandler):
     # to keep the blocks as simple as possible, the if branches have
     # been broken down into several if blocks
     user_is_proposer = self.data.user and \
-        (self.data.user.key() == self.data.proposer_user.key())
+        (self.data.user.key() == self.data.url_user.key())
     if user_is_proposer:
       context['user_role'] = 'proposer'
 
@@ -585,26 +564,12 @@ class ReviewProposal(RequestHandler):
         'score_action': score_action,
         'scores': scores,
         'scoring_visible': scoring_visible,
-        'student_email': self.data.proposer_profile.email,
-        'student_name': self.data.proposer_profile.name(),
+        'student_email': self.data.url_profile.email,
+        'student_name': self.data.url_profile.name(),
         'proposal_ignored': proposal_ignored,
         })
 
     return context
-
-def getProposalFromKwargs(kwargs):
-  fields = ['sponsor', 'program', 'student']
-  key_name = '/'.join(kwargs[i] for i in fields)
-
-  parent = db.Key.from_path('User', kwargs['student'],
-                            'GSoCProfile', key_name)
-
-  if not kwargs['id'].isdigit():
-    raise BadRequest("Proposal id is not numeric")
-
-  id = int(kwargs['id'])
-
-  return GSoCProposal.get_by_id(id, parent=parent)
 
 
 class PostComment(RequestHandler):
@@ -620,13 +585,9 @@ class PostComment(RequestHandler):
   def checkAccess(self):
     self.check.isProgramActive()
     self.check.isProfileActive()
-
-    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
-
-    if not self.data.proposal:
-      raise NotFound('Proposal does not exist')
-
-    self.data.proposer = self.data.proposal.parent()
+    self.mutator.proposalFromKwargs()
+    assert isSet(self.data.proposer)
+    assert isSet(self.data.proposal_org)
 
     # check if the comment is given by the author of the proposal
     if self.data.proposer.key() == self.data.profile.key():
@@ -634,7 +595,7 @@ class PostComment(RequestHandler):
       return
 
     self.data.public_only = False
-    self.check.isMentorForOrganization(self.data.proposal.org)
+    self.check.isMentorForOrganization(self.data.proposal_org)
 
   def createCommentFromForm(self):
     """Creates a new comment based on the data inserted in the form.
@@ -708,12 +669,10 @@ class PostScore(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
+    self.mutator.proposalFromKwargs()
+    assert isSet(self.data.proposal_org)
 
-    if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
-
-    org = self.data.proposal_org = self.data.proposal.org
+    org = self.data.proposal_org
 
     if not self.data.orgAdminFor(org) and org.scoring_disabled:
       raise BadRequest('Scoring is disabled for this organization')
@@ -796,12 +755,10 @@ class WishToMentor(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
+    self.mutator.proposalFromKwargs()
+    assert isSet(self.data.proposal_org)
 
-    if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
-
-    self.check.isMentorForOrganization(self.data.proposal.org)
+    self.check.isMentorForOrganization(self.data.proposal_org)
 
   def addToPotentialMentors(self, value):
     """Toggles the user from the potential mentors list.
