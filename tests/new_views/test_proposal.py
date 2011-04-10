@@ -22,8 +22,6 @@ __authors__ = [
   ]
 
 
-import httplib
-
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
 from tests.test_utils import MailTestCase
@@ -46,13 +44,6 @@ class ProposalTest(MailTestCase, DjangoTestCase):
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/base.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
-
-  def assertReviewTemplateUsed(self, response):
-    """Asserts that all the proposal review were used.
-    """
-    self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/review.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/_comment_form.html')
 
   def testSubmitProposal(self):
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
@@ -87,91 +78,6 @@ class ProposalTest(MailTestCase, DjangoTestCase):
 
     proposal = GSoCProposal.all().get()
     self.assertPropertiesEqual(properties, proposal)
-
-    suffix = "%s/%s/%d" % (
-        self.gsoc.key().name(),
-        self.data.user.key().name(),
-        proposal.key().id())
-
-    # test review GET
-    url = '/gsoc/proposal/review/' + suffix
-    response = self.client.get(url)
-    self.assertReviewTemplateUsed(response)
-
-    # test comment POST
-    from soc.modules.gsoc.models.comment import GSoCComment
-    url = '/gsoc/proposal/comment/' + suffix
-    override = {'author': self.data.profile, 'is_private': False}
-    response, properties = self.modelPost(url, GSoCComment, override)
-    self.assertResponseRedirect(response)
-
-    comment = GSoCComment.all().get()
-    self.assertPropertiesEqual(properties, comment)
-
-    self.assertEmailSent(to=mentor.profile.email, n=2)
-    self.assertEmailNotSent(to=self.data.profile.email)
-
-    # Hacky
-    self.data.createMentor(self.org)
-    self.data.profile.student_info = None
-    self.data.profile.put()
-
-    # test score POST
-    from soc.modules.gsoc.models.score import GSoCScore
-    url = '/gsoc/proposal/score/' + suffix
-    override = {'author': self.data.profile, 'parent': proposal, 'value': 1}
-    response, properties = self.modelPost(url, GSoCScore, override)
-    self.assertResponseOK(response)
-
-    score = GSoCScore.all().get()
-    self.assertPropertiesEqual(properties, score)
-
-    proposal = GSoCProposal.all().get()
-    self.assertEqual(1, proposal.score)
-    self.assertEqual(1, proposal.nr_scores)
-
-    # test updating score
-    override['value'] = 4
-    response, properties = self.modelPost(url, GSoCScore, override)
-    self.assertResponseOK(response)
-
-    proposal = GSoCProposal.all().get()
-    self.assertEqual(4, proposal.score)
-    self.assertEqual(1, proposal.nr_scores)
-
-    # test removing score
-    override['value'] = 0
-    response, properties = self.modelPost(url, GSoCScore, override)
-    self.assertResponseOK(response)
-
-    proposal = GSoCProposal.all().get()
-    self.assertEqual(0, proposal.score)
-    self.assertEqual(0, proposal.nr_scores)
-
-    url = '/gsoc/proposal/wish_to_mentor/' + suffix
-    postdata = {'value': 'enable'}
-    response = self.post(url, postdata)
-
-    proposal = GSoCProposal.all().get()
-    self.assertTrue(self.data.profile.key() in proposal.possible_mentors)
-
-    postdata = {'value': 'disable'}
-    response = self.post(url, postdata)
-
-    proposal = GSoCProposal.all().get()
-    self.assertFalse(self.data.profile.key() in proposal.possible_mentors)
-
-    other_mentor.profile.mentor_for = []
-    other_mentor.profile.put()
-
-    proposal.possible_mentors.append(other_mentor.profile.key())
-    proposal.put()
-
-    url = '/gsoc/proposal/review/' + suffix
-    response = self.client.get(url)
-
-    proposal = GSoCProposal.all().get()
-    self.assertFalse(other_mentor.profile.key() in proposal.possible_mentors)
 
   def testSubmitProposalWhenInactive(self):
     """Test the submission of student proposals during the student signup
