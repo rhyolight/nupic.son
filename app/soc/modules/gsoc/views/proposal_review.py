@@ -158,8 +158,8 @@ class AssignMentorFields(Template):
     possible_mentors, all_mentors = getMentorsChoicesToAssign(
         self.data.proposal)
     context = {
-        'possible_mentors': possible_mentors,
-        'all_mentors': all_mentors,
+        'possible_mentors': sorted(possible_mentors),
+        'all_mentors': sorted(all_mentors),
         'action': self.data.redirect.review(
             ).urlOf('gsoc_proposal_assign_mentor'),
         }
