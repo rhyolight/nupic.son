@@ -210,6 +210,93 @@ class Duplicate(Template):
     return 'v2/modules/gsoc/duplicates/proposal_duplicate_review.html'
 
 
+class ButtonTemplate(Template):
+  """Template to render buttons on proposal review page.
+  """
+
+  DEF_ENABLE_BTN_DISABLED_MSG = ugettext(
+      'This functionality is already enabled. To disable this functionality, '
+      'press the button adjacent to this.')
+
+  DEF_DISABLE_BTN_DISABLED_MSG = ugettext(
+      'This functionality is already disabled. To enable this functionality, '
+      'press the button adjacent to this.')
+
+  def __init__(self, data, title, id, url_name, enable=True,
+               disabled_msgs=None, labels=None):
+    """Instantiates the template for rendering review page buttons.
+
+    Args:
+      data: RequestData object
+      title: The text that must be displayed before the button
+      id: value to be given to HTML id attribute for button
+      url_name: The name with which the RequestHandler has registered
+      enable: if True Enable button is activated otherwise Disable button
+      disabled_msgs : dictionary containing the message to be shown for
+          each button when clicked in the disabled state
+      labels: dictionary containing the label for each of the two buttons
+    """
+    super(ButtonTemplate, self).__init__(data)
+    self.title = title
+    self.labels = labels
+    self._id = id
+    self._url_name = url_name
+    self._enable = enable
+    self._disabled_msgs = disabled_msgs
+
+  def context(self):
+    """The context for this template used in render().
+    """
+    context = {
+        'title': self.title,
+        'id': self.id,
+        'state': self.state,
+        }
+
+    if self.labels:
+      context['enable_label'] = self.labels.get('enable')
+      context['disable_label'] = self.labels.get('disable')
+
+    return context
+
+  @property
+  def state(self):
+    """Returns the state as needed by the Javascript and HTML.
+    """
+    return "enable" if self._enable else "disable"
+
+  @property
+  def link(self):
+    """Returns the post url for the button.
+    """
+    return self.data.redirect.review().urlOf(self._url_name)
+
+  @property
+  def id(self):
+    """Returns the id to be used for the button.
+    """
+    return self._id
+
+  @property
+  def enable_btn_disabled_msg(self):
+    """Returns the message to be displayed when the enable button is
+    pressed when it is disabled.
+    """
+    msg = self._disabled_msgs.get('enable')
+    return msg if msg else self.DEF_ENABLE_BTN_DISABLED_MSG
+
+  @property
+  def disable_btn_disabled_msg(self):
+    """Returns the message to be displayed when the disable button is
+    pressed when it is disabled.
+    """
+    msg = self._disabled_msgs.get('disable')
+    return msg if msg else self.DEF_DISABLE_BTN_DISABLED_MSG
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/_button.html'
+
+
 class ReviewProposal(RequestHandler):
   """View for the Propsal Review page.
   """
