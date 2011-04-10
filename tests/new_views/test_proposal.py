@@ -149,13 +149,13 @@ class ProposalTest(MailTestCase, DjangoTestCase):
     self.assertEqual(0, proposal.nr_scores)
 
     url = '/gsoc/proposal/wish_to_mentor/' + suffix
-    postdata = {'value': 'request'}
+    postdata = {'value': 'enable'}
     response = self.post(url, postdata)
 
     proposal = GSoCProposal.all().get()
     self.assertTrue(self.data.profile.key() in proposal.possible_mentors)
 
-    postdata = {'value': 'withdraw'}
+    postdata = {'value': 'disable'}
     response = self.post(url, postdata)
 
     proposal = GSoCProposal.all().get()
