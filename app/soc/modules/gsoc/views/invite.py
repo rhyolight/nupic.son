@@ -167,21 +167,7 @@ class InvitePage(RequestHandler):
     """
 
     self.check.isProgramActive()
-      
-    link_id = self.data.kwargs['organization']
-    filter = {
-        'link_id': link_id,
-        'scope': self.data.program,
-        'status': 'active'
-        }
-    self.data.organization = org_logic.getForFields(filter, unique=True)
-    if not self.data.organization:
-      msg = ugettext(
-          'The organization with link_id %s does not exist for %s.' % 
-          (link_id, self.data.program.name))
-
-      raise NotFound(msg)
-
+    self.mutator.organizationFromKwargs()
     self.check.isOrgAdmin()
 
   def context(self):

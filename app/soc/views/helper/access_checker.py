@@ -205,7 +205,15 @@ class Mutator(object):
     fields = ['sponsor', 'program', 'organization']
 
     key_name = '/'.join(self.data.kwargs[field] for field in fields)
-    self.data.organization = GSoCOrganization.get_by_key_name(key_name)
+    key = db.Key.from_path('GSoCOrganization', key_name)
+    self.data.organization = self.data.getOrganization(key)
+
+    if not self.data.organization:
+      msg = ugettext(
+          'The organization with link_id %s does not exist for %s.' %
+          (link_id, self.data.program.name))
+
+      raise NotFound(msg)
 
   def documentKeyNameFromKwargs(self):
     """Returns the document key fields from kwargs.
