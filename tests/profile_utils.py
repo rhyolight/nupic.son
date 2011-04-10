@@ -213,3 +213,13 @@ class GSoCProfileHelper(object):
                   'student': student, 'scope': org}
     self.seed(StudentProject, properties)
     return self.profile
+
+  def clear(self):
+    if self.profile and self.profile.student_info:
+      self.profile.student_info.delete()
+    if self.profile:
+      self.profile.delete()
+    if self.user:
+      self.user.delete()
+    self.profile = None
+    self.user = None
