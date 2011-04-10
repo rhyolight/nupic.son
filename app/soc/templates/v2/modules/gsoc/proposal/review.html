@@ -73,18 +73,6 @@ limitations under the License.
   {{ duplicate.render }}
 {% endif %}
 
-{% if ignore_proposal %}
-  <span class="action-link">
-    <a href="#" id="ignore-proposal-link">
-      {% if ignore_proposal == "ignore" %}
-        Ignore this proposal
-      {% else %}{% if ignore_proposal == "unignore" %}
-        Unignore this proposal
-      {% endif %}{% endif %}
-    </a>
-  </span>
-  <span>&nbsp;</span>
-{% endif %}
 
 
 {{ ignore_proposal_button.render }}
