@@ -93,6 +93,11 @@ class MainMenu(Template):
     if self.data.profile:
       self.data.redirect.program()
       context['profile_link'] = self.data.redirect.urlOf('edit_gsoc_profile')
+
+    if self.data.is_host:
+      self.data.redirect.program()
+      context['admin_link'] = self.data.redirect.urlOf('gsoc_admin_dashboard')
+
     return context
 
   def templatePath(self):

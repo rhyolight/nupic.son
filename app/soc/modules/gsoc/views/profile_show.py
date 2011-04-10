@@ -56,7 +56,6 @@ class ProfileShowPage(RequestHandler):
     return [
         url(r'^gsoc/profile/show/%s$' % url_patterns.PROGRAM,
          self, name='show_gsoc_profile'),
-        # TODO: Add legacy URLs if any
     ]
 
   def checkAccess(self):
@@ -82,5 +81,38 @@ class ProfileShowPage(RequestHandler):
         'program_name': program.name,
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'user': user,
+        'profile': ProfileReadOnlyTemplate(profile),
+        }
+
+
+class ProfileAdminPage(RequestHandler):
+  """View to display the readonly profile page.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'^gsoc/profile/admin/%s$' % url_patterns.PROFILE,
+         self, name='gsoc_profile_admin'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+    self.mutator.profileFromKwargs()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/profile_show/base.html'
+
+  def context(self):
+    assert isSet(self.data.program)
+    assert isSet(self.data.url_profile)
+    assert isSet(self.data.url_user)
+
+    user = self.data.url_user
+    profile = self.data.url_profile
+    program = self.data.program
+
+    return {
+        'page_name': '%s Profile - %s' % (program.short_name, profile.name()),
+        'program_name': program.name,
         'profile': ProfileReadOnlyTemplate(profile),
         }

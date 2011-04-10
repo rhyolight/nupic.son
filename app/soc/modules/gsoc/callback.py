@@ -62,6 +62,7 @@ class Callback(object):
     """Instantiates all view objects.
     """
     from soc.modules.gsoc.views import accepted_orgs
+    from soc.modules.gsoc.views import admin
     from soc.modules.gsoc.views import dashboard
     from soc.modules.gsoc.views import document
     from soc.modules.gsoc.views import duplicates
@@ -80,6 +81,8 @@ class Callback(object):
     from soc.modules.gsoc.views import search
 
     self.views.append(accepted_orgs.AcceptedOrgsPage())
+    self.views.append(admin.DashboardPage())
+    self.views.append(admin.LookupLinkIdPage())
     self.views.append(dashboard.Dashboard())
     self.views.append(document.DocumentPage())
     self.views.append(document.EditDocumentPage())
@@ -93,6 +96,7 @@ class Callback(object):
     self.views.append(org_profile.OrgProfilePage())
     self.views.append(profile.ProfilePage())
     self.views.append(profile_show.ProfileShowPage())
+    self.views.append(profile_show.ProfileAdminPage())
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
     self.views.append(projects_list.ListProjects())
