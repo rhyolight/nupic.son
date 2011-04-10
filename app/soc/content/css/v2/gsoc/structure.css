@@ -420,6 +420,7 @@
 #main .action-button .button {
   background: url("../../../images/v2/gsoc/form-submit-bg.png") repeat scroll 0 0 transparent;
   color: white;
+  cursor: pointer;
   width: 90px;
   padding: 3px;
   text-decoration: none;
@@ -428,6 +429,7 @@
 #main .action-button .button.disabled {
   background: url("../../../images/v2/gsoc/form-submit-bg-blue.png") repeat scroll 0 0 transparent;
   color: #f6f6f6;
+  cursor: pointer;
   width: 90px;
   padding: 3px;
   text-decoration: none;
