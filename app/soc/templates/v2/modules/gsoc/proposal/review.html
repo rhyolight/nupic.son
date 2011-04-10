@@ -86,46 +86,14 @@ limitations under the License.
   <span>&nbsp;</span>
 {% endif %}
 
-{% if accept_proposal %}
-  <span class="action-link">
-    <a href="#" id="accept-proposal-link">
-      {% if accept_proposal == "accept" %}
-        Accept proposal
-      {% else %}{% if accept_proposal == "revert" %}
-        Revert to pending
-      {% endif %}{% endif %}
-    </a>
-  </span>
-  <span>&nbsp;</span>
-{% endif %}
 
-{% if proposal_modification %}
-  <span class="action-link">
-    <a href="#" id="proposal-modification-link">
-      {% if proposal_modification == "allow" %}
-        Allow proposal modifications
-      {% else %}{% if proposal_modification == "disallow" %}
-        Disallow proposal modifications
-      {% endif %}{% endif %}
-    </a>
-  </span>
-  <span>&nbsp;</span>
-{% endif %}
+{{ ignore_proposal_button.render }}
 
-{% if wish_to_mentor %}
-  <br /><br />
-  <h2 id="project-page-student-name">
-    <span class="action-link">
-      <a href="#" id="wish-to-mentor-link">
-        {% if wish_to_mentor == "request" %}
-          I wish to mentor this project
-        {% else %}{% if wish_to_mentor == "withdraw" %}
-          I do not wish to mentor this project
-        {% endif %}{% endif %}
-      </a>
-    </span>
-  </h2>
-{% endif %}
+{{ accept_proposal_button.render }}
+
+{{ proposal_modification_button.render }}
+
+{{ wish_to_mentor_button.render }}
 
 {{ assign_mentor.render }}
 
