@@ -521,7 +521,8 @@ class BoundField(forms.BoundField):
         note if note else self.help_text)
 
   def div_class(self):
-    name = self.form.Meta.css_prefix + '_' + self.name
+    prefix = getattr(self.form.Meta, 'css_prefix', None)
+    name = prefix + '_' + self.name if prefix else self.name
     if self.errors:
       name += ' error'
     return name
