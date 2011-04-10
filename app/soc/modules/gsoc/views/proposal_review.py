@@ -665,17 +665,17 @@ class WishToMentor(RequestHandler):
     """Toggles the user from the potential mentors list.
 
     Args:
-      value: can be either "request" or "withdraw".
+      value: can be either "enable" or "disable".
     """
     assert isSet(self.data.profile)
     assert isSet(self.data.proposal)
 
-    if value != 'request' and value != 'withdraw':
+    if value != 'enable' and value != 'disable':
       raise BadRequest("Invalid post data.")
 
-    if value == 'request' and self.data.isPossibleMentorForProposal():
+    if value == 'enable' and self.data.isPossibleMentorForProposal():
       raise BadRequest("Invalid post data.")
-    if value == 'withdraw' and not self.data.isPossibleMentorForProposal():
+    if value == 'disable' and not self.data.isPossibleMentorForProposal():
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
@@ -684,7 +684,7 @@ class WishToMentor(RequestHandler):
     def update_possible_mentors_trx():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
-      if value == 'request':
+      if value == 'enable':
         # we have already been added
         if profile_key in proposal.possible_mentors:
           return
@@ -813,17 +813,17 @@ class IgnoreProposal(RequestHandler):
     """Toggles the ignore status of the proposal.
 
     Args:
-      value: can be either "ignore" or "unignore".
+      value: can be either "enable" or "disable".
     """
     assert isSet(self.data.proposal)
 
-    if value != 'ignore' and value != 'unignore':
+    if value != 'enable' and value != 'disable':
       raise BadRequest("Invalid post data.")
 
-    if value == 'ignore' and self.data.proposal.status not in [
+    if value == 'enable' and self.data.proposal.status not in [
         'pending', 'withdrawn']:
       raise BadRequest("Invalid post data.")
-    if value == 'unignore' and self.data.proposal.status != 'ignored':
+    if value == 'disable' and self.data.proposal.status != 'ignored':
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
@@ -831,9 +831,9 @@ class IgnoreProposal(RequestHandler):
     def update_status_txn():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
-      if value == 'ignore':
+      if value == 'enable':
         proposal.status = 'ignored'
-      elif value == 'unignore':
+      elif value == 'disable':
         proposal.status = 'pending'
 
       db.put(proposal)
@@ -872,16 +872,16 @@ class ProposalModificationPostDeadline(RequestHandler):
     """Toggles the permission to modify the proposal after proposal deadline.
 
     Args:
-      value: can be either "allow" or "disallow".
+      value: can be either "enable" or "disable".
     """
     assert isSet(self.data.proposal)
 
-    if value != 'allow' and value != 'disallow':
+    if value != 'enable' and value != 'disable':
       raise BadRequest("Invalid post data.")
 
-    if value == 'allow' and self.data.proposal.is_editable_post_deadline:
+    if value == 'enable' and self.data.proposal.is_editable_post_deadline:
       raise BadRequest("Invalid post data.")
-    if (value == 'disallow' and not
+    if (value == 'disable' and not
         self.data.proposal.is_editable_post_deadline):
       raise BadRequest("Invalid post data.")
 
@@ -890,9 +890,9 @@ class ProposalModificationPostDeadline(RequestHandler):
     def update_modification_perm_txn():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
-      if value == 'allow':
+      if value == 'enable':
         proposal.is_editable_post_deadline = True
-      elif value == 'disallow':
+      elif value == 'disable':
         proposal.is_editable_post_deadline = False
 
       db.put(proposal)
@@ -931,16 +931,16 @@ class AcceptProposal(RequestHandler):
     """Toggles the the application state between accept and pending.
 
     Args:
-      value: can be either "accept" or "revert".
+      value: can be either "enable" or "disable".
     """
     assert isSet(self.data.proposal)
 
-    if value != 'accept' and value != 'revert':
+    if value != 'enable' and value != 'disable':
       raise BadRequest("Invalid post data.")
 
-    if value == 'accept' and self.data.proposal.status == 'accepted':
+    if value == 'enable' and self.data.proposal.status == 'accepted':
       raise BadRequest("Invalid post data.")
-    if value == 'revert' and not self.data.proposal.status == 'accepted':
+    if value == 'disable' and not self.data.proposal.status == 'accepted':
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
@@ -948,9 +948,9 @@ class AcceptProposal(RequestHandler):
     def update_status_txn():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
-      if value == 'accept':
+      if value == 'enable':
         proposal.status = 'accepted'
-      elif value == 'revert':
+      elif value == 'disable':
         proposal.status = 'pending'
 
       db.put(proposal)
