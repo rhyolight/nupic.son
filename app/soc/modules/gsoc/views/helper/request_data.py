@@ -407,10 +407,10 @@ class RedirectHelper(object):
     """Sets the kwargs for an url_patterns.REVIEW redirect.
     """
     if not student:
-      assert 'student' in self._data.kwargs
-      student = self._data.kwargs['student']
+      assert 'user' in self._data.kwargs
+      student = self._data.kwargs['user']
     self.id(id)
-    self.kwargs['student'] = student
+    self.kwargs['user'] = student
     return self
 
   def createProfile(self, role):

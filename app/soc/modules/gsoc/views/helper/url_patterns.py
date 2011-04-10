@@ -86,6 +86,6 @@ CREATE_PROFILE = _role + namedLinkIdPattern(['sponsor', 'program'])
 DOCUMENT  = _document
 SURVEY    = namedLinkIdPattern(['prefix', 'sponsor', 'program', 'survey'])
 PROPOSAL  = namedIdBasedPattern(['sponsor', 'program'])
-REVIEW    = namedIdBasedPattern(['sponsor', 'program', 'student'])
+REVIEW    = namedIdBasedPattern(['sponsor', 'program', 'user'])
 ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
 INVITE    = _mentor_role + ORG
