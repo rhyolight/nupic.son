@@ -499,7 +499,15 @@ class SubmittedProposalsComponent(Component):
     list_config.setRowAction(lambda e, *args, **kwargs: 
         r.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
-    list_config.setDefaultSort('average', 'desc')
+    list_config.setDefaultSort('last_modified_on', 'desc')
+
+    for org in []: #data.mentor_for:
+      for column in org.proposal_extra:
+        list_config.addColumn(
+            column, column, (lambda ent, *args: ""))
+        list_config.setEditable(column, True, 'text', {})
+        list_config.setExtra(column, org=org.short_name)
+
     self._list_config = list_config
 
     super(SubmittedProposalsComponent, self).__init__(request, data)

@@ -164,6 +164,12 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
 
   org_tag = tag_property('org_tag')
 
+  proposal_extra = db.StringListProperty(
+      required=True, verbose_name=ugettext("Additional proposal columns"))
+  proposal_extra.help_text = ugettext(
+      "Additional columns that will be added to all proposals, one per line.")
+  proposal_extra.group = ugettext('4. Organization Preferences')
+
   def __init__(self, parent=None, key_name=None, app=None, **entity_values):
     """Constructor for GSoCOrganization Model.
 
