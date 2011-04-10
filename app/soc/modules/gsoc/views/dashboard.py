@@ -505,8 +505,8 @@ class SubmittedProposalsComponent(Component):
       for column in org.proposal_extra:
         list_config.addColumn(
             column, column, (lambda ent, *args: ""))
-        list_config.setEditable(column, True, 'text', {})
-        list_config.setExtra(column, org=org.short_name)
+        list_config.setColumnEditable(column, True, 'text', {})
+        list_config.setColumnExtra(column, org=org.short_name)
 
     self._list_config = list_config
 
