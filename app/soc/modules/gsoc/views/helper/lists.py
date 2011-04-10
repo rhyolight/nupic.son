@@ -64,6 +64,7 @@ class ListConfiguration(object):
     """
     self._col_names = []
     self._col_model = []
+    self._col_map = {}
     self._col_functions = {}
     self._row_num = 50
     self._row_list = [5, 10, 20, 50, 100, 500, 1000]
@@ -158,6 +159,7 @@ class ListConfiguration(object):
       model["editoptions"] = dict(value=values)
 
     self._col_model.append(model)
+    self._col_map[col_id] = model
     self._col_names.append(name)
     self._col_functions[col_id] = func
 
@@ -295,10 +297,9 @@ class ListConfiguration(object):
       order: The order in which to sort, either 'asc' or 'desc'.
              The default value is 'asc'.
     """
-    col_ids = [item.get('name') for item in self._col_model]
-    if col_id and col_id not in col_ids:
+    if col_id and col_id not in self._col_map:
       raise ValueError('Id %s is not a defined column (Known columns %s)'
-                       % (col_id, col_ids))
+                       % (col_id, self._col_map.keys()))
 
     if order not in ['asc', 'desc']:
       raise ValueError('%s is not a valid order' % order)
