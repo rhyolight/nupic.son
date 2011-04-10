@@ -40,6 +40,7 @@ def process(proposal_key):
     number = db.Query(GSoCScore).ancestor(proposal).count()
     proposal.nr_scores = number
     proposal.put()
+    return True
 
   if db.run_in_transaction(update_proposal_txn):
     yield operation.counters.Increment("proposals_updated")
