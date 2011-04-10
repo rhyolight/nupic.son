@@ -148,6 +148,31 @@ class ProposalTest(MailTestCase, DjangoTestCase):
     self.assertEqual(0, proposal.score)
     self.assertEqual(0, proposal.nr_scores)
 
+    url = '/gsoc/proposal/wish_to_mentor/' + suffix
+    postdata = {'value': 'request'}
+    response = self.post(url, postdata)
+
+    proposal = GSoCProposal.all().get()
+    self.assertTrue(self.data.profile.key() in proposal.possible_mentors)
+
+    postdata = {'value': 'withdraw'}
+    response = self.post(url, postdata)
+
+    proposal = GSoCProposal.all().get()
+    self.assertFalse(self.data.profile.key() in proposal.possible_mentors)
+
+    other_mentor.profile.mentor_for = []
+    other_mentor.profile.put()
+
+    proposal.possible_mentors.append(other_mentor.profile.key())
+    proposal.put()
+
+    url = '/gsoc/proposal/review/' + suffix
+    response = self.client.get(url)
+
+    proposal = GSoCProposal.all().get()
+    self.assertFalse(other_mentor.profile.key() in proposal.possible_mentors)
+
   def testSubmitProposalWhenInactive(self):
     """Test the submission of student proposals during the student signup
     period is not active.

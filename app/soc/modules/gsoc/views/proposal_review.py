@@ -316,9 +316,8 @@ class ReviewProposal(RequestHandler):
       changed = True
       self.data.proposal.possible_mentors.remove(mentor.key())
 
-    #if changed:
-    #  self.data.proposal.put()
-    # TODO: enable when there is test coverage for willing to mentor
+    if changed:
+      self.data.proposal.put()
 
     return result
 
