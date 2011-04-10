@@ -289,6 +289,7 @@ limitations under the License.
       }
 
       /* Make the ignore proposal button, post using ajax. */
+      {% if user_role == "org_admin" %}
       var ignore_proposal_button = new buttonObj(
           "{{ ignore_proposal_button.id }}",
           "{{ ignore_proposal_button.link }}",
@@ -309,7 +310,9 @@ limitations under the License.
           "disable":
               "{{ accept_proposal_button.disable_btn_disabled_msg }}"})
           .click();
+      {% endif %}
 
+      {% if user_role == "mentor" %}
       /* Make allow proposal modifications button, post using ajax. */
       var proposal_modification_button = new buttonObj(
           "{{ proposal_modification_button.id }}",
@@ -331,6 +334,9 @@ limitations under the License.
           "disable":
               "{{ wish_to_mentor_button.disable_btn_disabled_msg }}"})
           .click();
+      {% endif %}
+
+
     });
 
     {% if scoring_visible %}
