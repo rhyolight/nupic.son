@@ -245,7 +245,7 @@ limitations under the License.
           newAverage = 0;
           newMessage = 'No scores yet';
         } else {
-          newAverage = newTotal / newNumber;
+          newAverage = Math.floor(newTotal / newNumber);
           newMessage = newAverage + '/' + maxScore + ' out of ' + newNumber + ' users, total: ' + newTotal;
         }
         jQuery.fn.raty.start(newAverage, '#score-average-stars');
