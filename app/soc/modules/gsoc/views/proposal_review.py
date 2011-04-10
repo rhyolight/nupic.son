@@ -27,6 +27,7 @@ from google.appengine.ext import db
 
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
+from django.utils.translation import ugettext
 
 from soc.logic import cleaning
 from soc.logic.exceptions import NotFound
@@ -47,6 +48,39 @@ from soc.modules.gsoc.models.score import GSoCScore
 
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+
+
+DEF_ACCEPT_PROPOSAL_ENABLE_DISABLED_MSG = ugettext(
+    'You have already accepted this proposal. To revert to the pending '
+    'status, click the revert button adjacent to this button.')
+
+DEF_ACCEPT_PROPOSAL_DISABLE_DISABLED_MSG = ugettext(
+    'This proposal is already in pending status. To accept this proposal '
+    'click the accept button adjacent to this button.')
+
+DEF_IGNORE_PROPOSAL_ENABLE_DISABLED_MSG = ugettext(
+    'You have already ignored this proposal. To unignore it, click the '
+    'Unignore button adjacent to this button.')
+
+DEF_IGNORE_PROPOSAL_DISABLE_DISABLED_MSG = ugettext(
+    'This proposal is unignored already. To Ignore it, click the Ignore '
+    'button adjacent to this button.')
+
+DEF_PROPOSAL_MODIFICATION_ENABLE_DISABLED_MSG = ugettext(
+    'Student is already allowed to edit the proposal. To disable it, '
+    'click on the disable button adjacent to this button.')
+
+DEF_PROPOSAL_MODIFICATION_DISABLE_DISABLED_MSG = ugettext(
+    'Student cannot edit the proposal already. To allow student to '
+    'edit the proposal click the enable button adjacent to this button.')
+
+DEF_WISH_TO_MENTOR_ENABLE_DISABLED_MSG = ugettext(
+    'You have already wished to mentor this project. If you want to change '
+    'your decision click the disable button adjacent to this button.')
+
+DEF_WISH_TO_MENTOR_DISABLE_DISABLED_MSG = ugettext(
+    'You have not chosen to mentor this project. If you wish to mentor '
+    'click the enable button adjacent to this button.')
 
 
 def queryAllMentorsForOrg(org, limit=1000):
@@ -432,40 +466,61 @@ class ReviewProposal(RequestHandler):
     if self.data.private_comments_visible:
       context['user_role'] = 'mentor'
       if not proposal_ignored:
-        if self.data.isPossibleMentorForProposal():
-          context['wish_to_mentor'] = 'withdraw'
-        else:
-          context['wish_to_mentor'] = 'request'
-        context['wish_to_mentor_link'] = self.data.redirect.review(
-            ).urlOf('gsoc_proposal_wish_to_mentor')
+        context['wish_to_mentor_button'] = ButtonTemplate(
+              self.data, 'Wish to mentor', 'wish_to_mentor',
+              'gsoc_proposal_wish_to_mentor',
+              not self.data.isPossibleMentorForProposal(),
+              disabled_msgs = {
+                  'enable': DEF_WISH_TO_MENTOR_ENABLE_DISABLED_MSG,
+                  'disable': DEF_WISH_TO_MENTOR_DISABLE_DISABLED_MSG},
+              labels = {
+                  'enable': 'Yes',
+                  'disable': 'No'})
 
         if self.data.timeline.afterStudentSignupEnd():
-          if self.data.proposal.is_editable_post_deadline:
-            context['proposal_modification'] = 'disallow'
-          else:
-            context['proposal_modification'] = 'allow'
-
-          context['proposal_modification_link'] = self.data.redirect.review(
-              ).urlOf('gsoc_proposal_modification')
+          context['proposal_modification_button'] = ButtonTemplate(
+              self.data, 'Proposal modifications', 'proposal_modification',
+              'gsoc_proposal_modification',
+              not self.data.proposal.is_editable_post_deadline,
+              disabled_msgs = {
+                  'enable': DEF_PROPOSAL_MODIFICATION_ENABLE_DISABLED_MSG,
+                  'disable': DEF_PROPOSAL_MODIFICATION_DISABLE_DISABLED_MSG})
 
       if self.data.orgAdminFor(self.data.proposal.org):
         context['user_role'] = 'org_admin'
         # only org admins can ignore the proposal, assign mentors to proposals
-        if self.data.proposal.status in ['pending', 'withdrawn']:
-          context['ignore_proposal'] = 'ignore'
-        elif self.data.proposal.status == 'ignored':
-          context['ignore_proposal'] = 'unignore'
-        context['ignore_proposal_link'] = self.data.redirect.review(
-          ).urlOf('gsoc_proposal_ignore')
+        if self.data.proposal.status in ['pending', 'withdrawn', 'ignored']:
+          if self.data.proposal.status in ['pending', 'withdrawn']:
+            enable = True
+          elif self.data.proposal.status == 'ignored':
+            enable = False
+          context['ignore_proposal_button'] = ButtonTemplate(
+              self.data, 'Ignore proposal', 'ignore_proposal',
+              'gsoc_proposal_ignore', enable,
+              disabled_msgs = {
+                  'enable': DEF_IGNORE_PROPOSAL_ENABLE_DISABLED_MSG,
+                  'disable': DEF_IGNORE_PROPOSAL_DISABLE_DISABLED_MSG,},
+              labels = {
+                  'enable': 'Ignore',
+                  'disable': 'Unignore',})
 
-        if not proposal_ignored:
+        if not proposal_ignored and self.data.proposal.status in [
+            'pending', 'accepted']:
           if self.data.proposal.status == 'pending':
-            context['accept_proposal'] = 'accept'
+            enable = True
           elif self.data.proposal.status == 'accepted':
-            context['accept_proposal'] = 'revert'
+            enable = False
 
-          context['accept_proposal_link'] = self.data.redirect.review(
-              ).urlOf('gsoc_proposal_accept')
+          context['accept_proposal_button'] = ButtonTemplate(
+            self.data, 'Accept proposal', 'accept_proposal',
+            'gsoc_proposal_accept', enable,
+            disabled_msgs = {
+                'enable': DEF_ACCEPT_PROPOSAL_ENABLE_DISABLED_MSG,
+                'disable': DEF_ACCEPT_PROPOSAL_DISABLE_DISABLED_MSG,},
+            labels = {
+                'enable': 'Accept',
+                'disable': 'Revert',})
+
 
           context['assign_mentor'] = AssignMentorFields(self.data)
 
