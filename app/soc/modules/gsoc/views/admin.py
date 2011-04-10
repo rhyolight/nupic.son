@@ -134,7 +134,7 @@ class LookupLinkIdPage(RequestHandler):
     forms = [form]
     profile = None
 
-    if self.data.request.method == 'POST':
+    if not form.errors and self.data.request.method == 'POST':
       profile = form.cleaned_data.get('profile')
 
     if profile:
