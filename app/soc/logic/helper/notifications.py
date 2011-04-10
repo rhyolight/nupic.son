@@ -52,7 +52,7 @@ DEF_UPDATED_PROPOSAL_SUBJECT_FMT = ugettext(
 
 DEF_NEW_REVIEW_SUBJECT_FMT = ugettext(
     '[%(group)s] New %(review_visibility)s review on %(reviewed_name)s '
-    'by %(reviewer_name)s')
+    '(%(proposer_name)s) by %(reviewer_name)s')
 
 DEF_HANDLED_REQUEST_SUBJECT_FMT = ugettext(
     '[%(group)s] Request to become a %(role_verbose)s has been %(action)s')
@@ -313,6 +313,7 @@ def newCommentContext(data, comment, to_emails):
       'reviewed_name': reviewed_name,
       'review_content': comment.content,
       'review_visibility': review_type,
+      'proposer_name': data.proposer.name(),
       'group': data.proposal.org.name,
       }
 
