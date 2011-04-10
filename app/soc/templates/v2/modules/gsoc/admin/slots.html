@@ -14,8 +14,14 @@ limitations under the License.
 {% endcomment %}
 
 {% block page_content %}
-<ul>
-  <li><a href="{{ lookup_link }}">Lookup profile</a></li>
-  <li><a href="{{ slots_link }}">Allocate slots</a></li>
-</ul>
-{% endblock %}
+
+{{ slots_list.render }}
+
+{% endblock page_content %}
+
+{% block dependencies %}
+  [
+    dep.uniform,
+    dep.melange.list,
+  ]
+{% endblock dependencies %}
