@@ -108,12 +108,12 @@ class ModelReadOnlyTemplate(object):
 
   template_path = 'v2/modules/gsoc/_readonly_template.html'
 
-  def __init__(self, model_instance=None):
+  def __init__(self, instance=None):
     """Constructor to initialize the model instance.
 
     The readonly template will be rendered for the data in this model instance.
     """
-    self.model_instance = model_instance
+    self.instance = instance
 
   def __iter__(self):
     """Iterator yielding groups of model instance's properties to be rendered.
@@ -123,7 +123,7 @@ class ModelReadOnlyTemplate(object):
     for name, field in self.fields.items():
       group = getattr(field, 'group', '0. ')
       grouping[group].append((field.verbose_name, getattr(
-          self.model_instance, name)))
+          self.instance, name)))
 
     rexp = re.compile(r"\d+. ")
 
