@@ -402,8 +402,8 @@ class RedirectHelper(object):
     self.kwargs['student'] = student
     return self
 
-  def profile(self, role):
-    """Sets args for an url_patterns.PROFILE redirect.
+  def createProfile(self, role):
+    """Sets args for an url_patterns.CREATE_PROFILE redirect.
     """
     self.program()
     self.kwargs['role'] = role

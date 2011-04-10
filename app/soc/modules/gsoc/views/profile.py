@@ -223,7 +223,7 @@ class ProfilePage(RequestHandler):
     return [
         url(r'^gsoc/profile/%s$' % url_patterns.PROGRAM,
          self, name='edit_gsoc_profile'),
-        url(r'^gsoc/profile/%s$' % url_patterns.PROFILE,
+        url(r'^gsoc/profile/%s$' % url_patterns.CREATE_PROFILE,
          self, name='create_gsoc_profile'),
     ]
 

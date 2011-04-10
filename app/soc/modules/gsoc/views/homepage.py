@@ -82,9 +82,10 @@ class Apply(Template):
   def context(self):
     context = {}
     accepted_orgs = None
+    r = self.data.redirect.program()
 
     if self.data.timeline.orgsAnnounced():
-      r = self.data.redirect.program()
+      # accepted orgs block
       accepted_orgs = r.urlOf('gsoc_accepted_orgs')
       nr_orgs = self.data.program.nr_accepted_orgs
       context['nr_accepted_orgs'] = nr_orgs if nr_orgs else ""
@@ -103,24 +104,26 @@ class Apply(Template):
     context['student_signup'] = self.data.timeline.studentSignup()
     context['mentor_signup'] = self.data.timeline.mentorSignup()
 
-    signup = self.data.timeline.orgSignup(
-        ) or self.data.timeline.studentSignup(
-        ) or (self.data.timeline.mentorSignup() and not self.data.student_info)
+    signup = (
+        self.data.timeline.orgSignup() or
+        self.data.timeline.studentSignup() or
+        (self.data.timeline.mentorSignup() and not self.data.student_info)
+    )
 
+    # signup block
     if signup and not self.data.gae_user:
-      context['login_link'] = self.data.redirect.login().url()
+      context['login_link'] = r.login().url()
     if signup and not self.data.profile:
-      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
       if self.data.timeline.orgSignup():
-        kwargs['role'] = 'org_admin'
+        r.createProfile('org_admin')
       elif self.data.timeline.studentSignup():
-        kwargs['role'] = 'mentor'
-        context['mentor_profile_link'] = reverse(
-            'create_gsoc_profile', kwargs=kwargs)
-        kwargs['role'] = 'student'
+        r.createProfile('mentor')
+        context['mentor_profile_link'] = r.urlOf('create_gsoc_profile')
+        r.createProfile('student')
       elif self.data.timeline.mentorSignup():
-        kwargs['role'] = 'mentor'
-      context['profile_link'] = reverse('create_gsoc_profile', kwargs=kwargs)
+        r.createProfile('mentor')
+
+      context['profile_link'] = r.urlOf('create_gsoc_profile')
 
     if ((self.data.timeline.studentSignup() or
         self.data.timeline.mentorSignup()) and self.data.profile):
