@@ -324,23 +324,76 @@ limitations under the License.
         });
       });
 
-      /* Make allow proposal modifications button, post using ajax. */
-      var proposal_modification = "{{ proposal_modification }}";
-      jQuery("#proposal-modification-link").click(function() {
-        jQuery.post("{{ proposal_modification_link }}",
-            {value: proposal_modification, xsrf_token: window.xsrf_token},
-            function(data) {
-          if (proposal_modification == "allow") {
-            jQuery("#proposal-modification-link").html(
-                "Disallow proposal modification");
-            proposal_modification = "disallow";
-          } else if (proposal_modification == "disallow") {
-            jQuery("#proposal-modification-link").html(
-                "Allow proposal modification");
-            proposal_modification = "allow";
-          }
+      var buttonObj = function (post_url, init_state, button_id, msgs) {
+        this.post_url = post_url;
+        this.state = init_state;
+        this.button_id = button_id;
+        $enable_btn_disabled_msg = $('<div></div>')
+            .html("<p><strong>" + msgs.enable + "</strong></p>")
+            .dialog({
+                autoOpen: false,
+                title: 'Button Disabled'
         });
-      });
+        $disable_btn_disabled_msg = $('<div></div>')
+            .html("<p><strong>" + msgs.disable + "</strong></p>")
+            .dialog({
+                autoOpen: false,
+                title: 'Button Disabled'
+        });
+        self_obj = this;
+
+        this.click = function () {
+          jQuery("#" + this.button_id + "-enable").click(function() {
+            if (self_obj.is_enabled()) {
+              self_obj.flip_buttons();
+            } else {
+              $enable_btn_disabled_msg.dialog('open');
+            }
+          });
+          jQuery("#" + this.button_id + "-disable").click(function() {
+            if (self_obj.is_enabled()) {
+              $disable_btn_disabled_msg.dialog('open');
+            } else {
+              self_obj.flip_buttons();
+            }
+          });
+        }
+        this.flip_state = function () {
+          if (this.state == "enable") {
+            this.state = "disable";
+          } else if (this.state == "disable") {
+            this.state = "enable";
+          }
+        }
+        this.is_enabled = function () {
+          if (this.state == "enable") {
+            return true;
+          } else if (this.state == "disable") {
+            return false;
+          }
+        }
+        this.flip_buttons = function () {
+          jQuery.post(this.post_url,
+              {value: this.state, xsrf_token: window.xsrf_token},
+              function(data) {
+            if (self_obj.is_enabled()) {
+              jQuery("#"+self_obj.button_id+"-enable").addClass("disabled");
+              jQuery("#"+self_obj.button_id+"-disable").removeClass("disabled");
+            } else {
+              jQuery("#"+self_obj.button_id+"-disable").addClass("disabled");
+              jQuery("#"+self_obj.button_id+"-enable").removeClass("disabled");
+            }
+            self_obj.flip_state();
+          });
+        }
+      }
+
+      /* Make allow proposal modifications button, post using ajax. */
+      var proposal_button = new buttonObj(
+          "{{ proposal_modification_link }}", "{{ proposal_modification }}",
+          "proposal-modification",
+          {"enable": "{{ proposal_enable_disable_msg }}",
+          "disable": "{{ proposal_disable_disable_msg }}"}).click();
     });
 
     {% if scoring_visible %}
