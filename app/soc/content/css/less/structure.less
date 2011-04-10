@@ -428,6 +428,36 @@
             text-decoration: none;
         }
     }
+    .action-button {
+        font-size: 21px;
+        font-weight: normal;
+        line-height: 1.3em;
+        margin: 0 0 1em 0;
+
+        .text {
+            color: #238BD2;
+            clear: left;
+            float: left;
+            width: 250px;
+            text-align: right;
+            margin-right: 10px;
+            padding-right: 10px;
+        }
+        .button-mixin (@button-background: url("../../../images/v2/gsoc/form-submit-bg.png") repeat scroll 0 0 transparent, @button-color: white) {
+            background: @button-background;
+            color: @button-color;
+            width: 90px;
+            padding: 3px;
+            text-decoration: none;
+            text-align: center;
+        }
+        .button {
+            .button-mixin;
+        }
+        .button.disabled {
+            .button-mixin(url("../../../images/v2/gsoc/form-submit-bg-blue.png") repeat scroll 0 0 transparent, @grey);
+        }
+    }
 }
 
 /*////////////////
