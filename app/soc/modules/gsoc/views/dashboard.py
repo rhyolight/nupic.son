@@ -440,6 +440,10 @@ class SubmittedProposalsComponent(Component):
         ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
     list_config.addSimpleColumn('score', 'Score')
+    list_config.addSimpleColumn('nr_scores', '#scores', hidden=True)
+    list_config.addColumn(
+        'average', 'Average',
+        lambda ent, *a: int(ent.score/ent.nr_scores) if ent.nr_scores else 0)
 
     def getStatusOnDashboard(proposal, accepted, duplicates):
       """Method for determining which status to show on the dashboard.
