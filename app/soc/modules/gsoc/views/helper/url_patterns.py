@@ -83,6 +83,7 @@ ID        = namedIdBasedPattern(['sponsor', 'program'])
 SPONSOR   = namedLinkIdPattern(['sponsor'])
 PROGRAM   = namedLinkIdPattern(['sponsor', 'program'])
 CREATE_PROFILE = _role + namedLinkIdPattern(['sponsor', 'program'])
+PROFILE   = namedLinkIdPattern(['sponsor', 'program', 'user'])
 DOCUMENT  = _document
 SURVEY    = namedLinkIdPattern(['prefix', 'sponsor', 'program', 'survey'])
 PROPOSAL  = namedIdBasedPattern(['sponsor', 'program'])

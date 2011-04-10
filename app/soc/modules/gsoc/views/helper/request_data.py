@@ -420,6 +420,13 @@ class RedirectHelper(object):
     self.kwargs['role'] = role
     return self
 
+  def profile(self, user):
+    """Sets args for an url_patterns.PROFILE redirect.
+    """
+    self.program()
+    self.kwargs['user'] = user
+    return self
+
   def invite(self, role=None):
     """Sets args for an url_patterns.INVITE redirect.
     """
