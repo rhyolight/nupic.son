@@ -441,9 +441,15 @@ class SubmittedProposalsComponent(Component):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addSimpleColumn('score', 'Score')
     list_config.addSimpleColumn('nr_scores', '#scores', hidden=True)
+    def getAverage(ent):
+      if not ent.nr_scores:
+        return "0.00"
+
+      average = float(ent.score)/float(ent.nr_scores)
+      return "%.2f" % average
+
     list_config.addColumn(
-        'average', 'Average', lambda ent, *a: "%.2f" % (
-            ent.score/ent.nr_scores) if ent.nr_scores else "0.00")
+        'average', 'Average', lambda ent, *a: getAverage(ent))
 
     def getStatusOnDashboard(proposal, accepted, duplicates):
       """Method for determining which status to show on the dashboard.
