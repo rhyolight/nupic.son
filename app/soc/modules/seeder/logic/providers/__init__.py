@@ -108,6 +108,7 @@ class Logic():
                                       FixedReferenceProvider]
     providers['_ReverseReferenceProperty'] = []
     providers['ListProperty'] = [EmptyListProvider]
+    providers['StringListProperty'] = [EmptyListProvider]
     return providers
 
   def _getProvidersData(self):
