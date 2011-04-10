@@ -327,14 +327,13 @@ limitations under the License.
       var buttonObj = function (post_url, init_state, button_id, msgs) {
         this.post_url = post_url;
         this.state = init_state;
-        this.button_id = button_id;
-        $enable_btn_disabled_msg = $('<div></div>')
+        this.enable_btn_disabled_msg = $('<div></div>')
             .html("<p><strong>" + msgs.enable + "</strong></p>")
             .dialog({
                 autoOpen: false,
                 title: 'Button Disabled'
         });
-        $disable_btn_disabled_msg = $('<div></div>')
+        this.disable_btn_disabled_msg = $('<div></div>')
             .html("<p><strong>" + msgs.disable + "</strong></p>")
             .dialog({
                 autoOpen: false,
@@ -347,12 +346,12 @@ limitations under the License.
             if (self_obj.is_enabled()) {
               self_obj.flip_buttons();
             } else {
-              $enable_btn_disabled_msg.dialog('open');
+              self_obj.enable_btn_disabled_msg.dialog('open');
             }
           });
           jQuery("#" + this.button_id + "-disable").click(function() {
             if (self_obj.is_enabled()) {
-              $disable_btn_disabled_msg.dialog('open');
+              self_obj.disable_btn_disabled_msg.dialog('open');
             } else {
               self_obj.flip_buttons();
             }
