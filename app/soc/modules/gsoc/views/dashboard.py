@@ -22,6 +22,7 @@ __authors__ = [
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
+import logging
 
 from django.conf.urls.defaults import url
 from django.utils import simplejson
