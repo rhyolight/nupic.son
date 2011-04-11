@@ -755,7 +755,8 @@
                   var bounds = operation.bounds;
                   // create button for global operation
                   var new_button_id = _self.jqgrid.id + "_buttonOp_" + operation.id;
-                  jQuery("#t_" + _self.jqgrid.id).append("<input type='button' value='" + operation.caption + "' style='float:left' id='" + new_button_id + "'/>");
+                  var new_button_object = jQuery("<input type='button' value='" + operation.caption + "' style='float:left' id='" + new_button_id + "'/>").button();
+                  jQuery("#t_" + _self.jqgrid.id).append(new_button_object);
 
                   operation.parameters.idx = idx;
 
