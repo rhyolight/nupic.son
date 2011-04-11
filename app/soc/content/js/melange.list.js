@@ -553,11 +553,29 @@
             var number_of_records = current_grid.object.jqGrid('getGridParam','records');
             for (var record_number = 1; record_number <= number_of_records; record_number++) {
               var row = jQuery("#" + current_grid.id).jqGrid('getRowData',record_number);
-              if (current_grid.dirty_fields[row.key] !== undefined) {
+              //Extract the key from the key stored in the cell value, which could be enclosed in a link
+              //TODO(Mario)
+              //Need to refactor the internal data of the lists to prevent this from happening, temporary workaround.
+              var key_value = row.key.toString();
+              // extract link href (if any) from the text
+              var extracted_text = /^<a\b[^>]*href="(.*?)" \b[^>]*>(.*?)<\/a>$/.exec(key_value);
+              if (extracted_text !== null) {
+                key_value = extracted_text[2];
+              }
+              if (current_grid.dirty_fields[key_value] !== undefined) {
                 // This row should be updated, create object
-                rows_to_send[row.key] = {};
-                jQuery.each(current_grid.dirty_fields[row.key], function (column_index, column_name) {
-                  rows_to_send[row.key][column_name] = row[column_name];
+                rows_to_send[key_value] = {};
+                jQuery.each(current_grid.dirty_fields[key_value], function (column_index, column_name) {
+                  //Extract the value stored in the cell value, which could be enclosed in a link
+                  //TODO(Mario)
+                  //Need to refactor the internal data of the lists to prevent this from happening, temporary workaround.
+                  var column_value = row[column_name].toString();
+                  // extract link href (if any) from the text
+                  var extracted_text = /^<a\b[^>]*href="(.*?)" \b[^>]*>(.*?)<\/a>$/.exec(column_value);
+                  if (extracted_text !== null) {
+                    column_value = extracted_text[2];
+                  }
+                  rows_to_send[key_value][column_name] = column_value;
                 });
               }
             }
