@@ -132,7 +132,7 @@ class GSoCProfileHelper(object):
     properties = {
         'scope': self.profile, 'score': 0, 'nr_scores': 0,
         'is_publicly_visible': False, 'accept_as_project': False,
-        'is_editable_post_deadline': False,
+        'is_editable_post_deadline': False, 'extra': None,
         'parent': self.profile, 'status': 'pending',
         'program': self.program, 'org': org, 'mentor': mentor
     }

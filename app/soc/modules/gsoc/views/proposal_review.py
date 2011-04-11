@@ -774,12 +774,9 @@ class AssignMentor(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
-
-    if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
-
-    self.check.isOrgAdminForOrganization(self.data.proposal.org)
+    self.mutator.proposalFromKwargs()
+    assert isSet(self.data.proposal_org)
+    self.check.isOrgAdminForOrganization(self.data.proposal_org)
 
   def assignMentor(self, mentor_entity):
     """Assigns the mentor to the proposal.
