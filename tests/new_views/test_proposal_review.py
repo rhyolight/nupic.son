@@ -180,3 +180,120 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     response = self.client.get(url)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/review.html')
+
+  def testIgnoreProposalButton(self):
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student.createStudent()
+
+    proposal = self.createProposal({'is_publicly_visible': True,
+                                    'scope': student.profile,
+                                    'parent': student.profile})
+
+    suffix = "%s/%s/%d" % (
+        self.gsoc.key().name(),
+        student.user.key().name(),
+        proposal.key().id())
+
+    self.data.createMentor(self.org)
+
+    url = '/gsoc/proposal/ignore/' + suffix
+    postdata = {'value': 'enable'}
+    response = self.post(url, postdata)
+
+    self.assertResponseForbidden(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertNotEqual(proposal.status, 'ignored')
+
+  def testProposalModificationButton(self):
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student.createStudent()
+
+    proposal = self.createProposal({'is_publicly_visible': True,
+                                    'scope': student.profile,
+                                    'parent': student.profile})
+
+    suffix = "%s/%s/%d" % (
+        self.gsoc.key().name(),
+        student.user.key().name(),
+        proposal.key().id())
+
+    self.data.createMentor(self.org)
+
+    url = '/gsoc/proposal/modification/' + suffix
+    postdata = {'value': 'enable'}
+    response = self.post(url, postdata)
+
+    self.assertResponseOK(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertTrue(proposal.is_editable_post_deadline)
+
+  def testAcceptProposalButton(self):
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student.createStudent()
+
+    proposal = self.createProposal({'is_publicly_visible': True,
+                                    'scope': student.profile,
+                                    'parent': student.profile})
+
+    suffix = "%s/%s/%d" % (
+        self.gsoc.key().name(),
+        student.user.key().name(),
+        proposal.key().id())
+
+    self.data.createMentor(self.org)
+
+    url = '/gsoc/proposal/accept/' + suffix
+    postdata = {'value': 'enable'}
+    response = self.post(url, postdata)
+
+    self.assertResponseForbidden(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertNotEqual(proposal.status, 'accepted')
+
+  def testPubliclyVisibleButton(self):
+    self.data.createStudent()
+
+    proposal = self.createProposal({'is_publicly_visible': True,
+                                    'scope': self.data.profile,
+                                    'parent': self.data.profile})
+
+    suffix = "%s/%s/%d" % (
+        self.gsoc.key().name(),
+        self.data.user.key().name(),
+        proposal.key().id())
+
+    url = '/gsoc/proposal/publicly_visible/' + suffix
+    postdata = {'value': 'enable'}
+    response = self.post(url, postdata)
+
+    self.assertResponseOK(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertTrue(proposal.is_publicly_visible)
+
+  def testWithdrawProposalButton(self):
+    self.data.createStudent()
+
+    proposal = self.createProposal({'is_publicly_visible': True,
+                                    'scope': self.data.profile,
+                                    'parent': self.data.profile})
+
+    suffix = "%s/%s/%d" % (
+        self.gsoc.key().name(),
+        self.data.user.key().name(),
+        proposal.key().id())
+
+    url = '/gsoc/proposal/withdraw/' + suffix
+    postdata = {'value': 'enable'}
+    response = self.post(url, postdata)
+
+    self.assertResponseOK(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(proposal.status, 'withdrawn')
