@@ -73,7 +73,9 @@ limitations under the License.
   {{ duplicate.render }}
 {% endif %}
 
+{{ publicly_visible_button.render }}
 
+{{ withdraw_proposal_button.render }}
 
 {{ ignore_proposal_button.render }}
 
@@ -336,7 +338,27 @@ limitations under the License.
           .click();
       {% endif %}
 
-
+      {% if user_role == "proposer" %}
+      /* Make the publicly visible button, post using ajax. */
+      var publicly_visible_button = new buttonObj(
+          "{{ publicly_visible_button.id }}",
+          "{{ publicly_visible_button.link }}",
+          "{{ publicly_visible_button.state }}",
+          {"enable":
+              "{{ publicly_visible_button.enable_btn_disabled_msg }}",
+          "disable":
+              "{{ publicly_visible_button.disable_btn_disabled_msg }}"})
+          .click();
+      var withdraw_proposal_button = new buttonObj(
+          "{{ withdraw_proposal_button.id }}",
+          "{{ withdraw_proposal_button.link }}",
+          "{{ withdraw_proposal_button.state }}",
+          {"enable":
+              "{{ withdraw_proposal_button.enable_btn_disabled_msg }}",
+          "disable":
+              "{{ withdraw_proposal_button.disable_btn_disabled_msg }}"})
+          .click();
+      {% endif %}
     });
 
     {% if scoring_visible %}
