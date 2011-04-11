@@ -524,6 +524,9 @@ class SubmittedProposalsComponent(Component):
         'org', 'Organization', (lambda ent, *args: ent.org.short_name),
         options=options, hidden=True)
     list_config.addColumn(
+        'full_proposal_key', 'Full proposal key',
+        (lambda ent, *args: ent.org.key().name()), hidden=True)
+    list_config.addColumn(
         'org_key', 'Organization key',
         (lambda ent, *args: ent.org.key().name()), hidden=True)
     list_config.setRowAction(lambda e, *args, **kwargs: 
@@ -542,7 +545,8 @@ class SubmittedProposalsComponent(Component):
         list_config.setColumnExtra(column, org=org.short_name)
 
     if extra_columns:
-      list_config.addPostEditButton('save', "Save", "", ['org_key'])
+      fields = ['full_proposal_key', 'org_key']
+      list_config.addPostEditButton('save', "Save", "", fields)
 
     self._list_config = list_config
 
@@ -586,11 +590,12 @@ class SubmittedProposalsComponent(Component):
         extra_columns.setdefault(org.key().name(), []).append(column)
 
     for proposal_key_name, properties in parsed.iteritems():
-      if 'org_key' not in properties:
-        logging.warning("Missing org_key in '%s'" % properties)
+      if 'org_key' not in properties or 'full_proposal_key' not in properties:
+        logging.warning("Missing key in '%s'" % properties)
         continue
 
       org_key_name = properties.pop('org_key')
+      proposal_key = properties.pop('full_proposal_key')
 
       valid_columns = set(extra_columns.get(org_key_name, []))
       remove_properties = []
@@ -604,10 +609,10 @@ class SubmittedProposalsComponent(Component):
         properties.pop(prop)
 
       def update_proposal_txn():
-        proposal = GSoCProposal.get_by_key_name(key_name)
+        proposal = db.get(db.Key(proposal_key_name))
 
         if not proposal:
-          logging.warning("Invalid proposal_key '%s'" % key_name)
+          logging.warning("Invalid proposal_key '%s'" % proposal_key_name)
           return
 
         data = {}
