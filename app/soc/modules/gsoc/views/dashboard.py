@@ -24,6 +24,7 @@ __authors__ = [
 
 
 from django.conf.urls.defaults import url
+from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
@@ -519,6 +520,9 @@ class SubmittedProposalsComponent(Component):
     list_config.addColumn(
         'org', 'Organization', (lambda ent, *args: ent.org.short_name),
         options=options, hidden=True)
+    list_config.addColumn(
+        'org_key', 'Organization key',
+        (lambda ent, *args: ent.org.key().name()), hidden=True)
     list_config.setRowAction(lambda e, *args, **kwargs: 
         r.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
@@ -535,9 +539,8 @@ class SubmittedProposalsComponent(Component):
         list_config.setColumnExtra(column, org=org.short_name)
 
     if extra_columns:
-      bounds = ['0', 'all']
-      fields = ['key'] + extra_columns
-      list_config.addPostButton('save', "Save", "?idx=4", bounds, fields)
+      fields = ['key', 'org_key'] + extra_columns
+      list_config.addPostEditButton('save', "Save", "#", fields)
 
     self._list_config = list_config
 
@@ -566,6 +569,58 @@ class SubmittedProposalsComponent(Component):
     idx = lists.getListIndex(self.request)
     if idx != 4:
       return None
+
+    data = self.data.POST.get('data')
+
+    if not data:
+      raise BadRequest("Missing data")
+
+    parsed = simplejson.loads(data)
+
+    extra_columns = {}
+
+    for org in self.data.mentor_for:
+      for column in org.proposal_extra:
+        extra_columns.setdefault(org.key().name(), []).append(column)
+
+    for proposal_key_name, properties in parsed.iteritems():
+      if 'org_key' not in properties:
+        logging.warning("Missing org_key in '%s'" % properties)
+        continue
+
+      org_key_name = properties.pop('org_key')
+
+      valid_columns = set(extra_columns.get(org_key_name, []))
+      remove_properties = []
+
+      for prop in properties:
+        if prop not in valid_columns:
+          logging.warning("Invalid property '%s'" % prop)
+          remove_properties.append(prop)
+
+      for prop in remove_properties:
+        properties.pop(prop)
+
+      def update_proposal_txn():
+        proposal = GSoCProposal.get_by_key_name(key_name)
+
+        if not proposal:
+          logging.warning("Invalid proposal_key '%s'" % key_name)
+          return
+
+        data = {}
+
+        if proposal.extra_columns:
+          # we have to loads in the txn, should be fast enough
+          data = simplejson.loads(proposal.extra)
+
+        data.update(properties)
+
+        proposal.extra = simplejson.dumps(properties)
+        proposal.put()
+
+      db.run_in_transaction(update_proposal_txn)
+
     return True
 
   def getListData(self):

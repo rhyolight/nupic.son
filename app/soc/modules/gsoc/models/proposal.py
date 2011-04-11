@@ -129,3 +129,7 @@ class GSoCProposal(soc.models.base.ModelWithFieldAttributes):
 
   #: date when the proposal was last modified, should be set manually on edit
   last_modified_on = db.DateTimeProperty(required=True, auto_now=True)
+
+  #: JSON field storing extra data by the org
+  extra = db.TextProperty(required=False,
+      verbose_name=ugettext('Extra content'))
