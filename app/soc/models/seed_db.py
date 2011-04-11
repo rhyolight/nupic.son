@@ -63,6 +63,7 @@ from soc.modules.gsoc.models import student_proposal
 from soc.modules.gsoc.models.mentor import GSoCMentor
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
+from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.org_admin import GSoCOrgAdmin
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
@@ -395,14 +396,14 @@ def seed(request, *args, **kwargs):
     ranker_root_logic.create(student_proposal.DEF_RANKER_NAME, entity,
         student_proposal.DEF_SCORE, 100)
 
-    # Admin for the first org
+    # Admin (and thus mentor) for the first org
     if i == 0:
       profile.org_admin_for.append(entity.key())
+      profile.mentor_for.append(entity.key())
       profile.put()
 
-    # Mentor and admin for the second org
+    # Mentor for the second org
     if i == 1:
-      profile.org_admin_for.append(entity.key())
       profile.mentor_for.append(entity.key())
       profile.put()
 
@@ -1014,6 +1015,8 @@ def clear(*args, **kwargs):
       GSoCTimeline.all(),
       GCITimeline.all(),
       GSoCProgram.all(),
+      GSoCProfile.all(),
+      GSoCProposal.all(),
       GCIProgram.all(),
       Host.all(),
       Sponsor.all(),
