@@ -443,10 +443,10 @@ class SubmittedProposalsComponent(Component):
     list_config.addSimpleColumn('nr_scores', '#scores', hidden=True)
     def getAverage(ent):
       if not ent.nr_scores:
-        return "0.00"
+        return float(0)
 
       average = float(ent.score)/float(ent.nr_scores)
-      return "%.2f" % average
+      return float("%.2f" % average)
 
     list_config.addColumn(
         'average', 'Average', lambda ent, *a: getAverage(ent))
