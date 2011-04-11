@@ -230,18 +230,25 @@ limitations under the License.
         this.button_id = button_id;
         this.post_url = post_url;
         this.state = init_state;
+
+        /* This is intentionally not made an instance variable since
+           the settings are same across objects. */
+        disabled_dialog_settings = {
+            autoOpen: false,
+            title: 'Button Disabled',
+            buttons: {
+                Ok: function() {
+                  $( this ).dialog( "close" );
+                }
+            }
+        }
         this.enable_btn_disabled_msg = $('<div></div>')
             .html("<p><strong>" + msgs.enable + "</strong></p>")
-            .dialog({
-                autoOpen: false,
-                title: 'Button Disabled'
-        });
+            .dialog(disabled_dialog_settings);
+
         this.disable_btn_disabled_msg = $('<div></div>')
             .html("<p><strong>" + msgs.disable + "</strong></p>")
-            .dialog({
-                autoOpen: false,
-                title: 'Button Disabled'
-        });
+            .dialog(disabled_dialog_settings);
         var self_obj = this;
 
         this.click = function () {
