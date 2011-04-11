@@ -69,7 +69,8 @@ class SlotsTest(DjangoTestCase):
         'button_id': ['save'],
         'idx': ['0']
     }
-    self.post(url, postdata)
+    response = self.post(url, postdata)
+    self.assertResponseOK(response)
 
     org = GSoCOrganization.all().get()
 
