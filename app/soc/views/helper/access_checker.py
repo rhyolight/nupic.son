@@ -300,7 +300,7 @@ class Mutator(object):
     if self.data.profile and parent_key == self.data.profile.key():
       self.data.proposer = self.data.profile
     else:
-      self.data.proposer = self.data.proposal.parent
+      self.data.proposer = self.data.proposal.parent()
 
   def canRespondForUser(self):
     assert isSet(self.data.invited_user)
