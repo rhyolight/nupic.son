@@ -1023,8 +1023,13 @@
             }
           });
           if (previous_configuration["lists_configuration"][idx].sort_settings !== undefined) {
-            configuration.sortname = previous_configuration.lists_configuration[idx].sort_settings.sortname;
-            configuration.sortorder = previous_configuration.lists_configuration[idx].sort_settings.sortorder;
+            var previous_sortname = previous_configuration.lists_configuration[idx].sort_settings.sortname;
+            var previous_sortorder = previous_configuration.lists_configuration[idx].sort_settings.sortorder;
+            var column_present = jLinq.from(colModel).equals("name",previous_sortname).select()[0] !== undefined ? true : false;
+            if (column_present) {
+              configuration.sortname = previous_sortname;
+              configuration.sortorder = previous_sortorder;
+            }
           }
         }
         return configuration;
