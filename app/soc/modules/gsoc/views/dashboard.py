@@ -540,7 +540,7 @@ class SubmittedProposalsComponent(Component):
 
     if extra_columns:
       fields = ['key', 'org_key'] + extra_columns
-      list_config.addPostEditButton('save', "Save", "#", fields)
+      list_config.addPostEditButton('save', "Save", "", fields)
 
     self._list_config = list_config
 
