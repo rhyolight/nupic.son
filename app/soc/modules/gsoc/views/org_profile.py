@@ -61,7 +61,8 @@ class OrgProfileForm(forms.ModelForm):
     css_prefix = 'gsoc_org_page'
     exclude = [
         'status', 'scope', 'scope_path', 'founder', 'founder', 'slots', 'note',
-        'slots_calculated', 'nr_applications', 'nr_mentors', 'link_id'
+        'slots_calculated', 'nr_applications', 'nr_mentors', 'link_id',
+        'proposal_extra',
     ]
     widgets = forms.choiceWidgets(GSoCOrganization,
         ['contact_country', 'shipping_country'])
@@ -96,7 +97,8 @@ class OrgCreateProfileForm(OrgProfileForm):
     css_prefix = 'gsoc_org_page'
     exclude = [
         'status', 'scope', 'scope_path', 'founder', 'founder', 'slots', 'note',
-        'slots_calculated', 'nr_applications', 'nr_mentors', 'scoring_disabled'
+        'slots_calculated', 'nr_applications', 'nr_mentors', 'scoring_disabled',
+        'proposal_extra',
     ]
 
     widgets = forms.choiceWidgets(GSoCOrganization,
