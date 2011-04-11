@@ -446,7 +446,7 @@ class ReviewProposal(RequestHandler):
       context['user_role'] = 'proposer'
 
       context['publicly_visible_button'] = ButtonTemplate(
-              self.data, 'Publicly visilbe', 'publicly_visible',
+              self.data, 'Publicly visible', 'publicly_visible',
               'gsoc_proposal_publicly_visible',
               not self.data.proposal.is_publicly_visible,
               disabled_msgs = {
