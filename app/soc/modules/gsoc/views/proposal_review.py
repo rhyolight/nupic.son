@@ -1178,7 +1178,7 @@ class WithdrawProposal(RequestHandler):
 
     if value == 'enable' and self.data.proposal.status == 'withdrawn':
       raise BadRequest("Invalid post data.")
-    if value == 'disable' and not self.data.proposal.status == 'pending':
+    if value == 'disable' and not self.data.proposal.status == 'withdrawn':
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
