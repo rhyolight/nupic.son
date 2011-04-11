@@ -35,6 +35,7 @@ from django.utils.translation import ugettext
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import dicts
+from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.views import forms
 from soc.views import readonly_template
@@ -195,6 +196,46 @@ class SlotsList(Template):
         'lists': [list],
     }
 
+  def post(self):
+    idx = lists.getListIndex(self.request)
+    if idx != 0:
+      return False
+
+    data = self.data.POST.get('data')
+
+    if not data:
+      raise BadRequest("Missing data")
+
+    parsed = simplejson.loads(data)
+
+    for properties in parsed:
+      if not all(i in properties for i in ['key', 'note', 'slots']):
+        logging.warning("Missing value in '%s'" % properties)
+        continue
+
+      key_name = properties['key']
+      note = properties['note']
+      slots = properties['slots']
+
+      if not slots.isdigit():
+        logging.warning("Non-int value for slots: '%s'" % slots)
+        continue
+
+      slots = int(slots)
+
+      def update_org_txn():
+        org = GSoCOrganization.get_by_key_name(key_name)
+        if not org:
+          logging.warning("Invalid org_key '%s'" % key_name)
+          return
+        org.note = note
+        org.slots = slots
+        org.put()
+
+      db.run_in_transaction(update_org_txn)
+
+    return True
+
   def getListData(self):
     idx = lists.getListIndex(self.request)
     if idx != 0:
@@ -239,38 +280,11 @@ class SlotsPage(RequestHandler):
     return list_content.content()
 
   def post(self):
-    data = self.data.POST.get('data')
+    slots_list = SlotsList(self.request, self.data)
 
-    if not data:
-      raise BadRequest("Missing data")
-
-    parsed = simplejson.loads(data)
-
-    for properties in parsed:
-      if not all(i in properties for i in ['key', 'note', 'slots']):
-        logging.warning("Missing value in '%s'" % properties)
-        continue
-
-      key_name = properties['key']
-      note = properties['note']
-      slots = properties['slots']
-
-      if not slots.isdigit():
-        logging.warning("Non-int value for slots: '%s'" % slots)
-        continue
-
-      slots = int(slots)
-
-      def update_org_txn():
-        org = GSoCOrganization.get_by_key_name(key_name)
-        if not org:
-          logging.warning("Invalid org_key '%s'" % key_name)
-          return
-        org.note = note
-        org.slots = slots
-        org.put()
-
-      db.run_in_transaction(update_org_txn)
+    if not slots_list.post():
+      raise AccessViolation(
+          'You cannot change this data')
 
   def context(self):
     return {
