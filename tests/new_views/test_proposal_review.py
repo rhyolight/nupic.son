@@ -85,6 +85,10 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     response = self.client.get(url)
     self.assertReviewTemplateUsed(response)
 
+    self.assertNotContains(
+        response,
+        '<p class="status"><strong>Status:</strong> pending</p>')
+
     # test comment POST
     from soc.modules.gsoc.models.comment import GSoCComment
     url = '/gsoc/proposal/comment/' + suffix
