@@ -87,7 +87,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
 
     self.assertNotContains(
         response,
-        '<p class="status"><strong>Status:</strong> pending</p>')
+        '<p class="status"><strong>Status:</strong> Pending</p>')
 
     # test comment POST
     from soc.modules.gsoc.models.comment import GSoCComment
