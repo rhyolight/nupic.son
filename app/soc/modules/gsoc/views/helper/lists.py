@@ -191,7 +191,7 @@ class ListConfiguration(object):
         'parameters': parameters
     }
 
-  def setColumnEditable(self, col_id, editable, edittype, editoptions):
+  def setColumnEditable(self, col_id, editable, edittype=None, editoptions=None):
     """Sets the editability for the specified column.
 
     Args:
@@ -211,8 +211,12 @@ class ListConfiguration(object):
           edittype, self.VALID_EDIT_TYPES))
 
     model['editable'] = editable
-    model['edittype'] = edittype if edittype else ''
-    model['editoptions'] = editoptions
+
+    if edittype:
+      model['edittype'] = edittype
+
+    if editoptions:
+      model['editoptions'] = editoptions
 
   def setColumnExtra(self, col_id, **kwargs):
     """Sets the column 'extra' field.
