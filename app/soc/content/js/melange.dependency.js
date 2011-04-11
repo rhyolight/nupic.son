@@ -198,6 +198,7 @@
     s.jqgrid,
     null,
     tpjs + "jquery/jquery-jqgrid.common.js",
+    tpjs + "jquery/jquery-jqgrid.fmatter.js",
     tpjs + "jquery/jquery-jqgrid.formedit.js",
     null,
     tpjs + "jquery/jquery-jqgrid.searchFilter.js",
