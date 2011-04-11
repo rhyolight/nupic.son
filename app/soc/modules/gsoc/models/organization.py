@@ -102,10 +102,19 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
       'Note'))
 
   slots_desired = db.IntegerProperty(required=False, default=0,
-      verbose_name=ugettext('Slots desired'))
+      verbose_name=ugettext('#amazing proposals'))
   slots_desired.help_text = ugettext(
-      'The amount of slots desired by this organization.')
+      'The amount of amazing proposals submitted to this organization that '
+      'have a mentor assigned and the organization would _really_ like to '
+      'have a slot for.')
   slots_desired.group = ugettext("4. Organization Preferences")
+
+  max_slots_desired = db.IntegerProperty(required=False, default=0,
+      verbose_name=ugettext('#desired slots'))
+  max_slots_desired.help_text = ugettext(
+      'The amount of slots that this organization would like to receive if '
+      'there was an unlimited amount of slots available.')
+  max_slots_desired.group = ugettext("4. Organization Preferences")
 
   slots_calculated = db.IntegerProperty(required=False, default=0,
       verbose_name=ugettext('Slots calculated'))

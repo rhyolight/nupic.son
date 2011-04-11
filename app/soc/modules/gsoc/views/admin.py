@@ -168,9 +168,11 @@ class SlotsList(Template):
 
     list_config = lists.ListConfiguration()
     list_config.addColumn('name', 'Name',
-        lambda e, *args: e.name.strip())
+        (lambda e, *args: e.short_name.strip()), width=75)
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-    list_config.addSimpleColumn('slots', 'Slots')
+    list_config.addSimpleColumn('slots_desired', 'min', width=25)
+    list_config.addSimpleColumn('max_slots_desired', 'max', width=25)
+    list_config.addSimpleColumn('slots', 'Slots', width=50)
     list_config.setColumnEditable('slots', True)
     list_config.addSimpleColumn('note', 'Note')
     list_config.setColumnEditable('note', True) #, edittype='textarea')
