@@ -88,6 +88,20 @@ class Dashboard(RequestHandler):
           'You do not have access to this data')
     return list_content.content()
 
+  def post(self):
+    """Handler for POST requests.
+    """
+    components = self._getActiveComponents()
+
+    idx = lists.getListIndex(self.request)
+
+    for component in components:
+      if component.post():
+        break
+    else:
+      raise AccessViolation(
+          'You cannot change this data')
+
   def context(self):
     """Handler for default HTTP GET request.
     """
@@ -202,6 +216,15 @@ class Component(Template):
     """
     # by default no list is present
     return None
+
+  def post(self):
+    """Handleds a post request.
+
+    If posting ot the list as requested is not supported by this component
+    False is returned.
+    """
+    # by default post is not supported
+    return False
 
 
 class MyOrgApplicationsComponent(Component):
@@ -501,25 +524,29 @@ class SubmittedProposalsComponent(Component):
         urlOf('review_gsoc_proposal'))
     list_config.setDefaultSort('last_modified_on', 'desc')
 
+    extra_columns = []
     for org in []: #data.mentor_for:
       for column in org.proposal_extra:
+        extra_columns.append(column)
+        col_name = "%s <br/>(%s)" % (column, org.short_name)
         list_config.addColumn(
-            column, column, (lambda ent, *args: ""))
+            column, col_name, (lambda ent, *args: ""))
         list_config.setColumnEditable(column, True, 'text', {})
         list_config.setColumnExtra(column, org=org.short_name)
+
+    if extra_columns:
+      bounds = ['0', 'all']
+      fields = ['key'] + extra_columns
+      list_config.addPostButton('save', "Save", "?idx=4", bounds, fields)
 
     self._list_config = list_config
 
     super(SubmittedProposalsComponent, self).__init__(request, data)
 
   def templatePath(self):
-    """Returns the path to the template that should be used in render().
-    """
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def context(self):
-    """Returns the context of this component.
-    """
     description = SubmittedProposalsComponent.DESCRIPTION
 
     if self.data.program.allocations_visible:
@@ -535,12 +562,13 @@ class SubmittedProposalsComponent(Component):
         'lists': [list],
         }
 
-  def getListData(self):
-    """Returns the list data as requested by the current request.
+  def post(self):
+    idx = lists.getListIndex(self.request)
+    if idx != 4:
+      return None
+    return True
 
-    If the lists as requested is not supported by this component None is
-    returned.
-    """
+  def getListData(self):
     idx = lists.getListIndex(self.request)
     if idx != 4:
       return None
