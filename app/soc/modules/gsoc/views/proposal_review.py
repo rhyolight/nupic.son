@@ -416,22 +416,16 @@ class ReviewProposal(RequestHandler):
                   'disable': 'Unignore',})
 
         if not proposal_ignored:
-          if self.data.proposal.status in [
-            'pending', 'accepted']:
-            if self.data.proposal.status == 'pending':
-              enable = True
-            elif self.data.proposal.status == 'accepted':
-              enable = False
-
-            context['accept_proposal_button'] = ButtonTemplate(
-              self.data, 'Accept proposal', 'accept_proposal',
-              'gsoc_proposal_accept', enable,
-              disabled_msgs = {
-                  'enable': DEF_ACCEPT_PROPOSAL_ENABLE_DISABLED_MSG,
-                  'disable': DEF_ACCEPT_PROPOSAL_DISABLE_DISABLED_MSG,},
-              labels = {
-                  'enable': 'Accept',
-                  'disable': 'Revert',})
+          context['accept_proposal_button'] = ButtonTemplate(
+            self.data, 'Accept proposal', 'accept_proposal',
+            'gsoc_proposal_accept',
+            not self.data.proposal.accept_as_project,
+            disabled_msgs = {
+                'enable': DEF_ACCEPT_PROPOSAL_ENABLE_DISABLED_MSG,
+                'disable': DEF_ACCEPT_PROPOSAL_DISABLE_DISABLED_MSG,},
+            labels = {
+                'enable': 'Accept',
+                'disable': 'Revert',})
 
           context['assign_mentor'] = AssignMentorFields(self.data)
 
@@ -980,9 +974,9 @@ class AcceptProposal(RequestHandler):
     if value != 'enable' and value != 'disable':
       raise BadRequest("Invalid post data.")
 
-    if value == 'enable' and self.data.proposal.status == 'accepted':
+    if value == 'enable' and self.data.proposal.accept_as_project:
       raise BadRequest("Invalid post data.")
-    if value == 'disable' and not self.data.proposal.status == 'accepted':
+    if value == 'disable' and not self.data.proposal.accept_as_project:
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
@@ -991,9 +985,9 @@ class AcceptProposal(RequestHandler):
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
       if value == 'enable':
-        proposal.status = 'accepted'
+        proposal.accept_as_project = True
       elif value == 'disable':
-        proposal.status = 'pending'
+        proposal.accept_as_project = False
 
       db.put(proposal)
 
