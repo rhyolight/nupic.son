@@ -328,9 +328,12 @@ class ListConfiguration(object):
     """
     parameters = {
         'url': url,
-        'keys': keys,
         'refresh': refresh,
     }
+
+    if keys:
+      parameters['keys'] = keys
+
     self.__addButton(button_id, caption, None, 'post_edit', parameters)
 
   def setRowAction(self, func, new_window=True):
