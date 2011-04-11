@@ -67,7 +67,6 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     mentor = self.createMentorWithSettings('mentor@example.com', 
         {'new_proposals' :True, 'public_comments': True,
          'private_comments' :True})
-    other_mentor = self.createMentorWithSettings('other_mentor@example.com')
 
     self.data.createStudent()
     self.data.notificationSettings()
@@ -136,31 +135,6 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     self.assertEqual(0, proposal.score)
     self.assertEqual(0, proposal.nr_scores)
 
-    url = '/gsoc/proposal/wish_to_mentor/' + suffix
-    postdata = {'value': 'enable'}
-    response = self.post(url, postdata)
-
-    proposal = GSoCProposal.all().get()
-    self.assertTrue(self.data.profile.key() in proposal.possible_mentors)
-
-    postdata = {'value': 'disable'}
-    response = self.post(url, postdata)
-
-    proposal = GSoCProposal.all().get()
-    self.assertFalse(self.data.profile.key() in proposal.possible_mentors)
-
-    other_mentor.profile.mentor_for = []
-    other_mentor.profile.put()
-
-    proposal.possible_mentors.append(other_mentor.profile.key())
-    proposal.put()
-
-    url = '/gsoc/proposal/review/' + suffix
-    response = self.client.get(url)
-
-    proposal = GSoCProposal.all().get()
-    self.assertFalse(other_mentor.profile.key() in proposal.possible_mentors)
-
   def testReviewProposalPublicView(self):
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
@@ -186,8 +160,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     student.createOtherUser('student@example.com')
     student.createStudent()
 
-    proposal = self.createProposal({'is_publicly_visible': True,
-                                    'scope': student.profile,
+    proposal = self.createProposal({'scope': student.profile,
                                     'parent': student.profile})
 
     suffix = "%s/%s/%d" % (
@@ -206,38 +179,12 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     proposal = GSoCProposal.all().get()
     self.assertNotEqual(proposal.status, 'ignored')
 
-  def testProposalModificationButton(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
-
-    proposal = self.createProposal({'is_publicly_visible': True,
-                                    'scope': student.profile,
-                                    'parent': student.profile})
-
-    suffix = "%s/%s/%d" % (
-        self.gsoc.key().name(),
-        student.user.key().name(),
-        proposal.key().id())
-
-    self.data.createMentor(self.org)
-
-    url = '/gsoc/proposal/modification/' + suffix
-    postdata = {'value': 'enable'}
-    response = self.post(url, postdata)
-
-    self.assertResponseOK(response)
-
-    proposal = GSoCProposal.all().get()
-    self.assertTrue(proposal.is_editable_post_deadline)
-
   def testAcceptProposalButton(self):
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
     student.createStudent()
 
-    proposal = self.createProposal({'is_publicly_visible': True,
-                                    'scope': student.profile,
+    proposal = self.createProposal({'scope': student.profile,
                                     'parent': student.profile})
 
     suffix = "%s/%s/%d" % (
@@ -256,11 +203,76 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     proposal = GSoCProposal.all().get()
     self.assertNotEqual(proposal.status, 'accepted')
 
+  def testProposalModificationButton(self):
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student.createStudent()
+
+    proposal = self.createProposal({'scope': student.profile,
+                                    'parent': student.profile})
+
+    suffix = "%s/%s/%d" % (
+        self.gsoc.key().name(),
+        student.user.key().name(),
+        proposal.key().id())
+
+    self.data.createMentor(self.org)
+
+    url = '/gsoc/proposal/modification/' + suffix
+    postdata = {'value': 'enable'}
+    response = self.post(url, postdata)
+
+    self.assertResponseOK(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertTrue(proposal.is_editable_post_deadline)
+
+  def testWishToMentorButton(self):
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student.createStudent()
+
+    self.data.createMentor(self.org)
+
+    other_mentor = self.createMentorWithSettings('other_mentor@example.com')
+
+    proposal = self.createProposal({'scope': student.profile,
+                                    'parent': student.profile})
+
+    suffix = "%s/%s/%d" % (
+    self.gsoc.key().name(),
+    student.user.key().name(),
+    proposal.key().id())
+
+    url = '/gsoc/proposal/wish_to_mentor/' + suffix
+    postdata = {'value': 'enable'}
+    response = self.post(url, postdata)
+
+    proposal = GSoCProposal.all().get()
+    self.assertTrue(self.data.profile.key() in proposal.possible_mentors)
+
+    postdata = {'value': 'disable'}
+    response = self.post(url, postdata)
+
+    proposal = GSoCProposal.all().get()
+    self.assertFalse(self.data.profile.key() in proposal.possible_mentors)
+
+    other_mentor.profile.mentor_for = []
+    other_mentor.profile.put()
+
+    proposal.possible_mentors.append(other_mentor.profile.key())
+    proposal.put()
+
+    url = '/gsoc/proposal/review/' + suffix
+    response = self.client.get(url)
+
+    proposal = GSoCProposal.all().get()
+    self.assertFalse(other_mentor.profile.key() in proposal.possible_mentors)
+
   def testPubliclyVisibleButton(self):
     self.data.createStudent()
 
-    proposal = self.createProposal({'is_publicly_visible': True,
-                                    'scope': self.data.profile,
+    proposal = self.createProposal({'scope': self.data.profile,
                                     'parent': self.data.profile})
 
     suffix = "%s/%s/%d" % (
@@ -280,8 +292,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
   def testWithdrawProposalButton(self):
     self.data.createStudent()
 
-    proposal = self.createProposal({'is_publicly_visible': True,
-                                    'scope': self.data.profile,
+    proposal = self.createProposal({'scope': self.data.profile,
                                     'parent': self.data.profile})
 
     suffix = "%s/%s/%d" % (
