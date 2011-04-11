@@ -115,6 +115,10 @@ DEF_NOT_MENTOR_MSG = ugettext(
 DEF_NOT_PARTICIPATING_MSG = ugettext(
     'You are not participating in this program and have no access.')
 
+DEF_NOT_PROPOSER_MSG = ugettext(
+    'You are not allowed to perform this action since you are not the'
+    'author(proposer) for this proposal.')
+
 DEF_NOT_PUBLIC_DOCUMENT = ugettext(
     'This document is not publically readable.')
 
@@ -838,3 +842,18 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise AccessViolation(DEF_NOT_PUBLIC_DOCUMENT)
+
+  def isProposer(self):
+    """Checks if the current user is the author of the proposal.
+    """
+    self.check.isProgramActive()
+    self.check.isProfileActive()
+    self.mutator.proposalFromKwargs()
+
+    assert isSet(self.data.proposer)
+    assert isSet(self.data.proposal_org)
+
+    if self.data.proposer.key() == self.data.profile.key():
+      return
+
+    raise AccessViolation(DEF_NOT_PROPOSER_MSG)
