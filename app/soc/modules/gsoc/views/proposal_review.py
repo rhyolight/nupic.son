@@ -1104,3 +1104,119 @@ class AcceptProposal(RequestHandler):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
     self.error(405)
+
+
+class ProposalPubliclyVisible(RequestHandler):
+  """View allowing the proposer to make the proposal publicly visible.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'^gsoc/proposal/publicly_visible/%s$' % url_patterns.REVIEW,
+         self, name='gsoc_proposal_publicly_visible'),
+    ]
+
+  def checkAccess(self):
+    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
+
+    if not self.data.proposal:
+      raise NotFound('Requested proposal does not exist')
+
+    self.check.isProposer()
+
+  def togglePublicVisibilty(self, value):
+    """Toggles the the public visibility of the application.
+
+    Args:
+      value: can be either "enable" or "disable".
+    """
+    assert isSet(self.data.proposal)
+
+    if value != 'enable' and value != 'disable':
+      raise BadRequest("Invalid post data.")
+
+    if value == 'enable' and self.data.proposal.is_publicly_visible:
+      raise BadRequest("Invalid post data.")
+    if value == 'disable' and not self.data.proposal.is_publicly_visible:
+      raise BadRequest("Invalid post data.")
+
+    proposal_key = self.data.proposal.key()
+
+    def update_publicly_visibility_txn():
+      # transactionally get latest version of the proposal
+      proposal = db.get(proposal_key)
+      if value == 'enable':
+        proposal.is_publicly_visible = True
+      elif value == 'disable':
+        proposal.is_publicly_visible = False
+
+      db.put(proposal)
+
+    db.run_in_transaction(update_publicly_visibility_txn)
+
+  def post(self):
+    value = self.data.POST.get('value')
+    self.togglePublicVisibilty(value)
+
+  def get(self):
+    """Special Handler for HTTP GET request since this view only handles POST.
+    """
+    self.error(405)
+
+
+class WithdrawProposal(RequestHandler):
+  """View allowing the proposer to withdraw the proposal.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'^gsoc/proposal/withdraw/%s$' % url_patterns.REVIEW,
+         self, name='gsoc_proposal_publicly_visible'),
+    ]
+
+  def checkAccess(self):
+    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
+
+    if not self.data.proposal:
+      raise NotFound('Requested proposal does not exist')
+
+    self.check.isProposer()
+
+  def toggleWithdrawProposal(self, value):
+    """Toggles the the application state between withdraw and pending.
+
+    Args:
+      value: can be either "enable" or "disable".
+    """
+    assert isSet(self.data.proposal)
+
+    if value != 'enable' and value != 'disable':
+      raise BadRequest("Invalid post data.")
+
+    if value == 'enable' and self.data.proposal.status == 'withdrawn':
+      raise BadRequest("Invalid post data.")
+    if value == 'disable' and not self.data.proposal.status == 'pending':
+      raise BadRequest("Invalid post data.")
+
+    proposal_key = self.data.proposal.key()
+
+    def update_withdraw_status_txn():
+      # transactionally get latest version of the proposal
+      proposal = db.get(proposal_key)
+      if value == 'enable':
+        proposal.status = 'withdrawn'
+      elif value == 'disable':
+        proposal.status = 'pending'
+
+      db.put(proposal)
+
+    db.run_in_transaction(update_withdraw_status_txn)
+
+  def post(self):
+    value = self.data.POST.get('value')
+    self.toggleWithdrawProposal(value)
+
+  def get(self):
+    """Special Handler for HTTP GET request since this view only handles POST.
+    """
+    self.error(405)
