@@ -70,6 +70,15 @@ DEF_PROPOSAL_MODIFICATION_ENABLE_DISABLED_MSG = ugettext(
     'Student is already allowed to edit the proposal. To disable it, '
     'click on the disable button adjacent to this button.')
 
+DEF_PUBLICLY_VISIBLE_ENABLE_DISABLED_MSG = ugettext(
+    'Your proposal is already publicly visible. In order to make your '
+    'proposal visible to only your mentoring organization, click the '
+    'disable button adjacent to this button.')
+
+DEF_PUBLICLY_VISIBLE_DISABLE_DISABLED_MSG = ugettext(
+    'Your proposal is not publicly visible. In order to make it public, '
+    'click the enable button adjacent to this button.')
+
 DEF_PROPOSAL_MODIFICATION_DISABLE_DISABLED_MSG = ugettext(
     'Student cannot edit the proposal already. To allow student to '
     'edit the proposal click the enable button adjacent to this button.')
@@ -81,6 +90,15 @@ DEF_WISH_TO_MENTOR_ENABLE_DISABLED_MSG = ugettext(
 DEF_WISH_TO_MENTOR_DISABLE_DISABLED_MSG = ugettext(
     'You have not chosen to mentor this project. If you wish to mentor '
     'click the enable button adjacent to this button.')
+
+
+DEF_WITHDRAW_PROPOSAL_ENABLE_DISABLED_MSG = ugettext(
+    'You have already withdrawn your proposal. To resubmit it, click on '
+    'the resubmit button adjacent to this button.')
+
+DEF_WITHDRAW_PROPOSAL_DISABLE_DISABLED_MSG = ugettext(
+    'Your proposal is already submitted to your organization. To withdraw, '
+    'click on the withdraw button adjacent to this button.')
 
 
 def queryAllMentorsForOrg(org, limit=1000):
@@ -518,6 +536,28 @@ class ReviewProposal(RequestHandler):
         (self.data.user.key() == self.data.url_user.key())
     if user_is_proposer:
       context['user_role'] = 'proposer'
+
+      context['publicly_visible_button'] = ButtonTemplate(
+              self.data, 'Publicly visilbe', 'publicly_visible',
+              'gsoc_proposal_publicly_visible',
+              not self.data.proposal.is_publicly_visible,
+              disabled_msgs = {
+                  'enable': DEF_PUBLICLY_VISIBLE_ENABLE_DISABLED_MSG,
+                  'disable': DEF_PUBLICLY_VISIBLE_DISABLE_DISABLED_MSG,})
+      if self.data.proposal.status in ['pending', 'withdrawn']:
+        if self.data.proposal.status == 'withdrawn':
+          withdraw_enable = True
+        elif self.data.proposal.status == 'pending':
+          withdraw_enable = False
+        context['withdraw_proposal_button'] = ButtonTemplate(
+                self.data, 'Withdraw proposal', 'withdraw_proposal',
+                'gsoc_proposal_withdraw', withdraw_enable,
+                disabled_msgs = {
+                    'enable': DEF_WITHDRAW_PROPOSAL_ENABLE_DISABLED_MSG,
+                    'disable': DEF_WITHDRAW_PROPOSAL_DISABLE_DISABLED_MSG,},
+                labels = {
+                    'enable': 'Withdraw',
+                    'disable': 'Resubmit',})
 
       # we will check if the student is allowed to modify the proposal
       # after the student proposal deadline
