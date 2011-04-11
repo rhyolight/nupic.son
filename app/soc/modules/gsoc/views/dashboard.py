@@ -536,8 +536,10 @@ class SubmittedProposalsComponent(Component):
 
     def get_col_prop(column):
       def getter(ent, *args):
+        if not ent.extra:
+          return ""
         extra = simplejson.loads(ent.extra)
-        return extra.get(column)
+        return extra.get(column, "")
       return getter
 
     extra_columns = []
