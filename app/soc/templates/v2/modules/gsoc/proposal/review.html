@@ -314,7 +314,7 @@ limitations under the License.
           .click();
       {% endif %}
 
-      {% if user_role == "mentor" %}
+      {% if user_role == "mentor" or user_role == "org_admin" %}
       /* Make allow proposal modifications button, post using ajax. */
       var proposal_modification_button = new buttonObj(
           "{{ proposal_modification_button.id }}",
