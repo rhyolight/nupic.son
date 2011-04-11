@@ -501,23 +501,23 @@ class ReviewProposal(RequestHandler):
                   'enable': 'Ignore',
                   'disable': 'Unignore',})
 
-        if not proposal_ignored and self.data.proposal.status in [
+        if not proposal_ignored:
+          if self.data.proposal.status in [
             'pending', 'accepted']:
-          if self.data.proposal.status == 'pending':
-            enable = True
-          elif self.data.proposal.status == 'accepted':
-            enable = False
+            if self.data.proposal.status == 'pending':
+              enable = True
+            elif self.data.proposal.status == 'accepted':
+              enable = False
 
-          context['accept_proposal_button'] = ButtonTemplate(
-            self.data, 'Accept proposal', 'accept_proposal',
-            'gsoc_proposal_accept', enable,
-            disabled_msgs = {
-                'enable': DEF_ACCEPT_PROPOSAL_ENABLE_DISABLED_MSG,
-                'disable': DEF_ACCEPT_PROPOSAL_DISABLE_DISABLED_MSG,},
-            labels = {
-                'enable': 'Accept',
-                'disable': 'Revert',})
-
+            context['accept_proposal_button'] = ButtonTemplate(
+              self.data, 'Accept proposal', 'accept_proposal',
+              'gsoc_proposal_accept', enable,
+              disabled_msgs = {
+                  'enable': DEF_ACCEPT_PROPOSAL_ENABLE_DISABLED_MSG,
+                  'disable': DEF_ACCEPT_PROPOSAL_DISABLE_DISABLED_MSG,},
+              labels = {
+                  'enable': 'Accept',
+                  'disable': 'Revert',})
 
           context['assign_mentor'] = AssignMentorFields(self.data)
 
