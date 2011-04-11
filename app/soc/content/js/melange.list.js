@@ -338,7 +338,7 @@
         return function (row_id) {
           var option_name = list_object.jqgrid.object.jqGrid('getGridParam','multiselect') ? 'selarrrow' : 'selrow'
           var selected_ids = list_object.jqgrid.object.jqGrid('getGridParam',option_name);
-          if (!selected_ids instanceof Array) {
+          if (!(selected_ids instanceof Array)) {
             selected_ids = [selected_ids];
           }
 
