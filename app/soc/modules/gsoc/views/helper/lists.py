@@ -121,7 +121,7 @@ class ListConfiguration(object):
       self.row_list = row_list
 
   def addColumn(self, col_id, name, func,
-                resizable=True, hidden=False, options=None):
+                width=None, resizable=True, hidden=False, options=None):
     """Adds a column to the end of the list.
 
     Args:
@@ -131,6 +131,7 @@ class ListConfiguration(object):
             a single entity. This function should take an entity as first
             argument and args and kwargs if needed. The string rendering of
             the return value will be sent to the end user.
+      width: The width of the column.
       resizable: Whether the width of the column should be resizable by the
                  end user.
       hidden: Whether the column should be displayed by default.
@@ -148,6 +149,9 @@ class ListConfiguration(object):
         'resizable': resizable,
         'hidden': hidden,
     }
+
+    if width:
+      model['width'] = width
 
     if options:
       values = ";".join("%s:%s" % i for i in options)
