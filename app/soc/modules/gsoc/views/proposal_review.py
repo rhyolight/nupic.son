@@ -941,12 +941,9 @@ class IgnoreProposal(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
-
-    if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
-
-    self.check.isOrgAdminForOrganization(self.data.proposal.org)
+    self.mutator.proposalFromKwargs()
+    assert isSet(self.data.proposal_org)
+    self.check.isOrgAdminForOrganization(self.data.proposal_org)
 
   def toggleIgnoreProposal(self, value):
     """Toggles the ignore status of the proposal.
@@ -1000,12 +997,9 @@ class ProposalModificationPostDeadline(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
-
-    if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
-
-    self.check.isMentorForOrganization(self.data.proposal.org)
+    self.mutator.proposalFromKwargs()
+    assert isSet(self.data.proposal_org)
+    self.check.isMentorForOrganization(self.data.proposal_org)
 
   def toggleModificationPermission(self, value):
     """Toggles the permission to modify the proposal after proposal deadline.
@@ -1059,12 +1053,9 @@ class AcceptProposal(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
-
-    if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
-
-    self.check.isOrgAdminForOrganization(self.data.proposal.org)
+    self.mutator.proposalFromKwargs()
+    assert isSet(self.data.proposal_org)
+    self.check.isOrgAdminForOrganization(self.data.proposal_org)
 
   def toggleStatus(self, value):
     """Toggles the the application state between accept and pending.
@@ -1117,11 +1108,7 @@ class ProposalPubliclyVisible(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
-
-    if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
-
+    self.mutator.proposalFromKwargs()
     self.check.isProposer()
 
   def togglePublicVisibilty(self, value):
@@ -1175,11 +1162,7 @@ class WithdrawProposal(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.data.proposal = getProposalFromKwargs(self.data.kwargs)
-
-    if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
-
+    self.mutator.proposalFromKwargs()
     self.check.isProposer()
 
   def toggleWithdrawProposal(self, value):
