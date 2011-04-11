@@ -24,9 +24,13 @@ __authors__ = [
 
 import httplib
 
+from django.utils import simplejson
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
 from tests.timeline_utils import TimelineHelper
+
+from soc.modules.gsoc.models.organization import GSoCOrganization
 
 
 class SlotsTest(DjangoTestCase):
@@ -43,7 +47,7 @@ class SlotsTest(DjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/slots.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/_slots_list.html')
 
-  def testListProjects(self):
+  def testAllocateSlots(self):
     self.data.createHost()
     url = '/gsoc/admin/slots/' + self.gsoc.key().name()
     response = self.client.get(url)
@@ -51,3 +55,25 @@ class SlotsTest(DjangoTestCase):
 
     data = self.getListData(url, 0)
     self.assertEqual(1, len(data))
+
+    org_data = {
+        "key": self.org.key().name(),
+        "slots": "20",
+        "note":"Great org",
+    }
+
+    data = simplejson.dumps([org_data])
+
+    postdata = {
+        'data': [data],
+        'button_id': ['save'],
+        'idx': ['0']
+    }
+    self.post(url, postdata)
+
+    org = GSoCOrganization.all().get()
+
+    org_data.pop('key')
+    org_data["slots"] = 20
+
+    self.assertPropertiesEqual(org_data, org)

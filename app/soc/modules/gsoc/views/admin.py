@@ -22,16 +22,20 @@ __authors__ = [
   ]
 
 
+import logging
+
 from google.appengine.api import users
 from google.appengine.ext import db
 
 from django import forms as djangoforms
 from django.conf.urls.defaults import url
+from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import dicts
+from soc.logic.exceptions import BadRequest
 from soc.views import forms
 from soc.views import readonly_template
 from soc.views.template import Template
@@ -233,8 +237,38 @@ class SlotsPage(RequestHandler):
     return list_content.content()
 
   def post(self):
-    import sys
-    sys.stderr.write("%s\n" % self.data.POST)
+    data = self.data.POST.get('data')
+
+    if not data:
+      raise BadRequest("Missing data")
+
+    parsed = simplejson.loads(data)
+
+    for properties in parsed:
+      if not all(i in properties for i in ['key', 'note', 'slots']):
+        logging.warning("Missing value in '%s'" % properties)
+        continue
+
+      key_name = properties['key']
+      note = properties['note']
+      slots = properties['slots']
+
+      if not slots.isdigit():
+        logging.warning("Non-int value for slots: '%s'" % slots)
+        continue
+
+      slots = int(slots)
+
+      def update_org_txn():
+        org = GSoCOrganization.get_by_key_name(key_name)
+        if not org:
+          logging.warning("Invalid org_key '%s'" % key_name)
+          return
+        org.note = note
+        org.slots = slots
+        org.put()
+
+      db.run_in_transaction(update_org_txn)
 
   def context(self):
     return {
