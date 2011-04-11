@@ -342,9 +342,19 @@
 
           function updateDirtyField (row_id) {
             var row = jQuery("#" + list_object.jqgrid.id).jqGrid('getRowData', row_id);
-            var original_data = jLinq.from(list_object.data.all_data).equals("columns.key",row.key).select()[0];
-            if (list_object.jqgrid.dirty_fields[row.key] === undefined) {
-              list_object.jqgrid.dirty_fields[row.key] = [];
+            //Extract the key from the key stored in the cell value, which could be enclosed in a link
+            //TODO(Mario)
+            //Need to refactor the internal data of the lists to prevent this from happening, temporary workaround.
+            var key_value = row.key.toString();
+            // extract link href (if any) from the text
+            var extracted_text = /^<a\b[^>]*href="(.*?)" \b[^>]*>(.*?)<\/a>$/.exec(key_value);
+            if (extracted_text !== null) {
+              key_value = extracted_text[2];
+            }
+
+            var original_data = jLinq.from(list_object.data.all_data).equals("columns.key",key_value).select()[0];
+            if (list_object.jqgrid.dirty_fields[key_value] === undefined) {
+              list_object.jqgrid.dirty_fields[key_value] = [];
             }
             var changed_columns = [];
             var not_changed_columns = [];
@@ -361,22 +371,22 @@
 
             // Update dirty row with dirty columns
             jQuery.each(changed_columns, function (column_index, column_name) {
-              if (jQuery.inArray(column_name, list_object.jqgrid.dirty_fields[row.key]) === -1) {
-                list_object.jqgrid.dirty_fields[row.key].push(column_name);
+              if (jQuery.inArray(column_name, list_object.jqgrid.dirty_fields[key_value]) === -1) {
+                list_object.jqgrid.dirty_fields[key_value].push(column_name);
               }
             });
 
             // Check if a previously dirty column has now the original value again
             jQuery.each(not_changed_columns, function (column_index, column_name) {
-              var index_in_row_array = jQuery.inArray(column_name, list_object.jqgrid.dirty_fields[row.key]);
+              var index_in_row_array = jQuery.inArray(column_name, list_object.jqgrid.dirty_fields[key_value]);
               if (index_in_row_array !== -1) {
-                list_object.jqgrid.dirty_fields[row.key].splice(index_in_row_array, 1);
+                list_object.jqgrid.dirty_fields[key_value].splice(index_in_row_array, 1);
               }
             });
 
             // if deleting the not-anymore-dirty column has left the row array empty, then delete it
-            if (list_object.jqgrid.dirty_fields[row.key].length === 0) {
-              delete list_object.jqgrid.dirty_fields[row.key];
+            if (list_object.jqgrid.dirty_fields[key_value].length === 0) {
+              delete list_object.jqgrid.dirty_fields[key_value];
             }
 
             jQuery.each(list_object.operations.buttons, function (setting_index, operation) {
@@ -1007,7 +1017,10 @@
         if (previous_configuration["lists_configuration"][idx] !== undefined) {
           var this_list_preferences = previous_configuration["lists_configuration"][idx];
           jQuery.each(this_list_preferences.hidden_columns, function (column_name, is_hidden) {
-            (jLinq.from(colModel).equals("name",column_name).select()[0]).hidden = is_hidden;
+            var column_from_colmodel = jLinq.from(colModel).equals("name",column_name).select()[0] || null;
+            if (column_from_colmodel !== null) {
+              column_from_colmodel.hidden = is_hidden;
+            }
           });
           if (previous_configuration["lists_configuration"][idx].sort_settings !== undefined) {
             configuration.sortname = previous_configuration.lists_configuration[idx].sort_settings.sortname;
