@@ -1158,7 +1158,7 @@ class WithdrawProposal(RequestHandler):
   def djangoURLPatterns(self):
     return [
          url(r'^gsoc/proposal/withdraw/%s$' % url_patterns.REVIEW,
-         self, name='gsoc_proposal_publicly_visible'),
+         self, name='gsoc_proposal_withdraw'),
     ]
 
   def checkAccess(self):
