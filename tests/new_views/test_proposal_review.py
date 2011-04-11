@@ -341,3 +341,26 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     proposal = GSoCProposal.all().get()
     self.assertEqual(proposal.status, 'pending')
 
+  def testAssignMentor(self):
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student.createStudent()
+
+    proposal = self.createProposal({'scope': student.profile,
+                                    'parent': student.profile})
+
+    suffix = "%s/%s/%d" % (
+        self.gsoc.key().name(),
+        student.user.key().name(),
+        proposal.key().id())
+
+    self.data.createMentor(self.org)
+
+    url = '/gsoc/proposal/assign_mentor/' + suffix
+    postdata = {'assign_mentor': self.data.profile.key()}
+    response = self.post(url, postdata)
+
+    self.assertResponseForbidden(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(proposal.mentor, None)
