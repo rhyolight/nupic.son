@@ -250,8 +250,33 @@
       });
     }
 
-    var thegrid = jQuery("#" + list_objects.get(my_index).jqgrid.id)[0];
-    thegrid.addJSONData(json_to_return);
+    var thegrid = jQuery("#" + list_objects.get(my_index).jqgrid.id);
+    thegrid_dom = thegrid[0];
+    thegrid_dom.addJSONData(json_to_return);
+
+    // Hide/Show columns if an extra field is defined and this filter filtered that extra field
+    var colModel = list_objects.get(my_index).configuration.colModel;
+    jQuery.each(colModel, function (col_index, col_object) {
+      if (col_object.extra !== undefined) {
+        var filters_to_check = col_object.extra;
+        var show_column = false;
+        var filters_matches = 0;
+        var filters_total = 0;
+        jQuery.each(filters_to_check, function (filter_name, filter_value) {
+          if (postdata[filter_name] === filter_value) {
+            filters_matches++;
+          }
+          filters_total++;
+        });
+        if (filters_matches !== filters_total) {
+          colModel[col_index].hidden = true;
+          thegrid.jqGrid("hideCol", col_object.name);
+        } else {
+          colModel[col_index].hidden = false;
+          thegrid.jqGrid("showCol", col_object.name);
+        }
+      }
+    });
   };
 
   var list_objects = (function () {
