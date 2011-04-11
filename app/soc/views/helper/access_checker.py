@@ -45,94 +45,15 @@ DEF_AGREE_TO_TOS_MSG_FMT = ugettext(
     ' Service</a> in your <a href="/user/edit_profile">User Profile</a>'
     ' in order to view this page.')
 
-DEF_NOT_PARTICIPATING_MSG = ugettext(
-    'You are not participating in this program and have no access.')
-
-DEF_ALREADY_PARTICIPATING_MSG = ugettext(
-    'You cannot become a Student because you are already participating '
-    'in this program.')
-
-DEF_DEV_LOGOUT_LOGIN_MSG_FMT = ugettext(
-    'Please <a href="%%(sign_out)s">sign out</a>'
-    ' and <a href="%%(sign_in)s">sign in</a>'
-    ' again as %(role)s to view this page.')
-
-DEF_NO_USER_LOGIN_MSG = ugettext(
-    'Please create <a href="/user/create_profile">User Profile</a>'
-    ' in order to view this page.')
-
-DEF_PAGE_INACTIVE_MSG = ugettext(
-    'This page is inactive at this time.')
-
-DEF_SCOPE_INACTIVE_MSG = ugettext(
-    'The scope for this request is not active.')
-
-DEF_PROGRAM_INACTIVE_MSG_FMT = ugettext(
-    'This page is inaccessible because %s is not active at this time.')
-
-DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT = ugettext(
-    'This page is inactive before %s and after %s.')
-
-DEF_PROPOSAL_MODIFICATION_REQUEST_MSG = ugettext(
-    'If you would like to update this proposal, request your organization '
-    'to which this proposal belongs, to grant permission to modify the '
-    'proposal.')
-
-DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
-    'An organization administrator has flagged this proposal to be '
-    'ignored. If you think this is incorrect, contact an organization '
-    'administrator to resolve the situation.')
-
-DEF_PAGE_INACTIVE_BEFORE_MSG_FMT = ugettext(
-    'This page is inactive before %s')
-
-DEF_NO_SUCH_PROGRAM_MSG = ugettext(
-    'The url is wrong (no program was found).')
-
-DEF_ROLE_INACTIVE_MSG = ugettext(
-    'This page is inaccessible because you do not have a profile '
-    'in the program at this time.')
-
-DEF_IS_NOT_STUDENT_MSG = ugettext(
-    'This page is inaccessible because you do not have a student role '
-    'in the program.')
-
-DEF_IS_STUDENT_MSG = ugettext(
-    'This page is inaccessible because you are registered as a student.')
-
-DEF_ORG_DOES_NOT_EXISTS_MSG_FMT = ugettext(
-    'Organization, whose link_id is %(link_id)s, does not exist in '
-    '%(program)s.')
-
-DEF_ORG_NOT_ACTIVE_MSG_FMT = ugettext(
-    'Organization %(name)s is not active in %(program)s.')
-
-DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
-    '%(model)s entity, whose id is %(id)s, does not exist.')
-
-DEF_ID_BASED_ENTITY_INVALID_MSG_FMT = ugettext(
-    '%(model)s entity, whose id is %(id)s, is invalid at this time.')
-
-DEF_ENTITY_DOES_NOT_BELONG_TO_YOU = ugettext(
-    'This %(model)s entity does not belong to you.')
-
-DEF_NOT_HOST_MSG = ugettext(
-    'You need to be a program adminstrator to access this page.')
-
-DEF_NOT_ADMIN_MSG = ugettext(
-    'You need to be a organization administrator for %s to access this page.')
-
-DEF_NOT_MENTOR_MSG = ugettext(
-    'You need to be a mentor for %s to access this page.')
-
 DEF_ALREADY_ADMIN_MSG = ugettext(
     'You cannot be a organization administrator for %s to access this page.')
 
 DEF_ALREADY_MENTOR_MSG = ugettext(
     'You cannot be a mentor for %s to access this page.')
 
-DEF_NOT_DEVELOPER_MSG = ugettext(
-    'You need to be a site developer to access this page.')
+DEF_ALREADY_PARTICIPATING_MSG = ugettext(
+    'You cannot become a Student because you are already participating '
+    'in this program.')
 
 DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
     'You cannot register as a student since you are already a '
@@ -142,28 +63,107 @@ DEF_ALREADY_PARTICIPATING_AS_STUDENT_MSG = ugettext(
     'You cannot register as a %s since you are already a '
     'student in %s.')
 
+DEF_CANNOT_UPDATE_PROPOSAL = ugettext(
+    'This proposal cannot be updated.')
+
+DEF_DEV_LOGOUT_LOGIN_MSG_FMT = ugettext(
+    'Please <a href="%%(sign_out)s">sign out</a>'
+    ' and <a href="%%(sign_in)s">sign in</a>'
+    ' again as %(role)s to view this page.')
+
+DEF_ENTITY_DOES_NOT_BELONG_TO_YOU = ugettext(
+    'This %(model)s entity does not belong to you.')
+
+DEF_HAS_ALREADY_ROLE_FOR_ORG_MSG = ugettext(
+    'You already have %(role)s role for %(org)s.')
+
+DEF_ID_BASED_ENTITY_INVALID_MSG_FMT = ugettext(
+    '%(model)s entity, whose id is %(id)s, is invalid at this time.')
+
+DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
+    '%(model)s entity, whose id is %(id)s, does not exist.')
+
+DEF_IS_NOT_STUDENT_MSG = ugettext(
+    'This page is inaccessible because you do not have a student role '
+    'in the program.')
+
+DEF_IS_STUDENT_MSG = ugettext(
+    'This page is inaccessible because you are registered as a student.')
+
+DEF_NO_DOCUMENT = ugettext(
+    'The document was not found')
+
+DEF_NO_SUCH_PROGRAM_MSG = ugettext(
+    'The url is wrong (no program was found).')
+
+DEF_NO_USER_LOGIN_MSG = ugettext(
+    'Please create <a href="/user/create_profile">User Profile</a>'
+    ' in order to view this page.')
+
+DEF_NOT_ADMIN_MSG = ugettext(
+    'You need to be a organization administrator for %s to access this page.')
+
+DEF_NOT_DEVELOPER_MSG = ugettext(
+    'You need to be a site developer to access this page.')
+
+DEF_NOT_HOST_MSG = ugettext(
+    'You need to be a program adminstrator to access this page.')
+
+DEF_NOT_MENTOR_MSG = ugettext(
+    'You need to be a mentor for %s to access this page.')
+
+DEF_NOT_PARTICIPATING_MSG = ugettext(
+    'You are not participating in this program and have no access.')
+
+DEF_NOT_PUBLIC_DOCUMENT = ugettext(
+    'This document is not publically readable.')
+
 DEF_NOT_VALID_INVITATION_MSG = ugettext(
     'This is not a valid invitation.')
 
 DEF_NOT_VALID_REQUEST_MSG = ugettext(
     'This is not a valid request.')
 
-DEF_HAS_ALREADY_ROLE_FOR_ORG_MSG = ugettext(
-    'You already have %(role)s role for %(org)s.')
+DEF_ORG_DOES_NOT_EXISTS_MSG_FMT = ugettext(
+    'Organization, whose link_id is %(link_id)s, does not exist in '
+    '%(program)s.')
+
+DEF_ORG_NOT_ACTIVE_MSG_FMT = ugettext(
+    'Organization %(name)s is not active in %(program)s.')
+
+DEF_PAGE_INACTIVE_MSG = ugettext(
+    'This page is inactive at this time.')
+
+DEF_PAGE_INACTIVE_BEFORE_MSG_FMT = ugettext(
+    'This page is inactive before %s')
+
+DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT = ugettext(
+    'This page is inactive before %s and after %s.')
+
+DEF_PROGRAM_INACTIVE_MSG_FMT = ugettext(
+    'This page is inaccessible because %s is not active at this time.')
+
+DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
+    'An organization administrator has flagged this proposal to be '
+    'ignored. If you think this is incorrect, contact an organization '
+    'administrator to resolve the situation.')
+
+DEF_PROPOSAL_MODIFICATION_REQUEST_MSG = ugettext(
+    'If you would like to update this proposal, request your organization '
+    'to which this proposal belongs, to grant permission to modify the '
+    'proposal.')
 
 DEF_PROPOSAL_NOT_PUBLIC_MSG = ugettext(
     'This proposal is not made public, '
     'and you are not the student who submitted the proposal, '
     'nor are you a mentor for the organization it was submitted to.')
 
-DEF_NOT_PUBLIC_DOCUMENT = ugettext(
-    'This document is not publically readable.')
+DEF_ROLE_INACTIVE_MSG = ugettext(
+    'This page is inaccessible because you do not have a profile '
+    'in the program at this time.')
 
-DEF_NO_DOCUMENT = ugettext(
-    'The document was not found')
-
-DEF_CANNOT_UPDATE_PROPOSAL = ugettext(
-    'This proposal cannot be updated.')
+DEF_SCOPE_INACTIVE_MSG = ugettext(
+    'The scope for this request is not active.')
 
 unset = object()
 
@@ -763,8 +763,7 @@ class AccessChecker(BaseAccessChecker):
           'model': 'Request'
           }
       raise AccessViolation(error_msg)
-    
-    
+
   def canViewInvite(self):
     """Checks if the current user can see the invitation.
     """
