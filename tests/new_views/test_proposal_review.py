@@ -162,17 +162,17 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     self.assertFalse(other_mentor.profile.key() in proposal.possible_mentors)
 
   def testReviewProposalPublicView(self):
-    other_user = GSoCProfileHelper(self.gsoc, self.dev_test)
-    other_user.createOtherUser('student@example.com')
-    other_user.createStudent()
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student.createStudent()
 
     proposal = self.createProposal({'is_publicly_visible': True,
-                                    'scope': other_user.profile,
-                                    'parent': other_user.profile})
+                                    'scope': student.profile,
+                                    'parent': student.profile})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        other_user.user.key().name(),
+        student.user.key().name(),
         proposal.key().id())
 
     # test review GET
