@@ -202,10 +202,20 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     postdata = {'value': 'enable'}
     response = self.post(url, postdata)
 
+    # fail if mentor tries to accept the proposal
     self.assertResponseForbidden(response)
 
     proposal = GSoCProposal.all().get()
-    self.assertNotEqual(proposal.status, 'accepted')
+    self.assertFalse(proposal.accept_as_project)
+
+    # accept the proposal as project when the org admin tries to accept
+    # the proposal
+    self.data.createOrgAdmin(self.org)
+    response = self.post(url, postdata)
+    self.assertResponseOK(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertTrue(proposal.accept_as_project)
 
   def testProposalModificationButton(self):
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
