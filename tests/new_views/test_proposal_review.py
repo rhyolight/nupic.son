@@ -308,3 +308,22 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
 
     proposal = GSoCProposal.all().get()
     self.assertEqual(proposal.status, 'withdrawn')
+
+    url = '/gsoc/proposal/withdraw/' + suffix
+    postdata = {'value': 'enable'}
+    response = self.post(url, postdata)
+
+    self.assertResponseBadRequest(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(proposal.status, 'withdrawn')
+
+    url = '/gsoc/proposal/withdraw/' + suffix
+    postdata = {'value': 'disable'}
+    response = self.post(url, postdata)
+
+    self.assertResponseOK(response)
+
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(proposal.status, 'pending')
+
