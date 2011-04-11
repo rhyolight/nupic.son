@@ -24,6 +24,8 @@ __authors__ = [
 
 import logging
 
+from google.appengine.ext import db
+
 from django.conf.urls.defaults import url
 from django.utils import simplejson
 from django.utils.dateformat import format
