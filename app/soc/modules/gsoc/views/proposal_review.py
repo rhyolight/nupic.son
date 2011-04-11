@@ -544,10 +544,11 @@ class ReviewProposal(RequestHandler):
               disabled_msgs = {
                   'enable': DEF_PUBLICLY_VISIBLE_ENABLE_DISABLED_MSG,
                   'disable': DEF_PUBLICLY_VISIBLE_DISABLE_DISABLED_MSG,})
+
       if self.data.proposal.status in ['pending', 'withdrawn']:
-        if self.data.proposal.status == 'withdrawn':
+        if self.data.proposal.status == 'pending':
           withdraw_enable = True
-        elif self.data.proposal.status == 'pending':
+        elif self.data.proposal.status == 'withdrawn':
           withdraw_enable = False
         context['withdraw_proposal_button'] = ButtonTemplate(
                 self.data, 'Withdraw proposal', 'withdraw_proposal',
