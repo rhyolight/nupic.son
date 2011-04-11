@@ -34,7 +34,13 @@ from soc.views.template import Template
 def getListIndex(request):
   """Returns the index of the requested list.
   """
-  idx = request.GET.get('idx', '')
+  if 'idx' in request.GET:
+    idx = request.GET['idx']
+  elif 'idx' in request.POST:
+    idx = request.POST['idx']
+  else:
+    return -1
+
   idx = int(idx) if idx.isdigit() else -1
 
   return idx
