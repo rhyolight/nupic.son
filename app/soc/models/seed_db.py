@@ -400,11 +400,14 @@ def seed(request, *args, **kwargs):
     if i == 0:
       profile.org_admin_for.append(entity.key())
       profile.mentor_for.append(entity.key())
+      profile.is_mentor = True
+      profile.is_org_admin = True
       profile.put()
 
     # Mentor for the second org
     if i == 1:
       profile.mentor_for.append(entity.key())
+      profile.is_mentor = True
       profile.put()
 
   role_properties.update({
