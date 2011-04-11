@@ -438,7 +438,7 @@ class DjangoTestCase(TestCase):
       if isinstance(value, datetime.date) or isinstance(value, datetime.time):
         continue
 
-      msg = "property %s: '%s' != '%s'" % (key, value, prop)
+      msg = "property %s: '%r' != '%r'" % (key, value, prop)
 
       try:
         self.assertEqual(value, prop, msg=msg)
