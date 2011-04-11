@@ -57,12 +57,12 @@ class SlotsTest(DjangoTestCase):
     self.assertEqual(1, len(data))
 
     org_data = {
-        "key": self.org.key().name(),
         "slots": "20",
         "note":"Great org",
     }
+    org_name = self.org.key().name()
 
-    data = simplejson.dumps([org_data])
+    data = simplejson.dumps({org_name: org_data})
 
     postdata = {
         'data': [data],
@@ -74,7 +74,6 @@ class SlotsTest(DjangoTestCase):
 
     org = GSoCOrganization.all().get()
 
-    org_data.pop('key')
     org_data["slots"] = 20
 
     self.assertPropertiesEqual(org_data, org)
