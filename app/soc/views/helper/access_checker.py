@@ -846,12 +846,10 @@ class AccessChecker(BaseAccessChecker):
   def isProposer(self):
     """Checks if the current user is the author of the proposal.
     """
-    self.check.isProgramActive()
-    self.check.isProfileActive()
-    self.mutator.proposalFromKwargs()
+    self.isProgramActive()
+    self.isProfileActive()
 
     assert isSet(self.data.proposer)
-    assert isSet(self.data.proposal_org)
 
     if self.data.proposer.key() == self.data.profile.key():
       return
