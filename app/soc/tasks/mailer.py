@@ -27,8 +27,8 @@ import logging
 from google.appengine.api import mail
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
-from google.appengine.runtime import DeadlineExceededError
 from google.appengine.runtime.apiproxy_errors import OverQuotaError
+from google.appengine.runtime.apiproxy_errors import DeadlineExceededError
 
 from django.conf.urls.defaults import url
 from django.utils import simplejson
