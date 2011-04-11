@@ -525,7 +525,7 @@ class SubmittedProposalsComponent(Component):
         options=options, hidden=True)
     list_config.addColumn(
         'full_proposal_key', 'Full proposal key',
-        (lambda ent, *args: ent.org.key().name()), hidden=True)
+        (lambda ent, *args: str(ent.key())), hidden=True)
     list_config.addColumn(
         'org_key', 'Organization key',
         (lambda ent, *args: ent.org.key().name()), hidden=True)
@@ -534,13 +534,19 @@ class SubmittedProposalsComponent(Component):
         urlOf('review_gsoc_proposal'))
     list_config.setDefaultSort('last_modified_on', 'desc')
 
+    def get_col_prop(column):
+      def getter(ent, *args):
+        extra = simplejson.loads(ent.extra)
+        return extra.get(column)
+      return getter
+
     extra_columns = []
     for org in []: #data.mentor_for:
       for column in org.proposal_extra:
         extra_columns.append(column)
         col_name = "%s <br/>(%s)" % (column, org.short_name)
         list_config.addColumn(
-            column, col_name, (lambda ent, *args: ""))
+            column, col_name, get_col_prop(column))
         list_config.setColumnEditable(column, True, 'text', {})
         list_config.setColumnExtra(column, org=org.short_name)
 
@@ -589,7 +595,7 @@ class SubmittedProposalsComponent(Component):
       for column in org.proposal_extra:
         extra_columns.setdefault(org.key().name(), []).append(column)
 
-    for proposal_key_name, properties in parsed.iteritems():
+    for _, properties in parsed.iteritems():
       if 'org_key' not in properties or 'full_proposal_key' not in properties:
         logging.warning("Missing key in '%s'" % properties)
         continue
@@ -609,7 +615,7 @@ class SubmittedProposalsComponent(Component):
         properties.pop(prop)
 
       def update_proposal_txn():
-        proposal = db.get(db.Key(proposal_key_name))
+        proposal = db.get(db.Key(proposal_key))
 
         if not proposal:
           logging.warning("Invalid proposal_key '%s'" % proposal_key_name)
@@ -617,13 +623,13 @@ class SubmittedProposalsComponent(Component):
 
         data = {}
 
-        if proposal.extra_columns:
+        if proposal.extra:
           # we have to loads in the txn, should be fast enough
           data = simplejson.loads(proposal.extra)
 
         data.update(properties)
 
-        proposal.extra = simplejson.dumps(properties)
+        proposal.extra = simplejson.dumps(data)
         proposal.put()
 
       db.run_in_transaction(update_proposal_txn)
