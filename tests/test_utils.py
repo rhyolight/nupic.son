@@ -394,6 +394,11 @@ class DjangoTestCase(TestCase):
       return
     self.assertResponseCode(response, httplib.FORBIDDEN)
 
+  def assertResponseBadRequest(self, response):
+    """Asserts that the response status is BAD_REQUEST.
+    """
+    self.assertResponseCode(response, httplib.BAD_REQUEST)
+
   def assertGSoCTemplatesUsed(self, response):
     """Asserts that all the templates from the base view were used.
     """
