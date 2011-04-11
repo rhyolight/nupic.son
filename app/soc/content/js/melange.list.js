@@ -361,6 +361,16 @@
             var changed_columns = [];
             var not_changed_columns = [];
             jQuery.each(row, function (column_name, column_content) {
+              //Extract the value stored in the cell value, which could be enclosed in a link
+              //TODO(Mario)
+              //Need to refactor the internal data of the lists to prevent this from happening, temporary workaround.
+              var column_content = column_content.toString();
+              // extract link href (if any) from the text
+              var extracted_text = /^<a\b[^>]*href="(.*?)" \b[^>]*>(.*?)<\/a>$/.exec(column_content);
+              if (extracted_text !== null) {
+                column_content = extracted_text[2];
+              }
+
               /* Need to have a loose comparison here, as e.g. previously integer values
                  could be changed into strings by jqGrid
               */
