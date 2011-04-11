@@ -587,6 +587,21 @@
                   }
                   rows_to_send[key_value][column_name] = column_value;
                 });
+                // Send other columns, which are requested by the operation.
+                jQuery.each(parameters.keys, function (index, column_to_send) {
+                  if (rows_to_send[key_value][column_to_send] === undefined) {
+                    //Extract the value stored in the cell value, which could be enclosed in a link
+                    //TODO(Mario)
+                    //Need to refactor the internal data of the lists to prevent this from happening, temporary workaround.
+                    var column_value = row[column_to_send].toString();
+                    // extract link href (if any) from the text
+                    var extracted_text = /^<a\b[^>]*href="(.*?)" \b[^>]*>(.*?)<\/a>$/.exec(column_value);
+                    if (extracted_text !== null) {
+                      column_value = extracted_text[2];
+                    }
+                    rows_to_send[key_value][column_to_send] = column_value;
+                  }
+                });
               }
             }
             if (parameters.url === "") {
