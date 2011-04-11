@@ -193,13 +193,17 @@ class ListConfiguration(object):
     if self._buttons.get(col_id):
       logging.warning('Button with id %s is already defined' % col_id)
 
-    self._buttons[col_id] = {
+    button_config = {
         'id': col_id,
         'caption': caption,
-        'bounds': bounds,
         'type': col_type,
         'parameters': parameters
     }
+
+    if bounds:
+      button_config['bounds'] = bounds
+
+    self._buttons[col_id] = button_config
 
   def setColumnEditable(self, col_id, editable, edittype=None, editoptions=None):
     """Sets the editability for the specified column.
@@ -315,6 +319,19 @@ class ListConfiguration(object):
         'redirect': redirect,
     }
     self.__addButton(button_id, caption, bounds, 'post', parameters)
+
+  def addPostEditButton(self, button_id, caption, url, keys, refresh='current'):
+    """This button is used when all changed values should be posted.
+
+    Args:
+      See addPostButton
+    """
+    parameters = {
+        'url': url,
+        'keys': keys,
+        'refresh': refresh,
+    }
+    self.__addButton(button_id, caption, None, 'post_edit', parameters)
 
   def setRowAction(self, func, new_window=True):
     """The redirects the user to a URL when clicking on a row in the list.
