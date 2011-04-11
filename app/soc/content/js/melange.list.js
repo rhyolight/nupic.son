@@ -293,6 +293,8 @@
       edit: false,
       add: false,
       del: false,
+      refreshtext: "Refresh",
+      searchtext: "Filter",
       afterRefresh:
         function() {
           _self.refreshData();
@@ -1053,7 +1055,7 @@
       );
 
       var button_showhide_options = {
-        caption: "",
+        caption: "Columns",
         buttonicon: "ui-icon-calculator",
         onClickButton: function () {
           jQuery("#" + _self.jqgrid.id).setColumns({
