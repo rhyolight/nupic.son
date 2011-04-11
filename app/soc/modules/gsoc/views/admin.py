@@ -173,6 +173,8 @@ class SlotsList(Template):
     list_config.addColumn('name', 'Name',
         (lambda e, *args: e.short_name.strip()), width=75)
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    options = [('', 'All'), ('true', 'New'), ('false', 'Veteran')]
+    list_config.addSimpleColumn('new_org', 'New', width=25, options=options)
     list_config.addSimpleColumn('slots_desired', 'min', width=25)
     list_config.addSimpleColumn('max_slots_desired', 'max', width=25)
     list_config.addSimpleColumn('slots', 'Slots', width=50)

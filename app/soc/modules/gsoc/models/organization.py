@@ -93,6 +93,9 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
       ' to the organization.')
   contrib_template.group = ugettext("1. Public Info")
 
+  # whether this org is new to the program
+  new_org = db.BooleanProperty(default=False)
+
   slots = db.IntegerProperty(required=False, default=0,
       verbose_name=ugettext('Slots allocated'))
   slots.help_text = ugettext(

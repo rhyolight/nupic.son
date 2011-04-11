@@ -62,7 +62,7 @@ class OrgProfileForm(forms.ModelForm):
     exclude = [
         'status', 'scope', 'scope_path', 'founder', 'founder', 'slots', 'note',
         'slots_calculated', 'nr_applications', 'nr_mentors', 'link_id',
-        'proposal_extra',
+        'proposal_extra', 'new_org',
     ]
     widgets = forms.choiceWidgets(GSoCOrganization,
         ['contact_country', 'shipping_country'])
@@ -98,7 +98,7 @@ class OrgCreateProfileForm(OrgProfileForm):
     exclude = [
         'status', 'scope', 'scope_path', 'founder', 'founder', 'slots', 'note',
         'slots_calculated', 'nr_applications', 'nr_mentors', 'scoring_disabled',
-        'proposal_extra',
+        'proposal_extra', 'new_org',
     ]
 
     widgets = forms.choiceWidgets(GSoCOrganization,
