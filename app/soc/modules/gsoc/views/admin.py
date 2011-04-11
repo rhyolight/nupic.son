@@ -179,9 +179,8 @@ class SlotsList(Template):
     list_config.setColumnEditable('note', True) #, edittype='textarea')
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
-    bounds = ['0', 'all']
     fields = ['key', 'slots', 'note']
-    list_config.addPostButton('save', "Save", "#", bounds, fields)
+    list_config.addPostEditButton('save', "Save", "#", fields)
 
     self._list_config = list_config
 
@@ -208,28 +207,30 @@ class SlotsList(Template):
 
     parsed = simplejson.loads(data)
 
-    for properties in parsed:
-      if not all(i in properties for i in ['key', 'note', 'slots']):
-        logging.warning("Missing value in '%s'" % properties)
+    for key_name, properties in parsed.iteritems():
+      note = properties.get('note')
+      slots = properties.get('slots')
+
+      if 'note' not in properties and 'slots' not in properties:
+        logging.warning("Neither note or slots present in '%s'" % properties)
         continue
 
-      key_name = properties['key']
-      note = properties['note']
-      slots = properties['slots']
-
-      if not slots.isdigit():
-        logging.warning("Non-int value for slots: '%s'" % slots)
-        continue
-
-      slots = int(slots)
+      if 'slots' in properties:
+        if not slots.isdigit():
+          logging.warning("Non-int value for slots: '%s'" % slots)
+          properties.pop('slots')
+        else:
+          slots = int(slots)
 
       def update_org_txn():
         org = GSoCOrganization.get_by_key_name(key_name)
         if not org:
           logging.warning("Invalid org_key '%s'" % key_name)
           return
-        org.note = note
-        org.slots = slots
+        if 'note' in properties:
+          org.note = note
+        if 'slots' in properties:
+          org.slots = slots
         org.put()
 
       db.run_in_transaction(update_org_txn)
