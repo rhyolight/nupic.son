@@ -21,6 +21,7 @@ limitations under the License.
 
 {% block page_content %}
 
+<!-- Proposal Ignored banner -->
 {% if proposal_ignored %}
   <div id="user-message" class="error">
     <strong>ALERT:</strong> This proposal has been flagged as
@@ -48,16 +49,32 @@ limitations under the License.
   </div>
 {% endif %}
 
+<!-- Proposal withdrawn banner -->
+{% if proposal.status == "withdrawn" %}
+  <div id="user-message" class="error">
+    <strong>ALERT:</strong>
+    {% if user_role == 'proposer' %}
+      You have withdrawn this proposal. If you want your organization to
+      consider this proposal, click the <strong>Resubmit</strong> button
+      against the text "Withdraw proposal" below.
+    {% else %}{% if user_role == 'org_admin' or user_role == 'mentor' %}
+      The student has withdrawn this proposal. He/She can resubmit this proposal
+      by clicking the <strong>Resubmit</strong> button that is accessible to 
+      them against the text "Withdraw proposal" on this page.
+    {% endif %}{% endif %}
+  </div>
+{% endif %}
 
 <!--  TODO: Remove the following if block once the JS magic to remove
       the buttons of action is in place -->
 {% if not proposal_ignored and user_role == 'org_admin' %}
   <div id="user-message" class="error">
-    <strong>NOTE: </strong>If you click the <strong>Ignore this proposal
-    </strong> button below, please be sure to refresh the page before
-    performing any further action on this proposal.
+    <strong>NOTE: </strong>If you click the <strong>Ignore</strong> button
+    below, please be sure to refresh the page before performing any further
+    action on this proposal.
   </div>
 {% endif %}
+
 
 <h1 id="project-page-title">
   {{ proposal.title }}
