@@ -20,6 +20,9 @@
   background: #f6f6f6;
   padding-top: 5px;
   padding-bottom: 5px;
+  display: block;
+  overflow: hidden;
+  width: 100%;
 }
 .model-readonly .row-odd label {
   /*verbose name of each model property*/
@@ -33,9 +36,12 @@
   text-align: right;
   width: 200px;
 }
-.model-readonly .row-odd span.content {
+.model-readonly .row-odd span.readonly-row-content {
   /*actual value stored in the property*/
 
+  float: right;
+  padding: 0;
+  width: 390px;
 }
 .model-readonly .row-even {
   /*styling for odd rows*/
@@ -45,6 +51,9 @@
   background: white;
   padding-top: 5px;
   padding-bottom: 5px;
+  display: block;
+  overflow: hidden;
+  width: 100%;
 }
 .model-readonly .row-even label {
   /*verbose name of each model property*/
@@ -58,7 +67,10 @@
   text-align: right;
   width: 200px;
 }
-.model-readonly .row-even span.content {
+.model-readonly .row-even span.readonly-row-content {
   /*actual value stored in the property*/
 
+  float: right;
+  padding: 0;
+  width: 390px;
 }
