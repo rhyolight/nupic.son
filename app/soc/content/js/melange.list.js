@@ -1066,12 +1066,6 @@
 
       this.saveCurrentTableConfiguration = function () {
         //TODO(Mario): insulate all the functions better.
-        if (!_self.jqgrid.object) {
-          //TODO(Mario): check this in a better fashion.
-          // The list is not created yet, this is likely to be fired by gridComplete
-          // but it's not yet necessary to catch that.
-          return;
-        }
         var previous_configuration = melange.cookie.getCookie(melange.cookie.MELANGE_USER_PREFERENCES);
         var colModel = _self.jqgrid.object.jqGrid('getGridParam', 'colModel');
         var sortCol = _self.jqgrid.object.jqGrid('getGridParam', 'sortname');
@@ -1132,6 +1126,18 @@
       grid.jqGrid('footerData', 'set', footer_updates);
     };
 
+    var gridCompletionTasks = function () {
+      if (!_self.jqgrid.object) {
+        //TODO(Mario): check this in a better fashion.
+        // The list is not created yet, this is likely to be fired by gridComplete
+        // but it's not yet necessary to catch that.
+        return;
+      }
+
+      footerAggregates();
+      cookie_service.saveCurrentTableConfiguration();
+    };
+
     var initJQGrid = function () {
       _self.configuration = cookie_service.getPreviousTableConfiguration(_self.configuration);
 
@@ -1144,7 +1150,7 @@
           onSelectAll: jqgrid_functions.enableDisableButtons,
           onSelectRow: jqgrid_functions.enableDisableButtons,
           // When something changes in the list, update the cookie
-          gridComplete: cookie_service.saveCurrentTableConfiguration
+          gridComplete: gridCompletionTasks
         }
       );
 
