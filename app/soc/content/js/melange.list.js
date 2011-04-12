@@ -1109,6 +1109,27 @@
       };
     };
 
+    var footerAggregates = function () {
+      /* Calculate aggregates if requested, using summaryType as a reference, since
+         it won't work without grouping and so there's no harm on using it
+      */
+      if (!_self.jqgrid.configuration.footerrow) {
+        return;
+      }
+
+      var footer_updates = {};
+
+      var grid = _self.jqgrid.object;
+
+      jQuery.each(_self.configuration.colModel, function (col_index, col_object) {
+        if (col_object.summaryType !== undefined) {
+          var footer_aggregate = grid.jqGrid('getCol', col_object.name, false, col_object.summaryType);
+          footer_updates[col_object.name] = col_object.summaryTpl.replace(/\{0\}/ig, footer_aggregate);
+        }
+      });
+      grid.jqGrid('footerData', 'set', footer_updates);
+    };
+
     var initJQGrid = function () {
       _self.configuration = cookie_service.getPreviousTableConfiguration(_self.configuration);
 
