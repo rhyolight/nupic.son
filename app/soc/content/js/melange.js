@@ -91,24 +91,68 @@
     * @name melange.tinyMceConfig
     * @param {String[]} textareas Array of textareas IDs
     */
-  $m.tinyMceConfig = function (textareas) {
-    var default_tinymce_settings = {
-      "theme_advanced_toolbar_align": "left",
-      "theme_advanced_resizing": true,
-      "theme_advanced_statusbar_location": "bottom",
-      "theme_advanced_path": false,
-      "relative_urls": 0,
-      "theme_advanced_toolbar_location": "top",
-      "theme_advanced_buttons1": "bold,italic,underline,strikethrough,|,fontsizeselect,forecolor,|,bullist,numlist,outdent,indent",
-      "theme_advanced_buttons3": "",
-      "theme_advanced_buttons2": "undo,redo,|,justifyleft,justifycenter,justifyright,|,link,unlink,anchor,code",
-      "remove_script_host": 0,
-      "theme": "advanced",
-      "mode": "exact"
+  $m.tinyMceConfig = function (textareas, config_switch) {
+    var tinymce_settings = {
+      "basic": {
+        "height": 400,
+        "width": 500,
+        "mode": "exact",
+        "relative_urls": 0,
+        "remove_script_host": 0,
+        "theme": "advanced",
+        "theme_advanced_path": false,
+        "theme_advanced_resizing": false,
+        "theme_advanced_resizing_max_height": 600,
+        "theme_advanced_resizing_max_width": 600,
+        "theme_advanced_statusbar_location": "bottom",
+        "theme_advanced_toolbar_align": "left",
+        "theme_advanced_toolbar_location": "top",
+        "theme_advanced_buttons1": ["bold,italic,underline,fontsizeselect,|,bullist,numlist,outdent,",
+          "indent,|,undo,redo,|,justifyleft,justifycenter,justifyright,|,link,unlink,anchor"].join(),
+        "theme_advanced_buttons2": "",
+        "theme_advanced_buttons3": "",
+        "theme_advanced_source_editor_width": 700
+      },
+    
+      "advanced": {
+        "gecko_spellcheck": "true",
+        "theme_advanced_blockformats": "p,div,h1,h2,h3,h4,h5,h6,blockquote,dt,dd,code,samp",
+        "theme_advanced_buttons1": ["bold,italic,underline,strikethrough,hr,",
+          "|,fontselect,formatselect,fontsizeselect,forecolor"].join(),
+        "theme_advanced_buttons3": "",
+        "theme_advanced_buttons2": ["undo,redo,|,justifyleft,justifycenter,justifyright,|,",
+          "link,unlink,anchor,code,image,|,bullist,numlist,outdent,indent"].join(),
+        "theme_advanced_fonts": ["Andale Mono=andale mono,times;",
+          "Arial=arial,helvetica,sans-serif;",
+          "Arial Black=arial black,avant garde;",
+          "Book Antiqua=book antiqua,palatino;",
+          "Comic Sans MS=comic sans ms,sans-serif;",
+          "Courier New=courier new,courier;",
+          "Georgia=georgia,palatino;",
+          "Helvetica=helvetica;",
+          "Impact=impact,chicago;",
+          "Symbol=symbol;",
+          "Tahoma=tahoma,arial,helvetica,sans-serif;",
+          "Terminal=terminal,monaco;",
+          "Times New Roman=times new roman,times;",
+          "Trebuchet MS=trebuchet ms,geneva;",
+          "Verdana=verdana,geneva;",
+          "Webdings=webdings;",
+          "Wingdings=wingdings,zapf dingbats"].join()
+      }
+      
     };
+    
+    var returned_tinymce_settings = tinymce_settings.basic;
+    
+    if (config_switch !== undefined && config_switch !== null && 
+      tinymce_settings[config_switch] !== undefined) {
+      jQuery.extend(returned_tinymce_settings, tinymce_settings[config_switch]);
+    };
+        
     var textareaids = textareas.join(",");
-    return jQuery.extend(
-      default_tinymce_settings,
+    return jQuery.extend (
+      returned_tinymce_settings,
       {
         elements: textareaids
       }
