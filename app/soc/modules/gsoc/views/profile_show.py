@@ -40,12 +40,14 @@ class ProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
   class Meta:
     model = GSoCProfile
     css_prefix = 'gsoc_profile_show'
-    exclude = ['link_id', 'user', 'scope', 'mentor_for', 'org_admin_for',
-               'student_info', 'agreed_to_tos_on', 'scope_path', 'status',
-               'name_on_documents', 'agreed_to_tos', 'notify_new_requests',
-               'notify_new_proposals', 'notify_proposal_updates',
-               'notify_public_comments', 'notify_private_comments',
-               'is_mentor', 'is_org_admin']
+    fields = ['public_name', 'given_name', 'surname', 'im_network',
+              'im_handle', 'home_page', 'blog', 'photo_url', 'latitude',
+              'longitude', 'publish_location', 'email', 'res_street',
+              'res_street_extra', 'res_city', 'res_state', 'res_country',
+              'res_postalcode', 'phone', 'ship_name', 'ship_street',
+              'ship_street_extra', 'ship_city', 'ship_state',
+              'ship_country', 'ship_postalcode', 'birth_date',
+              'tshirt_style', 'tshirt_size', 'gender', 'program_knowledge']
 
 
 class ProfileShowPage(RequestHandler):
