@@ -446,7 +446,6 @@
         .button-mixin (@button-background: url("../../../images/v2/gsoc/form-submit-bg.png") repeat scroll 0 0 transparent, @button-color: white) {
             background: @button-background;
             color: @button-color;
-            cursor: pointer;
             width: 90px;
             padding: 3px;
             text-decoration: none;
@@ -454,9 +453,11 @@
         }
         .button {
             .button-mixin;
+            cursor: pointer;
         }
         .button.disabled {
             .button-mixin(url("../../../images/v2/gsoc/form-submit-bg-blue.png") repeat scroll 0 0 transparent, @grey);
+            cursor: default;
         }
     }
 }
