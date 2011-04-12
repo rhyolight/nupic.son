@@ -1109,7 +1109,7 @@
       /* Calculate aggregates if requested, using summaryType as a reference, since
          it won't work without grouping and so there's no harm on using it
       */
-      if (!_self.jqgrid.configuration.footerrow) {
+      if (!_self.configuration.footerrow) {
         return;
       }
 
