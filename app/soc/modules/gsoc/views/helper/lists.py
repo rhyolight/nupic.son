@@ -82,6 +82,7 @@ class ListConfiguration(object):
     self.autowidth = True
     self._sortname = ''
     self._sortorder = 'asc'
+    self._footer_row = False
     self.height = 'auto'
     self.multiselect = False
     self.toolbar = [True, 'top']
@@ -247,6 +248,8 @@ class ListConfiguration(object):
 
     model['summaryType'] = summary_type
     model['summaryTpl'] = summary_tpl
+
+    self._footer_row = True
 
   def setColumnExtra(self, col_id, **kwargs):
     """Sets the column 'extra' field.
@@ -449,6 +452,9 @@ class ListConfigurationResponse(Template):
                        self._config.multiselect,
         'toolbar': self._config.toolbar,
     }
+
+    if self._config._footer_row:
+      configuration['footerrow'] = self._config._footer_row
 
     operations = {
         'buttons': self._config._buttons,
