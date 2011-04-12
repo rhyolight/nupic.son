@@ -179,6 +179,7 @@ class SlotsList(Template):
     list_config.addSimpleColumn('max_slots_desired', 'max', width=25)
     list_config.addSimpleColumn('slots', 'Slots', width=50)
     list_config.setColumnEditable('slots', True)
+    list_config.setColumnSummary('slots', 'sum', "<b>Total: {0}</b>")
     list_config.addSimpleColumn('note', 'Note')
     list_config.setColumnEditable('note', True) #, edittype='textarea')
     list_config.setDefaultPagination(False)

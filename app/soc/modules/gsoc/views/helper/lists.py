@@ -232,6 +232,22 @@ class ListConfiguration(object):
     if editoptions:
       model['editoptions'] = editoptions
 
+  def setColumnSummary(self, col_id, summary_type, summary_tpl):
+    """Sets the column summary for the specified column.
+
+    Args:
+      summary_type: the summary type
+      summary_tpl: the summary template
+    """
+    model = self._col_map.get(col_id)
+
+    if not model:
+      raise ValueError('Id %s is not a defined column (Known columns %s)'
+                       % (col_id, self._col_map.keys()))
+
+    model['summaryType'] = summary_type
+    model['summaryTpl'] = summary_tpl
+
   def setColumnExtra(self, col_id, **kwargs):
     """Sets the column 'extra' field.
 
