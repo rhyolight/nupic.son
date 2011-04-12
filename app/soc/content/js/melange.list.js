@@ -251,7 +251,7 @@
     }
 
     var thegrid = jQuery("#" + list_objects.get(my_index).jqgrid.id);
-    thegrid_dom = thegrid[0];
+    var thegrid_dom = thegrid[0];
     thegrid_dom.addJSONData(json_to_return);
 
     // Hide/Show columns if an extra field is defined and this filter filtered that extra field
