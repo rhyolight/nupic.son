@@ -439,6 +439,8 @@
               }
             });
 
+            footerAggregates();
+
           }
 
           // Enable editing if set by backend
