@@ -506,6 +506,7 @@ class SubmittedProposalsComponent(Component):
     list_config.addColumn(
         'student', 'Student',
         lambda ent, *args: ent.parent().name())
+    list_config.addSimpleColumn('accept_as_project', 'Should accept')
 
     # assigned mentor column
     def mentor_key(ent, *args):
