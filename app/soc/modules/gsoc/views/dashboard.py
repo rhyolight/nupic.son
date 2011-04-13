@@ -566,11 +566,6 @@ class SubmittedProposalsComponent(Component):
   def context(self):
     description = SubmittedProposalsComponent.DESCRIPTION
 
-    if self.data.program.allocations_visible:
-      for org in self.data.mentor_for:
-        description = '%s %i slots have been assigned to %s.'%(
-            description, org.slots, org.name)
-
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=4, description=description)
     return {
@@ -739,6 +734,10 @@ class OrganizationsIParticipateInComponent(Component):
     list_config.addSimpleColumn('name', 'name')
     list_config.setRowAction(
         lambda e, *args, **kwargs: r.organization(e).urlOf('gsoc_org_home'))
+
+    if data.program.allocations_visible:
+      list_config.addSimpleColumn('slots', 'Slots assigned')
+
     list_config.setDefaultSort('name')
     self._list_config = list_config
 
