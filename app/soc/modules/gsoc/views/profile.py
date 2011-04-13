@@ -139,6 +139,7 @@ class ProfileForm(forms.ModelForm):
 
   clean_given_name = cleaning.clean_valid_shipping_chars('given_name')
   clean_surname = cleaning.clean_valid_shipping_chars('surname')
+  clean_email = cleaning.clean_email('email')
   clean_phone = cleaning.clean_phone_number('phone')
   clean_res_street = cleaning.clean_valid_shipping_chars('res_street')
   clean_res_street_extra = cleaning.clean_valid_shipping_chars(
