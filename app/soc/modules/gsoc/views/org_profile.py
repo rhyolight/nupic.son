@@ -24,9 +24,8 @@ __authors__ = [
 
 from soc.views import forms
 
-from django import forms as djangoforms
-from django.conf.urls.defaults import url
 from django import forms as django_forms
+from django.conf.urls.defaults import url
 
 from soc.logic import cleaning
 from soc.logic.exceptions import NotFound
@@ -69,7 +68,7 @@ class OrgProfileForm(forms.ModelForm):
     widgets = forms.choiceWidgets(GSoCOrganization,
         ['contact_country', 'shipping_country'])
 
-  tags = djangoforms.CharField(label='Tags')
+  tags = django_forms.CharField(label='Tags')
   clean_tags = gsoc_cleaning.cleanTagsList(
       'tags', gsoc_cleaning.COMMA_SEPARATOR)
   clean_description = cleaning.clean_html_content('description')
