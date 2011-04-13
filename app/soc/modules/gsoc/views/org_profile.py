@@ -46,11 +46,13 @@ class OrgProfileForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
     super(OrgProfileForm, self).__init__(*args, **kwargs)
 
-    fields = ['tags', 'name', 'feed_url', 'home_page', 'pub_mailing_list',
-              'description', 'ideas', 'contrib_template',
-              'facebook', 'twitter', 'blog']
+    homepage_fields = [
+        'tags', 'name', 'feed_url', 'home_page', 'pub_mailing_list',
+        'description', 'ideas', 'contrib_template',
+        'facebook', 'twitter', 'blog'
+    ]
 
-    for field in fields:
+    for field in homepage_fields:
       self.fields[field].group = '1. Homepage Info (displayed on org homepage)'
 
     feed_url = self.fields.pop('feed_url')
