@@ -509,15 +509,24 @@ class SubmittedProposalsComponent(Component):
     list_config.addSimpleColumn('accept_as_project', 'Should accept')
 
     # assigned mentor column
+    def split_key(key):
+      split_name = key.name().split('/')
+      return split_name[-1]
+
     def mentor_key(ent, *args):
       key = GSoCProposal.mentor.get_value_for_datastore(ent)
       if not key:
         return ""
-      split_name = key.name().split('/')
-      return split_name[-1]
+      return split_key(key)
+
+    def mentor_keys(ent, *args):
+      return ', '.join(split_key(i) for i in ent.possible_mentors)
 
     list_config.addColumn('mentor', 'Assigned mentor link_id',
                           mentor_key, hidden=True)
+    list_config.addColumn('possible_mentors', 'Possible mentor link_ids',
+                          mentor_keys, hidden=True)
+
     # organization column
     if not data.is_host:
       options = ([('', 'All')] +
