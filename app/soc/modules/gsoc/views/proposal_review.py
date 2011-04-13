@@ -659,6 +659,8 @@ class PostScore(RequestHandler):
       # update score entity
       score = query.get()
       if not score:
+        if not value:
+          return
         old_value = 0
         score = GSoCScore(
             parent=self.data.proposal,
