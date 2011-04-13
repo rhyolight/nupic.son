@@ -543,14 +543,14 @@ class SubmittedProposalsComponent(Component):
       return getter
 
     extra_columns = []
-    for org in []: #data.mentor_for:
+    for org in data.mentor_for:
       for column in org.proposal_extra:
         extra_columns.append(column)
         col_name = "%s <br/>(%s)" % (column, org.short_name)
         list_config.addColumn(
             column, col_name, get_col_prop(column))
         list_config.setColumnEditable(column, True, 'text', {})
-        list_config.setColumnExtra(column, org=org.short_name)
+        list_config.setColumnExtra(column, org="^%s$" % org.short_name)
 
     if extra_columns:
       fields = ['full_proposal_key', 'org_key']
