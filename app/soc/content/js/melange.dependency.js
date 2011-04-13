@@ -128,7 +128,7 @@
   s.raty = [
     tpjs + "jquery/jquery.raty.js"
   ];
-
+  
   s.jqueryui = {}
 
   if (melange.config.is_local !== undefined && melange.config.is_local === true) {
@@ -246,6 +246,7 @@
   s.melange.list = [
     s.jqgrid,
     s.jlinq,
+    new $m.cssFile(mcss + "v2/gsoc/others.css"),
     null,
     s.jqueryui.dialog,
     s.jqueryui.button,

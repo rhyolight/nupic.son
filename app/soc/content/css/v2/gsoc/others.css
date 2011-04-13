@@ -4,3 +4,9 @@
   height: 300px;
   width: 497px;
 }
+
+/* No underline for <a> elements inside lists */
+.ui-jqgrid a.listsnoul {
+  text-decoration: none;
+}
+
