@@ -564,6 +564,11 @@ class SubmittedProposalsComponent(Component):
       fields = ['full_proposal_key', 'org_key']
       list_config.addPostEditButton('save', "Save", "", fields)
 
+    # accept/reject proposals
+    bounds = [1,'all']
+    keys = ['full_proposal_key']
+    list_config.addPostButton('accept', "Accept", "", bounds, keys)
+
     self._list_config = list_config
 
     super(SubmittedProposalsComponent, self).__init__(request, data)
