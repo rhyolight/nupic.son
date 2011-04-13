@@ -211,6 +211,9 @@
 #main .content_column_1 .block-featured-project .block-content {
   padding-bottom: 0;
 }
+#main .content_column_1 #block-participants-content {
+  text-align: center;
+}
 #main .content_column_1 .block-participants {
   /*participating orgs block*/
 
