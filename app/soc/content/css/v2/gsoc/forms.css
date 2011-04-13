@@ -374,13 +374,11 @@
   background: #cde5f5;
   margin: 0;
   padding: 30px 0 10px 0;
-  width: auto;
 }
 #form.form-project-comment fieldset .row {
   /*every row*/
-
   display: block;
-  margin: 0 0 6px 11px;
+  padding: 10px 10px 15px 15px;
   width: 497px;
 }
 #form.form-project-comment textarea {
