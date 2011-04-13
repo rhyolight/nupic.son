@@ -25,6 +25,8 @@ __authors__ = [
 
 import httplib
 
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
 from tests.timeline_utils import TimelineHelper
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
@@ -84,3 +86,57 @@ class ProfileViewTest(DjangoTestCase):
     url = '/gsoc/profile/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertResponseOK(response)
+
+  def testCreateProfile(self):
+    from soc.modules.gsoc.models.profile import GSoCProfile
+    from soc.modules.gsoc.models.profile import GSoCStudentInfo
+
+    self.timeline.studentSignup()
+    self.data.createUser()
+
+    suffix = "%(program)s" % {
+        'program': self.gsoc.key().name(),
+        }
+
+    role_suffix = "%(role)s/%(suffix)s" % {
+        'role': 'student',
+        'suffix': suffix,
+        }
+
+    url = '/gsoc/profile/' + suffix
+    role_url = '/gsoc/profile/' + role_suffix
+
+
+    # we do not want to seed the data in the datastore, we just
+    # want to get the properties generated for seeding. The post
+    # test will actually do the entity creation, so we reuse the
+    # seed_properties method from the seeder to get the most common
+    # values for Profile and StudentInfo
+    postdata = seeder_logic.seed_properties(GSoCProfile)
+    postdata.update(seeder_logic.seed_properties(GSoCStudentInfo))
+    postdata.update({
+        'link_id': self.data.user.link_id,
+        'student_info': None,
+        'user': self.data.user, 'parent': self.data.user,
+        'scope': self.gsoc, 'status': 'active',
+        'email': self.data.user.account.email(),
+        'mentor_for': [], 'org_admin_for': [],
+        'is_org_admin': False, 'is_mentor': False,
+    })
+
+    response = self.post(role_url, postdata)
+
+    self.assertResponseRedirect(response, url+'?validated')
+
+    # hacky
+    profile = GSoCProfile.all().get()
+    profile.delete()
+
+    postdata.update({
+        'email': 'somerandominvalid@emailid',
+        })
+
+    print profile.email
+    response = self.post(role_url, postdata)
+
+    self.assertResponseRedirect(response, role_url+'#')
