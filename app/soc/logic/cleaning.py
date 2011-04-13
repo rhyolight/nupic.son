@@ -423,6 +423,34 @@ def clean_feed_url(field_name):
   return wrapper
 
 
+def sanitize_html_string(content):
+  """Sanitizes the given html string.
+
+  Raises:
+    forms.ValidationError in case of an error.
+  """
+  from HTMLParser import HTMLParseError
+
+  try:
+    cleaner = HtmlSanitizer.Cleaner()
+    try:
+      cleaner.string = content.encode("utf-8")
+    except Exception, e:
+      raise forms.ValidationError(str(e))
+    cleaner.clean()
+  except (HTMLParseError, safe_html.IllegalHTML), msg:
+    raise forms.ValidationError(msg)
+
+  content = cleaner.string
+
+  try:
+    content = content.decode("utf-8")
+  except Exception, e:
+    raise forms.ValidationError(str(e))
+
+  return content
+
+
 def clean_html_content(field_name):
   """Clean method for cleaning HTML content.
   """
@@ -431,8 +459,6 @@ def clean_html_content(field_name):
   def wrapped(self):
     """Decorator wrapper method.
     """
-    from HTMLParser import HTMLParseError
-
     content = self.cleaned_data.get(field_name)
 
     # clean_html_content is called when writing data into GAE rather than
@@ -442,22 +468,7 @@ def clean_html_content(field_name):
     if user_logic.isDeveloper():
       return content
 
-    try:
-      cleaner = HtmlSanitizer.Cleaner()
-      try:
-        cleaner.string = content.encode("utf-8")
-      except Exception, e:
-        raise forms.ValidationError(str(e))
-      cleaner.clean()
-    except (HTMLParseError, safe_html.IllegalHTML), msg:
-      raise forms.ValidationError(msg)
-
-    content = cleaner.string
-
-    try:
-      content = content.decode("utf-8")
-    except Exception, e:
-      raise forms.ValidationError(str(e))
+    content = sanitize_html_string(content)
 
     return content
 
