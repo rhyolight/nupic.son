@@ -315,6 +315,8 @@ class ListConfiguration(object):
     """This button is used when there is something to send to the backend in a
     POST request.
 
+    Sets multiselect to True.
+
     Args:
       button_id: The unique id of the button.
       caption: The display string shown to the end user.
@@ -331,6 +333,8 @@ class ListConfiguration(object):
       redirect: Set to True to have the user be redirected to a URL returned by
                 the URL where the POST request hits.
     """
+    self.multiselect = True
+
     parameters = {
         'url': url,
         'keys': keys,
@@ -448,8 +452,7 @@ class ListConfigurationResponse(Template):
         'rowNum': self._config._row_num,
         'sortname': self._config._sortname,
         'sortorder': self._config._sortorder,
-        'multiselect': False if self._config._row_operation else \
-                       self._config.multiselect,
+        'multiselect': self._config.multiselect,
         'toolbar': self._config.toolbar,
     }
 
