@@ -574,10 +574,12 @@ class SubmittedProposalsComponent(Component):
       fields = ['full_proposal_key', 'org_key']
       list_config.addPostEditButton('save', "Save", "", fields)
 
-    # accept/reject proposals
-    bounds = [1,'all']
-    keys = ['full_proposal_key']
-    list_config.addPostButton('accept', "Accept", "", bounds, keys)
+    if data.is_org_admin:
+      # accept/reject proposals
+      bounds = [1,'all']
+      keys = ['full_proposal_key']
+      list_config.addPostButton('accept', "Accept", "", bounds, keys)
+      list_config.addPostButton('unaccept', "Unaccept", "", bounds, keys)
 
     self._list_config = list_config
 
@@ -609,6 +611,23 @@ class SubmittedProposalsComponent(Component):
 
     parsed = simplejson.loads(data)
 
+    button_id = self.data.POST.get('button_id')
+
+    if not button_id:
+      raise BadRequest("Missing button_id")
+
+    if button_id == 'save':
+      return self.postSave(parsed)
+
+    if button_id == 'accept':
+      return self.postAccept(parsed, True)
+
+    if button_id == 'unaccept':
+      return self.postAccept(parsed, False)
+
+    raise BadRequest("Unknown button_id")
+
+  def postSave(self, parsed):
     extra_columns = {}
 
     for org in self.data.mentor_for:
@@ -657,6 +676,31 @@ class SubmittedProposalsComponent(Component):
         proposal.put()
 
       db.run_in_transaction(update_proposal_txn)
+
+    return True
+
+  def postAccept(self, data, accept):
+    for properties in data:
+      if 'full_proposal_key' not in properties:
+        logging.warning("Missing key in '%s'" % properties)
+        continue
+      proposal_key = properties['full_proposal_key']
+      def accept_proposal_txn():
+        proposal = db.get(db.Key(proposal_key))
+
+        if not proposal:
+          logging.warning("Invalid proposal_key '%s'" % proposal_key_name)
+          return
+
+        org_key = GSoCProposal.org.get_value_for_datastore(proposal)
+        if not self.data.orgAdminFor(org_key):
+          logging.warning("Not an org admin")
+          return
+
+        proposal.accept_as_project = accept
+        proposal.put()
+
+      db.run_in_transaction(accept_proposal_txn)
 
     return True
 
