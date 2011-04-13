@@ -45,40 +45,40 @@ class ProfileViewTest(DjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/profile/base.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
 
-  def testCreateProfile(self):
+  def testCreateProfilePage(self):
     self.timeline.studentSignup()
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertProfileTemplatesUsed(response)
 
-  def testCreateMentorProfile(self):
+  def testCreateMentorProfilePage(self):
     self.timeline.studentSignup()
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertProfileTemplatesUsed(response)
 
-  def testRedirectWithStudentProfile(self):
+  def testRedirectWithStudentProfilePage(self):
     self.timeline.studentSignup()
     self.data.createStudent()
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertResponseRedirect(response)
 
-  def testForbiddenWithStudentProfile(self):
+  def testForbiddenWithStudentProfilePage(self):
     self.timeline.studentSignup()
     self.data.createStudent()
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertResponseForbidden(response)
 
-  def testForbiddenWithMentorProfile(self):
+  def testForbiddenWithMentorProfilePage(self):
     self.timeline.studentSignup()
     self.data.createMentor(self.org)
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertResponseForbidden(response)
 
-  def testEditProfile(self):
+  def testEditProfilePage(self):
     self.timeline.studentSignup()
     self.data.createProfile()
     url = '/gsoc/profile/' + self.gsoc.key().name()
