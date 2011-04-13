@@ -26,6 +26,7 @@ from soc.views import forms
 
 from django import forms as django_forms
 from django.conf.urls.defaults import url
+from django.utils.translation import ugettext
 
 from soc.logic import cleaning
 from soc.logic.exceptions import NotFound
@@ -57,6 +58,12 @@ class OrgProfileForm(forms.ModelForm):
     feed_url = self.fields.pop('feed_url')
     self.fields.insert(len(self.fields), 'feed_url', feed_url)
 
+    instance = self.instance
+
+    field = self.fields['nonreq_proposal_extra']
+    field.group = ugettext("4. Organization Preferences")
+    field.initial = ', '.join(instance.proposal_extra) if instance else ''
+
   class Meta:
     model = GSoCOrganization
     css_prefix = 'gsoc_org_page'
@@ -67,6 +74,9 @@ class OrgProfileForm(forms.ModelForm):
     ]
     widgets = forms.choiceWidgets(GSoCOrganization,
         ['contact_country', 'shipping_country'])
+
+  nonreq_proposal_extra = django_forms.CharField(
+      label='Extra columns', required=False)
 
   tags = django_forms.CharField(label='Tags')
   clean_tags = gsoc_cleaning.cleanTagsList(
@@ -80,6 +90,20 @@ class OrgProfileForm(forms.ModelForm):
   clean_ideas = cleaning.clean_url('ideas')
   clean_pub_mailing_list = cleaning.clean_mailto('pub_mailing_list')
   clean_irc_channel = cleaning.clean_irc('irc_channel')
+
+  def clean(self):
+    if 'nonreq_proposal_extra' not in self.cleaned_data:
+      return
+
+    value = self.cleaned_data['nonreq_proposal_extra']
+
+    if not value:
+      self.cleaned_data['proposal_extra'] = []
+    else:
+      cols = [i.strip() for i in value.split(',')]
+      self.cleaned_data['proposal_extra'] = cols
+
+    return self.cleaned_data
 
   def clean_max_score(self):
     max_score = self.cleaned_data['max_score']
