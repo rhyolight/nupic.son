@@ -164,13 +164,13 @@ class Dashboard(RequestHandler):
         components.append(
             ProjectsIMentorComponent(self.request, self.data))
 
+    components.append(OrganizationsIParticipateInComponent(self.request, self.data))
+
     if timeline_helper.isAfterEvent(
       self.data.program_timeline, 'student_signup_start'):
       # Add the submitted proposals component
       components.append(
           SubmittedProposalsComponent(self.request, self.data))
-
-    components.append(OrganizationsIParticipateInComponent(self.request, self.data))
 
     if self.data.is_org_admin:
       # add a component for all organization that this user administers
