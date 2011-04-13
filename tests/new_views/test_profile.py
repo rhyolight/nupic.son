@@ -136,7 +136,14 @@ class ProfileViewTest(DjangoTestCase):
         'email': 'somerandominvalid@emailid',
         })
 
-    print profile.email
     response = self.post(role_url, postdata)
 
-    self.assertResponseRedirect(response, role_url+'#')
+    # yes! this is the protocol for form posts. We get an OK response
+    # with the response containing the form's GET request page whenever
+    # the form has an error and could not be posted. This is the architecture
+    # chosen in order to save the form error state's while rendering the
+    # error fields.
+    self.assertResponseOK(response)
+
+    error_dict = response.context['error']
+    self.assertTrue('email' in error_dict)
