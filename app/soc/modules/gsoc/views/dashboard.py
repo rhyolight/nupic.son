@@ -31,6 +31,7 @@ from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import timeline as timeline_helper
 from soc.logic.models.request import logic as request_logic
@@ -506,6 +507,7 @@ class SubmittedProposalsComponent(Component):
         'student', 'Student',
         lambda ent, *args: ent.parent().name())
 
+    # assigned mentor column
     def mentor_key(ent, *args):
       key = GSoCProposal.mentor.get_value_for_datastore(ent)
       if not key:
@@ -515,6 +517,7 @@ class SubmittedProposalsComponent(Component):
 
     list_config.addColumn('mentor', 'Assigned mentor link_id',
                           mentor_key, hidden=True)
+    # organization column
     if not data.is_host:
       options = ([('', 'All')] +
           [("^%s$" % i.short_name, i.short_name) for i in data.mentor_for])
@@ -523,17 +526,22 @@ class SubmittedProposalsComponent(Component):
     list_config.addColumn(
         'org', 'Organization', (lambda ent, *args: ent.org.short_name),
         options=options, hidden=True)
+
+    # hidden keys
     list_config.addColumn(
         'full_proposal_key', 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
     list_config.addColumn(
         'org_key', 'Organization key',
         (lambda ent, *args: ent.org.key().name()), hidden=True)
+
+    # row action
     list_config.setRowAction(lambda e, *args, **kwargs: 
         r.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
     list_config.setDefaultSort('last_modified_on', 'desc')
 
+    # additional columns
     def get_col_prop(column):
       def getter(ent, *args):
         if not ent.extra:
@@ -546,7 +554,7 @@ class SubmittedProposalsComponent(Component):
     for org in data.mentor_for:
       for column in org.proposal_extra:
         extra_columns.append(column)
-        col_name = "%s <br/>(%s)" % (column, org.short_name)
+        col_name = "%s" % (column)
         list_config.addColumn(
             column, col_name, get_col_prop(column))
         list_config.setColumnEditable(column, True, 'text', {})
@@ -603,10 +611,14 @@ class SubmittedProposalsComponent(Component):
       valid_columns = set(extra_columns.get(org_key_name, []))
       remove_properties = []
 
-      for prop in properties:
-        if prop not in valid_columns:
-          logging.warning("Invalid property '%s'" % prop)
-          remove_properties.append(prop)
+      for key, value in properties.iteritems():
+        if key not in valid_columns:
+          logging.warning("Invalid property '%s'" % key)
+          remove_properties.append(key)
+        try:
+          cleaning.sanitize_html_string(value)
+        except Exception, e:
+          remove_properties.append(key)
 
       for prop in remove_properties:
         properties.pop(prop)
