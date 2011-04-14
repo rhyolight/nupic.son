@@ -602,7 +602,9 @@
             }
             // This is done to make sure we detect rows by key column and not by row id
             var number_of_records = current_grid.object.jqGrid('getGridParam','records');
-            for (var record_number = 1; record_number <= number_of_records; record_number++) {
+            //TODO(Mario) Temporary fix: getRowData will fail if it reaches a non displayed column due to pagination
+            var displayed_records = current_grid.object.jqGrid('getGridParam','reccount');
+            for (var record_number = 1; record_number <= displayed_records; record_number++) {
               var row = jQuery("#" + current_grid.id).jqGrid('getRowData',record_number);
               //Extract the key from the key stored in the cell value, which could be enclosed in a link
               //TODO(Mario)
