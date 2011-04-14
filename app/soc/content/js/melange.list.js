@@ -430,6 +430,7 @@
             if (list_object.jqgrid.dirty_fields[key_value].length === 0) {
               delete list_object.jqgrid.dirty_fields[key_value];
             }
+
             jQuery.each(list_object.operations.buttons, function (setting_index, operation) {
               if (operation.type === "post_edit") {
                 var button_object = jQuery("#" + list_object.jqgrid.id + "_buttonOp_" + operation.id);
