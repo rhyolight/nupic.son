@@ -453,6 +453,7 @@ class ListConfigurationResponse(Template):
         'sortname': self._config._sortname,
         'sortorder': self._config._sortorder,
         'multiselect': self._config.multiselect,
+        'multiboxonly': self._config.multiselect,
         'toolbar': self._config.toolbar,
     }
 
