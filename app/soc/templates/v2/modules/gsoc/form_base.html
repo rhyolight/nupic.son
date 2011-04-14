@@ -38,6 +38,7 @@ limitations under the License.
     {{ form_top_msg.render }}
   {% endif %}
 
+  {% block form_header_msg %}
   <h2 id="form-register-title">
     {% if form_header_msg %}
       {{ form_header_msg }}
@@ -45,6 +46,7 @@ limitations under the License.
       {{ page_name }}
     {% endif %}
   </h2><p id="form-register-req" class="req">* fields required</p>
+  {% endblock form_header_msg %}
 
   {% for form in forms %}
     {{ form.render }}
