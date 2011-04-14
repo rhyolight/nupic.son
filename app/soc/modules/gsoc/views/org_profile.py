@@ -77,6 +77,7 @@ class OrgProfileForm(forms.ModelForm):
 
   nonreq_proposal_extra = django_forms.CharField(
       label='Extra columns', required=False)
+  nonreq_proposal_extra.help_text = ugettext('Comma separated list of values.')
 
   tags = django_forms.CharField(label='Tags')
   clean_tags = gsoc_cleaning.cleanTagsList(
