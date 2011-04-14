@@ -13,11 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block page_content %}
+{% if status == "rejected" %}
+  <div id="user-message" class="error">
+    <strong>ALERT: </strong>Program administrator has rejected your slot
+    transfer request.
+  </div>
+{% endif %}
+{{ block.super }}
+{% endblock page_content %}
+
 {% block form_header_msg %}
-  <h2 id="form-register-title">
-    {{ form_header_msg }}
-  </h2><p id="form-register-req" class="req">* fields required</p>
-  <h3 id="form-register-title"><strong>Status: </strong> {{ status|capfirst }}</h3>
+  {{ block.super }}
+  <h3 id="form-register-title" {% if status == "rejected" %}class="rejected"{% endif %}>
+      <strong>Status: </strong> {{ status|capfirst }}
+  </h3>
 {% endblock form_header_msg %}
 
 {% block dependencies %}
