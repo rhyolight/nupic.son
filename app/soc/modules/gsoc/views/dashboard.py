@@ -459,6 +459,15 @@ class SubmittedProposalsComponent(Component):
   DESCRIPTION = ugettext(
       'Click on a proposal to leave comments and give a score.')
 
+  CUSTOM_COLUMNS = ugettext(
+      '<p>To show/edit a custom column, select an organization from '
+      'the organization dropdown, the custom columns for that organization '
+      'will then be shown. Edit a column by clicking on it.<br/>'
+      'Hit enter to save your changes to the current column, '
+      'press esc or click outside the column to cancel. '
+      '<br/> Note: Due to a bug in JQGrid you cannot edit a row after '
+      'having just edited it, click a different row first.</p>')
+
   def __init__(self, request, data):
     """Initializes this component.
     """
@@ -570,7 +579,9 @@ class SubmittedProposalsComponent(Component):
         list_config.setColumnEditable(column, True, 'text', {})
         list_config.setColumnExtra(column, org="^%s$" % org.short_name)
 
-    if extra_columns:
+    self.has_extra_columns = bool(extra_columns)
+
+    if self.has_extra_columns:
       fields = ['full_proposal_key', 'org_key']
       list_config.addPostEditButton('save', "Save", "", fields, refresh="none")
 
@@ -589,7 +600,10 @@ class SubmittedProposalsComponent(Component):
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def context(self):
-    description = SubmittedProposalsComponent.DESCRIPTION
+    description = self.DESCRIPTION
+
+    if self.has_extra_columns:
+      description += self.CUSTOM_COLUMNS
 
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=4, description=description)
