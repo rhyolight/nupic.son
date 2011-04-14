@@ -248,6 +248,8 @@ class OrgHome(RequestHandler):
       context['edit_link'] =  r.urlOf('edit_gsoc_org_profile')
       context['invite_admin_link'] = r.invite('org_admin').urlOf('gsoc_invite')
       context['invite_mentor_link'] = r.invite('mentor').urlOf('gsoc_invite')
+      context['slot_transfer_link'] = r.organization(organization).urlOf(
+          'gsoc_slot_transfer')
 
     if self.data.timeline.studentsAnnounced():
       context['project_list'] = ProjectList(self.request, self.data)
