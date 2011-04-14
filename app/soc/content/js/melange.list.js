@@ -434,6 +434,8 @@
                   button_object.attr("disabled","disabled");
                 }
                 else {
+                  // Artificially click the save button to implement a quick and dirty autosaving
+                  button_object.click();
                   button_object.removeAttr("disabled");
                 }
               }
