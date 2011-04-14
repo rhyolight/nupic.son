@@ -572,7 +572,7 @@ class SubmittedProposalsComponent(Component):
 
     if extra_columns:
       fields = ['full_proposal_key', 'org_key']
-      list_config.addPostEditButton('save', "Save", "", fields)
+      list_config.addPostEditButton('save', "Save", "", fields, refresh="none")
 
     if data.is_org_admin:
       # accept/reject proposals
