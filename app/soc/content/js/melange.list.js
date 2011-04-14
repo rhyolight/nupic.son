@@ -397,9 +397,14 @@
               }
 
               /* Need to have a loose comparison here, as e.g. previously integer values
-                 could be changed into strings by jqGrid
+                 could be changed into strings by jqGrid. Also, need to cast an original
+                 boolean to string to check for changes
               */
-              if (column_content != original_data.columns[column_name]) {
+              var column_content_to_compare = original_data.columns[column_name];
+              if (typeof column_content_to_compare == 'boolean') {
+                column_content_to_compare = "" + column_content_to_compare;
+              }
+              if (column_content != column_content_to_compare) {
                 changed_columns.push(column_name);
               } else {
                 not_changed_columns.push(column_name);
@@ -425,7 +430,6 @@
             if (list_object.jqgrid.dirty_fields[key_value].length === 0) {
               delete list_object.jqgrid.dirty_fields[key_value];
             }
-
             jQuery.each(list_object.operations.buttons, function (setting_index, operation) {
               if (operation.type === "post_edit") {
                 var button_object = jQuery("#" + list_object.jqgrid.id + "_buttonOp_" + operation.id);
