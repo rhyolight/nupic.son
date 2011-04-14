@@ -92,6 +92,19 @@ class OrgProfileForm(forms.ModelForm):
   clean_pub_mailing_list = cleaning.clean_mailto('pub_mailing_list')
   clean_irc_channel = cleaning.clean_irc('irc_channel')
 
+  def clean_nonreq_proposal_extra(self):
+    values = self.cleaned_data['nonreq_proposal_extra']
+    splitvalues = values.split(',')
+
+    for value in splitvalues:
+      if ' ' not in value.strip():
+        continue
+
+      raise django_forms.ValidationError(
+          "Spaces not allowed in extra column mames.")
+
+    return values
+
   def clean(self):
     if 'nonreq_proposal_extra' not in self.cleaned_data:
       return
@@ -101,7 +114,7 @@ class OrgProfileForm(forms.ModelForm):
     if not value:
       self.cleaned_data['proposal_extra'] = []
     else:
-      cols = [i.strip() for i in value.split(',')]
+      cols = [i.strip() for i in value.split(',') if i.strip()]
       self.cleaned_data['proposal_extra'] = cols
 
     return self.cleaned_data
