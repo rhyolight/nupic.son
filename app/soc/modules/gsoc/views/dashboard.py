@@ -465,7 +465,7 @@ class SubmittedProposalsComponent(Component):
       'will then be shown. Edit a column by clicking on it.<br/>'
       'Hit enter to save your changes to the current column, '
       'press esc or click outside the column to cancel. '
-      '<br/> Note: Due to a bug in JQGrid you cannot edit a row after '
+      '<br/> Note: Due to a bug you cannot edit a row after '
       'having just edited it, click a different row first.</p>')
 
   def __init__(self, request, data):
