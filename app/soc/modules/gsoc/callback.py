@@ -79,6 +79,7 @@ class Callback(object):
     from soc.modules.gsoc.views import proposal_review
     from soc.modules.gsoc.views import request
     from soc.modules.gsoc.views import search
+    from soc.modules.gsoc.views import slot_transfer
 
     self.views.append(accepted_orgs.AcceptedOrgsPage())
     self.views.append(admin.DashboardPage())
@@ -116,6 +117,7 @@ class Callback(object):
     self.views.append(request.RequestPage())
     self.views.append(request.ShowRequest())
     self.views.append(search.SearchGsocPage())
+    self.views.append(slot_transfer.SlotTransferPage())
 
     # Appengine Task related views
     from soc.modules.gsoc.tasks.proposal_duplicates import \
