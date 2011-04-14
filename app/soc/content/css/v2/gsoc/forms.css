@@ -66,6 +66,15 @@
   line-height: 1.8em;
   margin: 10px 0 0 23px;
 }
+#form.form-register h3 {
+  /*heading*/
+
+  clear: left;
+  font-size: 18px;
+  line-height: 1.2em;
+  margin: 10px 0 0 23px;
+  padding: 0 0 10px 5px;
+}
 #form.form-register .req {
   /*required text*/
 
