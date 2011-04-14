@@ -18,24 +18,19 @@ limitations under the License.
 <div id="organization-name" class="block full home-block-1">
   <h2 id="title-section-organization-name">
     {{ organization.name }}
-    {% if edit_link %}
-      <span class="action-link">
-        <a href="{{ edit_link }}">Edit</a>
-      </span>
-    {% endif %}
   </h2>
 
-  {% if invite_admin_link %}
-    <span class="action-link">
-      <a href="{{ invite_admin_link }}">Invite admin</a>
-    </span>
-    <span>&nbsp;</span>
-  {% endif %}
-  {% if invite_mentor_link %}
-    <span class="action-link">
+  <div id="edit-page" class="org-page-link">
+    {% if edit_link %}
+      <a href="{{ edit_link }}">Edit</a> |
+    {% endif %}
+    {% if invite_admin_link %}
+      <a href="{{ invite_admin_link }}">Invite admin</a> |
+    {% endif %}
+    {% if invite_mentor_link %}
       <a href="{{ invite_mentor_link }}">Invite mentor</a>
-    </span>
-  {% endif %}
+    {% endif %}
+  </div>
 </div>
 
 <div id="organization-home" class="content_column_1">

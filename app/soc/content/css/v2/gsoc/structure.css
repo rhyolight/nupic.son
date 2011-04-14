@@ -438,6 +438,15 @@
   text-align: center;
   cursor: default;
 }
+#main #organization-name {
+  padding: 10px 0;
+}
+#main #organization-name h2 {
+  line-height: 1em;
+}
+#main .org-page-link {
+  margin: 5px 0 0 12px;
+}
 /*////////////////
 
   Footer
@@ -551,6 +560,18 @@
   Projects pages
 
 ////////////////*/
+h2#project-page-student-name {
+  font-size: 21px;
+  font-weight: normal;
+  line-height: 1.3em;
+  margin: 0 0 10px 0;
+}
+.project-edit-link {
+  /* Edit link styling on proposal review page*/
+
+  font-size: 12px;
+  margin: 0 0 15px 0;
+}
 .project-long {
   padding: 15px 15px 0 15px;
 }

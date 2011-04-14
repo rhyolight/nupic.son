@@ -78,14 +78,14 @@ limitations under the License.
 
 <h1 id="project-page-title">
   {{ proposal.title }}
-  {% if update_link and not proposal_ignored %}
-    <span class="action-link">
-      <a href="{{ update_link }}">Update</a>
-    </span>
-  {% endif %}
 </h1>
-<h2 id="project-page-student-name">{{ student_name }}</h2>
-
+<h2 id="project-page-student-name">{{ student_name }}
+{% if update_link and not proposal_ignored %}
+  <div id="edit-page" class="project-edit-link">
+    <a href="{{ update_link }}">Edit proposal</a>
+  </div>
+{% endif %}
+</h2>
 {% if duplicate %}
   {{ duplicate.render }}
 {% endif %}
