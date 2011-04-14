@@ -221,11 +221,15 @@ class OrgHome(RequestHandler):
     current_timeline = timeline_logic.getCurrentTimeline(
         self.data.program_timeline, self.data.org_app)
 
+    r = self.data.redirect
+    program_home_link = r.program().urlOf('gsoc_homepage')
+
     assert isSet(self.data.organization)
     organization = self.data.organization
 
     context = {
         'page_name': '%s - Homepage' % organization.short_name,
+        'program_home_link': program_home_link,
         'organization': organization,
         'contact': Contact(self.data),
         'tags': organization.tags_string(organization.org_tag),

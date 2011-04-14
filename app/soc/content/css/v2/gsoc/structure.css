@@ -95,6 +95,22 @@
   color: #d5620e;
   text-decoration: none;
 }
+#main .block .org-home-readmore {
+  /*read more link in block*/
+
+  background: #dedede;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 25px;
+  padding: 3px 0 3px 9px;
+  text-align: right;
+  font-size: 13px;
+  padding: 3px 10px 3px 9px;
+}
+#main .block .org-home-readmore a {
+  color: #d5620e;
+  text-decoration: none;
+}
 #main .home-block-1 {
   /*how summer of code works*/
 
