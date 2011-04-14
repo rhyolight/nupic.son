@@ -256,6 +256,7 @@
 
     // Hide/Show columns if an extra field is defined and this filter filtered that extra field
     var colModel = list_objects.get(my_index).configuration.colModel;
+
     jQuery.each(colModel, function (col_index, col_object) {
       if (col_object.extra !== undefined) {
         var filters_to_check = col_object.extra;
@@ -270,9 +271,15 @@
         });
         if (filters_matches !== filters_total) {
           colModel[col_index].hidden = true;
+          colModel[col_index].hidedlg = true;
+          // This is needed otherwise hidedlg won't be added to the actual grid
+          thegrid.jqGrid("getColProp", col_object.name).hidedlg = true;
           thegrid.jqGrid("hideCol", col_object.name);
         } else {
           colModel[col_index].hidden = false;
+          colModel[col_index].hidedlg = false;
+          // This is needed otherwise hidedlg won't be added to the actual grid
+          thegrid.jqGrid("getColProp", col_object.name).hidedlg = false;
           thegrid.jqGrid("showCol", col_object.name);
         }
       }
@@ -1169,7 +1176,8 @@
             colnameview: false,
             jqModal: true,
             ShrinkToFit: true,
-            afterSubmitForm: cookie_service.saveCurrentTableConfiguration
+            afterSubmitForm: cookie_service.saveCurrentTableConfiguration,
+            recreateForm: true
           });
           return false;
         },
