@@ -631,3 +631,67 @@
 #form.form-assign-mentor input:hover {
   cursor: pointer;
 }
+#form.form-slot-transfer {
+  /*register form*/
+
+  background: #e1edf5;
+  margin: 0 auto 39px auto;
+  width: 570px;
+}
+#form.form-slot-transfer h2 {
+  /*heading*/
+
+  float: left;
+  font-size: 27px;
+  line-height: 1.8em;
+  margin: 10px 0 0 23px;
+}
+#form.form-slot-transfer h4 {
+  clear: left;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0 0 0 23px;
+  padding: 0 0 10px 5px;
+}
+#form.form-slot-transfer .req {
+  /*required text*/
+
+  color: #d5620e;
+  display: block;
+  float: left;
+  font-size: 10px;
+  font-style: italic;
+  font-weight: bold;
+  margin: 25px 0 0 10px;
+}
+#form.form-slot-transfer fieldset {
+  clear: left;
+  background: #cde5f5;
+  margin: 0 23px 16px 23px;
+  padding: 30px 0 11px 0;
+}
+#form.form-slot-transfer fieldset .row {
+  /*every row*/
+
+  margin: 0 0 6px 11px;
+  width: 497px;
+}
+#form.form-slot-transfer fieldset legend {
+  color: #238bd2;
+  font-size: 18px;
+  line-height: 1.2em;
+  margin: -10px 0 0 0;
+  padding: 0 0 20px 15px;
+}
+#form.form-slot-transfer fieldset legend.rejected {
+  color: red;
+}
+#form.form-slot-transfer fieldset legend.accepted {
+  color: green;
+}
+#form.form-slot-transfer fieldset.nolegend {
+  padding: 11px 0;
+}
+#form.form-slot-transfer .row.button-row {
+  padding: 0 0 28px 28px;
+}
