@@ -25,7 +25,7 @@ __authors__ = [
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 
 
-def getSlotTransferEntityForOrg(org_entity):
+def getSlotTransferEntitiesForOrg(org_entity, limit=1000):
   """Returns the slot transfer entity for the organization.
 
   params:
@@ -37,4 +37,4 @@ def getSlotTransferEntityForOrg(org_entity):
   """
 
   q = GSoCSlotTransfer.all().ancestor(org_entity)
-  return q.get()
+  return q.fetch(limit=limit)
