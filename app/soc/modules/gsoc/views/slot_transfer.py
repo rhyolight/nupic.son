@@ -90,24 +90,34 @@ class SlotTransferPage(RequestHandler):
   def context(self):
     slots = self.data.organization.slots
 
-    slot_transfer_entity = slot_transfer_logic.getSlotTransferEntityForOrg(
-        self.data.organization)
+    forms = []
+    require_new_link = True
+    for ent in self.data.slot_transfer_entities:
+      if self.data.POST:
+        forms.append(SlotTransferForm(slots, self.data.POST,
+                                      instance=ent))
+      else:
+        forms.append(SlotTransferForm(slots,
+                                      instance=ent))
+      if ent.status == 'pending':
+        require_new_link = False
 
-    if self.data.POST:
-      slot_transfer_form = SlotTransferForm(slots, self.data.POST,
-                                            instance=slot_transfer_entity)
-    else:
-      slot_transfer_form = SlotTransferForm(slots,
-                                            instance=slot_transfer_entity)
+    if 'new' in self.data.kwargs:
+      if self.data.POST:
+        forms.append(SlotTransferForm(slots, self.data.POST))
+      else:
+        forms.append(SlotTransferForm(slots))
 
     context = {
         'page_name': 'Transfer slots to pool',
         'form_header_msg': 'Transfer the slots to the pool',
-        'forms': [slot_transfer_form],
+        'forms': forms,
         }
 
-    if slot_transfer_entity:
-      context['status'] = slot_transfer_entity.status
+    if 'new' not in self.data.kwargs and require_new_link:
+      r = self.data.redirect
+      context['new_slot_transfer_page_link'] = r.newSlotTransfer().urlOf(
+          'gsoc_new_slot_transfer')
 
     return context
 
@@ -118,14 +128,18 @@ class SlotTransferPage(RequestHandler):
       a newly created proposal entity or None
     """
 
+    slot_transfer_entity = None
+
     slot_transfer_form = SlotTransferForm(self.data.organization.slots,
                                           self.data.POST)
 
     if not slot_transfer_form.is_valid():
       return None
 
-    slot_transfer_entity = slot_transfer_logic.getSlotTransferEntityForOrg(
-        self.data.organization)
+    for ent in self.data.slot_transfer_entities:
+      if ent.status == 'pending':
+        slot_transfer_entity = ent
+        break
 
     def create_or_update_slot_transfer_trx():
       if slot_transfer_entity:
