@@ -28,9 +28,10 @@ from django import forms as django_forms
 from django.conf.urls.defaults import url
 
 from soc.logic import cleaning
+from soc.logic.exceptions import RedirectRequest
 from soc.views import forms
+from soc.views import readonly_template
 
-from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 
 from soc.modules.gsoc.views.base import RequestHandler
@@ -41,17 +42,12 @@ class SlotTransferForm(forms.ModelForm):
   """Django form for the slot transfer page.
   """
 
-  template_path = 'v2/modules/gsoc/slot_transfer/_form.html'
-
   def __init__(self, max_slots, *args, **kwargs):
     super(SlotTransferForm, self).__init__(*args, **kwargs)
     choices = [('None', self.fields['nr_slots'].label)] + [
         (i, i) for i in range(1, max_slots + 1)]
     self.fields['nr_slots'].widget = django_forms.widgets.Select(
         choices=choices)
-    if self.instance and self.instance.status != 'pending':
-      self.fields['nr_slots'].widget.attrs['disabled'] = 'disabled'
-      self.fields['remarks'].widget.attrs['disabled'] = 'disabled'
 
   class Meta:
     model = GSoCSlotTransfer
@@ -61,14 +57,27 @@ class SlotTransferForm(forms.ModelForm):
   clean_remarks = cleaning.clean_html_content('remarks')
 
 
+class SlotTransferReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
+  """Template to display readonly information from previous requests.
+  """
+
+  template_path = 'v2/modules/gsoc/slot_transfer/_readonly_template.html'
+
+  def __init__(self, counter, *args, **kwargs):
+    super(SlotTransferReadOnlyTemplate, self).__init__(*args, **kwargs)
+    self.counter = counter
+
+  class Meta:
+    model = GSoCSlotTransfer
+    css_prefix = 'gsoc_slot_transfer'
+
+
 class SlotTransferPage(RequestHandler):
   """View for transferring the slots.
   """
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/slots/transfer/%s$' % url_patterns.NEW_SLOT_TRANSFER,
-            self, name='gsoc_new_slot_transfer'),
         url(r'^gsoc/slots/transfer/%s$' % url_patterns.ORG,
             self, name='gsoc_slot_transfer'),
     ]
@@ -81,43 +90,87 @@ class SlotTransferPage(RequestHandler):
     self.check.isOrgAdminForOrganization(self.data.organization)
 
     self.mutator.slotTransferEntities()
-    self.check.slotTransferEntitiesExist()
+    if not self.data.slot_transfer_entities:
+      if 'new' not in self.data.kwargs:
+        r = self.data.redirect
+        new_url = r.organization().urlOf('gsoc_update_slot_transfer')
+        raise RedirectRequest(new_url)
 
 
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer/base.html'
 
   def context(self):
-    slots = self.data.organization.slots
-
-    forms = []
+    requests = []
     require_new_link = True
-    for ent in self.data.slot_transfer_entities:
-      if self.data.POST:
-        forms.append(SlotTransferForm(slots, self.data.POST,
-                                      instance=ent))
-      else:
-        forms.append(SlotTransferForm(slots,
-                                      instance=ent))
+    for i, ent in enumerate(self.data.slot_transfer_entities):
+      requests.append(SlotTransferReadOnlyTemplate(i, instance=ent))
       if ent.status == 'pending':
         require_new_link = False
 
-    if 'new' in self.data.kwargs:
-      if self.data.POST:
-        forms.append(SlotTransferForm(slots, self.data.POST))
-      else:
-        forms.append(SlotTransferForm(slots))
+    context = {
+        'page_name': 'Transfer slots to pool',
+        'requests': requests,
+        }
+
+    r = self.data.redirect.organization()
+    edit_url = r.urlOf('gsoc_update_slot_transfer')
+    if require_new_link:
+      context['new_slot_transfer_page_link'] = edit_url
+    else:
+      context['edit_slot_transfer_page_link'] = edit_url
+
+    return context
+
+
+class UpdateSlotTransferPage(RequestHandler):
+  """View for transferring the slots.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'^gsoc/slots/transfer/update/%s$' % url_patterns.ORG,
+            self, name='gsoc_update_slot_transfer'),
+    ]
+
+  def checkAccess(self):
+    self.check.isLoggedIn()
+    self.check.isProgramActive()
+    self.mutator.organizationFromKwargs()
+    self.check.isOrganizationInURLActive()
+    self.check.isOrgAdminForOrganization(self.data.organization)
+
+    self.mutator.slotTransferEntities()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/slot_transfer/form.html'
+
+  def context(self):
+    slots = self.data.organization.slots
+
+    if self.data.POST:
+      slot_transfer_form = SlotTransferForm(slots, self.data.POST)
+    else:
+      slot_transfer_form = SlotTransferForm(slots)
+
+    for ent in self.data.slot_transfer_entities:
+      if ent.status == 'pending':
+        if self.data.POST:
+          slot_transfer_form = SlotTransferForm(slots, self.data.POST,
+                                                instance=ent)
+        else:
+          slot_transfer_form = SlotTransferForm(slots,
+                                                instance=ent)
 
     context = {
         'page_name': 'Transfer slots to pool',
         'form_header_msg': 'Transfer the slots to the pool',
-        'forms': forms,
+        'forms': [slot_transfer_form],
         }
 
-    if 'new' not in self.data.kwargs and require_new_link:
-      r = self.data.redirect
-      context['new_slot_transfer_page_link'] = r.newSlotTransfer().urlOf(
-          'gsoc_new_slot_transfer')
+    r = self.data.redirect.organization()
+    context['org_home_page_link'] = r.urlOf('gsoc_org_home')
+    context['slot_transfer_page_link'] = r.urlOf('gsoc_slot_transfer')
 
     return context
 
@@ -161,6 +214,6 @@ class SlotTransferPage(RequestHandler):
     slot_transfer_entity = self.createOrUpdateFromForm()
     if slot_transfer_entity:
       self.redirect.organization(self.data.organization)
-      self.redirect.to('gsoc_slot_transfer', validated=True)
+      self.redirect.to('gsoc_update_slot_transfer', validated=True)
     else:
       self.get()

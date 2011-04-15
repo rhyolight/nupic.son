@@ -117,6 +117,7 @@ class Callback(object):
     self.views.append(request.RequestPage())
     self.views.append(request.ShowRequest())
     self.views.append(search.SearchGsocPage())
+    self.views.append(slot_transfer.UpdateSlotTransferPage())
     self.views.append(slot_transfer.SlotTransferPage())
 
     # Appengine Task related views
