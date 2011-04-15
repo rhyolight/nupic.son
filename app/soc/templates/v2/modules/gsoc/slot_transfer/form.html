@@ -1,4 +1,4 @@
-{% extends "v2/modules/gsoc/base.html" %}
+{% extends "v2/modules/gsoc/form_base.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,44 +13,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
-
 {% block page_content %}
-{% if status == "rejected" %}
+{% if form.instance.status == "rejected" %}
   <div id="user-message" class="error">
     <strong>ALERT: </strong>Program administrator has rejected your slot
     transfer request.
   </div>
 {% endif %}
-<h1 id="title-slot-transfer-show">
-  Slot transfer requests
-  {% if update_link %}
-    <span class="action-link">
-      <a href="{{ update_link }}">Update</a>
-    </span>
-  {% endif %}
-</h1>
-
-{% if new_slot_transfer_page_link %}
-  <a class="slot-transfer-readonly" href="{{ new_slot_transfer_page_link }}">
-    Initiate a new slot transfer request
-  </a>
-{% else %}{% if edit_slot_transfer_page_link %}
-  <a class="slot-transfer-readonly" href="{{ edit_slot_transfer_page_link }}">
-    Update pending slot transfer request
-  </a>
-{% endif %}{% endif %}
-
-
-{% for req in requests %}
-  {{ req.render }}
-{% endfor %}
-
-
+{{ block.super }}
 {% endblock page_content %}
+
+
+{% block form_header_msg %}
+  {{ block.super }}
+  <div class="back-links">
+    {% if org_home_page_link %}
+      <a href="{{ org_home_page_link }}">Organization home</a> |
+    {% endif %}
+    {% if slot_transfer_page_link %}
+      <a href="{{ slot_transfer_page_link }}">Transfer requests summary</a>
+    {% endif %}
+  </div>
+{% endblock form_header_msg %}
 
 
 {% block dependencies %}
   [
-    css("/soc/content/{{ app_version }}/css/v2/gsoc/readonly.css")
+    dep.uniform,
+    null,
+    function () {
+      jQuery("select, input:radio, input:file, input:checkbox").uniform();
+    },
   ]
 {% endblock dependencies %}
