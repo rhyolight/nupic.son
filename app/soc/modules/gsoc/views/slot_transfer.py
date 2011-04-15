@@ -49,6 +49,9 @@ class SlotTransferForm(forms.ModelForm):
         (i, i) for i in range(1, max_slots + 1)]
     self.fields['nr_slots'].widget = django_forms.widgets.Select(
         choices=choices)
+    if self.instance and self.instance.status != 'pending':
+      self.fields['nr_slots'].widget.attrs['disabled'] = 'disabled'
+      self.fields['remarks'].widget.attrs['disabled'] = 'disabled'
 
   class Meta:
     model = GSoCSlotTransfer
@@ -67,7 +70,7 @@ class SlotTransferPage(RequestHandler):
         url(r'^gsoc/slots/transfer/%s$' % url_patterns.NEW_SLOT_TRANSFER,
             self, name='gsoc_new_slot_transfer'),
         url(r'^gsoc/slots/transfer/%s$' % url_patterns.ORG,
-         self, name='gsoc_slot_transfer'),
+            self, name='gsoc_slot_transfer'),
     ]
 
   def checkAccess(self):
