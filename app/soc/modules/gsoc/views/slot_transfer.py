@@ -80,6 +80,10 @@ class SlotTransferPage(RequestHandler):
     self.check.isOrganizationInURLActive()
     self.check.isOrgAdminForOrganization(self.data.organization)
 
+    self.mutator.slotTransferEntities()
+    self.check.slotTransferEntitiesExist()
+
+
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer/base.html'
 
