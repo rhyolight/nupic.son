@@ -863,25 +863,3 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise AccessViolation(DEF_NOT_PROPOSER_MSG)
-
-  def slotTransferEntitiesExist(self):
-    """Checks if the current organization has a slot transfer entity.
-
-    If not entity exists, the request is redirected to new slot transfer
-    entity page.
-    """
-    assert isSet(self.data.slot_transfer_entities)
-    r = self.data.redirect
-
-    if not self.data.slot_transfer_entities:
-      if 'new' not in self.data.kwargs:
-        new_url = r.newSlotTransfer().urlOf('gsoc_new_slot_transfer')
-        raise RedirectRequest(new_url)
-    else:
-      if 'new' in self.data.kwargs:
-        for ent in self.data.slot_transfer_entities:
-          if ent.status == 'pending':
-            new_url = r.organization().urlOf('gsoc_slot_transfer')
-            raise RedirectRequest(new_url)
-
-    return
