@@ -172,7 +172,7 @@
     .fieldset-referral {/*referral fieldset*/
         background: none;
         padding: 0;
-        
+
         .row.radio {
             margin: 0 0 6px 35px;
             
@@ -184,6 +184,13 @@
     }
     .row.button-row {
         padding: 0 0 28px 28px;
+    }
+    div.back-links {
+        clear: left;
+        font-size: 12px;
+        font-weight: bold;
+        margin: 0 0 0 23px;
+        padding: 0 0 10px 5px;
     }
 }
 
@@ -470,65 +477,5 @@
         input:hover {
             cursor: pointer;
         }
-    }
-}
-
-#form.form-slot-transfer {/*register form*/
-    background: #e1edf5;
-    margin: 0 auto 39px auto;
-    width: 570px;
-
-    h2 {/*heading*/
-        float: left;
-        font-size: 27px;
-        line-height: 1.8em;
-        margin: 10px 0 0 23px;
-    }
-    h4 {
-        clear: left;
-        font-size: 14px;
-        font-weight: bold;
-        margin: 0 0 0 23px;
-        padding: 0 0 10px 5px;
-    }
-    .req {/*required text*/
-        color: @orange;
-        display: block;
-        float: left;
-        font-size: 10px;
-        font-style: italic;
-        font-weight: bold;
-        margin: 25px 0 0 10px;
-    }
-    fieldset {
-        clear: left;
-        background: #cde5f5;
-        margin: 0 23px 16px 23px;
-        padding: 30px 0 11px 0;
-
-        .row {/*every row*/
-            margin: 0 0 6px 11px;
-            width: 497px;
-        }
-        legend {
-            color: @lightblue;
-            font-size: 18px;
-            line-height: 1.2em;
-            margin: -10px 0 0 0;
-            padding: 0 0 20px 15px;
-
-            &.rejected {
-                color: red;
-            }
-            &.accepted {
-                color: green;
-        }
-        }
-    }
-    fieldset.nolegend {
-        padding: 11px 0;
-    }
-    .row.button-row {
-        padding: 0 0 28px 28px;
     }
 }
