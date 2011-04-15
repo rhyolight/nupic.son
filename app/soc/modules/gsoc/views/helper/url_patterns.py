@@ -78,6 +78,7 @@ _document = ''.join([
     captureLinkId('document'),
 ])
 _mentor_role = r'(?P<role>%s)/' % ("org_admin|mentor")
+_new_slot_transfer = r'(?P<new>%s)/' % ('new')
 
 ID        = namedIdBasedPattern(['sponsor', 'program'])
 SPONSOR   = namedLinkIdPattern(['sponsor'])
@@ -90,3 +91,4 @@ PROPOSAL  = namedIdBasedPattern(['sponsor', 'program'])
 REVIEW    = namedIdBasedPattern(['sponsor', 'program', 'user'])
 ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
 INVITE    = _mentor_role + ORG
+NEW_SLOT_TRANSFER = _new_slot_transfer + ORG

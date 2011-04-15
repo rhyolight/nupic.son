@@ -628,3 +628,8 @@ class RedirectHelper(object):
     self._clear()
     self._url = '/gsoc/student_project/show/%s' % student_project.key().id_or_name()
     return self
+
+  def newSlotTransfer(self):
+    self.organization()
+    self.kwargs['new'] = 'new'
+    return self

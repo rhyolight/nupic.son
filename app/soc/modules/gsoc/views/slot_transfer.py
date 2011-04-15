@@ -62,6 +62,8 @@ class SlotTransferPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
+        url(r'^gsoc/slots/transfer/%s$' % url_patterns.NEW_SLOT_TRANSFER,
+            self, name='gsoc_new_slot_transfer'),
         url(r'^gsoc/slots/transfer/%s$' % url_patterns.ORG,
          self, name='gsoc_slot_transfer'),
     ]
