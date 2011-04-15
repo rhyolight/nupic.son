@@ -204,13 +204,16 @@
       */
     var $m = melange.cookie;
 
+    $m.MELANGE_COOKIE_VERSION = "20110415";
+
     $m.MELANGE_USER_PREFERENCES = "melange_user_preferences";
 
-    $m.getCookie = function (cookie_name) {
-      var default_cookie = {
-        lists_configuration: {}
-      };
+    var cookie_to_save = {
+      version: $m.MELANGE_COOKIE_VERSION,
+      lists_configuration: {}
+    };
 
+    $m.getCookie = function (cookie_name) {
       var cookie = jQuery.cookie(cookie_name);
 
       try {
@@ -220,14 +223,15 @@
         }
       }
       catch(e) {
-        cookie = default_cookie;
+        cookie = cookie_to_save;
       }
 
       return cookie;
     };
 
     $m.saveCookie = function (cookie_name, cookie_content, cookie_expires, cookie_path) {
-      jQuery.cookie(cookie_name,JSON.stringify(cookie_content),{expires: cookie_expires, path: cookie_path});
+      jQuery.extend(cookie_to_save, cookie_content);
+      jQuery.cookie(cookie_name,JSON.stringify(cookie_to_save),{expires: cookie_expires, path: cookie_path});
     };
 
   }());
