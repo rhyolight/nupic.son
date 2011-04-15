@@ -41,6 +41,8 @@ class SlotTransferForm(forms.ModelForm):
   """Django form for the slot transfer page.
   """
 
+  template_path = 'v2/modules/gsoc/slot_transfer/_form.html'
+
   def __init__(self, max_slots, *args, **kwargs):
     super(SlotTransferForm, self).__init__(*args, **kwargs)
     choices = [('None', self.fields['nr_slots'].label)] + [
