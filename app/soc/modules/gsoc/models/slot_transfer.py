@@ -51,10 +51,14 @@ class GSoCSlotTransfer(soc.models.base.ModelWithFieldAttributes):
   #: accepted: program admin accepted the slot transfer
   #: rejected: program admin rejected the request to transfer the slots
   status = db.StringProperty(required=True, default='pending',
-      choices=['pending', 'accepted', 'rejected'])
+      choices=['pending', 'accepted', 'rejected'],
+      verbose_name='Status')
 
   #: date when the proposal was created
-  created_on = db.DateTimeProperty(required=True, auto_now_add=True)
+  created_on = db.DateTimeProperty(required=True, auto_now_add=True,
+                                   verbose_name=ugettext('Created On'))
 
   #: date when the proposal was last modified, should be set manually on edit
-  last_modified_on = db.DateTimeProperty(required=True, auto_now=True)
+  last_modified_on = db.DateTimeProperty(
+      required=True, auto_now=True,
+      verbose_name=ugettext('Last Modified On'))
