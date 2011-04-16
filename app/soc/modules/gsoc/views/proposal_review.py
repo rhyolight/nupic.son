@@ -27,6 +27,7 @@ from google.appengine.ext import db
 
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
+from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
@@ -186,7 +187,15 @@ class CommentForm(forms.ModelForm):
     #css_prefix = 'gsoc_comment'
     fields = ['content']
 
-  clean_content = cleaning.clean_html_content('content')
+  def clean_content(self):
+    field_name = 'content'
+    wrapped_clean_html_content = cleaning.clean_html_content(field_name)
+    content = wrapped_clean_html_content(self)
+    if content:
+      return content
+    else:
+      raise django_forms.ValidationError(
+          ugettext('Comment content cannot be empty.'), code='invalid')
 
 
 class PrivateCommentForm(CommentForm):
