@@ -595,6 +595,70 @@ h2#project-page-student-name {
   line-height: 1.6em;
   margin: 0 0 10px 0;
 }
+.project-long pre {
+  background: none;
+  color: #000;
+  font: 12px/1.5em Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  margin: 0;
+  white-space: normal;
+}
+.project-long pre code {
+  color: #000;
+  display: inline;
+  font: 12px/1.5em Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.project-long strong {
+  font-weight: bold;
+}
+.project-long em {
+  font-style: italic;
+}
+.project-long q {
+  margin-bottom: 10px;
+  border-left: 2px solid #CCCCCC;
+  font-style: normal;
+  margin-left: 2em;
+  padding-left: 1em;
+}
+.project-long blockquote {
+  margin-bottom: 10px;
+}
+.project-long h1,
+.project-long h2,
+.project-long h3,
+.project-long h4,
+.project-long h5,
+.project-long h6 {
+  color: #000;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.project-long h1 {
+  font-size: 20px;
+  line-height: 1.5em;
+}
+.project-long h2 {
+  font-size: 18px;
+  line-height: 1.5em;
+}
+.project-long h3 {
+  font-size: 16px;
+  line-height: 1.5em;
+}
+.project-long h4 {
+  font-size: 14px;
+  line-height: 1.5em;
+}
+.project-long h5 {
+  font-size: 13px;
+  line-height: 1.5em;
+}
+.project-long h6 {
+  font-size: 12px;
+  line-height: 1.5em;
+}
 .project-short {
   background: #fff;
   border: 1px solid #ebebeb;
@@ -794,4 +858,20 @@ p.reply-logged-in a {
 #user-login a {
   font-style: normal;
   font-weight: normal;
+}
+#sort {
+  text-align: right;
+  margin-bottom: 7px;
+  vertical-align: bottom;
+}
+#sort .selector {
+  /* make this class explicitly blank*/
+}
+#sort select {
+  min-width: 0;
+  width: 80px;
+}
+#sort span {
+  width: 45px;
+  text-align: left;
 }

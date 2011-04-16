@@ -588,7 +588,6 @@
         
     }
 
-    
 }
 /*////////////////
 
@@ -613,6 +612,65 @@ h2#project-page-student-name {
     p {
         line-height: 1.6em;
         margin: 0 0 10px 0;
+    }
+    pre {
+        background: none;
+        color: #000;
+        font: 12px/1.5em Arial,'Helvetica Neue',Helvetica,sans-serif;
+        margin: 0;
+        white-space: normal;
+        code {
+            color: #000;
+            display: inline;
+            font: 12px/1.5em Arial,'Helvetica Neue',Helvetica,sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+    }
+    strong {
+        font-weight: bold;
+    }
+    em {
+        font-style: italic;
+    }
+    q {
+        margin-bottom: 10px;
+        border-left: 2px solid #CCCCCC;
+        font-style: normal;
+        margin-left: 2em;
+        padding-left: 1em;
+    }
+    blockquote {
+        margin-bottom: 10px;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #000;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    h1 {
+        font-size: 20px;
+        line-height: 1.5em;
+    }
+    h2 {
+        font-size: 18px;
+        line-height: 1.5em;
+    }
+    h3 {
+        font-size: 16px;
+        line-height: 1.5em;
+    }
+    h4 {
+        font-size: 14px;
+        line-height: 1.5em;
+    }
+    h5 {
+        font-size: 13px;
+        line-height: 1.5em;
+    }
+    h6 {
+        font-size: 12px;
+        line-height: 1.5em;
     }
 }
 
@@ -836,4 +894,18 @@ p.reply-logged-in {
         font-weight: normal;
     }
 }
+#sort {
+    text-align: right;
+    margin-bottom: 7px;
+    vertical-align: bottom;
 
+    .selector {/* make this class explicitly blank*/}
+    select {
+        min-width: 0;
+        width: 80px;
+    }
+    span {
+        width: 45px;
+        text-align: left;
+    }
+}
