@@ -64,7 +64,7 @@ class Dashboard(RequestHandler):
     """The URL pattern for the dashboard.
     """
     return [
-        url(r'^gsoc/dashboard/%s$' %url_patterns.PROGRAM, self,
+        url(r'^gsoc/dashboard/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_dashboard')]
 
   def checkAccess(self):
