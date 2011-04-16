@@ -603,9 +603,9 @@ class PostComment(RequestHandler):
 
     comment = self.createCommentFromForm()
     if comment:
-      self.redirect.review(self.data.proposal.key().id(),
+      self.redirect.program()
+      self.redirect.to('gsoc_dashboard')
                            self.data.proposer.link_id)
-      self.redirect.to('review_gsoc_proposal')
     else:
       # TODO: probably we want to handle an error somehow
       pass
