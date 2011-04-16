@@ -183,12 +183,20 @@ class OrgProfilePage(RequestHandler):
       tags = self.data.organization.tags_string(self.data.organization.org_tag)
       form.fields['tags'].initial = tags
 
-    return {
+    context = {
         'page_name': "Organization profile",
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'forms': [form],
         'error': bool(form.errors),
         }
+
+    r = self.data.redirect.organization()
+    context['org_home_page_link'] = r.urlOf('gsoc_org_home')
+    if (self.data.program.allocations_visible and
+          self.data.timeline.beforeStudentsAnnounced()):
+      context['slot_transfer_page_link'] = r.urlOf('gsoc_slot_transfer')
+
+    return context
 
   def post(self):
     org_profile = self.createOrgProfileFromForm()

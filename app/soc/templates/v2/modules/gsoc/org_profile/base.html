@@ -13,10 +13,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+
+{% block form_header_msg %}
+  {{ block.super }}
+  <div class="back-links">
+    {% if org_home_page_link %}
+      <a href="{{ org_home_page_link }}">Organization home</a>
+    {% endif %}
+    {% if slot_transfer_page_link %}
+      | <a href="{{ slot_transfer_page_link }}">Slot transfer</a>
+    {% endif %}
+  </div>
+{% endblock form_header_msg %}
+
+
 {% block synchronous_scripts %}
   <script type='text/javascript' src="/tiny_mce/tiny_mce.js"></script>
   {{ block.super }}
 {% endblock synchronous_scripts %}
+
+
 {% block dependencies %}
   [
     dep.uniform,
