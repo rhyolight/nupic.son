@@ -17,256 +17,230 @@
 """Tasks related to accepting and rejecting student proposals"""
 
 __authors__ = [
+  '"Lennard de Rijk" <ljvderijk@gmail.com>',
   '"John Westbrook" <johnwestbrook@google.com>',
   ]
 
 
 import logging
-import time
 
-from django import http
+from django.conf.urls.defaults import url
+
 from google.appengine.api import taskqueue
+from google.appengine.ext import db
 from google.appengine.runtime import DeadlineExceededError
 
-from soc.logic import mail_dispatcher
 from soc.logic import dicts
-from soc.tasks.helper import error_handler
+from soc.logic import mail_dispatcher
 from soc.tasks.helper.timekeeper import Timekeeper
 from soc.tasks import responses
 
-from soc.modules.gsoc.logic.models.organization import logic as org_logic
-from soc.modules.gsoc.logic.models.program import logic as program_logic
-from soc.modules.gsoc.logic.models.student_proposal import logic as student_proposal_logic
-from soc.modules.gsoc.logic.models.student_project import logic as student_project_logic
+from soc.modules.gsoc.logic import proposal as proposal_logic
+from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models.program import GSoCProgram
+from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models.proposal import GSoCProposal
 
-
-def getDjangoURLPatterns():
-  """Returns the URL patterns for the tasks in this module
+class ProposalAcceptanceTask:
+  """Request handlers for accepting and rejecting proposals in form of a Task.
   """
 
-  patterns = [
-      (r'tasks/accept_proposals/main$',
-       r'soc.modules.gsoc.tasks.accept_proposals.convert_proposals'),
-      (r'tasks/accept_proposals/accept$',
-       r'soc.modules.gsoc.tasks.accept_proposals.accept_proposals'),
-      (r'tasks/accept_proposals/reject$',
-       r'soc.modules.gsoc.tasks.accept_proposals.reject_proposals')]
+  def djangoURLPatterns(self):
+    """Returns the URL patterns for the tasks in this module
+    """
+    patterns = [
+        url(r'tasks/gsoc/accept_proposals/main$', self.convertProposals),
+        url(r'tasks/gsoc/accept_proposals/accept$', self.acceptProposals),
+        url(r'tasks/gsoc/accept_proposals/reject$', self.rejectProposals)]
+    return patterns
 
-  return patterns
+  def convertProposals(self, request, *args, **kwargs):
+    """Start tasks to convert proposals for all organizations.
 
+    POST Args:
+      program_key: the key of the program whose proposals should be converted
+      org_cursor: the cursor indicating at which org we currently are
+    """
+    params = dicts.merge(request.POST, request.GET)
 
-def convert_proposals(request, *args, **kwargs):
-  """Convert proposals for all organizations.
-
-  POST Args:
-    programkey: the key of the program whose proposals should be converted
-    orgkey: the organization key to start at
-  """
-
-  # Setup an artifical request deadline
-  timelimit = 20000
-  timekeeper = Timekeeper(timelimit)
-
-  # Copy for modification below
-  params = dicts.merge(request.POST, request.GET)
-
-  if "programkey" not in params:
-    logging.error("missing programkey in params: '%s'" % params)
-    return responses.terminateTask()
-
-  program = program_logic.getFromKeyName(params["programkey"])
-
-  if not program:
-    logging.error("invalid programkey in params: '%s'" % params)
-    return responses.terminateTask()
-
-  fields = {
-      "scope": program,
-      "status": "active",
-  }
-
-  # Continue from the next organization
-  if "orgkey" in params:
-    org = org_logic.getFromKeyName(params["orgkey"])
-
-    if not org:
-      logging.error("invalid orgkey in params: '%s'" % params)
+    if 'program_key' not in params:
+      logging.error("missing program_key in params: '%s'" %params)
       return responses.terminateTask()
 
-    fields["__key__ >="] = org
+    program = GSoCProgram.get_by_key_name(params['program_key'])
 
-  # Add a task for each organization
-  org = None
-  try:
-    orgs = org_logic.getQueryForFields(filter=fields)
+    if not program:
+      logging.error("invalid program_key in params: '%s'" %params)
+      return responses.terminateTask()
 
-    for remain, org in timekeeper.iterate(orgs):
-      logging.info("convert %s %s", remain, org.key())
+    q = GSoCOrganization.all()
+    q.filter('scope', program)
+    q.filter('status', 'active')
 
-      # Compound accept/reject taskflow
+    # Continue from the next organization
+    if 'org_cursor' in params:
+      q.with_cursor(params['org_cursor'])
+
+    # Add a task for a single organization
+    org = q.get()
+
+    if org:
+      logging.info('Enqueing task to accept proposals for %s.' %org.name)
+      # Compounded accept/reject taskflow
       taskqueue.add(
-        url = "/tasks/accept_proposals/accept",
+        url = '/tasks/gsoc/accept_proposals/accept',
         params = {
-          "orgkey": org.key().id_or_name(),
-          "timelimit": timelimit,
-          "nextpath": "/tasks/accept_proposals/reject"
+          'org_key': org.key().id_or_name(),
         })
 
-  # Requeue this task for continuation
-  except DeadlineExceededError:
-    if org:
-      params["orgkey"] = org.key().id_or_name()
+      # Enqueue a new task to do the next organization
+      params['org_cursor'] = q.cursor()
+      taskqueue.add(url=request.path, params=params)
 
-    taskqueue.add(url=request.path, params=params)
-
-  # Exit this task successfully
-  return responses.terminateTask()
-
-
-def accept_proposals(request, *args, **kwargs):
-  """Accept proposals for an organization
-  """
-
-  params = request.POST
-
-  # Setup an artifical request deadline
-  timelimit = int(params["timelimit"])
-  timekeeper = Timekeeper(timelimit)
-
-  # Query proposals based on status
-  org = org_logic.getFromKeyName(params["orgkey"])
-  proposals = student_proposal_logic.getProposalsToBeAcceptedForOrg(org)
-
-  # Accept proposals
-  try:
-    for remain, proposal in timekeeper.iterate(proposals):
-      logging.info("accept %s %s %s", remain, org.key(), proposal.key())
-      accept_proposal(proposal)
-      accept_proposal_email(proposal)
-
-  # Requeue this task for continuation
-  except DeadlineExceededError:
-    taskqueue.add(url=request.path, params=params)
+    # Exit this task successfully
     return responses.terminateTask()
 
-  # Reject remaining proposals
-  taskqueue.add(url=params["nextpath"], params=params)
-  return responses.terminateTask()
+  def acceptProposals(self, request, *args, **kwargs):
+    """Accept proposals for an single organization.
 
+    POST Args:
+      org_key: The key of the organization
+    """
+    params = request.POST
 
-def reject_proposals(request, *args, **kwargs):
-  """Reject proposals for an org_logic
-  """
+    # Setup an artifical request deadline
+    timekeeper = Timekeeper(20000)
 
-  params = request.POST
+    # Query proposals based on status
+    org = GSoCOrganization.get_by_key_name(params['org_key'])
+    proposals = proposal_logic.getProposalsToBeAcceptedForOrg(org)
 
-  # Setup an artifical request deadline
-  timelimit = int(params["timelimit"])
-  timekeeper = Timekeeper(timelimit)
+    # Accept proposals
+    try:
+      for remain, proposal in timekeeper.iterate(proposals):
+        logging.info("accept %s %s %s", remain, org.key(), proposal.key())
+        self.acceptProposal(proposal)
+    # Requeue this task for continuation
+    except DeadlineExceededError:
+      taskqueue.add(url=request.path, params=params)
+      return responses.terminateTask()
 
-  # Query proposals
-  org = org_logic.getFromKeyName(params["orgkey"])
-  proposals = reject_proposals_query(org)
+    # Reject remaining proposals
+    taskqueue.add(url='/tasks/gsoc/accept_proposals/reject', params=params)
+    return responses.terminateTask()
 
-  # Reject proposals
-  try:
-    for remain, proposal in timekeeper.iterate(proposals):
-      logging.info("reject %s %s %s", remain, org.key(), proposal.key())
-      reject_proposal(proposal)
-      reject_proposal_email(proposal)
+  def rejectProposals(self, request, *args, **kwargs):
+    """Reject proposals for an single organization.
+    """
+    params = request.POST
 
-  # Requeue this task for continuation
-  except DeadlineExceededError:
-    taskqueue.add(url=request.path, params=params)
+    # Setup an artifical request deadline
+    timekeeper = Timekeeper(20000)
 
-  # Exit this task successfully
-  return responses.terminateTask()
+    # Query proposals
+    org = GSoCOrganization.get_by_key_name(params['org_key'])
+    q = GSoCProposal.all()
+    q.filter('org', org)
+    q.filter('status', 'pending')
 
+    # Reject proposals
+    try:
+      for remain, proposal in timekeeper.iterate(q):
+        logging.info("reject %s %s %s", remain, org.key(), proposal.key())
+        self.rejectProposal(proposal)
+    # Requeue this task for continuation
+    except DeadlineExceededError:
+      taskqueue.add(url=request.path, params=params)
+  
+    # Exit this task successfully
+    return responses.terminateTask()
 
-# Logic below ported from student_proposal_mailer.py
-def accept_proposal_email(proposal):
-  """Send an acceptance mail for the specified proposal.
-  """
+  # Logic below ported from student_proposal_mailer.py
+  def getAcceptProposalMailTxn(self, proposal):
+    """Returns the function to sent an acceptance mail for the specified
+    proposal.
+    """
+    sender_name, sender = mail_dispatcher.getDefaultMailSender()
 
-  sender_name, sender = mail_dispatcher.getDefaultMailSender()
+    student_entity = proposal.parent()
+    program_entity = proposal.program
 
-  student_entity = proposal.scope
-  program_entity = proposal.program
+    context = {
+      'to': student_entity.email,
+      'to_name': student_entity.given_name,
+      'sender': sender,
+      'sender_name': sender_name,
+      'program_name': program_entity.name,
+      'subject': 'Congratulations!',
+      'proposal_title': proposal.title,
+      'org_name': proposal.org.name
+      }
 
-  context = {
-    'to': student_entity.email,
-    'to_name': student_entity.given_name,
-    'sender': sender,
-    'sender_name': sender_name,
-    'program_name': program_entity.name,
-    'subject': 'Congratulations!',
-    'proposal_title': proposal.title,
-    'org_name': proposal.org.name
-    }
+    template = 'modules/gsoc/student_proposal/mail/accepted_gsoc2010.html'
+    return mail_dispatcher.getSendMailFromTemplateTxn(template, context,
+                                                      parent=proposal.parent())
 
-  template = 'modules/gsoc/student_proposal/mail/accepted_gsoc2010.html'
-  mail_dispatcher.sendMailFromTemplate(template, context)
+  def getRejectProposalMailTxn(self, proposal):
+    """Returns the function to sent an rejectance mail for the specified
+    proposal.
+    """
+    sender_name, sender = mail_dispatcher.getDefaultMailSender()
 
+    student_entity = proposal.parent()
+    program_entity = proposal.program
 
-def reject_proposal_email(proposal):
-  """Send an reject mail for the specified proposal.
-  """
+    context = {
+      'to': student_entity.email,
+      'to_name': student_entity.given_name,
+      'sender': sender,
+      'sender_name': sender_name,
+      'program_name': program_entity.name,
+      'subject': 'Thank you for applying to %s' % (program_entity.name)
+      }
 
-  sender_name, sender = mail_dispatcher.getDefaultMailSender()
+    template = 'modules/gsoc/student_proposal/mail/rejected_gsoc2010.html'
+    return mail_dispatcher.getSendMailFromTemplateTxn(template, context,
+                                                      parent=proposal.parent())
 
-  student_entity = proposal.scope
-  program_entity = proposal.program
+  def acceptProposal(self, proposal):
+    """Accept a single proposal.
 
-  context = {
-    'to': student_entity.email,
-    'to_name': student_entity.given_name,
-    'sender': sender,
-    'sender_name': sender_name,
-    'program_name': program_entity.name,
-    'subject': 'Thank you for applying to %s' % (program_entity.name)
-    }
+    Args:
+      proposal: The GSoCProposal entity to accept.
+    """
+    fields = {
+      'org': proposal.org,
+      'program': proposal.program,
+      'title': proposal.title,
+      'abstract': proposal.abstract,
+      'mentor': proposal.mentor,
+      }
+    student_profile = proposal.parent()
+    project = GSoCProject(parent=student_profile, **fields)
 
-  template = 'modules/gsoc/student_proposal/mail/rejected_gsoc2010.html'
-  mail_dispatcher.sendMailFromTemplate(template, context)
+    mail_txn = self.getAcceptProposalMailTxn(proposal)
 
+    def acceptProposalTxn():
+      """Transaction that puts the new project, sets the proposal to accepted
+      and mails the lucky student.
+      """
+      db.put(project)
+      proposal.status = 'accepted'
+      db.put(proposal)
+      mail_txn()
 
-# Logic below ported from scripts/stats.py
-def accept_proposal(proposal):
-  """Accept a single proposal.
-  """
+    db.RunInTransaction(acceptProposalTxn)
 
-  fields = {
-    'link_id': 't%i' % (int(time.time()*100)),
-    'scope_path': proposal.org.key().id_or_name(),
-    'scope': proposal.org,
-    'program': proposal.program,
-    'student': proposal.scope,
-    'title': proposal.title,
-    'abstract': proposal.abstract,
-    'mentor': proposal.mentor,
-    }
+  def rejectProposal(self, proposal):
+    """Reject a single proposal.
+    """
+    mail_txn = self.getRejectProposalMailTxn(proposal)
 
-  project = student_project_logic.updateOrCreateFromFields(fields, silent=True)
+    def rejectProposalTxn():
+      """Transaction that sets the proposal to rejected and mails the student.
+      """
+      proposal.status = 'rejected'
+      db.put(proposal)
+      mail_txn()
 
-  fields = {'status':'accepted'}
-  student_proposal_logic.updateEntityProperties(proposal, fields, silent=True)
-
-
-def reject_proposal(proposal):
-  """Reject a single proposal.
-  """
-
-  fields = {'status':'rejected'}
-  student_proposal_logic.updateEntityProperties(proposal, fields, silent=True)
-
-
-def reject_proposals_query(org):
-  """Query proposals to reject
-  """
-
-  fields = {
-    'status': ['new', 'pending'],
-    'org': org,
-    }
-
-  return student_proposal_logic.getQueryForFields(fields)
+    db.RunInTransaction(rejectProposalTxn)

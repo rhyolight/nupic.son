@@ -24,7 +24,6 @@ __authors__ = [
 
 from soc.views.models import role
 from soc.modules.gsoc.logic.models import program as program_logic
-from soc.modules.gsoc.tasks import accept_proposals
 from soc.modules.gsoc.tasks import org_app_survey as org_app_survey_tasks
 from soc.modules.gsoc.tasks import program_freezer
 from soc.modules.gsoc.tasks import slot_assignment
@@ -121,8 +120,11 @@ class Callback(object):
     self.views.append(slot_transfer.SlotTransferPage())
 
     # Appengine Task related views
+    from soc.modules.gsoc.tasks.accept_proposals import \
+        ProposalAcceptanceTask
     from soc.modules.gsoc.tasks.proposal_duplicates import \
         ProposalDuplicatesTask
+    self.views.append(ProposalAcceptanceTask())
     self.views.append(ProposalDuplicatesTask())
 
   def registerWithSitemap(self):
@@ -157,7 +159,6 @@ class Callback(object):
     # register the GSoC Tasks
     self.core.registerSitemapEntry(org_app_survey_tasks.getDjangoURLPatterns())
     self.core.registerSitemapEntry(program_freezer.getDjangoURLPatterns())
-    self.core.registerSitemapEntry(accept_proposals.getDjangoURLPatterns())
     self.core.registerSitemapEntry(proposal_review.getDjangoURLPatterns())
     self.core.registerSitemapEntry(slot_assignment.getDjangoURLPatterns())
 

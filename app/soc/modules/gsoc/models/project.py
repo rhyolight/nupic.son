@@ -27,7 +27,6 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 import soc.models.base
-import soc.models.linkable
 import soc.models.program
 import soc.models.role
 import soc.models.organization
@@ -98,7 +97,7 @@ class GSoCProject(soc.models.base.ModelWithFieldAttributes):
   #: manual changes in GradingRecords occur.
   failed_evaluations = db.ListProperty(item_type=db.Key, default=[])
 
-  #: Student which this project is from
+  #: Organization which this project is in
   org = db.ReferenceProperty(
       reference_class=soc.models.organization.Organization,
       required=True, collection_name='student_projects')
