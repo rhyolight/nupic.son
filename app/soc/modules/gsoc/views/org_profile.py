@@ -162,31 +162,25 @@ class OrgProfilePage(RequestHandler):
 
     if 'organization' in self.data.kwargs:
       self.check.isProfileActive()
-      key_name = '%s/%s/%s' % (
-          self.data.kwargs['sponsor'],
-          self.data.kwargs['program'],
-          self.data.kwargs['organization']
-          )
-      self.data.org = GSoCOrganization.get_by_key_name(key_name)
-      if not self.data.org:
-        NotFound('Organization does not exist.')
-      self.check.isOrgAdminForOrganization(self.data.org)
+      self.mutator.organizationFromKwargs()
+      self.check.isOrgAdminForOrganization(self.data.organization)
       #probably check if the org is active
     else:
-      self.data.org = None
+      self.data.organization = None
       self.check.fail("Org creation is not supported at this time")
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_profile/base.html'
 
   def context(self):
-    if not self.data.org:
+    if not self.data.organization:
       form = OrgCreateProfileForm(self.data.POST or None)
     else:
-      form = OrgProfileForm(self.data.POST or None, instance=self.data.org)
+      form = OrgProfileForm(self.data.POST or None,
+                            instance=self.data.organization)
 
-    if self.data.org.org_tag:
-      tags = self.data.org.tags_string(self.data.org.org_tag)
+    if self.data.organization.org_tag:
+      tags = self.data.organization.tags_string(self.data.organization.org_tag)
       form.fields['tags'].initial = tags
 
     return {
@@ -221,15 +215,15 @@ class OrgProfilePage(RequestHandler):
       a newly created organization entity or None
     """
 
-    if self.data.org:
-      form = OrgProfileForm(self.data.POST, instance=self.data.org)
+    if self.data.organization:
+      form = OrgProfileForm(self.data.POST, instance=self.data.organization)
     else:
       form = OrgCreateProfileForm(self.data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.org:
+    if not self.data.organization:
       form.cleaned_data['founder'] = self.data.user
       form.cleaned_data['scope'] = self.data.program
       form.cleaned_data['scope_path'] = self.data.program.key().name() 
