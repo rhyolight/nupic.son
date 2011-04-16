@@ -694,7 +694,16 @@ h2#project-page-student-name {
     overflow: hidden;
     padding: 0 0 0 18px;
 
-    .score-average {
+    .score-cumulative {
+        margin-left: 50px;
+
+        .score-cumulative-edit {
+            font-weight: bold;
+            line-height: 1em;
+            margin: 5px 0 0 0;
+        }
+    }
+    .score-average, .score-cumulative {
         float: left;
 
         em {
@@ -772,6 +781,11 @@ h2#project-page-student-name {
             overflow: hidden;
             padding: 15px;
 
+            .project-comment-score {
+                color: #4d4d4d;
+                font-style: italic;
+                margin: 0 0 3px 0;
+            }
             .project-comment-meta {
                 margin: 0 0 3px 0;
 
