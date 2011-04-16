@@ -676,10 +676,18 @@ h2#project-page-student-name {
   overflow: hidden;
   padding: 0 0 0 18px;
 }
-.score .score-average {
+.score .score-cumulative {
+  margin-left: 50px;
+}
+.score .score-cumulative .score-cumulative-edit {
+  font-weight: bold;
+  line-height: 1em;
+  margin: 5px 0 0 0;
+}
+.score .score-average, .score .score-cumulative {
   float: left;
 }
-.score .score-average em {
+.score .score-average em, .score .score-cumulative em {
   color: #989898;
   font-size: 11px;
   font-weight: bold;
@@ -750,6 +758,11 @@ h2#project-page-student-name {
   margin: 0 0 15px 0;
   overflow: hidden;
   padding: 15px;
+}
+.project-comment-container .project-comment-box .project-comment-single .project-comment-score {
+  color: #4d4d4d;
+  font-style: italic;
+  margin: 0 0 3px 0;
 }
 .project-comment-container .project-comment-box .project-comment-single .project-comment-meta {
   margin: 0 0 3px 0;
