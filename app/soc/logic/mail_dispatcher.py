@@ -101,11 +101,32 @@ def sendMailFromTemplate(template, context):
   sendMail(dicts.filter(context, mail.EmailMessage.PROPERTIES))
 
 
-def sendMail(context):
+def getSendMailFromTemplateTxn(template, context, parent=None):
+  """Returns a method that is safe to be run in a transaction to sent out an
+     email using a Django template.
+
+  See sendMailFromTemplate() for more information.
+
+  Args:
+    parent: The parent entity to use for the transaction.
+  """
+  # render the template and put in context with 'html' as key
+  context['html'] = loader.render_to_string(template, dictionary=context)
+
+  # filter out the unneeded values in context to keep sendMail happy
+  return sendMail(dicts.filter(context, mail.EmailMessage.PROPERTIES),
+                  parent=parent, run=False)
+
+
+def sendMail(context, parent=None, run=True):
   """Sends out an email using context to supply the needed information.
 
   Args:
-    context : The context supplied to the email message (dictionary)
+    context: The context supplied to the email message (dictionary)
+    parent: The parent entity to use for when this mail is to be sent in a
+            transaction.
+    run: If true the mail will be sent otherwise the function that can sent
+         the mail will be returned.
 
   Raises:
     Error that corresponds with the first problem it finds iff the message
@@ -122,8 +143,11 @@ def sendMail(context):
   if not system.isLocal() and system.isDebug():
     return
 
-  txn = mailer.getSpawnMailTaskTxn(context)
-  db.RunInTransaction(txn)
+  txn = mailer.getSpawnMailTaskTxn(context=context, parent=parent)
+  if run:
+    return db.RunInTransaction(txn)
+  else:
+    return txn
 
 
 def getDefaultMailSender():
