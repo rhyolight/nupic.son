@@ -94,6 +94,11 @@ DEF_IS_STUDENT_MSG = ugettext(
 DEF_NO_DOCUMENT = ugettext(
     'The document was not found')
 
+DEF_NO_SLOT_TRANSFER_MSG_FMT = ugettext(
+    'This page is inaccessible at this time. It is accessible only after '
+    'the program administrator has made the slot allocations available and '
+    'before %s')
+
 DEF_NO_SUCH_PROGRAM_MSG = ugettext(
     'The url is wrong (no program was found).')
 
@@ -863,3 +868,16 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise AccessViolation(DEF_NOT_PROPOSER_MSG)
+
+  def isSlotTransferActive(self):
+    """Checks if the slot transfers are active at the time.
+    """
+    assert isSet(self.data.program)
+    assert isSet(self.data.timeline)
+
+    if (self.data.program.allocations_visible and
+        self.data.timeline.beforeStudentsAnnounced()):
+      return
+
+    raise AccessViolation(DEF_NO_SLOT_TRANSFER_MSG_FMT % (
+        self.data.timeline.studentsAnnouncedOn()))

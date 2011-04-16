@@ -165,6 +165,9 @@ class TimelineHelper(object):
   def mentorSignup(self):
     return self.programActiveBetween() and self.orgsAnnounced()
 
+  def beforeStudentsAnnounced(self):
+    return isBefore(self.studentsAnnouncedOn())
+
 
 class RequestData(RequestData):
   """Object containing data we query for each request in the GSoC module.
