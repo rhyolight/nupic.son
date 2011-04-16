@@ -89,13 +89,13 @@ class SlotTransferPage(RequestHandler):
     self.check.isOrganizationInURLActive()
     self.check.isOrgAdminForOrganization(self.data.organization)
 
+    self.check.isSlotTransferActive()
     self.mutator.slotTransferEntities()
     if not self.data.slot_transfer_entities:
       if 'new' not in self.data.kwargs:
         r = self.data.redirect
         new_url = r.organization().urlOf('gsoc_update_slot_transfer')
         raise RedirectRequest(new_url)
-
 
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer/base.html'
@@ -113,12 +113,14 @@ class SlotTransferPage(RequestHandler):
         'requests': requests,
         }
 
-    r = self.data.redirect.organization()
-    edit_url = r.urlOf('gsoc_update_slot_transfer')
-    if require_new_link:
-      context['new_slot_transfer_page_link'] = edit_url
-    else:
-      context['edit_slot_transfer_page_link'] = edit_url
+    if (self.data.program.allocations_visible and
+        self.data.timeline.beforeStudentsAnnounced()):
+      r = self.data.redirect.organization()
+      edit_url = r.urlOf('gsoc_update_slot_transfer')
+      if require_new_link:
+        context['new_slot_transfer_page_link'] = edit_url
+      else:
+        context['edit_slot_transfer_page_link'] = edit_url
 
     return context
 
@@ -140,6 +142,7 @@ class UpdateSlotTransferPage(RequestHandler):
     self.check.isOrganizationInURLActive()
     self.check.isOrgAdminForOrganization(self.data.organization)
 
+    self.check.isSlotTransferActive()
     self.mutator.slotTransferEntities()
 
   def templatePath(self):
