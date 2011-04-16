@@ -21,6 +21,18 @@ limitations under the License.
 
 {% block page_content %}
 
+{% if posted %}
+  {% if comment_box.form.errors %}
+    <div id="flash-message" class="flash-error">
+    <p>Sorry, we could not save your comment. Please fix the errors mentioned
+    in the comment form below and submit the form again to save.</p>
+  {% else %}
+    <div id="flash-message" class="flash-success">
+    <p>Data saved successfully.</p>
+  {% endif %}
+  </div>
+{% endif %}
+
 <!-- Proposal Ignored banner -->
 {% if proposal_ignored %}
   <div id="user-message" class="error">

@@ -25,6 +25,7 @@ __authors__ = [
 
 from google.appengine.ext import db
 
+from django.core.urlresolvers import resolve
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
 from django import forms as django_forms
@@ -438,9 +439,9 @@ class ReviewProposal(RequestHandler):
 
           context['assign_mentor'] = AssignMentorFields(self.data)
 
-      form = PrivateCommentForm()
+      form = PrivateCommentForm(self.data.POST or None)
     else:
-      form = CommentForm()
+      form = CommentForm(self.data.POST or None)
 
     comment_box = {
         'action': comment_action,
@@ -544,6 +545,7 @@ class PostComment(RequestHandler):
     self.check.isProgramActive()
     self.check.isProfileActive()
     self.mutator.proposalFromKwargs()
+    self.mutator.commentVisible()
     assert isSet(self.data.proposer)
     assert isSet(self.data.proposal_org)
 
@@ -605,10 +607,18 @@ class PostComment(RequestHandler):
     if comment:
       self.redirect.program()
       self.redirect.to('gsoc_dashboard')
-                           self.data.proposer.link_id)
     else:
-      # TODO: probably we want to handle an error somehow
-      pass
+      # This is an insanely and absolutely hacky solution. We definitely
+      # do not want any one to use this a model for writing code elsewhere
+      # in Melange.
+      # TODO (Madhu): Replace this in favor of PJAX for loading comments.
+      r = self.redirect.review(self.data.proposal.key().id(),
+                           self.data.proposer.link_id)
+      redirect_url = r.urlOf('review_gsoc_proposal')
+      proposal_match = resolve(redirect_url)
+      proposal_view = proposal_match[0]
+      self.request.method = 'GET'
+      self.response = proposal_view(self.request, *self.args, **self.kwargs)
 
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
