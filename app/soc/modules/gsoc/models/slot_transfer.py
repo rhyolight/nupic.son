@@ -28,10 +28,17 @@ from django.utils.translation import ugettext
 
 import soc.models.base
 
+import soc.modules.gsoc.models.program
 
 class GSoCSlotTransfer(soc.models.base.ModelWithFieldAttributes):
   """Model that stores the organization has decided to give up.
   """
+
+  #: The program to which this slot transfer request belongs to
+  program = db.ReferenceProperty(
+      reference_class=soc.modules.gsoc.models.program.GSoCProgram,
+      required=True,
+      collection_name='slot_transfers')
 
   #: The number of slots the organization has decided to give up
   nr_slots = db.IntegerProperty(
@@ -53,6 +60,13 @@ class GSoCSlotTransfer(soc.models.base.ModelWithFieldAttributes):
   status = db.StringProperty(required=True, default='pending',
       choices=['pending', 'accepted', 'rejected'],
       verbose_name='Status')
+
+  #: Remarks given by the admin when accepting or rejecting
+  admin_remarks = db.StringProperty(
+      required=False, verbose_name=ugettext('Admin remarks'))
+  admin_remarks.help_text = ugettext(
+      'Remarks from the admin explaning why the slot transfer request '
+      'was accepted or rejected or what more information is needed.')
 
   #: date when the proposal was created
   created_on = db.DateTimeProperty(required=True, auto_now_add=True,
