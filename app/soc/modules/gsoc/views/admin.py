@@ -115,6 +115,8 @@ class DashboardPage(RequestHandler):
         'page_name': 'Admin dashboard',
         'lookup_link': r.urlOf('lookup_gsoc_profile'),
         'slots_link': r.urlOf('gsoc_slots'),
+        'slots_transfer_link': r.urlOf('gsoc_admin_slots_transfer'),
+        'duplicates_link': r.urlOf('gsoc_view_duplicates'),
         'program_link': r.urlOf('edit_gsoc_program'),
         'timeline_link': r.urlOf('edit_gsoc_timeline'),
     }
