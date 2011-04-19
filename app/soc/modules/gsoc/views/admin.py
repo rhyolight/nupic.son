@@ -184,7 +184,7 @@ class SlotsList(Template):
     list_config.setColumnEditable('note', True) #, edittype='textarea')
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
-    list_config.addPostEditButton('save', "Save", "", [])
+    list_config.addPostEditButton('save', "Save", "", [], refresh="none")
 
     self._list_config = list_config
 
