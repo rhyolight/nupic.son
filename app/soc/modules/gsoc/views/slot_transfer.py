@@ -52,7 +52,8 @@ class SlotTransferForm(forms.ModelForm):
   class Meta:
     model = GSoCSlotTransfer
     css_prefix = 'gsoc_slot_transfer'
-    exclude = ['status', 'created_on', 'last_modified_on']
+    exclude = ['status', 'created_on', 'last_modified_on',
+               'program', 'admin_remarks']
 
   clean_remarks = cleaning.clean_html_content('remarks')
 
@@ -70,6 +71,7 @@ class SlotTransferReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
   class Meta:
     model = GSoCSlotTransfer
     css_prefix = 'gsoc_slot_transfer'
+    exclude = ['program']
 
 
 class SlotTransferPage(RequestHandler):
