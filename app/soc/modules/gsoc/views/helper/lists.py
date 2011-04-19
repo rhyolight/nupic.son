@@ -103,7 +103,7 @@ class ListConfiguration(object):
                  end user.
       hidden: Whether the column should be displayed by default.
     """
-    func = lambda e, *args: e.key().id_or_name()
+    func = lambda e, *args: str(e.key().id_or_name())
     self.addColumn('key', 'Key', func, hidden=True)
 
   def setDefaultPagination(self, row_num, row_list=None):
