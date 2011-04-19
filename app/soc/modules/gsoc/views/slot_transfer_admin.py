@@ -71,7 +71,7 @@ class SlotsTransferAdminList(Template):
         (lambda e, *args: e.parent().max_slots_desired), width=25, hidden=True)
     list_config.addColumn(
         'slots', 'Slots',
-        (lambda e, *args: e.parent().max_slots_desired), width=50, hidden=True)
+        (lambda e, *args: e.parent().slots), width=50, hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('org')
     list_config.addPostEditButton('save', "Save", "",
