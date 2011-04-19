@@ -194,6 +194,8 @@ class UpdateSlotTransferPage(RequestHandler):
     if not slot_transfer_form.is_valid():
       return None
 
+    slot_transfer_form.cleaned_data['program'] = self.data.program
+
     for ent in self.data.slot_transfer_entities:
       if ent.status == 'pending':
         slot_transfer_entity = ent
