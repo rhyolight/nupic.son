@@ -49,6 +49,10 @@ class SlotsTransferAdminList(Template):
     self.data = data
 
     list_config = lists.ListConfiguration()
+    # hidden key
+    list_config.addColumn(
+        'full_transfer_key', 'Full slot transfer key',
+        (lambda ent, *args: str(ent.key())), hidden=True)
     list_config.addColumn(
         'org', 'Organization',
         (lambda e, *args: e.parent().short_name.strip()), width=75)
@@ -70,10 +74,11 @@ class SlotsTransferAdminList(Template):
         (lambda e, *args: e.parent().max_slots_desired), width=50, hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('org')
-    list_config.addPostEditButton('save', "Save", "", [], refresh="none")
+    list_config.addPostEditButton('save', "Save", "",
+                                  ['full_transfer_key'], refresh="none")
 
     bounds = [1,'all']
-    keys = ['key']
+    keys = ['key', 'full_transfer_key']
     list_config.addPostButton('accept', "Accept", "", bounds, keys)
     list_config.addPostButton('reject', "Reject", "", bounds, keys)
 
@@ -115,13 +120,13 @@ class SlotsTransferAdminList(Template):
 
   def postAccept(self, data, accept):
     for properties in data:
-      if 'key' not in properties:
+      if 'full_transfer_key' not in properties:
         logging.warning("Missing key in '%s'" % properties)
         continue
-      slot_transfer_key = properties['key']
+
+      slot_transfer_key = properties['full_transfer_key']
       def accept_slot_transfer_txn():
-        slot_transfer = db.get(db.Key.from_path('GSoCSlotTransfer',
-                                                slot_transfer_key))
+        slot_transfer = db.get(slot_transfer_key)
 
         if not slot_transfer:
           logging.warning("Invalid slot_transfer_key '%s'" % 
@@ -143,6 +148,13 @@ class SlotsTransferAdminList(Template):
     for key_name, properties in parsed.iteritems():
       admin_remarks = properties.get('admin_remarks')
       nr_slots = properties.get('nr_slots')
+      full_transfer_key = properties.get('full_transfer_key')
+
+      if not full_transfer_key:
+        logging.warning(
+            "key for the slot transfer request is not present '%s'" %
+            properties)
+        continue
 
       if 'admin_remarks' not in properties and 'nr_slots' not in properties:
         logging.warning(
@@ -158,7 +170,7 @@ class SlotsTransferAdminList(Template):
           nr_slots = int(nr_slots)
 
       def update_org_txn():
-        slot_transfer = GSoCSlotTransfer.get_by_key_name(key_name)
+        slot_transfer =  db.get(full_transfer_key)
         if not slot_transfer:
           logging.warning("Invalid slot_transfer_key '%s'" % key_name)
           return
