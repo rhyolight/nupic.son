@@ -133,9 +133,31 @@ class SlotsTransferAdminList(Template):
                           slot_transfer_key)
           return
 
+        org = slot_transfer.parent()
+        if not org:
+          logging.warning("No organization present for the slot transfer %s" %
+                          slot_transfer_key)
+          return
+
         if accept:
+          if slot_transfer.status == 'accepted':
+            return
+
           slot_transfer.status = 'accepted'
+
+          if slot_transfer.nr_slots < 0:
+            logging.warning("Trying to trick us to gain more slots "
+                "by using negative number %s" % slot_transfer.nr_slots)
+            return
+
+          org.slots -= slot_transfer.nr_slots
+          if org.slots < 0:
+            org.slots = 0
+
+          org.put()
         else:
+          if slot_transfer.status == 'rejected':
+            return
           slot_transfer.status = 'rejected'
         slot_transfer.put()
 
