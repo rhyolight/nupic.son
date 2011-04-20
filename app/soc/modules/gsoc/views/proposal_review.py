@@ -705,8 +705,10 @@ class PostScore(RequestHandler):
     db.run_in_transaction(update_score_trx)
 
   def post(self):
-    value = int(self.data.POST['value'])
-    self.createOrUpdateScore(value)
+    value_str = self.data.POST.get('value', '')
+    if value_str and value_str.isdigit():
+      value = int(value_str)
+      self.createOrUpdateScore(value)
 
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
