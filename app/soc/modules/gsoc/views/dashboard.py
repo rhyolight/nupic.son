@@ -732,6 +732,7 @@ class SubmittedProposalsComponent(Component):
     # Hold all duplicates for either the entire program or the orgs of the user.
     duplicates = []
     dupQ = GSoCProposalDuplicate.all()
+    dupQ.filter('is_duplicate', True)
 
     q = GSoCProposal.all()
     if not self.data.is_host:
