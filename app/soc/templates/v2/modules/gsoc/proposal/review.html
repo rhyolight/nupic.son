@@ -33,6 +33,10 @@ limitations under the License.
   </div>
 {% endif %}
 
+{% if duplicate %}
+  {{ duplicate.render }}
+{% endif %}
+
 <!-- Proposal Ignored banner -->
 {% if proposal_ignored %}
   <div id="user-message" class="error">
@@ -98,9 +102,6 @@ limitations under the License.
   </div>
 {% endif %}
 </h2>
-{% if duplicate %}
-  {{ duplicate.render }}
-{% endif %}
 
 {{ publicly_visible_button.render }}
 
@@ -197,8 +198,6 @@ limitations under the License.
   dep.uniform,
   dep.jqueryui.dialog,
   null,
-  css("/soc/content/{{ app_version }}/css/v2/gsoc/tables.css"),
-  css("/soc/content/{{ app_version }}/css/v2/gsoc/proposal.css"),
   {% if scoring_visible %}
   dep.raty,
   {% endif %}
