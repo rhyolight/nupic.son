@@ -58,7 +58,8 @@ class SlotsTransferAdminList(Template):
         (lambda e, *args: e.parent().short_name.strip()), width=75)
     options = [('', 'All'), ('pending', 'Pending'),
                ('accepted', 'Accepted'), ('rejected', 'Rejected')]
-    list_config.addSimpleColumn('status', 'Status', width=25, options=options)
+    list_config.addSimpleColumn('status', 'Status', width=40, options=options)
+    list_config.addSimpleColumn('remarks', 'Remarks', width=75)
     list_config.addSimpleColumn('nr_slots', 'Returned slots', width=50)
     list_config.setColumnEditable('nr_slots', True)
     list_config.addSimpleColumn('admin_remarks', 'Admin remarks')
