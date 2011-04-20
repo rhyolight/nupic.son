@@ -496,10 +496,13 @@ class SubmittedProposalsComponent(Component):
             return """<strong><font color="red">Duplicate</font></strong>"""
           elif proposal.key() in accepted:
             return """<strong><font color="green">Pending acceptance</font><strong>"""
+          elif proposal.accept_as_project:
+            return """<strong><font color="red">No mentor assigned</font></strong>"""
       # not showing duplicates or proposal doesn't have an interesting state
       return proposal.status
     options = [
-        ('(pending|accepted|rejected|duplicate)', 'Valid'),
+        ('(pending|accepted|rejected|duplicate|mentor)', 'Valid'),
+        ('(duplicate|mentor)', 'Needs attention'),
         ('', 'All'),
         ('(invalid|withdrawn|ignored)', 'Invalid'),
     ]
