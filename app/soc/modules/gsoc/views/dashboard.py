@@ -492,12 +492,13 @@ class SubmittedProposalsComponent(Component):
       """Method for determining which status to show on the dashboard.
       """
       if proposal.status == 'pending' and self.data.program.duplicates_visible:
-          if proposal.key() in duplicates:
+          if proposal.accept_as_project and (
+              not GSoCProposal.mentor.get_value_for_datastore(proposal)):
+            return """<strong><font color="red">No mentor assigned</font></strong>"""
+          elif proposal.key() in duplicates:
             return """<strong><font color="red">Duplicate</font></strong>"""
           elif proposal.key() in accepted:
             return """<strong><font color="green">Pending acceptance</font><strong>"""
-          elif proposal.accept_as_project:
-            return """<strong><font color="red">No mentor assigned</font></strong>"""
       # not showing duplicates or proposal doesn't have an interesting state
       return proposal.status
     options = [
