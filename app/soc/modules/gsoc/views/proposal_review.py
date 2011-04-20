@@ -706,9 +706,8 @@ class PostScore(RequestHandler):
 
   def post(self):
     value_str = self.data.POST.get('value', '')
-    if value_str and value_str.isdigit():
-      value = int(value_str)
-      self.createOrUpdateScore(value)
+    value = int(value_str) if value_str.isdigit() else None
+    self.createOrUpdateScore(value)
 
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
