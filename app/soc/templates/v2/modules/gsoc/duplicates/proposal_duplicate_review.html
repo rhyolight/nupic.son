@@ -12,37 +12,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
-<div class="duplicate-message">
-  <p>
-    This student is likely to be accepted by
-    {% if orgs|length == 1 %}
-      another organization.
-    {% else %}{% if orgs|length > 1 %}
-      other organizations.
-    {% endif %}{% endif %}
-    Please use the contact information of the
-    {% if orgs|length == 1 %}
-      corresponding organization
-    {% else %}{% if orgs|length > 1 %}
-      respective organizations
-    {% endif %}{% endif %}
-    in the table given below to resolve this situation.
-  </p>
-</div>
-<table id="duplicate-orgs" class="proposal-duplicates">
-  <tr>
-    <th><strong>Organization Name</strong></th>
-    <th><strong>Organization Administrators</strong></th>
-  </tr>
-  {% for org in orgs %}
+<div id="user-message" class="error">
+  This student is likely to be accepted by
+  {% if orgs|length == 1 %}
+    another organization.
+  {% else %}{% if orgs|length > 1 %}
+    other organizations.
+  {% endif %}{% endif %}
+  Please use the contact information of the
+  {% if orgs|length == 1 %}
+    corresponding organization
+  {% else %}{% if orgs|length > 1 %}
+    respective organizations
+  {% endif %}{% endif %}
+  in the table given below to resolve this situation.
+
+  <table id="duplicate-orgs" class="proposal-duplicates">
     <tr>
-      <td><a href="{{ org.link }}">{{ org.name }}</a></td>
-      <td>
-        {% for admin in org.admins %}
-          <a href="mailto:{{ admin.email }}">"{{ admin.name }}" &lt;{{ admin.email }}&gt;</a>{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-      </td>
+      <th><strong>Organization Name</strong></th>
+      <th><strong>Organization Administrators</strong></th>
     </tr>
-  {% endfor %}
-</table>
-<br />
+    {% for org in orgs %}
+      <tr>
+        <td><a href="{{ org.link }}">{{ org.name }}</a></td>
+        <td>
+          {% for admin in org.admins %}
+            <a href="mailto:{{ admin.email }}">"{{ admin.name }}" &lt;{{ admin.email }}&gt;</a>{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>
