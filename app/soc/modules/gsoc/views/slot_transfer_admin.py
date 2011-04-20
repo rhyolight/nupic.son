@@ -146,8 +146,9 @@ class SlotsTransferAdminList(Template):
           slot_transfer.status = 'accepted'
 
           if slot_transfer.nr_slots < 0:
-            logging.warning("Trying to trick us to gain more slots "
-                "by using negative number %s" % slot_transfer.nr_slots)
+            logging.warning("Organization %s is trying to trick us to "
+                "gain more slots by using a negative number %s" %
+                (org.name, slot_transfer.nr_slots))
             return
 
           org.slots -= slot_transfer.nr_slots
