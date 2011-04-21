@@ -1080,14 +1080,37 @@
         }
       };
 
+      var setTableFilters = function (colModel, postData) {
+        var filters_configuration = {
+          filters: {}
+        };
+
+        if (postData._search === true) {
+          jQuery.each(colModel, function(index, column) {
+            if (postData[column.name] !== undefined) {
+              filters_configuration.filters[column.name] = postData[column.name];
+            }
+          });
+        }
+
+        return filters_configuration;
+      };
+
       this.saveCurrentTableConfiguration = function () {
         //TODO(Mario): insulate all the functions better.
         var previous_configuration = melange.cookie.getCookie(melange.cookie.MELANGE_USER_PREFERENCES);
         var colModel = _self.jqgrid.object.jqGrid('getGridParam', 'colModel');
+
+        // Retrieve sort options
         var sortCol = _self.jqgrid.object.jqGrid('getGridParam', 'sortname');
         var sortOrder = _self.jqgrid.object.jqGrid('getGridParam', 'sortorder');
+
+        // Retrieve search filters
+        var postData = _self.jqgrid.object.jqGrid('getGridParam', 'postData');
+
         var configuration_to_save = setTableColumns(colModel);
         configuration_to_save = jQuery.extend(setTableOrder(sortCol, sortOrder), configuration_to_save);
+        configuration_to_save = jQuery.extend(setTableFilters(colModel, postData), configuration_to_save);
         var new_configuration = {
           lists_configuration: {}
         };
@@ -1115,6 +1138,17 @@
               configuration.sortname = previous_sortname;
               configuration.sortorder = previous_sortorder;
             }
+          }
+          if (previous_configuration["lists_configuration"][idx].filters !== undefined) {
+            var previous_filters = previous_configuration["lists_configuration"][idx].filters;
+            jQuery.each(previous_filters, function (column_name, column_filter) {
+              var column = jLinq.from(colModel).equals("name",column_name).select()[0];
+              if (column !== undefined) {
+                column.searchoptions = {
+                  defaultValue: column_filter
+                }
+              }
+            });
           }
         }
         return configuration;
@@ -1213,7 +1247,11 @@
         );
       jQuery("#" + _self.jqgrid.id).jqGrid(
         'filterToolbar',
-        {searchOnEnter: false}
+        {
+          beforeSearch: cookie_service.saveCurrentTableConfiguration,
+          searchOnEnter: false,
+          autosearch: true
+        }
       );
 
       // Prepare the Loading message, substituting it with an animated image

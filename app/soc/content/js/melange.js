@@ -204,7 +204,7 @@
       */
     var $m = melange.cookie;
 
-    $m.MELANGE_COOKIE_VERSION = "20110415";
+    $m.MELANGE_COOKIE_VERSION = "20110421";
 
     $m.MELANGE_USER_PREFERENCES = "melange_user_preferences";
 
