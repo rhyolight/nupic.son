@@ -552,7 +552,7 @@ class AccessChecker(BaseAccessChecker):
     self.isProfileActive()
     assert isSet(self.data.organization)
 
-    if not self.data.orgAdminFor(self.data.organization):
+    if self.data.organization.key() not in self.data.profile.org_admin_for:
       return
 
     raise AccessViolation(DEF_ALREADY_ADMIN_MSG % self.data.organization.name)
