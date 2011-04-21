@@ -837,6 +837,7 @@ class OrganizationsIParticipateInComponent(Component):
           return text
         return """<strong><font color="red">%s</font></strong>""" % text
 
+      list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
       list_config.addColumn('name', 'name', lambda ent, s, *args: c(ent, s, ent.name))
       list_config.addSimpleColumn('slots', 'Slots allowed')
       list_config.addColumn(
