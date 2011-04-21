@@ -47,6 +47,7 @@ from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import lists
@@ -868,14 +869,20 @@ class OrganizationsIParticipateInComponent(Component):
           not response.start or response.start.isdigit()):
         pos = int(response.start) if response.start else 0
 
-        if pos < len(self.data.mentor_for):
-          org = self.data.mentor_for[pos]
+        if self.data.is_host:
+          q = GSoCOrganization.all().filter('scope', self.data.program)
+          orgs = q.fetch(1000)
+        else:
+          orgs = self.data.mentor_for
+
+        if pos < len(orgs):
+          org = orgs[pos]
           q = db.Query(GSoCProposal, keys_only=False).filter('org', org)
           q.filter('has_mentor', True).filter('accept_as_project', True)
           slots_used = q.count()
           response.addRow(org, slots_used)
 
-        if (pos + 1) < len(self.data.mentor_for):
+        if (pos + 1) < len(orgs):
           response.next = str(pos + 1)
         else:
           response.next = 'done'
