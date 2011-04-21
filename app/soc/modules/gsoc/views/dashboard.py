@@ -846,7 +846,7 @@ class OrganizationsIParticipateInComponent(Component):
           lambda ent, s, *args: c(ent, s, (ent.slots - s)))
       list_config.addColumn(
           'delta_sortable', 'Slots difference (sortable)',
-          (lambda ent, s, *args: (ent.slots - s)), hidden=True)
+          (lambda ent, s, *args: abs(ent.slots - s)), hidden=True)
 
     list_config.setDefaultSort('name')
     self._list_config = list_config
