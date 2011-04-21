@@ -803,24 +803,36 @@ class AssignMentor(RequestHandler):
     """
     assert isSet(self.data.proposal)
 
-    proposal = self.data.proposal
+    proposal_key = self.data.proposal.key()
 
-    # do not do an update on the entity if the request is for same mentor
-    if proposal.mentor and proposal.mentor.key() == mentor_entity.key():
-      return
+    def assign_mentor_txn():
+      proposal = db.get(proposal_key)
 
-    proposal.mentor = mentor_entity
+      # do not do an update on the entity if the request is for same mentor
+      if proposal.mentor and proposal.mentor.key() == mentor_entity.key():
+        return
 
-    db.put(proposal)
+      proposal.mentor = mentor_entity
+      proposal.has_mentor = True
+
+      db.put(proposal)
+
+    db.run_in_transaction(assign_mentor_txn)
 
   def unassignMentor(self):
     """Removes the mentor assigned to the proposal.
     """
     assert isSet(self.data.proposal)
 
-    proposal = self.data.proposal
-    proposal.mentor = None
-    db.put(proposal)
+    proposal_key = self.data.proposal.key()
+
+    def unassign_mentor_txn():
+      proposal = db.get(proposal_key)
+      proposal.mentor = None
+      proposal.has_mentor = False
+      db.put(proposal)
+
+    db.run_in_transaction(unassign_mentor_txn)
 
   def validate(self):
     mentor_key = self.data.POST.get('assign_mentor')

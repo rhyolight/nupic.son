@@ -78,6 +78,9 @@ class GSoCProposal(soc.models.base.ModelWithFieldAttributes):
       required=False,
       collection_name='proposals')
 
+  #: true iff a proposal has a mentor
+  has_mentor = db.BooleanProperty(default=False)
+
   #: A property containing a list of possible Mentors for this proposal
   possible_mentors = db.ListProperty(item_type=db.Key, default=[])
 
