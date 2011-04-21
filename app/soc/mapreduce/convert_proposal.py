@@ -39,6 +39,8 @@ def process(proposal_key):
 
     number = db.Query(GSoCScore).ancestor(proposal).count()
     proposal.nr_scores = number
+    mentor_key = GSoCProposal.mentor.get_value_for_datastore(proposal)
+    proposal.has_mentor = bool(mentor_key)
     proposal.put()
     return True
 
