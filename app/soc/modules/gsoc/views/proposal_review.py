@@ -808,10 +808,6 @@ class AssignMentor(RequestHandler):
     def assign_mentor_txn():
       proposal = db.get(proposal_key)
 
-      # do not do an update on the entity if the request is for same mentor
-      if proposal.mentor and proposal.mentor.key() == mentor_entity.key():
-        return
-
       proposal.mentor = mentor_entity
       proposal.has_mentor = True
 
