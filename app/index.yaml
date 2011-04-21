@@ -21,6 +21,16 @@ indexes:
   - name: score
     direction: desc
 
+# used to figure out which proposals to accept
+- kind: GSoCProposal
+  properties:
+  - name: accept_as_project
+  - name: has_mentor
+  - name: org
+  - name: status
+  - name: score
+    direction: desc
+
 # used to list reviews in ascending order of date
 - kind: Review
   properties:
