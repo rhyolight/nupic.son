@@ -52,12 +52,12 @@ def getProposalsToBeAcceptedForOrg(org_entity, step_size=25):
   q.filter('org', org_entity)
   q.filter('status', 'pending')
   q.filter('accept_as_project', True)
+  q.filter('has_mentor', True)
   q.order('-score')
 
   # We are not putting this into the filter because order and != do not mix
   # in GAE.
   proposals = q.fetch(slots_left_to_assign)
-  proposals = [i for i in proposals if i.mentor]
 
   offset = slots_left_to_assign
   # retrieve as many additional proposals as needed in case the top
@@ -69,7 +69,6 @@ def getProposalsToBeAcceptedForOrg(org_entity, step_size=25):
       # we ran out of proposals`
       break
 
-    new_proposals = [i for i in new_proposals if i.mentor]
     proposals += new_proposals
     offset += step_size
 
