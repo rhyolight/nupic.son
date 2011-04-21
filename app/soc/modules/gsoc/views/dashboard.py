@@ -825,12 +825,24 @@ class OrganizationsIParticipateInComponent(Component):
     """
     r = data.redirect
     list_config = lists.ListConfiguration()
-    list_config.addSimpleColumn('name', 'name')
     list_config.setRowAction(
         lambda e, *args, **kwargs: r.organization(e).urlOf('gsoc_org_home'))
 
-    if data.program.allocations_visible:
-      list_config.addSimpleColumn('slots', 'Slots assigned')
+    if not data.program.allocations_visible:
+      list_config.addSimpleColumn('name', 'name')
+    else:
+      def c(ent, s, text):
+        if ent.slots - s == 0:
+          return text
+        return """<strong><font color="red">%s</font></strong>""" % text
+
+      list_config.addColumn('name', 'name', lambda ent, s, *args: c(ent, s, ent.name))
+      list_config.addSimpleColumn('slots', 'Slots allowed')
+      list_config.addColumn(
+          'slots_used', 'Slots used', lambda ent, s, *args: s)
+      list_config.addColumn(
+          'delta', 'Slots difference',
+          lambda ent, s, *args: c(ent, s, (ent.slots - s)))
 
     list_config.setDefaultSort('name')
     self._list_config = list_config
@@ -852,11 +864,21 @@ class OrganizationsIParticipateInComponent(Component):
     if idx == 6:
       response = lists.ListContentResponse(self.request, self._list_config)
 
-      if response.start != 'done':
-        # Add all organizations in one go since we already queried for it.
-        for mentor in self.data.mentor_for:
-          response.addRow(mentor)
-        response.next = 'done'
+      if response.start != 'done' and (
+          not response.start or response.start.isdigit()):
+        pos = int(response.start) if response.start else 0
+
+        if pos < len(self.data.mentor_for):
+          org = self.data.mentor_for[pos]
+          q = db.Query(GSoCProposal, keys_only=False).filter('org', org)
+          q.filter('has_mentor', True).filter('accept_as_project', True)
+          slots_used = q.count()
+          response.addRow(org, slots_used)
+
+        if (pos + 1) < len(self.data.mentor_for):
+          response.next = str(pos + 1)
+        else:
+          response.next = 'done'
 
       return response
     else:
