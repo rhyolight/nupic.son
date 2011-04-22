@@ -29,11 +29,15 @@ from django.conf.urls.defaults import url
 
 from soc.logic import cleaning
 from soc.logic.exceptions import RedirectRequest
+from soc.logic.helper import notifications
+from soc.models.user import User
+from soc.tasks import mailer
 from soc.views import forms
 from soc.views import readonly_template
 
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 
+from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
 
@@ -186,6 +190,11 @@ class UpdateSlotTransferPage(RequestHandler):
       a newly created proposal entity or None
     """
 
+    host_key = GSoCProgram.scope.get_value_for_datastore(self.data.program)
+    q = User.all()
+    q.filter('host_for', host_key)
+    host_entity = q.get()
+
     slot_transfer_entity = None
 
     slot_transfer_form = SlotTransferForm(self.data.organization.slots,
@@ -202,13 +211,23 @@ class UpdateSlotTransferPage(RequestHandler):
         break
 
     def create_or_update_slot_transfer_trx():
+      update = False
       if slot_transfer_entity:
         slot_transfer = db.get(slot_transfer_entity.key())
         slot_transfer_form.instance = slot_transfer
         slot_transfer = slot_transfer_form.save(commit=True)
+
+        update = True
       else:
         slot_transfer = slot_transfer_form.create(
             commit=True, parent=self.data.organization)
+
+      context = notifications.createOrUpdateSlotTransferContext(
+          self.data, slot_transfer,
+          [host_entity.account.email()], update)
+      sub_txn = mailer.getSpawnMailTaskTxn(
+          context, parent=slot_transfer.parent())
+      sub_txn()
 
       return slot_transfer
 
