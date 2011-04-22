@@ -505,6 +505,8 @@ class SubmittedProposalsComponent(Component):
     options = [
         ('(pending|accepted|rejected|duplicate|mentor)', 'Valid'),
         ('(duplicate|mentor)', 'Needs attention'),
+        ('(duplicate)', 'Duplicate'),
+        ('(mentor)', 'No mentor assigned'),
         ('', 'All'),
         ('(invalid|withdrawn|ignored)', 'Invalid'),
     ]
