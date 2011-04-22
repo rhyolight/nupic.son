@@ -690,7 +690,10 @@ def keyStarter(start, q):
     return True
   if '/' in start:
     return False
-  start_entity = db.get(start)
+  try:
+    start_entity = db.get(start)
+  except db.BadKeyError, e:
+    return False
   if not start_entity:
     return False
   q.filter('__key__ >=', start_entity.key())
