@@ -50,6 +50,12 @@ DEF_NEW_PROPOSAL_SUBJECT_FMT = ugettext(
 DEF_UPDATED_PROPOSAL_SUBJECT_FMT = ugettext(
     '[%(group)s] Update by %(proposer_name)s to proposal: %(proposal_name)s')
 
+DEF_NEW_SLOT_TRANSFER_SUBJECT_FMT = ugettext(
+    '[%(group)s] New slot transfer request by %(org_name)s.')
+
+DEF_UPDATE_SLOT_TRANSFER_SUBJECT_FMT = ugettext(
+    '[%(group)s] Slot transfer request updated by %(org_name)s.')
+
 DEF_NEW_REVIEW_SUBJECT_FMT = ugettext(
     '[%(group)s] New %(review_visibility)s review on %(reviewed_name)s '
     '(%(proposer_name)s) by %(reviewer_name)s')
@@ -83,6 +89,9 @@ DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
 
 DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/handled_invite.html'
+
+DEF_SLOT_TRANSFER_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/slot_transfer.html'
 
 
 def inviteContext(data, invite):
@@ -245,7 +254,7 @@ def newProposalContext(data, proposal, to_emails):
   """
   data.redirect.review(proposal.key().id(), data.user.link_id)
   proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
-  
+
   proposal_name = proposal.title
 
   message_properties = {
@@ -354,3 +363,36 @@ def getContext(data, receivers, message_properties, subject, template):
     bcc = receivers
 
   return mailer.getMailContext(to, subject, body, bcc=bcc)
+
+
+def createOrUpdateSlotTransferContext(data, slot_transfer,
+                                      to_emails, update=False):
+  """Mail context to be sent to program host upon slot transfer request
+
+  Args:
+    data: a RequestData object
+    slot_transfer: entity that holds the slot transfer request information
+    update: True if the request was updated, False if the new one was created
+  """
+
+  slot_transfer_admin_url = data.redirect.program().urlOf(
+      'gsoc_admin_slots_transfer', full=True)
+
+  message_properties = {
+      'group': slot_transfer.program.short_name,
+      'slot_transfer_admin_url': slot_transfer_admin_url,
+      'slot_transfer': slot_transfer,
+      'org_name': slot_transfer.parent().name,
+      'remarks': slot_transfer.remarks,
+      'update': update,
+      }
+
+  # determine the subject
+  if update:
+    subject = DEF_UPDATE_SLOT_TRANSFER_SUBJECT_FMT % message_properties
+  else:
+    subject = DEF_NEW_SLOT_TRANSFER_SUBJECT_FMT % message_properties
+
+  template = DEF_SLOT_TRANSFER_NOTIFICATION_TEMPLATE
+
+  return getContext(data, to_emails, message_properties, subject, template)
