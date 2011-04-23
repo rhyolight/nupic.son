@@ -45,10 +45,12 @@ class Callback(object):
   def registerViews(self):
     """Instantiates all view objects.
     """
+    from soc.views import host
     from soc.views import legacy
     from soc.views import site
     from soc.tasks import mailer
 
+    self.views.append(host.HostProfilePage())
     self.views.append(legacy.Legacy())
     self.views.append(site.EditSitePage())
     self.views.append(site.SiteHomepage())
