@@ -22,9 +22,6 @@ __authors__ = [
   ]
 
 
-from soc.modules.gsoc.logic.models import program as program_logic
-
-
 class Callback(object):
   """Callback object that handles interaction between the core.
   """
@@ -48,7 +45,7 @@ class Callback(object):
     from soc.modules.gsoc.views import duplicates
     from soc.modules.gsoc.views import homepage
     from soc.modules.gsoc.views import invite
-    from soc.modules.gsoc.views import org_app
+    #from soc.modules.gsoc.views import org_app
     from soc.modules.gsoc.views import org_home
     from soc.modules.gsoc.views import org_profile
     from soc.modules.gsoc.views import profile
@@ -74,7 +71,7 @@ class Callback(object):
     self.views.append(homepage.Homepage())
     self.views.append(invite.InvitePage())
     self.views.append(invite.ShowInvite())
-    self.views.append(org_app.OrgApp())
+    #self.views.append(org_app.OrgApp())
     self.views.append(org_home.OrgHome())
     self.views.append(org_profile.OrgProfilePage())
     self.views.append(profile.ProfilePage())
@@ -126,7 +123,8 @@ class Callback(object):
 
     self.core.requireUniqueService('registerWithProgramMap')
 
-    program_entities = program_logic.logic.getAllPrograms()
+    from soc.modules.gsoc.models.program import GSoCProgram
+    program_entities = GSoCProgram.all().fetch(1000)
     map = ('GSoC Programs', [
         (str(e.key()), e.name) for e in program_entities])
 
