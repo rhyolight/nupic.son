@@ -27,7 +27,6 @@ from soc.tasks import surveys as survey_tasks
 from soc.tasks.updates import project_conversion
 from soc.tasks.updates import proposal_conversion
 from soc.tasks.updates import role_conversion
-from soc.tasks.updates import start_update
 from soc.views.models import club
 from soc.views.models import club_admin
 from soc.views.models import club_member
@@ -121,7 +120,6 @@ class Callback(object):
     # register task URL's
     self.core.registerSitemapEntry(grading_group_tasks.getDjangoURLPatterns())
     self.core.registerSitemapEntry(mailer_tasks.getDjangoURLPatterns())
-    self.core.registerSitemapEntry(start_update.getDjangoURLPatterns())
     self.core.registerSitemapEntry(survey_tasks.getDjangoURLPatterns())
 
   def registerWithSidebar(self):
