@@ -28,6 +28,7 @@ from django import forms as django_forms
 from django.conf.urls.defaults import url
 
 from soc.logic import cleaning
+from soc.logic import host as host_logic
 from soc.logic.exceptions import RedirectRequest
 from soc.logic.helper import notifications
 from soc.models.user import User
@@ -189,12 +190,6 @@ class UpdateSlotTransferPage(RequestHandler):
     Returns:
       a newly created proposal entity or None
     """
-
-    host_key = GSoCProgram.scope.get_value_for_datastore(self.data.program)
-    q = User.all()
-    q.filter('host_for', host_key)
-    host_entity = q.get()
-
     slot_transfer_entity = None
 
     slot_transfer_form = SlotTransferForm(self.data.organization.slots,
@@ -210,6 +205,10 @@ class UpdateSlotTransferPage(RequestHandler):
         slot_transfer_entity = ent
         break
 
+    host_entities = host_logic.getHostsForProgram(self.data.program)
+    to_emails = [i.parent().account.email() for i in host_entities
+                 if i.notify_slot_transfer]
+
     def create_or_update_slot_transfer_trx():
       update = False
       if slot_transfer_entity:
@@ -224,7 +223,7 @@ class UpdateSlotTransferPage(RequestHandler):
 
       context = notifications.createOrUpdateSlotTransferContext(
           self.data, slot_transfer,
-          [host_entity.account.email()], update)
+          to_emails, update)
       sub_txn = mailer.getSpawnMailTaskTxn(
           context, parent=slot_transfer.parent())
       sub_txn()
