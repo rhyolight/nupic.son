@@ -233,7 +233,7 @@ class Mutator(object):
     if not self.data.organization:
       msg = ugettext(
           'The organization with link_id %s does not exist for %s.' %
-          (link_id, self.data.program.name))
+          (self.data.kwargs['organization'], self.data.program.name))
 
       raise NotFound(msg)
 
