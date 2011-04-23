@@ -120,8 +120,8 @@ TEMPLATE_DIRS = (
 
 INSTALLED_APPS = (
     'soc.views.helper',
-    'soc.modules.gsoc.views.helper',
-    'soc.modules.gci.views.helper',
+#    'soc.modules.gsoc.views.helper',
+#    'soc.modules.gci.views.helper',
 #    'django.contrib.auth',
 #    'django.contrib.contenttypes',
 #    'django.contrib.sessions',
