@@ -34,7 +34,6 @@ from soc.logic.exceptions import RedirectRequest
 from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import AccessViolation
-from soc.models.host import Host
 from soc.models.user import User
 
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
@@ -359,8 +358,6 @@ class Mutator(object):
   def host(self):
     assert isSet(self.data.user)
 
-    self.data.is_host = False
-
     self.data.host = host_logic.getHostForUser(self.data.user)
     if self.data.host or self.data.user.host_for:
       self.data.is_host = True
@@ -387,7 +384,7 @@ class DeveloperMutator(Mutator):
       else:
         raise NotFound(DEF_NO_LINK_ID_MSG)
 
-    user_key = db.Key.from_path('GSoCOrganization', key_name)
+    user_key = db.Key.from_path('User', key_name)
 
     if not user_key:
       raise NotFound(DEF_NO_USER_MSG_FMT % key_name)
