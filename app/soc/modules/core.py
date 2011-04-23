@@ -122,11 +122,7 @@ class Core(object):
     self.services = []
 
     self.sitemap = []
-    self.sidebar = []
     self.program_map = []
-    self.per_request_cache = {}
-    self.in_request = False
-    self.rights = {}
 
   ##
   ## internal
@@ -174,28 +170,6 @@ class Core(object):
   ## Core code
   ##
 
-  def getRequestValue(self, key, default=None):
-    """Gets a per-request value.
-
-    Args:
-      key: the key of the to be retrieved value
-      default: the default value (returned if no value is set)
-    """
-
-    assert self.in_request
-    return self.per_request_value.get(key, default)
-
-  def setRequestValue(self, key, value):
-    """Sets a per-request value.
-
-    Args:
-      key: the key of the to be set value
-      value: the value that should be set
-    """
-
-    assert self.in_request
-    self.per_request_value[key] = value
-
   def initialize(self):
     """Performs the required initialization for all modules.
     """
@@ -209,68 +183,11 @@ class Core(object):
     self.callService('registerWithSitemap', True)
     return defaults.patterns(None, *self.sitemap)
 
-  @soc.cache.sidebar.cache
-  def getSidebar(self, id, user):
-    """Constructs a sidebar for the current user.
-    """
-
-    self.callService('registerWithSidebar', True)
-
-    sidebar = []
-
-    for i in self.sidebar:
-      menus = i(id, user)
-
-      for menu in (menus if menus else []):
-        sidebar.append(menu)
-
-    return sorted(sidebar, key=lambda x: x.get('group'))
-
-  def getRightsChecker(self, prefix):
-    """Returns a rights checker for the specified prefix.
-    """
-
-    from soc.logic import rights as rights_logic
-
-    self.callService('registerRights', True)
-    return rights_logic.Checker(self.rights, prefix)
-
   ###
   ### Core control code
   ###
   ### Called by other setup code to get the Core in a desired state.
   ###
-
-  def startNewRequest(self, request):
-    """Prepares core to handle a new request.
-
-    Args:
-      request: a Django HttpRequest object
-    """
-
-    self.in_request = True
-    self.per_request_value = {}
-    self.setRequestValue('request', request)
-
-  def endRequest(self, request, optional):
-    """Performs cleanup after current request.
-
-    Args:
-      request: a Django HttpRequest object
-      optional: whether to noop when not in a request
-    """
-
-    # already cleaned up, as expected
-    if optional and not self.in_request:
-      return
-
-    old_request = self.getRequestValue('request')
-    self.per_request_value = {}
-    self.in_request = False
-
-    if id(old_request) != id(request):
-      logging.error("ending request: \n'%s'\n != \n'%s'\n" % (
-          old_request, request))
 
   def registerModuleCallbacks(self, modules, fmt):
     """Retrieves all callbacks for the modules of this site.
@@ -335,21 +252,6 @@ class Core(object):
     """
 
     self.sitemap.extend(entries)
-
-  def registerSidebarEntry(self, entry):
-    """Registers the specified entry with the sidebar.
-    """
-
-    self.sidebar.append(entry)
-
-  def registerRight(self, key, value):
-    """Registers the specified right.
-    """
-
-    if key in self.rights:
-      raise AlreadyRegisteredRight(key)
-
-    self.rights[key] = value
 
   def registerProgramEntry(self, entry):
     """Registers the specified module's programs with the core.

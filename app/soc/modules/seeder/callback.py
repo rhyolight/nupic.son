@@ -42,11 +42,3 @@ class Callback(object):
     self.core.requireUniqueService('registerWithSitemap')
 
     self.core.registerSitemapEntry(seeder.view.getDjangoURLPatterns())
-
-  def registerWithSidebar(self):
-    """Called by the server when sidebar entries should be registered.
-    """
-    self.core.requireUniqueService('registerWithSidebar')
-
-    self.core.registerSidebarEntry(seeder.view.getSidebarMenus)
-    #self.core.registerSidebarEntry(seeder.view.getExtraMenus)
