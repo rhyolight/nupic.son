@@ -25,11 +25,12 @@ __authors__ = [
 from django.conf.urls.defaults import url
 
 from soc.logic.exceptions import AccessViolation
+from soc.logic.helper import timeline as timeline_helper
 from soc.views.template import Template
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 
-from soc.modules.gsoc.logic.models.timeline import logic as timeline_logic
+
 from soc.modules.gsoc.logic.models.student_project import logic as sp_logic
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import lists
@@ -216,7 +217,7 @@ class OrgHome(RequestHandler):
   def context(self):
     """Handler to for GSoC Organization Home page HTTP get request.
     """
-    current_timeline = timeline_logic.getCurrentTimeline(
+    current_timeline = self.getCurrentTimeline(
         self.data.program_timeline, self.data.org_app)
 
     r = self.data.redirect
@@ -256,3 +257,15 @@ class OrgHome(RequestHandler):
       context['project_list'] = ProjectList(self.request, self.data)
 
     return context
+
+  def getCurrentTimeline(self, timeline, org_app):
+    """Return where we are currently on the timeline.
+    """
+    if timeline_helper.isActivePeriod(org_app, 'survey'):
+      return 'org_signup_period'
+    elif timeline_helper.isActivePeriod(timeline, 'student_signup'):
+      return 'student_signup_period'
+    elif timeline_helper.isActivePeriod(timeline, 'program'):
+      return 'program_period'
+
+    return 'offseason'

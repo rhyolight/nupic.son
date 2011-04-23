@@ -23,7 +23,6 @@ __authors__ = [
 
 
 from soc.logic.models import timeline
-from soc.logic.helper import timeline as timeline_helper
 
 import soc.models.timeline
 
@@ -41,16 +40,5 @@ class Logic(timeline.Logic):
 
     super(Logic, self).__init__(model, base_model=base_model)
 
-  def getCurrentTimeline(self, timeline, org_app):
-    """Return where we are currently on the timeline.
-    """
-    if timeline_helper.isActivePeriod(org_app, 'survey'):
-      return 'org_signup_period'
-    elif timeline_helper.isActivePeriod(timeline, 'student_signup'):
-      return 'student_signup_period'
-    elif timeline_helper.isActivePeriod(timeline, 'program'):
-      return 'program_period'
-
-    return 'offseason'
 
 logic = Logic()
