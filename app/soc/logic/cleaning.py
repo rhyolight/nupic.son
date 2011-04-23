@@ -42,8 +42,6 @@ from soc.logic import validate
 from soc.logic.models import document as document_logic
 from soc.logic.models.site import logic as site_logic
 from soc.logic.models.user import logic as user_logic
-from soc.models import document as document_model
-from soc.modules import callback
 
 
 DEF_VALID_SHIPPING_CHARS = re.compile('^[A-Za-z0-9\s-]+$')
@@ -918,87 +916,6 @@ def validate_student(program_logic):
     return cleaned_data
   return wrapper
 
-
-def validate_document_acl(view, creating=False):
-  """Validates that the document ACL settings are correct.
-  """
-
-  def wrapper(self):
-    """Decorator wrapper method.
-    """
-    cleaned_data = self.cleaned_data
-
-    fields = ['read_access', 'write_access', 'prefix', 'link_id', 'scope_path']
-
-    if not all((i in cleaned_data) for i in fields):
-      return cleaned_data
-
-    read_access = cleaned_data['read_access']
-    write_access = cleaned_data['write_access']
-
-    if read_access != 'public':
-      ordening = document_model.Document.DOCUMENT_ACCESS
-      if ordening.index(read_access) < ordening.index(write_access):
-        raise forms.ValidationError(
-            "Read access should be less strict than write access.")
-
-    params = view.getParams()
-    rights = params['rights']
-
-    user = user_logic.getCurrentUser()
-
-    # pylint: disable=E1103
-    rights.setCurrentUser(user.account, user)
-
-    prefix = self.cleaned_data['prefix']
-    link_id = self.cleaned_data['link_id']
-    scope_path = self.cleaned_data['scope_path']
-
-    validate_access(self, view, rights, prefix, scope_path, 'read_access')
-    validate_access(self, view, rights, prefix, scope_path, 'write_access')
-
-    if creating:
-      key_fields = {
-          'prefix': prefix,
-          'link_id': link_id,
-          'scope_path': scope_path,
-          }
-      if document_logic.logic.getFromKeyFields(key_fields):
-        raise forms.ValidationError(
-            "A document with that link_id and scope already exists.")
-      if not has_access(rights, 'restricted', scope_path, prefix):
-        raise forms.ValidationError(
-            "You do not have the required access to create this document.")
-
-    return cleaned_data
-
-  return wrapper
-
-
-def has_access(rights, access_level, scope_path, prefix):
-  """Checks whether the current user has the required access.
-  """
-
-  checker = callback.getCore().getRightsChecker(prefix)
-  roles = checker.getMembership(access_level)
-
-  django_args = {
-      'scope_path': scope_path,
-      'prefix': prefix,
-      }
-
-  return rights.hasMembership(roles, django_args)
-
-
-def validate_access(self, view, rights, prefix, scope_path, field):
-  """Validates that the user has access to the ACL for the specified fields.
-  """
-
-  access_level = self.cleaned_data[field]
-
-  if not has_access(rights, access_level, scope_path, prefix):
-    self._errors[field] = ErrorList([DEF_NO_RIGHTS_FOR_ACL_MSG])
-    del self.cleaned_data[field]
 
 
 def str2set(string_field, separator=','):
