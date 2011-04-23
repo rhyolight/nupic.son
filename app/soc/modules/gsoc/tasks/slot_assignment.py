@@ -22,19 +22,15 @@ __authors__ = [
 
 import logging
 
-from django import http
 from django.utils import simplejson
 from google.appengine.api import taskqueue
 from google.appengine.runtime import DeadlineExceededError
 
 from soc.tasks import responses
-from soc.tasks.helper import error_handler
 from soc.tasks.helper.timekeeper import Timekeeper
 from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.logic.models.program import logic as program_logic
 from soc.modules.gsoc.logic.models.student_proposal import logic as proposal_logic
-from soc.modules.gsoc.logic.models.student_project import logic as project_logic
-from soc.modules.gsoc.views.models import program as program_view
 
 
 def getDjangoURLPatterns():
