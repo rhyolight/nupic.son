@@ -37,7 +37,6 @@ from django import http
 from soc.logic import accounts
 from soc.logic import dicts
 from soc.logic.models.document import logic as document_logic
-from soc.logic.models.survey import logic as survey_logic
 from soc.logic.models.user import logic as user_logic
 from soc.models.document import Document
 from soc.models.host import Host
@@ -58,8 +57,6 @@ from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.student import GCIStudent
 from soc.modules.gci.models.timeline import GCITimeline
 
-from soc.modules.gsoc.logic.models.ranker_root import logic as ranker_root_logic
-from soc.modules.gsoc.models import student_proposal
 from soc.modules.gsoc.models.mentor import GSoCMentor
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
@@ -67,7 +64,6 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.org_admin import GSoCOrgAdmin
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.ranker_root import RankerRoot
 from soc.modules.gsoc.models.student import GSoCStudent
 from soc.modules.gsoc.models.student_project import StudentProject
 from soc.modules.gsoc.models.student_proposal import StudentProposal
@@ -357,10 +353,6 @@ def seed(request, *args, **kwargs):
 
   melange = GCIOrganization(**group_properties)
   #melange.put()
-  # create a new ranker
-  #ranker_root_logic.create(student_proposal.DEF_RANKER_NAME, melange,
-  #    student_proposal.DEF_SCORE, 100)
-
 
   group_properties.update({
     'scope_path': 'google/gsoc2009',
@@ -392,9 +384,6 @@ def seed(request, *args, **kwargs):
     entity = GSoCOrganization(**group_properties)
     orgs.append(entity)
     entity.put()
-    # create a new ranker
-    ranker_root_logic.create(student_proposal.DEF_RANKER_NAME, entity,
-        student_proposal.DEF_SCORE, 100)
 
     # Admin (and thus mentor) for the first org
     if i == 0:
@@ -989,13 +978,6 @@ def clear(*args, **kwargs):
   """Removes all entities from the datastore.
   """
 
-  # there no explicit ranker model anywhere, so make one for
-  # our own convenience to delete all rankers
-  class ranker(db.Model):
-    """ranker model used with ranklist module.
-    """
-    pass
-
   # TODO(dbentley): If there are more than 1000 instances of any model,
   # this method will not clear all instances.  Instead, it should continually
   # call .all(), delete all those, and loop until .all() is empty.
@@ -1010,8 +992,6 @@ def clear(*args, **kwargs):
       SurveyRecord.all(),
       GSoCOrgAdmin.all(),
       GCIOrgAdmin.all(),
-      ranker.all(),
-      RankerRoot.all(),
       StudentProposal.all(),
       GSoCOrganization.all(),
       GCIOrganization.all(),

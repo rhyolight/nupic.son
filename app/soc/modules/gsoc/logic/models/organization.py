@@ -82,19 +82,6 @@ class Logic(organization.Logic):
     
     return self.tags_service.setTagValuesForEntity(entity, entity_properties)
 
-  def _onCreate(self, entity):
-    """Creates a RankerRoot entity.
-    """
-
-    from soc.modules.gsoc.logic.models.ranker_root import logic as ranker_root_logic
-    from soc.modules.gsoc.models import student_proposal
-
-    # create a new ranker
-    ranker_root_logic.create(student_proposal.DEF_RANKER_NAME, entity,
-        student_proposal.DEF_SCORE, 100)
-
-    super(Logic, self)._onCreate(entity)
-
   def delete(self, entity):
     """Delete existing entity from datastore.
     """
