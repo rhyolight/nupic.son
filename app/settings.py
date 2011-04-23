@@ -131,4 +131,5 @@ INSTALLED_APPS = (
 GCI_TASK_QUOTA_LIMIT_ENABLED = False
 
 MODULE_FMT = 'soc.modules.%s.callback'
-MODULES = ['gsoc', 'statistic', 'gci']
+#MODULES = ['gsoc', 'statistic', 'gci']
+MODULES = ['gsoc']
