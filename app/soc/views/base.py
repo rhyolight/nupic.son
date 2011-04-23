@@ -39,6 +39,7 @@ from soc.logic.exceptions import RedirectRequest
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import Error
 from soc.logic.models.site import logic as site
+from soc.views.helper import access_checker
 from soc.views.helper import context as context_helper
 from soc.views.helper.request_data import RequestData
 
@@ -333,6 +334,12 @@ class SiteRequestHandler(RequestHandler):
   def init(self, request, args, kwargs):
     self.data = RequestData()
     self.data.populate(None, request, args, kwargs)
+    if self.data.is_developer:
+      self.mutator = access_checker.DeveloperMutator(self.data)
+      self.check = access_checker.DeveloperAccessChecker(self.data)
+    else:
+      self.mutator = access_checker.Mutator(self.data)
+      self.check = access_checker.AccessChecker(self.data)
 
   def redirect(self, url):
     self.response = http.HttpResponseRedirect(url)
