@@ -28,11 +28,13 @@ from django.utils.translation import ugettext
 from google.appengine.api import users
 from google.appengine.ext import db
 
+from soc.logic import host as host_logic
 from soc.logic.exceptions import LoginRequest
 from soc.logic.exceptions import RedirectRequest
 from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import AccessViolation
+from soc.models.host import Host
 from soc.models.user import User
 
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
@@ -94,6 +96,9 @@ DEF_IS_STUDENT_MSG = ugettext(
 DEF_NO_DOCUMENT = ugettext(
     'The document was not found')
 
+DEF_NO_LINK_ID_MSG = ugettext(
+    'Link ID should not be empty')
+
 DEF_NO_SLOT_TRANSFER_MSG_FMT = ugettext(
     'This page is inaccessible at this time. It is accessible only after '
     'the program administrator has made the slot allocations available and '
@@ -105,6 +110,9 @@ DEF_NO_SUCH_PROGRAM_MSG = ugettext(
 DEF_NO_USER_LOGIN_MSG = ugettext(
     'Please create <a href="/user/create_profile">User Profile</a>'
     ' in order to view this page.')
+
+DEF_NO_USER_MSG_FMT = ugettext(
+    'User with the Link ID %s does not exist.')
 
 DEF_NOT_ADMIN_MSG = ugettext(
     'You need to be a organization administrator for %s to access this page.')
@@ -348,6 +356,15 @@ class Mutator(object):
         slot_transfer_logic.getSlotTransferEntitiesForOrg(
             self.data.organization)
 
+  def host(self):
+    assert isSet(self.data.user)
+
+    self.data.is_host = False
+
+    self.data.host = host_logic.getHostForUser(self.data.user)
+    if self.data.host or self.data.user.host_for:
+      self.data.is_host = True
+
 
 class DeveloperMutator(Mutator):
   def canRespondForUser(self):
@@ -356,6 +373,27 @@ class DeveloperMutator(Mutator):
   def commentVisible(self):
     self.data.public_comments_visible = True
     self.data.private_comments_visible = True
+
+  def hostFromKwargs(self):
+    """Set the host entity for the given user in the kwargs.
+    """
+    self.data.host_user_key = None
+
+    key_name = self.data.kwargs.get('link_id', '')
+    if not key_name:
+      self.host()
+      if self.data.is_host:
+        return
+      else:
+        raise NotFound(DEF_NO_LINK_ID_MSG)
+
+    user_key = db.Key.from_path('GSoCOrganization', key_name)
+
+    if not user_key:
+      raise NotFound(DEF_NO_USER_MSG_FMT % key_name)
+
+    self.data.host_user_key = user_key
+    self.data.host = host_logic.getHostForUser(user_key)
 
 
 class BaseAccessChecker(object):
