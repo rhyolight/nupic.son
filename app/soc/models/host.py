@@ -14,20 +14,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the Host Model."""
+"""This module contains the Model for Host."""
 
 __authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
 ]
 
 
-import soc.models.role
-import soc.models.sponsor
+from google.appengine.ext import db
+
+from django.utils.translation import ugettext
+
+import soc.models.base
 
 
-class Host(soc.models.role.Role):
-  """Host details for a specific Program.
+class Host(soc.models.base.ModelWithFieldAttributes):
+  """Model containing host specific data.
+
+  The User entity corresponding to this host will be the parent of this entity.
   """
 
-  pass
+  notify_slot_transfer = db.BooleanProperty(required=False, default=True,
+      verbose_name=ugettext('Notify of slot transfer updates'))
+  notify_slot_transfer.help_text = ugettext(
+      'Whether to send an email notification when slot transfer requests '
+      'are made or updated.')
+  notify_slot_transfer.group = ugettext("1. Notification settings")
