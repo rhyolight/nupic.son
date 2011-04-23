@@ -76,7 +76,8 @@ def load_melange():
   # Register a core for the test modules to use
   callback.registerCore(Core())
   current_core = callback.getCore()
-  modules = ['gsoc', 'gci', 'seeder', 'statistic']
+  #modules = ['gsoc', 'gci', 'seeder', 'statistic']
+  modules = ['gsoc', 'seeder']
   fmt = 'soc.modules.%s.callback'
   current_core.registerModuleCallbacks(modules, fmt)
 
@@ -166,10 +167,9 @@ def main():
   else:
     load_melange()
 
-  # Ignore functional, views and tasks tests temporarily
+  # Ignore functional and old_app tests
   args = ['--exclude=functional',
-          '--exclude=^views$',
-          '--exclude=^tasks$']
+          '--exclude=^old_app$']
   sys.argv += args
   nose.main(addplugins=plugins)
 
