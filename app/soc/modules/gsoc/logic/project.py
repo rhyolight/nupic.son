@@ -42,13 +42,9 @@ def getFeaturedProject(current_timeline, program):
   # the current expiry time is 2 hours.
   expiry_time = datetime.timedelta(seconds=7200)
 
-  properties = {
-      # TODO(Madhu): Enable it once the featured property is added to student_project model
-      #'is_featured': True
-      }
-
   def queryForProject():
     query = GSoCProject.all()
+    query.filter('is_featured', True)
     query.filter('program', program)
     if current_timeline == 'coding_period':
       project_status = 'accepted'
