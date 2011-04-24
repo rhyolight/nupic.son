@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Daniel Hans" <daniel.m.hans@gmail.com>',
   ]
 
@@ -25,37 +26,45 @@ __authors__ = [
 from django.conf.urls.defaults import url
 
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import access_checker
 from soc.modules.gsoc.views.helper import url_patterns
 
 
-class StudentRegister(RequestHandler):
+class ProjectDetails(RequestHandler):
   """Encapsulate all the methods required to generate GSoC project
   details page.
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/homepage/base.html'
+    return 'v2/modules/gsoc/project_details/base.html'
 
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping.
     """
 
     return [
-        url(r'^gsoc/student/%s$' % url_patterns.PROGRAM, self,
-            name='gsoc_student_register')
+        url(r'^gsoc/project/%s$' % url_patterns.PROJECT, self,
+            name='gsoc_project_details')
     ]
 
   def checkAccess(self):
     """Access checks for GSoC project details page.
     """
-    pass
+    self.mutator.projectFromKwargs()
 
   def context(self):
     """Handler to for GSoC project details page HTTP get request.
     """
-
-    return {
+    context = {
         'page_name': 'Project details',
         'program': self.data.program,
+        'project': self.data.project,
     }
+
+    r = self.redirect.project()
+
+    user_is_owner = self.data.user and \
+        (self.data.user.key() == self.data.project_owner.parent_key())
+    if user_is_owner:
+      context['update_link'] = r.urlOf('gsoc_edit_project')
+
+    return context

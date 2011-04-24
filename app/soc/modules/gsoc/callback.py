@@ -51,6 +51,7 @@ class Callback(object):
     from soc.modules.gsoc.views import profile
     from soc.modules.gsoc.views import profile_show
     from soc.modules.gsoc.views import program
+    from soc.modules.gsoc.views import project_details
     from soc.modules.gsoc.views import projects_list
     from soc.modules.gsoc.views import proposal
     from soc.modules.gsoc.views import proposal_review
@@ -79,6 +80,7 @@ class Callback(object):
     self.views.append(profile_show.ProfileAdminPage())
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
+    self.views.append(project_details.ProjectDetails())
     self.views.append(projects_list.ListProjects())
     self.views.append(proposal.ProposalPage())
     self.views.append(proposal_review.AcceptProposal())
