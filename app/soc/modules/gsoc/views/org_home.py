@@ -31,7 +31,8 @@ from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 
 
-from soc.modules.gsoc.logic.models.student_project import logic as sp_logic
+from soc.modules.gsoc.logic import project as project_logic
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
@@ -142,7 +143,7 @@ class ProjectList(Template):
 
     list_config = lists.ListConfiguration()
     list_config.addColumn('student', 'Student',
-                          lambda entity, *args: entity.student.user.name)
+                          lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
     list_config.setDefaultSort('student')
     self._list_config = list_config
@@ -165,11 +166,15 @@ class ProjectList(Template):
     """
     idx = lists.getListIndex(self.request)
     if idx == 0:
-      fields = {'scope': self.data.organization,
-                'status': 'accepted'}
-      response_builder = lists.QueryContentResponseBuilder(
-          self.request, self._list_config, sp_logic,
-          fields, prefetch=['student'])
+      list_query = project_logic.getAcceptedProjectsQuery(
+          self.data.program, self.data.organization)
+
+      starter = lists.keyStarter
+      prefetcher = lists.modelPrefetcher(GSoCProject, [], parent=True)
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, list_query,
+          starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
       return None
