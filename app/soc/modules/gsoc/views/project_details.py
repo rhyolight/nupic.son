@@ -129,16 +129,19 @@ class ProjectDetails(RequestHandler):
   def context(self):
     """Handler to for GSoC project details page HTTP get request.
     """
+    project = self.data.project
+
+    r = self.redirect
+
     context = {
         'page_name': 'Project details',
-        'project': self.data.project,
+        'project': project,
+        'org_home_link': r.organization(project.org).urlOf('gsoc_org_home')
     }
-
-    r = self.redirect.project()
 
     user_is_owner = self.data.user and \
         (self.data.user.key() == self.data.project_owner.parent_key())
     if user_is_owner:
-      context['update_link'] = r.urlOf('gsoc_update_project')
+      context['update_link'] = r.project().urlOf('gsoc_update_project')
 
     return context
