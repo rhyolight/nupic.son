@@ -617,7 +617,7 @@ class RedirectHelper(object):
     """
     review = comment.parent()
     self.review(review.key().id_or_name(), review.parent().link_id)
-    url= self.urlOf('review_gsoc_proposal', full=full)
+    url = self.urlOf('review_gsoc_proposal', full=full)
     return "%s#c%s" % (url, comment.key().id())
 
   def projectDetails(self, student_project):
