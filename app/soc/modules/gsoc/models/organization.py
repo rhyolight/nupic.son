@@ -185,6 +185,24 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
       "Additional columns that will be added to all proposals, one per line.")
   proposal_extra.group = ugettext('4. Organization Preferences')
 
+  accepted_student_msg = db.TextProperty(
+      required=False, verbose_name=ugettext('Message to accepted students'))
+  accepted_student_msg.help_text = ugettext(
+      'Message from the organization to be added to the email sent to '
+      'accepted students. The format consists of a standard message to '
+      'all the accepted students, followed by this message, which is in '
+      'turn followed the signature.')
+  accepted_student_msg.group = ugettext('4. Organization Preferences')
+
+  rejected_student_msg = db.TextProperty(
+      required=False, verbose_name=ugettext('Message to rejected students'))
+  rejected_student_msg.help_text = ugettext(
+      'Message from the organization to be added to the email sent to '
+      'rejected students. The format consists of a standard message to '
+      'all the rejected students, followed by this message, which is in '
+      'turn followed by the signature.')
+  rejected_student_msg.group = ugettext('4. Organization Preferences')
+
   def __init__(self, parent=None, key_name=None, app=None, **entity_values):
     """Constructor for GSoCOrganization Model.
 
