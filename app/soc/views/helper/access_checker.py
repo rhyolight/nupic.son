@@ -946,3 +946,50 @@ class AccessChecker(BaseAccessChecker):
 
     raise AccessViolation(DEF_NO_SLOT_TRANSFER_MSG_FMT % (
         self.data.timeline.studentsAnnouncedOn()))
+
+  def isProjectInURLValid(self):
+    """Checks if the project in URL exists.
+    """
+    assert isSet(self.data.project)
+
+    if not self.data.project:
+      error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
+          'model': 'GSoCProject',
+          'id': self.data.kwargs['id']
+          }
+      raise AccessViolation(error_msg)
+
+    if self.data.project.status == 'invalid':
+      error_msg = DEF_ID_BASED_ENTITY_INVALID_MSG_FMT % {
+          'model': 'GSoCProject',
+          'id': self.data.kwargs['id'],
+          }
+      raise AccessViolation(error_msg)
+
+  def canStudentUpdateProject(self):
+    """Checks if the student can edit the project details.
+    """
+    assert isSet(self.data.program)
+    assert isSet(self.data.timeline)
+    assert isSet(self.data.project)
+    assert isSet(self.data.project_owner)
+
+    self.isProjectInURLValid()
+
+    # check if the timeline allows updating project
+    self.isProgramActive()
+    self.acceptedStudentsAnnounced()
+
+    # check if the project belongs to the current user
+    expected_profile_key = self.data.project.parent_key()
+    if expected_profile_key != self.data.profile.key():
+      error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
+          'model': 'GSoCProject'
+          }
+      raise AccessViolation(error_msg)
+
+    # check if the status allows the project to be updated
+    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+      raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
+          'model': 'GSoCProject'
+          })
