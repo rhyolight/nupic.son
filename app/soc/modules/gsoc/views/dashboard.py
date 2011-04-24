@@ -700,7 +700,7 @@ class SubmittedProposalsComponent(Component):
         proposal = db.get(db.Key(proposal_key))
 
         if not proposal:
-          logging.warning("Invalid proposal_key '%s'" % proposal_key_name)
+          logging.warning("Invalid proposal_key '%s'" % proposal_key)
           return
 
         data = {}
@@ -728,7 +728,7 @@ class SubmittedProposalsComponent(Component):
         proposal = db.get(db.Key(proposal_key))
 
         if not proposal:
-          logging.warning("Invalid proposal_key '%s'" % proposal_key_name)
+          logging.warning("Invalid proposal_key '%s'" % proposal_key)
           return
 
         org_key = GSoCProposal.org.get_value_for_datastore(proposal)
