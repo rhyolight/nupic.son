@@ -25,8 +25,84 @@ __authors__ = [
 
 from django.conf.urls.defaults import url
 
+from soc.views.forms import ModelForm
+
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+
+
+class ProjectDetailsForm(ModelForm):
+  """Constructs the form to edit the project details
+  """
+
+  class Meta:
+    model = GSoCProject
+    css_prefix = 'gsoc_project'
+    fields = ['title', 'abstract', 'public_info',
+              'additional_info', 'feed_url']
+
+
+class ProjectDetailsUpdate(RequestHandler):
+  """Encapsulate the methods required to generate Project Details update form.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/project_details/update.html'
+
+  def djangoURLPatterns(self):
+    """Returns the list of tuples for containing URL to view method mapping.
+    """
+
+    return [
+        url(r'^gsoc/project/update/%s$' % url_patterns.PROJECT, self,
+            name='gsoc_update_project')
+    ]
+
+  def checkAccess(self):
+    """Access checks for GSoC project details page.
+    """
+    self.check.isLoggedIn()
+    self.check.isActiveStudent()
+    self.mutator.projectFromKwargs()
+    self.check.canStudentUpdateProject()
+
+  def context(self):
+    """Handler to for GSoC project details page HTTP get request.
+    """
+    project_details_form = ProjectDetailsForm(self.data.POST or None,
+                                              instance=self.data.project)
+
+    context = {
+        'page_name': 'Edit project details',
+        'program': self.data.program,
+        'project': self.data.project,
+        'forms': [project_details_form],
+        'error': project_details_form.errors,
+    }
+
+    return context
+
+  def validate(self):
+    """Validate the form data and save if valid.
+    """
+    project_details_form = ProjectDetailsForm(self.data.POST or None,
+                                              instance=self.data.project)
+
+    if not project_details_form.is_valid():
+      return False
+
+    project_details_form.save()
+    return True
+
+  def post(self):
+    """Post handler for the project details update form.
+    """
+    if self.validate():
+      self.redirect.project()
+      self.redirect.to('gsoc_project_details')
+    else:
+      self.get()
 
 
 class ProjectDetails(RequestHandler):
