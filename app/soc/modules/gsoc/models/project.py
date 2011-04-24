@@ -68,6 +68,12 @@ class GSoCProject(soc.models.base.ModelWithFieldAttributes):
       'The URL should be a valid ATOM or RSS feed. '
       'Feed entries are shown on the public page.')
 
+  #: The project can be marked to be featured on program home page.
+  is_featured = db.BooleanProperty(default=False, required=True,
+                                   verbose_name=ugettext('Featured'))
+  is_featured.help_text = ugettext(
+      'Should this project be featured on the program homepage.')
+
   #: A property containing which mentor has been assigned to this project.
   #: A project must have a mentor at all times.
   mentor = db.ReferenceProperty(reference_class=soc.models.role.Profile,
