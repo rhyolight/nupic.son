@@ -343,6 +343,21 @@
 #main .content_column_2 .block-project-timeline .block-content {
   padding: 12px 0 0 0;
 }
+#main .content_column_2 .block-project-timeline .block-content .block-project-timeline-countdown {
+  margin-top: 10px;
+  text-align: center;
+}
+#main .content_column_2 .block-project-timeline .block-content .block-project-timeline-countdown .deadline {
+  color: #3ba3dc;
+  display: block;
+  line-height: 1.2em;
+}
+#main .content_column_2 .block-project-timeline .block-content .block-project-timeline-countdown .countdown {
+  color: #D5620E;
+  display: block;
+  font-size: 16px;
+  margin: 10px 0 15px 0;
+}
 #main .content_column_2 .block-connect {
   /*social network block*/
 
