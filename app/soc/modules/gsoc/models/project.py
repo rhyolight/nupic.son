@@ -42,18 +42,22 @@ class GSoCProject(soc.models.base.ModelWithFieldAttributes):
   title.help_text = ugettext('Title of the project')
 
   #: Required, text field describing the project
-  abstract = db.TextProperty(required=True)
+  abstract = db.TextProperty(
+      required=True, verbose_name=ugettext('Project abstract'))
   abstract.help_text = ugettext(
       'Short abstract, summary, or snippet;'
       ' 500 characters or less, plain text displayed publicly')
 
   #: Optional, text field containing all kinds of information about this project
-  public_info = db.TextProperty(required=False, default ='')
+  public_info = db.TextProperty(
+      required=False, default ='',
+      verbose_name=ugettext('Additional information'))
   public_info.help_text = ugettext(
       'Additional information about this project to be shown publicly')
 
   #: Optional, URL which can give more information about this project
-  additional_info = db.URLProperty(required=False)
+  additional_info = db.URLProperty(
+      required=False, verbose_name=ugettext('External resource URL'))
   additional_info.help_text = ugettext(
       'Link to a resource containing more information about this project.')
 
