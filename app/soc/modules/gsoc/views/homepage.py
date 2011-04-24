@@ -33,7 +33,7 @@ from soc.logic import system
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic.models.organization import logic as org_logic
-from soc.modules.gsoc.logic.models.student_project import logic as sp_logic
+from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
@@ -214,7 +214,7 @@ class Homepage(RequestHandler):
 
     current_timeline = self.data.timeline.currentPeriod()
 
-    featured_project = sp_logic.getFeaturedProject(
+    featured_project = project_logic.getFeaturedProject(
         current_timeline, self.data.program)
 
     context = {
