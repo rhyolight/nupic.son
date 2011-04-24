@@ -142,8 +142,7 @@ class Dashboard(RequestHandler):
   def _getStudentComponents(self):
     """Get the dashboard components for a student.
     """
-    # Add all the proposals of this current user
-    components = [MyProposalsComponent(self.request, self.data)]
+    components = []
 
     project_query = project_logic.getAcceptedProjectsQuery(
       ancestor=self.data.profile)
@@ -154,6 +153,9 @@ class Dashboard(RequestHandler):
       # Add a component to show the evaluations
       # TODO(ljvderijk): Enable after the right information can be displayed
       #components.append(MyEvaluationsComponent(self.request, self.data))
+
+    # Add all the proposals of this current user
+    components.append(MyProposalsComponent(self.request, self.data))
 
     return components
 
