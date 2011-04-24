@@ -141,11 +141,15 @@ class ProjectList(Template):
     self.request = request
     self.data = data
 
+    r = data.redirect
     list_config = lists.ListConfiguration()
     list_config.addColumn('student', 'Student',
                           lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
     list_config.setDefaultSort('student')
+    list_config.setRowAction(lambda e, *args, **kwargs:
+        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
+        urlOf('gsoc_project_details'))
     self._list_config = list_config
 
   def context(self):
