@@ -97,7 +97,7 @@ class ListProjects(RequestHandler):
     """
 
     return [
-        url(r'^gsoc/list_projects/%s$' % url_patterns.PROGRAM, self,
+        url(r'^gsoc/projects/list/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_accepted_projects')
     ]
 
