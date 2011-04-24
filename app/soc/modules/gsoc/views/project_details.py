@@ -141,6 +141,6 @@ class ProjectDetails(RequestHandler):
     user_is_owner = self.data.user and \
         (self.data.user.key() == self.data.project_owner.parent_key())
     if user_is_owner:
-      context['update_link'] = r.urlOf('gsoc_edit_project')
+      context['update_link'] = r.urlOf('gsoc_update_project')
 
     return context
