@@ -177,7 +177,7 @@ class ProposalAcceptanceTask:
       'org_entity': org_entity,
       }
 
-    template = 'modules/gsoc/student_proposal/mail/accepted_gsoc2010.html'
+    template = 'v2/soc/notification/gsoc2011_accepted_student.html'
     return mail_dispatcher.getSendMailFromTemplateTxn(template, context,
                                                       parent=proposal.parent())
 
