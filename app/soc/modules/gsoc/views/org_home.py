@@ -171,7 +171,7 @@ class ProjectList(Template):
     idx = lists.getListIndex(self.request)
     if idx == 0:
       list_query = project_logic.getAcceptedProjectsQuery(
-          self.data.program, self.data.organization)
+          program=self.data.program, org=self.data.organization)
 
       starter = lists.keyStarter
       prefetcher = lists.modelPrefetcher(GSoCProject, [], parent=True)
