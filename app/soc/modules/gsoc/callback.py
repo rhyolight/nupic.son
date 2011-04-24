@@ -81,6 +81,7 @@ class Callback(object):
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
     self.views.append(project_details.ProjectDetails())
+    self.views.append(project_details.ProjectDetailsUpdate())
     self.views.append(projects_list.ListProjects())
     self.views.append(proposal.ProposalPage())
     self.views.append(proposal_review.AcceptProposal())
