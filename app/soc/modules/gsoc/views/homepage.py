@@ -153,7 +153,7 @@ class FeaturedProject(Template):
 
   def context(self):
     project_id = self.featured_project.key().id_or_name()
-    student_link_id = self.featured_project.parent().user.link_id
+    student_link_id = self.featured_project.parent().link_id
 
     redirect = self.data.redirect
 
