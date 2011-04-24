@@ -29,7 +29,6 @@ from django.conf.urls.defaults import url
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
-from soc.logic.exceptions import NotFound
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 
