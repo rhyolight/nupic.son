@@ -40,14 +40,26 @@ limitations under the License.
       <p>{{ project.abstract|safe }}</p>
     </div>
     <div id="block-project-abstract-readmore" class="org-home-readmore">
-      {% if project.additional_info %}
-        <a href="{{ project.additional_info }}">Additional Information &raquo;</a>
-      {% endif %}&nbsp;&nbsp;
       <a href="{{ org_home_link }}">Organization Homepage &raquo;</a>
     </div>
   </div>
   <!-- end block -->
 
+  <!-- begin block -->
+  {% if project.public_info %}
+    <div id="project-public-info" class="block block-project-public-info">
+      <h4 title="title-section-project-public-info">Additional Information</h4>
+      <div id="block-project-public-info-content" class="block-content">
+        <p>{{ project.public_info|safe }}</p>
+      </div>
+      <div id="block-project-abstract-readmore" class="org-home-readmore">
+        {% if project.additional_info %}
+          <a href="{{ project.additional_info }}">Additional Information &raquo;</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+  <!-- end block -->
 {% if project.feed_url %}
 </div>
 <div class="content_column_2">
