@@ -620,14 +620,15 @@ class RedirectHelper(object):
     url = self.urlOf('review_gsoc_proposal', full=full)
     return "%s#c%s" % (url, comment.key().id())
 
-  def projectDetails(self, student_project):
+  def project(self, id=None, student=None):
     """Returns the URL to the Student Project.
 
     Args:
-      student_project: entity which represents the Student Project
+      student: entity which represents the user for the student
     """
-    # TODO: Use django reverse function from urlresolver once student_project
-    # view is converted to the new infrastructure
-    self._clear()
-    self._url = '/gsoc/student_project/show/%s' % student_project.key().id_or_name()
+    if not student:
+      assert 'user' in self._data.kwargs
+      student = self._data.kwargs['user']
+    self.id(id)
+    self.kwargs['user'] = student
     return self
