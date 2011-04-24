@@ -126,7 +126,13 @@ def remote(args, context=None):
 
   context['deepFetch'] = deepFetch
 
-  code.interact('App Engine interactive console for %s' % (app_id,), None, context)
+  try:
+    from IPython.Shell import IPShell
+    shell = IPShell(argv=[])
+    shell.mainloop()
+  except ImportError:
+    # IPython not found, use the vanilla interpreter shell
+    code.interact('App Engine interactive console for %s' % (app_id,), None, context)
 
 
 def setup():
