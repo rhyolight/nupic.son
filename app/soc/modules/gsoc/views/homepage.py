@@ -152,9 +152,14 @@ class FeaturedProject(Template):
     self.featured_project = featured_project
 
   def context(self):
+    project_id = self.featured_project.key().id_or_name()
+    student_link_id = self.featured_project.parent().user.link_id
+
     redirect = self.data.redirect
 
-    featured_project_url = redirect.projectDetails(self.featured_project).url()
+    featured_project_url = redirect.project(
+        id=project_id,
+        student=student_link_id).urlOf('gsoc_project_details')
 
     return {
       'featured_project': self.featured_project,
@@ -214,9 +219,6 @@ class Homepage(RequestHandler):
 
     current_timeline = self.data.timeline.currentPeriod()
 
-    featured_project = project_logic.getFeaturedProject(
-        current_timeline, self.data.program)
-
     context = {
         'logged_in_msg': LoggedInMsg(self.data, apply_link=False,
                                      div_name='user-login'),
@@ -226,6 +228,9 @@ class Homepage(RequestHandler):
         'page_name': 'Home page',
         'program': self.data.program,
     }
+
+    featured_project = project_logic.getFeaturedProject(
+        current_timeline, self.data.program)
 
     if featured_project:
       context['featured_project'] = FeaturedProject(
