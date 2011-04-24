@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
@@ -37,13 +38,13 @@ from soc.logic.helper import timeline as timeline_helper
 from soc.logic.models.request import logic as request_logic
 from soc.views.template import Template
 
+from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.models.org_app_survey import logic as \
     org_app_logic
-from soc.modules.gsoc.logic.models.student_project import logic as \
-    project_logic
 from soc.modules.gsoc.logic.models.survey import project_logic as \
     ps_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
+from soc.modules.gsoc.logic.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -144,8 +145,10 @@ class Dashboard(RequestHandler):
     # Add all the proposals of this current user
     components = [MyProposalsComponent(self.request, self.data)]
 
-    project = project_logic.getOneForFields({'student': self.data.profile})
-    if project:
+    project_query = project_logic.getAcceptedProjectsQuery(
+      ancestor=self.data.profile)
+
+    if project_query.count() > 1:
       # Add a component to show all the projects
       components.append(MyProjectsComponent(self.request, self.data))
       # Add a component to show the evaluations
@@ -359,10 +362,15 @@ class MyProjectsComponent(Component):
   def __init__(self, request, data):
     """Initializes this component.
     """
+    r = data.redirect
+
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org_name', 'Organization Name',
-                          lambda ent, *args: ent.scope.name)
+    list_config.addColumn('org', 'Organization Name',
+                          lambda ent, *args: ent.org.name)
+    list_config.setRowAction(lambda e, *args, **kwargs:
+        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
+        urlOf('gsoc_project_details'))
     self._list_config = list_config
 
     super(MyProjectsComponent, self).__init__(request, data)
@@ -380,12 +388,15 @@ class MyProjectsComponent(Component):
     """
     idx = lists.getListIndex(self.request)
     if idx == 2:
-      fields = {'program': self.data.program,
-                'student': self.data.profile}
-      prefetch = ['scope']
-      response_builder = lists.QueryContentResponseBuilder(
-          self.request, self._list_config, project_logic, fields,
-          prefetch=prefetch)
+      list_query = project_logic.getAcceptedProjectsQuery(
+          ancestor=self.data.profile, program=self.data.program)
+
+      starter = lists.keyStarter
+      prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, list_query,
+          starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
       return None
@@ -775,11 +786,17 @@ class ProjectsIMentorComponent(Component):
   def __init__(self, request, data):
     """Initializes this component.
     """
+    r = data.redirect
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org_name', 'Organization',
-                          lambda ent, *args: ent.scope.short_name)
+    list_config.addColumn('student', 'Student',
+                          lambda ent, *args: ent.parent().name())
+    list_config.addColumn('org', 'Organization',
+                          lambda ent, *args: ent.org.name)
     list_config.setDefaultSort('title')
+    list_config.setRowAction(lambda e, *args, **kwargs:
+        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
+        urlOf('gsoc_project_details'))
     self._list_config = list_config
 
     super(ProjectsIMentorComponent, self).__init__(request, data)
@@ -797,11 +814,15 @@ class ProjectsIMentorComponent(Component):
     """
     idx = lists.getListIndex(self.request)
     if idx == 5:
-      fields =  {'program': self.data.program,
-                 'mentor': self.data.profile}
-      response_builder = lists.QueryContentResponseBuilder(
-          self.request, self._list_config, project_logic,
-          fields, prefetch=['scope'])
+      list_query = project_logic.getAcceptedProjectsQuery(
+          mentor=self.data.profile, program=self.data.program)
+
+      starter = lists.keyStarter
+      prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, list_query,
+          starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
       return None
