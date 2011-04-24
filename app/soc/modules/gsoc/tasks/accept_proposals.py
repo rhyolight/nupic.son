@@ -163,6 +163,7 @@ class ProposalAcceptanceTask:
     sender_name, sender = mail_dispatcher.getDefaultMailSender()
 
     student_entity = proposal.parent()
+    org_entity = proposal.org
     program_entity = proposal.program
 
     context = {
@@ -173,7 +174,7 @@ class ProposalAcceptanceTask:
       'program_name': program_entity.name,
       'subject': 'Congratulations!',
       'proposal_title': proposal.title,
-      'org_name': proposal.org.name
+      'org_entity': org_entity,
       }
 
     template = 'modules/gsoc/student_proposal/mail/accepted_gsoc2010.html'
@@ -187,6 +188,7 @@ class ProposalAcceptanceTask:
     sender_name, sender = mail_dispatcher.getDefaultMailSender()
 
     student_entity = proposal.parent()
+    org_entity = proposal.org
     program_entity = proposal.program
 
     context = {
@@ -194,8 +196,10 @@ class ProposalAcceptanceTask:
       'to_name': student_entity.given_name,
       'sender': sender,
       'sender_name': sender_name,
+      'proposal_title': proposal.title,
       'program_name': program_entity.name,
-      'subject': 'Thank you for applying to %s' % (program_entity.name)
+      'subject': 'Thank you for applying to %s' % (program_entity.name),
+      'org_entity': org_entity,
       }
 
     template = 'modules/gsoc/student_proposal/mail/rejected_gsoc2010.html'
