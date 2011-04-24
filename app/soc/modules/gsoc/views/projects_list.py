@@ -28,7 +28,8 @@ from django.conf.urls.defaults import url
 from soc.logic.exceptions import AccessViolation
 from soc.views.template import Template
 
-from soc.modules.gsoc.logic.models.student_project import logic as sp_logic
+from soc.modules.gsoc.logic import project as project_logic
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
@@ -42,16 +43,20 @@ class ProjectList(Template):
     self.request = request
     self.data = data
 
+    r = data.redirect
     list_config = lists.ListConfiguration()
     list_config.addColumn('student', 'Student',
-                          lambda entity, *args: entity.student.name())
+                          lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
-                          lambda entity, *args: entity.scope.name)
+                          lambda entity, *args: entity.org.name)
     list_config.addColumn('mentor', 'Mentor',
                           lambda entity, *args: entity.mentor.name())
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
+    list_config.setRowAction(lambda e, *args, **kwargs:
+        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
+        urlOf('gsoc_project_details'))
     self._list_config = list_config
 
   def context(self):
@@ -72,11 +77,16 @@ class ProjectList(Template):
     """
     idx = lists.getListIndex(self.request)
     if idx == 0:
-      fields = {'program': self.data.program,
-                'status': 'accepted'}
-      response_builder = lists.QueryContentResponseBuilder(
-          self.request, self._list_config, sp_logic,
-          fields, prefetch=['student', 'scope', 'mentor'])
+      list_query = project_logic.getAcceptedProjectsQuery(
+          self.data.program)
+
+      starter = lists.keyStarter
+      prefetcher = lists.modelPrefetcher(GSoCProject, ['org', 'mentor'],
+                                         parent=True)
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, list_query,
+          starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
       return None
