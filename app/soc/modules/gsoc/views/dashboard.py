@@ -34,6 +34,7 @@ from django.utils.translation import ugettext
 
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
+from soc.logic.exceptions import BadRequest
 from soc.logic.helper import timeline as timeline_helper
 from soc.logic.models.request import logic as request_logic
 from soc.views.template import Template
