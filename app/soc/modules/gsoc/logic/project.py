@@ -25,7 +25,6 @@ __authors__ = [
 import datetime
 
 from google.appengine.api import memcache
-from google.appengine.ext import db
 
 from soc.modules.gsoc.models.project import GSoCProject
 
