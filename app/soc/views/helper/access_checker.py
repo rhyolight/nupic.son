@@ -66,8 +66,8 @@ DEF_ALREADY_PARTICIPATING_AS_STUDENT_MSG = ugettext(
     'You cannot register as a %s since you are already a '
     'student in %s.')
 
-DEF_CANNOT_UPDATE_PROPOSAL = ugettext(
-    'This proposal cannot be updated.')
+DEF_CANNOT_UPDATE_ENTITY = ugettext(
+    'This %(model)s cannot be updated.')
 
 DEF_DEV_LOGOUT_LOGIN_MSG_FMT = ugettext(
     'Please <a href="%%(sign_out)s">sign out</a>'
@@ -753,7 +753,9 @@ class AccessChecker(BaseAccessChecker):
     if status == 'ignored':
       raise AccessViolation(DEF_PROPOSAL_IGNORED_MESSAGE)
     elif status in ['invalid', 'accepted', 'rejected']:
-      raise AccessViolation(DEF_CANNOT_UPDATE_PROPOSAL)
+      raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
+          'model': 'GSoCProposal'
+          })
 
     # determine what can be done with the proposal
     if status == 'new' or status == 'pending':
