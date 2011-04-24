@@ -38,6 +38,7 @@ from soc.models.user import User
 
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
 
@@ -97,6 +98,9 @@ DEF_NO_DOCUMENT = ugettext(
 
 DEF_NO_LINK_ID_MSG = ugettext(
     'Link ID should not be empty')
+
+DEF_NO_PROJECT_MSG = ugettext(
+    'Requested project does not exist.')
 
 DEF_NO_SLOT_TRANSFER_MSG_FMT = ugettext(
     'This page is inaccessible at this time. It is accessible only after '
@@ -361,6 +365,30 @@ class Mutator(object):
     self.data.host = host_logic.getHostForUser(self.data.user)
     if self.data.host or self.data.user.host_for:
       self.data.is_host = True
+
+  def projectFromKwargs(self):
+    """Sets the project entity in RequestData object.
+    """
+    self.profileFromKwargs()
+    assert isSet(self.data.url_profile)
+
+    # can safely call int, since regexp guarnatees a number
+    project_id = int(self.data.kwargs['id'])
+
+    if not project_id:
+      raise NotFound(ugettext('Proposal id must be a positive number'))
+
+    self.data.project = GSoCProject.get_by_id(
+        project_id, parent=self.data.url_profile)
+
+    if not self.data.project:
+      raise NotFound(DEF_NO_PROJECT_MSG)
+
+    parent_key = self.data.project.parent_key()
+    if self.data.profile and parent_key == self.data.profile.key():
+      self.data.project_owner = self.data.profile
+    else:
+      self.data.project_owner = self.data.project.parent()
 
 
 class DeveloperMutator(Mutator):
