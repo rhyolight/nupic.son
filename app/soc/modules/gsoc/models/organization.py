@@ -101,7 +101,7 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
   slots.help_text = ugettext(
       'The amount of slots allocated to this organization.')
 
-  note= db.TextProperty(required=False, verbose_name=ugettext(
+  note = db.TextProperty(required=False, verbose_name=ugettext(
       'Note'))
 
   slots_desired = db.IntegerProperty(required=False, default=0,
