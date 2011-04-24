@@ -30,7 +30,7 @@ from google.appengine.ext import db
 from soc.modules.gsoc.models.project import GSoCProject
 
 
-def getFeaturedProject(self, current_timeline, program):
+def getFeaturedProject(current_timeline, program):
   """Return a featured project for a given program.
 
   Args:
