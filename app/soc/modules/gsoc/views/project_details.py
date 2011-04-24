@@ -74,8 +74,7 @@ class ProjectDetailsUpdate(RequestHandler):
                                               instance=self.data.project)
 
     context = {
-        'page_name': 'Edit project details',
-        'program': self.data.program,
+        'page_name': 'Update project details',
         'project': self.data.project,
         'forms': [project_details_form],
         'error': project_details_form.errors,
@@ -132,7 +131,6 @@ class ProjectDetails(RequestHandler):
     """
     context = {
         'page_name': 'Project details',
-        'program': self.data.program,
         'project': self.data.project,
     }
 
