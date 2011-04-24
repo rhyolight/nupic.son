@@ -30,7 +30,9 @@ limitations under the License.
   </div>
 </div>
 
-<div id="project-details" class="content_column_1">
+{% if project.feed_url %}
+  <div id="project-details" class="content_column_1">
+{% endif %}
   <!-- begin block -->
   <div id="project-abstract" class="block block-project-abstract">
     <h4 title="title-section-project-abstract">Abstract</h4>
@@ -46,15 +48,15 @@ limitations under the License.
   </div>
   <!-- end block -->
 
+{% if project.feed_url %}
 </div>
-
 <div class="content_column_2">
   <!-- begin block -->
-  {% if project.feed_url %}
-    <div id="blog-feed" class="block block-blog-feed"></div>
-  {% endif %}
+  <div id="blog-feed" class="block block-blog-feed"></div>
   <!-- end block -->
 </div>
+{% endif %}
+
 {% endblock page_content %}
 
 {% block dependencies %}
