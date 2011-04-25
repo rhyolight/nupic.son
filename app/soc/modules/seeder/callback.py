@@ -20,9 +20,6 @@ __authors__ = [
   ]
 
 
-from soc.modules.seeder.views import seeder
-
-
 class Callback(object):
   """Callback object that handles interaction between the core.
   """
@@ -41,4 +38,5 @@ class Callback(object):
 
     self.core.requireUniqueService('registerWithSitemap')
 
-    self.core.registerSitemapEntry(seeder.view.getDjangoURLPatterns())
+    #from soc.modules.seeder.views import seeder
+    #self.core.registerSitemapEntry(seeder.view.getDjangoURLPatterns())
