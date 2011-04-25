@@ -105,6 +105,39 @@ class TimelineHelper(object):
 
     return 'offseason'
 
+  def nextDeadline(self):
+    """Determines the next deadline on the timeline.
+
+    Returns:
+      A two-tuple containing deadline text and the datetime object for
+      the next deadline
+    """
+    if self.beforeOrgSignupStart():
+      return ("Org Application Starts", self.orgSignupStart())
+
+    if self.orgSignup():
+      return ("Org Application Deadline", self.orgSignupEnd())
+
+    #if isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
+    #  return ("Accepted Orgs Announced In", self.orgsAnnouncedOn())
+
+    if self.orgsAnnounced() and self.beforeStudentSignupStart():
+      return ("Student Application Opens", self.studentSignupStart())
+
+    if self.studentSignup():
+      return ("Student Application Deadline", self.studentSignupEnd())
+
+    if isBetween(self.studentSignupEnd(), self.applicationMatchedOn()):
+      return ("Proposal Matched Deadline", self.applicationMatchedOn())
+
+    if isBetween(self.applicationMatchedOn(), self.applicationReviewEndOn()):
+      return ("Proposal Scoring Deadline", self.applicationReviewEndOn())
+
+    if isBetween(self.applicationReviewEndOn(), self.studentsAnnouncedOn()):
+      return ("Accepted Students Announced", self.studentsAnnouncedOn())
+
+    return None
+
   def orgsAnnouncedOn(self):
     return self.timeline.accepted_organization_announced_deadline
 
@@ -113,6 +146,9 @@ class TimelineHelper(object):
 
   def orgSignupStart(self):
     return self.org_app.survey_start
+
+  def orgSignupEnd(self):
+    return self.org_app.survey_end
 
   def orgSignupBetween(self):
     return (self.org_app.survey_start, self.org_app.survey_end)
@@ -149,6 +185,9 @@ class TimelineHelper(object):
   def orgsAnnounced(self):
     return isAfter(self.orgsAnnouncedOn())
 
+  def beforeStudentSignupStart(self):
+    return isBefore(self.studentSignupStart())
+
   def afterStudentSignupStart(self):
     return isAfter(self.studentSignupStart())
 
@@ -167,6 +206,12 @@ class TimelineHelper(object):
 
   def beforeStudentsAnnounced(self):
     return isBefore(self.studentsAnnouncedOn())
+
+  def applicationReviewEndOn(self):
+    return self.timeline.application_review_deadline
+
+  def applicationMatchedOn(self):
+    return self.timeline.student_application_matched_deadline
 
 
 class RequestData(RequestData):
