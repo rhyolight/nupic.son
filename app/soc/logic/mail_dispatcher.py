@@ -150,39 +150,26 @@ def sendMail(context, parent=None, run=True):
     return txn
 
 
-def getDefaultMailSender():
+def getDefaultMailSender(data=None):
   """Returns the sender that currently can be used to send emails.
+
+  Args:
+    data: an option RequestData object
 
   Returns:
     - A tuple containing (sender_name, sender_address)
     Consisting of:
-    - If available the site name and noreply address from the site singleton
-    - Or the (public) name and email address of the current logged in User
-    - None if there is no address to return
   """
-  from soc.logic import accounts
-  from soc.logic.models import user as user_logic
+  from soc.logic import system
   from soc.logic.models import site as site_logic
 
   # check if there is a noreply email address set
-  site_entity = site_logic.logic.getSingleton()
 
-  if site_entity.noreply_email:
-    return (site_entity.site_name, site_entity.noreply_email)
+  if data:
+    site_entity = data.site
+  else:
+    site_entity = site_logic.logic.getSingleton()
 
-  # use the email address of the current logged in user
-  account = accounts.getCurrentAccount(normalize=False)
+  no_reply_email = system.getApplicationNoReplyEmail()
 
-  if not account:
-    logging.warning('Non-Authenticated user triggered getDefaultMailSender '
-                    'please set a no-reply address in Site settings')
-    return None
-
-  # we need to retrieve account separately, as user_logic normalizes it
-  # and the GAE admin API is case sensitive
-  user_entity = user_logic.logic.getForAccount(account)
-
-  # pylint: disable=E1103
-  name = user_entity.name if user_entity else account.nickname()
-
-  return (name, account.email())
+  return (site_entity.site_name, no_reply_email)
