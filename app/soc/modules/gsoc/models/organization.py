@@ -191,7 +191,7 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
       'Message from the organization to be added to the email sent to '
       'accepted students. The format consists of a standard message to '
       'all the accepted students, followed by this message, which is in '
-      'turn followed the signature.')
+      'turn followed by the signature.')
   accepted_student_msg.group = ugettext('4. Organization Preferences')
 
   rejected_student_msg = db.TextProperty(
