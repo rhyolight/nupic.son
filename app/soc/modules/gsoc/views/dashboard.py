@@ -57,6 +57,7 @@ from soc.modules.gsoc.views.helper import url_patterns
 
 
 DATETIME_FORMAT = 'Y-m-d H:i:s'
+BIRTHDATE_FORMAT = 'd-m-Y'
 
 
 class Dashboard(RequestHandler):
@@ -1110,6 +1111,10 @@ class StudentsComponent(Component):
     list_config.addSimpleColumn('given_name', "Given name", hidden=True)
     list_config.addSimpleColumn('surname', "Surname", hidden=True)
     list_config.addSimpleColumn('name_on_documents', "Name on documents", hidden=True)
+    list_config.addColumn(
+        'birth_date', "Birthdate",
+        (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
+        hidden=True)
 
     # address fields
     list_config.addSimpleColumn('res_street', "res_street", hidden=True)
