@@ -262,6 +262,8 @@ def seed(request, *args, **kwargs):
       'phone': '1-555-BANANA',
       'birth_date': db.DateProperty.now(),
       'agreed_to_tos': True,
+      'is_org_admin': True,
+      'is_mentor': True,
       }
 
 
@@ -464,6 +466,7 @@ def seed(request, *args, **kwargs):
       'scope': gsoc2009,
       'program': gsoc2009,
       'user': student_user,
+      'is_student': True,
       'public_name': 'Student',
       'given_name': 'Student',
       'surname': 'Student',
