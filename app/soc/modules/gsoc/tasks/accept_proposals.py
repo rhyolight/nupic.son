@@ -221,16 +221,23 @@ class ProposalAcceptanceTask:
       }
     student_profile = proposal.parent()
     project = GSoCProject(parent=student_profile, **fields)
+    student_info_key = student_profile.student_info.key()
 
     mail_txn = self.getAcceptProposalMailTxn(proposal)
+
+    proposal_key = proposal.key()
 
     def acceptProposalTxn():
       """Transaction that puts the new project, sets the proposal to accepted
       and mails the lucky student.
       """
-      db.put(project)
+      proposal = db.get(proposal_key)
       proposal.status = 'accepted'
+      student_info = db.get(student_info_key)
+      student_info.number_of_projects += 1
+      db.put(project)
       db.put(proposal)
+      db.put(student_info)
       mail_txn()
 
     db.RunInTransaction(acceptProposalTxn)

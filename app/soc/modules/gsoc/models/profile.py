@@ -87,3 +87,6 @@ class GSoCStudentInfo(soc.models.role.StudentInfo):
 
   #: number of proposals 
   number_of_proposals = db.IntegerProperty(default=0)
+
+  #: number of projects
+  number_of_projects = db.IntegerProperty(default=0)
