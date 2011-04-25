@@ -567,9 +567,10 @@ class SubmittedProposalsComponent(Component):
     if options and len(options) > 1:
       options = [('', 'All')] + options
 
+    hidden = len(data.mentor_for) < 2
     list_config.addColumn(
         'org', 'Organization', (lambda ent, *args: ent.org.short_name),
-        options=options, hidden=True)
+        options=options, hidden=hidden)
 
     # hidden keys
     list_config.addColumn(
