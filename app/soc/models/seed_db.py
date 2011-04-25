@@ -40,12 +40,14 @@ from soc.logic.models.document import logic as document_logic
 from soc.logic.models.user import logic as user_logic
 from soc.models.document import Document
 from soc.models.host import Host
+from soc.models.org_app_survey import OrgAppSurvey
 from soc.models.notification import Notification
 
 from soc.models.site import Site
 from soc.models.sponsor import Sponsor
 
-from soc.models.survey import Survey, SurveyContent
+from soc.models.survey import Survey
+from soc.models.survey import SurveyContent
 from soc.models.survey_record import SurveyRecord
 
 from soc.models.user import User
@@ -370,6 +372,36 @@ def seed(request, *args, **kwargs):
 
   profile = GSoCProfile(**role_properties)
   role_properties.pop('parent')
+
+  org_app_survey_content_properties = {
+      'schema': "{u'participating': {'has_comment': False, 'render': 'quant_radio', 'index': 0, 'question': u'Are you participating?', 'required': True, 'tip': u'', 'type': 'pick_quant'}}",
+      }
+
+  org_app_survey_content = SurveyContent(**org_app_survey_content_properties)
+  org_app_survey_content.put()
+
+  org_app_properties = {
+      'link_id': 'orgapp',
+      'key_name': 'gsoc_program/google/gsoc2009/orgapp',
+      'author': current_user,
+      'content': u'<p>Survey!</p>',
+      'is_featured': True,
+      'modified_by': current_user,
+      'prefix': u'gsoc_program',
+      'read_access': u'restricted',
+      'scope': gsoc2009,
+      'scope_path': gsoc2009.key().id_or_name(),
+      'short_name': u'GSoC2009OrgApp',
+      'survey_content': org_app_survey_content,
+      'survey_end': before,
+      'survey_start': before,
+      'taking_access': 'user',
+      'title': u'GSoC 2009 Org Application Survey',
+      'write_access': u'admin'
+      }
+
+  org_app_survey = OrgAppSurvey(**org_app_properties)
+  org_app_survey.put()
 
   orgs = []
   for i in range(15):
