@@ -149,13 +149,14 @@ class TimelineHelper(object):
     return (self.timeline.program_start, self.timeline.program_end)
 
   def orgSignupStart(self):
-    return self.org_app.survey_start
+    return self.org_app.survey_start if self.org_app else None
 
   def orgSignupEnd(self):
-    return self.org_app.survey_end
+    return self.org_app.survey_end if self.org_app else None
 
   def orgSignupBetween(self):
-    return (self.org_app.survey_start, self.org_app.survey_end)
+    return (self.org_app.survey_start, self.org_app.survey_end) if \
+        self.org_app else None
 
   def studentSignupStart(self):
     return self.timeline.student_signup_start
