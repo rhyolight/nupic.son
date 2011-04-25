@@ -525,6 +525,8 @@ class SubmittedProposalsComponent(Component):
         ('(pending|accepted|rejected|duplicate|mentor)', 'Valid'),
         ('(duplicate|mentor)', 'Needs attention'),
         ('(duplicate)', 'Duplicate'),
+        ('(accepted)', 'Accepted'),
+        ('(rejected)', 'Rejected'),
         ('(mentor)', 'No mentor assigned'),
         ('', 'All'),
         ('(invalid|withdrawn|ignored)', 'Invalid'),
