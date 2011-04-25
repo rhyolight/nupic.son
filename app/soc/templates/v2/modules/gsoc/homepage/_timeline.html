@@ -21,6 +21,12 @@ limitations under the License.
     <area shape="poly" coords="53,143,49,134,46,113,72,113,73,122,77,130" href="javascript:void(0)" alt="Organization Applications" title="Organization Applications" onMouseOver="if(document.images) document.getElementById('program-timeline').src= '/soc/content/{{ app_version }}/images/v2/gsoc/image-map-org-apps.png';" onMouseOut="if(document.images) document.getElementById('program-timeline').src= '{{ img_url }}';" />
     <area shape="poly" coords="75,165,62,155,53,143,77,130,81,136,88,142" href="javascript:void(0)" alt="Kickoff" title="Kickoff" onMouseOver="if(document.images) document.getElementById('program-timeline').src= '/soc/content/{{ app_version }}/images/v2/gsoc/image-map-kickoff.png';" onMouseOut="if(document.images) document.getElementById('program-timeline').src= '{{ img_url }}';" />
     <area shape="poly" coords="88,142,101,146,114,145,126,139,134,128,137,113,164,113,161,131,154,145,147,155,134,165,119,171,104,173,89,171,75,165" href="javascript:void(0)" alt="Off Season" title="Off Season" onMouseOver="if(document.images) document.getElementById('program-timeline').src= '/soc/content/{{ app_version }}/images/v2/gsoc/image-map-off-season.png';" onMouseOut="if(document.images) document.getElementById('program-timeline').src= '{{ img_url }}';" />
-
   </map>
+  {% if next_deadline_msg %}
+    <div id="block-program-timeline-content-countdown" class="block-project-timeline-countdown">
+      <strong class="deadline">{{ next_deadline_msg|title }}:</strong>
+      <strong class="deadline">{{ next_deadline_datetime|date:"F d" }} at {{ next_deadline_datetime|time:"H:i" }} UTC</strong>
+      <strong class="countdown">{{ next_deadline_datetime|timeuntil }} remaining</strong>
+    </div>
+  {% endif %}
 </div>
