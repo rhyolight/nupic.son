@@ -1110,6 +1110,23 @@ class StudentsComponent(Component):
     list_config.addSimpleColumn('given_name', "Given name", hidden=True)
     list_config.addSimpleColumn('surname', "Surname", hidden=True)
     list_config.addSimpleColumn('name_on_documents', "Name on documents", hidden=True)
+
+    # address fields
+    list_config.addSimpleColumn('res_street', "res_street", hidden=True)
+    list_config.addSimpleColumn('res_street_extra', "res_street_extra", hidden=True)
+    list_config.addSimpleColumn('res_city', "res_city", hidden=True)
+    list_config.addSimpleColumn('res_state', "res_state", hidden=True)
+    list_config.addSimpleColumn('res_country', "res_country", hidden=True)
+    list_config.addSimpleColumn('res_postalcode', "res_postalcode", hidden=True)
+    list_config.addSimpleColumn('phone', "phone", hidden=True)
+    list_config.addSimpleColumn('ship_name', "ship_name", hidden=True)
+    list_config.addSimpleColumn('ship_street', "ship_street", hidden=True)
+    list_config.addSimpleColumn('ship_street_extra', "ship_street_extra", hidden=True)
+    list_config.addSimpleColumn('ship_city', "ship_city", hidden=True)
+    list_config.addSimpleColumn('ship_state', "ship_state", hidden=True)
+    list_config.addSimpleColumn('ship_country', "ship_country", hidden=True)
+    list_config.addSimpleColumn('ship_postalcode', "ship_postalcode", hidden=True)
+
     list_config.addColumn(
         'number_of_proposals', "#proposals",
         lambda ent, si, *args: si[ent.key()].number_of_proposals)
