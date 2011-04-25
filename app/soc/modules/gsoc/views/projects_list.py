@@ -44,7 +44,9 @@ class ProjectList(Template):
     self.data = data
 
     r = data.redirect
-    list_config = lists.ListConfiguration()
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
+        ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addColumn('student', 'Student',
                           lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
