@@ -43,9 +43,10 @@ class Timeline(Template):
   """Timeline template.
   """
 
-  def __init__(self, data, current_timeline):
+  def __init__(self, data, current_timeline, next_deadline):
     self.data = data
     self.current_timeline = current_timeline
+    self.next_deadline = next_deadline
 
   def context(self):
     if self.current_timeline == 'kickoff_period':
@@ -64,9 +65,15 @@ class Timeline(Template):
       img_url = ("/soc/content/%s/images/v2/gsoc/image-map-off-season.png"
                  % system.getMelangeVersion())
 
-    return {
+    context = {
         'img_url': img_url
     }
+
+    if self.next_deadline:
+      context['next_deadline_msg'] = self.next_deadline[0]
+      context['next_deadline_datetime'] = self.next_deadline[1]
+
+    return context
 
   def templatePath(self):
     return "v2/modules/gsoc/homepage/_timeline.html"
@@ -218,11 +225,12 @@ class Homepage(RequestHandler):
     """
 
     current_timeline = self.data.timeline.currentPeriod()
+    next_deadline = self.data.timeline.nextDeadline()
 
     context = {
         'logged_in_msg': LoggedInMsg(self.data, apply_link=False,
                                      div_name='user-login'),
-        'timeline': Timeline(self.data, current_timeline),
+        'timeline': Timeline(self.data, current_timeline, next_deadline),
         'apply': Apply(self.data),
         'connect_with_us': ConnectWithUs(self.data),
         'page_name': 'Home page',
