@@ -133,7 +133,7 @@ class GSoCProfileHelper(object):
         'scope': self.profile, 'score': 0, 'nr_scores': 0,
         'is_publicly_visible': False, 'accept_as_project': False,
         'is_editable_post_deadline': False, 'extra': None,
-        'parent': self.profile, 'status': 'pending',
+        'parent': self.profile, 'status': 'pending', 'has_mentor': True,
         'program': self.program, 'org': org, 'mentor': mentor
     }
     self.seedn(GSoCProposal, properties, n)
@@ -146,13 +146,10 @@ class GSoCProfileHelper(object):
     """Sets the current user to be a student with a project for the current program.
     """
     self.createStudent()
-    from soc.modules.gsoc.models.student_project import StudentProject
-    from soc.modules.seeder.logic.providers.string import NextLinkIDProvider
-    properties = {'program': self.program, 'scope': org,
-                  'student': self.profile, 'status': 'accepted',
-                  'mentor': mentor,
-                  'link_id': NextLinkIDProvider(start=-1)}
-    self.seedn(StudentProject, properties, n)
+    from soc.modules.gsoc.models.project import GSoCProject
+    properties = {'program': self.program, 'org': org, 'status': 'accepted',
+                  'parent': self.profile, 'mentor': mentor}
+    self.seedn(GSoCProject, properties, n)
     return self.profile
 
   def createHost(self):
@@ -208,10 +205,10 @@ class GSoCProfileHelper(object):
     """Creates an mentor profile with a project for the current user.
     """
     self.createMentor(org)
-    from soc.modules.gsoc.models.student_project import StudentProject
+    from soc.modules.gsoc.models.project import GSoCProject
     properties = {'mentor': self.profile, 'program': self.program,
-                  'student': student, 'scope': org}
-    self.seed(StudentProject, properties)
+                  'parent': student, 'org': org, 'status': 'accepted'}
+    self.seed(GSoCProject, properties)
     return self.profile
 
   def clear(self):

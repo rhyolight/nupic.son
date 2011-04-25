@@ -85,10 +85,9 @@ class DashboardTest(DjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsStudentWithProject(self):
-    mentor = GSoCProfileHelper(
-        self.gsoc, self.dev_test).createOtherUser(
-        'mentor@example.com').createMentor(self.org)
-    self.data.createStudentWithProject(self.org, mentor)
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com').createMentor(self.org)
+    self.data.createStudentWithProject(self.org, mentor.profile)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertDashboardComponentTemplatesUsed(response)
@@ -121,10 +120,9 @@ class DashboardTest(DjangoTestCase):
 
   def testDashboardAsMentorWithProject(self):
     self.timeline.studentsAnnounced()
-    student = GSoCProfileHelper(
-        self.gsoc, self.dev_test).createOtherUser(
-        'student@example.com').createStudent()
-    self.data.createMentorWithProject(self.org, student)
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com').createStudent()
+    self.data.createMentorWithProject(self.org, student.profile)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertDashboardComponentTemplatesUsed(response)
