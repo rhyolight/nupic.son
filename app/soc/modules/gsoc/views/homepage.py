@@ -46,7 +46,7 @@ class Timeline(Template):
   def __init__(self, data, current_timeline, next_deadline):
     self.data = data
     self.current_timeline = current_timeline
-    self.next_deadline = next_deadline
+    self.next_deadline_msg, self.next_deadline_datetime = next_deadline
 
   def context(self):
     if self.current_timeline == 'kickoff_period':
@@ -69,9 +69,9 @@ class Timeline(Template):
         'img_url': img_url
     }
 
-    if self.next_deadline:
-      context['next_deadline_msg'] = self.next_deadline[0]
-      context['next_deadline_datetime'] = self.next_deadline[1]
+    if self.next_deadline_msg and self.next_deadline_datetime:
+      context['next_deadline_msg'] = self.next_deadline_msg
+      context['next_deadline_datetime'] = self.next_deadline_datetime
 
     return context
 

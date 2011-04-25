@@ -136,7 +136,7 @@ class TimelineHelper(object):
     if isBetween(self.applicationReviewEndOn(), self.studentsAnnouncedOn()):
       return ("Accepted Students Announced", self.studentsAnnouncedOn())
 
-    return None
+    return ('', None)
 
   def orgsAnnouncedOn(self):
     return self.timeline.accepted_organization_announced_deadline
