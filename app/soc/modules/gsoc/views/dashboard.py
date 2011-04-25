@@ -138,6 +138,18 @@ class Dashboard(RequestHandler):
       components += self._getLoneUserComponents()
       components.append(RequestComponent(self.request, self.data, False))
 
+    if self.data.is_host:
+      components += self._getHostComponents()
+
+    return components
+
+  def _getHostComponents(self):
+    """Get the dashboard components for a host.
+    """
+    components = []
+
+    components.append(StudentsComponent(self.request, self.data))
+
     return components
 
   def _getStudentComponents(self):
@@ -1078,5 +1090,77 @@ class ParticipantsComponent(Component):
     return {
         'name': 'participants',
         'title': 'MEMBERS OF MY ORGANIZATIONS',
+        'lists': [list],
+    }
+
+
+class StudentsComponent(Component):
+  """Component for listing all the students.
+  """
+
+  def __init__(self, request, data):
+    """Initializes this component.
+    """
+    self.data = data
+    list_config = lists.ListConfiguration()
+    list_config.addColumn(
+        'name', 'Name', lambda ent, *args: ent.name())
+    list_config.addSimpleColumn('link_id', "Link ID")
+    list_config.addSimpleColumn('email', "Email")
+    list_config.addSimpleColumn('given_name', "Given name", hidden=True)
+    list_config.addSimpleColumn('surname', "Surname", hidden=True)
+    list_config.addSimpleColumn('name_on_documents', "Name on documents", hidden=True)
+    list_config.addColumn(
+        'number_of_proposals', "#proposals",
+        lambda ent, si, *args: si[ent.key()].number_of_proposals)
+    list_config.addColumn(
+        'number_of_projects', "#projects",
+        lambda ent, si, *args: si[ent.key()].number_of_projects)
+
+    self._list_config = list_config
+
+    super(StudentsComponent, self).__init__(request, data)
+
+  def templatePath(self):
+    return'v2/modules/gsoc/dashboard/list_component.html'
+
+  def getListData(self):
+    idx = lists.getListIndex(self.request)
+
+    if idx != 10:
+      return None
+
+    q = GSoCProfile.all()
+
+    q.filter('scope', self.data.program)
+    q.filter('is_student', True)
+
+    starter = lists.keyStarter
+
+    def prefetcher(profiles):
+      keys = []
+
+      for profile in profiles:
+        key = GSoCProfile.student_info.get_value_for_datastore(profile)
+        if key:
+          keys.append(key)
+
+      entities = db.get(keys)
+      si = dict((i.parent_key(), i) for i in entities if i)
+
+      return ([si], {})
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+
+    return response_builder.build()
+
+  def context(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=10)
+
+    return {
+        'name': 'students',
+        'title': 'PARTICIPATING STUDENTS',
         'lists': [list],
     }
