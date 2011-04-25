@@ -148,7 +148,7 @@ class Dashboard(RequestHandler):
     project_query = project_logic.getAcceptedProjectsQuery(
       keys_only=True, ancestor=self.data.profile)
 
-    if project_query.count() > 1:
+    if project_query.count() > 0:
       # Add a component to show all the projects
       components.append(MyProjectsComponent(self.request, self.data))
       # Add a component to show the evaluations
