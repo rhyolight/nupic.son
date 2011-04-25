@@ -36,6 +36,12 @@ limitations under the License.
   </div>
 </div>
 
+<!-- begin block -->
+{% if project_list %}
+  {{ project_list.render }}
+{% endif %}
+<!-- end block -->
+
 <div id="organization-home" class="content_column_1">
   <!-- begin block -->
   <div id="organization-description" class="block block-organization-description">
@@ -69,11 +75,6 @@ limitations under the License.
   {% endif %}
   <!-- end block -->
 
-  <!-- begin block -->
-  {% if project_list %}
-    {{ project_list.render }}
-  {% endif %}
-  <!-- end block -->
 </div>
 
 <div class="content_column_2">
