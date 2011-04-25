@@ -49,7 +49,7 @@ class ProposalForm(forms.ModelForm):
     css_prefix = 'gsoc_proposal'
     exclude = ['status', 'mentor', 'possible_mentors', 'org', 'program',
         'is_editable_post_deadline', 'created_on', 'last_modified_on',
-        'score', 'nr_scores', 'accept_as_project', 'extra']
+        'score', 'nr_scores', 'accept_as_project', 'extra', 'has_mentor']
 
   clean_content = cleaning.clean_html_content('content')
 
