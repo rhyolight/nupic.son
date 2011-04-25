@@ -25,6 +25,7 @@ __authors__ = [
 import datetime
 
 from google.appengine.api import memcache
+from google.appengine.ext import db
 
 from soc.modules.gsoc.models.project import GSoCProject
 
@@ -76,7 +77,7 @@ def getFeaturedProject(current_timeline, program):
   return new_project
 
 
-def getAcceptedProjectsQuery(ancestor=None, **properties):
+def getAcceptedProjectsQuery(keys_only=False, ancestor=None, **properties):
   """Returns the Appengine query object for the given set of properties.
 
   Args:
@@ -84,7 +85,7 @@ def getAcceptedProjectsQuery(ancestor=None, **properties):
     properties: keyword arguments containing the properties for which the
         query must be constructed.
   """
-  q = GSoCProject.all()
+  q = db.Query(GSoCProject, keys_only=keys_only)
 
   if ancestor:
     q.ancestor(ancestor)
