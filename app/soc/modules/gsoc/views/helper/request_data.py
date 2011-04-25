@@ -115,6 +115,10 @@ class TimelineHelper(object):
     if self.beforeOrgSignupStart():
       return ("Org Application Starts", self.orgSignupStart())
 
+    # we do not have deadlines for any of those programs that are not active
+    if not self.programActive():
+      return ("", None)
+
     if self.orgSignup():
       return ("Org Application Deadline", self.orgSignupEnd())
 
