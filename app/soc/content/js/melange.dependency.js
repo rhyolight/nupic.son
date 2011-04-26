@@ -128,7 +128,15 @@
   s.raty = [
     tpjs + "jquery/jquery.raty.js"
   ];
-  
+
+  s.cluetip = [
+    tpjs + "jquery/jquery.cluetip.js"
+   ];
+
+  s.dimensions = [
+    tpjs + "jquery/jquery.dimensions.js"
+  ];
+
   s.jqueryui = {}
 
   if (melange.config.is_local !== undefined && melange.config.is_local === true) {
@@ -181,6 +189,11 @@
     null,
     tpjs + "jquery/jquery-ui.dialog.js"
   ];
+
+  s.jqueryui.checkboxes = [
+    tpjs + "jquery.ui-checkboxes.js";
+  ];
+
 
   s.jqgrid = [
     s.jqueryui.core,
