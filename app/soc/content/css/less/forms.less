@@ -314,7 +314,7 @@
 
 #form {/*form defaults*/
     margin: 0 auto;
-    
+
     .note {/*for adding a note below a text field*/
         color: @orange;
         display: block;
@@ -323,7 +323,21 @@
         font-weight: bold;
         margin: 0 0 0 4px;
     }
+    .input-submit-mixin (@height: 30px, @line-height: 30px) {
+        background: url(../../../images/v2/gsoc/form-submit-bg.png) 0 0 repeat;
+        border: 0;
+        color: #fff;
+        font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        height: @height;
+        line-height: @line-height;
+        padding: 0 15px;
+        text-transform: uppercase;
 
+        &:hover {
+            cursor: pointer;
+        }
     fieldset {
         position: relative;
         width: 524px;
@@ -463,19 +477,7 @@
     }
     .row.button-row {/*submit btn row*/
         input {
-            background:url(../../../images/v2/gsoc/form-submit-bg.png) 0 0 repeat;
-            border: 0;
-            color: #fff;
-            font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
-            font-size: 14px;
-            font-weight: bold;
-            height: 40px;
-            line-height: 40px;
-            padding: 0 15px;
-            text-transform: uppercase;
-        }
-        input:hover {
-            cursor: pointer;
+            .input-submit-mixin(40px, 40px);
         }
     }
 }
