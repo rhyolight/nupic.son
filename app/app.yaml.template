@@ -82,10 +82,6 @@ handlers:
   static_dir: shell/static
   expiration: 1d
 
-- url: /profiler/.*
-  script: profiler.py
-  login: admin
-
 - url: /google(.*).html
   static_files: webmaster/google\1.html
   upload: webmaster/google(.*).html
