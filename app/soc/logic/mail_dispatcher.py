@@ -101,7 +101,8 @@ def sendMailFromTemplate(template, context):
   sendMail(dicts.filter(context, mail.EmailMessage.PROPERTIES))
 
 
-def getSendMailFromTemplateTxn(template, context, parent=None):
+def getSendMailFromTemplateTxn(template, context, parent=None,
+                               transactional=True):
   """Returns a method that is safe to be run in a transaction to sent out an
      email using a Django template.
 
@@ -109,16 +110,19 @@ def getSendMailFromTemplateTxn(template, context, parent=None):
 
   Args:
     parent: The parent entity to use for the transaction.
+    context: The context passed on to sendMail.
+    parent: An optional parent entity of the to be created mail entity.
+    transactional: Whether the task should be created transactionally.
   """
   # render the template and put in context with 'html' as key
   context['html'] = loader.render_to_string(template, dictionary=context)
 
   # filter out the unneeded values in context to keep sendMail happy
   return sendMail(dicts.filter(context, mail.EmailMessage.PROPERTIES),
-                  parent=parent, run=False)
+                  parent=parent, run=False, transactional=transactional)
 
 
-def sendMail(context, parent=None, run=True):
+def sendMail(context, parent=None, run=True, transactional=True):
   """Sends out an email using context to supply the needed information.
 
   Args:
@@ -127,6 +131,7 @@ def sendMail(context, parent=None, run=True):
             transaction.
     run: If true the mail will be sent otherwise the function that can sent
          the mail will be returned.
+    transactional: Whether the task should be created transactionally.
 
   Raises:
     Error that corresponds with the first problem it finds iff the message
@@ -143,7 +148,8 @@ def sendMail(context, parent=None, run=True):
   if not system.isLocal() and system.isDebug():
     return
 
-  txn = mailer.getSpawnMailTaskTxn(context=context, parent=parent)
+  txn = mailer.getSpawnMailTaskTxn(
+      context=context, parent=parent, transactional=transactional)
   if run:
     return db.RunInTransaction(txn)
   else:

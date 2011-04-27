@@ -63,7 +63,7 @@ def getMailContext(to, subject, html, sender=None, bcc=None):
   return context
 
 
-def getSpawnMailTaskTxn(context, parent=None):
+def getSpawnMailTaskTxn(context, parent=None, transactional=True):
   """Spawns a new Task that sends out an email with the given dictionary.
   """
   if not (context.get('to') or context.get('bcc')):
@@ -84,7 +84,7 @@ def getSpawnMailTaskTxn(context, parent=None):
     # all the replicas yet.
     new_task = taskqueue.Task(params=task_params, url=SEND_MAIL_URL,
                               countdown=5)
-    new_task.add(queue_name='mail', transactional=True)
+    new_task.add(queue_name='mail', transactional=transactional)
 
   return txn
 

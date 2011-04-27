@@ -156,7 +156,7 @@ class ProposalAcceptanceTask:
     return responses.terminateTask()
 
   # Logic below ported from student_proposal_mailer.py
-  def getAcceptProposalMailTxn(self, proposal):
+  def getAcceptProposalMailTxn(self, proposal, transactional=True):
     """Returns the function to sent an acceptance mail for the specified
     proposal.
     """
@@ -178,8 +178,9 @@ class ProposalAcceptanceTask:
       }
 
     template = 'v2/soc/notification/gsoc2011_accepted_student.html'
-    return mail_dispatcher.getSendMailFromTemplateTxn(template, context,
-                                                      parent=proposal.parent())
+    return mail_dispatcher.getSendMailFromTemplateTxn(
+        template, context, parent=proposal.parent(),
+        transactional=transactional)
 
   def getRejectProposalMailTxn(self, proposal):
     """Returns the function to sent an rejectance mail for the specified
@@ -206,11 +207,12 @@ class ProposalAcceptanceTask:
     return mail_dispatcher.getSendMailFromTemplateTxn(template, context,
                                                       parent=proposal.parent())
 
-  def acceptProposal(self, proposal):
+  def acceptProposal(self, proposal, transactional=True):
     """Accept a single proposal.
 
     Args:
       proposal: The GSoCProposal entity to accept.
+      transactional: Whether the mail task should run transactionally.
     """
     fields = {
       'org': proposal.org,
@@ -223,7 +225,8 @@ class ProposalAcceptanceTask:
     project = GSoCProject(parent=student_profile, **fields)
     student_info_key = student_profile.student_info.key()
 
-    mail_txn = self.getAcceptProposalMailTxn(proposal)
+    mail_txn = self.getAcceptProposalMailTxn(
+        proposal, transactional=transactional)
 
     proposal_key = proposal.key()
 
