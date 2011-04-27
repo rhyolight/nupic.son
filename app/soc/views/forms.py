@@ -60,6 +60,27 @@ def choiceWidgets(model, fields):
   return dict((i, choiceWidget(getattr(model, i))) for i in fields)
 
 
+def hiddenWidget():
+  """Returns a HiddenInput widget for the specified field.
+  """
+  return widgets.HiddenInput()
+
+def hiddenWidgets(model, fields):
+  """Returns a dictionary of Select widgets for the specified fields.
+  """
+  return dict((i, hiddenWidget()) for i in fields)
+
+def mergeWidgets(*args):
+  """Merges a list of widgets.
+  """
+
+  widgets = dict()
+  for widget in args:
+    for k, v in widget.iteritems():
+      widgets[k] = v
+
+  return widgets
+
 class ReferenceWidget(widgets.TextInput):
   """Extends Django's TextInput widget to render the needed extra input field.
   """
@@ -375,6 +396,8 @@ class BoundField(forms.BoundField):
       return self.renderTextArea()
     elif isinstance(widget, widgets.DateTimeInput):
       return self.renderTextInput()
+    elif isinstance(widget, widgets.HiddenInput):
+      return self.renderHiddenInput()
 
     return self.NOT_SUPPORTED_MSG_FMT % (
         widget.__class__.__name__)
@@ -496,6 +519,15 @@ class BoundField(forms.BoundField):
         self._render_error(),
         self._render_note(),
         ))
+
+  def renderHiddenInput(self):
+    attrs = {
+        'id': self.name,
+        'name': self.name,
+        'type': 'hidden',
+        'value': self.field.initial or '',
+        }
+    return self.as_widget(attrs=attrs)
 
   def _render_label(self):
     return '<label>%s%s</label>' % (
