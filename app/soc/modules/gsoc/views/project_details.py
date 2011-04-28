@@ -23,14 +23,20 @@ __authors__ = [
   ]
 
 
+from google.appengine.ext import db
+
 from django.conf.urls.defaults import url
 from django.utils.translation import ugettext
 
+from soc.logic.exceptions import BadRequest
+from soc.views.helper.access_checker import isSet
 from soc.views.forms import ModelForm
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
 
+from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
 
@@ -175,3 +181,72 @@ class ProjectDetails(RequestHandler):
       context['update_link'] = r.project().urlOf('gsoc_update_project')
 
     return context
+
+
+class AssignMentor(RequestHandler):
+  """View which handles assigning mentor to a project.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'^gsoc/project/assign_mentor/%s$' % url_patterns.PROJECT,
+         self, name='gsoc_project_assign_mentor'),
+    ]
+
+  def checkAccess(self):
+    self.mutator.projectFromKwargs()
+    assert isSet(self.data.project.org)
+    self.check.isOrgAdminForOrganization(self.data.project.org)
+
+  def assignMentor(self, mentor_entity):
+    """Assigns the mentor to the project.
+
+    Args:
+      mentor_entity: The entity of the mentor profile which needs to assigned
+          to the project.
+    """
+    assert isSet(self.data.project)
+
+    project_key = self.data.project.key()
+
+    def assign_mentor_txn():
+      project = db.get(project_key)
+
+      project.mentor = mentor_entity
+
+      db.put(project)
+
+    db.run_in_transaction(assign_mentor_txn)
+
+  def validate(self):
+    mentor_key = self.data.POST.get('assign_mentor')
+
+    if mentor_key:
+      mentor_entity = db.get(mentor_key)
+      org = self.data.project.org
+
+      if (mentor_entity and db.Key(mentor_key) in
+          profile_logic.queryAllMentorsKeysForOrg(org)):
+        return mentor_entity
+      else:
+        raise BadRequest("Invalid post data.")
+
+    return None
+
+  def post(self):
+    assert isSet(self.data.project)
+
+    mentor_entity = self.validate()
+    if mentor_entity:
+      self.assignMentor(mentor_entity)
+
+    project_owner = self.data.project.parent()
+
+    self.redirect.project(self.data.project.key().id(),
+                          project_owner.link_id)
+    self.redirect.to('gsoc_project_details')
+
+  def get(self):
+    """Special Handler for HTTP GET request since this view only handles POST.
+    """
+    self.error(405)
