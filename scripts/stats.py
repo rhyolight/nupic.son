@@ -847,6 +847,7 @@ def main(args):
   from soc.modules.gsoc.models import org_admin
   from soc.modules.gsoc.models.student_proposal import StudentProposal
   from soc.modules.gsoc.models.student_project import StudentProject
+  from soc.modules.gsoc.tasks.accept_proposals import ProposalAcceptanceTask
 
   from soc.modules.gci.models.task import GCITask
   from soc.modules.gci.models.student import GCIStudent
@@ -888,6 +889,7 @@ def main(args):
       'addFollower': addFollower,
       'p': getGSoC2011Profile,
       'o': getGSoC2011Proposal,
+      'accepter': ProposalAcceptanceTask(),
       'GSoCOrganization': GSoCOrganization,
       'User': User,
       'GSoCStudent': GSoCStudent,
