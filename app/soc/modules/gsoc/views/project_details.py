@@ -24,8 +24,11 @@ __authors__ = [
 
 
 from django.conf.urls.defaults import url
+from django.utils.translation import ugettext
 
 from soc.views.forms import ModelForm
+from soc.views.template import Template
+from soc.views.toggle_button import ToggleButtonTemplate
 
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
@@ -102,6 +105,32 @@ class ProjectDetailsUpdate(RequestHandler):
       self.redirect.to('gsoc_project_details')
     else:
       self.get()
+
+
+class UserActions(Template):
+  """Template to render the left side user actions.
+  """
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    proposal_ignore = ToggleButtonTemplate(
+        self.data, 'on_off', 'Featured', 'project-featured',
+        'url-name-place-holder', help_text=ugettext(
+        'Choosing Yes features this project on program home page. The '
+        'project is featured when Yes is displayed in bright orange.'),
+        labels={
+            'enable': 'Yes',
+            'disable': 'No'})
+    context = {
+        'toggle_buttons': [proposal_ignore],
+        }
+
+    return context
+
+  def templatePath(self):
+    return "v2/modules/gsoc/project_details/_user_action.html"
 
 
 class ProjectDetails(RequestHandler):
