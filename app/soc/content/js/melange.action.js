@@ -66,13 +66,16 @@
         checkedLabel: 'Enable', uncheckedLabel: 'Disable'
       });
 
-      var onchange_checkbox = $('.onchange :checkbox').iphoneStyle();
-      setInterval(function toggleCheckbox() {
-        onchange_checkbox.attr(
-          'checked', !onchange_checkbox.is(':checked')).change();
-        $('span#status').html(onchange_checkbox.is(':checked').toString());
-      }, 2500);
-    });
+  /* This function exists as a show case function to show that this
+   * functionality of chaining the onchange of some other button to
+   * this button is possible. It is currently not used anywhere. */
+  $m.createOnChangeButton = function () {
+    var onchange_checkbox = jQuery('.onchange :checkbox').iphoneStyle();
+    setInterval(function toggleCheckbox() {
+      onchange_checkbox.attr(
+        'checked', !onchange_checkbox.is(':checked')).change();
+      jQuery('span#status').html(onchange_checkbox.is(':checked').toString());
+    }, 2500);
   }
 
   $m.createCluetip = function () {
