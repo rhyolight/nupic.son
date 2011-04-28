@@ -27,7 +27,7 @@
         </optgroup>
       {% endif %}
       {% if all_mentors %}
-        {% if not possible_mentors %}<optgroup label="All Mentors">{% endif %}
+        {% if possible_mentors %}<optgroup label="All Mentors">{% endif %}
           {% for m in all_mentors %}
             <option value="{{ m.key }}" {% if m.selected %}selected="selected"{% endif %}>{{ m.name }}</option>
           {% endfor %}
