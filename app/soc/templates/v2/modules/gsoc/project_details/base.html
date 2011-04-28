@@ -14,6 +14,18 @@ limitations under the License.
 {% endcomment %}
 
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/buttons.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/forms.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/uniform.default.css" />
+{% endblock stylesheets %}
+
+
+{% block usermenu %}
+  {{ user_actions.render }}
+{% endblock usermenu %}
+
 {% block page_content %}
 <div id="organization-name" class="block full home-block-1">
   <h2 id="title-section-project">
@@ -73,6 +85,13 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.uniform,
+    dep.melange.action,
+    function () {
+      /* Apply Uniform CSS to form fields. */
+      jQuery("select").uniform();
+      melange.action.createActionBox();
+    },
     {% if project.feed_url %}
       dep.melange.blog,
       null,

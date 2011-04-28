@@ -165,7 +165,8 @@ class ProjectDetails(RequestHandler):
     context = {
         'page_name': 'Project details',
         'project': project,
-        'org_home_link': r.organization(project.org).urlOf('gsoc_org_home')
+        'org_home_link': r.organization(project.org).urlOf('gsoc_org_home'),
+        'user_actions': UserActions(self.data)
     }
 
     user_is_owner = self.data.user and \
