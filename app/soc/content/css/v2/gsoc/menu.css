@@ -3,9 +3,16 @@
   Menu
 
 ////////////////*/
+/* New menu container */
+#menu-container {
+  margin-right: 0;
+}
+/* New menu container */
 #main-menu {
   background: url(../../../images/v2/gsoc/nav-bg.gif) 0 0 repeat;
   margin-right: 0;
+  float: left;
+  width: 220px;
 }
 #main-menu ul {
   margin: 13px 0;
@@ -71,4 +78,9 @@
   /*top level active list item w/ submenu - for use when the top level is highlighted but the submenu is not*/
 
   padding-bottom: 0px;
+}
+#main-menu ul#main-menu-list {
+  margin-top: 0;
+  padding-top: 13px;
+  padding-bottom: 13px;
 }
