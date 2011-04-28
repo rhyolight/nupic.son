@@ -44,11 +44,12 @@
   $m.createFloatMenu = function () {
     var name = "#floatMenu";
     var menuYloc = null;
-    $(document).ready(function(){
-      menuYloc = parseInt($(name).css("top").substring(0,$(name).css("top").indexOf("px")))
-      $(window).scroll(function () { 
-        offset = menuYloc+$(document).scrollTop()+"px";
-        $(name).animate({top:offset},{duration:500,queue:false});
+    jQuery(document).ready(function(){
+      menuYloc = parseInt(jQuery(name).css("top").substring(
+          0, jQuery(name).css("top").indexOf("px")))
+      jQuery(window).scroll(function () {
+        offset = menuYloc + jQuery(document).scrollTop()+"px";
+        jQuery(name).animate({top: offset},{duration: 500, queue: false});
       });
     });
   }
@@ -75,8 +76,8 @@
   }
 
   $m.createCluetip = function () {
-    $(document).ready(function() {
-      $('a.load-tooltip').cluetip({
+    jQuery(document).ready(function() {
+      jQuery('a.load-tooltip').cluetip({
         local:true,
         cursor: 'pointer',
         showTitle:false,
