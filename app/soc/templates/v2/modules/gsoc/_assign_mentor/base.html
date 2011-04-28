@@ -1,0 +1,39 @@
+<li id="user-menu-item-assign-mentor">
+  <p class="user-menu-row-title">Assign Mentor</p> <span id="user-menu-question"><a class="load-tooltip" href="#proposal-mentor-tooltip" rel="#proposal-mentor-tooltip">?</a></span>
+  <span id="user-menu-question">
+    <a class="load-tooltip" href="#assign-mentor-tooltip" rel="#assign-mentor-tooltip">
+      ?
+    </a>
+  </span>
+  <div id="assign-mentor-tooltip" class="tooltip">
+    Select a mentor from the drop-down list to assign to this project.
+    {% if not all_mentors %}
+      <span class="user-menu-note">
+        Note that only mentors that have clicked the "I wish to mentor this
+        project" button can be selected. <br/>
+        This can be changed in the organization profile page under
+        "Organization preferences".
+      </span>
+    {% endif %}
+  </div>
+  <form action="{{ action }}" method="post" id="form" class="form-user-proposal-assign-mentor">
+    <select>
+      <option selected="selected" disabled="disabled">Mentor Name</option>
+      {% if possible_mentors %}
+        <optgroup label="Possible Mentors">
+          {% for m in possible_mentors %}
+            <option value="{{ m.key }}" {% if m.selected %}selected="selected"{% endif %}>{{ m.name }}</option>
+          {% endfor %}
+        </optgroup>
+      {% endif %}
+      {% if all_mentors %}
+        {% if not possible_mentors %}<optgroup label="All Mentors">{% endif %}
+          {% for m in all_mentors %}
+            <option value="{{ m.key }}" {% if m.selected %}selected="selected"{% endif %}>{{ m.name }}</option>
+          {% endfor %}
+        </optgroup>
+      {% endif %}
+    </select>
+    <input id="form-user-proposal-assign-mentor-submit" type="submit" value="Assign" class="submit" />
+  </form>
+</li>
