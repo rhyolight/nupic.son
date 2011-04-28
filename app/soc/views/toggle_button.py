@@ -29,7 +29,7 @@ class ToggleButtonTemplate(Template):
   """Template to render toggle buttons.
   """
 
-  def __init__(self, data, type, title, id, url_name, checked=False,
+  def __init__(self, data, type, title, id, post_url, checked=False,
                help_text=None, note=None, labels=None):
     """Instantiates the template for rendering review page buttons.
 
@@ -38,7 +38,7 @@ class ToggleButtonTemplate(Template):
       type: Type of the button, can be one of on_off, disabled or long
       title: The text that must be displayed before the button
       id: value to be given to HTML id attribute for button
-      url_name: The name with which the RequestHandler has registered
+      post_url: The url to which post should be performed on click
       enable: if True Enable button is activated otherwise Disable button
       help_text: Tooltip to be displayed for the button.
       note: additional message to be displayed along with the buttons
@@ -52,7 +52,7 @@ class ToggleButtonTemplate(Template):
     self.title = title
     self.type = type
     self.id = id
-    self.url_name = url_name
+    self.post_url = post_url
 
   def context(self):
     """The context for this template used in render().
