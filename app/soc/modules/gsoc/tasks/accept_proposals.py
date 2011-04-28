@@ -41,7 +41,7 @@ from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
-class ProposalAcceptanceTask:
+class ProposalAcceptanceTask(object):
   """Request handlers for accepting and rejecting proposals in form of a Task.
   """
 
