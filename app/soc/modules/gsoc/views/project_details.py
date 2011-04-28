@@ -121,7 +121,7 @@ class UserActions(Template):
     self.data = data
 
   def context(self):
-    proposal_ignore = ToggleButtonTemplate(
+    featured_project = ToggleButtonTemplate(
         self.data, 'on_off', 'Featured', 'project-featured',
         'url-name-place-holder', help_text=ugettext(
         'Choosing Yes features this project on program home page. The '
@@ -130,7 +130,7 @@ class UserActions(Template):
             'enable': 'Yes',
             'disable': 'No'})
     context = {
-        'toggle_buttons': [proposal_ignore],
+        'toggle_buttons': [],
         }
 
     r = self.data.redirect
