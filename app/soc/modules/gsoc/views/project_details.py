@@ -133,6 +133,14 @@ class UserActions(Template):
         'toggle_buttons': [proposal_ignore],
         }
 
+    r = self.data.redirect
+    all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
+        self.data.project.org)
+    context['assign_mentor'] = assign_mentor.AssignMentorFields(
+        self.data, self.data.project.mentor,
+        r.project().urlOf('gsoc_project_assign_mentor'),
+        all_mentors=all_mentors_keys)
+
     return context
 
   def templatePath(self):
@@ -172,8 +180,10 @@ class ProjectDetails(RequestHandler):
         'page_name': 'Project details',
         'project': project,
         'org_home_link': r.organization(project.org).urlOf('gsoc_org_home'),
-        'user_actions': UserActions(self.data)
     }
+
+    if self.data.orgAdminFor(self.data.project.org):
+      context['user_actions'] = UserActions(self.data)
 
     user_is_owner = self.data.user and \
         (self.data.user.key() == self.data.project_owner.parent_key())
