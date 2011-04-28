@@ -16,6 +16,7 @@
 """
 
 __authors__ = [
+    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
     '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
     '"Sverre Rabbelier" <sverre@rabbelier.nl>',
     '"Lennard de Rijk" <ljvderijk@gmail.com>',
@@ -81,6 +82,7 @@ class Callback(object):
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
     self.views.append(project_details.AssignMentor())
+    self.views.append(project_details.FeaturedProject())
     self.views.append(project_details.ProjectDetails())
     self.views.append(project_details.ProjectDetailsUpdate())
     self.views.append(projects_list.ListProjects())
