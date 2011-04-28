@@ -54,17 +54,40 @@
     });
   }
 
-  $m.createToggleButton = function () {
-    $(window).load(function() {
-      $('.on_off :checkbox').iphoneStyle({
-        checkedLabel: 'Yes', uncheckedLabel: 'No'
+  $m.toggleButton = function (id, type, post_url, init_state, labels) {
+    this.id = id;
+    this.type = type;
+    this.post_url = post_url;
+    this.state = init_state;
+    this.labels = labels;
+
+    var self_obj = this;
+
+    this.is_enabled = function () {
+      if (this.state == "enabled") {
+        return true;
+      } else if (this.state == "disabled") {
+        return false;
+      }
+    }
+
+    jQuery(window).load(function() {
+      jQuery('.' + self_obj.type + ' :checkbox#' + self_obj.id).iphoneStyle({
+        checkedLabel: self_obj.labels.checked,
+        uncheckedLabel: self_obj.labels.unchecked
+      }).change(function (){
+        jQuery.post(self_obj.post_url,
+            {value: self_obj.state, xsrf_token: window.xsrf_token},
+            function(data) {
+          if (self_obj.state == "enabled") {
+            self_obj.state = "disabled";
+          } else if (self_obj.state == "disabled") {
+            self_obj.state = "enabled";
+          }
+        });
       });
-      $('.disabled :checkbox').iphoneStyle({
-        checkedLabel: 'Yes', uncheckedLabel: 'No'
-      });
-      $('.long :checkbox').iphoneStyle({
-        checkedLabel: 'Enable', uncheckedLabel: 'Disable'
-      });
+    });
+  }
 
   /* This function exists as a show case function to show that this
    * functionality of chaining the onchange of some other button to
