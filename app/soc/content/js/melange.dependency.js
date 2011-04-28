@@ -191,7 +191,8 @@
   ];
 
   s.jqueryui.checkboxes = [
-    tpjs + "jquery.ui-checkboxes.js";
+    s.jqueryui.core,
+    tpjs + "jquery/jquery.ui-checkboxes.js"
   ];
 
 
@@ -301,6 +302,14 @@
     s.google,
     null,
     mpjs + "melange.blog.js"
+  ];
+
+  s.melange.action = [
+    s.dimensions,
+    s.cluetip,
+    s.jqueryui.checkboxes,
+    null,
+    mpjs + "melange.action.js"
   ];
 
   $m.s = s;
