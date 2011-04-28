@@ -90,8 +90,4 @@
     });
   }
 
-  $m.createActionBox = function () {
-    $m.createCluetip();
-    $m.createToggleButton();
-  }
 }());
