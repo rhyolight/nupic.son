@@ -117,19 +117,29 @@ class UserActions(Template):
   """Template to render the left side user actions.
   """
 
+  DEF_FEATURED_PROJECT_HELP_MSG = ugettext(
+      'Choosing Yes features this project on program home page. The '
+      'project is featured when Yes is displayed in bright orange.')
+
   def __init__(self, data):
     super(UserActions, self).__init__(data)
     self._toggle_buttons = []
 
   def context(self):
+    assert isSet(self.data.project)
+
+    r = self.data.redirect.project()
+
     featured_project = ToggleButtonTemplate(
         self.data, 'on_off', 'Featured', 'project-featured',
-        'url-name-place-holder', help_text=ugettext(
-        'Choosing Yes features this project on program home page. The '
-        'project is featured when Yes is displayed in bright orange.'),
+        r.urlOf('gsoc_featured_project'),
+        checked=self.data.project.is_featured,
+        help_text=self.DEF_FEATURED_PROJECT_HELP_MSG,
         labels={
-            'enable': 'Yes',
-            'disable': 'No'})
+            'checked': 'Yes',
+            'unchecked': 'No'})
+    self._toggle_buttons.append(featured_project)
+
     context = {
         'toggle_buttons': self.toggle_buttons,
         }
