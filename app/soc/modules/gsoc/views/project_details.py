@@ -118,7 +118,8 @@ class UserActions(Template):
   """
 
   def __init__(self, data):
-    self.data = data
+    super(UserActions, self).__init__(data)
+    self._toggle_buttons = []
 
   def context(self):
     featured_project = ToggleButtonTemplate(
@@ -130,7 +131,7 @@ class UserActions(Template):
             'enable': 'Yes',
             'disable': 'No'})
     context = {
-        'toggle_buttons': [],
+        'toggle_buttons': self.toggle_buttons,
         }
 
     r = self.data.redirect
@@ -142,6 +143,12 @@ class UserActions(Template):
         all_mentors=all_mentors_keys)
 
     return context
+
+  @property
+  def toggle_buttons(self):
+    """Returns the list of toggle buttons for this user action template.
+    """
+    return self._toggle_buttons
 
   def templatePath(self):
     return "v2/modules/gsoc/project_details/_user_action.html"
