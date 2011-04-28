@@ -90,7 +90,21 @@ limitations under the License.
     function () {
       /* Apply Uniform CSS to form fields. */
       jQuery("select").uniform();
-      melange.action.createActionBox();
+
+      /* Change all the tooltips to be displayed onhover over a
+      * question mark. Calling this function only once will take
+      * care of all such instances.
+      */
+      melange.action.createCluetip();
+
+      /* Create the project featured button and make it post using ajax. */
+      {% for button in user_actions.toggle_buttons %}
+        melange.action.toggleButton(
+            "{{ button.id }}", "{{ button.type }}", "{{ button.post_url }}",
+            "{{ button.state }}",
+            {checked: "{{ button.labels.checked }}",
+             unchecked: "{{ button.labels.unchecked }}"});
+      {% endfor %}
     },
     {% if project.feed_url %}
       dep.melange.blog,
