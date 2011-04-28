@@ -27,15 +27,15 @@ limitations under the License.
   {% if button.note %}
     <span class="user-menu-note">{{ button.note }}</span>
   {% endif %}
-  <input type="checkbox"
+  <input type="checkbox" id={{ button.id }}
       {% if button.type == "disabled" %}
-        id="disabled" disabled="disabled"
+        class="disabled" disabled="disabled"
       {% else %}{% if button.type == "long" %}
-        id="long"
+        class="long"
       {% else %}{% if button.checked %}
-        id="on_off_on" checked="checked"
+        class="on_off_on" checked="checked"
       {% else %}
-        id="on_off"
+        class="on_off"
       {% endif %}{% endif %}{% endif %}
    />
 </li>
