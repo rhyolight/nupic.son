@@ -67,7 +67,7 @@ class ToggleButtonTemplate(Template):
   def state(self):
     """Returns the state as needed by the Javascript and HTML.
     """
-    return "enabled" if self.checked else "disabled"
+    return "checked" if self.checked else "unchecked"
 
   def templatePath(self):
     return 'v2/soc/_toggle_button.html'

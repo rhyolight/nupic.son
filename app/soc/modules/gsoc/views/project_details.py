@@ -298,17 +298,16 @@ class FeaturedProject(RequestHandler):
     """Makes the project featured.
 
     Args:
-      value: can be either "enable" or "disable".
+      value: can be either "checked" or "unchecked".
     """
     assert isSet(self.data.project)
-    import logging
-    logging.error(value)
-    if value != 'enabled' and value != 'disabled':
+
+    if value != 'checked' and value != 'checked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'enabled' and not self.data.project.is_featured:
+    if value == 'checked' and not self.data.project.is_featured:
       raise BadRequest("Invalid post data.")
-    if value == 'disabled' and self.data.project.is_featured:
+    if value == 'unchecked' and self.data.project.is_featured:
       raise BadRequest("Invalid post data.")
 
     project_key = self.data.project.key()
@@ -316,9 +315,9 @@ class FeaturedProject(RequestHandler):
     def make_featured_txn():
       # transactionally get latest version of the proposal
       project = db.get(project_key)
-      if value == 'disabled':
+      if value == 'unchecked':
         project.is_featured = True
-      elif value == 'enabled':
+      elif value == 'checked':
         project.is_featured = False
 
       db.put(project)

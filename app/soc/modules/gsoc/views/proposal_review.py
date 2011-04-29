@@ -725,7 +725,7 @@ class WishToMentor(RequestHandler):
     """Toggles the user from the potential mentors list.
 
     Args:
-      value: can be either "enable" or "disable".
+      value: can be either "checked" or "unchecked".
     """
     assert isSet(self.data.profile)
     assert isSet(self.data.proposal)
@@ -733,9 +733,9 @@ class WishToMentor(RequestHandler):
     if value != 'enable' and value != 'disable':
       raise BadRequest("Invalid post data.")
 
-    if value == 'enable' and self.data.isPossibleMentorForProposal():
+    if value == 'checked' and not self.data.isPossibleMentorForProposal():
       raise BadRequest("Invalid post data.")
-    if value == 'disable' and not self.data.isPossibleMentorForProposal():
+    if value == 'unchecked' and self.data.isPossibleMentorForProposal():
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
@@ -744,7 +744,7 @@ class WishToMentor(RequestHandler):
     def update_possible_mentors_trx():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
-      if value == 'enable':
+      if value == 'unchecked':
         # we have already been added
         if profile_key in proposal.possible_mentors:
           return
@@ -876,17 +876,17 @@ class IgnoreProposal(RequestHandler):
     """Toggles the ignore status of the proposal.
 
     Args:
-      value: can be either "enable" or "disable".
+      value: can be either "checked" or "unchecked".
     """
     assert isSet(self.data.proposal)
 
-    if value != 'enable' and value != 'disable':
+    if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'enable' and self.data.proposal.status not in [
-        'pending', 'withdrawn']:
+    if value == 'checked' and self.data.proposal.status != 'ignored':
       raise BadRequest("Invalid post data.")
-    if value == 'disable' and self.data.proposal.status != 'ignored':
+    if value == 'unchecked' and self.data.proposal.status not in [
+        'pending', 'withdrawn']:
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
@@ -894,9 +894,9 @@ class IgnoreProposal(RequestHandler):
     def update_status_txn():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
-      if value == 'enable':
+      if value == 'unchecked':
         proposal.status = 'ignored'
-      elif value == 'disable':
+      elif value == 'checked':
         proposal.status = 'pending'
 
       db.put(proposal)
@@ -932,16 +932,16 @@ class ProposalModificationPostDeadline(RequestHandler):
     """Toggles the permission to modify the proposal after proposal deadline.
 
     Args:
-      value: can be either "enable" or "disable".
+      value: can be either "checked" or "unchecked".
     """
     assert isSet(self.data.proposal)
 
-    if value != 'enable' and value != 'disable':
+    if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'enable' and self.data.proposal.is_editable_post_deadline:
+    if value == 'checked' and not self.data.proposal.is_editable_post_deadline:
       raise BadRequest("Invalid post data.")
-    if (value == 'disable' and not
+    if (value == 'unchecked' and
         self.data.proposal.is_editable_post_deadline):
       raise BadRequest("Invalid post data.")
 
@@ -950,9 +950,9 @@ class ProposalModificationPostDeadline(RequestHandler):
     def update_modification_perm_txn():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
-      if value == 'enable':
+      if value == 'unchecked':
         proposal.is_editable_post_deadline = True
-      elif value == 'disable':
+      elif value == 'checked':
         proposal.is_editable_post_deadline = False
 
       db.put(proposal)
@@ -988,16 +988,16 @@ class AcceptProposal(RequestHandler):
     """Toggles the the application state between accept and pending.
 
     Args:
-      value: can be either "enable" or "disable".
+      value: can be either "checked" or "unchecked".
     """
     assert isSet(self.data.proposal)
 
-    if value != 'enable' and value != 'disable':
+    if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'enable' and self.data.proposal.accept_as_project:
+    if value == 'checked' and not self.data.proposal.accept_as_project:
       raise BadRequest("Invalid post data.")
-    if value == 'disable' and not self.data.proposal.accept_as_project:
+    if value == 'unchecked' and self.data.proposal.accept_as_project:
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
@@ -1005,9 +1005,9 @@ class AcceptProposal(RequestHandler):
     def update_status_txn():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
-      if value == 'enable':
+      if value == 'unchecked':
         proposal.accept_as_project = True
-      elif value == 'disable':
+      elif value == 'checked':
         proposal.accept_as_project = False
 
       db.put(proposal)
@@ -1042,16 +1042,16 @@ class ProposalPubliclyVisible(RequestHandler):
     """Toggles the the public visibility of the application.
 
     Args:
-      value: can be either "enable" or "disable".
+      value: can be either "checked" or "unchecked".
     """
     assert isSet(self.data.proposal)
 
-    if value != 'enable' and value != 'disable':
+    if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'enable' and self.data.proposal.is_publicly_visible:
+    if value == 'checked' and not self.data.proposal.is_publicly_visible:
       raise BadRequest("Invalid post data.")
-    if value == 'disable' and not self.data.proposal.is_publicly_visible:
+    if value == 'unchecked' and self.data.proposal.is_publicly_visible:
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
@@ -1059,9 +1059,9 @@ class ProposalPubliclyVisible(RequestHandler):
     def update_publicly_visibility_txn():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
-      if value == 'enable':
+      if value == 'unchecked':
         proposal.is_publicly_visible = True
-      elif value == 'disable':
+      elif value == 'checked':
         proposal.is_publicly_visible = False
 
       db.put(proposal)
@@ -1096,16 +1096,16 @@ class WithdrawProposal(RequestHandler):
     """Toggles the the application state between withdraw and pending.
 
     Args:
-      value: can be either "enable" or "disable".
+      value: can be either "checked" or "unchecked".
     """
     assert isSet(self.data.proposal)
 
-    if value != 'enable' and value != 'disable':
+    if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'enable' and self.data.proposal.status == 'withdrawn':
+    if value == 'checked' and not self.data.proposal.status == 'withdrawn':
       raise BadRequest("Invalid post data.")
-    if value == 'disable' and not self.data.proposal.status == 'withdrawn':
+    if value == 'unchecked' and self.data.proposal.status == 'withdrawn':
       raise BadRequest("Invalid post data.")
 
     proposal_key = self.data.proposal.key()
@@ -1113,9 +1113,9 @@ class WithdrawProposal(RequestHandler):
     def update_withdraw_status_txn():
       # transactionally get latest version of the proposal
       proposal = db.get(proposal_key)
-      if value == 'enable':
+      if value == 'unchecked':
         proposal.status = 'withdrawn'
-      elif value == 'disable':
+      elif value == 'checked':
         proposal.status = 'pending'
 
       db.put(proposal)
