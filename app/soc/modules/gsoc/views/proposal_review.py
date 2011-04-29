@@ -488,6 +488,7 @@ class ReviewProposal(RequestHandler):
         'student_email': self.data.url_profile.email,
         'student_name': self.data.url_profile.name(),
         'proposal_ignored': self.data.proposal.status == 'ignored',
+        'user_role': user_role,
         })
 
     return context
