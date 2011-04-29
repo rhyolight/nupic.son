@@ -182,10 +182,39 @@ class UserActions(Template):
   """Template to render the left side user actions.
   """
 
+  DEF_ACCEPT_PROPOSAL_HELP_MSG = ugettext(
+      'Choosing Yes will mark this proposal as accepted. The proposal is '
+      'accepted when Yes is displayed in bright orange.')
+
   DEF_IGNORE_PROPOSAL_HELP_MSG = ugettext(
       'Choosing Yes will mark this proposal as ignored. The student will be '
       'be able to see that this proposal is ignored when he/she visits this '
       'page. The proposal is ignored when Yes is displayed in bright orange.')
+
+  DEF_IGNORE_PROPOSAL_NOTE_MSG = ugettext(
+      'Please refresh this page after setting this preference.')
+
+  DEF_PROPOSAL_MODIFICATION_HELP_MSG = ugettext(
+      'Choosing Enabled allows the student to edit this proposal. The '
+      'student can edit the proposal when Enabled is displayed in bright '
+      'orange.')
+
+  DEF_PUBLICLY_VISIBLE_HELP_MSG = ugettext(
+      'Choosing Yes will make this proposal publicly visible. The proposal '
+      'will be visible to even those who do not have a user account on this '
+      'site. The proposal is publicly visible when Yes is displayed in '
+      'bright orange')
+
+  DEF_WISH_TO_MENTOR_HELP_MSG = ugettext(
+      'Choosing Yes will add your name to the list of possible mentors to '
+      'this proposal. You will be listed as a possible mentor when Yes is '
+      'displayed in bright orange.')
+
+  DEF_WITHDRAW_PROPOSAL_HELP_MSG = ugettext(
+      'Choosing Withdrawn, notifies your organization that you have withdrawn '
+      'this proposal and no longer wish to participate in the program with '
+      'this proposal. The proposal is withdrawn when the button displays '
+      'Withdraw in bright orange.')
 
   def __init__(self, data, user_role):
     super(UserActions, self).__init__(data)
@@ -195,7 +224,30 @@ class UserActions(Template):
   def _mentorContext(self):
     """Construct the context needed for mentor actions.
     """
-    pass
+    r = self.data.redirect.review()
+
+    wish_to_mentor = ToggleButtonTemplate(
+        self.data, 'on_off', 'Wish to Mentor', 'wish-to-mentor',
+        r.urlOf('gsoc_proposal_wish_to_mentor'),
+        checked=self.data.isPossibleMentorForProposal(),
+        help_text=self.DEF_WISH_TO_MENTOR_HELP_MSG,
+        labels = {
+            'checked': 'Yes',
+            'unchecked': 'No'})
+    self._toggle_buttons.append(wish_to_mentor)
+
+    if self.data.timeline.afterStudentSignupEnd():
+      proposal_modification_button = ToggleButtonTemplate(
+          self.data, 'long', 'Proposal Modifications', 'proposal-modification',
+          r.urlOf('gsoc_proposal_modification'),
+          checked=self.data.proposal.is_editable_post_deadline,
+          help_text=self.DEF_PROPOSAL_MODIFICATION_HELP_MSG,
+          labels = {
+            'checked': 'Enabled',
+            'unchecked': 'Disabled'})
+      self._toggle_buttons.append(proposal_modification_button)
+
+    return {}
 
   def _orgAdminContext(self):
     """Construct the context needed for org admin actions.
@@ -203,21 +255,31 @@ class UserActions(Template):
     context = {}
     r = self.data.redirect.review()
 
-    checked = False
-    ignore_button_type = 'on_off'
+    ignore_button_checked = False
     if self.data.proposal.status == 'ignored':
-      checked = True
-    if self.data.proposal.status not in ['pending', 'withdrawn']:
-      ignore_button_type = 'disabled'
-    ignore_proposal = ToggleButtonTemplate(
-        self.data, ignore_button_type, 'Ignore Proposal', 'proposal-ignore',
-        r.urlOf('gsoc_proposal_ignore'),
-        checked=checked,
-        help_text=self.DEF_IGNORE_PROPOSAL_HELP_MSG,
-        labels={
-            'checked': 'Yes',
-            'unchecked': 'No'})
-    self._toggle_buttons.append(ignore_proposal)
+      ignore_button_checked = True
+    if self.data.proposal.status in ['pending', 'withdrawn']:
+      ignore_proposal = ToggleButtonTemplate(
+          self.data, 'on_off', 'Ignore Proposal', 'proposal-ignore',
+          r.urlOf('gsoc_proposal_ignore'),
+          checked=ignore_button_checked,
+          help_text=self.DEF_IGNORE_PROPOSAL_HELP_MSG,
+          note=self.DEF_IGNORE_PROPOSAL_NOTE_MSG,
+          labels={
+              'checked': 'Yes',
+              'unchecked': 'No'})
+      self._toggle_buttons.append(ignore_proposal)
+
+    if not self.proposal_ignored:
+      accept_proposal = ToggleButtonTemplate(
+          self.data, 'on_off', 'Accept proposal', 'accept-proposal',
+          r.urlOf('gsoc_proposal_accept'),
+          checked=self.data.proposal.accept_as_project,
+          help_text=self.DEF_ACCEPT_PROPOSAL_HELP_MSG,
+          labels = {
+              'checked': 'Yes',
+              'unchecked': 'No',})
+      self._toggle_buttons.append(accept_proposal)
 
     r = self.data.redirect
     possible_mentors_keys = self.data.proposal.possible_mentors
@@ -233,7 +295,33 @@ class UserActions(Template):
   def _proposerContext(self):
     """Construct the context needed for proposer actions.
     """
-    pass
+    r = self.data.redirect.review()
+
+    publicly_visible = ToggleButtonTemplate(
+        self.data, 'on_off', 'Publicly Visible', 'publicly-visible',
+        r.urlOf('gsoc_proposal_publicly_visible'),
+        checked=self.data.proposal.is_publicly_visible,
+        help_text=self.DEF_PUBLICLY_VISIBLE_HELP_MSG,
+        labels = {
+            'checked': 'Yes',
+            'unchecked': 'No',})
+    self._toggle_buttons.append(publicly_visible)
+
+    if self.data.proposal.status in ['pending', 'withdrawn']:
+      if self.data.proposal.status == 'withdrawn':
+        checked=True
+      elif self.data.proposal.status == 'pending':
+        checked=False
+      withdraw_proposal = ToggleButtonTemplate(
+          self.data, 'long', 'Withdraw Proposal', 'withdraw-proposal',
+          r.urlOf('gsoc_proposal_withdraw'), checked=checked,
+          help_text=self.DEF_WITHDRAW_PROPOSAL_HELP_MSG,
+          labels = {
+              'checked': 'Withdrawn',
+              'unchecked': 'Resubmitted',})
+      self._toggle_buttons.append(withdraw_proposal)
+
+    return {}
 
   def context(self):
     assert isSet(self.data.proposal)
