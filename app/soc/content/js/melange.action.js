@@ -55,14 +55,6 @@
   }
 
   $m.toggleButton = function (id, type, post_url, init_state, labels) {
-
-    this.is_enabled = function () {
-      if (this.state == "enabled") {
-        return true;
-      } else if (this.state == "disabled") {
-        return false;
-      }
-    }
     var button_id = id;
     var button_type = type;
     var button_post_url = post_url;
