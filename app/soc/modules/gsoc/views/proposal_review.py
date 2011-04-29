@@ -361,6 +361,8 @@ class ReviewProposal(RequestHandler):
 
     context = {}
 
+    user_role = None
+
     scores = self.getScores()
 
     # TODO: check if the scoring is not disabled
