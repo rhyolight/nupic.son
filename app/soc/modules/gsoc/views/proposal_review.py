@@ -514,6 +514,8 @@ class ReviewProposal(RequestHandler):
         'student_email': self.data.url_profile.email,
         'student_name': self.data.url_profile.name(),
         'proposal_ignored': proposal_ignored,
+        'user_actions': UserActions(self.data, user_role),
+        'user_role': user_role,
         })
 
     return context
