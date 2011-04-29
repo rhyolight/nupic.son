@@ -81,16 +81,6 @@ limitations under the License.
   </div>
 {% endif %}
 
-<!--  TODO: Remove the following if block once the JS magic to remove
-      the buttons of action is in place -->
-{% if not proposal_ignored and user_role == 'org_admin' %}
-  <div id="user-message" class="error">
-    <strong>NOTE: </strong>If you click the <strong>Ignore</strong> button
-    below, please be sure to refresh the page before performing any further
-    action on this proposal.
-  </div>
-{% endif %}
-
 
 <h1 id="project-page-title">
   {{ proposal.title }}
@@ -102,21 +92,6 @@ limitations under the License.
   </div>
 {% endif %}
 </h2>
-
-{{ publicly_visible_button.render }}
-
-{{ withdraw_proposal_button.render }}
-
-{{ ignore_proposal_button.render }}
-
-{{ accept_proposal_button.render }}
-
-{{ proposal_modification_button.render }}
-
-{{ wish_to_mentor_button.render }}
-
-{{ assign_mentor.render }}
-
 
 <div class="project-short">
   {% if public_comments_visible %}
@@ -197,7 +172,6 @@ limitations under the License.
   [
   dep.uniform,
   dep.jqueryui.dialog,
-  null,
   {% if scoring_visible %}
   dep.raty,
   {% endif %}
@@ -254,147 +228,6 @@ limitations under the License.
           starOff:    'proposal-rate-star-off.png',
           starOn:     'proposal-rate-star-on.png',
         });
-      {% endif %}
-
-      var buttonObj = function (button_id, post_url, init_state, msgs) {
-        this.button_id = button_id;
-        this.post_url = post_url;
-        this.state = init_state;
-
-        /* This is intentionally not made an instance variable since
-           the settings are same across objects. */
-        disabled_dialog_settings = {
-            autoOpen: false,
-            title: 'Button Disabled',
-            buttons: {
-                Ok: function() {
-                  $( this ).dialog( "close" );
-                }
-            }
-        }
-        this.enable_btn_disabled_msg = $('<div></div>')
-            .html("<p><strong>" + msgs.enable + "</strong></p>")
-            .dialog(disabled_dialog_settings);
-
-        this.disable_btn_disabled_msg = $('<div></div>')
-            .html("<p><strong>" + msgs.disable + "</strong></p>")
-            .dialog(disabled_dialog_settings);
-        var self_obj = this;
-
-        this.click = function () {
-          jQuery("#" + this.button_id + "-enable").click(function() {
-            if (self_obj.is_enabled()) {
-              self_obj.flip_buttons();
-            } else {
-              self_obj.enable_btn_disabled_msg.dialog('open');
-            }
-          });
-          jQuery("#" + this.button_id + "-disable").click(function() {
-            if (self_obj.is_enabled()) {
-              self_obj.disable_btn_disabled_msg.dialog('open');
-            } else {
-              self_obj.flip_buttons();
-            }
-          });
-        }
-        this.flip_state = function () {
-          if (this.state == "enable") {
-            this.state = "disable";
-          } else if (this.state == "disable") {
-            this.state = "enable";
-          }
-        }
-        this.is_enabled = function () {
-          if (this.state == "enable") {
-            return true;
-          } else if (this.state == "disable") {
-            return false;
-          }
-        }
-        this.flip_buttons = function () {
-          jQuery.post(this.post_url,
-              {value: this.state, xsrf_token: window.xsrf_token},
-              function(data) {
-            if (self_obj.is_enabled()) {
-              jQuery("#"+self_obj.button_id+"-enable").addClass("disabled");
-              jQuery("#"+self_obj.button_id+"-disable").removeClass("disabled");
-            } else {
-              jQuery("#"+self_obj.button_id+"-disable").addClass("disabled");
-              jQuery("#"+self_obj.button_id+"-enable").removeClass("disabled");
-            }
-            self_obj.flip_state();
-          });
-        }
-      }
-
-      /* Make the ignore proposal button, post using ajax. */
-      {% if user_role == "org_admin" %}
-      var ignore_proposal_button = new buttonObj(
-          "{{ ignore_proposal_button.id }}",
-          "{{ ignore_proposal_button.link }}",
-          "{{ ignore_proposal_button.state }}",
-          {"enable":
-              "{{ ignore_proposal_button.enable_btn_disabled_msg }}",
-          "disable":
-              "{{ ignore_proposal_button.disable_btn_disabled_msg }}"})
-          .click();
-
-      /* Make the accept proposal button, post using ajax. */
-      var accept_proposal_button = new buttonObj(
-          "{{ accept_proposal_button.id }}",
-          "{{ accept_proposal_button.link }}",
-          "{{ accept_proposal_button.state }}",
-          {"enable":
-              "{{ accept_proposal_button.enable_btn_disabled_msg }}",
-          "disable":
-              "{{ accept_proposal_button.disable_btn_disabled_msg }}"})
-          .click();
-      {% endif %}
-
-      {% if user_role == "mentor" or user_role == "org_admin" %}
-      /* Make allow proposal modifications button, post using ajax. */
-      var proposal_modification_button = new buttonObj(
-          "{{ proposal_modification_button.id }}",
-          "{{ proposal_modification_button.link }}",
-          "{{ proposal_modification_button.state }}",
-          {"enable":
-              "{{ proposal_modification_button.enable_btn_disabled_msg }}",
-          "disable":
-              "{{ proposal_modification_button.disable_btn_disabled_msg }}"})
-          .click();
-
-      /* Make the wish to mentor button, post using ajax. */
-      var wish_to_mentor_button = new buttonObj(
-          "{{ wish_to_mentor_button.id }}",
-          "{{ wish_to_mentor_button.link }}",
-          "{{ wish_to_mentor_button.state }}",
-          {"enable":
-              "{{ wish_to_mentor_button.enable_btn_disabled_msg }}",
-          "disable":
-              "{{ wish_to_mentor_button.disable_btn_disabled_msg }}"})
-          .click();
-      {% endif %}
-
-      {% if user_role == "proposer" %}
-      /* Make the publicly visible button, post using ajax. */
-      var publicly_visible_button = new buttonObj(
-          "{{ publicly_visible_button.id }}",
-          "{{ publicly_visible_button.link }}",
-          "{{ publicly_visible_button.state }}",
-          {"enable":
-              "{{ publicly_visible_button.enable_btn_disabled_msg }}",
-          "disable":
-              "{{ publicly_visible_button.disable_btn_disabled_msg }}"})
-          .click();
-      var withdraw_proposal_button = new buttonObj(
-          "{{ withdraw_proposal_button.id }}",
-          "{{ withdraw_proposal_button.link }}",
-          "{{ withdraw_proposal_button.state }}",
-          {"enable":
-              "{{ withdraw_proposal_button.enable_btn_disabled_msg }}",
-          "disable":
-              "{{ withdraw_proposal_button.disable_btn_disabled_msg }}"})
-          .click();
       {% endif %}
     });
 
