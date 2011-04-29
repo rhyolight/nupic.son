@@ -227,14 +227,14 @@ class UserActions(Template):
               'unchecked': 'No',})
       self._toggle_buttons.append(accept_proposal)
 
-    r = self.data.redirect
-    possible_mentors_keys = self.data.proposal.possible_mentors
-    all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
-        self.data.proposal_org)
-    context['assign_mentor'] = assign_mentor.AssignMentorFields(
-        self.data, self.data.proposal.mentor,
-        r.review().urlOf('gsoc_proposal_assign_mentor'),
-        possible_mentors_keys, all_mentors_keys)
+      r = self.data.redirect
+      possible_mentors_keys = self.data.proposal.possible_mentors
+      all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
+          self.data.proposal_org)
+      context['assign_mentor'] = assign_mentor.AssignMentorFields(
+          self.data, self.data.proposal.mentor,
+          r.review().urlOf('gsoc_proposal_assign_mentor'),
+          possible_mentors_keys, all_mentors_keys)
 
     return context
 
