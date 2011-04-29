@@ -55,13 +55,6 @@
   }
 
   $m.toggleButton = function (id, type, post_url, init_state, labels) {
-    this.id = id;
-    this.type = type;
-    this.post_url = post_url;
-    this.state = init_state;
-    this.labels = labels;
-
-    var self_obj = this;
 
     this.is_enabled = function () {
       if (this.state == "enabled") {
@@ -70,21 +63,27 @@
         return false;
       }
     }
+    var button_id = id;
+    var button_type = type;
+    var button_post_url = post_url;
+    var button_state = init_state;
+    var button_labels = labels;
 
     jQuery(window).load(function() {
-      jQuery('.' + self_obj.type + ' :checkbox#' + self_obj.id).iphoneStyle({
-        checkedLabel: self_obj.labels.checked,
-        uncheckedLabel: self_obj.labels.unchecked
-      }).change(function (){
-        jQuery.post(self_obj.post_url,
-            {value: self_obj.state, xsrf_token: window.xsrf_token},
-            function(data) {
-          if (self_obj.state == "enabled") {
-            self_obj.state = "disabled";
-          } else if (self_obj.state == "disabled") {
-            self_obj.state = "enabled";
-          }
-        });
+      jQuery('.' + button_type + ' :checkbox#' + button_id)
+        .iphoneStyle({
+          checkedLabel: button_labels.checked,
+          uncheckedLabel: button_labels.unchecked
+        }).change(function (){
+          jQuery.post(button_post_url,
+              {value: button_state, xsrf_token: window.xsrf_token},
+              function(data) {
+            if (button_state == "checked") {
+              button_state = "unchecked";
+            } else if (button_state == "unchecked") {
+              button_state = "checked";
+            }
+          });
       });
     });
   }
