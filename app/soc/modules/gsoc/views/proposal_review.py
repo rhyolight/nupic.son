@@ -32,12 +32,9 @@ from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
-from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import BadRequest
 from soc.logic.helper import notifications
-from soc.models.user import User
 from soc.views import forms
-from soc.views.button import ButtonTemplate
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -48,7 +45,6 @@ from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.score import GSoCScore
 
 from soc.modules.gsoc.views import assign_mentor
@@ -459,7 +455,8 @@ class ReviewProposal(RequestHandler):
       scoring_visible = True
 
     duplicate = None
-    if self.data.program.duplicates_visible and self.data.orgAdminFor(self.data.proposal_org):
+    if self.data.program.duplicates_visible and self.data.orgAdminFor(
+        self.data.proposal_org):
       q = GSoCProposalDuplicate.all()
       q.filter('duplicates', self.data.proposal)
       q.filter('is_duplicate', True)
