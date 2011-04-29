@@ -157,10 +157,10 @@ class UserActions(Template):
       'displayed in bright orange.')
 
   DEF_WITHDRAW_PROPOSAL_HELP_MSG = ugettext(
-      'Choosing Withdrawn, notifies your organization that you have withdrawn '
+      'Choosing Yes, notifies your organization that you have withdrawn '
       'this proposal and no longer wish to participate in the program with '
       'this proposal. The proposal is withdrawn when the button displays '
-      'Withdraw in bright orange.')
+      'Yes in bright orange.')
 
   def __init__(self, data, user_role):
     super(UserActions, self).__init__(data)
@@ -259,12 +259,12 @@ class UserActions(Template):
       elif self.data.proposal.status == 'pending':
         checked=False
       withdraw_proposal = ToggleButtonTemplate(
-          self.data, 'long', 'Withdraw Proposal', 'withdraw-proposal',
+          self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
           r.urlOf('gsoc_proposal_withdraw'), checked=checked,
           help_text=self.DEF_WITHDRAW_PROPOSAL_HELP_MSG,
           labels = {
-              'checked': 'Withdrawn',
-              'unchecked': 'Resubmitted',})
+              'checked': 'Yes',
+              'unchecked': 'No',})
       self._toggle_buttons.append(withdraw_proposal)
 
     return {}
