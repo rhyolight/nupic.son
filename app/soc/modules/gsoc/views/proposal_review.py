@@ -104,79 +104,6 @@ DEF_WITHDRAW_PROPOSAL_DISABLE_DISABLED_MSG = ugettext(
     'click on the withdraw button adjacent to this button.')
 
 
-def queryAllMentorsForOrg(org, limit=1000):
-  """Returns a list of keys of all the mentors for the organization
-
-  Args:
-    org: the organization entity for which we need to get all the mentors
-    limit: the maximum number of entities that must be fetched
-  """
-  # get all mentors keys first
-  query = GSoCProfile.all(keys_only=True)
-  query.filter('mentor_for', org)
-  mentors_keys = query.fetch(limit=limit)
-
-  # get all org admins keys first
-  query = GSoCProfile.all(keys_only=True)
-  query.filter('org_admin_for', org)
-  oa_keys = query.fetch(limit=limit)
-
-  return mentors_keys + oa_keys
-
-
-def getMentorsChoicesToAssign(proposal):
-  """Returns a list of tuple containing the mentor key and mentor name.
-
-  This is the list of mentors who have shown interest in mentoring a proposal.
-
-  Args:
-    proposal: entity for which the possible mentors should be obtained.
-  """
-  org = proposal.org
-  possible_mentors = db.get(proposal.possible_mentors)
-  cur_men = proposal.mentor
-
-  # construct a choice list for all the mentors in possible mentors list
-  possible_mentors_choices = []
-  possible_mentors_keys = []
-  for m in possible_mentors:
-    m_key = m.key()
-    choice = {
-        'key': m_key,
-        'name': m.name(),
-        }
-    if cur_men and m_key == cur_men.key():
-      choice['selected'] = True
-
-    possible_mentors_choices.append(choice)
-    possible_mentors_keys.append(m_key)
-
-
-  # construct the choice list for all the mentors
-  all_mentors_choices = []
-  if org.list_all_mentors:
-    all_mentors_keys = queryAllMentorsForOrg(org)
-
-    # remove all those mentors or org admins already in possible
-    # mentors list
-    remaining_mentors_keys = set(all_mentors_keys) - set(possible_mentors_keys)
-    remaining_mentors = db.get(remaining_mentors_keys)
-
-    # construct the actual choice list for only these remaining mentors
-    for m in remaining_mentors:
-      m_key = m.key()
-      choice = {
-          'key': m_key,
-          'name': m.name(),
-          }
-      if cur_men and m_key == cur_men.key():
-        choice['selected'] = True
-
-      all_mentors_choices.append(choice)
-
-  return possible_mentors_choices, all_mentors_choices
-
-
 class CommentForm(forms.ModelForm):
   """Django form for the comment.
   """
@@ -206,30 +133,6 @@ class PrivateCommentForm(CommentForm):
   class Meta:
     model = GSoCComment
     fields = CommentForm.Meta.fields + ['is_private']
-
-
-class AssignMentorFields(Template):
-  """Template to render the fields necessary to assign a mentor to a proposal.
-  """
-
-  def __init__(self, data):
-    """Instantiates the template for Assign mentor buttons for org admin.
-    """
-    super(AssignMentorFields, self).__init__(data)
-
-  def context(self):
-    possible_mentors, all_mentors = getMentorsChoicesToAssign(
-        self.data.proposal)
-    context = {
-        'possible_mentors': sorted(possible_mentors),
-        'all_mentors': sorted(all_mentors),
-        'action': self.data.redirect.review(
-            ).urlOf('gsoc_proposal_assign_mentor'),
-        }
-    return context
-
-  def templatePath(self):
-    return 'v2/modules/gsoc/proposal/_assign_mentor_form.html'
 
 
 class Duplicate(Template):
@@ -436,8 +339,6 @@ class ReviewProposal(RequestHandler):
             labels = {
                 'enable': 'Accept',
                 'disable': 'Revert',})
-
-          context['assign_mentor'] = AssignMentorFields(self.data)
 
       form = PrivateCommentForm(self.data.POST or None)
     else:
