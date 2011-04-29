@@ -56,56 +56,6 @@ from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
 
 
-DEF_ACCEPT_PROPOSAL_ENABLE_DISABLED_MSG = ugettext(
-    'You have already accepted this proposal. To revert to the pending '
-    'status, click the revert button adjacent to this button.')
-
-DEF_ACCEPT_PROPOSAL_DISABLE_DISABLED_MSG = ugettext(
-    'This proposal is already in pending status. To accept this proposal '
-    'click the accept button adjacent to this button.')
-
-DEF_IGNORE_PROPOSAL_ENABLE_DISABLED_MSG = ugettext(
-    'You have already ignored this proposal. To unignore it, click the '
-    'Unignore button adjacent to this button.')
-
-DEF_IGNORE_PROPOSAL_DISABLE_DISABLED_MSG = ugettext(
-    'This proposal is unignored already. To Ignore it, click the Ignore '
-    'button adjacent to this button.')
-
-DEF_PROPOSAL_MODIFICATION_ENABLE_DISABLED_MSG = ugettext(
-    'Student is already allowed to edit the proposal. To disable it, '
-    'click on the disable button adjacent to this button.')
-
-DEF_PUBLICLY_VISIBLE_ENABLE_DISABLED_MSG = ugettext(
-    'Your proposal is already publicly visible. In order to make your '
-    'proposal visible to only your mentoring organization, click the '
-    'disable button adjacent to this button.')
-
-DEF_PUBLICLY_VISIBLE_DISABLE_DISABLED_MSG = ugettext(
-    'Your proposal is not publicly visible. In order to make it public, '
-    'click the enable button adjacent to this button.')
-
-DEF_PROPOSAL_MODIFICATION_DISABLE_DISABLED_MSG = ugettext(
-    'Student cannot edit the proposal already. To allow student to '
-    'edit the proposal click the enable button adjacent to this button.')
-
-DEF_WISH_TO_MENTOR_ENABLE_DISABLED_MSG = ugettext(
-    'You have already wished to mentor this project. If you want to change '
-    'your decision click the disable button adjacent to this button.')
-
-DEF_WISH_TO_MENTOR_DISABLE_DISABLED_MSG = ugettext(
-    'You have not chosen to mentor this project. If you wish to mentor '
-    'click the enable button adjacent to this button.')
-
-DEF_WITHDRAW_PROPOSAL_ENABLE_DISABLED_MSG = ugettext(
-    'You have already withdrawn your proposal. To resubmit it, click on '
-    'the resubmit button adjacent to this button.')
-
-DEF_WITHDRAW_PROPOSAL_DISABLE_DISABLED_MSG = ugettext(
-    'Your proposal is already submitted to your organization. To withdraw, '
-    'click on the withdraw button adjacent to this button.')
-
-
 class CommentForm(forms.ModelForm):
   """Django form for the comment.
   """
