@@ -165,7 +165,7 @@ class UserActions(Template):
   def __init__(self, data, user_role):
     super(UserActions, self).__init__(data)
     self.user_role = user_role
-    self._toggle_buttons = []
+    self.toggle_buttons = []
 
   def _mentorContext(self):
     """Construct the context needed for mentor actions.
@@ -180,7 +180,7 @@ class UserActions(Template):
         labels = {
             'checked': 'Yes',
             'unchecked': 'No'})
-    self._toggle_buttons.append(wish_to_mentor)
+    self.toggle_buttons.append(wish_to_mentor)
 
     if self.data.timeline.afterStudentSignupEnd():
       proposal_modification_button = ToggleButtonTemplate(
@@ -191,7 +191,7 @@ class UserActions(Template):
           labels = {
             'checked': 'Enabled',
             'unchecked': 'Disabled'})
-      self._toggle_buttons.append(proposal_modification_button)
+      self.toggle_buttons.append(proposal_modification_button)
 
     return {}
 
@@ -214,7 +214,7 @@ class UserActions(Template):
           labels={
               'checked': 'Yes',
               'unchecked': 'No'})
-      self._toggle_buttons.append(ignore_proposal)
+      self.toggle_buttons.append(ignore_proposal)
 
     if not self.proposal_ignored:
       accept_proposal = ToggleButtonTemplate(
@@ -225,7 +225,7 @@ class UserActions(Template):
           labels = {
               'checked': 'Yes',
               'unchecked': 'No',})
-      self._toggle_buttons.append(accept_proposal)
+      self.toggle_buttons.append(accept_proposal)
 
       r = self.data.redirect
       possible_mentors_keys = self.data.proposal.possible_mentors
@@ -251,7 +251,7 @@ class UserActions(Template):
         labels = {
             'checked': 'Yes',
             'unchecked': 'No',})
-    self._toggle_buttons.append(publicly_visible)
+    self.toggle_buttons.append(publicly_visible)
 
     if self.data.proposal.status in ['pending', 'withdrawn']:
       if self.data.proposal.status == 'withdrawn':
@@ -265,7 +265,7 @@ class UserActions(Template):
           labels = {
               'checked': 'Yes',
               'unchecked': 'No',})
-      self._toggle_buttons.append(withdraw_proposal)
+      self.toggle_buttons.append(withdraw_proposal)
 
     return {}
 
@@ -292,12 +292,6 @@ class UserActions(Template):
     context['toggle_buttons'] = self.toggle_buttons
 
     return context
-
-  @property
-  def toggle_buttons(self):
-    """Returns the list of toggle buttons for this user action template.
-    """
-    return self._toggle_buttons
 
   def templatePath(self):
     return "v2/modules/gsoc/proposal/_user_action.html"

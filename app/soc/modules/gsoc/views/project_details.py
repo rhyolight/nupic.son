@@ -123,7 +123,7 @@ class UserActions(Template):
 
   def __init__(self, data):
     super(UserActions, self).__init__(data)
-    self._toggle_buttons = []
+    self.toggle_buttons = []
 
   def context(self):
     assert isSet(self.data.project)
@@ -138,7 +138,7 @@ class UserActions(Template):
         labels={
             'checked': 'Yes',
             'unchecked': 'No'})
-    self._toggle_buttons.append(featured_project)
+    self.toggle_buttons.append(featured_project)
 
     context = {
         'toggle_buttons': self.toggle_buttons,
@@ -153,12 +153,6 @@ class UserActions(Template):
         all_mentors=all_mentors_keys)
 
     return context
-
-  @property
-  def toggle_buttons(self):
-    """Returns the list of toggle buttons for this user action template.
-    """
-    return self._toggle_buttons
 
   def templatePath(self):
     return "v2/modules/gsoc/project_details/_user_action.html"
