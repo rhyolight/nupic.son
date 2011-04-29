@@ -335,6 +335,10 @@ class UserActions(Template):
 
     if self.user_role == 'org_admin':
       context.update(self._orgAdminContext())
+      # org admin is a mentor by default so add that context and buttons
+      # as well.
+      if not self.proposal_ignored:
+        context.update(self._mentorContext())
 
     if self.user_role == 'proposer':
       context.update(self._proposerContext())
