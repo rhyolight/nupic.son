@@ -182,7 +182,10 @@ limitations under the License.
   {% endif %}
   function () {
     /* Apply Uniform CSS to form fields. */
-    jQuery("select, input:radio, input:file, input:checkbox").uniform();
+    /* Only in this case we are customizing the input type checkbox to be
+       only applied for the field with the id is_private since it interferes
+       with the awesome looking action buttons */
+    jQuery("select, input:radio, input:file, input:checkbox#is_private").uniform();
 
     {% if public_comments_visible %}
       tinyMCE.init(melange.tinyMceConfig(["content"]));
