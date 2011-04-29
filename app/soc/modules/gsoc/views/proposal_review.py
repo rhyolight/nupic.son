@@ -41,14 +41,17 @@ from soc.views.button import ButtonTemplate
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
+from soc.views.toggle_button import ToggleButtonTemplate
 from soc.tasks import mailer
 
+from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.score import GSoCScore
 
+from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
 
@@ -93,7 +96,6 @@ DEF_WISH_TO_MENTOR_ENABLE_DISABLED_MSG = ugettext(
 DEF_WISH_TO_MENTOR_DISABLE_DISABLED_MSG = ugettext(
     'You have not chosen to mentor this project. If you wish to mentor '
     'click the enable button adjacent to this button.')
-
 
 DEF_WITHDRAW_PROPOSAL_ENABLE_DISABLED_MSG = ugettext(
     'You have already withdrawn your proposal. To resubmit it, click on '
@@ -174,6 +176,91 @@ class Duplicate(Template):
 
   def templatePath(self):
     return 'v2/modules/gsoc/duplicates/proposal_duplicate_review.html'
+
+
+class UserActions(Template):
+  """Template to render the left side user actions.
+  """
+
+  DEF_IGNORE_PROPOSAL_HELP_MSG = ugettext(
+      'Choosing Yes will mark this proposal as ignored. The student will be '
+      'be able to see that this proposal is ignored when he/she visits this '
+      'page. The proposal is ignored when Yes is displayed in bright orange.')
+
+  def __init__(self, data, user_role):
+    super(UserActions, self).__init__(data)
+    self.user_role = user_role
+    self._toggle_buttons = []
+
+  def _mentorContext(self):
+    """Construct the context needed for mentor actions.
+    """
+    pass
+
+  def _orgAdminContext(self):
+    """Construct the context needed for org admin actions.
+    """
+    context = {}
+    r = self.data.redirect.review()
+
+    checked = False
+    ignore_button_type = 'on_off'
+    if self.data.proposal.status == 'ignored':
+      checked = True
+    if self.data.proposal.status not in ['pending', 'withdrawn']:
+      ignore_button_type = 'disabled'
+    ignore_proposal = ToggleButtonTemplate(
+        self.data, ignore_button_type, 'Ignore Proposal', 'proposal-ignore',
+        r.urlOf('gsoc_proposal_ignore'),
+        checked=checked,
+        help_text=self.DEF_IGNORE_PROPOSAL_HELP_MSG,
+        labels={
+            'checked': 'Yes',
+            'unchecked': 'No'})
+    self._toggle_buttons.append(ignore_proposal)
+
+    r = self.data.redirect
+    possible_mentors_keys = self.data.proposal.possible_mentors
+    all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
+        self.data.proposal_org)
+    context['assign_mentor'] = assign_mentor.AssignMentorFields(
+        self.data, self.data.proposal.mentor,
+        r.review().urlOf('gsoc_proposal_assign_mentor'),
+        possible_mentors_keys, all_mentors_keys)
+
+    return context
+
+  def _proposerContext(self):
+    """Construct the context needed for proposer actions.
+    """
+    pass
+
+  def context(self):
+    assert isSet(self.data.proposal)
+
+    context = {}
+
+    if self.user_role == 'mentor':
+      context.update(self._mentorContext())
+
+    if self.user_role == 'org_admin':
+      context.update(self._orgAdminContext())
+
+    if self.user_role == 'proposer':
+      context.update(self._proposerContext())
+
+    context['toggle_buttons'] = self.toggle_buttons
+
+    return context
+
+  @property
+  def toggle_buttons(self):
+    """Returns the list of toggle buttons for this user action template.
+    """
+    return self._toggle_buttons
+
+  def templatePath(self):
+    return "v2/modules/gsoc/proposal/_user_action.html"
 
 
 class ReviewProposal(RequestHandler):
