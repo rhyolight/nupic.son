@@ -702,7 +702,7 @@ class WishToMentor(RequestHandler):
     assert isSet(self.data.profile)
     assert isSet(self.data.proposal)
 
-    if value != 'enable' and value != 'disable':
+    if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
     if value == 'checked' and not self.data.isPossibleMentorForProposal():
