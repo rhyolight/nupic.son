@@ -424,6 +424,9 @@ class ReviewProposal(RequestHandler):
 
     additional_info = self.data.proposal.additional_info
 
+    if user_role:
+      context['user_actions'] = UserActions(self.data, user_role)
+
     context.update({
         'additional_info': url_helper.trim_url_to(additional_info, 50),
         'additional_info_link': additional_info,
@@ -443,8 +446,6 @@ class ReviewProposal(RequestHandler):
         'scoring_visible': scoring_visible,
         'student_email': self.data.url_profile.email,
         'student_name': self.data.url_profile.name(),
-        'user_actions': UserActions(self.data, user_role),
-        'user_role': user_role,
         'proposal_ignored': self.data.proposal.status == 'ignored',
         })
 
