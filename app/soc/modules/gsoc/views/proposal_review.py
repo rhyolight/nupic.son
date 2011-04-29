@@ -375,7 +375,7 @@ class ReviewProposal(RequestHandler):
     proposal_ignored = self.data.proposal.status == 'ignored'
 
     if self.data.private_comments_visible:
-      context['user_role'] = 'mentor'
+      user_role = 'mentor'
       if not proposal_ignored:
         context['wish_to_mentor_button'] = ButtonTemplate(
               self.data, 'Wish to mentor', 'wish_to_mentor',
@@ -398,7 +398,7 @@ class ReviewProposal(RequestHandler):
                   'disable': DEF_PROPOSAL_MODIFICATION_DISABLE_DISABLED_MSG})
 
       if self.data.orgAdminFor(self.data.proposal.org):
-        context['user_role'] = 'org_admin'
+        user_role = 'org_admin'
         # only org admins can ignore the proposal, assign mentors to proposals
         if self.data.proposal.status in ['pending', 'withdrawn', 'ignored']:
           if self.data.proposal.status in ['pending', 'withdrawn']:
@@ -441,7 +441,7 @@ class ReviewProposal(RequestHandler):
     user_is_proposer = self.data.user and \
         (self.data.user.key() == self.data.url_user.key())
     if user_is_proposer:
-      context['user_role'] = 'proposer'
+      user_role = 'proposer'
 
       context['publicly_visible_button'] = ButtonTemplate(
               self.data, 'Publicly visible', 'publicly_visible',
@@ -826,7 +826,8 @@ class AssignMentor(RequestHandler):
 
       if mentor_entity and self.data.isPossibleMentorForProposal(
           mentor_entity) or (org.list_all_mentors
-          and db.Key(mentor_key) in queryAllMentorsForOrg(org)):
+          and db.Key(mentor_key) in profile_logic.queryAllMentorsKeysForOrg(
+          org)):
         return mentor_entity
       else:
         raise BadRequest("Invalid post data.")
