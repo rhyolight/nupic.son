@@ -375,59 +375,12 @@ class ReviewProposal(RequestHandler):
     comment_action = reverse('comment_gsoc_proposal', kwargs=self.data.kwargs)
 
     if self.data.private_comments_visible:
-      user_role = 'mentor'
-      if not proposal_ignored:
-        context['wish_to_mentor_button'] = ButtonTemplate(
-              self.data, 'Wish to mentor', 'wish_to_mentor',
-              'gsoc_proposal_wish_to_mentor',
-              not self.data.isPossibleMentorForProposal(),
-              disabled_msgs = {
-                  'enable': DEF_WISH_TO_MENTOR_ENABLE_DISABLED_MSG,
-                  'disable': DEF_WISH_TO_MENTOR_DISABLE_DISABLED_MSG},
-              labels = {
-                  'enable': 'Yes',
-                  'disable': 'No'})
-
-        if self.data.timeline.afterStudentSignupEnd():
-          context['proposal_modification_button'] = ButtonTemplate(
-              self.data, 'Proposal modifications', 'proposal_modification',
-              'gsoc_proposal_modification',
-              not self.data.proposal.is_editable_post_deadline,
-              disabled_msgs = {
-                  'enable': DEF_PROPOSAL_MODIFICATION_ENABLE_DISABLED_MSG,
-                  'disable': DEF_PROPOSAL_MODIFICATION_DISABLE_DISABLED_MSG})
-
+      form = PrivateCommentForm(self.data.POST or None)
       if self.data.orgAdminFor(self.data.proposal.org):
         user_role = 'org_admin'
-        # only org admins can ignore the proposal, assign mentors to proposals
-        if self.data.proposal.status in ['pending', 'withdrawn', 'ignored']:
-          if self.data.proposal.status in ['pending', 'withdrawn']:
-            enable = True
-          elif self.data.proposal.status == 'ignored':
-            enable = False
-          context['ignore_proposal_button'] = ButtonTemplate(
-              self.data, 'Ignore proposal', 'ignore_proposal',
-              'gsoc_proposal_ignore', enable,
-              disabled_msgs = {
-                  'enable': DEF_IGNORE_PROPOSAL_ENABLE_DISABLED_MSG,
-                  'disable': DEF_IGNORE_PROPOSAL_DISABLE_DISABLED_MSG,},
-              labels = {
-                  'enable': 'Ignore',
-                  'disable': 'Unignore',})
+      else:
+        user_role = 'mentor'
 
-        if not proposal_ignored:
-          context['accept_proposal_button'] = ButtonTemplate(
-            self.data, 'Accept proposal', 'accept_proposal',
-            'gsoc_proposal_accept',
-            not self.data.proposal.accept_as_project,
-            disabled_msgs = {
-                'enable': DEF_ACCEPT_PROPOSAL_ENABLE_DISABLED_MSG,
-                'disable': DEF_ACCEPT_PROPOSAL_DISABLE_DISABLED_MSG,},
-            labels = {
-                'enable': 'Accept',
-                'disable': 'Revert',})
-
-      form = PrivateCommentForm(self.data.POST or None)
     else:
       form = CommentForm(self.data.POST or None)
 
@@ -442,29 +395,6 @@ class ReviewProposal(RequestHandler):
         (self.data.user.key() == self.data.url_user.key())
     if user_is_proposer:
       user_role = 'proposer'
-
-      context['publicly_visible_button'] = ButtonTemplate(
-              self.data, 'Publicly visible', 'publicly_visible',
-              'gsoc_proposal_publicly_visible',
-              not self.data.proposal.is_publicly_visible,
-              disabled_msgs = {
-                  'enable': DEF_PUBLICLY_VISIBLE_ENABLE_DISABLED_MSG,
-                  'disable': DEF_PUBLICLY_VISIBLE_DISABLE_DISABLED_MSG,})
-
-      if self.data.proposal.status in ['pending', 'withdrawn']:
-        if self.data.proposal.status == 'pending':
-          withdraw_enable = True
-        elif self.data.proposal.status == 'withdrawn':
-          withdraw_enable = False
-        context['withdraw_proposal_button'] = ButtonTemplate(
-                self.data, 'Withdraw proposal', 'withdraw_proposal',
-                'gsoc_proposal_withdraw', withdraw_enable,
-                disabled_msgs = {
-                    'enable': DEF_WITHDRAW_PROPOSAL_ENABLE_DISABLED_MSG,
-                    'disable': DEF_WITHDRAW_PROPOSAL_DISABLE_DISABLED_MSG,},
-                labels = {
-                    'enable': 'Withdraw',
-                    'disable': 'Resubmit',})
 
       # we will check if the student is allowed to modify the proposal
       # after the student proposal deadline
