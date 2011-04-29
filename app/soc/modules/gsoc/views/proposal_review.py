@@ -374,8 +374,6 @@ class ReviewProposal(RequestHandler):
     # TODO: check if it is possible to post a comment
     comment_action = reverse('comment_gsoc_proposal', kwargs=self.data.kwargs)
 
-    proposal_ignored = self.data.proposal.status == 'ignored'
-
     if self.data.private_comments_visible:
       user_role = 'mentor'
       if not proposal_ignored:
@@ -515,9 +513,9 @@ class ReviewProposal(RequestHandler):
         'scoring_visible': scoring_visible,
         'student_email': self.data.url_profile.email,
         'student_name': self.data.url_profile.name(),
-        'proposal_ignored': proposal_ignored,
         'user_actions': UserActions(self.data, user_role),
         'user_role': user_role,
+        'proposal_ignored': self.data.proposal.status == 'ignored',
         })
 
     return context
