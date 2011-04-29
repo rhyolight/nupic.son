@@ -204,7 +204,7 @@ class UserActions(Template):
     ignore_button_checked = False
     if self.data.proposal.status == 'ignored':
       ignore_button_checked = True
-    if self.data.proposal.status in ['pending', 'withdrawn']:
+    if self.data.proposal.status in ['pending', 'withdrawn', 'ignored']:
       ignore_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Ignore Proposal', 'proposal-ignore',
           r.urlOf('gsoc_proposal_ignore'),
