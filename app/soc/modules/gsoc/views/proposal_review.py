@@ -328,7 +328,9 @@ class UserActions(Template):
 
     context = {}
 
-    if self.user_role == 'mentor':
+    self.proposal_ignored = self.data.proposal.status == 'ignored'
+
+    if self.user_role == 'mentor' and not self.proposal_ignored:
       context.update(self._mentorContext())
 
     if self.user_role == 'org_admin':
