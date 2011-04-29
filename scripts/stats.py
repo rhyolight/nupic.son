@@ -836,6 +836,9 @@ def main(args):
 
   interactive.setup()
 
+  from google.appengine.api import users
+  from google.appengine.ext import db
+
   from soc.models.user import User
   from soc.modules.gsoc.models.program import GSoCProgram
   from soc.modules.gsoc.models.organization import GSoCOrganization
@@ -866,10 +869,34 @@ def main(args):
   def getGSoC2011Proposal(link_id, id):
     profile = getGSoC2011Profile(link_id)
     return GSoCProposal.get_by_id(id, profile)
+  def getGSoC2011Project(link_id, id):
+    profile = getGSoC2011Profile(link_id)
+    return GSoCProject.get_by_id(id, profile)
+  def withdrawProject(link_id, id):
+    proposal = getGSoC2011Proposal(link_id, id)
+    proposal_key = proposal.key()
+    profile = proposal.parent()
+    profile_key = profile.key()
+    project = GSoCProject.all().ancestor(profile).get()
+    project_key = project.key()
+
+    def withdraw_project_txn():
+      proposal = db.get(proposal_key)
+      project = db.get(project_key)
+      profile = db.get(profile_key)
+
+      proposal.status = 'withdrawn'
+      project.status = 'withdrawn'
+      profile.number_of_projects = 0
+      db.put([proposal, project, profile])
+
+    db.run_in_transaction(withdraw_project_txn)
 
   context = {
       'load': loadPickle,
       'dump': dumpPickle,
+      'users': users,
+      'db': db,
       'orgStats': orgStats,
       'printPopularity': printPopularity,
       'saveValues': saveValues,
@@ -889,7 +916,9 @@ def main(args):
       'addFollower': addFollower,
       'p': getGSoC2011Profile,
       'o': getGSoC2011Proposal,
+      'r': getGSoC2011Project,
       'accepter': ProposalAcceptanceTask(),
+      'withdrawProject': withdrawProject,
       'GSoCOrganization': GSoCOrganization,
       'User': User,
       'GSoCStudent': GSoCStudent,
