@@ -312,6 +312,10 @@
     mpjs + "melange.action.js"
   ];
 
+  s.melange.map = [
+    mpjs + "melange.map.js"
+  ];
+
   $m.s = s;
 
   var unpack = function (orig_array) {
