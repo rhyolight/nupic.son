@@ -175,7 +175,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     self.data.createMentor(self.org)
 
     url = '/gsoc/proposal/ignore/' + suffix
-    postdata = {'value': 'enable'}
+    postdata = {'value': 'unchecked'}
     response = self.post(url, postdata)
 
     self.assertResponseForbidden(response)
@@ -199,7 +199,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     self.data.createMentor(self.org)
 
     url = '/gsoc/proposal/accept/' + suffix
-    postdata = {'value': 'enable'}
+    postdata = {'value': 'unchecked'}
     response = self.post(url, postdata)
 
     # fail if mentor tries to accept the proposal
@@ -233,7 +233,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     self.data.createMentor(self.org)
 
     url = '/gsoc/proposal/modification/' + suffix
-    postdata = {'value': 'enable'}
+    postdata = {'value': 'unchecked'}
     response = self.post(url, postdata)
 
     self.assertResponseOK(response)
@@ -259,13 +259,13 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     proposal.key().id())
 
     url = '/gsoc/proposal/wish_to_mentor/' + suffix
-    postdata = {'value': 'enable'}
+    postdata = {'value': 'unchecked'}
     response = self.post(url, postdata)
 
     proposal = GSoCProposal.all().get()
     self.assertTrue(self.data.profile.key() in proposal.possible_mentors)
 
-    postdata = {'value': 'disable'}
+    postdata = {'value': 'checked'}
     response = self.post(url, postdata)
 
     proposal = GSoCProposal.all().get()
@@ -295,7 +295,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
         proposal.key().id())
 
     url = '/gsoc/proposal/publicly_visible/' + suffix
-    postdata = {'value': 'enable'}
+    postdata = {'value': 'unchecked'}
     response = self.post(url, postdata)
 
     self.assertResponseOK(response)
@@ -315,7 +315,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
         proposal.key().id())
 
     url = '/gsoc/proposal/withdraw/' + suffix
-    postdata = {'value': 'enable'}
+    postdata = {'value': 'unchecked'}
     response = self.post(url, postdata)
 
     self.assertResponseOK(response)
@@ -324,7 +324,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     self.assertEqual(proposal.status, 'withdrawn')
 
     url = '/gsoc/proposal/withdraw/' + suffix
-    postdata = {'value': 'enable'}
+    postdata = {'value': 'unchecked'}
     response = self.post(url, postdata)
 
     self.assertResponseBadRequest(response)
@@ -333,7 +333,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     self.assertEqual(proposal.status, 'withdrawn')
 
     url = '/gsoc/proposal/withdraw/' + suffix
-    postdata = {'value': 'disable'}
+    postdata = {'value': 'checked'}
     response = self.post(url, postdata)
 
     self.assertResponseOK(response)
