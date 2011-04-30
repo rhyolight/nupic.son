@@ -61,7 +61,7 @@
     var button_state = init_state;
     var button_labels = labels;
 
-    jQuery(window).load(function() {
+    jQuery(document).ready(function() {
       jQuery('.' + button_type + ' :checkbox#' + button_id)
         .iphoneStyle({
           checkedLabel: button_labels.checked,
