@@ -150,7 +150,7 @@ class UserActions(Template):
     context['assign_mentor'] = assign_mentor.AssignMentorFields(
         self.data, self.data.project.mentor,
         r.project().urlOf('gsoc_project_assign_mentor'),
-        all_mentors=all_mentors_keys)
+        all_mentors=all_mentors_keys, mentor_required=True)
 
     return context
 
@@ -296,7 +296,7 @@ class FeaturedProject(RequestHandler):
     """
     assert isSet(self.data.project)
 
-    if value != 'checked' and value != 'checked':
+    if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
     if value == 'checked' and not self.data.project.is_featured:

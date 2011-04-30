@@ -58,7 +58,8 @@ class AssignMentorFields(Template):
   """
 
   def __init__(self, data, current_mentor, action,
-               all_mentors=None, possible_mentors=None):
+               all_mentors=None, possible_mentors=None,
+               mentor_required=False):
     """Instantiates the template for Assign mentor buttons for org admin.
 
     data: The request data object
@@ -67,16 +68,19 @@ class AssignMentorFields(Template):
     all_mentors: Set of all the mentors that can be assigned to this entity
     possible_mentors: List of possible mentors that can be assigned to
         this entity.
+    mentor_required: True if org admin is not allowed to unassign a mentor
     """
     super(AssignMentorFields, self).__init__(data)
     self.current_mentor = current_mentor
     self.action = action
     self.all_mentors = all_mentors
     self.possible_mentors = possible_mentors
+    self.mentor_required = mentor_required
 
   def context(self):
     context = {
         'action': self.action,
+        'mentor_required': self.mentor_required,
         }
 
     if self.possible_mentors:
