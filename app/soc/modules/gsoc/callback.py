@@ -77,8 +77,8 @@ class Callback(object):
     self.views.append(org_home.OrgHome())
     self.views.append(org_profile.OrgProfilePage())
     self.views.append(profile.ProfilePage())
-    self.views.append(profile_show.ProfileShowPage())
     self.views.append(profile_show.ProfileAdminPage())
+    self.views.append(profile_show.ProfileShowPage())
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
     self.views.append(project_details.AssignMentor())
@@ -95,15 +95,15 @@ class Callback(object):
     self.views.append(proposal_review.ProposalModificationPostDeadline())
     self.views.append(proposal_review.ProposalPubliclyVisible())
     self.views.append(proposal_review.ReviewProposal())
-    self.views.append(proposal_review.WithdrawProposal())
     self.views.append(proposal_review.WishToMentor())
+    self.views.append(proposal_review.WithdrawProposal())
     self.views.append(proposal.UpdateProposal())
     self.views.append(request.RequestPage())
     self.views.append(request.ShowRequest())
     self.views.append(search.SearchGsocPage())
-    self.views.append(slot_transfer.UpdateSlotTransferPage())
-    self.views.append(slot_transfer.SlotTransferPage())
     self.views.append(slot_transfer_admin.SlotsTransferAdminPage())
+    self.views.append(slot_transfer.SlotTransferPage())
+    self.views.append(slot_transfer.UpdateSlotTransferPage())
 
     # Appengine Task related views
     from soc.modules.gsoc.tasks.accept_proposals import \
