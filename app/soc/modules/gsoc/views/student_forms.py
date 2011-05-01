@@ -96,8 +96,6 @@ class TaxFormPage(RequestHandler):
     tax_form = TaxForm(self.data, self.data.POST,
                        instance=self.data.student_info)
     if not tax_form.is_valid():
-      import logging
-      logging.warning("Sad")
       return False
 
     tax_form.save()
