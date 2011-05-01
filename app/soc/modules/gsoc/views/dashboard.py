@@ -131,8 +131,10 @@ class Dashboard(RequestHandler):
     components = []
 
     if self.data.student_info:
+      components.append(TodoComponent(self.request, self.data))
       components += self._getStudentComponents()
     elif self.data.is_mentor:
+      components.append(TodoComponent(self.request, self.data))
       components += self._getOrgMemberComponents()
       components.append(RequestComponent(self.request, self.data, False))
     else:
@@ -1185,5 +1187,67 @@ class StudentsComponent(Component):
     return {
         'name': 'students',
         'title': 'PARTICIPATING STUDENTS',
+        'lists': [list],
+    }
+
+
+class TodoComponent(Component):
+  """Component listing all the Todos for the current user.
+  """
+
+  def __init__(self, request, data):
+    r = data.redirect
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn(
+        'key', 'Key', (lambda d, *args: d['key']), hidden=True)
+    list_config.addDictColumn('name', 'Name')
+    list_config.addDictColumn('status', 'Status')
+    def rowAction(d, *args):
+      if d['key'] == 'tax_form':
+        pass
+      return data.redirect.program().urlOf('edit_gsoc_profile')
+
+    list_config.setRowAction(rowAction)
+    self._list_config = list_config
+
+    super(TodoComponent, self).__init__(request, data)
+
+  def templatePath(self):
+    return'v2/modules/gsoc/dashboard/list_component.html'
+
+  def getListData(self):
+    if lists.getListIndex(self.request) != 11:
+      return None
+
+    response = lists.ListContentResponse(self.request, self._list_config)
+
+    if response.start == 'done':
+      return response
+
+    def is_submitted(form):
+      if form:
+        return """<font color="green">Submitted</font>"""
+      else:
+        return """<strong><font color="red">Not submitted</font></strong>"""
+
+    if self.data.is_student and self.data.student_info.number_of_projects:
+      status = is_submitted(self.data.student_info.tax_form)
+      response.addRow({
+          'key': 'tax_form',
+          'name': 'Tax form',
+          'status': status,
+      })
+
+    response.next = 'done'
+
+    return response
+
+  def context(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=11)
+
+    return {
+        'name': 'todo',
+        'title': 'MY TODOS',
         'lists': [list],
     }
