@@ -187,6 +187,22 @@ class ListConfiguration(object):
     func = lambda ent, *args: getattr(ent, col_id)
     self.addColumn(col_id, name, func, **kwargs)
 
+  def addDictColumn(self, col_id, name, **kwargs):
+    """Adds a column to the end of the list which uses the id of the column as
+    key of the dictionary to get the data from.
+
+    This method is basically a shorthand for addColumn with the function as
+    lambda d, *args: d[id].
+
+    Args:
+      col_id: A unique identifier of this column and name of the field to get
+          the data from.
+      name: The header of the column that is shown to the user.
+      **kwargs: passed on to addColumn
+    """
+    func = lambda d, *args: d[col_id]
+    self.addColumn(col_id, name, func, **kwargs)
+
   def __addButton(self, col_id, caption, bounds, col_type, parameters):
     """Internal method for adding buttons so that the uniqueness of the id can
     be checked.
