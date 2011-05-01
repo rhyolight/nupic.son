@@ -22,7 +22,9 @@ limitations under the License.
 {% block page_content %}
 
 <!-- begin form -->
+{% block open_form %}
 <form action="#" method="post" id="form" class="form-register">
+{% endblock open_form %}
   {% if posted %}
     {% if error %}
       <div id="flash-message" class="flash-error">
