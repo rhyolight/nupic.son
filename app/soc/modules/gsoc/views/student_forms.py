@@ -29,6 +29,7 @@ from google.appengine.ext import db
 from django.forms import fields
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
+from django.utils import simplejson
 
 from soc.logic import cleaning
 from soc.logic import dicts
@@ -103,7 +104,8 @@ class TaxFormPage(RequestHandler):
 
   def json(self):
     url = self.redirect.program().urlOf('gsoc_tax_forms')
-    return blobstore.create_upload_url(url)
+    data = simplejson.dumps(blobstore.create_upload_url(url))
+    self.response.write(data)
 
   def post(self):
     validated = self.validate()
