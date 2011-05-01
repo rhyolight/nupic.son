@@ -23,6 +23,7 @@ __authors__ = [
 
 
 from django.conf.urls.defaults import url
+from django.utils import simplejson
 
 from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import timeline as timeline_helper
@@ -225,6 +226,88 @@ class OrgHome(RequestHandler):
           'You do not have access to this data')
     return list_content.content()
 
+
+  def _getJSONMapData(self):
+    """Constructs the JSON for Google Maps on organization home page.
+
+    Returns:
+      A JSON object containing map data.
+    """
+    r = self.data.redirect
+
+    students = {}
+    mentors = {}
+    student_projects = {}
+
+    # get the query object which returns the Keys for project entities
+    # for the given organization
+    projects = project_logic.getAcceptedProjectsForOrg(
+        self.data.organization)
+
+    # Construct a dictionary of mentors and students. For each mentor construct
+    # a list of 3-tuples containing student name, project title and url.
+    # And for each student a list of 3 tuples containing mentor name, project
+    # title and url. Only students and mentors who have agreed to publish their
+    # locations will be in the dictionary.
+    for project in projects:
+      student = project.parent()
+      student_key = str(student.key())
+
+      mentor = project.mentor
+      mentor_key = str(mentor.key())
+
+      project_key_object = project.key()
+      project_key = str(project_key_object)
+      project_link = r.project(
+          id=project_key_object.id_or_name(),
+          student=student.link_id).urlOf(
+              'gsoc_project_details')
+
+      # store the project data in the projects dictionary
+      student_projects[project_key] = {
+         'title': project.title,
+         'link': project_link,
+         'student_key': student_key,
+         'student_name': student.name(),
+         'mentor_key': mentor_key,
+         'mentor_name': mentor.name()
+         }
+
+      if mentor.publish_location:
+        if mentor_key not in mentors:
+          # we have not stored the information of this mentor yet
+          mentors[mentor_key] = {
+              'name': mentor.name(),
+              'lat': mentor.latitude,
+              'lng': mentor.longitude,
+              'projects': []
+              }
+
+        # add this project to the mentor's list
+        mentors[mentor_key]['projects'].append(project_key)
+
+      if student.publish_location:
+        if student_key not in students:
+          # new student, store the name and location
+          students[student_key] = {
+              'name': student.name(),
+              'lat': student.latitude,
+              'lng': student.longitude,
+              'projects': [],
+              }
+
+        # append the current project to the known student's list of projects
+        students[student_key]['projects'].append(project_key)
+
+    # combine the people and projects data into one JSON object
+    data = {
+        'mentors': mentors,
+        'students': students,
+        'projects': student_projects
+        }
+
+    return simplejson.dumps(data)
+
   def context(self):
     """Handler to for GSoC Organization Home page HTTP get request.
     """
@@ -266,6 +349,9 @@ class OrgHome(RequestHandler):
 
     if self.data.timeline.studentsAnnounced():
       context['project_list'] = ProjectList(self.request, self.data)
+
+      # obtain a json object that contains the organization home page map data
+      context['org_map_data'] = self._getJSONMapData()
 
     return context
 
