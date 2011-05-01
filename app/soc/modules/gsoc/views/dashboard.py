@@ -1204,8 +1204,8 @@ class TodoComponent(Component):
     list_config.addDictColumn('status', 'Status')
     def rowAction(d, *args):
       if d['key'] == 'tax_form':
-        pass
-      return data.redirect.program().urlOf('edit_gsoc_profile')
+        return data.redirect.program().urlOf('gsoc_tax_forms')
+      return None
 
     list_config.setRowAction(rowAction)
     self._list_config = list_config
