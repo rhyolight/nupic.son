@@ -398,6 +398,8 @@ class BoundField(forms.BoundField):
       return self.renderTextInput()
     elif isinstance(widget, widgets.HiddenInput):
       return self.renderHiddenInput()
+    elif isinstance(widget, widgets.FileInput):
+      return self.renderFileInput()
 
     return self.NOT_SUPPORTED_MSG_FMT % (
         widget.__class__.__name__)
@@ -528,6 +530,18 @@ class BoundField(forms.BoundField):
         'value': self.field.initial or '',
         }
     return self.as_widget(attrs=attrs)
+
+  def renderFileInput(self):
+    attrs = {
+        'id': self.name,
+        }
+
+    return mark_safe('%s%s%s%s' % (
+        self._render_label(),
+        self.as_widget(attrs=attrs),
+        self._render_error(),
+        self._render_note(),
+    ))
 
   def _render_label(self):
     return '<label>%s%s</label>' % (
