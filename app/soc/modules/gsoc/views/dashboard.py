@@ -179,16 +179,18 @@ class Dashboard(RequestHandler):
     components = []
 
     if self.data.is_mentor:
-      if timeline_helper.isAfterEvent(
-          self.data.program_timeline, 'accepted_students_announced_deadline'):
+      if self.data.timeline.studentsAnnounced():
         # add a component to show all projects a user is mentoring
         components.append(
             ProjectsIMentorComponent(self.request, self.data))
 
-    components.append(OrganizationsIParticipateInComponent(self.request, self.data))
+    orgs = OrganizationsIParticipateInComponent(self.request, self.data)
 
-    if timeline_helper.isAfterEvent(
-      self.data.program_timeline, 'student_signup_start'):
+    # move to the top during student signup
+    if self.data.timeline.studentSignup():
+      components.append(orgs)
+
+    if self.data.timeline.afterStudentSignupStart():
       # Add the submitted proposals component
       components.append(
           SubmittedProposalsComponent(self.request, self.data))
@@ -197,6 +199,10 @@ class Dashboard(RequestHandler):
       # add a component for all organization that this user administers
       components.append(RequestComponent(self.request, self.data, True))
       components.append(ParticipantsComponent(self.request, self.data))
+
+    # move to the bottom after student signup
+    if not self.data.timeline.studentSignup():
+      components.append(orgs)
 
     return components
 
