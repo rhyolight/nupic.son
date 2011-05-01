@@ -35,8 +35,8 @@
         ampersand_question,
         "fmt=json"
       ].join(""),
-      error: function(msg) {
-        alert("Could not retrieve upload url");
+      error: function(msg, text, e) {
+        alert("Could not retrieve upload url: '" + e + "'.");
       }
     }).responseText;
   }
