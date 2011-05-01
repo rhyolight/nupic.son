@@ -348,6 +348,8 @@ class OrgHome(RequestHandler):
             'gsoc_slot_transfer')
 
     if self.data.timeline.studentsAnnounced():
+      context['students_announced'] = True
+
       context['project_list'] = ProjectList(self.request, self.data)
 
       # obtain a json object that contains the organization home page map data

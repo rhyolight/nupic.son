@@ -71,7 +71,7 @@ limitations under the License.
   <!-- end block -->
 
   <!-- begin block -->
-  {% if organization.contrib_template %}
+  {% if organization.contrib_template and not students_announced %}
   <div id="organization-application-template" class="block block-organization-application-template">
     <h4 title="title-section-organization-application-template">Application template</h4>
     <div id="block-organization-application-template-content" class="block-content">
