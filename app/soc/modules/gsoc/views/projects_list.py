@@ -136,5 +136,5 @@ class ListProjects(RequestHandler):
     return {
         'page_name': '%s - Accepted Projects' % program.short_name,
         'program_name': program.name,
-        #'project_list': ProjectList(self.request, self.data),
+        'project_list': ProjectList(self.request, self.data),
     }

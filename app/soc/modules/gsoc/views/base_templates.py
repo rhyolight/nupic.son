@@ -54,8 +54,8 @@ def siteMenuContext(data):
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
 
-  #if data.timeline.studentsAnnounced():
-  #  context['projects_link'] = redirect.allProjects().url()
+  if data.timeline.studentsAnnounced():
+    context['projects_link'] = redirect.allProjects().url()
 
   return context
 
