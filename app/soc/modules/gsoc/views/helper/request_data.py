@@ -579,7 +579,7 @@ class RedirectHelper(object):
     """
     from django.utils.encoding import iri_to_uri
     url = self._fullUrl(url, full)
-    self._response.set_status(302)
+    self._response.status_code = 302
     self._response["Location"] = iri_to_uri(url)
 
   def login(self):
