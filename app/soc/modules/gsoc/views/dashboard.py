@@ -297,16 +297,15 @@ class MyOrgApplicationsComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
-    if idx == 0:
-      fields = {'survey': self.org_app_survey,
-                'main_admin': self.data.user}
-      response_builder = lists.QueryContentResponseBuilder(
-          self.request, self._list_config, org_app_logic.getRecordLogic(),
-          fields)
-      return response_builder.build()
-    else:
+    if lists.getListIndex(self.request) != 0:
       return None
+
+    fields = {'survey': self.org_app_survey,
+              'main_admin': self.data.user}
+    response_builder = lists.QueryContentResponseBuilder(
+        self.request, self._list_config, org_app_logic.getRecordLogic(),
+        fields)
+    return response_builder.build()
 
 
 class MyProposalsComponent(Component):
@@ -355,20 +354,19 @@ class MyProposalsComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
-    if idx == 1:
-      q = GSoCProposal.all()
-      q.filter('program', self.data.program)
-      q.ancestor(self.data.profile)
-
-      starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
-
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, starter, prefetcher=prefetcher)
-      return response_builder.build()
-    else:
+    if lists.getListIndex(self.request) != 1:
       return None
+
+    q = GSoCProposal.all()
+    q.filter('program', self.data.program)
+    q.ancestor(self.data.profile)
+
+    starter = lists.keyStarter
+    prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+    return response_builder.build()
 
 
 class MyProjectsComponent(Component):
@@ -404,20 +402,19 @@ class MyProjectsComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
-    if idx == 2:
-      list_query = project_logic.getAcceptedProjectsQuery(
-          ancestor=self.data.profile, program=self.data.program)
-
-      starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
-
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
-          starter, prefetcher=prefetcher)
-      return response_builder.build()
-    else:
+    if lists.getListIndex(self.request) != 2:
       return None
+
+    list_query = project_logic.getAcceptedProjectsQuery(
+        ancestor=self.data.profile, program=self.data.program)
+
+    starter = lists.keyStarter
+    prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, list_query,
+        starter, prefetcher=prefetcher)
+    return response_builder.build()
 
   def context(self):
     """Returns the context of this component.
@@ -459,14 +456,13 @@ class MyEvaluationsComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
-    if idx == 3:
-      fields = {'program': self.data.program}
-      response_builder = lists.QueryContentResponseBuilder(
-          self.request, self._list_config, ps_logic, fields)
-      return response_builder.build()
-    else:
+    if lists.getListIndex(self.request) != 3:
       return None
+
+    fields = {'program': self.data.program}
+    response_builder = lists.QueryContentResponseBuilder(
+        self.request, self._list_config, ps_logic, fields)
+    return response_builder.build()
 
   def context(self):
     """Returns the context of this component.
@@ -838,20 +834,19 @@ class ProjectsIMentorComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
-    if idx == 5:
-      list_query = project_logic.getAcceptedProjectsQuery(
-          mentor=self.data.profile, program=self.data.program)
-
-      starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
-
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
-          starter, prefetcher=prefetcher)
-      return response_builder.build()
-    else:
+    if lists.getListIndex(self.request) != 5:
       return None
+
+    list_query = project_logic.getAcceptedProjectsQuery(
+        mentor=self.data.profile, program=self.data.program)
+
+    starter = lists.keyStarter
+    prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, list_query,
+        starter, prefetcher=prefetcher)
+    return response_builder.build()
 
   def context(self):
     """Returns the context of this component.
@@ -914,35 +909,36 @@ class OrganizationsIParticipateInComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
-    if idx == 6:
-      response = lists.ListContentResponse(self.request, self._list_config)
-
-      if response.start != 'done' and (
-          not response.start or response.start.isdigit()):
-        pos = int(response.start) if response.start else 0
-
-        if self.data.is_host:
-          q = GSoCOrganization.all().filter('scope', self.data.program)
-          orgs = q.fetch(1000)
-        else:
-          orgs = self.data.mentor_for
-
-        if pos < len(orgs):
-          org = orgs[pos]
-          q = db.Query(GSoCProposal, keys_only=False).filter('org', org)
-          q.filter('has_mentor', True).filter('accept_as_project', True)
-          slots_used = q.count()
-          response.addRow(org, slots_used)
-
-        if (pos + 1) < len(orgs):
-          response.next = str(pos + 1)
-        else:
-          response.next = 'done'
-
-      return response
-    else:
+    if lists.getListIndex(self.request) != 6:
       return None
+
+    response = lists.ListContentResponse(self.request, self._list_config)
+
+    if response.start == 'done' or (
+        response.start and not response.start.isdigit()):
+      return response
+
+    pos = int(response.start) if response.start else 0
+
+    if self.data.is_host:
+      q = GSoCOrganization.all().filter('scope', self.data.program)
+      orgs = q.fetch(1000)
+    else:
+      orgs = self.data.mentor_for
+
+    if pos < len(orgs):
+      org = orgs[pos]
+      q = db.Query(GSoCProposal, keys_only=False).filter('org', org)
+      q.filter('has_mentor', True).filter('accept_as_project', True)
+      slots_used = q.count()
+      response.addRow(org, slots_used)
+
+    if (pos + 1) < len(orgs):
+      response.next = str(pos + 1)
+    else:
+      response.next = 'done'
+
+    return response
 
   def context(self):
     """Returns the context of this component.
@@ -996,17 +992,16 @@ class RequestComponent(Component):
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
-    if idx == self.idx:
-      if self.for_admin:
-        fields = {'group': self.data.org_admin_for}
-      else:
-        fields = {'user': self.data.user}
-      response_builder = lists.QueryContentResponseBuilder(
-          self.request, self._list_config, request_logic, fields, prefetch=['user', 'group'])
-      return response_builder.build()
-    else:
+    if lists.getListIndex(self.request) != self.idx:
       return None
+
+    if self.for_admin:
+      fields = {'group': self.data.org_admin_for}
+    else:
+      fields = {'user': self.data.user}
+    response_builder = lists.QueryContentResponseBuilder(
+        self.request, self._list_config, request_logic, fields, prefetch=['user', 'group'])
+    return response_builder.build()
 
   def context(self):
     """Returns the context of this component.
