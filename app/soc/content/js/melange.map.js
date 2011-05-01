@@ -44,7 +44,7 @@
   ]);
 
   // Map load function
-  $m.loadMap = function (map_div) {
+  $m.loadMap = function (map_div, map_data) {
 
     var center_latlng = new google.maps.LatLng(0, 0);
     var init_options = {
