@@ -96,3 +96,12 @@ def getAcceptedProjectsQuery(keys_only=False, ancestor=None, **properties):
     q.filter(k, v)
 
   return q
+
+def getAcceptedProjectsForOrg(org, limit=1000):
+  """Returns all the accepted projects for a given organization.
+
+  Args:
+    org: The organization entity for which the accepted projects are accepted.
+  """
+  q = getAcceptedProjectsQuery(org=org)
+  return q.fetch(limit)
