@@ -104,8 +104,8 @@ class TaxFormPage(RequestHandler):
 
   def json(self):
     url = self.redirect.program().urlOf('gsoc_tax_forms')
-    data = simplejson.dumps(blobstore.create_upload_url(url))
-    self.response.write(data)
+    upload_url = blobstore.create_upload_url(url)
+    self.response.write(upload_url)
 
   def post(self):
     validated = self.validate()
