@@ -232,6 +232,7 @@ class RequestData(RequestData):
     timeline: A TimelineHelper entity
     is_host: is the current user a host of the program
     is_mentor: is the current user a mentor in the program
+    is_student: is the current user a student in the program
     is_org_admin: is the current user an org admin in the program
     org_map: map of retrieved organizations
     org_admin_for: the organizations the current user is an admin for
@@ -255,6 +256,7 @@ class RequestData(RequestData):
     self.profile = None
     self.is_host = False
     self.is_mentor = False
+    self.is_student = False
     self.is_org_admin = False
     self.org_map = {}
     self.mentor_for = []
@@ -390,6 +392,7 @@ class RequestData(RequestData):
 
       if student_info_key:
         self.student_info = db.get(student_info_key)
+        self.is_student = True
       else:
         orgs = db.get(org_keys)
 
