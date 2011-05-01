@@ -60,6 +60,7 @@ class Callback(object):
     from soc.modules.gsoc.views import search
     from soc.modules.gsoc.views import slot_transfer
     from soc.modules.gsoc.views import slot_transfer_admin
+    from soc.modules.gsoc.views import student_forms
 
     self.views.append(accepted_orgs.AcceptedOrgsPage())
     self.views.append(admin.DashboardPage())
@@ -104,6 +105,7 @@ class Callback(object):
     self.views.append(slot_transfer_admin.SlotsTransferAdminPage())
     self.views.append(slot_transfer.SlotTransferPage())
     self.views.append(slot_transfer.UpdateSlotTransferPage())
+    self.views.append(student_forms.TaxFormPage())
 
     # Appengine Task related views
     from soc.modules.gsoc.tasks.accept_proposals import \

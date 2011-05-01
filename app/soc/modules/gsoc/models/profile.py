@@ -22,6 +22,7 @@ __authors__ = [
 
 
 from google.appengine.ext import db
+from google.appengine.ext import blobstore
 
 from django.utils.translation import ugettext
 
@@ -90,3 +91,9 @@ class GSoCStudentInfo(soc.models.role.StudentInfo):
 
   #: number of projects
   number_of_projects = db.IntegerProperty(default=0)
+
+  #: Property pointing to the consent form
+  tax_form = blobstore.BlobReferenceProperty(
+      required=False, verbose_name=ugettext('Tax Form'))
+  tax_form.help_text = ugettext(
+      'A signed tax form')
