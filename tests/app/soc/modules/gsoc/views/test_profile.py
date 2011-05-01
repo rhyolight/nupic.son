@@ -113,7 +113,11 @@ class ProfileViewTest(DjangoTestCase):
     # seed_properties method from the seeder to get the most common
     # values for Profile and StudentInfo
     postdata = seeder_logic.seed_properties(GSoCProfile)
-    postdata.update(seeder_logic.seed_properties(GSoCStudentInfo))
+    props = seeder_logic.seed_properties(GSoCStudentInfo, properties={
+        'tax_form': None,
+    })
+    props.pop('tax_form')
+    postdata.update(props)
     postdata.update({
         'link_id': self.data.user.link_id,
         'student_info': None,
