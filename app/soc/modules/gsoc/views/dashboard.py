@@ -1224,14 +1224,16 @@ class TodoComponent(Component):
     if response.start == 'done':
       return response
 
-    def is_submitted(form):
-      if form:
-        return """<font color="green">Submitted</font>"""
+    def colorize(choice, yes, no):
+      if choice:
+        return """<font color="green">%s</font>""" % yes
       else:
-        return """<strong><font color="red">Not submitted</font></strong>"""
+        return """<strong><font color="red">%s</font></strong>""" % no
 
-    if self.data.is_student and self.data.student_info.number_of_projects:
-      status = is_submitted(self.data.student_info.tax_form)
+    info = self.data.student_info
+
+    if self.data.is_student and info.number_of_projects:
+      status = colorize(info.tax_form, "Submitted", "Not submitted")
       response.addRow({
           'key': 'tax_form',
           'name': 'Tax form',
