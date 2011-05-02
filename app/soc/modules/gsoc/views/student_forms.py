@@ -55,16 +55,18 @@ class TaxForm(forms.ModelForm):
     if self.instance:
       uploaded_form = self.instance.tax_form
       if uploaded_form:
-        base_url = data.redirect.program().urlOf('gsoc_tax_forms_download')
-        link = '%s?key=%s' % (base_url, uploaded_form.key())
-        file_download = '<br/><a href="%(link)s">%(name)s</a> \
-            (Size: %(size)s \
-            Uploaded on: %(uploaded)s)' % {
-            'name': uploaded_form.filename,
-            'link': link,
-            'size': defaultfilters.filesizeformat(uploaded_form.size),
-            'uploaded': '%s UTC' % (
-                dateformat.format(uploaded_form.creation, 'jS M Y h:i:sA')),
+        link = data.redirect.program().urlOf('gsoc_tax_forms_download')
+        file_download = """
+            <br/>
+            File: <a href="%(link)s">%(name)s</a><br/>
+            Size: %(size)s <br/>
+            Uploaded on: %(uploaded)s UTC)
+            """ % {
+                'name': uploaded_form.filename,
+                'link': link,
+                'size': defaultfilters.filesizeformat(uploaded_form.size),
+                'uploaded': dateformat.format(
+                      uploaded_form.creation, 'M jS Y, h:i:sA'),
             }
         self.fields['tax_form'].help_text += file_download
 
@@ -131,6 +133,6 @@ class DownloadTaxForm(RequestHandler):
     self.check.isProfileActive()
 
   def get(self):
-    blob_key = self.data.GET.get('key')
+    blob_key = str(self.data.student_info.tax_form.key())
 
     self.response = bs_helper.download_blob(blob_key)
