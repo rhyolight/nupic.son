@@ -1212,6 +1212,10 @@ class TodoComponent(Component):
       if key == 'school_name':
         url = data.redirect.program().urlOf('edit_gsoc_profile')
         return url + '#form_row_school_name'
+      if key.isdigit():
+        project_id = int(key)
+        r.project(id=project_id, student=data.profile.link_id)
+        return data.redirect.urlOf('gsoc_update_project')
       return None
 
     list_config.setRowAction(rowAction)
@@ -1261,6 +1265,14 @@ class TodoComponent(Component):
           'name': 'School name selected from autocomplete',
           'status': status,
       })
+      projects = project_logic.getAcceptedProjectsForStudent(self.data.profile)
+      for project in projects:
+        status = colorize(project.public_info, "Yes", "No")
+        response.addRow({
+            'key': str(project.key().id()),
+            'name': "Set 'additional info' for '%s'" % project.title,
+            'status': status
+        })
 
     response.next = 'done'
 
