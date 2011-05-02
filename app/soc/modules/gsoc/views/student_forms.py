@@ -22,29 +22,18 @@ __authors__ = [
   ]
 
 
-from google.appengine.api import users
 from google.appengine.ext import blobstore
-from google.appengine.ext import db
 
 from django.forms import fields
-from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
-from django.utils import simplejson
 from django.template import defaultfilters
 from django.utils.formats import dateformat
+
+from soc.views import forms
 from soc.views.helper import blobstore as bs_helper
 
-from soc.logic import cleaning
-from soc.logic import dicts
-from soc.views import forms
-
-from soc.models.user import User
-
-from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
 
 
@@ -102,13 +91,13 @@ class TaxFormPage(RequestHandler):
 
   def context(self):
     tax_form = TaxForm(self.data, self.data.POST or None,
-                      instance=self.data.student_info)
+                       instance=self.data.student_info)
 
     return {
         'page_name': 'Tax form',
         'forms': [tax_form],
         'error': bool(tax_form.errors),
-    }
+        }
 
   def validate(self):
     tax_form = TaxForm(self.data, self.data.POST,
