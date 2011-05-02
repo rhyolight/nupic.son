@@ -92,8 +92,14 @@ class GSoCStudentInfo(soc.models.role.StudentInfo):
   #: number of projects
   number_of_projects = db.IntegerProperty(default=0)
 
-  #: Property pointing to the consent form
+  #: Property pointing to the tax form
   tax_form = blobstore.BlobReferenceProperty(
       required=False, verbose_name=ugettext('Tax Form'))
   tax_form.help_text = ugettext(
       'A signed tax form')
+
+  #: Property pointing to the proof of enrollment form
+  enrollment_form = blobstore.BlobReferenceProperty(
+      required=False, verbose_name=ugettext('Proof of Enrollment Form'))
+  enrollment_form.help_text = ugettext(
+      'A proof of enrollment form')

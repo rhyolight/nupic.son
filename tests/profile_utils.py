@@ -116,7 +116,7 @@ class GSoCProfileHelper(object):
     self.createProfile()
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
-                  'school': None, 'tax_form': None}
+                  'school': None, 'tax_form': None, 'enrollment_form': None}
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.put()
     return self.profile

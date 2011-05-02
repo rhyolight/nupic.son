@@ -115,8 +115,10 @@ class ProfileViewTest(DjangoTestCase):
     postdata = seeder_logic.seed_properties(GSoCProfile)
     props = seeder_logic.seed_properties(GSoCStudentInfo, properties={
         'tax_form': None,
+        'enrollment_form': None,
     })
     props.pop('tax_form')
+    props.pop('enrollment_form')
     postdata.update(props)
     postdata.update({
         'link_id': self.data.user.link_id,
