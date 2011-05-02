@@ -1205,7 +1205,7 @@ class TodoComponent(Component):
     list_config.addDictColumn('status', 'Status')
     def rowAction(d, *args):
       if d['key'] == 'tax_form':
-        return data.redirect.program().urlOf('gsoc_tax_forms')
+        return data.redirect.program().urlOf('gsoc_tax_forms', secure=True)
       if d['key'] == 'school_name':
         url = data.redirect.program().urlOf('edit_gsoc_profile')
         return url + '#form_row_school_name'
