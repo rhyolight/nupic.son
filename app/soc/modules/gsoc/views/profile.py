@@ -214,7 +214,8 @@ class StudentInfoForm(forms.ModelForm):
   class Meta:
     model = GSoCStudentInfo
     css_prefix = 'student_info'
-    exclude = ['school', 'school_type', 'number_of_proposals']
+    exclude = ['school', 'school_type', 'number_of_proposals',
+               'number_of_projects', 'tax_form']
     widgets = forms.choiceWidgets(GSoCStudentInfo,
         ['school_country', 'school_type', 'degree'])
 
