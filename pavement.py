@@ -47,6 +47,9 @@ options(
     project_dir = PROJECT_DIR,
     app_build = PROJECT_DIR / 'build',
     app_folder = PROJECT_DIR / 'app',
+    overrides_folder = PROJECT_DIR / 'overrides',
+    overrides_dirs = ['soc', 'soc/models'],
+    overrides_files = ['soc/models/universities.py'],
     app_files = ['app.yaml', 'index.yaml', 'queue.yaml', 'cron.yaml',
                  'mapreduce.yaml', 'main.py', 'settings.py', 'urls.py',
                  'gae_django.py', 'profiler.py', 'appengine_config.py'],
@@ -249,6 +252,9 @@ def build(options):
   # Make the necessary symlinks between the app and build directories.
   build_symlinks(options)
 
+  # Handle overrides
+  overrides(options)
+
 
 @task
 @cmdopts([
@@ -393,3 +399,53 @@ def closure(options):
       "%-4sCLOSURE: Source file sizes: %s, Dest file sizes: %s, Rate: %s",
       '', old_size, new_size, rate)
 
+
+@task
+def overrides(options):
+  """Copies files from the overrides structure to the build directory.
+  """
+  for path in options.overrides_dirs:
+    target = options.app_build / path
+    unroll_symlink(target)
+  for path in options.overrides_files:
+    target = options.overrides_folder / path
+    if not target.isfile():
+      paver.tasks.environment.info(
+          "target '%s' is not a file", target)
+      continue
+    to = options.app_build / path
+    to.remove()
+    target.symlink(to)
+
+
+def unroll_symlink(target):
+  """Unrolls a symlink.
+
+  Does the following if target is a directory symlink:
+  - removes the symlink
+  - creates a directory with the same name
+  - populates it with symlinks to individual files
+
+  Otherwise does nothing.
+  """
+  if not target.exists():
+    paver.tasks.environment.info(
+        "target '%s' does not exist", target)
+    return
+  if not target.isdir():
+    paver.tasks.environment.info(
+        "target '%s' is not a directory", target)
+    return
+  if not target.islink():
+    paver.tasks.environment.info(
+        "target '%s' is not a symlink", target)
+    return
+
+  deref = target.readlinkabs()
+  target.remove()
+  target.mkdir()
+
+  contents = deref.listdir()
+
+  for path in contents:
+    path.symlink(target / path.name)
