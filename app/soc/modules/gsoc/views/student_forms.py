@@ -75,7 +75,7 @@ class TaxFormPage(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.check.isProfileActive()
+    self.check.isStudentWithProject()
 
   def templatePath(self):
     return 'v2/modules/gsoc/student_forms/tax.html'

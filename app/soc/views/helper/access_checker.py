@@ -90,6 +90,10 @@ DEF_IS_NOT_STUDENT_MSG = ugettext(
     'This page is inaccessible because you do not have a student role '
     'in the program.')
 
+DEF_HAS_NO_PROJECT_MSG = ugettext(
+    'This page is inaccessible because you do not have an accepted project '
+    'in the program.')
+
 DEF_IS_STUDENT_MSG = ugettext(
     'This page is inaccessible because you are registered as a student.')
 
@@ -598,6 +602,14 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise AccessViolation(DEF_IS_NOT_STUDENT_MSG)
+
+  def isStudentWithProject(self):
+    self.isActiveStudent()
+
+    if self.data.student_info.number_of_projects > 0:
+      return
+
+    raise AccessViolation(DEF_HAS_NO_PROJECT_MSG)
 
   def notStudent(self):
     """Checks if the current user has a non-student profile.
