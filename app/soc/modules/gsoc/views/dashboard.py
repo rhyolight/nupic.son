@@ -37,6 +37,7 @@ from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.logic.helper import timeline as timeline_helper
 from soc.logic.models.request import logic as request_logic
+from soc.models.universities import UNIVERSITIES
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
@@ -1205,6 +1206,9 @@ class TodoComponent(Component):
     def rowAction(d, *args):
       if d['key'] == 'tax_form':
         return data.redirect.program().urlOf('gsoc_tax_forms')
+      if d['key'] == 'school_name':
+        url = data.redirect.program().urlOf('edit_gsoc_profile')
+        return url + '#form_row_school_name'
       return None
 
     list_config.setRowAction(rowAction)
@@ -1237,6 +1241,14 @@ class TodoComponent(Component):
       response.addRow({
           'key': 'tax_form',
           'name': 'Tax form',
+          'status': status,
+      })
+
+      matches = info.school_name in UNIVERSITIES.get(info.school_country, [])
+      status = colorize(matches, "Yes", "No")
+      response.addRow({
+          'key': 'school_name',
+          'name': 'School name selected from autocomplete',
           'status': status,
       })
 
