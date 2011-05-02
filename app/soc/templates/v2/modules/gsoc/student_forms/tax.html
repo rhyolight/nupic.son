@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+
 {% block open_form %}
 <form method="POST" enctype="multipart/form-data" id="form" class="form-register">
 {% endblock %}
@@ -24,12 +25,13 @@ limitations under the License.
     dep.melange.uploadform,
     null,
     function() {
-        var form_name = '#form';
-        jQuery(form_name).submit(function() {
-          var url = melange.getUploadUrl();
-          jQuery(form_name).get(0).setAttribute('action', url);
-          return true;
-        });
+      jQuery("select, input:radio, input:file, input:checkbox").uniform();
+      var form_name = '#form';
+      jQuery(form_name).submit(function() {
+        var url = melange.getUploadUrl();
+        jQuery(form_name).get(0).setAttribute('action', url);
+        return true;
+      });
     }
   ]
 {% endblock dependencies %}
