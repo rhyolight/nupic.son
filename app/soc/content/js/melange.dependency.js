@@ -180,6 +180,7 @@
     s.jqueryui.position,
     s.jqueryui.widget,
     null,
+    new $m.cssFile(mcss + "jquery-ui/jquery.ui.autocomplete.css"),
     tpjs + "jquery/jquery-ui.autocomplete.js"
   ];
 
