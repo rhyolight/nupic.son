@@ -57,9 +57,38 @@ class TaxForm(forms.ModelForm):
       field._link = None
     else:
       field._file = self.instance.tax_form
-      field._link = data.redirect.program().urlOf('gsoc_tax_forms_download')
+      field._link = data.redirect.program().urlOf('gsoc_tax_form_download')
 
   def clean_tax_form(self):
+    uploads = self.data.request.file_uploads
+    return uploads[0] if uploads else None
+
+
+class EnrollmentForm(forms.ModelForm):
+  """Django form for the student enrollment form.
+  """
+
+  class Meta:
+    model = GSoCStudentInfo
+    css_prefix = 'student_form'
+    fields = ['enrollment_form']
+    widgets = {}
+
+  enrollment_form = fields.FileField(label='Upload new enrollment form', required=False)
+
+  def __init__(self, data, *args, **kwargs):
+    super(EnrollmentForm, self).__init__(*args, **kwargs)
+    self.data = data
+    field = self.fields['enrollment_form']
+
+    if not (self.instance and self.instance.enrollment_form):
+      field._file = None
+      field._link = None
+    else:
+      field._file = self.instance.enrollment_form
+      field._link = data.redirect.program().urlOf('gsoc_enrollment_form_download')
+
+  def clean_enrollment_form(self):
     uploads = self.data.request.file_uploads
     return uploads[0] if uploads else None
 
@@ -71,7 +100,7 @@ class TaxFormPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'^gsoc/student_forms/tax/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_tax_forms'),
+         self, name='gsoc_tax_form'),
     ]
 
   def checkAccess(self):
@@ -99,13 +128,57 @@ class TaxFormPage(RequestHandler):
     tax_form.save()
 
   def json(self):
-    url = self.redirect.program().urlOf('gsoc_tax_forms')
+    url = self.redirect.program().urlOf('gsoc_tax_form')
     upload_url = blobstore.create_upload_url(url)
     self.response.write(upload_url)
 
   def post(self):
     validated = self.validate()
-    self.redirect.program().to('gsoc_tax_forms', validated=validated)
+    self.redirect.program().to('gsoc_tax_form', validated=validated)
+
+
+class EnrollmentFormPage(RequestHandler):
+  """View for the participant profile.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'^gsoc/student_forms/enrollment/%s$' % url_patterns.PROGRAM,
+         self, name='gsoc_enrollment_form'),
+    ]
+
+  def checkAccess(self):
+    self.check.isStudentWithProject()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/student_forms/base.html'
+
+  def context(self):
+    enrollment_form = EnrollmentForm(self.data, self.data.POST or None,
+                       instance=self.data.student_info)
+
+    return {
+        'page_name': 'Enrollment form',
+        'forms': [enrollment_form],
+        'error': bool(enrollment_form.errors),
+        }
+
+  def validate(self):
+    enrollment_form = EnrollmentForm(self.data, self.data.POST,
+                       instance=self.data.student_info)
+    if not enrollment_form.is_valid():
+      return False
+
+    enrollment_form.save()
+
+  def json(self):
+    url = self.redirect.program().urlOf('gsoc_enrollment_form')
+    upload_url = blobstore.create_upload_url(url)
+    self.response.write(upload_url)
+
+  def post(self):
+    validated = self.validate()
+    self.redirect.program().to('gsoc_enrollment_form', validated=validated)
 
 
 class DownloadTaxForm(RequestHandler):
@@ -115,7 +188,7 @@ class DownloadTaxForm(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'^gsoc/student_forms/tax/download/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_tax_forms_download'),
+         self, name='gsoc_tax_form_download'),
     ]
 
   def checkAccess(self):
@@ -123,5 +196,22 @@ class DownloadTaxForm(RequestHandler):
 
   def get(self):
     blob_key = str(self.data.student_info.tax_form.key())
+    self.response = bs_helper.download_blob(blob_key)
 
+
+class DownloadEnrollmentForm(RequestHandler):
+  """View for downloading the enrollment form.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'^gsoc/student_forms/enrollment/download/%s$' % url_patterns.PROGRAM,
+         self, name='gsoc_enrollment_form_download'),
+    ]
+
+  def checkAccess(self):
+    self.check.isProfileActive()
+
+  def get(self):
+    blob_key = str(self.data.student_info.enrollment_form.key())
     self.response = bs_helper.download_blob(blob_key)
