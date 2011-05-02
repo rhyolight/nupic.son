@@ -67,6 +67,12 @@ def getHostname(data=None):
   return getRawHostname()
 
 
+def getSecureHostname():
+  """Returns the hostname suitable for https requests.
+  """
+  return "%s.appspot.com" % getApplicationId()
+
+
 def isSecondaryHostname(data=None):
   """Returns if the current request is from the secondary hostname.
   """
