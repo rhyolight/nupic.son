@@ -30,6 +30,8 @@ from django.forms import fields
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
 from django.utils import simplejson
+from django.template import defaultfilters
+from django.utils.formats import dateformat
 from soc.views.helper import blobstore as bs_helper
 
 from soc.logic import cleaning
@@ -61,6 +63,21 @@ class TaxForm(forms.ModelForm):
   def __init__(self, data, *args, **kwargs):
     super(TaxForm, self).__init__(*args, **kwargs)
     self.data = data
+    if self.instance:
+      uploaded_form = self.instance.tax_form
+      if uploaded_form:
+        base_url = data.redirect.program().urlOf('gsoc_tax_forms_download')
+        link = '%s?key=%s' % (base_url, uploaded_form.key())
+        file_download = '<br/><a href="%(link)s">%(name)s</a> \
+            (Size: %(size)s \
+            Uploaded on: %(uploaded)s)' % {
+            'name': uploaded_form.filename,
+            'link': link,
+            'size': defaultfilters.filesizeformat(uploaded_form.size),
+            'uploaded': '%s UTC' % (
+                dateformat.format(uploaded_form.creation, 'jS M Y h:i:sA')),
+            }
+        self.fields['tax_form'].help_text += file_download
 
   def clean_tax_form(self):
     uploads = self.data.request.file_uploads
