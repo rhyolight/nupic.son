@@ -30,6 +30,7 @@ from django.forms import fields
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url
 from django.utils import simplejson
+from soc.views.helper import blobstore as bs_helper
 
 from soc.logic import cleaning
 from soc.logic import dicts
@@ -108,3 +109,22 @@ class TaxFormPage(RequestHandler):
   def post(self):
     validated = self.validate()
     self.redirect.program().to('gsoc_tax_forms', validated=validated)
+
+
+class DownloadTaxForm(RequestHandler):
+  """View for downloading the tax form.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'^gsoc/student_forms/tax/download/%s$' % url_patterns.PROGRAM,
+         self, name='gsoc_tax_forms_download'),
+    ]
+
+  def checkAccess(self):
+    self.check.isProfileActive()
+
+  def get(self):
+    blob_key = self.data.GET.get('key')
+
+    self.response = bs_helper.download_blob(blob_key)

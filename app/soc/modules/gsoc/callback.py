@@ -105,6 +105,7 @@ class Callback(object):
     self.views.append(slot_transfer_admin.SlotsTransferAdminPage())
     self.views.append(slot_transfer.SlotTransferPage())
     self.views.append(slot_transfer.UpdateSlotTransferPage())
+    self.views.append(student_forms.DownloadTaxForm())
     self.views.append(student_forms.TaxFormPage())
 
     # Appengine Task related views
