@@ -78,7 +78,7 @@ class TaxFormPage(RequestHandler):
     self.check.isStudentWithProject()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/student_forms/tax.html'
+    return 'v2/modules/gsoc/student_forms/base.html'
 
   def context(self):
     tax_form = TaxForm(self.data, self.data.POST or None,

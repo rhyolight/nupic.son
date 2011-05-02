@@ -14,9 +14,24 @@ limitations under the License.
 {% endcomment %}
 
 
+{% block open_form %}
+<form method="POST" enctype="multipart/form-data" id="form" class="form-register">
+{% endblock %}
+
 {% block dependencies %}
   [
     dep.uniform,
     dep.melange.main,
+    dep.melange.uploadform,
+    null,
+    function() {
+      jQuery("select, input:radio, input:file, input:checkbox").uniform();
+      var form_name = '#form';
+      jQuery(form_name).submit(function() {
+        var url = melange.getUploadUrl();
+        jQuery(form_name).get(0).setAttribute('action', url);
+        return true;
+      });
+    }
   ]
 {% endblock dependencies %}
