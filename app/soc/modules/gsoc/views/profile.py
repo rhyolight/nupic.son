@@ -35,6 +35,7 @@ from soc.logic import dicts
 from soc.views import forms
 
 from soc.models.user import User
+from soc.models.universities import UNIVERSITIES
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -427,6 +428,9 @@ class ProfilePage(RequestHandler):
       return True
     else:
       return False
+
+  def jsonContext(self):
+    return UNIVERSITIES
 
   def post(self):
     """Handler for HTTP POST request.
