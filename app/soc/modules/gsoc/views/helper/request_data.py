@@ -524,7 +524,7 @@ class RedirectHelper(object):
     self._url_name = 'show_gsoc_document'
     return self
 
-  def urlOf(self, name, full=False):
+  def urlOf(self, name, full=False, secure=False):
     """Returns the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -536,30 +536,36 @@ class RedirectHelper(object):
     else:
       url = reverse(name)
 
-    return self._fullUrl(url, full)
+    return self._fullUrl(url, full, secure)
 
-  def url(self, full=False):
+  def url(self, full=False, secure=False):
     """Returns the url of the current state.
     """
     if self._no_url:
       return None
     assert self._url or self._url_name
     if self._url:
-      return self._fullUrl(self._url, full)
-    return self.urlOf(self._url_name, full=full)
+      return self._fullUrl(self._url, full, secure)
+    return self.urlOf(self._url_name, full=full, secure=secure)
 
-  def _fullUrl(self, url, full):
+  def _fullUrl(self, url, full, secure):
     """Returns the full version of the url iff full.
 
     The full version starts with http:// and includes getHostname().
     """
-    if not full:
+    if (not full) and (system.isLocal() or not secure):
       return url
 
-    # TODO(SRabbelier): when should we link to https:// ?
-    return 'http://%s%s' % (system.getHostname(self._data), url)
+    if secure:
+      protocol = 'https'
+      hostname = system.getSecureHostname()
+    else:
+      protocol = 'http'
+      hostname = system.getHostname(self._data)
 
-  def to(self, name=None, validated=False, full=False):
+    return '%s://%s%s' % (protocol, hostname, url)
+
+  def to(self, name=None, validated=False, full=False, secure=False):
     """Redirects to the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -572,13 +578,14 @@ class RedirectHelper(object):
 
     if validated:
       url = url + '?validated'
-    self.toUrl(url, full=full)
 
-  def toUrl(self, url, full=False):
+    self.toUrl(url, full=full, secure=secure)
+
+  def toUrl(self, url, full=False, secure=False):
     """Redirects to the specified url.
     """
     from django.utils.encoding import iri_to_uri
-    url = self._fullUrl(url, full)
+    url = self._fullUrl(url, full, secure)
     self._response.status_code = 302
     self._response["Location"] = iri_to_uri(url)
 
@@ -665,12 +672,12 @@ class RedirectHelper(object):
       self._url_name = 'gsoc_invitation'
     return self
 
-  def comment(self, comment, full=False):
+  def comment(self, comment, full=False, secure=False):
     """Creates a direct link to a comment.
     """
     review = comment.parent()
     self.review(review.key().id_or_name(), review.parent().link_id)
-    url = self.urlOf('review_gsoc_proposal', full=full)
+    url = self.urlOf('review_gsoc_proposal', full=full, secure=secure)
     return "%s#c%s" % (url, comment.key().id())
 
   def project(self, id=None, student=None):
