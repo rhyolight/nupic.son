@@ -1204,9 +1204,12 @@ class TodoComponent(Component):
     list_config.addDictColumn('name', 'Name')
     list_config.addDictColumn('status', 'Status')
     def rowAction(d, *args):
-      if d['key'] == 'tax_form':
-        return data.redirect.program().urlOf('gsoc_tax_forms', secure=True)
-      if d['key'] == 'school_name':
+      key = d['key']
+      if key == 'tax_form':
+        return data.redirect.program().urlOf('gsoc_tax_form', secure=True)
+      if key == 'enrollment_form':
+        return data.redirect.program().urlOf('gsoc_enrollment_form', secure=True)
+      if key == 'school_name':
         url = data.redirect.program().urlOf('edit_gsoc_profile')
         return url + '#form_row_school_name'
       return None
@@ -1241,6 +1244,13 @@ class TodoComponent(Component):
       response.addRow({
           'key': 'tax_form',
           'name': 'Tax form',
+          'status': status,
+      })
+
+      status = colorize(info.enrollment_form, "Submitted", "Not submitted")
+      response.addRow({
+          'key': 'enrollment_form',
+          'name': 'Enrollment form',
           'status': status,
       })
 
