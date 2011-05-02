@@ -33,8 +33,10 @@ from django.core.urlresolvers import reverse
 from django.forms import forms
 from django.forms import widgets
 from django.forms.util import flatatt
+from django.template import defaultfilters
 from django.template import loader
 from django.utils.encoding import force_unicode
+from django.utils.formats import dateformat
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext
@@ -536,11 +538,29 @@ class BoundField(forms.BoundField):
         'id': self.name,
         }
 
-    return mark_safe('%s%s%s%s' % (
+    current_file_fmt = """
+        <br/>
+        <p>
+        File: <a href="%(link)s">%(name)s</a><br/>
+        Size: %(size)s <br/>
+        Uploaded on: %(uploaded)s UTC)
+        <p>
+    """
+
+    current_file = current_file_fmt % {
+        'name': self.field._file.filename,
+        'link': self.field._link,
+        'size': defaultfilters.filesizeformat(self.field._file.size),
+        'uploaded': dateformat.format(
+              self.field._file.creation, 'M jS Y, h:i:sA'),
+    } if self.field._file else ""
+
+    return mark_safe('%s%s%s%s%s' % (
         self._render_label(),
         self.as_widget(attrs=attrs),
         self._render_error(),
         self._render_note(),
+        current_file,
     ))
 
   def _render_label(self):

@@ -26,8 +26,6 @@ from google.appengine.ext import blobstore
 
 from django.forms import fields
 from django.conf.urls.defaults import url
-from django.template import defaultfilters
-from django.utils.formats import dateformat
 
 from soc.views import forms
 from soc.views.helper import blobstore as bs_helper
@@ -52,23 +50,14 @@ class TaxForm(forms.ModelForm):
   def __init__(self, data, *args, **kwargs):
     super(TaxForm, self).__init__(*args, **kwargs)
     self.data = data
-    if self.instance:
-      uploaded_form = self.instance.tax_form
-      if uploaded_form:
-        link = data.redirect.program().urlOf('gsoc_tax_forms_download')
-        file_download = """
-            <br/>
-            File: <a href="%(link)s">%(name)s</a><br/>
-            Size: %(size)s <br/>
-            Uploaded on: %(uploaded)s UTC)
-            """ % {
-                'name': uploaded_form.filename,
-                'link': link,
-                'size': defaultfilters.filesizeformat(uploaded_form.size),
-                'uploaded': dateformat.format(
-                      uploaded_form.creation, 'M jS Y, h:i:sA'),
-            }
-        self.fields['tax_form'].help_text += file_download
+    field = self.fields['tax_form']
+
+    if not (self.instance and self.instance.tax_form):
+      field._file = None
+      field._link = None
+    else:
+      field._file = self.instance.tax_form
+      field._link = data.redirect.program().urlOf('gsoc_tax_forms_download')
 
   def clean_tax_form(self):
     uploads = self.data.request.file_uploads
