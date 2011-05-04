@@ -32,10 +32,11 @@ limitations under the License.
         class="disabled" disabled="disabled"
       {% else %}{% if button.type == "long" %}
         class="long"
-      {% else %}{% if button.checked %}
-        class="on_off_on" checked="checked"
       {% else %}
         class="on_off"
-      {% endif %}{% endif %}{% endif %}
+      {% endif %}{% endif %}
+      {% if button.checked %}
+        checked="checked"
+      {% endif %}
    />
 </li>
