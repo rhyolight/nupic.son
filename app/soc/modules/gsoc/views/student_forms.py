@@ -128,7 +128,7 @@ class TaxFormPage(RequestHandler):
     tax_form.save()
 
   def json(self):
-    url = self.redirect.program().urlOf('gsoc_tax_form')
+    url = self.redirect.program().urlOf('gsoc_tax_form', secure=True)
     upload_url = blobstore.create_upload_url(url)
     self.response.write(upload_url)
 
@@ -172,7 +172,7 @@ class EnrollmentFormPage(RequestHandler):
     enrollment_form.save()
 
   def json(self):
-    url = self.redirect.program().urlOf('gsoc_enrollment_form')
+    url = self.redirect.program().urlOf('gsoc_enrollment_form', secure=True)
     upload_url = blobstore.create_upload_url(url)
     self.response.write(upload_url)
 
