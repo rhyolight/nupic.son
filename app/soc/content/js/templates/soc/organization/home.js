@@ -38,14 +38,14 @@
 
     // Setup required icons
     var base_icon = new google.maps.Icon();
-    base_icon.shadow = "http://www.google.com/mapfiles/shadow50.png";
+    base_icon.shadow = "https://www.google.com/mapfiles/shadow50.png";
     base_icon.iconSize = new google.maps.Size(20, 34);
     base_icon.shadowSize = new google.maps.Size(37, 34);
     base_icon.iconAnchor = new google.maps.Point(9, 34);
     base_icon.infoWindowAnchor = new google.maps.Point(9, 2);
     base_icon.infoShadowAnchor = new google.maps.Point(18, 25);
     var student_icon = new google.maps.Icon(base_icon);
-    student_icon.image = "http://www.google.com/mapfiles/marker.png";
+    student_icon.image = "https://www.google.com/mapfiles/marker.png";
     var mentor_icon = new google.maps.Icon(base_icon);
     mentor_icon.image = "/soc/content/" + melange.config.app_version + "/images/mentor-marker.png";
 

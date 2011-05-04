@@ -465,7 +465,7 @@
         var vis_height = jQuery("#div_visualization_" + id).width();
         if (visualization_type.indexOf("ImageChart") >= 0) {
           // setting height/width as suggested by
-          // http://code.google.com/apis/chart/labels.html#pie_labels
+          // https://code.google.com/apis/chart/labels.html#pie_labels
           if (visualization_type === "ImageChartP") {
             vis_height = Math.ceil(vis_width / 2);
           }
@@ -488,7 +488,7 @@
                   "If you want to embed the visualization, ",
                   "paste this to your page: \n",
                   "<script type='text/javascript' ",
-                  "src='http://www.google.com/jsapi'></script>\n",
+                  "src='https://www.google.com/jsapi'></script>\n",
                   "If you want to embed the LIVE visualization,\n",
                   "<script type='text/javascript' src='", exp_server,
                   "/export?",
@@ -520,7 +520,7 @@
                 alert([
                   "Paste this to your page: \n",
                   "<script type='text/javascript' ",
-                  "src='http://www.google.com/jsapi'></script>\n",
+                  "src='https://www.google.com/jsapi'></script>\n",
                   "If you want to embed the LIVE visualization,\n",
                   "<script type='text/javascript' src='", exp_server,
                   "/export?",

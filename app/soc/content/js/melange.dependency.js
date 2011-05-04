@@ -69,12 +69,12 @@
 
   if (melange.config.google_api_key !== undefined) {
     s.google = [
-      "http://www.google.com/jsapi?key=" + melange.config.google_api_key
+      "https://www.google.com/jsapi?key=" + melange.config.google_api_key
     ];
   }
   else {
     s.google = [
-      "http://www.google.com/jsapi"
+      "https://www.google.com/jsapi"
     ];
   }
 
