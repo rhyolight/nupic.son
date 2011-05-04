@@ -70,10 +70,12 @@ class XsrfMiddleware(object):
     if not post_token:
       return http.HttpResponse('Missing XSRF token.', status=403)
 
-    if not xsrfutil.isTokenValid(self._getSecretKey(request), post_token):
-      return http.HttpResponse('Invalid XSRF token.', status=403)
+    result = xsrfutil.isTokenValid(self._getSecretKey(request), post_token)
 
-    return None
+    if result is True:
+      return None
+
+    return http.HttpResponse('Invalid XSRF token: %s' % result, status=403)
 
   def process_response(self, request, response):
     """Alters HTML responses containing <form> tags to embed the XSRF token."""

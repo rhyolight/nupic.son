@@ -86,21 +86,28 @@ def _validateToken(key, token, user_id, action_id=""):
     otherwise.
   """
   if not token:
-    return False
+    return "Missing token"
+
   try:
     decoded = base64.urlsafe_b64decode(str(token))
+  except (TypeError, ValueError):
+    return "Could not base64 decode token"
+
+  try:
     token_time = long(decoded.split(DELIMITER)[-1])
   except (TypeError, ValueError):
-    return False
+    return "Could not split token"
+
   current_time = time.time()
+
   # If the token is too old it's not valid.
   if current_time - token_time > DEFAULT_TIMEOUT_SECS:
-    return False
+    return "Token too old"
 
   # The given token should match the generated one with the same time.
   expected_token = _generateToken(key, user_id, action_id, when=token_time)
   if token != expected_token:
-    return False
+    return "Token mismatch for user_id '%s'" % user_id
 
   return True
 
