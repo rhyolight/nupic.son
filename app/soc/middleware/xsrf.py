@@ -49,7 +49,7 @@ class XsrfMiddleware(object):
   def _getSecretKey(self, request):
     """Gets the XSRF secret key from the request context."""
     if not hasattr(request, 'site'):
-      request.site =site_logic.getSingleton()
+      request.site = site_logic.getSingleton()
     return site_logic.getXsrfSecretKey(request.site)
 
   def process_request(self, request):
