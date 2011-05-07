@@ -26,6 +26,7 @@ __authors__ = [
 import datetime
 
 from google.appengine.api import taskqueue
+from google.appengine.ext import db
 
 from django import http
 from django.conf.urls.defaults import url
@@ -35,10 +36,8 @@ from soc.tasks.helper import error_handler
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.logic.models.program import logic as program_logic
-from soc.modules.gsoc.logic.models.proposal_duplicates import logic \
-      as pd_logic
-from soc.modules.gsoc.logic.models.proposal_duplicates_status import logic \
-      as pds_logic
+from soc.modules.gsoc.logic import duplicates as duplicates_logic
+from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 
 
 # TODO(ljvderijk): General purpose task responses such as retry(), abort() and
@@ -93,24 +92,28 @@ class ProposalDuplicatesTask(object):
           'Invalid program specified: %s' % program_key)
 
     # obtain the proposal duplicate status
-    pds_entity = pds_logic.getOrCreateForProgram(program_entity)
+    pds_entity = duplicates_logic.getOrCreateStatusForProgram(program_entity)
 
     if pds_entity.status == 'idle':
       # delete all old duplicates
-      pd_logic.deleteAllForProgram(program_entity)
+      duplicates_logic.deleteAllForProgram(program_entity)
 
       # pass these data along params as POST to the new task
       task_params = {'program_key': program_key}
       task_url = '/tasks/gsoc/proposal_duplicates/calculate'
 
       new_task = taskqueue.Task(params=task_params, url=task_url)
-      # add a new task that performs duplicate calculation per
-      # organization
-      new_task.add()
 
-      # update the status of the PDS entity to processing
-      fields = {'status': 'processing'}
-      pds_logic.updateEntityProperties(pds_entity, fields)
+      def txn():
+        # add a new task that performs duplicate calculation per
+        # organization
+        new_task.add(transactional=True)
+
+        # update the status of the PDS entity to processing
+        pds_entity.status = 'processing'
+        pds_entity.put()
+
+      db.RunInTransaction(txn)
 
     # Add a new clone of this task that must be performed an hour later because
     # the current task is part of the task that repeatedly runs but repeat
@@ -181,19 +184,19 @@ class ProposalDuplicatesTask(object):
 
       for ap in accepted_proposals:
         student_entity = ap.parent()
-        proposal_duplicate = pd_logic.getForFields({'student': student_entity},
-                                                   unique=True)
+
+        q = GSoCProposalDuplicate.all()
+        q.filter('student', student_entity)
+        proposal_duplicate = q.get()
+
         if proposal_duplicate and ap.key() not in proposal_duplicate.duplicates:
           # non-counted (to-be) accepted proposal found
-          pd_fields = {
-              'duplicates': proposal_duplicate.duplicates + [ap.key()],
-              }
-          pd_fields['is_duplicate'] = len(pd_fields['duplicates']) >= 2
+          proposal_duplicate.duplicates = proposal_duplicate.duplicates + \
+                                          [ap.key()]
+          proposal_duplicate.is_duplicate = \
+              len(proposal_duplicate.duplicates) >= 2
           if org_entity.key() not in proposal_duplicate.orgs:
-            pd_fields['orgs'] = proposal_duplicate.orgs + [org_entity.key()]
-
-          proposal_duplicate = pd_logic.updateEntityProperties(
-              proposal_duplicate, pd_fields)
+            proposal_duplicate.orgs = proposal_duplicate.orgs + [org_entity.key()]
         else:
           pd_fields  = {
               'program': program_entity,
@@ -202,7 +205,9 @@ class ProposalDuplicatesTask(object):
               'duplicates': [ap.key()],
               'is_duplicate': False
               }
-          proposal_duplicate = pd_logic.updateOrCreateFromFields(pd_fields)
+          proposal_duplicate = GSoCProposalDuplicate(**pd_fields)
+
+        proposal_duplicate.put()
 
       # Adds a new task that performs duplicate calculation for
       # the next organization.
@@ -216,13 +221,13 @@ class ProposalDuplicatesTask(object):
       # There aren't any more organizations to process. So delete
       # all the proposals for which there are not more than one
       # proposal for duplicates property.
-      pd_logic.deleteAllForProgram(program_entity, non_dupes_only=True)
+      duplicates_logic.deleteAllForProgram(program_entity, non_dupes_only=True)
 
       # update the proposal duplicate status and its timestamp
-      pds_entity = pds_logic.getOrCreateForProgram(program_entity)
-      new_fields = {'status': 'idle',
-                    'calculated_on': datetime.datetime.now()}
-      pds_logic.updateEntityProperties(pds_entity, new_fields)
+      pds_entity = duplicates_logic.getOrCreateStatusForProgram(program_entity)
+      pds_entity.status = 'idle'
+      pds_entity.calculated_on = datetime.datetime.now()
+      pds_entity.put()
 
     # return OK
     return http.HttpResponse()

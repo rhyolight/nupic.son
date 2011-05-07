@@ -31,10 +31,8 @@ from django.conf.urls.defaults import url
 
 from soc.views.template import Template
 
-from soc.modules.gsoc.logic.models.proposal_duplicates import logic \
-    as duplicates_logic
-from soc.modules.gsoc.logic.models.proposal_duplicates_status import \
-    logic as ds_logic
+from soc.modules.gsoc.logic import duplicates as duplicates_logic
+from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
@@ -61,11 +59,13 @@ class DuplicatesPage(RequestHandler):
     """
     program = self.data.program
 
-    fields = {'program': program,
-              'is_duplicate': True}
+    q = GSoCProposalDuplicate.all()
+    q.filter('program', program)
+    q.filter('is_duplicate', True)
+
     duplicates = [Duplicate(self.data, duplicate)
-                  for duplicate in duplicates_logic.getForFields(fields)]
-    duplicates_status = ds_logic.getOrCreateForProgram(program)
+                  for duplicate in q.fetch(1000)]
+    duplicates_status = duplicates_logic.getOrCreateStatusForProgram(program)
 
     context = {
       'page_name': 'Duplicates for %s' %program.name,
