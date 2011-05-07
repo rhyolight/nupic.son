@@ -50,6 +50,7 @@ from soc.modules.gsoc.logic.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -1119,6 +1120,26 @@ class StudentsComponent(Component):
         'birth_date', "Birthdate",
         (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
         hidden=True)
+
+    def formsSubmitted(ent, si):
+      info = si[ent.key()]
+      tax = GSoCStudentInfo.tax_form.get_value_for_datastore(info)
+      enroll = GSoCStudentInfo.enrollment_form.get_value_for_datastore(info)
+      return [tax, enroll]
+
+    list_config.addColumn(
+        'tax_submitted', "Tax form submitted",
+        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[0])),
+        hidden=True)
+
+    list_config.addColumn(
+        'enroll_submitted', "Enrollment form submitted",
+        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[1])),
+        hidden=True)
+
+    list_config.addColumn(
+        'forms_submitted', "Forms submitted",
+        lambda ent, si, *args: all(formsSubmitted(ent, si)))
 
     # address fields
     list_config.addSimpleColumn('res_street', "res_street", hidden=True)
