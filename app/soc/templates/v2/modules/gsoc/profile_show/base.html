@@ -41,11 +41,12 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.uniform,
     dep.melange.main,
     css("/soc/content/{{ app_version }}/css/v2/gsoc/readonly.css"),
     css("/soc/content/{{ app_version }}/css/v2/gsoc/map.css"),
     tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/profile_readonly.js", {
-      'css_prefix': '{{ css_prefix }}'
+      '_css_prefix': '{{ css_prefix }}'
     })
   ]
 {% endblock dependencies %}

@@ -23,7 +23,7 @@
   melange.templates._baseTemplate.apply(this, arguments);
 
   var _self = this;
-  var css_prefix = _self.context.css_prefix;
+  var css_prefix = "gsoc_profile_show";
 
   // Create global variables
   var map;
@@ -50,8 +50,7 @@
   var map_div = "profile_map";
 
   // Id of the element which the map will be appended after.
-  //var append_to = "#block-" + css_prefix + "-location-info-content";
-  var append_to = "#block-gsoc_profile_show-location-info-content";
+  var append_to = "#block-" + css_prefix + "-location-info-content";
 
   var field_lat = "#latitude";
   var field_lng = "#longitude";
