@@ -41,13 +41,14 @@ class ProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
     model = GSoCProfile
     css_prefix = 'gsoc_profile_show'
     fields = ['public_name', 'given_name', 'surname', 'im_network',
-              'im_handle', 'home_page', 'blog', 'photo_url', 'latitude',
-              'longitude', 'publish_location', 'email', 'res_street',
+              'im_handle', 'home_page', 'blog', 'photo_url',
+              'publish_location', 'email', 'res_street',
               'res_street_extra', 'res_city', 'res_state', 'res_country',
               'res_postalcode', 'phone', 'ship_name', 'ship_street',
               'ship_street_extra', 'ship_city', 'ship_state',
               'ship_country', 'ship_postalcode', 'birth_date',
               'tshirt_style', 'tshirt_size', 'gender', 'program_knowledge']
+    hidden_fields = ['latitude', 'longitude']
 
 
 class ProfileShowPage(RequestHandler):
@@ -84,6 +85,7 @@ class ProfileShowPage(RequestHandler):
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'user': user,
         'profile': ProfileReadOnlyTemplate(profile),
+        'css_prefix': ProfileReadOnlyTemplate.Meta.css_prefix
         }
 
 

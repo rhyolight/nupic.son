@@ -39,6 +39,8 @@ class ModelReadOnlyTemplateOptions(object):
         while rendering
     fields: list of appengine model property names to be rendered in the
         template, or None
+    hidden_fields: list of appengine model property names to be rendered in the
+        template with 'display: none' style, or None
     exclude: list of appengine model property names to be skipped from the
         template, or None
   """
@@ -50,6 +52,7 @@ class ModelReadOnlyTemplateOptions(object):
     self.css_prefix = getattr(options, 'css_prefix',
                               getattr(self.model, '__name__', None))
     self.fields = getattr(options, 'fields', None)
+    self.hidden_fields = getattr(options, 'hidden_fields', None)
     self.exclude = getattr(options, 'exclude', None)
 
 
@@ -73,16 +76,20 @@ class ModelReadOnlyTemplateMetaclass(type):
 
     if opts.model is not None:
       model_fields = SortedDict()
+      model_hidden_fields = {}
       for name, prop in sorted(opts.model.properties().iteritems(),
                                key=lambda prop: prop[1].creation_counter):
         if opts.fields and name not in opts.fields:
+          if opts.hidden_fields and name in opts.hidden_fields:
+            model_hidden_fields[name] = prop
           continue
         if opts.exclude and name in opts.exclude:
           continue
-  
+
         model_fields[name] = prop
 
       dict['fields'] = model_fields
+      dict['hidden_fields'] = model_hidden_fields
 
     if opts.css_prefix:
       dict['css_prefix'] = opts.css_prefix
@@ -114,6 +121,9 @@ class ModelReadOnlyTemplate(object):
     The readonly template will be rendered for the data in this model instance.
     """
     self.instance = instance
+    
+    for name, field in self.hidden_fields.items():
+      self.hidden_fields[name] = getattr(self.instance, name)
 
   def __iter__(self):
     """Iterator yielding groups of model instance's properties to be rendered.
@@ -136,6 +146,7 @@ class ModelReadOnlyTemplate(object):
 
     context = {
       'model': self,
+      'hidden_fields': self.hidden_fields,
       'css_prefix': self.css_prefix,
     }
     rendered = loader.render_to_string(self.template_path,
