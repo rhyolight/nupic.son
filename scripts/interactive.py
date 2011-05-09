@@ -100,6 +100,19 @@ def deepFetch(queryGen, key=None, filters=None, batchSize = 100):
       key = results[-1].key()
 
 
+def setupRemote(app_id, host=None):
+  """Sets up execution for the specified remote.
+  """
+  from google.appengine.api import apiproxy_stub_map
+  from google.appengine.ext import db
+  from google.appengine.ext.remote_api import remote_api_stub
+
+  if not host:
+    host = '%s.appspot.com' % app_id
+
+  remote_api_stub.ConfigureRemoteDatastore(app_id, '/_ah/remote_api', auth_func, host)
+
+
 def remote(args, context=None):
   """Starts a shell with the datastore as remote_api_stub.
 
@@ -108,21 +121,14 @@ def remote(args, context=None):
     context: locals that should be added to the shell
   """
 
-  from google.appengine.api import apiproxy_stub_map
-  from google.appengine.ext import db
-  from google.appengine.ext.remote_api import remote_api_stub
-
   if not context:
     context = {}
 
   app_id = args[0]
 
-  if len(args) > 1:
-    host = args[1]
-  else:
-    host = '%s.appspot.com' % app_id
+  host = args[1] if len(args) > 1 else None
 
-  remote_api_stub.ConfigureRemoteDatastore(app_id, '/_ah/remote_api', auth_func, host)
+  setupRemote(app_id, host)
 
   context['deepFetch'] = deepFetch
 
