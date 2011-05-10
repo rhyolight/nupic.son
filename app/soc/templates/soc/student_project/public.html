@@ -24,7 +24,7 @@ limitations under the License.
 
   function initialize() {
     var blog = new BlogPreview(document.getElementById("blog"));
-    blog.show("{{ entity.feed_url }}", 3);
+    blog.show("{{ entity.feed_url|safe }}", 3);
   }
   google.setOnLoadCallback(initialize);
   </script>

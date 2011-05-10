@@ -112,7 +112,7 @@ limitations under the License.
       function () {
         function initialize() {
           var blog = new BlogPreview(document.getElementById("blog-feed"));
-          blog.show("{{ project.feed_url }}", 5, "Blog Feed");
+          blog.show("{{ project.feed_url|safe }}", 5, "Blog Feed");
         }
 
         jQuery(
