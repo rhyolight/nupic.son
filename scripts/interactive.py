@@ -134,7 +134,7 @@ def remote(args, context=None):
 
   try:
     from IPython.Shell import IPShell
-    shell = IPShell(argv=[])
+    shell = IPShell(argv=[], user_ns=context)
     shell.mainloop()
   except ImportError:
     # IPython not found, use the vanilla interpreter shell
