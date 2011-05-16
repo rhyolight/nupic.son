@@ -16,30 +16,9 @@
 #
 
 
-AF_INET = None
-SOCK_STREAM = None
-SOCK_DGRAM = None
-
-_GLOBAL_DEFAULT_TIMEOUT = object()
 
 
-class error(OSError):
-  pass
-
-class herror(error):
-  pass
-
-class gaierror(error):
-  pass
-
-class timeout(error):
-  pass
+"""Runtime API module."""
 
 
-def _fileobject(fp, mode='rb', bufsize=-1, close=False):
-  """Assuming that the argument is a StringIO or file instance."""
-  if not hasattr(fp, 'fileno'):
-    fp.fileno = lambda: None
-  return fp
-
-ssl = None
+from runtime import *
