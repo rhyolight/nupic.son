@@ -91,15 +91,24 @@ class InviteTest(MailTestCase, DjangoTestCase):
     properties.pop('link_id')
     self.assertPropertiesEqual(properties, invitation)
 
+    other_data2 = GSoCProfileHelper(self.gsoc, self.dev_test)
+    other_data2.createOtherUser('to_be_admin2@example.com')
+    other_data2.createProfile()
+    other_data2.notificationSettings()
+
     invitation.delete()
-    override['link_id'] = 'to_be_admin@example.com'
+    override['link_id'] = 'to_be_admin@example.com, to_be_admin2@example.com'
     other_data.notificationSettings()
     response, properties = self.modelPost(url, Request, override)
     self.assertEmailSent(to=other_data.profile.email, n=1)
 
-    invitation = Request.all().get()
+    invitations = Request.all().fetch(2)
+    self.assertEqual(2, len(invitations))
+    invitation = invitations[0]
     properties.pop('link_id')
     self.assertPropertiesEqual(properties, invitation)
+    properties['user'] = other_data2.user
+    self.assertPropertiesEqual(properties, invitations[1])
 
     # test withdraw/resubmit invite
     url = '/gsoc/invitation/%s/%s' % (self.gsoc.key().name(), invitation.key().id())

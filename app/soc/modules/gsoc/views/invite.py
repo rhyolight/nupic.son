@@ -71,7 +71,9 @@ class InviteForm(forms.ModelForm):
     # reorder the fields so that link_id is the first one
     field = self.fields.pop('link_id')
     self.fields.insert(0, 'link_id', field)
-    field.help_text = "The link_id or email address of the invitee"
+    field.help_text = ugettext(
+        "The link_id or email address of the invitee, "
+        " separate multiple values with a comma")
     
   def clean_link_id(self):
     """Accepts link_id of users which may be invited.
@@ -79,6 +81,15 @@ class InviteForm(forms.ModelForm):
 
     assert isSet(self.request_data.organization)
 
+    link_ids = self.cleaned_data.get('link_id', '').split(',')
+
+    self.request_data.invited_user = []
+
+    for link_id in link_ids:
+      self.cleaned_data['link_id'] = link_id.strip()
+      self._clean_one_link_id()
+
+  def _clean_one_link_id(self):
     invited_user = None
 
     link_id_cleaner = cleaning.clean_link_id('link_id')
@@ -112,7 +123,7 @@ class InviteForm(forms.ModelForm):
       existing_user_cleaner = cleaning.clean_existing_user('link_id')
       invited_user = existing_user_cleaner(self)
 
-    self.request_data.invited_user = invited_user
+    self.request_data.invited_user.append(invited_user)
     
     # check if the organization has already sent an invitation to the user
     query = db.Query(Request)
@@ -203,7 +214,7 @@ class InvitePage(RequestHandler):
     assert self.data.invited_user
 
     # create a new invitation entity
-    invite_form.cleaned_data['user'] = self.data.invited_user
+
     invite_form.cleaned_data['group'] = self.data.organization
     invite_form.cleaned_data['role'] = self.data.kwargs['role']
     invite_form.cleaned_data['type'] = 'Invitation'
@@ -215,7 +226,12 @@ class InvitePage(RequestHandler):
       sub_txn()
       return invite
 
-    return db.run_in_transaction(create_invite_txn)
+    for user in self.data.invited_user:
+      invite_form.instance = None
+      invite_form.cleaned_data['user'] = user
+      db.run_in_transaction(create_invite_txn)
+
+    return True
 
   def post(self):
     """Handler to for GSoC Invitation Page HTTP post request.
