@@ -36,7 +36,7 @@ class RequestHandler(RequestHandler):
   """Customization required by GSoC to handle HTTP requests.
   """
 
-  def render(self, context):
+  def render(self, template_path, context):
     """Renders the page using the specified context.
 
     See soc.views.base.RequestHandler.
@@ -49,7 +49,7 @@ class RequestHandler(RequestHandler):
     context['header'] = base_templates.Header(self.data)
     context['mainmenu'] = base_templates.MainMenu(self.data)
     context['footer'] = base_templates.Footer(self.data)
-    super(RequestHandler, self).render(context)
+    super(RequestHandler, self).render(template_path, context)
 
   def init(self, request, args, kwargs):
     self.data = RequestData()

@@ -129,11 +129,11 @@ class RequestHandler(object):
   def get(self):
     """Handler for HTTP GET request.
 
-    Default implementation calls context and passes it to render to
-    construct the page.
+    Default implementation calls templatePath and context and passes
+    those to render to construct the page.
     """
     context = self.context()
-    self.render(context)
+    self.render(self.templatePath(), context)
 
   def json(self):
     """Handler for HTTP GET request with a 'fmt=json' parameter.
@@ -218,21 +218,22 @@ class RequestHandler(object):
     self.error(401, "checkAccess in base RequestHandler has not been changed "
                "to grant access")
 
-  def render(self, render_context):
+  def render(self, template_path, render_context):
     """Renders the page using the specified context.
 
-    The page is rendered using the template specified in self.templatePath()
-    and is written to the response object.
+    The page is rendered using the template and context specified and
+    is written to the response object.
 
     The context object is extended with the values from helper.context.default.
 
     Args:
+      template_path: the path of the template that should be used
       render_context: the context that should be used
     """
 
     context = context_helper.default(self.data)
     context.update(render_context)
-    rendered = loader.render_to_string(self.templatePath(), dictionary=context)
+    rendered = loader.render_to_string(template_path, dictionary=context)
     self.response.write(rendered)
 
   def templatePath(self):
