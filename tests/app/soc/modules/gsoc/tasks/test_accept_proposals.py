@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for accept_proposals task.
-"""
+'''Tests for accept_proposals task
+'''
 
 __authors__ = [
   '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
@@ -126,7 +126,7 @@ class AcceptProposalsTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
     for task in self.get_tasks():
       if task['url'] == self.ACCEPT_URL:
         expected_params = {'org_key':
-                           urllib.quote_plus(self.org.key().id_or_name())}
+                          urllib.quote_plus(self.org.key().id_or_name())}
         self.assertEqual(expected_params, task['params'])
 
       elif task['url'] == self.MAIN_URL:
@@ -134,10 +134,9 @@ class AcceptProposalsTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
         q.filter('scope', self.gsoc)
         q.filter('status', 'active')
         q.get()
-        expected_params = {
-            'org_cursor': q.cursor(),
-            'program_key': urllib.quote_plus(self.gsoc.key().name()),
-        }
+        expected_params = {'org_cursor': q.cursor(),
+                           'program_key': urllib.quote_plus(
+                               self.gsoc.key().name())}
 
         #as we can't know XSRF token, ignore it
         self.assertNotEqual(task['params'].get('xsrf_token'), None)
@@ -186,10 +185,10 @@ class AcceptProposalsTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
     #assert parameters to task
     for task in self.get_tasks():
       if task['url'] == self.REJECT_URL:
-        expected_params = {
-            'org_key': urllib.quote_plus(self.org.key().name()),
-            'program_key': urllib.quote_plus(self.gsoc.key().name()),
-        }
+        expected_params = {'org_key':
+                           urllib.quote_plus(self.org.key().name()),
+                           'program_key':
+                           urllib.quote_plus(self.gsoc.key().name())}
 
         #ignore xsrf token
         self.assertNotEqual(task['params'].get('xsrf_token'), None)
@@ -229,4 +228,3 @@ class AcceptProposalsTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
     #assert no projects are created for rejected student
     projects = GSoCProject.all().ancestor(self.student2.profile)
     self.assertEqual(projects.count(), 0)
-
