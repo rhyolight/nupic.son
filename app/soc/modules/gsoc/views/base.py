@@ -25,6 +25,7 @@ __authors__ = [
   ]
 
 from soc.views.base import RequestHandler
+from soc.views.template import Template
 
 from soc.modules.gsoc.views import base_templates
 from soc.modules.gsoc.views.helper import access_checker
@@ -61,3 +62,16 @@ class RequestHandler(RequestHandler):
     else:
       self.mutator = access_checker.Mutator(self.data)
       self.check = access_checker.AccessChecker(self.data)
+
+  def error(self, status, message=None):
+    self.response.set_status(status)
+
+    template_path = "v2/modules/gsoc/error.html"
+    context = {
+        'page_name': self.response.content,
+        'message': message,
+        'logged_in_msg': base_templates.LoggedInMsg(self.data, apply_link=False),
+    }
+
+    self.response.content = ''
+    self.render(template_path, context)
