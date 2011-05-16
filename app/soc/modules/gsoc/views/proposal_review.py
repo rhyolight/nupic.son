@@ -545,7 +545,8 @@ class PostComment(RequestHandler):
       q.filter('notify_public_comments', True)
     mentors = q.fetch(1000)
 
-    to_emails = [i.email for i in mentors]
+    to_emails = [i.email for i in mentors \
+                 if i.key() != self.data.profile.key()]
 
     def create_comment_txn():
       comment = comment_form.create(commit=True, parent=self.data.proposal)
