@@ -49,9 +49,9 @@ class ProposalAcceptanceTask(object):
     """Returns the URL patterns for the tasks in this module
     """
     patterns = [
-        url(r'tasks/gsoc/accept_proposals/main$', self.convertProposals),
-        url(r'tasks/gsoc/accept_proposals/accept$', self.acceptProposals),
-        url(r'tasks/gsoc/accept_proposals/reject$', self.rejectProposals)]
+        url(r'^tasks/gsoc/accept_proposals/main$', self.convertProposals),
+        url(r'^tasks/gsoc/accept_proposals/accept$', self.acceptProposals),
+        url(r'^tasks/gsoc/accept_proposals/reject$', self.rejectProposals)]
     return patterns
 
   def convertProposals(self, request, *args, **kwargs):

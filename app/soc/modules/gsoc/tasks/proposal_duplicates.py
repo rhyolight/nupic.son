@@ -49,9 +49,9 @@ class ProposalDuplicatesTask(object):
     """Returns the URL patterns for the tasks in this module.
     """
     patterns = [
-        url(r'tasks/gsoc/proposal_duplicates/start$',
+        url(r'^tasks/gsoc/proposal_duplicates/start$',
         self.start, name='proposal_duplicates_task_start'),
-        url(r'tasks/gsoc/proposal_duplicates/calculate$',
+        url(r'^tasks/gsoc/proposal_duplicates/calculate$',
         self.calculate, name='proposal_duplicates_task_calculate'),
         ]
     return patterns

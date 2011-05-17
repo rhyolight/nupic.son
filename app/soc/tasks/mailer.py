@@ -97,7 +97,7 @@ class MailerTask(object):
     """Returns the URL patterns for the tasks in this module.
     """
     return [
-        url(r'tasks/mail/send_mail$', self.sendMail,
+        url(r'^tasks/mail/send_mail$', self.sendMail,
             name='send_email_task'),
     ]
 
