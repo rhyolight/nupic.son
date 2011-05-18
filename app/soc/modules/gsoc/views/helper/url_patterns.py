@@ -22,7 +22,18 @@ __authors__ = [
   ]
 
 
+from django.conf.urls.defaults import url as django_url
+
 from soc.models import linkable
+
+
+def url(regex, view, kwargs=None, name=None):
+  """Constructs an url pattern prefixed with ^gsoc/.
+
+  Args: see django.conf.urls.defaults.url
+  """
+  return django_url('^gsoc/%s' % regex, view, kwargs=kwargs, name=name)
+
 
 def captureLinkId(name):
   """Returns a capture group for a link id with the specified name.
