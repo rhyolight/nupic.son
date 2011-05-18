@@ -22,7 +22,7 @@ __authors__ = [
   ]
 
 
-from django.conf.urls.defaults import url
+from django.conf.urls.defaults import url as django_url
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.template import Template
@@ -32,6 +32,7 @@ from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class AcceptedOrgsList(Template):
@@ -95,10 +96,10 @@ class AcceptedOrgsPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/accepted_orgs/%s$' % url_patterns.PROGRAM, self,
+        url(r'accepted_orgs/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_accepted_orgs'),
-        url(r'^gsoc/program/accepted_orgs/%s$' % url_patterns.PROGRAM, self),
-        url(r'^program/accepted_orgs/%s$' % url_patterns.PROGRAM, self),
+        url(r'program/accepted_orgs/%s$' % url_patterns.PROGRAM, self),
+        django_url(r'^program/accepted_orgs/%s$' % url_patterns.PROGRAM, self),
     ]
 
   def checkAccess(self):

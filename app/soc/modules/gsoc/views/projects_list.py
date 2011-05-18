@@ -23,8 +23,6 @@ __authors__ = [
   ]
 
 
-from django.conf.urls.defaults import url
-
 from soc.logic.exceptions import AccessViolation
 from soc.views.template import Template
 
@@ -33,6 +31,7 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class ProjectList(Template):
@@ -109,7 +108,7 @@ class ListProjects(RequestHandler):
     """
 
     return [
-        url(r'^gsoc/projects/list/%s$' % url_patterns.PROGRAM, self,
+        url(r'projects/list/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_accepted_projects')
     ]
 

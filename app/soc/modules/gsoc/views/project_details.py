@@ -25,7 +25,6 @@ __authors__ = [
 
 from google.appengine.ext import db
 
-from django.conf.urls.defaults import url
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import BadRequest
@@ -39,6 +38,7 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class ProjectDetailsForm(ModelForm):
@@ -64,7 +64,7 @@ class ProjectDetailsUpdate(RequestHandler):
     """
 
     return [
-        url(r'^gsoc/project/update/%s$' % url_patterns.PROJECT, self,
+        url(r'project/update/%s$' % url_patterns.PROJECT, self,
             name='gsoc_update_project')
     ]
 
@@ -171,7 +171,7 @@ class ProjectDetails(RequestHandler):
     """
 
     return [
-        url(r'^gsoc/project/%s$' % url_patterns.PROJECT, self,
+        url(r'project/%s$' % url_patterns.PROJECT, self,
             name='gsoc_project_details')
     ]
 
@@ -210,7 +210,7 @@ class AssignMentor(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/project/assign_mentor/%s$' % url_patterns.PROJECT,
+         url(r'project/assign_mentor/%s$' % url_patterns.PROJECT,
          self, name='gsoc_project_assign_mentor'),
     ]
 
@@ -279,7 +279,7 @@ class FeaturedProject(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/project/featured/%s$' % url_patterns.PROJECT,
+         url(r'project/featured/%s$' % url_patterns.PROJECT,
          self, name='gsoc_featured_project'),
     ]
 

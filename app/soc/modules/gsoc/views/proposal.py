@@ -25,7 +25,6 @@ __authors__ = [
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
-from django.conf.urls.defaults import url
 
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
@@ -38,6 +37,7 @@ from soc.modules.gsoc.models.profile import GSoCProfile
 
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class ProposalForm(forms.ModelForm):
@@ -59,7 +59,7 @@ class ProposalPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/proposal/submit/%s$' % url_patterns.ORG,
+        url(r'proposal/submit/%s$' % url_patterns.ORG,
          self, name='submit_gsoc_proposal'),
     ]
 
@@ -156,7 +156,7 @@ class UpdateProposal(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/update/%s$' % url_patterns.PROPOSAL,
+         url(r'proposal/update/%s$' % url_patterns.PROPOSAL,
          self, name='update_gsoc_proposal'),
     ]
 

@@ -22,7 +22,7 @@ __authors__ = [
   ]
 
 
-from django.conf.urls.defaults import url
+from django.conf.urls.defaults import url as django_url
 
 from soc.logic import dicts
 from soc.logic.helper import prefixes
@@ -34,6 +34,7 @@ from soc.views.forms import ModelForm
 
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class DocumentForm(ModelForm):
@@ -57,7 +58,7 @@ class EditDocumentPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/document/edit/%s$' % url_patterns.DOCUMENT, self,
+        url(r'document/edit/%s$' % url_patterns.DOCUMENT, self,
             name='edit_gsoc_document')
     ]
 
@@ -118,9 +119,9 @@ class DocumentPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/document/show/%s$' % url_patterns.DOCUMENT, self,
+        url(r'document/show/%s$' % url_patterns.DOCUMENT, self,
             name='show_gsoc_document'),
-        url(r'^document/show/%s$' % url_patterns.DOCUMENT, self),
+        django_url(r'^document/show/%s$' % url_patterns.DOCUMENT, self),
     ]
 
   def checkAccess(self):
@@ -143,7 +144,7 @@ class EventsPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/events/%s$' % url_patterns.PROGRAM, self,
+        url(r'events/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_events')
     ]
 

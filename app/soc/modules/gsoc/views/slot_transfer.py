@@ -25,7 +25,6 @@ __authors__ = [
 from google.appengine.ext import db
 
 from django import forms as django_forms
-from django.conf.urls.defaults import url
 
 from soc.logic import cleaning
 from soc.logic import host as host_logic
@@ -41,6 +40,7 @@ from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class SlotTransferForm(forms.ModelForm):
@@ -85,7 +85,7 @@ class SlotTransferPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/slots/transfer/%s$' % url_patterns.ORG,
+        url(r'slots/transfer/%s$' % url_patterns.ORG,
             self, name='gsoc_slot_transfer'),
     ]
 
@@ -138,7 +138,7 @@ class UpdateSlotTransferPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/slots/transfer/update/%s$' % url_patterns.ORG,
+        url(r'slots/transfer/update/%s$' % url_patterns.ORG,
             self, name='gsoc_update_slot_transfer'),
     ]
 

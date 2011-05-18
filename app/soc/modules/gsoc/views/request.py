@@ -25,7 +25,6 @@ __authors__ = [
 from google.appengine.ext import db
 from google.appengine.api import users
 
-from django.conf.urls.defaults import url
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
@@ -43,8 +42,8 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
-
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class RequestForm(forms.ModelForm):
@@ -68,7 +67,7 @@ class RequestPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/request/%s$' % url_patterns.ORG,
+        url(r'request/%s$' % url_patterns.ORG,
             self, name='gsoc_request')
     ]
 
@@ -176,7 +175,7 @@ class ShowRequest(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/request/%s$' % url_patterns.ID, self,
+        url(r'request/%s$' % url_patterns.ID, self,
             name='show_gsoc_request')
     ]
 

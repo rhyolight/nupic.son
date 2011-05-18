@@ -27,7 +27,6 @@ import logging
 
 from google.appengine.ext import db
 
-from django.conf.urls.defaults import url
 from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
@@ -56,6 +55,7 @@ from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 DATETIME_FORMAT = 'Y-m-d H:i:s'
@@ -70,7 +70,7 @@ class Dashboard(RequestHandler):
     """The URL pattern for the dashboard.
     """
     return [
-        url(r'^gsoc/dashboard/%s$' % url_patterns.PROGRAM, self,
+        url(r'dashboard/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_dashboard')]
 
   def checkAccess(self):

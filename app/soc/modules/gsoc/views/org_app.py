@@ -22,12 +22,11 @@ __authors__ = [
   ]
 
 
-from django.conf.urls.defaults import url
-
 from soc.views import forms
 
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class OrgApp(RequestHandler):
@@ -39,7 +38,7 @@ class OrgApp(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/org_app/apply/%s$' % url_patterns.SURVEY, self,
+        url(r'org_app/apply/%s$' % url_patterns.SURVEY, self,
             name='gsoc_org_app_apply')
     ]
 

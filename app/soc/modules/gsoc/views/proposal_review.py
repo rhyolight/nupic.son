@@ -27,7 +27,6 @@ from google.appengine.ext import db
 
 from django.core.urlresolvers import resolve
 from django.core.urlresolvers import reverse
-from django.conf.urls.defaults import url
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
@@ -50,6 +49,7 @@ from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class CommentForm(forms.ModelForm):
@@ -303,7 +303,7 @@ class ReviewProposal(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/review/%s$' % url_patterns.REVIEW,
+         url(r'proposal/review/%s$' % url_patterns.REVIEW,
          self, name='review_gsoc_proposal'),
     ]
 
@@ -494,7 +494,7 @@ class PostComment(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/comment/%s$' % url_patterns.REVIEW,
+         url(r'proposal/comment/%s$' % url_patterns.REVIEW,
          self, name='comment_gsoc_proposal'),
     ]
 
@@ -590,7 +590,7 @@ class PostScore(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/score/%s$' % url_patterns.REVIEW,
+         url(r'proposal/score/%s$' % url_patterns.REVIEW,
          self, name='score_gsoc_proposal'),
     ]
 
@@ -679,7 +679,7 @@ class WishToMentor(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/wish_to_mentor/%s$' % url_patterns.REVIEW,
+         url(r'proposal/wish_to_mentor/%s$' % url_patterns.REVIEW,
          self, name='gsoc_proposal_wish_to_mentor'),
     ]
 
@@ -743,7 +743,7 @@ class AssignMentor(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/assign_mentor/%s$' % url_patterns.REVIEW,
+         url(r'proposal/assign_mentor/%s$' % url_patterns.REVIEW,
          self, name='gsoc_proposal_assign_mentor'),
     ]
 
@@ -831,7 +831,7 @@ class IgnoreProposal(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/ignore/%s$' % url_patterns.REVIEW,
+         url(r'proposal/ignore/%s$' % url_patterns.REVIEW,
          self, name='gsoc_proposal_ignore'),
     ]
 
@@ -887,7 +887,7 @@ class ProposalModificationPostDeadline(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/modification/%s$' % url_patterns.REVIEW,
+         url(r'proposal/modification/%s$' % url_patterns.REVIEW,
          self, name='gsoc_proposal_modification'),
     ]
 
@@ -943,7 +943,7 @@ class AcceptProposal(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/accept/%s$' % url_patterns.REVIEW,
+         url(r'proposal/accept/%s$' % url_patterns.REVIEW,
          self, name='gsoc_proposal_accept'),
     ]
 
@@ -998,7 +998,7 @@ class ProposalPubliclyVisible(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/publicly_visible/%s$' % url_patterns.REVIEW,
+         url(r'proposal/publicly_visible/%s$' % url_patterns.REVIEW,
          self, name='gsoc_proposal_publicly_visible'),
     ]
 
@@ -1052,7 +1052,7 @@ class WithdrawProposal(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/proposal/withdraw/%s$' % url_patterns.REVIEW,
+         url(r'proposal/withdraw/%s$' % url_patterns.REVIEW,
          self, name='gsoc_proposal_withdraw'),
     ]
 

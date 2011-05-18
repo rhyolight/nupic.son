@@ -24,11 +24,10 @@ __authors__ = [
 
 import os
 
-from django.conf.urls.defaults import url
-
 from soc.logic.models.site import logic as site_logic
 
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class SearchGsocPage(RequestHandler):
@@ -37,7 +36,7 @@ class SearchGsocPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/search$', self, name='search_gsoc'),
+        url(r'search$', self, name='search_gsoc'),
     ]
 
   def context(self):

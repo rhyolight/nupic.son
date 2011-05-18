@@ -26,7 +26,6 @@ from google.appengine.ext import db
 from google.appengine.api import users
 
 from django import forms as djangoforms
-from django.conf.urls.defaults import url
 from django.core import validators
 from django.core.urlresolvers import reverse
 from django.forms import widgets
@@ -49,6 +48,7 @@ from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.helper import access_checker
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class InviteForm(forms.ModelForm):
@@ -169,7 +169,7 @@ class InvitePage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/invite/%s$' % url_patterns.INVITE,
+        url(r'invite/%s$' % url_patterns.INVITE,
             self, name='gsoc_invite')
     ]
 
@@ -261,7 +261,7 @@ class ShowInvite(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/invitation/%s$' % url_patterns.ID, self,
+        url(r'invitation/%s$' % url_patterns.ID, self,
             name='gsoc_invitation')
     ]
 

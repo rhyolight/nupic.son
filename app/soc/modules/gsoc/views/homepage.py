@@ -26,7 +26,7 @@ __authors__ = [
 from google.appengine.api import users
 
 from django.core.urlresolvers import reverse
-from django.conf.urls.defaults import url
+from django.conf.urls.defaults import url as django_url
 
 from soc.logic import dicts
 from soc.logic import system
@@ -37,6 +37,7 @@ from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class Timeline(Template):
@@ -209,10 +210,10 @@ class Homepage(RequestHandler):
     """
 
     return [
-        url(r'^gsoc/homepage/%s$' % url_patterns.PROGRAM, self,
+        url(r'homepage/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_homepage'),
-        url(r'^gsoc/program/home/%s$' % url_patterns.PROGRAM, self),
-        url(r'^program/home/%s$' % url_patterns.PROGRAM, self),
+        url(r'program/home/%s$' % url_patterns.PROGRAM, self),
+        django_url(r'^program/home/%s$' % url_patterns.PROGRAM, self),
     ]
 
   def checkAccess(self):

@@ -26,7 +26,6 @@ import logging
 
 from google.appengine.ext import db
 
-from django.conf.urls.defaults import url
 from django.utils import simplejson
 
 from soc.logic.exceptions import AccessViolation
@@ -38,6 +37,7 @@ from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class SlotsTransferAdminList(Template):
@@ -233,7 +233,7 @@ class SlotsTransferAdminPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/admin/slots/transfer/%s$' % url_patterns.PROGRAM,
+        url(r'admin/slots/transfer/%s$' % url_patterns.PROGRAM,
          self, name='gsoc_admin_slots_transfer'),
     ]
 

@@ -28,7 +28,6 @@ from google.appengine.ext import db
 
 from django.forms import fields
 from django.core.urlresolvers import reverse
-from django.conf.urls.defaults import url
 
 from soc.logic import cleaning
 from soc.logic import dicts
@@ -43,6 +42,7 @@ from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class EmptyForm(forms.ModelForm):
@@ -229,9 +229,9 @@ class ProfilePage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/profile/%s$' % url_patterns.PROGRAM,
+        url(r'profile/%s$' % url_patterns.PROGRAM,
          self, name='edit_gsoc_profile'),
-        url(r'^gsoc/profile/%s$' % url_patterns.CREATE_PROFILE,
+        url(r'profile/%s$' % url_patterns.CREATE_PROFILE,
          self, name='create_gsoc_profile'),
     ]
 

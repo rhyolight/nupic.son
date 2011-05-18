@@ -22,8 +22,6 @@ __authors__ = [
   ]
 
 
-from django.conf.urls.defaults import url
-
 from soc.views import readonly_template
 from soc.views.helper.access_checker import isSet
 
@@ -31,6 +29,7 @@ from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class ProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
@@ -57,7 +56,7 @@ class ProfileShowPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/profile/show/%s$' % url_patterns.PROGRAM,
+        url(r'profile/show/%s$' % url_patterns.PROGRAM,
          self, name='show_gsoc_profile'),
     ]
 
@@ -95,7 +94,7 @@ class ProfileAdminPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/profile/admin/%s$' % url_patterns.PROFILE,
+        url(r'profile/admin/%s$' % url_patterns.PROFILE,
          self, name='gsoc_profile_admin'),
     ]
 

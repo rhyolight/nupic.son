@@ -25,7 +25,6 @@ __authors__ = [
 from soc.views import forms
 
 from django import forms as django_forms
-from django.conf.urls.defaults import url
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
@@ -36,6 +35,7 @@ from soc.modules.gsoc.logic import cleaning as gsoc_cleaning
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class OrgProfileForm(forms.ModelForm):
@@ -149,9 +149,9 @@ class OrgProfilePage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/profile/organization/%s$' % url_patterns.PROGRAM,
+         url(r'profile/organization/%s$' % url_patterns.PROGRAM,
          self, name='create_gsoc_org_profile'),
-         url(r'^gsoc/profile/organization/%s$' % url_patterns.ORG,
+         url(r'profile/organization/%s$' % url_patterns.ORG,
          self, name='edit_gsoc_org_profile'),
     ]
 

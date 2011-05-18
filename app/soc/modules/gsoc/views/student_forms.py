@@ -25,7 +25,6 @@ __authors__ = [
 from google.appengine.ext import blobstore
 
 from django.forms import fields
-from django.conf.urls.defaults import url
 
 from soc.views import forms
 from soc.views.helper import blobstore as bs_helper
@@ -33,6 +32,7 @@ from soc.views.helper import blobstore as bs_helper
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class TaxForm(forms.ModelForm):
@@ -99,7 +99,7 @@ class TaxFormPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/student_forms/tax/%s$' % url_patterns.PROGRAM,
+        url(r'student_forms/tax/%s$' % url_patterns.PROGRAM,
          self, name='gsoc_tax_form'),
     ]
 
@@ -143,7 +143,7 @@ class EnrollmentFormPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/student_forms/enrollment/%s$' % url_patterns.PROGRAM,
+        url(r'student_forms/enrollment/%s$' % url_patterns.PROGRAM,
          self, name='gsoc_enrollment_form'),
     ]
 
@@ -187,7 +187,7 @@ class DownloadTaxForm(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/student_forms/tax/download/%s$' % url_patterns.PROGRAM,
+        url(r'student_forms/tax/download/%s$' % url_patterns.PROGRAM,
          self, name='gsoc_tax_form_download'),
     ]
 
@@ -205,7 +205,7 @@ class DownloadEnrollmentForm(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/student_forms/enrollment/download/%s$' % url_patterns.PROGRAM,
+        url(r'student_forms/enrollment/download/%s$' % url_patterns.PROGRAM,
          self, name='gsoc_enrollment_form_download'),
     ]
 

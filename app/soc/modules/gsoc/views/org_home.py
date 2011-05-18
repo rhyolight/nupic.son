@@ -22,7 +22,7 @@ __authors__ = [
   ]
 
 
-from django.conf.urls.defaults import url
+from django.conf.urls.defaults import url as django_url
 from django.utils import simplejson
 
 from soc.logic.exceptions import AccessViolation
@@ -37,6 +37,7 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class Apply(Template):
@@ -202,12 +203,12 @@ class OrgHome(RequestHandler):
     """
 
     return [
-        url(r'^gsoc/org/%s$' % url_patterns.ORG, self,
+        url(r'org/%s$' % url_patterns.ORG, self,
             name='gsoc_org_home'),
-        url(r'^gsoc/org/show/%s$' % url_patterns.ORG, self),
-        url(r'^gsoc/org/home/%s$' % url_patterns.ORG, self),
-        url(r'^org/show/%s$' % url_patterns.ORG, self),
-        url(r'^org/home/%s$' % url_patterns.ORG, self),
+        url(r'org/show/%s$' % url_patterns.ORG, self),
+        url(r'org/home/%s$' % url_patterns.ORG, self),
+        django_url(r'^org/show/%s$' % url_patterns.ORG, self),
+        django_url(r'^org/home/%s$' % url_patterns.ORG, self),
     ]
 
   def checkAccess(self):

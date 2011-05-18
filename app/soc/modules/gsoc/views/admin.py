@@ -28,7 +28,6 @@ from google.appengine.api import users
 from google.appengine.ext import db
 
 from django import forms as djangoforms
-from django.conf.urls.defaults import url
 from django.utils import simplejson
 from django.utils.translation import ugettext
 
@@ -49,6 +48,7 @@ from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class LookupForm(forms.ModelForm):
@@ -97,7 +97,7 @@ class DashboardPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/admin/%s$' % url_patterns.PROGRAM,
+        url(r'admin/%s$' % url_patterns.PROGRAM,
          self, name='gsoc_admin_dashboard'),
     ]
 
@@ -128,7 +128,7 @@ class LookupLinkIdPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/admin/lookup/%s$' % url_patterns.PROGRAM,
+        url(r'admin/lookup/%s$' % url_patterns.PROGRAM,
          self, name='lookup_gsoc_profile'),
     ]
 
@@ -267,7 +267,7 @@ class SlotsPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/admin/slots/%s$' % url_patterns.PROGRAM,
+        url(r'admin/slots/%s$' % url_patterns.PROGRAM,
          self, name='gsoc_slots'),
     ]
 

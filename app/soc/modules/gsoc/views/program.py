@@ -22,7 +22,6 @@ __authors__ = [
   ]
 
 
-from django.conf.urls.defaults import url
 from django.core.urlresolvers import reverse
 
 from soc.logic.models.document import logic as document_logic
@@ -32,6 +31,7 @@ from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class TimelineForm(ModelForm):
@@ -65,9 +65,9 @@ class ProgramPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/program/%s$' % url_patterns.PROGRAM, self,
+        url(r'program/%s$' % url_patterns.PROGRAM, self,
             name='edit_gsoc_program'),
-        url(r'^gsoc/program/edit/%s$' % url_patterns.PROGRAM, self),
+        url(r'program/edit/%s$' % url_patterns.PROGRAM, self),
     ]
 
   def jsonContext(self):
@@ -126,9 +126,9 @@ class TimelinePage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^gsoc/timeline/%s$' % url_patterns.PROGRAM, self,
+        url(r'timeline/%s$' % url_patterns.PROGRAM, self,
             name='edit_gsoc_timeline'),
-        url(r'^gsoc/timeline/edit/%s$' % url_patterns.PROGRAM, self),
+        url(r'timeline/edit/%s$' % url_patterns.PROGRAM, self),
     ]
 
   def checkAccess(self):
