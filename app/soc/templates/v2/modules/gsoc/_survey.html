@@ -22,12 +22,25 @@ limitations under the License.
 {% block dependencies %}
   [
     dep.uniform,
+    dep.melange.datetimepicker,
     null,
     tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/_survey.js", {}),
     function () {
       jQuery("select, input:radio, input:file, input:checkbox").uniform();
       var fields = ["content"];
       tinyMCE.init(melange.tinyMceConfig(fields, "advanced"));
+
+      var config = {
+        changeMonth: true,
+        changeYear: false,
+        dateFormat: "yy-mm-dd",
+        showButtonPanel: true,
+      }
+      var fields_to_enhance = [
+        "#survey_start",
+        "#survey_end",
+      ].join(",");
+      jQuery(fields_to_enhance).datetimepicker(config);
     }
   ]
 {% endblock dependencies %}
