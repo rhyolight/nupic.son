@@ -114,5 +114,5 @@ class GSoCProject(soc.models.base.ModelWithFieldAttributes):
 
   #: Program in which this project has been created
   program = db.ReferenceProperty(reference_class=soc.models.program.Program,
-                                 required=True, 
+                                 required=True,
                                  collection_name='projects')

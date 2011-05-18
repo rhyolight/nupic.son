@@ -21,12 +21,10 @@ __authors__ = [
   ]
 
 
-from soc.tasks import grading_survey_group as grading_group_tasks
-from soc.tasks import mailer as mailer_tasks
-from soc.tasks import surveys as survey_tasks
 from soc.tasks.updates import project_conversion
 from soc.tasks.updates import proposal_conversion
 from soc.tasks.updates import role_conversion
+from soc.tasks.updates import survey_conversion
 
 
 class Callback(object):
@@ -55,6 +53,9 @@ class Callback(object):
     self.views.append(site.EditSitePage())
     self.views.append(site.SiteHomepage())
     self.views.append(mailer.MailerTask())
+    self.views.append(survey_conversion.GradingRecordConversion())
+    self.views.append(survey_conversion.GradingSurveyGroupConversion())
+    self.views.append(survey_conversion.ProjectSurveyRecordConversion())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.

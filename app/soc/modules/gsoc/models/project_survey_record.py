@@ -28,7 +28,8 @@ from google.appengine.ext import db
 from soc.models.organization import Organization
 from soc.models.survey_record import SurveyRecord
 
-from soc.modules.gsoc.models.project_survey import ProjectSurvey
+from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models.project import GSoCProject
 
 import soc.modules.gsoc.models.student_project
 
@@ -41,7 +42,7 @@ class ProjectSurveyRecord(SurveyRecord):
   #: Reference to the Project that this record belongs to.
   project = db.ReferenceProperty(
       reference_class=soc.modules.gsoc.models.student_project.StudentProject,
-      required=True, collection_name="survey_records")
+      required=True, collection_name='survey_records')
 
   #: A many:1 relationship associating ProjectSurveyRecords 
   #: with specific Organization. The back-reference in the 
@@ -49,3 +50,19 @@ class ProjectSurveyRecord(SurveyRecord):
   org = db.ReferenceProperty(
       reference_class=Organization, 
       required=False, collection_name='survey_records')
+
+class GSoCProjectSurveyRecord(SurveyRecord):
+  """Record linked to a Project, enabling to store which Projects had their
+  Survey done. Should be used instead of the deprecated ProjectSurveyRecord model.
+  """
+
+  #: Reference to the Project that this record belongs to.
+  project = db.ReferenceProperty(
+      reference_class=GSoCProject,
+      required=True, collection_name='gsoc_survey_records')
+
+  #: A many:1 relationship associating ProjectSurveyRecords 
+  #: with specific GSoCOrganization.
+  org = db.ReferenceProperty(
+      reference_class=GSoCOrganization, 
+      required=False, collection_name='gsoc_survey_records')

@@ -25,11 +25,8 @@ __authors__ = [
 
 from google.appengine.ext import db
 
-from django.utils.translation import ugettext
-
-from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
+from soc.modules.gsoc.models.project_survey_record import GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.project_survey_record import ProjectSurveyRecord
-
 
 class GradingProjectSurveyRecord(ProjectSurveyRecord):
   """Grading record for evaluation surveys.
@@ -37,6 +34,21 @@ class GradingProjectSurveyRecord(ProjectSurveyRecord):
   Represents the grading part of a evaluation survey group (usually a pair)
   where the grading (e.g. Mentor's) survey is linked to a non-grading (e.g
   Student's) one by a project.
+  """
+
+  #: Required grade given to the project that this survey is about.
+  #: Symbolizes pass(=True) or fail(=False)
+  grade = db.BooleanProperty(required=True)
+
+
+class GSoCGradingProjectSurveyRecord(GSoCProjectSurveyRecord):
+  """Grading record for evaluation surveys.
+
+  Represents the grading part of a evaluation survey group (usually a pair)
+  where the grading (e.g. Mentor's) survey is linked to a non-grading (e.g
+  Student's) one by a project.
+
+  Should be used instead of the deprecated GradingProjectSurveyRecord.
   """
 
   #: Required grade given to the project that this survey is about.

@@ -27,8 +27,10 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from soc.models import base
 from soc.models import linkable
 
+from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
@@ -64,6 +66,49 @@ class GradingSurveyGroup(linkable.Linkable):
   student_survey = db.ReferenceProperty(
       reference_class=ProjectSurvey, required=False,
       collection_name='project_survey_groups')
+
+  #: DateTime when the last GradingRecord update was started for this group.
+  last_update_started = db.DateTimeProperty(
+      verbose_name=ugettext('Last Record update started'))
+
+  #: DateTime when the last GradingRecord update was completed for this group.
+  last_update_complete = db.DateTimeProperty(
+      verbose_name=ugettext('Last Record update completed'))
+
+
+class GSoCGradingSurveyGroup(base.ModelWithFieldAttributes):
+  """The GradingSurveyGroups links a ProjectSurvey with a GradingProjectSurvey.
+
+  The purpose of this model is to be able to link two different types of
+  Surveys together so that a decision can be made about whether or not a
+  Student has passed the evaluation. This model will link the Surveys together
+  a GradingRecord will link the SurveyRecords.
+
+  A GradingSurvey group can also work with only a GradingProjectSurvey defined.
+
+  The GradingSurveyGroup can have several GradingRecords attached to it. These
+  will contain matching SurveyRecords for the surveys set in this group, of
+  course only if they are filled in.
+  """
+
+  #: Name to give to this group for easy human-readable identification.
+  name = db.StringProperty(
+      required=True, verbose_name=ugettext('Survey Group Name'))
+
+  #: Program that this group belongs to.
+  program = db.ReferenceProperty(
+      reference_class=GSoCProgram, required=True,
+      collection_name='gsoc_grading_survey_groups')
+
+  #: GradingProjectSurvey which belongs to this group.
+  grading_survey = db.ReferenceProperty(
+      reference_class=GradingProjectSurvey, required=True,
+      collection_name='gsoc_grading_survey_groups')
+
+  #: non-required ProjectSurvey that belongs to this group.
+  student_survey = db.ReferenceProperty(
+      reference_class=ProjectSurvey, required=False,
+      collection_name='gsoc_project_survey_groups')
 
   #: DateTime when the last GradingRecord update was started for this group.
   last_update_started = db.DateTimeProperty(
