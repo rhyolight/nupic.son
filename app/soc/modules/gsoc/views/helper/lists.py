@@ -509,7 +509,7 @@ class ListContentResponse(object):
       next: The value that should be used to query for the next set of
             rows. In other words what start will be on the next roundtrip.
       limit: The maximum number of rows to return as indicated by the request,
-             defaults to 50.
+             defaults to 50. This is not enforced by this object.
 
     Args:
       request: The HTTPRequest containing the request for data.
@@ -565,8 +565,7 @@ class ListContentResponse(object):
   def content(self):
     """Returns the object that should be parsed to JSON.
     """
-    # The maximum number of rows to return is determined by the limit
-    data = {self.start: self.__rows[0:self.limit]}
+    data = {self.start: self.__rows}
     return {'data': data,
             'next': self.next}
 
@@ -788,7 +787,7 @@ class RawQueryContentResponseBuilder(object):
     args = list(args) + list(extra_args)
     kwargs.update(extra_kwargs)
 
-    for entity in entities:
+    for entity in entities[0:content_response.limit]:
       if self._skipper(entity, start):
         continue
       content_response.addRow(entity, *args, **kwargs)
