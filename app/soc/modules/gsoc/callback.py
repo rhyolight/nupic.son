@@ -118,8 +118,11 @@ class Callback(object):
         ProposalAcceptanceTask
     from soc.modules.gsoc.tasks.proposal_duplicates import \
         ProposalDuplicatesTask
+    from soc.modules.gsoc.tasks.survey_reminders import \
+        SurveyReminderTask
     self.views.append(ProposalAcceptanceTask())
     self.views.append(ProposalDuplicatesTask())
+    self.views.append(SurveyReminderTask())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.
