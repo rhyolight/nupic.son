@@ -24,7 +24,7 @@ __authors__ = [
 
 import logging
 
-from django.conf.urls.defaults import url
+from django.conf.urls.defaults import url as django_url
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
@@ -41,6 +41,7 @@ from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
+
 class ProposalAcceptanceTask(object):
   """Request handlers for accepting and rejecting proposals in form of a Task.
   """
@@ -49,9 +50,9 @@ class ProposalAcceptanceTask(object):
     """Returns the URL patterns for the tasks in this module
     """
     patterns = [
-        url(r'^tasks/gsoc/accept_proposals/main$', self.convertProposals),
-        url(r'^tasks/gsoc/accept_proposals/accept$', self.acceptProposals),
-        url(r'^tasks/gsoc/accept_proposals/reject$', self.rejectProposals)]
+        django_url(r'^tasks/gsoc/accept_proposals/main$', self.convertProposals),
+        django_url(r'^tasks/gsoc/accept_proposals/accept$', self.acceptProposals),
+        django_url(r'^tasks/gsoc/accept_proposals/reject$', self.rejectProposals)]
     return patterns
 
   def convertProposals(self, request, *args, **kwargs):

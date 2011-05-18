@@ -25,7 +25,7 @@ __authors__ = [
 from google.appengine.ext import db
 
 from django import http
-from django.conf.urls.defaults import url
+from django.conf.urls.defaults import url as django_url
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
@@ -58,9 +58,9 @@ class HostProfilePage(SiteRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^host/profile$', self, name='edit_host_profile'),
-        url(r'^host/profile/%s$' % url_patterns.USER, self,
-            name='edit_host_profile_linkid'),
+        django_url(r'^host/profile$', self, name='edit_host_profile'),
+        django_url(r'^host/profile/%s$' % url_patterns.USER, self,
+                   name='edit_host_profile_linkid'),
     ]
 
   def checkAccess(self):

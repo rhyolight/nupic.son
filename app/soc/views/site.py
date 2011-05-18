@@ -26,7 +26,7 @@ import os
 
 from google.appengine.api import users
 
-from django.conf.urls.defaults import url
+from django.conf.urls.defaults import url as django_url
 from django.core.urlresolvers import reverse
 from django.forms import widgets as django_widgets
 from django.utils.functional import lazy
@@ -81,7 +81,7 @@ class EditSitePage(SiteRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^site/edit$', self, name='edit_site_settings'),
+        django_url(r'^site/edit$', self, name='edit_site_settings'),
     ]
 
   def jsonContext(self):
@@ -133,9 +133,9 @@ class SiteHomepage(SiteRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'^$', self, name='site_home'),
-        url(r'^(login)$', self, name='login'),
-        url(r'^(logout)$', self, name='logout'),
+        django_url(r'^$', self, name='site_home'),
+        django_url(r'^(login)$', self, name='login'),
+        django_url(r'^(logout)$', self, name='logout'),
     ]
 
   def __call__(self, request, *args, **kwargs):

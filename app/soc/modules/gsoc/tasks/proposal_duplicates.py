@@ -29,7 +29,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 from django import http
-from django.conf.urls.defaults import url
+from django.conf.urls.defaults import url as django_url
 
 from soc.tasks.helper import error_handler
 
@@ -49,10 +49,10 @@ class ProposalDuplicatesTask(object):
     """Returns the URL patterns for the tasks in this module.
     """
     patterns = [
-        url(r'^tasks/gsoc/proposal_duplicates/start$',
-        self.start, name='proposal_duplicates_task_start'),
-        url(r'^tasks/gsoc/proposal_duplicates/calculate$',
-        self.calculate, name='proposal_duplicates_task_calculate'),
+        django_url(r'^tasks/gsoc/proposal_duplicates/start$',
+                   self.start, name='proposal_duplicates_task_start'),
+        django_url(r'^tasks/gsoc/proposal_duplicates/calculate$',
+                   self.calculate, name='proposal_duplicates_task_calculate'),
         ]
     return patterns
 

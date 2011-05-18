@@ -30,7 +30,7 @@ from google.appengine.ext import db
 from google.appengine.runtime.apiproxy_errors import OverQuotaError
 from google.appengine.runtime.apiproxy_errors import DeadlineExceededError
 
-from django.conf.urls.defaults import url
+from django.conf.urls.defaults import url as django_url
 from django.utils import simplejson
 
 from soc.logic import system
@@ -97,8 +97,8 @@ class MailerTask(object):
     """Returns the URL patterns for the tasks in this module.
     """
     return [
-        url(r'^tasks/mail/send_mail$', self.sendMail,
-            name='send_email_task'),
+        django_url(r'^tasks/mail/send_mail$', self.sendMail,
+                   name='send_email_task'),
     ]
 
   def sendMail(self, request):
