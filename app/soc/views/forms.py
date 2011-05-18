@@ -36,6 +36,7 @@ from django.forms.util import flatatt
 from django.template import defaultfilters
 from django.template import loader
 from django.utils.encoding import force_unicode
+from django.utils.encoding import StrAndUnicode
 from django.utils.formats import dateformat
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
@@ -82,6 +83,26 @@ def mergeWidgets(*args):
       widgets[k] = v
 
   return widgets
+
+
+class RadioFieldRenderer(widgets.RadioFieldRenderer):
+  """The rendering customization to use the Uniform CSS on radio fields.
+  """
+
+  def render(self):
+    """Outputs a <ul> for this set of radio fields.
+    """
+    return mark_safe(
+        u'%s' % u'\n'.join([
+        u'<div id="form-row-radio-%s" class="row radio">%s</div>'
+        % (w.attrs.get('id', ''), force_unicode(w)) for w in self]))
+
+
+class RadioSelect(widgets.RadioSelect):
+  """Customize the widget to with a homebrewn renderer
+  """
+  renderer = RadioFieldRenderer
+
 
 class ReferenceWidget(widgets.TextInput):
   """Extends Django's TextInput widget to render the needed extra input field.
@@ -386,6 +407,8 @@ class BoundField(forms.BoundField):
       return self.renderReferenceWidget()
     elif isinstance(widget, TOSWidget):
       return self.renderTOSWidget()
+    elif isinstance(widget, RadioSelect):
+      return self.renderRadioSelect()
     elif isinstance(widget, widgets.TextInput):
       return self.renderTextInput()
     elif isinstance(widget, widgets.DateInput):
@@ -561,6 +584,18 @@ class BoundField(forms.BoundField):
         self._render_error(),
         self._render_note(),
         current_file,
+    ))
+
+  def renderRadioSelect(self):
+    attrs = {
+        'id': self.name,
+        }
+
+    return mark_safe('%s%s%s%s' % (
+        self._render_label(),
+        self.as_widget(attrs=attrs),
+        self._render_error(),
+        self._render_note(),
     ))
 
   def _render_label(self):
