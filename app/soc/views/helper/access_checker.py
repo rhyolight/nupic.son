@@ -83,8 +83,8 @@ DEF_HAS_ALREADY_ROLE_FOR_ORG_MSG = ugettext(
 DEF_ID_BASED_ENTITY_INVALID_MSG_FMT = ugettext(
     '%(model)s entity, whose id is %(id)s, is invalid at this time.')
 
-DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
-    '%(model)s entity, whose id is %(id)s, does not exist.')
+DEF_REQUEST_NOT_EXISTS_MSG_FMT = ugettext(
+    'There is no request with id %(id)s.')
 
 DEF_IS_NOT_STUDENT_MSG = ugettext(
     'This page is inaccessible because you do not have a student role '
@@ -499,22 +499,13 @@ class BaseAccessChecker(object):
 
     raise AccessViolation(DEF_PROFILE_INACTIVE_MSG)
 
-  def _isIdBasedEntityPresent(self, entity, id, model_name):
-    """Checks if the entity is not None.
+  def isRequestPresent(self, entity, request_id):
+    """Checks if the specified Request entity is not None.
     """
     if entity is not None:
       return
 
-    error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
-        'model': model_name,
-        'id': id,
-        }
-    raise AccessViolation(error_msg)
-
-  def isRequestPresent(self, entity, id):
-    """Checks if the specified Request entity is not None.
-    """
-    self._isIdBasedEntityPresent(entity, id, 'Request')
+    raise AccessViolation(DEF_REQUEST_NOT_EXISTS_MSG_FMT % request_id)
 
 
 class DeveloperAccessChecker(BaseAccessChecker):
