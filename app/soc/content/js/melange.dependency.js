@@ -371,13 +371,13 @@
           $LAB = $LAB.wait();
       }
       else if (typeof _queue[i] == "object" && _queue[i] instanceof $m.templateWithContext) {
-          $LAB = $LAB.script(_queue[i].script_template).wait(
+          $LAB = $LAB.wait(
             function (context_to_send) {
               return function () {
                 melange.templates.setContextToLast(context_to_send);
               }
             }(_queue[i].context)
-          ).wait();
+          ).script(_queue[i].script_template).wait();
       }
       else if (typeof _queue[i] == "object" && _queue[i] instanceof $m.cssFile) {
         jQuery("<link>", {

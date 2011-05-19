@@ -407,7 +407,7 @@
       * following setContextToLast function.
       * @private
       */
-    var templatesQueue = [];
+    var contextQueue = [];
 
     /** Assign a context to the template
       *
@@ -416,8 +416,7 @@
       * @name melange.templates.setContextToLast
       */
     $m.setContextToLast = function (context) {
-      var last_template = templatesQueue[(templatesQueue.length - 1)];
-      last_template.context = jQuery.extend(last_template.context, context);
+      contextQueue.push(context);
     };
 
     /** Parent prototype for all templates
@@ -428,8 +427,7 @@
       */
     $m._baseTemplate = function () {
       // Create internal context variable and push this template to the queue
-      this.context = {};
-      templatesQueue.push(this);
+      this.context = contextQueue.pop();
     };
   }());
 }());
