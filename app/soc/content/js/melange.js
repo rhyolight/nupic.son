@@ -27,6 +27,9 @@
     return new melange();
   };
 
+  // Hook to attach javascript templates
+  melange.template = window.melange.template = {};
+
   if (window.jQuery === undefined) {
     throw new Error("jQuery package must be loaded exposing jQuery namespace");
   }
