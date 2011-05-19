@@ -17,15 +17,15 @@
  */
 
 (function() {
-  var template_name = "survey_template";
+  var template_name = "survey";
 
-  melange[template_name] = function(_self, context) {
+  melange.template[template_name] = function(_self, context) {
   };
 
-  melange[template_name].prototype = new melange.templates._baseTemplate();
-  melange[template_name].prototype.constructor = melange[template_name];
-  melange[template_name].apply(
-    melange[template_name],
-    [melange[template_name],melange[template_name].prototype.context]
+  melange.template[template_name].prototype = new melange.templates._baseTemplate();
+  melange.template[template_name].prototype.constructor = melange.template[template_name];
+  melange.template[template_name].apply(
+    melange.template[template_name],
+    [melange.template[template_name], melange.template[template_name].prototype.context]
   );
 }());
