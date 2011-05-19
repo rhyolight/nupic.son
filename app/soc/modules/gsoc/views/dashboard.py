@@ -848,7 +848,12 @@ class ProjectsIMentorComponent(Component):
       return None
 
     list_query = project_logic.getAcceptedProjectsQuery(
-        mentor=self.data.profile, program=self.data.program)
+        program=self.data.program)
+
+    if self.data.is_org_admin:
+      list_query.filter('org IN', self.data.profile.org_admin_for)
+    else:
+      list_query.filter('mentor', self.data.profile)
 
     starter = lists.keyStarter
     prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
@@ -864,9 +869,14 @@ class ProjectsIMentorComponent(Component):
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=5)
 
+    if self.data.is_org_admin:
+      title = 'PROJECTS FOR MY ORGS'
+    else:
+      title = 'PROJECTS I AM A MENTOR FOR'
+
     return {
         'name': 'mentoring_projects',
-        'title': 'PROJECTS I AM A MENTOR FOR',
+        'title': title,
         'lists': [list],
     }
 
