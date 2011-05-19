@@ -1,0 +1,1 @@
+(function(){melange.survey_template=function(){};melange.survey_template.prototype=new melange.templates._baseTemplate;melange.survey_template.prototype.constructor=melange.survey_template;melange.survey_template.apply(melange.survey_template,[melange.survey_template,melange.survey_template.prototype.context])})();
