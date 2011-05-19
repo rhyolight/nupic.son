@@ -479,18 +479,25 @@ class BaseAccessChecker(object):
 
     raise AccessViolation(DEF_NOT_DEVELOPER_MSG)
 
-  def isProfileActive(self):
-    """Checks if the profile of the current user is active.
+  def hasProfile(self):
+    """Checks if the user has a profile for the current program.
     """
     self.isLoggedIn()
 
     if self.data.profile:
-      if self.data.profile.status == 'active':
-        return
-
-      raise AccessViolation(DEF_PROFILE_INACTIVE_MSG)
+      return
 
     raise AccessViolation(DEF_NO_PROFILE_MSG)
+
+  def isProfileActive(self):
+    """Checks if the profile of the current user is active.
+    """
+    self.hasProfile()
+
+    if self.data.profile.status == 'active':
+      return
+
+    raise AccessViolation(DEF_PROFILE_INACTIVE_MSG)
 
   def _isIdBasedEntityPresent(self, entity, id, model_name):
     """Checks if the entity is not None.
