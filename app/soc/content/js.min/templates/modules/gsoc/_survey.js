@@ -1,1 +1,1 @@
-(function(){melange.template.survey=function(){};melange.template.survey.prototype=new melange.templates._baseTemplate;melange.template.survey.prototype.constructor=melange.template.survey;melange.template.survey.apply(melange.template.survey,[melange.template.survey,melange.template.survey.prototype.context])})();
+melange.templates.inherit(function(){});
