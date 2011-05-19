@@ -250,6 +250,20 @@
   margin: 0 0 0 23px;
   padding: 0 0 10px 5px;
 }
+#form.form-register .row.radio {
+  margin: 0 0 6px 15px;
+}
+#form.form-register .row.radio label {
+  color: #666;
+  font-size: 15px;
+}
+#form.form-register .row.checkbox {
+  margin: 0 0 6px 15px;
+}
+#form.form-register .row.checkbox label {
+  color: #666;
+  font-size: 15px;
+}
 #form.form-search {
   /*search form*/
 
