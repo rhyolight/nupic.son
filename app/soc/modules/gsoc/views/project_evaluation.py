@@ -92,6 +92,7 @@ class SurveyTakeForm(forms.ModelForm):
       widget = forms.CheckboxSelectMultiple()
     elif type == 'choice':
       field = django_forms.ChoiceField
+      widget = forms.RadioSelect()
     elif type == 'pick_quant':
       field = django_forms.ChoiceField
       widget = forms.RadioSelect()
@@ -149,7 +150,6 @@ class SurveyEditPage(RequestHandler):
         }
 
     return context
-
 
 
 class SurveyTakePage(RequestHandler):
