@@ -62,7 +62,7 @@ class ProfileShowPage(RequestHandler):
 
   def checkAccess(self):
     self.check.isLoggedIn()
-    self.check.isProfileActive()
+    self.check.hasProfile()
 
   def templatePath(self):
     return 'v2/modules/gsoc/profile_show/base.html'

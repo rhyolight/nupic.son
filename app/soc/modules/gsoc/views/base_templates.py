@@ -92,7 +92,10 @@ class MainMenu(Template):
     
     if self.data.profile:
       self.data.redirect.program()
-      context['profile_link'] = self.data.redirect.urlOf('edit_gsoc_profile')
+      if self.data.profile.status == 'active':
+        context['profile_link'] = self.data.redirect.urlOf('edit_gsoc_profile')
+      else:
+        context['profile_link'] = self.data.redirect.urlOf('show_gsoc_profile')
 
     if self.data.is_host:
       self.data.redirect.program()
