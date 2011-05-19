@@ -16,16 +16,7 @@
  * @author <a href="mailto:fadinlight@gmail.com">Mario Ferraro</a>
  */
 
-(function() {
-  var template_name = "survey";
-
-  melange.template[template_name] = function(_self, context) {
-  };
-
-  melange.template[template_name].prototype = new melange.templates._baseTemplate();
-  melange.template[template_name].prototype.constructor = melange.template[template_name];
-  melange.template[template_name].apply(
-    melange.template[template_name],
-    [melange.template[template_name], melange.template[template_name].prototype.context]
-  );
-}());
+melange.templates.inherit(
+  function (_self, context) {
+  }
+);
