@@ -183,7 +183,11 @@ DEF_PROPOSAL_NOT_PUBLIC_MSG = ugettext(
     'and you are not the student who submitted the proposal, '
     'nor are you a mentor for the organization it was submitted to.')
 
-DEF_ROLE_INACTIVE_MSG = ugettext(
+DEF_PROFILE_INACTIVE_MSG = ugettext(
+    'This page is inaccessible because your profile is inactive in '
+    'the program at this time.')
+
+DEF_NO_PROFILE_MSG = ugettext(
     'This page is inaccessible because you do not have a profile '
     'in the program at this time.')
 
@@ -480,10 +484,13 @@ class BaseAccessChecker(object):
     """
     self.isLoggedIn()
 
-    if self.data.profile and self.data.profile.status == 'active':
-      return
+    if self.data.profile:
+      if self.data.profile.status == 'active':
+        return
 
-    raise AccessViolation(DEF_ROLE_INACTIVE_MSG)
+      raise AccessViolation(DEF_PROFILE_INACTIVE_MSG)
+
+    raise AccessViolation(DEF_NO_PROFILE_MSG)
 
   def _isIdBasedEntityPresent(self, entity, id, model_name):
     """Checks if the entity is not None.
