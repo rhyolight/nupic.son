@@ -89,6 +89,7 @@ class SurveyTakeForm(forms.ModelForm):
       field = django_forms.ChoiceField
     elif type == 'pick_multi':
       field = django_forms.MultipleChoiceField
+      widget = forms.CheckboxSelectMultiple()
     elif type == 'choice':
       field = django_forms.ChoiceField
     elif type == 'pick_quant':

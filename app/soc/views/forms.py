@@ -24,6 +24,7 @@ __authors__ = [
 
 
 import collections
+import itertools
 import re
 
 from google.appengine.ext import db
@@ -102,6 +103,36 @@ class RadioSelect(widgets.RadioSelect):
   """Customize the widget to with a homebrewn renderer
   """
   renderer = RadioFieldRenderer
+
+
+class CheckboxSelectMultiple(widgets.SelectMultiple):
+  def render(self, name, value, attrs=None, choices=()):
+    if value is None:
+      value = []
+    has_id = attrs and 'id' in attrs
+    final_attrs = self.build_attrs(attrs, name=name)
+    output = [u'<div>']
+    # Normalize to strings
+    str_values = set([force_unicode(v) for v in value])
+    for i, (option_value, option_label) in enumerate(
+        itertools.chain(self.choices, choices)):
+      # If an ID attribute was given, add a numeric index as a suffix,
+      # so that the checkboxes don't all have the same ID attribute.
+      if has_id:
+        final_attrs = dict(final_attrs, id='%s_%s' % (attrs['id'], i))
+        label_for = u' for="%s"' % final_attrs['id']
+      else:
+        label_for = ''
+
+      cb = widgets.CheckboxInput(
+          final_attrs, check_test=lambda value: value in str_values)
+      option_value = force_unicode(option_value)
+      rendered_cb = cb.render(name, option_value)
+      option_label = conditional_escape(force_unicode(option_label))
+      output.append(u'<div id="form-row-radio-%s" class="row checkbox"><label%s>%s %s</label></div>' % (
+          final_attrs['id'], label_for, rendered_cb, option_label))
+    output.append(u'</div>')
+    return mark_safe(u'\n'.join(output))
 
 
 class ReferenceWidget(widgets.TextInput):
@@ -409,6 +440,8 @@ class BoundField(forms.BoundField):
       return self.renderTOSWidget()
     elif isinstance(widget, RadioSelect):
       return self.renderRadioSelect()
+    elif isinstance(widget, CheckboxSelectMultiple):
+      return self.renderCheckSelectMultiple()
     elif isinstance(widget, widgets.TextInput):
       return self.renderTextInput()
     elif isinstance(widget, widgets.DateInput):
@@ -587,6 +620,18 @@ class BoundField(forms.BoundField):
     ))
 
   def renderRadioSelect(self):
+    attrs = {
+        'id': self.name,
+        }
+
+    return mark_safe('%s%s%s%s' % (
+        self._render_label(),
+        self.as_widget(attrs=attrs),
+        self._render_error(),
+        self._render_note(),
+    ))
+
+  def renderCheckSelectMultiple(self):
     attrs = {
         'id': self.name,
         }
