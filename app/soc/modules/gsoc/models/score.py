@@ -29,6 +29,9 @@ import soc.modules.gsoc.models.profile
 
 class GSoCScore(soc.models.base.ModelWithFieldAttributes):
   """Model of a Score.
+
+  Parent:
+    soc.modules.gsoc.models.proposal.Proposal
   """
 
   #: the value associated with the score

@@ -34,6 +34,9 @@ import soc.models.organization
 
 class GSoCProject(soc.models.base.ModelWithFieldAttributes):
   """Model for a GSoC project used in the GSoC workflow.
+
+  Parent:
+    soc.modules.gsoc.models.profile.Profile
   """
 
   #: Required field indicating the "title" of the project

@@ -38,6 +38,9 @@ import soc.models.user
 class StudentInfo(soc.models.base.ModelWithFieldAttributes):
   """The model which contains some detailed information which are necessary
   only when the user has a student role. 
+
+  Parent:
+    soc.models.role.Profile
   """
 
   school_name = db.StringProperty(required=True, 
@@ -595,5 +598,8 @@ class Role(soc.models.linkable.Linkable):
 
 class Profile(Role):
   """New name for Role.
+
+  Parent:
+    soc.models.user.User
   """
   pass

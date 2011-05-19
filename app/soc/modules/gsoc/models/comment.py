@@ -37,6 +37,9 @@ class GSoCComment(soc.models.base.ModelWithFieldAttributes):
   There are two types of comment, public (i.e. visible to the student), 
   or private (i.e. visible to programme/club staff). Neither type are 
   visible to people who are not connected to the work being commented on.
+
+  Parent:
+    soc.modules.gsoc.models.proposal.Proposal
   """
 
   #: A required many:1 relationship with a comment entity indicating

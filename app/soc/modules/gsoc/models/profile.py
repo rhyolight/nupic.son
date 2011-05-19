@@ -84,6 +84,9 @@ class GSoCProfile(soc.models.role.Profile):
 
 class GSoCStudentInfo(soc.models.role.StudentInfo):
   """GSoCStudentInfo Model.
+
+  Parent:
+    soc.modules.gsoc.models.profile.Profile
   """
 
   #: number of proposals 

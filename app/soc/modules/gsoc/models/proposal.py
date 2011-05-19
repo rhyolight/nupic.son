@@ -34,6 +34,9 @@ import soc.modules.gsoc.models.program
 
 class GSoCProposal(soc.models.base.ModelWithFieldAttributes):
   """Model for a student proposal used in the GSoC workflow.
+
+  Parent:
+    soc.modules.gsoc.models.profile.Profile
   """
 
   #: Required field indicating the "title" of the proposal
