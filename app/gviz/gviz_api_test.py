@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2008 Google Inc.
+# Copyright (C) 2009 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -118,9 +118,11 @@ class DataTableTest(unittest.TestCase):
     self.assertRaises(DataTableException,
                       DataTable.ColumnTypeParser, 5)
     self.assertRaises(DataTableException,
-                      DataTable.ColumnTypeParser, ("a", "b", "c", "d"))
-    self.assertRaises(DataTableException,
                       DataTable.ColumnTypeParser, ("a", 5, "c"))
+    self.assertRaises(DataTableException,
+                      DataTable.ColumnTypeParser, ("a", "blah"))
+    self.assertRaises(DataTableException,
+                      DataTable.ColumnTypeParser, ("a", "number", "c", "d"))
 
     # Checking several legal formats
     self.assertEqual({"id": "abc", "label": "abc", "type": "string",
@@ -179,6 +181,14 @@ class DataTableTest(unittest.TestCase):
                                                 ("c", "string", "column c")]}))
 
     self.assertEqual(
+      [{"id": "a", "label": "column a", "type": "number", "depth": 0,
+        "container": "dict", "custom_properties": {}},
+       {"id": "b", "label": "column b", "type": "string", "depth": 0,
+        "container": "dict", "custom_properties": {}}],
+       DataTable.TableDescriptionParser({'a': ('number', 'column a'),
+                                         'b': ('string', 'column b')}))
+
+    self.assertEqual(
         [{"id": "a", "label": "column a", "type": "number",
           "depth": 0, "container": "dict", "custom_properties": {}},
          {"id": "b", "label": "b", "type": "number",
@@ -195,6 +205,28 @@ class DataTableTest(unittest.TestCase):
           "depth": 1, "container": "scalar", "custom_properties": {}}],
         DataTable.TableDescriptionParser({("a", "number", "column a"):
                                           ("b", "string", "column b")}))
+
+    # Cases that might create ambiguity
+    self.assertEqual(
+      [{"id": "a", "label": "column a", "type": "number", "depth": 0,
+        "container": "dict", "custom_properties": {}}],
+       DataTable.TableDescriptionParser({'a': ('number', 'column a')}))
+    self.assertRaises(DataTableException, DataTable.TableDescriptionParser,
+                      {'a': ('b', 'number')})
+
+    self.assertEqual(
+      [{"id": "a", "label": "a", "type": "string", "depth": 0,
+        "container": "dict", "custom_properties": {}},
+       {"id": "b", "label": "b", "type": "number", "depth": 1,
+        "container": "scalar", "custom_properties": {}}],
+       DataTable.TableDescriptionParser({'a': ('b', 'number', 'b', {})}))
+
+    self.assertEqual(
+      [{"id": "a", "label": "a", "type": "string", "depth": 0,
+        "container": "dict", "custom_properties": {}},
+       {"id": "b", "label": "b", "type": "number", "depth": 1,
+        "container": "scalar", "custom_properties": {}}],
+       DataTable.TableDescriptionParser({('a',): ('b', 'number')}))
 
   def testAppendData(self):
     # We check a few examples where the format of the data does not match the
@@ -241,14 +273,14 @@ class DataTableTest(unittest.TestCase):
     self.assertEqual(3, table.NumberOfRows())
 
   def testToJSCode(self):
-    table = DataTable([("a", "number", "A"), "b", ("c", "timeofday")],
+    table = DataTable([("a", "number", "A'"), "b'", ("c", "timeofday")],
                       [[1],
                        [None, "z", time(1, 2, 3)],
                        [(2, "2$"), "w", time(2, 3, 4)]])
     self.assertEqual(3, table.NumberOfRows())
     self.assertEqual(("var mytab = new google.visualization.DataTable();\n"
-                      "mytab.addColumn('number', 'A', 'a');\n"
-                      "mytab.addColumn('string', 'b', 'b');\n"
+                      "mytab.addColumn('number', \"A'\", 'a');\n"
+                      "mytab.addColumn('string', \"b'\", \"b'\");\n"
                       "mytab.addColumn('timeofday', 'c', 'c');\n"
                       "mytab.addRows(3);\n"
                       "mytab.setCell(0, 0, 1);\n"
@@ -318,11 +350,11 @@ class DataTableTest(unittest.TestCase):
                       "{c:[,{v:new Date(3,3,5)},{v:null}]}]}"),
                      table.ToJSon(columns_order=["t", "d", "dt"]))
 
-    json = ("{cols:[{id:'a',label:'a',type:'string'},"
-            "{id:'b',label:'b',type:'number'}],"
+    json = ("{cols:[{id:\"a'\",label:\"a'\",type:'string'},"
+            "{id:'b',label:\"bb'\",type:'number'}],"
             "rows:[{c:[{v:'a1'},{v:1}]},{c:[{v:'a2'},{v:2}]},"
             "{c:[{v:'a3'},{v:3}]}]}")
-    table = DataTable({"a": ("b", "number")},
+    table = DataTable({"a'": ("b", "number", "bb'", {})},
                       {"a1": 1, "a2": 2, "a3": 3})
     self.assertEqual(3, table.NumberOfRows())
     self.assertEqual(json,
@@ -404,13 +436,13 @@ class DataTableTest(unittest.TestCase):
     html_table_footer = "</table></body></html>"
     init_data_html = html_table_header + (
         "<thead><tr>"
-        "<th>A</th><th>b</th><th>c</th>"
+        "<th>A&lt;</th><th>b&gt;</th><th>c</th>"
         "</tr></thead>"
         "<tbody>"
         "<tr><td>'$1'</td><td></td><td></td></tr>"
         "<tr><td></td><td>'&lt;z&gt;'</td><td>true</td></tr>"
         "</tbody>") + html_table_footer
-    table = DataTable([("a", "number", "A"), "b", ("c", "boolean")],
+    table = DataTable([("a", "number", "A<"), "b>", ("c", "boolean")],
                       [[(1, "$1")], [None, "<z>", True]])
     self.assertEqual(init_data_html.replace("\n", ""), table.ToHtml())
 
