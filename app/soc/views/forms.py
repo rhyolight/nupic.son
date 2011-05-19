@@ -37,7 +37,6 @@ from django.forms.util import flatatt
 from django.template import defaultfilters
 from django.template import loader
 from django.utils.encoding import force_unicode
-from django.utils.encoding import StrAndUnicode
 from django.utils.formats import dateformat
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
