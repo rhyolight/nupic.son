@@ -51,9 +51,6 @@ class ProjectSurveyRecordConversion(object):
   counterparts. Must be run BEFORE the other conversions in this module.
   """
 
-  # number of records to convert in one go
-  BATCH_SIZE = 25
-
   def djangoURLPatterns(self):
     """Returns the URL patterns for the tasks in this module
     """
@@ -79,12 +76,12 @@ class ProjectSurveyRecordConversion(object):
         request, GradingProjectSurveyRecord, GSoCGradingProjectSurveyRecord)
 
   def _convertProjectSurveyRecord(self, request, from_model, to_model):
-    """Converts a set of SurveyRecords that is tied to a Project.
+    """Converts a SurveyRecords that is tied to a Project.
 
     Args:
       request: The HTTPRequest object for this task
       from_model: Model class of the record to convert from.
-      to_model: Model class of the record to conver to.
+      to_model: Model class of the record to convert to.
     """
     post_dict = request.POST
 
@@ -95,27 +92,23 @@ class ProjectSurveyRecordConversion(object):
       cursor = str(cursor)
       q.with_cursor(cursor)
 
-    records = q.fetch(ProjectSurveyRecordConversion.BATCH_SIZE)
+    record = q.get()
 
-    if not records:
+    if not record:
       # we are done, return OK
       return http.HttpResponse()
 
-    new_records = []
+    values = toValueDict(record)
+    # update the project value to a GSoCProject
+    values['project'] = getGSoCProjectFor(record.project)
 
-    for record in records:
-      values = toValueDict(record)
-
-      # update the project value to a GSoCProject
-      values['project'] = getGSoCProjectFor(record.project)
-
-      new_records.append(to_model(**values))
+    new_record = to_model(**values)
 
     def txn():
       task_params = {'cursor': unicode(q.cursor())}
       new_task = taskqueue.Task(params=task_params, url=request.path)
       new_task.add(transactional=True)
-      db.put(new_records)
+      db.put(new_record)
 
     db.RunInTransaction(txn)
 
