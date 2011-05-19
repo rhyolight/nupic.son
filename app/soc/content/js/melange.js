@@ -27,9 +27,6 @@
     return new melange();
   };
 
-  // Hook to attach javascript templates
-  melange.template = window.melange.template = {};
-
   if (window.jQuery === undefined) {
     throw new Error("jQuery package must be loaded exposing jQuery namespace");
   }
@@ -432,6 +429,15 @@
       // Create internal context variable and push this template to the queue
       this.context = contextQueue.pop();
     };
+
+    $m.inherit = function (template_object) {
+      template_object.prototype = new melange.templates._baseTemplate();
+      template_object.prototype.constructor = template_object;
+      template_object.apply(
+        template_object,
+        [template_object, template_object.prototype.context]
+      );
+    }
   }());
 }());
 window.melange = window.melange.logging.debugDecorator(window.melange);
