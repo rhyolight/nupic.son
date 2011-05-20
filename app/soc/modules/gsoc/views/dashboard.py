@@ -34,7 +34,6 @@ from django.utils.translation import ugettext
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
-from soc.logic.helper import timeline as timeline_helper
 from soc.logic.models.request import logic as request_logic
 from soc.models.universities import UNIVERSITIES
 from soc.views.template import Template
@@ -103,8 +102,6 @@ class Dashboard(RequestHandler):
     """Handler for POST requests.
     """
     components = self._getActiveComponents()
-
-    idx = lists.getListIndex(self.request)
 
     for component in components:
       if component.post():
@@ -253,9 +250,9 @@ class Component(Template):
     return None
 
   def post(self):
-    """Handleds a post request.
+    """Handles a post request.
 
-    If posting ot the list as requested is not supported by this component
+    If posting to the list as requested is not supported by this component
     False is returned.
     """
     # by default post is not supported
@@ -717,7 +714,7 @@ class SubmittedProposalsComponent(Component):
           remove_properties.append(key)
         try:
           cleaning.sanitize_html_string(value)
-        except Exception, e:
+        except Exception:
           remove_properties.append(key)
 
       for prop in remove_properties:
