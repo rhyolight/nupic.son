@@ -29,6 +29,7 @@ from django import forms as django_forms
 
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.models.survey import SurveyContent
+from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -159,12 +160,13 @@ class SurveyTakePage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/evaluation/midterm/student/%s$' % url_patterns.PROJECT,
+         url(r'^gsoc/survey/%s$' % url_patterns.SURVEY_RECORD,
          self, name='gsoc_take_midterm_survey'),
     ]
 
   def checkAccess(self):
-    pass
+    self.mutator.projectSurveyFromKwargs()
+    assert isSet(self.data.project_survey)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_survey_take.html'
