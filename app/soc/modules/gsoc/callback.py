@@ -114,12 +114,15 @@ class Callback(object):
     self.views.append(student_forms.TaxFormPage())
 
     # Appengine Task related views
+    from soc.modules.gsoc.tasks.grading_survey_group import \
+        GradingRecordTasks
     from soc.modules.gsoc.tasks.accept_proposals import \
         ProposalAcceptanceTask
     from soc.modules.gsoc.tasks.proposal_duplicates import \
         ProposalDuplicatesTask
     from soc.modules.gsoc.tasks.survey_reminders import \
         SurveyReminderTask
+    self.views.append(GradingRecordTasks())
     self.views.append(ProposalAcceptanceTask())
     self.views.append(ProposalDuplicatesTask())
     self.views.append(SurveyReminderTask())

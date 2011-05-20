@@ -50,14 +50,6 @@ indexes:
   - name: scope
   - name: __key__
 
-# Used for bulk mailing student and mentors with survey reminders. Also used
-# for gathering GradingRecords for evaluation purposes.
-- kind: StudentProject
-  properties:
-  - name: program
-  - name: status
-  - name: __key__
-
 # Used to update StudentProjects with the grade_decsion contained in a
 # GradingRecord.
 - kind: GradingRecord
