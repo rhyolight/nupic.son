@@ -476,9 +476,12 @@ class RedirectHelper(object):
     self.kwargs['role'] = role
     return self
 
-  def profile(self, user):
+  def profile(self, user=None):
     """Sets args for an url_patterns.PROFILE redirect.
     """
+    if not user:
+      assert 'user' in self._data.kwargs
+      user = self._data.kwargs['user']
     self.program()
     self.kwargs['user'] = user
     return self
