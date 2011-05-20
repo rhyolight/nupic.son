@@ -51,18 +51,19 @@ class SurveyTakeForm(forms.ModelForm):
   """Django form for taking a survey.
   """
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, survey_content, *args, **kwargs):
     super(SurveyTakeForm, self).__init__(*args, **kwargs)
+    self.survey_content = survey_content
     self.constructForm()
 
   def constructForm(self):
     """Constructs the form based on the schema stored in the survey content
     """
     # insert dynamic survey fields
-    if self.instance:
+    if self.survey_content:
       # TODO(madhu): Convert this to JSON
-      schema = eval(self.instance.schema)
-      for position, field_name in self.instance.getSurveyOrder().items():
+      schema = eval(self.survey_content.schema)
+      for position, field_name in self.survey_content.getSurveyOrder().items():
         field_info = schema.get(field_name)
         self.constructField(field_name, field_info)
 
@@ -81,7 +82,7 @@ class SurveyTakeForm(forms.ModelForm):
     help_text = field_info.get('tip', '')
 
     choices = [(choice, choice) for choice in getattr(
-        self.instance, field_name)]
+        self.survey_content, field_name)]
 
     widget = None
 
@@ -169,15 +170,8 @@ class SurveyTakePage(RequestHandler):
     return 'v2/modules/gsoc/_survey_take.html'
 
   def context(self):
-    # TODO: (test code) remove it
-    from google.appengine.ext import db
-    org_app_key_name = 'gsoc_program/google/gsoc2009/gsoc2009survey'
-    org_app_key = db.Key.from_path('OrgAppSurvey', org_app_key_name)
-    org_app = db.get(org_app_key)
-    # Test code end
-
-    form = SurveyTakeForm(self.data.POST or None,
-                          instance=org_app.survey_content)
+    form = SurveyTakeForm(self.data.project_survey.survey_content,
+                          self.data.POST or None)
 
     context = {
         'page_name': "Midterm survey page",
