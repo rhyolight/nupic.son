@@ -231,6 +231,7 @@ class Mutator(object):
     self.data.requester = unset
     self.data.scope_path = unset
     self.data.url_profile = unset
+    self.data.url_student_info = unset
     self.data.url_user = unset
 
   def organizationFromKwargs(self):
@@ -300,6 +301,13 @@ class Mutator(object):
 
     if not self.data.url_profile:
       raise NotFound('Requested user does not have a profile')
+
+  def studentFromKwargs(self):
+    self.profileFromKwargs()
+    self.data.url_student_info = self.data.url_profile.student_info
+
+    if not self.data.url_student_info:
+      raise NotFound('Requested user is not a student')
 
   def proposalFromKwargs(self):
     self.profileFromKwargs()
