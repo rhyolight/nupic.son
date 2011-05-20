@@ -17,24 +17,21 @@
  * @author <a href="mailto:lpalm@google.com">Leon Palm</a>
  */
 
-(function () {
-  var createSearchBox = function () {
-    var melange = window.melange;
-    this.prototype = new melange.templates._baseTemplate();
-    this.prototype.constructor = melange.templates._baseTemplate;
-    melange.templates._baseTemplate.apply(this, arguments);
+melange.templates.inherit(
+  function (_self, context) {
+    var createSearchBox = function () {
+      var customSearchControl =
+          new google.search.CustomSearchControl(context.cse_key);
+      customSearchControl
+          .setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+      customSearchControl.draw('cse');
+    };
+  
+    jQuery(
+      function () {
+        melange.loadGoogleApi("search", "1", {language: "en"}, createSearchBox);
+      }
+    );
 
-    var _self = this;
-    var customSearchControl =
-        new google.search.CustomSearchControl(_self.context.cse_key);
-    customSearchControl
-        .setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
-    customSearchControl.draw('cse');
-  };
-
-  jQuery(
-    function () {
-      melange.loadGoogleApi("search", "1", {language: "en"}, createSearchBox);
-    }
-  );
-}());
+  }
+);
