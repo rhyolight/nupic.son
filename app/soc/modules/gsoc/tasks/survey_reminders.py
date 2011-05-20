@@ -56,7 +56,8 @@ class SurveyReminderTask(object):
     """Returns the URL patterns for the tasks in this module.
     """
     patterns = [url(r'tasks/gsoc/surveys/send_reminder/spawn$',
-                    self.spawnRemindersForProjectSurvey),
+                    self.spawnRemindersForProjectSurvey,
+                    name='spawn_survey_reminders'),
                 url(r'tasks/gsoc/surveys/send_reminder/send$',
                     self.sendSurveyReminderForProject)]
     return patterns
@@ -86,7 +87,7 @@ class SurveyReminderTask(object):
     if not (program_key and survey_key and survey_type):
       # invalid task data, log and return OK
       return error_handler.logErrorAndReturnOK(
-          'Invalid sendRemindersForProjectSurvey data: %s' % post_dict)
+          'Invalid spawnRemindersForProjectSurvey data: %s' % post_dict)
 
     program_entity = GSoCProgram.get_by_key_name(program_key)
 

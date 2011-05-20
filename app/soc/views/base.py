@@ -33,12 +33,10 @@ from django import http
 from django.utils import simplejson
 from django.template import loader
 
-from soc.logic import system
 from soc.logic.exceptions import LoginRequest
 from soc.logic.exceptions import RedirectRequest
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import Error
-from soc.logic.models.site import logic as site
 from soc.views.helper import access_checker
 from soc.views.helper import context as context_helper
 from soc.views.helper.request_data import RequestData
@@ -306,7 +304,7 @@ class RequestHandler(object):
       self.checkAccess()
       self._dispatch()
     except LoginRequest, e:
-      full_path = request.get_full_path().encode('utf-8')
+      request.get_full_path().encode('utf-8')
       self.redirect.login().to()
     except RedirectRequest, e:
       self.redirect.toUrl(e.url)

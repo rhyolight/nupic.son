@@ -24,28 +24,29 @@ __authors__ = [
 
 import logging
 
+from google.appengine.api import taskqueue
 from google.appengine.api import users
 from google.appengine.ext import db
 
 from django import forms as djangoforms
+from django import http
 from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from soc.logic import accounts
 from soc.logic import cleaning
-from soc.logic import dicts
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.views import forms
-from soc.views import readonly_template
 from soc.views.template import Template
 
 from soc.models.user import User
 
-from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -119,6 +120,7 @@ class DashboardPage(RequestHandler):
         'duplicates_link': r.urlOf('gsoc_view_duplicates'),
         'program_link': r.urlOf('edit_gsoc_program'),
         'timeline_link': r.urlOf('edit_gsoc_timeline'),
+        'survey_reminder_link': r.urlOf('gsoc_survey_reminder_admin')
     }
 
 
@@ -297,4 +299,53 @@ class SlotsPage(RequestHandler):
     return {
       'page_name': 'Slots page',
       'slots_list': SlotsList(self.request, self.data),
+    }
+
+class SurveyReminderPage(RequestHandler):
+  """Page to send out reminder emails to fill out a Survey.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/survey_reminder/%s$' % url_patterns.PROGRAM,
+            self, name='gsoc_survey_reminder_admin'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/admin/survey_reminder.html'
+
+  def post(self):
+    post_dict = self.request.POST
+
+    task_params = {
+        'program_key': self.data.program.key().id_or_name(),
+        'survey_key': post_dict['key'],
+        'survey_type': post_dict['type']
+    }
+
+    task = taskqueue.Task(url=self.data.redirect.urlOf('spawn_survey_reminders'),
+                          params=task_params)
+    task.add()
+
+    self.response = http.HttpResponseRedirect(
+        self.request.path+'?msg=Reminders are being sent')
+    return
+
+  def context(self):
+    q = GradingProjectSurvey.all()
+    q.filter('scope', self.data.program)
+    mentor_surveys = q.fetch(1000)
+
+    q = ProjectSurvey.all()
+    q.filter('scope', self.data.program)
+    student_surveys = q.fetch(1000)
+
+    return {
+      'page_name': 'Sending Evaluation Reminders',
+      'mentor_surveys': mentor_surveys,
+      'student_surveys': student_surveys,
+      'msg': self.request.GET.get('msg', '')
     }

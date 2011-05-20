@@ -25,7 +25,6 @@ __authors__ = [
   ]
 
 from soc.views.base import RequestHandler
-from soc.views.template import Template
 
 from soc.modules.gsoc.views import base_templates
 from soc.modules.gsoc.views.helper import access_checker
