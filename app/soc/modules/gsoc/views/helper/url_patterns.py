@@ -91,6 +91,7 @@ _document = ''.join([
 _mentor_role = r'(?P<role>%s)/' % ("org_admin|mentor")
 
 ID        = namedIdBasedPattern(['sponsor', 'program'])
+KEY       = namedKeyBasedPattern(['sponsor', 'program'])
 SPONSOR   = namedLinkIdPattern(['sponsor'])
 PROGRAM   = namedLinkIdPattern(['sponsor', 'program'])
 CREATE_PROFILE = _role + namedLinkIdPattern(['sponsor', 'program'])

@@ -459,6 +459,16 @@ class RedirectHelper(object):
     self.kwargs['id'] = id
     return self
 
+  def key(self, key=None):
+    """Sets the kwargs for an url_patterns.KEY redirect.
+    """
+    if not key:
+      assert 'key' in self._data.kwargs
+      key = self._data.kwargs['key']
+    self.program()
+    self.kwargs['key'] = key
+    return self
+
   def review(self, id=None, student=None):
     """Sets the kwargs for an url_patterns.REVIEW redirect.
     """
