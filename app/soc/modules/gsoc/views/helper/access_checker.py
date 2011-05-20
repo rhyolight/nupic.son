@@ -28,8 +28,10 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation
+from soc.logic.exceptions import NotFound
 from soc.views.helper import access_checker
 
+from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.student_proposal import StudentProposal
 
 
@@ -37,9 +39,23 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
     'You have reached the maximum number of proposals allowed '
     'for this program.')
 
+DEF_NO_PROJECT_SURVEY_MSG = ugettext(
+    'The project survey with the requested parameters does not exist')
+
 
 class Mutator(access_checker.Mutator):
-  pass
+
+  def projectSurveyFromKwargs(self):
+    """Sets the survey record in RequestData object.
+    """
+        # kwargs which defines an organization
+    fields = ['prefix', 'sponsor', 'program', 'survey']
+
+    key_name = '/'.join(self.data.kwargs[field] for field in fields)
+    self.data.project_survey = ProjectSurvey.get_by_key_name(key_name)
+
+    if not self.data.project_survey:
+      raise NotFound(DEF_NO_PROJECT_SURVEY_MSG)
 
 
 class DeveloperMutator(access_checker.DeveloperMutator):
