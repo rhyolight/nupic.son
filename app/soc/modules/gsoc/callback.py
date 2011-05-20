@@ -109,10 +109,8 @@ class Callback(object):
     self.views.append(slot_transfer_admin.SlotsTransferAdminPage())
     self.views.append(slot_transfer.SlotTransferPage())
     self.views.append(slot_transfer.UpdateSlotTransferPage())
-    self.views.append(student_forms.DownloadEnrollmentForm())
-    self.views.append(student_forms.DownloadTaxForm())
-    self.views.append(student_forms.EnrollmentFormPage())
-    self.views.append(student_forms.TaxFormPage())
+    self.views.append(student_forms.DownloadForm())
+    self.views.append(student_forms.FormPage())
 
     # Appengine Task related views
     from soc.modules.gsoc.tasks.grading_survey_group import \

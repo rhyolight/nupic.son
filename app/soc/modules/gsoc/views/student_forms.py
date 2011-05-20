@@ -47,6 +47,19 @@ class TaxForm(forms.ModelForm):
 
   tax_form = fields.FileField(label='Upload new tax form', required=False)
 
+  def _admin(self):
+    return self.data.kwargs['admin']
+
+  def _r(self):
+    r = self.data.redirect
+    return r.profile() if self._admin() else r.program()
+
+  def _urlName(self):
+    if self._admin():
+      return 'gsoc_tax_form_download_admin'
+
+    return 'gsoc_tax_form_download'
+
   def __init__(self, data, *args, **kwargs):
     super(TaxForm, self).__init__(*args, **kwargs)
     self.data = data
@@ -57,7 +70,7 @@ class TaxForm(forms.ModelForm):
       field._link = None
     else:
       field._file = self.instance.tax_form
-      field._link = data.redirect.program().urlOf('gsoc_tax_form_download')
+      field._link = self._r().urlOf(self._urlName())
 
   def clean_tax_form(self):
     uploads = self.data.request.file_uploads
@@ -76,6 +89,19 @@ class EnrollmentForm(forms.ModelForm):
 
   enrollment_form = fields.FileField(label='Upload new enrollment form', required=False)
 
+  def _admin(self):
+    return self.data.kwargs['admin']
+
+  def _r(self):
+    r = self.data.redirect
+    return r.profile() if self._admin() else r.program()
+
+  def _urlName(self):
+    if self._admin():
+      return 'gsoc_enrollment_form_download_admin'
+
+    return 'gsoc_enrollment_form_download'
+
   def __init__(self, data, *args, **kwargs):
     super(EnrollmentForm, self).__init__(*args, **kwargs)
     self.data = data
@@ -86,132 +112,145 @@ class EnrollmentForm(forms.ModelForm):
       field._link = None
     else:
       field._file = self.instance.enrollment_form
-      field._link = data.redirect.program().urlOf('gsoc_enrollment_form_download')
+      field._link = self._r().urlOf(self._urlName())
 
   def clean_enrollment_form(self):
     uploads = self.data.request.file_uploads
     return uploads[0] if uploads else None
 
 
-class TaxFormPage(RequestHandler):
-  """View for the participant profile.
-  """
-
-  def djangoURLPatterns(self):
-    return [
-        url(r'student_forms/tax/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_tax_form'),
-    ]
-
-  def checkAccess(self):
-    self.check.isStudentWithProject()
-
-  def templatePath(self):
-    return 'v2/modules/gsoc/student_forms/base.html'
-
-  def context(self):
-    tax_form = TaxForm(self.data, self.data.POST or None,
-                       instance=self.data.student_info)
-
-    return {
-        'page_name': 'Tax form',
-        'forms': [tax_form],
-        'error': bool(tax_form.errors),
-        }
-
-  def validate(self):
-    tax_form = TaxForm(self.data, self.data.POST,
-                       instance=self.data.student_info)
-    if not tax_form.is_valid():
-      return False
-
-    tax_form.save()
-
-  def json(self):
-    url = self.redirect.program().urlOf('gsoc_tax_form', secure=True)
-    upload_url = blobstore.create_upload_url(url)
-    self.response.write(upload_url)
-
-  def post(self):
-    validated = self.validate()
-    self.redirect.program().to('gsoc_tax_form', validated=validated)
-
-
-class EnrollmentFormPage(RequestHandler):
-  """View for the participant profile.
+class FormPage(RequestHandler):
+  """View to upload student forms.
   """
 
   def djangoURLPatterns(self):
     return [
         url(r'student_forms/enrollment/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_enrollment_form'),
+            self, name='gsoc_enrollment_form',
+            kwargs=dict(form='enrollment', admin=False)),
+        url(r'student_forms/tax/%s$' % url_patterns.PROGRAM,
+            self, name='gsoc_tax_form',
+            kwargs=dict(form='tax', admin=False)),
+        url(r'student_forms/admin/enrollment/%s$' % url_patterns.PROFILE,
+            self, name='gsoc_enrollment_form_admin',
+            kwargs=dict(form='enrollment', admin=True)),
+        url(r'student_forms/admin/tax/%s$' % url_patterns.PROFILE,
+            self, name='gsoc_tax_form_admin',
+            kwargs=dict(form='tax', admin=True)),
     ]
 
   def checkAccess(self):
-    self.check.isStudentWithProject()
+    if self._admin():
+      self.check.isHost()
+      self.mutator.studentFromKwargs()
+    else:
+      self.check.isStudentWithProject()
 
   def templatePath(self):
     return 'v2/modules/gsoc/student_forms/base.html'
 
   def context(self):
-    enrollment_form = EnrollmentForm(self.data, self.data.POST or None,
-                       instance=self.data.student_info)
+    Form = self._form()
+    form = Form(self.data, self.data.POST or None, instance=self._studentInfo())
 
     return {
-        'page_name': 'Enrollment form',
-        'forms': [enrollment_form],
-        'error': bool(enrollment_form.errors),
+        'page_name': self._name(),
+        'forms': [form],
+        'error': bool(form.errors),
         }
 
   def validate(self):
-    enrollment_form = EnrollmentForm(self.data, self.data.POST,
-                       instance=self.data.student_info)
-    if not enrollment_form.is_valid():
+    Form = self._form()
+    form = Form(self.data, self.data.POST, instance=self._studentInfo())
+
+    if not form.is_valid():
       return False
 
-    enrollment_form.save()
+    form.save()
+
+  def _name(self):
+    return 'Tax form' if self._tax() else 'Enrollment form'
+
+  def _form(self):
+    return TaxForm if self._tax() else EnrollmentForm
+
+  def _studentInfo(self):
+    if self._admin():
+      return self.data.url_student_info
+    else:
+      return self.data.student_info
+
+  def _admin(self):
+    return self.kwargs['admin']
+
+  def _tax(self):
+    return self.kwargs['form'] == 'tax'
+
+  def _urlName(self):
+    if self._admin():
+      if self._tax():
+        return 'gsoc_tax_form_admin'
+      return 'gsoc_enrollment_form_admin'
+
+    if self._tax():
+      return 'gsoc_tax_form'
+    return 'gsoc_enrollment_form'
+
+  def _r(self):
+    return self.redirect.profile() if self._admin() else self.redirect.program()
 
   def json(self):
-    url = self.redirect.program().urlOf('gsoc_enrollment_form', secure=True)
+    url = self._r().urlOf(self._urlName(), secure=True)
     upload_url = blobstore.create_upload_url(url)
     self.response.write(upload_url)
 
   def post(self):
     validated = self.validate()
-    self.redirect.program().to('gsoc_enrollment_form', validated=validated)
+    self._r().to(self._urlName(), validated=validated)
 
 
-class DownloadTaxForm(RequestHandler):
-  """View for downloading the tax form.
-  """
-
-  def djangoURLPatterns(self):
-    return [
-        url(r'student_forms/tax/download/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_tax_form_download'),
-    ]
-
-  def checkAccess(self):
-    self.check.isProfileActive()
-
-  def get(self):
-    blob_key = str(self.data.student_info.tax_form.key())
-    self.response = bs_helper.download_blob(blob_key)
-
-
-class DownloadEnrollmentForm(RequestHandler):
-  """View for downloading the enrollment form.
+class DownloadForm(RequestHandler):
+  """View for downloading a student form.
   """
 
   def djangoURLPatterns(self):
     return [
         url(r'student_forms/enrollment/download/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_enrollment_form_download'),
+            self, name='gsoc_enrollment_form_download',
+            kwargs=dict(form='enrollment', admin=False)),
+        url(r'student_forms/tax/download/%s$' % url_patterns.PROGRAM,
+            self, name='gsoc_tax_form_download',
+            kwargs=dict(form='tax', admin=False)),
+        url(r'student_forms/admin/enrollment/download/%s$' % url_patterns.PROFILE,
+            self, name='gsoc_enrollment_form_download_admin',
+            kwargs=dict(form='enrollment', admin=True)),
+        url(r'student_forms/admin/tax/download/%s$' % url_patterns.PROFILE,
+            self, name='gsoc_tax_form_download_admin',
+            kwargs=dict(form='tax', admin=True)),
     ]
 
   def checkAccess(self):
-    self.check.isProfileActive()
+    if self._admin():
+      self.check.isHost()
+      self.mutator.studentFromKwargs()
+    else:
+      self.check.isProfileActive()
+
+  def _admin(self):
+    return self.kwargs['admin']
+
+  def _tax(self):
+    return self.kwargs['form'] == 'tax'
+
+  def _studentInfo(self):
+    if self._admin():
+      return self.data.url_student_info
+    else:
+      return self.data.student_info
 
   def get(self):
-    blob_key = str(self.data.student_info.enrollment_form.key())
+    if self._tax():
+      blob_key = str(self._studentInfo().tax_form.key())
+    else:
+      blob_key = str(self._studentInfo().enrollment_form.key())
     self.response = bs_helper.download_blob(blob_key)
