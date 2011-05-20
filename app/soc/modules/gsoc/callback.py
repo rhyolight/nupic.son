@@ -44,6 +44,7 @@ class Callback(object):
     from soc.modules.gsoc.views import dashboard
     from soc.modules.gsoc.views import document
     from soc.modules.gsoc.views import duplicates
+    from soc.modules.gsoc.views import grading_record_details
     from soc.modules.gsoc.views import homepage
     from soc.modules.gsoc.views import invite
     #from soc.modules.gsoc.views import org_app
@@ -74,6 +75,8 @@ class Callback(object):
     self.views.append(document.EditDocumentPage())
     self.views.append(document.EventsPage())
     self.views.append(duplicates.DuplicatesPage())
+    self.views.append(grading_record_details.GradingRecordDetails())
+    self.views.append(grading_record_details.GradingRecordsOverview())
     self.views.append(homepage.Homepage())
     self.views.append(invite.InvitePage())
     self.views.append(invite.ShowInvite())
