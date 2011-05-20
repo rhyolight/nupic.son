@@ -237,23 +237,24 @@ class GradingRecordConversion(object):
     values = toValueDict(old_record)
     values['grading_survey_group'] = new_group
 
+    project = getGSoCProjectFor(old_record.project)
+
     if old_record.mentor_record:
       old_mentor_record = old_record.mentor_record
       mentor_record_q = GSoCGradingProjectSurveyRecord.all()
       mentor_record_q.filter('survey', old_mentor_record.survey)
-      mentor_record_q.filter('project', old_mentor_record.project)
+      mentor_record_q.filter('project', project)
       values['mentor_record'] = mentor_record_q.get()
 
     if old_record.student_record:
       old_student_record = old_record.student_record
       student_record_q = GSoCProjectSurveyRecord.all()
       student_record_q.filter('survey', old_student_record.survey)
-      student_record_q.filter('project', old_student_record.project)
+      student_record_q.filter('project', project)
       values['student_record'] = student_record_q.get()
 
     # Create a new record where the parent is now the project for transactional
     # reasons.
-    project = getGSoCProjectFor(old_record.project)
     new_record = GSoCGradingRecord(parent=project, **values)
 
     def txn():
