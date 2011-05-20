@@ -1,25 +1,25 @@
-= WHAT BELONGS IN trunk/app =
+= WHAT BELONGS IN /app =
 
-trunk/app should contain only the files needed for the actual Google App
+/app should contain only the files needed for the actual Google App
 Engine application "image".  Support code that is not part of the application
-image belongs elsewhere, such as in trunk/scripts, for example.
+image belongs elsewhere, such as in /scripts, for example.
 
 = THIRD PARTY CODE =
 
 Third-party code that is *not* part of the application image (the Google App
-Engine SDK in trunk/thirdparty/google_appengine, for example) belongs in
-trunk/thirdparty (see also trunk/thirdparty/README).
+Engine SDK in /thirdparty/google_appengine, for example) belongs in
+/thirdparty (see also /thirdparty/README).
 
 Third-party code that is part of the application image is placed in a package
-subdirectory in trunk/app, such as trunk/app/django, for example.
+subdirectory in /app, such as /app/django, for example.
 
 If the third-party package is a single Python source file, place the code in
-trunk/app/<package>/__init__.py, so that it can simply be imported using,
+/app/<package>/__init__.py, so that it can simply be imported using,
 for example:
 
 import feedparser
 
-(The trunk/app/feedparser package is a good example of this approach.)
+(The /app/feedparser package is a good example of this approach.)
 
 == THIRD PARTY LICENSES ==
 
@@ -27,21 +27,19 @@ Third-party code must also include a license text file, named LICENSE or
 COPYING, in the package subdirectory.  If the third-party package subdirectory
 is maintained automatically with a tool such as svn_load_dirs.pl (which
 removes files, such as license text files, that were added later to the
-"target" directory), place the license text file in the trunk/app directory
+"target" directory), place the license text file in the /app directory
 and add the package name as a suffix (LICENSE.django is an example of this
 case).
 
 = CREATING AN OFFICIAL RELEASE =
 
-== CREATING THE RELEASE CANDIDATE BRANCH AND TAGGING A RELEASE ==
+== TAGGING A RELEASE ==
 
 Steps (currently done by hand, but too be scripted in the future) to make
 a release:
 
-1) Set the "version:" field in the app.yaml.template file to a "release
-   candidate" release string.  Version strings cannot contain dots
-   (periods) and have some other restrictions.  As a result, the format
-   of the release-candidate "version:" field needs to be:
+1) Update the "version:" field in the app.yaml.template file. Resulting
+   format of the "version:" field needs to be:
 
      A-B-YYYYMMDD
 
@@ -57,25 +55,18 @@ a release:
 
 2) Commit this file *by itself* in its own commit.
 
-3) Use 'svn cp' to create a release branch of /trunk/ in /branches/ with
-   exactly the same name as the contents of the "version:" field in the
-   app.yaml.template file.  Branch on the specific revision of the commit
+3) Use 'hg tag' to mark release in Mercurial with exactly the same name as
+   the contents of the "version:" field in the app.yaml.template file.
 
-4) Finalize the release candidate branch for a push to the live web site.
-   Use 'svn cp' to create a tag in /tags/ with exactly the same name as the
-   contents of the "version:" field in the app.yaml.template file.  Specify
-   the *specific revision* of the commit in step #2 above.
+4) Use 'hg push' to record your changes. Then deploy to the live web site.
 
-Step #4 might actually be delayed for one or more patch releases, once there
-is some sort of User Acceptance Testing (UAT) checklist for a release
-candidate, because defects would be patched in the release candidate branch
-one or more times before an actual release is tagged.  See the next section
-for details.
+== PATCHING AND RE-RELEASING AN EXISTING RELEASE ==
 
-== PATCHING AND RE-RELEASING AN EXISTING RELEASE CANDIDATE BRANCH ==
-
-To re-release a previously-tagged release branch after a patch for a push to
+To re-release a previously-tagged release after a patch for a push to
 the live web site:
+
+1) Update use "hg update -r tag" to bring your working copy to the tagged
+   version.
 
 1) Increment the "patch suffix" of the "version:" field value to the next
    integer (for example, "p1" becomes "p2"), or append "p1" to the end of
@@ -90,10 +81,11 @@ the live web site:
 
    etc.
 
-2) Commit this file *by itself* in its own commit (after the last batch
-   of patches being made to the existing /branches/ release branch).
+2) Commit this file *by itself* in its own commit (after all patches are
+   committed).
 
-3) Use 'svn cp' to create a tag in /tags/ with exactly the same name as the
+3) Use 'hg tag' to mark modified branch with exactly the same name as the
    contents of the new, patched "version:" field in the app.yaml.template
-   file.  Specify the *specific revision* of the commit in step #2 above.
+   file.
 
+4) Push changes with 'hg push'. Then deploy.
