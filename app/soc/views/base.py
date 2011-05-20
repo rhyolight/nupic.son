@@ -152,7 +152,11 @@ class RequestHandler(object):
       # allow the django test framework to capture the context dictionary
       loader.render_to_string('json_marker.html', dictionary=context)
 
-    data = simplejson.dumps(context)
+    if isinstance(context, unicode) or isinstance(context, str):
+      data = context
+    else:
+      data = simplejson.dumps(context)
+
     self.response.write(data)
 
   def jsonContext(self):

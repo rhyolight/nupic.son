@@ -61,6 +61,7 @@ class Callback(object):
     from soc.modules.gsoc.views import search
     from soc.modules.gsoc.views import slot_transfer
     from soc.modules.gsoc.views import slot_transfer_admin
+    from soc.modules.gsoc.views import statistic
     from soc.modules.gsoc.views import student_forms
 
     self.views.append(accepted_orgs.AcceptedOrgsPage())
@@ -111,6 +112,12 @@ class Callback(object):
     self.views.append(slot_transfer.UpdateSlotTransferPage())
     self.views.append(student_forms.DownloadForm())
     self.views.append(student_forms.FormPage())
+#    self.views.append(statistic.StatisticDashboard())
+#    self.views.append(statistic.StatisticFetcher())
+    self.views.append(student_forms.DownloadEnrollmentForm())
+    self.views.append(student_forms.DownloadTaxForm())
+    self.views.append(student_forms.EnrollmentFormPage())
+    self.views.append(student_forms.TaxFormPage())
 
     # Appengine Task related views
     from soc.modules.gsoc.tasks.grading_survey_group import \
@@ -121,10 +128,19 @@ class Callback(object):
         ProposalDuplicatesTask
     from soc.modules.gsoc.tasks.survey_reminders import \
         SurveyReminderTask
+    from soc.modules.gsoc.tasks.statistic import CollectProfileSpecificStatistics
+    from soc.modules.gsoc.tasks.statistic import CollectProposalSpecificStatistics
+    from soc.modules.gsoc.tasks.statistic import CreateProfileSpecificStatisticService
+    from soc.modules.gsoc.tasks.statistic import CreateProposalSpecificStatisticService
+
     self.views.append(GradingRecordTasks())
     self.views.append(ProposalAcceptanceTask())
     self.views.append(ProposalDuplicatesTask())
     self.views.append(SurveyReminderTask())
+#    self.views.append(CollectProfileSpecificStatistics())
+#    self.views.append(CollectProposalSpecificStatistics())
+#    self.views.append(CreateProfileSpecificStatisticService())
+#    self.views.append(CreateProposalSpecificStatisticService())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.
