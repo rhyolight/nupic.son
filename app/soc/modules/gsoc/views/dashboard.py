@@ -1117,6 +1117,7 @@ class StudentsComponent(Component):
   def __init__(self, request, data):
     """Initializes this component.
     """
+    r = data.redirect
     self.data = data
     list_config = lists.ListConfiguration()
     list_config.addColumn(
@@ -1130,6 +1131,8 @@ class StudentsComponent(Component):
         'birth_date', "Birthdate",
         (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
         hidden=True)
+    list_config.setRowAction(lambda e, *args, **kwargs:
+        r.profile(e.link_id).urlOf('gsoc_profile_admin'))
 
     def formsSubmitted(ent, si):
       info = si[ent.key()]
