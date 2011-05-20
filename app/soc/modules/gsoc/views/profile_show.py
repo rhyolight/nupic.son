@@ -74,17 +74,13 @@ class ProfileShowPage(RequestHandler):
 
     profile = self.data.profile
     program = self.data.program
-    user = self.data.user
 
     return {
-        'page_name': '%(program_name)s Profile - %(profile_name)s' % {
-            'program_name': program.short_name,
-            'profile_name': profile.name()},
+        'page_name': '%s Profile - %s' % (program.short_name, profile.name()),
         'program_name': program.name,
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
-        'user': user,
         'profile': ProfileReadOnlyTemplate(profile),
-        'css_prefix': ProfileReadOnlyTemplate.Meta.css_prefix
+        'css_prefix': ProfileReadOnlyTemplate.Meta.css_prefix,
         }
 
 
@@ -110,12 +106,16 @@ class ProfileAdminPage(RequestHandler):
     assert isSet(self.data.url_profile)
     assert isSet(self.data.url_user)
 
-    user = self.data.url_user
     profile = self.data.url_profile
     program = self.data.program
+    r = self.redirect.profile()
 
     return {
         'page_name': '%s Profile - %s' % (program.short_name, profile.name()),
         'program_name': program.name,
+        'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'profile': ProfileReadOnlyTemplate(profile),
+        'css_prefix': ProfileReadOnlyTemplate.Meta.css_prefix,
+        'submit_tax_link': r.urlOf('gsoc_tax_form_admin'),
+        'submit_enrollment_link': r.urlOf('gsoc_enrollment_form_admin'),
         }
