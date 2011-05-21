@@ -315,8 +315,8 @@ def seed(request, *args, **kwargs):
 
 
   timeline_properties.update({
-      'key_name': 'google/gsoc2009',
-      'link_id': 'gsoc2009',
+      'key_name': 'google/gsoc2010',
+      'link_id': 'gsoc2010',
   })
 
   gsoc2010_timeline = GSoCTimeline(**timeline_properties)
