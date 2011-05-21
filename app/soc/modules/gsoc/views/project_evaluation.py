@@ -174,8 +174,13 @@ class SurveyTakePage(RequestHandler):
     return 'v2/modules/gsoc/_survey_take.html'
 
   def context(self):
-    form = SurveyTakeForm(self.data.project_survey.survey_content,
-                          self.data.POST or None)
+    if self.data.project_survey_record:
+      form = SurveyTakeForm(
+          self.data.project_survey.survey_content,
+          self.data.POST or None, instance=self.data.project_survey_record)
+    else:
+      form = SurveyTakeForm(self.data.project_survey.survey_content,
+                            self.data.POST or None)
 
     context = {
         'page_name': "Midterm survey page",
