@@ -18,6 +18,8 @@
 
 melange.templates.inherit(
   function (_self, context) {
+    var current_content = {};
+
     // Dom Objects selectors
     var selectors = {
       submit_button: function() {return "#form-register-fieldset-button-row"},
@@ -25,7 +27,8 @@ melange.templates.inherit(
       menu: {
         menu: function() {return [selectors.container(), ".survey_menu"].join(" ")},
         buttons: {
-          selections: function() {return [selectors.menu.menu(), ".selections"].join(" ");},
+          radio: function() {return [selectors.menu.menu(), ".radio"].join(" ");},
+          checkbox: function() {return [selectors.menu.menu(), ".checkbox"].join(" ");},
           short_answer: function() {return [selectors.menu.menu(), ".short_answer"].join(" ")},
           long_answer: function() {return [selectors.menu.menu(), ".long_answer"].join(" ")}
         }
@@ -43,7 +46,8 @@ melange.templates.inherit(
       menu: {
         menu: function() {return jQuery(selectors.menu.menu())[0];},
         buttons: {
-          selections: function() {return jQuery(selectors.menu.buttons.selections())},
+          radio: function() {return jQuery(selectors.menu.buttons.radio())},
+          checkbox: function() {return jQuery(selectors.menu.buttons.checkbox())},
           short_answer: function() {return jQuery(selectors.menu.buttons.short_answer())},
           long_answer: function () {return jQuery(selectors.menu.buttons.long_answer())}
         }
@@ -69,25 +73,27 @@ melange.templates.inherit(
       (this.widget.find(".message")[0]).innerHTML = new Date().getTime();
     };
 
-    var createSelectionsWidget = function() {
+    var createRadioWidget = function() {
       var widget_container = new SurveyWidget();
-      //alert("creation of a selection widget");
+    };
+
+    var createCheckboxWidget = function() {
+      var widget_container = new SurveyWidget();
     };
 
     var createShortAnswerWidget = function() {
       var widget_container = new SurveyWidget();
-      //alert("creation of a short answer widget");
     };
 
     var createLongAnswerWidget = function() {
       var widget_container = new SurveyWidget();
-      //alert("creation of a long answer widget");
     }
 
     var callbacks = {
       menu: {
         buttons: {
-          selections: createSelectionsWidget,
+          radio: createRadioWidget,
+          checkbox: createCheckboxWidget,
           short_answer: createShortAnswerWidget,
           long_answer: createLongAnswerWidget
         }
@@ -102,21 +108,13 @@ melange.templates.inherit(
       jQuery.each(dos.menu.buttons, function (button_key, button_do) {
         button_do().bind("click", callbacks.menu.buttons[button_key]);
       });
-      //jQuery(dos.menu.buttons.selections()).bind(callbacks.menu.buttons.selections);
-      //jQuery(
-    }
-
-    var survey_widget = function() {
     }
 
     dos.container().insertBefore(dos.submit_button()).removeClass("hidden");
 
     if (context.previous_content !== undefined) {
-      //construct the UI
+      current_content = context.previous_content;
     }
-    else {
-      initMenu();
-    }
-
+    initMenu();
   }
 );
