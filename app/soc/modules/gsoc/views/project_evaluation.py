@@ -110,6 +110,8 @@ class SurveyTakeForm(forms.ModelForm):
       self.fields[field_name].widget = widget
     if choices:
       self.fields[field_name].choices = choices
+    if self.instance:
+      self.fields[field_name].initial = getattr(self.instance, field_name)
 
   class Meta:
     model = SurveyContent
