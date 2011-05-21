@@ -1,0 +1,10 @@
+/* Hidden divs */
+div .hidden {
+  display: none;
+}
+
+/* Survey widgets */
+div .survey_widget {
+  min-height: 100px;
+  border: 1px solid black;
+}
