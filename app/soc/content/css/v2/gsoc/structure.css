@@ -906,7 +906,6 @@ p.reply-logged-in a {
 }
 #sort select {
   min-width: 0;
-  width: 80px;
 }
 #sort span {
   width: 45px;
