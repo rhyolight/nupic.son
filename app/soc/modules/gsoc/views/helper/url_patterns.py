@@ -103,4 +103,5 @@ REVIEW    = namedIdBasedPattern(['sponsor', 'program', 'user'])
 ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
 INVITE    = _mentor_role + ORG
 PROJECT   = namedIdBasedPattern(['sponsor', 'program', 'user'])
-SURVEY_RECORD = namedIdBasedPattern(['prefix', 'sponsor', 'program', 'survey'])
+SURVEY_RECORD = namedIdBasedPattern(['prefix', 'sponsor', 'program',
+                                     'survey', 'user'])
