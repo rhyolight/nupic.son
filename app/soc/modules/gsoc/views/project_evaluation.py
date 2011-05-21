@@ -100,9 +100,9 @@ class SurveyTakeForm(forms.ModelForm):
       widget = forms.RadioSelect()
     elif type == 'long_answer':
       field = django_forms.CharField
+      widget = django_forms.Textarea()
     elif type == 'short_answer':
       field = django_forms.CharField
-      widget = django_forms.Textarea()
 
     self.fields[field_name] = field(label=label, required=required,
                                     help_text=help_text)
