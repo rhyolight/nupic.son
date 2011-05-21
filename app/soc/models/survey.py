@@ -56,6 +56,10 @@ class SurveyContent(ExpandoBase):
   #:Field storing the content of the survey in the form of a dictionary.
   schema = db.TextProperty()
 
+  #: Property containing the order of the questions in which the survey
+  #: questions must be rendered.
+  survey_order = db.StringListProperty(default=[])
+
   #: Fields storing the created on and last modified on dates.
   created = db.DateTimeProperty(auto_now_add=True)
   modified = db.DateTimeProperty(auto_now=True)
