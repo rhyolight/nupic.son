@@ -228,6 +228,7 @@ class RequestData(RequestData):
     site: The Site entity
     user: The user entity (if logged in)
     program: The GSoC program entity that the request is pointing to
+    programs: All GSoC programs.
     program_timeline: The GSoCTimeline entity
     timeline: A TimelineHelper entity
     is_host: is the current user a host of the program
@@ -248,6 +249,7 @@ class RequestData(RequestData):
     """
     super(RequestData, self).__init__()
     # program wide fields
+    self._programs = None
     self.program = None
     self.program_timeline = None
     self.org_app = None
@@ -262,6 +264,16 @@ class RequestData(RequestData):
     self.mentor_for = []
     self.org_admin_for = []
     self.student_info = None
+
+  @property
+  def programs(self):
+    """Memoizes and returns a list of all programs.
+    """
+    from soc.modules.gsoc.models.program import GSoCProgram
+    if not self._programs:
+      self._programs = list(GSoCProgram.all())
+
+    return self._programs
 
   def getOrganization(self, org_key):
     """Retrieves the specified organization.
