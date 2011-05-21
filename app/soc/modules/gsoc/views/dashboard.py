@@ -52,6 +52,7 @@ from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
+from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -119,6 +120,7 @@ class Dashboard(RequestHandler):
         'page_name': self.data.program.name,
         'user_name': self.data.profile.name() if self.data.profile else None,
         'logged_in_msg': LoggedInMsg(self.data),
+        'program_select': ProgramSelect(self.data, 'gsoc_dashboard'),
     # TODO(ljvderijk): Implement code for setting dashboard messages.
     #   'alert_msg': 'Default <strong>alert</strong> goes here',
         'components': components,
