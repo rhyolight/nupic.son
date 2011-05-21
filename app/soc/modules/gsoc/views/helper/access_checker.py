@@ -32,6 +32,8 @@ from soc.logic.exceptions import NotFound
 from soc.views.helper import access_checker
 
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
+from soc.modules.gsoc.models.project_survey_record import \
+    GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.student_proposal import StudentProposal
 
 
@@ -45,7 +47,7 @@ DEF_NO_PROJECT_SURVEY_MSG = ugettext(
 
 class Mutator(access_checker.Mutator):
 
-  def projectSurveyFromKwargs(self):
+  def projectSurveyRecordFromKwargs(self):
     """Sets the survey record in RequestData object.
     """
         # kwargs which defines an organization
@@ -56,6 +58,13 @@ class Mutator(access_checker.Mutator):
 
     if not self.data.project_survey:
       raise NotFound(DEF_NO_PROJECT_SURVEY_MSG)
+
+    self.projectFromKwargs()
+
+    q = GSoCProjectSurveyRecord.all()
+    q.filter('project', self.data.project)
+    q.filter('survey', self.data.project_survey)
+    self.data.project_survey_record = q.get()
 
 
 class DeveloperMutator(access_checker.DeveloperMutator):

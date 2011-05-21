@@ -165,7 +165,7 @@ class SurveyTakePage(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.mutator.projectSurveyFromKwargs()
+    self.mutator.projectSurveyRecordFromKwargs()
     assert isSet(self.data.project_survey)
 
   def templatePath(self):
