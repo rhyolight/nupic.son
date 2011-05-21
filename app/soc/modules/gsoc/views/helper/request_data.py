@@ -437,18 +437,24 @@ class RedirectHelper(object):
     self.args = []
     self.kwargs = {}
 
-  def sponsor(self):
+  def sponsor(self, program=None):
     """Sets kwargs for an url_patterns.SPONSOR redirect.
     """
+    if not program:
+      assert self._data.program
+      program = self._data.program
     self._clear()
-    self.kwargs['sponsor'] = self._data.program.scope_path
+    self.kwargs['sponsor'] = program.scope_path
     return self
 
-  def program(self):
+  def program(self, program=None):
     """Sets kwargs for an url_patterns.PROGRAM redirect.
     """
-    self.sponsor()
-    self.kwargs['program'] = self._data.program.link_id
+    if not program:
+      assert self._data.program
+      program = self._data.program
+    self.sponsor(program)
+    self.kwargs['program'] = program.link_id
     return self
 
   def organization(self, organization=None):
