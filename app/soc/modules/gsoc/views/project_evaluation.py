@@ -83,7 +83,7 @@ class SurveyTakeForm(forms.ModelForm):
     help_text = field_info.get('tip', '')
 
     choices = [(choice, choice) for choice in getattr(
-        self.survey_content, field_name)]
+        self.survey_content, field_name, [])]
 
     widget = None
 
