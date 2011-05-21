@@ -339,10 +339,16 @@ class Mutator(object):
   def surveyGroupFromKwargs(self):
     """Sets the GradingSurveyGroup from kwargs.
     """
+    assert isSet(self.data.program)
+
     survey_group = GSoCGradingSurveyGroup.get_by_id(int(self.data.kwargs['id']))
 
     if not survey_group:
       raise NotFound('Requested GSoCGradingSurveyGroup does not exist')
+
+    if survey_group.program.key() != self.data.program.key():
+      raise NotFound(
+          'Requested GSoCGradingSurveyGroup does not exist in this program')
 
     self.data.survey_group = survey_group
 
