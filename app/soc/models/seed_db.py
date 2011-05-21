@@ -313,6 +313,27 @@ def seed(request, *args, **kwargs):
   gsoc2009 = GSoCProgram(**program_properties)
   gsoc2009.put()
 
+
+  timeline_properties.update({
+      'key_name': 'google/gsoc2009',
+      'link_id': 'gsoc2009',
+  })
+
+  gsoc2010_timeline = GSoCTimeline(**timeline_properties)
+  gsoc2010_timeline.put()
+
+  program_properties.update({
+      'key_name': 'google/gsoc2010',
+      'link_id': 'gsoc2010',
+      'name': 'Google Summer of Code 2010',
+      'description': 'This is the program for GSoC 2010.',
+      'short_name': 'GSoC 2010',
+      'timeline': gsoc2010_timeline,
+  })
+
+  gsoc2010 = GSoCProgram(**program_properties)
+  gsoc2010.put()
+
   site.active_program = gsoc2009
   site.put()
 
