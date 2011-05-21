@@ -117,10 +117,6 @@ class Callback(object):
     self.views.append(student_forms.FormPage())
 #    self.views.append(statistic.StatisticDashboard())
 #    self.views.append(statistic.StatisticFetcher())
-    self.views.append(student_forms.DownloadEnrollmentForm())
-    self.views.append(student_forms.DownloadTaxForm())
-    self.views.append(student_forms.EnrollmentFormPage())
-    self.views.append(student_forms.TaxFormPage())
 
     # Appengine Task related views
     from soc.modules.gsoc.tasks.grading_survey_group import \
