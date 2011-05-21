@@ -29,6 +29,7 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -136,4 +137,5 @@ class ListProjects(RequestHandler):
         'page_name': '%s - Accepted Projects' % program.short_name,
         'program_name': program.name,
         'project_list': ProjectList(self.request, self.data),
+        'program_select': ProgramSelect(self.data, 'gsoc_accepted_projects'),
     }
