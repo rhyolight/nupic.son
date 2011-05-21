@@ -171,3 +171,31 @@ class LoggedInMsg(Template):
 
   def templatePath(self):
     return "v2/modules/gsoc/_loggedin_msg.html"
+
+
+class ProgramSelect(Template):
+  """Program select template.
+  """
+
+  def __init__(self, data, url_name):
+    self.data = data
+    self.url_name = url_name
+
+  def context(self):
+    def url(program):
+      r = self.data.redirect.program(program)
+      return r.urlOf(self.url_name)
+    def attr(program):
+      if program.key() == self.data.program.key():
+        return "selected=selected"
+      return ""
+
+    programs = [(i.short_name, url(i), attr(i)) for i in self.data.programs]
+
+    return {
+        'programs': programs,
+        'render': len(programs) > 1,
+    }
+
+  def templatePath(self):
+    return "v2/modules/gsoc/_program_select.html"
