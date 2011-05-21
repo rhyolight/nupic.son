@@ -45,6 +45,7 @@ class GradingRecordsOverview(RequestHandler):
     ]
 
   def checkAccess(self):
+    self.mutator.surveyGroupFromKwargs()
     self.check.isHost()
 
   def templatePath(self):
@@ -79,9 +80,6 @@ class GradingRecordsList(Template):
     """
     self.request = request
     self.data = data
-    # TODO(ljvderijk) Move to a mutator and use 404 if not exists
-    self.survey_group = GSoCGradingSurveyGroup.get_by_id(
-        int(self.data.kwargs['id']))
 
     list_config = lists.ListConfiguration()
 
@@ -119,7 +117,7 @@ class GradingRecordsList(Template):
     """Returns the ListContentResponse object that is constructed from the data.
     """
     q = GSoCGradingRecord.all()
-    q.filter('grading_survey_group', self.survey_group)
+    q.filter('grading_survey_group', self.data.survey_group)
 
     starter = lists.keyStarter
     prefetcher = lists.modelPrefetcher(
