@@ -62,7 +62,7 @@ class Callback(object):
     from soc.modules.gsoc.views import search
     from soc.modules.gsoc.views import slot_transfer
     from soc.modules.gsoc.views import slot_transfer_admin
-    from soc.modules.gsoc.views import statistic
+    #from soc.modules.gsoc.views import statistic
     from soc.modules.gsoc.views import student_forms
 
     self.views.append(accepted_orgs.AcceptedOrgsPage())
@@ -127,10 +127,10 @@ class Callback(object):
         ProposalDuplicatesTask
     from soc.modules.gsoc.tasks.survey_reminders import \
         SurveyReminderTask
-    from soc.modules.gsoc.tasks.statistic import CollectProfileSpecificStatistics
-    from soc.modules.gsoc.tasks.statistic import CollectProposalSpecificStatistics
-    from soc.modules.gsoc.tasks.statistic import CreateProfileSpecificStatisticService
-    from soc.modules.gsoc.tasks.statistic import CreateProposalSpecificStatisticService
+    #from soc.modules.gsoc.tasks.statistic import CollectProfileSpecificStatistics
+    #from soc.modules.gsoc.tasks.statistic import CollectProposalSpecificStatistics
+    #from soc.modules.gsoc.tasks.statistic import CreateProfileSpecificStatisticService
+    #from soc.modules.gsoc.tasks.statistic import CreateProposalSpecificStatisticService
 
     self.views.append(GradingRecordTasks())
     self.views.append(ProposalAcceptanceTask())
