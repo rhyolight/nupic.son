@@ -45,7 +45,7 @@ class SurveyEditForm(forms.ModelForm):
     css_prefix = 'gsoc_survey_edit'
     exclude = ['schema', 'scope', 'author', 'modified_by',
                'survey_content', 'scope_path', 'link_id',
-               'prefix']
+               'prefix', 'survey_order']
 
 
 class SurveyTakeForm(forms.ModelForm):
@@ -114,7 +114,7 @@ class SurveyTakeForm(forms.ModelForm):
   class Meta:
     model = SurveyContent
     css_prefix = 'gsoc_survey_content'
-    exclude = ['schema']
+    exclude = ['schema', 'survey_order']
 
 
 class SurveyEditPage(RequestHandler):
