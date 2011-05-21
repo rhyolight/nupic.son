@@ -30,6 +30,7 @@ from soc.views.helper import url as url_helper
 
 from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -117,4 +118,5 @@ class AcceptedOrgsPage(RequestHandler):
     return {
         'page_name': "Accepted organizations for %s" % self.data.program.name,
         'accepted_orgs_list': AcceptedOrgsList(self.request, self.data),
+        'program_select': ProgramSelect(self.data, 'gsoc_accepted_orgs'),
     }

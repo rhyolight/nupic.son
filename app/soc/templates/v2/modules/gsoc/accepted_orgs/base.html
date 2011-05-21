@@ -19,12 +19,18 @@ limitations under the License.
     You can filter the list by typing in the box under the field you want to filter</p>
   </div>
   <p id="user-logged-in">
+  {{ program_select.render }}
   {{ accepted_orgs_list.render|safe }}
 {% endblock page_content %}
 
 {% block dependencies %}
   [
     dep.melange.list,
-    css("/soc/content/{{ app_version }}/css/v2/gsoc/user-messages.css")
+    css("/soc/content/{{ app_version }}/css/v2/gsoc/user-messages.css"),
+    dep.melange.program_select,
+    null,
+    function() {
+      melange.program_select.makeSelector("#program_select");
+    }
   ]
 {% endblock dependencies %}
