@@ -64,7 +64,7 @@ class SurveyTakeForm(forms.ModelForm):
     if self.survey_content:
       # TODO(madhu): Convert this to JSON
       schema = eval(self.survey_content.schema)
-      for position, field_name in self.survey_content.getSurveyOrder().items():
+      for field_name in self.survey_content.survey_order:
         field_info = schema.get(field_name)
         self.constructField(field_name, field_info)
 
