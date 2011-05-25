@@ -13,7 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Logic for data seeding operations.
+
+"""GSoCProposal updating mapreduce.
 """
 
 __authors__ = [
@@ -34,7 +35,7 @@ def process(proposal_key):
   def update_proposal_txn():
     proposal = db.get(proposal_key)
     if not proposal:
-      logging.error("Missing profile for key ''." % proposal_key)
+      logging.error("Missing profile for key '%s'." % proposal_key)
       return False
 
     number = db.Query(GSoCScore).ancestor(proposal).count()

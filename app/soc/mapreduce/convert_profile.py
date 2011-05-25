@@ -13,7 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Logic for data seeding operations.
+
+"""GSoCProfile updating MapReduce.
 """
 
 __authors__ = [
@@ -34,7 +35,7 @@ def process(profile_key):
   def convert_profile_txn():
     profile = db.get(profile_key)
     if not profile:
-      logging.error("Missing profile for key ''." % profile_key)
+      logging.error("Missing profile for key '%s'." % profile_key)
       return False
     profile._fix_name(commit=False)
     profile.is_student = bool(profile.student_info)
