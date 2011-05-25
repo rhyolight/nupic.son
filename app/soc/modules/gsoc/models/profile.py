@@ -95,6 +95,9 @@ class GSoCStudentInfo(soc.models.role.StudentInfo):
   #: number of projects
   number_of_projects = db.IntegerProperty(default=0)
 
+  #: organizations the user has a project for
+  project_for_orgs = db.ListProperty(item_type=db.Key, default=[])
+
   #: Property pointing to the tax form
   tax_form = blobstore.BlobReferenceProperty(
       required=False, verbose_name=ugettext('Tax Form'))

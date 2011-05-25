@@ -230,6 +230,7 @@ class ProposalAcceptanceTask(object):
         proposal, transactional=transactional)
 
     proposal_key = proposal.key()
+    proposal_org_key = proposal.org.key()
 
     def acceptProposalTxn():
       """Transaction that puts the new project, sets the proposal to accepted
@@ -239,6 +240,8 @@ class ProposalAcceptanceTask(object):
       proposal.status = 'accepted'
       student_info = db.get(student_info_key)
       student_info.number_of_projects += 1
+      orgs = student_info.project_for_orgs + [proposal_org_key]
+      student_info.project_for_orgs = list(set(orgs))
       db.put(project)
       db.put(proposal)
       db.put(student_info)
