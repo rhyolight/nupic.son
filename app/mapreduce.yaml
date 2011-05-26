@@ -7,6 +7,14 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gsoc.models.profile.GSoCProfile
 
+- name: ConvertStudentInfo
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_student_info.process
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.profile.GSoCStudentInfo
+
 - name: ConvertProposal
   mapper:
     input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreKeyInputReader
