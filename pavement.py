@@ -409,6 +409,8 @@ def overrides(options):
     unroll_symlink(target)
   for path in options.overrides_files:
     target = options.overrides_folder / path
+    if not target.exists():
+      continue
     if not target.isfile():
       paver.tasks.environment.info(
           "target '%s' is not a file", target)
