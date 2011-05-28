@@ -79,7 +79,8 @@ class AcceptProposalsTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
     return student
 
   def acceptProposals(self):
-    """Set student proposals' acceptance state.
+    """Set student proposals' acceptance state and make sure the organization
+    has slots available.
     """
     self.student1 = self.createStudent('student1@example.com',
                                        n_proposals=2)
@@ -106,6 +107,9 @@ class AcceptProposalsTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
     for proposal in self.student2_proposals:
       proposal.accept_as_project = False
       proposal.put()
+
+    self.org.slots = 5
+    self.org.put()
 
     self.timeline.studentsAnnounced()
 
