@@ -56,7 +56,7 @@ options(
     app_dirs =  ["soc", "feedparser", "python25src",
                  "jquery.min", "ranklist", "shell", "json.min", "jlinq",
                  "htmlsanitizer", "LABjs.min", "taggable", "gviz",
-                 "webmaster"],
+                 "webmaster", "gdata", "atom"],
     css_dir = "soc/content/css",
     css_files = {
         "jquery-ui/jquery.ui.merged.css": [
