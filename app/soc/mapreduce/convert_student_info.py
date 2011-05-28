@@ -34,6 +34,7 @@ from soc.modules.gsoc.models.project import GSoCProject
 
 
 def process(student_info):
+  logging.debug("Converting student_info '%r'" % student_info.key())
   proposals = GSoCProposal.all().ancestor(student_info.parent_key()).fetch(1000)
   projects = GSoCProject.all().ancestor(student_info.parent_key()).fetch(1000)
 
