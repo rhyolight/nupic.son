@@ -35,7 +35,7 @@ STATISTICS = [
      'dependencies': ['students'],},
     {'name': 'students_per_country',
      'human_name': 'Students Per Country',
-     'dependencies': ['students']},
+     'dependencies': ['students_per_country']},
     {'name': 'mentors',
      'human_name': 'Mentors Per Program',
      'dependencies': ['mentors']},

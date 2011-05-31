@@ -19,9 +19,14 @@
 melange.templates.inherit(function (_self, context) {
   
   var statistic = {
+	'admins': '/gsoc/statistic/fetch/admins',
 	'profiles': '/gsoc/statistic/fetch/profiles',
 	'mentors': '/gsoc/statistic/fetch/mentors',
 	'students': '/gsoc/statistic/fetch/students',
+	'students_per_country': '/gsoc/statistic/fetch/students_per_country',
+	'mentors_per_country': '/gsoc/statistic/fetch/mentors_per_country',
+	'proposals_per_student': '/gsoc/statistic/fetch/proposals_per_student',
+	'students_with_proposals': '/gsoc/statistic/fetch/students_with_proposals',
   };
 
   var key_name = null;
@@ -29,7 +34,7 @@ melange.templates.inherit(function (_self, context) {
   var statistic_data = {}
 
   var drawStatisticVisualization = function (key_name) {
-	var chart = new google.visualization.PieChart(document.getElementById('statistic-presentation-div'));
+	var chart = new google.visualization.Table(document.getElementById('statistic-presentation-div'));
 	/* check if the data for a given statistic has already been downloaded. */
 	if (statistic_data[key_name] !== undefined) {
 	  chart.draw(statistic_data[key_name], {width: 400, height: 240});
@@ -64,6 +69,6 @@ melange.templates.inherit(function (_self, context) {
   
   jQuery(function () {
 	jQuery('#statistic-select').change(selectionChanged)
-	melange.loadGoogleApi('visualization', '1', {'packages':['corechart']}, initialize);
+	melange.loadGoogleApi('visualization', '1', {'packages':['table']}, initialize);
   });
 });

@@ -24,6 +24,7 @@ __authors__ = [
 from gviz import gviz_api
 from django.utils import simplejson
 
+from soc.models import countries
 from soc.modules.gsoc.statistics import mapping
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.statistic import GSoCStatistic
@@ -44,21 +45,42 @@ class AbstractPresenter(object):
     return sources
 
   def _getDataTableRows(self, key_name, sources):
+    if key_name == 'admins':
+      return self._getAdmins(key_name, sources)
     if key_name == 'profiles':
       return self._getProfiles(key_name, sources)
     if key_name == 'mentors':
       return self._getMentors(key_name, sources)
     if key_name == 'students':
       return self._getStudents(key_name, sources)
+    if key_name == 'students_per_country':
+      return self._getStudentsPerCountry(key_name, sources)
 
     raise Exception('Statistic %s not supported.' % key_name)
 
+  def _getAdmins(self, key_name, sources):
+    return self._getNumberPerProgramRows(key_name, sources)
+  
   def _getMentors(self, key_name, sources):
     return self._getNumberPerProgramRows(key_name, sources)
+
   def _getProfiles(self, key_name, sources):
     return self._getNumberPerProgramRows(key_name, sources)
+
   def _getStudents(self, key_name, sources):
     return self._getNumberPerProgramRows(key_name, sources)
+
+  def _getStudentsPerCountry(self, key_name, sources):
+    source = sources[key_name]
+
+    rows = []
+    for country in countries.COUNTRIES_AND_TERRITORIES:
+      row = [country]
+      row += [program.get(country, 0) for program in source.values()]
+      rows.append([country] + 
+          [program.get(country, 0) for program in source.values()])
+
+    return rows
 
   def _getNumberPerProgramRows(self, key_name, sources):
     source = sources[key_name]
@@ -69,6 +91,9 @@ class AbstractPresenter(object):
       rows.append([program.name, int(number)])
 
     return rows
+
+  def _getPerProgramPerCountryRows(self, key_name, sources):
+    pass
 
 class JsonPresenter(AbstractPresenter):
   def get(self, key_name):
