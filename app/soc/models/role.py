@@ -176,12 +176,12 @@ class Role(soc.models.linkable.Linkable):
   #: given name in some cultures, for example). Display names can be
   #: any valid UTF-8 text.
   name_on_documents = db.StringProperty(
-      verbose_name=ugettext('Name on documents'))
+      verbose_name=ugettext('Legal name'))
   name_on_documents.help_text = ugettext(
       'Optional field used as a display name, such as for documents like '
       'awards certificates. Should be the entire name in the format '
       'the person would like it displayed (could be family name followed '
-      'by given name in some cultures, for example). Name on documents can be '
+      'by given name in some cultures, for example). Legal name can be '
       'any valid UTF-8 text.')
   name_on_documents.group = ugettext("1. Public Info")
 

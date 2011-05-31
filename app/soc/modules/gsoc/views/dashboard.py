@@ -1125,7 +1125,7 @@ class StudentsComponent(Component):
     list_config.addSimpleColumn('email', "Email")
     list_config.addSimpleColumn('given_name', "Given name", hidden=True)
     list_config.addSimpleColumn('surname', "Surname", hidden=True)
-    list_config.addSimpleColumn('name_on_documents', "Name on documents", hidden=True)
+    list_config.addSimpleColumn('name_on_documents', "Legal name", hidden=True)
     list_config.addColumn(
         'birth_date', "Birthdate",
         (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
