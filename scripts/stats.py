@@ -844,6 +844,7 @@ def main(args):
   from soc.modules.gsoc.models.organization import GSoCOrganization
   from soc.modules.gsoc.models.student import GSoCStudent
   from soc.modules.gsoc.models.profile import GSoCProfile
+  from soc.modules.gsoc.models.profile import GSoCStudentInfo
   from soc.modules.gsoc.models.proposal import GSoCProposal
   from soc.modules.gsoc.models.project import GSoCProject
   from soc.modules.gsoc.models.mentor import GSoCMentor
@@ -931,6 +932,7 @@ def main(args):
       'GCIStudent': GCIStudent,
       'GCIOrganization': GCIOrganization,
       'GSoCProfile': GSoCProfile,
+      'GSoCStudentInfo': GSoCStudentInfo,
       'GSoCProposal': GSoCProposal,
       'GSoCProject': GSoCProject,
       'gci_tasks': gci_tasks,
