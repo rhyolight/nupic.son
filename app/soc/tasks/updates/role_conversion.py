@@ -41,6 +41,8 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.org_admin import GSoCOrgAdmin
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.program import GSoCProgram
+from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.student import GSoCStudent
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.student_project import StudentProject
@@ -76,6 +78,8 @@ def getDjangoURLPatterns():
         'soc.tasks.updates.role_conversion.updateStudents'),
       (r'^tasks/role_conversion/update_hosts$',
         'soc.tasks.updates.role_conversion.updateHosts'),
+      (r'^tasks/role_conversion/update_student_infos$',
+        'soc.tasks.updates.role_conversion.updateStudentInfos'),
   ]
 
   return patterns
@@ -229,11 +233,86 @@ class RoleUpdater(object):
       deferred.defer(self._process, start_key, batch_size)
 
 
+class StudentInfoUpdater(object):
+  """Class which is responsible for creating GSoCStudentInfo based on
+  the corresponding StudentInfo entities
+  """
+
+  def run(self, batch_size=25):
+    """Starts the updater.
+    """
+
+    self._process(None, batch_size)
+
+  def _processEntity(self, entity):
+    profile = entity.parent()
+    project = GSoCProject.all().ancestor(profile).get()
+    
+    properties = {
+        'school_name': entity.school_name,
+        'school_country': entity.school_country,
+        'school_home_page': entity.school_home_page,
+        'school_type': entity.school_type,
+        'major': entity.major,
+        'degree': entity.degree,
+        'expected_graduation': entity.expected_graduation,
+        'number_of_proposals': GSoCProposal.all().ancestor(profile).count(),
+        'number_of_projects': 1 if project is not None else 0,
+        'project_for_orgs': [project.org.key()] if project else []  
+        }
+
+    studentInfo = GSoCStudentInfo(key_name = profile.key().name(), 
+        parent=profile, **properties)
+    profile.student_info = studentInfo
+    
+    db.run_in_transaction(db.put, [profile, studentInfo])
+
+  def _process(self, start_key, batch_size):
+    """Retrieves entities and creates or updates a corresponding
+    Profile entity.
+    """
+
+    query = StudentInfo.all()
+    if start_key:
+      query.filter('__key__ > ', start_key)
+
+    try:
+      entities = query.fetch(batch_size)
+
+      if not entities:
+        # all entities has already been processed
+        return
+
+      for entity in entities:
+        try:
+          self._processEntity(entity)
+        except db.Error, e:
+          import logging
+          logging.exception(e)
+          logging.error("Broke on %s: %s" % (entity.key().name(), 'StudentInfo'))
+
+      # process the next batch of entities
+      start_key = entities[-1].key()
+      deferred.defer(self._process, start_key, batch_size)
+    except DeadlineExceededError:
+      # here we should probably be more careful
+      deferred.defer(self._process, start_key, batch_size)
+
+
 def updateHosts(request):
   """Starts a task which updates Host entities.
   """
 
   updater = HostUpdater()
+  updater.run()
+  return http.HttpResponse("Ok")
+
+
+def updateStudentInfos(request):
+  """Starts a task which updates StudentInfo entities
+  """
+
+  updater = StudentInfoUpdater()
   updater.run()
   return http.HttpResponse("Ok")
 
