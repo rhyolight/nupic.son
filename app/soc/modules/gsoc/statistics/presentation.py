@@ -49,6 +49,8 @@ class AbstractPresenter(object):
       return self._getAdmins(key_name, sources)
     if key_name == 'profiles':
       return self._getProfiles(key_name, sources)
+    if key_name == 'proposals_per_student':
+      return self._getProposalsPerStudent(key_name, sources)
     if key_name == 'mentors':
       return self._getMentors(key_name, sources)
     if key_name == 'mentors_per_country':
@@ -72,6 +74,10 @@ class AbstractPresenter(object):
   def _getProfiles(self, key_name, sources):
     return self._getNumberPerProgramRows(key_name, sources)
 
+  def _getProposalsPerStudent(self, key_name, sources):
+    values = range(21)
+    return self._getPerProgramPerNumberRows(key_name, sources, values)
+
   def _getStudents(self, key_name, sources):
     return self._getNumberPerProgramRows(key_name, sources)
 
@@ -93,10 +99,21 @@ class AbstractPresenter(object):
 
     rows = []
     for country in countries.COUNTRIES_AND_TERRITORIES:
-      row = [country]
-      row += [program.get(country, 0) for program in source.values()]
       rows.append([country] +
           [program.get(country, 0) for program in source.values()])
+    return rows
+
+  def _getPerProgramPerNumberRows(self, key_name, sources, values=None):
+    source = sources[key_name]
+
+    if not values:
+      existingValues = set(i.keys() for i in source.itervalues())
+      values = range(min(values), max(values) - 1)
+
+    rows = []
+    for value in values:
+      rows.append([value] + 
+          [program.get(str(value), 0) for program in source.values()])
     return rows
 
 class JsonPresenter(AbstractPresenter):
@@ -130,6 +147,14 @@ class GvizPresenter(AbstractPresenter):
       columns.append(('country', 'string', 'Country'))
       source = sources[key_name]
       programs = GSoCProgram.get_by_key_name(source.keys())
+      for program in programs:
+        columns.append((program.key().name(), 'number', program.name))
+      return columns
+    if key_name in ['proposals_per_student']:
+      columns = []
+      columns.append(('proposals', 'number', 'Proposals'))
+      source = sources[key_name]
+      programs = GSoCProgram.get_by_key_name(source.keys())     
       for program in programs:
         columns.append((program.key().name(), 'number', program.name))
       return columns
