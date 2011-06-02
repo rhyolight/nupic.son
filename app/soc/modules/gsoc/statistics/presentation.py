@@ -51,6 +51,8 @@ class AbstractPresenter(object):
       return self._getProfiles(key_name, sources)
     if key_name == 'mentors':
       return self._getMentors(key_name, sources)
+    if key_name == 'mentors_per_country':
+      return self._getMentorsPerCountry(key_name, sources)
     if key_name == 'students':
       return self._getStudents(key_name, sources)
     if key_name == 'students_per_country':
@@ -60,9 +62,12 @@ class AbstractPresenter(object):
 
   def _getAdmins(self, key_name, sources):
     return self._getNumberPerProgramRows(key_name, sources)
-  
+
   def _getMentors(self, key_name, sources):
     return self._getNumberPerProgramRows(key_name, sources)
+
+  def _getMentorsPerCountry(self, key_name, sources):
+    return self._getPerProgramPerCountryRows(key_name, sources)
 
   def _getProfiles(self, key_name, sources):
     return self._getNumberPerProgramRows(key_name, sources)
@@ -71,16 +76,7 @@ class AbstractPresenter(object):
     return self._getNumberPerProgramRows(key_name, sources)
 
   def _getStudentsPerCountry(self, key_name, sources):
-    source = sources[key_name]
-
-    rows = []
-    for country in countries.COUNTRIES_AND_TERRITORIES:
-      row = [country]
-      row += [program.get(country, 0) for program in source.values()]
-      rows.append([country] + 
-          [program.get(country, 0) for program in source.values()])
-
-    return rows
+    return self._getPerProgramPerCountryRows(key_name, sources)
 
   def _getNumberPerProgramRows(self, key_name, sources):
     source = sources[key_name]
@@ -93,7 +89,15 @@ class AbstractPresenter(object):
     return rows
 
   def _getPerProgramPerCountryRows(self, key_name, sources):
-    pass
+    source = sources[key_name]
+
+    rows = []
+    for country in countries.COUNTRIES_AND_TERRITORIES:
+      row = [country]
+      row += [program.get(country, 0) for program in source.values()]
+      rows.append([country] +
+          [program.get(country, 0) for program in source.values()])
+    return rows
 
 class JsonPresenter(AbstractPresenter):
   def get(self, key_name):
@@ -118,10 +122,10 @@ class GvizPresenter(AbstractPresenter):
     return json
 
   def _getDataTableDescriptions(self, key_name, sources):
-    if key_name in ['profiles', 'students', 'mentors', 'admins', 
+    if key_name in ['profiles', 'students', 'mentors', 'admins',
                     'students_with_proposals', 'students_with_projects']:
       return _NUMBER_PER_PROGRAM_DESCRIPTION
-    if key_name in ['students_per_country']:
+    if key_name in ['students_per_country', 'mentors_per_country']:
       columns = []
       columns.append(('country', 'string', 'Country'))
       source = sources[key_name]
