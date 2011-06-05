@@ -36,6 +36,7 @@ from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.logic.models.request import logic as request_logic
 from soc.models.universities import UNIVERSITIES
+from soc.views.helper import lists
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
@@ -53,7 +54,6 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.base_templates import ProgramSelect
-from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 

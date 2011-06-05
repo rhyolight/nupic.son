@@ -24,12 +24,12 @@ __authors__ = [
 
 from google.appengine.ext import db
 
+from soc.views.helper import lists
 from soc.views.template import Template
 
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 

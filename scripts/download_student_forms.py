@@ -35,8 +35,9 @@ parser.add_option("-o", "--output", dest="outputdir", default="forms",
 
 def downloadStudentForms(options):
   from google.appengine.ext import db
+  from soc.views.helper import lists as list_helper
   from soc.modules.gsoc.models.profile import GSoCStudentInfo
-  from soc.modules.gsoc.views.helper import lists as list_helper
+
 
   q = lambda: GSoCStudentInfo.all().filter('number_of_projects', 1)
 

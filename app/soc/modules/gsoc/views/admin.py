@@ -38,8 +38,8 @@ from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.views import forms
+from soc.views.helper import lists
 from soc.views.template import Template
-
 from soc.models.user import User
 
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
@@ -47,7 +47,6 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 

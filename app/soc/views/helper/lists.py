@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.5
 #
-# Copyright 2008 the Melange authors.
+# Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,342 +14,815 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Helpers used to render lists.
+"""Module that generates the lists.
 """
 
 __authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  '"Chen Lunpeng" <forever.clp@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
+  '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
 
+import logging
+
+from google.appengine.ext import db
+
 from django.utils import simplejson
 
-from soc.logic import dicts
-
-
-URL_PATTERN = '<a href="%(url)s"%(target)s%(nofollow)s>%(name)s</a>'
-
-class IsNonEmptyRequest(object):
-  """Request to check whether the list is non-empty."""
-
-  def __init__(self, idx):
-    self.idx = idx
-    self.GET = {}
-    self.POST = {}
-
-
-def urlize(url, name=None, target="_blank", nofollow=True):
-  """Make an url clickable.
-
-  Args:
-    url: the actual url, such as '/user/list'
-    name: the display name, such as 'List Users', defaults to url
-    target: the 'target' attribute of the <a> element
-    nofollow: whether to add the 'rel="nofollow"' attribute
-  """
-
-  if not url:
-    return ''
-
-  from django.utils.safestring import mark_safe
-  from django.utils.html import escape
-
-  safe_url = escape(url)
-  safe_name = escape(name)
-
-  link = URL_PATTERN % {
-      'url': safe_url,
-      'name': safe_name if name else safe_url,
-      'target': ' target="%s"' % target if target else '',
-      'nofollow': ' rel="nofollow"' if nofollow else "",
-  }
-
-  return mark_safe(link)
-
-
-def entityToRowDict(entity, key_order, no_filter, extra_cols_func,
-                    button_ops_func, row_ops_func, args):
-  """Returns the row dict for the specified entity.
-  """
-
-  extra_cols = extra_cols_func(entity, *args)
-  button_ops = button_ops_func(entity, *args)
-  row_ops = row_ops_func(entity, *args)
-
-  fields = set(key_order).difference(set(extra_cols))
-
-  columns = entity.toDict(list(fields))
-  columns.update(extra_cols)
-  columns['key'] = str(entity.key().id_or_name())
-
-  filter_fields = [i for i in columns.keys() if i not in no_filter]
-
-  columns = dicts.cleanDict(columns, filter_fields)
-
-  operations = {
-      "row": row_ops,
-      "buttons": button_ops,
-  }
-
-  result = {
-      "columns": columns,
-      "operations": operations,
-  }
-
-  return result
-
-
-def keyToColumnProperties(key, col_props, hidden):
-  """Returns the column properties for the specified key.
-  """
-
-  props = {
-    'name': key,
-    'index': key,
-    'resizable': True,
-  }
-
-  if key == 'key' or key in hidden:
-    props['hidden'] = True
-
-  if key in hidden:
-    props['searchoptions'] = {"searchhidden": True}
-
-  extra_props = col_props.get(key, {})
-  props.update(extra_props)
-
-  return props
-
-
-def getKeyOrderAndColNames(params, visibility):
-  """Retrieve key order and col names
-  """
-
-  key_order = ["key"] + params.get('%s_field_keys' % visibility)
-  col_names = ["Key"] + params.get('%s_field_names' % visibility)
-  ignore = params.get('%s_field_ignore' % visibility, [])
-
-  for field in ignore:
-    if field not in key_order:
-      continue
-
-    pos = key_order.index(field)
-    key_order = key_order[:pos] + key_order[pos+1:]
-    col_names = col_names[:pos] + col_names[pos+1:]
-
-  if not (key_order and col_names):
-    key_order = col_names = ['kind']
-
-  return key_order, col_names
-
-
-def isJsonRequest(request):
-  """Returns true iff the request is a JSON request.
-  """
-
-  if request.GET.get('fmt') == 'json':
-    return True
-
-  return False
-
-
-def isDataRequest(request):
-  """Returns true iff the request is a data request.
-  """
-
-  if isJsonRequest(request):
-    return True
-
-  return False
-
-
-def isNonEmptyRequest(request):
-  """Returns true iff the request is a non-empty request.
-  """
-
-  return isinstance(request, IsNonEmptyRequest)
+from soc.views.template import Template
 
 
 def getListIndex(request):
   """Returns the index of the requested list.
   """
+  if 'idx' in request.GET:
+    idx = request.GET['idx']
+  elif 'idx' in request.POST:
+    idx = request.POST['idx']
+  else:
+    return -1
 
-  if isNonEmptyRequest(request):
-    return request.idx
-
-  idx = request.GET.get('idx', '')
   idx = int(idx) if idx.isdigit() else -1
 
   return idx
 
 
-def getErrorResponse(request, msg):
-  """Returns an error appropriate for the request type.
+class ListConfiguration(object):
+  """Resembles the configuration of a list. This object is sent to the client
+  on page load.
+
+  See the wiki page on ListProtocols for more information
+  (http://code.google.com/p/soc/wiki/ListsProtocol).
+
+  Public fields are:
+    description: The description as shown to the end user.
+    autowidth: Whether the width of the columns should be automatically set.
+    height: Whether the height of the list should be automatically set.
+    multiselect: If true then the list will have a column with checkboxes which
+                 allows the user to select a number of rows.
+    toolbar: [boolean, string] showing if and where the toolbar with buttons
+             should be present.
   """
 
-  from soc.views.helper import responses
+  VALID_EDIT_TYPES = [
+      'text', 'textarea', 'select', 'checkbox', 'password',
+      'button', 'image', 'file'
+  ]
 
-  if isJsonRequest(request):
-    return responses.jsonErrorResponse(request, msg)
+  def __init__(self, add_key_column=True):
+    """Initializes the configuration.
 
-  raise Exception(msg)
+    If add_key_column is set will add a 'key' column with the key id/name.
+    """
+    self._col_names = []
+    self._col_model = []
+    self._col_map = {}
+    self._col_functions = {}
+    self._row_num = 50
+    self._row_list = [5, 10, 20, 50, 100, 500, 1000]
+    self.autowidth = True
+    self._sortname = ''
+    self._sortorder = 'asc'
+    self._footer_row = False
+    self.height = 'auto'
+    self.multiselect = False
+    self.toolbar = [True, 'top']
+
+    self._buttons = {}
+    self._button_functions = {}
+    self._row_operation = {}
+    self._row_operation_func = None
+
+    if add_key_column:
+      self._addKeyColumn()
+
+  def _addKeyColumn(self):
+    """Adds a column for the key.
+
+    Args:
+      resizable: Whether the width of the column should be resizable by the
+                 end user.
+      hidden: Whether the column should be displayed by default.
+    """
+    func = lambda e, *args: str(e.key().id_or_name())
+    self.addColumn('key', 'Key', func, hidden=True)
+
+  def setDefaultPagination(self, row_num, row_list=None):
+    """Sets the default pagination.
+
+    If row_num is False then pagination is disabled, and the row_list
+    argument is ignored.
+
+    Args:
+        row_num: The number of rows that should be shown on a page on default.
+        row_list: List of integers which is the allowed pagination size a user
+                  can can choose from.
+    """
+    if not row_num:
+      self._row_num = -1
+      self._row_list = []
+      return
+
+    self._row_num = row_num
+
+    if row_list:
+      self.row_list = row_list
+
+  def addColumn(self, col_id, name, func,
+                width=None, resizable=True, hidden=False, options=None):
+    """Adds a column to the end of the list.
+
+    Args:
+      col_id: A unique identifier of this column.
+      name: The header of the column that is shown to the user.
+      func: The function to be called when rendering this column for
+            a single entity. This function should take an entity as first
+            argument and args and kwargs if needed. The string rendering of
+            the return value will be sent to the end user.
+      width: The width of the column.
+      resizable: Whether the width of the column should be resizable by the
+                 end user.
+      hidden: Whether the column should be displayed by default.
+      options: An array of (regexp, display_value) tuples.
+    """
+    if self._col_functions.get(col_id):
+      logging.warning('Column with id %s is already defined' % col_id)
+
+    if not callable(func):
+      raise TypeError('Given function is not callable')
+
+    model = {
+        'name': col_id,
+        'index': col_id,
+        'resizable': resizable,
+        'hidden': hidden,
+    }
+
+    if width:
+      model['width'] = width
+
+    if options:
+      values = ";".join("%s:%s" % i for i in options)
+
+      model["stype"] = "select"
+      model["editoptions"] = dict(value=values)
+
+    self._col_model.append(model)
+    self._col_map[col_id] = model
+    self._col_names.append(name)
+    self._col_functions[col_id] = func
+
+  def addSimpleColumn(self, col_id, name, **kwargs):
+    """Adds a column to the end of the list which uses the id of the column as
+    attribute name of the entity to get the data from.
+
+    This method is basically a shorthand for addColumn with the function as
+    lambda ent, *args: getattr(ent, id).
+
+    Args:
+      col_id: A unique identifier of this column and name of the field to get
+          the data from.
+      name: The header of the column that is shown to the user.
+      **kwargs: passed on to addColumn
+    """
+    func = lambda ent, *args: getattr(ent, col_id)
+    self.addColumn(col_id, name, func, **kwargs)
+
+  def addDictColumn(self, col_id, name, **kwargs):
+    """Adds a column to the end of the list which uses the id of the column as
+    key of the dictionary to get the data from.
+
+    This method is basically a shorthand for addColumn with the function as
+    lambda d, *args: d[id].
+
+    Args:
+      col_id: A unique identifier of this column and name of the field to get
+          the data from.
+      name: The header of the column that is shown to the user.
+      **kwargs: passed on to addColumn
+    """
+    func = lambda d, *args: d[col_id]
+    self.addColumn(col_id, name, func, **kwargs)
+
+  def __addButton(self, col_id, caption, bounds, col_type, parameters):
+    """Internal method for adding buttons so that the uniqueness of the id can
+    be checked.
+    """
+    if self._buttons.get(col_id):
+      logging.warning('Button with id %s is already defined' % col_id)
+
+    button_config = {
+        'id': col_id,
+        'caption': caption,
+        'type': col_type,
+        'parameters': parameters
+    }
+
+    if bounds:
+      button_config['bounds'] = bounds
+
+    self._buttons[col_id] = button_config
+
+  def setColumnEditable(self, col_id, editable, edittype=None, editoptions=None):
+    """Sets the editability for the specified column.
+
+    Args:
+      editable: A boolean indicating whether the column should be editable.
+      edittype: A string indicating the type of values that should be entered,
+          see VALID_EDIT_TYPES for a list of valid values.
+      editoptions: A dictionary with options for the edit field.
+    """
+    model = self._col_map.get(col_id)
+
+    if not model:
+      raise ValueError('Id %s is not a defined column (Known columns %s)'
+                       % (col_id, self._col_map.keys()))
+
+    if edittype and edittype not in self.VALID_EDIT_TYPES:
+      raise ValueError("Invalid edit type '%s', known edit types: %s" % (
+          edittype, self.VALID_EDIT_TYPES))
+
+    model['editable'] = editable
+
+    if edittype:
+      model['edittype'] = edittype
+
+    if editoptions:
+      model['editoptions'] = editoptions
+
+  def setColumnSummary(self, col_id, summary_type, summary_tpl):
+    """Sets the column summary for the specified column.
+
+    Args:
+      summary_type: the summary type
+      summary_tpl: the summary template
+    """
+    model = self._col_map.get(col_id)
+
+    if not model:
+      raise ValueError('Id %s is not a defined column (Known columns %s)'
+                       % (col_id, self._col_map.keys()))
+
+    model['summaryType'] = summary_type
+    model['summaryTpl'] = summary_tpl
+
+    self._footer_row = True
+
+  def setColumnExtra(self, col_id, **kwargs):
+    """Sets the column 'extra' field.
+
+    Args:
+      col_id: The unique identifier of the column.
+      **kwargs: the contents of the 'extra' field.
+    """
+    model = self._col_map.get(col_id)
+
+    if not model:
+      raise ValueError('Id %s is not a defined column (Known columns %s)'
+                       % (col_id, self._col_map.keys()))
+
+    if model.get('extra'):
+      logging.warning('Column with id %s already has extra defined' % col_id)
+
+    model['extra'] = kwargs
+
+  def addSimpleRedirectButton(self, button_id, caption, url, new_window=True):
+    """Adds a button to the list that simply opens a URL.
+
+    Args:
+      button_id: The unique id the button.
+      caption: The display string shown to the end user.
+      url: The url to redirect the user to.
+      new_window: Boolean indicating whether the url should open in a new
+                  window.
+    """
+    parameters = {
+        'link': url,
+        'new_window': new_window
+    }
+    bounds = [0, 'all']
+    # add a simple redirect button that is always active.
+    self.__addButton(button_id, caption, bounds, 'redirect_simple', parameters)
+
+  def addCustomRedirectButton(self, button_id, caption, func, new_window=True):
+    """Adds a button to the list that simply opens a URL.
+
+    Args:
+      button_id: The unique id of the button.
+      caption: The display string shown to the end user.
+      func: The function to generate a url to redirect the user to.
+            This function should take an entity as first argument and args and
+            kwargs if needed. The return value of this function should be a
+            dictionary with the value for 'link' set to the url to redirect the
+            user to. A value for the key 'caption' can also be returned to
+            dynamically change the caption off the button.
+      new_window: Boolean indicating whether the url should open in a new
+                  window.
+    """
+    if not callable(func):
+      raise TypeError('Given function is not callable')
+
+    parameters = {'new_window': new_window}
+    # add a custom redirect button that is active on a single row
+    self.__addButton(id, caption, [1, 1], 'redirect_custom', parameters)
+    self._button_functions[id] = func
+
+  def addPostButton(self, button_id, caption, url, bounds, keys,
+                    refresh='current', redirect=False):
+    """This button is used when there is something to send to the backend in a
+    POST request.
+
+    Sets multiselect to True.
+
+    Args:
+      button_id: The unique id of the button.
+      caption: The display string shown to the end user.
+      url: The URL to make the POST request to.
+      bounds: An array of size two with integers or of an integer and the
+              keyword "all". This indicates how many rows need to be selected
+              for the button to be pressable.
+      keys: A list of column identifiers of which the content of the selected
+            rows will be send to the server when the button is pressed.
+      refresh: Indicates which list to refresh, is the current list by default.
+               The keyword 'all' can be used to refresh all lists on the page or
+               a integer index referring to the idx of the list to refresh can
+               be given.
+      redirect: Set to True to have the user be redirected to a URL returned by
+                the URL where the POST request hits.
+    """
+    self.multiselect = True
+
+    parameters = {
+        'url': url,
+        'keys': keys,
+        'refresh': refresh,
+        'redirect': redirect,
+    }
+    self.__addButton(button_id, caption, bounds, 'post', parameters)
+
+  def addPostEditButton(self, button_id, caption, url, keys, refresh='current'):
+    """This button is used when all changed values should be posted.
+
+    Args:
+      See addPostButton
+    """
+    parameters = {
+        'url': url,
+        'refresh': refresh,
+    }
+
+    if keys:
+      parameters['keys'] = keys
+
+    self.__addButton(button_id, caption, None, 'post_edit', parameters)
+
+  def setRowAction(self, func, new_window=True):
+    """The redirects the user to a URL when clicking on a row in the list.
+
+    This sets multiselect to False as indicated in the protocol spec.
+
+    Args:
+      func: The function that returns the url to redirect the user to.
+            This function should take an entity as first argument and args and
+            kwargs if needed.
+      new_window: Boolean indicating whether the url should open in a new
+                  window.
+    """
+    if not callable(func):
+      raise TypeError('Given function is not callable')
+
+    self.multiselect = False
+
+    parameters = {'new_window': new_window}
+    self._row_operation = {
+        'type': 'redirect_custom',
+        'parameters': parameters
+        }
+    self._row_operation_func = func
+
+  def setDefaultSort(self, col_id, order='asc'):
+    """Sets the default sort order for the list.
+
+    Args:
+      id: The id of the column to sort on by default. If this evaluates to
+      False then the default sort order will be removed.
+      order: The order in which to sort, either 'asc' or 'desc'.
+             The default value is 'asc'.
+    """
+    if col_id and col_id not in self._col_map:
+      raise ValueError('Id %s is not a defined column (Known columns %s)'
+                       % (col_id, self._col_map.keys()))
+
+    if order not in ['asc', 'desc']:
+      raise ValueError('%s is not a valid order' % order)
+
+    self._sortname = col_id if col_id else ''
+    self._sortorder = order
 
 
-def getResponse(request, contents):
-  """Returns a response appropriate for the request type.
+class ListConfigurationResponse(Template):
+  """Class that builds the template for configuring a list.
   """
 
-  from soc.views.helper import responses
+  def __init__(self, data, config, idx, description=''):
+    """Initializes the configuration.
 
-  if isJsonRequest(request):
-    json = simplejson.dumps(contents)
-    return responses.jsonResponse(request, json)
+    Args:
+      data: a RequestData object
+      config: A ListConfiguration object.
+      idx: A number uniquely identifying this list. ValueError will be raised if
+           not an int.
+      description: The description of this list, as should be shown to the
+                   user.
+    """
+    self._data = data
+    self._config = config
+    self._idx = int(idx)
+    self._description = description
 
-  if isNonEmptyRequest(request):
-    return contents
+    super(ListConfigurationResponse, self).__init__(data)
 
-  # TODO(SRabbelier): this is probably the best way to handle this
-  return contents
+  def context(self):
+    """Returns the context for the current template.
+    """
+    configuration = self._constructConfigDict()
+
+    context = {
+        'idx': self._idx,
+        'configuration': simplejson.dumps(configuration),
+        'description': self._description
+        }
+    return context
+
+  def _constructConfigDict(self):
+    """Builds the core of the list configuration that is sent to the client.
+
+    Among other things this configuration defines the columns and buttons
+    present on the list.
+    """
+    configuration = {
+        'autowidth': self._config.autowidth,
+        'colNames': self._config._col_names,
+        'colModel': self._config._col_model,
+        'height': self._config.height,
+        'rowList': self._config._row_list,
+        'rowNum': self._config._row_num,
+        'sortname': self._config._sortname,
+        'sortorder': self._config._sortorder,
+        'multiselect': self._config.multiselect,
+        'multiboxonly': self._config.multiselect,
+        'toolbar': self._config.toolbar,
+    }
+
+    if self._config._footer_row:
+      configuration['footerrow'] = self._config._footer_row
+
+    operations = {
+        'buttons': self._config._buttons,
+        'row': self._config._row_operation,
+    }
+
+    listConfiguration = {
+      'configuration': configuration,
+      'operations': operations,
+    }
+    return listConfiguration
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return 'v2/soc/list/list.html'
 
 
-def getListConfiguration(request, params, visibility, order):
-  """Returns the list data for the specified params.
-
-  Args:
-    visibility: determines which list will be used
-    order: the order the data should be sorted in
+class ListContentResponse(object):
+  """Class that builds the response for a list content request.
   """
 
-  key_order, col_names = getKeyOrderAndColNames(params, visibility)
+  def __init__(self, request, config):
+    """Initializes the list response.
 
-  conf_extra = params.get('%s_conf_extra' % visibility, {})
-  conf_min_num = params.get('%s_conf_min_num' % visibility, 0)
-  button_global = params.get('%s_button_global' % visibility, [])
-  row_action = params.get('%s_row_action' % visibility, {})
-  col_props = params.get('%s_field_props' % visibility, {})
-  hidden = params.get('%s_field_hidden' % visibility, [])
+    The request given can define the start parameter in the GET request
+    otherwise an empty string will be used indicating a request for the first
+    batch.
 
-  col_model = [keyToColumnProperties(i, col_props, hidden) for i in key_order]
+    Public fields:
+      start: The start argument as parsed from the request.
+      next: The value that should be used to query for the next set of
+            rows. In other words what start will be on the next roundtrip.
+      limit: The maximum number of rows to return as indicated by the request,
+             defaults to 50. This is not enforced by this object.
 
-  rowList = [5, 10, 20, 50, 100, 500, 1000]
-  rowList = [i for i in rowList if i >= conf_min_num]
-  rowNum = min(rowList)
+    Args:
+      request: The HTTPRequest containing the request for data.
+      config: A ListConfiguration object
+    """
+    self._request = request
+    self._config = config
 
-  sortorder = "asc"
-  sortname = order[0] if order else "key"
+    self.__rows = []
 
-  if sortname and sortname[0] == '-':
-    sortorder = "desc"
-    sortname = sortname[1:]
+    get_args = request.GET
+    self.next = ''
+    self.start =  get_args.get('start', '')
+    self.limit = int(get_args.get('limit', 50))
 
-  configuration = {
-      "autowidth": True,
-      "colModel": col_model,
-      "colNames": col_names,
-      "height": "auto",
-      "rowList": rowList,
-      "rowNum": max(1, rowNum),
-      "sortname": sortname,
-      "sortorder": sortorder,
-      "toolbar": [True, "top"],
-      "multiselect": False,
-  }
+  def addRow(self, entity, *args, **kwargs):
+    """Renders a row for a single entity.
 
-  configuration.update(conf_extra)
+    Args:
+      entity: The entity to render.
+      args: The args passed to the render functions defined in the config.
+      kwargs: The kwargs passed to the render functions defined in the config.
+    """
+    columns = {}
+    for col_id, func in self._config._col_functions.iteritems():
+      columns[col_id] = func(entity, *args, **kwargs)
 
-  operations = {
-      "buttons": button_global,
-      "row": row_action,
-  }
+    row = {}
+    buttons= {}
 
-  contents = {
-    'configuration': configuration,
-    'operations': operations,
-  }
+    if self._config._row_operation_func:
+      # perform the row operation function to retrieve the link
+      link = self._config._row_operation_func(entity, *args, **kwargs)
+      if link:
+        row['link'] = link
 
-  return contents
+    for button_id, func in self._config._button_functions.iteritems():
+      # The function called here should return a dictionary with 'link' and
+      # an optional 'caption' as keys.
+      buttons[button_id] = func(entity, *args, **kwargs)
+
+    operations = {
+        'row': row,
+        'buttons': buttons,
+    }
+
+    data = {
+      'columns': columns,
+      'operations': operations,
+    }
+    self.__rows.append(data)
+
+  def content(self):
+    """Returns the object that should be parsed to JSON.
+    """
+    data = {self.start: self.__rows}
+    return {'data': data,
+            'next': self.next}
 
 
-def getListData(request, params, fields, visibility=None, args=[]):
-  """Returns the list data for the specified params.
+def collectKeys(prop, data):
+  """Collects all keys for the specified property.
+  """
+  keys = [prop.get_value_for_datastore(i) for i in data]
+  return [i for i in keys if i]
 
-  Args:
-    fields: a filter that should be applied to this list
-    visibility: determines which list will be used
-    args: list of arguments to be passed to extract funcs
+
+def collectParentKeys(data):
+  """Collects all parent keys for the specified data.
+  """
+  keys = [i.parent_key() for i in data]
+  return [i for i in keys if i]
+
+
+def distributeKeys(prop, data, prefetched_dict):
+  """Distributes the keys for the specified property.
+  """
+  for i in data:
+    key = prop.get_value_for_datastore(i)
+    #key = str(key)
+
+    if key not in prefetched_dict:
+      continue
+
+    value = prefetched_dict[key]
+    setattr(i, prop.name, value)
+
+
+def distributeParentKeys(data, prefetched_dict):
+  """Distributes the keys for the parent property.
+
+  Uses an AppEngine internal api (the _parent property). See also:
+  https://groups.google.com/forum/#!topic/google-appengine-python/eBAzvJRAvH8
+  """
+  for i in data:
+    key = i.parent_key()
+
+    if key not in prefetched_dict:
+      continue
+
+    value = prefetched_dict[key]
+    try:
+      # BAD BAD BAD
+      i._parent = value
+    except Exception, e:
+      logging.exception(e)
+
+
+def prefetchFields(model, fields, data, parent):
+  """Prefetches the specified fields in data.
+  """
+  keys = []
+
+  for field in fields:
+    prop = getattr(model, field, None)
+
+    if not prop:
+      logging.exception("Model %s does not have attribute %s" %
+                        (model.kind(), field))
+      return
+
+    if not isinstance(prop, db.ReferenceProperty):
+      logging.exception("Property %s of %s is not a ReferenceProperty but a %s" %
+                        (field, model.kind(), prop.__class__.__name__))
+      return
+
+  for field in fields:
+    prop = getattr(model, field)
+    keys += collectKeys(prop, data)
+
+  if parent:
+    keys += collectParentKeys(data)
+
+  prefetched_entities = db.get(keys)
+  prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
+
+  for field in fields:
+    prop = getattr(model, field)
+    distributeKeys(prop, data, prefetched_dict)
+
+  if parent:
+    distributeParentKeys(data, prefetched_dict)
+
+
+def modelPrefetcher(model, fields, parent=False):
+  """Returns a prefetcher for the specified model and fields.
+  """
+  def prefetcher(entities):
+    prefetchFields(model, fields, entities, parent)
+    return [], {}
+  return prefetcher
+
+
+def prefetchListFields(model, fields, data):
+  """Prefetches the specified list fields in data.
+  """
+  for field in fields:
+    prop = getattr(model, field, None)
+
+    if not prop:
+      logging.exception("Model %s does not have attribute %s" %
+                        (model.kind(), field))
+      return
+
+    if not isinstance(prop, db.ListProperty):
+      logging.exception("Property %s of %s is not a ReferenceProperty but a %s" %
+                        (field, model.kind(), prop.__class__.__name__))
+      return
+
+  keys = []
+
+  for field in fields:
+    for i in data:
+      keys += getattr(i, field)
+
+  prefetched_entities = db.get(keys)
+  prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
+
+  return prefetched_dict
+
+
+def listPrefetcher(model, fields):
+  """Returns ap refetcher for the specified models and list fields.
+  """
+  def prefetcher(entities):
+    prefetched_entities = prefetchListFields(model, fields, entities)
+    return [prefetched_entities], {}
+  return prefetcher
+
+
+def keyStarter(start, q):
+  """Returns a starter for the specified key-based model.
+  """
+  if not start:
+    return True
+  if '/' in start:
+    return False
+  try:
+    start_entity = db.get(start)
+  except db.BadKeyError, e:
+    return False
+  if not start_entity:
+    return False
+  q.filter('__key__ >=', start_entity.key())
+  return True
+
+
+class RawQueryContentResponseBuilder(object):
+  """Builds a ListContentResponse for lists that are based on a single query.
   """
 
-  if not visibility:
-    visibility = 'public'
+  def __init__(self, request, config, query, starter,
+               ender=None, skipper=None, prefetcher=None):
+    """Initializes the fields needed to built a response.
 
-  if not fields:
-    fields = {}
+    Args:
+      request: The HTTPRequest containing the request for data.
+      config: The ListConfiguration object.
+      fields: The fields to query on.
+      query: The query object to use.
+      starter: The function used to retrieve the start entity.
+      ender: The function used to retrieve the value for the next start.
+      skipper: The function used to determine whether to skip a value.
+      prefetch: The fields that need to be prefetched for increased
+                performance.
+    """
+    if not ender:
+      ender = lambda entity, is_last, start: (
+          "done" if is_last else str(entity.key()))
+    if not skipper:
+      skipper = lambda entity, start: False
+    if not prefetcher:
+      prefetcher = lambda entitites: ([], {})
 
-  logic = params['logic']
+    self._request = request
+    self._config = config
+    self._query = query
+    self._starter = starter
+    self._ender = ender
+    self._skipper = skipper
+    self._prefetcher = prefetcher
 
-  if isNonEmptyRequest(request):
-    query = logic.getQueryForFields(filter=fields)
-    return query.count(1) > 0
+  def build(self, *args, **kwargs):
+    """Returns a ListContentResponse containing the data as indicated by the
+    query.
 
-  get_args = request.GET
-  start = get_args.get('start', '')
+    The start variable will be used as the starting key for our query, the data
+    returned does not contain the entity that is referred to by the start key.
+    The next variable will be defined as the key of the last entity returned,
+    empty if there are no entities to return.
 
-  limit = params.get('%s_conf_limit' % visibility)
-  if not limit:
-    limit = get_args.get('limit', 50)
-    limit = int(limit)
+    Args and Kwargs passed into this method will be passed along to
+    ListContentResponse.addRow().
+    """
+    content_response = ListContentResponse(self._request, self._config)
 
-  if start:
-    start_entity = logic.getFromKeyNameOrID(start)
+    start = content_response.start
 
-    if not start_entity:
-      return {'data': {start: []}}
+    if start == 'done':
+      logging.warning('Received query with "done" start key')
+      # return empty response
+      return content_response
 
-    fields['__key__ >'] = start_entity.key()
+    if not self._starter(start, self._query):
+      logging.warning('Received data query for non-existing start entity %s' % start)
+      # return empty response
+      return content_response
 
-  key_order, _ = getKeyOrderAndColNames(params, visibility)
+    count = content_response.limit + 1
+    entities = self._query.fetch(count)
 
-  column = params.get('%s_field_extra' % visibility, lambda *args: {})
-  row = params.get('%s_row_extra' % visibility, lambda *args: {})
-  button = params.get('%s_button_extra' % visibility, lambda *args: {})
-  no_filter = params.get('%s_field_no_filter' % visibility, [])
-  prefetch = params.get('%s_field_prefetch' % visibility, [])
+    is_last = len(entities) != count
 
-  entities = logic.getForFields(filter=fields, limit=limit, prefetch=prefetch)
+    extra_args, extra_kwargs = self._prefetcher(entities)
+    args = list(args) + list(extra_args)
+    kwargs.update(extra_kwargs)
 
-  extract_args = [key_order, no_filter, column, button, row, args]
-  columns = [entityToRowDict(i, *extract_args) for i in entities]
+    for entity in entities[0:content_response.limit]:
+      if self._skipper(entity, start):
+        continue
+      content_response.addRow(entity, *args, **kwargs)
 
-  data = {
-      start: columns,
-  }
+    if entities:
+      content_response.next = self._ender(entities[-1], is_last, start)
+    else:
+      content_response.next = self._ender(None, True, start)
 
-  contents = {'data': data}
-
-  return contents
+    return content_response
 
 
-def getListGenerator(request, params, visibility=None, order=[], idx=0):
-  """Returns a dict with fields used for rendering lists.
-
-  Args:
-    request: the Django HTTP request object
-    params: a dict with params for the View this list belongs to
-    idx: the index of this list
+class QueryContentResponseBuilder(RawQueryContentResponseBuilder):
+  """Builds a ListContentResponse for lists that are based on a single query.
   """
 
-  if not visibility:
-    visibility = 'public'
+  def __init__(self, request, config, logic, fields, ancestors=None,
+               prefetch=None):
+    """Initializes the fields needed to built a response.
 
-  configuration = getListConfiguration(request, params, visibility, order)
+    Args:
+      request: The HTTPRequest containing the request for data.
+      config: The ListConfiguration object.
+      logic: The Logic instance used for querying.
+      fields: The fields to query on.
+      ancestors: List of ancestor entities to add to the query
+      prefetch: The fields that need to be prefetched for increased
+                performance.
+    """
+    query = logic.getQueryForFields(
+        filter=fields, ancestors=ancestors)
 
-  content = {
-      'idx': idx,
-      'configuration': simplejson.dumps(configuration),
-      'description': params['list_description'],
-      }
+    prefetcher = None
+    if prefetch:
+      prefetcher = modelPrefetcher(logic.getModel(), prefetch)
 
-  return content
+    super(QueryContentResponseBuilder, self).__init__(
+        request, config, query, keyStarter, prefetcher=prefetcher)

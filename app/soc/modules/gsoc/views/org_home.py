@@ -26,16 +26,15 @@ from django.conf.urls.defaults import url as django_url
 from django.utils import simplejson
 
 from soc.logic.exceptions import AccessViolation
+from soc.views.helper import lists
 from soc.logic.helper import timeline as timeline_helper
 from soc.views.template import Template
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 
-
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import lists
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
