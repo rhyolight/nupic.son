@@ -723,3 +723,18 @@ class RedirectHelper(object):
     self.id(id)
     self.kwargs['user'] = student
     return self
+
+  def survey_record(self, survey=None):
+    """Returns the redirector object with the arguments for survey record
+
+    Args:
+      survey: the survey entity
+    """
+    self.program()
+    self.project()
+    if not survey:
+      assert 'survey' in self._data.kwargs
+      survey = self._data.kwargs['survey']
+    self.kwargs['survey'] = survey.link_id
+    self.kwargs['prefix'] = survey.prefix
+    return self
