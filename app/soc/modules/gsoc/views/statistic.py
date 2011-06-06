@@ -55,6 +55,7 @@ class StatisticDashboard(RequestHandler):
     return {
         'urls': str(action_urls),
         'statistics': mapping.STATISTICS,
+        'visualizations': mapping.VISUALIZATIONS,
         }
 
   def _constructActionUrls(self):

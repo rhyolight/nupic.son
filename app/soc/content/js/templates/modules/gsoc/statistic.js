@@ -20,6 +20,7 @@ melange.templates.inherit(function (_self, context) {
 
   // TODO: replace eval with a safe json library 
   eval('var urls = ' + context.urls);
+  eval('var visualizations = ' + context.visualizations);
 
   var statistic = {
 	'admins': '/gsoc/statistic/fetch/admins',

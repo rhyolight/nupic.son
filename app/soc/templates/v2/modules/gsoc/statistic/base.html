@@ -43,6 +43,7 @@ limitations under the License.
     null,
     tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/statistic.js", {
       'urls': '{{ urls|escapejs }}',
+      'visualizations': '{{ visualizations|escapejs }}',
       })
   ]
 {% endblock dependencies %}
