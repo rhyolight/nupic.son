@@ -30,7 +30,7 @@ STATISTICS = [
     {'name': 'profiles',
      'human_name': 'Profiles Per Program',
      'dependencies': ['profiles'],
-     'visualizations': ['table']},
+     'visualizations': ['table', 'piechart']},
     {'name': 'students',
      'human_name': 'Students Per Program',
      'dependencies': ['students'],

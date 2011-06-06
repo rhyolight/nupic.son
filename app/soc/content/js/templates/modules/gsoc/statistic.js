@@ -25,6 +25,7 @@ melange.templates.inherit(function (_self, context) {
   /* Maps Google Visualization Data packages with human friendly names. */
   var visualization_names = {
 	'piechart': 'Pie Chart',
+    'table': 'Table',
   }
 
   /* Maps Google Visualization API objects with vizualization names */ 
@@ -96,6 +97,7 @@ melange.templates.inherit(function (_self, context) {
   var initialize = function () {
 	visualization_objects = {
 	  'piechart': google.visualization.PieChart,
+	  'table': google.visualization.Table
 	};
 	selectionChanged();
   };
