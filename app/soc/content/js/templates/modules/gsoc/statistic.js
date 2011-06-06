@@ -22,16 +22,36 @@ melange.templates.inherit(function (_self, context) {
   eval('var urls = ' + context.urls);
   eval('var visualizations = ' + context.visualizations);
 
-  var key_name = null;
-  var obj = null
-  var statistic_data = {}
+  /* Maps Google Visualization Data packages with human friendly names. */
+  var visualization_names = {
+	'piechart': 'Pie Chart',
+  }
 
-  var drawStatisticVisualization = function (key_name) {
-	var chart = new google.visualization.Table(document.getElementById('statistic-presentation-div'));
+  /* Maps Google Visualization API objects with vizualization names */ 
+  var visualization_objects = {};
+
+  /* These two variables represent current state of the page:
+   * - statistic which is shown
+   * - visualization which is displayed
+   */
+  var key_name = null;
+  var visualization_name = null;
+
+  /* Saved data for the statistics which have been fetched. */
+  var statistic_data = {};
+
+  var drawStatisticVisualization = function (is_different) {
+	var chart = new visualization_objects[visualization_name](
+		document.getElementById('statistic-presentation-div'));
 	/* check if the data for a given statistic has already been downloaded. */
 	if (statistic_data[key_name] !== undefined) {
 	  chart.draw(statistic_data[key_name], {width: 400, height: 240});
+	  /* reset the options only if this is a different statistic */
+	  if (is_different) {
+	    setVisualizationOptions();
+	  }
 	} else {
+	/* The statistic is requested for the first time. Data has to fetched from the server. */
 	  var url = urls[key_name];
 	  jQuery.get(
 		url,
@@ -40,28 +60,49 @@ melange.templates.inherit(function (_self, context) {
 		  eval('var _data = ' + data);
 		  statistic_data[key_name] = new google.visualization.DataTable(_data);
 	      chart.draw(statistic_data[key_name], {width: 400, height: 240});
+	      setVisualizationOptions();
 		},
 		'text'
 	  );
 	}
-  }
+  };
 
-  var selectionChanged = function () {
-	jQuery('#statistic-select :selected').each(function (index) {
-	  key_name = jQuery(this).attr('id');
-	  drawStatisticVisualization(jQuery(this).attr('id'));
+  var setVisualizationOptions = function () {
+	jQuery('#statistic-visualization-select').find('option').remove();
+
+	jQuery(visualizations[key_name]).each(function (index, value) {
+		jQuery('#statistic-visualization-select').append(
+		    jQuery('<option></option>')
+		        .attr('value', value)
+		        .text(visualization_names[value]));
 	});
   };
   
-  var initialize = function () {
-	jQuery('#statistic-select :selected').each(function (index) {
+  var selectionChanged = function () {
+	jQuery('#statistic-select :selected').each(function () {
 	  key_name = jQuery(this).attr('id');
-	  drawStatisticVisualization(key_name);
+	  visualization_name = visualizations[key_name][0];
+	  drawStatisticVisualization(true);
 	});
+  };
+
+  var visualizationChanged = function () {
+	jQuery('#statistic-visualization-select :selected').each(function () {
+	  visualization_name = jQuery(this).attr('value');
+	  drawStatisticVisualization(false);
+	});
+  };
+
+  var initialize = function () {
+	visualization_objects = {
+	  'piechart': google.visualization.PieChart,
+	};
+	selectionChanged();
   };
   
   jQuery(function () {
-	jQuery('#statistic-select').change(selectionChanged)
-	melange.loadGoogleApi('visualization', '1', {'packages':['table']}, initialize);
+	jQuery('#statistic-select').change(selectionChanged);
+	jQuery('#statistic-visualization-select').change(visualizationChanged);
+	melange.loadGoogleApi('visualization', '1', {'packages':['table', 'corechart']}, initialize);
   });
 });
