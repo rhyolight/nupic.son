@@ -51,9 +51,9 @@ class StatisticDashboard(RequestHandler):
     pass
 
   def context(self):
-    action_urls = self._constructActionUrls()
+    urls = self._constructActionUrls()
     return {
-        'urls': str(action_urls),
+        'urls': urls,
         'statistics': mapping.STATISTICS,
         'visualizations': mapping.VISUALIZATIONS,
         }
