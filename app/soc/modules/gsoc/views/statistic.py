@@ -53,8 +53,8 @@ class StatisticDashboard(RequestHandler):
   def context(self):
     action_urls = self._constructActionUrls()
     return {
-        'action_urls': simplejson.dumps(action_urls),
-        'statistics': mapping.STATISTICS
+        'urls': str(action_urls),
+        'statistics': mapping.STATISTICS,
         }
 
   def _constructActionUrls(self):
@@ -94,8 +94,6 @@ class StatisticFetcher(RequestHandler):
       raise UnsupportedFormatException('Requested format is not supported.')
 
     return self._presenter.get(key_name)
-
-  #def get(self):
     
 
   def jsonContext(self):

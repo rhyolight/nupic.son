@@ -41,6 +41,8 @@ limitations under the License.
     dep.uniform,
     dep.counter,
     null,
-    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/statistic.js", {})
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/statistic.js", {
+      'urls': '{{ urls|escapejs }}',
+      })
   ]
 {% endblock dependencies %}
