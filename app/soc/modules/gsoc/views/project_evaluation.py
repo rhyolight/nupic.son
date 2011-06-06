@@ -58,6 +58,39 @@ class SurveyTakeForm(forms.ModelForm):
     self.survey_content = survey_content
     self.constructForm()
 
+  def create(self, commit=True, key_name=None, parent=None):
+    """Save this form's cleaned data as dynamic properties of a new
+    model instance.
+
+    Args:
+      commit: optional bool, default True; if true, the model instance
+        is also saved to the datastore.
+      key_name: the key_name of the new model instance, default None
+      parent: the parent of the new model instance, default None
+
+    Returns:
+      The model instance created by this call.
+    Raises:
+      ValueError if the data couldn't be validated.
+    """
+    instance = super(SurveyTakeForm, self).create(
+        commit=False, key_name=key_name, parent=parent)
+
+    for name, value in self.cleaned_data.iteritems():
+      # if the property is not to be updated, skip it
+      if self._meta.exclude:
+        if name in self._meta.exclude:
+          continue
+      if self._meta.fields:
+        if name not in self._meta.fields:
+          continue
+
+      setattr(instance, name, value)
+
+    if commit:
+      instance.put()
+    return instance
+
   def constructForm(self):
     """Constructs the form based on the schema stored in the survey content
     """
