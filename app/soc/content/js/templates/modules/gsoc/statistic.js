@@ -22,17 +22,6 @@ melange.templates.inherit(function (_self, context) {
   eval('var urls = ' + context.urls);
   eval('var visualizations = ' + context.visualizations);
 
-  var statistic = {
-	'admins': '/gsoc/statistic/fetch/admins',
-	'profiles': '/gsoc/statistic/fetch/profiles',
-	'mentors': '/gsoc/statistic/fetch/mentors',
-	'students': '/gsoc/statistic/fetch/students',
-	'students_per_country': '/gsoc/statistic/fetch/students_per_country',
-	'mentors_per_country': '/gsoc/statistic/fetch/mentors_per_country',
-	'proposals_per_student': '/gsoc/statistic/fetch/proposals_per_student',
-	'students_with_proposals': '/gsoc/statistic/fetch/students_with_proposals',
-  };
-
   var key_name = null;
   var obj = null
   var statistic_data = {}
@@ -43,9 +32,9 @@ melange.templates.inherit(function (_self, context) {
 	if (statistic_data[key_name] !== undefined) {
 	  chart.draw(statistic_data[key_name], {width: 400, height: 240});
 	} else {
-	  var action_url = statistic[key_name];
+	  var url = urls[key_name];
 	  jQuery.get(
-		action_url,
+		url,
 		{'fmt': 'json', 'type': 'gviz'},
 		function (data) {
 		  eval('var _data = ' + data);
