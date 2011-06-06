@@ -224,3 +224,39 @@ class SurveyTakePage(RequestHandler):
         }
 
     return context
+
+  def recordSurveyFromForm(self):
+    """Create/edit a new survey record based on the data inserted in the form.
+
+    Returns:
+      a newly created or updated survey record entity or None
+    """
+    if self.data.project_survey_record:
+      form = SurveyTakeForm(
+          self.data.project_survey.survey_content,
+          self.data.POST, instance=self.data.project_survey_record)
+    else:
+      form = SurveyTakeForm(self.data.project_survey.survey_content,
+                            self.data.POST)
+
+    if not form.is_valid():
+      return None
+
+    if not self.data.project_survey_record:
+      form.cleaned_data['project'] = self.data.project
+      form.cleaned_data['org'] = self.data.project.org
+      form.cleaned_data['user'] = self.data.user
+      form.cleaned_data['survey'] = self.data.project_survey
+      entity = form.create(commit=True)
+    else:
+      entity = form.save(commit=True)
+
+    return entity
+
+  def post(self):
+    project_survey_record = self.recordSurveyFromForm()
+    if project_survey_record:
+      r = self.redirect.survey_record(self.data.project_survey)
+      r.to('gsoc_take_midterm_survey', validated=True)
+    else:
+      self.get()
