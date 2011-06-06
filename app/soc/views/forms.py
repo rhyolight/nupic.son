@@ -511,7 +511,7 @@ class BoundField(forms.BoundField):
         }
 
     hidden = self.as_widget(attrs=attrs)
-    original = self.form.initial[self.name]
+    original = self.form.initial.get(self.name)
 
     key = self.form.initial.get(self.name)
 
