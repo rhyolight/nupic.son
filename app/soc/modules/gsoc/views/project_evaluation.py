@@ -27,8 +27,6 @@ from soc.views import forms
 from django.conf.urls.defaults import url
 from django import forms as django_forms
 
-from soc.modules.gsoc.models.project_survey import ProjectSurvey
-from soc.models.survey import SurveyContent
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
