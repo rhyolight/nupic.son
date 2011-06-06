@@ -31,6 +31,9 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.models.survey import SurveyContent
 from soc.views.helper.access_checker import isSet
 
+from soc.modules.gsoc.models.project_survey import ProjectSurvey
+from soc.modules.gsoc.models.project_survey_record import \
+    GSoCProjectSurveyRecord
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
@@ -114,9 +117,9 @@ class SurveyTakeForm(forms.ModelForm):
       self.fields[field_name].initial = getattr(self.instance, field_name)
 
   class Meta:
-    model = SurveyContent
+    model = GSoCProjectSurveyRecord
     css_prefix = 'gsoc_survey_content'
-    exclude = ['schema', 'survey_order']
+    exclude = ['project', 'org', 'user', 'survey', 'created', 'modified']
 
 
 class SurveyEditPage(RequestHandler):
