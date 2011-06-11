@@ -134,7 +134,7 @@ def remote(args, context=None):
 
   try:
     from IPython.frontend.terminal.embed import TerminalInteractiveShell
-    shell = TerminalInteractiveShell()
+    shell = TerminalInteractiveShell(user_ns=context)
     shell.mainloop()
   except ImportError:
     # IPython < 0.11
