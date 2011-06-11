@@ -67,7 +67,7 @@ class Mutator(access_checker.Mutator):
     self.data.project_survey_record = q.get()
 
 
-class DeveloperMutator(access_checker.DeveloperMutator):
+class DeveloperMutator(access_checker.DeveloperMutator, Mutator):
   pass
 
 
