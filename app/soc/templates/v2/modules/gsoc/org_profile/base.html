@@ -39,7 +39,10 @@ limitations under the License.
     null,
     function () {
       jQuery("select, input:radio, input:file, input:checkbox").uniform();
-      var fields = ["description", "contrib_template", "accepted_student_msg", "rejected_student_msg"];
+      var fields = ["melange-description-textarea",
+                    "melange-contrib_template-textarea",
+                    "melange-accepted_student_msg-textarea",
+                    "melange-rejected_student_msg-textarea"];
       tinyMCE.init(melange.tinyMceConfig(fields, "advanced"));
     }
   ]

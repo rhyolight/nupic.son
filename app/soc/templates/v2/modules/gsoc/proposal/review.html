@@ -204,7 +204,7 @@ limitations under the License.
     {% endfor %}
 
     {% if public_comments_visible %}
-      tinyMCE.init(melange.tinyMceConfig(["content"]));
+      tinyMCE.init(melange.tinyMceConfig(["melange-content-textarea"]));
     {% endif %}
     {% if scoring_visible %}
       var initialTotal = {{ scores.total }};
