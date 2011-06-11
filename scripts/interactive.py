@@ -133,13 +133,20 @@ def remote(args, context=None):
   context['deepFetch'] = deepFetch
 
   try:
-    from IPython.Shell import IPShell
-    shell = IPShell(argv=[], user_ns=context)
+    from IPython.frontend.terminal.embed import TerminalInteractiveShell
+    shell = TerminalInteractiveShell()
     shell.mainloop()
   except ImportError:
-    # IPython not found, use the vanilla interpreter shell
-    code.interact('App Engine interactive console for %s' % (app_id,), None, context)
-
+    # IPython < 0.11
+    # Explicitly pass an empty list as arguments, because otherwise
+    # IPython would use sys.argv from this script.
+    try:
+      from IPython.Shell import IPShell
+      shell = IPShell(argv=[], user_ns=context)
+      shell.mainloop()
+    except ImportError:
+      # IPython not found, use the vanilla interpreter shell
+      code.interact('App Engine interactive console for %s' % (app_id,), None, context)
 
 def setup():
   """Sets up the sys.path and environment for development.
