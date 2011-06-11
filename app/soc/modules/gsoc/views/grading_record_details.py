@@ -22,13 +22,15 @@ __authors__ = [
   ]
 
 
-from google.appengine.ext import db
+from google.appengine.api import taskqueue
 
+from soc.views import forms
 from soc.views.helper import lists
+from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 
+from soc.modules.gsoc.logic import grading_record
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
-from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -134,6 +136,17 @@ class GradingRecordsList(Template):
     return 'v2/soc/list/lists.html'
 
 
+class GradingRecordForm(forms.ModelForm):
+  """Django form to edit a GradingRecord manually.
+  """
+
+  class Meta:
+    model = GSoCGradingRecord
+    css_prefix = 'gsoc_grading_record'
+    fields = ['grade_decision', 'locked']
+    widgets = forms.choiceWidgets(GSoCGradingRecord, ['grade_decision'])
+
+
 class GradingRecordDetails(RequestHandler):
   """View to display GradingRecord details.
   """
@@ -145,16 +158,55 @@ class GradingRecordDetails(RequestHandler):
     ]
 
   def checkAccess(self):
+    self.mutator.gradingSurveyRecordFromKwargs()
     self.check.isHost()
 
   def context(self):
-    # TODO: Write mutator for this which takes a Model so it can throw a KindError
-    record = GSoCGradingRecord.get(db.Key(self.kwargs['key']))
+    assert isSet(self.data.record)
+
+    record = self.data.record
+
+    if self.data.POST:
+      record_form = GradingRecordForm(self.data.POST)
+    else:
+      record_form = GradingRecordForm(instance=record)
 
     return {
         'page_name': 'Grading Record Details',
         'record': record,
+        'record_form': record_form,
         }
+
+  def post(self):
+    """Handles the POST request when editing a GradingRecord.
+    """
+    assert isSet(self.data.record)
+
+    record_form = GradingRecordForm(self.data.POST)
+
+    if not record_form.is_valid():
+      self.get()
+
+    decision = record_form.cleaned_data['grade_decision']
+    locked = record_form.cleaned_data['locked']
+
+    record = self.data.record
+    record.grade_decision = decision
+    record.locked = locked
+    record.put()
+
+    if 'submit_mail' in self.data.POST:
+      grading_record.updateProjectsForGradingRecords([record])
+
+      # pass along these params as POST to the new task
+      task_params = {'record_key': str(record.key())}
+      task_url = '/tasks/gsoc/grading_record/mail_result'
+
+      mail_task = taskqueue.Task(params=task_params, url=task_url)
+      mail_task.add('mail')
+
+    self.redirect.id(record.grading_survey_group.key().id_or_name())
+    self.redirect.to('gsoc_grading_record_overview')
 
   def templatePath(self):
     return 'v2/modules/gsoc/grading_record/details.html'

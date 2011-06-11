@@ -155,13 +155,15 @@ class GSoCGradingRecord(base.ModelWithFieldAttributes):
   #:       set the decision will be fail.
   #: undecided: If no mentor_record has been set.
   grade_decision = db.StringProperty(required=True, default='undecided',
-                                     choices=['pass', 'fail', 'undecided'])
+                                     choices=['pass', 'fail', 'undecided'],
+                                     verbose_name=ugettext('Grade'))
 
   #: Boolean that states if the grade_decision property has been locked
   #: This is to prevent an automatic update from a GradingSurveyGroup to
   #: overwrite the decision made by for example a Program Administrator.
   locked = db.BooleanProperty(required=False, default=False,
-                              verbose_name=ugettext('Grade Decision locked'))
+                              verbose_name=ugettext('Grade locked'))
+  locked.help_text = ugettext('When locked the grade can only be changed manually.')
 
   #: Property containing the date that this GradingRecord was created.
   created = db.DateTimeProperty(auto_now_add=True)

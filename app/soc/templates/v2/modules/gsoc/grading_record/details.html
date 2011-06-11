@@ -13,12 +13,40 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/forms.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/uniform.default.css" />
+{% endblock stylesheets %}
+
 {% block page_content %}
 <p>
 <b>Evaluation</b> {{ record.grading_survey_group.name }}<br />
 <b>Project</b> {{ record.parent.title }}<br />
 <b>Student</b> {{ record.parent.parent.name }}<br />
+<b>Evaluations</b> TODO: A link to the evaluations should be placed here <br />
 </p>
 
-TODO: Buttons/Form to send mail and change the result :).
+<form action="" method="post" id="form" class="form-register">
+  <h2 id="form-register-title">{{ page_name}}</h2> <p id="form-register-req" class="req">* fields required</p>
+
+  {{ record_form.render }}
+
+  <div id="form-register-fieldset-button-row" class="row button-row">
+    <input id="form-register-submit" type="submit" name="submit" value="Save" class="submit" />
+    <input id="form-register-submit" type="submit" name="submit_mail" value="Save and Update Project" class="submit" />
+  </div>
+</form>
+<!-- end form -->
+
 {% endblock page_content %}
+
+{% block dependencies %}
+  [
+    dep.uniform,
+    null,
+    function () {
+      jQuery("select, input:radio, input:file, input:checkbox").uniform();
+    }
+  ]
+{% endblock dependencies %}
