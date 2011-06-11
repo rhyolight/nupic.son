@@ -244,7 +244,7 @@ class GradingRecordTasks(object):
 
     # add them all to the cc list
     for org_member in org_admins + additional_mentors:
-      mail_context['cc'].extend(org_member.email)
+      mail_context['cc'].append(org_member.email)
 
     # send out the email using a template
     mail_template = 'modules/gsoc/grading_record/mail/result.html'
