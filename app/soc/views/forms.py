@@ -478,7 +478,7 @@ class BoundField(forms.BoundField):
 
   def renderTextArea(self):
     attrs = {
-        'id': self.name,
+        'id': 'melange-%s-textarea' % self.name,
         'class': 'textarea'
         }
 
