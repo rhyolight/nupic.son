@@ -68,6 +68,25 @@ class GradingRecordsOverview(RequestHandler):
     else:
       super(GradingRecordsOverview, self).jsonContext()
 
+  def post(self):
+    """Handles the POST request from the list and starts the appropriate task.
+    """
+    post_dict = self.data.POST
+
+    if post_dict['button_id'] == 'update_records':
+      task_params = {'group_key': self.data.survey_group.key().id_or_name()}
+      task_url = '/tasks/gsoc/grading_record/update_records'
+
+      task = taskqueue.Task(params=task_params, url=task_url)
+      task.add()
+    elif post_dict['button_id'] == 'update_projects':
+      task_params = {'group_key': self.data.survey_group.key().id_or_name(),
+                     'send_mail': 'true'}
+      task_url = '/tasks/gsoc/grading_record/update_projects'
+
+      task = taskqueue.Task(params=task_params, url=task_url)
+      task.add()
+
 
 class GradingRecordsList(Template):
   """Lists all GradingRecords for a single GradingSurveyGroup.
@@ -88,6 +107,8 @@ class GradingRecordsList(Template):
     func = lambda rec, *args, **kwargs: \
         'Present' if rec.student_record else 'Missing'
     list_config.addColumn('student_record', 'Survey by Student', func)
+    list_config.addPostButton('update_records', 'Update Records', '', [0,'all'], [])
+    list_config.addPostButton('update_projects', 'Update Projects', '', [0,'all'], [])
 
     def mentorRecordInfo(rec, *args, **kwargs):
       """Displays information about a GradingRecord's mentor_record property.
