@@ -35,4 +35,5 @@ class Statistic(soc.models.base.ModelWithFieldAttributes):
   #: JSON encoded data of the statistic
   data = db.TextProperty(required=True)
 
-
+  #: whether the statistic is publicly visible or not
+  is_visible = db.BooleanProperty(required=False, default=False)
