@@ -32,4 +32,7 @@ class Statistic(soc.models.base.ModelWithFieldAttributes):
   """Model class for Statistic.
   """
 
+  #: JSON encoded data of the statistic
   data = db.TextProperty(required=True)
+
+
