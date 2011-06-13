@@ -23,6 +23,13 @@ __authors__ = [
 
 from django.utils import simplejson
 from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext
+
+from soc.views import forms
+from soc.views.template import Template
+from soc.views.toggle_button import ToggleButtonTemplate
+
+from soc.modules.gsoc.models.statistic import GSoCStatistic
 
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -32,8 +39,39 @@ from soc.modules.gsoc.statistics.presentation import GvizPresenter
 from soc.modules.gsoc.statistics.presentation import JsonPresenter
 
 
+class ManageActions(Template):
+  """Template to render the left side admin actions.
+  """
+
+  IS_VISIBLE_HELP_MSG = ugettext(
+      'Whether this statistic is publicly visible to all users or not.')
+
+
+  def context(self):
+    self.toggle_buttons = []
+
+    r = self.data.redirect.createProfile('org_admin')
+    self.toggle_buttons.append(
+        ToggleButtonTemplate(
+            self.data, 'on_off', 'Is visible', 'is-visible-statistic',
+            r.urlOf('create_gsoc_profile'),
+            checked=True,
+            help_text=self.IS_VISIBLE_HELP_MSG,
+            labels = {
+                'checked': 'Yes',
+                'unchecked': 'No',
+            }))
+    
+    return {
+        'toggle_buttons': self.toggle_buttons
+    }
+
+  def templatePath(self):
+    return "v2/modules/gsoc/proposal/_user_action.html"
+
 class UnsupportedFormatException(Exception):
   pass
+
 
 class StatisticDashboard(RequestHandler):
   """View for the statistic page.
@@ -51,20 +89,28 @@ class StatisticDashboard(RequestHandler):
     pass
 
   def context(self):
-    urls = self._constructActionUrls()
     return {
-        'urls': urls,
+        'fetch_urls': self._constructFetchUrls(),
+        'manage_urls': self._constructManageUrls(),
         'statistics': mapping.STATISTICS,
         'visualizations': mapping.VISUALIZATIONS,
+        'manage_actions': ManageActions(self.data)
         }
 
-  def _constructActionUrls(self):
-    action_urls = {}
+  def _constructFetchUrls(self):
+    fetch_urls = {}
     for name in mapping.STATISTIC_NAMES:
-      action_urls[name] = reverse(
+      fetch_urls[name] = reverse(
           'gsoc_statistic_fetch', kwargs={'key_name': name})
 
-    return action_urls
+    return fetch_urls
+
+  def _constructManageUrls(self):
+    manage_urls = {}
+    for name in mapping.STATISTIC_NAMES:
+      manage_urls[name] = reverse(
+          'gsoc_statistic_manage', kwargs={'key_name': name})
+    return manage_urls
 
 class StatisticFetcher(RequestHandler):
   """Loads data for a particular statistic.
@@ -96,9 +142,24 @@ class StatisticFetcher(RequestHandler):
 
     return self._presenter.get(key_name)
     
-
   def jsonContext(self):
     key_name = self.data.kwargs['key_name']
     presentation = self._getPresentation(key_name)
     return presentation
 
+
+class StatisticManager(RequestHandler):
+  """Manages the statistic entities.
+  """
+
+  def checkAccess(self):
+    pass
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'statistic/manage/(?P<key_name>(\w+))$', self,
+             name='gsoc_statistic_manage'),
+    ]
+
+  def post(self):
+    pass

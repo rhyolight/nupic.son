@@ -20,8 +20,37 @@ melange.templates.inherit(function (_self, context) {
 
   // TODO: replace eval with a safe json library 
   eval('var urls = ' + context.urls);
+  eval('var manage_urls = ' + context.manage_urls)
   eval('var visualizations = ' + context.visualizations);
 
+  var bindToggleButton = function () {
+	   // var button_id = id;
+	   // var button_type = type;
+	   // var button_post_url = post_url;
+	   // var button_state = init_state;
+	   // var button_labels = labels;
+
+	    jQuery(document).ready(function() {
+	      jQuery('.on_off :checkbox#is-visible-statistic')
+	        .iphoneStyle({
+	          checkedLabel: 'Yes',
+	          uncheckedLabel: 'No'
+	        }).change(toggleButtonChanged);
+	    });
+  }
+
+  var toggleButtonChanged = function () {
+	var buttonState = "checked";
+	jQuery.post(
+		manage_urls[key_name],
+	    {value: buttonState,
+	     xsrf_token: window.xsrf_token
+	    },
+	    function (data) {
+	      buttonState = "unchecked";
+	    });
+  }
+  
   /* Maps Google Visualization Data packages with human friendly names. */
   var visualization_names = {
 	'piechart': 'Pie Chart',
@@ -106,5 +135,6 @@ melange.templates.inherit(function (_self, context) {
 	jQuery('#statistic-select').change(selectionChanged);
 	jQuery('#statistic-visualization-select').change(visualizationChanged);
 	melange.loadGoogleApi('visualization', '1', {'packages':['table', 'corechart']}, initialize);
+	bindToggleButton();
   });
 });
