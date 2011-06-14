@@ -33,30 +33,6 @@ class GSoCProfile(soc.models.role.Profile):
   """GSoCProfile Model.
   """
 
-  notify_new_requests = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of new requests'))
-  notify_new_requests.help_text = ugettext(
-      'Whether to send an email notification when new requests are submitted.')
-  notify_new_requests.group = ugettext("6. Notification settings")
-
-  notify_invite_handled = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of handled invitations'))
-  notify_invite_handled.help_text = ugettext(
-      'Whether to send an email notification when an invite is handled.')
-  notify_invite_handled.group = ugettext("6. Notification settings")
-
-  notify_request_handled = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of handled requests'))
-  notify_request_handled.help_text = ugettext(
-      'Whether to send an email notification when your request is handled.')
-  notify_request_handled.group = ugettext("6. Notification settings")
-
-  notify_new_invites = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of new invites'))
-  notify_new_invites.help_text = ugettext(
-      'Whether to send an email notification when you receive a new invites.')
-  notify_new_invites.group = ugettext("6. Notification settings")
-
   notify_new_proposals = db.BooleanProperty(required=False, default=True,
       verbose_name=ugettext('Notify of new proposals'))
   notify_new_proposals.help_text = ugettext(

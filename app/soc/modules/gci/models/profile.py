@@ -17,9 +17,15 @@
 """This module contains the  GCIProfile Model."""
 
 __authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
+  '"Selwyn Jacob" <selwynjacob90@gmail.com>',
 ]
 
+
+from google.appengine.ext import db
+from google.appengine.ext import blobstore
+
+from django.utils.translation import ugettext
 
 import soc.models.role
 
@@ -28,4 +34,48 @@ class GCIProfile(soc.models.role.Profile):
   """GCIProfile Model.
   """
 
-  pass
+  automatic_task_subscription = db.BooleanProperty(required=False, default=True,
+      verbose_name=ugettext('Automatic task subscription'))
+  automatic_task_subscription.help_text = ugettext(
+      'Whether to subscribe to related tasks automatically.')
+  automatic_task_subscription.group = ugettext("6. Notification settings")
+
+  notify_comments = db.BooleanProperty(required=False, default=True,
+      verbose_name=ugettext('Notify of new comments'))
+  notify_comments.help_text = ugettext(
+      'Whether to send an email notification for a new comment.')
+  notify_comments.group = ugettext("6. Notification settings")
+
+
+class GCIStudentInfo(soc.models.role.StudentInfo):
+  """GCIStudentInfo Model.
+
+  Parent:
+    soc.modules.gci.models.profile.Profile
+  """
+
+
+  #: number of tasks completed
+  number_of_tasks_completed = db.IntegerProperty(default=0)
+
+  #: Set to True if the reminder mail to upload parental consent
+  #: form is sent to students
+  parental_form_mail = db.BooleanProperty(default=False)
+
+  #: Property pointing to the consent form
+  consent_form = blobstore.BlobReferenceProperty(
+      required=False, verbose_name=ugettext('Parental Consent Form'))
+  consent_form.help_text = ugettext(
+      'A signed Parental Consent Form from your legal parent or guardian')
+
+  #: Property pointing to the second page of the consent form
+  consent_form_two = blobstore.BlobReferenceProperty(
+      required=False, verbose_name=ugettext('Parental Consent Form (page 2)'))
+  consent_form_two.help_text = ugettext(
+      'Page two of the Parental Consent Form (if applicable)')
+
+  #: Property pointing to the student id form
+  student_id_form = blobstore.BlobReferenceProperty(
+      required=False, verbose_name=ugettext('Student ID form'))
+  student_id_form.help_text = ugettext(
+      'A scan of your student ID to verify your student status and birthday.')
