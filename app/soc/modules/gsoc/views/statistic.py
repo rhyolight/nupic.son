@@ -48,19 +48,16 @@ class ManageActions(Template):
 
 
   def context(self):
-    self.toggle_buttons = []
-
-    r = self.data.redirect.createProfile('org_admin')
-    self.toggle_buttons.append(
+    self.toggle_buttons = [
         ToggleButtonTemplate(
             self.data, 'on_off', 'Is visible', 'is-visible-statistic',
-            r.urlOf('create_gsoc_profile'),
+            None,
             checked=True,
             help_text=self.IS_VISIBLE_HELP_MSG,
             labels = {
                 'checked': 'Yes',
                 'unchecked': 'No',
-            }))
+        })]
     
     return {
         'toggle_buttons': self.toggle_buttons
