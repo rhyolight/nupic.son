@@ -26,8 +26,6 @@ __authors__ = [
 from google.appengine.api import users
 from google.appengine.ext import db
 
-from django.utils.functional import lazy
-
 from soc.logic.models.site import logic as site_logic
 from soc.logic.models.user import logic as user_logic
 
