@@ -48,6 +48,15 @@ DEF_NO_PROJECT_SURVEY_MSG = ugettext(
 DEF_NO_RECORD_FOUND = ugettext(
     'The Record with the specified key was not found')
 
+DEF_SURVEY_DOES_NOT_BELONG_TO_YOU_MSG = ugettext(
+    'This survey does not correspond to the survey for your project, '
+    'hence you cannot access this survey.')
+
+DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG = ugettext(
+    'You cannot access this survey because you do not have any '
+    'ongoing project.')
+
+
 class Mutator(access_checker.Mutator):
 
   def projectSurveyRecordFromKwargs(self):
@@ -111,6 +120,22 @@ class AccessChecker(access_checker.AccessChecker):
       # too many proposals access denied
       raise AccessViolation(DEF_MAX_PROPOSALS_REACHED)
 
+  def isStudentForSurvey(self):
+    """Checks if the student can take survey for the project.
+    """
+    assert access_checker.isSet(self.data.project)
+
+    self.isProjectInURLValid()
+
+    # check if the project belongs to the current user and if so he
+    # can access the survey
+    expected_profile_key = self.data.project.parent_key()
+    if expected_profile_key != self.data.profile.key():
+      raise AccessViolation(DEF_SURVEY_DOES_NOT_BELONG_TO_YOU_MSG)
+
+    # check if the project is still ongoing
+    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+      raise AccessViolation(DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass
