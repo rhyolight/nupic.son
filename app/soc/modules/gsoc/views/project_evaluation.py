@@ -59,7 +59,7 @@ class GSoCProjectSurveyTakeForm(forms.SurveyTakeForm):
     exclude = ['project', 'org', 'user', 'survey', 'created', 'modified']
 
 
-class SurveyEditPage(RequestHandler):
+class GSoCProjectSurveyEditPage(RequestHandler):
   """View for creating and/or editing surveys.
   """
 
@@ -96,7 +96,7 @@ class SurveyEditPage(RequestHandler):
     return context
 
 
-class SurveyTakePage(RequestHandler):
+class GSoCProjectSurveyTakePage(RequestHandler):
   """View for creating and/or editing surveys.
   """
 
