@@ -202,7 +202,11 @@ class SurveyTakePage(RequestHandler):
 
   def checkAccess(self):
     self.mutator.projectSurveyRecordFromKwargs()
+
     assert isSet(self.data.project_survey)
+    self.check.isSurveyActive(self.data.project_survey)
+    self.check.canUserTakeSurvey(self.data.project_survey)
+    self.check.isStudentForSurvey()
 
   def templatePath(self):
     return 'v2/modules/gsoc/_survey_take.html'
