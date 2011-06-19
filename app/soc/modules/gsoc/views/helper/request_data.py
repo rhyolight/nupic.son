@@ -27,28 +27,18 @@ __authors__ = [
 
 import datetime
 
-from google.appengine.api import users
 from google.appengine.ext import db
 
 from django.core.urlresolvers import reverse
 
-from soc.models import role
-from soc.models.org_app_survey import OrgAppSurvey
 from soc.logic import system
 from soc.logic.exceptions import NotFound
-from soc.logic.models.host import logic as host_logic
-from soc.logic.models.site import logic as site_logic
-from soc.logic.models.user import logic as user_logic
 from soc.views.helper.access_checker import isSet
 from soc.views.helper.request_data import RequestData
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 
-from soc.modules.gsoc.logic.models.mentor import logic as mentor_logic
 from soc.modules.gsoc.logic.models.organization import logic as org_logic
-from soc.modules.gsoc.logic.models.org_admin import logic as org_admin_logic
-from soc.modules.gsoc.logic.models.program import logic as program_logic
-from soc.modules.gsoc.logic.models.student import logic as student_logic
 
 
 def isBefore(date):
