@@ -25,7 +25,6 @@ __authors__ = [
 from soc.views import forms
 
 from django.conf.urls.defaults import url
-from django import forms as django_forms
 
 from soc.views.helper.access_checker import isSet
 
