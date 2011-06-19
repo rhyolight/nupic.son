@@ -84,6 +84,9 @@ DEF_HAS_ALREADY_ROLE_FOR_ORG_MSG = ugettext(
 DEF_ID_BASED_ENTITY_INVALID_MSG_FMT = ugettext(
     '%(model)s entity, whose id is %(id)s, is invalid at this time.')
 
+DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
+    '%(model)s entity, whose id is %(id)s, is does not exist.')
+
 DEF_REQUEST_NOT_EXISTS_MSG_FMT = ugettext(
     'There is no request with id %(id)s.')
 
