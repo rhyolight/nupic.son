@@ -115,6 +115,10 @@ DEF_NO_SLOT_TRANSFER_MSG_FMT = ugettext(
 DEF_NO_SUCH_PROGRAM_MSG = ugettext(
     'The url is wrong (no program was found).')
 
+DEF_NO_SURVEY_ACCESS_MSG = ugettext (
+    'You cannot take this survey because this survey is not created for'
+    'your role in the program.')
+
 DEF_NO_USER_LOGIN_MSG = ugettext(
     'Please create <a href="/user/create_profile">User Profile</a>'
     ' in order to view this page.')
@@ -1035,3 +1039,41 @@ class AccessChecker(BaseAccessChecker):
       raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
           'model': 'GSoCProject'
           })
+
+  def isSurveyActive(self, survey):
+    """Checks if the survey in the request data is active.
+
+    Args:
+      survey: the survey entity for which the access must be checked
+    """
+    assert isSet(self.data.program)
+    assert isSet(self.data.timeline)
+
+    if self.data.timeline.surveyPeriod(survey):
+      return
+
+    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT %
+        (survey.survey_start, survey.survey_end))
+
+  def canUserTakeSurvey(self, survey):
+    """Checks if the user with the given profile can take the survey.
+
+    Args:
+      survey: the survey entity for which the access must be checked
+    """
+    assert isSet(self.data.program)
+    assert isSet(self.data.timeline)
+
+    self.isProjectInURLValid()
+
+    if survey.taking_access == 'student':
+      self.isActiveStudent()
+      return
+    elif survey.taking_access == 'org':
+      self.isMentor()
+      return
+    elif survey.taking_access == 'user':
+      self.isUser()
+      return
+
+    raise AccessViolation(DEF_NO_SURVEY_ACCESS_MSG)
