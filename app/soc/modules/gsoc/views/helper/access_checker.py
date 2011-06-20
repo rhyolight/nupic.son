@@ -43,13 +43,13 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
     'for this program.')
 
 DEF_NO_PROJECT_SURVEY_MSG = ugettext(
-    'The project survey with the requested parameters does not exist')
+    'The project survey with the requested parameters does not exist.')
 
 DEF_NO_RECORD_FOUND = ugettext(
-    'The Record with the specified key was not found')
+    'The Record with the specified key was not found.')
 
 DEF_SURVEY_DOES_NOT_BELONG_TO_YOU_MSG = ugettext(
-    'This survey does not correspond to the survey for your project, '
+    'This survey does not correspond to the project you are mentor for, '
     'hence you cannot access this survey.')
 
 DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG = ugettext(
@@ -62,7 +62,7 @@ class Mutator(access_checker.Mutator):
   def projectSurveyRecordFromKwargs(self):
     """Sets the survey record in RequestData object.
     """
-        # kwargs which defines an organization
+    # kwargs which defines a survey
     fields = ['prefix', 'sponsor', 'program', 'survey']
 
     key_name = '/'.join(self.data.kwargs[field] for field in fields)
