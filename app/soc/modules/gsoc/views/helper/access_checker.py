@@ -79,6 +79,9 @@ class Mutator(access_checker.Mutator):
 
     self.projectFromKwargs()
 
+    assert access_checker.isSet(self.data.project)
+    self.data.organization = self.data.project.org
+
     q = GSoCProjectSurveyRecord.all()
     q.filter('project', self.data.project)
     q.filter('survey', self.data.project_survey)
