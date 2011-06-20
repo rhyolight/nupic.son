@@ -22,15 +22,13 @@ __authors__ = [
   ]
 
 
-from soc.views import forms
-
+from django import forms as django_forms
 from django.conf.urls.defaults import url
+from django.utils.translation import ugettext
 
+from soc.views import forms
 from soc.views.helper.access_checker import isSet
 
-from soc.modules.gsoc.models.project_survey import ProjectSurvey
-from soc.modules.gsoc.models.project_survey_record import \
-    GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -104,9 +102,9 @@ class GSoCProjectEvaluationTakePage(RequestHandler):
          url(r'^gsoc/evaluation/%s$' % url_patterns.SURVEY_RECORD,
          self, name='gsoc_take_evaluation_survey'),
     ]
-    self.mutator.projectEvaluationRecordFromKwargs()
 
   def checkAccess(self):
+    self.mutator.projectEvaluationRecordFromKwargs()
 
     assert isSet(self.data.project_evaluation)
     self.check.isSurveyActive(self.data.project_evaluation)

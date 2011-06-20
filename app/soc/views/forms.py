@@ -251,7 +251,7 @@ class ModelFormMetaclass(djangoforms.ModelFormMetaclass):
     fields = sorted(((field_name, attrs.pop(field_name))
                      for field_name, obj in attrs.items()
                      if isinstance(obj, forms.Field)),
-                    key=lambda obj: obj[1].creation_counter)
+                     key=lambda obj: obj[1].creation_counter)
     for base in bases[::-1]:
       if hasattr(base, 'base_fields'):
         fields = base.base_fields.items() + fields
