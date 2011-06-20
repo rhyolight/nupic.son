@@ -32,6 +32,9 @@ from soc.logic.exceptions import NotFound
 from soc.views.helper import access_checker
 
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
+from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
+from soc.modules.gsoc.models.grading_project_survey_record import \
+    GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
@@ -44,6 +47,9 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
 
 DEF_NO_PROJECT_SURVEY_MSG = ugettext(
     'The project survey with the requested parameters does not exist.')
+
+DEF_NO_PROJECT_EVALUATION_MSG = ugettext(
+    'The project evaluation with the requested parameters does not exist.')
 
 DEF_NO_RECORD_FOUND = ugettext(
     'The Record with the specified key was not found.')
@@ -77,6 +83,29 @@ class Mutator(access_checker.Mutator):
     q.filter('project', self.data.project)
     q.filter('survey', self.data.project_survey)
     self.data.project_survey_record = q.get()
+
+  def projectEvaluationRecordFromKwargs(self):
+    """Sets the evaluation and the record in RequestData object.
+    """
+    # kwargs which defines an evaluation
+    fields = ['prefix', 'sponsor', 'program', 'survey']
+
+    key_name = '/'.join(self.data.kwargs[field] for field in fields)
+    self.data.project_evaluation = GradingProjectSurvey.get_by_key_name(
+        key_name)
+
+    if not self.data.project_evaluation:
+      raise NotFound(DEF_NO_PROJECT_EVALUATION_MSG)
+
+    self.projectFromKwargs()
+
+    assert access_checker.isSet(self.data.project)
+    self.data.organization = self.data.project.org
+
+    q = GSoCGradingProjectSurveyRecord.all()
+    q.filter('project', self.data.project)
+    q.filter('survey', self.data.project_evaluation)
+    self.data.project_evaluation_record = q.get()
 
   def gradingSurveyRecordFromKwargs(self):
     """Sets a GradingSurveyRecord entry in the RequestData object.
