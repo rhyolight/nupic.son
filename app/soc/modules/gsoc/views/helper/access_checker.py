@@ -137,5 +137,25 @@ class AccessChecker(access_checker.AccessChecker):
     if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
       raise AccessViolation(DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
 
+  def isMentorForSurvey(self):
+    """Checks if the user is the mentor for the project or org admin.
+    """
+    assert access_checker.isSet(self.data.project)
+
+    self.isProjectInURLValid()
+
+    # check if the currently logged in user is the mentor or co-mentor
+    # for the project in request or the org admin for the org
+    expected_profile_keys = [self.data.project.mentor.key()] + \
+        self.data.project.additional_mentors
+
+    if self.data.profile.key() not in expected_profile_keys:
+      raise AccessViolation(DEF_SURVEY_DOES_NOT_BELONG_TO_YOU_MSG)
+
+    # check if the project is still ongoing
+    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+      raise AccessViolation(DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
+
+
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass
