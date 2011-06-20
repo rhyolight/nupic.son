@@ -205,6 +205,9 @@ DEF_SCOPE_INACTIVE_MSG = ugettext(
 DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
     'The requested %(model)s entity whose id is %(id)s does not exist.')
 
+DEF_STATISTIC_DOES_NOT_EXIST_MSG_FMT = ugettext(
+    'The statistic whose name is %(key_name)s does not exist.')
+
 unset = object()
 
 
@@ -1083,3 +1086,14 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise AccessViolation(DEF_NO_SURVEY_ACCESS_MSG)
+
+  def isStatisticValid(self):
+    """Checks if the URL refers to an existing statistic.
+    """
+    assert isSet(self.data.statistic)
+    # check if the statistic exist
+    if not self.data.statistic:
+      error_msg = DEF_STATISTIC_DOES_NOT_EXIST_MSG_FMT % {
+          'key_name': self.data.kwargs['id']
+          }
+      raise AccessViolation(error_msg)
