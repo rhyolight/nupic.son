@@ -31,16 +31,46 @@ from soc.views.helper.access_checker import isSet
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
+from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
+from soc.modules.gsoc.models.grading_project_survey_record import \
+    GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
 
 
+EVALUATION_CHOICES = (
+    (True, 'Pass'),
+    (False, 'Fail')
+    )
+
+
+class GSoCProjectEvaluationEditForm(forms.SurveyEditForm):
+  """Form to create/edit GSoC evaluation for the organization.
+class GSoCProjectEvaluationTakeForm(forms.SurveyTakeForm):
+  """Form for the organization to evaluate a student project.
   """
 
+  def __init__(self, survey_content, *args, **kwargs):
+    """Initialize the form field by adding a new grading field.
+    """
+    super(GSoCProjectEvaluationTakeForm, self).__init__(survey_content,
+                                                        *args, **kwargs)
+
+    # hack to re-order grade to push to the end of the survey form
+    self.fields.keyOrder.remove('grade')
+    self.fields.keyOrder.append('grade')
+
+    self.fields['grade'] = django_forms.ChoiceField(
+        label=ugettext('Student evaluation'), required=True,
+        help_text=ugettext(
+            'The response to this question determines whether the '
+            'student receives the next round of payments.'),
+        choices=EVALUATION_CHOICES, widget=forms.RadioSelect)
+
   class Meta:
-    model = ProjectSurvey
-    css_prefix = 'gsoc_survey_edit'
+    model = GradingProjectSurvey
+    css_prefix = 'gsoc_evaluation_edit'
     exclude = ['schema', 'scope', 'author', 'modified_by',
                'survey_content', 'scope_path', 'link_id',
                'prefix', 'survey_order']
@@ -49,6 +79,8 @@ from soc.modules.gsoc.views.helper import url_patterns
   """
 
   class Meta:
+    model = GSoCGradingProjectSurveyRecord
+    css_prefix = 'gsoc_evaluation_record'
     exclude = ['project', 'org', 'user', 'survey', 'created', 'modified']
 
 
