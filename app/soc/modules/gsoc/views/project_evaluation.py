@@ -47,6 +47,16 @@ EVALUATION_CHOICES = (
 
 class GSoCProjectEvaluationEditForm(forms.SurveyEditForm):
   """Form to create/edit GSoC evaluation for the organization.
+  """
+
+  class Meta:
+    model = GradingProjectSurvey
+    css_prefix = 'gsoc_evaluation_edit'
+    exclude = ['schema', 'scope', 'author', 'modified_by',
+               'survey_content', 'scope_path', 'link_id',
+               'prefix', 'survey_order']
+
+
 class GSoCProjectEvaluationTakeForm(forms.SurveyTakeForm):
   """Form for the organization to evaluate a student project.
   """
@@ -69,42 +79,51 @@ class GSoCProjectEvaluationTakeForm(forms.SurveyTakeForm):
         choices=EVALUATION_CHOICES, widget=forms.RadioSelect)
 
   class Meta:
-    model = GradingProjectSurvey
-    css_prefix = 'gsoc_evaluation_edit'
-    exclude = ['schema', 'scope', 'author', 'modified_by',
-               'survey_content', 'scope_path', 'link_id',
-               'prefix', 'survey_order']
-
-
-  """
-
-  class Meta:
     model = GSoCGradingProjectSurveyRecord
     css_prefix = 'gsoc_evaluation_record'
     exclude = ['project', 'org', 'user', 'survey', 'created', 'modified']
 
 
+class GSoCProjectEvaluationEditPage(RequestHandler):
+  """View for creating/editing organization evaluation form.
   """
 
   def djangoURLPatterns(self):
     return [
+         url(r'^gsoc/evaluation/edit/%s$' % url_patterns.PROGRAM,
+         self, name='gsoc_edit_evaluation_survey'),
     ]
 
 
+class GSoCProjectEvaluationTakePage(RequestHandler):
+  """View for the organization to submit student evaluation.
   """
 
   def djangoURLPatterns(self):
     return [
+         url(r'^gsoc/evaluation/%s$' % url_patterns.SURVEY_RECORD,
+         self, name='gsoc_take_evaluation_survey'),
     ]
+    self.mutator.projectEvaluationRecordFromKwargs()
 
   def checkAccess(self):
 
+    assert isSet(self.data.project_evaluation)
+    self.check.isSurveyActive(self.data.project_evaluation)
+    self.check.canUserTakeSurvey(self.data.project_evaluation)
+    self.check.isMentorForSurvey()
 
   def templatePath(self):
     return 'v2/modules/gsoc/_survey_take.html'
 
   def context(self):
+    if self.data.project_evaluation_record:
+      form = GSoCProjectEvaluationTakeForm(
+          self.data.project_evaluation.survey_content,
+          self.data.POST or None, instance=self.data.project_evaluation_record)
     else:
+      form = GSoCProjectEvaluationTakeForm(
+          self.data.project_evaluation.survey_content, self.data.POST or None)
 
     context = {
         'page_name': "Midterm survey page",
@@ -121,14 +140,22 @@ class GSoCProjectEvaluationTakeForm(forms.SurveyTakeForm):
     Returns:
       a newly created or updated survey record entity or None
     """
+    if self.data.project_evaluation_record:
+      form = GSoCProjectEvaluationTakeForm(
+          self.data.project_evaluation.survey_content,
+          self.data.POST, instance=self.data.project_evaluation_record)
     else:
+      form = GSoCProjectEvaluationTakeForm(
+          self.data.project_evaluation.survey_content, self.data.POST)
 
     if not form.is_valid():
       return None
 
+    if not self.data.project_evaluation_record:
       form.cleaned_data['project'] = self.data.project
       form.cleaned_data['org'] = self.data.project.org
       form.cleaned_data['user'] = self.data.user
+      form.cleaned_data['survey'] = self.data.project_evaluation
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
@@ -136,5 +163,9 @@ class GSoCProjectEvaluationTakeForm(forms.SurveyTakeForm):
     return entity
 
   def post(self):
+    project_evaluation_record = self.recordSurveyFromForm()
+    if project_evaluation_record:
+      r = self.redirect.survey_record(self.data.project_evaluation)
+      r.to('gsoc_take_evaluation_survey', validated=True)
     else:
       self.get()
