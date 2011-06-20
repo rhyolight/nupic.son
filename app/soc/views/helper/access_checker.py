@@ -202,6 +202,9 @@ DEF_NO_PROFILE_MSG = ugettext(
 DEF_SCOPE_INACTIVE_MSG = ugettext(
     'The scope for this request is not active.')
 
+DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
+    'The requested %(model)s entity whose id is %(id)s does not exist.')
+
 unset = object()
 
 
