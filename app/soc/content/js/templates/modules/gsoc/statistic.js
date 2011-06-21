@@ -24,19 +24,13 @@ melange.templates.inherit(function (_self, context) {
   eval('var visualizations = ' + context.visualizations);
 
   var bindToggleButton = function () {
-	   // var button_id = id;
-	   // var button_type = type;
-	   // var button_post_url = post_url;
-	   // var button_state = init_state;
-	   // var button_labels = labels;
-
-	    jQuery(document).ready(function() {
-	      jQuery('.on_off :checkbox#is-visible-statistic')
-	        .iphoneStyle({
-	          checkedLabel: 'Yes',
-	          uncheckedLabel: 'No'
-	        }).change(toggleButtonChanged);
-	    });
+    jQuery(document).ready(function() {
+	  jQuery('.on_off :checkbox#is-visible-statistic')
+	    .iphoneStyle({
+	      checkedLabel: 'Yes',
+	      uncheckedLabel: 'No'
+	    }).change(toggleButtonChanged);
+	});
   }
 
   var toggleButtonChanged = function () {

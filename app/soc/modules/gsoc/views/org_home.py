@@ -149,6 +149,8 @@ class ProjectList(Template):
     list_config.addColumn('student', 'Student',
                           lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
+    list_config.addColumn('mentor', 'Mentor',
+                          lambda entity, *args: entity.mentor.name())
     list_config.setDefaultSort('student')
     list_config.setRowAction(lambda e, *args, **kwargs:
         r.project(id=e.key().id_or_name(), student=e.parent().link_id).
@@ -177,7 +179,7 @@ class ProjectList(Template):
           program=self.data.program, org=self.data.organization)
 
       starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProject, [], parent=True)
+      prefetcher = lists.modelPrefetcher(GSoCProject, ['mentor'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, list_query,

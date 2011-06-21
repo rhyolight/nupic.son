@@ -21,6 +21,8 @@ __authors__ = [
 ]
 
 
+from google.appengine.ext import db
+
 from django.utils import simplejson
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
@@ -30,7 +32,6 @@ from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
 
 from soc.modules.gsoc.models.statistic import GSoCStatistic
-
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -48,19 +49,16 @@ class ManageActions(Template):
 
 
   def context(self):
-    self.toggle_buttons = []
-
-    r = self.data.redirect.createProfile('org_admin')
-    self.toggle_buttons.append(
+    self.toggle_buttons = [
         ToggleButtonTemplate(
             self.data, 'on_off', 'Is visible', 'is-visible-statistic',
-            r.urlOf('create_gsoc_profile'),
+            None,
             checked=True,
             help_text=self.IS_VISIBLE_HELP_MSG,
             labels = {
                 'checked': 'Yes',
                 'unchecked': 'No',
-            }))
+        })]
     
     return {
         'toggle_buttons': self.toggle_buttons
@@ -153,7 +151,10 @@ class StatisticManager(RequestHandler):
   """
 
   def checkAccess(self):
-    pass
+    key_name = self.data.kwargs['key_name']
+    self.data.statistic = GSoCStatistic.get_by_key_name(key_name)
+
+    self.check.isStatisticValid()
 
   def djangoURLPatterns(self):
     return [
@@ -162,4 +163,14 @@ class StatisticManager(RequestHandler):
     ]
 
   def post(self):
-    pass
+    value = self.data.POST.get('value')
+    if value == 'checked':
+      is_visible = True
+    elif value == 'unchecked':
+      is_visible = False
+    else:
+      raise AccessViolation('Unsupported value sent to the server')
+
+    if self.data.statistic.is_visible ^ is_visible:
+      self.data.statistic.is_visible = is_visible
+      db.put(self.data.statistic)

@@ -208,6 +208,11 @@ class TimelineHelper(object):
   def applicationMatchedOn(self):
     return self.timeline.student_application_matched_deadline
 
+  def surveyPeriod(self, survey):
+    start = survey.survey_start
+    end = survey.survey_end
+    return isAfter(start) and isBefore(end)
+
 
 class RequestData(RequestData):
   """Object containing data we query for each request in the GSoC module.

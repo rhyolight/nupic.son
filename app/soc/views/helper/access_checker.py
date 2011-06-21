@@ -84,6 +84,9 @@ DEF_HAS_ALREADY_ROLE_FOR_ORG_MSG = ugettext(
 DEF_ID_BASED_ENTITY_INVALID_MSG_FMT = ugettext(
     '%(model)s entity, whose id is %(id)s, is invalid at this time.')
 
+DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
+    '%(model)s entity, whose id is %(id)s, is does not exist.')
+
 DEF_REQUEST_NOT_EXISTS_MSG_FMT = ugettext(
     'There is no request with id %(id)s.')
 
@@ -114,6 +117,10 @@ DEF_NO_SLOT_TRANSFER_MSG_FMT = ugettext(
 
 DEF_NO_SUCH_PROGRAM_MSG = ugettext(
     'The url is wrong (no program was found).')
+
+DEF_NO_SURVEY_ACCESS_MSG = ugettext (
+    'You cannot take this survey because this survey is not created for'
+    'your role in the program.')
 
 DEF_NO_USER_LOGIN_MSG = ugettext(
     'Please create <a href="/user/create_profile">User Profile</a>'
@@ -194,6 +201,12 @@ DEF_NO_PROFILE_MSG = ugettext(
 
 DEF_SCOPE_INACTIVE_MSG = ugettext(
     'The scope for this request is not active.')
+
+DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
+    'The requested %(model)s entity whose id is %(id)s does not exist.')
+
+DEF_STATISTIC_DOES_NOT_EXIST_MSG_FMT = ugettext(
+    'The statistic whose name is %(key_name)s does not exist.')
 
 unset = object()
 
@@ -1035,3 +1048,54 @@ class AccessChecker(BaseAccessChecker):
       raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
           'model': 'GSoCProject'
           })
+
+  def isSurveyActive(self, survey):
+    """Checks if the survey in the request data is active.
+
+    Args:
+      survey: the survey entity for which the access must be checked
+    """
+    assert isSet(self.data.program)
+    assert isSet(self.data.timeline)
+
+    if self.data.timeline.surveyPeriod(survey):
+      return
+
+    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT %
+        (survey.survey_start, survey.survey_end))
+
+  def canUserTakeSurvey(self, survey):
+    """Checks if the user with the given profile can take the survey.
+
+    Args:
+      survey: the survey entity for which the access must be checked
+    """
+    assert isSet(self.data.program)
+    assert isSet(self.data.timeline)
+
+    self.isProjectInURLValid()
+
+    if survey.taking_access == 'student':
+      self.isActiveStudent()
+      return
+    elif survey.taking_access == 'org':
+      assert isSet(self.data.organization)
+
+      self.isMentor()
+      return
+    elif survey.taking_access == 'user':
+      self.isUser()
+      return
+
+    raise AccessViolation(DEF_NO_SURVEY_ACCESS_MSG)
+
+  def isStatisticValid(self):
+    """Checks if the URL refers to an existing statistic.
+    """
+    assert isSet(self.data.statistic)
+    # check if the statistic exist
+    if not self.data.statistic:
+      error_msg = DEF_STATISTIC_DOES_NOT_EXIST_MSG_FMT % {
+          'key_name': self.data.kwargs['id']
+          }
+      raise AccessViolation(error_msg)

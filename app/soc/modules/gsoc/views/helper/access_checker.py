@@ -32,6 +32,9 @@ from soc.logic.exceptions import NotFound
 from soc.views.helper import access_checker
 
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
+from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
+from soc.modules.gsoc.models.grading_project_survey_record import \
+    GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
@@ -43,17 +46,29 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
     'for this program.')
 
 DEF_NO_PROJECT_SURVEY_MSG = ugettext(
-    'The project survey with the requested parameters does not exist')
+    'The project survey with the requested parameters does not exist.')
+
+DEF_NO_PROJECT_EVALUATION_MSG = ugettext(
+    'The project evaluation with the requested parameters does not exist.')
 
 DEF_NO_RECORD_FOUND = ugettext(
-    'The Record with the specified key was not found')
+    'The Record with the specified key was not found.')
+
+DEF_SURVEY_DOES_NOT_BELONG_TO_YOU_MSG = ugettext(
+    'This survey does not correspond to the project you are mentor for, '
+    'hence you cannot access this survey.')
+
+DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG = ugettext(
+    'You cannot access this survey because you do not have any '
+    'ongoing project.')
+
 
 class Mutator(access_checker.Mutator):
 
   def projectSurveyRecordFromKwargs(self):
     """Sets the survey record in RequestData object.
     """
-        # kwargs which defines an organization
+    # kwargs which defines a survey
     fields = ['prefix', 'sponsor', 'program', 'survey']
 
     key_name = '/'.join(self.data.kwargs[field] for field in fields)
@@ -64,10 +79,36 @@ class Mutator(access_checker.Mutator):
 
     self.projectFromKwargs()
 
+    assert access_checker.isSet(self.data.project)
+    self.data.organization = self.data.project.org
+
     q = GSoCProjectSurveyRecord.all()
     q.filter('project', self.data.project)
     q.filter('survey', self.data.project_survey)
     self.data.project_survey_record = q.get()
+
+  def projectEvaluationRecordFromKwargs(self):
+    """Sets the evaluation and the record in RequestData object.
+    """
+    # kwargs which defines an evaluation
+    fields = ['prefix', 'sponsor', 'program', 'survey']
+
+    key_name = '/'.join(self.data.kwargs[field] for field in fields)
+    self.data.project_evaluation = GradingProjectSurvey.get_by_key_name(
+        key_name)
+
+    if not self.data.project_evaluation:
+      raise NotFound(DEF_NO_PROJECT_EVALUATION_MSG)
+
+    self.projectFromKwargs()
+
+    assert access_checker.isSet(self.data.project)
+    self.data.organization = self.data.project.org
+
+    q = GSoCGradingProjectSurveyRecord.all()
+    q.filter('project', self.data.project)
+    q.filter('survey', self.data.project_evaluation)
+    self.data.project_evaluation_record = q.get()
 
   def gradingSurveyRecordFromKwargs(self):
     """Sets a GradingSurveyRecord entry in the RequestData object.
@@ -110,6 +151,42 @@ class AccessChecker(access_checker.AccessChecker):
     if query.count() >= self.data.program.apps_tasks_limit:
       # too many proposals access denied
       raise AccessViolation(DEF_MAX_PROPOSALS_REACHED)
+
+  def isStudentForSurvey(self):
+    """Checks if the student can take survey for the project.
+    """
+    assert access_checker.isSet(self.data.project)
+
+    self.isProjectInURLValid()
+
+    # check if the project belongs to the current user and if so he
+    # can access the survey
+    expected_profile_key = self.data.project.parent_key()
+    if expected_profile_key != self.data.profile.key():
+      raise AccessViolation(DEF_SURVEY_DOES_NOT_BELONG_TO_YOU_MSG)
+
+    # check if the project is still ongoing
+    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+      raise AccessViolation(DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
+
+  def isMentorForSurvey(self):
+    """Checks if the user is the mentor for the project or org admin.
+    """
+    assert access_checker.isSet(self.data.project)
+
+    self.isProjectInURLValid()
+
+    # check if the currently logged in user is the mentor or co-mentor
+    # for the project in request or the org admin for the org
+    expected_profile_keys = [self.data.project.mentor.key()] + \
+        self.data.project.additional_mentors
+
+    if self.data.profile.key() not in expected_profile_keys:
+      raise AccessViolation(DEF_SURVEY_DOES_NOT_BELONG_TO_YOU_MSG)
+
+    # check if the project is still ongoing
+    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+      raise AccessViolation(DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
 
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
