@@ -51,11 +51,6 @@ from soc.modules.gsoc.models.student_proposal import StudentProposal
 
 ROLE_MODELS = [GSoCMentor, GSoCOrgAdmin, GSoCStudent]
 
-POPULATED_PROFILE_PROPS = set(
-    GSoCProfile.properties()) - set(Linkable.properties())
-
-POPULATED_STUDENT_PROPS = StudentInfo.properties()
-
 
 def getDjangoURLPatterns():
   """Returns the URL patterns for the tasks in this module.
@@ -136,17 +131,28 @@ class RoleUpdater(object):
   """Class which is responsible for updating the entities.
   """
 
-  def __init__(self, model, profile_model, program_field, role_field=None):
+  POPULATED_PROFILE_PROPS = set(
+      GSoCProfile.properties()) - set(Linkable.properties())
+
+  POPULATED_STUDENT_PROPS = StudentInfo.properties()
+
+  def __init__(self, model, profile_model, student_model,
+               studentinfo_model, program_field, role_field=None):
     self.MODEL = model
     self.PROFILE_MODEL = profile_model
     self.PROGRAM_FIELD = program_field
     self.ROLE_FIELD = role_field
+    self.STUDENT_MODEL = student_model
+    self.STUDENTINFO_MODEL = studentinfo_model
 
   def run(self, batch_size=25):
     """Starts the updater.
     """
 
     self._process(None, batch_size)
+
+  def _prcoessStudentEntity(self, entity, **properties):
+    pass
 
   def _processEntity(self, entity):
     program = getattr(entity, self.PROGRAM_FIELD)
@@ -160,14 +166,14 @@ class RoleUpdater(object):
         'scope': program,
         'parent': user,
         }
-    for prop in POPULATED_PROFILE_PROPS:
+    for prop in self.POPULATED_PROFILE_PROPS:
       properties[prop] = getattr(entity, prop)
 
     profile = self.PROFILE_MODEL.get_or_insert(
         key_name=key_name, **properties)
 
     # do not update anything if the role is already in the profile
-    if profile.student_info and self.MODEL == GSoCStudent:
+    if profile.student_info and self.MODEL == self.STUDENT_MODEL:
       return
     elif self.ROLE_FIELD:
       if entity.scope.key() in getattr(profile, self.ROLE_FIELD):
@@ -190,11 +196,12 @@ class RoleUpdater(object):
     else:
       # the role is certainly Student; we have to create a new StudentInfo
       properties = {}
-      for prop in POPULATED_STUDENT_PROPS:
+      for prop in self.POPULATED_STUDENT_PROPS:
         properties[prop] = getattr(entity, prop)
+      self._processStudentEntity(entity, properties)
 
       key_name = profile.key().name()
-      student_info = GSoCStudentInfo(key_name=key_name,
+      student_info = self.STUDENTINFO_MODEL(key_name=key_name,
           parent=profile, **properties)
       profile.student_info = student_info
       to_put.append(student_info)
@@ -322,12 +329,14 @@ def updateRole(role_name):
   """
 
   if role_name == 'gsoc_mentor':
-    updater = RoleUpdater(GSoCMentor, GSoCProfile, 'program', 'mentor_for')
+    updater = RoleUpdater(GSoCMentor, GSoCProfile,
+        GSoCStudent, GSoCStudentInfo, 'program', 'mentor_for')
   elif role_name == 'gsoc_org_admin':
-    updater = RoleUpdater(
-        GSoCOrgAdmin, GSoCProfile, 'program', 'org_admin_for')
+    updater = RoleUpdater(GSoCOrgAdmin, GSoCProfile,
+        GSoCStudent, GSoCStudentInfo, 'program', 'org_admin_for')
   elif role_name == 'gsoc_student':
-    updater = RoleUpdater(GSoCStudent, GSoCProfile, 'scope')
+    updater = RoleUpdater(GSoCStudent, GSoCProfile,
+        GSoCStudent, GSoCStudentInfo, 'scope')
 
   updater.run()
   return http.HttpResponse("Ok")
