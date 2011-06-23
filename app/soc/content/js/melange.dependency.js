@@ -137,6 +137,16 @@
     tpjs + "jquery/jquery.dimensions.js"
   ];
 
+  s.scrollTo = [
+    tpjs + "jquery/jquery.scrollTo.js"
+  ];
+
+  s.formbuilder = [
+    s.scrollTo,
+    null,
+    tpjs + "jquery/jquery.formbuilder.js"
+  ];
+
   s.jqueryui = {}
 
   if (melange.config.is_local !== undefined && melange.config.is_local === true) {
