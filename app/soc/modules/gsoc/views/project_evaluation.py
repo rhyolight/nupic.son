@@ -92,6 +92,20 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
          self, name='gsoc_edit_evaluation_survey'),
     ]
 
+  def checkAccess(self):
+    pass
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/_survey.html'
+
+  def context(self):
+    context = {
+        'post_url': self.redirect.program().urlOf('gsoc_edit_evaluation_survey'),
+        }
+    return context
+
+  def post(self):
+    self.get()
 
 class GSoCProjectEvaluationTakePage(RequestHandler):
   """View for the organization to submit student evaluation.
