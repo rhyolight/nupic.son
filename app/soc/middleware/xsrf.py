@@ -27,6 +27,7 @@ __authors__ = [
 
 
 import itertools
+import logging
 import os
 import re
 
@@ -68,6 +69,7 @@ class XsrfMiddleware(object):
     post_token = request.POST.get('xsrf_token')
 
     if not post_token:
+      logging.warn('Missing XSRF token for post data %s' % (request.POST))
       return http.HttpResponse('Missing XSRF token.', status=403)
 
     result = xsrfutil.isTokenValid(self._getSecretKey(request), post_token)
@@ -75,6 +77,7 @@ class XsrfMiddleware(object):
     if result is True:
       return None
 
+    logging.warn('Invalid XSRF token for post data %s' % (request.POST))
     return http.HttpResponse('Invalid XSRF token: %s' % result, status=403)
 
   def process_response(self, request, response):
