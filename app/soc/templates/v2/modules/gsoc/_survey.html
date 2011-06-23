@@ -19,26 +19,11 @@ limitations under the License.
 {% endblock stylesheets %}
 
 {% block page_content %}
-  {{ block.super }}
-  <div id="survey_widget_template" class="hidden">
-    <div class="survey_widget">
-      <p class="survey_widget message"></p>
-      <input type="button" class="button_edit" value="Edit"></input>
-      <input type="button" class="button_delete" value="Delete"></input>
-    </div>
+  <div id="form-wrap">
+    <ul id="form-builder">
+      <li></li>
+    </ul>
   </div>
-  <div id="survey_menu_template" class="hidden">
-    <div class="survey_menu">
-      <input type="button" value="Add radio selections" class="survey_button radio"></input>
-      <input type="button" value="Add checkbox selections" class="survey_button checkbox"></input>
-      <input type="button" value="Add short answer" class="survey_button short_answer"></input>
-      <input type="button" value="Add long answer" class="survey_button long_answer"></input>
-    </div>
-  </div>
-
-  <div id="survey_container" class="hidden">
-  </div>
-
 {% endblock page_content %}
 
 {% block synchronous_scripts %}
@@ -46,28 +31,23 @@ limitations under the License.
   {{ block.super }}
 {% endblock synchronous_scripts %}
 
+
 {% block dependencies %}
   [
     dep.uniform,
-    dep.melange.datetimepicker,
+    dep.jqueryui.sortable,
+    dep.formbuilder,
     null,
-//    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/_survey.js", {}),
     function () {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-      var fields = ["melange-content-textarea"];
-      tinyMCE.init(melange.tinyMceConfig(fields, "advanced"));
+      jQuery(document).ready(function(){
+        jQuery('#form-builder').formbuilder({
+          'save_url': "{{ post_url }}",
+          'load_url': "{{ post_url }}",
+        });
+        jQuery("#form-wrap ul").sortable({ opacity: 0.6, cursor: 'move'});
 
-      var config = {
-        changeMonth: true,
-        changeYear: false,
-        dateFormat: "yy-mm-dd",
-        showButtonPanel: true,
-      }
-      var fields_to_enhance = [
-        "#survey_start",
-        "#survey_end",
-      ].join(",");
-      jQuery(fields_to_enhance).datetimepicker(config);
+        jQuery("select, input:radio, input:file, input:checkbox").uniform();
+      });
     }
   ]
 {% endblock dependencies %}
