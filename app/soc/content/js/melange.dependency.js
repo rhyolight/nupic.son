@@ -180,6 +180,12 @@
     tpjs + "jquery/jquery-ui.widget.js"
   ];
 
+  s.jqueryui.mouse = [
+    s.jqueryui.core,
+    null,
+    tpjs + "jquery/jquery-ui.mouse.js"
+  ];
+
   s.jqueryui.button = [
     s.jqueryui.widget,
     null,
@@ -206,6 +212,12 @@
     tpjs + "jquery/jquery.ui-checkboxes.js"
   ];
 
+  s.jqueryui.sortable = [
+    s.jqueryui.widget,
+    s.jqueryui.mouse,
+    null,
+    tpjs + "jquery/jquery-ui.sortable.js"
+  ];
 
   s.jqgrid = [
     s.jqueryui.core,
