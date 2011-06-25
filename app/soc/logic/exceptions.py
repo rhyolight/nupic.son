@@ -47,6 +47,14 @@ class AccessViolation(Error):
   """
   status = 403
 
+class GDocsLoginRequest(Error):
+  """GDocs login required.
+  """
+
+  url_name = 'oauth_redirect'
+
+  def __init__(self, next):
+    self.next = next
 
 class NotFound(Error):
   """Item Not Found.

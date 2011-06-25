@@ -36,6 +36,7 @@ from django.template import loader
 from soc.logic.exceptions import LoginRequest
 from soc.logic.exceptions import RedirectRequest
 from soc.logic.exceptions import AccessViolation
+from soc.logic.exceptions import GDocsLoginRequest
 from soc.logic.exceptions import Error
 from soc.views.helper import access_checker
 from soc.views.helper import context as context_helper
@@ -314,6 +315,9 @@ class RequestHandler(object):
       self.redirect.toUrl(e.url)
     except AccessViolation, e:
       self.accessViolation(e.status, e.args[0])
+    except GDocsLoginRequest, e:
+      self.redirect.toUrl('%s?%s' % (self.redirect.urlOf(e.url_name),
+                                     urllib.urlencode({'next':e.next})))
     except Error, e:
       self.error(e.status, message=e.args[0])
     finally:
