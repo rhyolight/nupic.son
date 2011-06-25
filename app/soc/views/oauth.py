@@ -24,7 +24,7 @@ __authors__ = [
 
 from django.conf.urls.defaults import url as django_url
 
-from soc.views.helper.gdata_apis import gdocs_service_helper
+from soc.views.helper import gdata_apis as gdata_helper
 
 from soc.modules.gsoc.views.base import RequestHandler
 
@@ -43,10 +43,10 @@ class OAuthRedirectPage(RequestHandler):
     self.check.isUser()
 
   def context(self):
-    service = gdocs_service_helper.createGDocsService(self.request)
+    service = gdata_helper.createDocsService(self.data)
     next = '%s?next=%s' % (self.redirect.urlOf('oauth_verify'),
                            self.request.GET.get('next','/'))
-    url = gdocs_service_helper.generateOAuthRedirectURL(
+    url = gdata_helper.generateOAuthRedirectURL(
         service, self.data.user,
         next)
     context = {
@@ -72,9 +72,8 @@ class OAuthVerifyToken(RequestHandler):
     return patterns
 
   def get(self):
-    service = gdocs_service_helper.createGDocsService(self.request)
-    gdocs_service_helper.checkOAuthVerifier(service, self.request,
-                                            self.data.user)
+    service = gdata_helper.createDocsService(self.data)
+    gdata_helper.checkOAuthVerifier(service, self.data)
     next = self.request.GET.get('next','/')
     self.redirect.toUrl(next)
     return self.response
