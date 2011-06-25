@@ -65,6 +65,7 @@ class Callback(object):
     from soc.modules.gsoc.views import slot_transfer_admin
     #from soc.modules.gsoc.views import statistic
     from soc.modules.gsoc.views import student_forms
+    from soc.modules.gsoc.views import oauth
 
     self.views.append(accepted_orgs.AcceptedOrgsPage())
     self.views.append(admin.DashboardPage())
@@ -118,6 +119,8 @@ class Callback(object):
     self.views.append(slot_transfer.UpdateSlotTransferPage())
     self.views.append(student_forms.DownloadForm())
     self.views.append(student_forms.FormPage())
+    self.views.append(oauth.OAuthRedirectPage())
+    self.views.append(oauth.OAuthVerifyToken())
 #    self.views.append(statistic.StatisticDashboard())
 #    self.views.append(statistic.StatisticFetcher())
 
