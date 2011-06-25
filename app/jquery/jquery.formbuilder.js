@@ -84,8 +84,9 @@
 
 			// set the form save action
 			$(this).after($('<div class="clearfix"><button id="save-form" type="submit" name="submit">Save</button> <button id="preview-form" type="submit" name="submit">Preview</button></div>').click(function(){
-				save();
-				return false;
+			  $('#schema').attr('value', JSON.stringify($(ul_obj).serializeFormList()));
+				$('#form').submit();
+				return true;
 			}));
 			
 			// Create form control select box and add into the editor
@@ -408,7 +409,7 @@
 			attributes: ['class']
 		};
 		var opts = $.extend(defaults, options);
-		var serialStr 	= '';
+		var formJSON = [];
 		
 		if(!opts.is_child){ opts.prepend = '&'+opts.prepend; }
 		
@@ -416,71 +417,70 @@
 		this.each(function() {
 			var ul_obj = this;
 
-			var li_count 	= 0;
 			$(this).children().each(function(){
-				
 				for(att in opts.attributes){
-					serialStr += opts.prepend+'['+li_count+']['+opts.attributes[att]+']='+escape($(this).attr(opts.attributes[att]));
-					
+				  var fieldDict = {};
+				  fieldDict[opts.attributes[att]] = escape($(this).attr(opts.attributes[att]));
+
 					// append the form field values
 					if(opts.attributes[att] == 'class'){
-						
-						serialStr += opts.prepend+'['+li_count+'][required]='+escape($('#'+$(this).attr('id')+' input.required').attr('checked'));
-					
+ 	          fieldDict.required = escape($('#'+$(this).attr('id')+' input.required').attr('checked'));
+
 						switch($(this).attr(opts.attributes[att])){
 							case 'input_text':
-								serialStr += opts.prepend+'['+li_count+'][values]='+escape($('#'+$(this).attr('id')+' input[type=text]').val());
+								fieldDict.values = escape($('#'+$(this).attr('id')+' input[type=text]').val());
 								break;
 							case 'textarea':
-								serialStr += opts.prepend+'['+li_count+'][values]='+escape($('#'+$(this).attr('id')+' input[type=text]').val());
+							  fieldDict.values = escape($('#'+$(this).attr('id')+' input[type=text]').val());
 								break;
 							case 'checkbox':
-								var c = 1;
+							  fieldDict.values = [];
 								$('#'+$(this).attr('id')+' input[type=text]').each(function(){
 									
 									if($(this).attr('name') == 'title'){
-										serialStr += opts.prepend+'['+li_count+'][title]='+escape($(this).val());
+									  fieldDict.title = escape($(this).val());
 									} else {
-										serialStr += opts.prepend+'['+li_count+'][values]['+c+'][value]='+escape($(this).val());
-										serialStr += opts.prepend+'['+li_count+'][values]['+c+'][default]='+$(this).prev().attr('checked');
+									  var valueDict = {};
+									  valueDict.value = escape($(this).val());
+										valueDict.checked = $(this).prev().attr('checked');
+										fieldDict.values.push(valueDict);
 									}
-									c++;
 								});
 								break;
 							case 'radio':
-								var c = 1;
+							  fieldDict.values = [];
 								$('#'+$(this).attr('id')+' input[type=text]').each(function(){
 									if($(this).attr('name') == 'title'){
-										serialStr += opts.prepend+'['+li_count+'][title]='+escape($(this).val());
+									  fieldDict.title = escape($(this).val());
 									} else {
-										serialStr += opts.prepend+'['+li_count+'][values]['+c+'][value]='+escape($(this).val());
-										serialStr += opts.prepend+'['+li_count+'][values]['+c+'][default]='+$(this).prev().attr('checked');
+									  var valueDict = {};
+									  valueDict.value = escape($(this).val());
+									  valueDict.checked = $(this).prev().attr('checked');
+										fieldDict.values.push(valueDict);
 									}
-									c++;
 								});
 								break;
 							case 'select':
-								var c = 1;
-								
-								serialStr += opts.prepend+'['+li_count+'][multiple]='+$('#'+$(this).attr('id')+' input[name=multiple]').attr('checked');
+								fieldDict.multiple = $('#'+$(this).attr('id')+' input[name=multiple]').attr('checked');
 								
 								$('#'+$(this).attr('id')+' input[type=text]').each(function(){
 									
 									if($(this).attr('name') == 'title'){
-										serialStr += opts.prepend+'['+li_count+'][title]='+escape($(this).val());
+									  fieldDict.title = escape($(this).val());
 									} else {
-										serialStr += opts.prepend+'['+li_count+'][values]['+c+'][value]='+escape($(this).val());
-										serialStr += opts.prepend+'['+li_count+'][values]['+c+'][default]='+$(this).prev().attr('checked');
+									  var valueDict = {};
+									  valueDict.value = escape($(this).val());
+									  valueDict.checked = $(this).prev().attr('checked');
+									  fieldDict.values.push(valueDict);
 									}
-									c++;
 								});
 							break;
 						}
 					}
+					formJSON.push(fieldDict);
 				}
-				li_count++;
 			});
 		});
-		return(serialStr);
+		return(formJSON);
 	};
 })(jQuery);
