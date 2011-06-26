@@ -147,3 +147,76 @@ class Program(soc.models.presence.Presence):
       'Visible: Visible to everyone.<br/>'
       'Inactive: Not visible in sidebar, not editable.<br/>'
       'Invalid: Not visible or editable by anyone.</tt>')
+
+  #: The document entity which contains the "About" page for the program
+  about_page = db.ReferenceProperty(
+      reference_class=soc.models.document.Document,
+      verbose_name=ugettext('About page document'))
+  about_page.collection_name = 'about_page'
+  about_page.help_text = ugettext('The document with <b>About</b>')
+
+  #: The document entity which contains "Events & Timeline" page
+  #: for the program
+  events_page = db.ReferenceProperty(
+      reference_class=soc.models.document.Document,
+      verbose_name=ugettext('Events page document'))
+  events_page.collection_name = 'events_page'
+  events_page.help_text = ugettext(
+      'The document for the <b>Events & Timeline</b> page')
+
+  #: The url which contains the "Events & Timeline" frame
+  events_frame_url = db.LinkProperty(
+      verbose_name=ugettext('Events page iframe url'))
+  events_frame_url.help_text = ugettext(
+      'The iframe url for the <b>Events & Timeline</b> page')
+
+  #: The document entity which contains the "Connect With Us" page
+  #: for the program
+  connect_with_us_page = db.ReferenceProperty(
+      reference_class=soc.models.document.Document,
+      verbose_name=ugettext('Connect with us document'))
+  connect_with_us_page.collection_name = 'connect_with_us_page'
+  connect_with_us_page.help_text = ugettext(
+      'The document for the <b>Connect With Us</b> page')
+
+  #: The document entity which contains the "Help" page
+  #: for the program
+  help_page = db.ReferenceProperty(
+      reference_class=soc.models.document.Document,
+      verbose_name=ugettext('Help document'))
+  help_page.collection_name = 'help_page'
+  help_page.help_text = ugettext(
+      'The document for the <b>Help</b> page')
+
+  privacy_policy = db.ReferenceProperty(
+      reference_class=soc.models.document.Document,
+      verbose_name=ugettext("Privacy Policy Document"))
+  privacy_policy.collection_name = 'privacy_policy_page'
+  privacy_policy.help_text = ugettext(
+      "The document for the <b>Privacy Policy</b> page")
+
+  facebook = db.LinkProperty(
+      required=False, verbose_name=ugettext("Facebook URL"))
+  facebook.help_text = ugettext("URL of the Facebook page for the program")
+  facebook.group = ugettext("1. Public Info")
+
+  twitter = db.LinkProperty(
+      required=False, verbose_name=ugettext("Twitter URL"))
+  twitter.help_text = ugettext("URL of the Twitter profile for the program")
+  twitter.group = ugettext("1. Public Info")
+
+  blogger = db.LinkProperty(
+      required=False, verbose_name=ugettext("Blogger URL"))
+  blogger.help_text = ugettext("URL of the Blogger home page for the program")
+  blogger.group = ugettext("1. Public Info")
+
+  email = db.EmailProperty(
+      required=False, verbose_name=ugettext("Program email"))
+  email.help_text = ugettext("Contact email address for the program")
+  email.group = ugettext("1. Public Info")
+
+  irc = db.EmailProperty(
+      required=False, verbose_name=ugettext("IRC URL"))
+  irc.help_text = ugettext("URL of the irc channel for the program in "
+                           "the format irc://<channel>@server")
+  irc.group = ugettext("1. Public Info")
