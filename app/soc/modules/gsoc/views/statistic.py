@@ -151,7 +151,9 @@ class StatisticManager(RequestHandler):
   """
 
   def checkAccess(self):
-    key_name = self.data.kwargs['key_name']
+    self.check.isHost()
+
+    key_name = self.data.kwargs['key_name']    
     self.data.statistic = GSoCStatistic.get_by_key_name(key_name)
 
     self.check.isStatisticValid()
@@ -171,6 +173,6 @@ class StatisticManager(RequestHandler):
     else:
       raise AccessViolation('Unsupported value sent to the server')
 
-    if self.data.statistic.is_visible ^ is_visible:
+    if self.data.statistic.is_visible != is_visible:
       self.data.statistic.is_visible = is_visible
       db.put(self.data.statistic)
