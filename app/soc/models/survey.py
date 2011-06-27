@@ -157,3 +157,6 @@ class Survey(soc.models.work.Work):
   #: Referenceproperty that specifies the content of this survey.
   survey_content = db.ReferenceProperty(reference_class=SurveyContent,
                                         collection_name="survey_parent")
+
+  #: Stores the schema for the survey form
+  schema = db.TextProperty(required=False)
