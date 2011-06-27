@@ -117,8 +117,47 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
 
     return context
 
+  def surveyContentFromForm(self):
+    """Create/edit the project evaluation survey form.
+
+    Returns:
+      a newly created or updated survey entity or None.
+    """
+    if self.data.project_evaluation:
+      form = GSoCProjectEvaluationEditForm(
+          self.data.POST, instance=self.data.project_evaluation)
+    else:
+      form = GSoCProjectEvaluationEditForm(self.data.POST)
+
+    if not form.is_valid():
+      return None
+
+    form.cleaned_data['modified_by'] = self.data.user
+
+    if not self.data.project_evaluation:
+      form.cleaned_data['link_id'] = self.data.kwargs.get('survey')
+      form.cleaned_data['prefix'] = 'gsoc_program'
+      form.cleaned_data['author'] = self.data.user
+      # kwargs which defines an evaluation
+      fields = ['sponsor', 'program', 'survey']
+
+      key_name = '/'.join(['gsoc_program'] +
+                          [self.data.kwargs[field] for field in fields])
+
+      entity = form.create(commit=True, key_name=key_name)
+    else:
+      entity = form.save(commit=True)
+
+    return entity
+
   def post(self):
-    self.get()
+    survey_content = self.surveyContentFromForm()
+    if not survey_content:
+      r = self.redirect.survey()
+      r.to('gsoc_edit_evaluation_survey', validated=True)
+    else:
+      self.get()
+
 
 class GSoCProjectEvaluationTakePage(RequestHandler):
   """View for the organization to submit student evaluation.
