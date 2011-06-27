@@ -526,7 +526,8 @@ class SurveyTakeForm(ModelForm):
           self.fields[field_name].initial = str(value)
       self.fields[field_name].choices = choices
     if self.instance:
-      self.fields[field_name].initial = getattr(self.instance, field_name)
+      self.fields[field_name].initial = getattr(
+          self.instance, field_name, None)
 
 
 class BoundField(forms.BoundField):
