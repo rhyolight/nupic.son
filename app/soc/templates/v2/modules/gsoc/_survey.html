@@ -41,8 +41,9 @@ limitations under the License.
     function () {
       jQuery(document).ready(function(){
         jQuery('#form-builder').formbuilder({
-          'save_url': "{{ post_url }}",
-          'load_url': "{{ post_url }}",
+          save_url: "{{ post_url }}",
+          load_url: "{{ post_url }}",
+          useJson: true,
         });
         $(function() {
           $("#form-wrap ul").sortable({ opacity: 0.6, cursor: 'move'});
