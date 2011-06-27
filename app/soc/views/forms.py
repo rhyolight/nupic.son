@@ -460,7 +460,11 @@ class SurveyTakeForm(ModelForm):
         if name not in self._meta.fields:
           continue
 
-      setattr(instance, name, value)
+      # we do not want to set empty datastructures as property values,
+      # however for boolean fields value itself can be False so this
+      # or logic
+      if value == False or value:
+        setattr(instance, name, value)
 
     if commit:
       instance.put()
