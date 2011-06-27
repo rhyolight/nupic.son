@@ -26,6 +26,7 @@ __authors__ = [
 import collections
 import itertools
 import re
+import urllib
 
 from google.appengine.ext import db
 from google.appengine.ext.db import djangoforms
@@ -40,6 +41,7 @@ from django.utils.encoding import force_unicode
 from django.utils.formats import dateformat
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
+from django.utils.simplejson import loads
 from django.utils.translation import ugettext
 
 import django
@@ -473,46 +475,55 @@ class SurveyTakeForm(ModelForm):
       for field in schema:
         self.constructField(field)
 
-  def constructField(self, field_name, field_info):
+  def constructField(self, field_dict):
     """Constructs the field for the given field metadata
 
     Args:
-      field_name: Name of the field that must be populated
-      field_info: Meta data containing how the field must be constructed
+      field_dict: Meta data containing how the field must be constructed
     """
-    type = field_info.get('type', '')
-    label = field_info.get('question', '')
-    required = field_info.get('required', True)
-    comment = field_info.get('has_comment', False)
-    help_text = field_info.get('tip', '')
+    type = field_dict.get('class', '')
+    label = urllib.unquote(field_dict.get('label', ''))
+    required = field_dict.get('required', True)
+    comment = field_dict.get('has_comment', False)
+    help_text = field_dict.get('tip', '')
+    values = field_dict.get('values', '')
 
-    choices = [(choice, choice) for choice in getattr(
-        self.survey_content, field_name, [])]
+    pattern = re.compile(r'[A-Za-z0-9_]')
+    field_name_suffix = re.sub(pattern, '_', label).strip('_')
+
+    field_name = '%s_%s' % (type, field_name_suffix)
 
     widget = None
 
     if type == 'selection':
       field = django.forms.ChoiceField
-    elif type == 'pick_multi':
+    elif type == 'checkbox':
       field = django.forms.MultipleChoiceField
       widget = CheckboxSelectMultiple()
     elif type == 'choice':
       field = django.forms.ChoiceField
       widget = RadioSelect()
-    elif type == 'pick_quant':
+    elif type == 'radio':
       field = django.forms.ChoiceField
       widget = RadioSelect()
-    elif type == 'long_answer':
+    elif type == 'textarea':
       field = django.forms.CharField
       widget = django.forms.Textarea()
-    elif type == 'short_answer':
+    elif type == 'input_text':
       field = django.forms.CharField
 
     self.fields[field_name] = field(label=label, required=required,
                                     help_text=help_text)
     if widget:
       self.fields[field_name].widget = widget
-    if choices:
+
+    if isinstance(values, list):
+      choices = []
+      for choice in values:
+        value = urllib.unquote(choice.get('value'))
+        choices.append((value, value))
+        if choice['checked']:
+          self.fields[field_name].initial = str(value)
       self.fields[field_name].choices = choices
     if self.instance:
       self.fields[field_name].initial = getattr(self.instance, field_name)
