@@ -15,6 +15,7 @@
 			control_box_target: false,
 			useJson: true, // XML as fallback
 			serialize_prefix: 'frmb',
+			options_wrap_class: 'options-wrap',
 			messages: {
 				save				: "Save",
 				add_new_field		: "Add New Field...",
@@ -230,7 +231,7 @@
 					field += '<div class="frm-fld"><label>' + opts.messages.label + '</label>';
 					field += '<input type="text" name="label" value="' + unescape(label) + '" /></div>';
 					field += '<div class="false-label">' + opts.messages.select_options + '</div>';
-					field += '<div class="fields">';
+					field += '<div class="fields ' + opts.options_wrap_class + '">';
 					if (typeof (values) === 'object') {
 						for (i = 0; i < values.length; i++) {
 							field += checkboxFieldHtml(values[i]);
