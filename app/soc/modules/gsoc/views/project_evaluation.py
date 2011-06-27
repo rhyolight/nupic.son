@@ -50,9 +50,8 @@ class GSoCProjectEvaluationEditForm(forms.SurveyEditForm):
   class Meta:
     model = GradingProjectSurvey
     css_prefix = 'gsoc_evaluation_edit'
-    exclude = ['schema', 'scope', 'author', 'modified_by',
-               'survey_content', 'scope_path', 'link_id',
-               'prefix', 'survey_order']
+    exclude = ['scope', 'author', 'modified_by', 'survey_content',
+               'scope_path', 'link_id', 'prefix', 'survey_order']
 
 
 class GSoCProjectEvaluationTakeForm(forms.SurveyTakeForm):
