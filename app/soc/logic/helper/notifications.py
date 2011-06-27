@@ -227,7 +227,7 @@ def newOrganizationContext(data):
     data: a RequestData object
   """
 
-  url = data.redirect.survey().urlOf('gsoc_org_app_apply', full=True)
+  url = data.redirect.orgApp().urlOf('gsoc_org_app_apply', full=True)
 
   message_properties = {
       'url': url,
