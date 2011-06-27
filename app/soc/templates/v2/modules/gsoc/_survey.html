@@ -19,11 +19,21 @@ limitations under the License.
 {% endblock stylesheets %}
 
 {% block page_content %}
-  <div id="form-wrap">
-    <ul id="form-builder">
-      <li></li>
-    </ul>
-  </div>
+  <form action="#" method="post" id="form" class="form-register">
+    <h2 id="form-register-title">
+      {% if form_header_msg %}
+        {{ form_header_msg }}
+      {% else %}
+        {{ page_name }}
+      {% endif %}
+    </h2><p id="form-register-req" class="req">* fields required</p>
+    {{ form.render }}
+    <div id="form-wrap">
+      <p class="switch"></p>
+      <ul id="form-builder">
+      </ul>
+    </div>
+  </form>
 {% endblock page_content %}
 
 {% block synchronous_scripts %}
@@ -40,6 +50,8 @@ limitations under the License.
     null,
     function () {
       jQuery(document).ready(function(){
+        jQuery("select, input:radio, input:file, input:checkbox").uniform();
+
         jQuery('#form-builder').formbuilder({
           save_url: "{{ post_url }}",
           load_url: "{{ post_url }}",
@@ -59,7 +71,6 @@ limitations under the License.
           });
         });
 
-        jQuery("select, input:radio, input:file, input:checkbox").uniform();
       });
     }
   ]
