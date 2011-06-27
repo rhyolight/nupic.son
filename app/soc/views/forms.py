@@ -481,7 +481,7 @@ class SurveyTakeForm(ModelForm):
     Args:
       field_dict: Meta data containing how the field must be constructed
     """
-    type = field_dict.get('class', '')
+    type = field_dict.get('field_type', '')
     label = urllib.unquote(field_dict.get('label', ''))
     required = field_dict.get('required', True)
     comment = field_dict.get('has_comment', False)

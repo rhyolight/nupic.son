@@ -137,40 +137,40 @@
 					$(json).each(function () {
 					// checkbox type
 
-            if (this.class === 'input_text') {
+            if (this.field_type === 'input_text') {
               options = [this.label];
             }
-            if (this.class === 'textarea') {
+            if (this.field_type === 'textarea') {
               options = [this.label];
             }
 						// checkbox type
-            else if (this.class === 'checkbox') {
+            else if (this.field_type === 'checkbox') {
 							options = [this.label];
 							values = [];
 							$.each(this.values, function () {
-								values.push([this.value, this.default]);
+								values.push([this.value, this.checked]);
 							});
 						}
 						// radio type
-						else if (this.class === 'radio') {
+						else if (this.field_type === 'radio') {
 							options = [this.label];
 							values = [];
 							$.each(this.values, function () {
-								values.push([this.value, this.default]);
+								values.push([this.value, this.checked]);
 							});
 						}
 						// select type
-						else if (this.class === 'select') {
+						else if (this.field_type === 'select') {
 							options = [this.label, this.multiple];
 							values = [];
 							$.each(this.values, function () {
-								values.push([this.value, this.default]);
+								values.push([this.value, this.checked]);
 							});
 						}
 						else {
 							values = [this.values];
 						}
-						appendNewField(this.class, values, options, this.required);
+						appendNewField(this.field_type, values, options, this.required);
 					});
 				};
 			// Wrapper for adding a new field
@@ -464,7 +464,7 @@
     var defaults = {
       prepend: 'ul',
       is_child: false,
-      attributes: ['class']
+      attributes: ['field_type']
     };
     var opts = $.extend(defaults, options);
     var formJSON = [];
@@ -481,7 +481,7 @@
           fieldDict[opts.attributes[att]] = escape($(this).attr(opts.attributes[att]));
 
           // append the form field values
-          if(opts.attributes[att] == 'class'){
+          if(opts.attributes[att] == 'field_type'){
             fieldDict.required = $('#'+$(this).attr('id')+' input.required').attr('checked');
 
             switch($(this).attr(opts.attributes[att])){
