@@ -87,20 +87,34 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/evaluation/edit/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_edit_evaluation_survey'),
+         url(r'^gsoc/evaluation/edit/%s$' % url_patterns.SURVEY,
+             self, name='gsoc_edit_evaluation_survey'),
     ]
 
   def checkAccess(self):
-    pass
+    self.check.isHost()
+    self.mutator.projectEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_survey.html'
 
   def context(self):
+    if self.data.project_evaluation:
+      form = GSoCProjectEvaluationEditForm(
+          self.data.POST or None, instance=self.data.project_evaluation)
+    else:
+      form = GSoCProjectEvaluationEditForm(self.data.POST or None)
+
+    page_name = ugettext('Edit - %s' % (self.data.project_evaluation.title)) \
+        if self.data.project_evaluation else 'Create new survey'
     context = {
-        'post_url': self.redirect.program().urlOf('gsoc_edit_evaluation_survey'),
+        'page_name': page_name,
+        'post_url': self.redirect.survey().urlOf(
+            'gsoc_edit_evaluation_survey'),
+        'form': form,
+        'error': bool(form.errors),
         }
+
     return context
 
   def post(self):
