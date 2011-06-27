@@ -137,9 +137,9 @@ class Logic(object):
     """Returns the KeyName constructed by cutting out suffix from
     the given path.
 
-    One can compute the number of required parts, as it is the lenght of scope
-    plus one. Therefore, if the path contains more parts, there are cut out and
-    the prefix is returned.
+    One can compute the number of required parts, as it is the length 
+    of scope plus one. Therefore, if the path contains more parts, 
+    they are cut out and the prefix is returned.
 
     Args:
       path: a string whose format is string1/string2/.../stringN
@@ -154,7 +154,8 @@ class Logic(object):
     return'/'.join(key_name_parts[:required_parts_num])
 
   def getKeyNameFromFields(self, fields):
-    """Returns the KeyName constructed from fields dict for this type of entity.
+    """Returns the KeyName constructed from fields dict for this 
+    type of entity.
 
     The KeyName is in the following format:
     <key_value1>/<key_value2>/.../<key_valueN>

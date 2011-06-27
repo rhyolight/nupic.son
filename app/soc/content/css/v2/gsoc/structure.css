@@ -551,6 +551,14 @@
   font-size: 12px;
   line-height: 1.5em;
 }
+#main #description-section-redirect-message a {
+  text-decoration: none;
+  background: #d5620e;
+  color: #fff;
+  padding: 3px 7px;
+  font-size: 13px;
+  font-weight: bold;
+}
 /*////////////////
 
   Footer
