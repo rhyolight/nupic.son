@@ -49,20 +49,7 @@
 			var help;
 			// Add a unique class to the current element
 			$(ul_obj).addClass(frmb_id);
-			// load existing form data
-			if (opts.load_url) {
-				$.ajax({
-					type: "GET",
-					url: opts.load_url,
-					success: function (data) {
-						if (opts.useJson) {
-							fromJson(data);
-						} else {
-							fromXml(data);
-						}
-					}
-				});
-			}
+
 			// Create form control select box and add into the editor
 			var controlBox = function (target) {
 					var select = '';
@@ -90,8 +77,9 @@
 					$(ul_obj).after(save_button);
 					// Set the form save action
 					$('#' + save_id).click(function () {
-						save();
-						return false;
+					  $('#schema').attr('value', JSON.stringify($(ul_obj).serializeFormList()));
+					  $('#form').submit();
+					  return true;
 					});
 					// Add a callback to the select element
 					$('#' + box_id).change(function () {
@@ -112,7 +100,7 @@
 					$(xml).find('field').each(function () {
 						// checkbox type
 						if ($(this).attr('type') === 'checkbox') {
-							options = [$(this).attr('title')];
+							options = [$(this).attr('label')];
 							values = [];
 							$(this).find('checkbox').each(function () {
 								values.push([$(this).text(), $(this).attr('checked')]);
@@ -120,7 +108,7 @@
 						}
 						// radio type
 						else if ($(this).attr('type') === 'radio') {
-							options = [$(this).attr('title')];
+							options = [$(this).attr('label')];
 							values = [];
 							$(this).find('radio').each(function () {
 								values.push([$(this).text(), $(this).attr('checked')]);
@@ -128,7 +116,7 @@
 						}
 						// select type
 						else if ($(this).attr('type') === 'select') {
-							options = [$(this).attr('title'), $(this).attr('multiple')];
+							options = [$(this).attr('label'), $(this).attr('multiple')];
 							values = [];
 							$(this).find('option').each(function () {
 								values.push([$(this).text(), $(this).attr('checked')]);
@@ -147,9 +135,17 @@
 					var required = false;
 					// Parse json
 					$(json).each(function () {
+					// checkbox type
+
+            if (this.class === 'input_text') {
+              options = [this.label];
+            }
+            if (this.class === 'textarea') {
+              options = [this.label];
+            }
 						// checkbox type
-						if (this.class === 'checkbox') {
-							options = [this.title];
+            else if (this.class === 'checkbox') {
+							options = [this.label];
 							values = [];
 							$.each(this.values, function () {
 								values.push([this.value, this.default]);
@@ -157,7 +153,7 @@
 						}
 						// radio type
 						else if (this.class === 'radio') {
-							options = [this.title];
+							options = [this.label];
 							values = [];
 							$.each(this.values, function () {
 								values.push([this.value, this.default]);
@@ -165,7 +161,7 @@
 						}
 						// select type
 						else if (this.class === 'select') {
-							options = [this.title, this.multiple];
+							options = [this.label, this.multiple];
 							values = [];
 							$.each(this.values, function () {
 								values.push([this.value, this.default]);
@@ -186,10 +182,10 @@
 					}
 					switch (type) {
 					case 'input_text':
-						appendTextInput(values, required);
+						appendTextInput(values, options, required);
 						break;
 					case 'textarea':
-						appendTextarea(values, required);
+						appendTextarea(values, options, required);
 						break;
 					case 'checkbox':
 						appendCheckboxGroup(values, options, required);
@@ -203,28 +199,36 @@
 					}
 				};
 			// single line input type="text"
-			var appendTextInput = function (values, required) {
+			var appendTextInput = function (values, options, required) {
+  			  var label = '';
+          if (typeof (options) === 'object') {
+            label = options[0];
+          }
 					field += '<label>' + opts.messages.label + '</label>';
-					field += '<input class="fld-title" id="title-' + last_id + '" type="text" value="' + values + '" />';
+					field += '<input class="fld-label" id="label-' + last_id + '" type="text" value="' + unescape(label) + '" />';
 					help = '';
 					appendFieldLi(opts.messages.text, field, required, help);
 				};
 			// multi-line textarea
-			var appendTextarea = function (values, required) {
+			var appendTextarea = function (values, options, required) {
+			    var label = '';
+			    if (typeof (options) === 'object') {
+            label = options[0];
+          }
 					field += '<label>' + opts.messages.label + '</label>';
-					field += '<input type="text" value="' + values + '" />';
+					field += '<input type="text" value="' + unescape(label) + '" />';
 					help = '';
 					appendFieldLi(opts.messages.paragraph_field, field, required, help);
 				};
 			// adds a checkbox element
 			var appendCheckboxGroup = function (values, options, required) {
-					var title = '';
+					var label = '';
 					if (typeof (options) === 'object') {
-						title = options[0];
+						label = options[0];
 					}
 					field += '<div class="chk_group">';
-					field += '<div class="frm-fld"><label>' + opts.messages.title + '</label>';
-					field += '<input type="text" name="title" value="' + title + '" /></div>';
+					field += '<div class="frm-fld"><label>' + opts.messages.label + '</label>';
+					field += '<input type="text" name="label" value="' + unescape(label) + '" /></div>';
 					field += '<div class="false-label">' + opts.messages.select_options + '</div>';
 					field += '<div class="fields">';
 					if (typeof (values) === 'object') {
@@ -252,20 +256,20 @@
 					field = '';
 					field += '<div>';
 					field += '<input type="checkbox"' + (checked ? ' checked="checked"' : '') + ' />';
-					field += '<input type="text" value="' + value + '" />';
+					field += '<input type="text" value="' + unescape(value) + '" />';
 					field += '<a href="#" class="remove" title="' + opts.messages.remove_message + '">' + opts.messages.remove + '</a>';
 					field += '</div>';
 					return field;
 				};
 			// adds a radio element
 			var appendRadioGroup = function (values, options, required) {
-					var title = '';
+					var label = '';
 					if (typeof (options) === 'object') {
-						title = options[0];
+						label = options[0];
 					}
 					field += '<div class="rd_group">';
-					field += '<div class="frm-fld"><label>' + opts.messages.title + '</label>';
-					field += '<input type="text" name="title" value="' + title + '" /></div>';
+					field += '<div class="frm-fld"><label>' + opts.messages.label + '</label>';
+					field += '<input type="text" name="label" value="' + unescape(label) + '" /></div>';
 					field += '<div class="false-label">' + opts.messages.select_options + '</div>';
 					field += '<div class="fields">';
 					if (typeof (values) === 'object') {
@@ -293,7 +297,7 @@
 					field = '';
 					field += '<div>';
 					field += '<input type="radio"' + (checked ? ' checked="checked"' : '') + ' name="radio_' + name + '" />';
-					field += '<input type="text" value="' + value + '" />';
+					field += '<input type="text" value="' + unescape(value) + '" />';
 					field += '<a href="#" class="remove" title="' + opts.messages.remove_message + '">' + opts.messages.remove + '</a>';
 					field += '</div>';
 					return field;
@@ -301,14 +305,14 @@
 			// adds a select/option element
 			var appendSelectList = function (values, options, required) {
 					var multiple = false;
-					var title = '';
+					var label = '';
 					if (typeof (options) === 'object') {
-						title = options[0];
+						label = options[0];
 						multiple = options[1] === 'true' ? true : false;
 					}
 					field += '<div class="opt_group">';
-					field += '<div class="frm-fld"><label>' + opts.messages.title + '</label>';
-					field += '<input type="text" name="title" value="' + title + '" /></div>';
+					field += '<div class="frm-fld"><label>' + opts.messages.label + '</label>';
+					field += '<input type="text" name="label" value="' + unescape(label) + '" /></div>';
 					field += '';
 					field += '<div class="false-label">' + opts.messages.select_options + '</div>';
 					field += '<div class="fields">';
@@ -339,15 +343,15 @@
 					}
 				};
 			// Appends the new field markup to the editor
-			var appendFieldLi = function (title, field_html, required, help) {
+			var appendFieldLi = function (label, field_html, required, help) {
 					if (required) {
-						required = required === 'true' ? true : false;
+						required = required === true ? true : false;
 					}
 					var li = '';
 					li += '<li id="frm-' + last_id + '-item" class="' + field_type + '">';
 					li += '<div class="legend">';
 					li += '<a id="frm-' + last_id + '" class="toggle-form" href="#">' + opts.messages.hide + '</a> ';
-					li += '<strong id="txt-title-' + last_id + '">' + title + '</strong></div>';
+					li += '<strong id="txt-label-' + last_id + '">' + label + '</strong></div>';
 					li += '<div id="frm-' + last_id + '-fld" class="frm-holder">';
 					li += '<div class="frm-elements">';
 					li += field;
@@ -365,6 +369,9 @@
 					}, 'slow');
 					last_id++;
 				};
+      // load existing form data
+      fromJson(JSON.parse($('#schema').attr('value')));
+
 			// handle field delete links
 			$('.remove').live('click', function () {
 				$(this).parent('div').animate({
@@ -400,7 +407,7 @@
 			// handle delete confirmation
 			$('.delete-confirm').live('click', function () {
 				var delete_id = $(this).attr("id").replace(/del_/, '');
-				if (confirm($(this).attr('title'))) {
+				if (confirm($(this).attr('label'))) {
 					$('#frm-' + delete_id + '-item').animate({
 						opacity: 'hide',
 						height: 'hide',
@@ -451,83 +458,87 @@
  * Modified from the serialize list plugin
  * http://www.botsko.net/blog/2009/01/jquery_serialize_list_plugin/
  */
-(function ($) {
-	$.fn.serializeFormList = function (options) {
-		// Extend the configuration options with user-provided
-		var defaults = {
-			prepend: 'ul',
-			is_child: false,
-			attributes: ['class']
-		};
-		var opts = $.extend(defaults, options);
-		if (!opts.is_child) {
-			opts.prepend = '&' + opts.prepend;
-		}
-		var serialStr = '';
-		// Begin the core plugin
-		this.each(function () {
-			var ul_obj = this;
-			var li_count = 0;
-			var c = 1;
-			$(this).children().each(function () {
-				for (att = 0; att < opts.attributes.length; att++) {
-					serialStr += opts.prepend + '[' + li_count + '][' + opts.attributes[att] + ']=' + escape($(this).attr(opts.attributes[att]));
-					// append the form field values
-					if (opts.attributes[att] === 'class') {
-						serialStr += opts.prepend + '[' + li_count + '][required]=' + escape($('#' + $(this).attr('id') + ' input.required').attr('checked'));
-						switch ($(this).attr(opts.attributes[att])) {
-						case 'input_text':
-							serialStr += opts.prepend + '[' + li_count + '][values]=' + escape($('#' + $(this).attr('id') + ' input[type=text]').val());
-							break;
-						case 'textarea':
-							serialStr += opts.prepend + '[' + li_count + '][values]=' + escape($('#' + $(this).attr('id') + ' input[type=text]').val());
-							break;
-						case 'checkbox':
-							c = 1;
-							$('#' + $(this).attr('id') + ' input[type=text]').each(function () {
-								if ($(this).attr('name') === 'title') {
-									serialStr += opts.prepend + '[' + li_count + '][title]=' + escape($(this).val());
-								}
-								else {
-									serialStr += opts.prepend + '[' + li_count + '][values][' + c + '][value]=' + escape($(this).val());
-									serialStr += opts.prepend + '[' + li_count + '][values][' + c + '][default]=' + $(this).prev().attr('checked');
-								}
-								c++;
-							});
-							break;
-						case 'radio':
-							c = 1;
-							$('#' + $(this).attr('id') + ' input[type=text]').each(function () {
-								if ($(this).attr('name') === 'title') {
-									serialStr += opts.prepend + '[' + li_count + '][title]=' + escape($(this).val());
-								}
-								else {
-									serialStr += opts.prepend + '[' + li_count + '][values][' + c + '][value]=' + escape($(this).val());
-									serialStr += opts.prepend + '[' + li_count + '][values][' + c + '][default]=' + $(this).prev().attr('checked');
-								}
-								c++;
-							});
-							break;
-						case 'select':
-							c = 1;
-							serialStr += opts.prepend + '[' + li_count + '][multiple]=' + $('#' + $(this).attr('id') + ' input[name=multiple]').attr('checked');
-							$('#' + $(this).attr('id') + ' input[type=text]').each(function () {
-								if ($(this).attr('name') === 'title') {
-									serialStr += opts.prepend + '[' + li_count + '][title]=' + escape($(this).val());
-								}
-								else {
-									serialStr += opts.prepend + '[' + li_count + '][values][' + c + '][value]=' + escape($(this).val());
-									serialStr += opts.prepend + '[' + li_count + '][values][' + c + '][default]=' + $(this).prev().attr('checked');
-								}
-								c++;
-							});
-							break;
-						}
-					}
-				}
-				li_count++;
-			});
-		});
-		return (serialStr);
-	};
+(function($){
+  $.fn.serializeFormList = function(options) {
+    // Extend the configuration options with user-provided
+    var defaults = {
+      prepend: 'ul',
+      is_child: false,
+      attributes: ['class']
+    };
+    var opts = $.extend(defaults, options);
+    var formJSON = [];
+    
+    if(!opts.is_child){ opts.prepend = '&'+opts.prepend; }
+    
+    // Begin the core plugin
+    this.each(function() {
+      var ul_obj = this;
+
+      $(this).children().each(function(){
+        for(att in opts.attributes){
+          var fieldDict = {};
+          fieldDict[opts.attributes[att]] = escape($(this).attr(opts.attributes[att]));
+
+          // append the form field values
+          if(opts.attributes[att] == 'class'){
+            fieldDict.required = $('#'+$(this).attr('id')+' input.required').attr('checked');
+
+            switch($(this).attr(opts.attributes[att])){
+              case 'input_text':
+                fieldDict.label = escape($('#'+$(this).attr('id')+' input[type=text]').val());
+                break;
+              case 'textarea':
+                fieldDict.label = escape($('#'+$(this).attr('id')+' input[type=text]').val());
+                break;
+              case 'checkbox':
+                fieldDict.values = [];
+                $('#'+$(this).attr('id')+' input[type=text]').each(function(){
+                  
+                  if($(this).attr('name') == 'label'){
+                    fieldDict.label = escape($(this).val());
+                  } else {
+                    var valueDict = {};
+                    valueDict.value = escape($(this).val());
+                    valueDict.checked = $(this).prev().attr('checked');
+                    fieldDict.values.push(valueDict);
+                  }
+                });
+                break;
+              case 'radio':
+                fieldDict.values = [];
+                $('#'+$(this).attr('id')+' input[type=text]').each(function(){
+                  if($(this).attr('name') == 'label'){
+                    fieldDict.label = escape($(this).val());
+                  } else {
+                    var valueDict = {};
+                    valueDict.value = escape($(this).val());
+                    valueDict.checked = $(this).prev().attr('checked');
+                    fieldDict.values.push(valueDict);
+                  }
+                });
+                break;
+              case 'select':
+                fieldDict.multiple = $('#'+$(this).attr('id')+' input[name=multiple]').attr('checked');
+                
+                $('#'+$(this).attr('id')+' input[type=text]').each(function(){
+                  
+                  if($(this).attr('name') == 'label'){
+                    fieldDict.label = escape($(this).val());
+                  } else {
+                    var valueDict = {};
+                    valueDict.value = escape($(this).val());
+                    valueDict.checked = $(this).prev().attr('checked');
+                    fieldDict.values.push(valueDict);
+                  }
+                });
+              break;
+            }
+          }
+          formJSON.push(fieldDict);
+        }
+      });
+    });
+    return(formJSON);
+  };
 })(jQuery);
