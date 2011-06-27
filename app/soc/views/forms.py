@@ -419,7 +419,7 @@ class SurveyEditForm(ModelForm):
   """Django form for creating and/or editing survey.
   """
 
-  pass
+  schema = django.forms.CharField(widget=django.forms.HiddenInput())
 
 
 class SurveyTakeForm(ModelForm):
