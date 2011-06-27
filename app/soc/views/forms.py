@@ -426,9 +426,9 @@ class SurveyTakeForm(ModelForm):
   """Django form for taking a survey.
   """
 
-  def __init__(self, survey_content, *args, **kwargs):
+  def __init__(self, survey, *args, **kwargs):
     super(SurveyTakeForm, self).__init__(*args, **kwargs)
-    self.survey_content = survey_content
+    self.survey = survey
     self.constructForm()
 
   def create(self, commit=True, key_name=None, parent=None):
@@ -468,12 +468,10 @@ class SurveyTakeForm(ModelForm):
     """Constructs the form based on the schema stored in the survey content
     """
     # insert dynamic survey fields
-    if self.survey_content:
-      # TODO(madhu): Convert this to JSON
-      schema = eval(self.survey_content.schema)
-      for field_name in self.survey_content.survey_order:
-        field_info = schema.get(field_name)
-        self.constructField(field_name, field_info)
+    if self.survey:
+      schema = loads(self.survey.schema)
+      for field in schema:
+        self.constructField(field)
 
   def constructField(self, field_name, field_info):
     """Constructs the field for the given field metadata
