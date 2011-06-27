@@ -488,8 +488,8 @@ class SurveyTakeForm(ModelForm):
     help_text = field_dict.get('tip', '')
     values = field_dict.get('values', '')
 
-    pattern = re.compile(r'[A-Za-z0-9_]')
-    field_name_suffix = re.sub(pattern, '_', label).strip('_')
+    pattern = re.compile(r'[^A-Za-z0-9_]')
+    field_name_suffix = re.sub(pattern, '_', label).strip(' _').lower()
 
     field_name = '%s_%s' % (type, field_name_suffix)
 
