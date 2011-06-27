@@ -177,7 +177,8 @@ class GSoCProjectEvaluationTakePage(RequestHandler):
   def post(self):
     project_evaluation_record = self.recordSurveyFromForm()
     if project_evaluation_record:
-      r = self.redirect.survey_record(self.data.project_evaluation)
+      r = self.redirect.survey_record(
+          self.data.project_evaluation.link_id)
       r.to('gsoc_take_evaluation_survey', validated=True)
     else:
       self.get()
