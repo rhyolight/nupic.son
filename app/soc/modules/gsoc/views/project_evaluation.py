@@ -139,7 +139,7 @@ class GSoCProjectEvaluationTakePage(RequestHandler):
           self.data.project_evaluation, self.data.POST or None)
 
     context = {
-        'page_name': "Midterm survey page",
+        'page_name': '%s page' % (self.data.project_evaluation.title),
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'forms': [form],
         'error': bool(form.errors),
