@@ -470,6 +470,42 @@ class SurveyTakeForm(ModelForm):
       instance.put()
     return instance
 
+  def save(self, commit=True):
+    """Save this form's cleaned data into a model instance.
+
+    Args:
+      commit: optional bool, default True; if true, the model instance
+        is also saved to the datastore.
+
+    Returns:
+      A model instance.  If a model instance was already associated
+      with this form instance (either passed to the constructor with
+      instance=...  or by a previous save() call), that same instance
+      is updated and returned; if no instance was associated yet, one
+      is created by this call.
+
+    Raises:
+      ValueError if the data couldn't be validated.
+    """
+    instance = super(SurveyTakeForm, self).save(commit=False)
+
+    opts = self._meta
+    cleaned_data = self._cleaned_data()
+    additional_names = set(cleaned_data.keys() +
+        self.instance.dynamic_properties())
+
+    try:
+      for name in additional_names:
+        value = cleaned_data.get(name)
+        setattr(instance, name, value)
+    except db.BadValueError, err:
+      raise ValueError('The %s could not be updated (%s)' %
+                       (opts.model.kind(), err))
+
+    if commit:
+      instance.put()
+    return instance
+
   def constructForm(self):
     """Constructs the form based on the schema stored in the survey content
     """
