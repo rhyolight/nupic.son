@@ -97,11 +97,10 @@ PROGRAM   = namedLinkIdPattern(['sponsor', 'program'])
 CREATE_PROFILE = _role + namedLinkIdPattern(['sponsor', 'program'])
 PROFILE   = namedLinkIdPattern(['sponsor', 'program', 'user'])
 DOCUMENT  = _document
-SURVEY    = namedLinkIdPattern(['prefix', 'sponsor', 'program', 'survey'])
+SURVEY    = namedLinkIdPattern(['sponsor', 'program', 'survey'])
 PROPOSAL  = namedIdBasedPattern(['sponsor', 'program'])
 REVIEW    = namedIdBasedPattern(['sponsor', 'program', 'user'])
 ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
 INVITE    = _mentor_role + ORG
 PROJECT   = namedIdBasedPattern(['sponsor', 'program', 'user'])
-SURVEY_RECORD = namedIdBasedPattern(['prefix', 'sponsor', 'program',
-                                     'survey', 'user'])
+SURVEY_RECORD = namedIdBasedPattern(['sponsor', 'program', 'survey', 'user'])
