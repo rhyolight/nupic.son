@@ -47,10 +47,23 @@ limitations under the License.
     dep.uniform,
     dep.jqueryui.sortable,
     dep.formbuilder,
+    dep.melange.datetimepicker,
     null,
     function () {
       jQuery(document).ready(function(){
         jQuery("select, input:radio, input:file, input:checkbox").uniform();
+
+        var config = {
+          changeMonth: true,
+          changeYear: false,
+          dateFormat: "yy-mm-dd",
+          showButtonPanel: true,
+        }
+        var fields_to_enhance = [
+          "#survey_start",
+          "#survey_end"
+        ].join(",");
+        jQuery(fields_to_enhance).datetimepicker(config);
 
         jQuery('#form-builder').formbuilder({
           save_url: "{{ post_url }}",
@@ -73,6 +86,8 @@ limitations under the License.
         });
 
       });
+
+      tinyMCE.init(melange.tinyMceConfig(["melange-content-textarea"], "advanced"));
     }
   ]
 {% endblock dependencies %}
