@@ -719,6 +719,21 @@ class RedirectHelper(object):
     self.kwargs['user'] = student
     return self
 
+  def survey(self, survey=None):
+    """Sets kwargs for an url_patterns.SURVEY redirect.
+
+    Args:
+      survey: the survey's link_id
+    """
+    self.program()
+
+    if not survey:
+      assert 'survey' in self._data.kwargs
+      survey = self._data.kwargs['survey']
+    self.kwargs['survey'] = survey
+
+    return self
+
   def survey_record(self, survey=None):
     """Returns the redirector object with the arguments for survey record
 
