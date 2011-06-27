@@ -130,11 +130,11 @@ class GSoCProjectEvaluationTakePage(RequestHandler):
   def context(self):
     if self.data.project_evaluation_record:
       form = GSoCProjectEvaluationTakeForm(
-          self.data.project_evaluation.survey_content,
+          self.data.project_evaluation,
           self.data.POST or None, instance=self.data.project_evaluation_record)
     else:
       form = GSoCProjectEvaluationTakeForm(
-          self.data.project_evaluation.survey_content, self.data.POST or None)
+          self.data.project_evaluation, self.data.POST or None)
 
     context = {
         'page_name': "Midterm survey page",
@@ -153,11 +153,11 @@ class GSoCProjectEvaluationTakePage(RequestHandler):
     """
     if self.data.project_evaluation_record:
       form = GSoCProjectEvaluationTakeForm(
-          self.data.project_evaluation.survey_content,
+          self.data.project_evaluation,
           self.data.POST, instance=self.data.project_evaluation_record)
     else:
       form = GSoCProjectEvaluationTakeForm(
-          self.data.project_evaluation.survey_content, self.data.POST)
+          self.data.project_evaluation, self.data.POST)
 
     if not form.is_valid():
       return None
