@@ -117,6 +117,8 @@ class GSoCProjectEvaluationTakePage(RequestHandler):
     ]
 
   def checkAccess(self):
+    self.mutator.projectFromKwargs()
+    self.mutator.projectEvaluationFromKwargs()
     self.mutator.projectEvaluationRecordFromKwargs()
 
     assert isSet(self.data.project_evaluation)
