@@ -80,6 +80,12 @@ class GSoCProjectEvaluationTakeForm(forms.SurveyTakeForm):
     css_prefix = 'gsoc_evaluation_record'
     exclude = ['project', 'org', 'user', 'survey', 'created', 'modified']
 
+  def clean_grade(self):
+    """Convert the value of grade from string as returned by form to boolean
+    """
+    grade = self.cleaned_data.get('grade')
+    return True if grade == 'True' else False
+
 
 class GSoCProjectEvaluationEditPage(RequestHandler):
   """View for creating/editing organization evaluation form.
