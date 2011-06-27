@@ -464,7 +464,8 @@
     var defaults = {
       prepend: 'ul',
       is_child: false,
-      attributes: ['field_type']
+      attributes: ['class'],
+      serialization_attributes: ['field_type']
     };
     var opts = $.extend(defaults, options);
     var formJSON = [];
@@ -478,10 +479,10 @@
       $(this).children().each(function(){
         for(att in opts.attributes){
           var fieldDict = {};
-          fieldDict[opts.attributes[att]] = escape($(this).attr(opts.attributes[att]));
+          fieldDict[opts.serialization_attributes[att]] = escape($(this).attr(opts.attributes[att]));
 
           // append the form field values
-          if(opts.attributes[att] == 'field_type'){
+          if(opts.attributes[att] == 'class'){
             fieldDict.required = $('#'+$(this).attr('id')+' input.required').attr('checked');
 
             switch($(this).attr(opts.attributes[att])){
