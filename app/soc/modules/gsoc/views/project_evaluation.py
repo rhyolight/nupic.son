@@ -158,7 +158,7 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
 
   def post(self):
     survey_content = self.surveyContentFromForm()
-    if not survey_content:
+    if survey_content:
       r = self.redirect.survey()
       r.to('gsoc_edit_evaluation_survey', validated=True)
     else:
