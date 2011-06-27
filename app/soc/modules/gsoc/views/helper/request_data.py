@@ -723,13 +723,13 @@ class RedirectHelper(object):
     """Returns the redirector object with the arguments for survey record
 
     Args:
-      survey: the survey entity
+      survey: the survey's link_id
     """
     self.program()
     self.project()
     if not survey:
       assert 'survey' in self._data.kwargs
       survey = self._data.kwargs['survey']
-    self.kwargs['survey'] = survey.link_id
-    self.kwargs['prefix'] = survey.prefix
+    self.kwargs['survey'] = survey
+
     return self
