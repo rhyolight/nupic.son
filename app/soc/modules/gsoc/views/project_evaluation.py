@@ -59,11 +59,11 @@ class GSoCProjectEvaluationTakeForm(forms.SurveyTakeForm):
   """Form for the organization to evaluate a student project.
   """
 
-  def __init__(self, survey_content, *args, **kwargs):
+  def __init__(self, survey, *args, **kwargs):
     """Initialize the form field by adding a new grading field.
     """
-    super(GSoCProjectEvaluationTakeForm, self).__init__(survey_content,
-                                                        *args, **kwargs)
+    super(GSoCProjectEvaluationTakeForm, self).__init__(
+        survey, *args, **kwargs)
 
     # hack to re-order grade to push to the end of the survey form
     self.fields.keyOrder.remove('grade')
