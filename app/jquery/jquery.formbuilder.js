@@ -272,7 +272,7 @@
 					field += '<div class="frm-fld"><label>' + opts.messages.label + '</label>';
 					field += '<input type="text" name="label" value="' + unescape(label) + '" /></div>';
 					field += '<div class="false-label">' + opts.messages.select_options + '</div>';
-					field += '<div class="fields">';
+					field += '<div class="fields ' + opts.options_wrap_class + '">';
 					if (typeof (values) === 'object') {
 						for (i = 0; i < values.length; i++) {
 							field += radioFieldHtml(values[i], 'frm-' + last_id + '-fld');
@@ -316,7 +316,7 @@
 					field += '<input type="text" name="label" value="' + unescape(label) + '" /></div>';
 					field += '';
 					field += '<div class="false-label">' + opts.messages.select_options + '</div>';
-					field += '<div class="fields">';
+					field += '<div class="fields ' + opts.options_wrap_class + '">';
 					field += '<input type="checkbox" name="multiple"' + (multiple ? 'checked="checked"' : '') + '>';
 					field += '<label class="auto">' + opts.messages.selections_message + '</label>';
 					if (typeof (values) === 'object') {
