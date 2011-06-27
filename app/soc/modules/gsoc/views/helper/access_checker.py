@@ -69,7 +69,7 @@ class Mutator(access_checker.Mutator):
     """Sets the survey record in RequestData object.
     """
     # kwargs which defines a survey
-    fields = ['prefix', 'sponsor', 'program', 'survey']
+    fields = ['sponsor', 'program', 'survey']
 
     key_name = '/'.join(self.data.kwargs[field] for field in fields)
     self.data.project_survey = ProjectSurvey.get_by_key_name(key_name)
@@ -87,22 +87,29 @@ class Mutator(access_checker.Mutator):
     q.filter('survey', self.data.project_survey)
     self.data.project_survey_record = q.get()
 
-  def projectEvaluationRecordFromKwargs(self):
+  def projectEvaluationFromKwargs(self, raise_not_found=True):
     """Sets the evaluation and the record in RequestData object.
+
+    Args:
+      raise_not_found: iff False do not send 404 response.
     """
     # kwargs which defines an evaluation
-    fields = ['prefix', 'sponsor', 'program', 'survey']
+    fields = ['sponsor', 'program', 'survey']
 
-    key_name = '/'.join(self.data.kwargs[field] for field in fields)
+    key_name = '/'.join(['gsoc_program'] +
+                        [self.data.kwargs[field] for field in fields])
     self.data.project_evaluation = GradingProjectSurvey.get_by_key_name(
         key_name)
 
-    if not self.data.project_evaluation:
+    if raise_not_found and not self.data.project_evaluation:
       raise NotFound(DEF_NO_PROJECT_EVALUATION_MSG)
 
-    self.projectFromKwargs()
-
+  def projectEvaluationRecordFromKwargs(self):
+    """Sets the evaluation record in RequestData object.
+    """
+    assert access_checker.isSet(self.data.project_evaluation)
     assert access_checker.isSet(self.data.project)
+
     self.data.organization = self.data.project.org
 
     q = GSoCGradingProjectSurveyRecord.all()
