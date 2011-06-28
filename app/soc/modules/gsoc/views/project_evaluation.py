@@ -94,7 +94,7 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
          url(r'^gsoc/evaluation/edit/%s$' % url_patterns.SURVEY,
-             self, name='gsoc_edit_evaluation_survey'),
+             self, name='gsoc_edit_project_evaluation'),
     ]
 
   def checkAccess(self):
@@ -116,7 +116,7 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
     context = {
         'page_name': page_name,
         'post_url': self.redirect.survey().urlOf(
-            'gsoc_edit_evaluation_survey'),
+            'gsoc_edit_project_evaluation'),
         'form': form,
         'error': bool(form.errors),
         }
@@ -160,7 +160,7 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
     survey_content = self.surveyContentFromForm()
     if survey_content:
       r = self.redirect.survey()
-      r.to('gsoc_edit_evaluation_survey', validated=True)
+      r.to('gsoc_edit_project_evaluation', validated=True)
     else:
       self.get()
 
