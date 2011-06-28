@@ -111,7 +111,7 @@ class DashboardPage(RequestHandler):
     r = self.data.redirect
     r.program()
 
-    return {
+    context = {
         'page_name': 'Admin dashboard',
         'lookup_link': r.urlOf('lookup_gsoc_profile'),
         'slots_link': r.urlOf('gsoc_slots'),
@@ -122,6 +122,20 @@ class DashboardPage(RequestHandler):
         'survey_reminder_link': r.urlOf('gsoc_survey_reminder_admin')
     }
 
+    # HARDCODED
+    survey_context = {
+        'midterm_mentor_link': r.survey('midterm').urlOf(
+            'gsoc_edit_project_evaluation'),
+        'midterm_student_link': r.survey('midterm').urlOf(
+            'gsoc_edit_project_survey'),
+        'final_mentor_link': r.survey('final').urlOf(
+            'gsoc_edit_project_evaluation'),
+        'final_student_link': r.survey('final').urlOf(
+            'gsoc_edit_project_survey'),
+    }
+
+    context.update(survey_context)
+    return context
 
 class LookupLinkIdPage(RequestHandler):
   """View for the participant profile.
