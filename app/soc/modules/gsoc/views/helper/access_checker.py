@@ -183,6 +183,13 @@ class AccessChecker(access_checker.AccessChecker):
 
     self.isProjectInURLValid()
 
+    # check if the project is still ongoing
+    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+      raise AccessViolation(DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
+
+    if self.data.orgAdminFor(self.data.organization):
+      return
+
     # check if the currently logged in user is the mentor or co-mentor
     # for the project in request or the org admin for the org
     expected_profile_keys = [self.data.project.mentor.key()] + \
@@ -190,10 +197,6 @@ class AccessChecker(access_checker.AccessChecker):
 
     if self.data.profile.key() not in expected_profile_keys:
       raise AccessViolation(DEF_SURVEY_DOES_NOT_BELONG_TO_YOU_MSG)
-
-    # check if the project is still ongoing
-    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
-      raise AccessViolation(DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
 
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
