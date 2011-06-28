@@ -64,7 +64,7 @@ class GSoCProjectSurveyEditPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/survey/edit/%s$' % url_patterns.PROGRAM,
+         url(r'^gsoc/survey/edit/%s$' % url_patterns.SURVEY,
          self, name='gsoc_edit_project_survey'),
     ]
 
