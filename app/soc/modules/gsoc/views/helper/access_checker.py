@@ -45,11 +45,11 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
     'You have reached the maximum number of proposals allowed '
     'for this program.')
 
-DEF_NO_PROJECT_SURVEY_MSG = ugettext(
-    'The project survey with the requested parameters does not exist.')
+DEF_NO_PROJECT_SURVEY_MSG_FMT = ugettext(
+    'The project survey with name %s parameters does not exist.')
 
-DEF_NO_PROJECT_EVALUATION_MSG = ugettext(
-    'The project evaluation with the requested parameters does not exist.')
+DEF_NO_PROJECT_EVALUATION_MSG_FMT = ugettext(
+    'The project evaluation with name %s does not exist.')
 
 DEF_NO_RECORD_FOUND = ugettext(
     'The Record with the specified key was not found.')
@@ -71,11 +71,12 @@ class Mutator(access_checker.Mutator):
     # kwargs which defines a survey
     fields = ['sponsor', 'program', 'survey']
 
-    key_name = '/'.join(self.data.kwargs[field] for field in fields)
+    key_name = '/'.join(['gsoc_program'] +
+                        [self.data.kwargs[field] for field in fields])
     self.data.project_survey = ProjectSurvey.get_by_key_name(key_name)
 
     if not self.data.project_survey:
-      raise NotFound(DEF_NO_PROJECT_SURVEY_MSG)
+      raise NotFound(DEF_NO_PROJECT_SURVEY_MSG_FMT % key_name)
 
     self.projectFromKwargs()
 
@@ -102,7 +103,7 @@ class Mutator(access_checker.Mutator):
         key_name)
 
     if raise_not_found and not self.data.project_evaluation:
-      raise NotFound(DEF_NO_PROJECT_EVALUATION_MSG)
+      raise NotFound(DEF_NO_PROJECT_EVALUATION_MSG_FMT % key_name)
 
   def projectEvaluationRecordFromKwargs(self):
     """Sets the evaluation record in RequestData object.
