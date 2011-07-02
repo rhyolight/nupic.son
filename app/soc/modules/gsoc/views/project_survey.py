@@ -69,13 +69,14 @@ class GSoCProjectSurveyEditPage(RequestHandler):
     ]
 
   def checkAccess(self):
-    pass
+    self.check.isHost()
+    # TODO: Write mutator to grab the ProjectSurvey
 
   def templatePath(self):
     return 'v2/modules/gsoc/_survey.html'
 
   def context(self):
-    # TODO: (test code) remove it
+    # TODO(madhu): (test code) remove it
     from google.appengine.ext import db
     org_app_key_name = 'gsoc_program/google/gsoc2009/gsoc2009survey'
     org_app_key = db.Key.from_path('OrgAppSurvey', org_app_key_name)
