@@ -150,10 +150,7 @@ class AccessChecker(access_checker.AccessChecker):
     self.studentSignupActive()
 
     # check how many proposals the student has already submitted 
-    fields = {
-        'scope': self.data.profile
-        }
-    query = db.Query(StudentProposal)
+    query = StudentProposal.all()
     query.filter('scope = ', self.data.profile).ancestor(self.data.user)
 
     if query.count() >= self.data.program.apps_tasks_limit:
