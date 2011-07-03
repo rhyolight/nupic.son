@@ -39,11 +39,13 @@ from soc.models.universities import UNIVERSITIES
 from soc.views.helper import lists
 from soc.views.template import Template
 
+from soc.modules.gsoc.logic import grading_project_survey as gps_logic
+from soc.modules.gsoc.logic import grading_project_survey_record as gpsr_logic
 from soc.modules.gsoc.logic import project as project_logic
+from soc.modules.gsoc.logic import project_survey as ps_logic
+from soc.modules.gsoc.logic import project_survey_record as psr_logic
 from soc.modules.gsoc.logic.models.org_app_survey import logic as \
     org_app_logic
-from soc.modules.gsoc.logic.models.survey import project_logic as \
-    ps_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.logic.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
@@ -174,11 +176,15 @@ class Dashboard(RequestHandler):
       keys_only=True, ancestor=self.data.profile)
 
     if project_query.count() > 0:
+      # Add a component to show the evaluations
+      ms_eval = ps_logic.getProjectSurveyForProgram(
+          self.data.program, 'midterm')
+      if (ms_eval and self.data.timeline.afterSurveyStart(
+          ms_eval)):
+        components.append(MyEvaluationsComponent(self.request, self.data))
+
       # Add a component to show all the projects
       components.append(MyProjectsComponent(self.request, self.data))
-      # Add a component to show the evaluations
-      # TODO(ljvderijk): Enable after the right information can be displayed
-      #components.append(MyEvaluationsComponent(self.request, self.data))
 
     # Add all the proposals of this current user
     components.append(MyProposalsComponent(self.request, self.data))
@@ -453,12 +459,25 @@ class MyEvaluationsComponent(Component):
   def __init__(self, request, data):
     """Initializes this component.
     """
-    # TODO: This list should allow one to view or edit a record for each project
-    # available to the student.
-    list_config = lists.ListConfiguration()
-    list_config.addSimpleColumn('title', 'Title')
-    list_config.addSimpleColumn('survey_start', 'Survey Starts')
-    list_config.addSimpleColumn('survey_end', 'Survey Ends')
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn(
+        'key', 'Key', (lambda d, *args: d['key']), hidden=True)
+    list_config.addDictColumn('evaluation', 'Evaluation')
+    list_config.addDictColumn('project_title', 'Project')
+    list_config.addDictColumn('status', 'Status')
+    def rowAction(d, *args):
+      key = d['key']
+      if key == 'ms_eval':
+        return data.redirect.survey_record(
+            'midterm', d.get('project'), d.get('student')).urlOf(
+            'gsoc_take_student_evaluation')
+      if key == 'fs_eval':
+        return data.redirect.survey_record(
+            'final', d.get('project'), d.get('student')).urlOf(
+            'gsoc_take_student_evaluation')
+      return None
+
+    list_config.setRowAction(rowAction)
     self._list_config = list_config
 
     super(MyEvaluationsComponent, self).__init__(request, data)
@@ -477,10 +496,55 @@ class MyEvaluationsComponent(Component):
     if lists.getListIndex(self.request) != 3:
       return None
 
-    fields = {'program': self.data.program}
-    response_builder = lists.QueryContentResponseBuilder(
-        self.request, self._list_config, ps_logic, fields)
-    return response_builder.build()
+    response = lists.ListContentResponse(self.request, self._list_config)
+
+    projects = project_logic.getAcceptedProjectsForStudent(self.data.profile)
+
+    ms_eval = ps_logic.getProjectSurveyForProgram(self.data.program, 'midterm')
+    if (ms_eval and self.data.timeline.afterSurveyStart(ms_eval)):
+      for project in projects:
+        status = colorize(psr_logic.evalRecordExistsForStudent(
+            ms_eval, project), "Submitted", "Not submitted")
+        response.addRow({
+            'key': 'ms_eval',
+            'project': project.key().id(),
+            'student': project.parent().link_id,
+            'evaluation': 'Midterm',
+            'project_title': project.title,
+            'status': status
+        })
+
+    fs_eval = ps_logic.getProjectSurveyForProgram(self.data.program, 'final')
+    if (fs_eval and self.data.timeline.afterSurveyStart(fs_eval)):
+      for project in projects:
+        status = colorize(psr_logic.evalRecordExistsForStudent(
+            fs_eval, project), "Submitted", "Not submitted")
+        response.addRow({
+            'key': 'fs_eval',
+            'project': project.key().id(),
+            'student': project.parent().link_id,
+            'evaluation': 'Final',
+            'project_title': project.title,
+            'status': status
+        })
+
+    response.next = 'done'
+
+    return response
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=3)
+
+    return {
+        'name': 'evaluations',
+        'title': 'EVALUATIONS',
+        'lists': [list],
+    }
+
+
 
   def context(self):
     """Returns the context of this component.
