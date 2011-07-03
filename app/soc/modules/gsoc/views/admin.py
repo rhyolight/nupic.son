@@ -125,13 +125,13 @@ class DashboardPage(RequestHandler):
     # HARDCODED
     survey_context = {
         'midterm_mentor_link': r.survey('midterm').urlOf(
-            'gsoc_edit_project_evaluation'),
+            'gsoc_edit_mentor_evaluation'),
         'midterm_student_link': r.survey('midterm').urlOf(
-            'gsoc_edit_project_survey'),
+            'gsoc_edit_student_evaluation'),
         'final_mentor_link': r.survey('final').urlOf(
-            'gsoc_edit_project_evaluation'),
+            'gsoc_edit_mentor_evaluation'),
         'final_student_link': r.survey('final').urlOf(
-            'gsoc_edit_project_survey'),
+            'gsoc_edit_student_evaluation'),
     }
 
     context.update(survey_context)
