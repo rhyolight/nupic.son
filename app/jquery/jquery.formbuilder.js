@@ -84,7 +84,8 @@
 					});
 					// Add a callback to the select element
 					$('#' + box_id).change(function () {
-						appendNewField($(this).val());
+					  var field_id = "frm-t" + new Date().getTime().toString() + "-item";
+						appendNewField(field_id, $(this).val());
 						$(this).val(0).blur();
 						// This solves the scrollTo dependency
 						$('body').animate({
