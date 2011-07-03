@@ -135,47 +135,48 @@
 					var options = false;
 					var required = false;
 					// Parse json
-					$(json).each(function () {
+					$(json[0]).each(function () {
 					// checkbox type
+					  var fieldDict = json[1][this.valueOf()];
 
-            if (this.field_type === 'input_text') {
-              options = [this.label];
+            if (fieldDict.field_type === 'input_text') {
+              options = [fieldDict.label];
             }
-            if (this.field_type === 'textarea') {
-              options = [this.label];
+            if (fieldDict.field_type === 'textarea') {
+              options = [fieldDict.label];
             }
 						// checkbox type
-            else if (this.field_type === 'checkbox') {
-							options = [this.label];
+            else if (fieldDict.field_type === 'checkbox') {
+							options = [fieldDict.label];
 							values = [];
-							$.each(this.values, function () {
+							$.each(fieldDict.values, function () {
 								values.push([this.value, this.checked]);
 							});
 						}
 						// radio type
-						else if (this.field_type === 'radio') {
-							options = [this.label];
+						else if (fieldDict.field_type === 'radio') {
+							options = [fieldDict.label];
 							values = [];
-							$.each(this.values, function () {
+							$.each(fieldDict.values, function () {
 								values.push([this.value, this.checked]);
 							});
 						}
 						// select type
-						else if (this.field_type === 'select') {
-							options = [this.label, this.multiple];
+						else if (fieldDict.field_type === 'select') {
+							options = [fieldDict.label, fieldDict.multiple];
 							values = [];
-							$.each(this.values, function () {
+							$.each(fieldDict.values, function () {
 								values.push([this.value, this.checked]);
 							});
 						}
 						else {
-							values = [this.values];
+							values = [fieldDict.values];
 						}
-						appendNewField(this.field_type, values, options, this.required);
+						appendNewField(this, fieldDict.field_type, values, options, fieldDict.required);
 					});
 				};
 			// Wrapper for adding a new field
-			var appendNewField = function (type, values, options, required) {
+			var appendNewField = function (field_id, type, values, options, required) {
 					field = '';
 					field_type = type;
 					if (typeof (values) === 'undefined') {
@@ -183,24 +184,24 @@
 					}
 					switch (type) {
 					case 'input_text':
-						appendTextInput(values, options, required);
+						appendTextInput(field_id, values, options, required);
 						break;
 					case 'textarea':
-						appendTextarea(values, options, required);
+						appendTextarea(field_id, values, options, required);
 						break;
 					case 'checkbox':
-						appendCheckboxGroup(values, options, required);
+						appendCheckboxGroup(field_id, values, options, required);
 						break;
 					case 'radio':
-						appendRadioGroup(values, options, required);
+						appendRadioGroup(field_id, values, options, required);
 						break;
 					case 'select':
-						appendSelectList(values, options, required);
+						appendSelectList(field_id, values, options, required);
 						break;
 					}
 				};
 			// single line input type="text"
-			var appendTextInput = function (values, options, required) {
+			var appendTextInput = function (field_id, values, options, required) {
   			  var label = '';
           if (typeof (options) === 'object') {
             label = options[0];
@@ -208,10 +209,10 @@
 					field += '<label>' + opts.messages.label + '</label>';
 					field += '<input class="fld-label" id="label-' + last_id + '" type="text" value="' + unescape(label) + '" />';
 					help = '';
-					appendFieldLi(opts.messages.text, field, required, help);
+					appendFieldLi(field_id, opts.messages.text, field, required, help);
 				};
 			// multi-line textarea
-			var appendTextarea = function (values, options, required) {
+			var appendTextarea = function (field_id, values, options, required) {
 			    var label = '';
 			    if (typeof (options) === 'object') {
             label = options[0];
@@ -219,10 +220,10 @@
 					field += '<label>' + opts.messages.label + '</label>';
 					field += '<input type="text" value="' + unescape(label) + '" />';
 					help = '';
-					appendFieldLi(opts.messages.paragraph_field, field, required, help);
+					appendFieldLi(field_id, opts.messages.paragraph_field, field, required, help);
 				};
 			// adds a checkbox element
-			var appendCheckboxGroup = function (values, options, required) {
+			var appendCheckboxGroup = function (field_id, values, options, required) {
 					var label = '';
 					if (typeof (options) === 'object') {
 						label = options[0];
@@ -244,7 +245,7 @@
 					field += '</div>';
 					field += '</div>';
 					help = '';
-					appendFieldLi(opts.messages.checkbox_group, field, required, help);
+					appendFieldLi(field_id, opts.messages.checkbox_group, field, required, help);
 				};
 			// Checkbox field html, since there may be multiple
 			var checkboxFieldHtml = function (values) {
@@ -263,7 +264,7 @@
 					return field;
 				};
 			// adds a radio element
-			var appendRadioGroup = function (values, options, required) {
+			var appendRadioGroup = function (field_id, values, options, required) {
 					var label = '';
 					if (typeof (options) === 'object') {
 						label = options[0];
@@ -285,7 +286,7 @@
 					field += '</div>';
 					field += '</div>';
 					help = '';
-					appendFieldLi(opts.messages.radio_group, field, required, help);
+					appendFieldLi(field_id, opts.messages.radio_group, field, required, help);
 				};
 			// Radio field html, since there may be multiple
 			var radioFieldHtml = function (values, name) {
@@ -304,7 +305,7 @@
 					return field;
 				};
 			// adds a select/option element
-			var appendSelectList = function (values, options, required) {
+			var appendSelectList = function (field_id, values, options, required) {
 					var multiple = false;
 					var label = '';
 					if (typeof (options) === 'object') {
@@ -331,7 +332,7 @@
 					field += '</div>';
 					field += '</div>';
 					help = '';
-					appendFieldLi(opts.messages.select, field, required, help);
+					appendFieldLi(field_id, opts.messages.select, field, required, help);
           //initialize_sortable_options();
       };
 			// Select field html, since there may be multiple
@@ -344,12 +345,12 @@
 					}
 				};
 			// Appends the new field markup to the editor
-			var appendFieldLi = function (label, field_html, required, help) {
+			var appendFieldLi = function (field_id, label, field_html, required, help) {
 					if (required) {
 						required = required === true ? true : false;
 					}
 					var li = '';
-					li += '<li id="frm-' + last_id + '-item" class="' + field_type + '">';
+					li += '<li id="' + field_id + '" class="' + field_type + '">';
 					li += '<div class="legend">';
 					li += '<a id="frm-' + last_id + '" class="toggle-form" href="#">' + opts.messages.hide + '</a> ';
 					li += '<strong id="txt-label-' + last_id + '">' + label + '</strong></div>';
