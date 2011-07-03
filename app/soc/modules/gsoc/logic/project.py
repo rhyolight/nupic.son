@@ -130,3 +130,40 @@ def getAcceptedProjectsForStudent(student, limit=1000):
   """
   q = getAcceptedProjectsQuery(ancestor=student)
   return q.fetch(limit)
+
+
+def getProjectsForOrgs(orgs, limit=1000):
+  """Returns all the projects for the given organization(s).
+
+  Unlike getAcceptedProjectsForOrg function, this returns all the projects
+  for all the orgs listed
+
+  Args:
+    org: The organization entity for which the projects should be queried.
+  """
+  q = getProjectsQuery()
+  orgs = list(orgs)
+  q.filter('org IN', orgs)
+  return q.fetch(limit)
+
+
+def getProjectsForMentor(mentor, limit=1000):
+  """Returns all the projects that the mentor is assigned to.
+
+  Args:
+    mentor: The mentor for whom the projects he is mentoring should
+        be retrieved.
+  """
+  q = getProjectsQuery(mentor=mentor)
+  return q.fetch(limit)
+
+
+def getProjectsForCoMentor(mentor, limit=1000):
+  """Returns all the projects that the mentor is assigned as co-mentor.
+
+  Args:
+    mentor: The mentor for whom the projects he is co-mentoring should
+        be retrieved.
+  """
+  q = getProjectsQuery(additional_mentors=mentor)
+  return q.fetch(limit)
