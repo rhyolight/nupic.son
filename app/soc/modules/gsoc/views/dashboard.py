@@ -172,10 +172,9 @@ class Dashboard(RequestHandler):
     """
     components = []
 
-    project_query = project_logic.getAcceptedProjectsQuery(
-      keys_only=True, ancestor=self.data.profile)
+    info = self.data.student_info
 
-    if project_query.count() > 0:
+    if self.data.is_student and info.number_of_projects:
       # Add a component to show the evaluations
       ms_eval = ps_logic.getProjectSurveyForProgram(
           self.data.program, 'midterm')
