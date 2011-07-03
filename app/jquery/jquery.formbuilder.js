@@ -360,7 +360,7 @@
 					li += field;
 					li += '<div class="frm-fld frm-fld-req"><label for="required-' + last_id + '">' + opts.messages.required + '</label>';
 					li += '<input class="required" type="checkbox" value="1" name="required-' + last_id + '" id="required-' + last_id + '"' + (required ? ' checked="checked"' : '') + ' /></div>';
-					li += '<a id="del_' + last_id + '" class="del-button delete-confirm" href="#" title="' + opts.messages.remove_message + '"><span>Delete</span></a>';
+					li += '<a id="del_' + field_id + '" class="del-button delete-confirm" href="#" label="' + opts.messages.remove_message + '"><span>Delete</span></a>';
 					li += '</div>';
 					li += '</div>';
 					li += '</li>';
@@ -411,7 +411,7 @@
 			$('.delete-confirm').live('click', function () {
 				var delete_id = $(this).attr("id").replace(/del_/, '');
 				if (confirm($(this).attr('label'))) {
-					$('#frm-' + delete_id + '-item').animate({
+					$('#' + delete_id).animate({
 						opacity: 'hide',
 						height: 'hide',
 						marginBottom: '0px'
