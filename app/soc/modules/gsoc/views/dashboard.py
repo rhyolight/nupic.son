@@ -196,6 +196,12 @@ class Dashboard(RequestHandler):
     """
     components = []
 
+    mm_eval = gps_logic.getGradingProjectSurveyForProgram(
+        self.data.program, 'midterm')
+    if (mm_eval and self.data.timeline.afterSurveyStart(
+        mm_eval)):
+      components.append(OrgEvaluationsComponent(self.request, self.data))
+
     if self.data.is_mentor:
       if self.data.timeline.studentsAnnounced():
         # add a component to show all projects a user is mentoring
@@ -545,6 +551,97 @@ class MyEvaluationsComponent(Component):
     }
 
 
+class OrgEvaluationsComponent(Component):
+  """Component for listing all the Evaluations of the current Student.
+  """
+
+  def __init__(self, request, data):
+    """Initializes this component.
+    """
+    r = data.redirect
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn(
+        'key', 'Key', (lambda d, *args: d['key']), hidden=True)
+    list_config.addDictColumn('evaluation', 'Evaluation')
+    list_config.addDictColumn('student', 'Student')
+    list_config.addDictColumn('project_title', 'Project')
+    list_config.addDictColumn('status', 'Status')
+    def rowAction(d, *args):
+      key = d['key']
+      project = d.get('project')
+      student = d.get('student')
+      eval_url_name = 'gsoc_take_mentor_evaluation'
+      if key == 'mm_eval':
+        return r.survey_record('midterm', project, student).urlOf(eval_url_name)
+      if key == 'fm_eval':
+        return r.survey_record('final', project, student).urlOf(eval_url_name)
+      return None
+
+    list_config.setRowAction(rowAction)
+    self._list_config = list_config
+
+    super(OrgEvaluationsComponent, self).__init__(request, data)
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return'v2/modules/gsoc/dashboard/list_component.html'
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    if lists.getListIndex(self.request) != 3:
+      return None
+
+    response = lists.ListContentResponse(self.request, self._list_config)
+
+    projects = project_logic.getProjectsForMentor(self.data.profile)
+    projects += project_logic.getProjectsForCoMentor(self.data.profile)
+
+    if self.data.is_org_admin:
+      projects += project_logic.getProjectsForOrgs(
+          self.data.profile.org_admin_for)
+
+    # remove all the projects that are repeated
+    projects = set(projects)
+
+    mm_eval = gps_logic.getGradingProjectSurveyForProgram(
+        self.data.program, 'midterm')
+    if (mm_eval and self.data.timeline.afterSurveyStart(mm_eval)):
+      for project in projects:
+        status = colorize(gpsr_logic.evalRecordExistsForStudent(
+            mm_eval, project), "Submitted", "Not submitted")
+        response.addRow({
+            'key': 'mm_eval',
+            'survey': 'midterm',
+            'project': project.key().id(),
+            'student': project.parent().link_id,
+            'evaluation': 'Midterm',
+            'project_title': project.title,
+            'status': status
+        })
+
+    fm_eval = gps_logic.getGradingProjectSurveyForProgram(
+        self.data.program, 'final')
+    if (fm_eval and self.data.timeline.afterSurveyStart(fm_eval)):
+      for project in projects:
+        status = colorize(psr_logic.evalRecordExistsForStudent(
+            fm_eval, project), "Submitted", "Not submitted")
+        response.addRow({
+            'key': 'fm_eval',
+            'project': project.key().id(),
+            'student': project.parent().link_id,
+            'evaluation': 'Final',
+            'project_title': project.title,
+            'status': status
+        })
+
+    response.next = 'done'
+
+    return response
 
   def context(self):
     """Returns the context of this component.
