@@ -77,8 +77,9 @@ def getFeaturedProject(current_timeline, program):
   return new_project
 
 
-def getAcceptedProjectsQuery(keys_only=False, ancestor=None, **properties):
-  """Returns the Appengine query object for the given set of properties.
+def getProjectsQuery(keys_only=False, ancestor=None, **properties):
+  """Returns the Appengine GSoCProject query object for the given set
+  of properties.
 
   Args:
     ancestor: The student for which the accepted projects must be fetched.
@@ -90,12 +91,26 @@ def getAcceptedProjectsQuery(keys_only=False, ancestor=None, **properties):
   if ancestor:
     q.ancestor(ancestor)
 
-  q.filter('status', 'accepted')
-
   for k, v in properties.items():
     q.filter(k, v)
 
   return q
+
+
+def getAcceptedProjectsQuery(keys_only=False, ancestor=None, **properties):
+  """Returns the Appengine GSoCProject query object for the given
+  set of properties for accepted projects.
+
+  Args:
+    ancestor: The student for which the accepted projects must be fetched.
+    properties: keyword arguments containing the properties for which the
+        query must be constructed.
+  """
+  q = getProjectsQuery(keys_only, ancestor, **properties)
+  q.filter('status', 'accepted')
+
+  return q
+
 
 def getAcceptedProjectsForOrg(org, limit=1000):
   """Returns all the accepted projects for a given organization.
