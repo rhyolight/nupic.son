@@ -469,10 +469,11 @@
       serialization_attributes: ['field_type']
     };
     var opts = $.extend(defaults, options);
-    var formJSON = [];
-    
+    var fieldsDict = {};
+    var fieldsOrder = [];
+
     if(!opts.is_child){ opts.prepend = '&'+opts.prepend; }
-    
+
     // Begin the core plugin
     this.each(function() {
       var ul_obj = this;
@@ -537,10 +538,11 @@
               break;
             }
           }
-          formJSON.push(fieldDict);
+          fieldsDict[$(this).attr('id')] = fieldDict;
+          fieldsOrder.push($(this).attr('id'));
         }
       });
     });
-    return(formJSON);
+    return([fieldsOrder, fieldsDict]);
   };
 })(jQuery);
