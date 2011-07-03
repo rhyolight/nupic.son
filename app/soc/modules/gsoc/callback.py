@@ -48,14 +48,13 @@ class Callback(object):
     from soc.modules.gsoc.views import homepage
     from soc.modules.gsoc.views import invite
     #from soc.modules.gsoc.views import org_app
+    from soc.modules.gsoc.views import mentor_evaluation
     from soc.modules.gsoc.views import org_home
     from soc.modules.gsoc.views import org_profile
     from soc.modules.gsoc.views import profile
     from soc.modules.gsoc.views import profile_show
     from soc.modules.gsoc.views import program
     from soc.modules.gsoc.views import project_details
-    from soc.modules.gsoc.views import project_evaluation
-    from soc.modules.gsoc.views import project_survey
     from soc.modules.gsoc.views import projects_list
     from soc.modules.gsoc.views import proposal
     from soc.modules.gsoc.views import proposal_review
@@ -64,6 +63,7 @@ class Callback(object):
     from soc.modules.gsoc.views import slot_transfer
     from soc.modules.gsoc.views import slot_transfer_admin
     #from soc.modules.gsoc.views import statistic
+    from soc.modules.gsoc.views import student_evaluation
     from soc.modules.gsoc.views import student_forms
     from soc.modules.gsoc.views import oauth
 
@@ -82,6 +82,8 @@ class Callback(object):
     self.views.append(homepage.Homepage())
     self.views.append(invite.InvitePage())
     self.views.append(invite.ShowInvite())
+    self.views.append(mentor_evaluation.GSoCMentorEvaluationEditPage())
+    self.views.append(mentor_evaluation.GSoCMentorEvaluationTakePage())
     #self.views.append(org_app.OrgApp())
     self.views.append(org_home.OrgHome())
     self.views.append(org_profile.OrgProfilePage())
@@ -91,13 +93,10 @@ class Callback(object):
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
     self.views.append(project_details.AssignMentor())
+    self.views.append(project_details.AssignCoMentor())
     self.views.append(project_details.FeaturedProject())
     self.views.append(project_details.ProjectDetails())
     self.views.append(project_details.ProjectDetailsUpdate())
-    self.views.append(project_evaluation.GSoCProjectEvaluationEditPage())
-    self.views.append(project_evaluation.GSoCProjectEvaluationTakePage())
-    self.views.append(project_survey.GSoCProjectSurveyEditPage())
-    self.views.append(project_survey.GSoCProjectSurveyTakePage())
     self.views.append(projects_list.ListProjects())
     self.views.append(proposal.ProposalPage())
     self.views.append(proposal_review.AcceptProposal())
@@ -117,6 +116,8 @@ class Callback(object):
     self.views.append(slot_transfer_admin.SlotsTransferAdminPage())
     self.views.append(slot_transfer.SlotTransferPage())
     self.views.append(slot_transfer.UpdateSlotTransferPage())
+    self.views.append(student_evaluation.GSoCStudentEvaluationEditPage())
+    self.views.append(student_evaluation.GSoCStudentEvaluationTakePage())
     self.views.append(student_forms.DownloadForm())
     self.views.append(student_forms.FormPage())
     self.views.append(oauth.OAuthRedirectPage())

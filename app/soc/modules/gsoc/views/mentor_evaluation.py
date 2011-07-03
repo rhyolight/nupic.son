@@ -43,7 +43,7 @@ EVALUATION_CHOICES = (
     )
 
 
-class GSoCProjectEvaluationEditForm(forms.SurveyEditForm):
+class GSoCMentorEvaluationEditForm(forms.SurveyEditForm):
   """Form to create/edit GSoC evaluation for the organization.
   """
 
@@ -54,14 +54,14 @@ class GSoCProjectEvaluationEditForm(forms.SurveyEditForm):
                'scope_path', 'link_id', 'prefix', 'survey_order']
 
 
-class GSoCProjectEvaluationTakeForm(forms.SurveyTakeForm):
+class GSoCMentorEvaluationTakeForm(forms.SurveyTakeForm):
   """Form for the organization to evaluate a student project.
   """
 
   def __init__(self, survey, *args, **kwargs):
     """Initialize the form field by adding a new grading field.
     """
-    super(GSoCProjectEvaluationTakeForm, self).__init__(
+    super(GSoCMentorEvaluationTakeForm, self).__init__(
         survey, *args, **kwargs)
 
     # hack to re-order grade to push to the end of the survey form
@@ -87,14 +87,14 @@ class GSoCProjectEvaluationTakeForm(forms.SurveyTakeForm):
     return True if grade == 'True' else False
 
 
-class GSoCProjectEvaluationEditPage(RequestHandler):
+class GSoCMentorEvaluationEditPage(RequestHandler):
   """View for creating/editing organization evaluation form.
   """
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/evaluation/edit/%s$' % url_patterns.SURVEY,
-             self, name='gsoc_edit_project_evaluation'),
+         url(r'^gsoc/eval/mentor/edit/%s$' % url_patterns.SURVEY,
+             self, name='gsoc_edit_mentor_evaluation'),
     ]
 
   def checkAccess(self):
@@ -106,17 +106,17 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
 
   def context(self):
     if self.data.project_evaluation:
-      form = GSoCProjectEvaluationEditForm(
+      form = GSoCMentorEvaluationEditForm(
           self.data.POST or None, instance=self.data.project_evaluation)
     else:
-      form = GSoCProjectEvaluationEditForm(self.data.POST or None)
+      form = GSoCMentorEvaluationEditForm(self.data.POST or None)
 
     page_name = ugettext('Edit - %s' % (self.data.project_evaluation.title)) \
         if self.data.project_evaluation else 'Create new survey'
     context = {
         'page_name': page_name,
         'post_url': self.redirect.survey().urlOf(
-            'gsoc_edit_project_evaluation'),
+            'gsoc_edit_mentor_evaluation'),
         'form': form,
         'error': bool(form.errors),
         }
@@ -130,10 +130,10 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
       a newly created or updated survey entity or None.
     """
     if self.data.project_evaluation:
-      form = GSoCProjectEvaluationEditForm(
+      form = GSoCMentorEvaluationEditForm(
           self.data.POST, instance=self.data.project_evaluation)
     else:
-      form = GSoCProjectEvaluationEditForm(self.data.POST)
+      form = GSoCMentorEvaluationEditForm(self.data.POST)
 
     if not form.is_valid():
       return None
@@ -144,6 +144,7 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
       form.cleaned_data['link_id'] = self.data.kwargs.get('survey')
       form.cleaned_data['prefix'] = 'gsoc_program'
       form.cleaned_data['author'] = self.data.user
+      form.cleaned_data['scope'] = self.data.program
       # kwargs which defines an evaluation
       fields = ['sponsor', 'program', 'survey']
 
@@ -160,19 +161,19 @@ class GSoCProjectEvaluationEditPage(RequestHandler):
     survey_content = self.surveyContentFromForm()
     if survey_content:
       r = self.redirect.survey()
-      r.to('gsoc_edit_project_evaluation', validated=True)
+      r.to('gsoc_edit_mentor_evaluation', validated=True)
     else:
       self.get()
 
 
-class GSoCProjectEvaluationTakePage(RequestHandler):
+class GSoCMentorEvaluationTakePage(RequestHandler):
   """View for the organization to submit student evaluation.
   """
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/evaluation/%s$' % url_patterns.SURVEY_RECORD,
-         self, name='gsoc_take_evaluation_survey'),
+         url(r'^gsoc/eval/mentor/%s$' % url_patterns.SURVEY_RECORD,
+         self, name='gsoc_take_mentor_evaluation'),
     ]
 
   def checkAccess(self):
@@ -190,11 +191,11 @@ class GSoCProjectEvaluationTakePage(RequestHandler):
 
   def context(self):
     if self.data.project_evaluation_record:
-      form = GSoCProjectEvaluationTakeForm(
+      form = GSoCMentorEvaluationTakeForm(
           self.data.project_evaluation,
           self.data.POST or None, instance=self.data.project_evaluation_record)
     else:
-      form = GSoCProjectEvaluationTakeForm(
+      form = GSoCMentorEvaluationTakeForm(
           self.data.project_evaluation, self.data.POST or None)
 
     context = {
@@ -213,11 +214,11 @@ class GSoCProjectEvaluationTakePage(RequestHandler):
       a newly created or updated survey record entity or None
     """
     if self.data.project_evaluation_record:
-      form = GSoCProjectEvaluationTakeForm(
+      form = GSoCMentorEvaluationTakeForm(
           self.data.project_evaluation,
           self.data.POST, instance=self.data.project_evaluation_record)
     else:
-      form = GSoCProjectEvaluationTakeForm(
+      form = GSoCMentorEvaluationTakeForm(
           self.data.project_evaluation, self.data.POST)
 
     if not form.is_valid():
@@ -239,6 +240,6 @@ class GSoCProjectEvaluationTakePage(RequestHandler):
     if project_evaluation_record:
       r = self.redirect.survey_record(
           self.data.project_evaluation.link_id)
-      r.to('gsoc_take_evaluation_survey', validated=True)
+      r.to('gsoc_take_mentor_evaluation', validated=True)
     else:
       self.get()
