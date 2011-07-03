@@ -738,7 +738,7 @@ class RedirectHelper(object):
 
     return self
 
-  def survey_record(self, survey=None):
+  def survey_record(self, survey=None, id=None, student=None):
     """Returns the redirector object with the arguments for survey record
 
     Args:
