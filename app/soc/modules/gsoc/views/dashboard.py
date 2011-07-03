@@ -62,6 +62,15 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 BIRTHDATE_FORMAT = 'd-m-Y'
 
 
+def colorize(choice, yes, no):
+  """Differentiate between yes and no status with green and red colors.
+  """
+  if choice:
+    return """<font color="green">%s</font>""" % yes
+  else:
+    return """<strong><font color="red">%s</font></strong>""" % no
+
+
 class Dashboard(RequestHandler):
   """View for the participant dashboard.
   """
@@ -1267,12 +1276,6 @@ class TodoComponent(Component):
 
     if response.start == 'done':
       return response
-
-    def colorize(choice, yes, no):
-      if choice:
-        return """<font color="green">%s</font>""" % yes
-      else:
-        return """<strong><font color="red">%s</font></strong>""" % no
 
     info = self.data.student_info
 
