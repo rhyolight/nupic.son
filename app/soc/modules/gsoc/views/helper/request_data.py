@@ -208,6 +208,9 @@ class TimelineHelper(object):
   def applicationMatchedOn(self):
     return self.timeline.student_application_matched_deadline
 
+  def afterSurveyStart(self, survey):
+    return isAfter(survey.survey_start)
+
   def surveyPeriod(self, survey):
     start = survey.survey_start
     end = survey.survey_end
@@ -288,6 +291,7 @@ class RequestData(RequestData):
       return True
     if isinstance(organization, db.Model):
       organization = organization.key()
+
     return organization in [i.key() for i in self.org_admin_for]
 
   def mentorFor(self, organization):
@@ -741,7 +745,7 @@ class RedirectHelper(object):
       survey: the survey's link_id
     """
     self.program()
-    self.project()
+    self.project(id, student)
     if not survey:
       assert 'survey' in self._data.kwargs
       survey = self._data.kwargs['survey']
