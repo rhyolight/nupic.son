@@ -32,14 +32,6 @@ from soc.modules.gsoc.models.project import GSoCProject
 
 
 def process(project_key):
-  project = db.get(project_key)
-  if not project:
-    yield operation.counters.Increment("missing_project")
-
-  mentors = [project.mentor.key()]
-  for am in project.additional_mentors:
-    if am not in mentors:
-      mentors.append(am)
 
   def update_project_txn():
     project = db.get(project_key)
@@ -47,8 +39,13 @@ def process(project_key):
       logging.error("Missing project for key '%s'." % project_key)
       return False
 
+    mentor =  GSoCProject.mentor.get_value_for_datastore(project)
+    mentors = [mentor]
+    for am in project.additional_mentors:
+      if am not in mentors:
+        mentors.append(am)
+
     project.mentors = mentors
-    logging.warn(mentors)
     project.put()
     return True
 
