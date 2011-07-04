@@ -22,3 +22,11 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.proposal.GSoCProposal
+
+- name: ConvertProjectMentors
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.convert_project_mentors.process
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.project.GSoCProject
