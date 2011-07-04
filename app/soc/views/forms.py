@@ -511,27 +511,22 @@ class SurveyTakeForm(ModelForm):
     """
     # insert dynamic survey fields
     if self.survey:
-      schema = loads(self.survey.schema)
-      for field in schema:
-        self.constructField(field)
+      order, fields = loads(self.survey.schema)
+      for field_id in order:
+        self.constructField(field_id, fields.get(field_id, {}))
 
-  def constructField(self, field_dict):
+  def constructField(self, field_name, field_dict):
     """Constructs the field for the given field metadata
 
     Args:
+      field_name: Unique ID assigned to the field while creating it
       field_dict: Meta data containing how the field must be constructed
     """
     type = field_dict.get('field_type', '')
     label = urllib.unquote(field_dict.get('label', ''))
     required = field_dict.get('required', True)
-    comment = field_dict.get('has_comment', False)
     help_text = field_dict.get('tip', '')
     values = field_dict.get('values', '')
-
-    pattern = re.compile(r'[^A-Za-z0-9_]')
-    field_name_suffix = re.sub(pattern, '_', label).strip(' _').lower()
-
-    field_name = '%s_%s' % (type, field_name_suffix)
 
     widget = None
 
