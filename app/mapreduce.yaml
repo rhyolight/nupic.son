@@ -25,7 +25,7 @@ mapreduce:
 
 - name: ConvertProjectMentors
   mapper:
-    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreKeyInputReader
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
     handler: soc.mapreduce.convert_project_mentors.process
     params:
     - name: entity_kind

@@ -31,12 +31,11 @@ from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 
 
-def process(project_key):
+def process(project):
 
   def update_project_txn():
-    project = db.get(project_key)
     if not project:
-      logging.error("Missing project for key '%s'." % project_key)
+      logging.error("Missing project '%s'." % project)
       return False
 
     mentor =  GSoCProject.mentor.get_value_for_datastore(project)
