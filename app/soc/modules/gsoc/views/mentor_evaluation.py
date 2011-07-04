@@ -117,7 +117,7 @@ class GSoCMentorEvaluationEditPage(RequestHandler):
         'page_name': page_name,
         'post_url': self.redirect.survey().urlOf(
             'gsoc_edit_mentor_evaluation'),
-        'form': form,
+        'forms': [form],
         'error': bool(form.errors),
         }
 

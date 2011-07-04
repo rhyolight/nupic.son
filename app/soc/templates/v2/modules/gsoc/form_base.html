@@ -54,9 +54,11 @@ limitations under the License.
     {{ form.render }}
   {% endfor %}
 
-  <div id="form-register-fieldset-button-row" class="row button-row">
-    <input id="form-register-submit" type="submit" value="Submit" class="submit" />
-  </div>
+  {% block form_button %}
+    <div id="form-register-fieldset-button-row" class="row button-row">
+      <input id="form-register-submit" type="submit" value="Submit" class="submit" />
+    </div>
+  {% endblock form_button %}
 </form>
 <!-- end form -->
 
