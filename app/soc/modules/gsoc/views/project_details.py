@@ -246,10 +246,13 @@ class AssignMentors(RequestHandler):
     if str_mentor_keys:
       org = self.data.project.org
 
-      mentor_keys = [db.Key(k) for k in str_mentor_keys]
-      if set(mentor_keys) < set(
+      # need the list to set conversion and back to list conversion
+      # to ensure that same mentor doesn't get assigned to the
+      # project more than once
+      mentor_keys = set([db.Key(k) for k in str_mentor_keys])
+      if mentor_keys < set(
           profile_logic.queryAllMentorsKeysForOrg(org)):
-        return mentor_keys
+        return list(mentor_keys)
 
       raise BadRequest("Invalid post data.")
 
