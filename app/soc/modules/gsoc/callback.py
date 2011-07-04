@@ -92,7 +92,7 @@ class Callback(object):
     self.views.append(profile_show.ProfileShowPage())
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
-    self.views.append(project_details.AssignMentor())
+    self.views.append(project_details.AssignMentors())
     self.views.append(project_details.FeaturedProject())
     self.views.append(project_details.ProjectDetails())
     self.views.append(project_details.ProjectDetailsUpdate())

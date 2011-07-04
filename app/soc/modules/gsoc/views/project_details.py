@@ -148,8 +148,8 @@ class UserActions(Template):
     all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
         self.data.project.org)
     context['assign_mentor'] = assign_mentor.AssignMentorFields(
-        self.data, self.data.project.mentor,
-        r.project().urlOf('gsoc_project_assign_mentor'),
+        self.data, self.data.project.mentors,
+        r.project().urlOf('gsoc_project_assign_mentors'),
         all_mentors=all_mentors_keys, mentor_required=True)
 
     return context
@@ -204,14 +204,14 @@ class ProjectDetails(RequestHandler):
     return context
 
 
-class AssignMentor(RequestHandler):
+class AssignMentors(RequestHandler):
   """View which handles assigning mentor to a project.
   """
 
   def djangoURLPatterns(self):
     return [
-         url(r'project/assign_mentor/%s$' % url_patterns.PROJECT,
-         self, name='gsoc_project_assign_mentor'),
+         url(r'project/assign_mentors/%s$' % url_patterns.PROJECT,
+         self, name='gsoc_project_assign_mentors'),
     ]
 
   def checkAccess(self):
@@ -219,11 +219,11 @@ class AssignMentor(RequestHandler):
     assert isSet(self.data.project.org)
     self.check.isOrgAdminForOrganization(self.data.project.org)
 
-  def assignMentor(self, mentor_entity):
+  def assignMentors(self, mentor_keys):
     """Assigns the mentor to the project.
 
     Args:
-      mentor_entity: The entity of the mentor profile which needs to assigned
+      mentor_keys: List of mentor profile keys to to be assigned
           to the project.
     """
     assert isSet(self.data.project)
@@ -233,33 +233,33 @@ class AssignMentor(RequestHandler):
     def assign_mentor_txn():
       project = db.get(project_key)
 
-      project.mentor = mentor_entity
+      project.mentors = mentor_keys
 
       db.put(project)
 
     db.run_in_transaction(assign_mentor_txn)
 
   def validate(self):
-    mentor_key = self.data.POST.get('assign_mentor')
+    str_mentor_keys = self.data.POST.getlist('assign_mentor')
 
-    if mentor_key:
-      mentor_entity = db.get(mentor_key)
+    if str_mentor_keys:
       org = self.data.project.org
 
-      if (mentor_entity and db.Key(mentor_key) in
+      mentor_keys = [db.Key(k) for k in str_mentor_keys]
+      if set(mentor_keys) < set(
           profile_logic.queryAllMentorsKeysForOrg(org)):
-        return mentor_entity
-      else:
-        raise BadRequest("Invalid post data.")
+        return mentor_keys
+
+      raise BadRequest("Invalid post data.")
 
     return None
 
   def post(self):
     assert isSet(self.data.project)
 
-    mentor_entity = self.validate()
-    if mentor_entity:
-      self.assignMentor(mentor_entity)
+    mentor_keys = self.validate()
+    if mentor_keys:
+      self.assignMentors(mentor_keys)
 
     project_owner = self.data.project.parent()
 
