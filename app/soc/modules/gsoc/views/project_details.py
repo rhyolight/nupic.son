@@ -141,6 +141,7 @@ class UserActions(Template):
     self.toggle_buttons.append(featured_project)
 
     context = {
+        'title': 'Project Actions',
         'toggle_buttons': self.toggle_buttons,
         }
 

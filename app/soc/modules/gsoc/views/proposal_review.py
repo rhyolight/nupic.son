@@ -272,7 +272,9 @@ class UserActions(Template):
   def context(self):
     assert isSet(self.data.proposal)
 
-    context = {}
+    context = {
+        'title': 'Proposal Actions',
+        }
 
     self.proposal_ignored = self.data.proposal.status == 'ignored'
 
