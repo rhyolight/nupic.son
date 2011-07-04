@@ -29,10 +29,12 @@
 /* User menu */
 #floatMenu {
     margin-top: 30px;
+    /*
     position: absolute;
     top: 0;
     left: 0;
     width: 220px;
+    */
 
     #user-menu-inner {
         background: rgba(246, 246, 246, 0.6);
@@ -86,6 +88,9 @@
                 line-height: 1.3em;
                 margin: 0 0 4px 0;
             }
+        }
+        form select {
+            width: 100%;
         }
     }
 }
@@ -198,3 +203,25 @@ label.iPhoneCheckLabelOff {
     background: url(../../../images/v2/gsoc/ui_switch_slider_center.png);
 }
 /* Slide checkboxes */
+
+#user-menu-add-another-link {
+    display: block;
+    clear: both;
+    font-size: 11px;
+    padding-right: 5px;
+    text-align: right;
+}
+#newlink {
+    .user-menu-remove-link {
+        display: block;
+        font-size: 11px;
+        margin-bottom: 5px;
+    
+        &:last {
+            margin-bottom: 0;
+        }
+    }
+    > select {
+        margin-bottom: 5px;
+    }
+}
