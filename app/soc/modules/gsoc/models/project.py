@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Daniel Hans" <daniel.m.hans@gmail.com>',
 ]
 
@@ -85,6 +86,11 @@ class GSoCProject(soc.models.base.ModelWithFieldAttributes):
 
   #: A property containing a list of additional Mentors for this project
   additional_mentors = db.ListProperty(item_type=db.Key, default=[])
+
+  #: A property containing a list of Mentors assigned for this project
+  #: TODO(PostConversion): Make the property required after data
+  #: conversion and get rid of mentor and additional_mentors properties
+  mentors = db.ListProperty(item_type=db.Key, default=[])
 
   #: The status of this project
   #: accepted: This project has been accepted into the program
