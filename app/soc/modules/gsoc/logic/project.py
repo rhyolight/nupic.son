@@ -147,23 +147,12 @@ def getProjectsForOrgs(orgs, limit=1000):
   return q.fetch(limit)
 
 
-def getProjectsForMentor(mentor, limit=1000):
+def getProjectsForMentors(mentor, limit=1000):
   """Returns all the projects that the mentor is assigned to.
 
   Args:
     mentor: The mentor for whom the projects he is mentoring should
         be retrieved.
   """
-  q = getProjectsQuery(mentor=mentor)
-  return q.fetch(limit)
-
-
-def getProjectsForCoMentor(mentor, limit=1000):
-  """Returns all the projects that the mentor is assigned as co-mentor.
-
-  Args:
-    mentor: The mentor for whom the projects he is co-mentoring should
-        be retrieved.
-  """
-  q = getProjectsQuery(additional_mentors=mentor)
+  q = getProjectsQuery(mentors=mentor)
   return q.fetch(limit)

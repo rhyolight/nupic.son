@@ -597,8 +597,7 @@ class OrgEvaluationsComponent(Component):
 
     response = lists.ListContentResponse(self.request, self._list_config)
 
-    projects = project_logic.getProjectsForMentor(self.data.profile)
-    projects += project_logic.getProjectsForCoMentor(self.data.profile)
+    projects = project_logic.getProjectsForMentors(self.data.profile)
 
     if self.data.is_org_admin:
       projects += project_logic.getProjectsForOrgs(
