@@ -599,10 +599,6 @@ class OrgEvaluationsComponent(Component):
 
     projects = project_logic.getProjectsForMentors(self.data.profile)
 
-    if self.data.is_org_admin:
-      projects += project_logic.getProjectsForOrgs(
-          self.data.profile.org_admin_for)
-
     # remove all the projects that are repeated
     projects = set(projects)
 
