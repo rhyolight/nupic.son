@@ -132,7 +132,7 @@
         var form = _self.closest("form");
 
         form.submit(function () {
-          var trimmed_value = jQuery.trim(_self.val());
+          var trimmed_value = jQuery.trim(_self.val()).split(" ")[0];
           if (trimmed_value !== "") {
             _self.val([
               trimmed_value,
