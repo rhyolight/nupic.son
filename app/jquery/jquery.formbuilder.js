@@ -91,7 +91,7 @@
 						$(this).val(0).blur();
 						// This solves the scrollTo dependency
 						$('body').animate({
-							scrollTop: $('#frm-' + (last_id - 1) + '-item').offset().top
+							scrollTop: $('#' + field_id).offset().top
 						}, 500);
 						return false;
 					});
