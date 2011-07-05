@@ -51,8 +51,8 @@ class GSoCMentorEvaluationEditForm(forms.SurveyEditForm):
     model = GradingProjectSurvey
     css_prefix = 'gsoc-mentor-eval-edit'
     exclude = ['scope', 'author', 'modified_by', 'survey_content',
-               'scope_path', 'link_id', 'prefix', 'survey_order']
-
+               'scope_path', 'link_id', 'prefix', 'read_access',
+               'write_access', 'taking_access', 'is_featured']
 
 class GSoCMentorEvaluationTakeForm(forms.SurveyTakeForm):
   """Form for the organization to evaluate a student project.

@@ -46,6 +46,9 @@ class GSoCStudentEvaluationEditForm(forms.SurveyEditForm):
     exclude = ['schema', 'scope', 'author', 'modified_by',
                'survey_content', 'scope_path', 'link_id',
                'prefix', 'survey_order']
+    exclude = ['scope', 'author', 'modified_by', 'survey_content',
+               'scope_path', 'link_id', 'prefix', 'read_access',
+               'write_access', 'taking_access', 'is_featured']
 
 
 class GSoCStudentEvaluationTakeForm(forms.SurveyTakeForm):
