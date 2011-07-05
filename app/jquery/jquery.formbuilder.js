@@ -375,7 +375,10 @@
 					last_id++;
 				};
       // load existing form data
-      fromJson(JSON.parse($('#schema').attr('value')));
+			var schema = $('#schema').attr('value');
+			if (schema) {
+        fromJson(JSON.parse(schema));
+			}
 
 			// handle field delete links
 			$('.remove').live('click', function () {
