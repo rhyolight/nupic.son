@@ -22,19 +22,12 @@ __authors__ = [
   ]
 
 
-import logging
-
-from google.appengine.ext import db
 from google.appengine.ext.mapreduce import operation
 
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 
 
 def process(project):
-  if not project:
-    yield operation.counters.Increment("missing_project")
-
   mentor =  GSoCProject.mentor.get_value_for_datastore(project)
   mentors = [mentor]
   for am in project.additional_mentors:
