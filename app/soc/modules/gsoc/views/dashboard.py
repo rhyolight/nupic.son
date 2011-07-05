@@ -466,20 +466,18 @@ class MyEvaluationsComponent(Component):
     """
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn(
-        'key', 'Key', (lambda d, *args: d['key']), hidden=True)
-    list_config.addDictColumn('evaluation', 'Evaluation')
-    list_config.addDictColumn('project_title', 'Project')
-    list_config.addDictColumn('status', 'Status')
-    def rowAction(d, *args):
-      key = d['key']
-      if key == 'ms_eval':
-        return data.redirect.survey_record(
-            'midterm', d.get('project'), d.get('student')).urlOf(
-            'gsoc_take_student_evaluation')
-      if key == 'fs_eval':
-        return data.redirect.survey_record(
-            'final', d.get('project'), d.get('student')).urlOf(
-            'gsoc_take_student_evaluation')
+        'key', 'Key', (lambda ent, *args: '/'.join([
+            ent.parent_key().id_or_name(), args[0],
+            '%d' % (ent.key().id_or_name())])), hidden=True)
+    list_config.addColumn('evaluation', 'Evaluation',
+                          lambda ent, *args: args[0].capitalize())
+    list_config.addSimpleColumn('title', 'Project')
+    list_config.addColumn('status', 'Status', lambda ent, *args: args[1])
+    def rowAction(ent, *args):
+      evaluation = args[0]
+      return data.redirect.survey_record(
+          evaluation, ent.key().id_or_name(), ent.parent().link_id).urlOf(
+          'gsoc_take_student_evaluation')
       return None
 
     list_config.setRowAction(rowAction)
@@ -505,33 +503,21 @@ class MyEvaluationsComponent(Component):
 
     projects = project_logic.getAcceptedProjectsForStudent(self.data.profile)
 
-    ms_eval = ps_logic.getProjectSurveyForProgram(self.data.program, 'midterm')
+    evaluation = 'midterm'
+    ms_eval = ps_logic.getProjectSurveyForProgram(self.data.program, evaluation)
     if (ms_eval and self.data.timeline.afterSurveyStart(ms_eval)):
       for project in projects:
         status = colorize(psr_logic.evalRecordExistsForStudent(
             ms_eval, project), "Submitted", "Not submitted")
-        response.addRow({
-            'key': 'ms_eval',
-            'project': project.key().id(),
-            'student': project.parent().link_id,
-            'evaluation': 'Midterm',
-            'project_title': project.title,
-            'status': status
-        })
+        response.addRow(project, evaluation, status)
 
-    fs_eval = ps_logic.getProjectSurveyForProgram(self.data.program, 'final')
+    evaluation = 'final'
+    fs_eval = ps_logic.getProjectSurveyForProgram(self.data.program, evaluation)
     if (fs_eval and self.data.timeline.afterSurveyStart(fs_eval)):
       for project in projects:
         status = colorize(psr_logic.evalRecordExistsForStudent(
-            fs_eval, project), "Submitted", "Not submitted")
-        response.addRow({
-            'key': 'fs_eval',
-            'project': project.key().id(),
-            'student': project.parent().link_id,
-            'evaluation': 'Final',
-            'project_title': project.title,
-            'status': status
-        })
+            ms_eval, project), "Submitted", "Not submitted")
+        response.addRow(project, evaluation, status)
 
     response.next = 'done'
 
@@ -557,23 +543,22 @@ class OrgEvaluationsComponent(Component):
   def __init__(self, request, data):
     """Initializes this component.
     """
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn(
-        'key', 'Key', (lambda d, *args: d['key']), hidden=True)
-    list_config.addDictColumn('evaluation', 'Evaluation')
-    list_config.addDictColumn('student', 'Student')
-    list_config.addDictColumn('project_title', 'Project')
-    list_config.addDictColumn('status', 'Status')
-    def rowAction(d, *args):
-      key = d['key']
-      project = d.get('project')
-      student = d.get('student')
-      eval_url_name = 'gsoc_take_mentor_evaluation'
-      if key == 'mm_eval':
-        return r.survey_record('midterm', project, student).urlOf(eval_url_name)
-      if key == 'fm_eval':
-        return r.survey_record('final', project, student).urlOf(eval_url_name)
+        'key', 'Key', (lambda ent, *args: '/'.join([
+            ent.parent_key().id_or_name(), args[0],
+            '%d' % (ent.key().id_or_name())])), hidden=True)
+    list_config.addColumn('evaluation', 'Evaluation',
+                          lambda ent, *args: args[0].capitalize())
+    list_config.addColumn('student', 'Student',
+                          lambda ent, *args: ent.parent().name())
+    list_config.addSimpleColumn('title', 'Project')
+    list_config.addColumn('status', 'Status', lambda ent, *args: args[1])
+    def rowAction(ent, *args):
+      evaluation = args[0]
+      return data.redirect.survey_record(
+          evaluation, ent.key().id_or_name(), ent.parent().link_id).urlOf(
+          'gsoc_take_mentor_evaluation')
       return None
 
     list_config.setRowAction(rowAction)
@@ -599,39 +584,23 @@ class OrgEvaluationsComponent(Component):
 
     projects = project_logic.getProjectsForMentors(self.data.profile)
 
-    # remove all the projects that are repeated
-    projects = set(projects)
-
+    evaluation = 'midterm'
     mm_eval = gps_logic.getGradingProjectSurveyForProgram(
-        self.data.program, 'midterm')
+        self.data.program, evaluation)
     if (mm_eval and self.data.timeline.afterSurveyStart(mm_eval)):
       for project in projects:
         status = colorize(gpsr_logic.evalRecordExistsForStudent(
             mm_eval, project), "Submitted", "Not submitted")
-        response.addRow({
-            'key': 'mm_eval',
-            'survey': 'midterm',
-            'project': project.key().id(),
-            'student': project.parent().link_id,
-            'evaluation': 'Midterm',
-            'project_title': project.title,
-            'status': status
-        })
+        response.addRow(project, evaluation, status)
 
+    evaluation = 'final'
     fm_eval = gps_logic.getGradingProjectSurveyForProgram(
-        self.data.program, 'final')
+        self.data.program, evaluation)
     if (fm_eval and self.data.timeline.afterSurveyStart(fm_eval)):
       for project in projects:
-        status = colorize(psr_logic.evalRecordExistsForStudent(
-            fm_eval, project), "Submitted", "Not submitted")
-        response.addRow({
-            'key': 'fm_eval',
-            'project': project.key().id(),
-            'student': project.parent().link_id,
-            'evaluation': 'Final',
-            'project_title': project.title,
-            'status': status
-        })
+        status = colorize(gpsr_logic.evalRecordExistsForStudent(
+            mm_eval, project), "Submitted", "Not submitted")
+        response.addRow(project, evaluation, status)
 
     response.next = 'done'
 
