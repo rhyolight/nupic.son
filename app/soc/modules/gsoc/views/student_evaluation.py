@@ -55,7 +55,7 @@ class GSoCStudentEvaluationTakeForm(forms.SurveyTakeForm):
 
   class Meta:
     model = GSoCProjectSurveyRecord
-    css_prefix = 'gsoc_survey_record'
+    css_prefix = 'gsoc-student-eval-record'
     exclude = ['project', 'org', 'user', 'survey', 'created', 'modified']
 
 
@@ -138,7 +138,7 @@ class GSoCStudentEvaluationEditPage(RequestHandler):
       self.get()
 
 class GSoCStudentEvaluationTakePage(RequestHandler):
-  """View for students to respond to the survey during evaluation.
+  """View for students to submit their evaluation.
   """
 
   def djangoURLPatterns(self):
@@ -148,27 +148,29 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.mutator.projectSurveyRecordFromKwargs()
+    self.mutator.projectFromKwargs()
+    self.mutator.studentEvaluationFromKwargs()
+    self.mutator.studentEvaluationRecordFromKwargs()
 
-    assert isSet(self.data.project_survey)
-    self.check.isSurveyActive(self.data.project_survey)
-    self.check.canUserTakeSurvey(self.data.project_survey)
+    assert isSet(self.data.student_evaluation)
+    self.check.isSurveyActive(self.data.student_evaluation)
+    self.check.canUserTakeSurvey(self.data.student_evaluation)
     self.check.isStudentForSurvey()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_survey_take.html'
+    return 'v2/modules/gsoc/_evaluation_take.html'
 
   def context(self):
-    if self.data.project_survey_record:
+    if self.data.student_evaluation_record:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.project_survey,
-          self.data.POST or None, instance=self.data.project_survey_record)
+          self.data.student_evaluation,
+          self.data.POST or None, instance=self.data.student_evaluation_record)
     else:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.project_survey, self.data.POST or None)
+          self.data.student_evaluation, self.data.POST or None)
 
     context = {
-        'page_name': "Midterm survey page",
+        'page_name': '%s page' % (self.data.student_evaluation.title),
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'forms': [form],
         'error': bool(form.errors),
@@ -176,28 +178,28 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
 
     return context
 
-  def recordSurveyFromForm(self):
-    """Create/edit a new survey record based on the data inserted in the form.
+  def recordEvaluationFromForm(self):
+    """Create/edit a new student evaluation record based on the form input.
 
     Returns:
-      a newly created or updated survey record entity or None
+      a newly created or updated evaluation record entity or None
     """
-    if self.data.project_survey_record:
+    if self.data.student_evaluation_record:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.project_survey,
-          self.data.POST, instance=self.data.project_survey_record)
+          self.data.student_evaluation,
+          self.data.POST, instance=self.data.student_evaluation_record)
     else:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.project_survey, self.data.POST)
+          self.data.student_evaluation, self.data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.project_survey_record:
+    if not self.data.student_evaluation_record:
       form.cleaned_data['project'] = self.data.project
       form.cleaned_data['org'] = self.data.project.org
       form.cleaned_data['user'] = self.data.user
-      form.cleaned_data['survey'] = self.data.project_survey
+      form.cleaned_data['survey'] = self.data.student_evaluation
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
@@ -205,10 +207,10 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
     return entity
 
   def post(self):
-    project_survey_record = self.recordSurveyFromForm()
-    if project_survey_record:
+    student_evaluation_record = self.recordEvaluationFromForm()
+    if student_evaluation_record:
       r = self.redirect.survey_record(
-          self.data.project_survey.link_id)
+          self.data.student_evaluation.link_id)
       r.to('gsoc_take_student_evaluation', validated=True)
     else:
       self.get()
