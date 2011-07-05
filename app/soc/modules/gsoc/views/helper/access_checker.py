@@ -78,12 +78,16 @@ class Mutator(access_checker.Mutator):
                         [self.data.kwargs[field] for field in fields])
     self.data.student_evaluation = ProjectSurvey.get_by_key_name(key_name)
 
-    if not self.data.project_survey:
-      raise NotFound(DEF_NO_PROJECT_SURVEY_MSG_FMT % key_name)
+    if raise_not_found and not self.data.student_evaluation:
+      raise NotFound(DEF_NO_STUDENT_EVALUATION_MSG_FMT % key_name)
 
-    self.projectFromKwargs()
 
+  def studentEvaluationRecordFromKwargs(self):
+    """Sets the student evaluation record in RequestData object.
+    """
+    assert access_checker.isSet(self.data.student_evaluation)
     assert access_checker.isSet(self.data.project)
+
     self.data.organization = self.data.project.org
 
     q = GSoCProjectSurveyRecord.all()
