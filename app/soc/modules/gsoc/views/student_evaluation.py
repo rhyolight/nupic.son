@@ -25,6 +25,7 @@ __authors__ = [
 from soc.views import forms
 
 from django.conf.urls.defaults import url
+from django.utils.translation import ugettext
 
 from soc.views.helper.access_checker import isSet
 
@@ -42,10 +43,7 @@ class GSoCStudentEvaluationEditForm(forms.SurveyEditForm):
 
   class Meta:
     model = ProjectSurvey
-    css_prefix = 'gsoc_survey_edit'
-    exclude = ['schema', 'scope', 'author', 'modified_by',
-               'survey_content', 'scope_path', 'link_id',
-               'prefix', 'survey_order']
+    css_prefix = 'gsoc-student-eval-edit'
     exclude = ['scope', 'author', 'modified_by', 'survey_content',
                'scope_path', 'link_id', 'prefix', 'read_access',
                'write_access', 'taking_access', 'is_featured']
@@ -62,7 +60,7 @@ class GSoCStudentEvaluationTakeForm(forms.SurveyTakeForm):
 
 
 class GSoCStudentEvaluationEditPage(RequestHandler):
-  """View for creating/editing student survey to be taken during evalution.
+  """View for creating/editing student evalution.
   """
 
   def djangoURLPatterns(self):
@@ -72,31 +70,72 @@ class GSoCStudentEvaluationEditPage(RequestHandler):
     ]
 
   def checkAccess(self):
-    pass
+    self.check.isHost()
+    self.mutator.studentEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_survey.html'
+    return 'v2/modules/gsoc/_evaluation.html'
 
   def context(self):
-    # TODO: (test code) remove it
-    from google.appengine.ext import db
-    org_app_key_name = 'gsoc_program/google/gsoc2009/gsoc2009survey'
-    org_app_key = db.Key.from_path('OrgAppSurvey', org_app_key_name)
-    org_app = db.get(org_app_key)
-    # Test code end
+    if self.data.student_evaluation:
+      form = GSoCStudentEvaluationEditForm(
+          self.data.POST or None, instance=self.data.student_evaluation)
+    else:
+      form = GSoCStudentEvaluationEditForm(self.data.POST or None)
 
-    form = GSoCStudentEvaluationEditForm(self.data.POST or None,
-                                         instance=org_app.survey_content)
-
+    page_name = ugettext('Edit - %s' % (self.data.student_evaluation.title)) \
+        if self.data.student_evaluation else 'Create new student evaluation'
     context = {
-        'page_name': "Midterm survey page",
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False),
+        'page_name': page_name,
+        'post_url': self.redirect.survey().urlOf(
+            'gsoc_edit_student_evaluation'),
         'forms': [form],
         'error': bool(form.errors),
         }
 
     return context
 
+  def evaluationFromForm(self):
+    """Create/edit the student evaluation entity from form.
+
+    Returns:
+      a newly created or updated student evaluation entity or None.
+    """
+    if self.data.student_evaluation:
+      form = GSoCStudentEvaluationEditForm(
+          self.data.POST, instance=self.data.student_evaluation)
+    else:
+      form = GSoCStudentEvaluationEditForm(self.data.POST)
+
+    if not form.is_valid():
+      return None
+
+    form.cleaned_data['modified_by'] = self.data.user
+
+    if not self.data.student_evaluation:
+      form.cleaned_data['link_id'] = self.data.kwargs.get('survey')
+      form.cleaned_data['prefix'] = 'gsoc_program'
+      form.cleaned_data['author'] = self.data.user
+      form.cleaned_data['scope'] = self.data.program
+      # kwargs which defines an evaluation
+      fields = ['sponsor', 'program', 'survey']
+
+      key_name = '/'.join(['gsoc_program'] +
+                          [self.data.kwargs[field] for field in fields])
+
+      entity = form.create(commit=True, key_name=key_name)
+    else:
+      entity = form.save(commit=True)
+
+    return entity
+
+  def post(self):
+    evaluation = self.evaluationFromForm()
+    if evaluation:
+      r = self.redirect.survey()
+      r.to('gsoc_edit_student_evaluation', validated=True)
+    else:
+      self.get()
 
 class GSoCStudentEvaluationTakePage(RequestHandler):
   """View for students to respond to the survey during evaluation.
