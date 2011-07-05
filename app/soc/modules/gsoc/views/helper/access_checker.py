@@ -45,10 +45,10 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
     'You have reached the maximum number of proposals allowed '
     'for this program.')
 
-DEF_NO_PROJECT_SURVEY_MSG_FMT = ugettext(
+DEF_NO_STUDENT_EVALUATION_MSG_FMT = ugettext(
     'The project survey with name %s parameters does not exist.')
 
-DEF_NO_PROJECT_EVALUATION_MSG_FMT = ugettext(
+DEF_NO_MENTOR_EVALUATION_MSG_FMT = ugettext(
     'The project evaluation with name %s does not exist.')
 
 DEF_NO_RECORD_FOUND = ugettext(
@@ -65,15 +65,18 @@ DEF_SURVEY_NOT_ACCESSIBLE_FOR_PROJECT_MSG = ugettext(
 
 class Mutator(access_checker.Mutator):
 
-  def projectSurveyRecordFromKwargs(self):
-    """Sets the survey record in RequestData object.
+  def studentEvaluationFromKwargs(self, raise_not_found=True):
+    """Sets the student evaluation in RequestData object.
+
+    Args:
+      raise_not_found: iff False do not send 404 response.
     """
     # kwargs which defines a survey
     fields = ['sponsor', 'program', 'survey']
 
     key_name = '/'.join(['gsoc_program'] +
                         [self.data.kwargs[field] for field in fields])
-    self.data.project_survey = ProjectSurvey.get_by_key_name(key_name)
+    self.data.student_evaluation = ProjectSurvey.get_by_key_name(key_name)
 
     if not self.data.project_survey:
       raise NotFound(DEF_NO_PROJECT_SURVEY_MSG_FMT % key_name)
@@ -85,11 +88,11 @@ class Mutator(access_checker.Mutator):
 
     q = GSoCProjectSurveyRecord.all()
     q.filter('project', self.data.project)
-    q.filter('survey', self.data.project_survey)
-    self.data.project_survey_record = q.get()
+    q.filter('survey', self.data.student_evaluation)
+    self.data.student_evaluation_record = q.get()
 
-  def projectEvaluationFromKwargs(self, raise_not_found=True):
-    """Sets the evaluation and the record in RequestData object.
+  def mentorEvaluationFromKwargs(self, raise_not_found=True):
+    """Sets the mentor evaluation in RequestData object.
 
     Args:
       raise_not_found: iff False do not send 404 response.
@@ -99,24 +102,24 @@ class Mutator(access_checker.Mutator):
 
     key_name = '/'.join(['gsoc_program'] +
                         [self.data.kwargs[field] for field in fields])
-    self.data.project_evaluation = GradingProjectSurvey.get_by_key_name(
+    self.data.mentor_evaluation = GradingProjectSurvey.get_by_key_name(
         key_name)
 
-    if raise_not_found and not self.data.project_evaluation:
-      raise NotFound(DEF_NO_PROJECT_EVALUATION_MSG_FMT % key_name)
+    if raise_not_found and not self.data.mentor_evaluation:
+      raise NotFound(DEF_NO_MENTOR_EVALUATION_MSG_FMT % key_name)
 
-  def projectEvaluationRecordFromKwargs(self):
-    """Sets the evaluation record in RequestData object.
+  def mentorEvaluationRecordFromKwargs(self):
+    """Sets the mentor evaluation record in RequestData object.
     """
-    assert access_checker.isSet(self.data.project_evaluation)
+    assert access_checker.isSet(self.data.mentor_evaluation)
     assert access_checker.isSet(self.data.project)
 
     self.data.organization = self.data.project.org
 
     q = GSoCGradingProjectSurveyRecord.all()
     q.filter('project', self.data.project)
-    q.filter('survey', self.data.project_evaluation)
-    self.data.project_evaluation_record = q.get()
+    q.filter('survey', self.data.mentor_evaluation)
+    self.data.mentor_evaluation_record = q.get()
 
   def gradingSurveyRecordFromKwargs(self):
     """Sets a GradingSurveyRecord entry in the RequestData object.

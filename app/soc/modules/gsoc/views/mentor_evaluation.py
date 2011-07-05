@@ -49,7 +49,7 @@ class GSoCMentorEvaluationEditForm(forms.SurveyEditForm):
 
   class Meta:
     model = GradingProjectSurvey
-    css_prefix = 'gsoc_evaluation_edit'
+    css_prefix = 'gsoc-mentor-eval-edit'
     exclude = ['scope', 'author', 'modified_by', 'survey_content',
                'scope_path', 'link_id', 'prefix', 'survey_order']
 
@@ -77,7 +77,7 @@ class GSoCMentorEvaluationTakeForm(forms.SurveyTakeForm):
 
   class Meta:
     model = GSoCGradingProjectSurveyRecord
-    css_prefix = 'gsoc_evaluation_record'
+    css_prefix = 'gsoc-mentor-eval-record'
     exclude = ['project', 'org', 'user', 'survey', 'created', 'modified']
 
   def clean_grade(self):
@@ -99,20 +99,20 @@ class GSoCMentorEvaluationEditPage(RequestHandler):
 
   def checkAccess(self):
     self.check.isHost()
-    self.mutator.projectEvaluationFromKwargs(raise_not_found=False)
+    self.mutator.mentorEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_survey.html'
+    return 'v2/modules/gsoc/_evaluation.html'
 
   def context(self):
-    if self.data.project_evaluation:
+    if self.data.mentor_evaluation:
       form = GSoCMentorEvaluationEditForm(
-          self.data.POST or None, instance=self.data.project_evaluation)
+          self.data.POST or None, instance=self.data.mentor_evaluation)
     else:
       form = GSoCMentorEvaluationEditForm(self.data.POST or None)
 
-    page_name = ugettext('Edit - %s' % (self.data.project_evaluation.title)) \
-        if self.data.project_evaluation else 'Create new survey'
+    page_name = ugettext('Edit - %s' % (self.data.mentor_evaluation.title)) \
+        if self.data.mentor_evaluation else 'Create new mentor evaluation'
     context = {
         'page_name': page_name,
         'post_url': self.redirect.survey().urlOf(
@@ -123,15 +123,15 @@ class GSoCMentorEvaluationEditPage(RequestHandler):
 
     return context
 
-  def surveyContentFromForm(self):
-    """Create/edit the project evaluation survey form.
+  def evaluationFromForm(self):
+    """Create/edit the mentor evaluation entity from form.
 
     Returns:
-      a newly created or updated survey entity or None.
+      a newly created or updated mentor evaluation entity or None.
     """
-    if self.data.project_evaluation:
+    if self.data.mentor_evaluation:
       form = GSoCMentorEvaluationEditForm(
-          self.data.POST, instance=self.data.project_evaluation)
+          self.data.POST, instance=self.data.mentor_evaluation)
     else:
       form = GSoCMentorEvaluationEditForm(self.data.POST)
 
@@ -140,7 +140,7 @@ class GSoCMentorEvaluationEditPage(RequestHandler):
 
     form.cleaned_data['modified_by'] = self.data.user
 
-    if not self.data.project_evaluation:
+    if not self.data.mentor_evaluation:
       form.cleaned_data['link_id'] = self.data.kwargs.get('survey')
       form.cleaned_data['prefix'] = 'gsoc_program'
       form.cleaned_data['author'] = self.data.user
@@ -158,8 +158,8 @@ class GSoCMentorEvaluationEditPage(RequestHandler):
     return entity
 
   def post(self):
-    survey_content = self.surveyContentFromForm()
-    if survey_content:
+    evaluation = self.evaluationFromForm()
+    if evaluation:
       r = self.redirect.survey()
       r.to('gsoc_edit_mentor_evaluation', validated=True)
     else:
@@ -178,28 +178,28 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
 
   def checkAccess(self):
     self.mutator.projectFromKwargs()
-    self.mutator.projectEvaluationFromKwargs()
-    self.mutator.projectEvaluationRecordFromKwargs()
+    self.mutator.mentorEvaluationFromKwargs()
+    self.mutator.mentorEvaluationRecordFromKwargs()
 
-    assert isSet(self.data.project_evaluation)
-    self.check.isSurveyActive(self.data.project_evaluation)
-    self.check.canUserTakeSurvey(self.data.project_evaluation)
+    assert isSet(self.data.mentor_evaluation)
+    self.check.isSurveyActive(self.data.mentor_evaluation)
+    self.check.canUserTakeSurvey(self.data.mentor_evaluation)
     self.check.isMentorForSurvey()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_survey_take.html'
+    return 'v2/modules/gsoc/_evaluation_take.html'
 
   def context(self):
-    if self.data.project_evaluation_record:
+    if self.data.mentor_evaluation_record:
       form = GSoCMentorEvaluationTakeForm(
-          self.data.project_evaluation,
-          self.data.POST or None, instance=self.data.project_evaluation_record)
+          self.data.mentor_evaluation,
+          self.data.POST or None, instance=self.data.mentor_evaluation_record)
     else:
       form = GSoCMentorEvaluationTakeForm(
-          self.data.project_evaluation, self.data.POST or None)
+          self.data.mentor_evaluation, self.data.POST or None)
 
     context = {
-        'page_name': '%s page' % (self.data.project_evaluation.title),
+        'page_name': '%s page' % (self.data.mentor_evaluation.title),
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'forms': [form],
         'error': bool(form.errors),
@@ -207,28 +207,28 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
 
     return context
 
-  def recordSurveyFromForm(self):
-    """Create/edit a new survey record based on the data inserted in the form.
+  def recordEvaluationFromForm(self):
+    """Create/edit a new mentor evaluation record based on the form input.
 
     Returns:
-      a newly created or updated survey record entity or None
+      a newly created or updated evaluation record entity or None
     """
-    if self.data.project_evaluation_record:
+    if self.data.mentor_evaluation_record:
       form = GSoCMentorEvaluationTakeForm(
-          self.data.project_evaluation,
-          self.data.POST, instance=self.data.project_evaluation_record)
+          self.data.mentor_evaluation,
+          self.data.POST, instance=self.data.mentor_evaluation_record)
     else:
       form = GSoCMentorEvaluationTakeForm(
-          self.data.project_evaluation, self.data.POST)
+          self.data.mentor_evaluation, self.data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.project_evaluation_record:
+    if not self.data.mentor_evaluation_record:
       form.cleaned_data['project'] = self.data.project
       form.cleaned_data['org'] = self.data.project.org
       form.cleaned_data['user'] = self.data.user
-      form.cleaned_data['survey'] = self.data.project_evaluation
+      form.cleaned_data['survey'] = self.data.mentor_evaluation
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
@@ -236,10 +236,10 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
     return entity
 
   def post(self):
-    project_evaluation_record = self.recordSurveyFromForm()
-    if project_evaluation_record:
+    mentor_evaluation_record = self.recordEvaluationFromForm()
+    if mentor_evaluation_record:
       r = self.redirect.survey_record(
-          self.data.project_evaluation.link_id)
+          self.data.mentor_evaluation.link_id)
       r.to('gsoc_take_mentor_evaluation', validated=True)
     else:
       self.get()
