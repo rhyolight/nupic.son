@@ -125,3 +125,232 @@ class RequestData(object):
     if self.user and self.user.is_developer:
       self.is_developer = True
     self.gae_user = users.get_current_user()
+
+
+class RedirectHelper(object):
+  """Helper for constructing redirects.
+  """
+
+  def __init__(self, data, response):
+    """Initializes the redirect helper.
+    """
+    self._data = data
+    self._response = response
+    self._clear()
+
+  def _clear(self):
+    """Clears the internal state.
+    """
+    self._no_url = False
+    self._url_name = None
+    self._url = None
+    self.args = []
+    self.kwargs = {}
+
+  def sponsor(self, program=None):
+    """Sets kwargs for an url_patterns.SPONSOR redirect.
+    """
+    if not program:
+      assert self._data.program
+      program = self._data.program
+    self._clear()
+    self.kwargs['sponsor'] = program.scope_path
+    return self
+
+  def program(self, program=None):
+    """Sets kwargs for an url_patterns.PROGRAM redirect.
+    """
+    if not program:
+      assert self._data.program
+      program = self._data.program
+    self.sponsor(program)
+    self.kwargs['program'] = program.link_id
+    return self
+
+  def organization(self, organization=None):
+    """Sets the kwargs for an url_patterns.ORG redirect.
+    """
+    if not organization:
+      assert isSet(self._data.organization)
+      organization = self._data.organization
+    self.program()
+    self.kwargs['organization'] = organization.link_id
+    return self
+
+  def id(self, id=None):
+    """Sets the kwargs for an url_patterns.ID redirect.
+    """
+    if not id:
+      assert 'id' in self._data.kwargs
+      id = self._data.kwargs['id']
+    self.program()
+    self.kwargs['id'] = id
+    return self
+
+  def key(self, key=None):
+    """Sets the kwargs for an url_patterns.KEY redirect.
+    """
+    if not key:
+      assert 'key' in self._data.kwargs
+      key = self._data.kwargs['key']
+    self.program()
+    self.kwargs['key'] = key
+    return self
+
+  def createProfile(self, role):
+    """Sets args for an url_patterns.CREATE_PROFILE redirect.
+    """
+    self.program()
+    self.kwargs['role'] = role
+    return self
+
+  def profile(self, user=None):
+    """Sets args for an url_patterns.PROFILE redirect.
+    """
+    if not user:
+      assert 'user' in self._data.kwargs
+      user = self._data.kwargs['user']
+    self.program()
+    self.kwargs['user'] = user
+    return self
+
+  def document(self, document):
+    """Sets args for an url_patterns.DOCUMENT redirect.
+
+    If document is not set, a call to url() will return None.
+    """
+    self._clear()
+    if not document:
+      self._no_url = True
+      return self
+
+    if isinstance(document, db.Model):
+      key = document.key()
+    else:
+      key = document
+
+    prefix, rest = key.name().split('/', 1)
+    scope_path, link_id = rest.rsplit('/', 1)
+    self.args = [prefix, scope_path + '/', link_id]
+
+    return self
+
+  def urlOf(self, name, full=False, secure=False):
+    """Returns the resolved url for name.
+
+    Uses internal state for args and kwargs.
+    """
+    if self.args:
+      url = reverse(name, args=self.args)
+    elif self.kwargs:
+      url = reverse(name, kwargs=self.kwargs)
+    else:
+      url = reverse(name)
+
+    return self._fullUrl(url, full, secure)
+
+  def url(self, full=False, secure=False):
+    """Returns the url of the current state.
+    """
+    if self._no_url:
+      return None
+    assert self._url or self._url_name
+    if self._url:
+      return self._fullUrl(self._url, full, secure)
+    return self.urlOf(self._url_name, full=full, secure=secure)
+
+  def _fullUrl(self, url, full, secure):
+    """Returns the full version of the url iff full.
+
+    The full version starts with http:// and includes getHostname().
+    """
+    if (not full) and (system.isLocal() or not secure):
+      return url
+
+    if secure:
+      protocol = 'https'
+      hostname = system.getSecureHostname()
+    else:
+      protocol = 'http'
+      hostname = system.getHostname(self._data)
+
+    return '%s://%s%s' % (protocol, hostname, url)
+
+  def to(self, name=None, validated=False, full=False, secure=False):
+    """Redirects to the resolved url for name.
+
+    Uses internal state for args and kwargs.
+    """
+    if self._url:
+      url = self._url
+    else:
+      assert name or self._url_name
+      url = self.urlOf(name or self._url_name)
+
+    if validated:
+      url = url + '?validated'
+
+    self.toUrl(url, full=full, secure=secure)
+
+  def toUrl(self, url, full=False, secure=False):
+    """Redirects to the specified url.
+    """
+    from django.utils.encoding import iri_to_uri
+    url = self._fullUrl(url, full, secure)
+    self._response.status_code = 302
+    self._response["Location"] = iri_to_uri(url)
+
+  def login(self):
+    """Sets the _url to the login url.
+    """
+    self._clear()
+    self._url = self._data.login_url
+    return self
+
+  def logout(self):
+    """Sets the _url to the logout url.
+    """
+    self._clear()
+    self._url = self._data.logout_url
+    return self
+
+  def acceptedOrgs(self):
+    """Sets the _url_name to the list of all accepted orgs.
+    """
+    self.program()
+    return self
+  
+  def homepage(self):
+    """Sets the _url_name for the homepage of the current program.
+    """
+    self.program()
+    return self
+
+  def searchpage(self):
+    """Sets the _url_name for the searchpage of the current program.
+    """
+    self._clear()
+    return self
+
+  def orgHomepage(self, link_id):
+    """Sets the _url_name for the specified org homepage
+    """
+    self.program()
+    self.kwargs['organization'] = link_id
+    return self
+
+  def dashboard(self):
+    """Sets the _url_name for dashboard page of the current program.
+    """
+    self.program()
+    return self
+
+  def events(self):
+    """Sets the _url_name for the events page, if it is set.
+    """
+    if not key:
+      self._clear()
+      self._no_url = True
+
+    self.program()
+    return self
