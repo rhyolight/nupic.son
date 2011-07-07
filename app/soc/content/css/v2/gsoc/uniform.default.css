@@ -152,9 +152,10 @@ div.selector.disabled span {
 
 /* Checkbox */
 
-div.checker {
-  width: 19px;
-  height: 19px;
+
+div.row label div.checker {
+    float: left;
+    margin: 1px 5px 0 0;
 }
 
 div.checker input {
@@ -220,9 +221,9 @@ div.checker.disabled.active span.checked {
 
 /* Radio */
 
-div.radio {
-  width: 18px;
-  height: 18px;
+div.row label div.radio {
+    float: left;
+    margin: 1px 5px 0 0;
 }
 
 div.radio input {
