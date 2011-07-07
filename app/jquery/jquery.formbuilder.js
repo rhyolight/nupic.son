@@ -256,7 +256,7 @@
 					var value = '';
 					if (typeof (values) === 'object') {
 						value = values[0];
-						checked = values[1] === 'false' ? false : true;
+						checked = values[1] === true || values[1] === 'true' ? true : false;
 					}
 					field = '';
 					field += '<div>';
@@ -297,7 +297,7 @@
 					var value = '';
 					if (typeof (values) === 'object') {
 						value = values[0];
-						checked = values[1] === 'false' ? false : true;
+						checked = values[1] === true || values[1] === 'true' ? true : false;
 					}
 					field = '';
 					field += '<div>';
@@ -313,7 +313,7 @@
 					var label = '';
 					if (typeof (options) === 'object') {
 						label = options[0];
-						multiple = options[1] === 'true' ? true : false;
+						multiple = options[1] === true || options[1] === 'true' ? true : false;
 					}
 					field += '<div class="opt_group">';
 					field += '<div class="frm-fld"><label>' + opts.messages.label + '</label>';
