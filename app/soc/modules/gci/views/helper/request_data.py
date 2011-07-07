@@ -22,6 +22,7 @@ __authors__ = [
   '"Selwyn Jacob" <selwynjacob90@gmail.com>',
 ]
 
+
 from google.appengine.ext import db
 
 from soc.logic.exceptions import NotFound
@@ -153,3 +154,40 @@ class RequestData(RequestData):
 
     self.is_org_admin = self.is_host or bool(self.org_admin_for)
     self.is_mentor = self.is_org_admin or bool(self.mentor_for)
+    
+ 
+class RedirectHelper(object):
+  """Helper for constructing redirects.
+  """
+
+  def document(self, document):
+    """Override this method to set GCI specific _url_name.
+    """
+    self._url_name = 'gci_show_document'
+    return super(RedirectHelper, self).document(document)
+    
+  def homepage(self):
+    """Sets the _url_name for the homepage of the current GCI program.
+    """
+    self._url_name = 'gci_homepage'
+    return super(RedirectHelper, self).homepage()
+
+  def searchpage(self):
+    """Sets the _url_name for the searchpage of the current GCI program.
+    """
+    self._url_name = 'gci_search'
+    return super(RedirectHelper,self).searchpage()
+
+  def dashboard(self):
+    """Sets the _url_name for dashboard page of the current GCI program.
+    """
+    self._url_name = 'gci_dashboard'
+    return super(RedirectHelper, self).dashboard()
+
+  def events(self):
+    """Sets the _url_name for the events page, if it is set.
+    """
+    key = GCIProgram.events_page.get_value_for_datastore(self._data.program)
+
+    self._url_name = 'gci_events'
+    return super(RedirectHelper, self).events()
