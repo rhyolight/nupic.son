@@ -37,7 +37,8 @@
 				selections_message	: "Allow Multiple Selections",
 				hide				: "Hide",
 				required			: "Required",
-				show				: "Show"
+				show				: "Show",
+				other       : "Others"
 			}
 		};
 		var opts = $.extend(defaults, options);
@@ -150,7 +151,7 @@
             }
 						// checkbox type
             else if (fieldDict.field_type === 'checkbox') {
-							options = [fieldDict.label];
+							options = [fieldDict.label, fieldDict.other];
 							values = [];
 							$.each(fieldDict.values, function () {
 								values.push([this.value, this.checked]);
@@ -158,7 +159,7 @@
 						}
 						// radio type
 						else if (fieldDict.field_type === 'radio') {
-							options = [fieldDict.label];
+							options = [fieldDict.label, fieldDict.other];
 							values = [];
 							$.each(fieldDict.values, function () {
 								values.push([this.value, this.checked]);
@@ -166,7 +167,7 @@
 						}
 						// select type
 						else if (fieldDict.field_type === 'select') {
-							options = [fieldDict.label, fieldDict.multiple];
+							options = [fieldDict.label, fieldDict.multiple, fieldDict.other];
 							values = [];
 							$.each(fieldDict.values, function () {
 								values.push([this.value, this.checked]);
@@ -206,28 +207,31 @@
 			// single line input type="text"
 			var appendTextInput = function (field_id, values, options, required) {
   			  var label = '';
+  			  var other = {required: false, value: false};
           if (typeof (options) === 'object') {
             label = options[0];
           }
 					field += '<label>' + opts.messages.label + '</label>';
 					field += '<input class="fld-label" id="label-' + last_id + '" type="text" value="' + unescape(label) + '" />';
 					help = '';
-					appendFieldLi(field_id, opts.messages.text, field, required, help);
+					appendFieldLi(field_id, opts.messages.text, field, required, other, help);
 				};
 			// multi-line textarea
 			var appendTextarea = function (field_id, values, options, required) {
 			    var label = '';
+			    var other = {required: false, value: false};
 			    if (typeof (options) === 'object') {
             label = options[0];
           }
 					field += '<label>' + opts.messages.label + '</label>';
 					field += '<input type="text" value="' + unescape(label) + '" />';
 					help = '';
-					appendFieldLi(field_id, opts.messages.paragraph_field, field, required, help);
+					appendFieldLi(field_id, opts.messages.paragraph_field, field, required, other, help);
 				};
 			// adds a checkbox element
 			var appendCheckboxGroup = function (field_id, values, options, required) {
 					var label = '';
+					var other = {required: true, value: options[1]};
 					if (typeof (options) === 'object') {
 						label = options[0];
 					}
@@ -248,7 +252,7 @@
 					field += '</div>';
 					field += '</div>';
 					help = '';
-					appendFieldLi(field_id, opts.messages.checkbox_group, field, required, help);
+					appendFieldLi(field_id, opts.messages.checkbox_group, field, required, other, help);
 				};
 			// Checkbox field html, since there may be multiple
 			var checkboxFieldHtml = function (values) {
@@ -269,6 +273,7 @@
 			// adds a radio element
 			var appendRadioGroup = function (field_id, values, options, required) {
 					var label = '';
+					var other = {required: true, value: options[1]};
 					if (typeof (options) === 'object') {
 						label = options[0];
 					}
@@ -289,7 +294,7 @@
 					field += '</div>';
 					field += '</div>';
 					help = '';
-					appendFieldLi(field_id, opts.messages.radio_group, field, required, help);
+					appendFieldLi(field_id, opts.messages.radio_group, field, required, other, help);
 				};
 			// Radio field html, since there may be multiple
 			var radioFieldHtml = function (values, name) {
@@ -311,6 +316,7 @@
 			var appendSelectList = function (field_id, values, options, required) {
 					var multiple = false;
 					var label = '';
+					var other = {required: true, value: options[1]};
 					if (typeof (options) === 'object') {
 						label = options[0];
 						multiple = options[1] === true || options[1] === 'true' ? true : false;
@@ -335,7 +341,7 @@
 					field += '</div>';
 					field += '</div>';
 					help = '';
-					appendFieldLi(field_id, opts.messages.select, field, required, help);
+					appendFieldLi(field_id, opts.messages.select, field, required, other, help);
           //initialize_sortable_options();
       };
 			// Select field html, since there may be multiple
@@ -348,7 +354,7 @@
 					}
 				};
 			// Appends the new field markup to the editor
-			var appendFieldLi = function (field_id, label, field_html, required, help) {
+			var appendFieldLi = function (field_id, label, field_html, required, other, help) {
 					if (required) {
 						required = required === true ? true : false;
 					}
@@ -362,6 +368,10 @@
 					li += field;
 					li += '<div class="frm-fld frm-fld-req"><label for="required-' + last_id + '">' + opts.messages.required + '</label>';
 					li += '<input class="required" type="checkbox" value="1" name="required-' + last_id + '" id="required-' + last_id + '"' + (required ? ' checked="checked"' : '') + ' /></div>';
+					if (other.required) {
+					  li += '<div class="frm-fld frm-fld-other"><label for="other-' + last_id + '">' + opts.messages.other + '</label>';
+					  li += '<input class="other" type="checkbox" value="1" name="other-' + last_id + '" id="other-' + last_id + '"' + (other.value ? ' checked="checked"' : '') + ' /></div>';
+					}
 					li += '<a id="del_' + field_id + '" class="del-button delete-confirm" href="#" label="' + opts.messages.remove_message + '"><span>Delete</span></a>';
 					li += '</div>';
 					li += '</div>';
