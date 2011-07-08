@@ -449,14 +449,16 @@ class RedirectHelper(request_data.RedirectHelper):
   def document(self, document):
     """Override this method to set GSoC specific _url_name.
     """
+    super(RedirectHelper, self).document(document)
     self._url_name = 'show_gsoc_document'
-    return super(RedirectHelper, self).document(document)
+    return self
  
   def acceptedOrgs(self):
     """Sets the _url_name to the list all the accepted orgs.
     """
+    super(RedirectHelper, self).acceptedOrgs()
     self._url_name = 'gsoc_accepted_orgs'
-    return super(RedirectHelper, self).acceptedOrgs()
+    return self
 
   def allProjects(self):
     """Sets the _url_name to list all GSoC projects.
@@ -468,26 +470,30 @@ class RedirectHelper(request_data.RedirectHelper):
   def homepage(self):
     """Sets the _url_name for the homepage of the current GSOC program.
     """
+    super(RedirectHelper, self).homepage()
     self._url_name = 'gsoc_homepage'
-    return super(RedirectHelper, self).homepage()
+    return self
 
   def searchpage(self):
     """Sets the _url_name for the searchpage of the current GSOC program.
     """
+    super(RedirectHelper, self).searchpage()
     self._url_name = 'search_gsoc'
-    return super(RedirectHelper, self).searchpage()
+    return self
 
   def orgHomepage(self, link_id):
     """Sets the _url_name for the specified org homepage
     """
+    super(RedirectHelper, self).orgHomepage()
     self._url_name = 'gsoc_org_home'
-    return super(RedirectHelper, self).orgHomepage()
+    return self
 
   def dashboard(self):
     """Sets the _url_name for dashboard page of the current GSOC program.
     """
+    super(RedirectHelper, self).dashboard()
     self._url_name = 'gsoc_dashboard'
-    return super(RedirectHelper, self).dashboard()
+    return self
 
   def events(self):
     """Sets the _url_name for the events page, if it is set.
@@ -499,8 +505,9 @@ class RedirectHelper(request_data.RedirectHelper):
       self._clear()
       self._no_url = True
 
+    self.program()
     self._url_name = 'gsoc_events'
-    return super(RedirectHelper, self).events()
+    return self
 
   def request(self, request):
     """Sets the _url_name for a request.

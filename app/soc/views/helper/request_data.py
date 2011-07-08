@@ -324,7 +324,7 @@ class RedirectHelper(object):
     """
     self.program()
     return self
-  
+
   def homepage(self):
     """Sets the _url_name for the homepage of the current program.
     """
@@ -353,5 +353,4 @@ class RedirectHelper(object):
   def events(self):
     """Sets the _url_name for the events page, if it is set.
     """
-    self.program()
     return self
