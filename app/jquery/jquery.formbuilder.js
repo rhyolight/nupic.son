@@ -38,7 +38,7 @@
 				hide				: "Hide",
 				required			: "Required",
 				show				: "Show",
-				other       : "Others"
+				other       : "Include other option"
 			}
 		};
 		var opts = $.extend(defaults, options);
