@@ -547,6 +547,7 @@ class SurveyTakeForm(ModelForm):
     type = field_dict.get('field_type', '')
     label = urllib.unquote(field_dict.get('label', ''))
     required = field_dict.get('required', True)
+    other = field_dict.get('other', False)
     help_text = field_dict.get('tip', '')
     values = field_dict.get('values', '')
 
@@ -581,6 +582,12 @@ class SurveyTakeForm(ModelForm):
         choices.append((value, value))
         if choice['checked']:
           self.fields[field_name].initial = str(value)
+      else:
+        if other:
+          choices.append(('Other', 'Other'))
+          ofn = '%s-other' % (field_name)
+          self.fields[ofn] = django.forms.CharField(
+              initial=getattr(self.instance, ofn, None))
       self.fields[field_name].choices = choices
     if self.instance:
       self.fields[field_name].initial = getattr(
