@@ -257,12 +257,18 @@
   color: #666;
   font-size: 15px;
 }
+#form.form-register .row.radio label div.radio-content {
+  display: table-cell;
+}
 #form.form-register .row.checkbox {
   margin: 0 0 6px 15px;
 }
 #form.form-register .row.checkbox label {
   color: #666;
   font-size: 15px;
+}
+#form.form-register .row.checkbox label div.checkbox-content {
+  display: table-cell;
 }
 #form.form-search {
   /*search form*/

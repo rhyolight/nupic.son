@@ -87,9 +87,29 @@ def mergeWidgets(*args):
   return widgets
 
 
+class RadioInput(widgets.RadioInput):
+  """The rendering customization to be used for individual radio elements.
+  """
+
+  def __unicode__(self):
+    if 'id' in self.attrs:
+      label_for = ' for="%s_%s"' % (self.attrs['id'], self.index)
+    else:
+      label_for = ''
+    choice_label = conditional_escape(force_unicode(self.choice_label))
+    return mark_safe(
+        u'<label%s>%s <div class="radio-content">%s</div></label>' % (
+        label_for, self.tag(), choice_label))
+
+
+
 class RadioFieldRenderer(widgets.RadioFieldRenderer):
   """The rendering customization to use the Uniform CSS on radio fields.
   """
+
+  def __iter__(self):
+    for i, choice in enumerate(self.choices):
+      yield RadioInput(self.name, self.value, self.attrs.copy(), choice, i)
 
   def render(self):
     """Outputs a <ul> for this set of radio fields.
@@ -130,7 +150,9 @@ class CheckboxSelectMultiple(widgets.SelectMultiple):
       option_value = force_unicode(option_value)
       rendered_cb = cb.render(name, option_value)
       option_label = conditional_escape(force_unicode(option_label))
-      output.append(u'<div id="form-row-radio-%s" class="row checkbox"><label%s>%s %s</label></div>' % (
+      output.append(
+          u'<div id="form-row-radio-%s" class="row checkbox"><label%s>%s '
+          '<div class="checkbox-content">%s</div></label></div>' % (
           final_attrs['id'], label_for, rendered_cb, option_label))
     output.append(u'</div>')
     return mark_safe(u'\n'.join(output))
