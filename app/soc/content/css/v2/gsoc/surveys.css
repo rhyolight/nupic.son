@@ -224,7 +224,7 @@ input::-moz-focus-inner {/*Remove FF button padding*/
     padding-top: 10px;
 }
 .frm-fld-req input {
-    margin-left: 0;
+    margin: 4px 0 0 0;
 }
 .frm-fld-other {
     clear: both;
@@ -232,7 +232,7 @@ input::-moz-focus-inner {/*Remove FF button padding*/
     padding-top: 10px;
 }
 .frm-fld-other input {
-    margin-left: 0;
+    margin: 4px 0 0 0;
 }
 .frm-elements:after, .frm-fld:after {content:".";display:block;height:0;clear:both;visibility:hidden;}
 .frm-elements, .frm-fld { display:inline-block; }
