@@ -512,6 +512,7 @@
                 fieldDict.label = escape($('#'+$(this).attr('id')+' input[type=text]').val());
                 break;
               case 'checkbox':
+                fieldDict.other = $('#'+$(this).attr('id')+' input.other').attr('checked');
                 fieldDict.values = [];
                 $('#'+$(this).attr('id')+' input[type=text]').each(function(){
                   
@@ -526,6 +527,7 @@
                 });
                 break;
               case 'radio':
+                fieldDict.other = $('#'+$(this).attr('id')+' input.other').attr('checked');
                 fieldDict.values = [];
                 $('#'+$(this).attr('id')+' input[type=text]').each(function(){
                   if($(this).attr('name') == 'label'){
@@ -539,6 +541,7 @@
                 });
                 break;
               case 'select':
+                fieldDict.other = $('#'+$(this).attr('id')+' input.other').attr('checked');
                 fieldDict.multiple = $('#'+$(this).attr('id')+' input[name=multiple]').attr('checked');
                 
                 $('#'+$(this).attr('id')+' input[type=text]').each(function(){
