@@ -29,12 +29,9 @@ import datetime
 
 from google.appengine.ext import db
 
-from django.core.urlresolvers import reverse
-
-from soc.logic import system
 from soc.logic.exceptions import NotFound
 from soc.views.helper.access_checker import isSet
-from soc.views.helper.request_data import RequestData
+from soc.views.helper import request_data
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 
@@ -217,7 +214,7 @@ class TimelineHelper(object):
     return isAfter(start) and isBefore(end)
 
 
-class RequestData(RequestData):
+class RequestData(request_data.RequestData):
   """Object containing data we query for each request in the GSoC module.
 
   The only view that will be exempt is the one that creates the program.
@@ -416,9 +413,10 @@ class RequestData(RequestData):
     self.is_mentor = self.is_org_admin or bool(self.mentor_for)
 
 
-class RedirectHelper(object):
+class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects.
   """
+
   def review(self, id=None, student=None):
     """Sets the kwargs for an url_patterns.REVIEW redirect.
     """
@@ -496,6 +494,10 @@ class RedirectHelper(object):
     """
     from soc.modules.gsoc.models.program import GSoCProgram
     key = GSoCProgram.events_page.get_value_for_datastore(self._data.program)
+
+    if not key:
+      self._clear()
+      self._no_url = True
 
     self._url_name = 'gsoc_events'
     return super(RedirectHelper, self).events()

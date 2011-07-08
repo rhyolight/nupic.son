@@ -19,6 +19,7 @@ request in the GSoC module.
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   ]
 
@@ -26,8 +27,12 @@ __authors__ = [
 from google.appengine.api import users
 from google.appengine.ext import db
 
+from django.core.urlresolvers import reverse
+
+from soc.logic import system
 from soc.logic.models.site import logic as site_logic
 from soc.logic.models.user import logic as user_logic
+from soc.views.helper.access_checker import isSet
 
 
 class RequestData(object):
@@ -348,9 +353,5 @@ class RedirectHelper(object):
   def events(self):
     """Sets the _url_name for the events page, if it is set.
     """
-    if not key:
-      self._clear()
-      self._no_url = True
-
     self.program()
     return self
