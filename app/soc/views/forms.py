@@ -120,12 +120,6 @@ class RadioFieldRenderer(widgets.RadioFieldRenderer):
         % (w.attrs.get('id', ''), force_unicode(w)) for w in self]))
 
 
-class RadioSelect(widgets.RadioSelect):
-  """Customize the widget to with a homebrewn renderer
-  """
-  renderer = RadioFieldRenderer
-
-
 class CheckboxSelectMultiple(widgets.SelectMultiple):
   def render(self, name, value, attrs=None, choices=()):
     if value is None:
@@ -558,7 +552,7 @@ class SurveyTakeForm(ModelForm):
       widget = CheckboxSelectMultiple()
     elif type == 'radio':
       field = django.forms.ChoiceField
-      widget = RadioSelect()
+      widget = django.forms.RadioSelect(renderer=RadioFieldRenderer)
     elif type == 'textarea':
       field = django.forms.CharField
       widget = django.forms.Textarea()
@@ -612,7 +606,7 @@ class BoundField(forms.BoundField):
       return self.renderReferenceWidget()
     elif isinstance(widget, TOSWidget):
       return self.renderTOSWidget()
-    elif isinstance(widget, RadioSelect):
+    elif isinstance(widget, widgets.RadioSelect):
       return self.renderRadioSelect()
     elif isinstance(widget, CheckboxSelectMultiple):
       return self.renderCheckSelectMultiple()
