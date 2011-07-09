@@ -22,9 +22,10 @@ __authors__ = [
   ]
 
 
-from django import forms as django_forms
 from django.conf.urls.defaults import url
 from django.utils.translation import ugettext
+
+import django
 
 from soc.views import forms
 from soc.views.helper.access_checker import isSet
@@ -68,12 +69,13 @@ class GSoCMentorEvaluationTakeForm(forms.SurveyTakeForm):
     self.fields.keyOrder.remove('grade')
     self.fields.keyOrder.append('grade')
 
-    self.fields['grade'] = django_forms.ChoiceField(
+    self.fields['grade'] = django.forms.ChoiceField(
         label=ugettext('Student evaluation'), required=True,
         help_text=ugettext(
             'The response to this question determines whether the '
             'student receives the next round of payments.'),
-        choices=EVALUATION_CHOICES, widget=forms.RadioSelect)
+        choices=EVALUATION_CHOICES,
+        widget=django.forms.RadioSelect(renderer=forms.RadioFieldRenderer))
 
   class Meta:
     model = GSoCGradingProjectSurveyRecord
