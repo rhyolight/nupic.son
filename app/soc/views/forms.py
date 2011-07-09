@@ -553,14 +553,9 @@ class SurveyTakeForm(ModelForm):
 
     widget = None
 
-    if type == 'selection':
-      field = django.forms.ChoiceField
-    elif type == 'checkbox':
+    if type == 'checkbox':
       field = django.forms.MultipleChoiceField
       widget = CheckboxSelectMultiple()
-    elif type == 'choice':
-      field = django.forms.ChoiceField
-      widget = RadioSelect()
     elif type == 'radio':
       field = django.forms.ChoiceField
       widget = RadioSelect()
