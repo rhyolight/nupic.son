@@ -480,6 +480,11 @@ class SurveyTakeForm(ModelForm):
       # however for boolean fields value itself can be False so this
       # or logic
       if value == False or value:
+        # If the widget for the field that must be saved is a Textarea
+        # widget use the Text property
+        field = self.fields.get(name, None)
+        if field and isinstance(field.widget, django.forms.Textarea):
+          value = db.Text(value)
         setattr(instance, name, value)
 
     if commit:
