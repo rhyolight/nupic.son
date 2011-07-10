@@ -219,6 +219,16 @@
     tpjs + "jquery/jquery-ui.sortable.js"
   ];
 
+  s.jqueryui.effects = [
+    tpjs + "jquery/jquery-ui.effects.core.js"
+  ];
+
+  s.jqueryui.effects.blind = [
+    s.jqueryui.effects,
+    null,
+    tpjs + "jquery/jquery-ui.effects.blind.js"
+  ];
+
   s.jqgrid = [
     s.jqueryui.core,
     null,
