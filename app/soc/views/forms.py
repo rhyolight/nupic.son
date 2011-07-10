@@ -576,7 +576,8 @@ class SurveyTakeForm(ModelForm):
           choices.append(('Other', 'Other'))
           ofn = '%s-other' % (field_name)
           self.fields[ofn] = django.forms.CharField(
-              initial=getattr(self.instance, ofn, None))
+              initial=getattr(self.instance, ofn, None),
+              widget=forms.TextInput(attrs={'div_class':'other'}))
       self.fields[field_name].choices = choices
     if self.instance:
       self.fields[field_name].initial = getattr(
