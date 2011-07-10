@@ -837,6 +837,11 @@ class BoundField(forms.BoundField):
   def div_class(self):
     prefix = getattr(self.form.Meta, 'css_prefix', None)
     name = prefix + '_' + self.name if prefix else self.name
+
+    widget_div_class = self.field.widget.attrs.get('div_class', None)
+    if widget_div_class:
+      name = '%s %s' % (widget_div_class, name)
+
     if self.errors:
       name += ' error'
     return name
