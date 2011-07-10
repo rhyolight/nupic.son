@@ -35,6 +35,109 @@ from soc.logic.models.user import logic as user_logic
 from soc.views.helper.access_checker import isSet
 
 
+def isBefore(date):
+  """Returns True iff date is before utcnow().
+
+  Returns False if date is not set.
+  """
+  return date and datetime.datetime.utcnow() < date
+
+
+def isAfter(date):
+  """Returns True iff date is after utcnow().
+
+  Returns False if date is not set.
+  """
+  return date and date < datetime.datetime.utcnow()
+
+
+def isBetween(start, end):
+  """Returns True iff utcnow() is between start and end.
+  """
+  return isAfter(start) and isBefore(end)
+
+
+class TimelineHelper(object):
+  """Helper class for the determination of the currently active period.
+
+  Methods ending with "On", "Start", or "End" return a date.
+  Methods ending with "Between" return a tuple with two dates.
+  Methods ending with neither return a Boolean.
+  """
+
+  def __init__(self, timeline, org_app):
+    self.timeline = timeline
+    self.org_app = org_app
+
+  def currentPeriod(self):
+    """Return where we are currently on the timeline.
+    """
+    pass
+
+  def nextDeadline(self):
+    """Determines the next deadline on the timeline.
+    """
+    pass
+
+  def orgsAnnouncedOn(self):
+    return self.timeline.accepted_organization_announced_deadline
+
+  def programActiveBetween(self):
+    return (self.timeline.program_start, self.timeline.program_end)
+
+  def orgSignupStart(self):
+    return self.org_app.survey_start if self.org_app else None
+
+  def orgSignupEnd(self):
+    return self.org_app.survey_end if self.org_app else None
+
+  def orgSignupBetween(self):
+    return (self.org_app.survey_start, self.org_app.survey_end) if \
+        self.org_app else (None, None)
+
+  def studentSignupStart(self):
+    return self.timeline.student_signup_start
+
+  def studentSignupEnd(self):
+    return self.timeline.student_signup_end
+
+  def studentsSignupBetween(self):
+    return (self.timeline.student_signup_start,
+            self.timeline.student_signup_end)
+
+  def programActive(self):
+    start, end = self.programActiveBetween()
+    return isBetween(start, end)
+
+  def beforeOrgSignupStart(self):
+    return self.org_app and isBefore(self.orgSignupStart())
+
+  def afterOrgSignupStart(self):
+    return self.org_app and isAfter(self.orgSignupStart())
+
+  def orgSignup(self):
+    if not self.org_app:
+      return False
+    start, end = self.orgSignupBetween()
+    return isBetween(start, end)
+
+  def orgsAnnounced(self):
+    return isAfter(self.orgsAnnouncedOn())
+
+  def beforeStudentSignupStart(self):
+    return isBefore(self.studentSignupStart())
+
+  def afterStudentSignupStart(self):
+    return isAfter(self.studentSignupStart())
+
+  def studentSignup(self):
+    start, end = self.studentsSignupBetween()
+    return isBetween(start, end)
+
+  def afterStudentSignupEnd(self):
+    return isAfter(self.studentSignupEnd())
+
+
 class RequestData(object):
   """Object containing data we query for each request.
 

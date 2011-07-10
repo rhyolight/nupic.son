@@ -38,39 +38,13 @@ from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.logic.models.organization import logic as org_logic
 
 
-def isBefore(date):
-  """Returns True iff date is before utcnow().
-
-  Returns False if date is not set.
-  """
-  return date and datetime.datetime.utcnow() < date
-
-
-def isAfter(date):
-  """Returns True iff date is after utcnow().
-
-  Returns False if date is not set.
-  """
-  return date and date < datetime.datetime.utcnow()
-
-
-def isBetween(start, end):
-  """Returns True iff utcnow() is between start and end.
-  """
-  return isAfter(start) and isBefore(end)
-
-
-class TimelineHelper(object):
+class TimelineHelper(request_data.TimelineHelper):
   """Helper class for the determination of the currently active period.
 
   Methods ending with "On", "Start", or "End" return a date.
   Methods ending with "Between" return a tuple with two dates.
   Methods ending with neither return a Boolean.
   """
-
-  def __init__(self, timeline, org_app):
-    self.timeline = timeline
-    self.org_app = org_app
 
   def currentPeriod(self):
     """Return where we are currently on the timeline.
@@ -81,14 +55,14 @@ class TimelineHelper(object):
     if self.beforeOrgSignupStart():
       return 'kickoff_period'
 
-    if self.studentsAnnounced():
-      return 'coding_period'
-
     if self.afterStudentSignupStart():
       return 'student_signup_period'
 
     if self.afterOrgSignupStart():
       return 'org_signup_period'
+    
+    if self.studentsAnnounced():
+      return 'coding_period'
 
     return 'offseason'
 
@@ -100,7 +74,7 @@ class TimelineHelper(object):
       the next deadline
     """
     if self.beforeOrgSignupStart():
-      return ("Org Application Starts", self.orgSignupStart())
+     return ("Org Application Starts", self.orgSignupStart())
 
     # we do not have deadlines for any of those programs that are not active
     if not self.programActive():
@@ -118,86 +92,25 @@ class TimelineHelper(object):
     if self.studentSignup():
       return ("Student Application Deadline", self.studentSignupEnd())
 
-    if isBetween(self.studentSignupEnd(), self.applicationMatchedOn()):
+    if request_data.isBetween(self.studentSignupEnd(), self.applicationMatchedOn()):
       return ("Proposal Matched Deadline", self.applicationMatchedOn())
 
-    if isBetween(self.applicationMatchedOn(), self.applicationReviewEndOn()):
+    if request_data.isBetween(self.applicationMatchedOn(), self.applicationReviewEndOn()):
       return ("Proposal Scoring Deadline", self.applicationReviewEndOn())
 
-    if isBetween(self.applicationReviewEndOn(), self.studentsAnnouncedOn()):
+    if request_data.isBetween(self.applicationReviewEndOn(), self.studentsAnnouncedOn()):
       return ("Accepted Students Announced", self.studentsAnnouncedOn())
 
     return ('', None)
 
-  def orgsAnnouncedOn(self):
-    return self.timeline.accepted_organization_announced_deadline
-
-  def programActiveBetween(self):
-    return (self.timeline.program_start, self.timeline.program_end)
-
-  def orgSignupStart(self):
-    return self.org_app.survey_start if self.org_app else None
-
-  def orgSignupEnd(self):
-    return self.org_app.survey_end if self.org_app else None
-
-  def orgSignupBetween(self):
-    return (self.org_app.survey_start, self.org_app.survey_end) if \
-        self.org_app else (None, None)
-
-  def studentSignupStart(self):
-    return self.timeline.student_signup_start
-
-  def studentSignupEnd(self):
-    return self.timeline.student_signup_end
-
-  def studentsSignupBetween(self):
-    return (self.timeline.student_signup_start,
-            self.timeline.student_signup_end)
-
   def studentsAnnouncedOn(self):
     return self.timeline.accepted_students_announced_deadline
 
-  def programActive(self):
-    start, end = self.programActiveBetween()
-    return isBetween(start, end)
-
-  def beforeOrgSignupStart(self):
-    return self.org_app and isBefore(self.orgSignupStart())
-
-  def afterOrgSignupStart(self):
-    return self.org_app and isAfter(self.orgSignupStart())
-
-  def orgSignup(self):
-    if not self.org_app:
-      return False
-    start, end = self.orgSignupBetween()
-    return isBetween(start, end)
-
-  def orgsAnnounced(self):
-    return isAfter(self.orgsAnnouncedOn())
-
-  def beforeStudentSignupStart(self):
-    return isBefore(self.studentSignupStart())
-
-  def afterStudentSignupStart(self):
-    return isAfter(self.studentSignupStart())
-
-  def studentSignup(self):
-    start, end = self.studentsSignupBetween()
-    return isBetween(start, end)
-
-  def afterStudentSignupEnd(self):
-    return isAfter(self.studentSignupEnd())
-
   def studentsAnnounced(self):
-    return isAfter(self.studentsAnnouncedOn())
-
-  def mentorSignup(self):
-    return self.programActiveBetween() and self.orgsAnnounced()
+    return request_data.isAfter(self.studentsAnnouncedOn())
 
   def beforeStudentsAnnounced(self):
-    return isBefore(self.studentsAnnouncedOn())
+    return request_data.isBefore(self.studentsAnnouncedOn())
 
   def applicationReviewEndOn(self):
     return self.timeline.application_review_deadline
@@ -211,10 +124,13 @@ class TimelineHelper(object):
   def afterSurveyEnd(self, survey):
     return isAfter(survey.survey_end)
 
+  def mentorSignup(self):
+    return self.programActiveBetween() and self.orgsAnnounced()
+
   def surveyPeriod(self, survey):
     start = survey.survey_start
     end = survey.survey_end
-    return isAfter(start) and isBefore(end)
+    return request_data.isAfter(start) and request_data.isBefore(end)
 
   def afterFirstSurveyStart(self, surveys):
     """Returns True if we are past at least one survey has start date.

@@ -27,11 +27,81 @@ from google.appengine.ext import db
 
 from soc.logic.exceptions import NotFound
 from soc.models.site import Site
+from soc.views.helper import request_data
 from soc.views.helper.request_data import RequestData
 
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.logic.models.organization import logic as org_logic
+
+
+class TimelineHelper(request_data.TimelineHelper):
+  """Helper class for the determination of the currently active period.
+     see the super class, soc.views.helper.request_data.TimelineHelper
+  """
+
+  def currentPeriod(self):
+    """Return where we are currently on the timeline.
+    """
+    if not self.programActive():
+      return 'offseason'
+
+    if self.beforeOrgSignupStart():
+      return 'kickoff_period'
+
+    if self.afterOrgSignupStart():
+      return 'org_signup_period'
+
+    if self.afterStudentSignupStart():
+      return 'student_signup_period'
+          
+    if self.tasksPubliclyVisible():
+      return 'working_period'
+    
+    return 'offseason'
+
+  def nextDeadline(self):
+    """Determines the next deadline on the timeline.
+    """
+    if self.beforeOrgSignupStart():
+     return ("Org Application Starts", self.orgSignupStart())
+
+    # we do not have deadlines for any of those programs that are not active
+    if not self.programActive():
+      return ("", None)
+
+    if self.orgSignup():
+      return ("Org Application Deadline", self.orgSignupEnd())
+
+    if isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
+      return ("Accepted Orgs Announced In", self.orgsAnnouncedOn())
+
+    if self.orgsAnnounced() and self.beforeStudentSignupStart():
+      return ("Student Application Opens", self.studentSignupStart())
+
+    if self.studentSignup():
+      return ("Student Application Deadline", self.studentSignupEnd())
+
+    if request_data.isBetween(self.tasksPubliclyVisible(), self.tasksClaimEndOn()):
+      return ("Tasks Claim Deadline", self.tasksClaimEndOn())
+
+    if request_data.isBetween(self.tasksClaimEndOn(), self.stopAllWorkOn()):
+      return ("Work Submission Deadline", self.stopAllWorkOn())
+
+    return ('', None)
+
+  def tasksPubliclyVisibleOn(self):
+    return self.timeline.tasks_publicly_visible
+
+  def tasksPubliclyVisible(self):
+    return isAfter(self.tasksPubliclyVisibleOn())
+
+  def tasksClaimEndOn(self):
+    return self.timeline.task_claim_deadline
+
+  def stopAllWorkOn(self):
+    return self.timeline.stop_all_work_deadline
+
 
 class RequestData(RequestData):
   """Object containing data we query for each request in the GCI module.
@@ -43,6 +113,8 @@ class RequestData(RequestData):
     user: The user entity (if logged in)
     program: The GCI program entity that the request is pointing to
     programs: All GCI programs.
+    program_timeline: The GCITimeline entity
+    timeline: A TimelineHelper entity
     profile: The GCIProfile entity of the current user
     is_host: is the current user a host of the program
     is_mentor: is the current user a mentor in the program
@@ -64,6 +136,8 @@ class RequestData(RequestData):
     # program wide fields
     self._programs = None
     self.program = None
+    self.program_timeline = None
+    self.org_app = None
 
     # user profile specific fields
     self.profile = None
@@ -110,15 +184,19 @@ class RequestData(RequestData):
       program_key = Site.active_program.get_value_for_datastore(self.site)
       program_key_name = program_key.name()
 
+    timeline_key = db.Key.from_path('GCITimeline', program_key_name)
+
     org_app_key_name = 'gci_program/%s/orgapp' % program_key_name
     org_app_key = db.Key.from_path('OrgAppSurvey', org_app_key_name)
 
-    keys = [program_key, org_app_key]
+    keys = [program_key, timeline_key, org_app_key]
 
-    self.program, self.org_app = db.get(keys)
+    self.program, self.program_timeline, self.org_app = db.get(keys)
 
     if not self.program:
       raise NotFound("There is no program for url '%s'" % program_key_name)
+
+    self.timeline = TimelineHelper(self.program_timeline, self.org_app)
 
     if kwargs.get('organization'):
       org_keyfields = {
