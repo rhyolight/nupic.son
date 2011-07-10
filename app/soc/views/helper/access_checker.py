@@ -259,12 +259,15 @@ class Mutator(object):
     self.data.url_student_info = unset
     self.data.url_user = unset
 
-  def organizationFromKwargs(self):
+  def getOrgKeyForKeyName(key_name):
+     return db.Key.from_path('Organization', key_name)
+  
+  def organizationFromKwargs(self, organization):
     # kwargs which defines an organization
     fields = ['sponsor', 'program', 'organization']
 
     key_name = '/'.join(self.data.kwargs[field] for field in fields)
-    key = db.Key.from_path('GSoCOrganization', key_name)
+    key = getOrgKeyForKeyName(key_name)
     self.data.organization = self.data.getOrganization(key)
 
     if not self.data.organization:

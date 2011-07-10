@@ -38,6 +38,10 @@ class Mutator(access_checker.Mutator):
     self.data.task = unset
     super(access_checker.Mutator, self).unsetAll()
 
+  
+  def getOrgKeyForKeyName(key_name):
+     return db.Key.from_path('GCIOrganization', key_name)
+  
   def taskFromKwargs(self):
     """Sets the task entity in RequestData object.
     """
