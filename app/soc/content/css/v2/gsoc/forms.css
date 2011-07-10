@@ -270,6 +270,13 @@
 #form.form-register .row.checkbox label div.checkbox-content {
   display: table-cell;
 }
+#form.form-register .row.other {
+  margin: 0 0 6px 51px;
+  width: 400px;
+}
+#form.form-register .row.other input {
+  width: 400px;
+}
 #form.form-search {
   /*search form*/
 
