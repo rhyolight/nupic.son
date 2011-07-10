@@ -16,12 +16,38 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.jqueryui.effects.blind,
     dep.uniform,
     null,
     function () {
       jQuery("select, input:radio, input:file, input:checkbox").uniform();
-      var fields = ["description", "contrib_template", "accepted_student_msg", "rejected_student_msg"];
-      tinyMCE.init(melange.tinyMceConfig(fields, "advanced"));
+
+      jQuery(document).ready(function () {
+
+        jQuery(':checkbox[value="Other"],:radio').each(function () {
+          if ($(this).val() == "Other") {
+            var selector = "#form_row_" + $(this).attr("name") + "-other";
+            if ($(this).parent().attr("class") == "checked") {
+              jQuery(selector).show();
+            } else {
+              jQuery(selector).hide();
+            }
+          }
+        });
+
+        jQuery(':radio').change(function () {
+          var selector = "#form_row_" + $(this).attr("name") + "-other";
+          if ($(this).val() != "Other") {
+            jQuery(selector).hide("Blind");
+          } else {
+            jQuery(selector).show("Blind");
+          }
+        });
+        jQuery(':checkbox[value="Other"]').change(function () {
+          var selector = "#form_row_" + $(this).attr("name") + "-other";
+          jQuery(selector).toggle("Blind");
+        });
+      });
     }
   ]
 {% endblock dependencies %}
