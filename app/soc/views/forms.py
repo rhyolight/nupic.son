@@ -518,6 +518,9 @@ class SurveyTakeForm(ModelForm):
     try:
       for name in additional_names:
         value = cleaned_data.get(name)
+        field = self.fields.get(name, None)
+        if field and isinstance(field.widget, django.forms.Textarea):
+          value = db.Text(value)
         setattr(instance, name, value)
     except db.BadValueError, err:
       raise ValueError('The %s could not be updated (%s)' %
