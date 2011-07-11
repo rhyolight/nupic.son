@@ -54,7 +54,7 @@
     });
   }
 
-  $m.toggleButton = function (id, type, post_url, init_state, labels) {
+  $m.toggleButton = function (id, type, post_url, init_state, labels, callback) {
     var button_id = id;
     var button_type = type;
     var button_post_url = post_url;
@@ -74,6 +74,9 @@
               button_state = "unchecked";
             } else if (button_state == "unchecked") {
               button_state = "checked";
+            }
+            if (callback !== undefined && typeof(callback) === 'function') {
+              callback();
             }
           });
       });
