@@ -66,6 +66,7 @@ class Callback(object):
     from soc.modules.gsoc.views import student_evaluation
     from soc.modules.gsoc.views import student_forms
     from soc.modules.gsoc.views import oauth
+    from soc.modules.gsoc.views import withdraw_projects
 
     self.views.append(accepted_orgs.AcceptedOrgsPage())
     self.views.append(admin.DashboardPage())
@@ -123,6 +124,7 @@ class Callback(object):
     self.views.append(oauth.OAuthVerifyToken())
 #    self.views.append(statistic.StatisticDashboard())
 #    self.views.append(statistic.StatisticFetcher())
+    self.views.append(withdraw_projects.WithdrawProjects())
 
     # Appengine Task related views
     from soc.modules.gsoc.tasks.grading_survey_group import \
