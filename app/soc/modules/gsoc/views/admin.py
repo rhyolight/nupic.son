@@ -18,11 +18,13 @@
 """
 
 __authors__ = [
+  '"Akeda Bagus" <admin@gedex.web.id>',
   '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   ]
 
 
 import logging
+import math
 
 from google.appengine.api import taskqueue
 from google.appengine.api import users
@@ -31,6 +33,7 @@ from google.appengine.ext import db
 from django import forms as djangoforms
 from django import http
 from django.utils import simplejson
+from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic import accounts
@@ -40,13 +43,20 @@ from soc.logic.exceptions import BadRequest
 from soc.views import forms
 from soc.views.helper import lists
 from soc.views.template import Template
+from soc.views.toggle_button import ToggleButtonTemplate
 from soc.models.user import User
 
+from soc.modules.gsoc.logic.project import getAcceptedProjectsQuery
+from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
+from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -91,6 +101,43 @@ class LookupForm(forms.ModelForm):
     self.cleaned_data['profile'] = q.get()
 
 
+class UserActions(Template):
+  """Template to render the left side user actions.
+  """
+
+  DEF_USE_COLORBOX_HELP_MSG = ugettext(
+      'Choosing Yes will allow you to open link in the dashboard within '
+      'a box without leaving the page.')
+
+  def __init__(self, data):
+    super(UserActions, self).__init__(data)
+
+    self.toggle_buttons = []
+
+    r = self.data.redirect
+    r.program()
+
+    state = self.data.GET.get('colorbox')
+    use_colorbox = ToggleButtonTemplate(
+        self.data, 'on_off', 'Use colorbox', 'use-colorbox',
+        r.urlOf('gsoc_admin_dashboard'),
+        checked=state,
+        help_text=self.DEF_USE_COLORBOX_HELP_MSG,
+        labels = {
+            'checked': 'Yes',
+            'unchecked': 'No'})
+
+    self.toggle_buttons.append(use_colorbox)
+
+  def context(self):
+    return {
+        'toggle_buttons': self.toggle_buttons
+    }
+
+  def templatePath(self):
+    return "v2/soc/_user_action.html"
+
+
 class DashboardPage(RequestHandler):
   """Dashboard for admins.
   """
@@ -105,37 +152,356 @@ class DashboardPage(RequestHandler):
     self.check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/dashboard.html'
+    return 'v2/modules/gsoc/admin/base.html'
 
   def context(self):
+    """Context for dashboard page.
+    """
+    dashboards = []
+
+    dashboards.append(MainDashboard(self.request, self.data))
+    dashboards.append(ProgramSettingsDashboard(self.request, self.data))
+    dashboards.append(ManageOrganizationsDashboard(self.request, self.data))
+
+    return {
+        'colorbox': self.data.GET.get('colorbox'),
+        'dashboards': dashboards,
+        'page_name': 'Admin dashboard',
+        'user_actions': UserActions(self.data)
+    }
+
+  def post(self):
+    """Handles a post request.
+
+    Do nothing, since toggle button posting to this handler
+    without expecting any response.
+    """
+    return False
+
+
+class Dashboard(Template):
+  """Base dashboard for admin page
+  """
+
+  def __init__(self, request, data, subpages=None):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+      subpages: Subpages of current dashboard
+    """
+    self.request = request
+    self.data = data
+    self.subpages = subpages
+
+  def getSubpagesLink(self):
+    """Returns the link to other dashboard that appears
+    on top of the dashboard.
+    """
+    return self.subpages
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render()
+    """
+    return 'v2/modules/gsoc/admin/dashboard.html'
+
+  def _divideSubPages(self, subpages):
+    """Returns the subpages divided into two columns.
+    """
+    middle_ceil = int(math.ceil(float(len(subpages))/2))
+
+    return [
+        subpages[:middle_ceil],
+        subpages[middle_ceil:],
+    ]
+
+
+class MainDashboard(Dashboard):
+  """Dashboard for admin's main-dashboard
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    super(MainDashboard, self).__init__(request, data)
+
+  def context(self):
+    """Returns the context of main dashboard.
+    """
     r = self.data.redirect
     r.program()
 
-    context = {
-        'page_name': 'Admin dashboard',
-        'lookup_link': r.urlOf('lookup_gsoc_profile'),
-        'slots_link': r.urlOf('gsoc_slots'),
-        'slots_transfer_link': r.urlOf('gsoc_admin_slots_transfer'),
-        'duplicates_link': r.urlOf('gsoc_view_duplicates'),
-        'program_link': r.urlOf('edit_gsoc_program'),
-        'timeline_link': r.urlOf('edit_gsoc_timeline'),
-        'survey_reminder_link': r.urlOf('gsoc_survey_reminder_admin')
+    manage_orgs = ManageOrganizationsDashboard(self.request, self.data)
+    program_settings = ProgramSettingsDashboard(self.request, self.data)
+
+    subpages = [
+        {
+            'name': 'lookup_profile',
+            'description': ugettext(
+                'Lookup profile of mentor or student from various program.'),
+            'title': 'Lookup profile',
+            'link': r.urlOf('lookup_gsoc_profile')
+        },
+        {
+            'name': 'allocate_slots',
+            'description': ugettext(
+                'Allocate slots (number of acceptable projects) per '
+                'organization'),
+            'title': 'Allocate slots',
+            'link': r.urlOf('gsoc_slots')
+        },
+        {
+            'name': 'slots_transfer',
+            'description': ugettext(
+                'Transfer slots for organizations'),
+            'title': 'Slots transfer',
+            'link': r.urlOf('gsoc_admin_slots_transfer')
+        },
+        {
+            'name': 'duplicates',
+            'description': ugettext(
+                'Calculate how many duplicate proposals, students that have '
+                'accepted proposals more than one'),
+            'title': 'Duplicates',
+            'link': r.urlOf('gsoc_view_duplicates')
+        },
+        {
+            'name': 'accept_proposals',
+            'description': ugettext(
+                'Start proposals into projects conversion'),
+            'title': 'Accept proposals',
+            'link': r.urlOf('gsoc_accept_proposals')
+        },
+        {
+            'name': 'withdraw_projects',
+            'description': ugettext(
+                'Withdraw accepted projects or accept withdrawn projects'),
+            'title': 'Withdraw projects',
+            'link': r.urlOf('gsoc_withdraw_projects')
+        },
+        {
+            'name': 'manage_organizations',
+            'description': ugettext(
+                'Manage organizations from active program. You can allocate '
+                'slots for organizations, manage invitations for '
+                'org admin/mentors, and withdraw/accept students/mentors '
+                'from various organizations'),
+            'title': 'Manage organizations',
+            'link': '',
+            'subpage_links': manage_orgs.getSubpagesLink(),
+        },
+        {
+            'name': 'reminder_emails',
+            'description': ugettext(
+                'Send reminder emails for evaluations.'),
+            'title': 'Send reminder emails for evaluations',
+            'link': r.urlOf('gsoc_survey_reminder_admin')
+        },
+        {
+            'name': 'program_settings',
+            'description': ugettext(
+                'Edit program settings and timeline'),
+            'title': 'Program settings',
+            'link': '',
+            'subpage_links': program_settings.getSubpagesLink(),
+        },
+        {
+            'name': 'participant_locations',
+            'description': ugettext(
+                'Show all participants (students and mentors) in a '
+                'clusterer map. You can also view a single profile map '
+                'after clicking the marker.'),
+            'title': 'Participant Locations',
+            'link': '#'
+        },
+        {
+            'name': 'report_statistic',
+            'description': ugettext(
+                'Reports and statistics of program'),
+            'title': 'Report/statistic',
+            'link': '#'
+        },
+    ]
+
+    return {
+        'title': 'Admin Dashboard',
+        'name': 'main',
+        'subpages': self._divideSubPages(subpages),
+        'enabled': True
     }
 
-    # HARDCODED
-    survey_context = {
-        'midterm_mentor_link': r.survey('midterm').urlOf(
-            'gsoc_edit_mentor_evaluation'),
-        'midterm_student_link': r.survey('midterm').urlOf(
-            'gsoc_edit_student_evaluation'),
-        'final_mentor_link': r.survey('final').urlOf(
-            'gsoc_edit_mentor_evaluation'),
-        'final_student_link': r.survey('final').urlOf(
-            'gsoc_edit_student_evaluation'),
+
+class ProgramSettingsDashboard(Dashboard):
+  """Dashboard for admin's program-settings-dashboard
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    r = data.redirect
+    r.program()
+
+    subpages = [
+        {
+            'name': 'edit_program',
+            'description': ugettext(
+                'Edit your program settings such as information, slots, '
+                'documents, etc.'),
+            'title': 'Edit program',
+            'link': r.urlOf('edit_gsoc_program')
+        },
+        {
+            'name': 'edit_timeline',
+            'description': ugettext(
+                'Edit your program timeline such as program start/end date, '
+                'student signup start/end date, etc.'),
+            'title': 'Edit timeline',
+            'link': r.urlOf('edit_gsoc_timeline')
+        },
+    ]
+
+    super(ProgramSettingsDashboard, self).__init__(request, data, subpages)
+
+  def context(self):
+    """Returns the context of program settings dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Program Settings',
+        'name': 'program_settings',
+        'backlink': {
+            'to': 'main',
+            'title': 'Admin dashboard'
+        },
+        'subpages': subpages
     }
 
-    context.update(survey_context)
-    return context
+
+class ManageOrganizationsDashboard(Dashboard):
+  """Dashboard for admin's manage-organizations-dashboard
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    r = data.redirect
+    r.program()
+
+    subpages = [
+        {
+            'name': 'slots_allocation',
+            'description': ugettext(
+                'Allocate slots (number of acceptable projects) for '
+                'organizations'),
+            'title': 'Slots allocation',
+            'link': r.urlOf('gsoc_slots')
+        },
+        {
+            'name': 'manage_proposals',
+            'description': ugettext(
+                'Proposals submitted by student to organizations'),
+            'title': 'Proposals',
+            'link': r.urlOf('gsoc_proposals_orgs')
+        },
+        {
+            'name': 'manage_projects',
+            'description': ugettext(
+                'Projects by students'),
+            'title': 'Projects',
+            'link': r.urlOf('gsoc_projects_orgs')
+        }
+    ]
+
+    super(ManageOrganizationsDashboard, self).__init__(request, data, subpages)
+
+  def context(self):
+    """Returns the context of manage organizations dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Manage Organizations',
+        'name': 'manage_organizations',
+        'backlink': {
+            'to': 'main',
+            'title': 'Admin dashboard'
+        },
+        'subpages': subpages
+    }
+
+
+class SurveyDashboard(Dashboard):
+  """Dashboard for admin's survey-dashboard
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    r = data.redirect
+    r.program()
+
+    subpages = [
+        {
+            'name': 'midterm_mentor',
+            'description': ugettext('Midterm mentor.'),
+            'title': 'Midterm mentor',
+            'link': r.survey('midterm').urlOf('gsoc_edit_mentor_evaluation')
+        },
+        {
+            'name': 'midterm_student',
+            'description': ugettext('Midterm student'),
+            'title': 'Midterm student',
+            'link': r.survey('midterm').urlOf('gsoc_edit_student_evaluation')
+        },
+        {
+            'name': 'final_mentor',
+            'description': ugettext('Final mentor'),
+            'title': 'Final mentor',
+            'link': r.survey('final').urlOf('gsoc_edit_mentor_evaluation')
+        },
+        {
+            'name': 'final_student',
+            'description': ugettext('Final student'),
+            'title': 'Final student',
+            'link': r.survey('final').urlOf('gsoc_edit_student_evaluation')
+        },
+    ]
+
+    super(SurveyDashboard, self).__init__(request, data, subpages)
+
+  def context(self):
+    """Returns the context of manage organizations dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Survey',
+        'name': 'survey',
+        'backlink': {
+            'to': 'main',
+            'title': 'Admin dashboard'
+        },
+        'subpages': subpages
+    }
+
 
 class LookupLinkIdPage(RequestHandler):
   """View for the participant profile.
@@ -167,8 +533,12 @@ class LookupLinkIdPage(RequestHandler):
       profile = form.cleaned_data.get('profile')
 
     if profile:
+      cbox = False
+      if self.data.GET.get('cbox'):
+        cbox = True
+
       self.redirect.profile(profile.link_id)
-      self.redirect.to('gsoc_profile_admin')
+      self.redirect.to('gsoc_profile_admin', cbox=cbox)
 
     return {
       'forms': forms,
@@ -178,8 +548,8 @@ class LookupLinkIdPage(RequestHandler):
     }
 
 
-class SlotsList(Template):
-  """Template for list of accepted organizations.
+class AcceptedOrgsList(Template):
+  """Template for list of accepted organizations
   """
 
   def __init__(self, request, data):
@@ -187,6 +557,467 @@ class SlotsList(Template):
     self.data = data
 
     list_config = lists.ListConfiguration()
+    list_config.addColumn('name', 'Name',
+        (lambda e, *args: e.short_name.strip()), width=75)
+    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+
+    list_config = self.extraColumn(list_config)
+    self._list_config = list_config
+
+  def extraColumn(self, list_config):
+    return list_config
+
+  def context(self):
+    description = 'List of organizations accepted into %s' % (
+            self.data.program.name)
+
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, description)
+
+    return {
+        'lists': [list],
+    }
+
+  def getListData(self):
+    idx = lists.getListIndex(self.request)
+    if idx != 0:
+      return None
+
+    q = GSoCOrganization.all().filter('scope', self.data.program)
+
+    starter = lists.keyStarter
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter)
+
+    return response_builder.build()
+
+  def templatePath(self):
+    return "v2/modules/gsoc/admin/_accepted_orgs_list.html"
+
+
+class ProposalsAcceptedOrgsList(AcceptedOrgsList):
+  """Template for list of accepted organizations
+  """
+
+  def extraColumn(self, list_config):
+    list_config.addColumn('name', 'Name',
+        (lambda e, *args: e.short_name.strip()), width=75)
+    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+
+    use_cbox = False
+    if self.request.GET.get('cbox'):
+      use_cbox = True
+
+    r = self.data.redirect
+    list_config.setRowAction(
+        lambda e, *args: r.organization(e).urlOf('gsoc_proposals_org',
+            cbox=use_cbox))
+    list_config.addSimpleColumn('slots_desired', 'min', width=20)
+    list_config.addSimpleColumn('max_slots_desired', 'max', width=20)
+    list_config.addSimpleColumn('slots', 'Slots', width=20)
+
+    return list_config
+
+  def context(self):
+    description = 'List of organizations accepted into %s. Click on '\
+                  'a organization to see the submitted proposals.' % (
+                      self.data.program.name)
+
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, description)
+
+    return {
+        'lists': [list],
+    }
+
+
+class ProposalsAcceptedOrgsPage(RequestHandler):
+  """View for accepted orgs.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/proposals/%s$' % url_patterns.PROGRAM,
+         self, name='gsoc_proposals_orgs'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/admin/proposals.html'
+
+  def jsonContext(self):
+    list_content = ProposalsAcceptedOrgsList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    return {
+      'page_name': 'Proposal page',
+      'list': ProposalsAcceptedOrgsList(self.request, self.data),
+    }
+
+
+class ProjectsAcceptedOrgsList(AcceptedOrgsList):
+  """Template for list of accepted organizations
+  """
+
+  def extraColumn(self, list_config):
+    list_config.addColumn('name', 'Name',
+        (lambda e, *args: e.short_name.strip()), width=75)
+    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+
+    use_cbox = False
+    if self.request.GET.get('cbox'):
+      use_cbox = True
+
+    r = self.data.redirect
+    list_config.setRowAction(
+        lambda e, *args: r.organization(e).urlOf('gsoc_projects_org',
+            cbox=use_cbox))
+    list_config.addSimpleColumn('slots_desired', 'min', width=20)
+    list_config.addSimpleColumn('max_slots_desired', 'max', width=20)
+    list_config.addSimpleColumn('slots', 'Slots', width=20)
+
+    def getTotalProjects(ent):
+      q = GSoCProject.all()
+      q.filter('program', self.data.program)
+      q.filter('org', ent)
+      return q.count()
+
+    list_config.addColumn('projects', 'Projects',
+        lambda ent, *a: getTotalProjects(ent))
+
+    return list_config
+
+  def context(self):
+    description = 'List of organizations accepted into %s. Click on ' \
+                  'a organization to see the accepted projects.' % (
+                      self.data.program.name)
+
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, description)
+
+    return {
+        'lists': [list],
+    }
+
+
+class ProjectsAcceptedOrgsPage(RequestHandler):
+  """View for accepted orgs.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/projects/%s$' % url_patterns.PROGRAM,
+         self, name='gsoc_projects_orgs'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/admin/projects.html'
+
+  def jsonContext(self):
+    list_content = ProjectsAcceptedOrgsList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    return {
+      'page_name': 'Projects page',
+      'list': ProjectsAcceptedOrgsList(self.request, self.data),
+    }
+
+
+class ProposalsList(Template):
+  """Template for listing all the proposals sent to org.
+  """
+
+  def __init__(self, request, data):
+    """Initializes this proposals list.
+    """
+    self.request = request
+    self.data = data
+
+    r = data.redirect
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
+        ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addSimpleColumn('title', 'Title')
+    list_config.addColumn(
+        'email', 'Student Email',
+        (lambda ent, *args: ent.parent().email), hidden=True)
+    list_config.addSimpleColumn('score', 'Score')
+    list_config.addSimpleColumn('nr_scores', '#scores', hidden=True)
+    def getAverage(ent):
+      if not ent.nr_scores:
+        return float(0)
+
+      average = float(ent.score)/float(ent.nr_scores)
+      return float("%.2f" % average)
+
+    list_config.addColumn(
+        'average', 'Average', lambda ent, *a: getAverage(ent))
+
+    def getStatusOnDashboard(proposal, accepted, duplicates):
+      """Method for determining which status to show on the dashboard.
+      """
+      if proposal.status == 'pending':
+          if proposal.accept_as_project and (
+              not GSoCProposal.mentor.get_value_for_datastore(proposal)):
+            return """<strong><font color="red">No mentor assigned</font></strong>"""
+          elif proposal.key() in duplicates:
+            return """<strong><font color="red">Duplicate</font></strong>"""
+          elif proposal.key() in accepted:
+            return """<strong><font color="green">Pending acceptance</font><strong>"""
+      # not showing duplicates or proposal doesn't have an interesting state
+      return proposal.status
+    options = [
+        ('(pending|accepted|rejected|duplicate|mentor)', 'Valid'),
+        ('(duplicate|mentor)', 'Needs attention'),
+        ('(duplicate)', 'Duplicate'),
+        ('(accepted)', 'Accepted'),
+        ('(rejected)', 'Rejected'),
+        ('(mentor)', 'No mentor assigned'),
+        ('', 'All'),
+        ('(invalid|withdrawn|ignored)', 'Invalid'),
+    ]
+    list_config.addColumn('status', 'Status', getStatusOnDashboard, options=options)
+
+    list_config.addColumn(
+        'last_modified_on', 'Last modified',
+        lambda ent, *args: format(ent.last_modified_on, 'Y-m-d H:i:s'))
+    list_config.addColumn(
+        'created_on', 'Created on',
+        (lambda ent, *args: format(ent.created_on, 'Y-m-d H:i:s')),
+        hidden=True)
+    list_config.addColumn(
+        'student', 'Student',
+        lambda ent, *args: ent.parent().name())
+    list_config.addSimpleColumn('accept_as_project', 'Should accept')
+
+    # hidden keys
+    list_config.addColumn(
+        'full_proposal_key', 'Full proposal key',
+        (lambda ent, *args: str(ent.key())), hidden=True)
+    list_config.addColumn(
+        'org_key', 'Organization key',
+        (lambda ent, *args: ent.org.key().name()), hidden=True)
+
+    list_config.setDefaultSort('last_modified_on', 'desc')
+
+    self._list_config = list_config
+
+  def templatePath(self):
+    return'v2/modules/gsoc/admin/_proposals_list.html'
+
+  def context(self):
+    description = 'List of proposals submitted into %s' % self.data.organization.name
+
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=0, description=description)
+    return {
+        'name': 'proposals_submitted',
+        'title': 'PROPOSALS SUBMITTED TO MY ORGS',
+        'lists': [list],
+        }
+
+  def getListData(self):
+    idx = lists.getListIndex(self.request)
+    if idx != 0:
+      return None
+
+    org = self.data.organization
+    program = self.data.program
+
+    # Hold all the accepted projects for orgs where this user is a member of
+    accepted = []
+    # Hold all duplicates for either the entire program or the orgs of the user.
+    duplicates = []
+    dupQ = GSoCProposalDuplicate.all()
+    dupQ.filter('is_duplicate', True)
+    dupQ.filter('org', org)
+    dupQ.filter('program', program)
+
+    accepted.extend([p.key() for p in getProposalsToBeAcceptedForOrg(org)])
+
+    duplicate_entities = dupQ.fetch(1000)
+    for dup in duplicate_entities:
+      duplicates.extend(dup.duplicates)
+
+    q = GSoCProposal.all()
+    q.filter('org', org)
+    q.filter('program', program)
+
+    starter = lists.keyStarter
+    prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+    return response_builder.build(accepted, duplicates)
+
+
+class ProposalsPage(RequestHandler):
+  """View for proposals for particular org.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/proposals/%s$' % url_patterns.ORG,
+         self, name='gsoc_proposals_org'),
+    ]
+
+  def checkAccess(self):
+    self.mutator.organizationFromKwargs()
+    self.check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/admin/proposals.html'
+
+  def jsonContext(self):
+    list_content = ProposalsList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+
+    return list_content.content()
+
+  def post(self):
+    """Handler for POST requests.
+    """
+    proposals_list = ProposalsList(self.request, self.data)
+
+    if not proposals_list.post():
+      raise AccessViolation(
+          'You cannot change this data')
+
+  def context(self):
+    return {
+      'page_name': 'Proposal page',
+      'list': ProposalsList(self.request, self.data),
+    }
+
+
+class ProjectsList(Template):
+  """Template for listing all projects of particular org.
+  """
+
+  def __init__(self, request, data):
+    self.request = request
+    self.data = data
+
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
+        ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addColumn('student', 'Student',
+                          lambda entity, *args: entity.parent().name())
+    list_config.addSimpleColumn('title', 'Title')
+    list_config.addColumn('org', 'Organization',
+                          lambda entity, *args: entity.org.name)
+    list_config.addColumn('mentor', 'Mentor',
+                          lambda entity, *args: entity.mentor.name())
+    list_config.setDefaultPagination(False)
+    list_config.setDefaultSort('student')
+
+    self._list_config = list_config
+
+  def context(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=0,
+        description='List of projects under %s that ' \
+            'accepted into %s' % (
+            self.data.organization.name, self.data.program.name))
+
+    return {
+        'lists': [list],
+        }
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    idx = lists.getListIndex(self.request)
+    if idx == 0:
+      list_query = getAcceptedProjectsQuery(
+          program=self.data.program, org=self.data.organization)
+
+      starter = lists.keyStarter
+      prefetcher = lists.modelPrefetcher(GSoCProject, ['org', 'mentor'],
+                                         parent=True)
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, list_query,
+          starter, prefetcher=prefetcher)
+      return response_builder.build()
+    else:
+      return None
+
+  def templatePath(self):
+    return "v2/modules/gsoc/admin/_projects_list.html"
+
+
+class ProjectsPage(RequestHandler):
+  """View for projects of particular org.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/projects/%s$' % url_patterns.ORG,
+         self, name='gsoc_projects_org'),
+    ]
+
+  def checkAccess(self):
+    self.mutator.organizationFromKwargs()
+    self.check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/admin/projects.html'
+
+  def jsonContext(self):
+    list_content = ProjectsList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+
+    return list_content.content()
+
+  def post(self):
+    """Handler for POST requests.
+    """
+    projects_list = ProjectsList(self.request, self.data)
+
+    if not projects_list.post():
+      raise AccessViolation(
+          'You cannot change this data')
+
+  def context(self):
+    return {
+      'page_name': 'Projects page',
+      'list': ProjectsList(self.request, self.data),
+    }
+
+
+class SlotsList(AcceptedOrgsList):
+  """Template for list of accepted organizations.
+  """
+
+  def extraColumn(self, list_config):
     list_config.addColumn('name', 'Name',
         (lambda e, *args: e.short_name.strip()), width=75)
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
@@ -203,18 +1034,7 @@ class SlotsList(Template):
     list_config.setDefaultSort('name')
     list_config.addPostEditButton('save', "Save", "", [], refresh="none")
 
-    self._list_config = list_config
-
-  def context(self):
-    description = 'List of organizations accepted into %s' % (
-            self.data.program.name)
-
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
-    return {
-        'lists': [list],
-    }
+    return list_config
 
   def post(self):
     idx = lists.getListIndex(self.request)
@@ -258,23 +1078,6 @@ class SlotsList(Template):
 
     return True
 
-  def getListData(self):
-    idx = lists.getListIndex(self.request)
-    if idx != 0:
-      return None
-
-    q = GSoCOrganization.all().filter('scope', self.data.program)
-
-    starter = lists.keyStarter
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter)
-
-    return response_builder.build()
-
-  def templatePath(self):
-    return "v2/modules/gsoc/admin/_slots_list.html"
-
 
 class SlotsPage(RequestHandler):
   """View for the participant profile.
@@ -313,6 +1116,7 @@ class SlotsPage(RequestHandler):
       'page_name': 'Slots page',
       'slots_list': SlotsList(self.request, self.data),
     }
+
 
 class SurveyReminderPage(RequestHandler):
   """Page to send out reminder emails to fill out a Survey.

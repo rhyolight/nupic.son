@@ -1,0 +1,1 @@
+melange.templates.inherit(function(c,a){jQuery("."+a.dashboard_link_class).bind("click",function(){var b=jQuery(this).attr("href")+a.dashboard_id_suffix;b=jQuery(b);jQuery("."+a.dashboard_class).addClass("disabled");b.removeClass("disabled").show()})});

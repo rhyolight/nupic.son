@@ -74,10 +74,11 @@ class WithdrawProjectsTest(DjangoTestCase):
     self.assertEqual(0, len(data))
 
     # list response with projects
-    self.mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    self.mentor.createMentor(self.org)
-    self.data.createStudentWithProposal(self.org, self.mentor.profile)
-    self.data.createStudentWithProject(self.org, self.mentor.profile)
+    mentor_profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor_profile_helper.createOtherUser('mentor@example.com')
+    mentor = mentor_profile_helper.createMentor(self.org)
+    self.data.createStudentWithProposal(self.org, mentor)
+    self.data.createStudentWithProject(self.org, mentor)
 
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)

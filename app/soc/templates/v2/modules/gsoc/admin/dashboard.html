@@ -1,4 +1,3 @@
-{% extends "v2/modules/gsoc/base.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,18 +12,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
-{% block page_content %}
-<ul>
-  <li><a href="{{ lookup_link }}">Lookup profile</a></li>
-  <li><a href="{{ slots_link }}">Allocate slots</a></li>
-  <li><a href="{{ slots_transfer_link }}">Slots transfer</a></li>
-  <li><a href="{{ duplicates_link }}">Duplicates</a></li>
-  <li><a href="{{ survey_reminder_link }}">Send reminder emails for evaluations</a></li>
-  <li><a href="{{ program_link }}">Edit program</a></li>
-  <li><a href="{{ timeline_link }}">Edit timeline</a></li>
-  <li><a href="{{ midterm_mentor_link }}">Edit Midterm Mentor Evaluation</a></li>
-  <li><a href="{{ midterm_student_link }}">Edit Midterm Student Evaluation</a></li>
-  <li><a href="{{ final_mentor_link }}">Edit Final Mentor Evaluation</a></li>
-  <li><a href="{{ final_student_link }}">Edit Final Student Evaluation</a></li>
-</ul>
-{% endblock %}
+<div class="dashboard{% if not enabled %} disabled{% endif %}" id="{{ name }}-dashboard">
+  <div class="dashboard-head">
+    <span>
+      {% if backlink %}
+        <a class="dashboard-link" href="#{{ backlink.to }}">{{ backlink.title }}</a>&nbsp;/
+      {% endif %}
+      {{ title|safe }}
+    </span>
+  </div>
+  <div class="block block-dashboard">
+    {% for column in subpages %}
+    <div class="column{% if forloop.first %} first{% endif %}">
+        {% for subpage in column %}
+          <div class="column-entry {{ subpage.name }}">
+            <h4>
+              <a class="{% if not subpage.link %}dashboard-link{% endif %}" href="{% if subpage.link %}{{ subpage.link }}{% else %}#{{ subpage.name }}{% endif %}" title="{{ subpage.title }}">{{ subpage.title }}</a>
+            </h4>
+            <p>{{ subpage.description|safe }}</p>
+            {% if subpage.subpage_links %}
+              <div>
+                {% for sublink in subpage.subpage_links %}
+                  <a href="{{ sublink.link }}" title="{{ sublink.title }}">{{ sublink.title }}</a>
+                  {% if not forloop.last %}|{% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</div>

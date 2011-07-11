@@ -113,9 +113,14 @@ class ProgramPage(RequestHandler):
   def post(self):
     """Handler for HTTP POST request.
     """
+    if self.data.GET.get('cbox'):
+      cbox = True
+    else:
+      cbox = False
+
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gsoc_program', validated=True)
+      self.redirect.to('edit_gsoc_program', validated=True, cbox=cbox)
     else:
       self.get()
 
@@ -159,8 +164,13 @@ class TimelinePage(RequestHandler):
   def post(self):
     """Handler for HTTP POST request.
     """
+    if self.data.GET.get('cbox'):
+      cbox = True
+    else:
+      cbox = False
+
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gsoc_timeline', validated=True)
+      self.redirect.to('edit_gsoc_timeline', validated=True, cbox=cbox)
     else:
       self.get()

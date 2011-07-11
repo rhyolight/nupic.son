@@ -240,7 +240,7 @@ class RedirectHelper(object):
 
     return self
 
-  def urlOf(self, name, full=False, secure=False):
+  def urlOf(self, name, full=False, secure=False, cbox=False):
     """Returns the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -251,6 +251,9 @@ class RedirectHelper(object):
       url = reverse(name, kwargs=self.kwargs)
     else:
       url = reverse(name)
+
+    if cbox:
+      url = url + '?cbox=true'
 
     return self._fullUrl(url, full, secure)
 
@@ -281,7 +284,7 @@ class RedirectHelper(object):
 
     return '%s://%s%s' % (protocol, hostname, url)
 
-  def to(self, name=None, validated=False, full=False, secure=False):
+  def to(self, name=None, validated=False, full=False, secure=False, cbox=False):
     """Redirects to the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -292,8 +295,14 @@ class RedirectHelper(object):
       assert name or self._url_name
       url = self.urlOf(name or self._url_name)
 
+    if cbox:
+      url = url + '?cbox=true'
+
     if validated:
-      url = url + '?validated'
+      if cbox:
+        url = url + '&validated'
+      else:
+        url = url + '?validated'
 
     self.toUrl(url, full=full, secure=secure)
 

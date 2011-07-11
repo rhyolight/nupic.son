@@ -1,4 +1,4 @@
-{% extends "v2/modules/gsoc/base.html" %}
+{% extends base_layout %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ limitations under the License.
 
 <!-- begin form -->
 {% block open_form %}
-<form action="#" method="post" id="form" class="form-register">
+<form action="{% if cbox %}?cbox=true{% else %}#{% endif %}" method="post" id="form" class="form-register">
 {% endblock open_form %}
   {% if posted %}
     {% if error %}

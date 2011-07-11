@@ -147,6 +147,10 @@
     tpjs + "jquery/jquery.formbuilder.js"
   ];
 
+  s.colorbox = [
+    tpjs + "jquery/jquery.colorbox.js"
+  ];
+
   s.jqueryui = {}
 
   if (melange.config.is_local !== undefined && melange.config.is_local === true) {

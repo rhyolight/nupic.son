@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Akeda Bagus" <admin@gedex.web.id>',
   '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   ]
 
@@ -45,7 +46,8 @@ class SlotsTest(DjangoTestCase):
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/slots.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/_slots_list.html')
+    self.assertTemplateUsed(response,
+        'v2/modules/gsoc/admin/_accepted_orgs_list.html')
 
   def testAllocateSlots(self):
     self.data.createHost()
