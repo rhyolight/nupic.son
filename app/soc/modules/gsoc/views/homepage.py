@@ -234,7 +234,7 @@ class Homepage(RequestHandler):
         'timeline': Timeline(self.data, current_timeline, next_deadline),
         'apply': Apply(self.data),
         'connect_with_us': ConnectWithUs(self.data),
-        'page_name': 'Home page',
+        'page_name': '%s - Home page' % (self.data.program.name),
         'program': self.data.program,
     }
 
