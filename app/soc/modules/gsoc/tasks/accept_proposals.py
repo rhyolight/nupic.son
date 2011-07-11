@@ -22,8 +22,10 @@ __authors__ = [
   ]
 
 
+import datetime
 import logging
 
+from django import http
 from django.conf.urls.defaults import url as django_url
 
 from google.appengine.api import taskqueue
@@ -33,9 +35,12 @@ from google.appengine.runtime import DeadlineExceededError
 from soc.logic import dicts
 from soc.logic import mail_dispatcher
 from soc.tasks.helper.timekeeper import Timekeeper
+from soc.tasks.helper import error_handler
 from soc.tasks import responses
 
+from soc.modules.gsoc.logic import accept_proposals as conversion_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
+from soc.modules.gsoc.logic.models.program import logic as program_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.project import GSoCProject
@@ -52,6 +57,7 @@ class ProposalAcceptanceTask(object):
     patterns = [
         django_url(r'^tasks/gsoc/accept_proposals/main$', self.convertProposals),
         django_url(r'^tasks/gsoc/accept_proposals/accept$', self.acceptProposals),
+        django_url(r'^tasks/gsoc/accept_proposals/status$', self.status),
         django_url(r'^tasks/gsoc/accept_proposals/reject$', self.rejectProposals)]
     return patterns
 
@@ -156,6 +162,52 @@ class ProposalAcceptanceTask(object):
     # Exit this task successfully
     return responses.terminateTask()
 
+  def status(self, request, *args, **kwargs):
+    """Update the status of proposals conversion.
+
+    Expects the following to be present in the POST dict:
+      program_key: Specifies the program key name for which to update the
+                   conversion status
+    Args:
+      request: Django Request object
+    """
+    params = request.POST
+
+    # retrieve the program_key from POST data
+    program_key = params.get('program_key')
+
+    if not program_key:
+      # invalid task data, log and return OK
+      return error_handler.logErrorAndReturnOK(
+          '"Missing program_key in params: "%s"' % params)
+
+    # get the program for the given keyname
+    program_entity = program_logic.getFromKeyName(program_key)
+
+    if not program_entity:
+      # invalid program specified, log and return OK
+      return error_handler.logErrorAndReturnOK(
+          'Invalid program key specified: "%s"' % program_key)
+
+    # obtain the accept proposals status
+    aps_entity = conversion_logic.getOrCreateStatusForProgram(program_entity)
+
+    # update the accept proposals status
+    aps_entity.status = 'proceeded'
+
+    # if the first proposal set the started_on
+    converted_projects = aps_entity.nr_converted_projects + 1
+    if converted_projects == 1:
+      aps_entity.started_on = datetime.datetime.now()
+
+    # tracks the number of converted projects so far
+    aps_entity.nr_converted_projects = converted_projects
+
+    db.put(aps_entity)
+
+    # return OK
+    return http.HttpResponse()
+
   # Logic below ported from student_proposal_mailer.py
   def getAcceptProposalMailTxn(self, proposal, transactional=True):
     """Returns the function to sent an acceptance mail for the specified
@@ -232,16 +284,28 @@ class ProposalAcceptanceTask(object):
     proposal_key = proposal.key()
     proposal_org_key = proposal.org.key()
 
+    # pass these data along params as POST to the new task
+    task_params = {'program_key': proposal.program.key().id_or_name()}
+    task_url = '/tasks/gsoc/accept_proposals/status'
+
+    status_task = taskqueue.Task(params=task_params, url=task_url)
+
     def acceptProposalTxn():
       """Transaction that puts the new project, sets the proposal to accepted
       and mails the lucky student.
       """
+
+      # add a task that performs conversion status per
+      # proposal
+      status_task.add(transactional=True)
+
       proposal = db.get(proposal_key)
       proposal.status = 'accepted'
       student_info = db.get(student_info_key)
       student_info.number_of_projects += 1
       orgs = student_info.project_for_orgs + [proposal_org_key]
       student_info.project_for_orgs = list(set(orgs))
+
       db.put(project)
       db.put(proposal)
       db.put(student_info)
