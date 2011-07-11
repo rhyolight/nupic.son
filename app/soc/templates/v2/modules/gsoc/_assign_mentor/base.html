@@ -22,7 +22,9 @@
         {% for mentor in mentors %}
           <select name="assign_mentor"
             id="id-assign-mentor{% if forloop.counter > 1 %}-{{ forloop.counter|add:"-1" }}{% endif %}">
-            <option {% if mentor_required %}disabled="disabled"{% endif %} value="">
+            <option {% if mentor_required and forloop.counter == 1 %}
+              disabled="disabled"
+            {% endif %} value="">
               Assign Mentor
             </option>
             {% if mentor.possible_mentors %}

@@ -249,7 +249,7 @@ class AssignMentors(RequestHandler):
       # need the list to set conversion and back to list conversion
       # to ensure that same mentor doesn't get assigned to the
       # project more than once
-      mentor_keys = set([db.Key(k) for k in str_mentor_keys])
+      mentor_keys = set([db.Key(k) for k in str_mentor_keys if k])
       if mentor_keys < set(
           profile_logic.queryAllMentorsKeysForOrg(org)):
         return list(mentor_keys)
