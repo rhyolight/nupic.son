@@ -27,3 +27,4 @@ develop-eggs
 .nfs*
 \#*\#
 .\#*
+overrides
