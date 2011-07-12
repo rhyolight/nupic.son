@@ -197,10 +197,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check if the currently logged in user is the mentor or co-mentor
     # for the project in request or the org admin for the org
-    expected_profile_keys = [self.data.project.mentor.key()] + \
-        self.data.project.additional_mentors
-
-    if self.data.profile.key() not in expected_profile_keys:
+    if self.data.profile.key() not in self.data.project.mentors:
       raise AccessViolation(DEF_SURVEY_DOES_NOT_BELONG_TO_YOU_MSG)
 
 
