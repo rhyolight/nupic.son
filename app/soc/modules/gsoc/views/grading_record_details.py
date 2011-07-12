@@ -104,9 +104,14 @@ class GradingRecordsList(Template):
 
     list_config = lists.ListConfiguration()
 
-    func = lambda rec, *args, **kwargs: \
+    title_func = lambda rec, *args, **kwargs: rec.parent().title
+    list_config.addColumn('project_title', 'Project Title', title_func)
+    org_func = lambda rec, *args, **kwargs: rec.parent().org.name
+    list_config.addColumn('org_name', 'Organization', org_func)
+    stud_rec_func = lambda rec, *args, **kwargs: \
         'Present' if rec.student_record else 'Missing'
-    list_config.addColumn('student_record', 'Survey by Student', func)
+    list_config.addColumn('student_record', 'Survey by Student', stud_rec_func)
+
     list_config.addPostButton('update_records', 'Update Records', '', [0,'all'], [])
     list_config.addPostButton('update_projects', 'Update Projects', '', [0,'all'], [])
 
