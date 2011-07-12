@@ -78,19 +78,8 @@ class GSoCProject(soc.models.base.ModelWithFieldAttributes):
   is_featured.help_text = ugettext(
       'Should this project be featured on the program homepage.')
 
-  #: A property containing which mentor has been assigned to this project.
-  #: A project must have a mentor at all times.
-  mentor = db.ReferenceProperty(reference_class=soc.models.role.Profile,
-                                required=True,
-                                collection_name='projects')
-
-  #: A property containing a list of additional Mentors for this project
-  additional_mentors = db.ListProperty(item_type=db.Key, default=[])
-
   #: A property containing a list of Mentors assigned for this project
-  #: TODO(PostConversion): Make the property required after data
-  #: conversion and get rid of mentor and additional_mentors properties
-  mentors = db.ListProperty(item_type=db.Key, default=[])
+  mentors = db.ListProperty(item_type=db.Key, default=[], required=True)
 
   #: The status of this project
   #: accepted: This project has been accepted into the program
