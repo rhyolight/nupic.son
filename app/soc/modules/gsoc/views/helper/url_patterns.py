@@ -70,7 +70,7 @@ def namedKeyBasedPattern(names):
   is a string representation of a Key instance.
   """
 
-  return r'/'.join([namedLinkIdPattern(names), r'(?P<key>(\w+))'])
+  return r'/'.join([namedLinkIdPattern(names), r'(?P<key>([\w-]+))'])
 
 
 _role = r'(?P<role>%s)/' % ("student|mentor|org_admin")
