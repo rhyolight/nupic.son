@@ -22,6 +22,8 @@ __authors__ = [
   ]
 
 
+from django.utils.translation import ugettext
+
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import lists
 from soc.views.helper.access_checker import isSet
@@ -31,14 +33,18 @@ from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import grading_project_survey as gps_logic
 from soc.modules.gsoc.logic import grading_project_survey_record as gpsr_logic
 from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.dashboard import colorize
+from soc.modules.gsoc.views import dashboard
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class MentorMidtermList(Template):
-  """Template for list of student projects accepted under the organization.
+DEF_NOT_ADMIN_MSG = ugettext(
+    'You must be an organization administrator for at least one '
+    'organization in the program to access this page.')
+
+
+class MentorEvaluationComponent(dashboard.Component):
+  """Component for listing mentor evaluations for organizations.
   """
 
   def __init__(self, request, data):
@@ -56,11 +62,13 @@ class MentorMidtermList(Template):
     list_config.addColumn('student', 'Student',
                           lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Project Title')
+    list_config.addColumn('org', 'Organization',
+                          lambda entity, *args: entity.org.name)
     list_config.addColumn(
         'mentors', 'Mentors', lambda entity, mentors, *args: ', '.join(
             [mentors.get(m).name() for m in entity.mentors]))
     list_config.addColumn(
-        'status', 'Status', lambda entity, *args: colorize(
+        'status', 'Status', lambda entity, *args: dashboard.colorize(
             gpsr_logic.evalRecordExistsForStudent(
             mm_eval, entity), "Submitted", "Not submitted"))
     list_config.setDefaultSort('student')
@@ -73,13 +81,11 @@ class MentorMidtermList(Template):
 
   def context(self):
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=0,
-        description='List of projects accepted into %s' % (
-            self.data.organization.name))
+        self.data, self._list_config, idx=0)
 
     return {
         'lists': [list],
-        'evaluation_name': 'Mentor Evaluations - Midterm',
+        'title': 'Mentor Evaluations - Midterm',
         }
 
   def getListData(self):
@@ -90,11 +96,12 @@ class MentorMidtermList(Template):
     """
     idx = lists.getListIndex(self.request)
     if idx == 0:
-      list_query = project_logic.getAcceptedProjectsQuery(
-          program=self.data.program, org=self.data.organization)
+      list_query = project_logic.getProjectsQueryForOrgs(
+          orgs=self.data.org_admin_for)
 
       starter = lists.keyStarter
-      prefetcher = lists.listPrefetcher(GSoCProject, ['mentors'])
+      prefetcher = lists.listModelPrefetcher(
+          GSoCProject, ['org'], ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, list_query,
@@ -104,49 +111,32 @@ class MentorMidtermList(Template):
       return None
 
   def templatePath(self):
-    return 'v2/modules/gsoc/org_evaluations/_list.html'
+    return'v2/modules/gsoc/dashboard/list_component.html'
 
 
-class OrgEvaluations(RequestHandler):
-  """View for the list of all the evaluations under an organization.
+class Dashboard(dashboard.Dashboard):
+  """View for the list of all the organization related components.
   """
 
   def djangoURLPatterns(self):
     """The URL pattern for the org evaluations.
     """
     return [
-        url(r'evaluations/%s$' % url_patterns.ORG, self,
-            name='gsoc_org_evaluations')]
+        url(r'dashboard/org/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_org_dashboard')]
 
   def checkAccess(self):
     """Denies access if the user is not an org admin.
     """
-    self.mutator.organizationFromKwargs()
-    self.check.isOrgAdmin()
+    self.check.isProfileActive()
 
-  def templatePath(self):
-    return 'v2/modules/gsoc/org_evaluations/base.html'
+    if self.data.is_org_admin:
+      return
 
-  def jsonContext(self):
-    """Handler for JSON requests.
+    raise AccessViolation(DEF_NOT_ADMIN_MSG)
+
+  def _getActiveComponents(self):
+    """Returns the components that are active on the page.
     """
-    assert isSet(self.data.organization)
-    list_content = MentorMidtermList(self.request, self.data).getListData()
-
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-
-  def context(self):
-    """Handler to for GSoC Organization Evaluations page HTTP get request.
-    """
-    assert isSet(self.data.organization)
-    organization = self.data.organization
-
-    context = {
-        'page_name': '%s - Evaluations' % organization.short_name,
-        'mentor_midterm_list': MentorMidtermList(self.request, self.data),
-    }
-
-    return context
+    components = [MentorEvaluationComponent(self.request, self.data)]
+    return components
