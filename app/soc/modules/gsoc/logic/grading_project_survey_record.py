@@ -26,16 +26,16 @@ from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
 
 
-def evalRecordExistsForStudent(survey, project):
-  """Return True if the evaluation record exists for the given project.
+def getEvalRecord(survey, project):
+  """Return the mentor evaluation record for the given project.
 
   Args:
     survey: survey entity for which the record should be searched
-    project: the project entity belonging to the student for which we need
-        look for the evaluation record
+    project: the project entity for which we need look for the
+        evaluation record
   """
   q = GSoCGradingProjectSurveyRecord.all()
   q.filter('survey', survey)
   q.filter('project', project)
 
-  return True if q.count() else False
+  return q.get()

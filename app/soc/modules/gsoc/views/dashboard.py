@@ -589,8 +589,8 @@ class OrgEvaluationsComponent(Component):
         self.data.program, evaluation)
     if (mm_eval and self.data.timeline.afterSurveyStart(mm_eval)):
       for project in projects:
-        status = colorize(gpsr_logic.evalRecordExistsForStudent(
-            mm_eval, project), "Submitted", "Not submitted")
+        status = colorize(bool(gpsr_logic.getEvalRecord(
+            mm_eval, project)), "Submitted", "Not submitted")
         response.addRow(project, evaluation, status)
 
     evaluation = 'final'
@@ -598,8 +598,8 @@ class OrgEvaluationsComponent(Component):
         self.data.program, evaluation)
     if (fm_eval and self.data.timeline.afterSurveyStart(fm_eval)):
       for project in projects:
-        status = colorize(gpsr_logic.evalRecordExistsForStudent(
-            mm_eval, project), "Submitted", "Not submitted")
+        status = colorize(bool(gpsr_logic.getEvalRecord(
+            mm_eval, project)), "Submitted", "Not submitted")
         response.addRow(project, evaluation, status)
 
     response.next = 'done'
