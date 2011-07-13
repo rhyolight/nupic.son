@@ -700,6 +700,16 @@ def listPrefetcher(model, fields):
   return prefetcher
 
 
+def listModelPrefetcher(model, fields, list_fields, parent=False):
+  """Returns a prefetcher for the specified model and (list) fields.
+  """
+  def prefetcher(entities):
+    prefetchFields(model, fields, entities, parent)
+    prefetched_entities = prefetchListFields(model, list_fields, entities)
+    return [prefetched_entities], {}
+  return prefetcher
+
+
 def keyStarter(start, q):
   """Returns a starter for the specified key-based model.
   """
