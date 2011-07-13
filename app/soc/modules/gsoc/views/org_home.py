@@ -350,8 +350,9 @@ class OrgHome(RequestHandler):
 
       context['project_list'] = ProjectList(self.request, self.data)
 
+      # TODO: Map needs to be rewritten to work with new mentors property
       # obtain a json object that contains the organization home page map data
-      context['org_map_data'] = self._getJSONMapData()
+      #context['org_map_data'] = self._getJSONMapData()
 
     return context
 

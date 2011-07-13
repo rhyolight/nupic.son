@@ -212,7 +212,6 @@ class GradingRecordTasks(object):
     survey_group_entity = record.grading_survey_group
     project_entity = record.parent()
     student_entity = project_entity.parent()
-    mentor_entity = project_entity.mentor
     org_entity = project_entity.org
     site_entity = site_logic.getSingleton()
 
@@ -231,7 +230,7 @@ class GradingRecordTasks(object):
   
     # set the receiver and subject
     mail_context['to'] = student_entity.email
-    mail_context['cc'] = [mentor_entity.email]
+    mail_context['cc'] = []
     mail_context['subject'] = '%s results processed for %s' %(
         survey_group_entity.name, project_entity.title)
 
@@ -239,11 +238,11 @@ class GradingRecordTasks(object):
     q.filter('org_admin_for', org_entity)
     org_admins = q.fetch(1000)
 
-    # collect all helping mentors
-    additional_mentors = db.get(project_entity.additional_mentors)
+    # collect all mentors
+    mentors = db.get(project_entity.mentors)
 
     # add them all to the cc list
-    for org_member in org_admins + additional_mentors:
+    for org_member in org_admins + mentors:
       mail_context['cc'].append(org_member.email)
 
     # send out the email using a template

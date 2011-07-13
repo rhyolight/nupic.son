@@ -203,12 +203,15 @@ class SurveyReminderTask(object):
       if survey_type == 'project':
         survey_redirect = redirects.getTakeSurveyRedirect(
             survey, {'url_name': 'gsoc/project_survey'})
-        to_profile = student_profile
+        to_name = student_profile.name()
+        to_address = student_profile.email
         mail_template = 'modules/gsoc/project_survey/mail/reminder_gsoc.html'
       elif survey_type == 'grading':
         survey_redirect = redirects.getTakeSurveyRedirect(
             survey, {'url_name': 'gsoc/grading_project_survey'})
-        to_profile = project.mentor
+        mentors = db.get(project.mentors)
+        to_address = [m.email for m in mentors]
+        to_name = 'mentor(s) for project "%s"' %(project.title)
         mail_template = \
             'modules/gsoc/grading_project_survey/mail/reminder_gsoc.html'
 
@@ -223,7 +226,7 @@ class SurveyReminderTask(object):
           'project_title': project.title,
           'survey_url': survey_url,
           'survey_end': survey.survey_end,
-          'to_name': to_profile.name(),
+          'to_name': to_name,
           'site_name': site_entity.site_name,
       }
 
@@ -231,7 +234,7 @@ class SurveyReminderTask(object):
       (_, sender_address) = mail_dispatcher.getDefaultMailSender()
       mail_context['sender'] = sender_address
       # set the receiver and subject
-      mail_context['to'] = to_profile.email
+      mail_context['to'] = to_address
       mail_context['subject'] = \
           'Evaluation Survey "%s" Reminder' %(survey.title)
 

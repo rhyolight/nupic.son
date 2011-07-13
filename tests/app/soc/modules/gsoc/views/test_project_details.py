@@ -46,7 +46,7 @@ class ProjectDetailsTest(DjangoTestCase):
 
   def createProject(self, override_properties={}):
     properties = {
-        'is_featured': False, 'mentor': None, 'additional_mentors': [],
+        'is_featured': False, 'mentors': [],
         'status': 'accepted', 'program': self.gsoc, 'org': self.org,
         
     }

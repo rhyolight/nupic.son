@@ -153,6 +153,7 @@ class ProjectList(Template):
       qp = GSoCProposal.all()
       qp.ancestor(profile_key)
       qp.filter('org', project.org)
+      # FIXME: ??? Mentors can change overtime so how does this work???
       qp.filter('mentor', project.mentor)
 
       if withdraw:
