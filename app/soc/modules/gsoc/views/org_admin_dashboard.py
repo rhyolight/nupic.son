@@ -26,8 +26,6 @@ from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import lists
-from soc.views.helper.access_checker import isSet
-from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import grading_project_survey as gps_logic
