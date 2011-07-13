@@ -985,7 +985,7 @@ class ProjectsIMentorComponent(Component):
     if self.data.is_org_admin:
       list_query.filter('org IN', self.data.profile.org_admin_for)
     else:
-      list_query.filter('mentor', self.data.profile)
+      list_query.filter('mentors', self.data.profile)
 
     starter = lists.keyStarter
     prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
