@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Daniel Hans" <daniel.m.hans@gmail.com>',
   '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   ]
@@ -533,25 +534,25 @@ class SurveyTakeForm(ModelForm):
   def constructForm(self):
     """Constructs the form based on the schema stored in the survey content
     """
+    from soc.views.helper.surveys import SurveySchema
     # insert dynamic survey fields
     if self.survey:
-      order, fields = loads(self.survey.schema)
-      for field_id in order:
-        self.constructField(field_id, fields.get(field_id, {}))
+      survey_schema = SurveySchema(self.survey)
+      for field in survey_schema:
+        self.constructField(field)
 
-  def constructField(self, field_name, field_dict):
+  def constructField(self, field_obj):
     """Constructs the field for the given field metadata
 
     Args:
-      field_name: Unique ID assigned to the field while creating it
-      field_dict: Meta data containing how the field must be constructed
+      field_obj: A survey field object containing all the meta data for the survey.
     """
-    type = field_dict.get('field_type', '')
-    label = urllib.unquote(field_dict.get('label', ''))
-    required = field_dict.get('required', True)
-    other = field_dict.get('other', False)
-    help_text = field_dict.get('tip', '')
-    values = field_dict.get('values', '')
+    type = field_obj.getType()
+    label = field_obj.getLabel()
+    required = field_obj.isRequired()
+    help_text = field_obj.getHelpText()
+
+    field_name = field_obj.getFieldName()
 
     widget = None
 
@@ -572,20 +573,16 @@ class SurveyTakeForm(ModelForm):
     if widget:
       self.fields[field_name].widget = widget
 
-    if isinstance(values, list):
-      choices = []
-      for choice in values:
-        value = urllib.unquote(choice.get('value'))
-        choices.append((value, value))
-        if choice['checked']:
-          self.fields[field_name].initial = str(value)
-      else:
-        if other:
-          choices.append(('Other', 'Other'))
-          ofn = '%s-other' % (field_name)
-          self.fields[ofn] = django.forms.CharField(
-              required=False, initial=getattr(self.instance, ofn, None),
-              widget=forms.TextInput(attrs={'div_class':'other'}))
+    if isinstance(field_obj.getValues(), list):
+      choices = field_obj.getChoices()
+
+      if field_obj.requireOtherField():
+        choices.append(('Other', 'Other'))
+        ofn = '%s-other' % (field_name)
+        self.fields[ofn] = django.forms.CharField(
+            required=False, initial=getattr(self.instance, ofn, None),
+            widget=forms.TextInput(attrs={'div_class':'other'}))
+
       self.fields[field_name].choices = choices
     if self.instance:
       self.fields[field_name].initial = getattr(
