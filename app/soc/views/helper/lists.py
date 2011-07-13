@@ -692,7 +692,7 @@ def prefetchListFields(model, fields, data):
 
 
 def listPrefetcher(model, fields):
-  """Returns ap refetcher for the specified models and list fields.
+  """Returns a prefetcher for the specified models and list fields.
   """
   def prefetcher(entities):
     prefetched_entities = prefetchListFields(model, fields, entities)
