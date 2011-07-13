@@ -52,8 +52,6 @@ class ProjectList(Template):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
                           lambda entity, *args: entity.org.name)
-    list_config.addColumn('mentor', 'Mentor',
-                          lambda entity, *args: entity.mentor.name())
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
     list_config.setRowAction(lambda e, *args, **kwargs:
@@ -83,7 +81,7 @@ class ProjectList(Template):
           program=self.data.program)
 
       starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProject, ['org', 'mentor'],
+      prefetcher = lists.modelPrefetcher(GSoCProject, ['org'],
                                          parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
