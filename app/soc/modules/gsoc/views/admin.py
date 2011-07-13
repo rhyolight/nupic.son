@@ -927,8 +927,9 @@ class ProjectsList(Template):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
                           lambda entity, *args: entity.org.name)
-    list_config.addColumn('mentor', 'Mentor',
-                          lambda entity, *args: entity.mentor.name())
+    list_config.addColumn(
+        'mentors', 'Mentor',
+        lambda entity, m, *args: [m[i].name() for i in entity.mentors])
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
 
@@ -957,8 +958,8 @@ class ProjectsList(Template):
           program=self.data.program, org=self.data.organization)
 
       starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProject, ['org', 'mentor'],
-                                         parent=True)
+      prefetcher = lists.listModelPrefetcher(
+          GSoCProject, ['org'], ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, list_query,
