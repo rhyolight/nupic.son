@@ -60,8 +60,6 @@ class ProjectList(Template):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
                           lambda entity, *args: entity.org.name)
-    list_config.addColumn('mentor', 'Mentor',
-                          lambda entity, *args: entity.mentor.name())
 
     def status(project):
       """Status to show on the list with color.
@@ -192,7 +190,7 @@ class ProjectList(Template):
       list_query = project_logic.getProjectsQuery(program=self.data.program)
 
       starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProject, ['org', 'mentor'],
+      prefetcher = lists.modelPrefetcher(GSoCProject, ['org'],
           parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
