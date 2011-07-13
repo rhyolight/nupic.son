@@ -46,11 +46,11 @@ DEF_NOT_ADMIN_MSG = ugettext(
 class StudentEvaluationComponent(dashboard.Component):
   """Component for listing student evaluations for organizations.
   """
-    self.idx = idx
 
   def __init__(self, request, data, idx):
     self.request = request
     self.data = data
+    self.idx = idx
 
     self.evaluation = 'midterm'
 
