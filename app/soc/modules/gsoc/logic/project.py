@@ -131,6 +131,18 @@ def getAcceptedProjectsForStudent(student, limit=1000):
   q = getAcceptedProjectsQuery(ancestor=student)
   return q.fetch(limit)
 
+def getProjectsQueryForOrgs(orgs):
+  """Returns the query corresponding to projects for the given organization(s).
+
+  Args:
+    orgs: The list of organization entities for which the projects
+        should be queried.
+  """
+  q = getProjectsQuery()
+  orgs = list(orgs)
+  q.filter('org IN', orgs)
+  return q
+
 
 def getProjectsForOrgs(orgs, limit=1000):
   """Returns all the projects for the given organization(s).
@@ -139,11 +151,10 @@ def getProjectsForOrgs(orgs, limit=1000):
   for all the orgs listed
 
   Args:
-    org: The organization entity for which the projects should be queried.
+    orgs: The list of organization entities for which the projects
+        should be queried.
   """
-  q = getProjectsQuery()
-  orgs = list(orgs)
-  q.filter('org IN', orgs)
+  q = getProjectsQueryForOrgs(orgs)
   return q.fetch(limit)
 
 
