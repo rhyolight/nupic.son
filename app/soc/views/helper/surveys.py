@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Daniel Diniz" <ajaksu@gmail.com>',
   '"Daniel Hans" <daniel.m.hans@gmail.com>',
   '"James Levy" <jamesalexanderlevy@gmail.com>',
@@ -30,6 +31,7 @@ import csv
 import datetime
 import logging
 import StringIO
+import urllib
 
 from google.appengine.ext import db
 from google.appengine.ext.db import djangoforms
@@ -42,6 +44,7 @@ from django.utils.datastructures import SortedDict
 from django.utils.encoding import force_unicode
 from django.utils.encoding import smart_unicode
 from django.utils.html import escape
+from django.utils.simplejson import loads
 
 from soc.models.survey import COMMENT_PREFIX
 from soc.models.survey import SurveyContent
@@ -1115,3 +1118,105 @@ def toCSV(survey_view):
 
     return header + output.getvalue(), survey.link_id
   return wrapper
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~NEW SURVEYS ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# TODO (madhu): Get rid of everything above once the midterm
+# evaluations are over.
+
+class SurveyField(object):
+  """Meta data for single field in the survey form.
+  """
+
+  def __init__(self, fields, field_id):
+    """Initialize the meta data dictionary for the field
+    """
+    self.fields = fields
+    self.field_id = field_id
+
+    # Assign the meta dictionary corresponding to an individial field
+    # to an object attribute
+    self.meta_dict = self.fields.get(self.field_id, {})
+
+    # If the field contains multiple choices, it contains additional
+    # meta data for each choice and which of them must be checked
+    self.choices = []
+    self.checked = []
+
+  def getFieldName(self):
+    """Returns the name to be used as the property name in the survey record.
+    """
+    return self.field_id
+
+  def getType(self):
+    """Returns the type of the field to which it should be rendered.
+
+    Possible types:
+      1. input_text
+      2. textarea
+      3. radio
+      4. checkbox
+    """
+    return self.meta_dict.get('field_type', '')
+
+  def getLabel(self):
+    """Returns the label which should be shown along with the field.
+    """
+    return urllib.unquote(self.meta_dict.get('label', ''))
+
+  def isRequired(self):
+    """Returns True if the field is a mandatory field on the form else False
+    """
+    return self.meta_dict.get('required', True)
+
+  def requireOtherField(self):
+    """Returns True if field needs "Other" option to be rendered automatically.
+    """
+    return self.meta_dict.get('other', False)
+
+  def getHelpText(self):
+    """Returns the help text which should be shown along with the field.
+    """
+    return self.meta_dict.get('tip', '')
+
+  def getValues(self):
+    """Returns the list of options which should be rendered for the field.
+    """
+    return self.meta_dict.get('values', '')
+
+  def getChoices(self):
+    """Returns the list of choices for the field as 2-tuple.
+
+    This format of returning the list of 2-tuples where each 2-tuple
+    corresponds to a single option for the multiple choice fields is
+    the format that Django uses in its form. So we can directly use this
+    list in the Django forms.
+    """
+    for choice in self.getValues():
+      value = urllib.unquote(choice.get('value'))
+      self.choices.append((value, value))
+      if choice['checked']:
+        self.checked.append(value)
+
+    return self.choices
+
+  def getCheckedChoices(self):
+    """Returns the list of choices that must be checked as initial values.
+    """
+    return self.checked
+
+
+class SurveySchema(object):
+  """Meta data containing the form elements needed to build surveys.
+  """
+
+  def __init__(self, survey):
+    """Intialize the Survey Schema from the provided survey entity.
+    """
+    self.order, self.fields = loads(survey.schema)
+
+  def __iter__(self):
+    """Iterator for providing the fields in order to be used to build surveys.
+    """
+    for field_id in self.order:
+      yield SurveyField(self.fields, field_id)
