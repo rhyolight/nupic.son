@@ -148,7 +148,7 @@ class GSoCProfileHelper(object):
     self.createStudent()
     from soc.modules.gsoc.models.project import GSoCProject
     properties = {'program': self.program, 'org': org, 'status': 'accepted',
-                  'parent': self.profile, 'mentor': mentor}
+                  'parent': self.profile, 'mentors': [mentor.key()]}
     self.seedn(GSoCProject, properties, n)
     return self.profile
 
