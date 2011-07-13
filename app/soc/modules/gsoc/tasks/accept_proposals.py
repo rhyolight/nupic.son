@@ -272,7 +272,7 @@ class ProposalAcceptanceTask(object):
       'program': proposal.program,
       'title': proposal.title,
       'abstract': proposal.abstract,
-      'mentor': proposal.mentor,
+      'mentors': [proposal.mentor],
       }
     student_profile = proposal.parent()
     project = GSoCProject(parent=student_profile, **fields)
