@@ -472,7 +472,16 @@ class MyEvaluationsComponent(Component):
     list_config.addColumn('evaluation', 'Evaluation',
                           lambda ent, *args: args[0].capitalize())
     list_config.addSimpleColumn('title', 'Project')
-    list_config.addColumn('status', 'Status', lambda ent, *args: args[1])
+    list_config.addColumn('status', 'Status', lambda ent, *args: args[2])
+    list_config.addColumn(
+        'created', 'Submitted on',
+        lambda ent, *args: format(
+            args[1].created, DATETIME_FORMAT) if args[1] else 'N/A')
+    list_config.addColumn(
+        'modified', 'Last modified on',
+        lambda ent, *args: format(
+            args[1].modified, DATETIME_FORMAT) if (
+            args[1] and args[1].modified) else 'N/A')
     def rowAction(ent, *args):
       evaluation = args[0]
       return data.redirect.survey_record(
@@ -507,17 +516,17 @@ class MyEvaluationsComponent(Component):
     ms_eval = ps_logic.getProjectSurveyForProgram(self.data.program, evaluation)
     if (ms_eval and self.data.timeline.afterSurveyStart(ms_eval)):
       for project in projects:
-        response.addRow(project, evaluation, status)
         record = psr_logic.getEvalRecord(ms_eval, project)
         status = colorize(bool(record), "Submitted", "Not submitted")
+        response.addRow(project, evaluation, record, status)
 
     evaluation = 'final'
     fs_eval = ps_logic.getProjectSurveyForProgram(self.data.program, evaluation)
     if (fs_eval and self.data.timeline.afterSurveyStart(fs_eval)):
       for project in projects:
-        response.addRow(project, evaluation, status)
         record = psr_logic.getEvalRecord(fs_eval, project)
         status = colorize(bool(record), "Submitted", "Not submitted")
+        response.addRow(project, evaluation, record, status)
 
     response.next = 'done'
 
@@ -553,7 +562,16 @@ class OrgEvaluationsComponent(Component):
     list_config.addColumn('student', 'Student',
                           lambda ent, *args: ent.parent().name())
     list_config.addSimpleColumn('title', 'Project')
-    list_config.addColumn('status', 'Status', lambda ent, *args: args[1])
+    list_config.addColumn('status', 'Status', lambda ent, *args: args[2])
+    list_config.addColumn(
+        'created', 'Submitted on',
+        lambda ent, *args: format(
+            args[1].created, DATETIME_FORMAT) if args[1] else 'N/A')
+    list_config.addColumn(
+        'modified', 'Last modified on',
+        lambda ent, *args: format(
+            args[1].modified, DATETIME_FORMAT) if (
+            args[1] and args[1].modified) else 'N/A')
     def rowAction(ent, *args):
       evaluation = args[0]
       return data.redirect.survey_record(
@@ -589,18 +607,18 @@ class OrgEvaluationsComponent(Component):
         self.data.program, evaluation)
     if (mm_eval and self.data.timeline.afterSurveyStart(mm_eval)):
       for project in projects:
-        status = colorize(bool(gpsr_logic.getEvalRecord(
-            mm_eval, project)), "Submitted", "Not submitted")
-        response.addRow(project, evaluation, status)
+        record = gpsr_logic.getEvalRecord(mm_eval, project)
+        status = colorize(bool(record), "Submitted", "Not submitted")
+        response.addRow(project, evaluation, record, status)
 
     evaluation = 'final'
     fm_eval = gps_logic.getGradingProjectSurveyForProgram(
         self.data.program, evaluation)
     if (fm_eval and self.data.timeline.afterSurveyStart(fm_eval)):
       for project in projects:
-        status = colorize(bool(gpsr_logic.getEvalRecord(
-            mm_eval, project)), "Submitted", "Not submitted")
-        response.addRow(project, evaluation, status)
+        record = gpsr_logic.getEvalRecord(fm_eval, project)
+        status = colorize(bool(record), "Submitted", "Not submitted")
+        response.addRow(project, evaluation, record, status)
 
     response.next = 'done'
 

@@ -22,6 +22,7 @@ __authors__ = [
   ]
 
 
+from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation
@@ -67,6 +68,16 @@ class StudentEvaluationComponent(dashboard.Component):
             [mentors.get(m).name() for m in entity.mentors]))
     list_config.addColumn(
         'status', 'Status', self._getStatus)
+    list_config.addColumn(
+        'created', 'Submitted on',
+        lambda ent, *args: format(
+            self.record.created, dashboard.DATETIME_FORMAT) if \
+            self.record else 'N/A')
+    list_config.addColumn(
+        'modified', 'Last modified on',
+        lambda ent, *args: format(
+            self.record.modified, dashboard.DATETIME_FORMAT) if (
+            self.record and self.record.modified) else 'N/A')
     list_config.setDefaultSort('student')
     self._list_config = list_config
 
