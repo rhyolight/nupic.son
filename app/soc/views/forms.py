@@ -25,6 +25,7 @@ __authors__ = [
 
 
 import collections
+import datetime
 import itertools
 import re
 import urllib
@@ -528,6 +529,7 @@ class SurveyTakeForm(ModelForm):
                        (opts.model.kind(), err))
 
     if commit:
+      instance.modified = datetime.datetime.now()
       instance.put()
     return instance
 
