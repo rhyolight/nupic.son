@@ -95,7 +95,7 @@ class GSoCMentorEvaluationEditPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/eval/mentor/edit/%s$' % url_patterns.SURVEY,
+         url_patterns.url(r'eval/mentor/edit/%s$' % url_patterns.SURVEY,
              self, name='gsoc_edit_mentor_evaluation'),
     ]
 
@@ -174,8 +174,8 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/eval/mentor/%s$' % url_patterns.SURVEY_RECORD,
-         self, name='gsoc_take_mentor_evaluation'),
+         url_patterns.url(r'eval/mentor/%s$' % url_patterns.SURVEY_RECORD,
+             self, name='gsoc_take_mentor_evaluation'),
     ]
 
   def checkAccess(self):

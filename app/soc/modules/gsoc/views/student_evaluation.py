@@ -24,7 +24,6 @@ __authors__ = [
 
 from soc.views import forms
 
-from django.conf.urls.defaults import url
 from django.utils.translation import ugettext
 
 from soc.views.helper.access_checker import isSet
@@ -66,8 +65,8 @@ class GSoCStudentEvaluationEditPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/eval/student/edit/%s$' % url_patterns.SURVEY,
-         self, name='gsoc_edit_student_evaluation'),
+         url_patterns.url(r'eval/student/edit/%s$' % url_patterns.SURVEY,
+             self, name='gsoc_edit_student_evaluation'),
     ]
 
   def checkAccess(self):
@@ -144,8 +143,8 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'^gsoc/eval/student/%s$' % url_patterns.SURVEY_RECORD,
-         self, name='gsoc_take_student_evaluation'),
+         url_patterns.url(r'eval/student/%s$' % url_patterns.SURVEY_RECORD,
+             self, name='gsoc_take_student_evaluation'),
     ]
 
   def checkAccess(self):
