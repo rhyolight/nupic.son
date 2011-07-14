@@ -507,17 +507,17 @@ class MyEvaluationsComponent(Component):
     ms_eval = ps_logic.getProjectSurveyForProgram(self.data.program, evaluation)
     if (ms_eval and self.data.timeline.afterSurveyStart(ms_eval)):
       for project in projects:
-        status = colorize(psr_logic.evalRecordExistsForStudent(
-            ms_eval, project), "Submitted", "Not submitted")
         response.addRow(project, evaluation, status)
+        record = psr_logic.getEvalRecord(ms_eval, project)
+        status = colorize(bool(record), "Submitted", "Not submitted")
 
     evaluation = 'final'
     fs_eval = ps_logic.getProjectSurveyForProgram(self.data.program, evaluation)
     if (fs_eval and self.data.timeline.afterSurveyStart(fs_eval)):
       for project in projects:
-        status = colorize(psr_logic.evalRecordExistsForStudent(
-            ms_eval, project), "Submitted", "Not submitted")
         response.addRow(project, evaluation, status)
+        record = psr_logic.getEvalRecord(fs_eval, project)
+        status = colorize(bool(record), "Submitted", "Not submitted")
 
     response.next = 'done'
 

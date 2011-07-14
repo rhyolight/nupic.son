@@ -73,9 +73,8 @@ class StudentEvaluationComponent(dashboard.Component):
   def _getStatus(self, entity, *args):
     eval = ps_logic.getProjectSurveyForProgram(
         self.data.program, self.evaluation)
-    return dashboard.colorize(
-        psr_logic.evalRecordExistsForStudent(
-        eval, entity), "Submitted", "Not submitted")
+    self.record = psr_logic.getEvalRecord(eval, entity)
+    return dashboard.colorize(bool(self.record), "Submitted", "Not submitted")
 
   def context(self):
     list = lists.ListConfigurationResponse(
