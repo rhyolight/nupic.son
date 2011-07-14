@@ -28,7 +28,6 @@ import collections
 import datetime
 import itertools
 import re
-import urllib
 
 from google.appengine.ext import db
 from google.appengine.ext.db import djangoforms
