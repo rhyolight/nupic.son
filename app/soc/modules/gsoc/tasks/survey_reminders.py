@@ -29,6 +29,7 @@ from google.appengine.ext import db
 
 from django import http
 from django.conf.urls.defaults import url
+from django.core.urlresolvers import reverse
 
 from soc.logic import mail_dispatcher
 from soc.logic import system
@@ -146,9 +147,6 @@ class SurveyReminderTask(object):
     Args:
       request: Django Request object
     """
-
-    from soc.views.helper import redirects
-
     post_dict = request.POST
 
     project_key = post_dict.get('project_key')
@@ -196,29 +194,32 @@ class SurveyReminderTask(object):
       student_profile = project.parent()
       site_entity = site_logic.getSingleton()
 
-      # TODO(madhusudancs): Redirect for the new take views should be inserted
-      # here.
-      logging.warning('If you are reading then some links are wrong')
-
       if survey_type == 'project':
-        survey_redirect = redirects.getTakeSurveyRedirect(
-            survey, {'url_name': 'gsoc/project_survey'})
+        url_name = 'gsoc_take_student_evaluation'
+
         to_name = student_profile.name()
         to_address = student_profile.email
-        mail_template = 'modules/gsoc/project_survey/mail/reminder_gsoc.html'
+        mail_template = 'v2/modules/gsoc/notification/student_eval_reminder.html'
       elif survey_type == 'grading':
-        survey_redirect = redirects.getTakeSurveyRedirect(
-            survey, {'url_name': 'gsoc/grading_project_survey'})
+        url_name = 'gsoc_take_mentor_evaluation'
+
         mentors = db.get(project.mentors)
         to_address = [m.email for m in mentors]
         to_name = 'mentor(s) for project "%s"' %(project.title)
         mail_template = \
-            'modules/gsoc/grading_project_survey/mail/reminder_gsoc.html'
+            'v2/modules/gsoc/notification/mentor_eval_reminder.html'
 
-      survey_url = "http://%(host)s%(redirect)s" % {
-        'redirect': survey_redirect,
-        'host': system.getHostname(),
-        }
+      program = project.program
+      hostname = system.getHostname()
+      url_kwargs = {
+          'sponsor': program.scope.link_id,
+          'program': program.link_id,
+          'survey': survey.link_id,
+          'user': student_profile.link_id,
+          'id': str(project.key().id()),
+          }
+      url = reverse(url_name, kwargs=url_kwargs)
+      survey_url = '%s://%s%s' % ('http', hostname, url)
 
       # set the context for the mail template
       mail_context = {
