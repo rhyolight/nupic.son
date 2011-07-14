@@ -28,6 +28,7 @@ from django.conf.urls.defaults import url
 from django.utils.translation import ugettext
 
 from soc.views.helper.access_checker import isSet
+from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
@@ -214,3 +215,65 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
       r.to('gsoc_take_student_evaluation', validated=True)
     else:
       self.get()
+
+
+class GSoCStudentEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
+  """Template to construct readonly student evaluation record.
+  """
+
+  class Meta:
+    model = GSoCProjectSurveyRecord
+    css_prefix = 'gsoc-student-eval-show'
+
+
+class GSoCStudentEvaluationShowPage(RequestHandler):
+  """View to display the readonly page for student evaluation.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url_patterns.url(r'eval/student/show/%s$' % url_patterns.SURVEY_RECORD,
+            self, name='gsoc_show_student_evaluation'),
+    ]
+
+  def checkAccess(self):
+    self.mutator.projectFromKwargs()
+    self.mutator.studentEvaluationFromKwargs()
+    self.mutator.studentEvaluationRecordFromKwargs()
+
+    assert isSet(self.data.project)
+    assert isSet(self.data.student_evaluation)
+
+    self.check.isProfileActive()
+    if self.data.orgAdminFor(self.data.project.org):
+      self.data.role = 'org_admin'
+      return
+
+    self.check.isStudentForSurvey()
+    self.data.role = 'student'
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/_survey/show.html'
+
+  def context(self):
+    assert isSet(self.data.student_evaluation_record)
+
+    record = self.data.student_evaluation_record
+    student = self.data.url_profile
+
+    context = {
+        'page_name': 'Student evaluation - %s' % (student.name()),
+        'student': student.name(),
+        'organization': self.data.project.org.name,
+        'project': self.data.project.title,
+        'top_msg': LoggedInMsg(self.data, apply_link=False),
+        'css_prefix': GSoCStudentEvaluationReadOnlyTemplate.Meta.css_prefix,
+        }
+
+    if record:
+      context['record'] = GSoCStudentEvaluationReadOnlyTemplate(record)
+
+    if self.data.role == 'student':
+      context['update_link'] = self.data.redirect.survey_record(
+          'midterm').urlOf('gsoc_take_student_evaluation')
+    return context
