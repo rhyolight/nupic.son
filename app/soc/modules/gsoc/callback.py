@@ -125,6 +125,7 @@ class Callback(object):
     self.views.append(slot_transfer.SlotTransferPage())
     self.views.append(slot_transfer.UpdateSlotTransferPage())
     self.views.append(student_evaluation.GSoCStudentEvaluationEditPage())
+    self.views.append(student_evaluation.GSoCStudentEvaluationShowPage())
     self.views.append(student_evaluation.GSoCStudentEvaluationTakePage())
     self.views.append(student_forms.DownloadForm())
     self.views.append(student_forms.FormPage())
