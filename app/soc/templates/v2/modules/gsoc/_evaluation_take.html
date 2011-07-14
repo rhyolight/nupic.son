@@ -25,9 +25,9 @@ limitations under the License.
       jQuery(document).ready(function () {
 
         jQuery(':checkbox[value="Other"],:radio').each(function () {
-          if ($(this).val() == "Other") {
-            var selector = "#form_row_" + $(this).attr("name") + "-other";
-            if ($(this).parent().attr("class") == "checked") {
+          if (jQuery(this).val() == "Other") {
+            var selector = "#form_row_" + jQuery(this).attr("name") + "-other";
+            if (jQuery(this).parent().attr("class") == "checked") {
               jQuery(selector).show();
             } else {
               jQuery(selector).hide();
@@ -36,15 +36,15 @@ limitations under the License.
         });
 
         jQuery(':radio').change(function () {
-          var selector = "#form_row_" + $(this).attr("name") + "-other";
-          if ($(this).val() != "Other") {
+          var selector = "#form_row_" + jQuery(this).attr("name") + "-other";
+          if (jQuery(this).val() != "Other") {
             jQuery(selector).hide("Blind");
           } else {
             jQuery(selector).show("Blind");
           }
         });
         jQuery(':checkbox[value="Other"]').change(function () {
-          var selector = "#form_row_" + $(this).attr("name") + "-other";
+          var selector = "#form_row_" + jQuery(this).attr("name") + "-other";
           jQuery(selector).toggle("Blind");
         });
       });
