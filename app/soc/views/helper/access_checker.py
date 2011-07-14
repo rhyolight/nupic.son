@@ -213,6 +213,12 @@ DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
 DEF_STATISTIC_DOES_NOT_EXIST_MSG_FMT = ugettext(
     'The statistic whose name is %(key_name)s does not exist.')
 
+DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
+    'The requested %(model)s entity whose keyname is %(key_name)s does not exist.')
+
+DEF_KEYNAME_BASED_ENTITY_INVALID_MSG_FMT = ugettext(
+    '%(model)s entity, whose keyname is %(key_name)s, is invalid at this time.')
+
 unset = object()
 
 
