@@ -165,5 +165,5 @@ def getProjectsForMentors(mentor, limit=1000):
     mentor: The mentor for whom the projects he is mentoring should
         be retrieved.
   """
-  q = getProjectsQuery(mentors=mentor)
+  q = getAcceptedProjectsQuery(mentors=mentor)
   return q.fetch(limit)
