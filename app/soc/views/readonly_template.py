@@ -29,6 +29,8 @@ import re
 from django.template import loader
 from django.utils.datastructures import SortedDict
 
+from soc.views.helper.surveys import SurveySchema
+
 
 class ModelReadOnlyTemplateOptions(object):
   """Class holding options specified in the Meta class of the model template.
@@ -146,6 +148,52 @@ class ModelReadOnlyTemplate(object):
 
     context = {
       'model': self,
+      'hidden_fields': self.hidden_fields,
+      'css_prefix': self.css_prefix,
+    }
+    rendered = loader.render_to_string(self.template_path,
+                                       dictionary=context)
+    return rendered
+
+
+class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
+  """A base class that constructs the readonly template for given survey record.
+
+  This uses the same notion that is used to build the model based readonly
+  templates but the schema read from the survey schema rather than the model.
+  """
+
+  template_path = 'v2/modules/gsoc/_survey/readonly_template.html'
+
+  def __init__(self, instance=None):
+    """Constructor to initialize the model instance.
+
+    The readonly template will be rendered for the data in this model instance.
+    """
+    self.instance = instance
+    self.schema = None
+    if self.instance:
+      self.schema = SurveySchema(self.instance.survey)
+
+  def __iter__(self):
+    """Iterator yielding groups of record instance's properties to be rendered.
+    """
+    if self.schema:
+      for field in self.schema:
+        field_id = field.getFieldName()
+        label = field.getLabel()
+        value = getattr(self.instance, field_id, 'N/A')
+        if isinstance(value, list):
+          value = ', '.join(value)
+
+        yield label, value
+
+  def render(self):
+    """Renders the html collecting the attributes available in this class.
+    """
+
+    context = {
+      'record': self,
       'hidden_fields': self.hidden_fields,
       'css_prefix': self.css_prefix,
     }
