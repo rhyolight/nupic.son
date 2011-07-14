@@ -42,10 +42,11 @@ from django.utils.encoding import force_unicode
 from django.utils.formats import dateformat
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
-from django.utils.simplejson import loads
 from django.utils.translation import ugettext
 
 import django
+
+from soc.views.helper.surveys import SurveySchema
 
 
 def choiceWidget(field):
@@ -535,7 +536,6 @@ class SurveyTakeForm(ModelForm):
   def constructForm(self):
     """Constructs the form based on the schema stored in the survey content
     """
-    from soc.views.helper.surveys import SurveySchema
     # insert dynamic survey fields
     if self.survey:
       survey_schema = SurveySchema(self.survey)
