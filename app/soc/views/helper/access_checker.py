@@ -1060,17 +1060,24 @@ class AccessChecker(BaseAccessChecker):
           'model': 'GSoCProject'
           })
 
-  def isSurveyActive(self, survey):
+  def isSurveyActive(self, survey, show_url=None):
     """Checks if the survey in the request data is active.
 
     Args:
       survey: the survey entity for which the access must be checked
+      show_url: The survey show page url to which the user must be
+          redirected to
     """
+    from soc.modules.gsoc.views.helper import request_data
+
     assert isSet(self.data.program)
     assert isSet(self.data.timeline)
 
     if self.data.timeline.surveyPeriod(survey):
       return
+
+    if request_data.isAfter(survey.survey_end):
+      raise RedirectRequest(show_url)
 
     raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT %
         (survey.survey_start, survey.survey_end))
