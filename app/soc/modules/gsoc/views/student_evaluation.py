@@ -255,6 +255,8 @@ class GSoCStudentEvaluationShowPage(RequestHandler):
     return 'v2/modules/gsoc/_survey/show.html'
 
   def context(self):
+    assert isSet(self.data.program)
+    assert isSet(self.data.timeline)
     assert isSet(self.data.student_evaluation_record)
 
     record = self.data.student_evaluation_record
@@ -272,7 +274,9 @@ class GSoCStudentEvaluationShowPage(RequestHandler):
     if record:
       context['record'] = GSoCStudentEvaluationReadOnlyTemplate(record)
 
-    if self.data.role == 'student':
+    if (self.data.timeline.surveyPeriod(self.data.student_evaluation) and
+        self.data.role == 'student'):
       context['update_link'] = self.data.redirect.survey_record(
-          'midterm').urlOf('gsoc_take_student_evaluation')
+          self.data.student_evaluation.link_id).urlOf(
+          'gsoc_take_student_evaluation')
     return context
