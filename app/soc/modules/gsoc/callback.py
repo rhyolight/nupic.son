@@ -91,6 +91,7 @@ class Callback(object):
     self.views.append(invite.InvitePage())
     self.views.append(invite.ShowInvite())
     self.views.append(mentor_evaluation.GSoCMentorEvaluationEditPage())
+    self.views.append(mentor_evaluation.GSoCMentorEvaluationShowPage())
     self.views.append(mentor_evaluation.GSoCMentorEvaluationTakePage())
     #self.views.append(org_app.OrgApp())
     self.views.append(org_admin_dashboard.Dashboard())

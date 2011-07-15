@@ -29,6 +29,7 @@ import django
 
 from soc.views import forms
 from soc.views.helper.access_checker import isSet
+from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
@@ -245,3 +246,62 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
       r.to('gsoc_take_mentor_evaluation', validated=True)
     else:
       self.get()
+
+
+class GSoCMentorEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
+  """Template to construct readonly mentor evaluation record.
+  """
+
+  class Meta:
+    model = GSoCGradingProjectSurveyRecord
+    css_prefix = 'gsoc-mentor-eval-show'
+
+
+class GSoCMentorEvaluationShowPage(RequestHandler):
+  """View to display the readonly page for mentor evaluation.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url_patterns.url(r'eval/mentor/show/%s$' % url_patterns.SURVEY_RECORD,
+            self, name='gsoc_show_mentor_evaluation'),
+    ]
+
+  def checkAccess(self):
+    self.mutator.projectFromKwargs()
+    self.mutator.mentorEvaluationFromKwargs()
+    self.mutator.mentorEvaluationRecordFromKwargs()
+
+    assert isSet(self.data.project)
+    assert isSet(self.data.mentor_evaluation)
+
+    self.check.isProfileActive()
+    self.check.isMentorForSurvey()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/_survey/show.html'
+
+  def context(self):
+    assert isSet(self.data.mentor_evaluation_record)
+
+    record = self.data.mentor_evaluation_record
+    student = self.data.url_profile
+
+    context = {
+        'page_name': 'Student evaluation - %s' % (student.name()),
+        'student': student.name(),
+        'organization': self.data.project.org.name,
+        'project': self.data.project.title,
+        'top_msg': LoggedInMsg(self.data, apply_link=False),
+        'css_prefix': GSoCMentorEvaluationReadOnlyTemplate.Meta.css_prefix,
+        }
+
+    if record:
+      context['record'] = GSoCMentorEvaluationReadOnlyTemplate(record)
+
+    if self.data.timeline.surveyPeriod(self.data.mentor_evaluation):
+      context['update_link'] = self.data.redirect.survey_record(
+          self.data.mentor_evaluation.link_id).urlOf(
+          'gsoc_take_mentor_evaluation')
+
+    return context
