@@ -279,9 +279,13 @@ class GSoCStudentEvaluationShowPage(RequestHandler):
     if record:
       context['record'] = GSoCStudentEvaluationReadOnlyTemplate(record)
 
-    if (self.data.timeline.surveyPeriod(self.data.student_evaluation) and
-        self.data.role == 'student'):
-      context['update_link'] = self.data.redirect.survey_record(
-          self.data.student_evaluation.link_id).urlOf(
-          'gsoc_take_student_evaluation')
+    if self.data.timeline.surveyPeriod(self.data.student_evaluation):
+      if self.data.role == 'student':
+        context['update_link'] = self.data.redirect.survey_record(
+            self.data.student_evaluation.link_id).urlOf(
+            'gsoc_take_student_evaluation')
+      else:
+        context['submission_msg'] = ugettext(
+            'Bug your student to submit the evaluation.')
+
     return context

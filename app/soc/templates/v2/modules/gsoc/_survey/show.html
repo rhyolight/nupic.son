@@ -21,8 +21,12 @@ limitations under the License.
 
 {% if not record %}
   <div id="user-message" class="error">
-    <strong>ALERT: </strong>No evaluation record exists. Bug your student
-    to submit the evaluation.
+    <strong>ALERT: </strong>No evaluation record exists.
+    {% if update_link %}
+      <a href="{{ update_link }}">To submit the evaluation click here.</a>
+    {% else %}
+      {{ submission_msg }}
+    {% endif %}
   </div>
 {% else %}
   <div id="gsoc-student-eval-show-name" class="block full home-block-1">
