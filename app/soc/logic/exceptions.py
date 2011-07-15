@@ -38,6 +38,8 @@ class RedirectRequest(Error):
   """User should be redirected to specific url.
   """
 
+  status = 302
+
   def __init__(self, url):
     self.url = url
 
