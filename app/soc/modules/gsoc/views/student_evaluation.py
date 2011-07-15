@@ -153,7 +153,12 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
     self.mutator.studentEvaluationRecordFromKwargs()
 
     assert isSet(self.data.student_evaluation)
-    self.check.isSurveyActive(self.data.student_evaluation)
+
+    show_url = self.data.redirect.survey_record(
+          self.data.student_evaluation.link_id).urlOf(
+          'gsoc_show_student_evaluation')
+    self.check.isSurveyActive(self.data.student_evaluation, show_url)
+
     self.check.canUserTakeSurvey(self.data.student_evaluation)
     self.check.isStudentForSurvey()
 

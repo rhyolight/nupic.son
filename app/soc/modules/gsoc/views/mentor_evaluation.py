@@ -184,7 +184,11 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
     self.mutator.mentorEvaluationRecordFromKwargs()
 
     assert isSet(self.data.mentor_evaluation)
-    self.check.isSurveyActive(self.data.mentor_evaluation)
+
+    show_url = self.data.redirect.survey_record(
+        self.data.mentor_evaluation.link_id).urlOf(
+        'gsoc_show_mentor_evaluation')
+    self.check.isSurveyActive(self.data.mentor_evaluation, show_url)
     self.check.canUserTakeSurvey(self.data.mentor_evaluation)
     self.check.isMentorForSurvey()
 
