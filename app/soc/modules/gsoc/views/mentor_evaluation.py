@@ -22,7 +22,6 @@ __authors__ = [
   ]
 
 
-from django.conf.urls.defaults import url
 from django.utils.translation import ugettext
 
 import django
