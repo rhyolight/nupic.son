@@ -27,6 +27,8 @@ from django.utils.translation import ugettext
 import django
 
 from soc.views import forms
+from soc.views import survey
+from soc.views.helper import lists
 from soc.views.helper.access_checker import isSet
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
@@ -249,6 +251,65 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
       r.to('gsoc_take_mentor_evaluation', validated=True)
     else:
       self.get()
+
+
+class GSoCMentorEvaluationRecordsList(RequestHandler):
+  """View for listing all records of a GSoCGradingProjectSurveyRecord.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url_patterns.url(
+             r'eval/mentor/records/%s$' % url_patterns.SURVEY,
+             self, name='gsoc_list_mentor_eval_records')
+         ]
+
+  def checkAccess(self):
+    """Defines access checks for this list, all hosts should be able to see it.
+    """
+    self.check.isHost()
+    self.mutator.mentorEvaluationFromKwargs()
+
+  def context(self):
+    """Returns the context of the page to render.
+    """
+    record_list = self._createSurveyRecordList()
+
+    page_name = ugettext('Records - %s' % (self.data.mentor_evaluation.title))
+    context = {
+        'page_name': page_name,
+        'record_list': record_list,
+        }
+    return context
+
+  def jsonContext(self):
+    """Handler for JSON requests.
+    """
+    idx = lists.getListIndex(self.request)
+    if idx == 0:
+      record_list = self._createSurveyRecordList()
+      return record_list.listContentResponse(
+          self.request, prefetch=['project', 'org']).content()
+    else:
+      super(GSoCMentorEvaluationRecordsList, self).jsonContext()
+
+  def _createSurveyRecordList(self):
+    """Creates a SurveyRecordList for the requested survey.
+    """
+    record_list = survey.SurveyRecordList(
+        self.data, self.data.mentor_evaluation, GSoCGradingProjectSurveyRecord,
+        idx=0)
+
+    record_list.list_config.addSimpleColumn('grade', 'Passed?')
+    record_list.list_config.addColumn(
+        'project', 'Project', lambda ent, *args: ent.project.title)
+    record_list.list_config.addColumn(
+        'org', 'Organization', lambda ent, *args: ent.org.name)
+
+    return record_list
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/mentor_eval/record_list.html'
 
 
 class GSoCMentorEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):

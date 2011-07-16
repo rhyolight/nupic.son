@@ -23,6 +23,8 @@ __authors__ = [
 
 
 from soc.views import forms
+from soc.views import survey
+from soc.views.helper import lists
 
 from django.utils.translation import ugettext
 
@@ -219,6 +221,63 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
       r.to('gsoc_take_student_evaluation', validated=True)
     else:
       self.get()
+
+
+class GSoCStudentEvaluationRecordsList(RequestHandler):
+  """View for listing all records of a GSoCGProjectSurveyRecord.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url_patterns.url(
+             r'eval/student/records/%s$' % url_patterns.SURVEY,
+             self, name='gsoc_list_student_eval_records')
+         ]
+
+  def checkAccess(self):
+    """Defines access checks for this list, all hosts should be able to see it.
+    """
+    self.check.isHost()
+    self.mutator.studentEvaluationFromKwargs()
+
+  def context(self):
+    """Returns the context of the page to render.
+    """
+    record_list = self._createSurveyRecordList()
+
+    page_name = ugettext('Records - %s' % (self.data.student_evaluation.title))
+    context = {
+        'page_name': page_name,
+        'record_list': record_list,
+        }
+    return context
+
+  def jsonContext(self):
+    """Handler for JSON requests.
+    """
+    idx = lists.getListIndex(self.request)
+    if idx == 0:
+      record_list = self._createSurveyRecordList()
+      return record_list.listContentResponse(
+          self.request, prefetch=['org', 'project']).content()
+    else:
+      super(GSoCStudentEvaluationRecordsList, self).jsonContext()
+
+  def _createSurveyRecordList(self):
+    """Creates a SurveyRecordList for the requested survey.
+    """
+    record_list = survey.SurveyRecordList(
+        self.data, self.data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
+
+    record_list.list_config.addColumn(
+        'project', 'Project', lambda ent, *args: ent.project.title)
+    record_list.list_config.addColumn(
+        'org', 'Organization', lambda ent, *args: ent.org.name)
+
+    return record_list
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/student_eval/record_list.html'
 
 
 class GSoCStudentEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
