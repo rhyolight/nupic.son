@@ -490,6 +490,7 @@ class SurveyTakeForm(ModelForm):
         setattr(instance, name, value)
 
     if commit:
+      instance.modified = datetime.datetime.now()
       instance.put()
     return instance
 
