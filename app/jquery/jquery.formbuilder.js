@@ -231,7 +231,11 @@
 			// adds a checkbox element
 			var appendCheckboxGroup = function (field_id, values, options, required) {
 					var label = '';
-					var other = {required: true, value: options[1]};
+					var other_value = false;
+					if (options) {
+					  other_value = options[1];
+					}
+					var other = {required: true, value: other_value};
 					if (typeof (options) === 'object') {
 						label = options[0];
 					}
@@ -273,7 +277,11 @@
 			// adds a radio element
 			var appendRadioGroup = function (field_id, values, options, required) {
 					var label = '';
-					var other = {required: true, value: options[1]};
+					var other_value = false;
+          if (options) {
+            other_value = options[1];
+          }
+          var other = {required: true, value: other_value};
 					if (typeof (options) === 'object') {
 						label = options[0];
 					}
@@ -316,7 +324,11 @@
 			var appendSelectList = function (field_id, values, options, required) {
 					var multiple = false;
 					var label = '';
-					var other = {required: true, value: options[1]};
+					var other_value = false;
+          if (options) {
+            other_value = options[1]
+          }
+          var other = {required: true, value: other_value};
 					if (typeof (options) === 'object') {
 						label = options[0];
 						multiple = options[1] === true || options[1] === 'true' ? true : false;
