@@ -65,12 +65,9 @@ class SurveyRecordList(Template):
     list_config.addColumn(
         'created', 'Created On',
         lambda ent, *args: format(ent.created, DATETIME_FORMAT))
-    # TODO(ljvderijk): Remove the conditional below once the use of the property
-    # is fixed.
     list_config.addColumn(
         'modified', 'Last Modified On',
-        lambda ent, *args: 
-            format(ent.modified, DATETIME_FORMAT) if ent.modified else 'None')
+        lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
     self.list_config = list_config
 
   def context(self):
