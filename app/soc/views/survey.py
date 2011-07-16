@@ -61,8 +61,9 @@ class SurveyRecordList(Template):
     for field in schema:
       label = field.getLabel()
       field_id = field.getFieldName()
-      list_config.addColumn(field_id, label,
-                            lambda ent, *args: getattr(ent, field_id, ''))
+      list_config.addColumn(
+          field_id, label, lambda ent, *args: getattr(ent, field_id, ''),
+          hidden=True)
 
     list_config.addColumn(
         'created', 'Created On',
