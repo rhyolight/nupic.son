@@ -141,7 +141,7 @@ class ListConfiguration(object):
       width: The width of the column.
       resizable: Whether the width of the column should be resizable by the
                  end user.
-      hidden: Whether the column should be displayed by default.
+      hidden: Whether the column should be hidden by default.
       options: An array of (regexp, display_value) tuples.
     """
     if self._col_functions.get(col_id):
