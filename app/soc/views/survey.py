@@ -32,6 +32,18 @@ from soc.views.template import Template
 
 DATETIME_FORMAT = 'Y-m-d H:i:s'
 
+def field_or_empty(field_id):
+  """In a list return the contents of the field with the id or an empty
+  string if the field does not exist.
+  """
+  def func(ent, *args):
+    try:
+      return getattr(ent, field_id)
+    except AttributeError:
+      return ''
+  return func
+
+
 class SurveyRecordList(Template):
   """Template for listing all records of a survey.
   """
@@ -59,8 +71,8 @@ class SurveyRecordList(Template):
 
     for field in schema:
       label = field.getLabel()
-      field_name = field.getFieldName()
-      list_config.addSimpleColumn(field_name, label)
+      field_id = field.getFieldName()
+      list_config.addColumn(field_id, label, field_or_empty(field_id))
 
     list_config.addColumn(
         'created', 'Created On',
