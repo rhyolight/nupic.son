@@ -71,42 +71,42 @@ class StudentEvaluationComponent(dashboard.Component):
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn(
         'key', 'Key',
-        (lambda ent, *args, **kwargs: "%s/%s/%s" % (
-            kwargs.get('evaluation'), ent.parent().key().name(),
+        (lambda ent, eval, *args: "%s/%s/%s" % (
+            eval, ent.parent().key().name(),
             ent.key().id())), hidden=True)
     list_config.addColumn(
         'student', 'Student',
-        lambda entity, *args, **kwargs: entity.parent().name())
+        lambda entity, eval, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Project Title')
     list_config.addColumn('org', 'Organization',
-                          lambda entity, *args, **kwargs: entity.org.name)
+                          lambda entity, eval, *args: entity.org.name)
     list_config.addColumn(
         'mentors', 'Mentors',
-        lambda ent, mentors, *args, **kwargs: ', '.join(
+        lambda ent, eval, mentors, *args: ', '.join(
             [mentors.get(m).name() for m in ent.mentors]))
     list_config.addColumn(
         'status', 'Status', self._getStatus)
     list_config.addColumn(
         'created', 'Submitted on',
-        lambda ent, *args, **kwargs: format(
+        lambda ent, eval, *args: format(
             self.record.created, dashboard.DATETIME_FORMAT) if \
             self.record else 'N/A')
     list_config.addColumn(
         'modified', 'Last modified on',
-        lambda ent, *args, **kwargs: format(
+        lambda ent, eval, *args: format(
             self.record.modified, dashboard.DATETIME_FORMAT) if (
             self.record and self.record.modified) else 'N/A')
     list_config.setDefaultSort('student')
-    list_config.setRowAction(lambda entity, *args, **kwargs:
+    list_config.setRowAction(lambda entity, eval, *args:
         data.redirect.survey_record(
-            kwargs.get('evaluation'), entity.key().id_or_name(),
+            eval, entity.key().id_or_name(),
             entity.parent().link_id).urlOf(
                 'gsoc_show_student_evaluation'))
     self._list_config = list_config
 
-  def _getStatus(self, entity, *args, **kwargs):
-    eval = self.evals.get(kwargs.get('evaluation'))
-    self.record = getEvalRecord(GSoCProjectSurveyRecord, eval, entity)
+  def _getStatus(self, entity, eval, *args):
+    eval_ent = self.evals.get(eval)
+    self.record = getEvalRecord(GSoCProjectSurveyRecord, eval_ent, entity)
     return dashboard.colorize(bool(self.record), "Submitted", "Not submitted")
 
   def context(self):
@@ -132,11 +132,12 @@ class StudentEvaluationComponent(dashboard.Component):
       starter = lists.keyStarter
       prefetcher = lists.listModelPrefetcher(
           GSoCProject, ['org'], ['mentors'], parent=True)
+      row_adder = lists.evaluationRowAdder(self.evals)
 
-      response_builder = lists.EvaluationQueryContentResponseBuilder(
+      response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, list_query,
-          starter, prefetcher=prefetcher)
-      return response_builder.build(evals=self.evals)
+          starter, prefetcher=prefetcher, row_adder=row_adder)
+      return response_builder.build()
     else:
       return None
 
@@ -148,7 +149,7 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
   """Component for listing mentor evaluations for organizations.
   """
 
-  def __init__(self, request, data, idx):
+  def __init__(self, request, data, evals, idx):
     """Initializes this component.
 
     Args:
@@ -157,25 +158,26 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
       evals: Dictionary containing evaluations for which the list must be built
       idx: The id for this list component
     """
-    super(MentorEvaluationComponent, self).__init__(request, data, idx)
+    super(MentorEvaluationComponent, self).__init__(request, data, evals, idx)
 
     self.record = None
 
     self._list_config.addColumn(
         'grade', 'Grade', self._getGrade)
-    self._list_config.setRowAction(lambda entity, *args, **kwargs:
+    self._list_config.setRowAction(lambda entity, eval, *args:
         data.redirect.survey_record(
-            kwargs.get('evaluation'), entity.key().id_or_name(),
+            eval, entity.key().id_or_name(),
             entity.parent().link_id).urlOf(
                 'gsoc_take_mentor_evaluation'))
 
-  def _getStatus(self, entity, *args, **kwargs):
-    eval = self.evals.get(kwargs.get('evaluation'))
-    self.record = getEvalRecord(GSoCGradingProjectSurveyRecord, eval, entity)
+  def _getStatus(self, entity, eval, *args):
+    eval_ent = self.evals.get(eval)
+    self.record = getEvalRecord(GSoCGradingProjectSurveyRecord,
+                                eval_ent, entity)
     return dashboard.colorize(
         bool(self.record), "Submitted", "Not submitted")
 
-  def _getGrade(self, entity, *args, **kwargs):
+  def _getGrade(self, entity, eval, *args):
     if self.record:
       return dashboard.colorize(
         self.record.grade, "Pass", "Fail")

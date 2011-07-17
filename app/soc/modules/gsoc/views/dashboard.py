@@ -480,28 +480,27 @@ class MyEvaluationsComponent(Component):
 
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn(
-        'key', 'Key', (lambda ent, *args, **kwargs: '/'.join([
-            kwargs.get('evaluation'), ent.parent_key().id_or_name(),
-            '%d' % (ent.key().id_or_name())])), hidden=True)
+        'key', 'Key', (lambda ent, eval, *args: '%s/%s/%s' % (
+            eval, ent.parent().key().name(),
+            ent.key().id())), hidden=True)
     list_config.addColumn(
         'evaluation', 'Evaluation',
-        lambda ent, *args, **kwargs: kwargs.get('evaluation', '').capitalize())
+        lambda ent, eval, *args: eval.capitalize() if eval else '')
     list_config.addSimpleColumn('title', 'Project')
     list_config.addColumn('status', 'Status', self._getStatus)
     list_config.addColumn(
         'created', 'Submitted on',
-        lambda ent, *args, **kwargs: format(
+        lambda ent, eval, *args: format(
             self.record.created, DATETIME_FORMAT) if \
             self.record else 'N/A')
     list_config.addColumn(
         'modified', 'Last modified on',
-        lambda ent, *args, **kwargs: format(
+        lambda ent, eval, *args: format(
             self.record.modified, DATETIME_FORMAT) if (
             self.record and self.record.modified) else 'N/A')
-    def rowAction(ent, *args, **kwargs):
-      evaluation = kwargs.get('evaluation')
+    def rowAction(ent, eval, *args):
       return data.redirect.survey_record(
-          evaluation, ent.key().id_or_name(), ent.parent().link_id).urlOf(
+          eval, ent.key().id_or_name(), ent.parent().link_id).urlOf(
           'gsoc_take_student_evaluation')
 
     list_config.setRowAction(rowAction)
@@ -509,9 +508,9 @@ class MyEvaluationsComponent(Component):
 
     super(MyEvaluationsComponent, self).__init__(request, data)
 
-  def _getStatus(self, entity, *args, **kwargs):
-    eval = self.evals.get(kwargs.get('evaluation'))
-    self.record = getEvalRecord(GSoCProjectSurveyRecord, eval, entity)
+  def _getStatus(self, entity, eval, *args):
+    eval_ent = self.evals.get(eval)
+    self.record = getEvalRecord(GSoCProjectSurveyRecord, eval_ent, entity)
     return colorize(bool(self.record), "Submitted", "Not submitted")
 
   def templatePath(self):
@@ -534,11 +533,12 @@ class MyEvaluationsComponent(Component):
     starter = lists.keyStarter
     prefetcher = lists.listModelPrefetcher(
         GSoCProject, ['org'], ['mentors'], parent=True)
+    row_adder = lists.evaluationRowAdder(self.evals)
 
-    response_builder = lists.EvaluationQueryContentResponseBuilder(
+    response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, list_query,
-        starter, prefetcher=prefetcher)
-    return response_builder.build(evals=self.evals)
+        starter, prefetcher=prefetcher, row_adder=row_adder)
+    return response_builder.build()
 
   def context(self):
     """Returns the context of this component.
@@ -569,19 +569,20 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
 
     self._list_config.addColumn(
         'student', 'Student',
-        lambda ent, *args, **kwargs: ent.parent().name())
+        lambda ent, eval, *args: ent.parent().name())
 
-    def rowAction(ent, *args, **kwargs):
-      evaluation = kwargs.get('evaluation')
+    def rowAction(ent, eval, *args):
+      eval_ent = eval
       return data.redirect.survey_record(
-          evaluation, ent.key().id_or_name(), ent.parent().link_id).urlOf(
+          eval_ent, ent.key().id_or_name(), ent.parent().link_id).urlOf(
           'gsoc_take_mentor_evaluation')
 
     self._list_config.setRowAction(rowAction)
 
-  def _getStatus(self, entity, *args, **kwargs):
-    eval = self.evals.get(kwargs.get('evaluation'))
-    self.record = getEvalRecord(GSoCGradingProjectSurveyRecord, eval, entity)
+  def _getStatus(self, entity, eval, *args):
+    eval_ent = self.evals.get(eval)
+    self.record = getEvalRecord(GSoCGradingProjectSurveyRecord,
+                                eval_ent, entity)
     return colorize(bool(self.record), "Submitted", "Not submitted")
 
   def getListData(self):
@@ -599,11 +600,12 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
     starter = lists.keyStarter
     prefetcher = lists.listModelPrefetcher(
         GSoCProject, ['org'], ['mentors'], parent=True)
+    row_adder = lists.evaluationRowAdder(self.evals)
 
-    response_builder = lists.EvaluationQueryContentResponseBuilder(
+    response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, list_query,
-        starter, prefetcher=prefetcher)
-    return response_builder.build(evals=self.evals)
+        starter, prefetcher=prefetcher, row_adder=row_adder)
+    return response_builder.build()
 
   def context(self):
     """Returns the context of this component.
