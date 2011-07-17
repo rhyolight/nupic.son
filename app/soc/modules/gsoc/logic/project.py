@@ -131,7 +131,6 @@ def getProjectsQueryForOrgs(orgs):
   """
   q = getProjectsQuery()
   orgs = list(orgs)
-  q.filter('status', 'accepted')
   q.filter('org IN', orgs)
   return q
 
