@@ -213,6 +213,16 @@ class TimelineHelper(object):
     end = survey.survey_end
     return isAfter(start) and isBefore(end)
 
+  def afterFirstSurveyStart(self, surveys):
+    """Returns True if we are past at least one survey has start date.
+
+    Args:
+      surveys: List of survey entities for which we need to determine if
+        at least one of them have started
+    """
+    first_survey_start = min([s.survey_start for s in surveys])
+    return isAfter(first_survey_start)
+
 
 class RequestData(request_data.RequestData):
   """Object containing data we query for each request in the GSoC module.
