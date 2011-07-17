@@ -727,13 +727,6 @@ def keyStarter(start, q):
   return True
 
 
-def rowAdder():
-  """Add rows for each entity that is fetched.
-  """
-  def adder(content_response, entity, *args, **kwargs):
-    content_response.addRow(entity, *args, **kwargs)
-  return adder
-
 def evaluationRowAdder(evals):
   """Add rows for each evaluation for each entity that is fetched.
   """
@@ -751,7 +744,7 @@ class RawQueryContentResponseBuilder(object):
 
   def __init__(self, request, config, query, starter,
                ender=None, skipper=None, prefetcher=None,
-               row_adder=rowAdder()):
+               row_adder=None):
     """Initializes the fields needed to built a response.
 
     Args:
@@ -772,6 +765,9 @@ class RawQueryContentResponseBuilder(object):
       skipper = lambda entity, start: False
     if not prefetcher:
       prefetcher = lambda entitites: ([], {})
+    if not row_adder:
+      row_adder = lambda content_response, entity, *args: \
+          content_response.addRow(entity, *args)
 
     self._request = request
     self._config = config
