@@ -486,26 +486,30 @@ class MyEvaluationsComponent(Component):
       evals: Dictionary containing evaluations for which the list must be built
     """
     self.evals = evals
+    self.record = None
+
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn(
-        'key', 'Key', (lambda ent, *args: '/'.join([
-            ent.parent_key().id_or_name(), args[0],
+        'key', 'Key', (lambda ent, *args, **kwargs: '/'.join([
+            kwargs.get('evaluation'), ent.parent_key().id_or_name(),
             '%d' % (ent.key().id_or_name())])), hidden=True)
-    list_config.addColumn('evaluation', 'Evaluation',
-                          lambda ent, *args: args[0].capitalize())
+    list_config.addColumn(
+        'evaluation', 'Evaluation',
+        lambda ent, *args, **kwargs: kwargs.get('evaluation', '').capitalize())
     list_config.addSimpleColumn('title', 'Project')
-    list_config.addColumn('status', 'Status', lambda ent, *args: args[2])
+    list_config.addColumn('status', 'Status', self._getStatus)
     list_config.addColumn(
         'created', 'Submitted on',
-        lambda ent, *args: format(
-            args[1].created, DATETIME_FORMAT) if args[1] else 'N/A')
+        lambda ent, *args, **kwargs: format(
+            self.record.created, DATETIME_FORMAT) if \
+            self.record else 'N/A')
     list_config.addColumn(
         'modified', 'Last modified on',
-        lambda ent, *args: format(
-            args[1].modified, DATETIME_FORMAT) if (
-            args[1] and args[1].modified) else 'N/A')
-    def rowAction(ent, *args):
-      evaluation = args[0]
+        lambda ent, *args, **kwargs: format(
+            self.record.modified, DATETIME_FORMAT) if (
+            self.record and self.record.modified) else 'N/A')
+    def rowAction(ent, *args, **kwargs):
+      evaluation = kwargs.get('evaluation')
       return data.redirect.survey_record(
           evaluation, ent.key().id_or_name(), ent.parent().link_id).urlOf(
           'gsoc_take_student_evaluation')
@@ -573,28 +577,33 @@ class OrgEvaluationsComponent(Component):
       evals: Dictionary containing evaluations for which the list must be built
     """
     self.evals = evals
+    self.record = None
+
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn(
-        'key', 'Key', (lambda ent, *args: '/'.join([
-            ent.parent_key().id_or_name(), args[0],
+        'key', 'Key', (lambda ent, *args, **kwargs: '/'.join([
+            kwargs.get('evaluation'), ent.parent_key().id_or_name(),
             '%d' % (ent.key().id_or_name())])), hidden=True)
-    list_config.addColumn('evaluation', 'Evaluation',
-                          lambda ent, *args: args[0].capitalize())
+    list_config.addColumn(
+        'evaluation', 'Evaluation',
+        lambda ent, *args, **kwargs: kwargs.get('evaluation', '').capitalize())
     list_config.addColumn('student', 'Student',
-                          lambda ent, *args: ent.parent().name())
+                          lambda ent, *args, **kwargs: ent.parent().name())
     list_config.addSimpleColumn('title', 'Project')
-    list_config.addColumn('status', 'Status', lambda ent, *args: args[2])
+    list_config.addColumn(
+        'status', 'Status', self._getStatus)
     list_config.addColumn(
         'created', 'Submitted on',
-        lambda ent, *args: format(
-            args[1].created, DATETIME_FORMAT) if args[1] else 'N/A')
+        lambda ent, *args, **kwargs: format(
+            self.record.created, DATETIME_FORMAT) if \
+            self.record else 'N/A')
     list_config.addColumn(
         'modified', 'Last modified on',
-        lambda ent, *args: format(
-            args[1].modified, DATETIME_FORMAT) if (
-            args[1] and args[1].modified) else 'N/A')
-    def rowAction(ent, *args):
-      evaluation = args[0]
+        lambda ent, *args, **kwargs: format(
+            self.record.modified, DATETIME_FORMAT) if (
+            self.record and self.record.modified) else 'N/A')
+    def rowAction(ent, *args, **kwargs):
+      evaluation = kwargs.get('evaluation')
       return data.redirect.survey_record(
           evaluation, ent.key().id_or_name(), ent.parent().link_id).urlOf(
           'gsoc_take_mentor_evaluation')
