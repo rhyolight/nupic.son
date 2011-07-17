@@ -530,29 +530,17 @@ class MyEvaluationsComponent(Component):
     if lists.getListIndex(self.request) != 3:
       return None
 
-    response = lists.ListContentResponse(self.request, self._list_config)
+    list_query = project_logic.getProjectsQueryForEval(
+        ancestor=self.data.profile)
 
-    projects = project_logic.getAcceptedProjectsForStudent(self.data.profile)
+    starter = lists.keyStarter
+    prefetcher = lists.listModelPrefetcher(
+        GSoCProject, ['org'], ['mentors'], parent=True)
 
-    evaluation = 'midterm'
-    ms_eval = ps_logic.getProjectSurveyForProgram(self.data.program, evaluation)
-    if (ms_eval and self.data.timeline.afterSurveyStart(ms_eval)):
-      for project in projects:
-        record = psr_logic.getEvalRecord(ms_eval, project)
-        status = colorize(bool(record), "Submitted", "Not submitted")
-        response.addRow(project, evaluation, record, status)
-
-    evaluation = 'final'
-    fs_eval = ps_logic.getProjectSurveyForProgram(self.data.program, evaluation)
-    if (fs_eval and self.data.timeline.afterSurveyStart(fs_eval)):
-      for project in projects:
-        record = psr_logic.getEvalRecord(fs_eval, project)
-        status = colorize(bool(record), "Submitted", "Not submitted")
-        response.addRow(project, evaluation, record, status)
-
-    response.next = 'done'
-
-    return response
+    response_builder = lists.EvaluationQueryContentResponseBuilder(
+        self.request, self._list_config, list_query,
+        starter, prefetcher=prefetcher)
+    return response_builder.build(evals=self.evals)
 
   def context(self):
     """Returns the context of this component.
@@ -626,31 +614,17 @@ class OrgEvaluationsComponent(Component):
     if lists.getListIndex(self.request) != 3:
       return None
 
-    response = lists.ListContentResponse(self.request, self._list_config)
+    list_query = project_logic.getProjectsQueryForEval(
+        mentors=self.data.profile)
 
-    projects = project_logic.getProjectsForMentors(self.data.profile)
+    starter = lists.keyStarter
+    prefetcher = lists.listModelPrefetcher(
+        GSoCProject, ['org'], ['mentors'], parent=True)
 
-    evaluation = 'midterm'
-    mm_eval = gps_logic.getGradingProjectSurveyForProgram(
-        self.data.program, evaluation)
-    if (mm_eval and self.data.timeline.afterSurveyStart(mm_eval)):
-      for project in projects:
-        record = gpsr_logic.getEvalRecord(mm_eval, project)
-        status = colorize(bool(record), "Submitted", "Not submitted")
-        response.addRow(project, evaluation, record, status)
-
-    evaluation = 'final'
-    fm_eval = gps_logic.getGradingProjectSurveyForProgram(
-        self.data.program, evaluation)
-    if (fm_eval and self.data.timeline.afterSurveyStart(fm_eval)):
-      for project in projects:
-        record = gpsr_logic.getEvalRecord(fm_eval, project)
-        status = colorize(bool(record), "Submitted", "Not submitted")
-        response.addRow(project, evaluation, record, status)
-
-    response.next = 'done'
-
-    return response
+    response_builder = lists.EvaluationQueryContentResponseBuilder(
+        self.request, self._list_config, list_query,
+        starter, prefetcher=prefetcher)
+    return response_builder.build(evals=self.evals)
 
   def context(self):
     """Returns the context of this component.
