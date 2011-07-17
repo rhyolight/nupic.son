@@ -25,19 +25,6 @@ __authors__ = [
 from soc.modules.gsoc.models.profile import GSoCProfile
 
 
-def getProposalsToBeAcceptedForOrg(org_entity, step_size=25):
-  """Returns all StudentProposals which will be accepted into the program
-  for the given organization.
-
-  params:
-    org_entity: the Organization for which the proposals should be checked
-    step_size: optional parameter to specify the amount of Student Proposals
-              that should be retrieved per roundtrip to the datastore
-
-  
-  """
-
-
 def queryAllMentorsKeysForOrg(org, limit=1000):
   """Returns a list of keys of all the mentors for the organization
 
