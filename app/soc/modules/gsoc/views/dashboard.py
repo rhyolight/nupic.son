@@ -13,6 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from soc.modules.gsoc.logic.survey import getSurveysForProgram
+from soc.modules.gsoc.models.grading_project_survey_record import GSoCGradingProjectSurveyRecord
+from soc.modules.gsoc.models.project_survey_record import GSoCProjectSurveyRecord
 
 """Module for the GSoC participant dashboard.
 """
@@ -189,11 +192,11 @@ class Dashboard(RequestHandler):
 
     if self.data.is_student and info.number_of_projects:
       # Add a component to show the evaluations
-      ms_eval = ps_logic.getProjectSurveyForProgram(
-          self.data.program, 'midterm')
-      if (ms_eval and self.data.timeline.afterSurveyStart(
-          ms_eval)):
-        components.append(MyEvaluationsComponent(self.request, self.data))
+      # TODO (madhu): (big fixes)
+      evals = dictForEvalModel(ProjectSurvey, self.data.program)
+      if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):
+        components.append(MyEvaluationsComponent(
+            self.request, self.data, evals))
 
       # Add a component to show all the projects
       components.append(MyProjectsComponent(self.request, self.data))
@@ -208,11 +211,11 @@ class Dashboard(RequestHandler):
     """
     components = []
 
-    mm_eval = gps_logic.getGradingProjectSurveyForProgram(
-        self.data.program, 'midterm')
-    if (mm_eval and self.data.timeline.afterSurveyStart(
-        mm_eval)):
-      components.append(OrgEvaluationsComponent(self.request, self.data))
+    evals = dictForEvalModel(GradingProjectSurvey, self.data.program)
+
+    if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):
+      components.append(OrgEvaluationsComponent(
+          self.request, self.data, evals))
 
     if self.data.is_mentor:
       if self.data.timeline.studentsAnnounced():
@@ -474,9 +477,15 @@ class MyEvaluationsComponent(Component):
   """Component for listing all the Evaluations of the current Student.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, request, data, evals):
     """Initializes this component.
+
+    Args:
+      request: The Django HTTP Request object
+      data: The RequestData object containing the entities from the request
+      evals: Dictionary containing evaluations for which the list must be built
     """
+    self.evals = evals
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn(
         'key', 'Key', (lambda ent, *args: '/'.join([
@@ -562,9 +571,15 @@ class OrgEvaluationsComponent(Component):
   """Component for listing all the Evaluations of the current Student.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, request, data, evals):
     """Initializes this component.
+
+    Args:
+      request: The Django HTTP Request object
+      data: The RequestData object containing the entities from the request
+      evals: Dictionary containing evaluations for which the list must be built
     """
+    self.evals = evals
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn(
         'key', 'Key', (lambda ent, *args: '/'.join([
