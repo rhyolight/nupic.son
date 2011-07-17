@@ -119,7 +119,7 @@ class StudentEvaluationComponent(dashboard.Component):
 
     return {
         'lists': [list],
-        'title': 'Student Evaluations - Midterm',
+        'title': 'Student Evaluations',
         }
 
   def getListData(self):
@@ -188,7 +188,7 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
 
   def context(self):
     context = super(MentorEvaluationComponent, self).context()
-    context['title'] = 'Mentor Evaluations - Midterm'
+    context['title'] = 'Mentor Evaluations'
     return context
 
 
