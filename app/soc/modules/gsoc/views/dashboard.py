@@ -47,9 +47,9 @@ from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.logic.models.org_app_survey import logic as \
     org_app_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
-from soc.modules.gsoc.logic.project import GSoCProject
 from soc.modules.gsoc.logic.survey import getSurveysForProgram
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
