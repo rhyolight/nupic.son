@@ -13,9 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from soc.modules.gsoc.logic.survey import getSurveysForProgram
-from soc.modules.gsoc.models.grading_project_survey_record import GSoCGradingProjectSurveyRecord
-from soc.modules.gsoc.models.project_survey_record import GSoCProjectSurveyRecord
 
 """Module for the GSoC participant dashboard.
 """
@@ -49,6 +46,8 @@ from soc.modules.gsoc.logic.models.org_app_survey import logic as \
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.logic.survey import getSurveysForProgram
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
+from soc.modules.gsoc.models.grading_project_survey_record import \
+    GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.proposal import GSoCProposal
@@ -56,6 +55,8 @@ from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models.project_survey_record import \
+    GSoCProjectSurveyRecord
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.base_templates import ProgramSelect
