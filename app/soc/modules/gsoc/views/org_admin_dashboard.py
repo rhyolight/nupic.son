@@ -130,7 +130,7 @@ class StudentEvaluationComponent(dashboard.Component):
     """
     idx = lists.getListIndex(self.request)
     if idx == self.idx:
-      list_query = project_logic.getProjectsQueryForOrgs(
+      list_query = project_logic.getProjectsQueryForEvalForOrgs(
           orgs=self.data.org_admin_for)
 
       starter = lists.keyStarter

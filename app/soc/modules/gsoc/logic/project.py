@@ -145,6 +145,30 @@ def getProjectsQueryForOrgs(orgs):
   return q
 
 
+def getProjectsQueryForEval(keys_only=False, ancestor=None, **properties):
+  """Returns the query corresponding to projects to be evaluated.
+
+  This is a special query needed to build evaluation lists.
+  """
+  q = getProjectsQuery(keys_only, ancestor, **properties)
+  q.filter('status IN', ['accepted', 'failed', 'completed'])
+  return q
+
+
+def getProjectsQueryForEvalForOrgs(orgs):
+  """Returns the query corresponding to projects for the given organization(s).
+
+  This is a special query needed to build evaluation lists.
+
+  Args:
+    orgs: The list of organization entities for which the projects
+        should be queried.
+  """
+  q = getProjectsQueryForOrgs(orgs)
+  q.filter('status IN', ['accepted', 'failed', 'completed'])
+  return q
+
+
 def getProjectsForOrgs(orgs, limit=1000):
   """Returns all the projects for the given organization(s).
 
