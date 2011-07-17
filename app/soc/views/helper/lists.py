@@ -727,12 +727,20 @@ def keyStarter(start, q):
   return True
 
 
+def rowAdder():
+  """Add rows for each entity that is fetched.
+  """
+  def adder(content_response, entity, *args, **kwargs):
+    content_response.addRow(entity, *args, **kwargs)
+  return adder
+
 class RawQueryContentResponseBuilder(object):
   """Builds a ListContentResponse for lists that are based on a single query.
   """
 
   def __init__(self, request, config, query, starter,
-               ender=None, skipper=None, prefetcher=None):
+               ender=None, skipper=None, prefetcher=None,
+               row_adder=rowAdder()):
     """Initializes the fields needed to built a response.
 
     Args:
@@ -761,14 +769,7 @@ class RawQueryContentResponseBuilder(object):
     self._ender = ender
     self._skipper = skipper
     self._prefetcher = prefetcher
-
-  def _addEntity(self, content_response, entity, *args, **kwargs):
-    """Add row for each entity that is fetched.
-
-    Args and Kwargs passed into this method will be passed along to
-    ListContentResponse.addRow().
-    """
-    content_response.addRow(entity, *args, **kwargs)
+    self._row_adder = row_adder
 
   def build(self, *args, **kwargs):
     """Returns a ListContentResponse containing the data as indicated by the
@@ -808,7 +809,7 @@ class RawQueryContentResponseBuilder(object):
     for entity in entities[0:content_response.limit]:
       if self._skipper(entity, start):
         continue
-      self._addEntity(content_response, entity, *args, **kwargs)
+      self._row_adder(content_response, entity, *args, **kwargs)
 
     if entities:
       content_response.next = self._ender(entities[-1], is_last, start)
