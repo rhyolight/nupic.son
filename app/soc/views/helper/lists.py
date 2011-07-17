@@ -184,7 +184,7 @@ class ListConfiguration(object):
       name: The header of the column that is shown to the user.
       **kwargs: passed on to addColumn
     """
-    func = lambda ent, *args: getattr(ent, col_id)
+    func = lambda ent, *args, **kwargs: getattr(ent, col_id)
     self.addColumn(col_id, name, func, **kwargs)
 
   def addDictColumn(self, col_id, name, **kwargs):
