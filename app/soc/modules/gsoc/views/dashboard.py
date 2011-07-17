@@ -516,6 +516,11 @@ class MyEvaluationsComponent(Component):
 
     super(MyEvaluationsComponent, self).__init__(request, data)
 
+  def _getStatus(self, entity, *args, **kwargs):
+    eval = self.evals.get(kwargs.get('evaluation'))
+    self.record = getEvalRecord(GSoCProjectSurveyRecord, eval, entity)
+    return colorize(bool(self.record), "Submitted", "Not submitted")
+
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
@@ -599,6 +604,11 @@ class OrgEvaluationsComponent(Component):
     self._list_config = list_config
 
     super(OrgEvaluationsComponent, self).__init__(request, data)
+
+  def _getStatus(self, entity, *args, **kwargs):
+    eval = self.evals.get(kwargs.get('evaluation'))
+    self.record = getEvalRecord(GSoCGradingProjectSurveyRecord, eval, entity)
+    return colorize(bool(self.record), "Submitted", "Not submitted")
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
