@@ -563,8 +563,8 @@ class MyEvaluationsComponent(Component):
     }
 
 
-class OrgEvaluationsComponent(Component):
-  """Component for listing all the Evaluations of the current Student.
+class OrgEvaluationsComponent(MyEvaluationsComponent):
+  """Component for listing all the Evaluations for the mentor.
   """
 
   def __init__(self, request, data, evals):
@@ -575,52 +575,24 @@ class OrgEvaluationsComponent(Component):
       data: The RequestData object containing the entities from the request
       evals: Dictionary containing evaluations for which the list must be built
     """
-    self.evals = evals
-    self.record = None
+    super(OrgEvaluationsComponent, self).__init__(request, data, evals)
 
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn(
-        'key', 'Key', (lambda ent, *args, **kwargs: '/'.join([
-            kwargs.get('evaluation'), ent.parent_key().id_or_name(),
-            '%d' % (ent.key().id_or_name())])), hidden=True)
-    list_config.addColumn(
-        'evaluation', 'Evaluation',
-        lambda ent, *args, **kwargs: kwargs.get('evaluation', '').capitalize())
-    list_config.addColumn('student', 'Student',
-                          lambda ent, *args, **kwargs: ent.parent().name())
-    list_config.addSimpleColumn('title', 'Project')
-    list_config.addColumn(
-        'status', 'Status', self._getStatus)
-    list_config.addColumn(
-        'created', 'Submitted on',
-        lambda ent, *args, **kwargs: format(
-            self.record.created, DATETIME_FORMAT) if \
-            self.record else 'N/A')
-    list_config.addColumn(
-        'modified', 'Last modified on',
-        lambda ent, *args, **kwargs: format(
-            self.record.modified, DATETIME_FORMAT) if (
-            self.record and self.record.modified) else 'N/A')
+    self._list_config.addColumn(
+        'student', 'Student',
+        lambda ent, *args, **kwargs: ent.parent().name())
+
     def rowAction(ent, *args, **kwargs):
       evaluation = kwargs.get('evaluation')
       return data.redirect.survey_record(
           evaluation, ent.key().id_or_name(), ent.parent().link_id).urlOf(
           'gsoc_take_mentor_evaluation')
 
-    list_config.setRowAction(rowAction)
-    self._list_config = list_config
-
-    super(OrgEvaluationsComponent, self).__init__(request, data)
+    self._list_config.setRowAction(rowAction)
 
   def _getStatus(self, entity, *args, **kwargs):
     eval = self.evals.get(kwargs.get('evaluation'))
     self.record = getEvalRecord(GSoCGradingProjectSurveyRecord, eval, entity)
     return colorize(bool(self.record), "Submitted", "Not submitted")
-
-  def templatePath(self):
-    """Returns the path to the template that should be used in render().
-    """
-    return'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     """Returns the list data as requested by the current request.
