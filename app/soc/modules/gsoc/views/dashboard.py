@@ -513,7 +513,6 @@ class MyEvaluationsComponent(Component):
       return data.redirect.survey_record(
           evaluation, ent.key().id_or_name(), ent.parent().link_id).urlOf(
           'gsoc_take_student_evaluation')
-      return None
 
     list_config.setRowAction(rowAction)
     self._list_config = list_config
@@ -607,7 +606,6 @@ class OrgEvaluationsComponent(Component):
       return data.redirect.survey_record(
           evaluation, ent.key().id_or_name(), ent.parent().link_id).urlOf(
           'gsoc_take_mentor_evaluation')
-      return None
 
     list_config.setRowAction(rowAction)
     self._list_config = list_config
