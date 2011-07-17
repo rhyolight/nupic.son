@@ -856,21 +856,3 @@ class QueryContentResponseBuilder(RawQueryContentResponseBuilder):
 
     super(QueryContentResponseBuilder, self).__init__(
         request, config, query, keyStarter, prefetcher=prefetcher)
-
-
-class EvaluationQueryContentResponseBuilder(RawQueryContentResponseBuilder):
-  """Builds a ListContentResponse for listing evaluation records.
-  """
-
-  def _addEntity(self, content_response, entity, *args, **kwargs):
-    """Add row for each entity that is fetched.
-
-    Args and Kwargs passed into this method will be passed along to
-    ListContentResponse.addRow().
-    """
-    evals = kwargs.pop('evals')
-    for eval in evals:
-      # TODO (madhu): BIG FIXES. Add only after start date
-      # TODO (madhu): Do not add row if prev failed.
-      kwargs['evaluation'] = eval
-      content_response.addRow(entity, *args, **kwargs)
