@@ -33,7 +33,15 @@ from soc.modules.gsoc.logic import grading_project_survey as gps_logic
 from soc.modules.gsoc.logic import grading_project_survey_record as gpsr_logic
 from soc.modules.gsoc.logic import project_survey as ps_logic
 from soc.modules.gsoc.logic import project_survey_record as psr_logic
+from soc.modules.gsoc.logic.survey import getSurveysForProgram
+from soc.modules.gsoc.logic.survey_record import getEvalRecord
+from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
+from soc.modules.gsoc.models.grading_project_survey_record import \
+    GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models.project_survey import ProjectSurvey
+from soc.modules.gsoc.models.project_survey_record import \
+    GSoCProjectSurveyRecord
 from soc.modules.gsoc.views import dashboard
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -48,7 +56,15 @@ class StudentEvaluationComponent(dashboard.Component):
   """Component for listing student evaluations for organizations.
   """
 
-  def __init__(self, request, data, idx):
+  def __init__(self, request, data, evals, idx):
+    """Initializes this component.
+
+    Args:
+      request: The Django HTTP Request object
+      data: The RequestData object containing the entities from the request
+      evals: Dictionary containing evaluations for which the list must be built
+      idx: The id for this list component
+    """
     self.request = request
     self.data = data
     self.idx = idx
@@ -132,6 +148,14 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
   """
 
   def __init__(self, request, data, idx):
+    """Initializes this component.
+
+    Args:
+      request: The Django HTTP Request object
+      data: The RequestData object containing the entities from the request
+      evals: Dictionary containing evaluations for which the list must be built
+      idx: The id for this list component
+    """
     super(MentorEvaluationComponent, self).__init__(request, data, idx)
 
     self.record = None
@@ -188,6 +212,11 @@ class Dashboard(dashboard.Dashboard):
   def _getActiveComponents(self):
     """Returns the components that are active on the page.
     """
-    components = [MentorEvaluationComponent(self.request, self.data, 0),
-                  StudentEvaluationComponent(self.request, self.data, 1)]
+    program = self.data.program
+    mentor_evals =  dashboard.dictForEvalModel(GradingProjectSurvey, program)
+    student_evals = dashboard.dictForEvalModel(ProjectSurvey, program)
+
+    components = [
+        MentorEvaluationComponent(self.request, self.data, mentor_evals, 0),
+        StudentEvaluationComponent(self.request, self.data, student_evals, 1)]
     return components
