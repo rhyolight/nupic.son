@@ -116,7 +116,8 @@ class GSoCProfileHelper(object):
     self.createProfile()
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
-                  'school': None, 'tax_form': None, 'enrollment_form': None}
+                  'school': None, 'tax_form': None, 'enrollment_form': None,
+                  'number_of_projects':0}
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.put()
     return self.profile
@@ -145,7 +146,9 @@ class GSoCProfileHelper(object):
   def createStudentWithProjects(self, org, mentor, n):
     """Sets the current user to be a student with a project for the current program.
     """
-    self.createStudent()
+    student = self.createStudent()
+    student.student_info.number_of_projects=n
+    student.student_info.put()
     from soc.modules.gsoc.models.project import GSoCProject
     properties = {'program': self.program, 'org': org, 'status': 'accepted',
                   'parent': self.profile, 'mentors': [mentor.key()]}
