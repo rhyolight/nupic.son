@@ -358,7 +358,7 @@ class MyProposalsComponent(Component):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
-    list_config.setRowAction(lambda e, *args, **kwargs: 
+    list_config.setRowAction(lambda e, *args:
         r.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
     self._list_config = list_config
@@ -419,7 +419,7 @@ class MyProjectsComponent(Component):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization Name',
                           lambda ent, *args: ent.org.name)
-    list_config.setRowAction(lambda e, *args, **kwargs:
+    list_config.setRowAction(lambda e, *args:
         r.project(id=e.key().id_or_name(), student=e.parent().link_id).
         urlOf('gsoc_project_details'))
     self._list_config = list_config
@@ -740,7 +740,7 @@ class SubmittedProposalsComponent(Component):
         (lambda ent, *args: ent.org.key().name()), hidden=True)
 
     # row action
-    list_config.setRowAction(lambda e, *args, **kwargs: 
+    list_config.setRowAction(lambda e, *args:
         r.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
     list_config.setDefaultSort('last_modified_on', 'desc')
@@ -959,7 +959,7 @@ class ProjectsIMentorComponent(Component):
     list_config.addColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setDefaultSort('title')
-    list_config.setRowAction(lambda e, *args, **kwargs:
+    list_config.setRowAction(lambda e, *args:
         r.project(id=e.key().id_or_name(), student=e.parent().link_id).
         urlOf('gsoc_project_details'))
     self._list_config = list_config
@@ -1024,7 +1024,7 @@ class OrganizationsIParticipateInComponent(Component):
     r = data.redirect
     list_config = lists.ListConfiguration()
     list_config.setRowAction(
-        lambda e, *args, **kwargs: r.organization(e).urlOf('gsoc_org_home'))
+        lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
 
     if not data.program.allocations_visible:
       list_config.addSimpleColumn('name', 'name')
@@ -1264,7 +1264,7 @@ class StudentsComponent(Component):
         'birth_date', "Birthdate",
         (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
         hidden=True)
-    list_config.setRowAction(lambda e, *args, **kwargs:
+    list_config.setRowAction(lambda e, *args:
         r.profile(e.link_id).urlOf('gsoc_profile_admin'))
 
     def formsSubmitted(ent, si):

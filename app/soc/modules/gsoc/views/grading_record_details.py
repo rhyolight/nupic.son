@@ -104,18 +104,18 @@ class GradingRecordsList(Template):
 
     list_config = lists.ListConfiguration()
 
-    title_func = lambda rec, *args, **kwargs: rec.parent().title
+    title_func = lambda rec, *args: rec.parent().title
     list_config.addColumn('project_title', 'Project Title', title_func)
-    org_func = lambda rec, *args, **kwargs: rec.parent().org.name
+    org_func = lambda rec, *args: rec.parent().org.name
     list_config.addColumn('org_name', 'Organization', org_func)
-    stud_rec_func = lambda rec, *args, **kwargs: \
+    stud_rec_func = lambda rec, *args: \
         'Present' if rec.student_record else 'Missing'
     list_config.addColumn('student_record', 'Survey by Student', stud_rec_func)
 
     list_config.addPostButton('update_records', 'Update Records', '', [0,'all'], [])
     list_config.addPostButton('update_projects', 'Update Projects', '', [0,'all'], [])
 
-    def mentorRecordInfo(rec, *args, **kwargs):
+    def mentorRecordInfo(rec, *args):
       """Displays information about a GradingRecord's mentor_record property.
       """
       if not rec.mentor_record:
@@ -130,7 +130,7 @@ class GradingRecordsList(Template):
 
     list_config.addSimpleColumn('grade_decision', 'Decision')
     r = data.redirect
-    list_config.setRowAction(lambda e, *args, **kwargs: 
+    list_config.setRowAction(lambda e, *args:
         r.key(str(e.key())).urlOf('gsoc_grading_record_detail'))
 
     self._list_config = list_config

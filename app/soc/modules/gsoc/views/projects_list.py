@@ -54,7 +54,7 @@ class ProjectList(Template):
                           lambda entity, *args: entity.org.name)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
-    list_config.setRowAction(lambda e, *args, **kwargs:
+    list_config.setRowAction(lambda e, *args:
         r.project(id=e.key().id_or_name(), student=e.parent().link_id).
         urlOf('gsoc_project_details'))
     self._list_config = list_config
