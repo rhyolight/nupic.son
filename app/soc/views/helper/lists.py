@@ -734,6 +734,17 @@ def rowAdder():
     content_response.addRow(entity, *args, **kwargs)
   return adder
 
+def evaluationRowAdder(evals):
+  """Add rows for each evaluation for each entity that is fetched.
+  """
+  def adder(content_response, entity, *args, **kwargs):
+    for eval in evals:
+      # TODO (madhu): BIG FIXES. Add only after start date
+      # TODO (madhu): Do not add row if prev failed.
+      content_response.addRow(entity, eval, *args, **kwargs)
+  return adder
+
+
 class RawQueryContentResponseBuilder(object):
   """Builds a ListContentResponse for lists that are based on a single query.
   """
