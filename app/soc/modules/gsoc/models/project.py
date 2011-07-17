@@ -29,7 +29,6 @@ from django.utils.translation import ugettext
 
 import soc.models.base
 import soc.models.program
-import soc.models.role
 import soc.models.organization
 
 
