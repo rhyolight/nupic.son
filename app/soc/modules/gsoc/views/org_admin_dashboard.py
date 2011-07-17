@@ -67,45 +67,50 @@ class StudentEvaluationComponent(dashboard.Component):
     """
     self.request = request
     self.data = data
+    self.evals = evals
     self.idx = idx
 
-    self.evaluation = 'midterm'
+    self.record = None
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
-    list_config.addColumn('student', 'Student',
-                          lambda entity, *args: entity.parent().name())
+    list_config.addColumn(
+        'key', 'Key',
+        (lambda ent, *args, **kwargs: "%s/%s/%s" % (
+            kwargs.get('evaluation'), ent.parent().key().name(),
+            ent.key().id())), hidden=True)
+    list_config.addColumn(
+        'student', 'Student',
+        lambda entity, *args, **kwargs: entity.parent().name())
     list_config.addSimpleColumn('title', 'Project Title')
     list_config.addColumn('org', 'Organization',
-                          lambda entity, *args: entity.org.name)
+                          lambda entity, *args, **kwargs: entity.org.name)
     list_config.addColumn(
-        'mentors', 'Mentors', lambda entity, mentors, *args: ', '.join(
-            [mentors.get(m).name() for m in entity.mentors]))
+        'mentors', 'Mentors',
+        lambda ent, mentors, *args, **kwargs: ', '.join(
+            [mentors.get(m).name() for m in ent.mentors]))
     list_config.addColumn(
         'status', 'Status', self._getStatus)
     list_config.addColumn(
         'created', 'Submitted on',
-        lambda ent, *args: format(
+        lambda ent, *args, **kwargs: format(
             self.record.created, dashboard.DATETIME_FORMAT) if \
             self.record else 'N/A')
     list_config.addColumn(
         'modified', 'Last modified on',
-        lambda ent, *args: format(
+        lambda ent, *args, **kwargs: format(
             self.record.modified, dashboard.DATETIME_FORMAT) if (
             self.record and self.record.modified) else 'N/A')
     list_config.setDefaultSort('student')
     list_config.setRowAction(lambda entity, *args, **kwargs:
         data.redirect.survey_record(
-            self.evaluation, entity.key().id_or_name(),
+            kwargs.get('evaluation'), entity.key().id_or_name(),
             entity.parent().link_id).urlOf(
                 'gsoc_show_student_evaluation'))
     self._list_config = list_config
 
-  def _getStatus(self, entity, *args):
-    eval = ps_logic.getProjectSurveyForProgram(
-        self.data.program, self.evaluation)
-    self.record = psr_logic.getEvalRecord(eval, entity)
+  def _getStatus(self, entity, *args, **kwargs):
+    eval = self.evals.get(kwargs.get('evaluation'))
+    self.record = getEvalRecord(GSoCProjectSurveyRecord, eval, entity)
     return dashboard.colorize(bool(self.record), "Submitted", "Not submitted")
 
   def context(self):
@@ -132,10 +137,10 @@ class StudentEvaluationComponent(dashboard.Component):
       prefetcher = lists.listModelPrefetcher(
           GSoCProject, ['org'], ['mentors'], parent=True)
 
-      response_builder = lists.RawQueryContentResponseBuilder(
+      response_builder = lists.EvaluationQueryContentResponseBuilder(
           self.request, self._list_config, list_query,
           starter, prefetcher=prefetcher)
-      return response_builder.build()
+      return response_builder.build(evals=self.evals)
     else:
       return None
 
@@ -164,18 +169,17 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
         'grade', 'Grade', self._getGrade)
     self._list_config.setRowAction(lambda entity, *args, **kwargs:
         data.redirect.survey_record(
-            self.evaluation, entity.key().id_or_name(),
+            kwargs.get('evaluation'), entity.key().id_or_name(),
             entity.parent().link_id).urlOf(
                 'gsoc_take_mentor_evaluation'))
 
-  def _getStatus(self, entity, *args):
-    eval = gps_logic.getGradingProjectSurveyForProgram(
-        self.data.program, self.evaluation)
-    self.record = gpsr_logic.getEvalRecord(eval, entity)
+  def _getStatus(self, entity, *args, **kwargs):
+    eval = self.evals.get(kwargs.get('evaluation'))
+    self.record = getEvalRecord(GSoCGradingProjectSurveyRecord, eval, entity)
     return dashboard.colorize(
         bool(self.record), "Submitted", "Not submitted")
 
-  def _getGrade(self, entity, *args):
+  def _getGrade(self, entity, *args, **kwargs):
     if self.record:
       return dashboard.colorize(
         self.record.grade, "Pass", "Fail")
