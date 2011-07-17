@@ -122,15 +122,6 @@ def getAcceptedProjectsForOrg(org, limit=1000):
   return q.fetch(limit)
 
 
-def getAcceptedProjectsForStudent(student, limit=1000):
-  """Returns all the accepted projects for a given student.
-
-  Args:
-    student: The student for whom the projects should be retrieved.
-  """
-  q = getAcceptedProjectsQuery(ancestor=student)
-  return q.fetch(limit)
-
 def getProjectsQueryForOrgs(orgs):
   """Returns the query corresponding to projects for the given organization(s).
 
@@ -180,15 +171,4 @@ def getProjectsForOrgs(orgs, limit=1000):
         should be queried.
   """
   q = getProjectsQueryForOrgs(orgs)
-  return q.fetch(limit)
-
-
-def getProjectsForMentors(mentor, limit=1000):
-  """Returns all the projects that the mentor is assigned to.
-
-  Args:
-    mentor: The mentor for whom the projects he is mentoring should
-        be retrieved.
-  """
-  q = getAcceptedProjectsQuery(mentors=mentor)
   return q.fetch(limit)
