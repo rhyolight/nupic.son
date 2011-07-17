@@ -762,6 +762,14 @@ class RawQueryContentResponseBuilder(object):
     self._skipper = skipper
     self._prefetcher = prefetcher
 
+  def _addEntity(self, content_response, entity, *args, **kwargs):
+    """Add row for each entity that is fetched.
+
+    Args and Kwargs passed into this method will be passed along to
+    ListContentResponse.addRow().
+    """
+    content_response.addRow(entity, *args, **kwargs)
+
   def build(self, *args, **kwargs):
     """Returns a ListContentResponse containing the data as indicated by the
     query.
@@ -772,7 +780,7 @@ class RawQueryContentResponseBuilder(object):
     empty if there are no entities to return.
 
     Args and Kwargs passed into this method will be passed along to
-    ListContentResponse.addRow().
+    _addEntity() method.
     """
     content_response = ListContentResponse(self._request, self._config)
 
@@ -800,7 +808,7 @@ class RawQueryContentResponseBuilder(object):
     for entity in entities[0:content_response.limit]:
       if self._skipper(entity, start):
         continue
-      content_response.addRow(entity, *args, **kwargs)
+      self._addEntity(content_response, entity, *args, **kwargs)
 
     if entities:
       content_response.next = self._ender(entities[-1], is_last, start)
