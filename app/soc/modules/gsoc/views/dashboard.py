@@ -44,10 +44,14 @@ from soc.modules.gsoc.logic import grading_project_survey_record as gpsr_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import project_survey as ps_logic
 from soc.modules.gsoc.logic import project_survey_record as psr_logic
+from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.logic.models.org_app_survey import logic as \
     org_app_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.logic.project import GSoCProject
+from soc.modules.gsoc.logic.survey import getSurveysForProgram
+from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
+from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -72,6 +76,15 @@ def colorize(choice, yes, no):
   else:
     return """<strong><font color="red">%s</font></strong>""" % no
 
+def dictForEvalModel(model, program):
+  """Returns a dictionary of link id and entity pairs for given model.
+
+  Args:
+    model: The evaluation model class for which the dictionary must be built
+    program: The program to query
+  """
+  return dict([(e.link_id, e) for e in getSurveysForProgram(
+    model, program, ['midterm', 'final'])])
 
 class Dashboard(RequestHandler):
   """View for the participant dashboard.
