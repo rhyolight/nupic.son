@@ -42,11 +42,7 @@ from soc.models.universities import UNIVERSITIES
 from soc.views.helper import lists
 from soc.views.template import Template
 
-from soc.modules.gsoc.logic import grading_project_survey as gps_logic
-from soc.modules.gsoc.logic import grading_project_survey_record as gpsr_logic
 from soc.modules.gsoc.logic import project as project_logic
-from soc.modules.gsoc.logic import project_survey as ps_logic
-from soc.modules.gsoc.logic import project_survey_record as psr_logic
 from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.logic.models.org_app_survey import logic as \
     org_app_logic
