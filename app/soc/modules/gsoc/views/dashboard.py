@@ -37,6 +37,7 @@ from soc.logic.exceptions import BadRequest
 from soc.logic.models.request import logic as request_logic
 from soc.models.universities import UNIVERSITIES
 from soc.views.helper import lists
+from soc.views.helper.surveys import dictForSurveyModel
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
@@ -44,7 +45,6 @@ from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.logic.models.org_app_survey import logic as \
     org_app_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
-from soc.modules.gsoc.logic.survey import getSurveysForProgram
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -76,15 +76,6 @@ def colorize(choice, yes, no):
   else:
     return """<strong><font color="red">%s</font></strong>""" % no
 
-def dictForEvalModel(model, program):
-  """Returns a dictionary of link id and entity pairs for given model.
-
-  Args:
-    model: The evaluation model class for which the dictionary must be built
-    program: The program to query
-  """
-  return dict([(e.link_id, e) for e in getSurveysForProgram(
-    model, program, ['midterm', 'final'])])
 
 class Dashboard(RequestHandler):
   """View for the participant dashboard.
@@ -190,7 +181,8 @@ class Dashboard(RequestHandler):
     if self.data.is_student and info.number_of_projects:
       # Add a component to show the evaluations
       # TODO (madhu): (big fixes)
-      evals = dictForEvalModel(ProjectSurvey, self.data.program)
+      evals = dictForSurveyModel(
+          ProjectSurvey, self.data.program, ['midterm', 'final'])
       if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):
         components.append(MyEvaluationsComponent(
             self.request, self.data, evals))
@@ -208,7 +200,8 @@ class Dashboard(RequestHandler):
     """
     components = []
 
-    evals = dictForEvalModel(GradingProjectSurvey, self.data.program)
+    evals = dictForSurveyModel(GradingProjectSurvey, self.data.program,
+                               ['midterm', 'final'])
 
     if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):
       components.append(OrgEvaluationsComponent(

@@ -27,6 +27,7 @@ from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import lists
+from soc.views.helper.surveys import dictForSurveyModel
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.survey_record import getEvalRecord
@@ -212,8 +213,10 @@ class Dashboard(dashboard.Dashboard):
     """Returns the components that are active on the page.
     """
     program = self.data.program
-    mentor_evals =  dashboard.dictForEvalModel(GradingProjectSurvey, program)
-    student_evals = dashboard.dictForEvalModel(ProjectSurvey, program)
+    mentor_evals =  dictForSurveyModel(GradingProjectSurvey, program,
+                                     ['midterm', 'final'])
+    student_evals = dictForSurveyModel(ProjectSurvey, program,
+                                     ['midterm', 'final'])
 
     components = [
         MentorEvaluationComponent(self.request, self.data, mentor_evals, 0),

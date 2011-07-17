@@ -51,6 +51,8 @@ from soc.models.survey import SurveyContent
 
 from soc.views.helper import widgets as custom_widgets
 
+from soc.modules.gsoc.logic.survey import getSurveysForProgram
+
 
 CHOICE_TYPES = set(('selection', 'pick_multi', 'choice', 'pick_quant'))
 
@@ -1220,3 +1222,15 @@ class SurveySchema(object):
     """
     for field_id in self.order:
       yield SurveyField(self.fields, field_id)
+
+
+def dictForSurveyModel(model, program, surveys):
+  """Returns a dictionary of link id and entity pairs for given model.
+
+  Args:
+    model: The survey model class for which the dictionary must be built
+    program: The program to query
+    surveys: The list containing the link ids of the surveys
+  """
+  return dict([(e.link_id, e) for e in getSurveysForProgram(
+    model, program, surveys)])
