@@ -29,11 +29,6 @@ from soc.logic.exceptions import AccessViolation
 from soc.views.helper import lists
 
 from soc.modules.gsoc.logic import project as project_logic
-from soc.modules.gsoc.logic import grading_project_survey as gps_logic
-from soc.modules.gsoc.logic import grading_project_survey_record as gpsr_logic
-from soc.modules.gsoc.logic import project_survey as ps_logic
-from soc.modules.gsoc.logic import project_survey_record as psr_logic
-from soc.modules.gsoc.logic.survey import getSurveysForProgram
 from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
