@@ -111,6 +111,8 @@ class GradingRecordsList(Template):
     stud_rec_func = lambda rec, *args: \
         'Present' if rec.student_record else 'Missing'
     list_config.addColumn('student_record', 'Survey by Student', stud_rec_func)
+    stud_id_func = lambda rec, *args: rec.parent().parent().link_id
+    list_config.addColumn('student_id', 'Student Link Id', stud_id_func, hidden=True)
 
     list_config.addPostButton('update_records', 'Update Records', '', [0,'all'], [])
     list_config.addPostButton('update_projects', 'Update Projects', '', [0,'all'], [])
