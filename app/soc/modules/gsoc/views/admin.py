@@ -242,8 +242,6 @@ class MainDashboard(Dashboard):
     manage_orgs = ManageOrganizationsDashboard(self.request, self.data)
     program_settings = ProgramSettingsDashboard(self.request, self.data)
     evaluations = EvaluationsDashboard(self.request, self.data)
-    mentor_evaluations = MentorEvaluationsDashboard(self.request, self.data)
-    student_evaluations = StudentEvaluationsDashboard(self.request, self.data)
 
     subpages = [
         {
@@ -304,26 +302,11 @@ class MainDashboard(Dashboard):
         {
             'name': 'evaluations',
             'description': ugettext(
-                'Send reminder and grade overview for evaluations'),
+                'Send reminder, grade overview, create, edit, '
+                'view evaluations for mentors and students'),
             'title': 'Evaluations',
             'link': '',
             'subpage_links': evaluations.getSubpagesLink(),
-        },
-        {
-            'name': 'mentor_evaluations',
-            'description': ugettext(
-                'Create, edit and view evaluations for mentors'),
-            'title': 'Mentor Evaluations',
-            'link': '',
-            'subpage_links': mentor_evaluations.getSubpagesLink(),
-        },
-        {
-            'name': 'student_evaluations',
-            'description': ugettext(
-                'Create, edit and view evaluations for students'),
-            'title': 'Student Evaluations',
-            'link': '',
-            'subpage_links': student_evaluations.getSubpagesLink(),
         },
         {
             'name': 'program_settings',
@@ -402,10 +385,12 @@ class ProgramSettingsDashboard(Dashboard):
     return {
         'title': 'Program Settings',
         'name': 'program_settings',
-        'backlink': {
-            'to': 'main',
-            'title': 'Admin dashboard'
-        },
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+        ],
         'subpages': subpages
     }
 
@@ -459,10 +444,12 @@ class ManageOrganizationsDashboard(Dashboard):
     return {
         'title': 'Manage Organizations',
         'name': 'manage_organizations',
-        'backlink': {
-            'to': 'main',
-            'title': 'Admin dashboard'
-        },
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+        ],
         'subpages': subpages
     }
 
@@ -481,6 +468,9 @@ class EvaluationsDashboard(Dashboard):
     r = data.redirect
     r.program()
 
+    mentor_evaluations = MentorEvaluationsDashboard(request, data)
+    student_evaluations = StudentEvaluationsDashboard(request, data)
+
     subpages = [
         {
             'name': 'reminder_emails',
@@ -496,6 +486,22 @@ class EvaluationsDashboard(Dashboard):
             'title': 'Grade Overview',
             'link': '#'
         },
+        {
+            'name': 'mentor_evaluations',
+            'description': ugettext(
+                'Create, edit and view evaluations for mentors'),
+            'title': 'Mentor Evaluations',
+            'link': '',
+            'subpage_links': mentor_evaluations.getSubpagesLink(),
+        },
+        {
+            'name': 'student_evaluations',
+            'description': ugettext(
+                'Create, edit and view evaluations for students'),
+            'title': 'Student Evaluations',
+            'link': '',
+            'subpage_links': student_evaluations.getSubpagesLink(),
+        },
     ]
 
     super(EvaluationsDashboard, self).__init__(request, data, subpages)
@@ -508,10 +514,12 @@ class EvaluationsDashboard(Dashboard):
     return {
         'title': 'Evaluations',
         'name': 'evaluations',
-        'backlink': {
-            'to': 'main',
-            'title': 'Admin dashboard'
-        },
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+        ],
         'subpages': subpages
     }
 
@@ -561,10 +569,16 @@ class MentorEvaluationsDashboard(Dashboard):
     return {
         'title': 'Mentor Evaluations',
         'name': 'mentor_evaluations',
-        'backlink': {
-            'to': 'main',
-            'title': 'Admin dashboard'
-        },
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+            {
+                'to': 'evaluations',
+                'title': 'Evaluations'
+            },
+        ],
         'subpages': subpages
     }
 
@@ -614,10 +628,16 @@ class StudentEvaluationsDashboard(Dashboard):
     return {
         'title': 'Student Evaluations',
         'name': 'student_evaluations',
-        'backlink': {
-            'to': 'main',
-            'title': 'Admin dashboard'
-        },
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+            {
+                'to': 'evaluations',
+                'title': 'Evaluations'
+            },
+        ],
         'subpages': subpages
     }
 

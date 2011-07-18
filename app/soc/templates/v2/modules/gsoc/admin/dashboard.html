@@ -15,8 +15,10 @@ limitations under the License.
 <div class="dashboard{% if not enabled %} disabled{% endif %}" id="{{ name }}-dashboard">
   <div class="dashboard-head">
     <span>
-      {% if backlink %}
-        <a class="dashboard-link" href="#{{ backlink.to }}">{{ backlink.title }}</a>&nbsp;/
+      {% if backlinks %}
+        {% for backlink in backlinks %}
+          <a class="dashboard-link" href="#{{ backlink.to }}">{{ backlink.title }}</a>&nbsp;/
+        {% endfor %}
       {% endif %}
       {{ title|safe }}
     </span>
@@ -33,7 +35,11 @@ limitations under the License.
             {% if subpage.subpage_links %}
               <div>
                 {% for sublink in subpage.subpage_links %}
-                  <a href="{{ sublink.link }}" title="{{ sublink.title }}">{{ sublink.title }}</a>
+                  {% if sublink.link %}
+                    <a href="{{ sublink.link }}" title="{{ sublink.title }}">{{ sublink.title }}</a>
+                  {% else %}
+                    <a class="dashboard-link" href="#{{ sublink.name }}" title="{{ sublink.title }}">{{ sublink.title }}</a>
+                  {% endif %}
                   {% if not forloop.last %}|{% endif %}
                 {% endfor %}
               </div>
