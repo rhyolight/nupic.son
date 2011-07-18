@@ -162,6 +162,8 @@ class DashboardPage(RequestHandler):
     dashboards.append(MainDashboard(self.request, self.data))
     dashboards.append(ProgramSettingsDashboard(self.request, self.data))
     dashboards.append(ManageOrganizationsDashboard(self.request, self.data))
+    dashboards.append(MentorEvaluationsDashboard(self.request, self.data))
+    dashboards.append(StudentEvaluationsDashboard(self.request, self.data))
 
     return {
         'colorbox': self.data.GET.get('colorbox'),
@@ -238,6 +240,8 @@ class MainDashboard(Dashboard):
 
     manage_orgs = ManageOrganizationsDashboard(self.request, self.data)
     program_settings = ProgramSettingsDashboard(self.request, self.data)
+    mentor_evaluations = MentorEvaluationsDashboard(self.request, self.data)
+    student_evaluations = StudentEvaluationsDashboard(self.request, self.data)
 
     subpages = [
         {
@@ -301,6 +305,22 @@ class MainDashboard(Dashboard):
                 'Send reminder emails for evaluations.'),
             'title': 'Send reminder emails for evaluations',
             'link': r.urlOf('gsoc_survey_reminder_admin')
+        },
+        {
+            'name': 'mentor_evaluations',
+            'description': ugettext(
+                'Create, edit and view evaluations for mentors'),
+            'title': 'Mentor Evaluations',
+            'link': '',
+            'subpage_links': mentor_evaluations.getSubpagesLink(),
+        },
+        {
+            'name': 'student_evaluations',
+            'description': ugettext(
+                'Create, edit and view evaluations for students'),
+            'title': 'Student Evaluations',
+            'link': '',
+            'subpage_links': student_evaluations.getSubpagesLink(),
         },
         {
             'name': 'program_settings',
@@ -444,8 +464,8 @@ class ManageOrganizationsDashboard(Dashboard):
     }
 
 
-class SurveyDashboard(Dashboard):
-  """Dashboard for admin's survey-dashboard
+class MentorEvaluationsDashboard(Dashboard):
+  """Dashboard for mentor's evaluations
   """
 
   def __init__(self, request, data):
@@ -460,41 +480,88 @@ class SurveyDashboard(Dashboard):
 
     subpages = [
         {
-            'name': 'midterm_mentor',
-            'description': ugettext('Midterm mentor.'),
-            'title': 'Midterm mentor',
-            'link': r.survey('midterm').urlOf('gsoc_edit_mentor_evaluation')
+            'name': 'create_mentor_evaluation',
+            'description': ugettext('Create evaluation for mentors'),
+            'title': 'Create',
+            'link': '#'
         },
         {
-            'name': 'midterm_student',
-            'description': ugettext('Midterm student'),
-            'title': 'Midterm student',
-            'link': r.survey('midterm').urlOf('gsoc_edit_student_evaluation')
+            'name': 'edit_mentor_evaluation',
+            'description': ugettext('Edit evaluation for mentors'),
+            'title': 'Edit',
+            'link': '#'
         },
         {
-            'name': 'final_mentor',
-            'description': ugettext('Final mentor'),
-            'title': 'Final mentor',
-            'link': r.survey('final').urlOf('gsoc_edit_mentor_evaluation')
-        },
-        {
-            'name': 'final_student',
-            'description': ugettext('Final student'),
-            'title': 'Final student',
-            'link': r.survey('final').urlOf('gsoc_edit_student_evaluation')
+            'name': 'view_mentor_evaluation',
+            'description': ugettext('View evaluation for mentors'),
+            'title': 'View',
+            'link': '#'
         },
     ]
 
-    super(SurveyDashboard, self).__init__(request, data, subpages)
+    super(MentorEvaluationsDashboard, self).__init__(request, data, subpages)
 
   def context(self):
-    """Returns the context of manage organizations dashboard.
+    """Returns the context of mentor evaluations dashboard.
     """
     subpages = self._divideSubPages(self.subpages)
 
     return {
-        'title': 'Survey',
-        'name': 'survey',
+        'title': 'Mentor Evaluations',
+        'name': 'mentor_evaluations',
+        'backlink': {
+            'to': 'main',
+            'title': 'Admin dashboard'
+        },
+        'subpages': subpages
+    }
+
+
+class StudentEvaluationsDashboard(Dashboard):
+  """Dashboard for student's evaluations
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    r = data.redirect
+    r.program()
+
+    subpages = [
+        {
+            'name': 'create_student_evaluation',
+            'description': ugettext('Create evaluation for students'),
+            'title': 'Create',
+            'link': '#'
+        },
+        {
+            'name': 'edit_student_evaluation',
+            'description': ugettext('Edit evaluation for students'),
+            'title': 'Edit',
+            'link': '#'
+        },
+        {
+            'name': 'view_student_evaluation',
+            'description': ugettext('View evaluation for students'),
+            'title': 'View',
+            'link': '#'
+        },
+    ]
+
+    super(StudentEvaluationsDashboard, self).__init__(request, data, subpages)
+
+  def context(self):
+    """Returns the context of student evaluations dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Student Evaluations',
+        'name': 'student_evaluations',
         'backlink': {
             'to': 'main',
             'title': 'Admin dashboard'
