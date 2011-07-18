@@ -124,3 +124,28 @@
 .column-entry.report_statistic {
   background-image: url(../../../images/v2/gsoc/admin/report.png);
 }
+.column-entry.evaluations,
+.column-entry.mentor_evaluations,
+.column-entry.student_evaluations
+{
+  background-image: url(../../../images/v2/gsoc/admin/evaluations.png);
+}
+.column-entry.grade_overview
+{
+  background-image: url(../../../images/v2/gsoc/admin/grade.png);
+}
+.column-entry.create_mentor_evaluation,
+.column-entry.create_student_evaluation
+{
+  background-image: url(../../../images/v2/gsoc/admin/create.png);
+}
+.column-entry.edit_mentor_evaluation,
+.column-entry.edit_student_evaluation
+{
+  background-image: url(../../../images/v2/gsoc/admin/edit.png);
+}
+.column-entry.view_mentor_evaluation,
+.column-entry.view_student_evaluation
+{
+  background-image: url(../../../images/v2/gsoc/admin/view.png);
+}
