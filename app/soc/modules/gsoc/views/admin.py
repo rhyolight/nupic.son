@@ -162,6 +162,7 @@ class DashboardPage(RequestHandler):
     dashboards.append(MainDashboard(self.request, self.data))
     dashboards.append(ProgramSettingsDashboard(self.request, self.data))
     dashboards.append(ManageOrganizationsDashboard(self.request, self.data))
+    dashboards.append(EvaluationsDashboard(self.request, self.data))
     dashboards.append(MentorEvaluationsDashboard(self.request, self.data))
     dashboards.append(StudentEvaluationsDashboard(self.request, self.data))
 
@@ -240,6 +241,7 @@ class MainDashboard(Dashboard):
 
     manage_orgs = ManageOrganizationsDashboard(self.request, self.data)
     program_settings = ProgramSettingsDashboard(self.request, self.data)
+    evaluations = EvaluationsDashboard(self.request, self.data)
     mentor_evaluations = MentorEvaluationsDashboard(self.request, self.data)
     student_evaluations = StudentEvaluationsDashboard(self.request, self.data)
 
@@ -300,11 +302,12 @@ class MainDashboard(Dashboard):
             'subpage_links': manage_orgs.getSubpagesLink(),
         },
         {
-            'name': 'reminder_emails',
+            'name': 'evaluations',
             'description': ugettext(
-                'Send reminder emails for evaluations.'),
-            'title': 'Send reminder emails for evaluations',
-            'link': r.urlOf('gsoc_survey_reminder_admin')
+                'Send reminder and grade overview for evaluations'),
+            'title': 'Evaluations',
+            'link': '',
+            'subpage_links': evaluations.getSubpagesLink(),
         },
         {
             'name': 'mentor_evaluations',
@@ -456,6 +459,55 @@ class ManageOrganizationsDashboard(Dashboard):
     return {
         'title': 'Manage Organizations',
         'name': 'manage_organizations',
+        'backlink': {
+            'to': 'main',
+            'title': 'Admin dashboard'
+        },
+        'subpages': subpages
+    }
+
+
+class EvaluationsDashboard(Dashboard):
+  """Dashboard for admin's evaluations-dashboard
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    r = data.redirect
+    r.program()
+
+    subpages = [
+        {
+            'name': 'reminder_emails',
+            'description': ugettext(
+                'Send reminder emails for evaluations.'),
+            'title': 'Send reminder',
+            'link': r.urlOf('gsoc_survey_reminder_admin')
+        },
+        {
+            'name': 'grade_overview',
+            'description': ugettext(
+                'Grade Overview'),
+            'title': 'Grade Overview',
+            'link': '#'
+        },
+    ]
+
+    super(EvaluationsDashboard, self).__init__(request, data, subpages)
+
+  def context(self):
+    """Returns the context of manage organizations dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Evaluations',
+        'name': 'evaluations',
         'backlink': {
             'to': 'main',
             'title': 'Admin dashboard'
