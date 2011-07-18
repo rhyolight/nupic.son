@@ -19,8 +19,8 @@
 melange.templates.inherit(
   function (_self, context) {
     jQuery('.' + context.dashboard_link_class).bind('click', function() {
-      var dashboard = jQuery(this).attr('href') + context.dashboard_id_suffix;
-          dashboard = jQuery(dashboard);
+      var target_str = jQuery(this).attr('href') + context.dashboard_id_suffix;
+      var dashboard = jQuery(target_str);
 
       // hide other dashboards
       jQuery('.' + context.dashboard_class).addClass('disabled');
