@@ -21,10 +21,10 @@ __authors__ = [
 ]
 
 
-import soc.models.statistic
+import soc.models.statistic_data
 
 
-class GSoCStatistic(soc.models.statistic.Statistic):
-  """Model class for GSoCStatistic.
+class GSoCStatisticData(soc.models.statistic_data.StatisticData):
+  """Model class for GSoCStatisticData.
   """
   pass

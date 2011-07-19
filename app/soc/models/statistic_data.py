@@ -14,7 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the Statistic Model."""
+"""This module contains the StatisticData Model.
+
+The entities contain all the data which is necessary to gather actual
+statistics.
+"""
 
 __authors__ = [
   '"Daniel Hans" <dhans@google.com>',
@@ -23,17 +27,12 @@ __authors__ = [
 
 from google.appengine.ext import db
 
-from django.utils import simplejson
-
 import soc.models.base
 
 
-class Statistic(soc.models.base.ModelWithFieldAttributes):
-  """Model class for Statistic.
+class StatisticData(soc.models.base.ModelWithFieldAttributes):
+  """Model class for StatisticData.
   """
 
   #: JSON encoded data of the statistic
   data = db.TextProperty(required=True)
-
-  #: whether the statistic is publicly visible or not
-  is_visible = db.BooleanProperty(required=False, default=False)
