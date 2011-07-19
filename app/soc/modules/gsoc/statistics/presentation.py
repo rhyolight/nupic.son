@@ -27,14 +27,14 @@ from django.utils import simplejson
 from soc.models import countries
 from soc.modules.gsoc.statistics import mapping
 from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.statistic import GSoCStatistic
+from soc.modules.gsoc.models.statistic_data import GSoCStatisticData
 
 
 class AbstractPresenter(object):
 
   def _getDataSources(self, key_name):
     key_names = mapping.DEPENDENCIES[key_name]
-    statistics = GSoCStatistic.get_by_key_name(key_names)
+    statistics = GSoCStatisticData.get_by_key_name(key_names)
     sources = {}
     for statistic in statistics:
       sources[statistic.key().name()] = simplejson.loads(statistic.data)
@@ -118,7 +118,7 @@ class AbstractPresenter(object):
 
 class JsonPresenter(AbstractPresenter):
   def get(self, key_name):
-    statistic = GSoCStatistic.get_by_key_name(key_name)
+    statistic = GSoCStatisticData.get_by_key_name(key_name)
     return statistic.data if statistic else {}
 
 
