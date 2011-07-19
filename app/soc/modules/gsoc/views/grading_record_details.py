@@ -102,7 +102,9 @@ class GradingRecordsList(Template):
     self.request = request
     self.data = data
 
-    list_config = lists.ListConfiguration()
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
+        ent.parent().key().name(), ent.key().id())), hidden=True)
 
     title_func = lambda rec, *args: rec.parent().title
     list_config.addColumn('project_title', 'Project Title', title_func)
