@@ -1174,6 +1174,45 @@ class RequestComponent(Component):
     }
 
 
+def addAddressColumns(list_config):
+  """Adds address columns to the specified list config.
+
+  Columns added:
+    * res_street
+    * res_street_extra
+    * res_city
+    * res_state
+    * res_country
+    * res_postalcode
+    * phone
+    * ship_name
+    * ship_street
+    * ship_street_extra
+    * ship_city
+    * ship_state
+    * ship_country
+    * ship_postalcode
+    * tshirt_style
+    * tshirt_size
+  """
+  list_config.addSimpleColumn('res_street', "res_street", hidden=True)
+  list_config.addSimpleColumn('res_street_extra', "res_street_extra", hidden=True)
+  list_config.addSimpleColumn('res_city', "res_city", hidden=True)
+  list_config.addSimpleColumn('res_state', "res_state", hidden=True)
+  list_config.addSimpleColumn('res_country', "res_country", hidden=True)
+  list_config.addSimpleColumn('res_postalcode', "res_postalcode", hidden=True)
+  list_config.addSimpleColumn('phone', "phone", hidden=True)
+  list_config.addSimpleColumn('ship_name', "ship_name", hidden=True)
+  list_config.addSimpleColumn('ship_street', "ship_street", hidden=True)
+  list_config.addSimpleColumn('ship_street_extra', "ship_street_extra", hidden=True)
+  list_config.addSimpleColumn('ship_city', "ship_city", hidden=True)
+  list_config.addSimpleColumn('ship_state', "ship_state", hidden=True)
+  list_config.addSimpleColumn('ship_country', "ship_country", hidden=True)
+  list_config.addSimpleColumn('ship_postalcode', "ship_postalcode", hidden=True)
+  list_config.addSimpleColumn('tshirt_style', "tshirt_style", hidden=True)
+  list_config.addSimpleColumn('tshirt_size', "tshirt_size", hidden=True)
+
+
 class ParticipantsComponent(Component):
   """Component for listing all the participants for all organizations.
   """
@@ -1200,6 +1239,10 @@ class ParticipantsComponent(Component):
         'admin_for', 'Organization admin for',
         lambda ent, orgs, *args: ', '.join(
             [get(i, orgs) for i in ent.org_admin_for if data.orgAdminFor(i)]))
+
+    if self.data.is_host:
+      addAddressColumns(list_config)
+
     self._list_config = list_config
 
     super(ParticipantsComponent, self).__init__(request, data)
@@ -1287,21 +1330,7 @@ class StudentsComponent(Component):
         'forms_submitted', "Forms submitted",
         lambda ent, si, *args: all(formsSubmitted(ent, si)))
 
-    # address fields
-    list_config.addSimpleColumn('res_street', "res_street", hidden=True)
-    list_config.addSimpleColumn('res_street_extra', "res_street_extra", hidden=True)
-    list_config.addSimpleColumn('res_city', "res_city", hidden=True)
-    list_config.addSimpleColumn('res_state', "res_state", hidden=True)
-    list_config.addSimpleColumn('res_country', "res_country", hidden=True)
-    list_config.addSimpleColumn('res_postalcode', "res_postalcode", hidden=True)
-    list_config.addSimpleColumn('phone', "phone", hidden=True)
-    list_config.addSimpleColumn('ship_name', "ship_name", hidden=True)
-    list_config.addSimpleColumn('ship_street', "ship_street", hidden=True)
-    list_config.addSimpleColumn('ship_street_extra', "ship_street_extra", hidden=True)
-    list_config.addSimpleColumn('ship_city', "ship_city", hidden=True)
-    list_config.addSimpleColumn('ship_state', "ship_state", hidden=True)
-    list_config.addSimpleColumn('ship_country', "ship_country", hidden=True)
-    list_config.addSimpleColumn('ship_postalcode', "ship_postalcode", hidden=True)
+    addAddressColumns(list_config)
 
     list_config.addColumn(
         'number_of_proposals', "#proposals",
