@@ -97,11 +97,6 @@ class ListConfiguration(object):
 
   def _addKeyColumn(self):
     """Adds a column for the key.
-
-    Args:
-      resizable: Whether the width of the column should be resizable by the
-                 end user.
-      hidden: Whether the column should be displayed by default.
     """
     func = lambda e, *args: str(e.key().id_or_name())
     self.addColumn('key', 'Key', func, hidden=True)
