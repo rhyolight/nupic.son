@@ -29,11 +29,15 @@ from django.utils import simplejson
 from django.conf.urls.defaults import url
 
 from soc.models import countries
+from soc.models.statistic_info import StatisticInfo
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.proposal import GSoCProposal
-from soc.modules.gsoc.models.statistic import GSoCStatistic
+from soc.modules.gsoc.models.statistic_data import GSoCStatisticData
+from soc.modules.gsoc.models.statistic_info import GSoCStatisticInfo
+
+from soc.modules.gsoc.statistics import mapping
 
 
 PROFILE_SPECIFIC = [
@@ -67,6 +71,21 @@ class AbstractStatisticService(object):
     raise NotImplementedError('The process request method not implemented.')
 
 
+class CreateStatisticInfoService(AbstractStatisticService):
+  def djangoURLPatterns(self):
+    return [
+        url(r'^gsoc/statistic_info/create$', self)]
+
+  def processRequest(self, request, args, kwargs):
+    statisticInfo = GSoCStatisticInfo.getInstance()
+
+    # create Statistic instances based on mapping file
+    # by default all the statistic will be hidden
+    for statistic_name in mapping.STATISTIC_NAMES:
+      statisticInfo.appendStatistic(
+          StatisticInfo.Statistic(statistic_name, False))
+    statisticInfo.put()
+
 class CollectStatisticService(AbstractStatisticService):
   _model = None
   _model_specific = []
@@ -74,7 +93,7 @@ class CollectStatisticService(AbstractStatisticService):
   _statistics = {}
 
   def initialize(self):
-    entities = GSoCStatistic.get_by_key_name(self._model_specific)
+    entities = GSoCStatisticData.get_by_key_name(self._model_specific)
     for entity in entities:
       self._statistics[entity.key().name()] = {
           'entity': entity,
@@ -152,9 +171,9 @@ class CreateStatisticService(AbstractStatisticService):
 
   def _createStatistic(self, key_name):
     data = self._createInitialData(key_name)
-    entity = GSoCStatistic.get_by_key_name(key_name) 
+    entity = GSoCStatisticData.get_by_key_name(key_name) 
     if not entity:
-      entity = GSoCStatistic(key_name=key_name, data=data)
+      entity = GSoCStatisticData(key_name=key_name, data=data)
     else:
       entity.data = data
     return entity
@@ -226,7 +245,7 @@ class CreateProfileSpecificStatisticService(CreateStatisticService):
     return self._createPerProgramInitialData()
 
   def _createProposalsPerStudent(self):
-    return self._createPerProgramPerCounter(20)
+    return self._createPerProgramPerCounter(25)
 
   def _createStudents(self):
     return self._createPerProgramInitialData()
@@ -295,7 +314,7 @@ class CollectProfileSpecificStatistics(CollectStatisticService):
 
   def _processEntity(self, entity):
     # check if the profile is active
-    if entity.status != 'active':
+    if entity.status == 'invalid':
       return
 
     self._collectProfiles(entity)
