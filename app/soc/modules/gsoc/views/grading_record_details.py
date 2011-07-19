@@ -197,7 +197,8 @@ class GradingRecordDetails(RequestHandler):
     if self.data.POST:
       record_form = GradingRecordForm(self.data.POST)
     else:
-      record_form = GradingRecordForm(instance=record)
+      # locked is initially set to true because the user is editing it manually
+      record_form = GradingRecordForm(instance=record, initial={'locked': True})
 
     return {
         'page_name': 'Grading Record Details',
