@@ -29,13 +29,17 @@ limitations under the License.
 
 <script src="https://www.google.com/jsapi" type="text/javascript"></script>
 
-<div id='statistic-select-div'>
-<select id='statistic-select'>
+<div id='statistic-select-div' class='selector'>
+<span>Statistic name</span>
+<select id='statistic-select' style='opacity: 0'>
   {% for statistic in statistics %}
   <option id='{{ statistic.name }}'>{{ statistic.human_name }}</option>
   {% endfor %}
 </select>
-<select id='statistic-visualization-select'>
+</div>
+<div id='statistic-select-div' class='selector'>
+<span>Visualization</span>
+<select id='statistic-visualization-select' style='opacity: 0'>
 </select>
 </div>
 <div id='statistic-presentation-div'>
