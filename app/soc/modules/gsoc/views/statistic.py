@@ -31,7 +31,7 @@ from soc.views import forms
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
 
-from soc.modules.gsoc.models.statistic import GSoCStatistic
+from soc.modules.gsoc.models.statistic_info import GSoCStatisticInfo
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -57,8 +57,7 @@ class ManageActions(Template):
             help_text=self.IS_VISIBLE_HELP_MSG,
             labels = {
                 'checked': 'Yes',
-                'unchecked': 'No',
-        })]
+                'unchecked': 'No'})]
     
     return {
         'toggle_buttons': self.toggle_buttons
@@ -87,11 +86,18 @@ class StatisticDashboard(RequestHandler):
     pass
 
   def context(self):
+    # TODO(daniel): admin should get all statistics, while users only visible
+    names = [s.name for s in GSoCStatisticInfo.getInstance().getStatistics()]
+
+    statistics = [s for s in mapping.STATISTICS if s['name'] in names]
+    visualizations = dict(
+        filter(lambda (k, v): k in names, mapping.VISUALIZATIONS.items()))
+
     return {
         'fetch_urls': self._constructFetchUrls(),
         'manage_urls': self._constructManageUrls(),
-        'statistics': mapping.STATISTICS,
-        'visualizations': mapping.VISUALIZATIONS,
+        'statistics': statistics,
+        'visualizations': visualizations,
         'manage_actions': ManageActions(self.data)
         }
 
@@ -109,6 +115,7 @@ class StatisticDashboard(RequestHandler):
       manage_urls[name] = reverse(
           'gsoc_statistic_manage', kwargs={'key_name': name})
     return manage_urls
+
 
 class StatisticFetcher(RequestHandler):
   """Loads data for a particular statistic.
