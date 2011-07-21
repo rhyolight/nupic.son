@@ -62,7 +62,7 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class LookupForm(forms.ModelForm):
-  """Django form for the invite page.
+  """Django form for the lookup profile page.
   """
 
   class Meta:
