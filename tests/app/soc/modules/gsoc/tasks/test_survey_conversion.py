@@ -43,6 +43,7 @@ from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.project_survey_record import ProjectSurveyRecord
 
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 class SurveyConversionTest(DjangoTestCase, TaskQueueTestCase):
   """Test the code that converts the old surveys.
@@ -84,8 +85,7 @@ class SurveyConversionTest(DjangoTestCase, TaskQueueTestCase):
         'student': self.student}
     for prop in self.project.properties().keys():
       values[prop] = getattr(self.project, prop)
-    self.old_project = StudentProject(key_name='keyname', **values)
-    self.old_project.put()
+    self.old_project = seeder_logic.seed(StudentProject, values)
 
   def createSurveys(self):
     """Creates the surveys and records required for the tests in the old
@@ -99,19 +99,17 @@ class SurveyConversionTest(DjangoTestCase, TaskQueueTestCase):
         'scope': self.gsoc,
         'scope_path': self.gsoc.key().id_or_name()}
 
-    self.project_survey = ProjectSurvey(**survey_values)
-    self.project_survey.put()
+    self.project_survey = seeder_logic.seed(ProjectSurvey, survey_values)
 
     record_values = {
         'user': self.student.user,
         'org': self.org,
         'project': self.old_project,
         'survey': self.project_survey}
-    self.project_survey_record = ProjectSurveyRecord(**record_values)
-    self.project_survey_record.put()
+    self.project_survey_record = seeder_logic.seed(ProjectSurveyRecord,
+                                                   record_values)
 
-    self.grading_survey = GradingProjectSurvey(**survey_values)
-    self.grading_survey.put()
+    self.grading_survey = seeder_logic.seed(GradingProjectSurvey, survey_values)
 
     record_values = {
         'user': self.student.user,
@@ -119,8 +117,8 @@ class SurveyConversionTest(DjangoTestCase, TaskQueueTestCase):
         'project': self.old_project,
         'survey': self.grading_survey,
         'grade': True}
-    self.grading_survey_record = GradingProjectSurveyRecord(**record_values)
-    self.grading_survey_record.put()
+    self.grading_survey_record = seeder_logic.seed(GradingProjectSurveyRecord,
+                                                   record_values)
 
     group_values = {
         'name': 'Survey Group Name',
@@ -129,8 +127,7 @@ class SurveyConversionTest(DjangoTestCase, TaskQueueTestCase):
         'link_id': 'link_id',
         'scope': self.gsoc,
         'scope_path': self.gsoc.key().id_or_name()}
-    self.survey_group = GradingSurveyGroup(key_name='keyname', **group_values)
-    self.survey_group.put()
+    self.survey_group = seeder_logic.seed(GradingSurveyGroup, group_values)
 
     record_values = {
         'grading_survey_group': self.survey_group,
@@ -138,8 +135,7 @@ class SurveyConversionTest(DjangoTestCase, TaskQueueTestCase):
         'student_record': self.project_survey_record,
         'project': self.old_project,
         'grade_decision': 'pass'}
-    self.grading_record = GradingRecord(**record_values)
-    self.grading_record.put()
+    self.grading_record = seeder_logic.seed(GradingRecord, record_values)
 
     self.project.passed_evaluations = [self.grading_record.key()]
     self.project.put()
@@ -154,8 +150,7 @@ class SurveyConversionTest(DjangoTestCase, TaskQueueTestCase):
         'grading_survey': self.grading_survey,
         'student_survey': self.project_survey,
         'program': self.gsoc}
-    self.gsoc_survey_group = GSoCGradingSurveyGroup(**values)
-    self.gsoc_survey_group.put()
+    self.gsoc_survey_group = seeder_logic.seed(GSoCGradingSurveyGroup, values)
 
   def testConvertProjectSurveyRecords(self):
     """Test conversion of ProjectSurveyRecords.
