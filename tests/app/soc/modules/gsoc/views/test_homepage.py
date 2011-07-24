@@ -23,10 +23,6 @@ __authors__ = [
   ]
 
 
-import httplib
-
-from tests.timeline_utils import TimelineHelper
-from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
 
 # TODO: perhaps we should move this out?
