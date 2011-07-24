@@ -23,13 +23,9 @@ __authors__ = [
   ]
 
 
-import httplib
-
 from soc.models.document import Document
 
-from tests.timeline_utils import TimelineHelper
 from tests.test_utils import DjangoTestCase
-from tests.profile_utils import GSoCProfileHelper
 
 # TODO: perhaps we should move this out?
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
