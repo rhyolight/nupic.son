@@ -23,13 +23,9 @@ __authors__ = [
   ]
 
 
-import httplib
-
 from django.utils import simplejson
 
-from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
-from tests.timeline_utils import TimelineHelper
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 
