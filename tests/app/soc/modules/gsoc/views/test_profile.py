@@ -23,12 +23,8 @@ __authors__ = [
   ]
 
 
-import httplib
-
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests.timeline_utils import TimelineHelper
-from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
 
 # TODO: perhaps we should move this out?
@@ -132,7 +128,7 @@ class ProfileViewTest(DjangoTestCase):
 
     response = self.post(role_url, postdata)
 
-    self.assertResponseRedirect(response, url+'?validated')
+    self.assertResponseRedirect(response, url + '?validated')
 
     # hacky
     profile = GSoCProfile.all().get()
