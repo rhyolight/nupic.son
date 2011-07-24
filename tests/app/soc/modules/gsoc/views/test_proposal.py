@@ -25,7 +25,6 @@ __authors__ = [
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
 from tests.test_utils import MailTestCase
-from tests.timeline_utils import TimelineHelper
 
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
