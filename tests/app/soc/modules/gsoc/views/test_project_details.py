@@ -24,7 +24,6 @@ __authors__ = [
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
-from tests.timeline_utils import TimelineHelper
 
 from soc.modules.gsoc.models.project import GSoCProject
 
@@ -48,7 +47,7 @@ class ProjectDetailsTest(DjangoTestCase):
     properties = {
         'is_featured': False, 'mentors': [],
         'status': 'accepted', 'program': self.gsoc, 'org': self.org,
-        
+
     }
     properties.update(override_properties)
     return self.seed(GSoCProject, properties)
