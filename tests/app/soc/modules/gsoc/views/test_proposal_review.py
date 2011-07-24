@@ -26,7 +26,6 @@ __authors__ = [
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
 from tests.test_utils import MailTestCase
-from tests.timeline_utils import TimelineHelper
 
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
@@ -64,7 +63,7 @@ class ProposalReviewTest(MailTestCase, DjangoTestCase):
     return self.seed(GSoCProposal, properties)
 
   def testReviewProposal(self):
-    mentor = self.createMentorWithSettings('mentor@example.com', 
+    mentor = self.createMentorWithSettings('mentor@example.com',
         {'new_proposals' :True, 'public_comments': True,
          'private_comments' :True})
 
