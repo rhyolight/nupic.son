@@ -53,7 +53,7 @@ class GDocsLoginRequest(Error):
   """GDocs login required.
   """
 
-  url_name = 'oauth_redirect'
+  url_name = 'gdata_oauth_redirect'
 
   def __init__(self, next):
     self.next = next

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generic views and tools for GData and OAuth.
+"""Generic views and tools for OAuth.
 """
 
 __authors__ = [

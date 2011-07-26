@@ -36,7 +36,7 @@ from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import GDocsLoginRequest
 from soc.models.user import User
-from soc.views.helper import gdata_apis as gdata_helper
+from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
@@ -551,7 +551,7 @@ class BaseAccessChecker(object):
     """Checks if user has a valid access token to access Google Documents.
     """
     self.isUser()
-    access_token = gdata_helper.getAccessToken(self.data.user)
+    access_token = oauth_helper.getAccessToken(self.data.user)
     if not access_token: #TODO(orc.avs):check token is valid
       next = self.data.request.get_full_path()
       raise GDocsLoginRequest(next)

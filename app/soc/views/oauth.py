@@ -24,7 +24,7 @@ __authors__ = [
 
 from django.conf.urls.defaults import url as django_url
 
-from soc.views.helper import gdata_apis as gdata_helper
+from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 from soc.modules.gsoc.views.base import RequestHandler
 
@@ -35,7 +35,7 @@ class OAuthRedirectPage(RequestHandler):
 
   def djangoURLPatterns(self):
     patterns = [
-        django_url(r'^oauth/redirect$', self, name='oauth_redirect'),
+        django_url(r'^gdata/oauth/redirect$', self, name='gdata_oauth_redirect'),
     ]
     return patterns
 
@@ -43,10 +43,10 @@ class OAuthRedirectPage(RequestHandler):
     self.check.isUser()
 
   def context(self):
-    service = gdata_helper.createDocsService(self.data)
-    next = '%s?next=%s' % (self.redirect.urlOf('oauth_verify'),
+    service = oauth_helper.createDocsService(self.data)
+    next = '%s?next=%s' % (self.redirect.urlOf('gdata_oauth_verify'),
                            self.request.GET.get('next','/'))
-    url = gdata_helper.generateOAuthRedirectURL(
+    url = oauth_helper.generateOAuthRedirectURL(
         service, self.data.user,
         next)
     context = {
@@ -67,13 +67,13 @@ class OAuthVerifyToken(RequestHandler):
 
   def djangoURLPatterns(self):
     patterns = [
-        django_url(r'^oauth/verify$', self, name='oauth_verify'),
+        django_url(r'^gdata/oauth/verify$', self, name='gdata_oauth_verify'),
     ]
     return patterns
 
   def get(self):
-    service = gdata_helper.createDocsService(self.data)
-    gdata_helper.checkOAuthVerifier(service, self.data)
+    service = oauth_helper.createDocsService(self.data)
+    oauth_helper.checkOAuthVerifier(service, self.data)
     next = self.request.GET.get('next','/')
     self.redirect.toUrl(next)
     return self.response
