@@ -40,6 +40,7 @@ from soc.modules import callback
 from soc.views import helper
 from soc.views.helper import redirects
 from soc.views.helper import templates
+from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 
 def respond(request, template, context=None, response_args=None,
@@ -265,3 +266,17 @@ def redirectLegacyRequest(request, *args, **kwargs):
   url = '/gsoc' + request.path
 
   return http.HttpResponseRedirect(url)
+
+
+def useGDataJS(context, data, redirect, response):
+  """Updates context to use GData related functions at user side.
+  """
+
+  access_token = oauth_helper.getAccessToken(data.user)
+  if access_token:
+    context["gdata_logged_in"] = 'true'
+  else:
+    context["gdata_logged_in"] = 'false'
+    context["popup_oauth_redirect_url"] = redirect.urlOf(
+        "gdata_popup_oauth_redirect")
+  return context

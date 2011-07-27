@@ -357,6 +357,10 @@
     mpjs + "melange.program_select.js"
   ];
 
+  s.melange.gdata = [
+    mpjs + "melange.gdata.js"
+  ];
+
   $m.s = s;
 
   var unpack = function (orig_array) {

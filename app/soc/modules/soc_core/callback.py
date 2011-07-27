@@ -46,6 +46,7 @@ class Callback(object):
     from soc.views import host
     from soc.views import legacy
     from soc.views import site
+    from soc.views.gdata_apis import oauth
     from soc.tasks import mailer
 
     self.views.append(host.HostProfilePage())
@@ -56,6 +57,8 @@ class Callback(object):
     self.views.append(survey_conversion.GradingRecordConversion())
     self.views.append(survey_conversion.GradingSurveyGroupConversion())
     self.views.append(survey_conversion.ProjectSurveyRecordConversion())
+    self.views.append(oauth.PopupOAuthRedirectPage())
+    self.views.append(oauth.PopupOAuthVerified())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.

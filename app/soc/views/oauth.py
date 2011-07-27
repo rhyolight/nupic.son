@@ -77,3 +77,56 @@ class OAuthVerifyToken(RequestHandler):
     next = self.request.GET.get('next','/')
     self.redirect.toUrl(next)
     return self.response
+
+
+class PopupOAuthRedirectPage(RequestHandler):
+  """Redirects popup page to Google Documents.
+  """
+
+  def djangoURLPatterns(self):
+    patterns = [
+        django_url(r'^gdata/popup/oauth/redirect$', self,
+                   name='gdata_popup_oauth_redirect'),
+    ]
+    return patterns
+
+  def checkAccess(self):
+    self.check.isUser()
+
+  def get(self):
+    access_token = oauth_helper.getAccessToken(self.data.user)
+    if access_token:
+      url = self.redirect.urlOf('gdata_popup_oauth_redirect')
+    else:
+      service = oauth_helper.createDocsService(self.data)
+      next = '%s?next=%s' % (self.redirect.urlOf('gdata_oauth_verify'),
+                             self.redirect.urlOf('gdata_popup_oauth_verified'))
+      url = oauth_helper.generateOAuthRedirectURL(
+          service, self.data.user,
+          next)
+    self.redirect.toUrl(url)
+    return self.response
+
+
+class PopupOAuthVerified(RequestHandler):
+  """ Calls parent window's methods to indicate successful login.
+  """
+
+  def djangoURLPatterns(self):
+    patterns = [
+        django_url(r'^gdata/popup/oauth/verified$', self,
+                   name='gdata_popup_oauth_verified')
+    ]
+    return patterns
+
+  def checkAccess(self):
+    self.check.canAccessGoogleDocs()
+
+  def get(self):
+    html = (
+        "<html><body><script type='text/javascript'>"
+        "    window.opener.melange.gdata.loginSuccessful();"
+        "    window.close();"
+        "</script></body></html>"
+    )
+    self.response.write(html)
