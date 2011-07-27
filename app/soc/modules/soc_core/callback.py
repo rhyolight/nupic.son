@@ -46,7 +46,7 @@ class Callback(object):
     from soc.views import host
     from soc.views import legacy
     from soc.views import site
-    from soc.views.gdata_apis import oauth
+    from soc.views import oauth
     from soc.tasks import mailer
 
     self.views.append(host.HostProfilePage())
