@@ -1345,19 +1345,19 @@ class StudentsComponent(Component):
     addAddressColumns(list_config)
 
     list_config.addColumn('school_name', "school_name",
-        (lambda ent, si, *args: si.school_name), hidden=True)
+        (lambda ent, si, *args: si[ent.key()].school_name), hidden=True)
     list_config.addColumn('school_country', "school_country",
-        (lambda ent, si, *args: si.school_country), hidden=True)
+        (lambda ent, si, *args: si[ent.key()].school_country), hidden=True)
     list_config.addColumn('school_home_page', "school_home_page",
-        (lambda ent, si, *args: si.school_home_page), hidden=True)
+        (lambda ent, si, *args: si[ent.key()].school_home_page), hidden=True)
     list_config.addColumn('school_type', "school_type",
-        (lambda ent, si, *args: si.school_type), hidden=True)
+        (lambda ent, si, *args: si[ent.key()].school_type), hidden=True)
     list_config.addColumn('major', "major",
-        (lambda ent, si, *args: si.major), hidden=True)
+        (lambda ent, si, *args: si[ent.key()].major), hidden=True)
     list_config.addColumn('degree', "degree",
-        (lambda ent, si, *args: si.degree), hidden=True)
+        (lambda ent, si, *args: si[ent.key()].degree), hidden=True)
     list_config.addColumn('expected_graduation', "expected_graduation",
-        (lambda ent, si, *args: si.expected_graduation), hidden=True)
+        (lambda ent, si, *args: si[ent.key()].expected_graduation), hidden=True)
 
     list_config.addColumn(
         'number_of_proposals', "#proposals",
