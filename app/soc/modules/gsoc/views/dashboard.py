@@ -1203,12 +1203,24 @@ def addAddressColumns(list_config):
   list_config.addSimpleColumn('res_postalcode', "res_postalcode", hidden=True)
   list_config.addSimpleColumn('phone', "phone", hidden=True)
   list_config.addSimpleColumn('ship_name', "ship_name", hidden=True)
-  list_config.addSimpleColumn('ship_street', "ship_street", hidden=True)
-  list_config.addSimpleColumn('ship_street_extra', "ship_street_extra", hidden=True)
-  list_config.addSimpleColumn('ship_city', "ship_city", hidden=True)
-  list_config.addSimpleColumn('ship_state', "ship_state", hidden=True)
-  list_config.addSimpleColumn('ship_country', "ship_country", hidden=True)
-  list_config.addSimpleColumn('ship_postalcode', "ship_postalcode", hidden=True)
+  list_config.addColumn(
+      'ship_street', "ship_street",
+      (lambda ent, *args: ent.shipping_street()), hidden=True)
+  list_config.addColumn(
+      'ship_street_extra', "ship_street_extra",
+      (lambda ent, *args: ent.shipping_street_extra()), hidden=True)
+  list_config.addColumn(
+      'ship_city', "ship_city",
+      (lambda ent, *args: ent.shipping_city()), hidden=True)
+  list_config.addColumn(
+      'ship_state', "ship_state",
+      (lambda ent, *args: ent.shipping_state()), hidden=True)
+  list_config.addColumn(
+      'ship_country', "ship_country",
+      (lambda ent, *args: ent.shipping_country()), hidden=True)
+  list_config.addColumn(
+      'ship_postalcode', "ship_postalcode",
+      (lambda ent, *args: ent.shipping_postalcode()), hidden=True)
   list_config.addSimpleColumn('tshirt_style', "tshirt_style", hidden=True)
   list_config.addSimpleColumn('tshirt_size', "tshirt_size", hidden=True)
 
