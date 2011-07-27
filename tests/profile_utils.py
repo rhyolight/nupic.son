@@ -94,6 +94,14 @@ class GSoCProfileHelper(object):
     self.profile = self.seed(GSoCProfile, properties)
     return self.profile
 
+  def createInactiveProfile(self):
+    """Creates an inactive profile for the current user.
+    """
+    self.createProfile()
+    self.profile.status = 'inactive'
+    self.profile.put()
+    return self.profile
+
   def notificationSettings(
       self, new_requests=False, new_invites=False,
       invite_handled=False, request_handled=False,
@@ -121,6 +129,12 @@ class GSoCProfileHelper(object):
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.put()
     return self.profile
+
+  def createInactiveStudent(self):
+    """Sets the current user to be an inactive student for the current program.
+    """
+    self.createInactiveProfile()
+    return self.createStudent()
 
   def createStudentWithProposal(self, org, mentor):
     """Sets the current user to be a student with a proposal for the
