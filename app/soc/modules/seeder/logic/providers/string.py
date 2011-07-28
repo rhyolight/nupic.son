@@ -123,6 +123,14 @@ class DocumentKeyNameProvider(KeyNameProvider):
     key_name = "%s/%s" % (prefix, key_name)
     return key_name
 
+class SurveyKeyNameProvider(KeyNameProvider):
+  """Data proider that returns a key_name for Survey models.
+  """
+  def getValue(self, values):
+    key_name = super(SurveyKeyNameProvider, self).getValue(values)
+    prefix = values['prefix']
+    key_name = "%s/%s" % (prefix, key_name)
+    return key_name
 
 class RandomWordProvider(StringProvider):
   """Data provider that returns a random word.
