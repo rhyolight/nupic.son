@@ -207,7 +207,7 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
           self.data.mentor_evaluation, self.data.POST or None)
 
     context = {
-        'page_name': '%s page' % (self.data.mentor_evaluation.title),
+        'page_name': '%s' % (self.data.mentor_evaluation.title),
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'project': self.data.project.title,
         'student': self.data.project_owner.name(),
