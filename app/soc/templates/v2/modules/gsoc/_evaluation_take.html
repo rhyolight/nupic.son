@@ -13,6 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block form_header_msg %}
+  {{ block.super }}
+  <h3 id="form-project-title">
+    Project: {{ project }}<br/>
+    {% if student %}
+      Student: {{ student }}
+    {% endif %}
+  </h3>
+{% endblock form_header_msg %}
+
 
 {% block dependencies %}
   [
