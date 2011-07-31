@@ -42,9 +42,9 @@ from soc.modules.gsoc.views.helper import url_patterns
 
 
 DEF_CANNOT_ACCESS_EVALUATION_FMT = ugettext(
-    'Org Admins can view this evaluation submitted by the student only '
-    'after the evaluation deadline. Please visit this page after the '
-    'evaluation deadline has passed.')
+    'Organization Administrators can view this evaluation submitted by the '
+    'student only after the evaluation deadline. Please visit this page '
+    'after the evaluation deadline has passed.')
 
 
 class GSoCStudentEvaluationEditForm(forms.SurveyEditForm):
