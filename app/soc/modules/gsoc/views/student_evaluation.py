@@ -28,6 +28,8 @@ from soc.views.helper import lists
 
 from django.utils.translation import ugettext
 
+from soc.logic.exceptions import AccessViolation
+from soc.logic.exceptions import RedirectRequest
 from soc.views.helper.access_checker import isSet
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
@@ -37,6 +39,12 @@ from soc.modules.gsoc.models.project_survey_record import \
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
+
+
+DEF_CANNOT_ACCESS_EVALUATION_FMT = ugettext(
+    'Org Admins can view this evaluation submitted by the student only '
+    'after the evaluation deadline. Please visit this page after the '
+    'evaluation deadline has passed.')
 
 
 class GSoCStudentEvaluationEditForm(forms.SurveyEditForm):
@@ -160,6 +168,10 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
           self.data.student_evaluation.link_id).urlOf(
           'gsoc_show_student_evaluation')
     self.check.isSurveyActive(self.data.student_evaluation, show_url)
+
+    self.check.isProfileActive()
+    if self.data.orgAdminFor(self.data.project.org):
+      raise RedirectRequest(show_url)
 
     self.check.canUserTakeSurvey(self.data.student_evaluation)
     self.check.isStudentForSurvey()
@@ -310,7 +322,10 @@ class GSoCStudentEvaluationShowPage(RequestHandler):
     self.check.isProfileActive()
     if self.data.orgAdminFor(self.data.project.org):
       self.data.role = 'org_admin'
-      return
+      if self.data.timeline.afterSurveyEnd(self.data.student_evaluation):
+        return
+      else:
+        raise AccessViolation(DEF_CANNOT_ACCESS_EVALUATION_FMT)
 
     self.check.isStudentForSurvey()
     self.data.role = 'student'
