@@ -42,7 +42,7 @@ class StudentEvaluationTest(DjangoTestCase):
     self.init()
 
   def assertEvaluationCreateTemplateUsed(self, response):
-    """Asserts that all the proposal review were used.
+    """Asserts that all the evaluation create/edit templates were used.
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/form_base.html')
@@ -50,7 +50,7 @@ class StudentEvaluationTest(DjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_evaluation.html')
 
   def assertEvaluationTakeTemplateUsed(self, response):
-    """Asserts that all the proposal review were used.
+    """Asserts that all the evaluation take templates were used.
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/form_base.html')
@@ -58,7 +58,7 @@ class StudentEvaluationTest(DjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_evaluation_take.html')
 
   def assertEvaluationShowTemplateUsed(self, response):
-    """Asserts that all the proposal review were used.
+    """Asserts that all the evaluation show templates were used.
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_survey/show.html')
