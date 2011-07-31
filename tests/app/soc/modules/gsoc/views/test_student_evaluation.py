@@ -22,6 +22,9 @@ __authors__ = [
   ]
 
 
+from django.utils import simplejson as json
+from django.utils.html import escape
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
 from tests import timeline_utils
@@ -218,13 +221,46 @@ class StudentEvaluationTest(DjangoTestCase):
     self.assertContains(
         response, '<input name="schema" type="hidden" id="schema" value="" />')
 
+    self.assertEqual(response.context['page_name'],
+                     'Create new student evaluation')
+    self.assertEqual(response.context['post_url'], url)
+    form = response.context['forms'][0]
+
+    expected_fields = ['author', 'title', 'short_name', 'content',
+                       'survey_start', 'survey_end', 'schema'].sort()
+    actual_fields = form.fields.keys().sort()
+    self.assertEqual(expected_fields, actual_fields)
+
     override = {
         'survey_content': None,
         'author': host,
         'modified_by': host,
+        'schema': self.evalSchemaString(),
         }
     response, _ = self.modelPost(url, ProjectSurvey, override)
     self.assertResponseRedirect(response, url+'?validated')
+
+    eval = ProjectSurvey.all().get()
+
+    response = self.client.get(url)
+    self.assertEvaluationCreateTemplateUsed(response)
+
+    self.assertContains(
+        response, 'Edit - %s' % (eval.title,))
+    self.assertContains(
+        response,
+        '<input name="schema" type="hidden" id="schema" value=%s />'
+        % (json.dumps(escape(eval.schema)),))
+
+    self.assertEqual(response.context['page_name'],
+                     'Edit - %s' % (eval.title,))
+    self.assertEqual(response.context['post_url'], url)
+    form = response.context['forms'][0]
+
+    expected_fields = ['author', 'title', 'short_name', 'content',
+                       'survey_start', 'survey_end', 'schema'].sort()
+    actual_fields = form.fields.keys().sort()
+    self.assertEqual(expected_fields, actual_fields)
 
   def testTakeEvaluationForMentor(self):
     url, eval, _ = self.getStudentEvalRecordProperties()
