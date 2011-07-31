@@ -221,6 +221,18 @@ class DjangoTestCase(TestCase):
     response = self.post(url, properties)
     return response, properties
 
+  def createOrg(self, override={}):
+    """Creates an organization for the defined properties.
+    """
+    from soc.modules.gsoc.models.organization import GSoCOrganization
+
+    properties = {'scope': self.gsoc, 'status': 'active',
+                  'scoring_disabled': False, 'max_score': 5,
+                  'founder': self.founder,
+                  'home': None,}
+    properties.update(override)
+    return self.seed(GSoCOrganization, properties)
+
   def init(self):
     """Performs test setup.
 
@@ -238,7 +250,6 @@ class DjangoTestCase(TestCase):
     from soc.models.document import Document
     from soc.modules.gsoc.models.program import GSoCProgram
     from soc.modules.gsoc.models.timeline import GSoCTimeline
-    from soc.modules.gsoc.models.organization import GSoCOrganization
     from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
     from soc.models.org_app_survey import OrgAppSurvey
     from tests.timeline_utils import TimelineHelper
@@ -288,11 +299,7 @@ class DjangoTestCase(TestCase):
                   'survey_content': None,}
     self.org_app = self.seed(OrgAppSurvey, properties)
 
-    properties = {'scope': self.gsoc, 'status': 'active',
-                  'scoring_disabled': False, 'max_score': 5,
-                  'founder': self.founder,
-                  'home': None,}
-    self.org = self.seed(GSoCOrganization, properties)
+    self.org = self.createOrg()
 
     self.timeline = TimelineHelper(self.gsoc.timeline, self.org_app)
     self.data = GSoCProfileHelper(self.gsoc, self.dev_test)
