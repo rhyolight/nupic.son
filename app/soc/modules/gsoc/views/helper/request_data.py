@@ -208,6 +208,9 @@ class TimelineHelper(object):
   def afterSurveyStart(self, survey):
     return isAfter(survey.survey_start)
 
+  def afterSurveyEnd(self, survey):
+    return isAfter(survey.survey_end)
+
   def surveyPeriod(self, survey):
     start = survey.survey_start
     end = survey.survey_end
