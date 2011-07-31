@@ -49,6 +49,20 @@ class StudentEvaluationTest(DjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_evaluation.html')
 
+  def assertEvaluationTakeTemplateUsed(self, response):
+    """Asserts that all the proposal review were used.
+    """
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/form_base.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/_evaluation_take.html')
+
+  def assertEvaluationShowTemplateUsed(self, response):
+    """Asserts that all the proposal review were used.
+    """
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/_survey/show.html')
+
   def evalSchemaString(self):
     return ('[["frm-t1309871149671-item","frm-t1309871322655-item",'
         '"frm-t1309871157535-item","frm-t1309871294200-item",'
@@ -221,6 +235,9 @@ class StudentEvaluationTest(DjangoTestCase):
     response = self.client.get(url)
     self.assertResponseForbidden(response)
 
+    response = self.client.post(url)
+    self.assertResponseForbidden(response)
+
     project = GSoCProject.all().get()
     project.mentors.append(mentor.key())
     project.put()
@@ -382,7 +399,7 @@ class StudentEvaluationTest(DjangoTestCase):
     # test student evaluation show GET for a for a student who
     # has another project in a different organization
     response = self.client.get(url)
-    self.assertResponseOK(response)
+    self.assertEvaluationTakeTemplateUsed(response)
 
     self.ffPastEval(eval)
     response = self.client.get(url)
@@ -474,11 +491,11 @@ class StudentEvaluationTest(DjangoTestCase):
     # test student evaluation show GET for a for a student who
     # has another project in a different organization
     response = self.client.get(url)
-    self.assertResponseOK(response)
+    self.assertEvaluationShowTemplateUsed(response)
 
     self.ffPastEval(eval)
     response = self.client.get(url)
-    self.assertResponseOK(response)
+    self.assertEvaluationShowTemplateUsed(response)
 
   def testShowEvaluationForMentor(self):
     # test student evaluation show GET for a mentor of the same organization
@@ -544,4 +561,5 @@ class StudentEvaluationTest(DjangoTestCase):
 
     self.ffPastEval(eval)
     response = self.client.get(url)
-    self.assertResponseOK(response)
+    print [t.name for t in response.template]
+    self.assertEvaluationShowTemplateUsed(response)
