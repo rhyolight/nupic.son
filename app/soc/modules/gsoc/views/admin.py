@@ -373,6 +373,13 @@ class ProgramSettingsDashboard(Dashboard):
             'title': 'Edit timeline',
             'link': r.urlOf('edit_gsoc_timeline')
         },
+        {
+            'name': 'documents',
+            'description': ugettext(
+                'List of documents from various program.'),
+            'title': 'List of documents',
+            'link': r.urlOf('list_gsoc_documents')
+        },
     ]
 
     super(ProgramSettingsDashboard, self).__init__(request, data, subpages)

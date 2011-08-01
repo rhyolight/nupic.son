@@ -124,6 +124,7 @@
 .column-entry.report_statistic {
   background-image: url(../../../images/v2/gsoc/admin/report.png);
 }
+.column-entry.documents,
 .column-entry.evaluations,
 .column-entry.mentor_evaluations,
 .column-entry.student_evaluations
