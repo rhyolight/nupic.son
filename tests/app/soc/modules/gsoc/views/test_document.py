@@ -32,6 +32,25 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
 
 
+class ListDocumentTest(DjangoTestCase):
+  """Test document list page.
+  """
+
+  def setUp(self):
+    self.init()
+    self.data.createHost()
+
+  def testListDocument(self):
+    url = '/gsoc/documents/' + self.gsoc.key().name()
+    response = self.client.get(url)
+    self.assertGSoCTemplatesUsed(response)
+
+    response = self.getListResponse(url, 0)
+    self.assertIsJsonResponse(response)
+    data = response.context['data']['']
+    self.assertEqual(1, len(data))
+
+
 class EditProgramTest(DjangoTestCase):
   """Tests program edit page.
   """
