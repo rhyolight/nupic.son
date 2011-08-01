@@ -29,10 +29,13 @@ from soc.logic.helper import prefixes
 from soc.logic.models.document import logic as document_logic
 from soc.models.document import Document
 from soc.views import document
+from soc.views.helper import lists
 from soc.views.helper.access_checker import isSet
 from soc.views.forms import ModelForm
+from soc.views.template import Template
 
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -157,4 +160,85 @@ class EventsPage(RequestHandler):
         'document': self.data.program.events_page,
         'frame_url': self.data.program.events_frame_url,
         'page_name': 'Events and Timeline',
+    }
+
+
+class DocumentList(Template):
+  """Template for list of documents.
+  """
+
+  def __init__(self, request, data):
+    self.request = request
+    self.data = data
+    r = data.redirect
+
+    list_config = lists.ListConfiguration()
+    list_config.addSimpleColumn('title', 'Title')
+    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.addSimpleColumn('short_name', 'Short Name')
+    list_config.setRowAction(
+        lambda e, *args: r.document(e).urlOf('edit_gsoc_document'))
+
+    list_config.setDefaultPagination(False)
+    list_config.setDefaultSort('title')
+
+    self._list_config = list_config
+
+  def context(self):
+    description = 'List of documents for %s' % (
+            self.data.program.name)
+
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, description)
+
+    return {
+        'lists': [list],
+    }
+
+  def getListData(self):
+    idx = lists.getListIndex(self.request)
+    if idx == 0:
+      q = Document.all()
+      q.filter('scope', self.data.program)
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, q, lists.keyStarter)
+
+      return response_builder.build()
+    else:
+      return None
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/document/_document_list.html'
+
+
+class DocumentListPage(RequestHandler):
+  """View for the list documents page.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/document/document_list.html'
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'documents/%s$' % url_patterns.PROGRAM, self,
+            name='list_gsoc_documents'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def jsonContext(self):
+    list_content = DocumentList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+    return list_content.content()
+
+  def context(self):
+    return {
+        'page_name': "Documents for %s" % self.data.program.name,
+        'document_list': DocumentList(self.request, self.data),
+        'program_select': ProgramSelect(self.data, 'list_gsoc_documents'),
     }

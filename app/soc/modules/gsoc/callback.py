@@ -82,6 +82,7 @@ class Callback(object):
     self.views.append(admin.SurveyReminderPage())
     self.views.append(dashboard.Dashboard())
     self.views.append(document.DocumentPage())
+    self.views.append(document.DocumentListPage())
     self.views.append(document.EditDocumentPage())
     self.views.append(document.EventsPage())
     self.views.append(duplicates.DuplicatesPage())
