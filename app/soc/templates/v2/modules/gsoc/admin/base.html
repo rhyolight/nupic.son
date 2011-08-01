@@ -16,6 +16,7 @@ limitations under the License.
 {% block stylesheets %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/buttons.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/admin.css" />
 {% endblock stylesheets %}
 
 {% block usermenu %}
@@ -107,7 +108,6 @@ limitations under the License.
             });
       {% endfor %}
     },
-    css("/soc/content/{{ app_version }}/css/v2/gsoc/admin.css"),
     tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/admin.js", {
       'dashboard_class': 'dashboard',
       'dashboard_link_class': 'dashboard-link',
