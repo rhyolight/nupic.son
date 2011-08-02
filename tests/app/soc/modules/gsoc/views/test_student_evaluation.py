@@ -668,5 +668,4 @@ class StudentEvaluationTest(DjangoTestCase):
 
     self.ffPastEval(eval)
     response = self.client.get(url)
-    print [t.name for t in response.template]
     self.assertEvaluationShowTemplateUsed(response)
