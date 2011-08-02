@@ -72,7 +72,10 @@ def get_uploads(request, field_name=None, populate_post=False):
           request.__uploads.setdefault(key, []).append(
               blobstore.parse_blob_info(field))
         elif populate_post:
-          request.POST[key] = field.value
+          if isinstance(field, list):
+            request.POST[key] = [f.value for f in field]
+          else:
+            request.POST[key] = field.value
   if field_name:
     try:
       results = list(request.__uploads[field_name])
