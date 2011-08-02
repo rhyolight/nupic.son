@@ -22,12 +22,17 @@ __authors__ = [
   ]
 
 
+import urllib
+
+from django import forms as django_forms
 from django.utils import simplejson as json
 from django.utils.html import escape
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import DjangoTestCase
 from tests import timeline_utils
+
+from soc.views import forms
 
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
@@ -65,6 +70,41 @@ class StudentEvaluationTest(DjangoTestCase):
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_survey/show.html')
+
+  def assertFieldChoices(self, schema_choices, form_choices):
+    """Asserts if the form field has the same choices as defined in the schema.
+    """
+    choices = [c['value'] for c in schema_choices]
+    self.assertEqual(choices.sort(), form_choices.sort())
+
+  def assertFormFromSchema(self, form, schema_json):
+    """Asserts if the form built from the schema is same as the schema defined.
+    """
+    order, fields = json.loads(urllib.unquote(schema_json))
+
+    for field in order:
+      field_dict = fields[field]
+      form_field = form.fields[field]
+
+      if field_dict['field_type'] == 'checkbox':
+        self.assertTrue(isinstance(form_field,
+                                   django_forms.MultipleChoiceField))
+        self.assertTrue(isinstance(form_field.widget,
+                                   forms.CheckboxSelectMultiple))
+        self.assertFieldChoices(field_dict['values'], form_field.choices)
+      elif field_dict['field_type'] == 'radio':
+        self.assertTrue(isinstance(form_field, django_forms.ChoiceField))
+        self.assertTrue(isinstance(form_field.widget,
+                                   django_forms.RadioSelect))
+        self.assertFieldChoices(field_dict['values'], form_field.choices)
+      elif field_dict['field_type'] == 'textarea':
+        self.assertTrue(isinstance(form_field, django_forms.CharField))
+        self.assertTrue(isinstance(form_field.widget, django_forms.Textarea))
+      elif field_dict['field_type'] == 'input_text':
+        self.assertTrue(isinstance(form_field, django_forms.CharField))
+
+      self.assertEqual(field_dict['label'], form_field.label)
+      self.assertEqual(field_dict['required'], form_field.required)
 
   def evalSchemaString(self):
     return ('[["frm-t1309871149671-item","frm-t1309871322655-item",'
@@ -437,12 +477,43 @@ class StudentEvaluationTest(DjangoTestCase):
     response = self.client.get(url)
     self.assertEvaluationTakeTemplateUsed(response)
 
+    self.assertContains(response, '%s' % (eval.title))
+    self.assertContains(response, 'Project: %s' % (project.title))
+
+    self.assertEqual(response.context['page_name'],
+                     '%s' % (eval.title))
+    form = response.context['forms'][0]
+
+    self.assertFormFromSchema(form, eval.schema)
+
+    postdata = {
+        'frm-t1309871149671-item': 'one line text message',
+        'frm-t1309871322655-item': ['Option 2', 'Option 3'],
+        'frm-t1309871157535-item': """A quick brown fox jumped over a lazy dog.
+        A quick brown fox jumped over a lazy dog. A quick brown fox jumped 
+        over a lazy dog. A quick brown fox jumped over a lazy dog.""",
+        }
+    response = self.post(url, postdata)
+    self.assertResponseOK(response)
+    self.assertFormError(
+        response, 'form', 'frm-t1310822212610-item',
+        'This field is required.')
+
+    postdata = {
+        'frm-t1309871149671-item': 'one line text message',
+        'frm-t1309871322655-item': ['Option 2', 'Option 3'],
+        'frm-t1309871157535-item': """A quick brown fox jumped over a lazy dog.
+        A quick brown fox jumped over a lazy dog. A quick brown fox jumped 
+        over a lazy dog. A quick brown fox jumped over a lazy dog.""",
+        'frm-t1310822212610-item': "Wa Wa",
+        }
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(response, '%s?validated' % (url,))
+
     self.ffPastEval(eval)
     response = self.client.get(url)
     show_url = '%s/show/%s' % (base_url, suffix)
     self.assertResponseRedirect(response, show_url)
-
-    #TODO (madhu): Add tests for POST requests for take
 
   def testShowEvalForStudentWithNoProject(self):
     self.data.createStudent()
