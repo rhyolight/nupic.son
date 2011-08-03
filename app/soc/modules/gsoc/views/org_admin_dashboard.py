@@ -103,13 +103,14 @@ class StudentEvaluationComponent(dashboard.Component):
 
   def _getRowAction(self, entity, eval, *args):
     eval_ent = self.evals.get(eval)
-    if self.data.timeline.afterSurveyEnd(eval_ent):
-      return self.data.redirect.survey_record(
-          eval, entity.key().id_or_name(),
-          entity.parent().link_id).urlOf(
-              'gsoc_show_student_evaluation')
-    else:
+
+    if not self.data.timeline.afterSurveyEnd(eval_ent):
       return ''
+
+    url = self.data.redirect.survey_record(
+        eval, entity.key().id_or_name(),
+        entity.parent().link_id).urlOf('gsoc_show_student_evaluation')
+    return url
 
   def _getStatus(self, entity, eval, *args):
     eval_ent = self.evals.get(eval)
