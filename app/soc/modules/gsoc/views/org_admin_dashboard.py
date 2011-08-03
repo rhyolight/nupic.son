@@ -97,20 +97,20 @@ class StudentEvaluationComponent(dashboard.Component):
             self.record.modified, dashboard.DATETIME_FORMAT) if (
             self.record and self.record.modified) else 'N/A')
     list_config.setDefaultSort('student')
-    list_config.setRowAction(self._getRowAction)
+
+    def getRowAction(self, entity, eval, *args):
+      eval_ent = self.evals.get(eval)
+
+      if not self.data.timeline.afterSurveyEnd(eval_ent):
+        return ''
+
+      url = self.data.redirect.survey_record(
+          eval, entity.key().id_or_name(),
+          entity.parent().link_id).urlOf('gsoc_show_student_evaluation')
+      return url
+    list_config.setRowAction(getRowAction)
 
     self._list_config = list_config
-
-  def _getRowAction(self, entity, eval, *args):
-    eval_ent = self.evals.get(eval)
-
-    if not self.data.timeline.afterSurveyEnd(eval_ent):
-      return ''
-
-    url = self.data.redirect.survey_record(
-        eval, entity.key().id_or_name(),
-        entity.parent().link_id).urlOf('gsoc_show_student_evaluation')
-    return url
 
   def _getStatus(self, entity, eval, *args):
     eval_ent = self.evals.get(eval)
