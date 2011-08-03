@@ -472,11 +472,11 @@ class EvaluationsDashboard(Dashboard):
       request: The HTTPRequest object
       data: The RequestData object
     """
-    r = data.redirect
-    r.program()
-
     mentor_evaluations = MentorEvaluationsDashboard(request, data)
     student_evaluations = StudentEvaluationsDashboard(request, data)
+
+    r = data.redirect
+    r.program()
 
     subpages = [
         {
@@ -543,26 +543,38 @@ class MentorEvaluationsDashboard(Dashboard):
       data: The RequestData object
     """
     r = data.redirect
-    r.program()
+    r.survey('midterm')
 
     subpages = [
         {
-            'name': 'create_mentor_evaluation',
-            'description': ugettext('Create evaluation for mentors'),
-            'title': 'Create',
-            'link': '#'
-        },
-        {
             'name': 'edit_mentor_evaluation',
-            'description': ugettext('Edit evaluation for mentors'),
-            'title': 'Edit',
-            'link': '#'
+            'description': ugettext('Create or edit midterm evaluation for '
+                'mentors in active program'),
+            'title': 'Create or Edit Midterm',
+            'link': r.urlOf('gsoc_edit_mentor_evaluation')
         },
         {
             'name': 'view_mentor_evaluation',
-            'description': ugettext('View evaluation for mentors'),
-            'title': 'View',
-            'link': '#'
+            'description': ugettext('View midterm evaluation for mentors'),
+            'title': 'View Midterm Records',
+            'link': r.urlOf('gsoc_list_mentor_eval_records')
+        },
+    ]
+
+    r.survey('final')
+    subpages += [
+        {
+            'name': 'edit_mentor_evaluation',
+            'description': ugettext('Create or edit midterm evaluation for '
+                'mentors in active program'),
+            'title': 'Create or Edit Final Evaluation',
+            'link': r.urlOf('gsoc_edit_mentor_evaluation')
+        },
+        {
+            'name': 'view_mentor_evaluation',
+            'description': ugettext('View final evaluation for mentors'),
+            'title': 'View Final Evaluation Records',
+            'link': r.urlOf('gsoc_list_mentor_eval_records')
         },
     ]
 
@@ -602,26 +614,38 @@ class StudentEvaluationsDashboard(Dashboard):
       data: The RequestData object
     """
     r = data.redirect
-    r.program()
+    r.survey('midterm')
 
     subpages = [
         {
-            'name': 'create_student_evaluation',
-            'description': ugettext('Create evaluation for students'),
-            'title': 'Create',
-            'link': '#'
-        },
-        {
             'name': 'edit_student_evaluation',
-            'description': ugettext('Edit evaluation for students'),
-            'title': 'Edit',
-            'link': '#'
+            'description': ugettext('Create or edit midterm evaluation for '
+                'students in active program'),
+            'title': 'Create or Edit Midterm',
+            'link': r.urlOf('gsoc_edit_student_evaluation')
         },
         {
             'name': 'view_student_evaluation',
-            'description': ugettext('View evaluation for students'),
+            'description': ugettext('View midterm evaluation for students'),
             'title': 'View',
-            'link': '#'
+            'link': r.urlOf('gsoc_list_student_eval_records')
+        },
+    ]
+
+    r.survey('final')
+    subpages += [
+        {
+            'name': 'edit_student_evaluation',
+            'description': ugettext('Create or edit final evaluation for '
+                'students in active program'),
+            'title': 'Create or Edit Final Evaluation',
+            'link': r.urlOf('gsoc_edit_student_evaluation')
+        },
+        {
+            'name': 'view_student_evaluation',
+            'description': ugettext('View final evaluation for students'),
+            'title': 'View Final Evaluation Records',
+            'link': r.urlOf('gsoc_list_student_eval_records')
         },
     ]
 
