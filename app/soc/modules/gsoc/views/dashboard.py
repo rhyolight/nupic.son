@@ -532,7 +532,9 @@ class MyEvaluationsComponent(Component):
 
     starter = lists.keyStarter
     prefetcher = lists.listModelPrefetcher(
-        GSoCProject, ['org'], ['mentors'], parent=True)
+        GSoCProject, ['org'],
+        ['mentors', 'failed_evaluations'],
+        parent=True)
     row_adder = lists.evaluationRowAdder(self.evals)
 
     response_builder = lists.RawQueryContentResponseBuilder(
@@ -599,7 +601,9 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
 
     starter = lists.keyStarter
     prefetcher = lists.listModelPrefetcher(
-        GSoCProject, ['org'], ['mentors'], parent=True)
+        GSoCProject, ['org'],
+        ['mentors', 'failed_evaluations'],
+        parent=True)
     row_adder = lists.evaluationRowAdder(self.evals)
 
     response_builder = lists.RawQueryContentResponseBuilder(
