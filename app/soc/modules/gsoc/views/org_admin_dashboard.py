@@ -98,7 +98,7 @@ class StudentEvaluationComponent(dashboard.Component):
             self.record and self.record.modified) else 'N/A')
     list_config.setDefaultSort('student')
 
-    def getRowAction(self, entity, eval, *args):
+    def getRowAction(entity, eval, *args):
       eval_ent = self.evals.get(eval)
 
       if not self.data.timeline.afterSurveyEnd(eval_ent):
