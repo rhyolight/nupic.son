@@ -28,9 +28,11 @@ from django import forms as django_forms
 from django.utils import simplejson as json
 from django.utils.html import escape
 
-from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
 from tests import timeline_utils
+from tests.profile_utils import GSoCProfileHelper
+from tests.survey_utils import SurveyHelper
+from tests.test_utils import DjangoTestCase
+
 
 from soc.views import forms
 
@@ -38,7 +40,6 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
 from soc.modules.seeder.logic.providers.string import LinkIDProvider
-from soc.modules.seeder.logic.providers.string import SurveyKeyNameProvider
 
 
 class StudentEvaluationTest(DjangoTestCase):
@@ -48,6 +49,7 @@ class StudentEvaluationTest(DjangoTestCase):
   def setUp(self):
     super(StudentEvaluationTest, self).setUp()
     self.init()
+    self.evaluation = SurveyHelper(self.gsoc, self.dev_test)
 
   def assertEvaluationCreateTemplateUsed(self, response):
     """Asserts that all the evaluation create/edit templates were used.
@@ -106,48 +108,6 @@ class StudentEvaluationTest(DjangoTestCase):
       self.assertEqual(field_dict['label'], form_field.label)
       self.assertEqual(field_dict['required'], form_field.required)
 
-  def evalSchemaString(self):
-    return ('[["frm-t1309871149671-item","frm-t1309871322655-item",'
-        '"frm-t1309871157535-item","frm-t1309871294200-item",'
-        '"frm-t1310822212610-item"],{"frm-t1309871149671-item":'
-        '{"field_type":"input_text","required":true,"label":'
-        '"What%20is%20your%20name%3F"},"frm-t1309871322655-item":'
-        '{"field_type":"checkbox","required":false,"other":false,'
-        '"values":[{"value":"Option%203","checked":true},{"value":'
-        '"Option%202","checked":true},{"value":"Option%204","checked":true}'
-        ',{"value":"Option%201","checked":true}],"label":"'
-        'Give%20every%20option%20you%20think%20is%20right"},'
-        '"frm-t1309871157535-item":{"field_type":"textarea","required":'
-        'false,"label":"Write%20a%20detail%20of%20your%20project%3F"},'
-        '"frm-t1309871294200-item":{"field_type":"radio","required":'
-        'false,"other":false,"values":[{"value":"Amongst%20the%20best%20'
-        'people%20I%27ve%20ever%20worked%20with%20","checked":false},'
-        '{"value":"Don%27t%20Know","checked":false},{"value":"Yes","checked"'
-        ':false}],"label":"Are%20you%20alright%3F"},"frm-t1310822212610-item"'
-        ':{"field_type":"radio","required":true,"other":true,"values":'
-        '[{"value":"Wa","checked":true},{"value":"Wa%20Wa","checked":false}]'
-        ',"label":"Testing%20radio%20again%20%3A%29"}}]')
-
-  def createEvaluation(self, host=None, override={}):
-    if not host:
-      host_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-      host_profile.createOtherUser('mentor@example.com')
-      host = host_profile.createHost()
-
-    properties = {
-        'prefix': 'gsoc_program',
-        'schema': self.evalSchemaString(),
-        'survey_content': None,
-        'author': host,
-        'modified_by': host,
-        'scope': self.gsoc,
-        'key_name': SurveyKeyNameProvider(),
-        'survey_start': timeline_utils.past(),
-        'survey_end': timeline_utils.future(),
-        }
-    properties.update(override)
-    return self.seed(ProjectSurvey, properties)
-
   def createProject(self, override_properties={}):
     properties = {
         'is_featured': False, 'mentors': [],
@@ -158,7 +118,7 @@ class StudentEvaluationTest(DjangoTestCase):
     return self.seed(GSoCProject, properties)
 
   def getStudentEvalRecordProperties(self, show=False):
-    eval = self.createEvaluation()
+    eval = self.evaluation.createStudentEvaluation()
 
     mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor_profile.createOtherUser('mentor@example.com')
@@ -275,7 +235,7 @@ class StudentEvaluationTest(DjangoTestCase):
         'survey_content': None,
         'author': host,
         'modified_by': host,
-        'schema': self.evalSchemaString(),
+        'schema': self.evaluation.evalSchemaString(),
         }
     response, _ = self.modelPost(url, ProjectSurvey, override)
     self.assertResponseRedirect(response, url+'?validated')
@@ -455,7 +415,7 @@ class StudentEvaluationTest(DjangoTestCase):
     self.assertResponseRedirect(response, show_url)
 
   def testTakeEvalForStudent(self):
-    eval = self.createEvaluation()
+    eval = self.evaluation.createStudentEvaluation()
 
     mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor_profile.createOtherUser('mentor@example.com')
@@ -579,7 +539,7 @@ class StudentEvaluationTest(DjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testShowEvalForStudent(self):
-    eval = self.createEvaluation()
+    eval = self.evaluation.createStudentEvaluation()
 
     mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor_profile.createOtherUser('mentor@example.com')
