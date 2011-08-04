@@ -744,7 +744,8 @@ def evaluationRowAdder(evals):
       if isAfter(eval.survey_start):
         content_response.addRow(entity, eval_link_id, *args)
 
-        if failed_eval and failed_eval.key() == eval.key():
+        if failed_eval and \
+            failed_eval.key().id_or_name() == eval.key().id_or_name():
           break
 
   return adder
