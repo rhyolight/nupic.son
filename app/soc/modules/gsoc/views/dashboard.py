@@ -180,7 +180,6 @@ class Dashboard(RequestHandler):
 
     if self.data.is_student and info.number_of_projects:
       # Add a component to show the evaluations
-      # TODO (madhu): (big fixes)
       evals = dictForSurveyModel(
           ProjectSurvey, self.data.program, ['midterm', 'final'])
       if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):

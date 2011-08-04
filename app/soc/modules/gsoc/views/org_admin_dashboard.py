@@ -226,9 +226,9 @@ class Dashboard(dashboard.Dashboard):
     """
     program = self.data.program
     mentor_evals =  dictForSurveyModel(GradingProjectSurvey, program,
-                                     ['midterm', 'final'])
+                                       ['midterm', 'final'])
     student_evals = dictForSurveyModel(ProjectSurvey, program,
-                                     ['midterm', 'final'])
+                                       ['midterm', 'final'])
 
     components = [
         MentorEvaluationComponent(self.request, self.data, mentor_evals, 0),
