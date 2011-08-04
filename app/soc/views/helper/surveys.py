@@ -1233,6 +1233,7 @@ def dictForSurveyModel(model, program, surveys):
     surveys: The list containing the link ids of the surveys
   """
   survey_dict = dict([(e.link_id, e) for e in getSurveysForProgram(
+    model, program, surveys)])
 
   # Create a sorted dictionary to ensure that the surveys are stored
   # in the same order they were asked for in addition to giving key
@@ -1244,4 +1245,3 @@ def dictForSurveyModel(model, program, surveys):
       survey_sorted_dict[s] = survey
 
   return survey_sorted_dict
-    model, program, surveys)])
