@@ -22,7 +22,10 @@ __authors__ = [
   ]
 
 
+from django.utils import simplejson as json
+
 from tests.profile_utils import GSoCProfileHelper
+from tests.survey_utils import SurveyHelper
 from tests.test_utils import DjangoTestCase
 
 # TODO: perhaps we should move this out?
@@ -90,6 +93,31 @@ class DashboardTest(DjangoTestCase):
     self.assertDashboardComponentTemplatesUsed(response)
     response = self.getListResponse(url, 2)
     self.assertIsJsonResponse(response)
+
+  def testDashboardAsStudentWithEval(self):
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com').createMentor(self.org)
+    self.data.createStudentWithProject(self.org, mentor.profile)
+    url = '/gsoc/dashboard/' + self.gsoc.key().name()
+    response = self.client.get(url)
+    self.assertDashboardComponentTemplatesUsed(response)
+    response = self.getListResponse(url, 3)
+    self.assertResponseForbidden(response)
+
+    response = self.client.get(url)
+    self.assertDashboardComponentTemplatesUsed(response)
+    self.evaluation = SurveyHelper(self.gsoc, self.dev_test)
+    self.evaluation.createStudentEvaluation(override={'link_id': 'midterm'})
+    response = self.getListResponse(url, 3)
+    self.assertIsJsonResponse(response)
+    data = json.loads(response.content)
+    self.assertEqual(len(data['data']['']), 1)
+
+    self.evaluation.createStudentEvaluation(override={'link_id': 'final'})
+    response = self.getListResponse(url, 3)
+    self.assertIsJsonResponse(response)
+    data = json.loads(response.content)
+    self.assertEqual(len(data['data']['']), 2)
 
   def testDashboardAsHost(self):
     self.data.createHost()
