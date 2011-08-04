@@ -1232,5 +1232,16 @@ def dictForSurveyModel(model, program, surveys):
     program: The program to query
     surveys: The list containing the link ids of the surveys
   """
-  return dict([(e.link_id, e) for e in getSurveysForProgram(
+  survey_dict = dict([(e.link_id, e) for e in getSurveysForProgram(
+
+  # Create a sorted dictionary to ensure that the surveys are stored
+  # in the same order they were asked for in addition to giving key
+  # based access to surveys fetched
+  survey_sorted_dict = SortedDict()
+  for s in surveys:
+    survey = survey_dict.get(s)
+    if survey:
+      survey_sorted_dict[s] = survey
+
+  return survey_sorted_dict
     model, program, surveys)])
