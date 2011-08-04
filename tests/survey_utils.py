@@ -88,7 +88,8 @@ class SurveyHelper(object):
     return self.seed(survey, properties)
 
   def createStudentEvaluation(self, host=None, override={}):
-    self.createEvaluation(ProjectSurvey, host=host, override=override)
+    return self.createEvaluation(ProjectSurvey, host=host, override=override)
 
   def createMentorEvaluation(self, host=None, override={}):
-    self.createEvaluation(GradingProjectSurvey, host=host, override=override)
+    return self.createEvaluation(GradingProjectSurvey, host=host,
+                                 override=override)
