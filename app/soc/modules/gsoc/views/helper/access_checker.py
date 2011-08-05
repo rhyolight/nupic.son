@@ -176,14 +176,16 @@ class AccessChecker(access_checker.AccessChecker):
 
     self.isProjectInURLValid()
 
+    project = self.data.project
+
     # check if the project belongs to the current user and if so he
     # can access the survey
-    expected_profile_key = self.data.project.parent_key()
+    expected_profile_key = project.parent_key()
     if expected_profile_key != self.data.profile.key():
       raise AccessViolation(DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU_MSG)
 
     # check if the project is still ongoing
-    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+    if project.status in ['invalid', 'withdrawn']:
       raise AccessViolation(DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
 
   def isMentorForSurvey(self):
@@ -193,8 +195,10 @@ class AccessChecker(access_checker.AccessChecker):
 
     self.isProjectInURLValid()
 
+    project = self.data.project
+
     # check if the project is still ongoing
-    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+    if project.status in ['invalid', 'withdrawn']:
       raise AccessViolation(DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
 
     if self.data.orgAdminFor(self.data.organization):
@@ -202,9 +206,8 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check if the currently logged in user is the mentor or co-mentor
     # for the project in request or the org admin for the org
-    if self.data.profile.key() not in self.data.project.mentors:
+    if self.data.profile.key() not in project.mentors:
       raise AccessViolation(DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU_MSG)
-
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass
