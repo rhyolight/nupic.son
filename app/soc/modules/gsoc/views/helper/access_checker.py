@@ -41,6 +41,10 @@ from soc.modules.gsoc.models.project_survey_record import \
 from soc.modules.gsoc.models.student_proposal import StudentProposal
 
 
+DEF_FAILED_PREVIOUS_EVAL_MSG_FMT = ugettext(
+    'You cannot access %s for this project because this project was '
+    'failed in the previous evaluation.')
+
 DEF_MAX_PROPOSALS_REACHED = ugettext(
     'You have reached the maximum number of proposals allowed '
     'for this program.')
@@ -188,6 +192,18 @@ class AccessChecker(access_checker.AccessChecker):
     if project.status in ['invalid', 'withdrawn']:
       raise AccessViolation(DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
 
+    # check if the project has failed in a previous evaluation
+    # TODO(Madhu): This still has a problem that when the project fails
+    # in the final evaluation, the users will not be able to access the
+    # midterm evaluation show page. Should be fixed.
+    if project.status == 'failed' and project.failed_evaluations:
+      failed_evals = db.get(project.failed_evaluations)
+      fe_keynames = [f.grading_survey_group.grading_survey.key(
+          ).id_or_name() for f in failed_evals]
+      if self.data.student_evaluation.key().id_or_name() not in fe_keynames:
+        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL_MSG_FMT % (
+            self.data.student_evaluation.short_name.lower()))
+
   def isMentorForSurvey(self):
     """Checks if the user is the mentor for the project or org admin.
     """
@@ -200,6 +216,18 @@ class AccessChecker(access_checker.AccessChecker):
     # check if the project is still ongoing
     if project.status in ['invalid', 'withdrawn']:
       raise AccessViolation(DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
+
+    # check if the project has failed in a previous evaluation
+    # TODO(Madhu): This still has a problem that when the project fails
+    # in the final evaluation, the users will not be able to access the
+    # midterm evaluation show page. Should be fixed.
+    if project.status == 'failed' and project.failed_evaluations:
+      failed_evals = db.get(project.failed_evaluations)
+      fe_keynames = [f.grading_survey_group.grading_survey.key(
+          ).id_or_name() for f in failed_evals]
+      if self.data.mentor_evaluation.key().id_or_name() not in fe_keynames:
+        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL_MSG_FMT % (
+            self.data.mentor_evaluation.short_name.lower()))
 
     if self.data.orgAdminFor(self.data.organization):
       return
