@@ -67,8 +67,9 @@ class Timeline(Template):
                  % system.getMelangeVersion())
 
     context = {
-        'img_url': img_url
-    }
+        'img_url': img_url,
+        'events_link': self.data.redirect.events().url(),
+        }
 
     if self.next_deadline_msg and self.next_deadline_datetime:
       context['next_deadline_msg'] = self.next_deadline_msg
