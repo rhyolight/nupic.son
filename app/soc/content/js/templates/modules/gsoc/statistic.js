@@ -22,27 +22,38 @@ melange.templates.inherit(function (_self, context) {
   eval('var urls = ' + context.urls);
   eval('var manage_urls = ' + context.manage_urls)
   eval('var visualizations = ' + context.visualizations);
+  eval('var visibilities = ' + context.visibilities);
+  
+  var toggleButton = null;
+
+  // Whether change() function should send a request to the server
+  var sendRequest = true;
 
   var bindToggleButton = function () {
-    jQuery(document).ready(function() {
-	  jQuery('.on_off :checkbox#is-visible-statistic')
+     toggleButton = jQuery('.on_off :checkbox#is-visible-statistic')
 	    .iphoneStyle({
 	      checkedLabel: 'Yes',
 	      uncheckedLabel: 'No'
-	    }).change(toggleButtonChanged);
-	});
+	    })
+	    .change(toggleButtonChanged);
   }
 
   var toggleButtonChanged = function () {
-	var buttonState = "checked";
-	jQuery.post(
-		manage_urls[key_name],
-	    {value: buttonState,
-	     xsrf_token: window.xsrf_token
-	    },
-	    function (data) {
-	      buttonState = "unchecked";
-	    });
+	if (!sendRequest) {
+	  sendRequest = true;
+    } else {
+	  var oldState = toggleButton.is(':checked');
+	  var _key_name = key_name;
+	  jQuery.post(
+	      manage_urls[_key_name],
+	      {value: !oldState,
+	       xsrf_token: window.xsrf_token
+	      },
+	      function (data) {
+	        visibilities[_key_name] = !oldState;
+	      }
+	   );
+    }
   }
   
   /* Maps Google Visualization Data packages with human friendly names. */
@@ -107,6 +118,10 @@ melange.templates.inherit(function (_self, context) {
 	  key_name = jQuery(this).attr('id');
 	  visualization_name = visualizations[key_name][0];
 	  drawStatisticVisualization(true);
+	  if (toggleButton.is(':checked') !== visibilities[key_name]) {
+		sendRequest = false;
+		toggleButton.attr('checked', !toggleButton.is(':checked')).change();
+	  }
 	});
   };
 

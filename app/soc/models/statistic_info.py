@@ -71,6 +71,12 @@ class StatisticInfo(soc.models.base.ModelWithFieldAttributes):
     def __eq__(self, other):
       return self.name == other.name
 
+    def setVisible(self, is_visible):
+      self.is_visible = is_visible
+
+    def getVisible(self):
+      return self.is_visible
+
   @classmethod
   def getInstance(cls):
     return cls.get_or_insert(cls.INSTANCE_KEY_NAME)
@@ -95,7 +101,36 @@ class StatisticInfo(soc.models.base.ModelWithFieldAttributes):
     return [s for s in self.getStatistics() if s.is_visible]
 
   def hasStatistic(self, statistic):
-    """Returns True if the specified statistic exist in the instance
+    """Returns True if the specified statistic exists in the instance
     """
-
     return statistic in self.getStatistics()
+
+  def getStatisticByName(self, name):
+    """Returns statistic for the specified name.
+    """
+    for statistic in self.getStatistics():
+      if statistic.name == name:
+        return statistic
+
+    raise Exception('Statistic does not exist')
+
+  def removeStatistic(self, statistic):
+    """Removes statistic from the entity.
+    """
+    self.getStatistics().remove(statistic)
+
+  def updateStatistic(self, statistic):
+    """Updates an existing statistic in the entity.
+    """
+    
+    updated = False
+    for i, item in enumerate(self.data):
+      if self.Statistic.fromString(item).name == statistic.name:
+        updated = True
+        self.data[i] = str(statistic)
+        break
+
+    if not updated:
+      self.appendStatistic(statistic)
+
+    self.put()

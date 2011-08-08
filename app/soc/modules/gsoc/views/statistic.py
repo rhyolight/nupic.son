@@ -27,6 +27,8 @@ from django.utils import simplejson
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
+from soc.logic.exceptions import AccessViolation
+
 from soc.views import forms
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
@@ -46,7 +48,6 @@ class ManageActions(Template):
 
   IS_VISIBLE_HELP_MSG = ugettext(
       'Whether this statistic is publicly visible to all users or not.')
-
 
   def context(self):
     self.toggle_buttons = [
@@ -83,11 +84,19 @@ class StatisticDashboard(RequestHandler):
     return 'v2/modules/gsoc/statistic/base.html'
 
   def checkAccess(self):
-    pass
+    self.isHost = False
+    try:
+      self.check.isHost()
+      self.isHost = True
+    except AccessViolation:
+      pass
 
   def context(self):
-    # TODO(daniel): admin should get all statistics, while users only visible
-    names = [s.name for s in GSoCStatisticInfo.getInstance().getStatistics()]
+    if self.isHost:
+      infos = GSoCStatisticInfo.getInstance().getStatistics()
+    else:
+      infos = GSoCStatisticInfo.getInstance().getVisibleStatistics()
+    names = [i.name for i in infos]
 
     statistics = [s for s in mapping.STATISTICS if s['name'] in names]
     visualizations = dict(
@@ -98,8 +107,12 @@ class StatisticDashboard(RequestHandler):
         'manage_urls': self._constructManageUrls(),
         'statistics': statistics,
         'visualizations': visualizations,
-        'manage_actions': ManageActions(self.data)
+        'manage_actions': self._constructManageActions(),
+        'visibilities': self._constructVisibilities(infos),
         }
+
+  def _constructManageActions(self):
+    return ManageActions(self.data) if self.isHost else None
 
   def _constructFetchUrls(self):
     fetch_urls = {}
@@ -115,7 +128,13 @@ class StatisticDashboard(RequestHandler):
       manage_urls[name] = reverse(
           'gsoc_statistic_manage', kwargs={'key_name': name})
     return manage_urls
-
+  
+  def _constructVisibilities(self, infos):
+    visibilities = {}
+    if self.isHost:
+      for info in infos:
+        visibilities[str(info.name)] = True if info.is_visible else False
+    return simplejson.dumps(visibilities)
 
 class StatisticFetcher(RequestHandler):
   """Loads data for a particular statistic.
@@ -125,6 +144,9 @@ class StatisticFetcher(RequestHandler):
     self._presenter = None
 
   def checkAccess(self):
+    key_name = self.data.kwargs['key_name']
+    
+    # TODO(dhans): check if the statistic is visible
     pass
 
   def djangoURLPatterns(self):
@@ -160,11 +182,6 @@ class StatisticManager(RequestHandler):
   def checkAccess(self):
     self.check.isHost()
 
-    key_name = self.data.kwargs['key_name']    
-    self.data.statistic = GSoCStatistic.get_by_key_name(key_name)
-
-    self.check.isStatisticValid()
-
   def djangoURLPatterns(self):
     return [
          url(r'statistic/manage/(?P<key_name>(\w+))$', self,
@@ -172,14 +189,14 @@ class StatisticManager(RequestHandler):
     ]
 
   def post(self):
-    value = self.data.POST.get('value')
-    if value == 'checked':
-      is_visible = True
-    elif value == 'unchecked':
-      is_visible = False
-    else:
+    key_name = self.data.kwargs['key_name']
+    statistic = GSoCStatisticInfo.getInstance().getStatisticByName(key_name)
+
+    value = simplejson.loads(self.data.POST.get('value'))
+    if not isinstance(value, bool):
       raise AccessViolation('Unsupported value sent to the server')
 
-    if self.data.statistic.is_visible != is_visible:
-      self.data.statistic.is_visible = is_visible
-      db.put(self.data.statistic)
+    if statistic.getVisible() != value:
+      statistic.setVisible(value)
+      GSoCStatisticInfo.getInstance().updateStatistic(statistic)
+      

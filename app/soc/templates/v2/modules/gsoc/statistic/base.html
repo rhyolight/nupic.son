@@ -21,7 +21,9 @@ limitations under the License.
 {% endblock stylesheets %}
 
 {% block usermenu %}
+  {% if manage_actions %}
   {{ manage_actions.render }}
+  {% endif %} 
 {% endblock usermenu %}
 
 
@@ -58,6 +60,7 @@ limitations under the License.
       'urls': '{{ fetch_urls|escapejs }}',
       'manage_urls': '{{ manage_urls|escapejs }}',
       'visualizations': '{{ visualizations|escapejs }}',
+      'visibilities': '{{ visibilities|escapejs }}' 
       }),
     function () { 
       melange.action.createCluetip();
