@@ -164,6 +164,9 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
 
     assert isSet(self.data.student_evaluation)
 
+    if self.data.is_host:
+      return
+
     show_url = self.data.redirect.survey_record(
           self.data.student_evaluation.link_id).urlOf(
           'gsoc_show_student_evaluation')
