@@ -293,6 +293,79 @@
     }
 }
 
+/* Proposal form comments */
+#form.form-project-comment {/*project comment form*/
+    margin: 0 auto;
+    width: 524px;
+
+    fieldset {
+        background: #cde5f5;
+        margin: 0;
+        padding: 30px 0 10px 0;
+        width: auto;
+
+        .row {
+            /*every row*/
+            display: block;
+            margin: 0 0 6px 11px;
+            width: 497px;
+
+            &.project-comment-add-rating #score-add-stars {
+                margin: 5px 0 0 5px;
+            }
+            &.button-row {
+                padding: 5px 0 0 5px;
+
+                input {
+                    height: 30px;
+                    line-height: 30px;
+                }
+            }
+        }
+    }
+    p.reply-logged-in {
+        margin: 5px 0 0 4px;
+    }
+    textarea {
+        height: 200px;
+        width: 489px;
+    }
+}
+
+/* Proposal form comment replies */
+#form.form-project-comment-reply {/*project comment reply form*/
+    margin: 0;
+    width: auto;
+
+    fieldset {
+        width: auto;
+    }
+    textarea {
+        height: 200px;
+        width: 458px;
+    }
+    .row {
+        &.project-comment-reply-full {
+            display: block;
+            width: 472px;
+        }
+        &.button-row {
+            text-align: right;
+            padding: 5px 0 0 5px;
+            input {
+                height: 30px;
+                line-height: 30px;
+            }
+        }
+    }
+}
+#form.form-project-comment-reply .row.button-row input {
+  height: 30px;
+  line-height: 30px;
+}
+/* Proposal form comment replies */
+/* Proposal form comments */
+
 #form.form-proposal {/*application/proposal form*/
     background: #e1edf5;
     width: 500px;
