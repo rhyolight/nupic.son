@@ -21,33 +21,6 @@
   margin: 0 auto 39px auto;
   width: 570px;
 }
-#flash-message {
-    /*save confirmation banner*/
-    font-weight: bold;
-    left: 0;
-    margin-bottom: 10px;
-    padding: 10px 5px 8px 36px;
-    position: relative;
-    width: auto;
-    border-width: 2px;
-    border-style: solid;
-}
-#flash-message p {
-    margin-bottom: 0;
-}
-#flash-message.flash-error {
-    /*save confirmation banner notifies error*/
-    background: url(../../../images/v2/gsoc/flash-error.png) no-repeat 10px 50% #CF3333;
-    color: #FFF;
-    border-color: #990000;
-}
-#flash-message.flash-success {
-    /*save confirmation banner notifies success*/
-    background: url(../../../images/v2/gsoc/flash-success.png) no-repeat 10px 50% #C6F9C9;
-    color: #4F7F51;
-    border-color: #9BD39E;
-}
-
 #form.form-register .loggedin {
   /*logged in message*/
 
@@ -91,12 +64,9 @@
 }
 #form.form-register fieldset {
   background: #cde5f5;
-  clear: left;
   margin: 0 23px 16px 23px;
   padding: 30px 0 11px 0;
-}
-#form.form-register fieldset.nolegend {
-  padding: 11px 0;
+  clear: left;
 }
 #form.form-register fieldset .row {
   /*every row*/
@@ -222,6 +192,17 @@
 #form.form-register fieldset .row.schoolurl .text {
   width: 254px;
 }
+#form.form-register fieldset #abstract_counter {
+  color: #d5620e;
+  display: block;
+  font-size: 10px;
+  font-style: italic;
+  font-weight: bold;
+  margin: 0 0 0 4px;
+}
+#form.form-register fieldset.nolegend {
+  padding: 11px 0;
+}
 #form.form-register .fieldset-basicinfo {
   /*first fieldset on the registration page*/
 
@@ -331,6 +312,75 @@
   padding: 0;
   width: 77px;
 }
+/* Proposal form comments */
+#form.form-project-comment {
+  /*project comment form*/
+
+  margin: 0 auto;
+  width: 524px;
+}
+#form.form-project-comment fieldset {
+  background: #cde5f5;
+  margin: 0;
+  padding: 30px 0 10px 0;
+  width: auto;
+}
+#form.form-project-comment fieldset .row {
+  /*every row*/
+
+  display: block;
+  margin: 0 0 6px 11px;
+  width: 497px;
+}
+#form.form-project-comment fieldset .row.project-comment-add-rating #score-add-stars {
+  margin: 5px 0 0 5px;
+}
+#form.form-project-comment fieldset .row.button-row {
+  padding: 5px 0 0 5px;
+}
+#form.form-project-comment fieldset .row.button-row input {
+  height: 30px;
+  line-height: 30px;
+}
+#form.form-project-comment p.reply-logged-in {
+  margin: 5px 0 0 4px;
+}
+#form.form-project-comment textarea {
+  height: 200px;
+  width: 489px;
+}
+/* Proposal form comment replies */
+#form.form-project-comment-reply {
+  /*project comment reply form*/
+
+  margin: 0;
+  width: auto;
+}
+#form.form-project-comment-reply fieldset {
+  width: auto;
+}
+#form.form-project-comment-reply textarea {
+  height: 200px;
+  width: 458px;
+}
+#form.form-project-comment-reply .row.project-comment-reply-full {
+  display: block;
+  width: 472px;
+}
+#form.form-project-comment-reply .row.button-row {
+  text-align: right;
+  padding: 5px 0 0 5px;
+}
+#form.form-project-comment-reply .row.button-row input {
+  height: 30px;
+  line-height: 30px;
+}
+#form.form-project-comment-reply .row.button-row input {
+  height: 30px;
+  line-height: 30px;
+}
+/* Proposal form comment replies */
+/* Proposal form comments */
 #form.form-proposal {
   /*application/proposal form*/
 
@@ -381,14 +431,6 @@
 #form.form-proposal fieldset .row.project-tags {
   clear: both;
 }
-#form.form-register fieldset #abstract_counter {
-  color: #d5620e;
-  display: block;
-  font-size: 10px;
-  font-style: italic;
-  font-weight: bold;
-  margin: 0 0 0 4px;
-}
 #form.form-proposal fieldset #form-proposal-textfield-project-short_counter, #form.form-proposal fieldset #form-proposal-textfield-project-full_counter {
   color: #d5620e;
   display: block;
@@ -409,66 +451,6 @@
 #form.form-proposal .row.button-row .save {
   background: url(../../../images/v2/gsoc/form-submit-bg-blue.png) 0 0 repeat;
   margin-left: 15px;
-}
-#form.form-project-comment {
-  /*project comment form*/
-
-  margin: 0 auto;
-  width: 524px;
-}
-#form.form-project-comment fieldset {
-  background: #cde5f5;
-  margin: 0;
-  padding: 30px 0 10px 0;
-  width: auto;
-}
-#form.form-project-comment fieldset .row {
-  /*every row*/
-  display: block;
-  margin: 0 0 6px 11px;
-  width: 497px;
-}
-#form.form-project-comment p.reply-logged-in {
-  margin: 5px 0 0 4px;
-}
-#form.form-project-comment textarea {
-  height: 200px;
-  width: 489px;
-}
-#form.form-project-comment .row.project-comment-add-rating #score-add-stars {
-    margin: 5px 0 0 5px;
-}
-#form.form-project-comment .row.button-row {
-  padding: 5px 0 0 5px;
-}
-#form.form-project-comment .row.button-row input {
-  height: 30px;
-  line-height: 30px;
-}
-#form.form-project-comment-reply {
-  /*project comment reply form*/
-
-  margin: 0;
-  width: auto;
-}
-#form.form-project-comment-reply fieldset {
-  width: auto;
-}
-#form.form-project-comment-reply textarea {
-  height: 200px;
-  width: 458px;
-}
-#form.form-project-comment-reply .row.project-comment-reply-full {
-  display: block;
-  width: 472px;
-}
-#form.form-project-comment-reply .row.button-row {
-  text-align: right;
-  padding: 5px 0 0 5px;
-}
-#form.form-project-comment-reply .row.button-row input {
-  height: 30px;
-  line-height: 30px;
 }
 #form {
   /*form defaults*/
@@ -676,3 +658,64 @@
   margin: 3px 0 0 3px;
 }
 /* Submit button */
+/* Form submission success or failure flash messages  */
+#flash-message {
+  /*save confirmation banner*/
+
+  font-weight: bold;
+  left: 0;
+  margin-bottom: 10px;
+  padding: 10px 5px 8px 36px;
+  position: relative;
+  width: auto;
+  border-width: 2px;
+  border-style: solid;
+}
+#flash-message p {
+  margin-bottom: 0;
+}
+#flash-message.flash-error {
+  /*save confirmation banner notifies error*/
+
+  background: url(../../../images/v2/gsoc/flash-error.png) no-repeat 10px 50% #cf3333;
+  color: #FFF;
+  border-color: #990000;
+}
+#flash-message.flash-success {
+  /*save confirmation banner notifies success*/
+
+  background: url(../../../images/v2/gsoc/flash-success.png) no-repeat 10px 50% #c6f9c9;
+  color: #4F7F51;
+  border-color: #9BD39E;
+}
+/* Form submission success or failure flash messages  */
+#pre-form-header h2 {
+  /*heading*/
+
+  float: left;
+  font-size: 27px;
+  line-height: 1.8em;
+  margin: 10px 0 0 23px;
+}
+#pre-form-header h3 {
+  /*heading*/
+
+  clear: both;
+  font-size: 21px;
+  margin-left: 23px;
+}
+#pre-form-header .req {
+  /*required text*/
+
+  color: #d5620e;
+  display: block;
+  float: left;
+  font-size: 10px;
+  font-style: italic;
+  font-weight: bold;
+  margin: 25px 0 0 10px;
+}
+#pre-form-header .description {
+  clear: both;
+  margin-left: 23px;
+}
