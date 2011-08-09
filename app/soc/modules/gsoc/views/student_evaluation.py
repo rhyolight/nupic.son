@@ -193,7 +193,9 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
 
     context = {
         'page_name': '%s' % (self.data.student_evaluation.title),
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False),
+        'description': self.data.student_evaluation.content,
+        'form_top_msg': LoggedInMsg(self.data, apply_link=False,
+                                    div_name='user-login'),
         'project': self.data.project.title,
         'forms': [form],
         'error': bool(form.errors),
