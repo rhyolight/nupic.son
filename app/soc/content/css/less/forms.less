@@ -43,6 +43,19 @@
         line-height: 1.8em;
         margin: 10px 0 0 23px;
     }
+    h3 {
+      /*heading*/
+
+      clear: left;
+      font-size: 18px;
+      line-height: 1.2em;
+      margin: 10px 0 0 23px;
+      padding: 0 0 10px 5px;
+
+      &.rejected {
+          color: red;
+      }
+    }
     .req {/*required text*/
         color: @orange;
         display: block;
@@ -56,6 +69,8 @@
         background: #cde5f5;
         margin: 0 23px 16px 23px;
         padding: 30px 0 11px 0;
+        clear: left;
+
         .row {/*every row*/
             margin: 0 0 6px 11px;
             width: 497px;
@@ -161,6 +176,14 @@
             .text {
                 width: 254px;
             }
+        }
+        #abstract_counter {
+            color: #d5620e;
+            display: block;
+            font-size: 10px;
+            font-style: italic;
+            font-weight: bold;
+            margin: 0 0 0 4px;
         }
     }
     fieldset.nolegend {
@@ -528,6 +551,37 @@
     }
 }
 /* Submit button */
+
+/* Form submission success or failure flash messages  */
+#flash-message {
+    /*save confirmation banner*/
+    font-weight: bold;
+    left: 0;
+    margin-bottom: 10px;
+    padding: 10px 5px 8px 36px;
+    position: relative;
+    width: auto;
+    border-width: 2px;
+    border-style: solid;
+
+    p {
+        margin-bottom: 0;
+    }
+    &.flash-error {
+        /*save confirmation banner notifies error*/
+        background: url(../../../images/v2/gsoc/flash-error.png) no-repeat 10px 50% #CF3333;
+        color: #FFF;
+        border-color: #990000;
+    }
+    &.flash-success {
+        /*save confirmation banner notifies success*/
+        background: url(../../../images/v2/gsoc/flash-success.png) no-repeat 10px 50% #C6F9C9;
+        color: #4F7F51;
+        border-color: #9BD39E;
+    }
+}
+/* Form submission success or failure flash messages  */
+
 #pre-form-header {
     h2 {/*heading*/
         float: left;
