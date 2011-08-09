@@ -43,7 +43,8 @@ limitations under the License.
     {% else %}
       {{ page_name }}
     {% endif %}
-  </h2><p id="form-evaluation-req" class="req">* fields required</p>
+    <div id="form-evaluation-req" class="req">* fields required</div>
+  </h2>
   <h3 id="form-project-title">
   Project: {{ project }}<br/>
   {% if student %}
@@ -59,16 +60,6 @@ limitations under the License.
 {% block open_form %}
 <form action="{% if cbox %}?cbox=true{% else %}#{% endif %}" method="post" id="form" class="form-register">
 {% endblock open_form %}
-
-  {% block form_header_msg %}
-  <h2 id="form-register-title">
-    {% if form_header_msg %}
-      {{ form_header_msg }}
-    {% else %}
-      {{ page_name }}
-    {% endif %}
-  </h2><p id="form-register-req" class="req">* fields required</p>
-  {% endblock form_header_msg %}
 
   {% for form in forms %}
     {{ form.render }}
