@@ -44,6 +44,7 @@ class ProjectListTest(DjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/projects_list/_project_list.html')
 
   def testListProjects(self):
+    self.timeline.studentsAnnounced()
     url = '/gsoc/projects/list/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertProjectTemplatesUsed(response)
