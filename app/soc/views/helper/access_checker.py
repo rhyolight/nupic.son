@@ -175,8 +175,11 @@ DEF_PAGE_INACTIVE_BEFORE_MSG_FMT = ugettext(
 DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT = ugettext(
     'This page is inactive before %s and after %s.')
 
-DEF_PROGRAM_INACTIVE_MSG_FMT = ugettext(
-    'This page is inaccessible because %s is not active at this time.')
+DEF_PROGRAM_NOT_VISIBLE_MSG_FMT = ugettext(
+    'This page is inaccessible because %s is not visible at this time.')
+
+DEF_PROGRAM_NOT_RUNNING_MSG_FMT = ugettext(
+    'This page is inaccessible because %s is not running at this time.')
 
 DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
     'An organization administrator has flagged this proposal to be '
@@ -580,11 +583,26 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise AccessViolation(DEF_NOT_HOST_MSG)
+  
+  def isProgramRunning(self):
+    """Checks whether the program is running now by making sure the current 
+    data is between program start and end and the program is visible to 
+    normal users.
+    """
+    if not self.data.program:
+      raise AccessViolation(DEF_NO_SUCH_PROGRAM_MSG)
+    
+    self.isProgramVisible()
+    
+    if self.data.timeline.programActive():
+      return
+    
+    raise AccessViolation(
+        DEF_PROGRAM_NOT_RUNNING_MSG_FMT % self.data.program.name)
 
-  def isProgramActive(self):
-    """Checks that the program is active.
-
-    Active means 'visible' or 'inactive'.
+  def isProgramVisible(self):
+    """Checks whether the program exists and is visible to the user. 
+    Visible programs are either in the visible or inactive state.
     """
     if not self.data.program:
       raise AccessViolation(DEF_NO_SUCH_PROGRAM_MSG)
@@ -593,12 +611,12 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise AccessViolation(
-        DEF_PROGRAM_INACTIVE_MSG_FMT % self.data.program.name)
+        DEF_PROGRAM_NOT_VISIBLE_MSG_FMT % self.data.program.name)
 
   def acceptedOrgsAnnounced(self):
     """Checks if the accepted orgs have been announced.
     """
-    self.isProgramActive()
+    self.isProgramVisible()
 
     if self.data.timeline.orgsAnnounced():
       return
@@ -609,7 +627,7 @@ class AccessChecker(BaseAccessChecker):
   def acceptedStudentsAnnounced(self):
     """Checks if the accepted students have been announced.
     """
-    self.isProgramActive()
+    self.isProgramVisible()
 
     if self.data.timeline.studentsAnnounced():
       return
@@ -770,7 +788,7 @@ class AccessChecker(BaseAccessChecker):
   def studentSignupActive(self):
     """Checks if the student signup period is active.
     """
-    self.isProgramActive()
+    self.isProgramVisible()
 
     if self.data.timeline.studentSignup():
       return
@@ -781,7 +799,7 @@ class AccessChecker(BaseAccessChecker):
   def canStudentUpdateProposalPostSignup(self):
     """Checks if the student signup deadline has passed.
     """
-    self.isProgramActive()
+    self.isProgramVisible()
 
     if (self.data.timeline.afterStudentSignupEnd() and
         self.data.proposal.is_editable_post_deadline):
@@ -990,7 +1008,7 @@ class AccessChecker(BaseAccessChecker):
   def isProposer(self):
     """Checks if the current user is the author of the proposal.
     """
-    self.isProgramActive()
+    self.isProgramVisible()
     self.isProfileActive()
 
     assert isSet(self.data.proposer)
@@ -1043,7 +1061,7 @@ class AccessChecker(BaseAccessChecker):
     self.isProjectInURLValid()
 
     # check if the timeline allows updating project
-    self.isProgramActive()
+    self.isProgramVisible()
     self.acceptedStudentsAnnounced()
 
     # check if the project belongs to the current user
