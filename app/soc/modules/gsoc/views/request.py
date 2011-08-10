@@ -75,7 +75,7 @@ class RequestPage(RequestHandler):
     """Access checks for GSoC Invite page.
     """
 
-    self.check.isProgramActive()
+    self.check.isProgramVisible()
     
     # check if the current user has a profile, but is not a student
     self.check.notStudent()
