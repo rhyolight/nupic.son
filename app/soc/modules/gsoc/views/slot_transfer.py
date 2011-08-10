@@ -91,7 +91,7 @@ class SlotTransferPage(RequestHandler):
 
   def checkAccess(self):
     self.check.isLoggedIn()
-    self.check.isProgramActive()
+    self.check.isProgramVisible()
     self.mutator.organizationFromKwargs()
     self.check.isOrganizationInURLActive()
     self.check.isOrgAdminForOrganization(self.data.organization)
