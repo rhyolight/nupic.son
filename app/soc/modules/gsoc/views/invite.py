@@ -177,7 +177,7 @@ class InvitePage(RequestHandler):
     """Access checks for GSoC Invite page.
     """
 
-    self.check.isProgramActive()
+    self.check.isProgramVisible()
     self.mutator.organizationFromKwargs()
     self.check.isOrgAdmin()
 
