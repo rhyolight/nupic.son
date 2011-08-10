@@ -157,7 +157,7 @@ class OrgProfilePage(RequestHandler):
 
   def checkAccess(self):
     self.check.isLoggedIn()
-    self.check.isProgramActive()
+    self.check.isProgramVisible()
 
     if 'organization' in self.data.kwargs:
       self.check.isProfileActive()
