@@ -501,7 +501,7 @@ class PostComment(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.check.isProgramActive()
+    self.check.isProgramVisible()
     self.check.isProfileActive()
     self.mutator.proposalFromKwargs()
     self.mutator.commentVisible()
