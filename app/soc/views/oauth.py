@@ -25,9 +25,12 @@ __authors__ = [
 from django.conf.urls.defaults import url as django_url
 
 from soc.views.helper.gdata_apis import oauth as oauth_helper
+from soc.views.helper import responses as response_helper
 
 from soc.modules.gsoc.views.base import RequestHandler
 
+from django.conf import settings
+from django.utils import simplejson
 
 class OAuthRedirectPage(RequestHandler):
   """Redirect page to Google Documents.
@@ -96,7 +99,7 @@ class PopupOAuthRedirectPage(RequestHandler):
   def get(self):
     access_token = oauth_helper.getAccessToken(self.data.user)
     if access_token:
-      url = self.redirect.urlOf('gdata_popup_oauth_redirect')
+      url = self.redirect.urlOf('gdata_popup_oauth_verified')
     else:
       service = oauth_helper.createDocsService(self.data)
       next = '%s?next=%s' % (self.redirect.urlOf('gdata_oauth_verify'),
