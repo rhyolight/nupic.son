@@ -302,7 +302,7 @@ class MainDashboard(Dashboard):
         {
             'name': 'evaluations',
             'description': ugettext(
-                'Send reminder, grade overview, create, edit, '
+                'Send reminder, evaluation group, create, edit, '
                 'view evaluations for mentors and students'),
             'title': 'Evaluations',
             'link': '',
@@ -489,8 +489,8 @@ class EvaluationsDashboard(Dashboard):
         {
             'name': 'grade_overview',
             'description': ugettext(
-                'Grade Overview'),
-            'title': 'Grade Overview',
+                'Evaluation Group'),
+            'title': 'Create and view evaluation group',
             'link': '#'
         },
         {
