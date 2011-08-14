@@ -165,6 +165,7 @@ class DashboardPage(RequestHandler):
     dashboards.append(EvaluationsDashboard(self.request, self.data))
     dashboards.append(MentorEvaluationsDashboard(self.request, self.data))
     dashboards.append(StudentEvaluationsDashboard(self.request, self.data))
+    dashboards.append(EvaluationGroupDashboard(self.request, self.data))
 
     return {
         'colorbox': self.data.GET.get('colorbox'),
@@ -474,6 +475,7 @@ class EvaluationsDashboard(Dashboard):
     """
     mentor_evaluations = MentorEvaluationsDashboard(request, data)
     student_evaluations = StudentEvaluationsDashboard(request, data)
+    evaluation_group = EvaluationGroupDashboard(request, data)
 
     r = data.redirect
     r.program()
@@ -487,11 +489,12 @@ class EvaluationsDashboard(Dashboard):
             'link': r.urlOf('gsoc_survey_reminder_admin')
         },
         {
-            'name': 'grade_overview',
+            'name': 'evaluation_group',
             'description': ugettext(
-                'Evaluation Group'),
-            'title': 'Create and view evaluation group',
-            'link': '#'
+                'Create and view evaluation group'),
+            'title': 'Evaluation group',
+            'link': '',
+            'subpage_links': evaluation_group.getSubpagesLink(),
         },
         {
             'name': 'mentor_evaluations',
@@ -659,6 +662,56 @@ class StudentEvaluationsDashboard(Dashboard):
     return {
         'title': 'Student Evaluations',
         'name': 'student_evaluations',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+            {
+                'to': 'evaluations',
+                'title': 'Evaluations'
+            },
+        ],
+        'subpages': subpages
+    }
+
+
+class EvaluationGroupDashboard(Dashboard):
+  """Dashboard for evaluation group
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    subpages = [
+        {
+            'name': 'edit_evaluation_group',
+            'description': ugettext('Create evaluation group'),
+            'title': 'Create',
+            'link': '#'
+        },
+        {
+            'name': 'view_evaluation_group',
+            'description': ugettext('View evaluation group'),
+            'title': 'View',
+            'link': '#'
+        },
+    ]
+
+    super(EvaluationGroupDashboard, self).__init__(request, data, subpages)
+
+  def context(self):
+    """Returns the context of evaluation group dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Evaluation Group',
+        'name': 'evaluation_group',
         'backlinks': [
             {
                 'to': 'main',
