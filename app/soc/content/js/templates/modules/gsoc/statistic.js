@@ -42,7 +42,7 @@ melange.templates.inherit(function (_self, context) {
 	if (!sendRequest) {
 	  sendRequest = true;
     } else {
-	  var oldState = toggleButton.is(':checked');
+	  var oldState = !toggleButton.is(':checked');
 	  var _key_name = key_name;
 	  jQuery.post(
 	      manage_urls[_key_name],
