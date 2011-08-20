@@ -39,7 +39,7 @@ def createDocsService(data):
 
   request = data.request
   site = data.site
-  service = docs_service.DocsService(source=settings.SOURCE)
+  service = docs_service.DocsService(source=settings.GDATA_SOURCE)
   if system.isSecondaryHostname(request):
     consumer_key = site.secondary_gdata_consumer_key
     consumer_secret = site.secondary_gdata_consumer_secret
@@ -52,7 +52,7 @@ def createDocsService(data):
 
   service.SetOAuthInputParameters(
       auth.OAuthSignatureMethod.HMAC_SHA1, consumer_key.encode('utf-8'),
-      consumer_secret.encode('utf-8'), settings.DOCS_SCOPE)
+      consumer_secret.encode('utf-8'), settings.GDATA_SCOPES)
   appengine.run_on_appengine(service)
   return service
 
@@ -92,7 +92,7 @@ def generateOAuthRedirectURL(service, user, next):
   """
 
   req_token = service.FetchOAuthRequestToken(
-      scopes=settings.DOCS_SCOPE,
+      scopes=settings.GDATA_SCOPES,
       oauth_callback='http://%s%s' % (system.getRawHostname(), next))
   memcache.add(user.key().name(), req_token.secret, 300,
                namespace='request_token_secret')

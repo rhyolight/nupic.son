@@ -115,10 +115,11 @@ limitations under the License.
             google_api_key: "{{ google_api_key }}",
             {% endif %}
             {% if is_local %}
-            is_local: true
+            is_local: true,
             {% else %}
-            is_local: false
+            is_local: false,
             {% endif %}
+            gdata_is_logged_in: {{ gdata_is_logged_in }},
           });
         }
       )

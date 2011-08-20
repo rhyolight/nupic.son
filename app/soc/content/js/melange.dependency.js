@@ -279,6 +279,12 @@
     mpjs + "melange.js"
   ];
 
+  s.melange.gdata = {};
+
+  s.melange.gdata.core = [
+    mpjs + "melange.gdata.core.js"
+  ];
+
   s.melange.datetimepicker = [
     s.jqueryui.datepicker,
     null,
@@ -355,10 +361,6 @@
 
   s.melange.program_select = [
     mpjs + "melange.program_select.js"
-  ];
-
-  s.melange.gdata = [
-    mpjs + "melange.gdata.js"
   ];
 
   $m.s = s;

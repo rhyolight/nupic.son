@@ -134,6 +134,17 @@ MODULE_FMT = 'soc.modules.%s.callback'
 #MODULES = ['gsoc', 'statistic', 'gci']
 MODULES = ['gsoc']
 
-#Google Data API Related Options
-SOURCE = 'Google-Melange-v1'
-DOCS_SCOPE = ['https://docs.google.com/feeds']
+#GData APIs Source:
+GDATA_SOURCE = 'Google-Melange-v1'
+
+#In order to use same access token with different services, we demand
+#a generic token that has access to all scopes that Melange uses. This
+#provides single authentication instead of seperate for each service.
+#So all scopes are defined together in a list:
+GDATA_SCOPES = [
+    # Used for: Syncing student proposals, ...
+    'https://docs.google.com/feeds',
+
+    # Used for: Exporting Melange lists, ...
+    'https://spreadsheets.google.com/feeds/',
+]

@@ -29,6 +29,7 @@ from google.appengine.ext import db
 from soc.logic import system
 from soc.logic.helper import xsrfutil
 from soc.logic.models.site import logic as site_logic
+from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 
 def default(data):
@@ -53,6 +54,11 @@ def default(data):
   else:
     google_api_key = data.site.google_api_key
 
+  if data.user and oauth_helper.getAccessToken(data.user):
+    gdata_is_logged_in = 'true'
+  else:
+    gdata_is_logged_in = 'false'
+
   return {
       'app_version': system.getMelangeVersion(),
       'is_local': system.isLocal(),
@@ -61,4 +67,5 @@ def default(data):
       'google_api_key': google_api_key,
       'ga_tracking_num': data.site.ga_tracking_num,
       'ds_write_disabled': data.ds_write_disabled,
+      'gdata_is_logged_in': gdata_is_logged_in,
   }

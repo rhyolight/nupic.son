@@ -43,16 +43,19 @@
 
   // Store local variables here
   var locals = {
-    is_logged_in: false,
-    popup_oauth_redirect_url: '',
+    is_logged_in: melange.config.gdata_is_logged_in,
     success_callback: null,
     success_callback_parameters: null,
   };
 
-  $m.init = function (is_logged_in, popup_oauth_redirect_url) {
-    locals.is_logged_in = is_logged_in;
-    locals.popup_oauth_redirect_url = popup_oauth_redirect_url;
-  };
+  /** For quickest initialization without passing any variable
+    * from each page tamplate that depends on this script,
+    * we need to hardcode these urls. These url names need to be
+    * arranged manually.
+    */
+  var make_request_url = '/gdata/oauth/make_request';
+  var popup_oauth_redirect_url = '/gdata/popup/oauth/redirect';
+  //TODO(orc.avs): Discuss providing variables above from main context helper
 
   // Public function to be accessed by success popup window
   $m.loginSuccessful = function () {
@@ -66,7 +69,7 @@
     }
   };
 
-  $m.loginFunctionFactory = function (callback, parameters) {
+  $m.createAuthorizedFunction = function (callback, parameters) {
     function fn() {
       if (locals.is_logged_in) {
         callback.apply(this, parameters);
@@ -83,16 +86,16 @@
         var left_pos = (width - pop_width) / 2;
         var top_pos = (height - pop_height) / 2;
         window.open(
-          locals.popup_oauth_redirect_url, 'popup',
+          popup_oauth_redirect_url, 'popup',
           [
-           'width=', pop_width, ',',
-           'height=', pop_height, ',',
-           'top=', top_pos, ',',
-           'left=', left_pos
+            'width=', pop_width, ',',
+            'height=', pop_height, ',',
+            'top=', top_pos, ',',
+            'left=', left_pos
           ].join("")
         );
       }
-    };
+    }
     return fn;
   };
 }());
