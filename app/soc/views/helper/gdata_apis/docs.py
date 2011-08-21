@@ -37,10 +37,11 @@ def find_documents(service, title='', categories=[]):
   return feed
 
 
-def get_content(service, resource_id, return_as):
+def get_content(service, resource_id, return_as, **kwargs):
   """Returns content of given entry.
   """
 
   stream_content = StringIO.StringIO()
-  service.Export(resource_id, 'sample_file.'+return_as, file_handler=stream_content)
+  service.Export(resource_id, 'sample_file.'+return_as,
+                 file_handler=stream_content, **kwargs)
   return stream_content.getvalue()
