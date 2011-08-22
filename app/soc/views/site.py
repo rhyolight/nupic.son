@@ -36,6 +36,7 @@ from soc.logic.models.document import logic as document_logic
 from soc.logic.models.site import logic as site_logic
 from soc.logic.exceptions import AccessViolation
 from soc.models.site import Site
+from soc.views.base import Response
 from soc.views.base import SiteRequestHandler
 from soc.views.forms import ModelForm
 
@@ -141,6 +142,10 @@ class SiteHomepage(SiteRequestHandler):
 
     This avoids looking up unneeded data.
     """
+    self.response = Response()
+
+    self.init(request, args, kwargs)
+
     action = args[0] if args else ''
 
     if action == 'login':
@@ -151,9 +156,7 @@ class SiteHomepage(SiteRequestHandler):
       site = site_logic.getSingleton()
       program = site.active_program
       if program:
-        kwargs['sponsor'] = program.scope_path
-        kwargs['program'] = program.link_id
-        self.redirect.to(program.homepage_url_name, kwargs=kwargs)
+        self.redirect.program(program).to(program.homepage_url_name)
       else:
         self.redirect.to('edit_site_settings')
 
