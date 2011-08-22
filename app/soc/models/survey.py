@@ -49,8 +49,15 @@ class Survey(ModelWithFieldAttributes):
   # to program
   #: Required N:1 relationship indicating the program to which the survey
   #: belongs to
-  program = db.ReferenceProperty(reference_class=Program, required=True,
+  program = db.ReferenceProperty(reference_class=Program, required=False,
                                  collection_name="program_surveys")
+
+# TODO(Madhu): Get rid of this property once the conversion is done
+  scope = db.SelfReferenceProperty(required=False,
+      collection_name='links', verbose_name=ugettext('Link Scope'))
+  scope.help_text = ugettext(
+      'Reference to another Linkable entity that defines the "scope" of'
+      ' this Linkable entity.')
 
   #: Required field indicating the "title" of the work, which may have
   #: different uses depending on the specific type of the work. Works
@@ -78,9 +85,14 @@ class Survey(ModelWithFieldAttributes):
   #: Required 1:1 relationship indicating the User who initially created the
   #: survey (this relationship is needed to keep track of lifetime document
   #: creation limits, used to prevent spamming, etc.).
-  created_by = db.ReferenceProperty(reference_class=User, required=True,
+  created_by = db.ReferenceProperty(reference_class=User, required=False,
                                     collection_name="created_surveys",
                                     verbose_name=ugettext('Created by'))
+
+  # TODO(Madhu): Remove after conversion
+  author = db.ReferenceProperty(reference_class=User, required=False,
+                                collection_name="authors",
+                                verbose_name=ugettext('Created by'))
 
   #: date when the work was last modified
   modified = db.DateTimeProperty(auto_now=True)
