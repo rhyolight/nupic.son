@@ -558,6 +558,11 @@ class SurveyTakeForm(ModelForm):
 
     widget = None
 
+    kwargs = {'label': label,
+              'required': required,
+              'help_text': help_text
+              }
+
     if type == 'checkbox':
       field = django.forms.MultipleChoiceField
       widget = CheckboxSelectMultiple()
@@ -569,24 +574,12 @@ class SurveyTakeForm(ModelForm):
       widget = django.forms.Textarea()
     elif type == 'input_text':
       field = django.forms.CharField
+      kwargs['max_length'] = 500
 
-    self.fields[field_name] = field(label=label, required=required,
-                                    help_text=help_text)
+    self.fields[field_name] = field(**kwargs)
+
     if widget:
       self.fields[field_name].widget = widget
-
-    if type == 'input_text':
-      def clean_input_text():
-        """Cleaner to check if the form field is not longer than 500 chars.
-        """
-        field_val = self.cleaned_data.get(field_name)
-        if len(field_val) > 500:
-          raise forms.ValidationError(
-              "This field cannot be longer than 500 characters.")
-
-        return field_val
-
-      setattr(self, 'clean_%s' % field_name, clean_input_text)
 
     if isinstance(field_obj.getValues(), list):
       choices = field_obj.getChoices()
