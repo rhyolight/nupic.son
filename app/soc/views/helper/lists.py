@@ -30,8 +30,6 @@ from django.utils import simplejson
 
 from soc.views.template import Template
 
-from soc.views.helper.request_data import isAfter
-
 
 def getListIndex(request):
   """Returns the index of the requested list.
@@ -729,32 +727,6 @@ def keyStarter(start, q):
     return False
   q.filter('__key__ >=', start_entity.key())
   return True
-
-
-def evaluationRowAdder(evals):
-  """Add rows for each evaluation for each entity that is fetched.
-  """
-  def adder(content_response, entity, *args):
-    # get the last failed evaluation for the project so that an
-    # entry for survey record need not be calculated after this
-    # evaluation
-    failed_eval = None
-    if entity.failed_evaluations:
-      failed_grading_record = entity.failed_evaluations[-1]
-      fgr_ent = args[0].get(failed_grading_record)
-      failed_eval = fgr_ent.grading_survey_group.grading_survey
-
-    # since evals is an object of type Django's SortedDict
-    # we can be sure that the evaluations are iterated in the order
-    for eval_link_id, eval in evals.items():
-      if isAfter(eval.survey_start):
-        content_response.addRow(entity, eval_link_id, *args)
-
-        if failed_eval and \
-            failed_eval.key().id_or_name() == eval.key().id_or_name():
-          break
-
-  return adder
 
 
 class RawQueryContentResponseBuilder(object):

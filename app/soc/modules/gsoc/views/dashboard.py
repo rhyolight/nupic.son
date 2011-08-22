@@ -42,6 +42,7 @@ from soc.views.helper.surveys import dictForSurveyModel
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
+from soc.modules.gsoc.logic.evaluations import evaluationRowAdder
 from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
@@ -533,7 +534,7 @@ class MyEvaluationsComponent(Component):
         GSoCProject, ['org'],
         ['mentors', 'failed_evaluations'],
         parent=True)
-    row_adder = lists.evaluationRowAdder(self.evals)
+    row_adder = evaluationRowAdder(self.evals)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, list_query,
@@ -602,7 +603,7 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
         GSoCProject, ['org'],
         ['mentors', 'failed_evaluations'],
         parent=True)
-    row_adder = lists.evaluationRowAdder(self.evals)
+    row_adder = evaluationRowAdder(self.evals)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, list_query,
