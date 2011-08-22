@@ -22,13 +22,6 @@ __authors__ = [
   ]
 
 
-from soc.modules.gci.tasks import bulk_create
-from soc.modules.gci.tasks import org_app_survey as org_app_survey_tasks
-from soc.modules.gci.tasks import parental_forms
-from soc.modules.gci.tasks import ranking_update
-from soc.modules.gci.tasks import task_update
-
-
 class Callback(object):
   """Callback object that handles interaction between the core.
   """
@@ -40,6 +33,15 @@ class Callback(object):
     """
 
     self.core = core
+    self.views = []
+
+  def registerViews(self):
+    """Instantiates all view objects.
+    """
+    from soc.modules.gci.views import org_app
+
+    self.views.append(org_app.GCIOrgAppEditPage())
+    self.views.append(org_app.GCIOrgAppTakePage())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.
@@ -47,9 +49,6 @@ class Callback(object):
 
     self.core.requireUniqueService('registerWithSitemap')
 
-    # register GCI GAE Tasks URL's
-    self.core.registerSitemapEntry(bulk_create.getDjangoURLPatterns())
-    self.core.registerSitemapEntry(org_app_survey_tasks.getDjangoURLPatterns())
-    self.core.registerSitemapEntry(parental_forms.getDjangoURLPatterns())
-    self.core.registerSitemapEntry(ranking_update.getDjangoURLPatterns())
-    self.core.registerSitemapEntry(task_update.getDjangoURLPatterns())
+    # Redesigned view registration
+    for view in self.views:
+      self.core.registerSitemapEntry(view.djangoURLPatterns())
