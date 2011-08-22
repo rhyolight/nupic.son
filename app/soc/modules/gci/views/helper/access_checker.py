@@ -22,8 +22,7 @@ __authors__ = [
     '"Selwyn Jacob" <selwynjacob90@gmail.com>',
   ]
 
-
-from django.utils.translation import ugettext
+from google.appengine.ext import db
 
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
@@ -35,18 +34,17 @@ from soc.modules.gci.models.task import GCITask
 class Mutator(access_checker.Mutator):
 
   def unsetAll(self):
-    self.data.task = unset
-    super(access_checker.Mutator, self).unsetAll()
+    self.data.task = access_checker.unset
+    super(Mutator, self).unsetAll()
 
-  
-  def getOrgKeyForKeyName(key_name):
-     return db.Key.from_path('GCIOrganization', key_name)
-  
+  def getOrgKeyForKeyName(self, key_name):
+    return db.Key.from_path('GCIOrganization', key_name)
+
   def taskFromKwargs(self):
     """Sets the task entity in RequestData object.
     """
     self.profileFromKwargs()
-    assert isSet(self.data.url_profile)
+    assert access_checker.isSet(self.data.url_profile)
 
     # kwargs which defines a task
     fields = ['sponsor', 'program', 'organization', 'task_link_id']
@@ -55,14 +53,15 @@ class Mutator(access_checker.Mutator):
     self.data.task = GCITask.get_by_key_name(key_name)
 
     if not self.data.task:
-      error_msg = access.checker.DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
+      error_msg = access_checker.DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
           'model': 'GCITask',
           'key_name': key_name
           }
       raise NotFound(error_msg)
 
 
-class DeveloperMutator(access_checker.DeveloperMutator, Mutator):
+class DeveloperMutator(access_checker.DeveloperMutator,
+                       Mutator):
   pass
 
 
@@ -71,12 +70,12 @@ class AccessChecker(access_checker.AccessChecker):
   def isTaskInURLValid(self):
     """Checks if the task in URL exists.
     """
-    assert isSet(self.data.task)
+    assert access_checker.isSet(self.data.task)
 
     fields = ['sponsor', 'program', 'organization', 'task_link_id']
     key_name = '/'.join(self.data.kwargs[field] for field in fields)
     if not self.data.task:
-      error_msg = DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
+      error_msg = access_checker.DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
           'model': 'GCITask',
           'key_name': key_name
           }
@@ -84,11 +83,12 @@ class AccessChecker(access_checker.AccessChecker):
 
     invalid_status = ['Invalid', 'Unpublished', 'Unapproved']
     if self.data.task.status in invalid_status:
-      error_msg = DEF_KEYNAME_BASED_ENTITY_INVALID_MSG_FMT % {
+      error_msg = access_checker.DEF_KEYNAME_BASED_ENTITY_INVALID_MSG_FMT % {
           'model': 'GCITask',
           'key_name': key_name,
           }
       raise AccessViolation(error_msg)
 
-class DeveloperAccessChecker(access_checker.DeveloperAccessChecker, AccessChecker):
+class DeveloperAccessChecker(access_checker.DeveloperAccessChecker,
+                             AccessChecker):
   pass
