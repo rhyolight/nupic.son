@@ -191,7 +191,7 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
         self.data.mentor_evaluation.link_id).urlOf(
         'gsoc_show_mentor_evaluation')
     self.check.isSurveyActive(self.data.mentor_evaluation, show_url)
-    self.check.canUserTakeSurvey(self.data.mentor_evaluation)
+    self.check.canUserTakeSurvey(self.data.mentor_evaluation, 'org')
     self.check.isMentorForSurvey()
 
   def templatePath(self):

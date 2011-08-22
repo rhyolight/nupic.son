@@ -176,7 +176,7 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
     if self.data.orgAdminFor(self.data.project.org):
       raise RedirectRequest(show_url)
 
-    self.check.canUserTakeSurvey(self.data.student_evaluation)
+    self.check.canUserTakeSurvey(self.data.student_evaluation, 'student')
     self.check.isStudentForSurvey()
 
   def templatePath(self):

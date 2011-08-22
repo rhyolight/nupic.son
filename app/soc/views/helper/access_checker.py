@@ -1128,7 +1128,7 @@ class AccessChecker(BaseAccessChecker):
     raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT %
         (survey.survey_start, survey.survey_end))
 
-  def canUserTakeSurvey(self, survey):
+  def canUserTakeSurvey(self, survey, taking_access='user'):
     """Checks if the user with the given profile can take the survey.
 
     Args:
@@ -1139,15 +1139,15 @@ class AccessChecker(BaseAccessChecker):
 
     self.isProjectInURLValid()
 
-    if survey.taking_access == 'student':
+    if taking_access == 'student':
       self.isActiveStudent()
       return
-    elif survey.taking_access == 'org':
+    elif taking_access == 'org':
       assert isSet(self.data.organization)
 
       self.isMentor()
       return
-    elif survey.taking_access == 'user':
+    elif taking_access == 'user':
       self.isUser()
       return
 
