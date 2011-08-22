@@ -35,6 +35,7 @@ from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import GDocsLoginRequest
+from soc.models.org_app_survey import OrgAppSurvey
 from soc.models.user import User
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
@@ -108,6 +109,10 @@ DEF_NO_DOCUMENT = ugettext(
 
 DEF_NO_LINK_ID_MSG = ugettext(
     'Link ID should not be empty')
+
+DEF_NO_ORG_APP_MSG_FMT = ugettext(
+    'The organization application survey with name %s parameters does '
+    'not exist.')
 
 DEF_NO_PROJECT_MSG = ugettext(
     'Requested project does not exist.')
@@ -259,15 +264,15 @@ class Mutator(object):
     self.data.url_student_info = unset
     self.data.url_user = unset
 
-  def getOrgKeyForKeyName(key_name):
-     return db.Key.from_path('Organization', key_name)
-  
+  def getOrgKeyForKeyName(self, key_name):
+    return db.Key.from_path('Organization', key_name)
+
   def organizationFromKwargs(self, organization):
     # kwargs which defines an organization
     fields = ['sponsor', 'program', 'organization']
 
     key_name = '/'.join(self.data.kwargs[field] for field in fields)
-    key = getOrgKeyForKeyName(key_name)
+    key = self.getOrgKeyForKeyName(key_name)
     self.data.organization = self.data.getOrganization(key)
 
     if not self.data.organization:
@@ -449,6 +454,22 @@ class Mutator(object):
       self.data.project_owner = self.data.profile
     else:
       self.data.project_owner = self.data.project.parent()
+
+  def orgAppFromKwargs(self, raise_not_found=True):
+    """Sets the organization application in RequestData object.
+
+    Args:
+      raise_not_found: iff False do not send 404 response.
+    """
+    # kwargs which defines a survey
+    fields = ['sponsor', 'program']
+
+    key_name = '/'.join(['gsoc_program'] +
+                        [self.data.kwargs[field] for field in fields])
+    self.data.org_app = OrgAppSurvey.get_by_key_name(key_name)
+
+    if raise_not_found and not self.data.org_app:
+      raise NotFound(DEF_NO_ORG_APP_MSG_FMT % key_name)
 
 
 class DeveloperMutator(Mutator):
