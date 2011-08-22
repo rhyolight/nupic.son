@@ -231,15 +231,14 @@ class GradingRecordDetails(RequestHandler):
     record.locked = locked
     record.put()
 
-    if 'submit_mail' in self.data.POST:
-      grading_record.updateProjectsForGradingRecords([record])
+    grading_record.updateProjectsForGradingRecords([record])
 
-      # pass along these params as POST to the new task
-      task_params = {'record_key': str(record.key())}
-      task_url = '/tasks/gsoc/grading_record/mail_result'
+    # pass along these params as POST to the new task
+    task_params = {'record_key': str(record.key())}
+    task_url = '/tasks/gsoc/grading_record/mail_result'
 
-      mail_task = taskqueue.Task(params=task_params, url=task_url)
-      mail_task.add('mail')
+    mail_task = taskqueue.Task(params=task_params, url=task_url)
+    mail_task.add('mail')
 
     self.redirect.id(record.grading_survey_group.key().id_or_name())
     self.redirect.to('gsoc_grading_record_overview')
