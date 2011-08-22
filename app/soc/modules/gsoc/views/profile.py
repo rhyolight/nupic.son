@@ -32,6 +32,7 @@ from django.core.urlresolvers import reverse
 from soc.logic import cleaning
 from soc.logic import dicts
 from soc.views import forms
+from soc.views.helper import url_patterns
 
 from soc.models.user import User
 from soc.models.universities import UNIVERSITIES
@@ -41,7 +42,6 @@ from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

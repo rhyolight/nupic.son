@@ -34,12 +34,12 @@ from soc.models.user import User
 from soc.tasks import mailer
 from soc.views import forms
 from soc.views import readonly_template
+from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

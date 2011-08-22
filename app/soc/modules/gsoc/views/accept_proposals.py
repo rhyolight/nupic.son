@@ -30,11 +30,11 @@ from google.appengine.ext import db
 from django import http
 
 from soc.views.template import Template
+from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.logic import accept_proposals as conversion_logic
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

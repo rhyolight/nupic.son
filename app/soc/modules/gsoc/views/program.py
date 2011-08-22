@@ -26,11 +26,11 @@ from django.core.urlresolvers import reverse
 
 from soc.logic.models.document import logic as document_logic
 from soc.views.forms import ModelForm
+from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

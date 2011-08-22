@@ -31,11 +31,11 @@ from django.utils import simplejson
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.views.helper import lists
+from soc.views.helper import url_patterns
 from soc.views.template import Template
 
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

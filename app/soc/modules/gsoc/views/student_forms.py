@@ -28,10 +28,10 @@ from django.forms import fields
 
 from soc.views import forms
 from soc.views.helper import blobstore as bs_helper
+from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

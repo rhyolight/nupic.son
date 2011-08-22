@@ -33,6 +33,7 @@ from django.utils import simplejson
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.views.helper import lists
+from soc.views.helper import url_patterns
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
@@ -40,7 +41,6 @@ from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

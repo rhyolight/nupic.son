@@ -26,13 +26,13 @@ from google.appengine.api import taskqueue
 
 from soc.views import forms
 from soc.views.helper import lists
+from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import grading_record
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

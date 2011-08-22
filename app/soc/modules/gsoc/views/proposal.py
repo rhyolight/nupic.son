@@ -30,13 +30,14 @@ from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import notifications
 from soc.views import forms
+from soc.views.helper import url_patterns
 from soc.tasks import mailer
 
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
 
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -156,7 +157,7 @@ class UpdateProposal(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/update/%s$' % url_patterns.PROPOSAL,
+         url(r'proposal/update/%s$' % gsoc_url_patterns.PROPOSAL,
          self, name='update_gsoc_proposal'),
     ]
 

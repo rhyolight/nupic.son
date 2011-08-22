@@ -37,6 +37,7 @@ from soc.logic.exceptions import BadRequest
 from soc.logic.models.request import logic as request_logic
 from soc.models.universities import UNIVERSITIES
 from soc.views.helper import lists
+from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
 from soc.views.template import Template
 
@@ -60,7 +61,6 @@ from soc.modules.gsoc.models.project_survey_record import \
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.base_templates import ProgramSelect
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

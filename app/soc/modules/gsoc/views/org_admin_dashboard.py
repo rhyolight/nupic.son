@@ -27,6 +27,7 @@ from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import lists
+from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
 
 from soc.modules.gsoc.logic import project as project_logic
@@ -39,7 +40,6 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.views import dashboard
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

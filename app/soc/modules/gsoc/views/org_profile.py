@@ -28,13 +28,13 @@ from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
+from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 
 from soc.modules.gsoc.logic import cleaning as gsoc_cleaning
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

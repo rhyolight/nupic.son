@@ -30,13 +30,13 @@ from soc.logic.models.document import logic as document_logic
 from soc.models.document import Document
 from soc.views import document
 from soc.views.helper import lists
+from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.forms import ModelForm
 from soc.views.template import Template
 
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import ProgramSelect
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
