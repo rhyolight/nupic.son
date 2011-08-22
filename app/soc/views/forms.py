@@ -32,19 +32,17 @@ import re
 from google.appengine.ext import db
 from google.appengine.ext.db import djangoforms
 
+from django import forms
 from django.core.urlresolvers import reverse
-from django.forms import forms
-from django.forms import widgets
-from django.forms.util import flatatt
+from django.core.exceptions import ImproperlyConfigured
 from django.template import defaultfilters
 from django.template import loader
+from django.utils.datastructures import SortedDict
 from django.utils.encoding import force_unicode
 from django.utils.formats import dateformat
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext
-
-import django
 
 from soc.views.helper.surveys import SurveySchema
 
@@ -58,7 +56,7 @@ def choiceWidget(field):
   choices.append(('', label))
   for choice in field.choices:
     choices.append((str(choice), unicode(choice)))
-  return widgets.Select(choices=choices)
+  return forms.Select(choices=choices)
 
 
 def choiceWidgets(model, fields):
@@ -70,7 +68,7 @@ def choiceWidgets(model, fields):
 def hiddenWidget():
   """Returns a HiddenInput widget for the specified field.
   """
-  return widgets.HiddenInput()
+  return forms.HiddenInput()
 
 def hiddenWidgets(model, fields):
   """Returns a dictionary of Select widgets for the specified fields.
@@ -89,7 +87,7 @@ def mergeWidgets(*args):
   return widgets
 
 
-class RadioInput(widgets.RadioInput):
+class RadioInput(forms.widgets.RadioInput):
   """The rendering customization to be used for individual radio elements.
   """
 
@@ -105,7 +103,7 @@ class RadioInput(widgets.RadioInput):
 
 
 
-class RadioFieldRenderer(widgets.RadioFieldRenderer):
+class RadioFieldRenderer(forms.widgets.RadioFieldRenderer):
   """The rendering customization to use the Uniform CSS on radio fields.
   """
 
@@ -122,7 +120,7 @@ class RadioFieldRenderer(widgets.RadioFieldRenderer):
         % (w.attrs.get('id', ''), force_unicode(w)) for w in self]))
 
 
-class CheckboxSelectMultiple(widgets.SelectMultiple):
+class CheckboxSelectMultiple(forms.SelectMultiple):
   def render(self, name, value, attrs=None, choices=()):
     if value is None:
       value = []
@@ -141,7 +139,7 @@ class CheckboxSelectMultiple(widgets.SelectMultiple):
       else:
         label_for = ''
 
-      cb = widgets.CheckboxInput(
+      cb = forms.CheckboxInput(
           final_attrs, check_test=lambda value: value in str_values)
       option_value = force_unicode(option_value)
       rendered_cb = cb.render(name, option_value)
@@ -154,7 +152,7 @@ class CheckboxSelectMultiple(widgets.SelectMultiple):
     return mark_safe(u'\n'.join(output))
 
 
-class ReferenceWidget(widgets.TextInput):
+class ReferenceWidget(forms.TextInput):
   """Extends Django's TextInput widget to render the needed extra input field.
   """
   pass
@@ -166,7 +164,7 @@ class DocumentWidget(ReferenceWidget):
   pass
 
 
-class TOSWidget(widgets.CheckboxInput):
+class TOSWidget(forms.CheckboxInput):
   """Widget that renders both the checkbox and the readonly text area.
   """
 
@@ -181,7 +179,7 @@ class TOSWidget(widgets.CheckboxInput):
     if self.tos_text:
       text = mark_safe(
           u'<div id="tos-readonly-%s"><div %s>%s</div></div>' % (
-          name, flatatt(readonly_attrs),
+          name, forms.util.flatatt(readonly_attrs),
           conditional_escape(mark_safe(force_unicode(self.tos_text)))))
     else:
       text = mark_safe(
@@ -204,10 +202,10 @@ class ReferenceProperty(djangoforms.ReferenceProperty):
     from soc.models.document import Document
 
     if self.data_type is Document:
-      return django.forms.CharField(required=self.required,
+      return forms.CharField(required=self.required,
                                     widget=DocumentWidget)
     else:
-      return django.forms.CharField(required=self.required,
+      return forms.CharField(required=self.required,
                                     widget=ReferenceWidget)
 
   def make_value_from_form(self, value):
@@ -275,7 +273,7 @@ class ModelFormMetaclass(djangoforms.ModelFormMetaclass):
     for base in bases[::-1]:
       if hasattr(base, 'base_fields'):
         fields = base.base_fields.items() + fields
-    declared_fields = django.utils.datastructures.SortedDict()
+    declared_fields = SortedDict()
     for field_name, obj in fields:
       declared_fields[field_name] = obj
 
@@ -289,15 +287,15 @@ class ModelFormMetaclass(djangoforms.ModelFormMetaclass):
       if base_model is not None:
         base_models.append(base_model)
     if len(base_models) > 1:
-      raise django.core.exceptions.ImproperlyConfigured(
+      raise ImproperlyConfigured(
           "%s's base classes define more than one model." % class_name)
 
     if opts.model is not None:
       if base_models and base_models[0] is not opts.model:
-        raise django.core.exceptions.ImproperlyConfigured(
+        raise ImproperlyConfigured(
             '%s defines a different model than its parent.' % class_name)
 
-      model_fields = django.utils.datastructures.SortedDict()
+      model_fields = SortedDict()
       for name, prop in sorted(opts.model.properties().iteritems(),
                                key=lambda prop: prop[1].creation_counter):
         if opts.fields and name not in opts.fields:
@@ -439,7 +437,7 @@ class SurveyEditForm(ModelForm):
   """Django form for creating and/or editing survey.
   """
 
-  schema = django.forms.CharField(widget=django.forms.HiddenInput())
+  schema = forms.CharField(widget=forms.HiddenInput())
 
 
 class SurveyTakeForm(ModelForm):
@@ -485,7 +483,7 @@ class SurveyTakeForm(ModelForm):
         # If the widget for the field that must be saved is a Textarea
         # widget use the Text property
         field = self.fields.get(name, None)
-        if field and isinstance(field.widget, django.forms.Textarea):
+        if field and isinstance(field.widget, forms.Textarea):
           value = db.Text(value)
         setattr(instance, name, value)
 
@@ -522,7 +520,7 @@ class SurveyTakeForm(ModelForm):
       for name in additional_names:
         value = cleaned_data.get(name)
         field = self.fields.get(name, None)
-        if field and isinstance(field.widget, django.forms.Textarea):
+        if field and isinstance(field.widget, forms.Textarea):
           value = db.Text(value)
         setattr(instance, name, value)
     except db.BadValueError, err:
@@ -564,16 +562,16 @@ class SurveyTakeForm(ModelForm):
               }
 
     if type == 'checkbox':
-      field = django.forms.MultipleChoiceField
+      field = forms.MultipleChoiceField
       widget = CheckboxSelectMultiple()
     elif type == 'radio':
-      field = django.forms.ChoiceField
-      widget = django.forms.RadioSelect(renderer=RadioFieldRenderer)
+      field = forms.ChoiceField
+      widget = forms.RadioSelect(renderer=RadioFieldRenderer)
     elif type == 'textarea':
-      field = django.forms.CharField
-      widget = django.forms.Textarea()
+      field = forms.CharField
+      widget = forms.Textarea()
     elif type == 'input_text':
-      field = django.forms.CharField
+      field = forms.CharField
       kwargs['max_length'] = 500
 
     self.fields[field_name] = field(**kwargs)
@@ -587,7 +585,7 @@ class SurveyTakeForm(ModelForm):
       if field_obj.requireOtherField():
         choices.append(('Other', 'Other'))
         ofn = '%s-other' % (field_name)
-        self.fields[ofn] = django.forms.CharField(
+        self.fields[ofn] = forms.CharField(
             required=False, initial=getattr(self.instance, ofn, None),
             widget=forms.TextInput(attrs={'div_class':'other'}))
 
@@ -597,7 +595,7 @@ class SurveyTakeForm(ModelForm):
           self.instance, field_name, None)
 
 
-class BoundField(forms.BoundField):
+class BoundField(forms.forms.BoundField):
   """
   """
 
@@ -607,10 +605,6 @@ class BoundField(forms.BoundField):
     return self.field.required
 
   def render(self):
-    attrs = {
-        'id': self.name
-        }
-
     widget = self.field.widget
 
     if isinstance(widget, DocumentWidget):
@@ -620,25 +614,25 @@ class BoundField(forms.BoundField):
       return self.renderReferenceWidget()
     elif isinstance(widget, TOSWidget):
       return self.renderTOSWidget()
-    elif isinstance(widget, widgets.RadioSelect):
+    elif isinstance(widget, forms.RadioSelect):
       return self.renderRadioSelect()
     elif isinstance(widget, CheckboxSelectMultiple):
       return self.renderCheckSelectMultiple()
-    elif isinstance(widget, widgets.TextInput):
+    elif isinstance(widget, forms.TextInput):
       return self.renderTextInput()
-    elif isinstance(widget, widgets.DateInput):
+    elif isinstance(widget, forms.DateInput):
       return self.renderTextInput()
-    elif isinstance(widget, widgets.Select):
+    elif isinstance(widget, forms.Select):
       return self.renderSelect()
-    elif isinstance(widget, widgets.CheckboxInput):
+    elif isinstance(widget, forms.CheckboxInput):
       return self.renderCheckboxInput()
-    elif isinstance(widget, widgets.Textarea):
+    elif isinstance(widget, forms.Textarea):
       return self.renderTextArea()
-    elif isinstance(widget, widgets.DateTimeInput):
+    elif isinstance(widget, forms.DateTimeInput):
       return self.renderTextInput()
-    elif isinstance(widget, widgets.HiddenInput):
+    elif isinstance(widget, forms.HiddenInput):
       return self.renderHiddenInput()
-    elif isinstance(widget, widgets.FileInput):
+    elif isinstance(widget, forms.FileInput):
       return self.renderFileInput()
 
     return self.NOT_SUPPORTED_MSG_FMT % (
@@ -699,7 +693,6 @@ class BoundField(forms.BoundField):
     key = self.form.initial.get(self.name)
 
     if key:
-      from google.appengine.ext import db
       entity = db.get(key)
       if entity:
         self.form.initial[self.name] = entity.key().name()
