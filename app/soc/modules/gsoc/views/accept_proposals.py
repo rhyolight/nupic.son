@@ -25,15 +25,12 @@ __authors__ = [
 
 
 from google.appengine.api import taskqueue
-from google.appengine.ext import db
 
 from django import http
 
-from soc.views.template import Template
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.logic import accept_proposals as conversion_logic
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -71,7 +68,6 @@ class AcceptProposalsPage(RequestHandler):
   def post(self):
     """Handles the POST request to (re)start conversion.
     """
-    post_data = self.request.POST
 
     # pass along these params as POST to the new task
     task_params = {'program_key': self.data.program.key().id_or_name()}

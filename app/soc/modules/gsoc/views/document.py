@@ -24,9 +24,8 @@ __authors__ = [
 
 from django.conf.urls.defaults import url as django_url
 
-from soc.logic import dicts
+from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import prefixes
-from soc.logic.models.document import logic as document_logic
 from soc.models.document import Document
 from soc.views import document
 from soc.views.helper import lists

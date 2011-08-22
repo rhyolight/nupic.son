@@ -23,12 +23,8 @@ __authors__ = [
   ]
 
 
-from google.appengine.api import users
-
-from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import url as django_url
 
-from soc.logic import dicts
 from soc.logic import system
 from soc.views.helper import url_patterns
 from soc.views.template import Template

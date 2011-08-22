@@ -21,15 +21,12 @@ __authors__ = [
 ]
 
 
-from google.appengine.ext import db
-
 from django.utils import simplejson
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation
 
-from soc.views import forms
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
 

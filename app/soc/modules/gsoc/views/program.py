@@ -22,8 +22,6 @@ __authors__ = [
   ]
 
 
-from django.core.urlresolvers import reverse
-
 from soc.logic.models.document import logic as document_logic
 from soc.views.forms import ModelForm
 from soc.views.helper import url_patterns

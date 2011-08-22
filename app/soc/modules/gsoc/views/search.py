@@ -24,8 +24,6 @@ __authors__ = [
 
 import os
 
-from soc.logic.models.site import logic as site_logic
-
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 

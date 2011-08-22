@@ -40,12 +40,12 @@ from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
+from soc.models.user import User
 from soc.views import forms
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
-from soc.models.user import User
 
 from soc.modules.gsoc.logic.project import getAcceptedProjectsQuery
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
@@ -57,7 +57,6 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

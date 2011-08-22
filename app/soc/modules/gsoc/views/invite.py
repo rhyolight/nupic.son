@@ -26,15 +26,10 @@ from google.appengine.ext import db
 from google.appengine.api import users
 
 from django import forms as djangoforms
-from django.core import validators
-from django.core.urlresolvers import reverse
-from django.forms import widgets
 from django.utils.translation import ugettext
 
 from soc.logic import accounts
 from soc.logic import cleaning
-from soc.logic import dicts
-from soc.logic.exceptions import NotFound
 from soc.logic.helper import notifications
 from soc.models.request import Request
 from soc.models.user import User
@@ -45,9 +40,7 @@ from soc.tasks import mailer
 
 from soc.modules.gsoc.views.base import RequestHandler
 
-from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.views.helper import access_checker
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

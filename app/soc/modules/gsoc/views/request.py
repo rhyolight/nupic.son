@@ -23,15 +23,9 @@ __authors__ = [
 
 
 from google.appengine.ext import db
-from google.appengine.api import users
 
-from django.core.urlresolvers import reverse
-from django.utils.translation import ugettext
-
-from soc.logic import dicts
 from soc.logic import accounts
 from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import NotFound
 from soc.logic.helper import notifications
 from soc.models.request import Request
 from soc.views import forms
@@ -39,7 +33,6 @@ from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.tasks import mailer
 
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
