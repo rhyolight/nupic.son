@@ -53,7 +53,7 @@ class Survey(ModelWithFieldAttributes):
                                  collection_name="program_surveys")
 
 # TODO(Madhu): Get rid of this property once the conversion is done
-  scope = db.SelfReferenceProperty(required=False,
+  scope = db.ReferenceProperty(required=False,
       collection_name='links', verbose_name=ugettext('Link Scope'))
   scope.help_text = ugettext(
       'Reference to another Linkable entity that defines the "scope" of'
