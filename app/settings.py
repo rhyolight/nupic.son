@@ -132,7 +132,7 @@ GCI_TASK_QUOTA_LIMIT_ENABLED = False
 
 MODULE_FMT = 'soc.modules.%s.callback'
 #MODULES = ['gsoc', 'statistic', 'gci']
-MODULES = ['gsoc']
+MODULES = ['gsoc', 'gci']
 
 #GData APIs Source:
 GDATA_SOURCE = 'Google-Melange-v1'
