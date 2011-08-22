@@ -30,8 +30,7 @@ from django.utils import simplejson
 
 from soc.views.template import Template
 
-# TODO(Madhu): To be changed after this helper is moved out of gsoc module
-from soc.modules.gsoc.views.helper.request_data import isAfter
+from soc.views.helper.request_data import isAfter
 
 
 def getListIndex(request):
