@@ -82,6 +82,6 @@ class OrgAppRecord(SurveyRecord):
   # but the applicant has not been informed yet.
   status = db.StringProperty(required=True,
       choices=['accepted','rejected','ignored','needs review','completed',
-          'pre-accepted', 'pre-rejected'],
+               'pre-accepted', 'pre-rejected'],
       default='needs review',
       verbose_name=ugettext('Application Status'))
