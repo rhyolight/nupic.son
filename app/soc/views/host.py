@@ -129,9 +129,8 @@ class HostProfilePage(SiteRequestHandler):
       link_id = self.data.kwargs.get('link_id')
       if link_id:
         kwargs = {'link_id': link_id}
-        url = reverse('edit_host_profile_linkid', kwargs=kwargs)
+        self.redirect.to('edit_host_profile_linkid', kwargs=kwargs)
       else:
-        url = reverse('edit_host_profile')
-      self.response = http.HttpResponseRedirect(url)
+        self.redirect.to('edit_host_profile')
     else:
       self.get()

@@ -24,7 +24,7 @@ __authors__ = [
   '"Lennard de Rijk" <ljvderijk@gmail.com>'
   ]
 
-import os
+
 import urllib
 
 from google.appengine.ext import db
@@ -41,6 +41,7 @@ from soc.logic.exceptions import Error
 from soc.views.helper import access_checker
 from soc.views.helper import context as context_helper
 from soc.views.helper.request_data import RequestData
+from soc.views.helper.request_data import RedirectHelper
 
 
 class Response(http.HttpResponse):
@@ -340,6 +341,7 @@ class SiteRequestHandler(RequestHandler):
 
   def init(self, request, args, kwargs):
     self.data = RequestData()
+    self.redirect = RedirectHelper(self.data, self.response)
     self.data.populate(None, request, args, kwargs)
     if self.data.is_developer:
       self.mutator = access_checker.DeveloperMutator(self.data)
@@ -347,6 +349,3 @@ class SiteRequestHandler(RequestHandler):
     else:
       self.mutator = access_checker.Mutator(self.data)
       self.check = access_checker.AccessChecker(self.data)
-
-  def redirect(self, url):
-    self.response = http.HttpResponseRedirect(url)

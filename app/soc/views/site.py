@@ -27,7 +27,6 @@ import os
 from google.appengine.api import users
 
 from django.conf.urls.defaults import url as django_url
-from django.core.urlresolvers import reverse
 from django.forms import widgets as django_widgets
 from django.utils.functional import lazy
 from django.utils.translation import ugettext
@@ -37,10 +36,9 @@ from soc.logic.models.document import logic as document_logic
 from soc.logic.models.site import logic as site_logic
 from soc.logic.exceptions import AccessViolation
 from soc.models.site import Site
-from soc.models.work import Work
 from soc.views.base import SiteRequestHandler
 from soc.views.forms import ModelForm
-from soc.views.helper import widgets as widgets_helper
+
 
 from soc.modules import callback
 
@@ -122,7 +120,7 @@ class EditSitePage(SiteRequestHandler):
     """Handler for HTTP POST request.
     """
     if self.validate():
-      self.redirect(reverse('edit_site_settings'))
+      self.redirect.to('edit_site_settings')
     else:
       self.get()
 
@@ -146,18 +144,17 @@ class SiteHomepage(SiteRequestHandler):
     action = args[0] if args else ''
 
     if action == 'login':
-      url = users.create_login_url('/')
+      self.redirect.toUrl(users.create_login_url('/'))
     elif action == 'logout':
-      url = users.create_logout_url('/')
+      self.redirect.toUrl(users.create_logout_url('/'))
     else:
       site = site_logic.getSingleton()
       program = site.active_program
       if program:
         kwargs['sponsor'] = program.scope_path
         kwargs['program'] = program.link_id
-        url = reverse(program.homepage_url_name, kwargs=kwargs)
+        self.redirect.to(program.homepage_url_name, kwargs=kwargs)
       else:
-        url = reverse('edit_site_settings')
+        self.redirect.to('edit_site_settings')
 
-    self.redirect(url)
     return self.response
