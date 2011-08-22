@@ -26,6 +26,10 @@
 
 
 
+from __future__ import with_statement
+
+
+import threading
 
 from google.appengine.api import apiproxy_stub_map
 from google.appengine.api.system import system_service_pb
@@ -39,7 +43,6 @@ def cpu_usage():
     - total(): total mcycles consumed by this instance
     - rate1m(): average mcycles consumed per second over the last minute
     - rate10m(): average mcycles consumed per second over the last ten minutes
-    - rate1h(): average mcycles consumed per second over the last hour
 
   Functions for converting from mcycles to cpu-seconds are located in the quotas
   API.
@@ -55,7 +58,6 @@ def memory_usage():
     - current(): memory currently used by this instance
     - average1m(): average memory use, over the last minute
     - average10m(): average memory use, over the last ten minutes
-    - average1h(): average memory use, over the last hour
   """
   return _GetSystemStats().memory()
 
@@ -68,13 +70,16 @@ def _GetSystemStats():
   return response
 
 
+__shutdown_mutex = threading.Lock()
 __shutdown_hook = None
 __shuting_down = False
 
 
 def is_shutting_down():
   """Returns true if the server is shutting down."""
-  return __shuting_down
+  with __shutdown_mutex:
+    shutting_down = __shuting_down
+  return shutting_down
 
 
 def set_shutdown_hook(hook):
@@ -99,8 +104,9 @@ def set_shutdown_hook(hook):
   if hook is not None and not callable(hook):
     raise TypeError("hook must be callable, got %s" % hook.__class__)
   global __shutdown_hook
-  old_hook = __shutdown_hook
-  __shutdown_hook = hook
+  with __shutdown_mutex:
+    old_hook = __shutdown_hook
+    __shutdown_hook = hook
   return old_hook
 
 
@@ -108,6 +114,8 @@ def __BeginShutdown():
 
 
   global __shuting_down
-  __shuting_down = True
-  if __shutdown_hook:
-    __shutdown_hook()
+  with __shutdown_mutex:
+    __shuting_down = True
+    shutdown_hook = __shutdown_hook
+  if shutdown_hook:
+    shutdown_hook()
