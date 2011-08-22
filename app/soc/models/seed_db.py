@@ -47,7 +47,6 @@ from soc.models.site import Site
 from soc.models.sponsor import Sponsor
 
 from soc.models.survey import Survey
-from soc.models.survey import SurveyContent
 from soc.models.survey_record import SurveyRecord
 
 from soc.models.user import User
@@ -396,13 +395,6 @@ def seed(request, *args, **kwargs):
   profile = GSoCProfile(**role_properties)
   role_properties.pop('parent')
 
-  org_app_survey_content_properties = {
-      'schema': "{u'participating': {'has_comment': False, 'render': 'quant_radio', 'index': 0, 'question': u'Are you participating?', 'required': True, 'tip': u'', 'type': 'pick_quant'}}",
-      }
-
-  org_app_survey_content = SurveyContent(**org_app_survey_content_properties)
-  org_app_survey_content.put()
-
   org_app_properties = {
       'link_id': 'orgapp',
       'key_name': 'gsoc_program/google/gsoc2009/orgapp',
@@ -415,7 +407,6 @@ def seed(request, *args, **kwargs):
       'scope': gsoc2009,
       'scope_path': gsoc2009.key().id_or_name(),
       'short_name': u'GSoC2009OrgApp',
-      'survey_content': org_app_survey_content,
       'survey_end': before,
       'survey_start': before,
       'taking_access': 'user',
@@ -1048,7 +1039,6 @@ def clear(*args, **kwargs):
       GSoCStudent.all(),
       GCIStudent.all(),
       Survey.all(),
-      SurveyContent.all(),
       SurveyRecord.all(),
       GSoCOrgAdmin.all(),
       GCIOrgAdmin.all(),
