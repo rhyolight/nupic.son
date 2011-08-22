@@ -126,7 +126,8 @@ class ListConfiguration(object):
       self.row_list = row_list
 
   def addColumn(self, col_id, name, func,
-                width=None, resizable=True, hidden=False, options=None):
+                width=None, resizable=True,
+                hidden=False, searchhidden=True, options=None):
     """Adds a column to the end of the list.
 
     Args:
@@ -140,6 +141,7 @@ class ListConfiguration(object):
       resizable: Whether the width of the column should be resizable by the
                  end user.
       hidden: Whether the column should be hidden by default.
+      searchhidden: Whether this column should be searchable when hidden.
       options: An array of (regexp, display_value) tuples.
     """
     if self._col_functions.get(col_id):
@@ -163,6 +165,11 @@ class ListConfiguration(object):
 
       model["stype"] = "select"
       model["editoptions"] = dict(value=values)
+
+    if searchhidden:
+      model["searchoptions"] = {
+        "searchhidden": True
+      }
 
     self._col_model.append(model)
     self._col_map[col_id] = model
