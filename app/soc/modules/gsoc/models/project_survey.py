@@ -18,11 +18,17 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Daniel Diniz" <ajaksu@gmail.com>',
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
 ]
 
 
+from google.appengine.ext import db
+
+from django.utils.translation import ugettext
+
+from soc.models.linkable import LINK_ID_PATTERN_CORE
 from soc.models.survey import Survey
 
 
@@ -30,7 +36,14 @@ class ProjectSurvey(Survey):
   """Survey for Students that have a StudentProject.
   """
 
-  def __init__(self, *args, **kwargs):
-    super(ProjectSurvey, self).__init__(*args, **kwargs)
-    self.prefix = 'gsoc_program'
-    self.taking_access = 'student'
+  #: Required field storing "ID" used in URL links. ASCII characters,
+  #: digits and underscores only.  Valid link IDs successfully match
+  #: the LINK_ID_REGEX.
+  link_id = db.StringProperty(required=True,
+      verbose_name=ugettext('Link ID'))
+  link_id.example_text = ugettext('Unique Name, see tooltip.')
+  link_id.help_text = ugettext(
+      'Link ID is used as part of various URL links throughout the site.'
+      ' <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
+      ' alphanumeric characters, digits, and underscores only.'
+      ' The regexp used to validate is "%s".') % LINK_ID_PATTERN_CORE

@@ -52,18 +52,6 @@ class BaseSurveyRecord(ExpandoBase):
   #: change.
   modified = db.DateTimeProperty(auto_now=False)
 
-  def getValues(self):
-    """Method to get dynamic property values for a survey record.
-
-    Right now it gets all dynamic values, but it could also be confined to
-    the SurveyContent entity linked to the survey entity.
-    """
-    survey_order = self.survey.survey_content.getSurveyOrder()
-    values = []
-    for position, property in survey_order.items():
-        values.insert(position, getattr(self, property, None))
-    return values
-
 
 class SurveyRecord(BaseSurveyRecord):
   """Record produced by taking a Survey.

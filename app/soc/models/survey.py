@@ -21,6 +21,7 @@ SurveyContent contains the fields (questions) and their metadata.
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Daniel Diniz" <ajaksu@gmail.com>',
   '"James Levy" <jamesalexanderlevy@gmail.com>',
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
@@ -31,65 +32,12 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.models.expando_base import ExpandoBase
-
-import soc.models.work
-
-
-COMMENT_PREFIX = 'comment_for_'
+from soc.models.base import ModelWithFieldAttributes
+from soc.models.program import Program
+from soc.models.user import User
 
 
-class SurveyContent(ExpandoBase):
-  """Fields (questions) and schema representation of a Survey.
-
-  Each survey content entity consists of properties where names and default
-  values are set by the survey creator as survey fields.
-
-    schema: A dictionary (as text) storing, for each field:
-      - type
-      - index
-      - order (for choice questions)
-      - render (for choice questions)
-      - question (free form text question, used as label)
-  """
-
-  #:Field storing the content of the survey in the form of a dictionary.
-  schema = db.TextProperty()
-
-  #: Property containing the order of the questions in which the survey
-  #: questions must be rendered.
-  survey_order = db.StringListProperty(default=[])
-
-  #: Fields storing the created on and last modified on dates.
-  created = db.DateTimeProperty(auto_now_add=True)
-  modified = db.DateTimeProperty(auto_now=True)
-
-  def getSurveyOrder(self):
-    """Make survey questions always appear in the same (creation) order.
-    """
-    survey_order = {}
-    schema = eval(self.schema)
-    for property in self.dynamic_properties():
-      # map out the order of the survey fields
-      index = schema[property]["index"]
-      if index not in survey_order:
-        survey_order[index] = property
-      else:
-        # Handle duplicated indexes
-        survey_order[max(survey_order) + 1] = property
-    return survey_order
-
-  def orderedProperties(self):
-    """Helper for View.get_fields(), keep field order.
-    """
-    properties = []
-    survey_order = self.getSurveyOrder().items()
-    for position, key in survey_order:
-      properties.insert(position, key)
-    return properties
-
-
-class Survey(soc.models.work.Work):
+class Survey(ModelWithFieldAttributes):
   """Model of a Survey.
 
   This model describes meta-information and permissions.
@@ -97,50 +45,50 @@ class Survey(soc.models.work.Work):
   in the SurveyContent entity.
   """
 
-  # euphemisms like "student" and "mentor" should be used if possible
-  SURVEY_ACCESS = ['admin', 'restricted', 'member', 'user']
+  # TODO(Madhu): Conversion script for existing surveys to convert scope
+  # to program
+  #: Required N:1 relationship indicating the program to which the survey
+  #: belongs to
+  program = db.ReferenceProperty(reference_class=Program, required=True,
+                                 collection_name="program_surveys")
 
-  # these are GSoC specific, so eventually we can subclass this
-  SURVEY_TAKING_ACCESS = ['student', 'mentor', 'org_admin', 'org', 'user']
+  #: Required field indicating the "title" of the work, which may have
+  #: different uses depending on the specific type of the work. Works
+  #: can be indexed, filtered, and sorted by 'title'.
+  title = db.StringProperty(required=True,
+      verbose_name=ugettext('Title'))
+  title.help_text = ugettext(
+      'title of the document; often used in the window title')
 
-  prefix = db.StringProperty(default='program', required=True,
-      choices=['site', 'club', 'sponsor', 'program', 'org', 'user',
-               'gsoc_program', 'gci_program'],
-      verbose_name=ugettext('Prefix'))
-  prefix.help_text = ugettext(
-      'Indicates the prefix of the survey,'
-      ' determines which access scheme is used.')
+  #: short name used in places such as the sidebar menu and breadcrumb trail
+  #: (optional: title will be used if short_name is not present)
+  short_name = db.StringProperty(verbose_name=ugettext('Short name'))
+  short_name.help_text = ugettext(
+      'short name used, for example, in the sidebar menu')
 
-  #: Field storing the required access to read this survey.
-  read_access = db.StringProperty(default='restricted', required=True,
-      choices=SURVEY_ACCESS,
-      verbose_name=ugettext('Survey Read Access'))
-  read_access.help_text = ugettext(
-      'Indicates who can read the results of this survey.')
+  #: Required db.TextProperty containing the contents of the Work.
+  #: The content is only to be displayed to Persons in Roles eligible to
+  #: view them (which may be anyone, for example, with the site front page).
+  content = db.TextProperty(verbose_name=ugettext('Content'))
 
-  #: Field storing the required access to write to this survey.
-  write_access = db.StringProperty(default='admin', required=True,
-      choices=SURVEY_ACCESS,
-      verbose_name=ugettext('Survey Write Access'))
-  write_access.help_text = ugettext(
-      'Indicates who can edit this survey.')
+  #: date when the work was created
+  created = db.DateTimeProperty(auto_now_add=True)
 
-  #: Field storing the required access to write to this survey.
-  taking_access = db.StringProperty(default='student', required=True,
-      choices=SURVEY_TAKING_ACCESS,
-      verbose_name=ugettext('Survey Taking Access'))
-  taking_access.help_text = ugettext(
-      'Indicates who can take this survey. '
-      'Student/Mentor options are for Midterms and Finals.')
+  # TODO(Madhu): Conversion from author to created_by
+  #: Required 1:1 relationship indicating the User who initially created the
+  #: survey (this relationship is needed to keep track of lifetime document
+  #: creation limits, used to prevent spamming, etc.).
+  created_by = db.ReferenceProperty(reference_class=User, required=True,
+                                    collection_name="created_surveys",
+                                    verbose_name=ugettext('Created by'))
 
-  #: Field storing whether a link to the survey should be featured in
-  #: the sidebar menu (and possibly elsewhere); FAQs, Terms of Service,
-  #: and the like are examples of "featured" survey.
-  is_featured = db.BooleanProperty(
-      verbose_name=ugettext('Is Featured'))
-  is_featured.help_text = ugettext(
-      'Field used to indicate if a Survey should be featured, for example,'
-      ' in the sidebar menu.')
+  #: date when the work was last modified
+  modified = db.DateTimeProperty(auto_now=True)
+
+  # indicating wich user last modified the work. Used in displaying Work
+  modified_by = db.ReferenceProperty(reference_class=User, required=True,
+                                     collection_name="modified_surveys",
+                                     verbose_name=ugettext('Modified by'))
 
   #: Date at which the survey becomes available for taking.
   survey_start = db.DateTimeProperty(
@@ -157,10 +105,6 @@ class Survey(soc.models.work.Work):
   survey_end.help_text = ugettext(
       'Indicates a date after which this survey'
       ' cannot be taken.')
-
-  #: Referenceproperty that specifies the content of this survey.
-  survey_content = db.ReferenceProperty(reference_class=SurveyContent,
-                                        collection_name="survey_parent")
 
   #: Stores the schema for the survey form
   schema = db.TextProperty(required=False)

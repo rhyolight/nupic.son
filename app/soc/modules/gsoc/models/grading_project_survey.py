@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Daniel Diniz" <ajaksu@gmail.com>',
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
 ]
@@ -30,6 +31,4 @@ class GradingProjectSurvey(ProjectSurvey):
   """Survey for Mentors for each of their StudentProjects.
   """
 
-  def __init__(self, *args, **kwargs):
-    super(GradingProjectSurvey, self).__init__(*args, **kwargs)
-    self.taking_access = 'org'
+  pass

@@ -29,6 +29,4 @@ class OrgAppSurvey(Survey):
   """Survey for Users to apply as an Organization.
   """
 
-  def __init__(self, *args, **kwargs):
-    super(OrgAppSurvey, self).__init__(*args, **kwargs)
-    self.taking_access = 'user'
+  pass
