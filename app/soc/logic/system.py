@@ -25,12 +25,17 @@ __authors__ = [
 import os
 import settings
 
+from google.appengine.api import app_identity
+
 from soc.logic.models.site import logic as site_logic
+
+
+
 
 def getApplicationId():
   """Returns the current application id.
   """
-  return os.environ.get('APPLICATION_ID', '')
+  return app_identity.get_application_id()
 
 
 def getApplicationEmail(name):
