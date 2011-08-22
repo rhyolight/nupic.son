@@ -24,7 +24,6 @@ __authors__ = [
 from soc.tasks.updates import project_conversion
 from soc.tasks.updates import proposal_conversion
 from soc.tasks.updates import role_conversion
-from soc.tasks.updates import survey_conversion
 
 
 class Callback(object):
@@ -54,9 +53,6 @@ class Callback(object):
     self.views.append(site.EditSitePage())
     self.views.append(site.SiteHomepage())
     self.views.append(mailer.MailerTask())
-    self.views.append(survey_conversion.GradingRecordConversion())
-    self.views.append(survey_conversion.GradingSurveyGroupConversion())
-    self.views.append(survey_conversion.ProjectSurveyRecordConversion())
     self.views.append(oauth.PopupOAuthRedirectPage())
     self.views.append(oauth.PopupOAuthVerified())
 
