@@ -294,7 +294,11 @@ class DjangoTestCase(TestCase):
                      active_program=self.gsoc)
     self.site.put()
 
-    properties = {'scope': self.gsoc, 'modified_by': self.founder,
+    # TODO (Madhu): Remove scope and author fields once the data
+    # conversion is done.
+    properties = {'scope': self.gsoc, 'program': self.gsoc,
+                  'modified_by': self.founder,
+                  'created_by': self.founder,
                   'author': self.founder,
                   'survey_content': None,}
     self.org_app = self.seed(OrgAppSurvey, properties)
