@@ -75,6 +75,9 @@ class StudentEvaluationComponent(dashboard.Component):
             eval, ent.parent().key().name(),
             ent.key().id())), hidden=True)
     list_config.addColumn(
+        'evaluation', 'Evaluation',
+        lambda ent, eval, *args: eval.capitalize() if eval else '')
+    list_config.addColumn(
         'student', 'Student',
         lambda entity, eval, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Project Title')
