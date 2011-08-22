@@ -136,18 +136,21 @@ class Mutator(access_checker.Mutator):
   def gradingSurveyRecordFromKwargs(self):
     """Sets a GradingSurveyRecord entry in the RequestData object.
     """
-    if not 'key' in self.data.kwargs:
+    self.projectFromKwargs()
+
+    if not ('group' in self.data.kwargs and 'id' in self.data.kwargs):
       raise BadRequest(access_checker.DEF_NOT_VALID_REQUEST_MSG)
 
-    try:
-      record = GSoCGradingRecord.get(db.Key(self.data.kwargs['key']))
-      self.data.record = record
-    except db.datastore_errors.BadKeyError:
-      record = None
+    # url regexp ensures that it is a digit
+    record_id = long(self.data.kwargs['record'])
+    group_id = long(self.data.kwargs['group'])
 
-    if not record:
+    record = GSoCGradingRecord.get_by_id(record_id, parent=self.data.project)
+
+    if not record or record.grading_survey_group.key().id() != group_id:
       raise NotFound(DEF_NO_RECORD_FOUND) 
 
+    self.data.record = record
 
 class DeveloperMutator(access_checker.DeveloperMutator, Mutator):
   pass

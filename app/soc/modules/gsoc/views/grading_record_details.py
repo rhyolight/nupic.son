@@ -140,7 +140,7 @@ class GradingRecordsList(Template):
     list_config.addSimpleColumn('grade_decision', 'Decision')
     r = data.redirect
     list_config.setRowAction(lambda e, *args:
-        r.key(str(e.key())).urlOf('gsoc_grading_record_detail'))
+        r.grading_record(e).urlOf('gsoc_grading_record_detail'))
 
     self._list_config = list_config
 
@@ -188,7 +188,7 @@ class GradingRecordDetails(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'grading_records/detail/%s$' % url_patterns.KEY,
+        url(r'grading_records/detail/%s$' % url_patterns.GRADING_RECORD,
          self, name='gsoc_grading_record_detail'),
     ]
 

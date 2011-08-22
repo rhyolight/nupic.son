@@ -583,3 +583,19 @@ class RedirectHelper(request_data.RedirectHelper):
     self.kwargs['survey'] = survey
 
     return self
+
+  def grading_record(self, record):
+    """Returns the redirector object with the arguments for grading record
+
+    Args:
+      record: the grading record entity
+    """
+    self.program()
+
+    project = record.parent()
+    self.project(project.key().id(), project.parent().link_id)
+
+    self.kwargs['group'] = record.grading_survey_group.key().id_or_name()
+    self.kwargs['record'] = record.key().id()
+
+    return self
