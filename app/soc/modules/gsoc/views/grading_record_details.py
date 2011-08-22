@@ -33,6 +33,7 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import grading_record
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -188,7 +189,7 @@ class GradingRecordDetails(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'grading_records/detail/%s$' % url_patterns.GRADING_RECORD,
+        url(r'grading_records/detail/%s$' % gsoc_url_patterns.GRADING_RECORD,
          self, name='gsoc_grading_record_detail'),
     ]
 
