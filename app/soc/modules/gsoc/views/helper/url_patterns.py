@@ -18,13 +18,15 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
 
 from django.conf.urls.defaults import url as django_url
 
-from soc.models import linkable
+from soc.views.helper.url_patterns import namedIdBasedPattern
+from soc.views.helper.url_patterns import namedLinkIdPattern
 
 
 def url(regex, view, kwargs=None, name=None):
@@ -35,73 +37,9 @@ def url(regex, view, kwargs=None, name=None):
   return django_url('^gsoc/%s' % regex, view, kwargs=kwargs, name=name)
 
 
-def captureLinkId(name):
-  """Returns a capture group for a link id with the specified name.
-  """
-  return r'(?P<%s>%s)' % (name, linkable.LINK_ID_PATTERN_CORE)
-
-
-def namedLinkIdPattern(names):
-  """Returns a link ID pattern consisting of named parts.
-
-  The returned pattern does not start or end with a /, the parts are however
-  concatenated with a /.
-
-  Args:
-    names: The names that should be given to the different parts.
-  """
-  named_patterns = []
-  for name in names:
-    named_patterns.append(captureLinkId(name))
-
-  return r'/'.join(named_patterns)
-
-
-def namedIdBasedPattern(names):
-  """Returns a url pattern consisting of named parts whose last element
-  is a numeric id.
-  """
-
-  return r'/'.join([namedLinkIdPattern(names), r'(?P<id>(\d+))'])
-
-
-def namedKeyBasedPattern(names):
-  """Returns a url pattern consisting of named parts whose last element
-  is a string representation of a Key instance.
-  """
-
-  return r'/'.join([namedLinkIdPattern(names), r'(?P<key>([\w-]+))'])
-
-
-_role = r'(?P<role>%s)/' % ("student|mentor|org_admin")
-_document = ''.join([
-    captureLinkId('prefix'), '/',
-    '(',
-      "(%s/)|" % captureLinkId('scope'),
-      '(',
-        "%s/" % captureLinkId('sponsor'),
-        '(',
-        "%s/" % captureLinkId('program'),
-          "(%s/)?" % captureLinkId('organization'),
-        ')?',
-      ')',
-    ')',
-    captureLinkId('document'),
-])
-_mentor_role = r'(?P<role>%s)/' % ("org_admin|mentor")
-
-ID        = namedIdBasedPattern(['sponsor', 'program'])
-KEY       = namedKeyBasedPattern(['sponsor', 'program'])
-SPONSOR   = namedLinkIdPattern(['sponsor'])
-PROGRAM   = namedLinkIdPattern(['sponsor', 'program'])
-CREATE_PROFILE = _role + namedLinkIdPattern(['sponsor', 'program'])
-PROFILE   = namedLinkIdPattern(['sponsor', 'program', 'user'])
-DOCUMENT  = _document
 SURVEY    = namedLinkIdPattern(['sponsor', 'program', 'survey'])
 PROPOSAL  = namedIdBasedPattern(['sponsor', 'program'])
 REVIEW    = namedIdBasedPattern(['sponsor', 'program', 'user'])
-ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
-INVITE    = _mentor_role + ORG
 PROJECT   = namedIdBasedPattern(['sponsor', 'program', 'user'])
 SURVEY_RECORD = namedIdBasedPattern(['sponsor', 'program', 'survey', 'user'])
 GRADING_RECORD = '/'.join([PROJECT, r'(?P<group>(\d+))', r'(?P<record>(\d+))'])
