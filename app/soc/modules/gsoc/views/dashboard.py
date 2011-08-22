@@ -43,8 +43,6 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.survey_record import getEvalRecord
-from soc.modules.gsoc.logic.models.org_app_survey import logic as \
-    org_app_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
@@ -239,16 +237,17 @@ class Dashboard(RequestHandler):
     """
     components = []
 
-    org_app_survey = org_app_logic.getForProgram(self.data.program)
+    #TODO(Madhu): Use the right query to fetch the required org app survey.
+    #org_app_survey = org_app_logic.getForProgram(self.data.program)
 
-    fields = {'survey': org_app_survey}
-    org_app_record = org_app_logic.getRecordLogic().getForFields(fields,
-                                                                 unique=True)
+    #fields = {'survey': org_app_survey}
+    #org_app_record = org_app_logic.getRecordLogic().getForFields(fields,
+    #                                                             unique=True)
 
-    if org_app_record:
+    #if org_app_record:
       # add a component showing the organization application of the user
-      components.append(MyOrgApplicationsComponent(self.request, self.data,
-                                                   org_app_survey))
+    #  components.append(MyOrgApplicationsComponent(self.request, self.data,
+    #                                               org_app_survey))
 
     return components
 
