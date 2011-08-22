@@ -25,8 +25,6 @@ __authors__ = [
 ]
 
 
-import datetime
-
 from google.appengine.ext import db
 
 from soc.logic.exceptions import NotFound
@@ -74,7 +72,7 @@ class TimelineHelper(request_data.TimelineHelper):
       the next deadline
     """
     if self.beforeOrgSignupStart():
-     return ("Org Application Starts", self.orgSignupStart())
+      return ("Org Application Starts", self.orgSignupStart())
 
     # we do not have deadlines for any of those programs that are not active
     if not self.programActive():
@@ -83,7 +81,7 @@ class TimelineHelper(request_data.TimelineHelper):
     if self.orgSignup():
       return ("Org Application Deadline", self.orgSignupEnd())
 
-    if isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
+    if request_data.isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
       return ("Accepted Orgs Announced In", self.orgsAnnouncedOn())
 
     if self.orgsAnnounced() and self.beforeStudentSignupStart():
@@ -119,10 +117,10 @@ class TimelineHelper(request_data.TimelineHelper):
     return self.timeline.student_application_matched_deadline
 
   def afterSurveyStart(self, survey):
-    return isAfter(survey.survey_start)
+    return request_data.isAfter(survey.survey_start)
 
   def afterSurveyEnd(self, survey):
-    return isAfter(survey.survey_end)
+    return request_data.isAfter(survey.survey_end)
 
   def mentorSignup(self):
     return self.programActiveBetween() and self.orgsAnnounced()
@@ -140,7 +138,7 @@ class TimelineHelper(request_data.TimelineHelper):
         at least one of them have started
     """
     first_survey_start = min([s.survey_start for s in surveys])
-    return isAfter(first_survey_start)
+    return request_data.isAfter(first_survey_start)
 
 
 class RequestData(request_data.RequestData):
