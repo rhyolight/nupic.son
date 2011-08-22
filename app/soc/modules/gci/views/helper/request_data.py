@@ -28,7 +28,6 @@ from google.appengine.ext import db
 from soc.logic.exceptions import NotFound
 from soc.models.site import Site
 from soc.views.helper import request_data
-from soc.views.helper.request_data import RequestData
 
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.profile import GCIProfile
@@ -64,7 +63,7 @@ class TimelineHelper(request_data.TimelineHelper):
     """Determines the next deadline on the timeline.
     """
     if self.beforeOrgSignupStart():
-     return ("Org Application Starts", self.orgSignupStart())
+      return ("Org Application Starts", self.orgSignupStart())
 
     # we do not have deadlines for any of those programs that are not active
     if not self.programActive():
@@ -73,7 +72,7 @@ class TimelineHelper(request_data.TimelineHelper):
     if self.orgSignup():
       return ("Org Application Deadline", self.orgSignupEnd())
 
-    if isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
+    if request_data.isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
       return ("Accepted Orgs Announced In", self.orgsAnnouncedOn())
 
     if self.orgsAnnounced() and self.beforeStudentSignupStart():
@@ -94,7 +93,7 @@ class TimelineHelper(request_data.TimelineHelper):
     return self.timeline.tasks_publicly_visible
 
   def tasksPubliclyVisible(self):
-    return isAfter(self.tasksPubliclyVisibleOn())
+    return request_data.isAfter(self.tasksPubliclyVisibleOn())
 
   def tasksClaimEndOn(self):
     return self.timeline.task_claim_deadline
@@ -103,7 +102,7 @@ class TimelineHelper(request_data.TimelineHelper):
     return self.timeline.stop_all_work_deadline
 
 
-class RequestData(RequestData):
+class RequestData(request_data.RequestData):
   """Object containing data we query for each request in the GCI module.
 
   The only view that will be exempt is the one that creates the program.
@@ -234,7 +233,7 @@ class RequestData(RequestData):
     self.is_mentor = self.is_org_admin or bool(self.mentor_for)
     
  
-class RedirectHelper(object):
+class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects.
   """
 
