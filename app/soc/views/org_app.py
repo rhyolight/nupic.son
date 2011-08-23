@@ -44,7 +44,7 @@ class OrgAppEditForm(forms.SurveyEditForm):
   class Meta:
     model = OrgAppSurvey
     css_prefix = 'org-app-edit'
-    exclude = ['program', 'created_by', 'modified_by']
+    exclude = ['scope', 'author', 'program', 'created_by', 'modified_by']
 
 
 class OrgAppTakeForm(forms.SurveyTakeForm):
