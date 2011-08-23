@@ -111,8 +111,7 @@ DEF_NO_LINK_ID_MSG = ugettext(
     'Link ID should not be empty')
 
 DEF_NO_ORG_APP_MSG_FMT = ugettext(
-    'The organization application survey with name %s parameters does '
-    'not exist.')
+    'The organization application for the program %s does not exist.')
 
 DEF_NO_PROJECT_MSG = ugettext(
     'Requested project does not exist.')
@@ -461,15 +460,13 @@ class Mutator(object):
     Args:
       raise_not_found: iff False do not send 404 response.
     """
-    # kwargs which defines a survey
-    fields = ['sponsor', 'program']
+    assert self.data.program
 
-    key_name = '/'.join(['gsoc_program'] +
-                        [self.data.kwargs[field] for field in fields])
-    self.data.org_app = OrgAppSurvey.get_by_key_name(key_name)
+    q = OrgAppSurvey.all().filter('program', self.data.program)
+    self.data.org_app = q.get()
 
     if raise_not_found and not self.data.org_app:
-      raise NotFound(DEF_NO_ORG_APP_MSG_FMT % key_name)
+      raise NotFound(DEF_NO_ORG_APP_MSG_FMT % self.data.program.name)
 
 
 class DeveloperMutator(Mutator):
