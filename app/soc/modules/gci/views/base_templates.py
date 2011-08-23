@@ -87,9 +87,8 @@ class MainMenu(Template):
     context = siteMenuContext(self.data)
     context.update({
         'home_link': self.data.redirect.homepage().url(),
-        'search_link': self.data.redirect.searchpage().url(),
     })
-    
+
     if self.data.profile:
       self.data.redirect.program()
       if self.data.profile.status == 'active':
