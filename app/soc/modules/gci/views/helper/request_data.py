@@ -242,12 +242,13 @@ class RedirectHelper(request_data.RedirectHelper):
     """
     self._url_name = 'gci_show_document'
     return super(RedirectHelper, self).document(document)
-    
+
   def homepage(self):
     """Sets the _url_name for the homepage of the current GCI program.
     """
+    super(RedirectHelper, self).homepage()
     self._url_name = 'gci_homepage'
-    return super(RedirectHelper, self).homepage()
+    return self
 
   def searchpage(self):
     """Sets the _url_name for the searchpage of the current GCI program.
