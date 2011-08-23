@@ -548,13 +548,13 @@ class Role(soc.models.linkable.Linkable):
     else:
       return self.name()
 
-  def recipient_name(self):
+  def shipping_name(self):
     """Property recipient_name that returns the name used for shipping.
 
     Does not check hasShippingAddress because this field was added later and
     would be None for old roles.
     """
-    return self.ship_name if self.ship_name else self.name()
+    return self.ship_name if self.hasShippingAddress() else self.given_name + " " + self.surname
 
   def shipping_street(self):
     """Property shipping_street that returns shipping street if
