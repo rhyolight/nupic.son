@@ -1102,7 +1102,6 @@ class ProposalsPage(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.mutator.organizationFromKwargs()
     self.check.isHost()
 
   def templatePath(self):
@@ -1205,7 +1204,6 @@ class ProjectsPage(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.mutator.organizationFromKwargs()
     self.check.isHost()
 
   def templatePath(self):

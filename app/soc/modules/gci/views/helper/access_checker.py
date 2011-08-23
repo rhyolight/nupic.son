@@ -37,9 +37,6 @@ class Mutator(access_checker.Mutator):
     self.data.task = access_checker.unset
     super(Mutator, self).unsetAll()
 
-  def getOrgKeyForKeyName(self, key_name):
-    return db.Key.from_path('GCIOrganization', key_name)
-
   def taskFromKwargs(self):
     """Sets the task entity in RequestData object.
     """
@@ -66,7 +63,7 @@ class DeveloperMutator(access_checker.DeveloperMutator,
 
 
 class AccessChecker(access_checker.AccessChecker):
-  
+
   def isTaskInURLValid(self):
     """Checks if the task in URL exists.
     """

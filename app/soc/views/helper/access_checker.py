@@ -41,7 +41,6 @@ from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -250,7 +249,6 @@ class Mutator(object):
     self.data.invited_profile = unset
     self.data.invite = unset
     self.data.key_name = unset
-    self.data.organization = unset
     self.data.private_comments_visible = unset
     self.data.proposal = unset
     self.data.proposer = unset
@@ -262,24 +260,6 @@ class Mutator(object):
     self.data.url_profile = unset
     self.data.url_student_info = unset
     self.data.url_user = unset
-
-  def getOrgKeyForKeyName(self, key_name):
-    return db.Key.from_path('Organization', key_name)
-
-  def organizationFromKwargs(self, organization):
-    # kwargs which defines an organization
-    fields = ['sponsor', 'program', 'organization']
-
-    key_name = '/'.join(self.data.kwargs[field] for field in fields)
-    key = self.getOrgKeyForKeyName(key_name)
-    self.data.organization = self.data.getOrganization(key)
-
-    if not self.data.organization:
-      msg = ugettext(
-          'The organization with link_id %s does not exist for %s.' %
-          (self.data.kwargs['organization'], self.data.program.name))
-
-      raise NotFound(msg)
 
   def documentKeyNameFromKwargs(self):
     """Returns the document key fields from kwargs.
@@ -610,7 +590,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise AccessViolation(DEF_NOT_HOST_MSG)
-  
+
   def isProgramRunning(self):
     """Checks whether the program is running now by making sure the current 
     data is between program start and end and the program is visible to 
@@ -618,12 +598,12 @@ class AccessChecker(BaseAccessChecker):
     """
     if not self.data.program:
       raise AccessViolation(DEF_NO_SUCH_PROGRAM_MSG)
-    
+
     self.isProgramVisible()
-    
+
     if self.data.timeline.programActive():
       return
-    
+
     raise AccessViolation(
         DEF_PROGRAM_NOT_RUNNING_MSG_FMT % self.data.program.name)
 

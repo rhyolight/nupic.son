@@ -171,7 +171,6 @@ class InvitePage(RequestHandler):
     """
 
     self.check.isProgramVisible()
-    self.mutator.organizationFromKwargs()
     self.check.isOrgAdmin()
 
   def context(self):

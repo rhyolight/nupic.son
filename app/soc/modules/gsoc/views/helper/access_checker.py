@@ -73,9 +73,6 @@ DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT_MSG = ugettext(
 
 class Mutator(access_checker.Mutator):
 
-  def getOrgKeyForKeyName(key_name):
-     return db.Key.from_path('GSoCOrganization', key_name)
-  
   def studentEvaluationFromKwargs(self, raise_not_found=True):
     """Sets the student evaluation in RequestData object.
 

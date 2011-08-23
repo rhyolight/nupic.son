@@ -161,7 +161,6 @@ class OrgProfilePage(RequestHandler):
 
     if 'organization' in self.data.kwargs:
       self.check.isProfileActive()
-      self.mutator.organizationFromKwargs()
       self.check.isOrgAdminForOrganization(self.data.organization)
       #probably check if the org is active
     else:

@@ -67,7 +67,6 @@ class ProposalPage(RequestHandler):
   def checkAccess(self):
     self.check.isLoggedIn()
     self.check.isActiveStudent()
-    self.mutator.organizationFromKwargs()
     self.check.isOrganizationInURLActive()
     self.check.canStudentPropose()
 

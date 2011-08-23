@@ -215,9 +215,9 @@ class OrgHome(RequestHandler):
     ]
 
   def checkAccess(self):
-    """Access checks for GSoC Organization Application.
+    """Access checks for GSoC Organization Homepage.
     """
-    self.mutator.organizationFromKwargs()
+    pass
 
   def jsonContext(self):
     """Handler for JSON requests.

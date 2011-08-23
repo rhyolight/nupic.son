@@ -69,7 +69,6 @@ class RequestPage(RequestHandler):
     self.check.notStudent()
 
     # check if the organization exists
-    self.mutator.organizationFromKwargs()
     self.check.isOrganizationInURLActive()
 
     # check if the user is not already mentor role for the organization

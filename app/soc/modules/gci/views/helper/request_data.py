@@ -231,8 +231,8 @@ class RequestData(request_data.RequestData):
 
     self.is_org_admin = self.is_host or bool(self.org_admin_for)
     self.is_mentor = self.is_org_admin or bool(self.mentor_for)
-    
- 
+
+
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects.
   """
