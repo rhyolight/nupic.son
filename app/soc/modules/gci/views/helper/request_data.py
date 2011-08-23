@@ -53,7 +53,7 @@ class TimelineHelper(request_data.TimelineHelper):
 
     if self.afterStudentSignupStart():
       return 'student_signup_period'
-          
+
     if self.tasksPubliclyVisible():
       return 'working_period'
     
