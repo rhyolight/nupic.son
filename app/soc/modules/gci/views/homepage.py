@@ -32,7 +32,8 @@ from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
-from soc.modules.gsoc.views.helper.url_patterns import url
+
+from soc.modules.gci.views.helper.url_patterns import url
 
 
 class Timeline(Template):
