@@ -573,6 +573,8 @@ def exportRolesForGoogleCode(csv_filename, gc_project_prefix='',
 
   from soc.modules.gsoc.models.org_admin import GSoCOrgAdmin
   from soc.modules.gsoc.models.mentor import GSoCMentor
+  from soc.modules.gsoc.models.profile import GSoCProfile
+  from soc.modules.gsoc.models.project import GSoCProject
   from soc.modules.gsoc.models.student import GSoCStudent
   from soc.modules.gsoc.models.organization import GSoCOrganization
   from soc.modules.gsoc.models.student_project import StudentProject
@@ -584,14 +586,19 @@ def exportRolesForGoogleCode(csv_filename, gc_project_prefix='',
   org_admins_by_orgs = {}
   students_by_orgs = {}
   mentors_by_orgs = {}
-  resolved_keys = {}
+  resolved_users = {}
 
-  def get_new_keys(keys):
-    have = set(resolved_keys.keys())
+  def get_new_users(keys):
+    have = set(resolved_users.keys())
     want = set(keys).difference(have)
     if not want:
       return
-    resolved_keys.update(res)
+    new_users = db.get(want)
+    for i in new_users:
+      resolved_users[i.key()] = i
+
+  def resolve_profile_key_to_user(profile_key):
+    return resolved_users[profile_key.parent()]
 
   def key(prop, item):
     return prop.get_value_for_datastore(item)
@@ -607,55 +614,67 @@ def exportRolesForGoogleCode(csv_filename, gc_project_prefix='',
 
   for org in orgs.values():
     # get all projects
-    fields = {'scope_path': org.key().id_or_name()}
-    org_admins = getEntities(GSoCOrgAdmin, fields=fields)()
+    #TODO: fix that
+    #fields = {'scope_path': org.key().id_or_name()}
+    fields = {'org_admin_for': org.key()}
+    #org_admins = getEntities(GSoCOrgAdmin, fields=fields)()
+    org_admins = getEntities(GSoCProfile, fields=fields)()
 
-    fields = {'scope_path': org.key().id_or_name(), 'status': 'accepted'}
-    student_projects = getEntities(StudentProject, fields=fields)()
+    fields = {'org': org, 'status': 'accepted'}
+    student_projects = getEntities(GSoCProject, fields=fields)()
+    #fields = {'scope_path': org.key().id_or_name(), 'status': 'accepted'}
+    #student_projects = getEntities(StudentProject, fields=fields)()
 
     org_short_name = short_name(org)
 
-    project_key = gc_project_prefix + org_short_name
+    if not gc_project_prefix.endswith('-'):
+      gc_project_prefix += '-'
+
     org_admins_by_orgs[project_key] = []
     students_by_orgs[project_key] = []
     mentors_by_orgs[project_key] = []
 
     keys = []
-    keys += [key(GSoCOrgAdmin.user, i) for i in org_admins.values()]
-    keys += [key(StudentProject.student, i) for i in student_projects.values()]
-    keys += [key(StudentProject.mentor, i) for i in student_projects.values()]
+    keys += [key(GSoCProfile.user, i) for i in org_admins.values()]
+    keys += [i.parent_key().parent() for i in student_projects.values()]
+    for project in student_projects.values():
+      keys += [i.parent() for i in project.mentors]
 
-    get_new_keys(keys)
+    print keys
+    get_new_users(keys)
 
     org_short_name = short_name(org)
 
     for org_admin in org_admins.values():
-      account_name = str(value(GSoCOrgAdmin.user, org_admin).account)
+      account_name = str(resolve_profile_key_to_user(org_admin.key()).account)
       org_admins_by_orgs[project_key].append(account_name)
       print 'OrgAdmin %s for %s' % (account_name, project_key)
     
-    students = [value(StudentProject.student, i) for i in student_projects.values()]
-    mentors = [value(StudentProject.mentor, i) for i in student_projects.values()]
+    #students = [value(StudentProject.student, i) for i in student_projects.values()]
+    #mentors = [value(StudentProject.mentor, i) for i in student_projects.values()]
 
-    keys = []
-    keys += [key(GSoCStudent.user, i) for i in students]
-    keys += [key(GSoCMentor.user, i) for i in mentors]
+    #keys = []
+    #keys += [key(GSoCStudent.user, i) for i in students]
+    #keys += [key(GSoCMentor.user, i) for i in mentors]
 
-    get_new_keys(keys)
+    #get_new_keys(keys)
 
-    org_short_name = short_name(org)
+    #org_short_name = short_name(org)
 
-    for student_project in student_projects.values():
-      student_entity = value(StudentProject.student, student_project)
-
-      account_name = str(value(GSoCStudent.user, student_entity).account)
+    for project in student_projects.values():
+      account_name = str(resolve_profile_key_to_user(
+          project.parent_key()).account)
       students_by_orgs[project_key].append(account_name)
       print 'Student %s for %s' % (account_name, project_key)
 
-      mentor_entity = value(StudentProject.mentor, student_project)
-      account_name = str(value(GSoCMentor.user, mentor_entity).account)
-      mentors_by_orgs[project_key].append(account_name)
-      print 'Mentor %s for %s' % (account_name, project_key)
+      for mentor in project.mentors:
+        account_name = str(resolve_profile_key_to_user(mentor).account)
+        mentors_by_orgs[project_key].append(account_name)
+        print 'Mentor %s for %s' % (account_name, project_key)
+#      mentor_entity = value(StudentProject.mentor, student_project)
+##      account_name = str(value(GSoCMentor.user, mentor_entity).account)
+#      mentors_by_orgs[project_key].append(account_name)
+#      print 'Mentor %s for %s' % (account_name, project_key)
     
   roles_data = {}
 
@@ -926,12 +945,12 @@ def main(args):
       'GSoCMentor': GSoCMentor,
       'GSoCOrgAdmin': org_admin.GSoCOrgAdmin,
       'GSoCProgram': GSoCProgram,
+      'GSoCProfile': GSoCProfile,
       'GCITask': GCITask,
       'Request': Request,
       'SRequest': StudentKeyRequest,
       'GCIStudent': GCIStudent,
       'GCIOrganization': GCIOrganization,
-      'GSoCProfile': GSoCProfile,
       'GSoCStudentInfo': GSoCStudentInfo,
       'GSoCProposal': GSoCProposal,
       'GSoCProject': GSoCProject,
