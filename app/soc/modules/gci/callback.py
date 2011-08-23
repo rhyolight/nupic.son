@@ -38,8 +38,10 @@ class Callback(object):
   def registerViews(self):
     """Instantiates all view objects.
     """
+    from soc.modules.gci.views import dashboard
     from soc.modules.gci.views import org_app
 
+    self.views.append(dashboard.Dashboard())
     self.views.append(org_app.GCIOrgAppEditPage())
     self.views.append(org_app.GCIOrgAppTakePage())
 

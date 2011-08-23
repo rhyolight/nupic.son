@@ -36,10 +36,10 @@ from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.logic.models.request import logic as request_logic
 from soc.models.universities import UNIVERSITIES
+from soc.views.dashboard import Component
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
-from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.evaluations import evaluationRowAdder
@@ -100,7 +100,7 @@ class Dashboard(RequestHandler):
   def jsonContext(self):
     """Handler for JSON requests.
     """
-    components = self._getActiveComponents()
+    components = self.components()
 
     list_content = None
     for component in components:
@@ -116,7 +116,7 @@ class Dashboard(RequestHandler):
   def post(self):
     """Handler for POST requests.
     """
-    components = self._getActiveComponents()
+    components = self.components()
 
     for component in components:
       if component.post():
@@ -128,7 +128,7 @@ class Dashboard(RequestHandler):
   def context(self):
     """Handler for default HTTP GET request.
     """
-    components = self._getActiveComponents()
+    components = self.components()
 
     return {
         'page_name': self.data.program.name,
@@ -140,7 +140,7 @@ class Dashboard(RequestHandler):
         'components': components,
     }
 
-  def _getActiveComponents(self):
+  def components(self):
     """Returns the components that are active on the page.
     """
     components = []
@@ -251,39 +251,6 @@ class Dashboard(RequestHandler):
     #                                               org_app_survey))
 
     return components
-
-
-class Component(Template):
-  """Base component for the dashboard.
-  """
-
-  def __init__(self, request, data):
-    """Initializes the component.
-
-    Args:
-      request: The HTTPRequest object
-      data: The RequestData object
-    """
-    self.request = request
-    self.data = data
-
-  def getListData(self):
-    """Returns the list data as requested by the current request.
-
-    If the lists as requested is not supported by this component None is
-    returned.
-    """
-    # by default no list is present
-    return None
-
-  def post(self):
-    """Handles a post request.
-
-    If posting to the list as requested is not supported by this component
-    False is returned.
-    """
-    # by default post is not supported
-    return False
 
 
 class MyOrgApplicationsComponent(Component):
