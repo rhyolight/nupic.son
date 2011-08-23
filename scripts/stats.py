@@ -630,6 +630,8 @@ def exportRolesForGoogleCode(csv_filename, gc_project_prefix='',
     if not gc_project_prefix.endswith('-'):
       gc_project_prefix += '-'
 
+    project_key = gc_project_prefix + org_short_name
+
     org_admins_by_orgs[project_key] = []
     students_by_orgs[project_key] = []
     mentors_by_orgs[project_key] = []
