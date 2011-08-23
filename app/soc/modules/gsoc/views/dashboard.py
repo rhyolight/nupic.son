@@ -1433,15 +1433,17 @@ class TodoComponent(Component):
 
     info = self.data.student_info
 
+    isgood = lambda x: x and x.size and x.filename
+
     if self.data.is_student and info.number_of_projects:
-      status = colorize(info.tax_form, "Submitted", "Not submitted")
+      status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
       response.addRow({
           'key': 'tax_form',
           'name': 'Tax form',
           'status': status,
       })
 
-      status = colorize(info.enrollment_form, "Submitted", "Not submitted")
+      status = colorize(isgood(info.enrollment_form), "Submitted", "Not submitted")
       response.addRow({
           'key': 'enrollment_form',
           'name': 'Enrollment form',
