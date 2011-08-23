@@ -312,7 +312,7 @@
     };
   }());
 
-  function List (div, idx, configuration, operations) {
+  function List (div, idx, configuration, operations, is_new_list) {
     var _self = this;
     // Default options
 
@@ -337,6 +337,8 @@
     // Init data
     var div = div;
     var idx = idx;
+
+    var is_new_list = is_new_list;
 
     // Configuration (sent by protocol either by server or at init)
     this.configuration = configuration;
@@ -1287,7 +1289,7 @@
     }();
   };
 
-  $m.loadList = function (div, init, idx) {
+  $m.loadList = function (div, init, idx, is_new_list) {
     var idx = parseInt(idx, 10);
     var init = JSON.parse(init);
     if (isNaN(idx) || idx < 0) {
@@ -1297,6 +1299,6 @@
       throw new melange.error.indexAlreadyExistent("Index " + idx + " is already existent");
     }
 
-    var list = new List(div, idx, init.configuration, init.operations);
+    var list = new List(div, idx, init.configuration, init.operations, is_new_list);
   };
 }());
