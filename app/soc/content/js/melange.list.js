@@ -1187,11 +1187,17 @@
       }
 
       footerAggregates();
-      cookie_service.saveCurrentTableConfiguration();
+      if (!_self.is_new_list) {
+        // Temporarily disable cookie service for new lists.
+        cookie_service.saveCurrentTableConfiguration();
+      }
     };
 
     var initJQGrid = function () {
-      _self.configuration = cookie_service.getPreviousTableConfiguration(_self.configuration);
+      if (!_self.is_new_list) {
+        // Temporarily disable cookie service for new lists.
+        _self.configuration = cookie_service.getPreviousTableConfiguration(_self.configuration);
+      }
 
       var final_jqgrid_configuration = jQuery.extend(
         _self.configuration,
@@ -1224,6 +1230,15 @@
         cursor: "pointer"
       };
 
+      var search_parameters = {};
+
+      if (!_self.is_new_list) {
+        search_parameters = {
+          closeAfterSearch: true,
+          multipleSearch: true
+        };
+      }
+
       jQuery("#" + _self.jqgrid.id)
        .jqGrid(
          jQuery.extend(_self.jqgrid.options, final_jqgrid_configuration)
@@ -1236,25 +1251,26 @@
          {}, // settings for edit
          {}, // settings for add
          {}, // settings for delete
-         {
-           closeAfterSearch: true,
-           multipleSearch: true
-         },
+         search_parameters,
          {} // view parameters
-        ).jqGrid(
+        );
+      // Do not show columns and filter Toolbar for new lists.
+      if (!_self.is_new_list) {
+        jQuery("#" + _self.jqgrid.id).jqGrid(
           // show button to hide/show columns
           "navButtonAdd",
           "#" + _self.jqgrid.pager.id,
           button_showhide_options
         );
-      jQuery("#" + _self.jqgrid.id).jqGrid(
-        'filterToolbar',
-        {
-          beforeSearch: cookie_service.saveCurrentTableConfiguration,
-          searchOnEnter: false,
-          autosearch: true
-        }
-      );
+        jQuery("#" + _self.jqgrid.id).jqGrid(
+          'filterToolbar',
+          {
+            beforeSearch: cookie_service.saveCurrentTableConfiguration,
+            searchOnEnter: false,
+            autosearch: true
+          }
+        );
+      }
 
       // Prepare the Loading message, substituting it with an animated image
       jQuery("#load_" + _self.jqgrid.id).closest("div").css("line-height","100%");
