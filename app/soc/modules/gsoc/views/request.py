@@ -42,9 +42,6 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 class RequestForm(forms.ModelForm):
   """Django form for the request page.
   """
-
-  #link_id = djangoforms.CharField(label='Link ID')
-
   class Meta:
     model = Request
     css_prefix = 'gsoc_request'
@@ -54,7 +51,6 @@ class RequestForm(forms.ModelForm):
 class RequestPage(RequestHandler):
   """Encapsulate all the methods required to generate Request page.
   """
-
   def templatePath(self):
     return 'v2/modules/gsoc/invite/base.html'
 
@@ -67,9 +63,8 @@ class RequestPage(RequestHandler):
   def checkAccess(self):
     """Access checks for GSoC Invite page.
     """
-
     self.check.isProgramVisible()
-    
+
     # check if the current user has a profile, but is not a student
     self.check.notStudent()
 
@@ -92,7 +87,6 @@ class RequestPage(RequestHandler):
   def context(self):
     """Handler for GSoC Request Page HTTP get request.
     """
-
     request_form = RequestForm(self.data.POST or None)
 
     return {
@@ -105,7 +99,6 @@ class RequestPage(RequestHandler):
   def post(self):
     """Handler for GSoC Request Page HTTP post request.
     """
-
     request = self._createFromForm()
     if request:
       self.redirect.id(request.key().id())
@@ -119,7 +112,6 @@ class RequestPage(RequestHandler):
     Returns:
       a newly created Request entity or None
     """
-
     assert isSet(self.data.organization)
 
     request_form = RequestForm(self.data.POST)
@@ -132,8 +124,6 @@ class RequestPage(RequestHandler):
     request_form.cleaned_data['group'] = self.data.organization
     request_form.cleaned_data['role'] = 'mentor'
     request_form.cleaned_data['type'] = 'Request'
-
-    to = accounts.denormalizeAccount(self.data.user.account).email()
 
     q = GSoCProfile.all().filter('org_admin_for', self.data.organization)
     q = q.filter('status', 'active').filter('notify_new_requests', True)
@@ -153,7 +143,6 @@ class RequestPage(RequestHandler):
 class ShowRequest(RequestHandler):
   """Encapsulate all the methods required to generate Show Request page.
   """
-
   # maps actions with button names
   ACTIONS = {
       'accept': 'Accept',
@@ -206,7 +195,6 @@ class ShowRequest(RequestHandler):
   def context(self):
     """Handler to for GSoC Show Request Page HTTP get request.
     """
-
     assert isSet(self.data.request_entity)
     assert isSet(self.data.can_respond)
     assert isSet(self.data.organization)
@@ -267,7 +255,6 @@ class ShowRequest(RequestHandler):
   def post(self):
     """Handler to for GSoC Show Request Page HTTP post request.
     """
-
     assert isSet(self.data.action)
     assert isSet(self.data.request_entity)
 
@@ -286,7 +273,6 @@ class ShowRequest(RequestHandler):
   def _acceptRequest(self):
     """Accepts a request.
     """
-
     assert isSet(self.data.organization)
     assert isSet(self.data.requester_profile)
 
