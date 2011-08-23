@@ -248,12 +248,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'gci_homepage'
     return self
 
-  def searchpage(self):
-    """Sets the _url_name for the searchpage of the current GCI program.
-    """
-    self._url_name = 'gci_search'
-    return super(RedirectHelper,self).searchpage()
-
   def dashboard(self):
     """Sets the _url_name for dashboard page of the current GCI program.
     """
