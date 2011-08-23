@@ -32,8 +32,7 @@ from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
 from soc.modules.gsoc.models.profile import GSoCProfile
-
-from soc.modules.gsoc.logic.models.organization import logic as org_logic
+from soc.modules.gsoc.models.organization import GSoCOrganization
 
 
 class TimelineHelper(request_data.TimelineHelper):
@@ -304,11 +303,9 @@ class RequestData(request_data.RequestData):
     self.timeline = TimelineHelper(self.program_timeline, self.org_app)
 
     if kwargs.get('organization'):
-      org_keyfields = {
-          'link_id': kwargs.get('organization'),
-          'scope_path': self.program.key().id_or_name(),
-          }
-      self.organization = org_logic.getFromKeyFieldsOr404(org_keyfields)
+      fields = [self.program.key().id_or_name(), kwargs.get('organization')]
+      key_name = '/'.join(fields)
+      self.organization = GSoCOrganization.get_by_key_name(key_name)
 
     if self.user:
       key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)

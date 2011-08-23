@@ -301,11 +301,15 @@ class MyOrgApplicationsComponent(Component):
     if lists.getListIndex(self.request) != 0:
       return None
 
-    fields = {'survey': self.org_app_survey,
-              'main_admin': self.data.user}
-    response_builder = lists.QueryContentResponseBuilder(
-        self.request, self._list_config, org_app_logic.getRecordLogic(),
-        fields)
+    # TODO(madhu): import the right class
+    q = GSoCOrgApp.all()
+    q.filter('survey', self.org_app_survey)
+    q.filter('main_admin', self.data.user)
+
+    starter = lists.keyStarter
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter)
     return response_builder.build()
 
 
@@ -1118,12 +1122,17 @@ class RequestComponent(Component):
     if lists.getListIndex(self.request) != self.idx:
       return None
 
+    q = GSoCRequest.all()
+
     if self.for_admin:
-      fields = {'group': self.data.org_admin_for}
+      q.filter('group IN', self.data.org_admin_for)
     else:
-      fields = {'user': self.data.user}
-    response_builder = lists.QueryContentResponseBuilder(
-        self.request, self._list_config, request_logic, fields, prefetch=['user', 'group'])
+      q.filter('user', self.data.user)
+
+    starter = lists.keyStarter
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter, prefetch=['user', 'group'])
     return response_builder.build()
 
   def context(self):

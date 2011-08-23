@@ -815,31 +815,3 @@ class RawQueryContentResponseBuilder(object):
       content_response.next = self._ender(None, True, start)
 
     return content_response
-
-
-class QueryContentResponseBuilder(RawQueryContentResponseBuilder):
-  """Builds a ListContentResponse for lists that are based on a single query.
-  """
-
-  def __init__(self, request, config, logic, fields, ancestors=None,
-               prefetch=None):
-    """Initializes the fields needed to built a response.
-
-    Args:
-      request: The HTTPRequest containing the request for data.
-      config: The ListConfiguration object.
-      logic: The Logic instance used for querying.
-      fields: The fields to query on.
-      ancestors: List of ancestor entities to add to the query
-      prefetch: The fields that need to be prefetched for increased
-                performance.
-    """
-    query = logic.getQueryForFields(
-        filter=fields, ancestors=ancestors)
-
-    prefetcher = None
-    if prefetch:
-      prefetcher = modelPrefetcher(logic.getModel(), prefetch)
-
-    super(QueryContentResponseBuilder, self).__init__(
-        request, config, query, keyStarter, prefetcher=prefetcher)

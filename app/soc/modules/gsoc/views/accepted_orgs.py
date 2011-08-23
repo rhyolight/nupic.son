@@ -30,7 +30,7 @@ from soc.views.template import Template
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 
-from soc.modules.gsoc.logic.models.organization import logic as org_logic
+from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -76,10 +76,14 @@ class AcceptedOrgsList(Template):
   def getListData(self):
     idx = lists.getListIndex(self.request)
     if idx == 0:
-      fields = {'scope': self.data.program,
-                'status': ['new', 'active', 'inactive']}
-      response_builder = lists.QueryContentResponseBuilder(
-          self.request, self._list_config, org_logic, fields)
+      q = GSoCOrganization.all()
+      q.filter('scope', self.data.program)
+      q.filter('status IN', ['new', 'active', 'inactive'])
+
+      starter = lists.keyStarter
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, q, starter)
       return response_builder.build()
     else:
       return None
