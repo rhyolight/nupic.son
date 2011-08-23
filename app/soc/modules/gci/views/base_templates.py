@@ -54,8 +54,8 @@ def siteMenuContext(data):
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
 
-  if data.timeline.studentsAnnounced():
-    context['projects_link'] = redirect.allProjects().url()
+  if data.timeline.tasksPubliclyVisible():
+    context['tasks_link'] = ''
 
   return context
 
@@ -105,7 +105,9 @@ class MainMenu(Template):
 
     if self.data.is_host:
       self.data.redirect.program()
-      context['admin_link'] = self.data.redirect.urlOf('gci_admin_dashboard')
+      # TODO(Madhu): Replace with the proper redirect once the
+      # gci_admin_dashboard is implemented
+      context['admin_link'] = ''
 
     return context
 
