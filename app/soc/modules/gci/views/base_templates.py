@@ -34,10 +34,10 @@ def siteMenuContext(data):
   redirect = data.redirect
   program = data.program
 
-  from soc.modules.gsoc.models.program import GSoCProgram
-  about_page = GSoCProgram.about_page.get_value_for_datastore(program)
-  connect = GSoCProgram.connect_with_us_page.get_value_for_datastore(program)
-  help_page = GSoCProgram.help_page.get_value_for_datastore(program)
+  from soc.modules.gci.models.program import GCIProgram
+  about_page = GCIProgram.about_page.get_value_for_datastore(program)
+  connect = GCIProgram.connect_with_us_page.get_value_for_datastore(program)
+  help_page = GCIProgram.help_page.get_value_for_datastore(program)
 
   context = {
       'about_link': redirect.document(about_page).url(),
@@ -93,19 +93,19 @@ class MainMenu(Template):
     if self.data.profile:
       self.data.redirect.program()
       if self.data.profile.status == 'active':
-        context['profile_link'] = self.data.redirect.urlOf('edit_gsoc_profile')
+        context['profile_link'] = self.data.redirect.urlOf('edit_gci_profile')
 
         # Add org admin dashboard link if the user has active
         # org admin profile and is an org admin of some organization
         if self.data.is_org_admin:
           context['org_dashboard_link'] = self.data.redirect.urlOf(
-              'gsoc_org_dashboard')
+              'gci_org_dashboard')
       else:
-        context['profile_link'] = self.data.redirect.urlOf('show_gsoc_profile')
+        context['profile_link'] = self.data.redirect.urlOf('show_gci_profile')
 
     if self.data.is_host:
       self.data.redirect.program()
-      context['admin_link'] = self.data.redirect.urlOf('gsoc_admin_dashboard')
+      context['admin_link'] = self.data.redirect.urlOf('gci_admin_dashboard')
 
     return context
 
@@ -125,8 +125,8 @@ class Footer(Template):
     redirect = self.data.redirect
     program = self.data.program
 
-    from soc.modules.gsoc.models.program import GSoCProgram
-    policy = GSoCProgram.privacy_policy.get_value_for_datastore(program)
+    from soc.modules.gci.models.program import GCIProgram
+    policy = GCIProgram.privacy_policy.get_value_for_datastore(program)
 
     context.update({
         'privacy_policy_url': redirect.document(policy).url(),
