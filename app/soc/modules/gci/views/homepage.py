@@ -207,7 +207,7 @@ class Homepage(RequestHandler):
 
     return [
         url(r'homepage/%s$' % url_patterns.PROGRAM, self,
-            name='gsoc_homepage'),
+            name='gci_homepage'),
         url(r'program/home/%s$' % url_patterns.PROGRAM, self),
         django_url(r'^program/home/%s$' % url_patterns.PROGRAM, self),
     ]
