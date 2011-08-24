@@ -249,7 +249,7 @@ class GCIOrgAppShowPage(RequestHandler):
     record = self.data.org_app_record
 
     context = {
-        'page_name': 'Organization application - %s' % (record.name()),
+        'page_name': 'Organization application - %s' % (record.name),
         'organization': record.name,
         'css_prefix': org_app.OrgAppReadOnlyTemplate.Meta.css_prefix,
         }
