@@ -135,3 +135,6 @@ class OrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
   class Meta:
     model = OrgAppRecord
     css_prefix = 'org-app-show'
+    fields = ['org_id', 'name', 'description', 'home_page', 'license',
+              'agreed_to_admin_agreement']
+    survey_name = 'Organization Application'
