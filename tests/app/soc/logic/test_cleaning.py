@@ -26,14 +26,11 @@ from django import forms
 from google.appengine.ext import db
 from google.appengine.api import users
 
+from soc.models.user import User
 from soc.logic import accounts
 from soc.logic import cleaning
-from soc.logic.models.document import logic as document_logic
-from soc.logic.models.site import logic as site_logic
-from soc.logic.models.user import logic as user_logic
-from soc.logic.models import group as group_logic
-from soc.logic.models import student as student_logic
-from soc.logic.models import organization as org_logic
+from soc.logic import site
+from soc.logic import user
 from soc.models import user
 from soc.models import group
 from soc.models import school
@@ -63,17 +60,20 @@ class CleaningTest(DjangoTestCase):
     user_properties = {
         'account': users.get_current_user(),
         'link_id': 'current_user',
+        'key_name': 'current_user',
         'name': 'Current User',
         }
-    self.user = user_logic.updateOrCreateFromFields(user_properties)
+    self.user = User(**user_properties)
+    self.user.put()
     # Create another user
     another_user_properties = {
         'account': users.User(email="another_user@email.com"),
         'link_id': 'another_user',
+        'key_name': 'another_user',
         'name': 'Another User',
         }
-    self.another_user = user_logic.updateOrCreateFromFields(
-        another_user_properties)
+    self.another_user = User(**another_user_properties)
+    self.another_user.put()
     # Create a dummy form object
     self.form = Form()
 
@@ -167,49 +167,6 @@ class CleaningTest(DjangoTestCase):
     self.assertRaises(forms.ValidationError, clean_field, self.form)
     self.assertEqual(self.form.cleaned_data, cleaned_data_before)
     self.assertEqual(self.form._errors, {})
-
-  def testCleanAgreesToTos(self):
-    """Tests that the agrees_to_tos field can be cleaned.
-    """
-    field_name = 'agrees_to_tos'
-    clean_field = cleaning.clean_agrees_to_tos(field_name)
-    # Test that the value of the field will be returned
-    # if there is no tos document
-    field_value = 'Any value'
-    self.form.cleaned_data = {field_name: field_value}
-    self.assertEqual(clean_field(self.form), field_value)
-    site = site_logic.getSingleton()
-    document_properties = {
-        'link_id': 'a_tos',
-        'scope_path': site.link_id,
-        'scope': site,
-        'prefix': 'site',
-        'author': self.user,
-        'title': 'Home Page',
-        'short_name': 'Home',
-        'content': 'This is the Home Page',
-        'modified_by': self.user,
-        }
-    document = document_logic.updateOrCreateFromFields(document_properties)
-    site.tos = document
-    site.put()
-    # Test that True will be returned if there is a tos document and
-    # the value of the field is not empty
-    field_value = 'Any value'
-    self.form.cleaned_data = {field_name: field_value}
-    self.assertEqual(clean_field(self.form), True)
-    # Test that None will be returned instead of ValidationError if there is
-    # a tos document and the value of the field is empty
-    field_value = ''
-    self.form.cleaned_data = {field_name: field_value}
-    self.assertEqual(clean_field(self.form), None)
-    #self.assertRaises(forms.ValidationError, clean_field, self.form)
-    # Test that None will be returned instead of ValidationError if there is
-    # a tos document and the value of the field is False
-    field_value = False
-    self.form.cleaned_data = {field_name: field_value}
-    self.assertEqual(clean_field(self.form), None)
-    #self.assertRaises(forms.ValidationError, clean_field, self.form)
 
   def testCleanExistingUser(self):
     """Tests that the user field can be cleaned for existing users.
