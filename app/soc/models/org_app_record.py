@@ -27,6 +27,7 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 from soc.models import licenses
+from soc.models.linkable import LINK_ID_PATTERN_CORE
 from soc.models.survey_record import SurveyRecord
 
 import soc.models.user
@@ -37,6 +38,17 @@ class OrgAppRecord(SurveyRecord):
 
   This record also contains the status of the application.
   """
+
+#: Required field storing "ID" used in URL links. ASCII characters,
+  #: digits and underscores only.  Valid link IDs successfully match
+  #: the LINK_ID_REGEX.
+  org_id = db.StringProperty(required=True,
+      verbose_name=ugettext('Organization ID'))
+  org_id.help_text = ugettext(
+      'Organization ID is used as part of various URL links throughout '
+      'the site.<a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
+      'alphanumeric characters, digits, and underscores only. '
+      'The regexp used to validate is "%s".') % LINK_ID_PATTERN_CORE
 
   #: field storing the name of the organization.
   name = db.StringProperty(
