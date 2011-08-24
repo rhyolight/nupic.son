@@ -1118,7 +1118,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.timeline.surveyPeriod(survey):
       return
 
-    if self.data.timeline.afterSurveyEnd(survey):
+    if self.data.timeline.afterSurveyEnd(survey) and show_url:
       raise RedirectRequest(show_url)
 
     raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT %
