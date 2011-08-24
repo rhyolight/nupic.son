@@ -155,13 +155,13 @@ class OrgProfilePageTest(DjangoTestCase):
     """Tests that when an org admin tries to access the profile page for an
     org which does not exists a 404 is shown.
     """
+    self.data.createOrgAdmin(self.org)
     suffix = '%s/%s/%s' % (self.sponsor.link_id, self.gsoc.link_id, 
                            'non_existing_link_id')
     url = '/gsoc/profile/organization/' + suffix
     import httplib
     response = self.client.get(url)
     self.assertResponseCode(response, httplib.NOT_FOUND)
-    
     
   def testAnOrgAdminCanUpdateOrgProfile(self):
     """Tests if an org admin can update the profile for its organization.
