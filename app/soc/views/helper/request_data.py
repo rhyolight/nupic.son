@@ -284,10 +284,19 @@ class RedirectHelper(object):
 
     return '%s://%s%s' % (protocol, hostname, url)
 
-  def to(self, name=None, validated=False, full=False, secure=False, cbox=False):
+  def to(self, name=None, validated=False, full=False, secure=False,
+         cbox=False, extra=[]):
     """Redirects to the resolved url for name.
 
     Uses internal state for args and kwargs.
+
+    Args:
+      name: Name of the URL pattern
+      validated: If set to True will add &validated to GET arguments
+      full: Whether the URL should include the protocol
+      secure: Whether the protocol of the URL should be set to HTTPS
+      cbox: If set to True will add &cbox=true to GET arguments
+      extra: List of additional arguments that will be added as GET arguments
     """
     if self._url:
       url = self._url
@@ -295,14 +304,17 @@ class RedirectHelper(object):
       assert name or self._url_name
       url = self.urlOf(name or self._url_name)
 
+    get_args = []
+
     if cbox:
-      url = url + '?cbox=true'
+      get_args.append('cbox=true')
 
     if validated:
-      if cbox:
-        url = url + '&validated'
-      else:
-        url = url + '?validated'
+      get_args.append('validated')
+
+    get_args.extend(extra)
+
+    url = url + '?' + '&'.join(get_args)
 
     self.toUrl(url, full=full, secure=secure)
 
