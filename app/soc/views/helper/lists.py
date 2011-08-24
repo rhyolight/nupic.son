@@ -425,7 +425,7 @@ class ListConfigurationResponse(Template):
   """Class that builds the template for configuring a list.
   """
 
-  def __init__(self, data, config, idx, description='', is_new_list=False):
+  def __init__(self, data, config, idx, description=''):
     """Initializes the configuration.
 
     Args:
@@ -435,12 +435,10 @@ class ListConfigurationResponse(Template):
            not an int.
       description: The description of this list, as should be shown to the
                    user.
-      is_new_list: Whether this list should be handled as a new list.
     """
     self._data = data
     self._config = config
     self._idx = int(idx)
-    self._is_new_list = is_new_list
     self._description = description
 
     super(ListConfigurationResponse, self).__init__(data)
@@ -452,7 +450,6 @@ class ListConfigurationResponse(Template):
 
     context = {
         'idx': self._idx,
-        'is_new_list': simplejson.dumps(self._is_new_list),
         'configuration': simplejson.dumps(configuration),
         'description': self._description
         }
