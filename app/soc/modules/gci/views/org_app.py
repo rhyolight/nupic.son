@@ -229,13 +229,13 @@ class GCIOrgAppShowPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'org/application/show/%s$' % url_patterns.ORG,
+        url(r'org/application/show/%s$' % url_patterns.ID,
             self, name='gci_show_org_app'),
     ]
 
   def checkAccess(self):
     self.mutator.orgAppFromKwargs()
-    self.mutator.orgAppRecordFromKwargs()
+    self.mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(self.data.org_app)
 
   def templatePath(self):
