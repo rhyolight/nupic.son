@@ -312,7 +312,7 @@
     };
   }());
 
-  function List (div, idx, configuration, operations, is_new_list) {
+  function List (div, idx, configuration, operations, templates, is_new_list) {
     var _self = this;
     // Default options
 
@@ -343,6 +343,7 @@
     // Configuration (sent by protocol either by server or at init)
     this.configuration = configuration;
     this.operations = operations;
+    this.templates = templates;
 
     // JQGrid related data
     this.jqgrid = {
@@ -729,6 +730,26 @@
         ].join(""));
     };
 
+    var preRenderData = function (columns) {
+      if (_self.templates === undefined) {
+        return columns;
+      }
+      var columns = columns;
+      jQuery.each(_self.templates, function (dest_column, template) {
+        var match;
+        var re =  /\{\{([^\}]+)\}\}/g
+        var final_string = template;
+        while (match = re.exec(template)) {
+          var column_to_replace = jQuery.trim(match[1]);
+          if (columns[column_to_replace] !== undefined && columns[dest_column] !== undefined) {
+            final_string = final_string.replace(match[0], columns[column_to_replace]);
+          }
+        }
+        columns[dest_column] = final_string
+      });
+      return columns;
+    };
+
     var fetchDataFromServer = function() {
       var start = "";
       var current_loop = 0;
@@ -797,7 +818,7 @@
               var my_data = source.data[start];
 
               jQuery.each(my_data, function () {
-                _self.data.data.push(this.columns);
+                _self.data.data.push(preRenderData(this.columns));
                 _self.data.all_data.push(this);
               });
 
@@ -1316,6 +1337,6 @@
       throw new melange.error.indexAlreadyExistent("Index " + idx + " is already existent");
     }
 
-    var list = new List(div, idx, init.configuration, init.operations, is_new_list);
+    var list = new List(div, idx, init.configuration, init.operations, init.templates, is_new_list);
   };
 }());
