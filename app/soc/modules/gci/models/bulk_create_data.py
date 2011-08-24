@@ -23,14 +23,15 @@ __authors__ = [
 
 
 from google.appengine.ext import db
-from soc.modules.gci.models.org_admin import GCIOrgAdmin
+from soc.modules.gci.models.organization import GCIOrganization
+from soc.modules.gci.models.profile import GCIProfile
 
 class GCIBulkCreateData(db.Model):
   """GCI model for bulk creating Tasks.
   """
 
   #: The tasks to be created in json format.
-  tasks = db.ListProperty(item_type=db.Text)
+  tasks = db.ListProperty(item_type=db.Text, required=True)
 
   #: The accumulated error messages
   errors = db.ListProperty(item_type=db.Text)
@@ -40,8 +41,13 @@ class GCIBulkCreateData(db.Model):
   #: their csv may contain an error.
   total_tasks = db.IntegerProperty(default=0, required=True)
 
+  #: A required relationship to the organization for which the tasks are 
+  #: created.
+  org = db.ReferenceProperty(reference_class=GCIOrganization, required=True,
+                             collection_name='bulk_create_data')
+
   #: A required relationship to the user who wants to create the tasks.
-  created_by = db.ReferenceProperty(reference_class=GCIOrgAdmin, required=True,
+  created_by = db.ReferenceProperty(reference_class=GCIProfile, required=True,
                                     collection_name='bulk_create_task_created')
 
   #: Date when the task creation was first stored.

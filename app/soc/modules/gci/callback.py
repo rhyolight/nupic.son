@@ -38,15 +38,22 @@ class Callback(object):
   def registerViews(self):
     """Instantiates all view objects.
     """
+    from soc.modules.gci.views import bulk_create
     from soc.modules.gci.views import dashboard
     from soc.modules.gci.views import homepage
     from soc.modules.gci.views import org_app
 
+    self.views.append(bulk_create.BulkCreate())
     self.views.append(dashboard.Dashboard())
     self.views.append(homepage.Homepage())
     self.views.append(org_app.GCIOrgAppEditPage())
     self.views.append(org_app.GCIOrgAppShowPage())
     self.views.append(org_app.GCIOrgAppTakePage())
+
+    # Google Appengine Tasks
+    from soc.modules.gci.tasks.bulk_create import BulkCreateTask
+
+    self.views.append(BulkCreateTask())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.
