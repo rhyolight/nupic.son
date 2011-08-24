@@ -443,7 +443,8 @@ class Mutator(object):
     """
     assert self.data.program
 
-    q = OrgAppSurvey.all().filter('program', self.data.program)
+    q = OrgAppSurvey.all()
+    q.filter('program', self.data.program)
     self.data.org_app = q.get()
 
     if raise_not_found and not self.data.org_app:

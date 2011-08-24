@@ -32,11 +32,9 @@ from soc.views.helper import lists
 from soc.logic import cleaning
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
-from soc.views.helper.access_checker import isSet
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
 from soc.views.base import SiteRequestHandler
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
 
 
 class OrgAppEditForm(forms.SurveyEditForm):
