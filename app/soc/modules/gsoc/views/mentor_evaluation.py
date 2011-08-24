@@ -257,6 +257,41 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
       self.get()
 
 
+class GSoCMentorEvaluationPreviewPage(RequestHandler):
+  """View for the host preview mentor evaluation.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url_patterns.url(r'eval/mentor/preview/%s$' % url_patterns.SURVEY,
+             self, name='gsoc_preview_mentor_evaluation'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+    self.mutator.mentorEvaluationFromKwargs(raise_not_found=False)
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/_evaluation_take.html'
+
+  def context(self):
+    form = GSoCMentorEvaluationTakeForm(
+        self.data.mentor_evaluation, self.data.POST or None)
+
+    context = {
+        'page_name': '%s' % (self.data.mentor_evaluation.title),
+        'description': self.data.mentor_evaluation.content,
+        'form_top_msg': LoggedInMsg(self.data, apply_link=False,
+                                    div_name='user-login'),
+        'project': 'The Project Title',
+        'student': "The Student's Name",
+        'forms': [form],
+        'error': bool(form.errors),
+        }
+
+    return context
+
+
 class GSoCMentorEvaluationRecordsList(RequestHandler):
   """View for listing all records of a GSoCGradingProjectSurveyRecord.
   """
