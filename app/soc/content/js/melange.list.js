@@ -175,6 +175,11 @@
         }
       });
     }
+    // Get only unique values
+    temp_data = temp_data.filter(function (item, index, array) {
+      return index == array.indexOf(item) && !isEmptyObject(item);
+    });
+
     // Process index/sorting filters
     var sort_column = postdata.sidx;
     var order_type = postdata.sord;
