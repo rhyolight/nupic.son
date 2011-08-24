@@ -45,6 +45,7 @@ class Callback(object):
     self.views.append(dashboard.Dashboard())
     self.views.append(homepage.Homepage())
     self.views.append(org_app.GCIOrgAppEditPage())
+    self.views.append(org_app.GCIOrgAppShowPage())
     self.views.append(org_app.GCIOrgAppTakePage())
 
   def registerWithSitemap(self):

@@ -165,42 +165,10 @@ class OrgAppRecordsList(SiteRequestHandler):
     return 'v2/modules/gsoc/student_eval/record_list.html'
 
 
-class GCIOrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
+class OrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
   """Template to construct readonly organization application record.
   """
 
   class Meta:
     model = OrgAppRecord
     css_prefix = 'org-app-show'
-
-
-class OrgAppShowPage(SiteRequestHandler):
-  """View to display the readonly page for organization applications.
-  """
-
-  def checkAccess(self):
-    self.mutator.orgAppFromKwargs()
-    self.mutator.orgAppRecordFromKwargs()
-    assert isSet(self.data.org_app)
-
-  def templatePath(self):
-    return 'v2/modules/gsoc/_survey/show.html'
-
-  def context(self):
-    assert isSet(self.data.program)
-    assert isSet(self.data.timeline)
-    assert isSet(self.data.org_app_record)
-
-    record = self.data.org_app_record
-
-    context = {
-        'page_name': 'Organization application - %s' % (record.name()),
-        'organization': record.name,
-        'top_msg': LoggedInMsg(self.data, apply_link=False),
-        'css_prefix': GCIOrgAppReadOnlyTemplate.Meta.css_prefix,
-        }
-
-    if record:
-      context['record'] = GCIOrgAppReadOnlyTemplate(record)
-
-    return context

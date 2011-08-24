@@ -152,3 +152,29 @@ class GCIOrgAppShowPage(RequestHandler):
         url(r'org/application/show/%s$' % url_patterns.ORG,
             self, name='gci_show_org_app'),
     ]
+
+  def checkAccess(self):
+    self.mutator.orgAppFromKwargs()
+    self.mutator.orgAppRecordFromKwargs()
+    assert access_checker.isSet(self.data.org_app)
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/_survey/show.html'
+
+  def context(self):
+    assert access_checker.isSet(self.data.program)
+    assert access_checker.isSet(self.data.timeline)
+    assert access_checker.isSet(self.data.org_app_record)
+
+    record = self.data.org_app_record
+
+    context = {
+        'page_name': 'Organization application - %s' % (record.name()),
+        'organization': record.name,
+        'css_prefix': org_app.OrgAppReadOnlyTemplate.Meta.css_prefix,
+        }
+
+    if record:
+      context['record'] = org_app.OrgAppReadOnlyTemplate(record)
+
+    return context
