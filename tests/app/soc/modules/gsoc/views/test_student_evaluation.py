@@ -235,10 +235,10 @@ class StudentEvaluationTest(DjangoTestCase):
     # conversion is done.
     override = {
         'survey_content': None,
-        'author': host,
-        'created_by': host,
-        'program': self.gsoc,
-        'modified_by': host,
+        'author': host.key(),
+        'created_by': host.key(),
+        'program': self.gsoc.key(),
+        'modified_by': host.key(),
         'schema': self.evaluation.evalSchemaString(),
         }
     response, _ = self.modelPost(url, ProjectSurvey, override)
