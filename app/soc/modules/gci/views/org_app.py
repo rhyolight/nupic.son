@@ -105,6 +105,35 @@ class GCIOrgAppEditPage(RequestHandler):
       self.get()
 
 
+class GCIOrgAppPreviewPage(RequestHandler):
+  """View for organizations to submit their application.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'org/application/preview/%s$' % url_patterns.PROGRAM,
+             self, name='gci_take_org_app'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+    self.mutator.orgAppFromKwargs(raise_not_found=False)
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/_evaluation_take.html'
+
+  def context(self):
+    form = org_app.OrgAppTakeForm(self.data.org_app)
+
+    context = {
+        'page_name': '%s' % (self.data.org_app.title),
+        'forms': [form],
+        'error': bool(form.errors),
+        }
+
+    return context
+
+
 class GCIOrgAppTakePage(RequestHandler):
   """View for organizations to submit their application.
   """
