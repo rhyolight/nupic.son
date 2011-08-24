@@ -694,7 +694,7 @@
 
   float: left;
   font-size: 27px;
-  line-height: 1.8em;
+  line-height: 1.3em;
   margin: 10px 0 0 23px;
 }
 #pre-form-header h3 {
@@ -709,11 +709,9 @@
 
   color: #d5620e;
   display: block;
-  float: left;
   font-size: 10px;
   font-style: italic;
   font-weight: bold;
-  margin: 25px 0 0 10px;
 }
 #pre-form-header .description {
   clear: both;
