@@ -85,28 +85,10 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.load_template_source',
 )
 
-# The order of the middleware is as follows because:
-# - The ValueStore middleware should be before any other middleware
-#   so that the value store is available to it.
-# - The ExceptionHandler should be the outermost handler (after the
-#   ValueStore) so as to catch as many errors as possible.
-# - The Profile middleware should be as outmost as possible, so that
-#   as many function calls as possible, but it cannot be before the
-#   ExceptionHandler (so as to catch exceptions thrown by it).
-# - The MaintenanceMiddleware should be after the Profiler, since we
-#   do want it's actions profiled.
 MIDDLEWARE_CLASSES = (
     'google.appengine.ext.appstats.recording.AppStatsDjangoMiddleware',
-#    'soc.middleware.value_store.ValueStoreMiddleware',
-#    'soc.middleware.exception_handler.ExceptionHandlerMiddleware',
-#    'soc.middleware.profiler.ProfileMiddleware',
-#    'soc.middleware.maintenance.MaintenanceMiddleware',
     'soc.middleware.blobstore.BlobStoreMiddleware',
     'soc.middleware.xsrf.XsrfMiddleware',
-#    'django.middleware.common.CommonMiddleware',
-#    'django.contrib.sessions.middleware.SessionMiddleware',
-#    'django.contrib.auth.middleware.AuthenticationMiddleware',
-#    'django.middleware.doc.XViewMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
