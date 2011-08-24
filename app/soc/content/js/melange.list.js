@@ -326,8 +326,6 @@
     var div = div;
     var idx = idx;
 
-    var features = features;
-
     // Configuration (sent by protocol either by server or at init)
     this.configuration = configuration;
     this.operations = operations;
