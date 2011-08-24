@@ -339,6 +339,7 @@ class GSoCStudentEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
   class Meta:
     model = GSoCProjectSurveyRecord
     css_prefix = 'gsoc-student-eval-show'
+    survey_name = 'Student Evaluation'
 
 
 class GSoCStudentEvaluationShowPage(RequestHandler):

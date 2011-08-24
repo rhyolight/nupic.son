@@ -357,6 +357,7 @@ class GSoCMentorEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
   class Meta:
     model = GSoCGradingProjectSurveyRecord
     css_prefix = 'gsoc-mentor-eval-show'
+    survey_name = 'Mentor Evaluation'
 
 
 class GSoCMentorEvaluationShowPage(RequestHandler):

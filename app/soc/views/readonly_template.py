@@ -197,6 +197,10 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
       'hidden_fields': self.hidden_fields,
       'css_prefix': self.css_prefix,
     }
+
+    meta = getattr(self, 'Meta', None)
+    context['survey_name'] = getattr(meta, 'survey_name', '')
+
     rendered = loader.render_to_string(self.template_path,
                                        dictionary=context)
     return rendered
