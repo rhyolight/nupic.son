@@ -48,10 +48,10 @@ class TaxForm(forms.ModelForm):
   tax_form = fields.FileField(label='Upload new tax form', required=False)
 
   def _admin(self):
-    return self.data.kwargs['admin']
+    return self.request_data.kwargs['admin']
 
   def _r(self):
-    r = self.data.redirect
+    r = self.request_data.redirect
     return r.profile() if self._admin() else r.program()
 
   def _urlName(self):
@@ -60,9 +60,9 @@ class TaxForm(forms.ModelForm):
 
     return 'gsoc_tax_form_download'
 
-  def __init__(self, data, *args, **kwargs):
+  def __init__(self, request_data, *args, **kwargs):
     super(TaxForm, self).__init__(*args, **kwargs)
-    self.data = data
+    self.request_data = request_data
     field = self.fields['tax_form']
 
     if not (self.instance and self.instance.tax_form):
@@ -90,10 +90,10 @@ class EnrollmentForm(forms.ModelForm):
   enrollment_form = fields.FileField(label='Upload new enrollment form', required=False)
 
   def _admin(self):
-    return self.data.kwargs['admin']
+    return self.request_data.kwargs['admin']
 
   def _r(self):
-    r = self.data.redirect
+    r = self.request_data.redirect
     return r.profile() if self._admin() else r.program()
 
   def _urlName(self):
@@ -102,9 +102,9 @@ class EnrollmentForm(forms.ModelForm):
 
     return 'gsoc_enrollment_form_download'
 
-  def __init__(self, data, *args, **kwargs):
+  def __init__(self, request_data, *args, **kwargs):
     super(EnrollmentForm, self).__init__(*args, **kwargs)
-    self.data = data
+    self.request_data = request_data
     field = self.fields['enrollment_form']
 
     if not (self.instance and self.instance.enrollment_form):
