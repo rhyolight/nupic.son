@@ -38,10 +38,10 @@ from django.core import validators
 from django.forms.util import ErrorList
 from django.utils.translation import ugettext
 
+from soc.models.user import User
 from soc.logic import validate
-from soc.logic.models import document as document_logic
-from soc.logic.models.site import logic as site_logic
-from soc.logic.models.user import logic as user_logic
+from soc.logic import site
+from soc.logic import user
 
 
 DEF_VALID_SHIPPING_CHARS = re.compile('^[A-Za-z0-9\s-]+$')
@@ -182,32 +182,6 @@ def clean_scope_path(field_name):
   return wrapper
 
 
-def clean_agrees_to_tos(field_name):
-  """Checks if there is a ToS to see if it is allowed to leave
-     the field_name field false.
-  """
-
-  @check_field_is_empty(field_name)
-  def wrapper(self):
-    """Decorator wrapper method.
-    """
-    agrees_to_tos = self.cleaned_data.get(field_name)
-
-    if not site_logic.getToS(site_logic.getSingleton()):
-      return agrees_to_tos
-
-    # Site settings specify a site-wide ToS, so agreement is *required*
-    if agrees_to_tos:
-      return True
-
-    # there was no agreement made so raise an error
-    raise forms.ValidationError(
-        'The site-wide Terms of Service must be accepted to participate'
-        ' on this site.')
-
-  return wrapper
-
-
 def clean_existing_user(field_name):
   """Check if the field_name field is a valid user.
   """
@@ -218,7 +192,7 @@ def clean_existing_user(field_name):
     """
     link_id = clean_link_id(field_name)(self)
 
-    user_entity = user_logic.getFromKeyFields({'link_id': link_id})
+    user_entity = User.get_by_key_name(link_id)
 
     if not user_entity:
       # user does not exist
@@ -239,7 +213,7 @@ def clean_user_is_current(field_name, as_user=True):
     """
     link_id = clean_link_id(field_name)(self)
 
-    user_entity = user_logic.getCurrentUser()
+    user_entity = user.current()
     # pylint: disable=E1103
     if not user_entity or user_entity.link_id != link_id:
       # this user is not the current user
@@ -260,7 +234,7 @@ def clean_user_not_exist(field_name):
     """
     link_id = clean_link_id(field_name)(self)
 
-    user_entity = user_logic.getFromKeyFields({'link_id': link_id})
+    user_entity = User.get_by_key_name(link_id)
 
     if user_entity:
       # user exists already
@@ -282,7 +256,7 @@ def clean_users_not_same(field_name):
     clean_user_field = clean_existing_user(field_name)
     user_entity = clean_user_field(self)
 
-    current_user_entity = user_logic.getCurrentUser()
+    current_user_entity = user.current()
     # pylint: disable=E1103
     if user_entity.key() == current_user_entity.key():
       # users are equal
@@ -320,10 +294,9 @@ def clean_user_account_not_in_use(field_name):
     # get the user account for this email and check if it's in use
     user_account = users.User(email_adress)
 
-    fields = {'account': user_account}
-    user_entity = user_logic.getForFields(fields, unique=True)
+    user_entity = User.all().filter('account', user_account).get()
 
-    if user_entity or user_logic.isFormerAccount(user_account):
+    if user_entity or user.isFormerAccount(user_account):
       raise forms.ValidationError("There is already a user "
           "with this email address.")
 
@@ -463,7 +436,7 @@ def clean_html_content(field_name):
     # when reading data from GAE. This short-circuiting of the sanitizer
     # only affects html authored by developers. The isDeveloper test for
     # example allows developers to add javascript.
-    if user_logic.isDeveloper():
+    if user.isDeveloper():
       return content
 
     content = sanitize_html_string(content)

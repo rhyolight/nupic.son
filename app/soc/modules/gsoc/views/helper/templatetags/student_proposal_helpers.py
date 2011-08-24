@@ -26,7 +26,7 @@ from google.appengine.ext import db
 
 from django import template
 
-from soc.modules.gsoc.logic.models.org_admin import logic as org_admin_logic
+from soc.modules.gsoc.models.org_admin import GSoCOrgAdmin
 
 register = template.Library()
 
@@ -47,9 +47,11 @@ def as_proposal_duplicates(context, proposal_duplicate):
     orgs_details[org.key().id_or_name()] = {
         'name': org.name
         }
-    fields = {'scope': org,
-              'status': 'active'}
-    org_admins = org_admin_logic.getForFields(fields)
+
+    q = GSoCOrgAdmin.all()
+    q.filter('scope', org)
+    q.filter('status', 'active')
+    org_admins = q.fetch(1000)
 
     orgs_details[org.key().id_or_name()]['admins'] = []
     for org_admin in org_admins:

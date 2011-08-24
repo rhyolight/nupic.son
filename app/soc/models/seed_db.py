@@ -36,8 +36,7 @@ from django import http
 
 from soc.logic import accounts
 from soc.logic import dicts
-from soc.logic.models.document import logic as document_logic
-from soc.logic.models.user import logic as user_logic
+from soc.logic import user
 from soc.models.document import Document
 from soc.models.host import Host
 from soc.models.org_app_survey import OrgAppSurvey
@@ -147,7 +146,6 @@ class UserSeeder(Seeder):
     entity = User(**user_properties)
     if entities is None:
       entity.put()
-      user_logic._onCreate(entity)
     else:
       entities.append(entity)
 
@@ -596,7 +594,6 @@ def seed(request, *args, **kwargs):
 
   home_document = Document(**document_properties)
   home_document.put()
-  document_logic._onCreate(home_document) 
 
 
   document_properties = {
@@ -614,7 +611,6 @@ def seed(request, *args, **kwargs):
 
   notes_document = Document(**document_properties)
   notes_document.put()
-  document_logic._onCreate(home_document) 
 
   site.home = home_document
   site.put()

@@ -167,14 +167,14 @@ def getDefaultMailSender(data=None):
     Consisting of:
   """
   from soc.logic import system
-  from soc.logic.models import site as site_logic
+  from soc.logic import site
 
   # check if there is a noreply email address set
 
   if data:
     site_entity = data.site
   else:
-    site_entity = site_logic.logic.getSingleton()
+    site_entity = site.singleton()
 
   no_reply_email = system.getApplicationNoReplyEmail()
 

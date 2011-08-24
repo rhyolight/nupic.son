@@ -35,7 +35,7 @@ from django import http
 from django.utils.safestring import mark_safe
 
 from soc.logic.helper import xsrfutil
-from soc.logic.models.site import logic as site_logic
+from soc.logic import site
 from soc.views.helper import responses
 
 
@@ -50,8 +50,8 @@ class XsrfMiddleware(object):
   def _getSecretKey(self, request):
     """Gets the XSRF secret key from the request context."""
     if not hasattr(request, 'site'):
-      request.site = site_logic.getSingleton()
-    return site_logic.getXsrfSecretKey(request.site)
+      request.site = site.singleton()
+    return site.xsrfSecretKey(request.site)
 
   def process_request(self, request):
     """Requires a valid XSRF token on POST requests."""

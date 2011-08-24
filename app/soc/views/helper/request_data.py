@@ -32,8 +32,8 @@ from google.appengine.ext import db
 from django.core.urlresolvers import reverse
 
 from soc.logic import system
-from soc.logic.models.site import logic as site_logic
-from soc.logic.models.user import logic as user_logic
+from soc.logic import site
+from soc.logic import user
 from soc.views.helper.access_checker import isSet
 
 
@@ -231,9 +231,9 @@ class RequestData(object):
     self.full_path = request.get_full_path().encode('utf-8')
     # XSRF middleware already retrieved it for us
     if not hasattr(request, 'site'):
-      request.site = site_logic.getSingleton()
+      request.site = site.singleton()
     self.site = request.site
-    self.user = user_logic.getCurrentUser()
+    self.user = user.current()
     if users.is_current_user_admin():
       self.is_developer = True
     if self.user and self.user.is_developer:

@@ -27,7 +27,7 @@ import settings
 
 from google.appengine.api import app_identity
 
-from soc.logic.models.site import logic as site_logic
+from soc.logic import site
 
 
 
@@ -65,10 +65,10 @@ def getRawHostname():
 def getHostname(data=None):
   """Returns the hostname, taking in account site hostname settings.
   """
-  site = data.site if data else site_logic.getSingleton()
+  settings = data.site if data else site.singleton()
 
-  if site.hostname:
-    return site.hostname
+  if settings.hostname:
+    return settings.hostname
 
   return getRawHostname()
 
@@ -82,12 +82,12 @@ def getSecureHostname():
 def isSecondaryHostname(data=None):
   """Returns if the current request is from the secondary hostname.
   """
-  site = data.site if data else site_logic.getSingleton()
+  settings = data.site if data else site.singleton()
 
-  if not site.hostname:
+  if not settings.hostname:
     return False
 
-  return getRawHostname().find(site.hostname) >= 0
+  return getRawHostname().find(settings.hostname) >= 0
 
 
 def getAppVersion():

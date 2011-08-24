@@ -35,7 +35,7 @@ from soc.logic import system
 from soc.logic.helper import timeline
 from soc.logic.helper import xsrfutil
 from soc.logic.models import site
-from soc.logic.models.user import logic as user_logic
+from soc.logic import user
 from soc.modules import callback
 from soc.views import helper
 from soc.views.helper import redirects
@@ -123,8 +123,8 @@ def getUniversalContext(request):
   context['request'] = request
 
   if account:
-    user = user_logic.getForAccount(account)
-    is_admin = user_logic.isDeveloper(account=account, user=user)
+    user = user.forAccount(account)
+    is_admin = user.isDeveloper(account=account, user=user)
 
   context['account'] = account
   context['user'] = user

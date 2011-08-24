@@ -33,8 +33,8 @@ from django.conf.urls.defaults import url as django_url
 
 from soc.tasks.helper import error_handler
 
+from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.logic import proposal as proposal_logic
-from soc.modules.gsoc.logic.models.organization import logic as org_logic
 from soc.modules.gsoc.logic.models.program import logic as program_logic
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
@@ -160,12 +160,11 @@ class ProposalDuplicatesTask(object):
       return error_handler.logErrorAndReturnOK(
           'Invalid program specified: %s' % program_key)
 
-    fields = {'scope': program_entity,
-              'slots >': 0,
-              'status': 'active'}
-
     # get the organization and update the cursor if possible
-    q = org_logic.getQueryForFields(fields)
+    q = GSoCOrganization.all()
+    q.filter('status', 'active')
+    q.filter('scope', program_entity)
+    q.filter('slots >', 0)
 
     # retrieve the org_cursor from POST data
     org_cursor = post_dict.get('org_cursor')

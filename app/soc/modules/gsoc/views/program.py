@@ -22,10 +22,10 @@ __authors__ = [
   ]
 
 
-from soc.logic.models.document import logic as document_logic
 from soc.views.forms import ModelForm
 from soc.views.helper import url_patterns
 
+from soc.models.document import Document
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.gsoc.views.base import RequestHandler
@@ -69,15 +69,14 @@ class ProgramPage(RequestHandler):
     ]
 
   def jsonContext(self):
-    entities = document_logic.getForFields({
-        'prefix': 'gsoc_program',
-        'scope': self.data.program.key()
-    })
+    q = Document.all()
+    q.filter('prefix', 'gsoc_program')
+    q.filter('scope', self.data.program.key())
 
     data = [{'key': str(i.key()),
             'key_name': i.key().name(),
             'label': i.title}
-            for i in entities]
+            for i in q]
 
     return {'data': data}
 

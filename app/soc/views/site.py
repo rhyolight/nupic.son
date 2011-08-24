@@ -31,8 +31,8 @@ from django.forms import widgets as django_widgets
 from django.utils.functional import lazy
 from django.utils.translation import ugettext
 
+from soc.models.document import Document
 from soc.logic import cleaning
-from soc.logic.models.document import logic as document_logic
 from soc.logic.models.site import logic as site_logic
 from soc.logic.exceptions import AccessViolation
 from soc.models.site import Site
@@ -84,7 +84,7 @@ class EditSitePage(SiteRequestHandler):
     ]
 
   def jsonContext(self):
-    entities = document_logic.getForFields({'prefix': 'site'})
+    entities = Document.all().filter('prefix', 'site')
 
     data = [{'key': str(i.key()),
             'link_id': i.link_id,

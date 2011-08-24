@@ -28,7 +28,7 @@ from google.appengine.ext import db
 
 from soc.logic import system
 from soc.logic.helper import xsrfutil
-from soc.logic.models.site import logic as site_logic
+from soc.logic import site
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 
@@ -46,7 +46,7 @@ def default(data):
   """
   posted = data.request.POST or 'validated' in data.request.GET
 
-  xsrf_secret_key = site_logic.getXsrfSecretKey(data.site)
+  xsrf_secret_key = site.xsrfSecretKey(data.site)
   xsrf_token = xsrfutil.getGeneratedTokenForCurrentUser(xsrf_secret_key)
 
   if system.isSecondaryHostname(data):
