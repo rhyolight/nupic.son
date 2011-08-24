@@ -315,7 +315,8 @@ class ModelFormMetaclass(djangoforms.ModelFormMetaclass):
       for name, field in model_fields.iteritems():
         prop = props.get(name)
         if prop:
-          def clean_for_property_field(value, prop=prop, old_clean=field.clean):
+          def clean_for_property_field(value, initial, prop=prop,
+                                       old_clean=field.clean):
             value = old_clean(value)
             djangoforms.property_clean(prop, value)
             return value
