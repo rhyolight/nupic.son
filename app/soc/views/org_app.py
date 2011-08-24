@@ -57,69 +57,6 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     exclude = ['status', 'user', 'survey', 'created', 'modified']
 
 
-class OrgAppEditPage(SiteRequestHandler):
-  """View for creating/editing organization application.
-  """
-
-  pass
-
-
-class OrgAppTakePage(SiteRequestHandler):
-  """View for organizations to submit their application.
-  """
-
-  def checkAccess(self):
-    self.mutator.orgAppFromKwargs()
-    self.mutator.orgAppRecordFromKwargs()
-    assert isSet(self.data.org_app)
-
-  def templatePath(self):
-    return 'v2/modules/gsoc/_evaluation_take.html'
-
-  def context(self):
-    if self.data.org_app_record:
-      form = OrgAppTakeForm(self.data.org_app, self.data.POST or None,
-                            instance=self.data.org_app_record)
-    else:
-      form = OrgAppTakeForm(self.data.org_app, self.data.POST or None)
-
-    context = {
-        'page_name': '%s' % (self.data.org_app.title),
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False),
-        'forms': [form],
-        'error': bool(form.errors),
-        }
-
-    return context
-
-  def recordOrgAppFromForm(self):
-    """Create/edit a new student evaluation record based on the form input.
-
-    Returns:
-      a newly created or updated evaluation record entity or None
-    """
-    if self.data.student_evaluation_record:
-      form = OrgAppTakeForm(
-          self.data.org_app,
-          self.data.POST, instance=self.data.org_app_record)
-    else:
-      form = OrgAppTakeForm(
-          self.data.org_app, self.data.POST)
-
-    if not form.is_valid():
-      return None
-
-    if not self.data.org_app_record:
-      form.cleaned_data['user'] = self.data.user
-      form.cleaned_data['main_admin'] = self.data.user
-      form.cleaned_data['survey'] = self.data.org_app
-      entity = form.create(commit=True)
-    else:
-      entity = form.save(commit=True)
-
-    return entity
-
-
 class OrgAppRecordsList(SiteRequestHandler):
   """View for listing all records of a Organization Applications.
   """
