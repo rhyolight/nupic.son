@@ -32,6 +32,7 @@ from soc.views.helper import request_data
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.organization import GCIOrganization
+from soc.modules.gci.models.timeline import GCITimeline
 
 
 class TimelineHelper(request_data.TimelineHelper):
