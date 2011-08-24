@@ -1049,12 +1049,14 @@
               });
 
               //Add RegExp switch
-              jQuery("#t_" + _self.jqgrid.id).append("<div style='float:right;margin-right:4px;'><input type='checkbox' id='regexp_" + _self.jqgrid.id + "'/>RegExp Search</div>");
+              if (_self.features.column_search) {
+                jQuery("#t_" + _self.jqgrid.id).append("<div style='float:right;margin-right:4px;'><input type='checkbox' id='regexp_" + _self.jqgrid.id + "'/>RegExp Search</div>");
 
-              //Make the switch trigger a new search when clicked
-              jQuery("#regexp_" + _self.jqgrid.id).click(function () {
-                jQuery("#" + _self.jqgrid.id).jqGrid().trigger("reloadGrid");
-              });
+                //Make the switch trigger a new search when clicked
+                jQuery("#regexp_" + _self.jqgrid.id).click(function () {
+                  jQuery("#" + _self.jqgrid.id).jqGrid().trigger("reloadGrid");
+                });
+              }
 
 
               //Trigger event when loading of the list is finished
