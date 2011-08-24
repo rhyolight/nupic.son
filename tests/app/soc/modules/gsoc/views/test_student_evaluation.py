@@ -231,9 +231,13 @@ class StudentEvaluationTest(DjangoTestCase):
     actual_fields = form.fields.keys().sort()
     self.assertEqual(expected_fields, actual_fields)
 
+    # TODO(Madhu): Get rid of scope and author fields once the data
+    # conversion is done.
     override = {
         'survey_content': None,
         'author': host,
+        'created_by': host,
+        'program': self.gsoc,
         'modified_by': host,
         'schema': self.evaluation.evalSchemaString(),
         }

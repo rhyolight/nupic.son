@@ -73,7 +73,11 @@ class SurveyHelper(object):
       host_profile.createOtherUser('mentor@example.com')
       host = host_profile.createHost()
 
+    # TODO (Madhu): Remove scope and author once the survey data conversion
+    # is complete
     properties = {
+        'program': self.program,
+        'created_by': host,
         'prefix': 'gsoc_program',
         'schema': self.evalSchemaString(),
         'survey_content': None,
