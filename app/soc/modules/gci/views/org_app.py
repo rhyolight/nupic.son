@@ -25,6 +25,7 @@ __authors__ = [
 from django.utils.translation import ugettext
 
 from soc.views import org_app
+from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.views.base import RequestHandler
@@ -104,7 +105,7 @@ class GCIOrgAppEditPage(RequestHandler):
       self.get()
 
 
-class GCIOrgAppTakePage(org_app.OrgAppTakePage):
+class GCIOrgAppTakePage(RequestHandler):
   """View for organizations to submit their application.
   """
 
@@ -112,20 +113,70 @@ class GCIOrgAppTakePage(org_app.OrgAppTakePage):
     return [
          url(r'org/application/%s$' % url_patterns.PROGRAM,
              self, name='gci_take_org_app'),
-         url(r'org/application/%s$' % url_patterns.ORG,
+         url(r'org/application/%s$' % url_patterns.ID,
              self, name='gci_take_org_app'),
     ]
 
   def checkAccess(self):
-    super(GCIOrgAppTakePage, self).checkAccess()
+    self.mutator.orgAppFromKwargs()
+    self.mutator.orgAppRecordIfIdInKwargs()
+    assert access_checker.isSet(self.data.org_app)
 
-    show_url = self.data.redirect.org_app().urlOf('gci_show_org_app')
+    show_url = None
+    if 'organization' in self.kwargs:
+      show_url = self.data.redirect.organization().urlOf('gci_show_org_app')
+
     self.check.isSurveyActive(self.data.org_app, show_url)
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/_evaluation_take.html'
+
+  def context(self):
+    if self.data.org_app_record:
+      form = org_app.OrgAppTakeForm(self.data.org_app, self.data.POST or None,
+                                    instance=self.data.org_app_record)
+    else:
+      form = org_app.OrgAppTakeForm(self.data.org_app, self.data.POST or None)
+
+    context = {
+        'page_name': '%s' % (self.data.org_app.title),
+        'forms': [form],
+        'error': bool(form.errors),
+        }
+
+    return context
+
+  def recordOrgAppFromForm(self):
+    """Create/edit a new student evaluation record based on the form input.
+
+    Returns:
+      a newly created or updated evaluation record entity or None
+    """
+    if self.data.org_app_record:
+      form = org_app.OrgAppTakeForm(
+          self.data.org_app,
+          self.data.POST, instance=self.data.org_app_record)
+    else:
+      form = org_app.OrgAppTakeForm(
+          self.data.org_app, self.data.POST)
+
+    if not form.is_valid():
+      return None
+
+    if not self.data.org_app_record:
+      form.cleaned_data['user'] = self.data.user
+      form.cleaned_data['main_admin'] = self.data.user
+      form.cleaned_data['survey'] = self.data.org_app
+      entity = form.create(commit=True)
+    else:
+      entity = form.save(commit=True)
+
+    return entity
 
   def post(self):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
-      r = self.redirect.organization(org_app_record.link_id)
+      r = self.redirect.id(org_app_record.key().id())
       r.to('gci_take_org_app', validated=True)
     else:
       self.get()
