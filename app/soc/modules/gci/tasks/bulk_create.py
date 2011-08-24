@@ -197,7 +197,7 @@ class BulkCreateTask(object):
       cleaner = HtmlSanitizer.Cleaner()
       cleaner.string = task['description']
       cleaner.clean()
-      task['description'] = cleaner.string.strip().replace('\r\n', '\n')  
+      task['description'] = cleaner.string.strip().replace('\r\n', '\n')
     except (HTMLParseError, safe_html.IllegalHTML, TypeError), e:
       logging.warning('Cleaning of description failed with: %s' %e)
       errors.append(
@@ -208,7 +208,7 @@ class BulkCreateTask(object):
     try:
       task['time_to_complete'] = int(task['time_to_complete'])
     except (ValueError, TypeError), e:
-      errors.append('No valid time to completion found, given was: %s.' 
+      errors.append('No valid time to completion found, given was: %s.'
                     %task['time_to_complete'])
 
     # clean mentors
