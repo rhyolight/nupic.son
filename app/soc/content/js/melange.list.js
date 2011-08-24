@@ -314,13 +314,25 @@
 
   function List (div, idx, configuration, operations, templates, features) {
     var _self = this;
-    // Default options
+
+    // Init data
+    var div = div;
+    var idx = idx;
+
+    var features = features;
+
+    // Configuration (sent by protocol either by server or at init)
+    this.configuration = configuration;
+    this.operations = operations;
+    this.templates = templates;
+    this.features = features;
 
     var default_jqgrid_options = {
       datatype: retrieveData,
       viewrecords: true
     };
 
+    // Default options
     var default_pager_options = {
       edit: false,
       add: false,
@@ -334,17 +346,9 @@
         }
     };
 
-    // Init data
-    var div = div;
-    var idx = idx;
-
-    var features = features;
-
-    // Configuration (sent by protocol either by server or at init)
-    this.configuration = configuration;
-    this.operations = operations;
-    this.templates = templates;
-    this.features = features;
+    if (!_self.features.search_dialog) {
+      default_pager_options.search = false;
+    }
 
     // JQGrid related data
     this.jqgrid = {
