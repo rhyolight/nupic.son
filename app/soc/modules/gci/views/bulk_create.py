@@ -61,7 +61,7 @@ class BulkCreate(RequestHandler):
   def checkAccess(self):
     """Denies access if you are not the org admin.
     """
-    #self.check.isOrgAdmin()
+    self.check.isOrgAdmin()
 
   def templatePath(self):
     """Returns the path to the template.
