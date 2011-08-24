@@ -33,7 +33,7 @@ from django.utils.translation import ugettext
 
 from soc.models.document import Document
 from soc.logic import cleaning
-from soc.logic.models.site import logic as site_logic
+from soc.logic import site
 from soc.logic.exceptions import AccessViolation
 from soc.models.site import Site
 from soc.views.base import Response
@@ -153,7 +153,7 @@ class SiteHomepage(SiteRequestHandler):
     elif action == 'logout':
       self.redirect.toUrl(users.create_logout_url('/'))
     else:
-      site = site_logic.getSingleton()
+      site = site.singleton()
       program = site.active_program
       if program:
         self.redirect.program(program).to(program.homepage_url_name)

@@ -25,7 +25,7 @@ __authors__ = [
 
 from django import template
 
-from soc.logic.models import user as user_logic
+from soc.logic import user
 from soc.views.helper import redirects
 
 
@@ -48,7 +48,7 @@ def as_comment(context, comment):
   """
 
   edit_link = ''
-  current_user = user_logic.logic.getCurrentUser()
+  current_user = user.current()
   # pylint: disable=E1103
   if current_user and comment.author.key() == current_user.key():
     params = {'url_name': context['comment_on_url_name']}

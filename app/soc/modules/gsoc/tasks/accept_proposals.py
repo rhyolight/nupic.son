@@ -40,7 +40,6 @@ from soc.tasks import responses
 
 from soc.modules.gsoc.logic import accept_proposals as conversion_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
-from soc.modules.gsoc.logic.models.program import logic as program_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.project import GSoCProject
@@ -182,7 +181,7 @@ class ProposalAcceptanceTask(object):
           '"Missing program_key in params: "%s"' % params)
 
     # get the program for the given keyname
-    program_entity = program_logic.getFromKeyName(program_key)
+    program_entity = GSoCProgram.get_by_key_name(program_key)
 
     if not program_entity:
       # invalid program specified, log and return OK

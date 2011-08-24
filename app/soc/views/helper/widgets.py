@@ -137,8 +137,8 @@ tinyMCE.init(%(settings_json)s)
     """Render TinyMCE widget as HTML.
     """
 
-    from soc.logic.models.user import logic as user_logic
-    user = user_logic.getCurrentUser()
+    from soc.logic import user
+    user = user.current()
 
     if user and user.disable_tinymce:
       return super(FullTinyMCE, self).render(name, value, attrs)
