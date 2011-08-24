@@ -1318,6 +1318,28 @@
       jQuery("#load_" + _self.jqgrid.id).html("<img src='/soc/content/" + melange.config.app_version + "/images/jqgrid_loading.gif'></img>");
 
       _self.jqgrid.object = jQuery("#" + _self.jqgrid.id);
+
+      if (!isEmptyObject(_self.features.global_search)) {
+        jQuery(_self.features.global_search.element_path).bind("keyup", function(event) {
+          var search_query = jQuery(_self.features.global_search.element_path).val();
+          var postData = _self.jqgrid.object.jqGrid('getGridParam', 'postData');
+          postData._search = true;
+          postData.filters = {
+            "groupOp": "OR",
+            "rules": []
+          };
+          jQuery.each(_self.configuration.colModel, function(index, column) {
+            postData.filters.rules.push({
+              "field": column.name,
+              "op": "cn",
+              "data": search_query
+            });
+          });
+          postData.filters = JSON.stringify(postData.filters);
+          _self.jqgrid.object.jqGrid('setGridParam', {search: true, postData: postData});
+          _self.jqgrid.object.trigger("reloadGrid");
+        });
+      }
     };
 
     this.getDiv = function () {return div;};
