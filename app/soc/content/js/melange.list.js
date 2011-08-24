@@ -238,14 +238,16 @@
                 }
               }
             var column_content = temp_data[i][element_value.name];
-            if (current_row.operations !== undefined && current_row.operations.row !== undefined && current_row.operations.row.link !== undefined) {
+            if (current_row && current_row.operations !== undefined && current_row.operations.row !== undefined && current_row.operations.row.link !== undefined) {
               // If there are no links in the text and the column is not editable then insert a listsnoul link
               var column_editable = element_value.editable || false;
               if (column_content !== null && column_content !== undefined && !column_editable && column_content.toString().match(/<a\b[^>]*>.*<\/a>/) === null) {
                 column_content = '<a style="display:block;" href="' + current_row.operations.row.link + '" class="listsnoul">' + column_content + '</a>';
               }
             }
-            my_cell.push(column_content);
+            if (column_content !== null) {
+              my_cell.push(column_content);
+            }
           });
       }
 
