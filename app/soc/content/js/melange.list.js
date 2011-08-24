@@ -967,86 +967,88 @@
               jQuery("#t_" + _self.jqgrid.id).css("padding-bottom","3px");
 
               //Add CSV export button
-              jQuery("#t_" + _self.jqgrid.id).append("<input type='button' value='CSV Export' style='float:right;' id='csvexport_" + _self.jqgrid.id + "'/>");
-              jQuery("#csvexport_" + _self.jqgrid.id).button();
-              //Add Click event to CSV export button
-              jQuery("#csvexport_" + _self.jqgrid.id).click(function () {
-                var csv_export = [];
-                csv_export[0] = [];
-                //get Columns names
-                if (_self.data.data[0] !== undefined || _self.data.filtered_data[0] !== undefined) {
-                  var iterate_through = _self.data.filtered_data || _self.data.data;
-                  jQuery.each(_self.configuration.colNames, function (column_index, column_name) {
-                    // check index for column name
-                    var field_text = column_name;
-                    // Check for &quot;, which is translated to " when output to textarea
-                    field_text = field_text.replace(/\"|&quot;|&#34;/g,"\"\"");
-
-                    if (field_text.indexOf(",") !== -1 || field_text.indexOf("\"") !== -1 || field_text.indexOf("\r\n") !== -1) {
-                      field_text = "\"" + field_text + "\"";
-                    }
-                    csv_export[0].push(field_text);
-                  });
-                  csv_export[0] = csv_export[0].join(",");
-
-                  //Check the actual order of the column, so the data dictionary can be in any order
-                  var column_ids = [];
-                  jQuery.each(_self.configuration.colModel, function (column, details) {
-                    column_ids.push(details.name);
-                  });
-                  //now run through the columns
-                  jQuery.each(iterate_through, function (row_index, row) {
-                    csv_export[csv_export.length] = [];
-                    jQuery.each(column_ids, function (column_index, column_id) {
-                      var cell_value = row[column_id];
-                      if (cell_value === null) {
-                        cell_value = "";
-                      }
-                      if (cell_value === undefined) {
-                        cell_value = "";
-                      }
-                      var field_text = cell_value.toString();
-
-                      // extract link href (if any) from the text
-                      var extracted_text = /^<a\b[^>]*href="(.*?)" \b[^>]*>(.*?)<\/a>$/.exec(field_text);
-                      if (extracted_text !== null) {
-                        field_text = extracted_text[1];
-                      }
-
+              if (_self.features.csv_export) {
+                jQuery("#t_" + _self.jqgrid.id).append("<input type='button' value='CSV Export' style='float:right;' id='csvexport_" + _self.jqgrid.id + "'/>");
+                jQuery("#csvexport_" + _self.jqgrid.id).button();
+                //Add Click event to CSV export button
+                jQuery("#csvexport_" + _self.jqgrid.id).click(function () {
+                  var csv_export = [];
+                  csv_export[0] = [];
+                  //get Columns names
+                  if (_self.data.data[0] !== undefined || _self.data.filtered_data[0] !== undefined) {
+                    var iterate_through = _self.data.filtered_data || _self.data.data;
+                    jQuery.each(_self.configuration.colNames, function (column_index, column_name) {
+                      // check index for column name
+                      var field_text = column_name;
                       // Check for &quot;, which is translated to " when output to textarea
                       field_text = field_text.replace(/\"|&quot;|&#34;/g,"\"\"");
 
                       if (field_text.indexOf(",") !== -1 || field_text.indexOf("\"") !== -1 || field_text.indexOf("\r\n") !== -1) {
                         field_text = "\"" + field_text + "\"";
                       }
-                      csv_export[csv_export.length - 1].push(field_text);
+                      csv_export[0].push(field_text);
                     });
-                    csv_export[csv_export.length - 1] = csv_export[csv_export.length - 1].join(",");
-                  });
-                  csv_export = csv_export.join("\r\n");
+                    csv_export[0] = csv_export[0].join(",");
 
-                  //CSV string is there, now put it in a modal dialog for the user to copy/paste
-                  jQuery("#csv_dialog").remove();
-                  jQuery("body").append(
-                    [
-                      "<div id='csv_dialog' style='display:none'>",
-                      "  <h3>Now you can copy and paste CSV data from the text area to a new file:</h3>",
-                      "  <textarea style='width:450px;height:250px'>",csv_export,"</textarea>",
-                      "</div>"
-                    ].join("")
-                  );
-                  jQuery("#csv_dialog").dialog({
-                    height: 420,
-                    width: 500,
-                    modal: true,
-                    buttons: {
-                      "Close": function () {
-                        jQuery(this).dialog("close");
+                    //Check the actual order of the column, so the data dictionary can be in any order
+                    var column_ids = [];
+                    jQuery.each(_self.configuration.colModel, function (column, details) {
+                      column_ids.push(details.name);
+                    });
+                    //now run through the columns
+                    jQuery.each(iterate_through, function (row_index, row) {
+                      csv_export[csv_export.length] = [];
+                      jQuery.each(column_ids, function (column_index, column_id) {
+                        var cell_value = row[column_id];
+                        if (cell_value === null) {
+                          cell_value = "";
+                        }
+                        if (cell_value === undefined) {
+                          cell_value = "";
+                        }
+                        var field_text = cell_value.toString();
+
+                        // extract link href (if any) from the text
+                        var extracted_text = /^<a\b[^>]*href="(.*?)" \b[^>]*>(.*?)<\/a>$/.exec(field_text);
+                        if (extracted_text !== null) {
+                          field_text = extracted_text[1];
+                        }
+
+                        // Check for &quot;, which is translated to " when output to textarea
+                        field_text = field_text.replace(/\"|&quot;|&#34;/g,"\"\"");
+
+                        if (field_text.indexOf(",") !== -1 || field_text.indexOf("\"") !== -1 || field_text.indexOf("\r\n") !== -1) {
+                          field_text = "\"" + field_text + "\"";
+                        }
+                        csv_export[csv_export.length - 1].push(field_text);
+                      });
+                      csv_export[csv_export.length - 1] = csv_export[csv_export.length - 1].join(",");
+                    });
+                    csv_export = csv_export.join("\r\n");
+
+                    //CSV string is there, now put it in a modal dialog for the user to copy/paste
+                    jQuery("#csv_dialog").remove();
+                    jQuery("body").append(
+                      [
+                        "<div id='csv_dialog' style='display:none'>",
+                        "  <h3>Now you can copy and paste CSV data from the text area to a new file:</h3>",
+                        "  <textarea style='width:450px;height:250px'>",csv_export,"</textarea>",
+                        "</div>"
+                      ].join("")
+                    );
+                    jQuery("#csv_dialog").dialog({
+                      height: 420,
+                      width: 500,
+                      modal: true,
+                      buttons: {
+                        "Close": function () {
+                          jQuery(this).dialog("close");
+                        }
                       }
-                    }
-                  });
-                }
-              });
+                    });
+                  }
+                });
+              }
 
               //Add RegExp switch
               if (_self.features.column_search) {
