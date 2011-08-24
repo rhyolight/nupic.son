@@ -275,8 +275,7 @@ class GSoCMentorEvaluationPreviewPage(RequestHandler):
     return 'v2/modules/gsoc/_evaluation_take.html'
 
   def context(self):
-    form = GSoCMentorEvaluationTakeForm(
-        self.data.mentor_evaluation, self.data.POST or None)
+    form = GSoCMentorEvaluationTakeForm(self.data.mentor_evaluation)
 
     context = {
         'page_name': '%s' % (self.data.mentor_evaluation.title),
