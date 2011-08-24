@@ -312,7 +312,7 @@
     };
   }());
 
-  function List (div, idx, configuration, operations, templates, is_new_list) {
+  function List (div, idx, configuration, operations, templates, features) {
     var _self = this;
     // Default options
 
@@ -338,12 +338,13 @@
     var div = div;
     var idx = idx;
 
-    var is_new_list = is_new_list;
+    var features = features;
 
     // Configuration (sent by protocol either by server or at init)
     this.configuration = configuration;
     this.operations = operations;
     this.templates = templates;
+    this.features = features;
 
     // JQGrid related data
     this.jqgrid = {
@@ -1210,14 +1211,14 @@
       }
 
       footerAggregates();
-      if (!_self.isNewList()) {
+      if (_self.features.cookie_service) {
         // Temporarily disable cookie service for new lists.
         cookie_service.saveCurrentTableConfiguration();
       }
     };
 
     var initJQGrid = function () {
-      if (!_self.isNewList()) {
+      if (_self.features.cookie_service) {
         // Temporarily disable cookie service for new lists.
         _self.configuration = cookie_service.getPreviousTableConfiguration(_self.configuration);
       }
@@ -1255,7 +1256,7 @@
 
       var search_parameters = {};
 
-      if (!_self.isNewList()) {
+      if (_self.features.column_search) {
         search_parameters = {
           closeAfterSearch: true,
           multipleSearch: true
@@ -1278,13 +1279,15 @@
          {} // view parameters
         );
       // Do not show columns and filter Toolbar for new lists.
-      if (!_self.isNewList()) {
+      if (_self.features.columns_show_hide) {
         jQuery("#" + _self.jqgrid.id).jqGrid(
           // show button to hide/show columns
           "navButtonAdd",
           "#" + _self.jqgrid.pager.id,
           button_showhide_options
         );
+      }
+      if (_self.features.column_search) {
         jQuery("#" + _self.jqgrid.id).jqGrid(
           'filterToolbar',
           {
@@ -1304,7 +1307,6 @@
 
     this.getDiv = function () {return div;};
     this.getIdx = function () {return idx;};
-    this.isNewList = function () {return is_new_list;};
 
     var init = function () {
       jQuery(
@@ -1329,7 +1331,7 @@
     }();
   };
 
-  $m.loadList = function (div, init, idx, is_new_list) {
+  $m.loadList = function (div, init, idx) {
     var idx = parseInt(idx, 10);
     var init = JSON.parse(init);
     if (isNaN(idx) || idx < 0) {
@@ -1339,6 +1341,6 @@
       throw new melange.error.indexAlreadyExistent("Index " + idx + " is already existent");
     }
 
-    var list = new List(div, idx, init.configuration, init.operations, init.templates, is_new_list);
+    var list = new List(div, idx, init.configuration, init.operations, init.templates, init.features);
   };
 }());
