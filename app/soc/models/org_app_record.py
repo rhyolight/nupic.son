@@ -18,6 +18,7 @@
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
 ]
 
@@ -71,12 +72,12 @@ class OrgAppRecord(SurveyRecord):
   #: is therefore the main admin if the application is accepted.
   main_admin = db.ReferenceProperty(
       reference_class=soc.models.user.User, required=True,
-      collection_name='main_admin_org_app')
+      verbose_name="Main Admin", collection_name='main_admin_org_app')
 
   #: field storing the user reference of the backup admin.
   backup_admin = db.ReferenceProperty(
       reference_class=soc.models.user.User, required=True,
-      collection_name='backup_admin_org_app')
+      verbose_name="Backup Admin", collection_name='backup_admin_org_app')
 
   #: field storing whether the User has agreed to the site-wide 
   #: Terms of Service. (Not a required field because the Terms of 
