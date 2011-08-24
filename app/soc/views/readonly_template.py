@@ -178,6 +178,9 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
   def __iter__(self):
     """Iterator yielding groups of record instance's properties to be rendered.
     """
+    for name, field in self.fields.items():
+      yield field.verbose_name, getattr(self.instance, name)
+
     if self.schema:
       for field in self.schema:
         field_id = field.getFieldName()
