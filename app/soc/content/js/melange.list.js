@@ -319,18 +319,39 @@
     };
   }());
 
-  function List (div, idx, configuration, operations, templates, features) {
+  function List (div, idx, jqgrid_configuration, melange_list_configuration) {
     var _self = this;
 
     // Init data
     var div = div;
     var idx = idx;
 
+    var features_default = {
+      cookie_service: {
+        enabled: true
+      },
+      column_search: {
+        enabled: true
+      },
+      columns_show_hide: {
+        enabled: true
+      },
+      search_dialog: {
+        enabled: true
+      },
+      csv_export: {
+        enabled: true
+      },
+      global_search: {
+        enabled: false
+      }
+    };
+
     // Configuration (sent by protocol either by server or at init)
-    this.configuration = configuration;
-    this.operations = operations;
-    this.templates = templates;
-    this.features = features;
+    this.configuration = jqgrid_configuration;
+    this.operations = melange_list_configuration.operations !== undefined ? melange_list_configuration.operations : {};
+    this.templates = melange_list_configuration.templates !== undefined ? melange_list_configuration.templates : {};
+    this.features = melange_list_configuration.features !== undefined ? jQuery.extend(features_default, melange_list_configuration.features) : features_default;
 
     var default_jqgrid_options = {
       datatype: retrieveData,
@@ -351,7 +372,7 @@
         }
     };
 
-    if (!_self.features.search_dialog) {
+    if (!_self.features.search_dialog.enabled) {
       default_pager_options.search = false;
     }
 
@@ -972,7 +993,7 @@
               jQuery("#t_" + _self.jqgrid.id).css("padding-bottom","3px");
 
               //Add CSV export button
-              if (_self.features.csv_export) {
+              if (_self.features.csv_export.enabled) {
                 jQuery("#t_" + _self.jqgrid.id).append("<input type='button' value='CSV Export' style='float:right;' id='csvexport_" + _self.jqgrid.id + "'/>");
                 jQuery("#csvexport_" + _self.jqgrid.id).button();
                 //Add Click event to CSV export button
@@ -1056,7 +1077,7 @@
               }
 
               //Add RegExp switch
-              if (_self.features.column_search) {
+              if (_self.features.column_search.enabled) {
                 jQuery("#t_" + _self.jqgrid.id).append("<div style='float:right;margin-right:4px;'><input type='checkbox' id='regexp_" + _self.jqgrid.id + "'/>RegExp Search</div>");
 
                 //Make the switch trigger a new search when clicked
@@ -1224,14 +1245,14 @@
       }
 
       footerAggregates();
-      if (_self.features.cookie_service) {
+      if (_self.features.cookie_service.enabled) {
         // Temporarily disable cookie service for new lists.
         cookie_service.saveCurrentTableConfiguration();
       }
     };
 
     var initJQGrid = function () {
-      if (_self.features.cookie_service) {
+      if (_self.features.cookie_service.enabled) {
         // Temporarily disable cookie service for new lists.
         _self.configuration = cookie_service.getPreviousTableConfiguration(_self.configuration);
       }
@@ -1269,7 +1290,7 @@
 
       var search_parameters = {};
 
-      if (_self.features.column_search) {
+      if (_self.features.column_search.enabled) {
         search_parameters = {
           closeAfterSearch: true,
           multipleSearch: true
@@ -1292,7 +1313,7 @@
          {} // view parameters
         );
       // Do not show columns and filter Toolbar for new lists.
-      if (_self.features.columns_show_hide) {
+      if (_self.features.columns_show_hide.enabled) {
         jQuery("#" + _self.jqgrid.id).jqGrid(
           // show button to hide/show columns
           "navButtonAdd",
@@ -1300,7 +1321,7 @@
           button_showhide_options
         );
       }
-      if (_self.features.column_search) {
+      if (_self.features.column_search.enabled) {
         jQuery("#" + _self.jqgrid.id).jqGrid(
           'filterToolbar',
           {
@@ -1317,7 +1338,7 @@
 
       _self.jqgrid.object = jQuery("#" + _self.jqgrid.id);
 
-      if (!isEmptyObject(_self.features.global_search)) {
+      if (_self.features.global_search.enabled) {
         jQuery(_self.features.global_search.element_path).bind("keyup", function(event) {
           var search_query = jQuery(_self.features.global_search.element_path).val();
           var postData = _self.jqgrid.object.jqGrid('getGridParam', 'postData');
@@ -1376,6 +1397,6 @@
       throw new melange.error.indexAlreadyExistent("Index " + idx + " is already existent");
     }
 
-    var list = new List(div, idx, init.configuration, init.operations, init.templates, init.features);
+    var list = new List(div, idx, init.configuration, init);
   };
 }());
