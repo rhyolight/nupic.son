@@ -222,7 +222,7 @@ class GradingRecordDetails(RequestHandler):
     record_form = GradingRecordForm(self.data.POST)
 
     if not record_form.is_valid():
-      self.get()
+      return self.get()
 
     decision = record_form.cleaned_data['grade_decision']
     locked = record_form.cleaned_data['locked']
