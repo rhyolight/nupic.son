@@ -45,7 +45,13 @@ class TaxForm(forms.ModelForm):
     fields = ['tax_form']
     widgets = {}
 
-  tax_form = fields.FileField(label='Upload new tax form', required=False)
+  tax_form = fields.FileField(label='Upload new tax form',
+                              required=True)
+
+  def fileFieldName(self):
+    """Returns the name of the FileField in this form.
+    """
+    return 'tax_form'
 
   def _admin(self):
     return self.request_data.kwargs['admin']
@@ -72,10 +78,6 @@ class TaxForm(forms.ModelForm):
       field._file = self.instance.tax_form
       field._link = self._r().urlOf(self._urlName())
 
-  def clean_tax_form(self):
-    uploads = self.data.request.file_uploads
-    return uploads[0] if uploads else None
-
 
 class EnrollmentForm(forms.ModelForm):
   """Django form for the student enrollment form.
@@ -87,7 +89,13 @@ class EnrollmentForm(forms.ModelForm):
     fields = ['enrollment_form']
     widgets = {}
 
-  enrollment_form = fields.FileField(label='Upload new enrollment form', required=False)
+  enrollment_form = fields.FileField(label='Upload new enrollment form',
+                                     required=True)
+
+  def fileFieldName(self):
+    """Returns the name of the FileField in this form.
+    """
+    return 'enrollment_form'
 
   def _admin(self):
     return self.request_data.kwargs['admin']
@@ -113,10 +121,6 @@ class EnrollmentForm(forms.ModelForm):
     else:
       field._file = self.instance.enrollment_form
       field._link = self._r().urlOf(self._urlName())
-
-  def clean_enrollment_form(self):
-    uploads = self.data.request.file_uploads
-    return uploads[0] if uploads else None
 
 
 class FormPage(RequestHandler):
@@ -153,20 +157,15 @@ class FormPage(RequestHandler):
     Form = self._form()
     form = Form(self.data, self.data.POST or None, instance=self._studentInfo())
 
+    if 'error' in self.data.GET:
+      error = self.data.GET['error']
+      form.errors[form.fileFieldName()] = form.error_class([error])
+
     return {
         'page_name': self._name(),
         'forms': [form],
         'error': bool(form.errors),
         }
-
-  def validate(self):
-    Form = self._form()
-    form = Form(self.data, self.data.POST, instance=self._studentInfo())
-
-    if not form.is_valid():
-      return False
-
-    form.save()
 
   def _name(self):
     return 'Tax form' if self._tax() else 'Enrollment form'
@@ -205,8 +204,30 @@ class FormPage(RequestHandler):
     self.response.write(upload_url)
 
   def post(self):
-    validated = self.validate()
-    self._r().to(self._urlName(), validated=validated)
+    Form = self._form()
+    form = Form(self.data, data=self.data.POST,
+                files=self.data.request.file_uploads,
+                instance=self._studentInfo())
+
+    if not form.is_valid():
+      # we are not storing this form, remove the uploaded blob from the cloud
+      for file in self.data.request.file_uploads.itervalues():
+        file.delete()
+
+      # since this is a file upload we must return a 300 response
+      error = form.errors[form.fileFieldName()]
+      self._r().to(self._urlName(), extra=['error=%s'%error.as_text()])
+      return
+
+    # delete the old blob, if it exists
+    oldBlob = getattr(self.data.student_info, form.fileFieldName())
+    if oldBlob:
+      oldBlob.delete()
+
+    # write information about the new blob to the datastore
+    form.save()
+
+    self._r().to(self._urlName(), validated=True)
 
 
 class DownloadForm(RequestHandler):
