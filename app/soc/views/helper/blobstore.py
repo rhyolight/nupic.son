@@ -39,12 +39,11 @@ from django.http import HttpResponse
 from soc.logic.exceptions import BadRequest
 
 
-def get_uploads(request, field_name=None, populate_post=False):
+def get_uploads(request, field_name=None):
   """Get uploads sent to this handler.
 
   Args:
     field_name: Only select uploads that were sent as a specific field
-    populate_post: Add the non blob fields to request.POST
   Returns:
     A list of BlobInfo records corresponding to each upload
     Empty list if there are no blob-info records for field_name
@@ -62,8 +61,9 @@ def get_uploads(request, field_name=None, populate_post=False):
                                 environ=request.META)
 
       request.__uploads = {}
-      if populate_post:
-        request.POST = {}
+
+      request.POST = {}
+      request.file_uploads = {}
 
       for key in fields.keys():
         field = fields[key]
@@ -71,11 +71,16 @@ def get_uploads(request, field_name=None, populate_post=False):
             field, cgi.FieldStorage) and 'blob-key' in field.type_options:
           request.__uploads.setdefault(key, []).append(
               blobstore.parse_blob_info(field))
-        elif populate_post:
-          if isinstance(field, list):
-            request.POST[key] = [f.value for f in field]
-          else:
-            request.POST[key] = field.value
+          # Put the BlobInfo in the POST data and format it for Django by
+          # adding the name property.
+          blobInfo = request.__uploads[key][0]
+          blobInfo.name = blobInfo.filename
+          request.file_uploads[key] = blobInfo
+        elif isinstance(field, list):
+          request.POST[key] = [f.value for f in field]
+        else:
+          request.POST[key] = field.value
+
   if field_name:
     try:
       results = list(request.__uploads[field_name])
@@ -84,8 +89,6 @@ def get_uploads(request, field_name=None, populate_post=False):
   else:
     for uploads in request.__uploads.itervalues():
       results += uploads
-
-  request.file_uploads = results
 
   return results
 
