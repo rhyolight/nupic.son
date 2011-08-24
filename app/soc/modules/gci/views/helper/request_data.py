@@ -123,6 +123,7 @@ class RequestData(request_data.RequestData):
     org_admin_for: the organizations the current user is an admin for
     mentor_for: the organizations the current user is a mentor for
     student_info: the StudentInfo for the current user and program
+    organization: the GCIOrganization for the current url
 
   Raises:
     out_of_band: 404 when the program does not exist
@@ -148,6 +149,7 @@ class RequestData(request_data.RequestData):
     self.mentor_for = []
     self.org_admin_for = []
     self.student_info = None
+    self.organization = None
 
   @property
   def programs(self):
@@ -199,8 +201,10 @@ class RequestData(request_data.RequestData):
 
     if kwargs.get('organization'):
       fields = [self.program.key().id_or_name(), kwargs.get('organization')]
-      key_name = '/'.join(fields)
-      self.organization = GCIOrganization.get_by_key_name(key_name)
+      org_key_name = '/'.join(fields)
+      self.organization = GCIOrganization.get_by_key_name(org_key_name)
+      if not self.organization:
+        raise NotFound("There is no organization for url '%s'" % org_key_name)
 
     if self.user:
       key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
