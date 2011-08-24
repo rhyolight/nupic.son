@@ -35,6 +35,7 @@ from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import GDocsLoginRequest
+from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.models.user import User
 from soc.views.helper.gdata_apis import oauth as oauth_helper
@@ -447,6 +448,23 @@ class Mutator(object):
 
     if raise_not_found and not self.data.org_app:
       raise NotFound(DEF_NO_ORG_APP_MSG_FMT % self.data.program.name)
+
+  def orgAppRecordIfIdInKwargs(self):
+    """Sets the organization application in RequestData object.
+
+    Args:
+      raise_not_found: iff False do not send 404 response.
+    """
+    assert self.data.org_app
+
+    self.data.org_app_record = None
+
+    id = self.data.kwargs.get('id')
+    if id:
+      self.data.org_app_record = OrgAppRecord.get_by_id(int(id))
+
+      if not self.data.org_app_record:
+        raise NotFound(DEF_NO_ORG_APP_MSG_FMT % self.data.program.name)
 
 
 class DeveloperMutator(Mutator):
