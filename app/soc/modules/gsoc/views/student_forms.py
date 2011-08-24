@@ -242,7 +242,9 @@ class DownloadForm(RequestHandler):
         url(r'student_forms/tax/download/%s$' % url_patterns.PROGRAM,
             self, name='gsoc_tax_form_download',
             kwargs=dict(form='tax', admin=False)),
-        url(r'student_forms/admin/enrollment/download/%s$' % url_patterns.PROFILE,
+        url(
+            r'student_forms/admin/enrollment/download/%s$' % 
+                url_patterns.PROFILE,
             self, name='gsoc_enrollment_form_download_admin',
             kwargs=dict(form='enrollment', admin=True)),
         url(r'student_forms/admin/tax/download/%s$' % url_patterns.PROFILE,
