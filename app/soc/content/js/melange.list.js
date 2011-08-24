@@ -1187,14 +1187,14 @@
       }
 
       footerAggregates();
-      if (!_self.is_new_list) {
+      if (!_self.isNewList()) {
         // Temporarily disable cookie service for new lists.
         cookie_service.saveCurrentTableConfiguration();
       }
     };
 
     var initJQGrid = function () {
-      if (!_self.is_new_list) {
+      if (!_self.isNewList()) {
         // Temporarily disable cookie service for new lists.
         _self.configuration = cookie_service.getPreviousTableConfiguration(_self.configuration);
       }
@@ -1232,7 +1232,7 @@
 
       var search_parameters = {};
 
-      if (!_self.is_new_list) {
+      if (!_self.isNewList()) {
         search_parameters = {
           closeAfterSearch: true,
           multipleSearch: true
@@ -1255,7 +1255,7 @@
          {} // view parameters
         );
       // Do not show columns and filter Toolbar for new lists.
-      if (!_self.is_new_list) {
+      if (!_self.isNewList()) {
         jQuery("#" + _self.jqgrid.id).jqGrid(
           // show button to hide/show columns
           "navButtonAdd",
@@ -1281,6 +1281,7 @@
 
     this.getDiv = function () {return div;};
     this.getIdx = function () {return idx;};
+    this.isNewList = function () {return is_new_list;};
 
     var init = function () {
       jQuery(
