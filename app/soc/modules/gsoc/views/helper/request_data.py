@@ -124,11 +124,6 @@ class TimelineHelper(request_data.TimelineHelper):
   def mentorSignup(self):
     return self.programActiveBetween() and self.orgsAnnounced()
 
-  def surveyPeriod(self, survey):
-    start = survey.survey_start
-    end = survey.survey_end
-    return request_data.isAfter(start) and request_data.isBefore(end)
-
   def afterFirstSurveyStart(self, surveys):
     """Returns True if we are past at least one survey has start date.
 

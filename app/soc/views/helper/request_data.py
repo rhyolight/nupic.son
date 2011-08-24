@@ -139,6 +139,10 @@ class TimelineHelper(object):
   def afterStudentSignupEnd(self):
     return isAfter(self.studentSignupEnd())
 
+  def surveyPeriod(self, survey):
+    start = survey.survey_start
+    end = survey.survey_end
+    return isAfter(start) and isBefore(end)
 
 class RequestData(object):
   """Object containing data we query for each request.
