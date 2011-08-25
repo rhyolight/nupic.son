@@ -84,6 +84,7 @@ def updateMentors(request):
   updater.run()
   return http.HttpResponse("Ok")
 
+
 def updateOrgAdmins(request):
   """Starts an iterative task which updates org admins.
   """

@@ -254,7 +254,7 @@ class StudentInfoUpdater(object):
   def _processEntity(self, entity):
     profile = entity.parent()
     project = GSoCProject.all().ancestor(profile).get()
-    
+
     properties = {
         'school_name': entity.school_name,
         'school_country': entity.school_country,
@@ -271,7 +271,7 @@ class StudentInfoUpdater(object):
     studentInfo = GSoCStudentInfo(key_name = profile.key().name(), 
         parent=profile, **properties)
     profile.student_info = studentInfo
-    
+
     db.run_in_transaction(db.put, [profile, studentInfo])
 
   def _process(self, start_key, batch_size):

@@ -57,7 +57,7 @@ class TimelineHelper(request_data.TimelineHelper):
 
     if self.afterOrgSignupStart():
       return 'org_signup_period'
-    
+
     if self.studentsAnnounced():
       return 'coding_period'
 
