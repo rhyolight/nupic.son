@@ -1180,7 +1180,6 @@ def addAddressColumns(list_config):
   list_config.addSimpleColumn('res_country', "res_country", hidden=True)
   list_config.addSimpleColumn('res_postalcode', "res_postalcode", hidden=True)
   list_config.addSimpleColumn('phone', "phone", hidden=True)
-  list_config.addSimpleColumn('ship_name', "ship_name", hidden=True)
   list_config.addColumn(
       'ship_name', "ship_name",
       (lambda ent, *args: ent.shipping_name()), hidden=True)
