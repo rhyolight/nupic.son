@@ -35,6 +35,7 @@ from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.models.universities import UNIVERSITIES
+from soc.models.request import Request
 from soc.views.dashboard import Component
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -1121,7 +1122,7 @@ class RequestComponent(Component):
     if lists.getListIndex(self.request) != self.idx:
       return None
 
-    q = GSoCRequest.all()
+    q = Request.all()
 
     if self.for_admin:
       q.filter('group IN', self.data.org_admin_for)
@@ -1130,8 +1131,10 @@ class RequestComponent(Component):
 
     starter = lists.keyStarter
 
+    prefetcher = lists.modelPrefetcher(Request, ['user', 'group'])
+
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetch=['user', 'group'])
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
     return response_builder.build()
 
   def context(self):
