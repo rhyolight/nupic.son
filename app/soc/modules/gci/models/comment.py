@@ -31,6 +31,9 @@ import soc.models.base
 
 class GCIComment(soc.models.base.ModelWithFieldAttributes):
   """GCI Comment model for tasks, extends the basic Comment model.
+
+    Parent:
+      soc.modules.gci.models.task.GCITask
   """
 
   #: The rich textual content of this comment

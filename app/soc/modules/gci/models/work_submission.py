@@ -38,9 +38,8 @@ from soc.modules.gci.models import program as gci_program_model
 class GCIWorkSubmission(soc.models.base.ModelWithFieldAttributes):
   """Model for work submissions for a task by students.
 
-  Scope will be set to the Organization to which this work has been submitted.
-  scope_path will be set to the task key name under which this work was
-  submitted.
+  Parent:
+    soc.modules.gci.models.task.GCITask
   """
 
   #: User who submitted this work
