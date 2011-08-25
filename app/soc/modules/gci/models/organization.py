@@ -32,4 +32,4 @@ class GCIOrganization(soc.models.organization.Organization):
   """
 
   #: Property that stores the amount of tasks the organization can publish.
-  task_quota_limit = db.IntegerProperty(required=False, default=0)
+  task_quota_limit = db.IntegerProperty(required=True, default=0)

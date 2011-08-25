@@ -28,5 +28,4 @@ import soc.models.mentor
 class GCIMentor(soc.models.mentor.Mentor):
   """GCI Mentor model extends the basic Mentor model.
   """
-
   pass

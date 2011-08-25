@@ -34,7 +34,6 @@ from taggable.taggable import tag_property
 
 import soc.models.linkable
 import soc.models.role
-import soc.models.student
 import soc.models.user
 
 import soc.modules.gci.models.program
@@ -173,7 +172,7 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
   #: Student profile to whom this task is currently assigned to. If the user
   #: has registered as a Student than this field will be filled in. This field
   #: is mandatory for all Tasks in the closed state.
-  student = db.ReferenceProperty(reference_class=soc.models.student.Student,
+  student = db.ReferenceProperty(reference_class=soc.models.role.Role,
                                  required=False,
                                  collection_name='assigned_tasks')
 

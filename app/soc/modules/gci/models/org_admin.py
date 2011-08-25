@@ -28,5 +28,4 @@ import soc.models.org_admin
 class GCIOrgAdmin(soc.models.org_admin.OrgAdmin):
   """GCI Org Admin model extends the basic Org Admin model.
   """
-
   pass

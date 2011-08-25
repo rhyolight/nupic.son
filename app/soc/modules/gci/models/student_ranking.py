@@ -25,6 +25,7 @@ __authors__ = [
 from google.appengine.ext import db
 
 import soc.models.linkable
+import soc.models.role
 
 
 class GCIStudentRanking(soc.models.linkable.Linkable):
@@ -36,7 +37,7 @@ class GCIStudentRanking(soc.models.linkable.Linkable):
      verbose_name=('Points'), default=0)
 
   #: student entity that the ranking refers to
-  student = db.ReferenceProperty(reference_class=soc.models.student.Student,
+  student = db.ReferenceProperty(reference_class=soc.models.role.Role,
                                  required=True)
 
   #: tasks that have been taken account into this ranking

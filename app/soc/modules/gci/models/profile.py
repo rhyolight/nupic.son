@@ -54,7 +54,6 @@ class GCIStudentInfo(soc.models.role.StudentInfo):
     soc.modules.gci.models.profile.Profile
   """
 
-
   #: number of tasks completed
   number_of_tasks_completed = db.IntegerProperty(default=0)
 
