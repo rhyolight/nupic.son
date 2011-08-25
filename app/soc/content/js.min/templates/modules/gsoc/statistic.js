@@ -17,58 +17,133 @@
  */
 
 melange.templates.inherit(function (_self, context) {
+
+  // TODO: replace eval with a safe json library 
+  eval('var urls = ' + context.urls);
+  eval('var manage_urls = ' + context.manage_urls)
+  eval('var visualizations = ' + context.visualizations);
+  eval('var visibilities = ' + context.visibilities);
   
-  var statistic = {
-	'admins': '/gsoc/statistic/fetch/admins',
-	'profiles': '/gsoc/statistic/fetch/profiles',
-	'mentors': '/gsoc/statistic/fetch/mentors',
-	'students': '/gsoc/statistic/fetch/students',
-	'students_per_country': '/gsoc/statistic/fetch/students_per_country',
-	'mentors_per_country': '/gsoc/statistic/fetch/mentors_per_country',
-	'proposals_per_student': '/gsoc/statistic/fetch/proposals_per_student',
-	'students_with_proposals': '/gsoc/statistic/fetch/students_with_proposals',
-  };
+  var toggleButton = null;
 
+  // Whether change() function should send a request to the server
+  var sendRequest = true;
+
+  var bindToggleButton = function () {
+     toggleButton = jQuery('.on_off :checkbox#is-visible-statistic')
+	    .iphoneStyle({
+	      checkedLabel: 'Yes',
+	      uncheckedLabel: 'No'
+	    })
+	    .change(toggleButtonChanged);
+  }
+
+  var toggleButtonChanged = function () {
+	if (!sendRequest) {
+	  sendRequest = true;
+    } else {
+	  var oldState = !toggleButton.is(':checked');
+	  var _key_name = key_name;
+	  jQuery.post(
+	      manage_urls[_key_name],
+	      {value: !oldState,
+	       xsrf_token: window.xsrf_token
+	      },
+	      function (data) {
+	        visibilities[_key_name] = !oldState;
+	      }
+	   );
+    }
+  }
+  
+  /* Maps Google Visualization Data packages with human friendly names. */
+  var visualization_names = {
+	'piechart': 'Pie Chart',
+    'table': 'Table',
+  }
+
+  /* Maps Google Visualization API objects with vizualization names */ 
+  var visualization_objects = {};
+
+  /* These two variables represent current state of the page:
+   * - statistic which is shown
+   * - visualization which is displayed
+   */
   var key_name = null;
-  var obj = null
-  var statistic_data = {}
+  var visualization_name = null;
 
-  var drawStatisticVisualization = function (key_name) {
-	var chart = new google.visualization.Table(document.getElementById('statistic-presentation-div'));
+  /* Saved data for the statistics which have been fetched. */
+  var statistic_data = {};
+
+  var drawStatisticVisualization = function (is_different) {
+	var chart = new visualization_objects[visualization_name](
+		document.getElementById('statistic-presentation-div'));
 	/* check if the data for a given statistic has already been downloaded. */
 	if (statistic_data[key_name] !== undefined) {
 	  chart.draw(statistic_data[key_name], {width: 400, height: 240});
+	  /* reset the options only if this is a different statistic */
+	  if (is_different) {
+	    setVisualizationOptions();
+	  }
 	} else {
-	  var action_url = statistic[key_name];
+	/* The statistic is requested for the first time. Data has to fetched from the server. */
+	  var url = urls[key_name];
 	  jQuery.get(
-		action_url,
+		url,
 		{'fmt': 'json', 'type': 'gviz'},
 		function (data) {
 		  eval('var _data = ' + data);
 		  statistic_data[key_name] = new google.visualization.DataTable(_data);
 	      chart.draw(statistic_data[key_name], {width: 400, height: 240});
+	      setVisualizationOptions();
 		},
 		'text'
 	  );
 	}
-  }
+  };
 
-  var selectionChanged = function () {
-	jQuery('#statistic-select :selected').each(function (index) {
-	  key_name = jQuery(this).attr('id');
-	  drawStatisticVisualization(jQuery(this).attr('id'));
+  var setVisualizationOptions = function () {
+	jQuery('#statistic-visualization-select').find('option').remove();
+
+	jQuery(visualizations[key_name]).each(function (index, value) {
+		jQuery('#statistic-visualization-select').append(
+		    jQuery('<option></option>')
+		        .attr('value', value)
+		        .text(visualization_names[value]));
 	});
   };
   
-  var initialize = function () {
-	jQuery('#statistic-select :selected').each(function (index) {
+  var selectionChanged = function () {
+	jQuery('#statistic-select :selected').each(function () {
 	  key_name = jQuery(this).attr('id');
-	  drawStatisticVisualization(key_name);
+	  visualization_name = visualizations[key_name][0];
+	  drawStatisticVisualization(true);
+	  if (toggleButton.is(':checked') !== visibilities[key_name]) {
+		sendRequest = false;
+		toggleButton.attr('checked', !toggleButton.is(':checked')).change();
+	  }
 	});
+  };
+
+  var visualizationChanged = function () {
+	jQuery('#statistic-visualization-select :selected').each(function () {
+	  visualization_name = jQuery(this).attr('value');
+	  drawStatisticVisualization(false);
+	});
+  };
+
+  var initialize = function () {
+	visualization_objects = {
+	  'piechart': google.visualization.PieChart,
+	  'table': google.visualization.Table
+	};
+	selectionChanged();
   };
   
   jQuery(function () {
-	jQuery('#statistic-select').change(selectionChanged)
-	melange.loadGoogleApi('visualization', '1', {'packages':['table']}, initialize);
+	jQuery('#statistic-select').change(selectionChanged);
+	jQuery('#statistic-visualization-select').change(visualizationChanged);
+	melange.loadGoogleApi('visualization', '1', {'packages':['table', 'corechart']}, initialize);
+	bindToggleButton();
   });
 });
