@@ -26,6 +26,7 @@ __authors__ = [
 from google.appengine.api import users
 
 from soc.views.template import Template
+from soc.views.base_templates import LoggedInMsg
 
 
 def siteMenuContext(data):

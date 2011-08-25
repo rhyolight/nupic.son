@@ -27,6 +27,8 @@ from google.appengine.api import users
 
 from soc.views.template import Template
 
+from soc.views.base_templates import LoggedInMsg
+
 
 def siteMenuContext(data):
   """Generates URL links for the hard-coded GSoC site menu items.
@@ -143,37 +145,9 @@ class Footer(Template):
     return "v2/modules/gsoc/footer.html"
 
 
-class LoggedInMsg(Template):
+class LoggedInMsg(LoggedInMsg):
   """Template to render user login message at the top of the profile form.
   """
-  def __init__(self, data, apply_role=False, apply_link=True, div_name=None):
-    if not div_name:
-      div_name = 'loggedin-message'
-    self.data = data
-    self.apply_link = apply_link
-    self.apply_role = apply_role
-    self.div_name = div_name
-
-  def context(self):
-    context = {
-        'logout_link': self.data.redirect.logout().url(),
-        'user_email': self.data.gae_user.email(),
-        'has_profile': bool(self.data.profile),
-        'div_name': self.div_name,
-    }
-
-    if self.apply_role and self.data.kwargs.get('role'):
-      context['role'] = self.data.kwargs['role']
-
-    if self.data.user:
-      context['link_id'] = " [link_id: %s]" % self.data.user.link_id
-
-    if self.apply_link and self.data.timeline.orgsAnnounced() and (
-      (self.data.profile and not self.data.student_info) or
-      (self.data.timeline.studentSignup() and self.data.student_info)):
-      context['apply_link'] = self.data.redirect.acceptedOrgs().url()
-
-    return context
 
   def templatePath(self):
     return "v2/modules/gsoc/_loggedin_msg.html"
