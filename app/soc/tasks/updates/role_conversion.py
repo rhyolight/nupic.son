@@ -167,7 +167,8 @@ class RoleUpdater(object):
         'parent': user,
         }
     for prop in self.POPULATED_PROFILE_PROPS:
-      properties[prop] = getattr(entity, prop)
+      if hasattr(entity, prop):
+        properties[prop] = getattr(entity, prop)
 
     profile = self.PROFILE_MODEL.get_or_insert(
         key_name=key_name, **properties)
@@ -197,7 +198,8 @@ class RoleUpdater(object):
       # the role is certainly Student; we have to create a new StudentInfo
       properties = {}
       for prop in self.POPULATED_STUDENT_PROPS:
-        properties[prop] = getattr(entity, prop)
+        if hasattr(entity, prop):
+          properties[prop] = getattr(entity, prop)
       self._processStudentEntity(entity, properties)
 
       key_name = profile.key().name()
