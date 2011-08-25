@@ -119,6 +119,6 @@ def updateGCIStudentRankingReferences(request):
   """ 
   
   updater = role_conversion.ReferenceUpdater(GCIStudentRanking, GCIProfile,
-      ['student'], ['tasks'])
+      ['student'])
   updater.run()
   return http.HttpResponse("Ok")
