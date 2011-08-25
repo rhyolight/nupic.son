@@ -36,7 +36,6 @@ from django.utils.safestring import mark_safe
 
 from soc.logic.helper import xsrfutil
 from soc.logic import site
-from soc.views.helper import responses
 
 
 _HTML_TYPES = ('text/html', 'application/xhtml+xml')

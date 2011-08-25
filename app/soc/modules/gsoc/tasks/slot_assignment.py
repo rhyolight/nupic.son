@@ -28,9 +28,9 @@ from google.appengine.runtime import DeadlineExceededError
 
 from soc.tasks import responses
 from soc.tasks.helper.timekeeper import Timekeeper
-from soc.modules.gsoc.logic.models.organization import logic as org_logic
-from soc.modules.gsoc.logic.models.program import logic as program_logic
-from soc.modules.gsoc.logic.models.student_proposal import logic as proposal_logic
+from soc.modules.gsoc.models.program import GSoCProgram
+from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models.student_proposal import StudentProposal
 
 
 def getDjangoURLPatterns():
@@ -61,7 +61,7 @@ def assignProgramSlots(request, *args, **kwargs):
 
   # Query the program entity
   try:
-    program = program_logic.getFromKeyName(params["programkey"])
+    program = GSoCProgram.get_by_key_name(params["programkey"])
   except KeyError:
     logging.error("programkey not in params")
     return responses.terminateTask()
@@ -97,7 +97,7 @@ def assignSlots(request, *args, **kwargs):
 
   program_key = request.REQUEST.get("programkey")
   last_key = request.REQUEST.get("lastkey", "")
-  program = program_logic.getFromKeyName(program_key)
+  program = GSoCProgram.get_by_key_name(program_key)
 
   # Copy for modification below
   params = request.POST.copy()
@@ -115,10 +115,8 @@ def assignSlots(request, *args, **kwargs):
 
       org_slots = slots[org_key]
       # Get the organization entity
-      org = org_logic.getFromKeyFields({
-          'link_id': org_key,
-          'scope_path': program_key,
-      })
+      org_key = '/'.join([program_key, org_key])
+      org = GSoCOrganization.get_by_key_name(org_key)
 
       if not org:
         logging.error("no such org '%s'/'%s'" % (program_key, org_key))
@@ -143,12 +141,7 @@ def assignSlots(request, *args, **kwargs):
   return responses.terminateTask()
 
 def countProposals(org):
-
-  filter = {
-    'org': org.key(),
-    }
-
-  proposals = proposal_logic.getForFields(filter=filter)
+  proposals = StudentProposal.all().filter('org', org).fetch(1000)
   mentors = [p.mentor for p in proposals if p.mentor]
 
   return len(proposals), len(mentors)

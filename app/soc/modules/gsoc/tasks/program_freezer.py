@@ -30,10 +30,10 @@ from google.appengine.ext import db
 from soc.tasks import responses
 from soc.tasks.helper import error_handler
 
-from soc.modules.gsoc.logic.models.mentor import logic as mentor_logic
-from soc.modules.gsoc.logic.models.org_admin import logic as org_admin_logic
-from soc.modules.gsoc.logic.models.organization import logic as org_logic
-from soc.modules.gsoc.logic.models.student import logic as student_logic
+#from soc.modules.gsoc.logic.models.mentor import logic as mentor_logic
+#from soc.modules.gsoc.logic.models.org_admin import logic as org_admin_logic
+#from soc.modules.gsoc.logic.models.organization import logic as org_logic
+#from soc.modules.gsoc.logic.models.student import logic as student_logic
 
 
 ROLE_PER_SCOPE_MODELS_URL_PATTERNS = [
@@ -215,7 +215,7 @@ def _constructRequestURL(django_url_pattern):
   return '/' + django_url_pattern[0][1:-1]
 
 
-manageMentorsStatus = manageModelStatus(mentor_logic)
-manageOrgAdminsStatus = manageModelStatus(org_admin_logic)
-manageOrgsStatus = manageModelStatus(org_logic, _orgStatusRetriever)
-manageStudentsStatus = manageModelStatus(student_logic)
+#manageMentorsStatus = manageModelStatus(mentor_logic)
+#manageOrgAdminsStatus = manageModelStatus(org_admin_logic)
+#manageOrgsStatus = manageModelStatus(org_logic, _orgStatusRetriever)
+#manageStudentsStatus = manageModelStatus(student_logic)

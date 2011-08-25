@@ -33,7 +33,7 @@ from django.core.urlresolvers import reverse
 
 from soc.logic import mail_dispatcher
 from soc.logic import system
-from soc.logic.models.site import logic as site_logic
+from soc.logic import site
 from soc.tasks.helper import error_handler
 
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
@@ -192,7 +192,7 @@ class SurveyReminderTask(object):
     if not record:
       # send reminder email because we found no record
       student_profile = project.parent()
-      site_entity = site_logic.getSingleton()
+      site_entity = site.singleton()
 
       if survey_type == 'project':
         url_name = 'gsoc_take_student_evaluation'

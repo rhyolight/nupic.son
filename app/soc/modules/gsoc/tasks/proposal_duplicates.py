@@ -33,9 +33,9 @@ from django.conf.urls.defaults import url as django_url
 
 from soc.tasks.helper import error_handler
 
+from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.logic import proposal as proposal_logic
-from soc.modules.gsoc.logic.models.program import logic as program_logic
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 
@@ -84,7 +84,7 @@ class ProposalDuplicatesTask(object):
           'Invalid task data: %s' % post_dict)
 
     # get the program for the given keyname
-    program_entity = program_logic.getFromKeyName(program_key)
+    program_entity = GSoCProgram.get_by_key_name(program_key)
 
     if not program_entity:
       # invalid program specified, log and return OK
@@ -154,7 +154,7 @@ class ProposalDuplicatesTask(object):
       return error_handler.logErrorAndReturnOK(
           'Invalid program key: %s' % post_dict)
 
-    program_entity = program_logic.getFromKeyName(program_key)
+    program_entity = GSoCProgram.get_by_key_name(program_key)
     if not program_entity:
       # invalid program specified, log and return OK
       return error_handler.logErrorAndReturnOK(
