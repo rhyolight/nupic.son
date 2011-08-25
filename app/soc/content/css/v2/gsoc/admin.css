@@ -147,6 +147,11 @@
 {
   background-image: url(../../../images/v2/gsoc/admin/edit.png);
 }
+.column-entry.preview_mentor_evaluation,
+.column-entry.preview_student_evaluation
+{
+  background-image: url(../../../images/v2/gsoc/admin/preview.png);
+}
 .column-entry.view_mentor_evaluation,
 .column-entry.view_student_evaluation,
 .column-entry.view_evaluation_group

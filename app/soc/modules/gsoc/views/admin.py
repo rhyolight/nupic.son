@@ -556,6 +556,13 @@ class MentorEvaluationsDashboard(Dashboard):
             'link': r.urlOf('gsoc_edit_mentor_evaluation')
         },
         {
+            'name': 'preview_mentor_evaluation',
+            'description': ugettext('Preview midterm evaluation to be '
+                'administered mentors.'),
+            'title': 'Preview Midterm Evaluation',
+            'link': r.urlOf('gsoc_preview_mentor_evaluation')
+        },
+        {
             'name': 'view_mentor_evaluation',
             'description': ugettext('View midterm evaluation for mentors'),
             'title': 'View Midterm Records',
@@ -571,6 +578,13 @@ class MentorEvaluationsDashboard(Dashboard):
                 'mentors in active program'),
             'title': 'Create or Edit Final Evaluation',
             'link': r.urlOf('gsoc_edit_mentor_evaluation')
+        },
+        {
+            'name': 'preview_mentor_evaluation',
+            'description': ugettext('Preview final evaluation to be '
+                'administered mentors.'),
+            'title': 'Preview Final Evaluation',
+            'link': r.urlOf('gsoc_preview_mentor_evaluation')
         },
         {
             'name': 'view_mentor_evaluation',
@@ -627,6 +641,13 @@ class StudentEvaluationsDashboard(Dashboard):
             'link': r.urlOf('gsoc_edit_student_evaluation')
         },
         {
+            'name': 'preview_student_evaluation',
+            'description': ugettext('Preview midterm evaluation to be '
+                'administered to the students.'),
+            'title': 'Preview Midterm Evaluation',
+            'link': r.urlOf('gsoc_preview_student_evaluation')
+        },
+        {
             'name': 'view_student_evaluation',
             'description': ugettext('View midterm evaluation for students'),
             'title': 'View',
@@ -642,6 +663,13 @@ class StudentEvaluationsDashboard(Dashboard):
                 'students in active program'),
             'title': 'Create or Edit Final Evaluation',
             'link': r.urlOf('gsoc_edit_student_evaluation')
+        },
+        {
+            'name': 'preview_student_evaluation',
+            'description': ugettext('Preview final evaluation to be '
+                'administered to the students.'),
+            'title': 'Preview Final Evaluation',
+            'link': r.urlOf('gsoc_preview_student_evaluation')
         },
         {
             'name': 'view_student_evaluation',
