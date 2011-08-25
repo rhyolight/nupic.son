@@ -99,9 +99,8 @@ class BulkCreate(RequestHandler):
     if not form.is_valid():
       return self.get()
 
-    # TODO(ljvderijk): Enable after tests have been written
-    #bulk_create.spawnBulkCreateTasks(
-    #    form.cleaned_data['tasks'], self.data.org, self.data.profile)
+    bulk_create.spawnBulkCreateTasks(
+        form.cleaned_data['task_data'], self.data.organization, self.data.profile)
 
     self.redirect.organization(self.data.organization)
     self.redirect.to('gci_bulk_create', validated=True)

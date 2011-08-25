@@ -151,7 +151,7 @@ class BulkCreateTask(object):
 
         # create the new task
         logging.info('Creating new task with fields: %s' %task)
-        task_entity = GCITask(key_name='%s(scope_path)/%s(link_id)'%task, **task)
+        task_entity = GCITask(key_name='%(scope_path)s/%(link_id)s'%task, **task)
         task_entity.put()
         task_quota = task_quota - 1
       except DeadlineExceededError:
@@ -272,7 +272,7 @@ class BulkCreateTask(object):
     return errors
 
 
-def spawnBulkCreateTasks(self, data, org, org_admin):
+def spawnBulkCreateTasks(data, org, org_admin):
   """Spawns a task to bulk post the given data.
 
   The data given to this method should be in CSV format with the following

@@ -24,7 +24,7 @@ __authors__ = [
 from soc.modules.gci.models.task import GCITask
 
 
-def getRemainingTaskQuota(self, org):
+def getRemainingTaskQuota(org):
   """Returns the number of remaining tasks that the organization can publish.
 
   While calculating the remaining quota we consider all the tasks that
@@ -45,7 +45,7 @@ def getRemainingTaskQuota(self, org):
 
   q = GCITask.all()
   q.filter('scope', org)
-  q.filter('status', valid_status)
+  q.filter('status IN', valid_status)
 
   return org.task_quota_limit - q.count()
 

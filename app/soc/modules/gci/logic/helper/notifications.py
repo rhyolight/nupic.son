@@ -34,8 +34,7 @@ from soc.logic.helper import notifications
 DEF_BULK_CREATE_COMPLETE_SUBJECT_MSG = ugettext(
     'Bulk creation of tasks completed')
 
-DEF_BULK_CREATE_COMPLETE_TEMPLATE = \
-    'modules/gci/notification/messages/bulk_create_complete.html'
+DEF_BULK_CREATE_COMPLETE_TEMPLATE = 'v2/modules/gci/reminder/bulk_create.html'
 
 DEF_TASK_REQUEST_SUBJECT_MSG = ugettext(
     'A new task has been requested from your organization')
@@ -57,9 +56,9 @@ def sendMail(to_user, subject, message_properties, template):
     template: template that holds the content of the mail
   """
 
-  from soc.logic.models.site import logic as site_logic
+  from soc.logic import site
 
-  site_entity = site_logic.getSingleton()
+  site_entity = site.singleton()
   site_name = site_entity.site_name
 
   # get the default mail sender
@@ -120,8 +119,7 @@ def sendBulkCreationCompleted(bulk_data):
   subject = DEF_BULK_CREATE_COMPLETE_SUBJECT_MSG
   template = DEF_BULK_CREATE_COMPLETE_TEMPLATE
 
-  notifications.sendNotification(
-      bulk_data.created_by.user, None, message_properties, subject, template)
+  sendMail(bulk_data.created_by.user, subject, message_properties, template)
 
 def sendParentalConsentFormRequired(user_entity, program_entity):
   """Sends out a notification to the student who completed first task that
@@ -150,7 +148,7 @@ def sendRequestTaskNotification(org_admins, message):
     message: a short message that will be included to the notification
   """
 
-  from soc.logic.models.site import logic as site_logic
+  from soc.logic import site
 
   # get the default mail sender
   default_sender = mail_dispatcher.getDefaultMailSender()
@@ -162,7 +160,7 @@ def sendRequestTaskNotification(org_admins, message):
     (sender_name, sender) = default_sender
 
   # get site name
-  site_entity = site_logic.getSingleton()
+  site_entity = site.singleton()
   template = DEF_TASK_REQUEST_TEMPLATE
 
   properties = {
