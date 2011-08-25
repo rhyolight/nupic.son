@@ -199,7 +199,7 @@ class SurveyReminderTask(object):
 
         to_name = student_profile.name()
         to_address = student_profile.email
-        mail_template = 'v2/modules/gsoc/notification/student_eval_reminder.html'
+        mail_template = 'v2/modules/gsoc/reminder/student_eval_reminder.html'
       elif survey_type == 'grading':
         url_name = 'gsoc_take_mentor_evaluation'
 
@@ -207,7 +207,7 @@ class SurveyReminderTask(object):
         to_address = [m.email for m in mentors]
         to_name = 'mentor(s) for project "%s"' %(project.title)
         mail_template = \
-            'v2/modules/gsoc/notification/mentor_eval_reminder.html'
+            'v2/modules/gsoc/reminder/mentor_eval_reminder.html'
 
       program = project.program
       hostname = system.getHostname()
@@ -229,6 +229,7 @@ class SurveyReminderTask(object):
           'survey_end': survey.survey_end,
           'to_name': to_name,
           'site_name': site_entity.site_name,
+          'sender_name': "The %s Team" % site_entity.site_name,
       }
 
       # set the sender
