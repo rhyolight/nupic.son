@@ -77,7 +77,7 @@ def load_melange():
   callback.registerCore(Core())
   current_core = callback.getCore()
   #modules = ['gsoc', 'gci', 'seeder', 'statistic']
-  modules = ['gsoc', 'seeder']
+  modules = ['gsoc', 'gci', 'seeder']
   fmt = 'soc.modules.%s.callback'
   current_core.registerModuleCallbacks(modules, fmt)
 
