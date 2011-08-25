@@ -70,6 +70,9 @@ DEF_ALREADY_PARTICIPATING_AS_STUDENT_MSG = ugettext(
     'You cannot register as a %s since you are already a '
     'student in %s.')
 
+DEF_CANNOT_ACCESS_ORG_APP = ugettext(
+    'You do not have access to this organization application.')
+
 DEF_CANNOT_UPDATE_ENTITY = ugettext(
     'This %(model)s cannot be updated.')
 
@@ -1159,3 +1162,16 @@ class AccessChecker(BaseAccessChecker):
           'key_name': self.data.kwargs['id']
           }
       raise AccessViolation(error_msg)
+
+  def canAccessOrgApp(self):
+    """Checks if the user can edit the org app record if it exists.
+    """
+    assert isSet(self.data.org_app_record)
+
+    self.isLoggedIn()
+
+    if self.data.org_app_record:
+      allowed_keys = [self.data.org_app_record.main_admin.key(),
+                      self.data.org_app_record.backup_admin.key()]
+      if self.data.user.key() not in allowed_keys:
+        raise AccessViolation(DEF_CANNOT_ACCESS_ORG_APP)
