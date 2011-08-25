@@ -1341,6 +1341,8 @@
 
       _self.jqgrid.object = jQuery("#" + _self.jqgrid.id);
 
+      // Global Search
+
       if (_self.features.global_search.enabled) {
         jQuery(_self.features.global_search.element_path).bind("keyup", function(event) {
           var search_query = jQuery(_self.features.global_search.element_path).val();
