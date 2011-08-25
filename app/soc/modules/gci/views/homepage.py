@@ -28,7 +28,7 @@ from soc.logic import system
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
-from soc.modules.gsoc.logic.models.organization import logic as org_logic
+from soc.modules.gsoc.logic import organization as org_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -96,7 +96,7 @@ class Apply(Template):
       context['nr_accepted_orgs'] = nr_orgs if nr_orgs else ""
       context['accepted_orgs_link'] = accepted_orgs
       participating_orgs = []
-      current_orgs = org_logic.getParticipatingOrgs(self.data.program)
+      current_orgs = org_logic.participating(self.data.program)
       for org in current_orgs:
         participating_orgs.append({
             'link': r.orgHomepage(org.link_id).url(),
