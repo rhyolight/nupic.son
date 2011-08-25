@@ -18,7 +18,7 @@
 
 melange.templates.inherit(function (_self, context) {
 
-  // TODO: replace eval with a safe json library 
+  // TODO: replace eval with a safe json library
   eval('var urls = ' + context.urls);
   eval('var manage_urls = ' + context.manage_urls)
   eval('var visualizations = ' + context.visualizations);
@@ -55,14 +55,14 @@ melange.templates.inherit(function (_self, context) {
 	   );
     }
   }
-  
+
   /* Maps Google Visualization Data packages with human friendly names. */
   var visualization_names = {
-	'piechart': 'Pie Chart',
-    'table': 'Table',
+    'piechart': 'Pie Chart',
+    'table': 'Table'
   }
 
-  /* Maps Google Visualization API objects with vizualization names */ 
+  /* Maps Google Visualization API objects with vizualization names */
   var visualization_objects = {};
 
   /* These two variables represent current state of the page:
