@@ -32,7 +32,7 @@ from django import http
 from django.conf.urls.defaults import url
 
 from soc.logic import mail_dispatcher
-from soc.logic.models.site import logic as site_logic
+from soc.logic import site
 from soc.tasks.helper import error_handler
 
 from soc.modules.gsoc.logic import grading_record
@@ -213,7 +213,7 @@ class GradingRecordTasks(object):
     project_entity = record.parent()
     student_entity = project_entity.parent()
     org_entity = project_entity.org
-    site_entity = site_logic.getSingleton()
+    site_entity = site.singleton()
 
     mail_context = {
       'survey_group': survey_group_entity,
