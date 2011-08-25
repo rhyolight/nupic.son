@@ -258,6 +258,29 @@ class RequestData(request_data.RequestData):
     self.is_org_admin = self.is_host or bool(self.org_admin_for)
     self.is_mentor = self.is_org_admin or bool(self.mentor_for)
 
+  def orgAdminFor(self, organization):
+    """Returns true iff the user is admin for the specified organization.
+
+    Organization may either be a key or an organization instance.
+    """
+    if self.is_host:
+      return True
+    if isinstance(organization, db.Model):
+      organization = organization.key()
+
+    return organization in [i.key() for i in self.org_admin_for]
+
+  def mentorFor(self, organization):
+    """Returns true iff the user is mentor for the specified organization.
+
+    Organization may either be a key or an organization instance.
+    """
+    if self.is_host:
+      return True
+    if isinstance(organization, db.Model):
+      organization = organization.key()
+    return organization in [i.key() for i in self.mentor_for]
+
 
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects.
