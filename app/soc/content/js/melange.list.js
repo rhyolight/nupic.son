@@ -344,6 +344,9 @@
       },
       global_search: {
         enabled: false
+      },
+      global_sort: {
+        enabled: false
       }
     };
 
@@ -1358,6 +1361,43 @@
           _self.jqgrid.object.jqGrid('setGridParam', {search: true, postData: postData});
           _self.jqgrid.object.trigger("reloadGrid");
         });
+      }
+
+      // Global Sort
+
+      var gs = _self.features.global_sort;
+      if (gs.enabled && _self.getIdx()===6) {
+        if (gs.element_paths.column !== undefined) {
+          var select = jQuery(gs.element_paths.column);
+          jQuery(' option', select).remove();
+          var cm = _self.configuration.colModel;
+          jQuery.each(_self.configuration.colModel, function(index, column) {
+            select.append(jQuery('<option></option>').val(column.name).html(_self.configuration.colNames[index]));
+          });
+          var selected_item = (_self.jqgrid.object.jqGrid('getGridParam', 'postData')).sidx;
+          select.val(selected_item);
+
+          select.bind("change", function() {
+            var column_to_sort = jQuery(this).val();
+            _self.jqgrid.object.jqGrid('setGridParam', {sortname: column_to_sort});
+            _self.jqgrid.object.trigger("reloadGrid");
+          });
+        }
+        if (gs.element_paths.asc_desc !== undefined) {
+          var select = jQuery(gs.element_paths.asc_desc);
+          jQuery(' option', select).remove();
+          select.append(jQuery('<option></option>').val('asc').html('Ascending'));
+          select.append(jQuery('<option></option>').val('desc').html('Descending'));
+          var selected_item = (_self.jqgrid.object.jqGrid('getGridParam', 'postData')).sord;
+          select.val(selected_item);
+
+          select.bind("change", function() {
+            var asc_desc = jQuery(this).val();
+            _self.jqgrid.object.jqGrid('setGridParam', {sortorder: asc_desc});
+            _self.jqgrid.object.trigger("reloadGrid");
+          });
+        }
+
       }
     };
 
