@@ -266,8 +266,9 @@ class RedirectHelper(request_data.RedirectHelper):
   def document(self, document):
     """Override this method to set GCI specific _url_name.
     """
+    super(RedirectHelper, self).document(document)
     self._url_name = 'gci_show_document'
-    return super(RedirectHelper, self).document(document)
+    return self
 
   def homepage(self):
     """Sets the _url_name for the homepage of the current GCI program.
@@ -279,13 +280,13 @@ class RedirectHelper(request_data.RedirectHelper):
   def dashboard(self):
     """Sets the _url_name for dashboard page of the current GCI program.
     """
+    super(RedirectHelper, self).dashboard()
     self._url_name = 'gci_dashboard'
-    return super(RedirectHelper, self).dashboard()
+    return self
 
   def events(self):
     """Sets the _url_name for the events page, if it is set.
     """
-    key = GCIProgram.events_page.get_value_for_datastore(self._data.program)
-
+    super(RedirectHelper, self).events()
     self._url_name = 'gci_events'
-    return super(RedirectHelper, self).events()
+    return self
