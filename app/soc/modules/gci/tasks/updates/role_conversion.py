@@ -58,7 +58,7 @@ def getDjangoURLPatterns():
   
 
 class RoleUpdater(role_conversion.RoleUpdater):
-  """Class which is responsibe for updating entities in GCI.
+  """Class which is responsible for updating entities in GCI.
   """
 
   POPULATED_PROFILE_PROPS = set(
