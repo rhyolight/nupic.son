@@ -43,19 +43,15 @@ def getDjangoURLPatterns():
   patterns = [
       (r'^tasks/gci/role_conversion/update_mentors$',
         'soc.modules.gci.tasks.updates.role_conversion.updateMentors'),
-
       (r'^tasks/gci/role_conversion/update_org_admins$',
         'soc.modules.gci.tasks.updates.role_conversion.updateOrgAdmins'),
-
       (r'^tasks/gci/role_conversion/update_students$',
         'soc.modules.gci.tasks.updates.role_conversion.updateStudents'),
-
       (r'^tasks/gci/role_conversion/update_task_reference',
-        'soc.modules.gci.tasks.updates.role_conversion.updateGCITaskReference'),
-      
+        'soc.modules.gci.tasks.updates.role_conversion.updateGCITaskReferences'),
       (r'^tasks/gci/role_conversion/update_studentranking_reference',
-        'soc.modules.gci.tasks.updates.role_conversion.\
-         updateGCIStudentRankingReference'),
+        'soc.modules.gci.tasks.updates.role_conversion.'
+        'updateGCIStudentRankingReferences'),
   ]
 
   return patterns
