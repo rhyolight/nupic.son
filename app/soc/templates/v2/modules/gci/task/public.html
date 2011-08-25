@@ -1,0 +1,87 @@
+{% extends "v2/modules/gci/base.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/buttons.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/forms.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/uniform.default.css" />
+{% endblock stylesheets %}
+
+{% block header %}
+  {{ block.super }}
+  Title: {{ task.title }}
+{% endblock %}
+
+{% block page_content %}
+
+{% if posted %}
+  {% if comment_box.form.errors %}
+     <div id="flash-message" class="flash-error">
+     <p>Sorry, we could not save your comment. Please fix the errors mentioned
+     in the comment form below and submit the form again to save.</p>
+  {% else %}
+     <div id="flash-message" class="flash-success">
+     <p>Data saved successfully.</p>
+  {% endif %}
+     </div>
+{% endif %}
+
+{% block task-show %}
+{% if header_msg %}
+  {{ header_msg|safe }}
+{% endif %}
+
+<div id="created" />
+  Last Modified on: {{ task.modified_on }} by {{ task.modified_by.name }}
+</div>
+
+
+  <p class="description"><strong>Short description:</strong> {{ task.description }}</p>
+  <p class="difficulty"><strong>Task difficulty:</strong> {{ task.difficulty }}</p>
+  <p class="type"><strong>Task type:</strong> {{ task.type }}</p>
+  <p class="task-mentors"><strong>Mentors: </strong>{{ mentors|default:"No mentor assigned" }}</p>
+  <p class="time-to-complete"><strong>Time to complete: </strong>{{ task.time_to_complete }}</p>
+  <p class="deadline"><strong>Deadline: </strong>{{ task.deadline }}</p>
+  <p class="task-page-student-name"><strong>Assigned student: </strong>{{ student_name }}</p>
+
+{% endblock task-show %}
+
+{% if comments %}
+<div class="task-comment-container">
+  <a name="comments"></a><h3>{{ comments|length }} comments</h3>
+    {% for comment in comments %}
+      <div class="task-comment-single" id="c{{ comment.key.id_or_name }}">
+        <p class="task-comment-meta"><strong>{{ comment.created_by.name }}</strong> <a href="#c{{ comment.key.id_or_name }}">{{ comment.created_on }}</a></p>
+        {{ comment.content|safe }}
+      </div>
+    {% endfor %}
+{% endif %}
+</div>
+
+{% block list-work-submissions %}
+{% if work_submissions %}
+<h3> Work Submission:</h3>
+{% for work_submission in work_submissions %}
+  <p class ="Information"><strong>Information of the work submitted: </strong>{{ work_submission.information|safe }}</p>
+  <p class ="url_to_work"><strong>URL of the work submitted: <strong> <a href="{{ work_submission.url_to_work }}">URL of yje work submitted</a></p>
+  <p class="upload_of_word"><strong>File submitted as work: </strong>{{ work_submission.upload_of_work }}</p>
+  <p class="submitted_on"><strong>Submitted on: </strong{{ work_submission.submitted_on }}</p>
+{% endfor %}
+<hr />
+{% endif %}
+{% endblock list-work-submissions %}
+
+{% endblock page_content %}

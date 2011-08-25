@@ -1,0 +1,13 @@
+<fieldset id="form-task-comment-fieldset" class="fieldset-task-comment">
+  <legend><span>Leave a comment</span></legend>
+  {% for _, fields in form %}
+    {% for field in fields %}
+      <div id="form_row_{{ field.name }}" class="row {{ field.div_class }}">
+        {{ field.render }}
+      </div>
+    {% endfor %}
+  {% endfor %}
+  <div id="form-task-comment-fieldset-button-row" class="row button-row">
+    <input id="form-task-comment-submit" type="submit" value="Submit" class="submit"/>
+  </div>
+</fieldset>
