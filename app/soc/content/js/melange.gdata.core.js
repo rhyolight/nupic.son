@@ -45,7 +45,7 @@
   var locals = {
     is_logged_in: melange.config.gdata_is_logged_in,
     success_callback: null,
-    success_callback_parameters: null,
+    success_callback_parameters: null
   };
 
   /** For quickest initialization without passing any variable
