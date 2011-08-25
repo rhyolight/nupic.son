@@ -42,7 +42,6 @@ from django.test import TestCase
 from soc.logic.helper import xsrfutil
 from soc.middleware.xsrf import XsrfMiddleware
 from soc.modules import callback
-from soc.views.helper import responses
 
 
 class MockRequest(object):
@@ -129,13 +128,7 @@ class StuboutHelper(object):
   def stuboutBase(self):
     """Applies basic stubout replacements.
     """
-
-    self.stubout.Set(
-        responses, 'respond',
-        get_general_raw(['request', 'template', 'context', 'args', 'headers']))
-    self.stubout.Set(
-        responses, 'errorResponse',
-        get_general_raw(['error', 'request', 'template', 'context']))
+    pass
 
   def stuboutElement(self, parent, child_name, args_names):
     """Applies a specific stubout replacement.
