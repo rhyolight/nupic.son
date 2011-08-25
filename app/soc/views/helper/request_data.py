@@ -423,7 +423,8 @@ class RedirectHelper(object):
 
     get_args.extend(extra)
 
-    url = url + '?' + '&'.join(get_args)
+    if get_args:
+      url = url + '?' + '&'.join(get_args)
 
     self.toUrl(url, full=full, secure=secure)
 
