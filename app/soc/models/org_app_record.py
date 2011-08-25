@@ -43,7 +43,7 @@ class OrgAppRecord(SurveyRecord):
 #: Required field storing "ID" used in URL links. ASCII characters,
   #: digits and underscores only.  Valid link IDs successfully match
   #: the LINK_ID_REGEX.
-  org_id = db.StringProperty(required=True,
+  org_id = db.StringProperty(required=False,
       verbose_name=ugettext('Organization ID'))
   org_id.help_text = ugettext(
       'Organization ID is used as part of various URL links throughout '
