@@ -225,39 +225,6 @@ class RequestData(request_data.RequestData):
       organization = organization.key()
     return organization in [i.key() for i in self.mentor_for]
 
-  def _requestQuery(self, organization):
-    """Returns a query to retrieve a Request for this user.
-    """
-    if isinstance(organization, db.Model):
-      organization = organization.key()
-
-    from soc.models.request import Request
-    query = Request.all()
-    query.filter('user', self.user)
-    query.filter('group', organization)
-
-    return query
-
-  def appliedTo(self, organization):
-    """Returns true iff the user has applied for the specified organization.
-
-    Organization may either be a key or an organization instance.
-    """
-    query = self._requestQuery(organization)
-    query.filter('type', 'Request')
-    return bool(query.get())
-
-  def invitedTo(self, organization):
-    """Returns the role the user has bene invoted to,.
-
-    Organization may either be a key or an organization instance.
-    Returns None if no invite was sent.
-    """
-    query = self._requestQuery(organization)
-    query.filter('type', 'Invitation')
-    invite = query.get()
-    return invite.role if invite else None
-
   def isPossibleMentorForProposal(self, mentor_profile=None):
     """Checks if the user is a possible mentor for the proposal in the data.
     """

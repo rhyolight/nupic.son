@@ -170,6 +170,29 @@ class RequestData(request_data.RequestData):
 
     return self.org_map[org_key]
 
+  def orgAdminFor(self, organization):
+    """Returns true iff the user is admin for the specified organization.
+
+    Organization may either be a key or an organization instance.
+    """
+    if self.is_host:
+      return True
+    if isinstance(organization, db.Model):
+      organization = organization.key()
+
+    return organization in [i.key() for i in self.org_admin_for]
+
+  def mentorFor(self, organization):
+    """Returns true iff the user is mentor for the specified organization.
+
+    Organization may either be a key or an organization instance.
+    """
+    if self.is_host:
+      return True
+    if isinstance(organization, db.Model):
+      organization = organization.key()
+    return organization in [i.key() for i in self.mentor_for]
+
   def populate(self, redirect, request, args, kwargs):
     """Populates the fields in the RequestData object.
 

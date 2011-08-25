@@ -240,6 +240,39 @@ class RequestData(object):
       self.is_developer = True
     self.gae_user = users.get_current_user()
 
+  def _requestQuery(self, organization):
+    """Returns a query to retrieve a Request for this user.
+    """
+    if isinstance(organization, db.Model):
+      organization = organization.key()
+
+    from soc.models.request import Request
+    query = Request.all()
+    query.filter('user', self.user)
+    query.filter('group', organization)
+
+    return query
+
+  def appliedTo(self, organization):
+    """Returns true iff the user has applied for the specified organization.
+
+    Organization may either be a key or an organization instance.
+    """
+    query = self._requestQuery(organization)
+    query.filter('type', 'Request')
+    return bool(query.get())
+
+  def invitedTo(self, organization):
+    """Returns the role the user has been invited to,.
+
+    Organization may either be a key or an organization instance.
+    Returns None if no invite was sent.
+    """
+    query = self._requestQuery(organization)
+    query.filter('type', 'Invitation')
+    invite = query.get()
+    return invite.role if invite else None
+
 
 class RedirectHelper(object):
   """Helper for constructing redirects.
