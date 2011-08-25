@@ -153,3 +153,11 @@ class DashboardTest(DjangoTestCase):
     self.assertDashboardComponentTemplatesUsed(response)
     response = self.getListResponse(url, 4)
     self.assertIsJsonResponse(response)
+
+  def testDashboardRequest(self):
+    self.data.createHost()
+    url = '/gsoc/dashboard/' + self.gsoc.key().name()
+    response = self.getListResponse(url, 7)
+    self.assertIsJsonResponse(response)
+    response = self.getListResponse(url, 8)
+    self.assertIsJsonResponse(response)
