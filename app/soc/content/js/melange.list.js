@@ -157,7 +157,10 @@
     else if (original_data[0] !== undefined) {
       jQuery.each(original_data[0], function (element_key, element_value) {
         if (postdata[element_key] !== undefined) {
-          var search_by_reg_exp = jQuery("#regexp_" + list_objects.get(my_index).jqgrid.id).is(":checked");
+          var search_by_reg_exp = false;
+          if (jQuery("#regexp_" + list_objects.get(my_index).jqgrid.id) !== undefined && jQuery("#regexp_" + list_objects.get(my_index).jqgrid.id).is(":checked")) {
+            search_by_reg_exp = true;
+          }
           var select_filter = false;
           jQuery.each(list_objects.get(my_index).configuration.colModel, function (item_index, column) {
             if (column.editoptions !== undefined && element_key === column.name) {
@@ -331,7 +334,8 @@
         enabled: true
       },
       column_search: {
-        enabled: true
+        enabled: true,
+        regexp: true
       },
       columns_show_hide: {
         enabled: true
@@ -1080,7 +1084,7 @@
               }
 
               //Add RegExp switch
-              if (_self.features.column_search.enabled) {
+              if (_self.features.column_search.enabled && _self.features.column_search.regexp) {
                 jQuery("#t_" + _self.jqgrid.id).append("<div style='float:right;margin-right:4px;'><input type='checkbox' id='regexp_" + _self.jqgrid.id + "'/>RegExp Search</div>");
 
                 //Make the switch trigger a new search when clicked
