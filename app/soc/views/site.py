@@ -153,8 +153,8 @@ class SiteHomepage(SiteRequestHandler):
     elif action == 'logout':
       self.redirect.toUrl(users.create_logout_url('/'))
     else:
-      site = site.singleton()
-      program = site.active_program
+      settings = site.singleton()
+      program = settings.active_program
       if program:
         self.redirect.program(program).to(program.homepage_url_name)
       else:
