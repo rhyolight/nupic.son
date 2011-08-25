@@ -42,7 +42,7 @@ class Group(soc.models.presence.Presence):
       verbose_name=ugettext('Name'))
   name.help_text = ugettext('Complete, formal name of the group.')  
   name.group = ugettext("1. Public Info")
-  
+
   #: Required field storing short name of the group.
   #: It can be used for displaying group as sidebar menu item.
   short_name = db.StringProperty(required=True,
