@@ -45,6 +45,8 @@ from soc.modules.gci.models.work_submission import GCIWorkSubmission
 UNPUBLISHED = ['Unpublished', 'Unapproved']
 
 
+# TODO(Madhu): after the data conversion inherit the model from
+# ModelFieldWithAttributes rather than Linkable.
 class GCITask(Taggable, soc.models.linkable.Linkable):
   """Model for a task used in GCI workflow.
 
@@ -106,6 +108,12 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
       reference_class=soc.modules.gci.models.program.GCIProgram,
       required=True, collection_name='tasks')
 
+  # TODO(Madhu): Make it required after data conversion
+  #: Program in which this Task has been created
+  org = db.ReferenceProperty(
+      reference_class=soc.modules.gci.models.organization.GCIOrganization,
+      required=False, collection_name='org_tasks')
+
   #: Required property which holds the state, the Task is currently in.
   #: This is a hidden field not shown on forms. Handled by logic internally.
   #: The state can be one of the following:
@@ -146,6 +154,9 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
   deadline = db.DateTimeProperty(required=False,
                                  verbose_name=ugettext('Deadline'))
 
+  # Property holding the list of users who are subscribed to the task.
+  subscribers = db.ListProperty(item_type=db.Key, default=[])
+
   #: Required field containing the Mentor/Org Admin who created this task.
   #: If site developer has created the task, it is empty.
   created_by = db.ReferenceProperty(reference_class=soc.models.role.Role,
@@ -170,6 +181,7 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
   modified_on = db.DateTimeProperty(required=True, auto_now_add=True,
                                     verbose_name=ugettext('Modified on'))
 
+  # TODO(Madhu): Remove after data conversion
   #: A field which holds the entire history of this task in JSON. The
   #: structure of this JSON string is as follows:
   #: {
