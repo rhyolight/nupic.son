@@ -80,12 +80,12 @@
 
   if (melange.config.is_local !== undefined && melange.config.is_local === true) {
     s.jquery = [
-      tpjs + "jquery/jquery-1.5.1.js"
+      tpjs + "jquery/jquery-1.5.2.js"
     ];
   }
   else {
     s.jquery = [
-      "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"
+      "https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"
     ];
   }
 
