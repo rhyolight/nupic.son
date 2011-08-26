@@ -777,9 +777,9 @@
       if (data.operations === undefined && data.operations.row_buttons === undefined) {
         return data;
       }
-      jQuery.each(data.operations.row_buttons, function (index, button) {
+      jQuery.each(data.operations.row_buttons, function (id, button) {
         if (button.type === 'redirect_simple') {
-          var button_id = 'row_button_' + _self.getIdx() + '_' + row_num + '_' + button.id;
+          var button_id = 'row_button_' + _self.getIdx() + '_' + row_num + '_' + id;
           var button_html = [
             '<input type="button" value="', button.caption,'" id="', button_id ,'"></input>'
           ].join("");
@@ -894,8 +894,8 @@
               // Bind row buttons click events, if present. Can be bound only after the actual object is appended to the DOM.
               jQuery.each(_self.data.all_data, function (row_index, row) {
                 if (row.operations !== undefined && row.operations.row_buttons !== undefined) {
-                  jQuery.each(row.operations.row_buttons, function (button_index, button) {
-                    var button_id = 'row_button_' + _self.getIdx() + '_' + row_index + '_' + button.id;
+                  jQuery.each(row.operations.row_buttons, function (id, button) {
+                    var button_id = 'row_button_' + _self.getIdx() + '_' + row_index + '_' + id;
                     // Only redirect_simple operation is supported at the moment.
                     if (button.type === 'redirect_simple') {
                       jQuery('#' + button_id).click(jqgrid_functions.global_button_functions[button.type](button.parameters));
