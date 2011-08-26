@@ -774,7 +774,7 @@
     };
 
     var preRenderButtons = function(row_num, data) {
-      if (data.operations.row_buttons === undefined) {
+      if (data.operations === undefined && data.operations.row_buttons === undefined) {
         return data;
       }
       jQuery.each(data.operations.row_buttons, function (index, button) {
@@ -893,7 +893,7 @@
 
               // Bind row buttons click events, if present. Can be bound only after the actual object is appended to the DOM.
               jQuery.each(_self.data.all_data, function (row_index, row) {
-                if (row.operations.row_buttons !== undefined) {
+                if (row.operations !== undefined && row.operations.row_buttons !== undefined) {
                   jQuery.each(row.operations.row_buttons, function (button_index, button) {
                     var button_id = 'row_button_' + _self.getIdx() + '_' + row_index + '_' + button.id;
                     // Only redirect_simple operation is supported at the moment.
