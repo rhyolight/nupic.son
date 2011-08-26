@@ -99,7 +99,7 @@ def new_task_for_old(task):
 def process_student_ranking(student_ranking):
   """Replace all the references to the list of old tasks to the new tasks.
   """
-  tasks = db.get(student_ranking.tasks)
+  tasks = GCITask.get(student_ranking.tasks)
   new_tasks = []
   for t in tasks:
     new_t = new_task_for_old(t)
