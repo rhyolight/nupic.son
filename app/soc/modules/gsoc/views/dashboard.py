@@ -1348,6 +1348,12 @@ class StudentsComponent(Component):
     list_config.addColumn(
         'number_of_projects', "#projects",
         lambda ent, si, *args: si[ent.key()].number_of_projects)
+    list_config.addColumn(
+        'passed_evaluations', "#passed",
+        lambda ent, si, *args: si[ent.key()].passed_evaluations)
+    list_config.addColumn(
+        'failed_evaluations', "#failed",
+        lambda ent, si, *args: si[ent.key()].failed_evaluations)
 
     self._list_config = list_config
 
