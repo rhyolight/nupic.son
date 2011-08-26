@@ -76,7 +76,8 @@ def process_task(task):
       yield operation.counters.Increment("comment_updated")
 
     # Update all the work submission entities with the new task as the parent
-    work_submissions = GCIWorkSubmission.all().ancestor(new_task_key).fetch(1000)
+    work_submissions = GCIWorkSubmission.all().ancestor(
+        new_task_key).fetch(1000)
     for ws in work_submissions:
       new_ws_properties = {}
       for ws_prop in WORK_SUBMISSION_PROPERTIES:
@@ -88,16 +89,20 @@ def process_task(task):
     yield operation.counters.Increment("task_updated")
 
 
+def new_task_for_old(task):
+  q = GCITask.all(keys_only=True)
+  q.filter('org', task.scope)
+  q.filter('link_id', task.link_id)
+  return q.get()
+
+
 def process_student_ranking(student_ranking):
   """Replace all the references to the list of old tasks to the new tasks.
   """
   tasks = db.get(student_ranking.tasks)
   new_tasks = []
   for t in tasks:
-    q = GCITask.all()
-    q.filter('org', t.scope)
-    q.filter('link_id', t.link_id)
-    new_t = q.get()
+    new_t = new_task_for_old(t)
     if new_t:
       new_tasks.append(new_t)
 
