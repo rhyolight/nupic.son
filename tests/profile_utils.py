@@ -125,8 +125,10 @@ class GSoCProfileHelper(object):
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
                   'school': None, 'tax_form': None, 'enrollment_form': None,
-                  'number_of_projects': 0}
+                  'number_of_projects': 0, 'number_of_proposals': 0,
+                  'passed_evaluations': 0, 'failed_evaluations': 0,}
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
+    self.profile.is_student = True
     self.profile.put()
     return self.profile
 
@@ -147,6 +149,8 @@ class GSoCProfileHelper(object):
     proposals for the current program.
     """
     self.createStudent()
+    self.profile.student_info.number_of_proposals = n
+    self.profile.put()
     from soc.modules.gsoc.models.proposal import GSoCProposal
     properties = {
         'scope': self.profile, 'score': 0, 'nr_scores': 0,
@@ -191,6 +195,8 @@ class GSoCProfileHelper(object):
     self.createProfile()
     self.profile.mentor_for = [org.key()]
     self.profile.org_admin_for = [org.key()]
+    self.profile.is_mentor = True
+    self.profile.is_org_admin = True
     self.profile.put()
     return self.profile
 
@@ -223,6 +229,7 @@ class GSoCProfileHelper(object):
     """
     self.createProfile()
     self.profile.mentor_for = [org.key()]
+    self.profile.is_mentor = True
     self.profile.put()
     return self.profile
 
