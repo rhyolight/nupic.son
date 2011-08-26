@@ -1209,9 +1209,6 @@ def addAddressColumns(list_config):
       'ship_name', "ship_name",
       (lambda ent, *args: ent.shipping_name()), hidden=True)
   list_config.addColumn(
-      'ship_name', "ship_name",
-      (lambda ent, *args: ent.shipping_name()), hidden=True)
-  list_config.addColumn(
       'ship_street', "ship_street",
       (lambda ent, *args: ent.shipping_street()), hidden=True)
   list_config.addColumn(
