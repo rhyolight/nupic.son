@@ -780,8 +780,12 @@
       jQuery.each(data.operations.row_buttons, function (id, button) {
         if (button.type === 'redirect_simple') {
           var button_id = 'row_button_' + _self.getIdx() + '_' + row_num + '_' + id;
+          var button_classes = '';
+          if (button.classes !== undefined && button.classes.length !== 0) {
+            button_classes = ' class = "' + button.classes.join(' ') + '"';
+          }
           var button_html = [
-            '<input type="button" value="', button.caption,'" id="', button_id ,'"></input>'
+            '<input type="button" value="', button.caption,'" id="', button_id ,'"', button_classes, '></input>'
           ].join("");
           data.columns[button.append_to_column] += button_html;
         }
