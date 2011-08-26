@@ -20,9 +20,9 @@ for checking access.
 
 __authors__ = [
     '"Selwyn Jacob" <selwynjacob90@gmail.com>',
+    '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
-from google.appengine.ext import db
 
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
@@ -32,29 +32,33 @@ from soc.modules.gci.models.task import GCITask
 
 
 class Mutator(access_checker.Mutator):
+  """Helper class for access checking.
+
+  Mutates the data object as requested.
+  """
 
   def unsetAll(self):
     self.data.task = access_checker.unset
     super(Mutator, self).unsetAll()
 
   def taskFromKwargs(self):
-    """Sets the task entity in RequestData object.
+    """Sets the GCITask entity in RequestData object.
+
+    The entity that is set will always be in a valid state and for the program
+    that is set in the RequestData.
     """
-    self.profileFromKwargs()
-    assert access_checker.isSet(self.data.url_profile)
+    id = long(self.data.kwargs['id'])
+    task = GCITask.get_by_id(id)
 
-    # kwargs which defines a task
-    fields = ['sponsor', 'program', 'organization', 'task_link_id']
-
-    key_name = '/'.join(self.data.kwargs[field] for field in fields)
-    self.data.task = GCITask.get_by_key_name(key_name)
-
-    if not self.data.task:
-      error_msg = access_checker.DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
+    if not task or (task.program.key() != self.data.program) or \
+        task.status == 'invalid':
+      error_msg = access_checker.DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
           'model': 'GCITask',
-          'key_name': key_name
+          'id': id,
           }
       raise NotFound(error_msg)
+
+    self.data.task = task
 
 
 class DeveloperMutator(access_checker.DeveloperMutator,
@@ -63,29 +67,20 @@ class DeveloperMutator(access_checker.DeveloperMutator,
 
 
 class AccessChecker(access_checker.AccessChecker):
+  """Access checker for GCI specific methods.
+  """
 
-  def isTaskInURLValid(self):
-    """Checks if the task in URL exists.
+  def isTaskVisible(self):
+    """Checks if the task is visible to the public.
     """
     assert access_checker.isSet(self.data.task)
 
-    fields = ['sponsor', 'program', 'organization', 'task_link_id']
-    key_name = '/'.join(self.data.kwargs[field] for field in fields)
-    if not self.data.task:
-      error_msg = access_checker.DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
-          'model': 'GCITask',
-          'key_name': key_name
-          }
-      raise AccessViolation(error_msg)
-
-    invalid_status = ['Invalid', 'Unpublished', 'Unapproved']
-    if self.data.task.status in invalid_status:
-      error_msg = access_checker.DEF_KEYNAME_BASED_ENTITY_INVALID_MSG_FMT % {
-          'model': 'GCITask',
-          'key_name': key_name,
-          }
+    if not self.data.task.isPublished():
+      error_msg = access_checker.DEF_PAGE_INACTIVE_MSG
       raise AccessViolation(error_msg)
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker,
                              AccessChecker):
+  """Developer access checker for GCI specific methods.
+  """
   pass

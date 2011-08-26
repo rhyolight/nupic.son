@@ -35,22 +35,13 @@ from soc.views import forms
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gci.models.comment import GCIComment
-from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.work_submission import GCIWorkSubmission
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_patterns
+from soc.modules.gci.views.helper.url_patterns import url
 
-
-DEF_TASK_CLOSED_MSG = ugettext('This task is closed.')
-DEF_TASK_OPEN_MSG = ugettext(
-    'This task is open. If you are a GCI student, you can claim it!')
-
-DEF_TASK_REOPENED_MSG = ugettext(
-    'This task has been reopened. If you are a GCI student, '
-    'you can claim it!')
 
 class CommentForm(forms.ModelForm):
-  """Djanfgo form for the comment.
+  """Django form for the comment.
   """
 
   template_path = 'v2/modules/gci/proposal/_comment_form.html'
@@ -75,56 +66,21 @@ class TaskViewPage(RequestHandler):
   """
 
   def djangoURLPatterns(self):
+    """URL pattern for this view.
+    """
     return [
-        url_patterns.url(r'task/%s$' % url_patterns.TASK,
-            self, name='gci_view_task'),
+        url(r'task/%s$' % url_patterns.TASK, self, name='gci_view_task'),
     ]
 
   def checkAccess(self):
+    """Checks whether this task is visible to the public.
+    """
     self.mutator.taskFromKwargs()
-    self.check.isTaskInURLValid()
-
-  def getWorkSubmissions(self):
-    """Gets the Work Submissions for this task.
-    """
-    query = GCIWorkSubmission.all().filter('user', self.data.task.user)
-    work_submissions = query.fetch(1000)
-    return work_submissions
-
-  def getComments(self, limit=1000):
-    """Gets all comments for the Task.
-    """
-    assert isSet(self.data.task)
-
-    comments = []
-    #The parent for GCIComment entity is GCITask as they run in transactions.
-    query = db.Query(GCIComment).parent(self.data.task)
-    query.order('created_on')
-    all_comments = query.fetch(limit)
-
-    for comment in all_comments:
-      comments.append(comment)
-
-    return comments
-
-  def getHeaderMsg(self):
-    """Gets the header message for non-logged in general public
-       and for logged-in public.
-    """
-    if self.data.task.status == 'Closed':
-      header_msg = self.DEF_TASK_CLOSED_MSG
-    elif self.data.task.status == 'Open':
-      header_msg = self.DEF_TASK_OPEN_MSG
-    elif self.data.task.status == 'Reopened':
-      header_msg = self.DEF_TASK_REOPEN_MSG
-
-    return header_msg
+    self.check.isTaskVisible()
 
   def context(self):
-    assert isSet(self.data.url_profile)
-    assert isSet(self.data.url_user)
-    assert isSet(self.data.task)
-
+    """Returns the context for this view.
+    """
     mentors = db.get(self.data.task.mentors)
     mentors_names = ', '.join([m.name() for m in mentors])
 
@@ -135,13 +91,11 @@ class TaskViewPage(RequestHandler):
               'form': form,
     }
 
-    header_msg = self.getHeaderMsg()
-    comments = self.getComments()
-    work_submissions = self.getWorkSubmissions()
+    comments = self.data.task.comments()
+    work_submissions = self.data.task.workSubmissions()
 
     context = {
       'task': self.data.task,
-      'header_msg': header_msg,
       'mentors': mentors_names,
       'comments': comments,
       'work_submissions': work_submissions,
@@ -166,9 +120,10 @@ class PostComment(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.check.isProgramActive()
-    self.check.isProfileActive()
     self.mutator.TaskFromKwargs()
+    self.check.isTaskVisible()
+    self.check.isProgramActive()
+    self.check.isLoggedIn()
 
   def createCommentFromForm(self):
     """Creates a new comment based on the data inserted in the form.
