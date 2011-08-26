@@ -70,7 +70,7 @@ class SurveyHelper(object):
   def createEvaluation(self, survey, host=None, override={}):
     if not host:
       host_profile = GSoCProfileHelper(self.program, self.dev_test)
-      host_profile.createOtherUser('mentor@example.com')
+      host_profile.createOtherUser('host@example.com')
       host = host_profile.createHost()
 
     properties = {
