@@ -777,18 +777,42 @@
       if (data.operations === undefined || data.operations.row_buttons === undefined) {
         return data;
       }
-      jQuery.each(data.operations.row_buttons, function (id, button) {
-        if (button.type === 'redirect_simple') {
-          var button_id = 'row_button_' + _self.getIdx() + '_' + row_num + '_' + id;
-          var button_classes = '';
-          if (button.classes !== undefined && button.classes.length !== 0) {
-            button_classes = ' class = "' + button.classes.join(' ') + '"';
+      jQuery.each(data.operations.row_buttons, function (column_to_append, definitions) {
+        var buttons_htmls = {};
+        jQuery.each(definitions.buttons_def, function (id, button) {
+          if (button.type === 'redirect_simple') {
+            var button_id = 'row_button_' + _self.getIdx() + '_' + row_num + '_' + id;
+            var button_classes = '';
+            if (button.classes !== undefined && button.classes.length !== 0) {
+              button_classes = ' class = "' + button.classes.join(' ') + '"';
+            }
+            var button_html = [
+              '<input type="button" value="', button.caption,'" id="', button_id ,'"', button_classes, '></input>'
+            ].join("");
+            buttons_htmls[id] = button_html;
           }
-          var button_html = [
-            '<input type="button" value="', button.caption,'" id="', button_id ,'"', button_classes, '></input>'
-          ].join("");
-          data.columns[button.append_to_column] += button_html;
+        });
+        var template = '';
+        if (definitions.template === undefined || jQuery.trim(definitions.template) === '') {
+          jQuery.each(buttons_htmls, function (button_id, button_html) {
+            template += '{{ ' + button_id + '}}';
+          });
         }
+        else {
+          template = definitions.template;
+        }
+        // Use template to render buttons.
+        // TODO(Mario): do not repeat preRenderTemplates' code.
+        var match;
+        var re =  /\{\{([^\}]+)\}\}/g
+        var final_string = template;
+        while (match = re.exec(template)) {
+          var button_to_replace = jQuery.trim(match[1]);
+          if (buttons_htmls[button_to_replace] !== undefined) {
+            final_string = final_string.replace(match[0], buttons_htmls[button_to_replace]);
+          }
+        }
+        data.columns[column_to_append] += final_string;
       });
       return data;
     }
@@ -898,12 +922,14 @@
               // Bind row buttons click events, if present. Can be bound only after the actual object is appended to the DOM.
               jQuery.each(_self.data.all_data, function (row_index, row) {
                 if (row.operations !== undefined && row.operations.row_buttons !== undefined) {
-                  jQuery.each(row.operations.row_buttons, function (id, button) {
-                    var button_id = 'row_button_' + _self.getIdx() + '_' + row_index + '_' + id;
-                    // Only redirect_simple operation is supported at the moment.
-                    if (button.type === 'redirect_simple') {
-                      jQuery('#' + button_id).click(jqgrid_functions.global_button_functions[button.type](button.parameters));
-                    }
+                  jQuery.each(row.operations.row_buttons, function (column, definitions) {
+                    jQuery.each(definitions.buttons_def, function (id, button) {
+                      var button_id = 'row_button_' + _self.getIdx() + '_' + row_index + '_' + id;
+                      // Only redirect_simple operation is supported at the moment.
+                      if (button.type === 'redirect_simple') {
+                        jQuery('#' + button_id).click(jqgrid_functions.global_button_functions[button.type](button.parameters));
+                      }
+                    });
                   });
                 }
               });
