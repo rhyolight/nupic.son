@@ -121,10 +121,17 @@ class DashboardTest(DjangoTestCase):
 
   def testDashboardAsHost(self):
     self.data.createHost()
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com').createMentor(self.org)
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student.createStudentWithProject(self.org, mentor.profile)
+
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.client.get(url)
     self.assertDashboardTemplatesUsed(response)
-    # TODO(SRabbelier): anything we should show for hosts?
+    response = self.getListResponse(url, 10)
+    self.assertIsJsonResponse(response)
 
   def testDashboardAsOrgAdmin(self):
     self.data.createOrgAdmin(self.org)
