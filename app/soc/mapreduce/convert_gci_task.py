@@ -110,3 +110,23 @@ def process_student_ranking(student_ranking):
 
   yield operation.db.Put(student_ranking)
   yield operation.counters.Increment("student_ranking_updated")
+
+
+def process_tag(tag):
+  """Replace all the references to the list of old tasks to the new tasks.
+  """
+  tagged = db.get(tag.tagged)
+  new_tagged_keys = []
+  for t in tagged:
+    try:
+      task = GCITask.get(t)
+      new_tagged = new_task_for_old(task)
+    except db.KindError:
+      new_tagged = t
+
+    new_tagged_keys.append(new_tagged)
+
+  tag.tagged = new_tagged_keys
+
+  yield operation.db.Put(tag)
+  yield operation.counters.Increment("tag_updated")

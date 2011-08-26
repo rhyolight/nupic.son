@@ -87,3 +87,27 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.student_ranking.GCIStudentRanking
 
+- name: ConvertTaskTypeTag
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_gci_task.process_tag
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.task.TaskTypeTag
+
+- name: ConvertTaskDifficultyTag
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_gci_task.process_tag
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.task.TaskDifficultyTag
+
+- name: ConvertTaskArbitraryTag
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_gci_task.process_tag
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.task.TaskArbitraryTag
+
