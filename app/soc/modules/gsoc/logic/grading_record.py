@@ -188,7 +188,12 @@ def updateProjectsForGradingRecords(records):
     project.failed_evaluations = failed_evals
     project.status = new_status
 
+    profile = project.parent()
+    profile.student_info.passed_evaluations = len(passed_evals)
+    profile.student_info.failed_evaluations = len(failed_evals)
+
     projects_to_update.append(project)
+    projects_to_update.append(profile.student_info)
 
   # batch put the StudentProjects that need to be updated
   db.put(projects_to_update)

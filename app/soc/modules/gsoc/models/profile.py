@@ -71,6 +71,12 @@ class GSoCStudentInfo(soc.models.role.StudentInfo):
   #: number of projects
   number_of_projects = db.IntegerProperty(default=0)
 
+  #: number of passed evaluations
+  passed_evaluations = db.IntegerProperty(default=0)
+
+  #: number of failed evaluations
+  failed_evaluations = db.IntegerProperty(default=0)
+
   #: organizations the user has a project for
   project_for_orgs = db.ListProperty(item_type=db.Key, default=[])
 
