@@ -774,7 +774,7 @@
     };
 
     var preRenderButtons = function(row_num, data) {
-      if (data.operations === undefined && data.operations.row_buttons === undefined) {
+      if (data.operations === undefined || data.operations.row_buttons === undefined) {
         return data;
       }
       jQuery.each(data.operations.row_buttons, function (id, button) {
