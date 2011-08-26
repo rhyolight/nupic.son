@@ -40,6 +40,7 @@ from soc.modules.gci.models.work_submission import GCIWorkSubmission
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_patterns
 
+
 DEF_TASK_CLOSED_MSG = ugettext('This task is closed.')
 DEF_TASK_OPEN_MSG = ugettext(
     'This task is open. If you are a GCI student, you can claim it!')
@@ -48,13 +49,13 @@ DEF_TASK_REOPENED_MSG = ugettext(
     'This task has been reopened. If you are a GCI student, '
     'you can claim it!')
 
-class CommentForm(forms.Modelform):
+class CommentForm(forms.ModelForm):
   """Djanfgo form for the comment.
   """
 
   template_path = 'v2/modules/gci/proposal/_comment_form.html'
   class Meta:
-    model = GCIomment
+    model = GCIComment
     css_prefix = 'gci_comment'
     fields = ['content']
 
@@ -75,8 +76,8 @@ class TaskViewPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-          url(r'task/show/%s$' %url_patterns.TASK,
-          self, name='gci_show_task'),
+        url_patterns.url(r'task/%s$' % url_patterns.TASK,
+            self, name='gci_view_task'),
     ]
 
   def checkAccess(self):
@@ -106,7 +107,7 @@ class TaskViewPage(RequestHandler):
 
     return comments
 
- def getHeaderMsg(self):
+  def getHeaderMsg(self):
     """Gets the header message for non-logged in general public
        and for logged-in public.
     """
@@ -127,24 +128,24 @@ class TaskViewPage(RequestHandler):
     mentors = db.get(self.data.task.mentors)
     mentors_names = ', '.join([m.name() for m in mentors])
 
-    comment_action = reverse('gci_task_comment', kwargs=self.data.kwargs)
+    comment_action = ''
     form = CommentForm(self.data.POST or None)
     comment_box = {
               'action': comment_action,
               'form': form,
     }
 
-    header_msg = getHeaderMsg()
+    header_msg = self.getHeaderMsg()
     comments = self.getComments()
     work_submissions = self.getWorkSubmissions()
 
     context = {
-      'task': self.data.task
-      'header_msg': header_msg
-      'mentors': mentors_names
-      'comments': comments
-      'work_submissions': work_submissions
-      'student_name': self.data.url_profile.name()
+      'task': self.data.task,
+      'header_msg': header_msg,
+      'mentors': mentors_names,
+      'comments': comments,
+      'work_submissions': work_submissions,
+      'student_name': self.data.url_profile.name(),
       'comment_box': comment_box
     }
 
@@ -160,8 +161,8 @@ class PostComment(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'task/comment/%s$' % url_patterns.TASK,
-         self, name='gci_task_comment'),
+        url_patterns.url(r'task/comment/%s$' % url_patterns.TASK,
+            self, name='gci_task_comment'),
     ]
 
   def checkAccess(self):
@@ -179,8 +180,7 @@ class PostComment(RequestHandler):
 
     comment_form = CommentForm(self.data.request.POST)
     if not comment_form.is_valid():
-
-    comment_form.cleaned_data['created_by'] = self.data.profile
+      self.cleaned_data['created_by'] = self.data.profile
 
     to_emails = []
     mentors_keys = self.data.task.mentors
