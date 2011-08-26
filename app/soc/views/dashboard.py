@@ -25,8 +25,6 @@ __authors__ = [
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
-import math
-
 from django.utils.translation import ugettext
 
 from soc.views.template import Template
