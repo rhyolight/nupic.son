@@ -106,5 +106,7 @@ def process_student_ranking(student_ranking):
     if new_t:
       new_tasks.append(new_t)
 
+  student_ranking.tasks = new_tasks
+
   yield operation.db.Put(student_ranking)
   yield operation.counters.Increment("student_ranking_updated")
