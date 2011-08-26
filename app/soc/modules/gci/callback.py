@@ -45,6 +45,7 @@ class Callback(object):
     from soc.modules.gci.views import dashboard
     from soc.modules.gci.views import homepage
     from soc.modules.gci.views import org_app
+    from soc.modules.gci.views import task
 
     self.views.append(bulk_create.BulkCreate())
     self.views.append(dashboard.Dashboard())
@@ -53,6 +54,7 @@ class Callback(object):
     self.views.append(org_app.GCIOrgAppPreviewPage())
     self.views.append(org_app.GCIOrgAppShowPage())
     self.views.append(org_app.GCIOrgAppTakePage())
+    self.views.append(task.TaskViewPage())
 
     # Google Appengine Tasks
     from soc.modules.gci.tasks.bulk_create import BulkCreateTask

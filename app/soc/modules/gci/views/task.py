@@ -14,12 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI Task page.
+"""Views for the GCI Task view page.
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Selwyn Jacob" <selwynjacob90@gmail.com>',
   ]
+
 
 from google.appengine.ext import db
 
@@ -67,8 +69,8 @@ class CommentForm(forms.Modelform):
           ugettext('Comment content cannot be empty.'), code='invalid')
 
 
-class PublicTask(RequestHandler):
-  """View for the GCI Task page.
+class TaskViewPage(RequestHandler):
+  """View for the GCI Task view page where all the actions happen.
   """
 
   def djangoURLPatterns(self):
