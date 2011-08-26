@@ -180,6 +180,7 @@ class GradingSurveyGroupTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
     project = GSoCProject.all().get()
     self.assertFalse(project is None)
     self.assertEqual(project.passed_evaluations, [self.grading_record.key()])
+    self.assertEqual(1, project.parent().student_info.passed_evaluations)
 
   def testUpdateProjectWithSendMail(self):
     """Test updating a Project with a GradingRecord's result and sending mail.
@@ -198,6 +199,7 @@ class GradingSurveyGroupTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
     project = GSoCProject.all().get()
     self.assertFalse(project is None)
     self.assertEqual(project.passed_evaluations, [self.grading_record.key()])
+    self.assertEqual(1, project.parent().student_info.passed_evaluations)
 
   def testSendMail(self):
     """Test sending mail about a GradingRecord's result.
