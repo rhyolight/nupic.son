@@ -768,7 +768,28 @@
         ].join(""));
     };
 
-    var preRenderData = function (columns) {
+    var preRenderData = function (row_num, data) {
+      data.columns = preRenderTemplates(data.columns);
+      data = preRenderButtons(row_num, data);
+    };
+
+    var preRenderButtons = function(row_num, data) {
+      if (data.operations.row_buttons === undefined) {
+        return data;
+      }
+      jQuery.each(data.operations.row_buttons, function (index, button) {
+        if (button.type === 'redirect_simple') {
+          var button_id = 'row_button_' + _self.getIdx() + '_' + row_num + '_' + button.id;
+          var button_html = [
+            '<input type="button" value="', button.caption,'" id="', button_id ,'"></input>'
+          ].join("");
+          data.columns[button.append_to_column] += button_html;
+        }
+      });
+      return data;
+    }
+
+    var preRenderTemplates = function (columns) {
       if (_self.templates === undefined) {
         return columns;
       }
@@ -855,9 +876,10 @@
               }
               var my_data = source.data[start];
 
-              jQuery.each(my_data, function () {
-                _self.data.data.push(preRenderData(this.columns));
-                _self.data.all_data.push(this);
+              jQuery.each(my_data, function (index, current_row) {
+                preRenderData(index, current_row);
+                _self.data.data.push(current_row.columns);
+                _self.data.all_data.push(current_row);
               });
 
               //if jQGrid object is not already instantiated, create it
@@ -868,6 +890,19 @@
                 //else trigger new data in jqgrid object
                 _self.jqgrid.object.trigger("reloadGrid");
               }
+
+              // Bind row buttons click events, if present. Can be bound only after the actual object is appended to the DOM.
+              jQuery.each(_self.data.all_data, function (row_index, row) {
+                if (row.operations.row_buttons !== undefined) {
+                  jQuery.each(row.operations.row_buttons, function (button_index, button) {
+                    var button_id = 'row_button_' + _self.getIdx() + '_' + row_index + '_' + button.id;
+                    // Only redirect_simple operation is supported at the moment.
+                    if (button.type === 'redirect_simple') {
+                      jQuery('#' + button_id).click(jqgrid_functions.global_button_functions[button.type](button.parameters));
+                    }
+                  });
+                }
+              });
 
               //call next iteration
               if (!last_batch) {
