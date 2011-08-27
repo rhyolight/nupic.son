@@ -23,6 +23,7 @@ __authors__ = [
 
 
 import StringIO
+import re
 
 import gdata.docs
 
@@ -45,3 +46,16 @@ def get_content(service, resource_id, return_as, **kwargs):
   service.Export(resource_id, 'sample_file.'+return_as,
                  file_handler=stream_content, **kwargs)
   return stream_content.getvalue()
+
+
+def get_resource_key_from_document_link(link):
+  """Returns resource key by parsing link.
+  """
+
+  pattern = "key=(\w+)[&#]?"
+  match = re.search(pattern, link)
+  if match:
+    resource_key = match.groups()[0]
+    return resource_key
+  else:
+    return None
