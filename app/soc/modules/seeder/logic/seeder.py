@@ -380,7 +380,8 @@ class Logic(object):
                   }
     return scopes_dict.get(model_name, None)
 
-  def seedn(self, model_class, n=1, properties=None, recurse=True):
+  def seedn(self, model_class, n=1, properties=None, recurse=True,
+            auto_seed_optional_properties=True):
     """Seeds n model_class entities.
 
     Any number of properties can be specified either with their values or
@@ -402,7 +403,8 @@ class Logic(object):
     debug = lambda x: sys.stderr.write(x) if n > 100 else None
     for _ in xrange(n):
       debug("!")
-      data = self.seed(model_class, properties, recurse, commit=False)
+      data = self.seed(model_class, properties, recurse, commit=False,
+          auto_seed_optional_properties=auto_seed_optional_properties)
       result.append(data)
 
     debug("\nsaving...\n")
@@ -410,7 +412,8 @@ class Logic(object):
     debug("saved...\n")
     return result
 
-  def _seedProperty(self, model_class, properties, prop, prop_name, recurse):
+  def _seedProperty(self, model_class, properties, prop, prop_name, recurse,
+      auto_seed_optional_properties=True):
     """Seeds one property.
     """
     result = properties.get(prop_name)
@@ -449,7 +452,8 @@ class Logic(object):
         if not recurse:
           raise RecurseError("Recursing a %s on %s:%s" % (
               reference_class.__name__, model_class.__name__, prop_name))
-        result = self.seed(reference_class)
+        result = self.seed(reference_class,
+            auto_seed_optional_properties=auto_seed_optional_properties)
       return result
 
     # If the property has choices, choose one of them randomly
@@ -460,7 +464,8 @@ class Logic(object):
     # automatically
     return self.genRandomValueForPropertyClass(prop.__class__)
 
-  def seed_properties(self, model_class, properties=None, recurse=True):
+  def seed_properties(self, model_class, properties=None, recurse=True,
+          auto_seed_optional_properties=True):
     """Seeds the properties for a model_class entity.
 
     Any number of properties can be specified either with their values or
@@ -487,12 +492,16 @@ class Logic(object):
 
     # Produce all properties of model_class
     for prop_name, prop in items:
+      if (not auto_seed_optional_properties) and (prop is not None) and (not prop.required):
+        continue
       properties[prop_name] = self._seedProperty(model_class, properties,
-                                                 prop, prop_name, recurse)
+          prop, prop_name, recurse,
+          auto_seed_optional_properties=auto_seed_optional_properties)
 
     return properties
 
-  def seed(self, model_class, properties=None, recurse=True, commit=True):
+  def seed(self, model_class, properties=None, recurse=True, commit=True,
+           auto_seed_optional_properties=True):
     """Seeds a model_class entity.
 
     Any number of properties can be specified either with their values or
@@ -508,7 +517,8 @@ class Logic(object):
         {"name": "John Smith",
          "age": RandomUniformDistributionIntegerProvider(min=0, max=80)}
     """
-    properties = self.seed_properties(model_class, properties, recurse)
+    properties = self.seed_properties(model_class, properties, recurse,
+        auto_seed_optional_properties=auto_seed_optional_properties)
     data = model_class(**properties)
     if commit:
       data.put()
