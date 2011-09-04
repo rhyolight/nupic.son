@@ -19,10 +19,14 @@
 """
 
 __authors__ = [
+  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
   '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   ]
 
 
+import datetime
+
+from soc.modules.gci.models.task import GCITask
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
@@ -275,4 +279,98 @@ class GSoCProfileHelper(ProfileHelper):
     properties = {'mentors': [self.profile.key()], 'program': self.program,
                   'parent': student, 'org': org, 'status': 'accepted'}
     self.seed(GSoCProject, properties)
+    return self.profile
+
+
+class GCIProfileHelper(ProfileHelper):
+  """Helper class to aid in manipulating GCI profile data.
+  """
+
+  def __init__(self, program, dev_test):
+    """Initializes the GSocProfileHelper.
+
+    Args:
+      program: a GCIProgram
+      dev_test: if set, always creates users as developers
+    """
+    super(GCIProfileHelper, self).__init__(program, dev_test)
+
+  def createProfile(self):
+    """Creates a profile for the current user.
+    """
+    if self.profile:
+      return
+    from soc.modules.gci.models.profile import GCIProfile
+    user = self.createUser()
+    properties = {
+        'link_id': user.link_id, 'student_info': None, 'user': user,
+        'parent': user, 'scope': self.program, 'status': 'active',
+        'email': self.user.account.email(),
+        'mentor_for': [], 'org_admin_for': [],
+        'is_org_admin': False, 'is_mentor': False, 'is_student': False
+    }
+    self.profile = self.seed(GCIProfile, properties)
+    return self.profile
+
+  def notificationSettings(
+      self, new_requests=False, new_invites=False,
+      invite_handled=False, request_handled=False,
+      comments=False):
+    self.createProfile()
+    self.profile.notify_new_requests = new_requests
+    self.profile.notify_new_invites = new_invites
+    self.profile.notify_invite_handled = invite_handled
+    self.profile.notify_request_handled = request_handled
+    self.profile.notify_comments = comments
+    self.profile.put()
+
+  def createStudent(self):
+    """Sets the current user to be a student for the current program.
+    """
+    self.createProfile()
+    from soc.modules.gci.models.profile import GCIStudentInfo
+    properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
+                  'school': None, 'number_of_tasks_completed': 0}
+    self.profile.student_info = self.seed(GCIStudentInfo, properties)
+    self.profile.is_student = True
+    self.profile.put()
+    return self.profile
+
+  def createStudentWithTask(self, org, mentor):
+    """Sets the current user to be a student with a task for the 
+    current program.
+    """
+    return self.createStudentWithTasks(org, mentor, 1)
+
+  def createStudentWithTasks(self, org, mentor, n=1):
+    """Sets the current user to be a student with specified number of 
+    tasks for the current program.
+    """
+    student = self.createStudent()
+    student.student_info.put()
+    properties = {'program': self.program, 'org': org, 'status': 'Claimed',
+        'mentors': [mentor.key()], 'student': student, 'user': student.user,
+        'created_by': mentor, 'modified_by': mentor,
+        'created_on': datetime.datetime.now() - datetime.timedelta(20),
+        'modified_on': datetime.datetime.now() - datetime.timedelta(10)
+    }
+    self.seedn(GCITask, properties, n)
+    return self.profile
+
+  def createMentorWithTask(self, org, student):
+    """Creates an mentor profile with a task for the current user.
+    """
+    return self.createMentorWithTasks(org, student, 1)
+
+  def createMentorWithTasks(self, org, student, n=1):
+    """Creates an mentor profile with a task for the current user.
+    """
+    self.createMentor(org)
+    properties = {'mentors': [self.profile.key()], 'program': self.program,
+        'student': student,'user': student.user, 'org': org, 'status': 'Open',
+        'created_by': self.profile, 'modified_by': self.profile,
+        'created_on': datetime.datetime.now() - datetime.timedelta(20),
+        'modified_on': datetime.datetime.now() - datetime.timedelta(10)
+    }
+    self.seedn(GCITask, properties, n)
     return self.profile
