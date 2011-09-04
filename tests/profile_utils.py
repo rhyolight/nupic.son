@@ -26,15 +26,15 @@ __authors__ = [
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
-class GSoCProfileHelper(object):
+class ProfileHelper(object):
   """Helper class to aid in manipulating profile data.
   """
 
   def __init__(self, program, dev_test):
-    """Initializes the GSocProfileHelper.
+    """Initializes the ProfileHelper.
 
     Args:
-      program: a GSoCProgram
+      program: a program
       dev_test: if set, always creates users as developers
     """
     self.program = program
@@ -80,19 +80,7 @@ class GSoCProfileHelper(object):
   def createProfile(self):
     """Creates a profile for the current user.
     """
-    if self.profile:
-      return
-    from soc.modules.gsoc.models.profile import GSoCProfile
-    user = self.createUser()
-    properties = {
-        'link_id': user.link_id, 'student_info': None, 'user': user,
-        'parent': user, 'scope': self.program, 'status': 'active',
-        'email': self.user.account.email(),
-        'mentor_for': [], 'org_admin_for': [],
-        'is_org_admin': False, 'is_mentor': False, 'is_student': False
-    }
-    self.profile = self.seed(GSoCProfile, properties)
-    return self.profile
+    pass
 
   def createInactiveProfile(self):
     """Creates an inactive profile for the current user.
@@ -102,84 +90,16 @@ class GSoCProfileHelper(object):
     self.profile.put()
     return self.profile
 
-  def notificationSettings(
-      self, new_requests=False, new_invites=False,
-      invite_handled=False, request_handled=False,
-      new_proposals=False, proposal_updates=False,
-      public_comments=False, private_comments=False):
-    self.createProfile()
-    self.profile.notify_new_requests = new_requests
-    self.profile.notify_new_invites = new_invites
-    self.profile.notify_invite_handled = invite_handled
-    self.profile.notify_request_handled = request_handled
-    self.profile.notify_new_proposals = new_proposals
-    self.profile.notify_proposal_updates = proposal_updates
-    self.profile.notify_public_comments = public_comments
-    self.profile.notify_private_comments = private_comments
-    self.profile.put()
-
   def createStudent(self):
     """Sets the current user to be a student for the current program.
     """
-    self.createProfile()
-    from soc.modules.gsoc.models.profile import GSoCStudentInfo
-    properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
-                  'school': None, 'tax_form': None, 'enrollment_form': None,
-                  'number_of_projects': 0, 'number_of_proposals': 0,
-                  'passed_evaluations': 0, 'failed_evaluations': 0,}
-    self.profile.student_info = self.seed(GSoCStudentInfo, properties)
-    self.profile.is_student = True
-    self.profile.put()
-    return self.profile
+    pass
 
   def createInactiveStudent(self):
     """Sets the current user to be an inactive student for the current program.
     """
     self.createInactiveProfile()
     return self.createStudent()
-
-  def createStudentWithProposal(self, org, mentor):
-    """Sets the current user to be a student with a proposal for the
-    current program.
-    """
-    return self.createStudentWithProposals(org, mentor, 1)
-
-  def createStudentWithProposals(self, org, mentor, n):
-    """Sets the current user to be a student with specified number of 
-    proposals for the current program.
-    """
-    self.createStudent()
-    self.profile.student_info.number_of_proposals = n
-    self.profile.put()
-    from soc.modules.gsoc.models.proposal import GSoCProposal
-    properties = {
-        'scope': self.profile, 'score': 0, 'nr_scores': 0,
-        'is_publicly_visible': False, 'accept_as_project': False,
-        'is_editable_post_deadline': False, 'extra': None,
-        'parent': self.profile, 'status': 'pending', 'has_mentor': True,
-        'program': self.program, 'org': org, 'mentor': mentor
-    }
-    self.seedn(GSoCProposal, properties, n)
-    return self.profile
-
-  def createStudentWithProject(self, org, mentor):
-    """Sets the current user to be a student with a project for the 
-    current program.
-    """
-    return self.createStudentWithProjects(org, mentor, 1)
-
-  def createStudentWithProjects(self, org, mentor, n):
-    """Sets the current user to be a student with specified number of 
-    projects for the current program.
-    """
-    student = self.createStudent()
-    student.student_info.number_of_projects = n
-    student.student_info.put()
-    from soc.modules.gsoc.models.project import GSoCProject
-    properties = {'program': self.program, 'org': org, 'status': 'accepted',
-                  'parent': self.profile, 'mentors': [mentor.key()]}
-    self.seedn(GSoCProject, properties, n)
-    return self.profile
 
   def createHost(self):
     """Sets the current user to be a host for the current program.
@@ -233,16 +153,6 @@ class GSoCProfileHelper(object):
     self.profile.put()
     return self.profile
 
-  def createMentorWithProject(self, org, student):
-    """Creates an mentor profile with a project for the current user.
-    """
-    self.createMentor(org)
-    from soc.modules.gsoc.models.project import GSoCProject
-    properties = {'mentor': self.profile, 'program': self.program,
-                  'parent': student, 'org': org, 'status': 'accepted'}
-    self.seed(GSoCProject, properties)
-    return self.profile
-
   def clear(self):
     if self.profile and self.profile.student_info:
       self.profile.student_info.delete()
@@ -252,3 +162,117 @@ class GSoCProfileHelper(object):
       self.user.delete()
     self.profile = None
     self.user = None
+
+
+class GSoCProfileHelper(ProfileHelper):
+  """Helper class to aid in manipulating GSoC profile data.
+  """
+
+  def __init__(self, program, dev_test):
+    """Initializes the GSocProfileHelper.
+
+    Args:
+      program: a GSoCProgram
+      dev_test: if set, always creates users as developers
+    """
+    super(GSoCProfileHelper, self).__init__(program, dev_test)
+
+  def createProfile(self):
+    """Creates a profile for the current user.
+    """
+    if self.profile:
+      return
+    from soc.modules.gsoc.models.profile import GSoCProfile
+    user = self.createUser()
+    properties = {
+        'link_id': user.link_id, 'student_info': None, 'user': user,
+        'parent': user, 'scope': self.program, 'status': 'active',
+        'email': self.user.account.email(),
+        'mentor_for': [], 'org_admin_for': [],
+        'is_org_admin': False, 'is_mentor': False, 'is_student': False
+    }
+    self.profile = self.seed(GSoCProfile, properties)
+    return self.profile
+
+  def notificationSettings(
+      self, new_requests=False, new_invites=False,
+      invite_handled=False, request_handled=False,
+      new_proposals=False, proposal_updates=False,
+      public_comments=False, private_comments=False):
+    self.createProfile()
+    self.profile.notify_new_requests = new_requests
+    self.profile.notify_new_invites = new_invites
+    self.profile.notify_invite_handled = invite_handled
+    self.profile.notify_request_handled = request_handled
+    self.profile.notify_new_proposals = new_proposals
+    self.profile.notify_proposal_updates = proposal_updates
+    self.profile.notify_public_comments = public_comments
+    self.profile.notify_private_comments = private_comments
+    self.profile.put()
+
+  def createStudent(self):
+    """Sets the current user to be a student for the current program.
+    """
+    self.createProfile()
+    from soc.modules.gsoc.models.profile import GSoCStudentInfo
+    properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
+                  'school': None, 'tax_form': None, 'enrollment_form': None,
+                  'number_of_projects': 0, 'number_of_proposals': 0,
+                  'passed_evaluations': 0, 'failed_evaluations': 0,}
+    self.profile.student_info = self.seed(GSoCStudentInfo, properties)
+    self.profile.is_student = True
+    self.profile.put()
+    return self.profile
+
+  def createStudentWithProposal(self, org, mentor):
+    """Sets the current user to be a student with a proposal for the
+    current program.
+    """
+    return self.createStudentWithProposals(org, mentor, 1)
+
+  def createStudentWithProposals(self, org, mentor, n):
+    """Sets the current user to be a student with specified number of 
+    proposals for the current program.
+    """
+    self.createStudent()
+    self.profile.student_info.number_of_proposals = n
+    self.profile.put()
+    from soc.modules.gsoc.models.proposal import GSoCProposal
+    properties = {
+        'scope': self.profile, 'score': 0, 'nr_scores': 0,
+        'is_publicly_visible': False, 'accept_as_project': False,
+        'is_editable_post_deadline': False, 'extra': None,
+        'parent': self.profile, 'status': 'pending', 'has_mentor': True,
+        'program': self.program, 'org': org, 'mentor': mentor
+    }
+    self.seedn(GSoCProposal, properties, n)
+    return self.profile
+
+  def createStudentWithProject(self, org, mentor):
+    """Sets the current user to be a student with a project for the 
+    current program.
+    """
+    return self.createStudentWithProjects(org, mentor, 1)
+
+  def createStudentWithProjects(self, org, mentor, n):
+    """Sets the current user to be a student with specified number of 
+    projects for the current program.
+    """
+    student = self.createStudent()
+    student.student_info.number_of_projects = n
+    student.student_info.put()
+    from soc.modules.gsoc.models.project import GSoCProject
+    properties = {'program': self.program, 'org': org, 'status': 'accepted',
+                  'parent': self.profile, 'mentors': [mentor.key()]}
+    self.seedn(GSoCProject, properties, n)
+    return self.profile
+
+  def createMentorWithProject(self, org, student):
+    """Creates an mentor profile with a project for the current user.
+    """
+    self.createMentor(org)
+    from soc.modules.gsoc.models.project import GSoCProject
+    properties = {'mentor': self.profile, 'program': self.program,
+                  'parent': student, 'org': org, 'status': 'accepted'}
+    self.seed(GSoCProject, properties)
+    return self.profile
