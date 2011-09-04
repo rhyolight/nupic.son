@@ -385,9 +385,7 @@ class Logic(object):
     """Seeds n model_class entities.
 
     Any number of properties can be specified either with their values or
-    with the data provider used to generate the values. Unspecified properties
-    will be generated randomly; unspecified ReferenceProperty will be
-    generated and seeded recursively.
+    with the data provider used to generate the values.
     Args:
       model_class: data store model class
       n: number of entities to seed
@@ -397,6 +395,10 @@ class Logic(object):
         provider used to generate the value of the property, e.g.
         {"name": "John Smith",
          "age": RandomUniformDistributionIntegerProvider(min=0, max=80)}
+      recurse: if True, unspecified properties will be generated randomly;
+        unspecified ReferenceProperty will be generated and seeded recursively.
+      auto_seed_optional_properties:
+        if False, optimal properties are not seeded.
     """
     result = []
     import sys
@@ -469,9 +471,7 @@ class Logic(object):
     """Seeds the properties for a model_class entity.
 
     Any number of properties can be specified either with their values or
-    with the data provider used to generate the values. Unspecified properties
-    will be generated randomly; unspecified ReferenceProperty will be
-    generated and seeded recursively.
+    with the data provider used to generate the values.
     Args:
       model_class: data store model class
       properties: a dict specifying some of the properties of the model_class
@@ -480,6 +480,10 @@ class Logic(object):
         provider used to generate the value of the property, e.g.
         {"name": "John Smith",
          "age": RandomUniformDistributionIntegerProvider(min=0, max=80)}
+      recurse: if True, unspecified properties will be generated randomly;
+        unspecified ReferenceProperty will be generated and seeded recursively.
+      auto_seed_optional_properties:
+        if False, optimal properties are not seeded.
     """
     if properties is None:
       properties = {}
@@ -505,9 +509,7 @@ class Logic(object):
     """Seeds a model_class entity.
 
     Any number of properties can be specified either with their values or
-    with the data provider used to generate the values. Unspecified properties
-    will be generated randomly; unspecified ReferenceProperty will be
-    generated and seeded recursively.
+    with the data provider used to generate the values.
     Args:
       model_class: data store model class
       properties: a dict specifying some of the properties of the model_class
@@ -516,6 +518,12 @@ class Logic(object):
         provider used to generate the value of the property, e.g.
         {"name": "John Smith",
          "age": RandomUniformDistributionIntegerProvider(min=0, max=80)}
+      recurse: if True, unspecified properties will be generated randomly;
+        unspecified ReferenceProperty will be generated and seeded recursively.
+      commit: if True, save to datastore; otherwise, not.
+      auto_seed_optional_properties:
+        if False, optimal properties are not seeded.
+    """
     """
     properties = self.seed_properties(model_class, properties, recurse,
         auto_seed_optional_properties=auto_seed_optional_properties)
