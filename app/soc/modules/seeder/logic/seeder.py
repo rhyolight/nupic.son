@@ -524,7 +524,6 @@ class Logic(object):
       auto_seed_optional_properties:
         if False, optimal properties are not seeded.
     """
-    """
     properties = self.seed_properties(model_class, properties, recurse,
         auto_seed_optional_properties=auto_seed_optional_properties)
     data = model_class(**properties)
