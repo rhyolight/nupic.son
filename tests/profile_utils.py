@@ -272,7 +272,7 @@ class GSoCProfileHelper(ProfileHelper):
     """
     self.createMentor(org)
     from soc.modules.gsoc.models.project import GSoCProject
-    properties = {'mentor': self.profile, 'program': self.program,
+    properties = {'mentors': [self.profile.key()], 'program': self.program,
                   'parent': student, 'org': org, 'status': 'accepted'}
     self.seed(GSoCProject, properties)
     return self.profile
