@@ -107,6 +107,7 @@ class Logic():
     providers['ReferenceProperty'] = [RandomReferenceProvider,
                                       FixedReferenceProvider]
     providers['_ReverseReferenceProperty'] = []
+    providers['BlobReferenceProperty'] = []
     providers['ListProperty'] = [EmptyListProvider]
     providers['StringListProperty'] = [EmptyListProvider]
     return providers

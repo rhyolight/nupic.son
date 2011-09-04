@@ -523,6 +523,7 @@ class Logic(object):
     value = None
     providers_dict = seeder_providers_logic.getProviders()
     providers_list = providers_dict[property_class.__name__]
+    provider_class = None
     for provider_class in providers_list:
       if provider_class.__name__.startswith('Random'):
         break
