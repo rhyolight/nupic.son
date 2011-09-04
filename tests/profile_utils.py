@@ -46,11 +46,15 @@ class ProfileHelper(object):
     self.profile = None
     self.dev_test = dev_test
 
-  def seed(self, model, properties):
-    return seeder_logic.seed(model, properties, recurse=False)
+  def seed(self, model, properties,
+           auto_seed_optional_properties=True):
+    return seeder_logic.seed(model, properties, recurse=False,
+        auto_seed_optional_properties=auto_seed_optional_properties)
 
-  def seedn(self, model, properties, n):
-    return seeder_logic.seedn(model, n, properties, recurse=False)
+  def seedn(self, model, properties, n,
+            auto_seed_optional_properties=True):
+    return seeder_logic.seedn(model, n, properties, recurse=False,
+        auto_seed_optional_properties=auto_seed_optional_properties)
 
   def createUser(self):
     """Creates a user entity for the current user.
