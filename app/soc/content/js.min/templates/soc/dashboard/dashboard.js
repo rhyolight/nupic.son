@@ -1,0 +1,2 @@
+melange.templates.inherit(function(d,a){jQuery("."+a.dashboard_link_class).bind("click",function(){var b=jQuery(this).attr("href")+a.dashboard_id_suffix;b=jQuery(b);jQuery("."+a.dashboard_class).addClass("disabled");b.removeClass("disabled").show();jQuery(this).hasClass(a.component_link_class)&&jQuery("."+a.list_container_class,b).each(function(){var c=jQuery(this).attr("id").substr(a.list_prefix_id.length);melange.list.isIdxOkayToLoad(c)&&melange.list.loadList(a.list_prefix_id+c,list_configurations[c],
+c)})})});
