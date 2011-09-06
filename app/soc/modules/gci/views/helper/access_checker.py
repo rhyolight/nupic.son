@@ -41,11 +41,16 @@ class Mutator(access_checker.Mutator):
     self.data.task = access_checker.unset
     super(Mutator, self).unsetAll()
 
-  def taskFromKwargs(self):
+  def taskFromKwargs(self, comments=False, work_submissions=True):
     """Sets the GCITask entity in RequestData object.
 
     The entity that is set will always be in a valid state and for the program
     that is set in the RequestData.
+
+    Args:
+      comments: If true the comments on this task are added to RequestData
+      work_submissions: If true the work submissions on this task are added to
+                        RequestData
     """
     id = long(self.data.kwargs['id'])
     task = GCITask.get_by_id(id)
@@ -59,6 +64,12 @@ class Mutator(access_checker.Mutator):
       raise NotFound(error_msg)
 
     self.data.task = task
+
+    if comments:
+      self.data.comments = task.comments()
+
+    if work_submissions:
+      self.data.work_submissions = task.workSubmissions()
 
 
 class DeveloperMutator(access_checker.DeveloperMutator,
