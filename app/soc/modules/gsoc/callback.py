@@ -80,7 +80,7 @@ class Callback(object):
     self.views.append(admin.ProposalsPage())
     self.views.append(admin.SlotsPage())
     self.views.append(admin.SurveyReminderPage())
-    self.views.append(dashboard.Dashboard())
+    self.views.append(dashboard.DashboardPage())
     self.views.append(document.DocumentPage())
     self.views.append(document.DocumentListPage())
     self.views.append(document.EditDocumentPage())
