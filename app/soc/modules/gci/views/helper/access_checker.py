@@ -57,7 +57,7 @@ class Mutator(access_checker.Mutator):
     id = long(self.data.kwargs['id'])
     task = GCITask.get_by_id(id)
 
-    if not task or (task.program.key() != self.data.program) or \
+    if not task or (task.program.key() != self.data.program.key()) or \
         task.status == 'invalid':
       error_msg = access_checker.DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
           'model': 'GCITask',
