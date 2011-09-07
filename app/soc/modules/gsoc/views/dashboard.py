@@ -38,7 +38,6 @@ from soc.models.universities import UNIVERSITIES
 from soc.models.request import Request
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
-from soc.views.dashboard import DashboardUserActions
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
@@ -191,13 +190,13 @@ class DashboardPage(RequestHandler):
     # dashboard container, will hold each component list
     dashboards = []
 
-    # masin container that contains all component list
+    # main container that contains all component list
     main = MainDashboard(self.request, self.data)
 
     # retrieve active component(s) for currently logged-in user
     components = self.components()
 
-    # add components as children of main dashboard and threat the component
+    # add components as children of main dashboard and treat the component
     # as dashboard element
     for component in components:
       c = {
