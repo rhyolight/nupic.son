@@ -13,6 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/dashboard.css" />
+{% endblock stylesheets %}
+
 {% block page_content %}
   {% if alert_msg %}
     <div id="user-message" class="error">
@@ -25,11 +30,8 @@ limitations under the License.
 
   {{ program_select.render }}
 
-  {% for component in components %}
-    {{ component.render|safe }}
-  {% empty %}
-    There are no dashboard items available for you (yet).
-    Come back here when you have submitted a proposal or are a member of an organization.
+  {% for dashboard in dashboards %}
+    {{ dashboard.render|safe }}
   {% endfor %}
 {% endblock page_content %}
 
@@ -41,6 +43,13 @@ limitations under the License.
     null,
     function() {
       melange.program_select.makeSelector("#program_select");
-    }
+    },
+    tc("/soc/content/{{ app_version }}/js/templates/soc/dashboard/dashboard.js", {
+      'dashboard_class': 'dashboard',
+      'dashboard_link_class': 'dashboard-link',
+      'dashboard_id_suffix': '-dashboard',
+      'component_link_class': 'component-link',
+      'list_container_class': 'melange-list-container',
+    })
   ]
 {% endblock dependencies %}
