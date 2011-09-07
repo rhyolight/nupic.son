@@ -425,7 +425,7 @@ class ListConfigurationResponse(Template):
   """Class that builds the template for configuring a list.
   """
 
-  def __init__(self, data, config, idx, description=''):
+  def __init__(self, data, config, idx, description='', preload_list=True):
     """Initializes the configuration.
 
     Args:
@@ -435,11 +435,16 @@ class ListConfigurationResponse(Template):
            not an int.
       description: The description of this list, as should be shown to the
                    user.
+      preload_list: Boolean to indicate whether the list should be loaded
+          when this configuration is rendered. If you want the list to be
+          loaded later (such as in the iconic dashboard) set preload_list
+          to False.
     """
     self._data = data
     self._config = config
     self._idx = int(idx)
     self._description = description
+    self._preload_list = preload_list
 
     super(ListConfigurationResponse, self).__init__(data)
 
@@ -451,7 +456,8 @@ class ListConfigurationResponse(Template):
     context = {
         'idx': self._idx,
         'configuration': simplejson.dumps(configuration),
-        'description': self._description
+        'description': self._description,
+        'preload_list': self._preload_list
         }
     return context
 

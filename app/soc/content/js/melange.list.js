@@ -296,7 +296,7 @@
     });
   };
 
-  var list_objects = (function () {
+  $m.list_objects = (function () {
     var self = this;
     var lists = [];
 
@@ -322,12 +322,15 @@
     };
   }());
 
-  function List (div, idx, jqgrid_configuration, melange_list_configuration) {
+  var list_objects = $m.list_objects;
+
+  function List (div, idx, jqgrid_configuration, melange_list_configuration, preload_list) {
     var _self = this;
 
     // Init data
     var div = div;
     var idx = idx;
+    var preload_list = preload_list;
 
     var features_default = {
       cookie_service: {
@@ -854,7 +857,7 @@
           async: true,
           cache: false,
           url: [
-            window.location.href,
+            window.location.href.split('#')[0],
             ampersand_question,
             "fmt=json&limit=150",
             (start === "" ? "" : "&start=" + start),
@@ -1475,7 +1478,7 @@
     this.getDiv = function () {return div;};
     this.getIdx = function () {return idx;};
 
-    var init = function () {
+    this.init = function () {
       jQuery(
         function () {
           if (jQuery("#" + div).length === 0) {
@@ -1495,10 +1498,17 @@
         }
       );
 
-    }();
+    };
+
+    if (preload_list !== undefined && preload_list === true) {
+      this.init();
+    } else {
+      // we need to add this list for later retrieval
+      list_objects.add(this);
+    }
   };
 
-  $m.loadList = function (div, init, idx) {
+  $m.loadList = function (div, init, idx, preload_list) {
     var idx = parseInt(idx, 10);
     var init = JSON.parse(init);
     if (isNaN(idx) || idx < 0) {
@@ -1508,6 +1518,6 @@
       throw new melange.error.indexAlreadyExistent("Index " + idx + " is already existent");
     }
 
-    var list = new List(div, idx, init.configuration, init);
+    var list = new List(div, idx, init.configuration, init, preload_list);
   };
 }());
