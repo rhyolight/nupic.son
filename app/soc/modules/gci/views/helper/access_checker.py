@@ -39,6 +39,8 @@ class Mutator(access_checker.Mutator):
 
   def unsetAll(self):
     self.data.task = access_checker.unset
+    self.data.comments = access_checker.unset
+    self.data.work_submissions = access_checker.unset
     super(Mutator, self).unsetAll()
 
   def taskFromKwargs(self, comments=False, work_submissions=True):
