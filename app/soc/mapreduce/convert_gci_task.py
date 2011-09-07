@@ -25,7 +25,14 @@ __authors__ = [
 from google.appengine.ext import db
 from google.appengine.ext.mapreduce import operation
 
+from soc.models.host import Host
+from soc.models.role import Role
+
 from soc.modules.gci.models.comment import GCIComment
+from soc.modules.gci.models.mentor import GCIMentor
+from soc.modules.gci.models.org_admin import GCIOrgAdmin
+from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.student import GCIStudent
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task_subscription import GCITaskSubscription
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
