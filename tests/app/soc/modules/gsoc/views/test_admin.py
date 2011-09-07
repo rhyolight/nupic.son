@@ -54,13 +54,13 @@ class AdminDashboardTest(DjangoTestCase):
     """Asserts that all the templates to render a dashboard were used.
     """
     self.assertAdminBaseTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/dashboard.html')
+    self.assertTemplateUsed(response, 'v2/soc/dashboard/base.html')
 
   def assertUserActionsTemplatesUsed(self, response):
     """Asserts that all the templates to render user actions were used.
     """
     self.assertAdminBaseTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/soc/_user_action.html')
+    self.assertTemplateUsed(response, 'v2/soc/dashboard/_user_action.html')
 
   def testAdminDashboard(self):
     self.data.createHost()
