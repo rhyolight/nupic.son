@@ -204,7 +204,7 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
     return context
 
 
-class Dashboard(dashboard.Dashboard):
+class Dashboard(dashboard.DashboardPage):
   """View for the list of all the organization related components.
   """
 
