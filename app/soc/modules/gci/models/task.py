@@ -43,6 +43,10 @@ from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
 
 UNPUBLISHED = ['Unpublished', 'Unapproved']
+CLAIMABLE = ['Open', 'Reopened']
+ACTIVE_CLAIMED_TASK = ['ClaimRequested', 'Claimed', 'ActionNeeded',
+                       'AwaitingRegistration', 'NeedsWork', 'NeedsReview']
+UPLOAD_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork', 'NeedsReview']
 
 
 # TODO(Madhu): after the data conversion inherit the model from

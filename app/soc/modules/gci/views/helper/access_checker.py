@@ -88,6 +88,11 @@ class AccessChecker(access_checker.AccessChecker):
     """
     assert access_checker.isSet(self.data.task)
 
+    if not self.data.timeline.tasksPubliclyVisible():
+      period = self.data.timeline.tasksPubliclyVisibleOn()
+      raise AccessViolation(
+          access_checker.DEF_PAGE_INACTIVE_BEFORE_MSG_FMT % period)
+
     if not self.data.task.isPublished():
       error_msg = access_checker.DEF_PAGE_INACTIVE_MSG
       raise AccessViolation(error_msg)
