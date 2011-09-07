@@ -19,6 +19,15 @@ difficult: f51a4a
 @import url("jquery-ui-1.8.16.custom.css");
 /* @end */
 
+/* @group Sticky Footer */
+* {margin:0;padding:0;} 
+html, body {height: 100%;}
+#wrap {min-height: 100%;}
+#main {overflow:auto; padding-bottom: 80px;}
+#footer {position: relative; margin-top: -80px; height: 80px; clear:both;} 
+body:before {content:""; height:100%; float:left; width:0; margin-top:-32767px;}
+/* @end */
+
 /* @group Helper Classes */
 .clearfix:before, .clearfix:after { content: "."; display: block; height: 0; visibility: hidden; }
 .clearfix:after { clear: both; }
@@ -172,7 +181,8 @@ a:hover {  }
 .task-btn:hover, 
 .single-comment a:hover, 
 .block-task-uploaded-code table td a:hover, 
-.form-row .add-field-link a:hover {/*Red text*/
+.form-row .add-field-link a:hover, 
+.task-group .task-group-pager a:hover {/*Red text*/
     color: #d14936;
 }
 .block-status .block-status-user a:hover, 
@@ -244,6 +254,10 @@ input.button {
         background-position: 7px -38px;
         padding-left: 23px;
     }
+    .task-btn-approve {
+        background-position: 7px -38px;
+        padding-left: 20px;
+    }
     .task-btn-unassign {
         background-position: 7px -59px;
     }
@@ -254,6 +268,9 @@ input.button {
         background: #fff;
         padding-left: 15px;
         padding-right: 15px;
+    }
+    .task-btn-publish {
+        background-position: 7px -104px;
     }
 /* @end */
 
@@ -270,40 +287,42 @@ body {
         margin: 10px 0 0 125px;
         width: 266px;
     }
-.footer {
+#footer {
     background: #bce1fb;
     border-top: 1px solid #89a4b7;
     display: block;
     font-size: 15px;
     font-weight: bold;
-    padding: 6px 0 20px 0;
     width: 100%;
 }
-    .footer .menu-footer {
+    #footer .container_12 {
+        margin-top: 10px;
+    }
+    #footer .menu-footer {
         margin-bottom: 5px;
     }
-        .footer .menu-footer li {
+        #footer .menu-footer li {
             padding: 0 11px;
         }
-        .footer .menu-footer li.social {
+        #footer .menu-footer li.social {
             padding: 0 3px;   
         }
-        .footer .menu-footer li a {
+        #footer .menu-footer li a {
             color: #238bd2;
         }
-        .footer .menu-footer li img {
+        #footer .menu-footer li img {
             vertical-align: text-top;
         }
-    .footer .menu-credit {
+    #footer .menu-credit {
         color: #6998b7;
     }
-        .footer .menu-credit li {
+        #footer .menu-credit li {
             
         }
-        .footer .menu-credit li.menu-credit-melange {
+        #footer .menu-credit li.menu-credit-melange {
             padding-right: 30px;
         }
-        .footer .menu-credit li.menu-credit-echoditto img {
+        #footer .menu-credit li.menu-credit-echoditto img {
             vertical-align: top;
         }
 .main {
@@ -1318,11 +1337,29 @@ body {
             margin: 6px 0 2px 0;
             width: 440px;
         }
+            .task-single.task-single-admin .task-single-title, 
+            .task-single.task-single-admin .task-single-content-bottom {
+                width: 380px;
+            }
+            .task-single.task-single-admin .task-single-content-bottom {
+                float: left;
+            }
+            .task-single.task-single-admin .task-single-admin-btns {
+                float: right;
+                width: 200px;
+            }
+        .task-single .task-single-check {
+            float: left;
+            margin-right: 8px;
+        }
+            .task-single .task-single-check .checker {
+                margin: 8px 0 0 0;
+            }
         .task-single .task-single-content {
             overflow: hidden;
         }
         .task-single .task-single-content .task-single-content-bottom {
-            clear: both;
+            clear: left;
         }
         .task-single .task-single-content-col1, 
         .task-single .task-single-content-col2, 
@@ -1330,9 +1367,19 @@ body {
             float: left;
             width: 33%;
         }
+            .task-single.task-single-admin .task-single-content-col1, 
+            .task-single.task-single-admin .task-single-content-col2 {
+                width: 50%;
+            }
         .task-single .task-btn {
             float: right;
         }
+            .task-single.task-single-admin .task-btn {
+                margin: 7px 8px 3px 0;
+                padding-left: 20px;
+                padding-right: 0;
+                width: 65px;
+            }
         .task-single .task-single-info {
             display: block;
             text-transform: uppercase;
@@ -1364,6 +1411,37 @@ body {
                 .block-user-tabs .task-single-in-progress .task-single-complete .emph {
                     color: #000;
                 }
+        .task-group .task-group-actions {
+            background: #d3d3d3;
+            border-bottom: 6px solid #0082c8;
+            padding: 8px 0 8px 47px;
+        }
+            .task-group .task-group-actions .task-group-actions-select-all {
+                float: left;
+                margin-right: 5px;
+            }
+                .task-group .task-group-actions .task-group-actions-select-all .task-group-actions-select-all-text {
+                    color: #0f649d;
+                    font-size: 14px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+            .task-group .task-group-actions .task-btn {
+                margin: 2px 10px 0 0;
+            }
+        .task-group .task-group-pager {
+            background: #ebebeb;
+            padding: 5px 0;
+        }
+            .task-group .task-group-pager ul {
+                margin-bottom: 0;
+            }
+            .task-group .task-group-pager ul li {
+                color: #000;
+                font-size: 17px;
+                font-weight: bold;
+                margin: 0 5px;
+            }
 .block-task {/*Task block styles*/
     
 }
