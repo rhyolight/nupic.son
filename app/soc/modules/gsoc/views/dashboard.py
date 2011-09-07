@@ -37,6 +37,8 @@ from soc.logic.exceptions import BadRequest
 from soc.models.universities import UNIVERSITIES
 from soc.models.request import Request
 from soc.views.dashboard import Component
+from soc.views.dashboard import Dashboard
+from soc.views.dashboard import DashboardUserActions
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
@@ -65,6 +67,7 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 DATETIME_FORMAT = 'Y-m-d H:i:s'
 BIRTHDATE_FORMAT = 'd-m-Y'
+BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
 
 def colorize(choice, yes, no):
@@ -76,7 +79,64 @@ def colorize(choice, yes, no):
     return """<strong><font color="red">%s</font></strong>""" % no
 
 
-class Dashboard(RequestHandler):
+class MainDashboard(Dashboard):
+  """ Main dashboard that shows all component dashboard icons
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    super(MainDashboard, self).__init__(request, data)
+    self.subpages = []
+
+  def context(self):
+    """Returns the context of main dashboard.
+    """
+    return {
+        'title': BACKLINKS_TO_ADMIN['title'],
+        'name': 'main',
+        'subpages': self._divideSubPages(self.subpages),
+        'enabled': True
+    }
+
+  def addSubpages(self, subpage):
+    self.subpages.append(subpage)
+
+
+class ComponentsDashboard(Dashboard):
+  """Dashboard that holds component list
+  """
+
+  def __init__(self, request, data, component_property):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+      component_property: Component property
+    """
+    super(ComponentsDashboard, self).__init__(request, data)
+    self.name = component_property.get('name')
+    self.title = component_property.get('title')
+    self.components = [component_property.get('component'),]
+    self.backlinks = [component_property.get('backlinks'),]
+
+  def context(self):
+    """Returns the context of components dashboard.
+    """
+    return {
+        'title': self.title,
+        'name': self.name,
+        'backlinks': self.backlinks,
+        'components': self.components,
+    }
+
+
+class DashboardPage(RequestHandler):
   """View for the participant dashboard.
   """
 
@@ -128,7 +188,34 @@ class Dashboard(RequestHandler):
   def context(self):
     """Handler for default HTTP GET request.
     """
+    # dashboard container, will hold each component list
+    dashboards = []
+
+    # masin container that contains all component list
+    main = MainDashboard(self.request, self.data)
+
+    # retrieve active component(s) for currently logged-in user
     components = self.components()
+
+    # add components as children of main dashboard and threat the component
+    # as dashboard element
+    for component in components:
+      c = {
+          'name': component.context().get('name'),
+          'description': component.context().get('description'),
+          'title': component.context().get('title'),
+          'component_link': True,
+          }
+      main.addSubpages(c)
+
+      dashboards.append(ComponentsDashboard(self.request, self.data, {
+          'name': component.context().get('name'),
+          'title': component.context().get('title'),
+          'component': component,
+          'backlinks': BACKLINKS_TO_ADMIN,
+          }))
+
+    dashboards.append(main)
 
     return {
         'page_name': self.data.program.name,
@@ -137,7 +224,7 @@ class Dashboard(RequestHandler):
         'program_select': ProgramSelect(self.data, 'gsoc_dashboard'),
     # TODO(ljvderijk): Implement code for setting dashboard messages.
     #   'alert_msg': 'Default <strong>alert</strong> goes here',
-        'components': components,
+        'dashboards': dashboards,
     }
 
   def components(self):
@@ -284,12 +371,14 @@ class MyOrgApplicationsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=0)
+        self.data, self._list_config, idx=0, preload_list=False)
 
     return {
         'name': 'org_applications',
-        'title': 'MY ORGANIZATION APPLICATIONS',
+        'title': 'My organization applications',
         'lists': [list],
+        'description': ugettext('My organization applications'),
+        'idx': 0,
         }
 
   def getListData(self):
@@ -346,11 +435,13 @@ class MyProposalsComponent(Component):
     """
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=1,
-        description=MyProposalsComponent.DESCRIPTION)
+        description=MyProposalsComponent.DESCRIPTION, preload_list=False)
     return {
         'name': 'proposals',
         'title': 'PROPOSALS',
         'lists': [list],
+        'description': ugettext('List of my submitted proposals'),
+        'idx': 1,
         }
 
   def getListData(self):
@@ -425,11 +516,13 @@ class MyProjectsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=2)
+        self.data, self._list_config, idx=2, preload_list=False)
     return {
         'name': 'projects',
-        'title': 'PROJECTS',
+        'title': 'Projects',
         'lists': [list],
+        'description': ugettext('Projects'),
+        'idx': 2,
     }
 
 
@@ -516,12 +609,14 @@ class MyEvaluationsComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=3)
+        self.data, self._list_config, idx=3, preload_list=False)
 
     return {
         'name': 'evaluations',
-        'title': 'EVALUATIONS',
+        'title': 'Evaluations',
         'lists': [list],
+        'description': ugettext('Evaluations'),
+        'idx': 3,
     }
 
 
@@ -585,12 +680,14 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=3)
+        self.data, self._list_config, idx=3, preload_list=False)
 
     return {
         'name': 'evaluations',
-        'title': 'EVALUATIONS',
+        'title': 'Evaluations',
         'lists': [list],
+        'description': ugettext('Evaluations'),
+        'idx': 3,
     }
 
 
@@ -765,11 +862,15 @@ class SubmittedProposalsComponent(Component):
       description += self.CUSTOM_COLUMNS
 
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=4, description=description)
+        self.data, self._list_config, idx=4, description=description,
+        preload_list=False)
     return {
         'name': 'proposals_submitted',
-        'title': 'PROPOSALS SUBMITTED TO MY ORGS',
+        'title': 'Proposals submitted to my orgs',
         'lists': [list],
+        'description': ugettext(
+            'List of proposals submitted to my organizations'),
+        'idx': 4,
         }
 
   def post(self):
@@ -977,14 +1078,16 @@ class ProjectsIMentorComponent(Component):
         self.data, self._list_config, idx=5)
 
     if self.data.is_org_admin:
-      title = 'PROJECTS FOR MY ORGS'
+      title = 'Projects for my orgs'
     else:
-      title = 'PROJECTS I AM A MENTOR FOR'
+      title = 'Projects I am a mentor for'
 
     return {
         'name': 'mentoring_projects',
         'title': title,
         'lists': [list],
+        'description': ugettext(title),
+        'idx': 5,
     }
 
 
@@ -1071,12 +1174,15 @@ class OrganizationsIParticipateInComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=6)
+        self.data, self._list_config, idx=6, preload_list=False)
 
     return {
         'name': 'adminning_organizations',
-        'title': 'MY ORGANIZATIONS',
+        'title': 'My organizations',
         'lists': [list],
+        'description': ugettext(
+            'List of organizations which I participate in'),
+        'idx': 6,
     }
 
 
@@ -1141,17 +1247,20 @@ class RequestComponent(Component):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=self.idx)
+        self.data, self._list_config, idx=self.idx, preload_list=False)
 
     if self.for_admin:
-      title = 'REQUESTS FOR MY ORGANIZATIONS'
+      title = 'Requests for my organizations'
     else:
-      title = 'MY REQUESTS'
+      title = 'My requests'
 
     return {
         'name': 'requests',
         'title': title,
         'lists': [list],
+        'description': ugettext(
+            'List of requests for my organizations.'),
+        'idx': self.idx,
     }
 
 
@@ -1272,12 +1381,15 @@ class ParticipantsComponent(Component):
 
   def context(self):
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=9)
+        self.data, self._list_config, idx=9, preload_list=False)
 
     return {
         'name': 'participants',
-        'title': 'MEMBERS OF MY ORGANIZATIONS',
+        'title': 'Members of my organizations',
         'lists': [list],
+        'description': ugettext(
+            'List of your organizations members'),
+        'idx': 9,
     }
 
 
@@ -1395,12 +1507,15 @@ class StudentsComponent(Component):
 
   def context(self):
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=10)
+        self.data, self._list_config, idx=10, preload_list=False)
 
     return {
         'name': 'students',
-        'title': 'PARTICIPATING STUDENTS',
+        'title': 'Participating students',
         'lists': [list],
+        'description': ugettext(
+            'List of participating students'),
+        'idx': 10,
     }
 
 
@@ -1488,10 +1603,12 @@ class TodoComponent(Component):
 
   def context(self):
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=11)
+        self.data, self._list_config, idx=11, preload_list=False)
 
     return {
         'name': 'todo',
-        'title': 'MY TODOS',
+        'title': 'My todos',
         'lists': [list],
+        'description': ugettext('List of my todos'),
+        'idx': 11,
     }
