@@ -125,16 +125,16 @@ def process_student_ranking(student_ranking):
 def process_tag(tag):
   """Replace all the references to the list of old tasks to the new tasks.
   """
-  tagged = db.get(tag.tagged)
   new_tagged_keys = []
-  for t in tagged:
+  for t in tag.tagged:
     try:
       task = GCITask.get(t)
-      new_tagged = new_task_for_old(task)
+      new_tagged = new_task_for_old(task) if task else None
     except db.KindError:
-      new_tagged = t
+      new_tagged = db.get(t)
 
-    new_tagged_keys.append(new_tagged)
+    if new_tagged:
+      new_tagged_keys.append(new_tagged)
 
   tag.tagged = new_tagged_keys
 
