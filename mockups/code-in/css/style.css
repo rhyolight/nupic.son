@@ -387,7 +387,7 @@ body {
     }
     .block-comments {
         background: #e0e0e0 url(../images/block-comments-bg.gif) 0 0 repeat-x;
-        padding: 15px 0 20px 38px;
+        padding: 15px 20px 20px 38px;
     }
         .block-comments .block-comments-title {
             color: #0082c8;
