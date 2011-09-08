@@ -30,9 +30,9 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import organization as org_logic
 from soc.modules.gsoc.logic import project as project_logic
-from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 
+from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
