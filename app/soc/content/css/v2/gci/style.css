@@ -194,7 +194,7 @@ a.btn,
 form input[type=submit],  
 form input[type=button], 
 input.button {
-    background: #c53926 url(../images/arrow-white-lg.png) 95% 50% no-repeat;
+    background: #c53926 url(../../../../../images/v2/gci/v2/gci/arrow-white-lg.png) 95% 50% no-repeat;
     border: none;
         border-radius: 3px;
         -moz-border-radius: 3px;
@@ -219,7 +219,7 @@ input.button {
         -webkit-box-shadow: 1px 2px 3px #295c77;
     }
 .task-btn {
-    background: #fff url(../images/dashboard-task-icons.png) 7px 4px no-repeat;
+    background: #fff url(../../../images/v2/gci/dashboard-task-icons.png) 7px 4px no-repeat;
     border-radius: 10px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
@@ -259,13 +259,13 @@ input.button {
 
 /* @group Layout */
 body {
-    background:url(../images/body-bg.gif) top center no-repeat;
+    background:url(../../../images/v2/gci/body-bg.gif) top center no-repeat;
 }
 .header {
     height: 143px;
 }
     .logo {
-        background-image:url(../images/google_code-in.png);
+        background-image:url(../../../images/v2/gci/google_code-in.png);
         height: 127px;
         margin: 10px 0 0 125px;
         width: 266px;
@@ -362,12 +362,12 @@ body {
         padding: 4px 0 4px 25px;
     }
     .block .block-footer a {
-        background:url(../images/arrow-white-sm.png) right center no-repeat;
+        background:url(../../../images/v2/gci/arrow-white-sm.png) right center no-repeat;
         color: #fff;
         padding-right: 9px;
     }
     .block-comments {
-        background: #e0e0e0 url(../images/block-comments-bg.gif) 0 0 repeat-x;
+        background: #e0e0e0 url(../../../images/v2/gci/block-comments-bg.gif) 0 0 repeat-x;
         padding: 15px 0 20px 38px;
     }
         .block-comments .block-comments-title {
@@ -449,7 +449,7 @@ body {
             padding-left: 10px;
         }
     .block-task-uploaded-code {
-        background: #52b8ef url(../images/block-task-uploaded-code-bg.gif) 0 0 repeat-x;
+        background: #52b8ef url(../../../images/v2/gci/block-task-uploaded-code-bg.gif) 0 0 repeat-x;
         color: #fff;
         padding: 15px 18px 20px 38px;
     }
@@ -549,23 +549,23 @@ body {
                 right: 245px;
             }
 .stopwatch .stopwatch-watch {/*Stopwatch and countdown*/
-    background:url(../images/block-timeline-watch.png) 0 0 no-repeat;
+    background:url(../../../images/v2/gci/block-timeline-watch.png) 0 0 no-repeat;
     height: 85px;
     width: 79px;
     float: left;
     position: relative;
 }
     .stopwatch.percent-25 .stopwatch-watch {
-        background-image:url(../images/block-timeline-watch-percent-25.png);
+        background-image:url(../../../images/v2/gci/block-timeline-watch-percent-25.png);
     }
     .stopwatch.percent-33 .stopwatch-watch {
-        background-image:url(../images/block-timeline-watch-percent-33.png);
+        background-image:url(../../../images/v2/gci/block-timeline-watch-percent-33.png);
     }
     .stopwatch.percent-50 .stopwatch-watch {
-        background-image:url(../images/block-timeline-watch-percent-50.png);
+        background-image:url(../../../images/v2/gci/block-timeline-watch-percent-50.png);
     }
     .stopwatch.percent-75 .stopwatch-watch {
-        background-image:url(../images/block-timeline-watch-percent-75.png);
+        background-image:url(../../../images/v2/gci/block-timeline-watch-percent-75.png);
     }
     .stopwatch .stopwatch-remaining {
         float: right;
@@ -634,7 +634,7 @@ body {
 
 /*Difficulties*/
 .block-featured-task .cog {/*Featured task, homepage block*/
-    background-image:url(../images/block-cog-featured.png);
+    background-image:url(../../../images/v2/gci/block-cog-featured.png);
     height: 77px;
     width: 73px;
 }
@@ -648,7 +648,7 @@ body {
         background-position: 0 -154px;
     }
 .block-student-featured-task .cog {/*Featured task, student dashboard block*/
-    background-image:url(../images/block-cog-featured-student.png);
+    background-image:url(../../../images/v2/gci/block-cog-featured-student.png);
     height: 79px;
     width: 78px;
 }
@@ -662,7 +662,7 @@ body {
         background-position: 0 -158px;
     }
 .block-status .cog {/*Sidebar current task block*/
-    background-image:url(../images/block-cog-current-task.png);
+    background-image:url(../../../images/v2/gci/block-cog-current-task.png);
     height: 62px;
     width: 62px;
 }
@@ -685,25 +685,25 @@ body {
     width: 70px;
 }
     .task-single.level-difficult .cog {
-        background-image:url(../images/dashboard-task-cog-difficult.png);
+        background-image:url(../../../images/v2/gci/dashboard-task-cog-difficult.png);
     }
     .task-single.level-medium .cog {
-        background-image:url(../images/dashboard-task-cog-medium.png);
+        background-image:url(../../../images/v2/gci/dashboard-task-cog-medium.png);
     }
     .task-single.level-easy .cog {
-        background-image:url(../images/dashboard-task-cog-easy.png);
+        background-image:url(../../../images/v2/gci/dashboard-task-cog-easy.png);
     }
 .block-completed-tasks .task-single {/*Student completed tasks*/
     
 }
     .block-completed-tasks .task-single.level-difficult .cog {
-        background-image:url(../images/dashboard-task-cog-difficult-complete.png);
+        background-image:url(../../../images/v2/gci/dashboard-task-cog-difficult-complete.png);
     }
     .block-completed-tasks .task-single.level-medium .cog {
-        background-image:url(../images/dashboard-task-cog-medium-complete.png);
+        background-image:url(../../../images/v2/gci/dashboard-task-cog-medium-complete.png);
     }
     .block-completed-tasks .task-single.level-easy .cog {
-        background-image:url(../images/dashboard-task-cog-easy-complete.png);
+        background-image:url(../../../images/v2/gci/dashboard-task-cog-easy-complete.png);
     }
 /* @end */
 
@@ -828,7 +828,7 @@ body {
             border-bottom: 1px solid #b62f23;
         }
         .block-status .block-status-action a span {
-            background:url(../images/arrow-white-sm.png) right center no-repeat;
+            background:url(../../../images/v2/gci/arrow-white-sm.png) right center no-repeat;
             padding-right: 10px;
         }
         .block-status .block-status-action a:first-child {
@@ -885,7 +885,7 @@ body {
 
 /* @group Homepage blocks */
 .block-how-it-works {/*How Code-In Works*/
-    background: #e0e0e0 url(../images/block-how-it-works-bg.gif) 0 0 repeat-x;
+    background: #e0e0e0 url(../../../images/v2/gci/block-how-it-works-bg.gif) 0 0 repeat-x;
     border: 1px solid #b4b4b4;
     padding: 8px 18px 18px 18px;
 }
@@ -939,11 +939,11 @@ body {
             -o-transition: all 1s ease-in-out;
         }
         .block-how-it-works-step1 .cog {
-            background-image:url(../images/block-how-it-works-step1-cog.png);
+            background-image:url(../../../images/v2/gci/block-how-it-works-step1-cog.png);
         }
         .block-how-it-works-step2 .cog, 
         .block-how-it-works-step3 .cog {
-            background-image:url(../images/block-how-it-works-step2-3-cog.png);
+            background-image:url(../../../images/v2/gci/block-how-it-works-step2-3-cog.png);
         }
         .block-how-it-works-step .cog-center {
             height: 45px;
@@ -954,10 +954,10 @@ body {
             z-index: 100;
         }
         .block-how-it-works-step2 .cog-center {
-            background-image:url(../images/block-how-it-works-step2-cog-center.png);
+            background-image:url(../../../images/v2/gci/block-how-it-works-step2-cog-center.png);
         }
         .block-how-it-works-step3 .cog-center {
-            background-image:url(../images/block-how-it-works-step3-cog-center.png);
+            background-image:url(../../../images/v2/gci/block-how-it-works-step3-cog-center.png);
         }
         .block-how-it-works-step:hover .cog {
             -webkit-transform: rotate(180deg);
@@ -965,14 +965,14 @@ body {
             -o-transform: rotate(180deg);
         }
         .block-how-it-works-step1 {
-            background: #0c99e5 url(../images/block-how-it-works-step1.png) 8% 82% no-repeat;
+            background: #0c99e5 url(../../../images/v2/gci/block-how-it-works-step1.png) 8% 82% no-repeat;
             width: 220px;
         }
         .block-how-it-works-step2 {
-            background: #52b8ef url(../images/block-how-it-works-step2.png) 16% 85% no-repeat;
+            background: #52b8ef url(../../../images/v2/gci/block-how-it-works-step2.png) 16% 85% no-repeat;
         }
         .block-how-it-works-step3 {
-            background: #7ccffb url(../images/block-how-it-works-step3.png) 16% 85% no-repeat;
+            background: #7ccffb url(../../../images/v2/gci/block-how-it-works-step3.png) 16% 85% no-repeat;
         }
         .block-how-it-works-repeat {
             background: #cd402c;
@@ -993,7 +993,7 @@ body {
                 margin: 0 auto;
             }
             .block-how-it-works-repeat .block-how-it-works-repeat-caption .repeat-icon {
-                background:url(../images/block-how-it-works-repeat.png) 0 0 no-repeat;
+                background:url(../../../images/v2/gci/block-how-it-works-repeat.png) 0 0 no-repeat;
                 float: left;
                 height: 19px;
                 margin: 11px 7px 0 0;
@@ -1030,20 +1030,20 @@ body {
                 width: 23px;
             }
             .block-how-it-works-step1 .arrow {
-                background-image:url(../images/block-how-it-works-step1-arrow.png);
+                background-image:url(../../../images/v2/gci/block-how-it-works-step1-arrow.png);
             }
             .block-how-it-works-step2 .arrow {
-                background-image:url(../images/block-how-it-works-step2-arrow.png);
+                background-image:url(../../../images/v2/gci/block-how-it-works-step2-arrow.png);
             }
             .block-how-it-works-step3 .arrow {
-                background-image:url(../images/block-how-it-works-step3-arrow.png);
+                background-image:url(../../../images/v2/gci/block-how-it-works-step3-arrow.png);
                 height: 14px;
                 width: 26px;
                 left: 96px;
                 bottom: -14px;
             }
             .block-how-it-works-repeat .arrow {
-                background-image:url(../images/block-how-it-works-repeat-arrow.png);
+                background-image:url(../../../images/v2/gci/block-how-it-works-repeat-arrow.png);
                 height: 15px;
                 width: 28px;
                 top: -11px;
@@ -1056,7 +1056,7 @@ body {
         width: 320px;
     }
         .block-how-it-works .block-how-it-works-more {
-            background:url(../images/block-how-it-works-more.jpg) 0 0 no-repeat;
+            background:url(../../../images/v2/gci/block-how-it-works-more.jpg) 0 0 no-repeat;
         }
         .block-how-it-works .block-how-it-works-more .block-how-it-works-more-caption {
             background:rgba(0, 130, 200, 0.9);
@@ -1080,7 +1080,7 @@ body {
             padding: 4px 8px;
         }
     .block-how-it-works .block-how-it-works-start {
-        background:url(../images/block-how-it-works-start.png) top right no-repeat;
+        background:url(../../../images/v2/gci/block-how-it-works-start.png) top right no-repeat;
         float: right;
         height: 133px;
         width: 320px;
@@ -1094,7 +1094,7 @@ body {
             text-transform: uppercase;
         }
         .block-how-it-works .block-how-it-works-start a {
-            background: #c53926 url(../images/arrow-white-lg.png) 95% 50% no-repeat;
+            background: #c53926 url(../../../images/v2/gci/arrow-white-lg.png) 95% 50% no-repeat;
                 border-radius: 3px;
                 -moz-border-radius: 3px;
                 -webkit-border-radius: 3px;
@@ -1211,12 +1211,12 @@ body {
         color: #d14936;
     }
     .block-user-message a.more {
-        background:url(../images/arrow-red-sm.png) right center no-repeat;
+        background:url(../../../images/v2/gci/arrow-red-sm.png) right center no-repeat;
         font-weight: bold;
         padding-right: 11px;
     }
 .block-user-welcome {
-    background: #e0e0e0 url(../images/block-user-welcome-bg.png) 0 0 repeat-x;
+    background: #e0e0e0 url(../../../images/v2/gci/block-user-welcome-bg.png) 0 0 repeat-x;
     border: 1px solid #b4b4b4;
     padding: 18px 38px 18px 13px;
 }
@@ -1301,7 +1301,7 @@ body {
         padding: 3px 0 3px 12px;
     }
     .task-single {
-        background:url(../images/dashboard-task-single-bg.gif) 0 0 repeat-y;
+        background:url(../../../images/v2/gci/dashboard-task-single-bg.gif) 0 0 repeat-y;
         background-color: #e0e0e0;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         font-weight: bold;
@@ -1393,7 +1393,7 @@ body {
                 padding-left: 2px;
             }
         .block-task .block-title .block-task-action {
-            background:url(../images/block-task-action-bg.png) center left no-repeat;
+            background:url(../../../images/v2/gci/block-task-action-bg.png) center left no-repeat;
             float: right;
             padding: 6px 0 10px 0;
             width: 229px;
@@ -1507,7 +1507,7 @@ body {
 }
     .block-task-mentor .cog, 
     .block-task-student .cog  {
-        background-image:url(../images/block-cog-task.png);
+        background-image:url(../../../images/v2/gci/block-cog-task.png);
         height: 103px;
         width: 98px;
     }
@@ -1525,7 +1525,7 @@ body {
         }
     .block-task-mentor .block-title, 
     .block-task-student .block-title {
-        background: #0082c8 url(../images/block-task-title-bg.gif) top right repeat-y;
+        background: #0082c8 url(../../../images/v2/gci/block-task-title-bg.gif) top right repeat-y;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         font-size: 12px;
         font-weight: normal;
@@ -1583,7 +1583,7 @@ body {
 }
     .block-task-mentor.block-task-open .cog, 
     .block-task-student.block-task-open .cog {
-        background-image: url(../images/block-cog-task-open.png);
+        background-image: url(../../../images/v2/gci/block-cog-task-open.png);
     }
     .block-task-open .block-task-action {
         text-align: center;
@@ -1617,7 +1617,7 @@ body {
 
 /* @group Forms */
 .block-form {
-    background: #e0e0e0 url(../images/block-form-bg.png) 0 0 repeat-x;
+    background: #e0e0e0 url(../../../images/v2/gci/block-form-bg.png) 0 0 repeat-x;
     border: 1px solid #b4b4b4;
     padding: 13px 20px;
 }
@@ -1776,7 +1776,7 @@ form legend {
     }
 form input[type=submit], 
 form input[type=button] {
-    background: #c53926 url(../images/arrow-white-lg.png) 90% 50% no-repeat;
+    background: #c53926 url(../../../images/v2/gci/arrow-white-lg.png) 90% 50% no-repeat;
 }
 
 /* @group Task creation */
@@ -1790,7 +1790,7 @@ form input[type=button] {
     width: 220px;
 }
     .form-row-task-completion-time .form-row-task-completion-time-inner {
-        background: #b6dcf7 url(../images/stopwatch-sm.png) 5px 5px no-repeat;
+        background: #b6dcf7 url(../../../images/v2/gci/stopwatch-sm.png) 5px 5px no-repeat;
         font-size: 18px;
         padding: 10px 0 10px 50px;
     }
@@ -1802,7 +1802,7 @@ form input[type=button] {
     width: 165px;
 }
     .form-row-task-difficulty-inner {
-        background: #b6dcf7 url(../images/cog-grey-sm.png) 5px 5px no-repeat;
+        background: #b6dcf7 url(../../../images/v2/gci/cog-grey-sm.png) 5px 5px no-repeat;
         padding: 10px 0 10px 50px;
     }
 .form-row-task-assigned-mentor {
