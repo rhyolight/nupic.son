@@ -88,7 +88,8 @@ class TaskViewPage(RequestHandler):
     context = {
       'page_name': '%s - %s' %(self.data.task.title, self.data.task.org.name),
       'task': self.data.task,
-      'task_info': TaskInformation(self.data)
+      'task_info': TaskInformation(self.data),
+      'comments': CommentsTemplate(self.data),
     }
 
     if self.data.work_submissions:
@@ -97,9 +98,6 @@ class TaskViewPage(RequestHandler):
     if task_logic.isOwnerOfTask(self.data.task, self.data.user) and \
         self.data.task.status in UPLOAD_ALLOWED:
       context['upload_work'] = UploadWorkTemplate(self.data)
-
-    if self.data.task.status != 'Closed':
-      context['comments'] = CommentsTemplate(self.data)
 
     return context
 
@@ -157,7 +155,14 @@ class CommentsTemplate(Template):
   def context(self):
     """Returns the context for the current template.
     """
-    return {'comments': self.data.comments}
+    context = {
+        'comments': self.data.comments
+    }
+
+    if self.data.task.status != 'Closed':
+      context['comment_form'] = CommentForm()
+
+    return context
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
