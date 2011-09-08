@@ -165,7 +165,7 @@ class NonFailingFakePayload(object):
     return self.__content.readline(length)
 
 
-class DjangoTestCase(TestCase):
+class GSoCDjangoTestCase(TestCase):
   """Class extending Django TestCase in order to extend its functions.
 
   As well as remove the functions which are not supported by Google App Engine,
@@ -487,7 +487,7 @@ def runTasks(url = None, name=None, queue_names = None):
                                          queue_names=queue_names)
   for task in tasks:
     postdata = task['params']
-    xsrf_token = DjangoTestCase.getXsrfToken(url, data=postdata)
+    xsrf_token = GSoCDjangoTestCase.getXsrfToken(url, data=postdata)
     postdata.update(xsrf_token=xsrf_token)
     client.FakePayload = NonFailingFakePayload
     c = client.Client()

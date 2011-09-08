@@ -23,13 +23,13 @@ __authors__ = [
   ]
 
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 # TODO: perhaps we should move this out?
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
-class EditProgramTest(DjangoTestCase):
+class EditProgramTest(GSoCDjangoTestCase):
   """Tests program edit page.
   """
 

@@ -26,7 +26,7 @@ import httplib
 import urllib
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
 
@@ -35,7 +35,7 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
 
-class SurveyRemindersTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
+class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
   """Tests for accept_proposals task.
   """
 

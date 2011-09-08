@@ -23,10 +23,10 @@ __authors__ = [
   ]
 
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 
-class TaskViewTest(DjangoTestCase):
+class TaskViewTest(GSoCDjangoTestCase):
   """Tests GCITask public view.
   """
 

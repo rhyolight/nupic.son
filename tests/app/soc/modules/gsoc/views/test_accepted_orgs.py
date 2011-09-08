@@ -26,10 +26,10 @@ __authors__ = [
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 
-class AcceptedOrgsPageTest(DjangoTestCase):
+class AcceptedOrgsPageTest(GSoCDjangoTestCase):
   """Tests the page to display accepted organization.
   """
   

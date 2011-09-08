@@ -26,13 +26,13 @@ from django.utils import simplejson as json
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.survey_utils import SurveyHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 # TODO: perhaps we should move this out?
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
-class DashboardTest(DjangoTestCase):
+class DashboardTest(GSoCDjangoTestCase):
   """Tests dashboard page.
   """
 

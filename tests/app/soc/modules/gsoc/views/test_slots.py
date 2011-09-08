@@ -25,12 +25,12 @@ __authors__ = [
 
 from django.utils import simplejson
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 
 
-class SlotsTest(DjangoTestCase):
+class SlotsTest(GSoCDjangoTestCase):
   """Tests slots page.
   """
 

@@ -36,7 +36,7 @@ from soc.models import group
 from soc.models import school
 from soc.models import student
 from soc.models import organization
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 
 class Form(object):
@@ -49,7 +49,7 @@ class Form(object):
     self._errors = {}
 
 
-class CleaningTest(DjangoTestCase):
+class CleaningTest(GSoCDjangoTestCase):
   """Tests related to cleaning logic.
   """
   def setUp(self):

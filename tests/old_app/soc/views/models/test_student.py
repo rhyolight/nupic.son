@@ -31,10 +31,10 @@ from soc.logic.models.student import logic as student_logic
 from soc.logic.models.timeline import logic as timeline_logic
 from soc.logic.models.user import logic as user_logic
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 
-class StudentTestNonexistent(DjangoTestCase):
+class StudentTestNonexistent(GSoCDjangoTestCase):
   """Tests related to the student view.
 
   With non-existent sponsor, program and student.
@@ -149,7 +149,7 @@ class StudentTestNonexistent(DjangoTestCase):
     self.assertEqual(response.status_code, httplib.NOT_FOUND)
 
 
-class StudentTestExistent(DjangoTestCase):
+class StudentTestExistent(GSoCDjangoTestCase):
   """Tests related to the student view.
 
   With existent sponsor, program and student.

@@ -27,12 +27,12 @@ from google.appengine.ext import db
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 #TODO(Praveen): Test r'profile/organization/%s$' % url_patterns.PROGRAM when
 #org creation is implemented.
 
-class OrgProfilePageTest(DjangoTestCase):
+class OrgProfilePageTest(GSoCDjangoTestCase):
   """Tests the view for organization profile page.
   """
 

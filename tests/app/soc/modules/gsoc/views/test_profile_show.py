@@ -23,9 +23,9 @@ __authors__ = [
   ]
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
-class ProfileShowPageTest(DjangoTestCase):
+class ProfileShowPageTest(GSoCDjangoTestCase):
   """Tests the view for read only profile show page.
   """
 
@@ -97,7 +97,7 @@ class ProfileShowPageTest(DjangoTestCase):
     self.assertEqual(expected_program_name, actual_program_name)
 
 
-class ProfileAdminPageTest(DjangoTestCase):
+class ProfileAdminPageTest(GSoCDjangoTestCase):
   """Tests the view related to readonly profile page.
   """
 

@@ -27,7 +27,7 @@ import httplib
 import urllib
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
 from tests.timeline_utils import TimelineHelper
@@ -37,7 +37,7 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.project import GSoCProject
 
 
-class AcceptProposalsTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
+class AcceptProposalsTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
   """Tests for accept_proposals task.
   """
 

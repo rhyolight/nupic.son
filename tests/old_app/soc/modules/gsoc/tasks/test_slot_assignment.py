@@ -39,11 +39,11 @@ from soc.modules.gsoc.logic.models.student import logic as student_logic
 from soc.modules.gsoc.logic.models.student_proposal import logic \
     as student_proposal_logic
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import TaskQueueTestCase
 
 
-class SlotAssignmentTest(DjangoTestCase, TaskQueueTestCase):
+class SlotAssignmentTest(GSoCDjangoTestCase, TaskQueueTestCase):
   """Tests related to soc.modules.gsoc.tasks.slot_assignment'
   """
   def setUp(self):

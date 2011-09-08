@@ -23,12 +23,12 @@ __authors__ = [
 
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 from soc.modules.gsoc.models.project import GSoCProject
 
 
-class ProjectDetailsTest(DjangoTestCase):
+class ProjectDetailsTest(GSoCDjangoTestCase):
   """Tests project details page.
   """
 

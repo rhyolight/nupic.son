@@ -23,7 +23,7 @@ __authors__ = [
 
 import httplib
 from django.utils import simplejson
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 from google.appengine.api import users
 
@@ -32,7 +32,7 @@ from soc.logic.helper import xsrfutil
 from soc.logic.models.user import logic as user_logic
 
 
-class DataSeederViewTest(DjangoTestCase):
+class DataSeederViewTest(GSoCDjangoTestCase):
   """Tests data seeder views.
   """
   def setUp(self):

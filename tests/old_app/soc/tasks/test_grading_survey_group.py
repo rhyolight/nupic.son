@@ -51,12 +51,12 @@ from soc.modules.gsoc.logic.models.survey import grading_logic \
 
 from soc.tasks.grading_survey_group import DEF_BATCH_SIZE
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
 
 
-class GradingSurveyGroupTasksTest(DjangoTestCase,
+class GradingSurveyGroupTasksTest(GSoCDjangoTestCase,
                                   TaskQueueTestCase,
                                   MailTestCase):
   """Tests related to the soc.tasks.grading_survey_group view.
