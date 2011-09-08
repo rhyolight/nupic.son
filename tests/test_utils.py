@@ -410,7 +410,8 @@ class GSoCDjangoTestCase(DjangoTestCase):
     from soc.modules.gsoc.models.timeline import GSoCTimeline
     from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
     from soc.models.org_app_survey import OrgAppSurvey
-    from tests.timeline_utils import TimelineHelper
+    #TODO(Leo): add TimelineHelper for GCI
+    #from tests.timeline_utils import TimelineHelper
     from tests.profile_utils import GSoCProfileHelper
 
     # Initialize instances in the parent first
@@ -457,7 +458,7 @@ class GSoCDjangoTestCase(DjangoTestCase):
 
     self.org = self.createOrg()
 
-    self.timeline = TimelineHelper(self.gsoc.timeline, self.org_app)
+    #self.timeline = TimelineHelper(self.gsoc.timeline, self.org_app)
     self.data = GSoCProfileHelper(self.gsoc, self.dev_test)
 
   def createOrg(self, override={}):
@@ -498,6 +499,111 @@ class GSoCDjangoTestCase(DjangoTestCase):
           if hasattr(value, 'render'):
             value.render()
     self.assertTemplateUsed(response, 'v2/modules/gsoc/base_colorbox.html')
+
+
+class GCIDjangoTestCase(DjangoTestCase):
+  """DjangoTestCase specifically for GCI view tests.
+  """
+
+  def init(self):
+    """Performs test setup.
+
+    Sets the following attributes:
+      dev_test: True iff DEV_TEST is in environment (in parent)
+      founder: a founder instance (in parent)
+      sponsor: a sponsor instance (in parent)
+      gci: a GSoCProgram instance
+      org_app: a OrgAppSurvey instance
+      org: a GSoCOrganization instance
+      timeline: a TimelineHelper instance
+      data: a GCIProfileHelper instance
+    """
+    from soc.models.site import Site
+    from soc.models.document import Document
+    from soc.modules.gci.models.program import GCIProgram
+    from soc.modules.gci.models.timeline import GCITimeline
+    from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
+    from soc.models.org_app_survey import OrgAppSurvey
+    from tests.timeline_utils import TimelineHelper
+    from tests.profile_utils import GCIProfileHelper
+
+    # Initialize instances in the parent first
+    super(GCIDjangoTestCase, self).init()
+    properties = {'scope': self.sponsor}
+    self.program_timeline = self.seed(GCITimeline, properties)
+
+    properties = {'timeline': self.program_timeline,
+                  'status': 'visible',
+                  'scope': self.sponsor,
+                  'student_agreement': None, 'events_page': None,
+                  'help_page': None, 'connect_with_us_page': None,
+                  'mentor_agreement': None, 'org_admin_agreement': None,
+                  'privacy_policy': None, 'home': None, 'about_page': None,
+                  'nr_simultaneous_tasks': 5,
+                  'task_difficulties': ['easy', 'moderate', 'hard'],
+                  'task_types': ['code', 'documentation', 'design']}
+    self.gci = self.seed(GCIProgram, properties)
+
+    properties = {
+        'prefix': 'gci_program', 'scope': self.gci,
+        'read_access': 'public', 'key_name': DocumentKeyNameProvider(),
+        'modified_by': self.founder, 'author': self.founder,
+        'home_for': None,
+    }
+    document = self.seed(Document, properties=properties)
+
+    self.gci.about_page = document
+    self.gci.events_page = document
+    self.gci.help_page = document
+    self.gci.connect_with_us_page = document
+    self.gci.privacy_policy = document
+    self.gci.put()
+
+    self.site = Site(key_name='site', link_id='site',
+                     active_program=self.gci)
+    self.site.put()
+
+    # TODO (Madhu): Remove scope and author fields once the data
+    # conversion is done.
+    properties = {'scope': self.gci, 'program': self.gci,
+                  'modified_by': self.founder,
+                  'created_by': self.founder,
+                  'author': self.founder,
+                  'survey_content': None,}
+    self.org_app = self.seed(OrgAppSurvey, properties)
+
+    self.org = self.createOrg()
+
+    self.timeline = TimelineHelper(self.gci.timeline, self.org_app)
+    self.data = GCIProfileHelper(self.gci, self.dev_test)
+
+  def createOrg(self, override={}):
+    """Creates an organization for the defined properties.
+    """
+    from soc.modules.gci.models.organization import GCIOrganization
+
+    properties = {'scope': self.gci, 'status': 'active',
+                  'founder': self.founder,
+                  'home': None,
+                  'task_quota_limit': 100}
+    properties.update(override)
+    return self.seed(GCIOrganization, properties)
+
+  def assertGCITemplatesUsed(self, response):
+    """Asserts that all the templates from the base view were used.
+    """
+    self.assertResponseOK(response)
+    for contexts in response.context:
+      for context in contexts:
+        for value in context.values():
+          # make it easier to debug render failures
+          if hasattr(value, 'render'):
+            value.render()
+    self.assertTemplateUsed(response, 'v2/modules/gci/base.html')
+    self.assertTemplateUsed(response, 'v2/modules/gci/footer.html')
+    self.assertTemplateUsed(response, 'v2/modules/gci/header.html')
+    self.assertTemplateUsed(response, 'v2/modules/gci/mainmenu.html')
+    self.assertTemplateUsed(response, 'v2/modules/gci/status_block.html')
 
 
 def runTasks(url = None, name=None, queue_names = None):
