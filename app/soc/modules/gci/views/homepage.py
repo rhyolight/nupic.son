@@ -200,7 +200,7 @@ class Homepage(RequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/homepage/base.html'
+    return 'v2/modules/gci/homepage/base.html'
 
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping.

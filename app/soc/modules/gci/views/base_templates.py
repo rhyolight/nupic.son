@@ -69,7 +69,7 @@ class Header(Template):
     self.data = data
 
   def templatePath(self):
-    return "v2/modules/gsoc/header.html"
+    return "v2/modules/gci/header.html"
 
   def context(self):
     return {
@@ -112,7 +112,7 @@ class MainMenu(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/mainmenu.html"
+    return "v2/modules/gci/mainmenu.html"
 
 
 class Footer(Template):
@@ -142,7 +142,7 @@ class Footer(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/footer.html"
+    return "v2/modules/gci/footer.html"
 
 
 class LoggedInMsg(Template):
