@@ -312,7 +312,7 @@ def newCommentContext(data, comment, to_emails):
   assert isSet(data.proposer)
 
   review_notification_url = data.redirect.comment(comment, full=True)
-  
+
   review_type = 'private' if comment.is_private else 'public'
   reviewed_name = data.proposal.title
 

@@ -24,18 +24,15 @@ __authors__ = [
   ]
 
 
-from google.appengine.ext import db
-
 from django.utils.translation import ugettext
 from django import forms as django_forms
 
 from soc.logic import cleaning
-from soc.logic.helper import notifications
-from soc.tasks import mailer
 from soc.views import forms
 from soc.views.template import Template
 from soc.views.helper.access_checker import isSet
 
+from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import UPLOAD_ALLOWED
@@ -199,41 +196,24 @@ class PostComment(RequestHandler):
     self.mutator.TaskFromKwargs()
     self.check.isTaskVisible()
     self.check.isProgramActive()
-    self.check.isLoggedIn()
-
-  def createCommentFromForm(self):
-    """Creates a new comment based on the data inserted in the form.
-
-    Returns:
-      a newly created comment entity or None
-    """
-    assert isSet(self.data.task)
-
-    comment_form = CommentForm(self.data.request.POST)
-    if not comment_form.is_valid():
-      self.cleaned_data['created_by'] = self.data.profile
-
-    to_emails = []
-    mentors_keys = self.data.task.mentors
-    for mentor_key in mentors_keys:
-      if mentor_key != self.data.profile.key():
-        mentor = db.get(mentor_key)
-        to_emails.append(mentor.email)
-
-    # TODO: Refactor to method so that Melange itself can write comments for
-    # workuploads, automatic state transfers
-    def create_comment_txn():
-      comment = comment_form.create(commit=True, parent=self.data.task)
-      context = notifications.newCommentContext(self.data, comment, to_emails)
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=comment)
-      sub_txn()
-      return comment
-
-    return db.run_in_transaction(create_comment_txn)
+    self.check.isUser()
 
   def post(self):
     assert isSet(self.data.task)
-    self.createCommentFromForm()
+
+    comment_form = CommentForm(self.data.request.POST)
+
+    if not comment_form.is_valid():
+      # TODO(ljvderijk): Form error handling
+      return
+
+    self.cleaned_data['created_by'] = self.data.user
+    self.cleaned_data['modified_by'] = self.data.user
+
+    comment = comment_form.create(commit=False, parent=self.data.task)
+    comment_logic.storeAndNotify(comment)
+
+    self.redirect.to('gci_view_task', validated=True)
 
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
