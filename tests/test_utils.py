@@ -165,7 +165,7 @@ class NonFailingFakePayload(object):
     return self.__content.readline(length)
 
 
-class GSoCDjangoTestCase(TestCase):
+class DjangoTestCase(TestCase):
   """Class extending Django TestCase in order to extend its functions.
 
   As well as remove the functions which are not supported by Google App Engine,
@@ -180,6 +180,30 @@ class GSoCDjangoTestCase(TestCase):
 
   def _post_teardown(self):
     """ Performs any post-test cleanup.
+    """
+    pass
+
+  def init(self):
+    """Performs test setup.
+
+    Sets the following attributes:
+      dev_test: True iff DEV_TEST is in environment
+      founder: a founder instance
+      sponsor: a sponsor instance
+    """
+    from soc.models.user import User
+    from soc.models.sponsor import Sponsor
+
+    self.dev_test = 'DEV_TEST' in os.environ
+
+    properties = {}
+    self.founder = self.seed(User, properties)
+
+    properties = {'founder': self.founder, 'home': None}
+    self.sponsor = self.seed(Sponsor, properties)
+
+  def createOrg(self, override={}):
+    """Creates an organization for the defined properties.
     """
     pass
 
@@ -213,93 +237,6 @@ class GSoCDjangoTestCase(TestCase):
     properties = self.seedProperties(model, properties)
     response = self.post(url, properties)
     return response, properties
-
-  def createOrg(self, override={}):
-    """Creates an organization for the defined properties.
-    """
-    from soc.modules.gsoc.models.organization import GSoCOrganization
-
-    properties = {'scope': self.gsoc, 'status': 'active',
-                  'scoring_disabled': False, 'max_score': 5,
-                  'founder': self.founder,
-                  'home': None,}
-    properties.update(override)
-    return self.seed(GSoCOrganization, properties)
-
-  def init(self):
-    """Performs test setup.
-
-    Sets the following attributes:
-      dev_test: True iff DEV_TEST is in environment
-      gsoc: a GSoCProgram instance
-      org_app: a OrgAppSurvey instance
-      org: a GSoCOrganization instance
-      timeline: a TimelineHelper instance
-      data: a GSoCProfileHelper instance
-    """
-    from soc.models.user import User
-    from soc.models.site import Site
-    from soc.models.sponsor import Sponsor
-    from soc.models.document import Document
-    from soc.modules.gsoc.models.program import GSoCProgram
-    from soc.modules.gsoc.models.timeline import GSoCTimeline
-    from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
-    from soc.models.org_app_survey import OrgAppSurvey
-    from tests.timeline_utils import TimelineHelper
-    from tests.profile_utils import GSoCProfileHelper
-
-    self.dev_test = 'DEV_TEST' in os.environ
-
-    properties = {}
-    self.founder = self.seed(User, properties)
-
-    properties = {'founder': self.founder, 'home': None}
-    self.sponsor = self.seed(Sponsor, properties)
-
-    properties = {'scope': self.sponsor}
-    self.program_timeline = self.seed(GSoCTimeline, properties)
-
-    properties = {'timeline': self.program_timeline,
-                  'status': 'visible', 'apps_tasks_limit': 20,
-                  'scope': self.sponsor,
-                  'student_agreement': None, 'events_page': None,
-                  'help_page': None, 'connect_with_us_page': None,
-                  'mentor_agreement': None, 'org_admin_agreement': None,
-                  'privacy_policy': None, 'home': None, 'about_page': None}
-    self.gsoc = self.seed(GSoCProgram, properties)
-
-    properties = {
-        'prefix': 'gsoc_program', 'scope': self.gsoc,
-        'read_access': 'public', 'key_name': DocumentKeyNameProvider(),
-        'modified_by': self.founder, 'author': self.founder,
-        'home_for': None,
-    }
-    document = self.seed(Document, properties=properties)
-
-    self.gsoc.about_page = document
-    self.gsoc.events_page = document
-    self.gsoc.help_page = document
-    self.gsoc.connect_with_us_page = document
-    self.gsoc.privacy_policy = document
-    self.gsoc.put()
-
-    self.site = Site(key_name='site', link_id='site',
-                     active_program=self.gsoc)
-    self.site.put()
-
-    # TODO (Madhu): Remove scope and author fields once the data
-    # conversion is done.
-    properties = {'scope': self.gsoc, 'program': self.gsoc,
-                  'modified_by': self.founder,
-                  'created_by': self.founder,
-                  'author': self.founder,
-                  'survey_content': None,}
-    self.org_app = self.seed(OrgAppSurvey, properties)
-
-    self.org = self.createOrg()
-
-    self.timeline = TimelineHelper(self.gsoc.timeline, self.org_app)
-    self.data = GSoCProfileHelper(self.gsoc, self.dev_test)
 
   @classmethod
   def getXsrfToken(cls, path=None, method='POST', data={}, site=None, **extra):
@@ -409,33 +346,6 @@ class GSoCDjangoTestCase(TestCase):
     """
     self.assertResponseCode(response, httplib.BAD_REQUEST)
 
-  def assertGSoCTemplatesUsed(self, response):
-    """Asserts that all the templates from the base view were used.
-    """
-    self.assertResponseOK(response)
-    for contexts in response.context:
-      for context in contexts:
-        for value in context.values():
-          # make it easier to debug render failures
-          if hasattr(value, 'render'):
-            value.render()
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/footer.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/header.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/mainmenu.html')
-
-  def assertGSoCColorboxTemplatesUsed(self, response):
-    """Asserts that all the templates from the base_colorbox view were used.
-    """
-    self.assertResponseOK(response)
-    for contexts in response.context:
-      for context in contexts:
-        for value in context.values():
-          # make it easier to debug render failures
-          if hasattr(value, 'render'):
-            value.render()
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/base_colorbox.html')
-
   def assertIsJsonResponse(self, response):
     """Asserts that all the templates from the base view were used.
     """
@@ -475,6 +385,119 @@ class GSoCDjangoTestCase(TestCase):
 
     if errors:
       self.fail("\n".join(errors))
+
+
+class GSoCDjangoTestCase(DjangoTestCase):
+  """DjangoTestCase specifically for GSoC view tests.
+  """
+
+  def init(self):
+    """Performs test setup.
+
+    Sets the following attributes:
+      dev_test: True iff DEV_TEST is in environment (in parent)
+      founder: a founder instance (in parent)
+      sponsor: a sponsor instance (in parent)
+      gsoc: a GSoCProgram instance
+      org_app: a OrgAppSurvey instance
+      org: a GSoCOrganization instance
+      timeline: a TimelineHelper instance
+      data: a GSoCProfileHelper instance
+    """
+    from soc.models.site import Site
+    from soc.models.document import Document
+    from soc.modules.gsoc.models.program import GSoCProgram
+    from soc.modules.gsoc.models.timeline import GSoCTimeline
+    from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
+    from soc.models.org_app_survey import OrgAppSurvey
+    from tests.timeline_utils import TimelineHelper
+    from tests.profile_utils import GSoCProfileHelper
+
+    # Initialize instances in the parent first
+    super(GSoCDjangoTestCase, self).init()
+    properties = {'scope': self.sponsor}
+    self.program_timeline = self.seed(GSoCTimeline, properties)
+
+    properties = {'timeline': self.program_timeline,
+                  'status': 'visible', 'apps_tasks_limit': 20,
+                  'scope': self.sponsor,
+                  'student_agreement': None, 'events_page': None,
+                  'help_page': None, 'connect_with_us_page': None,
+                  'mentor_agreement': None, 'org_admin_agreement': None,
+                  'privacy_policy': None, 'home': None, 'about_page': None}
+    self.gsoc = self.seed(GSoCProgram, properties)
+
+    properties = {
+        'prefix': 'gsoc_program', 'scope': self.gsoc,
+        'read_access': 'public', 'key_name': DocumentKeyNameProvider(),
+        'modified_by': self.founder, 'author': self.founder,
+        'home_for': None,
+    }
+    document = self.seed(Document, properties=properties)
+
+    self.gsoc.about_page = document
+    self.gsoc.events_page = document
+    self.gsoc.help_page = document
+    self.gsoc.connect_with_us_page = document
+    self.gsoc.privacy_policy = document
+    self.gsoc.put()
+
+    self.site = Site(key_name='site', link_id='site',
+                     active_program=self.gsoc)
+    self.site.put()
+
+    # TODO (Madhu): Remove scope and author fields once the data
+    # conversion is done.
+    properties = {'scope': self.gsoc, 'program': self.gsoc,
+                  'modified_by': self.founder,
+                  'created_by': self.founder,
+                  'author': self.founder,
+                  'survey_content': None,}
+    self.org_app = self.seed(OrgAppSurvey, properties)
+
+    self.org = self.createOrg()
+
+    self.timeline = TimelineHelper(self.gsoc.timeline, self.org_app)
+    self.data = GSoCProfileHelper(self.gsoc, self.dev_test)
+
+  def createOrg(self, override={}):
+    """Creates an organization for the defined properties.
+    """
+    from soc.modules.gsoc.models.organization import GSoCOrganization
+
+    properties = {'scope': self.gsoc, 'status': 'active',
+                  'scoring_disabled': False, 'max_score': 5,
+                  'founder': self.founder,
+                  'home': None,}
+    properties.update(override)
+    return self.seed(GSoCOrganization, properties)
+
+  def assertGSoCTemplatesUsed(self, response):
+    """Asserts that all the templates from the base view were used.
+    """
+    self.assertResponseOK(response)
+    for contexts in response.context:
+      for context in contexts:
+        for value in context.values():
+          # make it easier to debug render failures
+          if hasattr(value, 'render'):
+            value.render()
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/base.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/footer.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/header.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/mainmenu.html')
+
+  def assertGSoCColorboxTemplatesUsed(self, response):
+    """Asserts that all the templates from the base_colorbox view were used.
+    """
+    self.assertResponseOK(response)
+    for contexts in response.context:
+      for context in contexts:
+        for value in context.values():
+          # make it easier to debug render failures
+          if hasattr(value, 'render'):
+            value.render()
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/base_colorbox.html')
 
 
 def runTasks(url = None, name=None, queue_names = None):
