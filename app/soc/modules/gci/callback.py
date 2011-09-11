@@ -72,3 +72,16 @@ class Callback(object):
       self.core.registerSitemapEntry(view.djangoURLPatterns())
 
     self.core.registerSitemapEntry(role_conversion.getDjangoURLPatterns())
+
+  def registerWithProgramMap(self):
+    """Called by the server when program_map entries should be registered.
+    """
+
+    self.core.requireUniqueService('registerWithProgramMap')
+
+    from soc.modules.gci.models.program import GCIProgram
+    program_entities = GCIProgram.all().fetch(1000)
+    map = ('GCI Programs', [
+        (str(e.key()), e.name) for e in program_entities])
+
+    self.core.registerProgramEntry(map)
