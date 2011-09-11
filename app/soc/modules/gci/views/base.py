@@ -44,7 +44,7 @@ class RequestHandler(RequestHandler):
       mainmenu: a rendered site_menu.MainMenu template for the current self.data
       footer: a rendered site_menu.Footer template for the current self.data
     """
-    context['base_layout'] = 'v2/modules/gsoc/base.html'
+    context['base_layout'] = 'v2/modules/gci/base.html'
     context['header'] = base_templates.Header(self.data)
     context['mainmenu'] = base_templates.MainMenu(self.data)
     context['footer'] = base_templates.Footer(self.data)
