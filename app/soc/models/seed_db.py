@@ -208,10 +208,6 @@ def seed(request, *args, **kwargs):
   gsoc2010 = GSoCProgram(**program_properties)
   gsoc2010.put()
 
-  site.active_program = gsoc2009
-  site.put()
-
-  # TODO: Use real GCIProgram here
   timeline_properties = {
         'key_name': 'google/gci2009',
         'link_id': 'gci2009',
@@ -220,7 +216,7 @@ def seed(request, *args, **kwargs):
   }
 
   gci2009_timeline = GCITimeline(**timeline_properties)
-  #gci2009_timeline.put()
+  gci2009_timeline.put()
 
 
   program_properties.update({
@@ -234,7 +230,11 @@ def seed(request, *args, **kwargs):
       })
 
   gci2009 = GCIProgram(**program_properties)
-  #gci2009.put()
+  gci2009.put()
+
+
+  site.active_program = gci2009
+  site.put()
 
 
   group_properties.update({
@@ -251,7 +251,7 @@ def seed(request, *args, **kwargs):
     })
 
   melange = GCIOrganization(**group_properties)
-  #melange.put()
+  melange.put()
 
   group_properties.update({
     'scope_path': 'google/gsoc2009',
@@ -299,18 +299,16 @@ def seed(request, *args, **kwargs):
       profile.put()
 
   role_properties.update({
-      'key_name': 'google/gci2009/melange/test',
+      'key_name': 'google/gci2009/test',
       'link_id': 'test',
-      'scope_path': 'google/gci2009/melange',
-      'scope': melange,
+      'scope_path': 'google/gci2009',
+      'scope': gci2009,
       'program': gci2009,
       })
 
-  melange_admin = GCIOrgAdmin(**role_properties)
-  #melange_admin.put()
-
-  melange_mentor = GCIMentor(**role_properties)
-  #melange_mentor.put()
+  melange_admin = GSoCProfile(**role_properties)
+  # TODO: add GCI orgs
+  melange_admin.put()
 
   user_properties = {
       'key_name': 'student',
