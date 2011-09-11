@@ -23,9 +23,94 @@ __authors__ = [
 
 
 from soc.views.helper import url_patterns
+from soc.views.template import Template
 
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
+
+class HowItWorks(Template):
+  """How it works template.
+  """
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    return {
+    }
+
+  def templatePath(self):
+    return "v2/modules/gci/homepage/_how_it_works.html"
+
+class FeaturedTask(Template):
+  """Featured task template.
+  """
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    return {
+    }
+
+  def templatePath(self):
+    return "v2/modules/gci/homepage/_featured_task.html"
+
+class ParticipatingOrgs(Template):
+  """Participating orgs template.
+  """
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    return {
+    }
+
+  def templatePath(self):
+    return "v2/modules/gci/homepage/_participating_orgs.html"
+
+class News(Template):
+  """News template.
+  """
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    return {
+    }
+
+  def templatePath(self):
+    return "v2/modules/gci/homepage/_news.html"
+
+class Timeline(Template):
+  """News template.
+  """
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    return {
+    }
+
+  def templatePath(self):
+    return "v2/modules/gci/homepage/_timeline.html"
+
+class ConnectWithUs(Template):
+  """Connect with us template.
+  """
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    return {
+    }
+
+  def templatePath(self):
+    return "v2/modules/gci/homepage/_connect_with_us.html"
 
 
 class Homepage(RequestHandler):
@@ -51,6 +136,12 @@ class Homepage(RequestHandler):
 
     context = {
         'page_name': '%s - Home page' % (self.data.program.name),
+        'how_it_works': HowItWorks(self.data),
+        'featured_task': FeaturedTask(self.data),
+        'participating_orgs': ParticipatingOrgs(self.data),
+        'news': News(self.data),
+        'timeline': Timeline(self.data),
+        'connect_with_us': ConnectWithUs(self.data),
         'program': self.data.program,
     }
 
