@@ -34,7 +34,7 @@ def isOwnerOfTask(task, user):
     task: The GCITask entity
     user: The User which might be the owner of the task
   """
-  return task.user.key() == user.key()
+  return user and task.user and task.user.key() == user.key()
 
 
 def canClaimRequestTask(task, user):
