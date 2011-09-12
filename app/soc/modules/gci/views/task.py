@@ -86,20 +86,14 @@ class TaskViewPage(RequestHandler):
       'page_name': '%s - %s' %(self.data.task.title, self.data.task.org.name),
       'task': self.data.task,
       'task_info': TaskInformation(self.data),
+      'work_submissions': WorkSubmissions(self.data),
       'comments': CommentsTemplate(self.data),
     }
 
-    if self.data.work_submissions:
-      context['work_submissions'] = WorkSubmissions(self.data)
-
-    if task_logic.isOwnerOfTask(self.data.task, self.data.user) and \
-        self.data.task.status in UPLOAD_ALLOWED:
-      context['upload_work'] = UploadWorkTemplate(self.data)
-
     return context
 
-    def templatePath(self):
-      return 'v2/modules/gci/task/public.html'
+  def templatePath(self):
+    return 'v2/modules/gci/task/public.html'
 
 
 class TaskInformation(Template):
@@ -115,35 +109,27 @@ class TaskInformation(Template):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    raise NotImplementedError()
-
-
-class UploadWorkTemplate(Template):
-  """Template for a student that owns the task to upload work.
-  """
-  def context(self):
-    """Returns the context for the current template.
-    """
-    return {'task': self.data.task}
-
-  def templatePath(self):
-    """Returns the path to the template that should be used in render().
-    """
-    raise NotImplementedError()
+    return 'v2/modules/gci/task/_task_information.html'
 
 
 class WorkSubmissions(Template):
-  """Template to render all the GCIWorkSubmissions.
+  """Template to render all the GCIWorkSubmissions, contain the form to upload
+    work and to contain the Mark task as Complete button for students.
   """
   def context(self):
     """Returns the context for the current template.
     """
+    if task_logic.isOwnerOfTask(self.data.task, self.data.user) and \
+        self.data.task.status in UPLOAD_ALLOWED:
+      # Add the form for allowing uploads
+      pass
+
     return {'submissions': self.data.work_submissions}
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    raise NotImplementedError()
+    return 'v2/modules/gci/task/_work_submissions.html'
 
 
 class CommentsTemplate(Template):
@@ -164,7 +150,7 @@ class CommentsTemplate(Template):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    raise NotImplementedError()
+    return 'v2/modules/gci/task/_comments.html'
 
 
 class PostUploadWork(RequestHandler):

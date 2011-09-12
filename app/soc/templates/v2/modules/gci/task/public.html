@@ -1,0 +1,49 @@
+{% extends "v2/modules/gci/base.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+
+{% block page_content %}
+
+  <div class="block block-task block-task-mentor level-medium">
+    {{ task_info.render }}
+    {{ work_submissions.render }}
+    {{ comments.render }}
+  </div>
+
+{% endblock page_content %}
+
+{% block scripts %}
+  {{ block.super }}
+
+  {% comment %}
+    TODO: Needs to be fixed and refactored to comply with melange js standards.
+  {% endcomment %}
+  <!-- Task pages: Hide/show reply box -->
+  <script type="text/javascript">
+    $(document).ready(function(){
+    $(".single-comment-reply").hide();
+    $(".task-btn-comment-reply").click(function(){
+      $(this).toggleClass("active").next().slideToggle("slow");
+      });
+    });
+  </script>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $(".block-comments-post-new").hide();
+      $(".task-btn-comment-new").click(function(){
+        $(this).toggleClass("active").next().slideToggle("slow");
+      });
+    });
+  </script>
+{% endblock scripts %}

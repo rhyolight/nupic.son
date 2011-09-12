@@ -1,0 +1,48 @@
+<div class="block-comments clearfix">
+  <span class="block-comments-title">Comments</span>
+  <a href="javascript:void(0)" class="task-btn task-btn-comment-new">Post new comment</a>
+  <div class="block-comments-post-new">
+    <span class="block-comments-post-new-title">Post new comment</span>
+
+    <form action="#" method="post" class="form-comment-post-new clearfix">
+      <div class="form-row">
+        <label for="comment-reply-title" class="form-label">Title</label>
+        <input name="comment-reply-title" value="" type="text">
+      </div>
+      <div class="form-row">
+        <label for="comment-reply-body" class="form-label">Body</label>
+        <textarea id="comment-reply-body" name="comment-reply-body"></textarea>
+      </div>
+      <div class="form-row form-row-buttons">
+        <input value="Submit" class="button" type="submit">
+      </div>
+    </form>
+  </div>
+  <!--end .block-comments-post-new-->  
+
+  <div class="single-comment">
+    <span class="single-comment-title">This is a great task idea.</span>
+    <span class="single-comment-meta">by <a href="javascript:void(0)">Eric Schmidt</a> July 28 2011 10:57 GMT</span>
+    <p>Praesent porta nunc diam, sed ullamcorper turpis. Praesent dignissim eleifend sapien pellentesque fermentum. Etiam feugiat lacinia lorem, semper varius ligula ornare eget. Nunc at risus ante. Maecenas vehicula lacinia vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; aliquam erat volutpat!</p>
+    <a href="javascript:void(0)" class="task-btn task-btn-comment-reply">Reply</a>
+    <div class="single-comment-reply">
+      <span class="single-comment-reply-title">Reply</span>
+      <form action="#" method="post" class="form-comment-reply clearfix">
+        <div class="form-row">
+          <label for="comment-reply-title" class="form-label">Title</label>
+           <input name="comment-reply-title" value="" type="text">
+        </div>
+        <div class="form-row">
+          <label for="comment-reply-body" class="form-label">Body</label>
+          <textarea id="comment-reply-body" name="comment-reply-body"></textarea>
+        </div>
+        <div class="form-row form-row-buttons">
+          <input value="Submit" class="button" type="submit">
+        </div>
+      </form>
+    </div>
+    <!--end .single-comment-reply-->    
+  </div>
+  <!-- end .single-comment -->
+</div>
+<!-- end .block-comments -->
