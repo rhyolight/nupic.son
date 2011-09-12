@@ -38,6 +38,8 @@ class GCIComment(soc.models.base.ModelWithFieldAttributes):
       soc.modules.gci.models.task.GCITask
   """
 
+  title = db.StringProperty(required=False, verbose_name=ugettext('Title'))
+
   #: The rich textual content of this comment
   content = db.TextProperty(required=False, verbose_name=ugettext('Content'))
 
