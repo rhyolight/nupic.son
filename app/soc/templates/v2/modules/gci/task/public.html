@@ -15,7 +15,8 @@ limitations under the License.
 
 {% block page_content %}
 
-  <div class="block block-task block-task-mentor level-medium">
+  {% comment %} What to do for class where user is neither mentor nor student? {% endcomment %}
+  <div class="block block-task block-task-mentor level-{{ task.difficulty.0|lower }}">
     {{ task_info.render }}
     {{ work_submissions.render }}
     {{ comments.render }}
