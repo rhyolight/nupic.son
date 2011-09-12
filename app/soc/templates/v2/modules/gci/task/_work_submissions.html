@@ -1,39 +1,50 @@
 <div class="block-task-uploaded-code">
-  <span class="block-task-uploaded-code-title">Uploaded code</span>
+  <span class="block-task-uploaded-code-title">Uploaded Work</span>
   <div class="block-task-uploaded-code-content">
-    <span class="block-task-uploaded-code-status">No code has been uploaded yet.</span>
-    <span class="block-task-uploaded-code-status">Upload your final work file or paste in its URL, then click Submit.</span>
-    <form action="#" method="post" class="form-upload-code clearfix">
-      <div class="form-row form-row-file-upload">
-        <input type="file" name="datafile">
-      </div>
-      <div class="form-row form-row-student-work-url"> 
-        <input name="final-work-url" value="http://" type="text"> 
-      </div> 
-      <div class="form-row form-row-buttons">
-        <input value="Submit" class="button" type="submit">
-      </div>
+    {% if not work_submissions %}
+      <span class="block-task-uploaded-code-status">No work has been uploaded yet.</span>
+    {% else %}
+      {% if send_for_review %}
+        <span class="block-task-uploaded-code-note">If you have finished the task, click <strong>Mark Task as Complete</strong> to submit your work for review.</span>
+      {% endif %}
+
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" class="block-task-uploaded-code-listing">
+        <tr>
+          <th>File name</th>
+          <th>File size</th>
+          <th>Date submitted</th>
+          <th></th>
+        </tr>
+        <tr>
+          <td><a href="javascript:void(0)">Documentation-v2.rtf</a></td>
+          <td>190 kb</td>
+          <td>July 29 2011 15:45 GMT</td>
+          <td><a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a></td>
+        </tr>
+      </table>
+
+      {% if send_for_review %}
+        <div class="block-task-uploaded-code-btns">
+          <a href="javascript:void(0)" class="btn btn-task-mark-complete">Mark task as complete</a>
+        </div>
+      {% endif %}
+
+    {% endif %}
+
+    {% if upload_form %}
+      <span class="block-task-uploaded-code-status">Upload your final work file or paste in its URL, then click Submit.</span>
+      <form action="#" method="post" class="form-upload-code clearfix">
+        <div class="form-row form-row-file-upload">
+          <input type="file" name="datafile">
+        </div>
+        <div class="form-row form-row-student-work-url">
+          <input name="final-work-url" value="http://" type="text">
+        </div>
+        <div class="form-row form-row-buttons">
+          <input value="Submit" class="button" type="submit">
+        </div>
     </form>
-
-    <span class="block-task-uploaded-code-note">If you have finished the task, click <strong>Mark Task as Complete</strong> to submit your work for review.</span>
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="block-task-uploaded-code-listing">
-      <tr>
-        <th>File name</th>
-        <th>File size</th>
-        <th>Date submitted</th>
-        <th></th>
-      </tr>
-      <tr>
-        <td><a href="javascript:void(0)">Documentation-v2.rtf</a></td>
-        <td>190 kb</td>
-        <td>July 29 2011 15:45 GMT</td>
-        <td><a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a></td>
-      </tr>
-    </table>
-
-    <div class="block-task-uploaded-code-btns">
-      <a href="javascript:void(0)" class="btn btn-task-mark-complete">Mark task as complete</a>
-    </div>
+    {% endif %}
 
   </div>
 </div>

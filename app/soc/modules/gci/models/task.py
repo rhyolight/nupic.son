@@ -47,6 +47,7 @@ CLAIMABLE = ['Open', 'Reopened']
 ACTIVE_CLAIMED_TASK = ['ClaimRequested', 'Claimed', 'ActionNeeded',
                        'AwaitingRegistration', 'NeedsWork', 'NeedsReview']
 UPLOAD_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork', 'NeedsReview']
+SEND_FOR_REVIEW_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork']
 
 
 # TODO(Madhu): after the data conversion inherit the model from

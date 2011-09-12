@@ -39,6 +39,7 @@ from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import UPLOAD_ALLOWED
+from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_patterns
 from soc.modules.gci.views.helper.url_patterns import url
@@ -126,12 +127,20 @@ class WorkSubmissions(Template):
   def context(self):
     """Returns the context for the current template.
     """
-    if task_logic.isOwnerOfTask(self.data.task, self.data.user) and \
-        self.data.task.status in UPLOAD_ALLOWED:
-      # Add the form for allowing uploads
-      pass
+    context = {'submissions': self.data.work_submissions}
 
-    return {'submissions': self.data.work_submissions}
+    task = self.data.task
+    is_owner = task_logic.isOwnerOfTask(task, self.data.user)
+
+    if is_owner:
+      context['send_for_review'] = self.data.work_submissions and \
+          task.status in SEND_FOR_REVIEW_ALLOWED
+
+      if task.status in UPLOAD_ALLOWED:
+        # Add the form for allowing uploads
+        context['upload_form'] = True
+
+    return context
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
