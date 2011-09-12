@@ -43,12 +43,15 @@ class Callback(object):
     """
     from soc.modules.gci.views import bulk_create
     from soc.modules.gci.views import dashboard
+    from soc.modules.gci.views import document
     from soc.modules.gci.views import homepage
     from soc.modules.gci.views import org_app
     from soc.modules.gci.views import task
 
     self.views.append(bulk_create.BulkCreate())
     self.views.append(dashboard.Dashboard())
+    self.views.append(document.DocumentPage())
+    self.views.append(document.EditDocumentPage())
     self.views.append(homepage.Homepage())
     self.views.append(org_app.GCIOrgAppEditPage())
     self.views.append(org_app.GCIOrgAppPreviewPage())

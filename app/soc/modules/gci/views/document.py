@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC documents page.
+"""Module containing the views for GCI documents page.
 """
 
 __authors__ = [
@@ -22,16 +22,15 @@ __authors__ = [
   ]
 
 
-from django.conf.urls.defaults import url as django_url
-
 from soc.logic.exceptions import AccessViolation
 from soc.views import document
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
+from soc.views.template import Template
 
-from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.base_templates import ProgramSelect
-from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gci.views.base import RequestHandler
+#from soc.modules.gci.views.base_templates import ProgramSelect
+from soc.modules.gci.views.helper.url_patterns import url
 
 
 class EditDocumentPage(RequestHandler):
@@ -39,12 +38,12 @@ class EditDocumentPage(RequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/document/base.html'
+    return 'v2/modules/gci/document/base.html'
 
   def djangoURLPatterns(self):
     return [
         url(r'document/edit/%s$' % url_patterns.DOCUMENT, self,
-            name='edit_gsoc_document')
+            name='edit_gci_document')
     ]
 
   def checkAccess(self):
@@ -65,10 +64,10 @@ class EditDocumentPage(RequestHandler):
   def post(self):
     """Handler for HTTP POST request.
     """
-    document = document.validateForm(self.data)
-    if document:
-      self.redirect.document(document)
-      self.redirect.to('edit_gsoc_document')
+    entity = document.validateForm(self.data)
+    if entity:
+      self.redirect.document(entity)
+      self.redirect.to('edit_gci_document')
     else:
       self.get()
 
@@ -78,21 +77,16 @@ class DocumentPage(RequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/base.html'
+    return 'v2/modules/gci/base.html'
 
   def djangoURLPatterns(self):
     return [
         url(r'document/show/%s$' % url_patterns.DOCUMENT, self,
-            name='show_gsoc_document'),
-        django_url(r'^document/show/%s$' % url_patterns.DOCUMENT, self),
+            name='show_gci_document'),
     ]
 
   def checkAccess(self):
     self.mutator.documentKeyNameFromKwargs()
-
-    if not self.data.document:
-      raise NotFound("No such document: '%s'" % self.data.key_name)
-
     self.check.canViewDocument()
 
   def context(self):
@@ -107,12 +101,12 @@ class EventsPage(RequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/document/events.html'
+    return 'v2/modules/gci/document/events.html'
 
   def djangoURLPatterns(self):
     return [
         url(r'events/%s$' % url_patterns.PROGRAM, self,
-            name='gsoc_events')
+            name='gci_events')
     ]
 
   def checkAccess(self):
@@ -132,10 +126,10 @@ class DocumentList(document.DocumentList):
   """
 
   def __init__(self, request, data):
-    super(DocumentList, self).__init__(request, data, 'edit_gsoc_document')
+    super(DocumentList, self).__init__(request, data, 'edit_gci_document')
 
   def templatePath(self):
-    return 'v2/modules/gsoc/document/_document_list.html'
+    return 'v2/modules/gci/document/_document_list.html'
 
 
 class DocumentListPage(RequestHandler):
@@ -143,12 +137,12 @@ class DocumentListPage(RequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/document/document_list.html'
+    return 'v2/modules/gci/document/document_list.html'
 
   def djangoURLPatterns(self):
     return [
         url(r'documents/%s$' % url_patterns.PROGRAM, self,
-            name='list_gsoc_documents'),
+            name='list_gci_documents'),
     ]
 
   def checkAccess(self):
@@ -166,5 +160,5 @@ class DocumentListPage(RequestHandler):
     return {
         'page_name': "Documents for %s" % self.data.program.name,
         'document_list': DocumentList(self.request, self.data),
-        'program_select': ProgramSelect(self.data, 'list_gsoc_documents'),
+#        'program_select': ProgramSelect(self.data, 'list_gci_documents'),
     }
