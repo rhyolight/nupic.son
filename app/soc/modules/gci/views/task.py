@@ -24,8 +24,11 @@ __authors__ = [
   ]
 
 
+from google.appengine.ext import db
+
 from django.utils.translation import ugettext
 from django import forms as django_forms
+
 
 from soc.logic import cleaning
 from soc.views import forms
@@ -104,7 +107,11 @@ class TaskInformation(Template):
     """
     # TODO: Switches for control buttons that are based on role, status and 
     # the program's timeline.
-    return {'task': self.data.task}
+    task = self.data.task
+    mentors = [m.public_name for m in db.get(task.mentors)]
+
+    return {'task': task,
+            'mentors': mentors}
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
@@ -114,7 +121,7 @@ class TaskInformation(Template):
 
 class WorkSubmissions(Template):
   """Template to render all the GCIWorkSubmissions, contain the form to upload
-    work and to contain the Mark task as Complete button for students.
+     work and to contain the Mark task as Complete button for students.
   """
   def context(self):
     """Returns the context for the current template.

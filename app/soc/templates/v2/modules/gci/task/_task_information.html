@@ -2,24 +2,24 @@
 
 <div class="block-title clearfix">
   <div class="block-task-title">
-    <span class="title">Write documentation for export function</span>
-    <span class="project">Drupal Foundation</span>
+    <span class="title">{{ task.title }}</span>
+    <span class="project">{{ task.org.name }}</span>
   </div>
 
   <div class="block-task-action">
-    <span class="block-task-action-title">You are mentor for this task.</span> <a href=
-    "javascript:void(0)" class="task-btn task-btn-close">Mark task as closed</a>
+    <span class="block-task-action-title">You are mentor for this task.</span>
+    <a href="javascript:void(0)" class="task-btn task-btn-close">Mark task as closed</a>
     <a href="javascript:void(0)" class="task-btn task-btn-unassign">Unassign task</a>
-    <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit task</a> <a href=
-    "javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
+    <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit task</a>
+    <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
   </div>
 </div>
 
 <div class="block-task-difficulty">
-  <span class="difficulty">Difficulty: <span class="emph">Medium</span></span>
-  <span class="status">Status: <span class="emph">In progress</span></span>
+  <span class="difficulty">Difficulty: <span class="emph">{{ task.difficulty.0 }}</span></span>
+  <span class="status">Status: <span class="emph">{{ task.status }}</span></span>
   <span class="remaining">Time left: <span class="emph">5 hrs 6 min</span></span>
-  <span class="mentor">Mentor: <span class="emph">Carol Smith</span></span>
+  <span class="mentor">Mentor: <span class="emph">{{ mentors|join:", " }}</span></span>
 </div>
 
 <div class="block-content clearfix">
@@ -48,25 +48,7 @@
   <!-- end .block-task-countdown -->
 
   <div class="block-task-description">
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis porttitor purus
-    massa. Aliquam erat volutpat. Maecenas vitae neque ipsum. Morbi scelerisque varius
-    augue ac euismod. Pellentesque euismod augue a justo mollis eu tempor nunc
-    ultricies. Fusce pharetra convallis dignissim...</p>
-
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis porttitor purus
-    massa. Aliquam erat volutpat. Maecenas vitae neque ipsum. Morbi scelerisque varius
-    augue ac euismod. Pellentesque euismod augue a justo mollis eu tempor nunc
-    ultricies. Fusce pharetra convallis dignissim...</p>
-
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis porttitor purus
-    massa. Aliquam erat volutpat. Maecenas vitae neque ipsum. Morbi scelerisque varius
-    augue ac euismod. Pellentesque euismod augue a justo mollis eu tempor nunc
-    ultricies. Fusce pharetra convallis dignissim...</p>
-
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis porttitor purus
-    massa. Aliquam erat volutpat. Maecenas vitae neque ipsum. Morbi scelerisque varius
-      augue ac euismod. Pellentesque euismod augue a justo mollis eu tempor nunc
-      ultricies. Fusce pharetra convallis dignissim...</p>
+    {{ task.description|safe }}
   </div>
   <!-- end .block-task-description -->
 </div>
