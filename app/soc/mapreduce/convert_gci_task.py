@@ -76,7 +76,7 @@ def process_task(task):
 
     if new_task_key:
       # Update all the comments with the new task as the parent
-      comments = GCIComment.all().ancestor(new_task_key).fetch(1000)
+      comments = GCIComment.all().ancestor(task).fetch(1000)
       for c in comments:
         new_comm_properties = {}
         for c_prop in COMMENT_PROPERTIES:
@@ -86,13 +86,12 @@ def process_task(task):
         yield operation.counters.Increment("comment_updated")
 
       # Update all the work submission entities with the new task as the parent
-      work_submissions = GCIWorkSubmission.all().ancestor(
-          new_task_key).fetch(1000)
+      work_submissions = GCIWorkSubmission.all().ancestor(task).fetch(1000)
       for ws in work_submissions:
         new_ws_properties = {}
         for ws_prop in WORK_SUBMISSION_PROPERTIES:
           new_ws_properties[ws_prop] = getattr(ws, ws_prop)
-        new_ws = GCIWorkSubmission(parent=new_task_key, **new_comm_properties)
+        new_ws = GCIWorkSubmission(parent=new_task_key, **new_ws_properties)
         yield operation.db.Put(new_ws)
         yield operation.counters.Increment("work_submission_updated")
 
