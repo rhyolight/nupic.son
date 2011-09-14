@@ -24,27 +24,23 @@ limitations under the License.
 
 {% endblock page_content %}
 
-{% block scripts %}
-  {{ block.super }}
-
-  {% comment %}
-    TODO: Needs to be fixed and refactored to comply with melange js standards.
-  {% endcomment %}
-  <!-- Task pages: Hide/show reply box -->
-  <script type="text/javascript">
-    $(document).ready(function(){
-    $(".single-comment-reply").hide();
-    $(".task-btn-comment-reply").click(function(){
-      $(this).toggleClass("active").next().slideToggle("slow");
+{% block dependencies %}
+  null,
+  function () {
+    <!-- Task pages: Hide/show reply box -->
+     jQuery(document).ready(function(){
+     jQuery(".single-comment-reply").hide();
+     jQuery(".task-btn-comment-reply").click(function(){
+       jQuery(this).toggleClass("active").next().slideToggle("slow");
+       });
+     });
+  },
+  function () {
+    jQuery(document).ready(function(){
+      jQuery(".block-comments-post-new").hide();
+      jQuery(".task-btn-comment-new").click(function(){
+        jQuery(this).toggleClass("active").next().slideToggle("slow");
       });
     });
-  </script>
-  <script type="text/javascript">
-    $(document).ready(function(){
-      $(".block-comments-post-new").hide();
-      $(".task-btn-comment-new").click(function(){
-        $(this).toggleClass("active").next().slideToggle("slow");
-      });
-    });
-  </script>
-{% endblock scripts %}
+  }
+{% endblock dependencies %}
