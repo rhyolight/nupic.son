@@ -97,7 +97,7 @@
                     <a href="javascript:void(0)" class="task-btn task-btn-publish">Publish</a>
                 </div>
                 <!-- end .task-group-actions -->
-                <div class="task-group-pager clearfix">
+                <div class="task-group-pager block-pager clearfix">
                     <ul class="menu-center-inline">
                         <li class="current">1</li>
                         <li><a href="javascript:void(0)">2</a></li>
