@@ -31,10 +31,10 @@ from google.appengine.api import users
 from soc.logic.models.sponsor import logic as sponsor_logic
 from soc.logic.models.user import logic as user_logic
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 
-class SponsorTestForDeveloper(DjangoTestCase):
+class SponsorTestForDeveloper(GSoCDjangoTestCase):
   """Tests related to the user view for developer users.
   """
   def setUp(self):

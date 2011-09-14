@@ -34,10 +34,10 @@ from soc.logic.models.sponsor import logic as sponsor_logic
 from soc.logic.models.timeline import logic as timeline_logic
 from soc.logic.models.user import logic as user_logic
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 
-class OrgAdminTestNonexistent(DjangoTestCase):
+class OrgAdminTestNonexistent(GSoCDjangoTestCase):
   """Tests related to the org admin view.
 
   With non-existent sponsor, program, organization and org admin.
@@ -175,7 +175,7 @@ class OrgAdminTestNonexistent(DjangoTestCase):
     self.assertEqual(actual_redirected_location, expected_redirected_location)
 
 
-class OrgAdminTestExistent(DjangoTestCase):
+class OrgAdminTestExistent(GSoCDjangoTestCase):
   """Tests related to the org admin view.
 
   With existent sponsor, program and org admin.

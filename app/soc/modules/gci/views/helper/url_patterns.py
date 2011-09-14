@@ -36,4 +36,4 @@ def url(regex, view, kwargs=None, name=None):
   return django_url('^gci/%s' % regex, view, kwargs=kwargs, name=name)
 
 
-TASK = url_patterns.namedIdBasedPattern(['sponsor', 'program', 'task'])
+TASK = url_patterns.namedIdBasedPattern(['sponsor', 'program'])

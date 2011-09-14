@@ -24,13 +24,13 @@ __authors__ = [
 
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
 
-class ProposalReviewTest(MailTestCase, DjangoTestCase):
+class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
   """Tests proposal review page.
   """
 

@@ -28,11 +28,11 @@ import urllib
 from django.utils import simplejson
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.timeline_utils import TimelineHelper
 
 
-class WithdrawProjectsTest(DjangoTestCase):
+class WithdrawProjectsTest(GSoCDjangoTestCase):
   """Test withdraw projects page
   """
 

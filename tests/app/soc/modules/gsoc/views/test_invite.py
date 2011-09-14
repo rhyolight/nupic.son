@@ -27,14 +27,14 @@ from google.appengine.ext import db
 from soc.models.request import Request
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 
 # TODO: perhaps we should move this out?
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
-class InviteTest(MailTestCase, DjangoTestCase):
+class InviteTest(MailTestCase, GSoCDjangoTestCase):
   """Tests invite page.
   """
 

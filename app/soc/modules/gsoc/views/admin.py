@@ -42,10 +42,11 @@ from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.models.user import User
 from soc.views import forms
+from soc.views.dashboard import Dashboard
+from soc.views.dashboard import DashboardUserActions
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
-from soc.views.toggle_button import ToggleButtonTemplate
 
 from soc.modules.gsoc.logic.project import getAcceptedProjectsQuery
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
@@ -100,41 +101,15 @@ class LookupForm(forms.ModelForm):
     self.cleaned_data['profile'] = q.get()
 
 
-class UserActions(Template):
+class UserActions(DashboardUserActions):
   """Template to render the left side user actions.
   """
 
-  DEF_USE_COLORBOX_HELP_MSG = ugettext(
-      'Choosing Yes will allow you to open link in the dashboard within '
-      'a box without leaving the page.')
-
-  def __init__(self, data):
-    super(UserActions, self).__init__(data)
-
-    self.toggle_buttons = []
-
+  def actionURL(self):
     r = self.data.redirect
     r.program()
 
-    state = self.data.GET.get('colorbox')
-    use_colorbox = ToggleButtonTemplate(
-        self.data, 'on_off', 'Use colorbox', 'use-colorbox',
-        r.urlOf('gsoc_admin_dashboard'),
-        checked=state,
-        help_text=self.DEF_USE_COLORBOX_HELP_MSG,
-        labels = {
-            'checked': 'Yes',
-            'unchecked': 'No'})
-
-    self.toggle_buttons.append(use_colorbox)
-
-  def context(self):
-    return {
-        'toggle_buttons': self.toggle_buttons
-    }
-
-  def templatePath(self):
-    return "v2/soc/_user_action.html"
+    return r.urlOf('gsoc_admin_dashboard')
 
 
 class DashboardPage(RequestHandler):
@@ -180,44 +155,6 @@ class DashboardPage(RequestHandler):
     without expecting any response.
     """
     return False
-
-
-class Dashboard(Template):
-  """Base dashboard for admin page
-  """
-
-  def __init__(self, request, data, subpages=None):
-    """Initializes the dashboard.
-
-    Args:
-      request: The HTTPRequest object
-      data: The RequestData object
-      subpages: Subpages of current dashboard
-    """
-    self.request = request
-    self.data = data
-    self.subpages = subpages
-
-  def getSubpagesLink(self):
-    """Returns the link to other dashboard that appears
-    on top of the dashboard.
-    """
-    return self.subpages
-
-  def templatePath(self):
-    """Returns the path to the template that should be used in render()
-    """
-    return 'v2/modules/gsoc/admin/dashboard.html'
-
-  def _divideSubPages(self, subpages):
-    """Returns the subpages divided into two columns.
-    """
-    middle_ceil = int(math.ceil(float(len(subpages))/2))
-
-    return [
-        subpages[:middle_ceil],
-        subpages[middle_ceil:],
-    ]
 
 
 class MainDashboard(Dashboard):

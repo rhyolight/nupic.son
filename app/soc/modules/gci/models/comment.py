@@ -26,6 +26,8 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from soc.models.user import User
+
 import soc.models.base
 
 
@@ -35,6 +37,8 @@ class GCIComment(soc.models.base.ModelWithFieldAttributes):
     Parent:
       soc.modules.gci.models.task.GCITask
   """
+
+  title = db.StringProperty(required=False, verbose_name=ugettext('Title'))
 
   #: The rich textual content of this comment
   content = db.TextProperty(required=False, verbose_name=ugettext('Content'))
@@ -54,7 +58,7 @@ class GCIComment(soc.models.base.ModelWithFieldAttributes):
 
   #: A required many:1 relationship with a comment entity indicating
   #: the user who provided that comment.
-  created_by = db.ReferenceProperty(reference_class=soc.models.user.User,
+  created_by = db.ReferenceProperty(reference_class=User,
                                     required=False,
                                     collection_name="commented_by")
 
@@ -62,7 +66,7 @@ class GCIComment(soc.models.base.ModelWithFieldAttributes):
   created_on = db.DateTimeProperty(auto_now_add=True)
 
   # indicating wich user last modified the work. Used in displaying Work
-  modified_by = db.ReferenceProperty(reference_class=soc.models.user.User,
+  modified_by = db.ReferenceProperty(reference_class=User,
                                      required=False,
                                      collection_name="comment_modified_by",
                                      verbose_name=ugettext('Modified by'))

@@ -43,6 +43,11 @@ from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
 
 UNPUBLISHED = ['Unpublished', 'Unapproved']
+CLAIMABLE = ['Open', 'Reopened']
+ACTIVE_CLAIMED_TASK = ['ClaimRequested', 'Claimed', 'ActionNeeded',
+                       'AwaitingRegistration', 'NeedsWork', 'NeedsReview']
+UPLOAD_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork', 'NeedsReview']
+SEND_FOR_REVIEW_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork']
 
 
 # TODO(Madhu): after the data conversion inherit the model from
@@ -280,7 +285,7 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
     """Returns the GCIWorksubmissions that have the given task as parent.
     """
     q = GCIWorkSubmission.all()
-    q.parent(self)
+    q.ancestor(self)
     return q.fetch(1000)
 
   def comments(self):
@@ -289,7 +294,7 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
     The results are sorted by the date on which they have been created.
     """
     q = GCIComment.all()
-    q.parent(self)
+    q.ancestor(self)
     q.order('created_on')
     return q.fetch(1000)
 

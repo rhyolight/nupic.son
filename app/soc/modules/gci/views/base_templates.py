@@ -69,7 +69,7 @@ class Header(Template):
     self.data = data
 
   def templatePath(self):
-    return "v2/modules/gsoc/header.html"
+    return "v2/modules/gci/_header.html"
 
   def context(self):
     return {
@@ -112,7 +112,7 @@ class MainMenu(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/mainmenu.html"
+    return "v2/modules/gci/_mainmenu.html"
 
 
 class Footer(Template):
@@ -142,68 +142,4 @@ class Footer(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/footer.html"
-
-
-class LoggedInMsg(Template):
-  """Template to render user login message at the top of the profile form.
-  """
-  def __init__(self, data, apply_role=False, apply_link=True, div_name=None):
-    if not div_name:
-      div_name = 'loggedin-message'
-    self.data = data
-    self.apply_link = apply_link
-    self.apply_role = apply_role
-    self.div_name = div_name
-
-  def context(self):
-    context = {
-        'logout_link': self.data.redirect.logout().url(),
-        'user_email': self.data.gae_user.email(),
-        'has_profile': bool(self.data.profile),
-        'div_name': self.div_name,
-    }
-
-    if self.apply_role and self.data.kwargs.get('role'):
-      context['role'] = self.data.kwargs['role']
-
-    if self.data.user:
-      context['link_id'] = " [link_id: %s]" % self.data.user.link_id
-
-    if self.apply_link and self.data.timeline.orgsAnnounced() and (
-      (self.data.profile and not self.data.student_info) or
-      (self.data.timeline.studentSignup() and self.data.student_info)):
-      context['apply_link'] = self.data.redirect.acceptedOrgs().url()
-
-    return context
-
-  def templatePath(self):
-    return "v2/modules/gsoc/_loggedin_msg.html"
-
-
-class ProgramSelect(Template):
-  """Program select template.
-  """
-
-  def __init__(self, data, url_name):
-    self.data = data
-    self.url_name = url_name
-
-  def context(self):
-    def url(program):
-      r = self.data.redirect.program(program)
-      return r.urlOf(self.url_name)
-    def attr(program):
-      if program.key() == self.data.program.key():
-        return "selected=selected"
-      return ""
-
-    programs = [(i.short_name, url(i), attr(i)) for i in self.data.programs]
-
-    return {
-        'programs': programs,
-        'render': len(programs) > 1,
-    }
-
-  def templatePath(self):
-    return "v2/modules/gsoc/_program_select.html"
+    return "v2/modules/gci/_footer.html"

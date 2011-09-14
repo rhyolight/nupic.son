@@ -24,10 +24,10 @@ import httplib
 
 from django.test.client import Client
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 
-class ProgramTest(DjangoTestCase):
+class ProgramTest(GSoCDjangoTestCase):
   """Tests related to the program view.
   """
   def setUp(self):

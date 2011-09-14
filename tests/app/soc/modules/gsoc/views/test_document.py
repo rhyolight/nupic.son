@@ -25,14 +25,14 @@ __authors__ = [
 
 from soc.models.document import Document
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 # TODO: perhaps we should move this out?
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
 
 
-class ListDocumentTest(DjangoTestCase):
+class ListDocumentTest(GSoCDjangoTestCase):
   """Test document list page.
   """
 
@@ -51,7 +51,7 @@ class ListDocumentTest(DjangoTestCase):
     self.assertEqual(1, len(data))
 
 
-class EditProgramTest(DjangoTestCase):
+class EditProgramTest(GSoCDjangoTestCase):
   """Tests program edit page.
   """
 

@@ -24,7 +24,7 @@ import httplib
 import urllib
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import TaskQueueTestCase
 
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
@@ -32,7 +32,7 @@ from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
 
-class ProposalDuplicatesTest(DjangoTestCase, TaskQueueTestCase):
+class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
   """Tests for the tasks that calculates duplicates.
   """
 

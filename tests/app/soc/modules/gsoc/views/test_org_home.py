@@ -24,10 +24,10 @@ __authors__ = [
 
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 
-class OrgHomeProjectListTest(DjangoTestCase):
+class OrgHomeProjectListTest(GSoCDjangoTestCase):
   """Tests organization homepage views.
   """
 
@@ -98,7 +98,7 @@ class OrgHomeProjectListTest(DjangoTestCase):
     self.assertEqual(2, len(data))
 
 
-class OrgHomeApplyTest(DjangoTestCase):
+class OrgHomeApplyTest(GSoCDjangoTestCase):
   """Tests organization homepage views.
   """
 

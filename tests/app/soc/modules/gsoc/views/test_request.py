@@ -27,11 +27,11 @@ from google.appengine.ext import db
 from soc.models.request import Request
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 
 
-class RequestTest(MailTestCase, DjangoTestCase):
+class RequestTest(MailTestCase, GSoCDjangoTestCase):
   """Tests request page.
   """
 

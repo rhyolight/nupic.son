@@ -109,7 +109,7 @@ def updateGCITaskReferences(request):
   """ 
   
   updater = role_conversion.ReferenceUpdater(GCITask, GCIProfile,
-      ['student'], ['mentors'])
+      ['student', 'created_by', 'modified_by'], ['mentors'])
   updater.run()
   return http.HttpResponse("Ok")
 

@@ -25,11 +25,11 @@ __authors__ = [
 import httplib
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.timeline_utils import TimelineHelper
 
 
-class AdminDashboardTest(DjangoTestCase):
+class AdminDashboardTest(GSoCDjangoTestCase):
   """Tests admin dashboard page.
   """
 
@@ -54,13 +54,13 @@ class AdminDashboardTest(DjangoTestCase):
     """Asserts that all the templates to render a dashboard were used.
     """
     self.assertAdminBaseTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/dashboard.html')
+    self.assertTemplateUsed(response, 'v2/soc/dashboard/base.html')
 
   def assertUserActionsTemplatesUsed(self, response):
     """Asserts that all the templates to render user actions were used.
     """
     self.assertAdminBaseTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/soc/_user_action.html')
+    self.assertTemplateUsed(response, 'v2/soc/dashboard/_user_action.html')
 
   def testAdminDashboard(self):
     self.data.createHost()
@@ -93,7 +93,7 @@ class AdminDashboardTest(DjangoTestCase):
     self.assertTrue(context['colorbox'])
 
 
-class LookupProfileTest(DjangoTestCase):
+class LookupProfileTest(GSoCDjangoTestCase):
   """Test lookup profile page
   """
 
@@ -162,7 +162,7 @@ class LookupProfileTest(DjangoTestCase):
     self.assertResponseRedirect(response, new_url)
 
 
-class AcceptedOrgsPageTest(DjangoTestCase):
+class AcceptedOrgsPageTest(GSoCDjangoTestCase):
   """Test for accepted orgs that show proposals or projects for each org
   """
 
@@ -207,7 +207,7 @@ class AcceptedOrgsPageTest(DjangoTestCase):
       self.assertAcceptedOrgs(response, base)
 
 
-class ProposalsPageTest(DjangoTestCase):
+class ProposalsPageTest(GSoCDjangoTestCase):
   """Test proposals list page for admin
   """
 
@@ -261,7 +261,7 @@ class ProposalsPageTest(DjangoTestCase):
     self.assertProposalsPage(response)
 
 
-class ProjectsPageTest(DjangoTestCase):
+class ProjectsPageTest(GSoCDjangoTestCase):
   """Test projects list for admin
   """
 

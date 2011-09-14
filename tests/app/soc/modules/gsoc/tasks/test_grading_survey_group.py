@@ -26,7 +26,7 @@ import httplib
 import urllib
 
 from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
 
@@ -40,7 +40,7 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import GSoCProjectSurveyRecord
 
 
-class GradingSurveyGroupTest(MailTestCase, DjangoTestCase, TaskQueueTestCase):
+class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
   """Tests for accept_proposals task.
   """
 

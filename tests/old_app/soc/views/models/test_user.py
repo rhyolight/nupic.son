@@ -30,10 +30,10 @@ from google.appengine.api import users
 
 from soc.logic.models.user import logic as user_logic
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 
 
-class UserTestUnregistered(DjangoTestCase):
+class UserTestUnregistered(GSoCDjangoTestCase):
   """Tests related to the user view for unregistered users.
   """
   def setUp(self):
@@ -208,7 +208,7 @@ class UserTestUnregistered(DjangoTestCase):
     self.assertTrue('message' in response.context[0])
 
 
-class UserTestRegistered(DjangoTestCase):
+class UserTestRegistered(GSoCDjangoTestCase):
   """Tests related to the user view for registered users.
   """
   def setUp(self):
@@ -417,7 +417,7 @@ class UserTestRegistered(DjangoTestCase):
     self.assertTrue('message' in response.context[0])
 
 
-class UserTestDeveloper(DjangoTestCase):
+class UserTestDeveloper(GSoCDjangoTestCase):
   """Tests related to the user view for developer users.
   """
   def setUp(self):

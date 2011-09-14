@@ -123,11 +123,14 @@ class StudentEvaluationComponent(dashboard.Component):
 
   def context(self):
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=self.idx)
+        self.data, self._list_config, idx=self.idx, preload_list=False)
 
     return {
+        'name': 'student_evaluations',
         'lists': [list],
         'title': 'Student Evaluations',
+        'description': ugettext('Student evaluations'),
+        'idx': self.idx,
         }
 
   def getListData(self):
@@ -201,10 +204,12 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
   def context(self):
     context = super(MentorEvaluationComponent, self).context()
     context['title'] = 'Mentor Evaluations'
+    context['description'] = ugettext('Student evaluations')
+    context['name'] = 'mentor_evaluations'
     return context
 
 
-class Dashboard(dashboard.Dashboard):
+class Dashboard(dashboard.DashboardPage):
   """View for the list of all the organization related components.
   """
 
@@ -225,7 +230,7 @@ class Dashboard(dashboard.Dashboard):
 
     raise AccessViolation(DEF_NOT_ADMIN_MSG)
 
-  def _getActiveComponents(self):
+  def components(self):
     """Returns the components that are active on the page.
     """
     program = self.data.program

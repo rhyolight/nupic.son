@@ -1,0 +1,54 @@
+<div class="cog"></div>
+
+<div class="block-title clearfix">
+  <div class="block-task-title">
+    <span class="title">{{ task.title }}</span>
+    <span class="project">{{ task.org.name }}</span>
+  </div>
+
+  <div class="block-task-action">
+    <span class="block-task-action-title">You are mentor for this task.</span>
+    <a href="javascript:void(0)" class="task-btn task-btn-close">Mark task as closed</a>
+    <a href="javascript:void(0)" class="task-btn task-btn-unassign">Unassign task</a>
+    <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit task</a>
+    <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
+  </div>
+</div>
+
+<div class="block-task-difficulty">
+  <span class="difficulty">Difficulty: <span class="emph">{{ task.difficulty.0 }}</span></span>
+  <span class="status">Status: <span class="emph">{{ task.status }}</span></span>
+  <span class="remaining">Time left: <span class="emph">5 hrs 6 min</span></span>
+  <span class="mentor">Mentor: <span class="emph">{{ mentors|join:", " }}</span></span>
+</div>
+
+<div class="block-content clearfix">
+  <div class="block-task-countdown">
+    <div class="stopwatch percent-33 clearfix">
+      <div class="stopwatch-watch"></div>
+
+      <div class="stopwatch-remaining clearfix">
+        <div class="stopwatch-time">
+          <div class="stopwatch-time-c">
+            <div class="time time-first">
+              <span class="number">35</span><span class="cap">days</span>
+            </div>
+
+            <div class="time">
+              <span class="number">17</span><span class="cap">hours</span>
+            </div>
+          </div>
+        </div>
+        <span class="remain">Remaining</span> <span class="timestamp">as of 7/23 @3:30GMT</span>
+      </div>
+      <a href="javascript:void(0)" class="task-btn task-btn-extended-deadline">Extended deadline</a>
+    </div>
+    <!-- end .stockwatch -->
+  </div>
+  <!-- end .block-task-countdown -->
+
+  <div class="block-task-description">
+    {{ task.description|safe }}
+  </div>
+  <!-- end .block-task-description -->
+</div>

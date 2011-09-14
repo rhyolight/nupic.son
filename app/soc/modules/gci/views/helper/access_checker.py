@@ -39,18 +39,25 @@ class Mutator(access_checker.Mutator):
 
   def unsetAll(self):
     self.data.task = access_checker.unset
+    self.data.comments = access_checker.unset
+    self.data.work_submissions = access_checker.unset
     super(Mutator, self).unsetAll()
 
-  def taskFromKwargs(self):
+  def taskFromKwargs(self, comments=False, work_submissions=True):
     """Sets the GCITask entity in RequestData object.
 
     The entity that is set will always be in a valid state and for the program
     that is set in the RequestData.
+
+    Args:
+      comments: If true the comments on this task are added to RequestData
+      work_submissions: If true the work submissions on this task are added to
+                        RequestData
     """
     id = long(self.data.kwargs['id'])
     task = GCITask.get_by_id(id)
 
-    if not task or (task.program.key() != self.data.program) or \
+    if not task or (task.program.key() != self.data.program.key()) or \
         task.status == 'invalid':
       error_msg = access_checker.DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
           'model': 'GCITask',
@@ -59,6 +66,12 @@ class Mutator(access_checker.Mutator):
       raise NotFound(error_msg)
 
     self.data.task = task
+
+    if comments:
+      self.data.comments = task.comments()
+
+    if work_submissions:
+      self.data.work_submissions = task.workSubmissions()
 
 
 class DeveloperMutator(access_checker.DeveloperMutator,
@@ -74,6 +87,11 @@ class AccessChecker(access_checker.AccessChecker):
     """Checks if the task is visible to the public.
     """
     assert access_checker.isSet(self.data.task)
+
+    if not self.data.timeline.tasksPubliclyVisible():
+      period = self.data.timeline.tasksPubliclyVisibleOn()
+      raise AccessViolation(
+          access_checker.DEF_PAGE_INACTIVE_BEFORE_MSG_FMT % period)
 
     if not self.data.task.isPublished():
       error_msg = access_checker.DEF_PAGE_INACTIVE_MSG

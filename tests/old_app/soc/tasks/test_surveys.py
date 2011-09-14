@@ -45,12 +45,12 @@ from soc.modules.gsoc.logic.models.survey import project_logic \
 from soc.modules.gsoc.logic.models.survey import grading_logic \
     as grading_survey_logic
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
 
 
-class SurveysTasksTest(DjangoTestCase, TaskQueueTestCase, MailTestCase):
+class SurveysTasksTest(GSoCDjangoTestCase, TaskQueueTestCase, MailTestCase):
   """Tests related to soc.tasks.surveys.
   """
 

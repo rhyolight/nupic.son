@@ -39,12 +39,12 @@ from soc.modules.gsoc.logic.models.student import logic as student_logic
 from soc.modules.gsoc.logic.models.student_proposal import logic \
     as student_proposal_logic
 
-from tests.test_utils import DjangoTestCase
+from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
 
 
-class AcceptProposalsTest(DjangoTestCase, TaskQueueTestCase, MailTestCase):
+class AcceptProposalsTest(GSoCDjangoTestCase, TaskQueueTestCase, MailTestCase):
   """Tests related to soc.modules.gsoc.tasks.accept_proposals.
   """
   def setUp(self):
