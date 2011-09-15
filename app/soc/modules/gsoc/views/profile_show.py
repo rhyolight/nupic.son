@@ -132,7 +132,7 @@ class ProfileAdminPage(RequestHandler):
 
     for project in GSoCProject.all().ancestor(profile):
       r.project(project.key().id())
-      links.append(r.urlOf('gsoc_project_details'))
+      links.append(r.urlOf('gsoc_project_details', full=True))
 
     r = self.redirect.profile()
 
