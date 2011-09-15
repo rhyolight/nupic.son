@@ -27,6 +27,7 @@ from soc.views import readonly_template
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
@@ -127,12 +128,21 @@ class ProfileAdminPage(RequestHandler):
     program = self.data.program
     r = self.redirect.profile()
 
+    links = []
+
+    for project in GSoCProject.all().ancestor(profile):
+      r.project(project.key().id())
+      links.append(r.urlOf('gsoc_project_details'))
+
+    r = self.redirect.profile()
+
     return {
         'page_name': '%s Profile - %s' % (program.short_name, profile.name()),
         'program_name': program.name,
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'user': UserReadOnlyTemplate(user),
         'profile': ProfileReadOnlyTemplate(profile),
+        'links': links,
         'css_prefix': ProfileReadOnlyTemplate.Meta.css_prefix,
         'submit_tax_link': r.urlOf('gsoc_tax_form_admin'),
         'submit_enrollment_link': r.urlOf('gsoc_enrollment_form_admin'),

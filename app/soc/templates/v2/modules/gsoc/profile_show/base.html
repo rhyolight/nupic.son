@@ -47,6 +47,12 @@ limitations under the License.
 {{ profile.render }}
 <!-- end profile block -->
 
+<!-- begin link block -->
+{% for link in links %}
+  {{ link|urlizetrunc:50 }}
+{% endfor %}
+<!-- end link block -->
+
 {% endblock page_content %}
 
 
