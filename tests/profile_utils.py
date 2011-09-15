@@ -85,6 +85,18 @@ class ProfileHelper(object):
     self.user = self.seed(User, properties=properties)
     return self
 
+  def deleteProfile(self):
+    """Deletes the created profile.
+    """
+    if not self.profile:
+      return self
+
+    if self.profile.student_info:
+      self.profile.student_info.delete()
+    self.profile.delete()
+
+    return self
+
   def createProfile(self):
     """Creates a profile for the current user.
     """
@@ -189,7 +201,7 @@ class GSoCProfileHelper(ProfileHelper):
     """Creates a profile for the current user.
     """
     if self.profile:
-      return
+      return self.profile
     from soc.modules.gsoc.models.profile import GSoCProfile
     user = self.createUser()
     properties = {

@@ -148,7 +148,7 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     response = self.client.get(url)
     self.assertResponseForbidden(response)
     
-    self.data.createMentor(self.org)
+    self.data.deleteProfile().createMentor(self.org)
     response = self.client.get(url)
     self.assertResponseForbidden(response)
     
@@ -156,32 +156,34 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     response = self.client.get(url)
     self.assertResponseForbidden(response)
     
-    self.data.createInactiveProfile()
+    self.data.deleteProfile().createInactiveProfile()
     response = self.client.get(url)
     self.assertResponseForbidden(response)
     
   def testOnlyAHostCanAccessTheAdminProfilePage(self):
-    """Tests that only the host is allowed to access its profile page.
+    """Tests that only the host is allowed to access profile pages.
     """
-    profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('host@example.com')
-    profile_helper.createProfile()
-    profile_helper.createHost()
-    url = '/gsoc/profile/admin/' + profile_helper.profile.key().name()
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com').createMentor(self.org)
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student.createStudentWithProject(self.org, mentor.profile)
+
+    url = '/gsoc/profile/admin/' + student.profile.key().name()
 
     self.data.createStudent()
     response = self.client.get(url)
     self.assertResponseForbidden(response)
     
-    self.data.createInactiveStudent()
+    self.data.deleteProfile().createInactiveStudent()
     response = self.client.get(url)
     self.assertResponseForbidden(response)
     
-    self.data.createInactiveProfile()
+    self.data.deleteProfile().createInactiveProfile()
     response = self.client.get(url)
     self.assertResponseForbidden(response)
     
-    self.data.createMentor(self.org)
+    self.data.deleteProfile().createMentor(self.org)
     response = self.client.get(url)
     self.assertResponseForbidden(response)
     
@@ -189,9 +191,9 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     response = self.client.get(url)
     self.assertResponseForbidden(response)
 
-    self.data.createProfile()
+    self.data.deleteProfile().createProfile()
     self.data.createHost()
-    url = '/gsoc/profile/admin/' + self.data.profile.key().name()
+
     response = self.client.get(url)
     self.assertResponseOK(response)
     self.assertProfileShowPageTemplatesUsed(response)
@@ -201,12 +203,16 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     self.assertTrue('program_name' in context)
     self.assertTrue('form_top_msg' in context)
     self.assertTrue('profile' in context)
+    self.assertTrue('user' in context)
+    self.assertTrue('links' in context)
     self.assertTrue('css_prefix' in context)
     self.assertTrue('submit_tax_link' in context)
     self.assertTrue('submit_enrollment_link' in context)
+
+    self.assertEqual(1, len(context['links']))
     
     expected_page_name = '%s Profile - %s' % (self.data.program.short_name, 
-                                              self.data.profile.name())
+                                              student.profile.name())
     actual_page_name = context['page_name']
     self.assertEqual(expected_page_name, actual_page_name)
     

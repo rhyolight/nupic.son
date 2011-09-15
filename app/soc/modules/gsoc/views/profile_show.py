@@ -22,14 +22,30 @@ __authors__ = [
   ]
 
 
+from soc.models.user import User
 from soc.views import readonly_template
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper.url_patterns import url
+
+
+class UserReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
+  """Template to construct readonly Profile data.
+  """
+
+  class Meta:
+    model = User
+    css_prefix = 'gsoc_profile_show'
+    fields = ['link_id']
+
+  def __init__(self, *args, **kwargs):
+    super(UserReadOnlyTemplate, self).__init__(*args, **kwargs)
+    self.fields['link_id'].group = "1. User info"
 
 
 class ProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
@@ -79,6 +95,7 @@ class ProfileShowPage(RequestHandler):
         'page_name': '%s Profile - %s' % (program.short_name, profile.name()),
         'program_name': program.name,
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
+        'user': UserReadOnlyTemplate(self.data.user),
         'profile': ProfileReadOnlyTemplate(profile),
         'css_prefix': ProfileReadOnlyTemplate.Meta.css_prefix,
         }
@@ -106,15 +123,26 @@ class ProfileAdminPage(RequestHandler):
     assert isSet(self.data.url_profile)
     assert isSet(self.data.url_user)
 
+    user = self.data.url_user
     profile = self.data.url_profile
     program = self.data.program
+    r = self.redirect.profile()
+
+    links = []
+
+    for project in GSoCProject.all().ancestor(profile):
+      r.project(project.key().id())
+      links.append(r.urlOf('gsoc_project_details'))
+
     r = self.redirect.profile()
 
     return {
         'page_name': '%s Profile - %s' % (program.short_name, profile.name()),
         'program_name': program.name,
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
+        'user': UserReadOnlyTemplate(user),
         'profile': ProfileReadOnlyTemplate(profile),
+        'links': links,
         'css_prefix': ProfileReadOnlyTemplate.Meta.css_prefix,
         'submit_tax_link': r.urlOf('gsoc_tax_form_admin'),
         'submit_enrollment_link': r.urlOf('gsoc_enrollment_form_admin'),
