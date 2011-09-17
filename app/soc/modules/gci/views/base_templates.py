@@ -143,3 +143,18 @@ class Footer(Template):
 
   def templatePath(self):
     return "v2/modules/gci/_footer.html"
+
+
+class Status(Template):
+  """Template to render the status block.
+  """
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    return {
+    }
+
+  def templatePath(self):
+    return "v2/modules/gci/_status_block.html"

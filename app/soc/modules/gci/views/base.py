@@ -45,6 +45,8 @@ class RequestHandler(RequestHandler):
       footer: a rendered site_menu.Footer template for the current self.data
     """
     context['base_layout'] = 'v2/modules/gci/base.html'
+    if self.data.user:
+      context['status'] = base_templates.Status(self.data)
     context['header'] = base_templates.Header(self.data)
     context['mainmenu'] = base_templates.MainMenu(self.data)
     context['footer'] = base_templates.Footer(self.data)
