@@ -25,6 +25,7 @@ __authors__ = [
 from django.conf.urls.defaults import url as django_url
 
 from soc.logic.exceptions import AccessViolation
+from soc.logic.exceptions import NotFound
 from soc.views import document
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
