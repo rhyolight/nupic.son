@@ -401,7 +401,7 @@ class GSoCDjangoTestCase(DjangoTestCase):
       gsoc: a GSoCProgram instance
       org_app: a OrgAppSurvey instance
       org: a GSoCOrganization instance
-      timeline: a TimelineHelper instance
+      timeline: a GSoCTimelineHelper instance
       data: a GSoCProfileHelper instance
     """
     from soc.models.site import Site
@@ -410,7 +410,7 @@ class GSoCDjangoTestCase(DjangoTestCase):
     from soc.modules.gsoc.models.timeline import GSoCTimeline
     from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
     from soc.models.org_app_survey import OrgAppSurvey
-    from tests.timeline_utils import TimelineHelper
+    from tests.timeline_utils import GSoCTimelineHelper
     from tests.profile_utils import GSoCProfileHelper
 
     # Initialize instances in the parent first
@@ -457,7 +457,7 @@ class GSoCDjangoTestCase(DjangoTestCase):
 
     self.org = self.createOrg()
 
-    self.timeline = TimelineHelper(self.gsoc.timeline, self.org_app)
+    self.timeline = GSoCTimelineHelper(self.gsoc.timeline, self.org_app)
     self.data = GSoCProfileHelper(self.gsoc, self.dev_test)
 
   def createOrg(self, override={}):
@@ -514,7 +514,7 @@ class GCIDjangoTestCase(DjangoTestCase):
       gci: a GSoCProgram instance
       org_app: a OrgAppSurvey instance
       org: a GSoCOrganization instance
-      timeline: a TimelineHelper instance
+      timeline: a GSoCTimelineHelper instance
       data: a GCIProfileHelper instance
     """
     from soc.models.site import Site
@@ -523,8 +523,8 @@ class GCIDjangoTestCase(DjangoTestCase):
     from soc.modules.gci.models.timeline import GCITimeline
     from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
     from soc.models.org_app_survey import OrgAppSurvey
-    #TODO(Leo): add TimelineHelper for GCI
-    #from tests.timeline_utils import TimelineHelper
+    #TODO(Leo): add GSoCTimelineHelper for GCI
+    #from tests.timeline_utils import GSoCTimelineHelper
     from tests.profile_utils import GCIProfileHelper
 
     # Initialize instances in the parent first
@@ -574,7 +574,7 @@ class GCIDjangoTestCase(DjangoTestCase):
 
     self.org = self.createOrg()
 
-    #self.timeline = TimelineHelper(self.gci.timeline, self.org_app)
+    #self.timeline = GSoCTimelineHelper(self.gci.timeline, self.org_app)
     self.data = GCIProfileHelper(self.gci, self.dev_test)
 
   def createOrg(self, override={}):

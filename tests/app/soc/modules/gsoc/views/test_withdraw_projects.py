@@ -29,7 +29,7 @@ from django.utils import simplejson
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
-from tests.timeline_utils import TimelineHelper
+from tests.timeline_utils import GSoCTimelineHelper
 
 
 class WithdrawProjectsTest(GSoCDjangoTestCase):

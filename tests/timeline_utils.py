@@ -39,7 +39,7 @@ def future(delta=100):
   return datetime.today() + timedelta(delta)
 
 
-class TimelineHelper(object):
+class GSoCTimelineHelper(object):
   """Helper class to aid in setting the timeline.
   """
 

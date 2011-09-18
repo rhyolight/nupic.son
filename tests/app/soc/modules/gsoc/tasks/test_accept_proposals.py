@@ -30,7 +30,7 @@ from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
-from tests.timeline_utils import TimelineHelper
+from tests.timeline_utils import GSoCTimelineHelper
 
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.organization import GSoCOrganization
