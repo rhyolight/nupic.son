@@ -65,9 +65,9 @@ class EditDocumentPage(RequestHandler):
   def post(self):
     """Handler for HTTP POST request.
     """
-    document = document.validateForm(self.data)
-    if document:
-      self.redirect.document(document)
+    validated_document = document.validateForm(self.data)
+    if validated_document:
+      self.redirect.document(validated_document)
       self.redirect.to('edit_gsoc_document')
     else:
       self.get()
