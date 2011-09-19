@@ -73,6 +73,15 @@ class Mutator(access_checker.Mutator):
     if work_submissions:
       self.data.work_submissions = task.workSubmissions()
 
+  def taskFromKwargsIfId(self):
+    """Sets the GCITask entity in RequestData object if ID exists or None.
+    """
+    if not 'id' in self.data.kwargs:
+      self.data.task = None
+      return
+
+    self.taskFromKwargs()
+
 
 class DeveloperMutator(access_checker.DeveloperMutator,
                        Mutator):

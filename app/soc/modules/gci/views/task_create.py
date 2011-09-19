@@ -88,9 +88,9 @@ class TaskCreatePage(RequestHandler):
     ]
 
   def checkAccess(self):
+    self.mutator.taskFromKwargsIfId()
+
     self.check.isLoggedIn()
-    self.mutator.organiationFromKwargs()
-    self.check.isMentorForOrganization(self.data.organization)
 
   def templatePath(self):
     return 'v2/modules/gci/task/create.html'
