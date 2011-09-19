@@ -25,7 +25,6 @@ __authors__ = [
 
 import time
 
-
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
@@ -145,7 +144,6 @@ class TaskCreatePage(RequestHandler):
       'error': form.errors,
     }
 
-
     return context
 
   def putWithMentors(self, form, entity):
@@ -198,4 +196,3 @@ class TaskCreatePage(RequestHandler):
       self.redirect.to('gci_show_task', validated=True)
     else:
       self.get()
-
