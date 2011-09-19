@@ -60,7 +60,7 @@ class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
 
   #: Required field indicating the "title" of the task
   title = db.StringProperty(required=True,
-                            verbose_name=ugettext('Title'))
+                            verbose_name=ugettext('Task Title'))
   title.help_text = ugettext('Title of the task')
 
   #: Required field containing the description of the task
