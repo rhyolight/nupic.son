@@ -73,19 +73,6 @@ class ParticipatingOrgs(Template):
   def templatePath(self):
     return "v2/modules/gci/homepage/_participating_orgs.html"
 
-class News(Template):
-  """News template.
-  """
-
-  def __init__(self, data):
-    self.data = data
-
-  def context(self):
-    return {
-    }
-
-  def templatePath(self):
-    return "v2/modules/gci/homepage/_news.html"
 
 class Timeline(Template):
   """News template.
@@ -143,7 +130,6 @@ class Homepage(RequestHandler):
         'how_it_works': HowItWorks(self.data),
         'featured_task': FeaturedTask(self.data),
         'participating_orgs': ParticipatingOrgs(self.data),
-        'news': News(self.data),
         'timeline': Timeline(self.data),
         'connect_with_us': ConnectWithUs(self.data),
         'program': self.data.program,
