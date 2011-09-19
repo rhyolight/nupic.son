@@ -43,33 +43,65 @@ class TaskCreateForm(forms.ModelForm):
   """Django form for the task creation page.
   """
 
+  tags = django_forms.CharField(label=ugettext('Tags'))
+
+  time_to_complete_days = django_forms.IntegerField(
+      label=ugettext('Time to complete'))
+
+  time_to_complete_hours = django_forms.IntegerField(
+      label=ugettext('Time to complete'))
+
+  def __init__(self, data, *args, **kwargs):
+    super(TaskCreateForm, self).__init__(*args, **kwargs)
+
+    # get a list difficulty levels stored for the program entity
+    difficulties = task.TaskDifficultyTag.get_by_scope(data.program)
+
+    task_difficulties = []
+    for difficulty in difficulties:
+      task_difficulties.append((difficulty.tag, difficulty.tag))
+
+    self.fields['difficulties'] = django_forms.ChoiceField(
+        label=ugettext('Difficulty'), choices=task_difficulties)
+
+    # get a list of task type tags stored for the program entity
+    type_tags = task.TaskTypeTag.get_by_scope(data.program)
+
+    task_type_tags = []
+    for type_tag in type_tags:
+      task_type_tags.append((type_tag.tag, type_tag.tag))
+
+    self.fields['task_type'] = django_forms.MultipleChoiceField(
+        label=ugettext('Type'), choices=task_type_tags,
+        widget=forms.CheckboxSelectMultiple)
+
+    org_choices = []
+    for org in set(data.org_admin_for + data.mentor_for):
+      org_choices.append((org.link_id, org.name))
+
+    self.fields['organization'] = django_forms.ChoiceField(
+        label=ugettext('Organization'), choices=org_choices)
+
+#    self.fields['mentors'] = django_forms.ChoiceField(
+#        widget=django_forms.MultipleHiddenInput(), choices=)
+
   class Meta:
     model = task.GCITask
     css_prefix = 'gci_task'
-    exclude = ['mentors', 'user', 'student', 'program', 'closed_on',
-               'deadline', 'created_by', 'created_on', 'modified_by',
-               'modified_on', 'history']
+    fields = ['title', 'description', 'difficulty' , 'task_type', 'arbit_tag']
 
-    widgets = forms.choiceWidgets(
-        task.GCITask, ['difficulty', 'task_type'])
-
-  time_to_complete_days = django_forms.IntegerField()
   clean_description = cleaning.clean_html_content('description')
-
-  def __init__(self, request_data, *args, **kwargs):
-    super(CreateTaskForm, self).__init__(*args, **kwargs)
-    self_request_data = request_data
 
   def clean_mentors(self):
     program_key_name = self.request_data.program.key().name()
 
-    mentor_link_ids = form.cleaned_data['mentors']
+    mentor_link_ids = self.cleaned_data['mentors']
     split_link_ids = mentor_link_ids.split(',')
 
     for link_id in split_link_ids:
       link_id = link_id.strip()
       mentor_key_name = '%s/%s' % (program_key_name, link_id)
-      mentor_entity = db.get_by_key_name(mentor_key_name)
+      mentor_entity = GCIProfile.get_by_key_name(mentor_key_name)
       if self.request_data.organization.key() not in mentor_entity.mentor_for:
         raise django_forms.ValidationError(
             "link id %s is not a valid mentor" % (link_id))
