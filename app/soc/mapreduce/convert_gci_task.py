@@ -130,7 +130,7 @@ def process_tag(tag):
       task = GCITask.get(t)
       new_tagged = new_task_for_old(task) if task else None
     except db.KindError:
-      new_tagged = db.get(t)
+      new_tagged = t
 
     if new_tagged:
       new_tagged_keys.append(new_tagged)
