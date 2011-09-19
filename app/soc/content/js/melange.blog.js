@@ -41,7 +41,7 @@ BlogPreview.prototype.render_ = function (result, title, title_link) {
   if (!title_link) {
     title_link = result.feed.link;
   }
-  this.createElement_("h4", container, "", "title-section-blog-feed", title);
+  this.createDiv_(container, "block-title", "title-section-blog-feed", title);
 
   var blog = this.createDiv_(container, "block-content",
                              "block-blog-feed-content");
@@ -55,7 +55,7 @@ BlogPreview.prototype.render_ = function (result, title, title_link) {
   }
   var footer = this.createDiv_(container, "readmore",
                                "block-blog-feed-readmore");
-  this.createLink_(footer, title_link, "read more");
+  this.createLink_(footer, title_link, "Read more");
 };
 
 BlogPreview.prototype.createDiv_ = function (parent, className,

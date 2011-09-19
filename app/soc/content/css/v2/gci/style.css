@@ -166,7 +166,7 @@ a:hover {  }
 
 /*Link hover styles*/
 .block-status .block-status-task .block-status-task-link a:hover, 
-.block-news .block-news-item a:hover, 
+.block-news .blog-item a:hover,
 .block-featured-task .block-featured-task-link a:hover, 
 .task-single a:hover, 
 .task-btn:hover, 
@@ -1153,23 +1153,35 @@ body {
         vertical-align: middle;
     }
 .block-news {/*News*/
-    
 }
-    .block-news .block-news-item {
+    .block-news .blog-item {
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         font-weight: bold;
         padding-bottom: 7px;
     }
-    .block-news .block-news-item:last-child {
+    .block-news .blog-item:last-child {
         padding-bottom: 0;
     }
-    .block-news .block-news-item .date {
+    .block-news .blog-item .date {
         color: #666;
         display: block;
     }
-    .block-news .block-news-item a {
+    .block-news .blog-item a {
         font-size: 16px;
         line-height: 18px;
+    }
+    .block .readmore {
+        background: #0f649d;
+        color: #fff;
+        font-size: 13px;
+        font-weight: bold;
+        line-height: 15px;
+        padding: 4px 0 4px 25px;
+    }
+    .block .readmore a {
+        background:url(../../../images/v2/gci/arrow-white-sm.png) right center no-repeat;
+        color: #fff;
+        padding-right: 9px;
     }
 .block-timeline {/*Timeline*/
     
