@@ -98,6 +98,7 @@ class ConnectWithUs(Template):
 
   def context(self):
     return {
+        'program': self.data.program,
     }
 
   def templatePath(self):
