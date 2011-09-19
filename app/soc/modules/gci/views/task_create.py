@@ -14,35 +14,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI Task creation page.
+"""Views for creating/editing GCI Tasks.
 """
 
 __authors__ = [
+  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   '"Selwyn Jacob" <selwynjacob90@gmail.com>',
   ]
 
 
 import time
 
-from google.appengine.ext import db
-
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
-from soc.logic.exceptions import AccessViolation
-from soc.logic.helper import notifications
 from soc.views import forms
-from soc.tasks import mailer
+from soc.views.helper import url_patterns
 
 from soc.modules.gci.models import task
-from soc.modules.gci.views import forms as gci_forms
+from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.base_templates import LoggedInMsg
-from soc.modules.gci.views.helper import url_patterns
+from soc.modules.gci.views.helper.url_patterns import url
 
 
-class CreateTaskForm(gci_forms.GCIModelForm):
+class TaskCreateForm(forms.ModelForm):
   """Django form for the task creation page.
   """
 
@@ -80,7 +77,7 @@ class CreateTaskForm(gci_forms.GCIModelForm):
     return mentor_link_ids
 
 
-class CreateTaskPage(RequestHandler):
+class TaskCreatePage(RequestHandler):
   """View to create a new task.
   """
 
@@ -100,13 +97,12 @@ class CreateTaskPage(RequestHandler):
 
   def context(self):
     if self.data.task:
-      form = CreateTaskFrom(self.data.POST or None,
+      form = TaskCreateForm(self.data, self.data.POST or None,
                             instance=self.data.task)
-      page_name = "Edit task"
+      page_name = "Edit task - %s" % (self.data.task.title)
     else:
-      form = CreateTaskForm(self.data.POST or None)
-      page_name = "Create task"
-    error = form.errors
+      form = TaskCreateForm(self.data, self.data.POST or None)
+      page_name = "Create a new task"
 
     org_entity = self.data.organization
 
