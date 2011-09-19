@@ -1,4 +1,4 @@
-{% extends "v2/modules/gci/form_base.html" %}
+{% extends "v2/modules/gci/base.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,3 +12,127 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gci/uniform.default.css" />
+{% endblock stylesheets %}
+
+{% block page_content %}
+<div class="block block-form">
+  <div class="block-form-title">
+    <span class="title">{{ title }}</span>
+    <span class="req">* fields required</span>
+  </div>
+  <form action="#" method="post" class="form-create-task clearfix">
+  <div class="form-row error form-row-task-title">
+      <label for="task-title" class="form-label">Task title<em>*</em> <span class="form-row-error-msg">*Task needs a name!</span></label>
+      <input name="task-title" value="" type="text">
+  </div>
+    <div class="form-row form-row-task-short-description">
+      <label for="short-description" class="form-label">Short description</label>
+      <input name="short-description" value="" type="text">
+    <span class="note">300 characters remaining</span>
+    </div>
+
+      <div class="form-row grid_4 alpha form-row-task-type">
+          <label for="type" class="form-label">Type<em>*</em></label>
+          <span class="note">The kind of work to be done</span>
+          <div class="form-checkboxes">
+              <div class="form-checkboxes-item">
+                  <input name="code" id="code" value="1" type="checkbox"> <label for="code">Code</label>
+              </div>
+              <div class="form-checkboxes-item">
+                  <input name="documentation" id="documentation" value="1" type="checkbox"> <label for="documentation">Documentation</label>
+              </div>
+              <div class="form-checkboxes-item">
+                  <input name="outreach" id="outreach" value="1" type="checkbox"> <label for="outreach">Outreach</label>
+              </div>
+              <div class="form-checkboxes-item">
+                  <input name="quality" id="quality" value="1" type="checkbox"> <label for="quality">Quality Assurance</label>
+              </div>
+              <div class="form-checkboxes-item">
+                  <input name="research" id="research" value="1" type="checkbox"> <label for="research">Research</label>
+              </div>
+              <div class="form-checkboxes-item">
+                  <input name="training" id="training" value="1" type="checkbox"> <label for="training">Training</label>
+              </div>
+              <div class="form-checkboxes-item">
+                  <input name="translation" id="translation" value="1" type="checkbox"> <label for="translation">Translation</label>
+              </div>
+              <div class="form-checkboxes-item">
+                  <input name="ui" id="ui" value="1" type="checkbox"> <label for="ui">User Interface</label>
+              </div>
+          </div>
+      </div>
+
+      <div class="form-row grid_4 omega form-row-task-tags">
+          <label for="tags" class="form-label">Tags<em>*</em></label>
+          <input name="tags" value="" type="text">
+          <span class="note">Describe this task with tags (comma separated). Ex: Linux, Apache, C++, GUI</span>
+      </div>
+
+      <div class="clear"></div>
+
+      <div class="form-row form-row-task-long-description">
+          <label for="long-description" class="form-label">Long description</label>
+          <textarea id="long-description" name="long-description"></textarea>
+          <span class="note">30,000 characters remaining</span>
+      </div>
+
+      <div class="form-row form-row-task-completion-time">
+          <label for="complete-time" class="form-label">Time to complete<em>*</em></label>
+          <div class="form-row-task-completion-time-inner">
+              <input name="complete-days" value="" type="text"> days
+              <input name="complete-hours" value="" type="text"> hours
+          </div>
+          <span class="note">30,000 characters remaining</span>
+      </div>
+
+      <div class="form-row form-row-task-difficulty">
+          <label for="long-description" class="form-label">Difficulty<em>*</em></label>
+          <div class="form-row-task-difficulty-inner">
+              <select>
+                <option>Select</option>
+                <option>Easy</option>
+                <option>Medium</option>
+                <option>Difficult</option>
+              </select>
+          </div>
+          <span class="note">The overall difficulty of the task</span>
+      </div>
+
+      <div class="form-row form-row-task-assigned-mentor">
+          <label for="long-description" class="form-label">Assigned Mentor<em>*</em></label>
+          <div class="form-row-task-assigned-mentor-inner">
+              <select>
+                  <option>Select a mentor</option>
+                <option>Bill Atkinson</option>
+                <option>Mentor name, it's a long one!</option>
+                <option>Mentor name</option>
+                <option>Mentor name</option>
+              </select>
+              <div class="add-field-link clearfix">
+                  <a href="javascript:void(0)">+ add another mentor</a>
+              </div>
+          </div>
+          <span class="note">Mentor who will oversee task's completion</span>
+      </div>
+
+      <div class="form-row form-row-buttons">
+        <input value="Submit" class="button" type="submit">
+      </div>
+  </form>
+
+</div>
+{% endblock page_content %}
+
+{% block dependencies %}
+  [
+    dep.uniform,
+    null,
+    function () {
+      jQuery("select, input:radio, input:file, input:checkbox").uniform();
+    }
+  ]
+{% endblock dependencies %}
