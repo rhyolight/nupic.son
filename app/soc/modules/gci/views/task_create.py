@@ -136,31 +136,14 @@ class TaskCreatePage(RequestHandler):
       form = TaskCreateForm(self.data, self.data.POST or None)
       page_name = "Create a new task"
 
-    org_entity = self.data.organization
-
-    # get a list difficulty levels stored for the program entity
-    task_difficulty_tags = task.TaskDifficultyTag.get_by_scope(org_entity.scope)
-    form.fields['difficulties'] = [(d.tag, d.tag) for d in task_difficulty_tags]
-
-    # get a list of task type tags stored for the program entity
-    task_type_tags = task.TaskTypeTag.get_by_scope(org_entity.scope)
-    form.fields['task_type'] = [(t.tag, t.tag) for t in task_type_tags]
-
     context = {
       'page_name':  page_name,
       'form_top_msg': LoggedInMsg(self.data, apply_link=False),
-      'form': [form],
-      'error': error,
+      'forms': [form],
+      'error': form.errors,
     }
 
     return context
-
-  def post(self):
-    task = creatTaskFromForm()
-    if task:
-      self.redirect.to('gci_show_task', validated=True)
-    else:
-      self.get()
 
   def putWithMentors(self, form, entity):
     program_key_name = self.request_data.program.key().name()
@@ -173,7 +156,7 @@ class TaskCreatePage(RequestHandler):
     for link_id in split_link_ids:
       link_id = link_id.strip()
       mentor_key_name = '%s/%s' % (program_key_name, link_id)
-      mentor_entity = db.get_by_key_name(mentor_key_name)
+      mentor_entity = GCIProfile.get_by_key_name(mentor_key_name)
       mentors_keys.append(mentor_entity.key())
 
     entity.mentors = mentors_keys
@@ -187,9 +170,10 @@ class TaskCreatePage(RequestHandler):
       a newly created task entity or None.
     """
     if self.data.task:
-      form = CreatTaskForm(self.data.POST, instance=self.data.task)
+      form = TaskCreateForm(self.data, self.data.POST,
+                            instance=self.data.task)
     else:
-      form = CreateTaskForm(self.data.POST)
+      form = TaskCreateForm(self.data, self.data.POST)
 
     if not form.is_valid():
       return None
@@ -204,3 +188,10 @@ class TaskCreatePage(RequestHandler):
       entity = form.create(commit=False)
 
     self.putWithMentors(form, entity)
+
+  def post(self):
+    task = self.createTaskFromForm()
+    if task:
+      self.redirect.to('gci_show_task', validated=True)
+    else:
+      self.get()
