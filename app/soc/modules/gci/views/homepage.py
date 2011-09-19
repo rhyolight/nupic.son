@@ -28,6 +28,7 @@ from soc.views.template import Template
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
+
 class HowItWorks(Template):
   """How it works template.
   """
@@ -42,6 +43,7 @@ class HowItWorks(Template):
   def templatePath(self):
     return "v2/modules/gci/homepage/_how_it_works.html"
 
+
 class FeaturedTask(Template):
   """Featured task template.
   """
@@ -55,6 +57,7 @@ class FeaturedTask(Template):
 
   def templatePath(self):
     return "v2/modules/gci/homepage/_featured_task.html"
+
 
 class ParticipatingOrgs(Template):
   """Participating orgs template.
@@ -97,6 +100,7 @@ class Timeline(Template):
 
   def templatePath(self):
     return "v2/modules/gci/homepage/_timeline.html"
+
 
 class ConnectWithUs(Template):
   """Connect with us template.

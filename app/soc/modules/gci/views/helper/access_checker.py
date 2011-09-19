@@ -97,6 +97,7 @@ class AccessChecker(access_checker.AccessChecker):
       error_msg = access_checker.DEF_PAGE_INACTIVE_MSG
       raise AccessViolation(error_msg)
 
+
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker,
                              AccessChecker):
   """Developer access checker for GCI specific methods.

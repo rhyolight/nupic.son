@@ -151,7 +151,7 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
   #: Indicates when the Task was closed. Its value is None before it is
   #: completed.
   closed_on = db.DateTimeProperty(required=False,
-                                 verbose_name=ugettext('Closed on'))
+                                  verbose_name=ugettext('Closed on'))
 
   #: This field is set to the next deadline that will have consequences for
   #: this Task. For instance this will store a DateTime property which will
@@ -178,9 +178,9 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
   #: difficulty, task_type, time_to_complete. If site developer has modified
   #: the task, it is empty.
   modified_by = db.ReferenceProperty(reference_class=soc.models.role.Role,
-                                   required=False,
-                                   collection_name='edited_tasks',
-                                   verbose_name=ugettext('Modified by'))
+                                     required=False,
+                                     collection_name='edited_tasks',
+                                     verbose_name=ugettext('Modified by'))
 
   #: Date when the proposal was last modified, should be set manually on edit
   modified_on = db.DateTimeProperty(required=True, auto_now_add=True,
