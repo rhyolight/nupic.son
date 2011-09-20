@@ -53,6 +53,23 @@
         	<div class="block-comments clearfix">
         	    <span class="block-comments-title">Comments</span>
         	    <a href="javascript:void(0)" class="task-btn task-btn-comment-new">Post new comment</a>
+        	    <div class="block-comments-post-new">
+        	        <span class="block-comments-post-new-title">Post new comment</span>
+        	        <form action="#" method="post" class="form-comment-post-new clearfix">
+        	            <div class="form-row">
+        	                <label for="comment-reply-title" class="form-label">Title</label>
+        	                <input name="comment-reply-title" value="" type="text">
+        	            </div>
+        	            <div class="form-row">
+        	                <label for="comment-reply-body" class="form-label">Body</label>
+        	                <textarea id="comment-reply-body" name="comment-reply-body"></textarea>
+        	            </div>
+        	            <div class="form-row form-row-buttons">
+        	            	<input value="Submit" class="button" type="submit">
+        	            </div>
+        	        </form>
+        	    </div>
+        	    <!--end .block-comments-post-new-->  
         	</div>
         	<!-- end .block-comments -->
         </div>

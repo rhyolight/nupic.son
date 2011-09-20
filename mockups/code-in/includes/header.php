@@ -15,6 +15,8 @@
 </head>
 <body>
 
+<div id="wrap">
+<div id="main">
 <div class="container_12">
     <div class="grid_12 header">
         <h1 class="logo ir"><a href="/">Google Code-In</a></h1>
