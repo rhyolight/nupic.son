@@ -165,6 +165,7 @@ class RoleUpdater(object):
         'scope_path': program.key().name(),
         'scope': program,
         'parent': user,
+        'public_name': user.name,
         }
     for prop in self.POPULATED_PROFILE_PROPS:
       if hasattr(entity, prop):
