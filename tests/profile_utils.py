@@ -356,7 +356,7 @@ class GCIProfileHelper(ProfileHelper):
     """Sets the current user to be a student with a task for the 
     current program.
     """
-    return self.createStudentWithTasks(org, mentor, 1)
+    return self.createStudentWithTasks(org, mentor, 1)[0]
 
   def createStudentWithTasks(self, org, mentor, n=1):
     """Sets the current user to be a student with specified number of 
@@ -370,23 +370,21 @@ class GCIProfileHelper(ProfileHelper):
         'created_on': datetime.datetime.now() - datetime.timedelta(20),
         'modified_on': datetime.datetime.now() - datetime.timedelta(10)
     }
-    self.seedn(GCITask, properties, n)
-    return self.profile
+    return self.seedn(GCITask, properties, n)
 
-  def createMentorWithTask(self, org, student):
+  def createMentorWithTask(self, org):
     """Creates an mentor profile with a task for the current user.
     """
-    return self.createMentorWithTasks(org, student, 1)
+    return self.createMentorWithTasks(org, 1)[0]
 
-  def createMentorWithTasks(self, org, student, n=1):
+  def createMentorWithTasks(self, org, n=1):
     """Creates an mentor profile with a task for the current user.
     """
     self.createMentor(org)
     properties = {'mentors': [self.profile.key()], 'program': self.program,
-        'student': student,'user': student.user, 'org': org, 'status': 'Open',
-        'created_by': self.profile, 'modified_by': self.profile,
+        'org': org, 'status': 'Open', 'created_by': self.profile,
+        'modified_by': self.profile,
         'created_on': datetime.datetime.now() - datetime.timedelta(20),
         'modified_on': datetime.datetime.now() - datetime.timedelta(10)
     }
-    self.seedn(GCITask, properties, n)
-    return self.profile
+    return self.seedn(GCITask, properties, n)
