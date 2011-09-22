@@ -18,13 +18,53 @@
 """
 
 __authors__ = [
+    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
     '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
+import datetime
+import logging
 
+from google.appengine.ext import db
+
+from django.utils.translation import ugettext
+
+from soc.logic import tags
+
+from soc.modules.gci.logic import comment as comment_logic
+from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.work_submission import GCIWorkSubmission
+
+
+TAG_NAMES = ['arbit_tag', 'difficulty', 'task_type']
+TAGS_SERVICE = tags.TagsService(TAG_NAMES)
+
+
+DEF_ACTION_NEEDED_TITLE = ugettext('Initial Deadline passed')
+DEF_ACTION_NEEDED_MSG = ugettext(
+    '(The Melange Automated System has detected that the intial '
+    'deadline has been passed and it has set the task status to '
+    'ActionNeeded.)')
+
+
+DEF_NO_MORE_WORK_TITLE = ugettext('No more Work can be submitted')
+DEF_NO_MORE_WORK_MSG = ugettext(
+    '(The Melange Automated System has detected that the deadline '
+    'has passed and no more work can be submitted. The submitted work should '
+    'be reviewed.)')
+
+
+DEF_REOPENED_TITLE = ugettext('Task has been Reopened')
+DEF_REOPENED_MSG = ugettext(
+    '(The Melange Automated System has detected that the final '
+    'deadline has passed and it has Reopened the task.)')
+
+
+# TODO(ljvderijk): Add basic subscribers when task is created
+# TODO(ljvderijk): Implement closed transition after registration of student
 
 
 def isOwnerOfTask(task, user):
@@ -73,3 +113,183 @@ def canAdministrateTask(task, profile):
 
   org = task.org.key()
   return org in profile.is_mentor_for or org in profile.is_org_admin_for
+
+
+def updateTaskStatus(task):
+  """Method used to transit a task from a state to another state
+  depending on the context. Whenever the deadline has passed.
+
+  To be called by the automated system running on Appengine tasks or
+  whenever the public page for the task is loaded in case the Appengine task
+  framework is running late.
+
+  Args:
+    task: The GCITask entity
+  """
+  from soc.modules.gci.tasks import task_update
+
+  if not task.deadline or datetime.datetime.now() < task.deadline:
+    # do nothing if there is no deadline or it hasn't passed yet
+    return
+
+  # the transition depends on the current state of the task
+  transit_func = STATE_TRANSITIONS[task.status]
+
+  if not transit_func:
+    logging.warning('Invalid state to transfer from %s' %task.status)
+    return
+
+  # update the task and create a comment
+  task, comment = transit_func(task)
+
+  # store the new task, comment and notify those interested in a transaction
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+  def updateTaskAndCreateCommentTxn():
+    db.put(task)
+    comment_txn()
+
+  db.run_in_transaction(updateTaskAndCreateCommentTxn())
+
+  if task.deadline:
+    # only if there is a deadline set we should schedule another task
+    task_update.spawnUpdateTask(task)
+
+
+def transitFromClaimed(task):
+  """Makes a state transition of a GCI Task from Claimed state
+  to ActionNeeded.
+
+  Args:
+    task: The GCITask entity
+  """
+  # deadline is extended by 24 hours.
+  task.status = 'ActionNeeded'
+  task.deadline = task.deadline + datetime.timedelta(hours=24)
+
+  changes = [ugettext('User-MelangeAutomatic'),
+             ugettext('Action-Warned for action'),
+             ugettext('Status-%s' %task.status)]
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_ACTION_NEEDED_TITLE,
+      'content': DEF_ACTION_NEEDED_MSG,
+      'changes': changes
+  }
+  comment = GCIComment(**comment_props)
+
+  return task, comment
+
+
+def transitFromNeedsReview(task):
+  """Makes a state transition of a GCI Task that is in NeedsReview state.
+
+  This state transition is special since it actually only clears the deadline
+  field and does not change value of the state field. A Task is in this state
+  when work has been submitted and it has not been reviewed before the original
+  deadline runs out.
+
+  Args:
+    task: The GCITask entity
+  """
+  # Clear the deadline since mentors are not forced to review work within a
+  # certain period.
+  task.deadline = None
+
+  changes = [ugettext('User-MelangeAutomatic'),
+             ugettext('Action-Deadline passed'),
+             ugettext('Status-%s' %task.status)]
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_NO_MORE_WORK_TITLE,
+      'content': DEF_NO_MORE_WORK_MSG,
+      'changes': changes
+  }
+  comment = GCIComment(**comment_props)
+
+  return task, comment
+
+
+def transitFromActionNeeded(task):
+  """Makes a state transition of a GCI Task from ActionNeeded state
+  to Reopened state.
+
+  Args:
+    task: The GCITask entity
+  """
+  # reopen the task
+  task.user = None
+  task.student = None
+  task.status = 'Reopened'
+  task.deadline = None
+
+  changes = [ugettext('User-MelangeAutomatic'),
+             ugettext('Action-Forcibly reopened'),
+             ugettext('Status-%s' %task.status)]
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_REOPENED_TITLE,
+      'content': DEF_REOPENED_MSG,
+      'changes': changes
+  }
+  comment = GCIComment(**comment_props)
+
+  return task, comment
+
+
+def transitFromNeedsWork(task):
+  """Makes a state transition of a GCI Task from NeedsWork state
+  to Reopened state.
+
+  A task that has been marked as Needs(more)Work will NOT get a deadline 
+  extension and will be reopened immediately.
+
+  Args:
+    task: The GCITask entity
+  """
+  task.user = None
+  task.student = None
+  task.status = 'Reopened'
+  task.deadline = None
+
+  changes = [ugettext('User-MelangeAutomatic'),
+             ugettext('Action-Forcibly reopened'),
+             ugettext('Status-%s'% task.status)]
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_REOPENED_TITLE,
+      'content': DEF_REOPENED_MSG,
+      'changes': changes
+  }
+  comment = GCIComment(**comment_props)
+
+  return task, comment
+
+
+def delete(task):
+  """Delete existing task from datastore.
+  """
+  def task_delete_txn(task):
+    """Performs all necessary operations in a single transaction when a task
+    is deleted.
+    """
+    to_delete = []
+    to_delete += GCIComment.all(keys_only=True).ancestor(task)
+    to_delete += GCIWorkSubmission.all(keys_only=True).ancestor(task)
+    to_delete += [task.key()]
+
+    db.delete(to_delete)
+
+  TAGS_SERVICE.removeAllTagsForEntity(task)
+  db.run_in_transaction(task_delete_txn, task)
+
+# define the state transition functions
+STATE_TRANSITIONS = {
+    'Claimed': transitFromClaimed,
+    'NeedsReview': transitFromNeedsReview,
+    'ActionNeeded': transitFromActionNeeded,
+    'NeedsWork': transitFromNeedsWork,
+    }

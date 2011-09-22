@@ -31,6 +31,16 @@ def storeAndNotify(comment):
   Args:
     comment: A GCIComment instance
   """
+  db.run_in_transaction(storeAndNotifyTxn(comment))
+
+
+def storeAndNotifyTxn(comment):
+  """Returns a method that can run inside a transaction to store the comment
+  and notify those that are subscribed.
+
+  This is separated because we need to be able to update tasks or store a
+  worksubmission while posting a comment.
+  """
   task = comment.parent()
 
   # TODO(ljvderijk): Only subscribers should be notified, maybe skip the user
@@ -39,9 +49,8 @@ def storeAndNotify(comment):
 
   #context = notifications.newCommentContext(data, comment, to_emails)
   #sub_txn = mailer.getSpawnMailTaskTxn(context, parent=comment)
-  def create_comment_txn():
+  def store_comment_and_notify_txn():
     #sub_txn()
     comment.put()
-    return comment
 
-  db.run_in_transaction(create_comment_txn)
+  return store_comment_and_notify_txn()

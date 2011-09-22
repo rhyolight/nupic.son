@@ -20,6 +20,7 @@
 __authors__ = [
     '"Madhusudan.C.S" <madhusudancs@gmail.com>',
     '"Daniel Hans" <dhans@google.com>',
+    '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
 
@@ -32,13 +33,12 @@ from django import http
 from django.utils.translation import ugettext
 
 from soc.logic import system
-from soc.tasks import responses as task_reponses
 from soc.tasks.helper import error_handler
 from soc.views.helper import redirects
 
-from soc.modules.gci.logic.models import task as gci_task_logic
+from soc.modules.gci.logic import task as task_logic
+from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.tasks import ranking_update
-
 
 DEF_TASK_UPDATE_SUBJECT_FMT = ugettext(
     '[%(program_name)s Task Update] %(title)s')
@@ -64,7 +64,7 @@ def spawnUpdateTask(entity):
   """
 
   update_params = {
-      'gci_task_key': entity.key().name(),
+      'gci_task_key': entity.key().id(),
       }
   update_url = '/tasks/gci/task/update'
 
@@ -86,26 +86,23 @@ def updateGCITask(request, *args, **kwargs):
 
   post_dict = request.POST
 
-  key_name = post_dict.get('gci_task_key')
+  id = int(post_dict.get('gci_task_key'))
 
-  if not key_name:
+  if not id:
     # invalid task data, log and return OK
     return error_handler.logErrorAndReturnOK(
         'Invalid updateGCITask data: %s' % post_dict)
 
-  entity = gci_task_logic.logic.getFromKeyName(key_name)
+  task = GCITask.get_by_id(id)
 
-  if not entity:
+  if not task:
     # invalid task data, log and return OK
     return error_handler.logErrorAndReturnOK(
-        'Invalid updateGCITask gci_task_key: %s' % post_dict)
+        'No GCITask found for: %s' % post_dict)
 
-  entity, comment_entity = gci_task_logic.logic.updateTaskStatus(entity)
+  task_logic.updateTaskStatus(task)
 
-  if entity:
-    # TODO(madhusudan): does this really mean an unsuccessful update?
-    # return OK
-    return http.HttpResponse()
+  return http.HttpResponse()
 
 
 def spawnCreateNotificationMail(entity):

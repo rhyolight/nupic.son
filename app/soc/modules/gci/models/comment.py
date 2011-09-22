@@ -56,8 +56,9 @@ class GCIComment(soc.models.base.ModelWithFieldAttributes):
                              choices=['valid','invalid'],
                              verbose_name=ugettext('Status of this Comment'))
 
-  #: A required many:1 relationship with a comment entity indicating
-  #: the user who provided that comment.
+  #: A non-required many:1 relationship with a comment entity indicating
+  #: the user who provided that comment. If not available the system created
+  #: the comment.
   created_by = db.ReferenceProperty(reference_class=User,
                                     required=False,
                                     collection_name="commented_by")
@@ -65,7 +66,7 @@ class GCIComment(soc.models.base.ModelWithFieldAttributes):
   #: Date when the comment was added
   created_on = db.DateTimeProperty(auto_now_add=True)
 
-  # indicating wich user last modified the work. Used in displaying Work
+  # indicating wich user last modified the comment.
   modified_by = db.ReferenceProperty(reference_class=User,
                                      required=False,
                                      collection_name="comment_modified_by",
