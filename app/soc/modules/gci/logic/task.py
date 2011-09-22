@@ -125,19 +125,22 @@ def updateTaskStatus(task):
 
   Args:
     task: The GCITask entity
+
+  Returns:
+    Boolean indicating whether the task has been updated.
   """
   from soc.modules.gci.tasks import task_update
 
   if not task.deadline or datetime.datetime.now() < task.deadline:
     # do nothing if there is no deadline or it hasn't passed yet
-    return
+    return False
 
   # the transition depends on the current state of the task
   transit_func = STATE_TRANSITIONS[task.status]
 
   if not transit_func:
     logging.warning('Invalid state to transfer from %s' %task.status)
-    return
+    return False
 
   # update the task and create a comment
   task, comment = transit_func(task)
@@ -154,6 +157,7 @@ def updateTaskStatus(task):
     # only if there is a deadline set we should schedule another task
     task_update.spawnUpdateTask(task)
 
+  return True
 
 def transitFromClaimed(task):
   """Makes a state transition of a GCI Task from Claimed state
