@@ -150,7 +150,7 @@ class TimelinePage(RequestHandler):
 
   def validate(self):
     timeline_form = TimelineForm(self.data.POST,
-                                instance=self.data.program_timeline)
+                                 instance=self.data.program_timeline)
 
     if not timeline_form.is_valid():
       return False

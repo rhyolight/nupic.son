@@ -29,7 +29,6 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 from django import forms as django_forms
 
-
 from soc.logic import cleaning
 from soc.views import forms
 from soc.views.template import Template
@@ -50,6 +49,7 @@ class CommentForm(forms.ModelForm):
   """
 
   template_path = 'v2/modules/gci/proposal/_comment_form.html'
+
   class Meta:
     model = GCIComment
     css_prefix = 'gci_comment'
@@ -103,6 +103,7 @@ class TaskViewPage(RequestHandler):
 class TaskInformation(Template):
   """Template that contains the details of a task.
   """
+
   def context(self):
     """Returns the context for the current template.
     """
@@ -121,9 +122,12 @@ class TaskInformation(Template):
 
 
 class WorkSubmissions(Template):
-  """Template to render all the GCIWorkSubmissions, contain the form to upload
-     work and to contain the Mark task as Complete button for students.
+  """Template to render all the GCIWorkSubmissions.
+
+  Contains the form to upload work and contains the "Mark task as complete"
+  button for students.
   """
+
   def context(self):
     """Returns the context for the current template.
     """
@@ -151,6 +155,7 @@ class WorkSubmissions(Template):
 class CommentsTemplate(Template):
   """Template for rendering and adding comments.
   """
+
   def context(self):
     """Returns the context for the current template.
     """
@@ -172,6 +177,7 @@ class CommentsTemplate(Template):
 class PostUploadWork(RequestHandler):
   """View which handles posting WorkSubmissions.
   """
+
   def djangoURLPatterns(self):
     return [
         url_patterns.url(r'task/submit_work/%s$' % url_patterns.TASK,

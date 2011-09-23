@@ -100,7 +100,8 @@ class BulkCreate(RequestHandler):
       return self.get()
 
     bulk_create.spawnBulkCreateTasks(
-        form.cleaned_data['task_data'], self.data.organization, self.data.profile)
+        form.cleaned_data['task_data'], self.data.organization,
+        self.data.profile)
 
     self.redirect.organization(self.data.organization)
     self.redirect.to('gci_bulk_create', validated=True)

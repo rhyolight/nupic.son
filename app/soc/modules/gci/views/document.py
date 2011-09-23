@@ -54,7 +54,8 @@ class EditDocumentPage(RequestHandler):
     self.check.canEditDocument()
 
   def context(self):
-    form = document.DocumentForm(self.data.POST or None, instance=self.data.document)
+    form = document.DocumentForm(
+        self.data.POST or None, instance=self.data.document)
 
     return {
         'page_name': 'Edit document',
@@ -152,8 +153,7 @@ class DocumentListPage(RequestHandler):
     list_content = DocumentList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise AccessViolation('You do not have access to this data')
     return list_content.content()
 
   def context(self):
