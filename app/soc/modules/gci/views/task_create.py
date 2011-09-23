@@ -108,22 +108,12 @@ class CreateTaskPage(RequestHandler):
     org_entity = self.data.organization
 
     # get a list difficulty levels stored for the program entity
-    difficulties = task.TaskDifficultyTag.get_by_scope(org_entity.scope)
-
-    task_difficulties = []
-    for difficulty in difficulties:
-      task_difficulties.append((difficulty.tag, difficulty.tag))
-
-    form.fields['difficulties'] = task_difficulties
+    task_difficulty_tags = task.TaskDifficultyTag.get_by_scope(org_entity.scope)
+    form.fields['difficulties'] = [(d.tag, d.tag) for d in task_difficulty_tags]
 
     # get a list of task type tags stored for the program entity
-    type_tags = task.TaskTypeTag.get_by_scope(org_entity.scope)
-
-    task_type_tags = []
-    for type_tag in type_tags:
-      task_type_tags.append((type_tag.tag, type_tag.tag))
-
-    form.fields['task_type'] = task_type_tags
+    task_type_tags = task.TaskTypeTag.get_by_scope(org_entity.scope)
+    form.fields['task_type'] = [(t.tag, t.tag) for t in task_type_tags]
 
     context = {
       'page_name':  page_name,
