@@ -64,8 +64,10 @@ class Callback(object):
 
     # Google Appengine Tasks
     from soc.modules.gci.tasks.bulk_create import BulkCreateTask
+    from soc.modules.gci.tasks.task_update import TaskUpdate
 
     self.views.append(BulkCreateTask())
+    self.views.append(TaskUpdate())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.
