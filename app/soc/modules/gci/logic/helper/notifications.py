@@ -123,14 +123,13 @@ def sendBulkCreationCompleted(bulk_data):
 
 def sendParentalConsentFormRequired(user_entity, program_entity):
   """Sends out a notification to the student who completed first task that
-  a parent consental form is necessary to receive prizes.
+  a parent consent form is necessary to receive prizes.
 
   Args:
     user_entity: User entity who completed his/her first task
     program_entity: The entity for the program for which the task
                     was completed.
   """
-
   subject = DEF_PARENTAL_FORM_SUBJECT_MSG % {
       'program_name': program_entity.name
       }
