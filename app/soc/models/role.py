@@ -610,7 +610,6 @@ class Profile(Role):
   Parent:
     soc.models.user.User
   """
-
   notify_new_requests = db.BooleanProperty(required=False, default=True,
       verbose_name=ugettext('Notify of new requests'))
   notify_new_requests.help_text = ugettext(

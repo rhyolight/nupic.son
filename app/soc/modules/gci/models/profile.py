@@ -33,27 +33,21 @@ import soc.models.role
 class GCIProfile(soc.models.role.Profile):
   """GCIProfile Model.
   """
-
-  automatic_task_subscription = db.BooleanProperty(required=False, default=True,
+  automatic_task_subscription = db.BooleanProperty(
+      required=False, default=True,
       verbose_name=ugettext('Automatic task subscription'))
   automatic_task_subscription.help_text = ugettext(
-      'Whether to subscribe to related tasks automatically.')
+      'Whether to subscribe to tasks of interest automatically. These are '
+      'tasks which you have claimed or are mentoring.')
   automatic_task_subscription.group = ugettext("6. Notification settings")
-
-  notify_comments = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of new comments'))
-  notify_comments.help_text = ugettext(
-      'Whether to send an email notification for a new comment.')
-  notify_comments.group = ugettext("6. Notification settings")
 
 
 class GCIStudentInfo(soc.models.role.StudentInfo):
   """GCIStudentInfo Model.
 
   Parent:
-    soc.modules.gci.models.profile.Profile
+    soc.modules.gci.models.profile.GCIProfile
   """
-
   #: number of tasks completed
   number_of_tasks_completed = db.IntegerProperty(default=0)
 

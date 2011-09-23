@@ -26,18 +26,12 @@ from google.appengine.ext import db
 
 import soc.models.base
 
-import soc.modules.gci.models.task
-
 
 class GCITaskSubscription(soc.models.base.ModelWithFieldAttributes):
   """GCI Subscription model for tasks.
+
+  Parent:
+    soc.modules.gci.models.task.GCITask
   """
-
-  # Property holding reference to the GCITask for which this subscription
-  # entity exists.
-  task = db.ReferenceProperty(
-      reference_class=soc.modules.gci.models.task.GCITask,
-      required=True, collection_name='task_subscribers')
-
   # Property holding the list of users who are subscribed to the task.
   subscribers = db.ListProperty(item_type=db.Key, default=[])
