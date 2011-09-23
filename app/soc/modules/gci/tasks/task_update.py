@@ -120,7 +120,6 @@ class TaskUpdate(object):
     idx = int(post_dict.get('subscriber_start_index', 0))
     subscribers = db.get(subscription.subscribers[idx:idx+batch_size])
 
-    # TODO(ljvderijk): Use Django reverse lookup for this
     url_kwargs = {
       'sponsor': task.program.scope_path,
       'program': task.program.link_id,
