@@ -31,14 +31,16 @@ from google.appengine.ext import db
 
 from django import http
 from django.conf.urls.defaults import url
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
 from soc.logic import system
 from soc.tasks.helper import error_handler
-from soc.views.helper import redirects
 
 from soc.modules.gci.logic import task as task_logic
+from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.task_subscription import GCITaskSubscription
 
 
 class TaskUpdate(object):
@@ -54,7 +56,7 @@ class TaskUpdate(object):
     patterns = [
         url(r'^tasks/gci/task/update/(?P<id>(\d+))$', self.updateGCITask,
             name='task_update_GCI_task'),
-        url(r'^tasks/gci/task/mail/create$', self.createNotificationMail,
+        url(r'^tasks/gci/task/mail/comment', self.sendCommentNotificationMail,
             name='task_create_GCI_comment_notification'),
         url(r'^tasks/gci/task/update/student_status$',
             self.updateTasksPostStudentSignUp, name='task_gci_post_sign_up')]
@@ -80,21 +82,16 @@ class TaskUpdate(object):
 
     return http.HttpResponse()
 
-  def createNotificationMail(self, request, *args, **kwargs):
+  def sendCommentNotificationMail(self, request, *args, **kwargs):
     """Appengine task that sends mail to the subscribed users.
 
     Expects the following to be present in the POST dict:
       comment_key: Specifies the comment id for which to send the notifications
-      task_key: Specifies the task key name for which the comment belongs to
 
     Args:
       request: Django Request object
     """
-    from soc.modules.gci.logic.helper import notifications as gci_notifications
-
-    from soc.modules.gci.logic.models import comment as gci_comment_logic
-    from soc.modules.gci.logic.models import task_subscription as \
-        gci_task_subscription_logic
+    # TODO(ljvderijk): If all mails are equal we can sent one big bcc mail
 
     # set default batch size
     batch_size = 10
@@ -102,78 +99,69 @@ class TaskUpdate(object):
     post_dict = request.POST
 
     comment_key = post_dict.get('comment_key')
-    task_key = post_dict.get('task_key')
 
-    if not (comment_key and task_key):
+    if not comment_key:
       # invalid task data, log and return OK
       return error_handler.logErrorAndReturnOK(
           'Invalid createNotificationMail data: %s' % post_dict)
 
-    comment_key = long(comment_key)
+    comment_key = db.Key(comment_key)
+    comment = GCIComment.get(comment_key)
 
-    # get the task entity under which the specified comment was made
-    task_entity = gci_task_logic.logic.getFromKeyName(task_key)
-
-    # get the comment for the given id
-    comment_entity = gci_comment_logic.logic.getFromID(
-        comment_key, task_entity)
-
-    if not comment_entity:
+    if not comment:
       # invalid comment specified, log and return OK
       return error_handler.logErrorAndReturnOK(
-          'Invalid comment specified: %s/%s' % (comment_key, task_key))
+          'Invalid comment specified: %s' % (comment_key))
+
+    task = comment.parent()
+    subscription = GCITaskSubscription.all().ancestor(task).fetch(1)
 
     # check and retrieve the subscriber_start_key that has been done last
-    idx = post_dict.get('subscriber_start_index', '')
-    subscriber_start_index = int(idx) if idx.isdigit() else 0
+    idx = int(post_dict.get('subscriber_start_index', 0))
+    subscribers = db.get(subscription.subscribers[idx:idx+batch_size])
 
-    # get all subscribers to GCI task
-    fields = {
-        'task': task_entity,
-        }
-
-    ts_entity = gci_task_subscription_logic.logic.getForFields(
-        fields, unique=True)
-
-    subscribers = db.get(ts_entity.subscribers[
-        subscriber_start_index:subscriber_start_index+batch_size])
-
+    # TODO(ljvderijk): Use Django reverse lookup for this
+    url_kwargs = {
+      'sponsor': task.program.scope_path,
+      'program': task.program.link_id,
+      'id': task.key().id_or_name(),
+    }
     task_url = "http://%(host)s%(task)s" % {
-                   'host': system.getHostname(),
-                   'task': redirects.getPublicRedirect(
-                       task_entity, {'url_name': 'gci/task'}),
-                   }
+        'host': system.getHostname(),
+        'task': reverse('gci_view_task', kwargs=url_kwargs)
+        }
 
     # create the data for the mail to be sent
     message_properties = {
         'task_url': task_url,
         'redirect_url': "%(task_url)s#c%(cid)d" % {
             'task_url': task_url,
-            'cid': comment_entity.key().id_or_name()
+            'cid': comment.key().id_or_name()
             },
-        'comment_entity': comment_entity,
-        'task_entity': task_entity,
+        'comment_entity': comment,
+        'task_entity': task,
     }
 
-    subject = DEF_TASK_UPDATE_SUBJECT_FMT % {
-        'program_name': task_entity.program.short_name,
-        'title': task_entity.title,
+    subject = self.DEF_TASK_UPDATE_SUBJECT_FMT % {
+        'program_name': task.program.short_name,
+        'title': task.title,
         }
 
     for subscriber in subscribers:
-      gci_notifications.sendTaskUpdateMail(subscriber, subject,
-                                            message_properties)
+      # TODO(ljvderijk): enable sending of mail after template fixes
+      #gci_notifications.sendTaskUpdateMail(subscriber, subject,
+      #                                      message_properties)
+      pass
 
     if len(subscribers) == batch_size:
       # spawn task for sending out notifications to next set of subscribers
-      next_start = subscriber_start_index + batch_size
+      next_start = idx + batch_size
 
       task_params = {
-          'comment_key': comment_key,
-          'task_key': task_key,
+          'comment_key': str(comment_key),
           'subscriber_start_index': next_start
           }
-      task_url = '/tasks/gci/task/mail/create'
+      task_url = '/tasks/gci/task/mail/comment'
 
       new_task = taskqueue.Task(params=task_params, url=task_url)
       new_task.add('mail')
@@ -256,19 +244,17 @@ def spawnUpdateTask(entity):
   new_task.add('gci-update')
 
 
-def spawnCreateNotificationMail(entity):
+def spawnCreateNotificationMail(comment):
   """Spawns a task to send mail to the user who has subscribed to the specific
   task.
 
   Args:
-    entity: The Comment entity for which mails must be sent
+    comment: The Comment entity for which mails must be sent
   """
-
   task_params = {
-      'comment_key': entity.key().id_or_name(),
-      'task_key': entity.parent_key().id_or_name(),
+      'comment_key': str(comment.key())
       }
-  task_url = '/tasks/gci/task/mail/create'
+  task_url = '/tasks/gci/task/mail/comment'
 
   new_task = taskqueue.Task(params=task_params, url=task_url)
   new_task.add('mail')
