@@ -126,52 +126,52 @@ class CreateTaskPage(RequestHandler):
 
     return context
 
-    def post(self):
-      task = creatTaskFromForm()
-      if task:
-        self.redirect.to('gci_show_task', validated=True)
-      else:
-        self.get()
+  def post(self):
+    task = creatTaskFromForm()
+    if task:
+      self.redirect.to('gci_show_task', validated=True)
+    else:
+      self.get()
 
-    def putWithMentors(self, form, entity):
-      program_key_name = self.request_data.program.key().name()
+  def putWithMentors(self, form, entity):
+    program_key_name = self.request_data.program.key().name()
 
-      mentor_link_ids = form.cleaned_data['mentors']
-      split_link_ids = mentor_link_ids.split(',')
+    mentor_link_ids = form.cleaned_data['mentors']
+    split_link_ids = mentor_link_ids.split(',')
 
-      #The creator of the task automatically becomes a mentor
-      mentors_keys = [self.data.url_user.key()]
-      for link_id in split_link_ids:
-        link_id = link_id.strip()
-        mentor_key_name = '%s/%s' % (program_key_name, link_id)
-        mentor_entity = db.get_by_key_name(mentor_key_name)
-        mentors_keys.append(mentor_entity.key())
+    #The creator of the task automatically becomes a mentor
+    mentors_keys = [self.data.url_user.key()]
+    for link_id in split_link_ids:
+      link_id = link_id.strip()
+      mentor_key_name = '%s/%s' % (program_key_name, link_id)
+      mentor_entity = db.get_by_key_name(mentor_key_name)
+      mentors_keys.append(mentor_entity.key())
 
-      entity.mentors = mentors_keys
+    entity.mentors = mentors_keys
 
-      entity.put()
+    entity.put()
 
-    def createTaskFromForm(self):
-      """Creates a new task based on the data inserted in the form.
+  def createTaskFromForm(self):
+    """Creates a new task based on the data inserted in the form.
 
-      Returns:
-        a newly created task entity or None.
-      """
-      if self.data.task:
-        form = CreatTaskForm(self.data.POST, instance=self.data.task)
-      else:
-        form = CreateTaskForm(self.data.POST)
+    Returns:
+      a newly created task entity or None.
+    """
+    if self.data.task:
+      form = CreatTaskForm(self.data.POST, instance=self.data.task)
+    else:
+      form = CreateTaskForm(self.data.POST)
 
-      if not form.is_valid():
-        return None
-      task_link_id = 't%i' % (int(time.time()*100))
-      if not self.data.task:
-        key_name = '%s/%s' % (
-            self.data.organization.key.name(),
-            task_link_id
-            )
-        entity = form.create(commit=False, key_name=key_name)
-      else:
-        entity = form.create(commit=False)
+    if not form.is_valid():
+      return None
+    task_link_id = 't%i' % (int(time.time()*100))
+    if not self.data.task:
+      key_name = '%s/%s' % (
+          self.data.organization.key.name(),
+          task_link_id
+          )
+      entity = form.create(commit=False, key_name=key_name)
+    else:
+      entity = form.create(commit=False)
 
-      self.putWithMentors(form, entity)
+    self.putWithMentors(form, entity)
