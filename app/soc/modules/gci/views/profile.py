@@ -51,6 +51,7 @@ class GCIProfileForm(profile.ProfileForm):
     super(profile.ProfileForm, self).__init__(
 
         gci_forms.GCIBoundField, gci_forms.TEMPLATE_PATH, *args, **kwargs)
+
   class Meta:
     model = GCIProfile
     css_prefix = 'gci_profile'
