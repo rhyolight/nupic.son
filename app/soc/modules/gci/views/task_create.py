@@ -196,3 +196,4 @@ class TaskCreatePage(RequestHandler):
       self.redirect.to('gci_show_task', validated=True)
     else:
       self.get()
+
