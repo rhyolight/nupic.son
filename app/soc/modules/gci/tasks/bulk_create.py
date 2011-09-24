@@ -51,6 +51,7 @@ from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import TaskDifficultyTag
 from soc.modules.gci.models.task import TaskTypeTag
 
+
 BULK_CREATE_URL = '/tasks/gci/task/bulk_create'
 
 DATA_HEADERS = ['title', 'description', 'time_to_complete', 'mentors',
@@ -209,7 +210,7 @@ class BulkCreateTask(object):
       task['time_to_complete'] = int(task['time_to_complete'])
     except (ValueError, TypeError), e:
       errors.append('No valid time to completion found, given was: %s.'
-                    %task['time_to_complete'])
+                    % task['time_to_complete'])
 
     # clean mentors
     mentor_ids = set(task['mentors'].split(','))
@@ -224,7 +225,7 @@ class BulkCreateTask(object):
       if mentor:
         mentors.append(mentor.key())
       else:
-        errors.append('%s is not a mentor.' %mentor_id)
+        errors.append('%s is not a mentor.' % mentor_id)
 
     task['mentors'] = mentors
 
@@ -237,7 +238,7 @@ class BulkCreateTask(object):
 
     if not difficulty or difficulty not in allowed_difficulties:
       # no valid difficulty found
-      errors.append('No valid task difficulty found, given %s.' %difficulty)
+      errors.append('No valid task difficulty found, given %s.' % difficulty)
     else:
       task['difficulty'] = {
           'tags': task['difficulty'],
@@ -253,7 +254,7 @@ class BulkCreateTask(object):
       if task_type in allowed_types:
         task_types.append(task_type)
       else:
-        errors.append('%s is not a valid task type.' %task_type)
+        errors.append('%s is not a valid task type.' % task_type)
 
     task['task_type'] = {
         'tags': task_types,
@@ -307,7 +308,7 @@ def spawnBulkCreateTasks(data, org, org_admin):
       'bulk_create_key': bulk_data.key()
       }
 
-  logging.info('Enqueued bulk_create with: %s' %task_params)
+  logging.info('Enqueued bulk_create with: %s' % task_params)
   new_task = taskqueue.Task(params=task_params,
                             url=BULK_CREATE_URL)
   new_task.add()

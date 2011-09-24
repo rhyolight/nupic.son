@@ -40,6 +40,7 @@ from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.base_templates import LoggedInMsg
 from soc.modules.gci.views.helper import url_patterns
 
+
 class CreateTaskForm(forms.ModelForm):
   """Django form for the task creation page.
   """
@@ -48,11 +49,11 @@ class CreateTaskForm(forms.ModelForm):
     model = task.GCITask
     css_prefix = 'gci_task'
     exclude = ['mentors', 'user', 'student', 'program', 'closed_on',
-        'deadline', 'created_by', 'created_on', 'modified_by',
-        'modified_on', 'history']
+               'deadline', 'created_by', 'created_on', 'modified_by',
+               'modified_on', 'history']
 
-    widgets = forms.choiceWidgets(task.GCITask,
-        ['difficulty', 'task_type'])
+    widgets = forms.choiceWidgets(
+        task.GCITask, ['difficulty', 'task_type'])
 
   time_to_complete_days = django_forms.IntegerField()
   clean_description = cleaning.clean_html_content('description')
@@ -77,6 +78,7 @@ class CreateTaskForm(forms.ModelForm):
 
     return mentor_link_ids
 
+
 class CreateTaskPage(RequestHandler):
   """View to create a new task.
   """
@@ -98,7 +100,7 @@ class CreateTaskPage(RequestHandler):
   def context(self):
     if self.data.task:
       form = CreateTaskFrom(self.data.POST or None,
-                                       instance=self.data.task)
+                            instance=self.data.task)
       page_name = "Edit task"
     else:
       form = CreateTaskForm(self.data.POST or None)
@@ -173,4 +175,3 @@ class CreateTaskPage(RequestHandler):
         entity = form.create(commit=False)
 
       self.putWithMentors(form, entity)
-
