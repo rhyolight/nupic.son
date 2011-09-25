@@ -46,3 +46,9 @@ class Organization(soc.models.group.Group):
   ideas.example_text = ugettext('For instance a link to a Melange public '
       'document or some other URL')
   ideas.group = ugettext("1. Public Info")
+
+  logo_url = db.LinkProperty(
+      required=False, verbose_name=ugettext("Logo URL"))
+  logo_url.help_text = ugettext("URL to the Logo of your organization. Please "
+  "ensure that the image you provide is smaller than 65px65px.")
+  logo_url.group = ugettext("1. Public Info")
