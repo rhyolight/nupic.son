@@ -43,8 +43,7 @@ class TaskViewTest(GCIDjangoTestCase):
         createMentorWithTask(self.org)
 
     # Set timeline to taskPubliclyVisible
-    # TODO(ljvderijk): Use timeline helper from GCI.
-    #self.timeline.taskPubliclyVisible()
+    self.timeline.tasksPubliclyVisible()
 
     # Use a non-logged-in request to the page for that task
     self.profile.clear()
