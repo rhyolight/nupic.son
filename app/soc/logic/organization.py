@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GSoCOrganization (Model) query functions.
+"""Organization (Model) query functions.
 """
 
 __authors__ = [
@@ -27,9 +27,6 @@ __authors__ = [
 import datetime
 
 from google.appengine.api import memcache
-from google.appengine.ext import db
-
-from soc.modules.gsoc.models.organization import GSoCOrganization
 
 
 def _orgsWithLogoForQuery(query, batch_size=5):
@@ -50,10 +47,10 @@ def _orgsWithLogoForQuery(query, batch_size=5):
   return orgs
 
 
-def _orgWithLogoQuery(program):
-  """Returns a query for GSoCorganizations in the specified program with logo.
+def _orgWithLogoQuery(model, program):
+  """Returns a query for Organizations in the specified program with logo.
   """
-  q = GSoCOrganization.all()
+  q = model.all()
   q.filter('scope', program)
   q.filter('status', 'active')
   q.filter('logo_url >=', '')
@@ -61,7 +58,7 @@ def _orgWithLogoQuery(program):
   return q
 
 
-def participating(program):
+def participating(model, program):
   """Return a list of organizations to display on program homepage.
 
   Args:
@@ -73,7 +70,7 @@ def participating(program):
 
   batch_size = 5
 
-  q = _orgWithLogoQuery(program)
+  q = _orgWithLogoQuery(model, program)
 
   # the cache stores a 3-tuple in the order list of org entities,
   # cursor and the last time the cache was updated
@@ -91,7 +88,7 @@ def participating(program):
   orgs = _orgsWithLogoForQuery(q, batch_size)
 
   if len(orgs) < batch_size:
-    q = _orgWithLogoQuery(program)
+    q = _orgWithLogoQuery(model, program)
     extra_orgs = _orgsWithLogoForQuery(q, batch_size - len(orgs))
 
     # add only those orgs which are not already in the list
