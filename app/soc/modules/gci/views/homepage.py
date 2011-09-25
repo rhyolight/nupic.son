@@ -25,6 +25,7 @@ __authors__ = [
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
+from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -48,12 +49,16 @@ class FeaturedTask(Template):
   """Featured task template.
   """
 
-  def __init__(self, data):
+  def __init__(self, data, featured_task):
     self.data = data
+    self.featured_task = featured_task
 
   def context(self):
+    task_url = self.data.redirect.id(self.featured_task.key().id())
     return {
-    }
+        'featured_task': self.featured_task,
+        'featured_task_url': task_url,
+        }
 
   def templatePath(self):
     return "v2/modules/gci/homepage/_featured_task.html"
@@ -129,11 +134,17 @@ class Homepage(RequestHandler):
     context = {
         'page_name': '%s - Home page' % (self.data.program.name),
         'how_it_works': HowItWorks(self.data),
-        'featured_task': FeaturedTask(self.data),
         'participating_orgs': ParticipatingOrgs(self.data),
         'timeline': Timeline(self.data),
         'connect_with_us': ConnectWithUs(self.data),
         'program': self.data.program,
     }
+
+    featured_task = task_logic.getFeaturedTask(
+        current_timeline, self.data.program)
+
+    if featured_task:
+      context['featured_task'] = FeaturedTask(
+        self.data, featured_task)
 
     return context
