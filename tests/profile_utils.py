@@ -383,7 +383,7 @@ class GCIProfileHelper(ProfileHelper):
     self.createMentor(org)
     properties = {'mentors': [self.profile.key()], 'program': self.program,
         'org': org, 'status': 'Open', 'created_by': self.profile,
-        'modified_by': self.profile,
+        'modified_by': self.profile, 'student': None, 'user': None,
         'created_on': datetime.datetime.now() - datetime.timedelta(20),
         'modified_on': datetime.datetime.now() - datetime.timedelta(10)
     }
