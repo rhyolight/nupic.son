@@ -365,6 +365,8 @@ class GCIProfileHelper(ProfileHelper):
     student = self.createStudent()
     student.student_info.put()
     properties = {'program': self.program, 'org': org, 'status': 'Claimed',
+        'difficulty': self.program.task_difficulties[0],
+        'task_type': self.program.task_types[0],
         'mentors': [mentor.key()], 'student': student, 'user': student.user,
         'created_by': mentor, 'modified_by': mentor,
         'created_on': datetime.datetime.now() - datetime.timedelta(20),
@@ -382,6 +384,8 @@ class GCIProfileHelper(ProfileHelper):
     """
     self.createMentor(org)
     properties = {'mentors': [self.profile.key()], 'program': self.program,
+        'difficulty': self.program.task_difficulties[0],
+        'task_type': self.program.task_types[0],
         'org': org, 'status': 'Open', 'created_by': self.profile,
         'modified_by': self.profile, 'student': None, 'user': None,
         'created_on': datetime.datetime.now() - datetime.timedelta(20),
