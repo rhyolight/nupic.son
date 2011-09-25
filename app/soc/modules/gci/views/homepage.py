@@ -56,7 +56,9 @@ class FeaturedTask(Template):
     self.featured_task = featured_task
 
   def context(self):
-    task_url = self.data.redirect.id(self.featured_task.key().id())
+    task_url = self.data.redirect.id(self.featured_task.key().id()).urlOf(
+        'gci_view_task')
+
     return {
         'featured_task': self.featured_task,
         'featured_task_url': task_url,
