@@ -46,7 +46,7 @@ class TaskViewTest(GCIDjangoTestCase):
     self.timeline.tasksPubliclyVisible()
 
     # Use a non-logged-in request to the page for that task
-    self.profile.clear()
+    self.data.clear()
 
     url = '/gci/task/view/%s/%s' %(task.program.key().name(), task.key().id())
     response = self.client.get(url)
