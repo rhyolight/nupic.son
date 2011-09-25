@@ -39,8 +39,8 @@ def future(delta=100):
   return datetime.today() + timedelta(delta)
 
 
-class GSoCTimelineHelper(object):
-  """Helper class to aid in setting the timeline.
+class TimelineHelper(object):
+  """Base helper class to aid in setting the timeline.
   """
 
   def __init__(self, timeline, org_appl):
@@ -60,7 +60,6 @@ class GSoCTimelineHelper(object):
     self.timeline.accepted_organization_announced_deadline = None
     self.timeline.student_signup_start = None
     self.timeline.student_signup_end = None
-    self.timeline.accepted_students_announced_deadline = None
 
   def offSeason(self):
     """Sets the current period to off season.
@@ -73,9 +72,6 @@ class GSoCTimelineHelper(object):
     self.timeline.accepted_organization_announced_deadline = past()
     self.timeline.student_signup_start = past()
     self.timeline.student_signup_end = past()
-    self.timeline.accepted_students_announced_deadline = past()
-    self.timeline.put()
-    self.org_appl.put()
 
   def kickoff(self):
     """Sets the current period to the program kickoff.
@@ -88,9 +84,6 @@ class GSoCTimelineHelper(object):
     self.timeline.accepted_organization_announced_deadline = future()
     self.timeline.student_signup_start = future()
     self.timeline.student_signup_end = future()
-    self.timeline.accepted_students_announced_deadline = future()
-    self.timeline.put()
-    self.org_appl.put()
 
   def orgSignup(self):
     """Sets the current period to the organization signup phase.
@@ -103,9 +96,6 @@ class GSoCTimelineHelper(object):
     self.timeline.accepted_organization_announced_deadline = future()
     self.timeline.student_signup_start = future()
     self.timeline.student_signup_end = future()
-    self.timeline.accepted_students_announced_deadline = future()
-    self.timeline.put()
-    self.org_appl.put()
 
   def orgsAnnounced(self):
     """Sets the current period to the organization signup phase.
@@ -118,9 +108,6 @@ class GSoCTimelineHelper(object):
     self.timeline.accepted_organization_announced_deadline = past()
     self.timeline.student_signup_start = future()
     self.timeline.student_signup_end = future()
-    self.timeline.accepted_students_announced_deadline = future()
-    self.timeline.put()
-    self.org_appl.put()
 
   def studentSignup(self):
     """Sets the current period to the student signup phase.
@@ -133,6 +120,59 @@ class GSoCTimelineHelper(object):
     self.timeline.accepted_organization_announced_deadline = past()
     self.timeline.student_signup_start = past()
     self.timeline.student_signup_end = future()
+
+
+class GSoCTimelineHelper(TimelineHelper):
+  """Helper class to aid in setting the GSoC timeline.
+  """
+
+  def __init__(self, timeline, org_appl):
+    super(GSoCTimelineHelper, self).__init__(timeline, org_appl)
+
+  def _empty(self):
+    """Removes all timeline settings.
+
+    Note: does not save changes.
+    """
+    super(GSoCTimelineHelper, self)._empty()
+    self.timeline.accepted_students_announced_deadline = None
+
+  def offSeason(self):
+    """Sets the current period to off season.
+    """
+    super(GSoCTimelineHelper, self).offSeason()
+    self.timeline.accepted_students_announced_deadline = past()
+    self.timeline.put()
+    self.org_appl.put()
+
+  def kickoff(self):
+    """Sets the current period to the program kickoff.
+    """
+    super(GSoCTimelineHelper, self).kickoff()
+    self.timeline.accepted_students_announced_deadline = future()
+    self.timeline.put()
+    self.org_appl.put()
+
+  def orgSignup(self):
+    """Sets the current period to the organization signup phase.
+    """
+    super(GSoCTimelineHelper, self).orgSignup()
+    self.timeline.accepted_students_announced_deadline = future()
+    self.timeline.put()
+    self.org_appl.put()
+
+  def orgsAnnounced(self):
+    """Sets the current period to the organization signup phase.
+    """
+    super(GSoCTimelineHelper, self).orgsAnnounced()
+    self.timeline.accepted_students_announced_deadline = future()
+    self.timeline.put()
+    self.org_appl.put()
+
+  def studentSignup(self):
+    """Sets the current period to the student signup phase.
+    """
+    super(GSoCTimelineHelper, self).studentSignup()
     self.timeline.accepted_students_announced_deadline = future()
     self.timeline.put()
     self.org_appl.put()
