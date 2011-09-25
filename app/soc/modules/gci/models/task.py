@@ -186,6 +186,12 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
   modified_on = db.DateTimeProperty(required=True, auto_now_add=True,
                                     verbose_name=ugettext('Modified on'))
 
+  #: The task can be marked to be featured on program home page.
+  is_featured = db.BooleanProperty(default=False, required=True,
+                                   verbose_name=ugettext('Featured'))
+  is_featured.help_text = ugettext(
+      'Should this task be featured on the program homepage.')
+
   # TODO(Madhu): Remove after data conversion
   #: A field which holds the entire history of this task in JSON. The
   #: structure of this JSON string is as follows:
