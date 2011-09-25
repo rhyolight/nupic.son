@@ -25,6 +25,7 @@ __authors__ = [
 import datetime
 import logging
 
+from google.appengine.api import memcache
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
@@ -297,3 +298,58 @@ STATE_TRANSITIONS = {
     'ActionNeeded': transitFromActionNeeded,
     'NeedsWork': transitFromNeedsWork,
     }
+
+
+def getFeaturedTask(current_timeline, program):
+  """Return a featured task for a given program.
+
+  Args:
+    current_timeline: where we are currently on the program timeline
+    program: entity representing the program from which the featured
+        tasks should be fetched
+  """
+  # expiry time to fetch the new featured gci task entity
+  # the current expiry time is 2 hours.
+  expiry_time = datetime.timedelta(seconds=7200)
+
+  def queryForTask():
+    query = GCITask.all()
+    query.filter('is_featured', True)
+    query.filter('program', program)
+
+    return query
+
+  q = queryForTask()
+
+  # the cache stores a 3-tuple in the order gci task entity,
+  # cursor and the last time the cache was updated
+  fgt_cache = memcache.get('featured_gci_task')
+
+  if fgt_cache:
+    cached_task, cached_cursor, cache_expiry_time = fgt_cache
+    if (cached_task and not
+        datetime.datetime.now() > cache_expiry_time + expiry_time):
+      return cached_task
+    else:
+      q.with_cursor(cached_cursor)
+      if q.count() == 0:
+        q = queryForTask()
+
+  if current_timeline == 'student_signup_period':
+    task_status = ['Open', 'Reopened', 'ClaimRequested', 'Claimed',
+                   'ActionNeeded', 'AwaitingRegistration', 'NeedsWork',
+                   'NeedsReview']
+  else:
+    task_status = ['Closed']
+
+  for task in q:
+    if task.status in task_status:
+      new_task = task
+      break
+
+  new_cursor = q.cursor()
+  memcache.set(
+    key='featured_gci_task',
+    value=(new_task, new_cursor, datetime.datetime.now()))
+
+  return new_task
