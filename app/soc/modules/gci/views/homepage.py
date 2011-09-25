@@ -128,17 +128,18 @@ class Homepage(RequestHandler):
     pass
 
   def context(self):
-    current_timeline = self.data.timeline.currentPeriod()
-    next_deadline = self.data.timeline.nextDeadline()
-
     context = {
         'page_name': '%s - Home page' % (self.data.program.name),
         'how_it_works': HowItWorks(self.data),
         'participating_orgs': ParticipatingOrgs(self.data),
-        'timeline': Timeline(self.data),
         'connect_with_us': ConnectWithUs(self.data),
         'program': self.data.program,
     }
+
+    current_timeline = self.data.timeline.currentPeriod()
+
+    if current_timeline == 'student_signup_period':
+      context['timeline'] = Timeline(self.data)
 
     featured_task = task_logic.getFeaturedTask(
         current_timeline, self.data.program)
