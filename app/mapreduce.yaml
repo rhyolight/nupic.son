@@ -111,3 +111,11 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.task.TaskArbitraryTag
 
+- name: DeleteKeyNameTask
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_gci_task.process_task_children_delete
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.task.GCITask
+

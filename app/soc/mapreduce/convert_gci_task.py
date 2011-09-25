@@ -28,6 +28,7 @@ from google.appengine.ext.mapreduce import operation
 from soc.models.host import Host
 from soc.models.role import Role
 
+from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.mentor import GCIMentor
 from soc.modules.gci.models.org_admin import GCIOrgAdmin
@@ -139,3 +140,14 @@ def process_tag(tag):
 
   yield operation.db.Put(tag)
   yield operation.counters.Increment("tag_updated")
+
+
+def process_task_children_delete(task):
+  """Delete all the task entities and all its descendent entities.
+  """
+  if not task.key().name():
+    return
+
+  task_logic.delete(task)
+
+  yield operation.counters.Increment("task_with_key_deleted")
