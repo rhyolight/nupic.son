@@ -290,3 +290,10 @@ class RedirectHelper(request_data.RedirectHelper):
     super(RedirectHelper, self).events()
     self._url_name = 'gci_events'
     return self
+
+  def orgHomepage(self, link_id):
+    """Sets the _url_name for the specified org homepage
+    """
+    super(RedirectHelper, self).orgHomepage(link_id)
+    self._url_name = 'gci_org_home'
+    return self
