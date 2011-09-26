@@ -3,8 +3,17 @@
 </div>
 <!-- end #main -->
 </div>
-<!-- end #wrap -->
+<!-- 
+////////////////////////
+   END WRAPPER
+////////////////////////
+-->
 
+<!-- 
+////////////////////////
+   BEGIN FOOTER
+////////////////////////
+-->
 <div id="footer">
     <div class="container_12">
         <div class="grid_12">
@@ -27,8 +36,17 @@
     </div>
     <!-- end .container_12 -->
 </div>
-<!--end #footer-->
+<!-- 
+////////////////////////
+   END FOOTER
+////////////////////////
+-->
 
+<!-- 
+////////////////////////
+   BEGIN JAVASCRIPT
+////////////////////////
+-->
 <script type="text/javascript" src="../js/jquery-1.6.2.min.js" type=""></script>
 <script type="text/javascript" src="../js/jquery-ui-1.8.16.custom.min.js"></script>
 
@@ -88,7 +106,17 @@ $(document).ready(function(){
 	});
 });
 </script>
+<!-- 
+////////////////////////
+   END JAVASCRIPT
+////////////////////////
+-->
 
+<!-- 
+////////////////////////
+   SELECTIVIZR FOR IE
+////////////////////////
+-->
 <!--[if (gte IE 6)&(lte IE 8)]>
 <script type="text/javascript" src="../js/selectivizr-min.js"></script>
 <![endif]--> 
