@@ -100,7 +100,7 @@ class Callback(object):
     self.views.append(org_admin_dashboard.Dashboard())
     self.views.append(org_home.OrgHome())
     self.views.append(org_profile.OrgProfilePage())
-    self.views.append(profile.ProfilePage())
+    self.views.append(profile.GSoCProfilePage())
     self.views.append(profile_show.ProfileAdminPage())
     self.views.append(profile_show.ProfileShowPage())
     self.views.append(program.ProgramPage())
