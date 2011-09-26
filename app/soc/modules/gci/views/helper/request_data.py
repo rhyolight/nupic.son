@@ -267,7 +267,7 @@ class RedirectHelper(request_data.RedirectHelper):
     """Override this method to set GCI specific _url_name.
     """
     super(RedirectHelper, self).document(document)
-    self._url_name = 'gci_show_document'
+    self._url_name = 'show_gci_document'
     return self
 
   def homepage(self):
