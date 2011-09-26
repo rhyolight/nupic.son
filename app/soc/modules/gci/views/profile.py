@@ -151,7 +151,7 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
       key_name = '%s/%s' % (
           self.data.program.key().name(), link_id
           )
-      organization = GCICOrganization.get_by_key_name(key_name)
+      organization = GCIOrganization.get_by_key_name(key_name)
     else:
       organization = None
 
