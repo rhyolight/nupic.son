@@ -517,4 +517,5 @@ class RedirectHelper(object):
   def events(self):
     """Sets the _url_name for the events page, if it is set.
     """
+    self.program()
     return self
