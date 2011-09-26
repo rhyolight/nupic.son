@@ -599,10 +599,9 @@ class GCIDjangoTestCase(DjangoTestCase):
           if hasattr(value, 'render'):
             value.render()
     self.assertTemplateUsed(response, 'v2/modules/gci/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/footer.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/header.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/mainmenu.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/status_block.html')
+    self.assertTemplateUsed(response, 'v2/modules/gci/_footer.html')
+    self.assertTemplateUsed(response, 'v2/modules/gci/_header.html')
+    self.assertTemplateUsed(response, 'v2/modules/gci/_mainmenu.html')
 
 
 def runTasks(url = None, name=None, queue_names = None):
