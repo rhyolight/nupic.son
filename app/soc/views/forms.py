@@ -332,15 +332,20 @@ class ModelForm(djangoforms.ModelForm):
   """
 
   __metaclass__ = ModelFormMetaclass
+  __bound_field_class = None
 
   template_path = 'v2/modules/gsoc/_form.html'
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, bound_field_class=None, *args, **kwargs):
     """Fixes label and help_text issues after parent initialization.
 
     Args:
       *args, **kwargs:  passed through to parent __init__() constructor
     """
+    if bound_field_class:
+      self.__bound_field_class = bound_field_class
+    else:
+      self.__bound_field_class = BoundField
 
     super(djangoforms.ModelForm, self).__init__(*args, **kwargs)
 
@@ -371,7 +376,7 @@ class ModelForm(djangoforms.ModelForm):
     grouping = collections.defaultdict(list)
 
     for name, field in self.fields.items():
-      bound = BoundField(self, field, name)
+      bound = self.__bound_field_class(self, field, name)
       group = getattr(field, 'group', '0. ')
       grouping[group].append(bound)
 
