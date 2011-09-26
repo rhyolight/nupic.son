@@ -35,6 +35,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.profile import GCIStudentInfo
+from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 
 
@@ -45,6 +46,10 @@ PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
 class GCIProfileForm(profile.ProfileForm):
   """Django form to edit GCI profile page.
   """
+
+  def __init__(self, *args, **kwargs):
+    super(profile.ProfileForm, self).__init__(
+        gci_forms.GCIBoundField, *args, **kwargs)
 
   class Meta:
     model = GCIProfile

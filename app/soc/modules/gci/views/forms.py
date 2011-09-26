@@ -36,4 +36,6 @@ class GCIModelForm(forms.ModelForm):
 class GCIBoundField(forms.BoundField):
   """GCI specific BoundField representation.
   """
-  pass
+  
+  def render(self):
+    raise NotImplementedError

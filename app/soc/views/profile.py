@@ -83,8 +83,8 @@ class ProfileForm(forms.ModelForm):
   """Django form for profile page.
   """
 
-  def __init__(self, *args, **kwargs):
-    super(ProfileForm, self).__init__(*args, **kwargs)
+  def __init__(self, bound_field_class=None, *args, **kwargs):
+    super(ProfileForm, self).__init__(bound_field_class, *args, **kwargs)
     self.fields['given_name'].group = "2. Contact Info (Private)"
     self.fields['surname'].group = "2. Contact Info (Private)"
 

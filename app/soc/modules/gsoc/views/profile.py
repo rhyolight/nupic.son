@@ -38,6 +38,7 @@ from soc.models.universities import UNIVERSITIES
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
+from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -89,6 +90,10 @@ PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
 class GSoCProfileForm(profile.ProfileForm):
   """Django form for profile page.
   """
+
+  def __init__(self, *args, **kwargs):
+    super(profile.ProfileForm, self).__init__(
+        gsoc_forms.GSoCBoundField, *args, **kwargs)
 
   class Meta:
     model = GSoCProfile
