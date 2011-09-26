@@ -346,6 +346,8 @@ def getFeaturedTask(current_timeline, program):
     if task.status in task_status:
       new_task = task
       break
+  else:
+    return None
 
   new_cursor = q.cursor()
   memcache.set(
