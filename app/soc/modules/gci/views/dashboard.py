@@ -36,7 +36,7 @@ class Dashboard(RequestHandler):
     """
     return [
         url(r'dashboard/%s$' % url_patterns.PROGRAM, self,
-            name='gci_dashbaord')]
+            name='gci_dashboard')]
 
   def checkAccess(self):
     """Denies access if you are not logged in.
