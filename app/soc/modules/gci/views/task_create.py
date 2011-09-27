@@ -26,7 +26,7 @@ import time
 
 from google.appengine.ext import db
 
-from django import forms as djang_forms
+from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
