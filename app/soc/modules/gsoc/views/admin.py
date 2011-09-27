@@ -41,7 +41,6 @@ from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.models.user import User
-from soc.views import forms
 from soc.views.dashboard import Dashboard
 from soc.views.dashboard import DashboardUserActions
 from soc.views.helper import lists
@@ -57,11 +56,12 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
+from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class LookupForm(forms.ModelForm):
+class LookupForm(gsoc_forms.GSoCModelForm):
   """Django form for the lookup profile page.
   """
 
