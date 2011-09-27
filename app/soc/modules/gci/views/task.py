@@ -30,7 +30,6 @@ from django.utils.translation import ugettext
 from django import forms as django_forms
 
 from soc.logic import cleaning
-from soc.views import forms
 from soc.views.template import Template
 from soc.views.helper.access_checker import isSet
 
@@ -39,12 +38,13 @@ from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import UPLOAD_ALLOWED
 from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
+from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_patterns
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-class CommentForm(forms.ModelForm):
+class CommentForm(gci_forms.GCIModelForm):
   """Django form for the comment.
   """
 
