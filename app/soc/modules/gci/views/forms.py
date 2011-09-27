@@ -30,7 +30,7 @@ class GCIModelForm(forms.ModelForm):
   """
   
   def __init__(self, *args, **kwargs):
-    super(forms.ModelForm, self).__init__(GCIBoundField, *args, **kwargs)
+    super(GCIModelForm, self).__init__(GCIBoundField, *args, **kwargs)
 
 
 class GCIBoundField(forms.BoundField):

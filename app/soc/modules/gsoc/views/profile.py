@@ -44,7 +44,7 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class StudentNotificationForm(forms.ModelForm):
+class StudentNotificationForm(gsoc_forms.GSoCModelForm):
   """Django form for student notification settings.
   """
 
@@ -60,7 +60,7 @@ MENTOR_FIELDS = [
     'notify_public_comments', 'notify_private_comments',
 ]
 
-class AdminNotificationForm(forms.ModelForm):
+class AdminNotificationForm(gsoc_forms.GSoCModelForm):
   """Django form for mentor notification settings.
   """
 
@@ -70,7 +70,7 @@ class AdminNotificationForm(forms.ModelForm):
     fields = ['notify_new_requests'] + MENTOR_FIELDS
 
 
-class MentorNotificationForm(forms.ModelForm):
+class MentorNotificationForm(gsoc_forms.GSoCModelForm):
   """Django form for mentor notification settings.
   """
 
@@ -137,7 +137,7 @@ class CreateGSoCProfileForm(GSoCProfileForm):
     return value
 
 
-class GSoCStudentInfoForm(forms.ModelForm):
+class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
   """Django form for the student profile page.
   """
 
