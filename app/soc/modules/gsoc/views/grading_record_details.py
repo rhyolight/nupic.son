@@ -32,6 +32,7 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import grading_record
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
+from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -172,7 +173,7 @@ class GradingRecordsList(Template):
     return 'v2/soc/list/lists.html'
 
 
-class GradingRecordForm(forms.ModelForm):
+class GradingRecordForm(gsoc_forms.GSoCModelForm):
   """Django form to edit a GradingRecord manually.
   """
 
