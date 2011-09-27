@@ -23,6 +23,7 @@ __authors__ = [
 
 
 from soc.views import forms
+from soc.views import org_app
 
 
 class GCIModelForm(forms.ModelForm):
@@ -32,6 +33,21 @@ class GCIModelForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
     super(GCIModelForm, self).__init__(GCIBoundField, *args, **kwargs)
 
+
+class OrgAppEditForm(org_app.OrgAppEditForm):
+  """Form to create/edit GCI organization application survey.
+  """
+
+  def __init__(self, *args, **kwargs):
+    super(OrgAppEditForm, self).__init__(GCIBoundField, *args, **kwargs)
+
+
+class OrgAppTakeForm(org_app.OrgAppTakeForm):
+  """Form for would-be organization admins to apply for a GCI program.
+  """
+
+  def __init__(self, *args, **kwargs):
+    super(OrgAppTakeForm, self).__init__(GCIBoundField, *args, **kwargs)
 
 class GCIBoundField(forms.BoundField):
   """GCI specific BoundField representation.

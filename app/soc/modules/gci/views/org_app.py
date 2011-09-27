@@ -28,6 +28,7 @@ from soc.views import org_app
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
+from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -51,10 +52,10 @@ class GCIOrgAppEditPage(RequestHandler):
 
   def context(self):
     if self.data.org_app:
-      form = org_app.OrgAppEditForm(
+      form = gci_forms.OrgAppEditForm(
           self.data.POST or None, instance=self.data.org_app)
     else:
-      form = org_app.OrgAppEditForm(self.data.POST or None)
+      form = gci_forms.OrgAppEditForm(self.data.POST or None)
 
     if self.data.org_app:
       page_name = ugettext('Edit - %s' % (self.data.org_app.title))
@@ -77,10 +78,10 @@ class GCIOrgAppEditPage(RequestHandler):
       a newly created or updated organization application entity or None.
     """
     if self.data.org_app:
-      form = org_app.OrgAppEditForm(
+      form = gci_forms.OrgAppEditForm(
           self.data.POST, instance=self.data.org_app)
     else:
-      form = org_app.OrgAppEditForm(self.data.POST)
+      form = gci_forms.OrgAppEditForm(self.data.POST)
 
     if not form.is_valid():
       return None
@@ -123,7 +124,7 @@ class GCIOrgAppPreviewPage(RequestHandler):
     return 'v2/modules/gsoc/_evaluation_take.html'
 
   def context(self):
-    form = org_app.OrgAppTakeForm(self.data.org_app)
+    form = gci_forms.OrgAppTakeForm(self.data.org_app)
 
     context = {
         'page_name': '%s' % (self.data.org_app.title),
@@ -163,10 +164,11 @@ class GCIOrgAppTakePage(RequestHandler):
 
   def context(self):
     if self.data.org_app_record:
-      form = org_app.OrgAppTakeForm(self.data.org_app, self.data.POST or None,
-                                    instance=self.data.org_app_record)
+      form = gci_forms.OrgAppTakeForm(self.data.org_app,
+          self.data.POST or None, instance=self.data.org_app_record)
     else:
-      form = org_app.OrgAppTakeForm(self.data.org_app, self.data.POST or None)
+      form = gci_forms.OrgAppTakeForm(self.data.org_app,
+          self.data.POST or None)
 
     context = {
         'page_name': '%s' % (self.data.org_app.title),
@@ -183,11 +185,11 @@ class GCIOrgAppTakePage(RequestHandler):
       a newly created or updated evaluation record entity or None
     """
     if self.data.org_app_record:
-      form = org_app.OrgAppTakeForm(
+      form = gci_forms.OrgAppTakeForm(
           self.data.org_app,
           self.data.POST, instance=self.data.org_app_record)
     else:
-      form = org_app.OrgAppTakeForm(
+      form = gci_forms.OrgAppTakeForm(
           self.data.org_app, self.data.POST)
 
     if not form.is_valid():

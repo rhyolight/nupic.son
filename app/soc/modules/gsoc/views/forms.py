@@ -40,6 +40,25 @@ class GSoCModelForm(forms.ModelForm):
     super(GSoCModelForm, self).__init__(GSoCBoundField, *args, **kwargs)
 
 
+class SurveyEditForm(forms.SurveyEditForm):
+  """Django form for creating and/or editing survey.
+  """
+
+  def __init__(self, *args, **kwargs):
+    super(SurveyEditForm, self).__init__(GSoCBoundField, *args, **kwargs)
+
+  schema = forms.CharField(widget=forms.HiddenInput())
+
+
+class SurveyTakeForm(forms.SurveyTakeForm):
+  """Django form for taking a survey.
+  """
+
+  def __init__(self, survey, *args, **kwargs):
+    super(SurveyTakeForm, self).__init__(
+        survey, GSoCBoundField, *args, **kwargs)
+
+
 class GSoCBoundField(forms.BoundField):
   """GSoC specific BoundField representation.
   """

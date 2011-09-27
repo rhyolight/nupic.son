@@ -36,6 +36,7 @@ from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
+from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
@@ -47,7 +48,7 @@ DEF_CANNOT_ACCESS_EVALUATION_FMT = ugettext(
     'after the evaluation deadline has passed.')
 
 
-class GSoCStudentEvaluationEditForm(forms.SurveyEditForm):
+class GSoCStudentEvaluationEditForm(gsoc_forms.SurveyEditForm):
   """Form to create/edit GSoC project survey for students.
   """
 

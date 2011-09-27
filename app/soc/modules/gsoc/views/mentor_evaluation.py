@@ -35,6 +35,7 @@ from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
+from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
@@ -46,7 +47,7 @@ EVALUATION_CHOICES = (
     )
 
 
-class GSoCMentorEvaluationEditForm(forms.SurveyEditForm):
+class GSoCMentorEvaluationEditForm(gsoc_forms.SurveyEditForm):
   """Form to create/edit GSoC evaluation for the organization.
   """
 

@@ -85,6 +85,7 @@ def mergeWidgets(*args):
 
 
 # The standard input fields should be available to all importing modules
+CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
 DateInput = forms.DateInput
 DateTimeInput = forms.DateTimeInput
@@ -94,7 +95,6 @@ RadioSelect = forms.RadioSelect
 Select = forms.Select
 TextInput = forms.TextInput
 Textarea = forms.Textarea
-
 
 
 class RadioInput(forms.widgets.RadioInput):
@@ -459,8 +459,8 @@ class SurveyTakeForm(ModelForm):
   """Django form for taking a survey.
   """
 
-  def __init__(self, survey, *args, **kwargs):
-    super(SurveyTakeForm, self).__init__(*args, **kwargs)
+  def __init__(self, survey, bound_field_class, *args, **kwargs):
+    super(SurveyTakeForm, self).__init__(bound_field_class, *args, **kwargs)
     self.survey = survey
     self.constructForm()
 

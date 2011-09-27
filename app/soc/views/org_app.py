@@ -56,7 +56,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
       help_text=ugettext('The Link ID of the user who will serve as the '
                          'backup admin for this organization.'))
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, bound_class_field, *args, **kwargs):
     super(OrgAppTakeForm, self).__init__(*args, **kwargs)
     if self.instance:
       self.fields['backup_admin_id'].initial = \
