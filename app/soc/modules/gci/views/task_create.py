@@ -35,12 +35,13 @@ from soc.views.helper import url_patterns
 
 from soc.modules.gci.models import task
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.base_templates import LoggedInMsg
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-class TaskCreateForm(forms.ModelForm):
+class TaskCreateForm(gci_forms.GCIModelForm):
   """Django form for the task creation page.
   """
 
