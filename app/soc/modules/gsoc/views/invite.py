@@ -33,7 +33,6 @@ from soc.logic import cleaning
 from soc.logic.helper import notifications
 from soc.models.request import Request
 from soc.models.user import User
-from soc.views import forms
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.tasks import mailer
@@ -41,10 +40,11 @@ from soc.tasks import mailer
 from soc.modules.gsoc.views.base import RequestHandler
 
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class InviteForm(forms.ModelForm):
+class InviteForm(gsoc_forms.GSoCModelForm):
   """Django form for the invite page.
   """
 
