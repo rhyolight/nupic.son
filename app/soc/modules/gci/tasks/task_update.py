@@ -39,9 +39,10 @@ from soc.tasks.helper import error_handler
 
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment
+from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task_subscription import GCITaskSubscription
-
+from soc.modules.gci.tasks import ranking_update
 
 class TaskUpdate(object):
   """Tasks that are involved in dealing with GCITasks.
@@ -172,63 +173,37 @@ class TaskUpdate(object):
     """Appengine task that updates the GCI Tasks after the student signs up.
 
     Expects the following to be present in the POST dict:
-      student_key: Specifies the student key name who registered
+      student_key: Specifies the student key who registered
 
     Args:
       request: Django Request object
     """
-    from soc.modules.gci.logic.models import student as gci_student_logic
-    from soc.modules.gci.tasks import ranking_update
-
     post_dict = request.POST
 
-    student_key = post_dict.get('student_key')
+    student_key = db.Key(post_dict.get('student_key'))
 
-    if not student_key:
+    student = GCIProfile.get(student_key)
+    if not student:
       # invalid student data, log and return OK
       return error_handler.logErrorAndReturnOK(
           'Invalid Student data: %s' % post_dict)
 
-    student_entity = gci_student_logic.logic.getFromKeyNameOr404(student_key)
-
     # retrieve all tasks currently assigned to the user
-    task_fields = {
-        'user': student_entity.user,
-        }
-    task_entities = gci_task_logic.logic.getForFields(task_fields)
+    q = GCITask.all()
+    q.filter('user', student.parent())
+    tasks = q.fetch(1000)
 
-    # TODO(madhusudan) move this to the Task Logic
     # Make sure the tasks store references to the student as well as
     # closing all tasks that are AwaitingRegistration.
-    for task_entity in task_entities:
-      task_entity.student = student_entity
-      if task_entity.status == 'AwaitingRegistration':
-        task_entities.remove(task_entity)
-
-        properties = {
-            'status': 'Closed',
-            'closed_on': datetime.datetime.utcnow()
-            }
-        changes = [ugettext('User-MelangeAutomatic'),
-                   ugettext('Action-Student registered'),
-                   ugettext('Status-%s' % (properties['status']))]
-
-        comment_properties = {
-            'parent': task_entity,
-            'scope_path': task_entity.key().name(),
-            'created_by': None,
-            'changes': changes,
-            'content': ugettext(
-                '(The Melange Automated System has detected that the student '
-                'has signed up for the program and hence has closed this task.'),
-            }
-
-        gci_task_logic.logic.updateEntityPropertiesWithCWS(
-            task_entity, properties, comment_properties)
-
-        ranking_update.startUpdatingTask(task_entity)
-
-    db.put(task_entities)
+    for task in tasks:
+      if task.status == 'AwaitingRegistration':
+        task_logic.closeTaskOnRegistration(task, student)
+        # TODO(ljvderijk): Better solution would be to integrate the next
+        # call into a transaction with storing task+comment
+        ranking_update.startUpdatingTask(task)
+      else:
+        task.student = student
+        task.put()
 
     # return OK
     return http.HttpResponse()

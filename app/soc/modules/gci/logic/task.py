@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """GCITask logic methods.
 """
 
@@ -64,9 +63,13 @@ DEF_REOPENED_MSG = ugettext(
     'deadline has passed and it has Reopened the task.)')
 
 
-# TODO(ljvderijk): Add basic subscribers when task is created
-# TODO(ljvderijk): Implement closed transition after registration of student
+DEF_CLOSED_ON_REG_TITLE = ugettext('Task has Closed')
+DEF_CLOSED_ON_REG_MSG = ugettext(
+    '(The Melange Automated System has detected that the student '
+    'has signed up for the program and hence has closed this task.')
 
+
+# TODO(ljvderijk): Add basic subscribers when task is created
 
 def isOwnerOfTask(task, user):
   """Returns true if the given profile is owner/student of the task.
@@ -146,19 +149,24 @@ def updateTaskStatus(task):
   # update the task and create a comment
   task, comment = transit_func(task)
 
-  # store the new task, comment and notify those interested in a transaction
-  comment_txn = comment_logic.storeAndNotifyTxn(comment)
-  def updateTaskAndCreateCommentTxn():
-    db.put(task)
-    comment_txn()
-
-  db.run_in_transaction(updateTaskAndCreateCommentTxn())
+  _storeTaskAndComment(task, comment)
 
   if task.deadline:
     # only if there is a deadline set we should schedule another task
     task_update.spawnUpdateTask(task)
 
   return True
+
+def _storeTaskAndComment(task, comment):
+  """Stores the task and comment and notifies those that are interested in a
+  single transaction.
+  """
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+  def updateTaskAndCreateCommentTxn():
+    db.put(task)
+    comment_txn()
+
+  db.run_in_transaction(updateTaskAndCreateCommentTxn())
 
 def transitFromClaimed(task):
   """Makes a state transition of a GCI Task from Claimed state
@@ -274,6 +282,28 @@ def transitFromNeedsWork(task):
   return task, comment
 
 
+def closeTaskOnRegistration(task, student):
+  """Closes the given task after the student has registered.
+  """
+  task.student = student
+  task.status = 'Closed'
+  task.closed_on = datetime.datetime().utcnow()
+
+  changes = [ugettext('User-MelangeAutomatic'),
+             ugettext('Action-Student registered'),
+             ugettext('Status-%s' % (task.status))]
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_CLOSED_ON_REG_TITLE,
+      'content': DEF_CLOSED_ON_REG_MSG,
+      'changes': changes,
+      }
+  comment = GCIComment(**comment_props)
+
+  _storeTaskAndComment(task, comment)
+
+
 def delete(task):
   """Delete existing task from datastore.
   """
@@ -290,6 +320,7 @@ def delete(task):
 
   TAGS_SERVICE.removeAllTagsForEntity(task)
   db.run_in_transaction(task_delete_txn, task)
+
 
 def getFeaturedTask(current_timeline, program):
   """Return a featured task for a given program.
