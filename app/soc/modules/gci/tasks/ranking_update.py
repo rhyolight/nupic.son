@@ -19,157 +19,180 @@
 
 __authors__ = [
     '"Daniel Hans" <dhans@google.com>'
+    '"Lennard de Rijk" <ljvderijk@gmail.com>'
   ]
 
 
-from soc.logic.helper import timeline as timeline_helper
+import logging
+
+from google.appengine.api import taskqueue
+from google.appengine.ext import db
+
+from django.conf.urls.defaults import url
 
 from soc.tasks import responses
-from soc.tasks.helper import decorators
 
-from soc.modules.gci.logic.models.program import logic as gci_program_logic
-from soc.modules.gci.logic.models.student import logic as gci_student_logic
-from soc.modules.gci.logic.models.student_ranking import logic \
-    as gci_student_ranking_logic
-from soc.modules.gci.logic.models.task import logic as gci_task_logic
-from soc.modules.gci.models import task as gci_task_model
+from soc.modules.gci.logic import ranking as ranking_logic
+from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.program import GCIProgram
+from soc.modules.gci.models.student_ranking import GCIStudentRanking
+from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.task import TaskDifficultyTag
 
-
-def getDjangoURLPatterns():
-  """Returns the URL patterns for the tasks in this module.
+class RankingUpdater(object):
+  """Appengine tasks for updating the rankings for a GCI program.
   """
 
-  patterns = [
-      (r'^tasks/gci/ranking/update$',
-        'soc.modules.gci.tasks.ranking_update.update'),
-      (r'^tasks/gci/ranking/recalculate/(?P<key_name>.+)$',
-        'soc.modules.gci.tasks.ranking_update.recalculate'),
-      (r'^tasks/gci/ranking/recalculate_student/(?P<key_name>.+)$',
-        'soc.modules.gci.tasks.ranking_update.recalculate_student'),
-      (r'^tasks/gci/ranking/clear/(?P<key_name>.+)$',
-        'soc.modules.gci.tasks.ranking_update.clear')]
+  def djangoURLPatterns(self):
+    """Returns the URL patterns for the tasks in this module.
+    """
+    patterns = [
+        url(r'^tasks/gci/ranking/update$', self.updateRankingWithTask,
+            name='task_update_gci_ranking_with_task'),
+        url(r'^tasks/gci/ranking/recalculate$', self.recalculateGCIRanking,
+            name='task_recalculate_gci_ranking'),
+        url(r'^tasks/gci/ranking/recalculate_student$',
+            self.recalculateForStudent,
+            name='task_recalculate_gci_ranking_for_student'),
+        url(r'^tasks/gci/ranking/clear/(?P<key_name>.+)$', self.clearGCIRanking,
+            name='task_clear_gci_ranking')]
+    return patterns
 
-  return patterns
+  def updateRankingWithTask(self, request, *args, **kwargs):
+    """Updates student ranking based on the task passed as post argument.
+
+    Args in POST dict:
+      id: The (numeric) id of the task to update the ranking for
+    """
+    post_dict = request.POST
+
+    id = int(post_dict.get('id'))
+    task = GCITask.get_by_id(id)
+
+    if not task:
+      logging.warning('Ranking update queued for non-existing task: %s' %id)
+      responses.terminateTask()
+
+    ranking_logic.updateRankingWithTask(task)
+
+    return responses.terminateTask()
+
+  def recalculateGCIRanking(self, request):
+    """Recalculates student ranking for an entire program.
+
+    Args in POST dict:
+      program: The key name of the GCIProgram to recalculate the rankings for
+      cursor: Query cursor to figure out where we need to start processing
+    """
+    post_dict = request.POST
+    key_name = post_dict['program']
+    cursor = post_dict.get('cursor')
+
+    program = GCIProgram.get_by_key_name(key_name)
+    if not program:
+      logging.warning(
+          'Enqueued recalculate ranking task for non-existing '
+          'program: %s' %key_name)
+      return responses.terminateTask()
+
+    # prefetch all task difficulties to speedup processing
+    all_d = TaskDifficultyTag.all().fetch(1000)
+
+    # Retrieve the students for the program
+    q = GCIProfile.all()
+    q.filter('scope', program)
+    q.filter('is_student', True)
+
+    if cursor:
+      q.with_cursor(cursor)
+
+    students = q.fetch(25)
+
+    for student in students:
+      # get all the tasks that the student has completed
+      task_q = GCITask.all()
+      task_q.filter('student', student)
+      task_q.filter('status', 'Closed')
+
+      tasks = task_q.fetch(1000)
+
+      # calculate ranking with all the tasks
+      ranking_logic.calculateRankingForStudent(student, tasks, all_d)
+
+    if students:
+      # schedule task to do the rest of the students
+      params = {
+          'program': key_name,
+          'cursor': q.cursor(),
+          }
+      taskqueue.add(queue_name='gci-update', url=request.path, params=params)
+
+    return responses.terminateTask()
+
+  def clearGCIRanking(self, request, *args, **kwargs):
+    """Clears student ranking for a program with the specified key_name.
+    """
+    key_name = kwargs['key_name']
+
+    program = GCIProgram.get_by_key_name(key_name)
+    if not program:
+      logging.warning(
+          'Enqueued recalculate ranking task for non-existing '
+          'program: %s' %key_name)
+      return responses.terminateTask()
+
+    q = GCIStudentRanking.all()
+    q.filter('program', program)
+
+    rankings = q.fetch(500)
+    while rankings:
+      db.delete(rankings)
+      rankings = q.fetch(500)
+
+    return responses.terminateTask()
+
+  def recalculateForStudent(self, request, *args, **kwargs):
+    """Recalculates GCI Student Ranking for the specified student.
+
+    Args in POST:
+      key: The string version of the key for the GCIProfile entity
+           representing the student.
+    """
+    post_dict = request.POST
+    key = db.Key(post_dict['key'])
+    student = GCIProfile.get(key)
+
+    if not student:
+      logging.warning('Enqueued task to recalculate ranking for '
+                      'non-existent student %s' %(key))
+      return responses.terminateTask()
+
+    # get all the tasks that the student has completed
+    q = GCITask.all()
+    q.filter('student', student)
+    q.filter('status', 'Closed')
+    tasks = q.fetch(1000)
+
+    # prefetch all task difficulties to speedup processing
+    all_d = TaskDifficultyTag.all().fetch(1000)
+
+    ranking_logic.calculateRankingForStudent(student, tasks, all_d)
+
+    return responses.terminateTask()
+
 
 def startUpdatingTask(task):
   """Starts a new task which updates ranking entity for the specified task.
   """
-
   url = '/tasks/gci/ranking/update'
-  queue_name = 'gci-update'
-  context = {
-      'task_keyname': task.key().id_or_name()
+  params = {
+      'id': task.key().id_or_name()
       }
-  responses.startTask(url, queue_name, context)
+  taskqueue.add(queue_name='gci-update', url=url, params=params)
 
-def startClearingTask(key_name):
-  """Starts a new task which clears all ranking entities for the program
-  specified by the given key_name.
+
+def startClearingTask(program):
+  """Starts a new task which clears all ranking entities for the program.
   """
-
-  url = '/tasks/gci/ranking/clear/%s' % key_name
-  queue_name = 'gci-update'
-  responses.startTask(url, queue_name)
-
-def updateGCIRanking(request, *args, **kwargs):
-  """Updates student ranking based on the task passed as post argument.
-  """
-
-  post_dict = request.POST
-
-  task_keyname = post_dict.get('task_keyname')
-  if not task_keyname:
-    responses.terminateTask()
-
-  task = gci_task_logic.getFromKeyName(str(task_keyname))
-  gci_student_ranking_logic.updateRanking(task)
-
-  return responses.terminateTask()
-
-@decorators.iterative_task(gci_student_logic)
-def recalculateGCIRanking(request, entities, context, *args, **kwargs):
-  """Recalculates student ranking for a program with the specified key_name.
-  """
-
-  program = gci_program_logic.getFromKeyName(kwargs['key_name'])
-  if not program:
-    return responses.terminateTask()
-
-  # prefetch all task difficulties
-  all_d = gci_task_model.TaskDifficultyTag.all().fetch(100)
-
-  for entity in entities:
-    # check if the entity refers to the program in scope
-    if entity.scope.key() != program.key():
-      continue
-
-    # get all the tasks that the student has completed
-    filter = {
-        'student': entity,
-        'status': 'Closed',
-        }
-    tasks = gci_task_logic.getForFields(filter=filter)
-
-    # calculate ranking with all the tasks
-    gci_student_ranking_logic.calculateRankingForStudent(entity, tasks, all_d)
-
-    # this task should not be repeated after the program is over
-    timeline = program.timeline
-    if timeline_helper.isAfterEvent(timeline, 'program_end'):
-      raise responses.DoNotRepeatException()
-
-@decorators.iterative_task(gci_student_ranking_logic)
-def clearGCIRanking(request, entities, context, *args, **kwargs):
-  """Clears student ranking for a program with the specified key_name.
-  """
-
-  program = gci_program_logic.getFromKeyName(kwargs['key_name'])
-  if not program:
-    return responses.terminateTask()
-
-  for entity in entities:
-
-    # check if the entity refers to the program in scope
-    if entity.scope.key() != program.key():
-      continue
-
-    entity.points = 0
-    entity.tasks = []
-
-    entity.put()
-
-def recalculateGCIStudentRanking(request, *args, **kwargs):
-  """Recalculates GCI Student Ranking for the specified student.
-  """
-
-  student = gci_student_logic.getFromKeyName(kwargs['key_name'])
-  if not student:
-    return responses.terminateTask()
-
-  # find ranking entity for the student and clear it
-  filter = {
-      'student': student
-      }
-  ranking = gci_student_ranking_logic.getForFields(filter=filter,
-      unique=True)
-  ranking.points = 0
-  ranking.tasks = []
-  ranking.put()
-
-  # get all the tasks that the student has completed
-  filter = {
-      'student': student,
-      'status': 'Closed',
-      }
-  tasks = gci_task_logic.getForFields(filter=filter)
-
-  for task in tasks:
-    gci_student_ranking_logic.updateRanking(task)
-
-  return responses.terminateTask()
-
-
-clear = clearGCIRanking
-recalculate = recalculateGCIRanking
-recalculate_student = recalculateGCIStudentRanking
-update = decorators.task(updateGCIRanking)
+  url = '/tasks/gci/ranking/clear/%s' % program.key().id_or_name()
+  taskqueue.add(queue_name='gci-update', url=url)
