@@ -291,15 +291,6 @@ def delete(task):
   TAGS_SERVICE.removeAllTagsForEntity(task)
   db.run_in_transaction(task_delete_txn, task)
 
-# define the state transition functions
-STATE_TRANSITIONS = {
-    'Claimed': transitFromClaimed,
-    'NeedsReview': transitFromNeedsReview,
-    'ActionNeeded': transitFromActionNeeded,
-    'NeedsWork': transitFromNeedsWork,
-    }
-
-
 def getFeaturedTask(current_timeline, program):
   """Return a featured task for a given program.
 
@@ -355,3 +346,12 @@ def getFeaturedTask(current_timeline, program):
     value=(new_task, new_cursor, datetime.datetime.now()))
 
   return new_task
+
+
+# define the state transition functions
+STATE_TRANSITIONS = {
+    'Claimed': transitFromClaimed,
+    'NeedsReview': transitFromNeedsReview,
+    'ActionNeeded': transitFromActionNeeded,
+    'NeedsWork': transitFromNeedsWork,
+    }
