@@ -60,4 +60,7 @@ class GCIBoundField(forms.BoundField):
   """
 
   def render(self):
-    raise NotImplementedError
+    widget = self.field.widget
+
+    return self.NOT_SUPPORTED_MSG_FMT % (
+        widget.__class__.__name__)
