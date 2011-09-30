@@ -19,18 +19,24 @@
 
 __authors__ = [
   '"Daniel Hans" <daniel.m.hans@gmail.com>',
+  '"Lennard de Rijk" <ljvderijk@gmail.com>',
 ]
 
 
 from google.appengine.ext import db
 
-import soc.models.linkable
+import soc.models.base
 import soc.models.role
 
+from soc.modules.gci.models.program import GCIProgram
 
-class GCIStudentRanking(soc.models.linkable.Linkable):
-  """GCI Student Ranking model extends the linkable model.
+
+class GCIStudentRanking(soc.models.base.ModelWithFieldAttributes):
+  """GCI Student Ranking model.
   """
+  #: Required reference to the program so we can query for all rankings
+  #: in a single program at once.
+  program = db.ReferenceProperty(reference_class=GCIProgram, required=True)
 
   #: total number of points that the student gathered up
   points = db.IntegerProperty(required=True,
@@ -40,5 +46,5 @@ class GCIStudentRanking(soc.models.linkable.Linkable):
   student = db.ReferenceProperty(reference_class=soc.models.role.Role,
                                  required=True)
 
-  #: tasks that have been taken account into this ranking
+  #: tasks that have been taken into account when calculating the score
   tasks = db.ListProperty(item_type=db.Key, default=[])

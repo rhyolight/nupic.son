@@ -71,7 +71,7 @@ mapreduce:
     - name: entity_kind
       value: soc.models.org_app_survey.OrgAppSurvey
 
-- name: ConvertGCITask
+- name: GCIConvertTask
   mapper:
     input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
     handler: soc.mapreduce.convert_gci_task.process_task
@@ -79,15 +79,7 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.task.GCITask
 
-- name: ConvertGCIStudentRanking
-  mapper:
-    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
-    handler: soc.mapreduce.convert_gci_task.process_student_ranking
-    params:
-    - name: entity_kind
-      value: soc.modules.gci.models.student_ranking.GCIStudentRanking
-
-- name: ConvertTaskTypeTag
+- name: GCIConvertTaskTypeTag
   mapper:
     input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
     handler: soc.mapreduce.convert_gci_task.process_tag
@@ -95,7 +87,7 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.task.TaskTypeTag
 
-- name: ConvertTaskDifficultyTag
+- name: GCIConvertTaskDifficultyTag
   mapper:
     input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
     handler: soc.mapreduce.convert_gci_task.process_tag
@@ -103,7 +95,7 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.task.TaskDifficultyTag
 
-- name: ConvertTaskArbitraryTag
+- name: GCIConvertTaskArbitraryTag
   mapper:
     input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
     handler: soc.mapreduce.convert_gci_task.process_tag
@@ -111,7 +103,7 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.task.TaskArbitraryTag
 
-- name: DeleteKeyNameTask
+- name: GCIDeleteKeyNameBasedTasks
   mapper:
     input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
     handler: soc.mapreduce.convert_gci_task.process_task_children_delete

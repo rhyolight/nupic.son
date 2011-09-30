@@ -45,13 +45,13 @@ class DoNotRepeatException(Exception):
   """
   pass
 
+
 def startTask(url, queue_name='default', context=None, countdown=0, **kwargs):
   """Adds a new task to the specified task queue.
   """
-
-  queue = taskqueue.Queue(name=queue_name)
-  return queue.add(taskqueue.Task(url=url, countdown=countdown,
-      params=context))
+  # TODO(ljvderijk): The use of this method should be removed
+  return taskqueue.add(queue_name=queue_name, url=url, countdown=countdown,
+                       params=context)
 
 
 def terminateTask():
