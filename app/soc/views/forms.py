@@ -341,24 +341,16 @@ class ModelForm(djangoforms.ModelForm):
   """
 
   __metaclass__ = ModelFormMetaclass
-  __bound_field_class = None
 
-  template_path = 'v2/modules/gsoc/_form.html'
-
-  def __init__(self, bound_field_class=None, template_path=None, 
+  def __init__(self, bound_field_class, template_path,
       *args, **kwargs):
     """Fixes label and help_text issues after parent initialization.
 
     Args:
       *args, **kwargs:  passed through to parent __init__() constructor
     """
-    if bound_field_class:
-      self.__bound_field_class = bound_field_class
-    else:
-      self.__bound_field_class = BoundField
-
-    if template_path:
-      self.template_path = template_path
+    self.__bound_field_class = bound_field_class
+    self.__template_path = template_path
 
     super(djangoforms.ModelForm, self).__init__(*args, **kwargs)
 
@@ -448,7 +440,7 @@ class ModelForm(djangoforms.ModelForm):
       'form': self,
     }
 
-    rendered = loader.render_to_string(self.template_path, dictionary=context)
+    rendered = loader.render_to_string(self.__template_path, dictionary=context)
     return rendered
 
 
