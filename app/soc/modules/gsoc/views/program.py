@@ -64,13 +64,13 @@ class ProgramPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'program/%s$' % url_patterns.PROGRAM, self,
-            name='edit_gci_program'),
+            name='edit_gsoc_program'),
         url(r'program/edit/%s$' % url_patterns.PROGRAM, self),
     ]
 
   def jsonContext(self):
     q = Document.all()
-    q.filter('prefix', 'gci_program')
+    q.filter('prefix', 'gsoc_program')
     q.filter('scope', self.data.program.key())
 
     data = [{'key': str(i.key()),
@@ -84,7 +84,7 @@ class ProgramPage(RequestHandler):
     self.check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gci/program/base.html'
+    return 'v2/modules/gsoc/program/base.html'
 
   def context(self):
     scope_path = self.data.program.key().id_or_name()
@@ -117,7 +117,7 @@ class ProgramPage(RequestHandler):
 
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gci_program', validated=True, cbox=cbox)
+      self.redirect.to('edit_gsoc_program', validated=True, cbox=cbox)
     else:
       self.get()
 
@@ -129,7 +129,7 @@ class TimelinePage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'timeline/%s$' % url_patterns.PROGRAM, self,
-            name='edit_gci_timeline'),
+            name='edit_gsoc_timeline'),
         url(r'timeline/edit/%s$' % url_patterns.PROGRAM, self),
     ]
 
@@ -137,7 +137,7 @@ class TimelinePage(RequestHandler):
     self.check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gci/timeline/base.html'
+    return 'v2/modules/gsoc/timeline/base.html'
 
   def context(self):
     timeline_form = TimelineForm(self.data.POST or None,
@@ -168,6 +168,6 @@ class TimelinePage(RequestHandler):
 
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gci_timeline', validated=True, cbox=cbox)
+      self.redirect.to('edit_gsoc_timeline', validated=True, cbox=cbox)
     else:
       self.get()
