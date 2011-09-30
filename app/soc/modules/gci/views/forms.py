@@ -87,7 +87,7 @@ class GCIBoundField(forms.BoundField):
     return ''
 
   def _render_is_required(self):
-    return ''
+    return '<em>*</em>' if self.field.required else ''
 
   def _render_error(self):
     return ''
