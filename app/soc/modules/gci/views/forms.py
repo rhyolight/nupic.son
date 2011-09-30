@@ -94,3 +94,11 @@ class GCIBoundField(forms.BoundField):
 
   def _render_note(self):
     return ''
+
+  def div_class(self):
+    div_class = 'form-row'
+
+    if self.errors:
+      div_class += ' error'
+
+    return div_class
