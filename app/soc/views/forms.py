@@ -349,6 +349,8 @@ class ModelForm(djangoforms.ModelForm):
     Args:
       *args, **kwargs:  passed through to parent __init__() constructor
     """
+    assert(issubclass(bound_field_class, BoundField))
+    assert(isinstance(template_path, str))
     self.__bound_field_class = bound_field_class
     self.__template_path = template_path
 
