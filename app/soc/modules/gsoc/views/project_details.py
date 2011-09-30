@@ -29,7 +29,6 @@ from django.utils.translation import ugettext
 
 from soc.logic.exceptions import BadRequest
 from soc.views.helper.access_checker import isSet
-from soc.views.forms import ModelForm
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
 
@@ -37,11 +36,12 @@ from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class ProjectDetailsForm(ModelForm):
+class ProjectDetailsForm(GSoCModelForm):
   """Constructs the form to edit the project details
   """
 

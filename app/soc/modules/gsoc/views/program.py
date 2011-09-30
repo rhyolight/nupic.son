@@ -22,17 +22,17 @@ __authors__ = [
   ]
 
 
-from soc.views.forms import ModelForm
 from soc.views.helper import url_patterns
 
 from soc.models.document import Document
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class TimelineForm(ModelForm):
+class TimelineForm(GSoCModelForm):
   """Django form to edit timeline settings.
   """
 
@@ -42,7 +42,7 @@ class TimelineForm(ModelForm):
     exclude = ['link_id', 'scope', 'scope_path']
 
 
-class ProgramForm(ModelForm):
+class ProgramForm(GSoCModelForm):
   """Django form for the program settings.
   """
 
