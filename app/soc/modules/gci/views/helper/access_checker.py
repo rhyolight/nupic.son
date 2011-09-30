@@ -98,8 +98,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise AccessViolation(error_msg)
 
 
-class DeveloperAccessChecker(access_checker.DeveloperAccessChecker,
-                             AccessChecker):
+class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   """Developer access checker for GCI specific methods.
   """
   pass
