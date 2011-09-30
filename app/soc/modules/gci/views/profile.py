@@ -143,7 +143,7 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
       self.check.isProfileActive()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/profile/base.html'
+    return 'v2/modules/gci/profile/base.html'
 
   def post(self):
     """Handler for HTTP POST request.
