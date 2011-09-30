@@ -93,7 +93,7 @@ class CreateGCIProfileForm(GCIProfileForm):
     return value
 
 
-class NotificationForm(forms.ModelForm):
+class NotificationForm(gci_forms.GCIModelForm):
   """Django form for the notifications.
   """
 
@@ -103,7 +103,7 @@ class NotificationForm(forms.ModelForm):
     fields = ['automatic_task_subscription', 'notify_comments']
 
 
-class GCIStudentInfoForm(forms.ModelForm):
+class GCIStudentInfoForm(gci_forms.GCIModelForm):
   """Django form for the student profile page.
   """
 
