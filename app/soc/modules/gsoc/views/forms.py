@@ -32,12 +32,15 @@ from django.utils.safestring import mark_safe
 from soc.views import forms
 
 
+TEMPLATE_PATH = 'v2/modules/gsoc/_form.html'
+
 class GSoCModelForm(forms.ModelForm):
   """Django ModelForm class which uses our implementation of BoundField.
   """
   
   def __init__(self, *args, **kwargs):
-    super(GSoCModelForm, self).__init__(GSoCBoundField, *args, **kwargs)
+    super(GSoCModelForm, self).__init__(
+        GSoCBoundField, TEMPLATE_PATH, *args, **kwargs)
 
 
 class SurveyEditForm(forms.SurveyEditForm):
@@ -45,7 +48,8 @@ class SurveyEditForm(forms.SurveyEditForm):
   """
 
   def __init__(self, *args, **kwargs):
-    super(SurveyEditForm, self).__init__(GSoCBoundField, *args, **kwargs)
+    super(SurveyEditForm, self).__init__(
+        GSoCBoundField, TEMPLATE_PATH, *args, **kwargs)
 
   schema = forms.CharField(widget=forms.HiddenInput())
 
@@ -56,7 +60,7 @@ class SurveyTakeForm(forms.SurveyTakeForm):
 
   def __init__(self, survey, *args, **kwargs):
     super(SurveyTakeForm, self).__init__(
-        survey, GSoCBoundField, *args, **kwargs)
+        survey, GSoCBoundField, TEMPLATE_PATH, *args, **kwargs)
 
 
 class GSoCBoundField(forms.BoundField):

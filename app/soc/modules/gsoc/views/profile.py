@@ -90,7 +90,7 @@ class GSoCProfileForm(profile.ProfileForm):
 
   def __init__(self, *args, **kwargs):
     super(profile.ProfileForm, self).__init__(
-        gsoc_forms.GSoCBoundField, *args, **kwargs)
+        gsoc_forms.GSoCBoundField, gsoc_forms.TEMPLATE_PATH, *args, **kwargs)
 
   class Meta:
     model = GSoCProfile

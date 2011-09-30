@@ -345,7 +345,8 @@ class ModelForm(djangoforms.ModelForm):
 
   template_path = 'v2/modules/gsoc/_form.html'
 
-  def __init__(self, bound_field_class=None, *args, **kwargs):
+  def __init__(self, bound_field_class=None, template_path=None, 
+      *args, **kwargs):
     """Fixes label and help_text issues after parent initialization.
 
     Args:
@@ -355,6 +356,9 @@ class ModelForm(djangoforms.ModelForm):
       self.__bound_field_class = bound_field_class
     else:
       self.__bound_field_class = BoundField
+
+    if template_path:
+      self.template_path = template_path
 
     super(djangoforms.ModelForm, self).__init__(*args, **kwargs)
 
