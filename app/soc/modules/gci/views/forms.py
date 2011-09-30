@@ -84,7 +84,10 @@ class GCIBoundField(forms.BoundField):
     ))
 
   def _render_label(self):
-    return ''
+    return '<label>%s%s</label>' % (
+        self.field.label,
+        self._render_is_required(),
+    ) if self.field.label else ''
 
   def _render_is_required(self):
     return '<em>*</em>' if self.field.required else ''
