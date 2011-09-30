@@ -22,6 +22,8 @@ __authors__ = [
   ]
 
 
+from django.utils.safestring import mark_safe
+
 from soc.views import forms
 from soc.views import org_app
 
@@ -62,5 +64,33 @@ class GCIBoundField(forms.BoundField):
   def render(self):
     widget = self.field.widget
 
+    if isinstance(widget, forms.TextInput):
+      return self.renderTextInput()
+
     return self.NOT_SUPPORTED_MSG_FMT % (
         widget.__class__.__name__)
+
+  def renderTextInput(self):
+    attrs = {
+        'id': self.name,
+        'class': 'text',
+        }
+
+    return mark_safe('%s%s%s%s' % (
+        self._render_label(),
+        self.as_widget(attrs=attrs),
+        self._render_error(),
+        self._render_note(),
+    ))
+
+  def _render_label(self):
+    return ''
+
+  def _render_is_required(self):
+    return ''
+
+  def _render_error(self):
+    return ''
+
+  def _render_note(self):
+    return ''
