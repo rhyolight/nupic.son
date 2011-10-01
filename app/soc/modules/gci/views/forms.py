@@ -66,6 +66,12 @@ class GCIBoundField(forms.BoundField):
 
     if isinstance(widget, forms.TextInput):
       return self.renderTextInput()
+    elif isinstance(widget, forms.Textarea):
+      return self.renderTextArea()
+    elif isinstance(widget, forms.DateInput):
+      return self.renderTextInput()
+    elif isinstance(widget, forms.Select):
+      return self.renderSelect()
 
     return self.NOT_SUPPORTED_MSG_FMT % (
         widget.__class__.__name__)
@@ -83,8 +89,34 @@ class GCIBoundField(forms.BoundField):
         self._render_note(),
     ))
 
+  def renderTextArea(self):
+    attrs = {
+        'id': 'melange-%s-textarea' % self.name,
+        'class': 'textarea'
+        }
+
+    return mark_safe('%s%s%s%s' % (
+        self._render_label(),
+        self.as_widget(attrs=attrs),
+        self._render_error(),
+        self._render_note(),
+    ))
+
+  def renderSelect(self):
+    attrs = {
+        'id': self.name,
+        'style': 'opacity: 100;',
+        }
+
+    return mark_safe('%s%s%s%s' % (
+        self.as_widget(attrs=attrs),
+        self._render_is_required(),
+        self._render_error(),
+        self._render_note(),
+    ))
+
   def _render_label(self):
-    return '<label>%s%s</label>' % (
+    return '<label class="form-label">%s%s</label>' % (
         self.field.label,
         self._render_is_required(),
     ) if self.field.label else ''
