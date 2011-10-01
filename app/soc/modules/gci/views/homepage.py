@@ -22,12 +22,11 @@ __authors__ = [
   ]
 
 
-from soc.logic import organization
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
+from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.logic import task as task_logic
-from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -97,8 +96,7 @@ class ParticipatingOrgs(Template):
     r = self.data.redirect
 
     participating_orgs = []
-    current_orgs = organization.participating(
-        GCIOrganization, self.data.program)
+    current_orgs = org_logic.participating(self.data.program)
     for org in current_orgs:
       participating_orgs.append({
           # TODO(madhu): Put the URL bank once the org home page appears.

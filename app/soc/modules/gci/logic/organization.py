@@ -18,9 +18,14 @@
 """
 
 __authors__ = [
+    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
     '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
+
+from soc.logic import organization as org_logic
+
+from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.task import GCITask
 
 
@@ -49,3 +54,14 @@ def getRemainingTaskQuota(org):
 
   return org.task_quota_limit - q.count()
 
+
+def participating(program):
+  """Return a list of GCI organizations to display on GCI program homepage.
+
+  Function that acts as a GCI module wrapper for fetching participating
+  organizations.
+
+  Args:
+    program: GSoCProgram entity for which the orgs need to be fetched.
+  """
+  return org_logic.participating(GCIOrganization, program)
