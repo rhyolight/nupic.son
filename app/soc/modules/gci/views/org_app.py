@@ -113,7 +113,7 @@ class GCIOrgAppPreviewPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
          url(r'org/application/preview/%s$' % url_patterns.PROGRAM,
-             self, name='gci_take_org_app'),
+             self, name='gci_preview_org_app'),
     ]
 
   def checkAccess(self):
@@ -144,7 +144,7 @@ class GCIOrgAppTakePage(RequestHandler):
          url(r'org/application/%s$' % url_patterns.PROGRAM,
              self, name='gci_take_org_app'),
          url(r'org/application/%s$' % url_patterns.ID,
-             self, name='gci_take_org_app'),
+             self, name='gci_retake_org_app'),
     ]
 
   def checkAccess(self):
