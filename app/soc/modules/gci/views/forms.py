@@ -78,6 +78,8 @@ class GCIBoundField(forms.BoundField):
       return self.renderTextArea()
     elif isinstance(widget, forms.DateInput):
       return self.renderTextInput()
+    elif isinstance(widget, forms.DateTimeInput):
+      return self.renderTextInput()
     elif isinstance(widget, forms.Select):
       return self.renderSelect()
 
