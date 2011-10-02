@@ -20,6 +20,16 @@ limitations under the License.
 
 {% block page_content %}
 <div class="block block-form">
+  {% if posted %}
+    {% if error %}
+      <div class="block block-user-message">
+        <p>Sorry, we could not save your data. Please fix the errors mentioned below.</p>
+    {% else %}
+      <div class="block block-user-message">
+        <p>Data saved successfully.</p>
+    {% endif %}
+      </div>
+  {% endif %}
   <div class="block-form-title">
     <span class="title">{{ page_name }}</span>
     <span class="req">* fields required</span>

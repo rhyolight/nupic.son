@@ -24,6 +24,7 @@ __authors__ = [
 
 from google.appengine.ext import db
 
+from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
 from soc.views import forms
@@ -66,7 +67,12 @@ class GCIBoundField(forms.BoundField):
   def render(self):
     widget = self.field.widget
 
-    if isinstance(widget, forms.TextInput):
+    if isinstance(widget, forms.DocumentWidget):
+      self.setDocumentWidgetHelpText()
+
+    if isinstance(widget, forms.ReferenceWidget):
+      return self.renderReferenceWidget()
+    elif isinstance(widget, forms.TextInput):
       return self.renderTextInput()
     elif isinstance(widget, forms.Textarea):
       return self.renderTextArea()
@@ -117,10 +123,30 @@ class GCIBoundField(forms.BoundField):
         self._render_note(),
     ))
 
+  def setDocumentWidgetHelpText(self):
+    value = self.form.initial.get(self.name, self.field.initial)
+
+    if value:
+      document = db.get(value)
+      args = [document.prefix, document.scope_path + '/', document.link_id]
+    else:
+      scope_path = self.form.scope_path
+      args = ['gci_program', scope_path + '/', self.name]
+
+    edit_document_link = reverse('edit_gci_document', args=args)
+    self.help_text = """<a href="%s">Click here to edit this document.</a>
+        <br />%s""" % (edit_document_link, self.help_text)
+
   def _render_label(self):
-    return '<label class="form-label">%s%s</label>' % (
+    err = ''
+    if self.errors:
+      err = '<span class="form-row-error-msg">%s</span>' % (
+        self.errors[0])
+
+    return '<label class="form-label">%s%s%s</label>' % (
         self.field.label,
         self._render_is_required(),
+        err,
     ) if self.field.label else ''
 
   def _render_is_required(self):
@@ -129,8 +155,9 @@ class GCIBoundField(forms.BoundField):
   def _render_error(self):
     return ''
 
-  def _render_note(self):
-    return ''
+  def _render_note(self, note=None):
+    return '<span class="note">%s</span>' % (
+        note if note else self.help_text)
 
   def div_class(self):
     div_class = 'form-row'
