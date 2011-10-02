@@ -40,7 +40,25 @@ class HowItWorks(Template):
     self.data = data
 
   def context(self):
+    r = self.data.redirect
+    program = self.data.program
+
+    from soc.modules.gci.models.program import GCIProgram
+    about_page = GCIProgram.about_page.get_value_for_datastore(program)
+
+    if not self.data.timeline.programActive():
+      start_text = start_link = ''
+    elif self.data.timeline.orgSignup():
+      start_text = 'Sign up as organization'
+      start_link = r.program().urlOf('gci_take_org_app')
+    else:
+      # TODO
+      start_text = start_link = ''
+
     return {
+        'about_link': r.document(about_page).url(),
+        'start_text': start_text,
+        'start_link': start_link,
     }
 
   def templatePath(self):
