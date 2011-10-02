@@ -22,6 +22,8 @@ __authors__ = [
   ]
 
 
+from google.appengine.ext import db
+
 from django.utils.safestring import mark_safe
 
 from soc.views import forms

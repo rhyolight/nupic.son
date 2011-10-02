@@ -619,3 +619,37 @@ class BoundField(forms.forms.BoundField):
 
   def render(self):
     raise NotImplementedError
+
+  def renderReferenceWidget(self):
+    attrs = {
+        'id': self.name,
+        'name': self.name,
+        'type': "hidden",
+        'class': 'text',
+        }
+
+    hidden = self.as_widget(attrs=attrs)
+    original = self.form.initial.get(self.name)
+
+    key = self.form.initial.get(self.name)
+
+    if key:
+      entity = db.get(key)
+      if entity:
+        self.form.initial[self.name] = entity.key().name()
+
+    attrs = {
+        'id': self.name + "-pretty",
+        'name': self.name + "-pretty",
+        'class': 'text',
+        }
+    pretty = self.as_widget(attrs=attrs)
+    self.form.initial[self.name] = original
+
+    return mark_safe('%s%s%s%s%s' % (
+        self._render_label(),
+        pretty,
+        hidden,
+        self._render_error(),
+        self._render_note(),
+    ))
