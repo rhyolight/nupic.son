@@ -26,13 +26,27 @@ from django.conf.urls.defaults import url as django_url
 
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
+from soc.models.document import Document
 from soc.views import document
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper.url_patterns import url
+
+
+class GSoCDocumentForm(GSoCModelForm):
+  """Django form for creating documents.
+  """
+
+  class Meta:
+    model = Document
+    exclude = [
+        'scope', 'scope_path', 'author', 'modified_by', 'prefix', 'home_for',
+        'link_id', 'read_access', 'write_access', 'is_featured'
+    ]
 
 
 class EditDocumentPage(RequestHandler):
@@ -56,7 +70,7 @@ class EditDocumentPage(RequestHandler):
     self.check.canEditDocument()
 
   def context(self):
-    form = document.DocumentForm(self.data.POST or None, instance=self.data.document)
+    form = GSoCDocumentForm(self.data.POST or None, instance=self.data.document)
 
     return {
         'page_name': 'Edit document',
@@ -66,7 +80,8 @@ class EditDocumentPage(RequestHandler):
   def post(self):
     """Handler for HTTP POST request.
     """
-    validated_document = document.validateForm(self.data)
+    form = GSoCDocumentForm(self.data.POST or None, instance=self.data.document)
+    validated_document = document.validateForm(self.data, form)
     if validated_document:
       self.redirect.document(validated_document)
       self.redirect.to('edit_gsoc_document')

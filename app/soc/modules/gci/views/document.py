@@ -23,14 +23,28 @@ __authors__ = [
 
 
 from soc.logic.exceptions import AccessViolation
+from soc.models.document import Document
 from soc.views import document
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.forms import GCIModelForm
 #from soc.modules.gci.views.base_templates import ProgramSelect
 from soc.modules.gci.views.helper.url_patterns import url
+
+
+class GCIDocumentForm(GCIModelForm):
+  """Django form for creating documents.
+  """
+
+  class Meta:
+    model = Document
+    exclude = [
+        'scope', 'scope_path', 'author', 'modified_by', 'prefix', 'home_for',
+        'link_id', 'read_access', 'write_access', 'is_featured'
+    ]
 
 
 class EditDocumentPage(RequestHandler):
@@ -54,8 +68,7 @@ class EditDocumentPage(RequestHandler):
     self.check.canEditDocument()
 
   def context(self):
-    form = document.DocumentForm(
-        self.data.POST or None, instance=self.data.document)
+    form = GCIDocumentForm(self.data.POST or None, instance=self.data.document)
 
     return {
         'page_name': 'Edit document',
@@ -65,7 +78,8 @@ class EditDocumentPage(RequestHandler):
   def post(self):
     """Handler for HTTP POST request.
     """
-    entity = document.validateForm(self.data)
+    form = GCIDocumentForm(self.data.POST or None, instance=self.data.document)
+    entity = document.validateForm(self.data, form)
     if entity:
       self.redirect.document(entity)
       self.redirect.to('edit_gci_document')

@@ -23,7 +23,6 @@ __authors__ = [
 
 
 from soc.views.template import Template
-from soc.views.forms import ModelForm
 from soc.logic.helper import prefixes
 from soc.views.helper import lists
 
@@ -46,21 +45,7 @@ class Document(Template):
     return "v2/soc/_document.html"
 
 
-class DocumentForm(ModelForm):
-  """Django form for creating documents.
-  """
-
-  class Meta:
-    model = soc.models.document.Document
-    exclude = [
-        'scope', 'scope_path', 'author', 'modified_by', 'prefix', 'home_for',
-        'link_id', 'read_access', 'write_access', 'is_featured'
-    ]
-
-
-def validateForm(data):
-  document_form = DocumentForm(data.POST, instance=data.document)
-
+def validateForm(data, document_form):
   if not document_form.is_valid():
     return
 
