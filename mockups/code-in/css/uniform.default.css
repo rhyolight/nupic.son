@@ -44,6 +44,7 @@ div.button span {
 
 /* INPUT & TEXTAREA */
 
+/*
 input.text,
 input.email, 
 input.password,
@@ -75,6 +76,7 @@ textarea.uniform:focus {
   border-color: #999;
   background: url('../images/uniform-bg-input-focus.png') repeat-x 0px 0px;
 }
+*/
 
 /* SPRITES */
 
