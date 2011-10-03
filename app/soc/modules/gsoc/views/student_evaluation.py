@@ -60,7 +60,7 @@ class GSoCStudentEvaluationEditForm(gsoc_forms.SurveyEditForm):
                'write_access', 'taking_access', 'is_featured']
 
 
-class GSoCStudentEvaluationTakeForm(forms.SurveyTakeForm):
+class GSoCStudentEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
   """Form for students to respond to the survey during evaluations.
   """
 
