@@ -58,6 +58,8 @@ class TaskCreateForm(gci_forms.GCIModelForm):
   def __init__(self, data, *args, **kwargs):
     super(TaskCreateForm, self).__init__(*args, **kwargs)
 
+    self.request_data = data
+
     # get a list difficulty levels stored for the program entity
     difficulties = task.TaskDifficultyTag.get_by_scope(data.program)
 
