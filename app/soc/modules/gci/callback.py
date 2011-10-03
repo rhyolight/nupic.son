@@ -41,6 +41,7 @@ class Callback(object):
   def registerViews(self):
     """Instantiates all view objects.
     """
+    from soc.modules.gci.views import admin
     from soc.modules.gci.views import bulk_create
     from soc.modules.gci.views import dashboard
     from soc.modules.gci.views import document
@@ -50,11 +51,14 @@ class Callback(object):
     from soc.modules.gci.views import program
     from soc.modules.gci.views import task
 
+    self.views.append(admin.DashboardPage())
+    self.views.append(admin.LookupLinkIdPage())
     self.views.append(bulk_create.BulkCreate())
     self.views.append(dashboard.Dashboard())
     self.views.append(document.DocumentPage())
     self.views.append(document.EditDocumentPage())
     self.views.append(document.EventsPage())
+    self.views.append(document.DocumentListPage())
     self.views.append(homepage.Homepage())
     self.views.append(org_app.GCIOrgAppEditPage())
     self.views.append(org_app.GCIOrgAppPreviewPage())
