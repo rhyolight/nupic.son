@@ -65,8 +65,11 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     for difficulty in difficulties:
       task_difficulties.append((difficulty.tag, difficulty.tag))
 
-    self.fields['difficulties'] = django_forms.ChoiceField(
+    self.fields['difficulty'] = django_forms.ChoiceField(
         label=ugettext('Difficulty'), choices=task_difficulties)
+
+    if self.instance:
+      self.fields['difficulty'].initial = self.instance.difficulty
 
     # get a list of task type tags stored for the program entity
     type_tags = task.TaskTypeTag.get_by_scope(data.program)
