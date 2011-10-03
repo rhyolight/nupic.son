@@ -1422,19 +1422,19 @@ class StudentsComponent(Component):
       enroll = GSoCStudentInfo.enrollment_form.get_value_for_datastore(info)
       return [tax, enroll]
 
-    list_config.addColumn(
-        'tax_submitted', "Tax form submitted",
-        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[0])),
-        hidden=True)
+    #list_config.addColumn(
+    #    'tax_submitted', "Tax form submitted",
+    #    (lambda ent, si, *args: bool(formsSubmitted(ent, si)[0])),
+    #    hidden=True)
 
-    list_config.addColumn(
-        'enroll_submitted', "Enrollment form submitted",
-        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[1])),
-        hidden=True)
+    #list_config.addColumn(
+    #    'enroll_submitted', "Enrollment form submitted",
+    #    (lambda ent, si, *args: bool(formsSubmitted(ent, si)[1])),
+    #    hidden=True)
 
-    list_config.addColumn(
-        'forms_submitted', "Forms submitted",
-        lambda ent, si, *args: all(formsSubmitted(ent, si)))
+    #list_config.addColumn(
+    #    'forms_submitted', "Forms submitted",
+    #    lambda ent, si, *args: all(formsSubmitted(ent, si)))
 
     addAddressColumns(list_config)
 
