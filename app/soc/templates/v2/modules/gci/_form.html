@@ -8,7 +8,7 @@
       <legend><span>{{ group }}</span></legend>
     {% endif %}
     {% for field in fields %}
-      <div id="form_row_{{ field.name }}" class="row {{ field.div_class }}">
+      <div id="form_row_{{ field.name }}" class="form-row {{ field.div_class }}">
         {{ field.render }}
       </div>
     {% endfor %}
