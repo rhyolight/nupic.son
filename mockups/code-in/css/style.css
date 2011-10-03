@@ -1960,13 +1960,27 @@ body {
 form {
     
 }
-form legend {
-    color: #0f649d;
-    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
-    font-size: 25px;
-    font-weight: bold;
-    line-height: 32px;
+form fieldset {
+	margin-bottom: 15px;
+	position: relative;
 }
+form fieldset legend {
+    display: block;
+    float: left;
+    height: 36px;
+    position: relative;
+    width: 100%;
+}
+	form fieldset legend span {
+	  color: #0f649d;
+	  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+	  font-size: 25px;
+	  font-weight: bold;
+	  line-height: 32px;
+	  position: absolute;
+	  top: 0;
+	  left: 2px;
+	}
 .form-row {/*Default form row styles*/
     color: #666;
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
@@ -1975,6 +1989,9 @@ form legend {
     margin-bottom: 15px;
     width: 100%;
 }
+	.form-row:last-child {
+		margin-bottom: 0;
+	}
     .form-row .add-field-link {
         clear: both;
         display: block;
