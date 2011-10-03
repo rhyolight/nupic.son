@@ -29,7 +29,7 @@ from soc.logic import system
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
-from soc.modules.gci.logic import organization as org_logic
+from soc.modules.gsoc.logic import organization as org_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
