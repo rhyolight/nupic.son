@@ -167,7 +167,7 @@ class TaskCreatePage(RequestHandler):
     context = {
       'page_name':  page_name,
       'form_top_msg': LoggedInMsg(self.data, apply_link=False),
-      'forms': [form],
+      'form': form,
       'error': form.errors,
     }
 
