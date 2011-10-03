@@ -101,10 +101,8 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertEmailSent(to=mentor.profile.email, n=1)
     self.assertEmailNotSent(to=self.data.profile.email)
 
-    # Hacky
+    self.data.deleteProfile()
     self.data.createMentor(self.org)
-    self.data.profile.student_info = None
-    self.data.profile.put()
 
     # test score POST
     from soc.modules.gsoc.models.score import GSoCScore
