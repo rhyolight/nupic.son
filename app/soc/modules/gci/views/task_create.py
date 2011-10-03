@@ -198,6 +198,7 @@ class TaskCreatePage(RequestHandler):
   def post(self):
     task = self.createTaskFromForm()
     if task:
-      self.redirect.to('gci_show_task', validated=True)
+      r = self.redirect.id(id=task.key().id_or_name())
+      r.to('gci_create_task', validated=True)
     else:
       self.get()
