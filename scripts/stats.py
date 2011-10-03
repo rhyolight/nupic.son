@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 #
 # Copyright 2009 the Melange authors.
 #
