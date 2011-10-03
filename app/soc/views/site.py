@@ -116,7 +116,9 @@ class EditSitePage(SiteRequestHandler):
     }
 
   def validate(self):
-    site_form = SiteForm(self.data.POST, instance=self.data.site)
+    from soc.modules.gsoc.views.forms import GSoCBoundField
+    site_form = SiteForm(GSoCBoundField, self.data.POST,
+                         instance=self.data.site)
 
     if not site_form.is_valid():
       return False
