@@ -140,7 +140,7 @@ class TaskCreatePage(RequestHandler):
     self.check.isLoggedIn()
 
   def templatePath(self):
-    return 'v2/modules/gci/task/create.html'
+    return 'v2/modules/gci/task_create/base.html'
 
   def context(self):
     if self.data.task:
