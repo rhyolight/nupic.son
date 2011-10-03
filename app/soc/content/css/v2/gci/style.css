@@ -1791,6 +1791,16 @@ form input[type=button] {
     background: #c53926 url(../../../images/v2/gci/arrow-white-lg.png) 90% 50% no-repeat;
 }
 
+.form-row-organization label.form-label {/*Default form label*/
+    color: #0f649d;
+    display: block;
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+    font-size: 18px;
+    line-height: 22px;
+    padding: 0 0 0 2px;
+    float: left;
+}
+
 /* @group Task creation */
 .form-row-task-completion-time, 
 .form-row-task-difficulty, 
