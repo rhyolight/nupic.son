@@ -35,10 +35,6 @@ from soc.views.helper import url_patterns
 from soc.models.user import User
 from soc.models.universities import UNIVERSITIES
 
-from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.models.profile import GSoCStudentInfo
-from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -46,6 +42,9 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 class EmptyForm(forms.ModelForm):
   """Empty form that is always valid.
   """
+
+  def __init__(self, *args, **kwargs):
+    super(EmptyForm, self).__init__(forms.BoundField, *args, **kwargs)
 
   def is_valid(self):
     return True
@@ -55,8 +54,8 @@ class UserForm(forms.ModelForm):
   """Django form for the user profile.
   """
 
-  def __init__(self, *args, **kwargs):
-    super(UserForm, self).__init__(*args, **kwargs)
+  def __init__(self, bound_field_class, *args, **kwargs):
+    super(UserForm, self).__init__(bound_field_class, *args, **kwargs)
     self.fields['link_id'].label = "Username"
 
   class Meta:
@@ -175,8 +174,11 @@ class ProfilePage(object):
     elif role == 'org_admin':
       page_name = 'Register as Org Admin'
 
-    form = EmptyForm if self.data.user else UserForm
-    user_form = form(self.data.POST or None, instance=self.data.user)
+    if self.data.user:
+      user_form = EmptyForm(self.data.POST or None, instance=self.data.user)
+    else:
+      user_form = self._getCreateUserForm()
+
     if self.data.profile:
       self.data.profile._fix_name()
       profile_form = self._getEditProfileForm()
@@ -203,7 +205,7 @@ class ProfilePage(object):
     if self.data.user:
       user_form = EmptyForm()
     else:
-      user_form = UserForm(self.data.POST)
+      user_form = self._getCreateUserForm()
 
     if not user_form.is_valid():
       return user_form

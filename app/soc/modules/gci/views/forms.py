@@ -42,7 +42,10 @@ class GCIModelForm(forms.ModelForm):
   
   def __init__(self, *args, **kwargs):
     super(GCIModelForm, self).__init__(
-        GCIBoundField, TEMPLATE_PATH, *args, **kwargs)
+        GCIBoundField, *args, **kwargs)
+
+  def templatePath(self):
+    return TEMPLATE_PATH
 
 
 class OrgAppEditForm(org_app.OrgAppEditForm):
@@ -51,7 +54,10 @@ class OrgAppEditForm(org_app.OrgAppEditForm):
 
   def __init__(self, *args, **kwargs):
     super(OrgAppEditForm, self).__init__(
-        GCIBoundField, TEMPLATE_PATH, *args, **kwargs)
+        GCIBoundField, *args, **kwargs)
+
+  def templatePath(self):
+    return TEMPLATE_PATH
 
 
 class OrgAppTakeForm(org_app.OrgAppTakeForm):
@@ -60,7 +66,10 @@ class OrgAppTakeForm(org_app.OrgAppTakeForm):
 
   def __init__(self, *args, **kwargs):
     super(OrgAppTakeForm, self).__init__(
-        GCIBoundField, TEMPLATE_PATH, *args, **kwargs)
+        GCIBoundField, *args, **kwargs)
+
+  def templatePath(self):
+    return TEMPLATE_PATH
 
 
 class GCIBoundField(forms.BoundField):

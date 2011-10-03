@@ -29,19 +29,18 @@ from django.utils.translation import ugettext
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import notifications
-from soc.views import forms
 from soc.views.helper import url_patterns
 from soc.tasks import mailer
 
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
-
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class ProposalForm(forms.ModelForm):
+class ProposalForm(GSoCModelForm):
   """Django form for the proposal page.
   """
 

@@ -90,7 +90,7 @@ class GSoCProfileForm(profile.ProfileForm):
 
   def __init__(self, *args, **kwargs):
     super(profile.ProfileForm, self).__init__(
-        gsoc_forms.GSoCBoundField, gsoc_forms.TEMPLATE_PATH, *args, **kwargs)
+        gsoc_forms.GSoCBoundField, *args, **kwargs)
 
   class Meta:
     model = GSoCProfile
@@ -104,6 +104,9 @@ class GSoCProfileForm(profile.ProfileForm):
         ['longitude', 'latitude'])
 
     widgets = forms.mergeWidgets(_choiceWidgets, _hiddenWidgets)
+
+  def templatePath(self):
+    return gsoc_forms.TEMPLATE_PATH
 
 
 class CreateGSoCProfileForm(GSoCProfileForm):
@@ -222,6 +225,9 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
 
   def _getCreateProfileURLPattern(self):
     return url_patterns.CREATE_PROFILE
+
+  def _getCreateUserForm(self):
+    return profile.UserForm(gsoc_forms.GSoCBoundField, self.data.POST)
 
   def _getEditProfileForm(self):
     return GSoCProfileForm(self.data.POST or None, instance=self.data.profile)

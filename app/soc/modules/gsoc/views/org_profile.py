@@ -35,10 +35,11 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.logic import cleaning as gsoc_cleaning
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
+from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class OrgProfileForm(forms.ModelForm):
+class OrgProfileForm(GSoCModelForm):
   """Django form for the organization profile.
   """
 

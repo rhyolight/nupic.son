@@ -40,7 +40,10 @@ class GSoCModelForm(forms.ModelForm):
   
   def __init__(self, *args, **kwargs):
     super(GSoCModelForm, self).__init__(
-        GSoCBoundField, TEMPLATE_PATH, *args, **kwargs)
+        GSoCBoundField, *args, **kwargs)
+
+  def templatePath(self):
+    return TEMPLATE_PATH
 
 
 class SurveyEditForm(forms.SurveyEditForm):
@@ -49,7 +52,10 @@ class SurveyEditForm(forms.SurveyEditForm):
 
   def __init__(self, *args, **kwargs):
     super(SurveyEditForm, self).__init__(
-        GSoCBoundField, TEMPLATE_PATH, *args, **kwargs)
+        GSoCBoundField, *args, **kwargs)
+
+  def templatePath(self):
+    return TEMPLATE_PATH
 
   schema = forms.CharField(widget=forms.HiddenInput())
 
@@ -60,7 +66,10 @@ class SurveyTakeForm(forms.SurveyTakeForm):
 
   def __init__(self, survey, *args, **kwargs):
     super(SurveyTakeForm, self).__init__(
-        survey, GSoCBoundField, TEMPLATE_PATH, *args, **kwargs)
+        survey, GSoCBoundField, *args, **kwargs)
+
+  def templatePath(self):
+    return TEMPLATE_PATH
 
 
 class GSoCBoundField(forms.BoundField):

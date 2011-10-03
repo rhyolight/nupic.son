@@ -49,8 +49,7 @@ class GCIProfileForm(profile.ProfileForm):
 
   def __init__(self, *args, **kwargs):
     super(profile.ProfileForm, self).__init__(
-
-        gci_forms.GCIBoundField, gci_forms.TEMPLATE_PATH, *args, **kwargs)
+        gci_forms.GCIBoundField, *args, **kwargs)
 
   class Meta:
     model = GCIProfile
@@ -64,6 +63,9 @@ class GCIProfileForm(profile.ProfileForm):
         ['longitude', 'latitude'])
 
     widgets = forms.mergeWidgets(_choiceWidgets, _hiddenWidgets)
+
+  def templatePath(self):
+    return gci_forms.TEMPLATE_PATH
 
 
 class CreateGCIProfileForm(GCIProfileForm):
@@ -190,6 +192,9 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
 
   def _getCreateProfileURLPattern(self):
     return url_patterns.CREATE_PROFILE
+
+  def _getCreateUserForm(self):
+    return profile.UserForm(gci_forms.GCIBoundField, self.data.POST)
 
   def _getEditProfileForm(self):
     return GCIProfileForm(self.data.POST or None, instance=self.data.profile)

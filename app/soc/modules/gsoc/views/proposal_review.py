@@ -33,7 +33,6 @@ from django.utils.translation import ugettext
 from soc.logic import cleaning
 from soc.logic.exceptions import BadRequest
 from soc.logic.helper import notifications
-from soc.views import forms
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -45,18 +44,16 @@ from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.score import GSoCScore
-
 from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class CommentForm(forms.ModelForm):
+class CommentForm(GSoCModelForm):
   """Django form for the comment.
   """
-
-  template_path = 'v2/modules/gsoc/proposal/_comment_form.html'
 
   class Meta:
     model = GSoCComment
@@ -72,6 +69,9 @@ class CommentForm(forms.ModelForm):
     else:
       raise django_forms.ValidationError(
           ugettext('Comment content cannot be empty.'), code='invalid')
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/proposal/_comment_form.html'
 
 
 class PrivateCommentForm(CommentForm):
