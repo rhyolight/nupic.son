@@ -94,6 +94,12 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 #    self.fields['mentors'] = django_forms.ChoiceField(
 #        widget=django_forms.MultipleHiddenInput(), choices=)
 
+    # Bind all the fields here to boundclass since we do not iterate
+    # over the fields using iterator for this form.
+    self.bound_fields = {}
+    for name, field in self.fields.items():
+      self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
+
   class Meta:
     model = task.GCITask
     css_prefix = 'gci_task'
