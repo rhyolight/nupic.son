@@ -107,6 +107,19 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
   clean_description = cleaning.clean_html_content('description')
 
+  def clean(self):
+    super(TaskCreateForm, self).clean()
+
+    cleaned_data = self.cleaned_data
+    ttc_days = cleaned_data.get("time_to_complete_days")
+    ttc_hours = cleaned_data.get("time_to_complete_hours")
+
+    cleaned_data['time_to_complete'] = ttc_days * 24 + ttc_hours
+
+    cleaned_data['program'] = self.request_data.program
+
+    return cleaned_data
+
   def clean_mentors(self):
     program_key_name = self.request_data.program.key().name()
 
@@ -159,24 +172,6 @@ class TaskCreatePage(RequestHandler):
     }
 
     return context
-
-  def putWithMentors(self, form, entity):
-    program_key_name = self.request_data.program.key().name()
-
-    mentor_link_ids = form.cleaned_data['mentors']
-    split_link_ids = mentor_link_ids.split(',')
-
-    #The creator of the task automatically becomes a mentor
-    mentors_keys = [self.data.url_user.key()]
-    for link_id in split_link_ids:
-      link_id = link_id.strip()
-      mentor_key_name = '%s/%s' % (program_key_name, link_id)
-      mentor_entity = GCIProfile.get_by_key_name(mentor_key_name)
-      mentors_keys.append(mentor_entity.key())
-
-    entity.mentors = mentors_keys
-
-    entity.put()
 
   def createTaskFromForm(self):
     """Creates a new task based on the data inserted in the form.
