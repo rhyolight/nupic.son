@@ -44,7 +44,10 @@ class TaskCreateForm(gci_forms.GCIModelForm):
   """Django form for the task creation page.
   """
 
-  tags = django_forms.CharField(label=ugettext('Tags'))
+  tags = django_forms.CharField(
+      label=ugettext('Tags'),
+      help_text=ugettext('Describe this task with tags (comma separated). '
+                         'Ex: Linux, Apache, C++, GUI'))
 
   time_to_complete_days = django_forms.IntegerField(
       label=ugettext('Time to complete'))
