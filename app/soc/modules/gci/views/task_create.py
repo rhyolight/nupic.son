@@ -102,7 +102,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
   class Meta:
     model = task.GCITask
-    css_prefix = 'gci_task'
+    css_prefix = 'gci-task'
     fields = ['title', 'description', 'difficulty' , 'task_type', 'arbit_tag']
 
   clean_description = cleaning.clean_html_content('description')
