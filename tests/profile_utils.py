@@ -94,6 +94,7 @@ class ProfileHelper(object):
     if self.profile.student_info:
       self.profile.student_info.delete()
     self.profile.delete()
+    self.profile = None
 
     return self
 
