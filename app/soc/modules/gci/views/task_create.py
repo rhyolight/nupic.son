@@ -187,17 +187,13 @@ class TaskCreatePage(RequestHandler):
 
     if not form.is_valid():
       return None
-    task_link_id = 't%i' % (int(time.time()*100))
-    if not self.data.task:
-      key_name = '%s/%s' % (
-          self.data.organization.key.name(),
-          task_link_id
-          )
-      entity = form.create(commit=False, key_name=key_name)
-    else:
-      entity = form.create(commit=False)
 
-    self.putWithMentors(form, entity)
+    if not self.data.task:
+      entity = form.create(commit=True)
+    else:
+      entity = form.save(commit=True)
+
+    return entity
 
   def post(self):
     task = self.createTaskFromForm()
