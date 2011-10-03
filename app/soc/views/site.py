@@ -71,6 +71,9 @@ class SiteForm(ModelForm):
       return ''
     return self.cleaned_data['tos']
 
+  def templatePath(self):
+    return 'v2/modules/gsoc/_form.html'
+
   clean_noreply_email = cleaning.clean_empty_field('noreply_email')
 
 
@@ -102,7 +105,10 @@ class EditSitePage(SiteRequestHandler):
     return 'v2/soc/site/base.html'
 
   def context(self):
-    site_form = SiteForm(self.data.POST or None, instance=self.data.site)
+    # TODO: suboptimal
+    from soc.modules.gsoc.views.forms import GSoCBoundField
+    site_form = SiteForm(GSoCBoundField, self.data.POST or None,
+                         instance=self.data.site)
     return {
         'app_version': os.environ.get('CURRENT_VERSION_ID', '').split('.')[0],
         'page_name': 'Edit site settings',
