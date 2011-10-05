@@ -64,9 +64,10 @@
   padding: 0 0 0 7px;
   text-transform: uppercase;
 }
-#main .block div.title {
+#main .block div.block-title {
   /*block title*/
 
+  font-weight: bold;
   background: #6eb5e5;
   color: #fff;
   font-size: 15px;
