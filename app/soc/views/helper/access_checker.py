@@ -62,10 +62,6 @@ DEF_ALREADY_PARTICIPATING_MSG = ugettext(
     'You cannot become a Student because you are already participating '
     'in this program.')
 
-DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
-    'You cannot register as a student since you are already a '
-    'mentor or organization administrator in %s.')
-
 DEF_ALREADY_PARTICIPATING_AS_STUDENT_MSG = ugettext(
     'You cannot register as a %s since you are already a '
     'student in %s.')
@@ -664,21 +660,7 @@ class AccessChecker(BaseAccessChecker):
     period = self.data.timeline.studentsAnnouncedOn()
     raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE_MSG_FMT % period)
 
-  def canApplyStudent(self, edit_url):
-    """Checks if the user can apply as a student.
-    """
-    self.isLoggedIn()
 
-    if self.data.profile and self.data.profile.student_info:
-      raise RedirectRequest(edit_url)
-
-    self.studentSignupActive()
-
-    if not self.data.profile:
-      return
-
-    raise AccessViolation(
-        DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG % self.data.program.name)
 
   def canApplyNonStudent(self, role, edit_url):
     """Checks if the user can apply as a mentor or org admin.

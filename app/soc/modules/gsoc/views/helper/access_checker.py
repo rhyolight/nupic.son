@@ -29,6 +29,7 @@ from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation, BadRequest
 from soc.logic.exceptions import NotFound
+from soc.logic.exceptions import RedirectRequest
 from soc.views.helper import access_checker
 
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
@@ -69,6 +70,10 @@ DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU_MSG = ugettext(
 DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT_MSG = ugettext(
     'You cannot access this evaluation because you do not have any '
     'ongoing project.')
+
+DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
+    'You cannot register as a student since you are already a '
+    'mentor or organization administrator in %s.')
 
 
 class Mutator(access_checker.Mutator):
@@ -239,6 +244,22 @@ class AccessChecker(access_checker.AccessChecker):
     # for the project in request or the org admin for the org
     if self.data.profile.key() not in project.mentors:
       raise AccessViolation(DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU_MSG)
+
+  def canApplyStudent(self, edit_url):
+    """Checks if the user can apply as a student.
+    """
+    self.isLoggedIn()
+
+    if self.data.profile and self.data.profile.student_info:
+      raise RedirectRequest(edit_url)
+
+    self.studentSignupActive()
+
+    if not self.data.profile:
+      return
+
+    raise AccessViolation(
+        DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG % self.data.program.name)
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass
