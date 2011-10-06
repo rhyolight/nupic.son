@@ -73,13 +73,22 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
 
   def clean_backup_admin_id(self):
     backup_admin = cleaning.clean_existing_user('backup_admin_id')(self)
+
+    if not self.instance:
+      cleaning.clean_users_not_same('backup_admin_id')(self)
+    elif self.instance.main_admin.key() == backup_admin.key():
+      raise django_forms.ValidationError(
+          'You cannot enter the person who created the application here')
+
     self.cleaned_data['backup_admin'] = backup_admin
     return backup_admin
 
   def clean(self):
     cleaned_data = self.cleaned_data
 
-    cleaned_data.pop('backup_admin_id')
+    # pop our custom id field if exists
+    if 'backup_admin_id' in cleaned_data:
+      cleaned_data.pop('backup_admin_id')
 
     return cleaned_data
 
