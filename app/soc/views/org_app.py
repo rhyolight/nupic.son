@@ -63,13 +63,35 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
       self.fields['backup_admin_id'].initial = \
           self.instance.backup_admin.link_id
 
+    # not marked required by data model for backwards compatibility
+    self.fields['org_id'].required = True
+
   class Meta:
     model = OrgAppRecord
     css_prefix = 'org-app-record'
     exclude = ['main_admin', 'backup_admin', 'status', 'user', 'survey',
                'created', 'modified']
 
-  clean_org_id = cleaning.clean_link_id('org_id')
+  def clean_org_id(self):
+    org_id = cleaning.clean_link_id('org_id')(self)
+
+    if not org_id:
+      # manual required check, see Issue 1291
+      raise django_forms.ValidationError('This field is required.')
+
+    q = OrgAppRecord.all()
+    q.filter('survey', self.survey)
+    q.filter('org_id', org_id)
+
+    org_app = q.get()
+
+    if org_app:
+      # If we are creating a new org app it is a duplicate, if we are editing
+      # an org app we must check if the one we found has a different key.
+      if (not self.instance) or (org_app.key() != self.instance.key()):
+        raise django_forms.ValidationError('This ID has already been taken.')
+
+    return org_id
 
   def clean_backup_admin_id(self):
     backup_admin = cleaning.clean_existing_user('backup_admin_id')(self)
@@ -78,7 +100,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
       cleaning.clean_users_not_same('backup_admin_id')(self)
     elif self.instance.main_admin.key() == backup_admin.key():
       raise django_forms.ValidationError(
-          'You cannot enter the person who created the application here')
+          'You cannot enter the person who created the application here.')
 
     self.cleaned_data['backup_admin'] = backup_admin
     return backup_admin
