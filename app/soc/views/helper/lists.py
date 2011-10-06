@@ -361,7 +361,7 @@ class ListConfiguration(object):
     }
     self.__addButton(button_id, caption, bounds, 'post', parameters)
 
-  def addPostEditButton(self, button_id, caption, url, keys, refresh='current'):
+  def addPostEditButton(self, button_id, caption, url='', keys=[], refresh='current'):
     """This button is used when all changed values should be posted.
 
     Args:

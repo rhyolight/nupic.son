@@ -63,6 +63,7 @@ class Callback(object):
     self.views.append(homepage.Homepage())
     self.views.append(org_app.GCIOrgAppEditPage())
     self.views.append(org_app.GCIOrgAppPreviewPage())
+    self.views.append(org_app.GCIOrgAppRecordsList())
     self.views.append(org_app.GCIOrgAppShowPage())
     self.views.append(org_app.GCIOrgAppTakePage())
     self.views.append(profile.GCIProfilePage())

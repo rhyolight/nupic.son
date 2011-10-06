@@ -19,11 +19,17 @@
 
 __authors__ = [
   '"Madhusudan.C.S" <madhusudancs@gmail.com>',
+  '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
 
+import logging
+
+from django.utils import simplejson
 from django.utils.translation import ugettext
 
+from soc.logic.exceptions import BadRequest
+from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
@@ -214,7 +220,7 @@ class GCIOrgAppTakePage(RequestHandler):
       self.get()
 
 
-class GCIOrgAppRecordsList(org_app.OrgAppRecordsList):
+class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
   """View for listing all records of a GCI Organization application.
   """
 
@@ -224,6 +230,41 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList):
              r'org/application/records/%s$' % url_patterns.PROGRAM,
              self, name='gci_list_org_app_records')
          ]
+
+  def post(self):
+    """Edits records from commands received by the list code.
+    """
+    post_data = self.request.POST
+
+    if not post_data.get('button_id', None) == 'save':
+      raise BadRequest('No valid POST data found')
+
+    data = self.data.POST.get('data')
+    if not data:
+      raise BadRequest('Missing data')
+
+    parsed = simplejson.loads(data)
+
+    for id, properties in parsed.iteritems():
+      record = OrgAppRecord.get_by_id(long(id))
+
+      if not record:
+        logging.warning('%s is an invalid OrgAppRecord ID'%id)
+        continue
+
+      if record.survey.key() != self.data.org_app.key():
+        logging.warning('%s is not a record for the Org App in the URL'%record.key())
+        continue
+
+      new_status = properties['status']
+
+      if record.status != new_status:
+        # TODO(ljvderijk): Implement state change code with email if needed
+        # This is temporary code to check the workings of the page
+        record.status = new_status
+        record.put()
+
+    self.response.set_status(200)
 
 
 class GCIOrgAppShowPage(RequestHandler):

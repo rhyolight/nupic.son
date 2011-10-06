@@ -35,8 +35,6 @@ from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
-from soc.views.base import SiteRequestHandler
-
 
 class OrgAppEditForm(forms.SurveyEditForm):
   """Form to create/edit organization application survey.
@@ -116,7 +114,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     return cleaned_data
 
 
-class OrgAppRecordsList(SiteRequestHandler):
+class OrgAppRecordsList(object):
   """View for listing all records of a Organization Applications.
   """
 
@@ -144,8 +142,7 @@ class OrgAppRecordsList(SiteRequestHandler):
     idx = lists.getListIndex(self.request)
     if idx == 0:
       record_list = self._createOrgAppsList()
-      return record_list.listContentResponse(
-          self.request, prefetch=['org', 'project']).content()
+      return record_list.listContentResponse(self.request).content()
     else:
       super(OrgAppRecordsList, self).jsonContext()
 
@@ -154,11 +151,31 @@ class OrgAppRecordsList(SiteRequestHandler):
     """
     record_list = survey.SurveyRecordList(
         self.data, self.data.org_app, OrgAppRecord, idx=0)
+    record_list.list_config.addSimpleColumn('name', 'Name')
+    record_list.list_config.addSimpleColumn('org_id', 'Organization ID')
+
+    # TODO(ljvderijk): Poke Mario during all-hands to see if we can separate
+    # "search options" and in-line selection options.
+    options = [
+        ('', 'All'),
+        ('(needs review)', 'needs review'),
+        ('(pre-accepted)', 'pre-accepted'),
+        ('(accepted)', 'accepted'),
+        ('(pre-rejected)', 'pre-rejected'),
+        ('(rejected)', 'rejected'),
+        ('(ignored)', 'ignored'),
+    ]
+
+    record_list.list_config.addSimpleColumn('status', 'Status', options=options)
+    record_list.list_config.setColumnEditable('status', True, 'select')
+    record_list.list_config.addPostEditButton('save', 'Save')
+
+    # TODO: list should redirect to view record (read-only) page
 
     return record_list
 
   def templatePath(self):
-    return 'v2/modules/gsoc/student_eval/record_list.html'
+    return 'v2/soc/org_app/records.html'
 
 
 class OrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
