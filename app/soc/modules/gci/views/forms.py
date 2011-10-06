@@ -52,6 +52,9 @@ class OrgAppEditForm(org_app.OrgAppEditForm):
   """Form to create/edit GCI organization application survey.
   """
 
+  class Meta(org_app.OrgAppEditForm.Meta):
+    pass
+
   def __init__(self, *args, **kwargs):
     super(OrgAppEditForm, self).__init__(
         GCIBoundField, *args, **kwargs)
@@ -63,6 +66,9 @@ class OrgAppEditForm(org_app.OrgAppEditForm):
 class OrgAppTakeForm(org_app.OrgAppTakeForm):
   """Form for would-be organization admins to apply for a GCI program.
   """
+
+  class Meta(org_app.OrgAppTakeForm.Meta):
+    pass
 
   def __init__(self, *args, **kwargs):
     super(OrgAppTakeForm, self).__init__(
