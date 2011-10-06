@@ -79,10 +79,8 @@ class OrgAppRecord(SurveyRecord):
       reference_class=soc.models.user.User, required=True,
       verbose_name="Backup Admin", collection_name='backup_admin_org_app')
 
-  #: field storing whether the User has agreed to the site-wide 
-  #: Terms of Service. (Not a required field because the Terms of 
-  #: Service might not be present).
-  agreed_to_admin_agreement = db.BooleanProperty(required=False, default=False,
+  #: field storing whether the User has agreed to the org admin agreement
+  agreed_to_admin_agreement = db.BooleanProperty(required=True, default=False,
       verbose_name=ugettext('I Agree to the Admin Agreement'))
   agreed_to_admin_agreement.help_text = ugettext(
       'Indicates whether the user agreed to the Admin Agreement.')
