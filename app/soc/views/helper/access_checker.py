@@ -451,9 +451,6 @@ class Mutator(object):
 
   def orgAppRecordIfIdInKwargs(self):
     """Sets the organization application in RequestData object.
-
-    Args:
-      raise_not_found: iff False do not send 404 response.
     """
     assert self.data.org_app
 

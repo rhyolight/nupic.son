@@ -247,10 +247,6 @@ class GCIOrgAppShowPage(RequestHandler):
     return 'v2/modules/gsoc/_survey/show.html'
 
   def context(self):
-    assert access_checker.isSet(self.data.program)
-    assert access_checker.isSet(self.data.timeline)
-    assert access_checker.isSet(self.data.org_app_record)
-
     record = self.data.org_app_record
 
     context = {
