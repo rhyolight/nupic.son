@@ -209,7 +209,7 @@ class GCIOrgAppTakePage(RequestHandler):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
       r = self.redirect.id(org_app_record.key().id())
-      r.to('gci_take_org_app', validated=True)
+      r.to('gci_retake_org_app', validated=True)
     else:
       self.get()
 
