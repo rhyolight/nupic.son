@@ -24,11 +24,19 @@ __authors__ = [
   ]
 
 
+from django.utils.translation import ugettext
+
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
+from soc.logic.exceptions import RedirectRequest
 from soc.views.helper import access_checker
 
 from soc.modules.gci.models.task import GCITask
+
+
+DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
+    'You cannot register as a student since you are already a '
+    'mentor or organization administrator in %s.')
 
 
 class Mutator(access_checker.Mutator):
@@ -106,6 +114,27 @@ class AccessChecker(access_checker.AccessChecker):
       error_msg = access_checker.DEF_PAGE_INACTIVE_MSG
       raise AccessViolation(error_msg)
 
+  def canApplyStudent(self, edit_url):
+    """Checks if a user may apply as a student to the program.
+    """
+
+    self.isLoggedIn()
+
+    if self.data.profile:
+      if self.data.profile.student_info:
+        raise RedirectRequest(edit_url)
+      else:
+        raise AccessViolation(
+            DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG % 
+            self.data.program.name)
+
+    self.studentSignupActive()
+    self.checkOneTaskCompleted()
+    
+  def checkOneTaskCompleted(self):
+    """Checks if the current user completed at least one task for the program.
+    """
+    pass
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   """Developer access checker for GCI specific methods.
