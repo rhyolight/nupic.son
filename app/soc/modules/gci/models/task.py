@@ -32,7 +32,7 @@ from taggable.taggable import Tag
 from taggable.taggable import Taggable
 from taggable.taggable import tag_property
 
-import soc.models.linkable
+import soc.models.base
 import soc.models.role
 import soc.models.user
 
@@ -50,9 +50,7 @@ UPLOAD_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork', 'NeedsReview']
 SEND_FOR_REVIEW_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork']
 
 
-# TODO(Madhu): after the data conversion inherit the model from
-# ModelFieldWithAttributes rather than Linkable.
-class GCITask(Taggable, soc.models.linkable.Linkable):
+class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
   """Model for a task used in GCI workflow.
 
   The scope property of Linkable will be set to the Organization to which
