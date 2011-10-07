@@ -132,7 +132,6 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
   def checkAccess(self):
     self.check.isLoggedIn()
     self.check.isProgramVisible()
-    return True
   
     if 'role' in self.data.kwargs:
       role = self.data.kwargs['role']
