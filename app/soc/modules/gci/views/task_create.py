@@ -23,8 +23,6 @@ __authors__ = [
   ]
 
 
-import time
-
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
