@@ -38,8 +38,6 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
     'You cannot register as a student since you are already a '
     'mentor or organization administrator in %s.')
 
-DEF_ONE_TASK_NOT_COMPLETED = ugettext(
-    'You must complete one task before you can register as a student.')
 
 class Mutator(access_checker.Mutator):
   """Helper class for access checking.
@@ -130,21 +128,7 @@ class AccessChecker(access_checker.AccessChecker):
             self.data.program.name)
 
     self.studentSignupActive()
-    self._isAwaitingRegistration()
     
-  def _isAwaitingRegistration(self):
-    """Checks if the current user completed one task whose status is
-    'AwaitingRegistration'.
-
-    It is assumed that a user may take up only one task before he or she
-    needs to be registered in order to still participate in the program. 
-    """
-    if hasattr(self.gae_user, 'assigned_tasks') and \
-        len(self.gae_user.assigned_tasks) == 1 and \
-        self.gae_user.assigned_tasks[0].status == 'AwaitingRegistration':
-      return
-
-    raise AccessViolation(DEF_ONE_TASK_NOT_COMPLETED)
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   """Developer access checker for GCI specific methods.
