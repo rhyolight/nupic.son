@@ -58,7 +58,7 @@ class GSoCMentorEvaluationEditForm(gsoc_forms.SurveyEditForm):
                'scope_path', 'link_id', 'prefix', 'read_access',
                'write_access', 'taking_access', 'is_featured']
 
-class GSoCMentorEvaluationTakeForm(forms.SurveyTakeForm):
+class GSoCMentorEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
   """Form for the organization to evaluate a student project.
   """
 
