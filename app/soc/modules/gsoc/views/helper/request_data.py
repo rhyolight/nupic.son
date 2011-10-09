@@ -115,12 +115,6 @@ class TimelineHelper(request_data.TimelineHelper):
   def applicationMatchedOn(self):
     return self.timeline.student_application_matched_deadline
 
-  def afterSurveyStart(self, survey):
-    return request_data.isAfter(survey.survey_start)
-
-  def afterSurveyEnd(self, survey):
-    return request_data.isAfter(survey.survey_end)
-
   def mentorSignup(self):
     return self.programActiveBetween() and self.orgsAnnounced()
 
