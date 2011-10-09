@@ -1751,7 +1751,7 @@ form legend {
         margin: 5px 0;
     }
     .form-checkbox .form-checkbox-item .checker {
-        margin-right: 0;
+        margin-right: 5px;
     }
     .form-checkbox input {
     }
