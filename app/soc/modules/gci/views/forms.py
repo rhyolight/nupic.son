@@ -134,6 +134,10 @@ class OrgAppTakeForm(org_app.OrgAppTakeForm):
   """Form for would-be organization admins to apply for a GCI program.
   """
 
+  CHECKBOX_SELECT_MULTIPLE = CheckboxSelectMultiple
+
+  RADIO_FIELD_RENDERER = RadioFieldRenderer
+
   class Meta(org_app.OrgAppTakeForm.Meta):
     pass
 

@@ -457,6 +457,10 @@ class SurveyTakeForm(ModelForm):
   """Django form for taking a survey.
   """
 
+  CHECKBOX_SELECT_MULTIPLE = CheckboxSelectMultiple
+
+  RADIO_FIELD_RENDERER = RadioFieldRenderer
+
   def __init__(self, survey, bound_field_class, *args, **kwargs):
     super(SurveyTakeForm, self).__init__(bound_field_class, *args, **kwargs)
     self.survey = survey
@@ -576,10 +580,10 @@ class SurveyTakeForm(ModelForm):
 
     if type == 'checkbox':
       field = forms.MultipleChoiceField
-      widget = CheckboxSelectMultiple()
+      widget = self.CHECKBOX_SELECT_MULTIPLE()
     elif type == 'radio':
       field = forms.ChoiceField
-      widget = forms.RadioSelect(renderer=RadioFieldRenderer)
+      widget = forms.RadioSelect(renderer=self.RADIO_FIELD_RENDERER)
     elif type == 'textarea':
       field = forms.CharField
       widget = forms.Textarea()
