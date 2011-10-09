@@ -54,7 +54,7 @@ class GCIOrgAppEditPage(RequestHandler):
     self.mutator.orgAppFromKwargs(raise_not_found=False)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_evaluation.html'
+    return 'v2/modules/gci/org_app/edit.html'
 
   def context(self):
     if self.data.org_app:
@@ -127,7 +127,7 @@ class GCIOrgAppPreviewPage(RequestHandler):
     self.mutator.orgAppFromKwargs(raise_not_found=False)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_evaluation_take.html'
+    return 'v2/modules/gci/org_app/take.html'
 
   def context(self):
     form = gci_forms.OrgAppTakeForm(self.data.org_app)
@@ -166,7 +166,7 @@ class GCIOrgAppTakePage(RequestHandler):
     self.check.canAccessOrgApp()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_evaluation_take.html'
+    return 'v2/modules/gci/org_app/take.html'
 
   def context(self):
     if self.data.org_app_record:
@@ -285,7 +285,7 @@ class GCIOrgAppShowPage(RequestHandler):
     self.check.canAccessOrgApp()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_survey/show.html'
+    return 'v2/modules/gci/org_app/show.html'
 
   def context(self):
     record = self.data.org_app_record
