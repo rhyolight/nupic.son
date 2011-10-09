@@ -521,6 +521,15 @@ class BaseAccessChecker(object):
 
     raise LoginRequest()
 
+  def isLoggedOut(self):
+    """Ensures that the user is logged out.
+    """
+
+    if not self.gae_user:
+      return
+
+    raise RedirectRequest(self.data.logout_url)
+
   def isUser(self):
     """Checks if the current user has an User entity.
     """
