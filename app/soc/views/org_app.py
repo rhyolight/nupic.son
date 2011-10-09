@@ -55,7 +55,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
       help_text=ugettext('The Link ID of the user who will serve as the '
                          'backup admin for this organization.'))
 
-  def __init__(self, survey, bound_class_field, *args, **kwargs):
+  def __init__(self, tos_content, survey, bound_class_field, *args, **kwargs):
     super(OrgAppTakeForm, self).__init__(survey, bound_class_field, *args,
                                          **kwargs)
     if self.instance:
@@ -64,6 +64,9 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
 
     # not marked required by data model for backwards compatibility
     self.fields['org_id'].required = True
+
+    self.fields['agreed_to_admin_agreement'].widget = forms.TOSWidget(
+        tos_content)
 
   class Meta:
     model = OrgAppRecord
