@@ -22,9 +22,13 @@ __authors__ = [
   ]
 
 
+import itertools
+
 from google.appengine.ext import db
 
 from django.core.urlresolvers import reverse
+from django.utils.encoding import force_unicode
+from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.template import defaultfilters
 from django.utils.formats import dateformat
@@ -34,6 +38,69 @@ from soc.views import org_app
 
 
 TEMPLATE_PATH = 'v2/modules/gci/_form.html'
+
+
+class RadioInput(forms.RadioInput):
+  """The rendering customization to be used for individual radio elements.
+  """
+
+  def __unicode__(self):
+    if 'id' in self.attrs:
+      label_for = ' for="%s_%s"' % (self.attrs['id'], self.index)
+    else:
+      label_for = ''
+    choice_label = conditional_escape(force_unicode(self.choice_label))
+    return mark_safe(
+        u'%s <label%s>%s</label>' % (
+        self.tag(), label_for, choice_label))
+
+
+class RadioFieldRenderer(forms.RadioFieldRenderer):
+  """The rendering customization to use the Uniform CSS on radio fields.
+  """
+
+  def __iter__(self):
+    for i, choice in enumerate(self.choices):
+      yield RadioInput(self.name, self.value, self.attrs.copy(), choice, i)
+
+  def render(self):
+    """Outputs the enclosing <div> for this set of radio fields.
+    """
+    return mark_safe(u'<div class="form-radio">%s</div>' % u'\n'.join([
+        u'<div id="form-row-radio-%s" class="form-radio-item">%s</div>'
+        % (w.attrs.get('id', ''), force_unicode(w)) for w in self]))
+
+
+class CheckboxSelectMultiple(forms.CheckboxSelectMultiple):
+  def render(self, name, value, attrs=None, choices=()):
+    if value is None:
+      value = []
+    has_id = attrs and 'id' in attrs
+    final_attrs = self.build_attrs(attrs, name=name)
+    output = [u'<div class="form-checkbox">']
+    # Normalize to strings
+    str_values = set([force_unicode(v) for v in value])
+    for i, (option_value, option_label) in enumerate(
+        itertools.chain(self.choices, choices)):
+      # If an ID attribute was given, add a numeric index as a suffix,
+      # so that the checkboxes don't all have the same ID attribute.
+      if has_id:
+        final_attrs = dict(final_attrs, id='%s_%s' % (attrs['id'], i))
+        label_for = u' for="%s"' % final_attrs['id']
+      else:
+        label_for = ''
+
+      cb = forms.CheckboxInput(
+          final_attrs, check_test=lambda value: value in str_values)
+      option_value = force_unicode(option_value)
+      rendered_cb = cb.render(name, option_value)
+      option_label = conditional_escape(force_unicode(option_label))
+      output.append(
+          u'<div id="form-row-checkbox-%s" class="form-checkbox-item">'
+          '%s<label%s>%s</label></div>' % (
+          final_attrs['id'], rendered_cb, label_for, option_label))
+    output.append(u'</div>')
+    return mark_safe(u'\n'.join(output))
 
 
 class GCIModelForm(forms.ModelForm):
