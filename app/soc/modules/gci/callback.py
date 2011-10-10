@@ -42,6 +42,7 @@ class Callback(object):
     """Instantiates all view objects.
     """
     from soc.modules.gci.views import admin
+    from soc.modules.gci.views import age_check
     from soc.modules.gci.views import bulk_create
     from soc.modules.gci.views import dashboard
     from soc.modules.gci.views import document
@@ -54,6 +55,7 @@ class Callback(object):
 
     self.views.append(admin.DashboardPage())
     self.views.append(admin.LookupLinkIdPage())
+    self.views.append(age_check.AgeCheck())
     self.views.append(bulk_create.BulkCreate())
     self.views.append(dashboard.Dashboard())
     self.views.append(document.DocumentPage())
