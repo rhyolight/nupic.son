@@ -24,8 +24,10 @@ __authors__ = [
   ]
 
 
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
+from soc.logic import dicts
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import RedirectRequest
@@ -128,7 +130,15 @@ class AccessChecker(access_checker.AccessChecker):
             self.data.program.name)
 
     self.studentSignupActive()
-    
+
+    # custom pre-registration age check for GCI students
+    age_check = self.data.request.COOKIES.get('age_check', None)
+    if not age_check or age_check == '0':
+      # no age check done or it failed
+      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+      age_check_url = reverse('gci_age_check', kwargs=kwargs)
+      raise RedirectRequest(age_check_url)
+
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   """Developer access checker for GCI specific methods.
