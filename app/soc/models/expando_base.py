@@ -29,9 +29,8 @@ from soc.logic import dicts
 
 class ExpandoBase(db.Expando):
   """Expando Base model.
-
-  This might later on contain general functionalities like the
-  ModelWithFieldAttributes model.
+  
+  TODO(ljvderijk): Delete this base model.
   """
 
   toDict = dicts.toDict
