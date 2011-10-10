@@ -43,6 +43,8 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.url = '/gci/profile/%(program_suffix)s' % {
         'program_suffix': program_suffix
         }
+    
+    self.validated_url = self.url + '?validated'
 
     self.student_url = '/gci/profile/%(role)s/%(program_suffix)s' % {
         'role': 'student',
@@ -137,7 +139,7 @@ class ProfileViewTest(GCIDjangoTestCase):
         })
 
     response = self.post(self.student_url, self.default_props)
-    self.assertResponseRedirect(response, self.url + '?validated')
+    self.assertResponseRedirect(response, self.validated_url)
 
   def testCreateUserNoLinkId(self):
     self.timeline.studentSignup()
@@ -188,9 +190,9 @@ class ProfileViewTest(GCIDjangoTestCase):
         'is_org_admin': False, 'is_mentor': False,
     })
 
-    response = self.post(role_url, postdata)
+    response = self.post(self.student_url, postdata)
 
-    self.assertResponseRedirect(response, url + '?validated')
+    self.assertResponseRedirect(response, self.validated_url)
 
     # hacky
     profile = GCIProfile.all().get()
