@@ -33,7 +33,35 @@ class ProfileViewTest(GCIDjangoTestCase):
   """
 
   def setUp(self):
+    from soc.modules.gci.models.profile import GCIProfile
+    from soc.modules.gci.models.profile import GCIStudentInfo
+
     self.init()
+
+    program_suffix = self.gci.key().name()
+
+    self.url = '/gci/profile/%(program_suffix)s' % {
+        'program_suffix': program_suffix
+        }
+
+    self.student_url = '/gci/profile/%(role)s/%(program_suffix)s' % {
+        'role': 'student',
+        'program_suffix': program_suffix                                                            
+        }
+
+    props = {
+        'student_info': None,
+        'status': 'active',
+        'is_org_admin': False,
+        'is_mentor': False,
+        'org_admin_for': [],
+        'mentor_for': [],
+        'scope': self.gci
+        }
+    props.update(seeder_logic.seed_properties(GCIProfile))
+    props.update(seeder_logic.seed_properties(GCIStudentInfo))
+
+    self.default_props = props
 
   def assertProfileTemplatesUsed(self, response):
     self.assertGCITemplatesUsed(response)
@@ -100,7 +128,27 @@ class ProfileViewTest(GCIDjangoTestCase):
   #  url = '/gci/profile/' + self.gci.key().name()
   #  response = self.client.get(url)
   #  self.assertResponseForbidden(response)
-    
+
+  def testCreateUser(self):
+    self.timeline.studentSignup()
+
+    self.default_props.update({
+        'link_id': 'test',
+        })
+
+    response = self.post(self.student_url, self.default_props)
+    self.assertResponseRedirect(response, self.url + '?validated')
+
+  def testCreateUserNoLinkId(self):
+    self.timeline.studentSignup()
+
+    self.default_props.update({
+        })
+
+    response = self.post(self.student_url, self.default_props)
+    self.assertResponseOK(response)
+    self.assertTrue('link_id' in response.context['error'])
+
   def testCreateProfile(self):
     from soc.modules.gci.models.profile import GCIProfile
     from soc.modules.gci.models.profile import GCIStudentInfo
