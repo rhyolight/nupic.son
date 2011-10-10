@@ -87,7 +87,7 @@ class GSoCUserForm(gsoc_forms.GSoCModelForm):
     css_prefix = 'user'
     fields = ['link_id']
 
- # clean_link_id = cleaning.clean_user_not_exist('link_id')
+  clean_link_id = cleaning.clean_user_not_exist('link_id')
 
 
 PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
