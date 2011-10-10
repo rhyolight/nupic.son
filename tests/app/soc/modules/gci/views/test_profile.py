@@ -89,6 +89,7 @@ class ProfileViewTest(GCIDjangoTestCase):
   def testCreateProfilePage(self):
     self.timeline.studentSignup()
     url = '/gci/profile/student/' + self.gci.key().name()
+    self.client.cookies['age_check'] = '1'
     response = self.client.get(url)
     self.assertProfileTemplatesUsed(response)
 
