@@ -91,9 +91,7 @@ class Program(soc.models.presence.Presence):
       'Minimum age of the student to sign-up in years.')
 
   #: Property that contains the date as of which above student
-  #: minimum age requirement holds. This is a DateTimeProperty because
-  #: programs might run in a different timezone then the Appengine Server
-  #: is running on.
+  #: minimum age requirement holds.
   student_min_age_as_of = db.DateProperty(
       required=False, verbose_name=ugettext('Minimum age as of'))
   student_min_age_as_of.group = ugettext('Contest Rules')
