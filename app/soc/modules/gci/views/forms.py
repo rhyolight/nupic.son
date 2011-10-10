@@ -141,9 +141,9 @@ class OrgAppTakeForm(org_app.OrgAppTakeForm):
   class Meta(org_app.OrgAppTakeForm.Meta):
     pass
 
-  def __init__(self, tos_content, survey, *args, **kwargs):
+  def __init__(self, survey, tos_content, *args, **kwargs):
     super(OrgAppTakeForm, self).__init__(
-        tos_content, survey, GCIBoundField, *args, **kwargs)
+        survey, tos_content, GCIBoundField, *args, **kwargs)
 
   def templatePath(self):
     return TEMPLATE_PATH
