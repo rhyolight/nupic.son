@@ -27,7 +27,7 @@ from django.forms import fields
 
 from soc.logic import cleaning
 from soc.logic import dicts
-
+from soc.models.user import User
 from soc.views import forms
 from soc.views import profile
 from soc.views.helper import url_patterns
@@ -37,6 +37,18 @@ from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
+
+
+class GCIUserForm(gci_forms.GCIModelForm):
+  """Django form for User model in GCI program.
+  """
+
+  class Meta:
+    model = User
+    css_prefix = 'user'
+    fields = ['link_id']
+
+  clean_link_id = cleaning.clean_user_not_exist('link_id')
 
 
 PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
@@ -193,7 +205,7 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
     return url_patterns.CREATE_PROFILE
 
   def _getCreateUserForm(self):
-    return profile.UserForm(gci_forms.GCIBoundField, self.data.POST)
+    return GCIUserForm(self.data.POST)
 
   def _getEditProfileForm(self):
     return GCIProfileForm(self.data.POST or None, instance=self.data.profile)

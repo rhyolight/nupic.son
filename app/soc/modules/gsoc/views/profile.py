@@ -28,6 +28,7 @@ from django.core.urlresolvers import reverse
 
 from soc.logic import cleaning
 from soc.logic import dicts
+from soc.models.user import User
 from soc.views import forms
 from soc.views import profile
 from soc.views.helper import url_patterns
@@ -77,12 +78,23 @@ class MentorNotificationForm(gsoc_forms.GSoCModelForm):
     fields = MENTOR_FIELDS
 
 
+class GSoCUserForm(gsoc_forms.GSoCModelForm):
+  """Django form for User model in GSoC program.
+  """
+
+  class Meta:
+    model = User
+    css_prefix = 'user'
+    fields = ['link_id']
+
+ # clean_link_id = cleaning.clean_user_not_exist('link_id')
+
+
 PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
     # notifications
     'notify_new_proposals', 'notify_proposal_updates',
     'notify_public_comments', 'notify_private_comments',
 ]
-
 
 class GSoCProfileForm(profile.ProfileForm):
   """Django form for profile page.
@@ -227,7 +239,7 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     return url_patterns.CREATE_PROFILE
 
   def _getCreateUserForm(self):
-    return profile.UserForm(gsoc_forms.GSoCBoundField, self.data.POST)
+    return GSoCUserForm(self.data.POST or None)
 
   def _getEditProfileForm(self):
     return GSoCProfileForm(self.data.POST or None, instance=self.data.profile)

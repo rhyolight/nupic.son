@@ -50,22 +50,6 @@ class EmptyForm(forms.ModelForm):
     return True
 
 
-class UserForm(forms.ModelForm):
-  """Django form for the user profile.
-  """
-
-  def __init__(self, bound_field_class, *args, **kwargs):
-    super(UserForm, self).__init__(bound_field_class, *args, **kwargs)
-    self.fields['link_id'].label = "Username"
-
-  class Meta:
-    model = User
-    css_prefix = 'user'
-    fields = ['link_id']
-
-  clean_link_id = cleaning.clean_user_not_exist('link_id')
-
-
 PROFILE_EXCLUDE = [
     # identification fields
     'link_id', 'user', 'scope', 'scope_path', 'status',
