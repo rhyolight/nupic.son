@@ -101,7 +101,7 @@ class GSoCProfileForm(profile.ProfileForm):
   """
 
   def __init__(self, *args, **kwargs):
-    super(profile.ProfileForm, self).__init__(
+    super(GSoCProfileForm, self).__init__(
         gsoc_forms.GSoCBoundField, *args, **kwargs)
 
   class Meta:

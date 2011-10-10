@@ -392,6 +392,30 @@ def clean_feed_url(field_name):
   return wrapper
 
 
+def clean_birth_date(field_name, program, check_age):
+  """Clean method for cleaning birth date.
+  
+  Args:
+    field_name: the name of the field needed cleaning
+    program: program entity that the field refers to
+    check_age: whether the birth date should be checked against the minimal
+      date for the program
+  """
+
+  def wrapper(form):
+    """Decorator wrapped method.
+    """
+    birth_date = form.cleaned_data.get(field_name)
+    
+    if form.check_age and not validate.isAgeSufficient(birth_date,
+        form.program.student_min_age, form.program.student_min_age_as_of):
+      raise forms.ValidationError(
+          'The age is not sufficient to participate in the program.')
+    
+    return birth_date
+  return wrapper
+
+
 def sanitize_html_string(content):
   """Sanitizes the given html string.
 
@@ -546,4 +570,3 @@ def str2set(string_field, separator=','):
     return list_data
 
   return wrapper
-
