@@ -60,10 +60,26 @@ class ProfileViewTest(GCIDjangoTestCase):
         'mentor_for': [],
         'scope': self.gci
         }
+    # we do not want to seed the data in the datastore, we just
+    # want to get the properties generated for seeding. The post
+    # test will actually do the entity creation, so we reuse the
+    # seed_properties method from the seeder to get the most common
+    # values for Profile and StudentInfo
     props.update(seeder_logic.seed_properties(GCIProfile))
     props.update(seeder_logic.seed_properties(GCIStudentInfo))
 
     self.default_props = props
+
+  def _updateDefaultProps(self, request_data):
+    """Updates default_props variable with more personal data stored in
+    the specified request_data object.
+    """
+    self.default_props.update({
+        'link_id': request_data.user.link_id,
+        'user': request_data.user,
+        'parent': request_data.user,
+        'email': request_data.user.account.email()
+        })
 
   def assertProfileTemplatesUsed(self, response):
     self.assertGCITemplatesUsed(response)
@@ -157,29 +173,10 @@ class ProfileViewTest(GCIDjangoTestCase):
 
     self.timeline.studentSignup()
     self.data.createUser()
-
-    # we do not want to seed the data in the datastore, we just
-    # want to get the properties generated for seeding. The post
-    # test will actually do the entity creation, so we reuse the
-    # seed_properties method from the seeder to get the most common
-    # values for Profile and StudentInfo
-    postdata = seeder_logic.seed_properties(GCIProfile)
-    props = seeder_logic.seed_properties(GCIStudentInfo)
-
-    
-    postdata.update(props)
-    postdata.update({
-        'link_id': self.data.user.link_id,
-        'student_info': None,
-        'user': self.data.user, 'parent': self.data.user,
-        'scope': self.gci, 'status': 'active',
-        'email': self.data.user.account.email(),
-        'mentor_for': [], 'org_admin_for': [],
-        'is_org_admin': False, 'is_mentor': False,
-    })
+    self._updateDefaultProps(self.data)
+    postdata = self.default_props
 
     response = self.post(self.student_url, postdata)
-
     self.assertResponseRedirect(response, self.validated_url)
 
     # hacky
