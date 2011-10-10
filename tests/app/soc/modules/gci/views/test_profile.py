@@ -158,18 +158,6 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.timeline.studentSignup()
     self.data.createUser()
 
-    suffix = "%(program)s" % {
-        'program': self.gci.key().name(),
-        }
-
-    role_suffix = "%(role)s/%(suffix)s" % {
-        'role': 'student',
-        'suffix': suffix,
-        }
-
-    role_url = '/gci/profile/' + role_suffix
-
-
     # we do not want to seed the data in the datastore, we just
     # want to get the properties generated for seeding. The post
     # test will actually do the entity creation, so we reuse the
@@ -178,6 +166,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     postdata = seeder_logic.seed_properties(GCIProfile)
     props = seeder_logic.seed_properties(GCIStudentInfo)
 
+    
     postdata.update(props)
     postdata.update({
         'link_id': self.data.user.link_id,
@@ -201,7 +190,7 @@ class ProfileViewTest(GCIDjangoTestCase):
         'email': 'somerandominvalid@emailid',
         })
 
-    response = self.post(role_url, postdata)
+    response = self.post(self.student_url, postdata)
 
     # yes! this is the protocol for form posts. We get an OK response
     # with the response containing the form's GET request page whenever
