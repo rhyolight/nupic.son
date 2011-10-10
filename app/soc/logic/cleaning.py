@@ -35,12 +35,10 @@ from google.appengine.api import users
 
 from django import forms
 from django.core import validators
-from django.forms.util import ErrorList
 from django.utils.translation import ugettext
 
 from soc.models.user import User
 from soc.logic import validate
-from soc.logic import site
 from soc.logic import user
 
 
