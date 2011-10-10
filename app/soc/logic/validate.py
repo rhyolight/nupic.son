@@ -86,3 +86,13 @@ def isScopePathFormatValid(scope_path):
     return True
   
   return False
+
+
+def isAgeSufficient(birth_date, minimal_age, as_of_date):
+  """Returns True if the specified birth_date indicates that minimal_age
+  has been reached no later than on as_of_date. 
+  """
+  min_year = as_of_date.year - minimal_age
+  min_date = as_of_date.replace(year=min_year)
+
+  return True if birth_date <= min_date else False
