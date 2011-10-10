@@ -194,7 +194,14 @@ class RoleUpdater(object):
 
     if self.ROLE_FIELD:
       # the role is either Mentor or OrgAdmin
-      getattr(profile, self.ROLE_FIELD).append(entity.scope.key())
+      if self.ROLE_FIELD == 'org_admin_for':
+        org_admin_for = list(set(profile.org_admin_for + [entity.scope.key()]))
+        profile.org_admin_for = org_admin_for
+        profile.is_org_admin = True
+
+      mentor_for = list(set(profile.mentor_for + [entity.scope.key()]))
+      profile.mentor_for = mentor_for
+      profile.is_mentor = True
     else:
       # the role is certainly Student; we have to create a new StudentInfo
       properties = {}
@@ -207,6 +214,7 @@ class RoleUpdater(object):
       student_info = self.STUDENTINFO_MODEL(key_name=key_name,
           parent=profile, **properties)
       profile.student_info = student_info
+      profile.is_student = True
       to_put.append(student_info)
 
     db.run_in_transaction(db.put, to_put)
