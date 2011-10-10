@@ -167,7 +167,6 @@ class ProfileViewTest(GCIDjangoTestCase):
         'suffix': suffix,
         }
 
-    url = '/gci/profile/' + suffix
     role_url = '/gci/profile/' + role_suffix
 
 
