@@ -392,7 +392,7 @@ def clean_feed_url(field_name):
   return wrapper
 
 
-def clean_birth_date(field_name, program, check_age):
+def clean_birth_date(field_name):
   """Clean method for cleaning birth date.
   
   Args:
