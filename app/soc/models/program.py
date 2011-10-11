@@ -90,8 +90,15 @@ class Program(soc.models.presence.Presence):
   student_min_age.help_text = ugettext(
       'Minimum age of the student to sign-up in years.')
 
+  #: Property that contains the maximum age of a student allowed to
+  #: participate
+  student_max_age = db.IntegerProperty(default=100,
+      required=False, verbose_name=ugettext('Student maximum age'))
+  student_max_age.help_text = ugettext(
+      'Maximum age of the student (in years) to participate.')
+
   #: Property that contains the date as of which above student
-  #: minimum age requirement holds.
+  #: minimum/maximum age requirement holds.
   student_min_age_as_of = db.DateProperty(
       required=False, verbose_name=ugettext('Minimum age as of'))
   student_min_age_as_of.group = ugettext('Contest Rules')
