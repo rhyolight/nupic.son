@@ -94,9 +94,10 @@ def isAgeSufficientForProgram(birth_date, program):
   """
   
   # do not check if the data is not present
+  validation_result = True
   if program.student_min_age_as_of and program.student_min_age:
     min_year = program.student_min_age_as_of.year - program.student_min_age
     min_date = program.student_min_age_as_of.replace(year=min_year)
-    return True if birth_date <= min_date else False
-  else:
-    return True
+    validation_result = birth_date >= min_date
+
+  return validation_result
