@@ -370,15 +370,10 @@ class GCIBoundField(forms.BoundField):
         <br />%s""" % (edit_document_link, self.help_text)
 
   def _render_label(self):
-    err = ''
-    if self.errors:
-      err = '<span class="form-row-error-msg">%s</span>' % (
-        self.errors[0])
-
     return '<label class="form-label">%s%s%s</label>' % (
         self.field.label,
         self._render_is_required(),
-        err,
+        self._render_error(),
     ) if self.field.label else ''
 
   def _render_is_required(self):
