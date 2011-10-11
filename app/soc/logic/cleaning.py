@@ -410,7 +410,7 @@ def clean_birth_date(field_name):
     if form.check_age and not validate.isAgeSufficient(birth_date,
         form.program.student_min_age, form.program.student_min_age_as_of):
       raise forms.ValidationError(
-          'The age is not sufficient to participate in the program.')
+          'Your age does not allow you to participate in the program.')
     
     return birth_date
   return wrapper
