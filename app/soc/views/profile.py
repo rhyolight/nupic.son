@@ -149,8 +149,11 @@ class ProfilePage(object):
     role = self.data.kwargs.get('role')
     if self.data.student_info or role == 'student':
       student_info_form = self._getStudentInfoForm()
+      # student's age should be checked
+      check_age = True
     else:
       student_info_form = EmptyForm()
+      check_age = False
 
     if not role:
       page_name = 'Edit your Profile'
@@ -209,6 +212,12 @@ class ProfilePage(object):
     return user_form
 
   def validateProfile(self, dirty):
+    if self.data.student_info or self.data.kwargs.get('role') == 'student':
+      # student's age should be checked
+      check_age = True
+    else:
+      check_age = False
+      
     if self.data.profile:
       profile_form = self._getEditProfileForm()
     else:
