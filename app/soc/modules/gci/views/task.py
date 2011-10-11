@@ -220,7 +220,7 @@ class PostComment(RequestHandler):
     self.mutator.TaskFromKwargs()
     self.check.isTaskVisible()
     self.check.isProgramActive()
-    self.check.isUser()
+    self.check.isProfileActive()
 
   def post(self):
     assert isSet(self.data.task)
