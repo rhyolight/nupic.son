@@ -406,9 +406,9 @@ def clean_birth_date(field_name):
     """Decorator wrapped method.
     """
     birth_date = form.cleaned_data.get(field_name)
-    
-    if form.check_age and not validate.isAgeSufficient(birth_date,
-        form.program.student_min_age, form.program.student_min_age_as_of):
+
+    if form.program and not validate.isAgeSufficientForProgram(
+        birth_date, form.program):
       raise forms.ValidationError(
           'Your age does not allow you to participate in the program.')
     
