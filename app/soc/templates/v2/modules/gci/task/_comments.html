@@ -23,7 +23,7 @@
       <span class="single-comment-title">{{ comment.title|default:"No Title" }}</span>
       <span class="single-comment-meta">by <a href="javascript:void(0)">{{ comment.created_by.name }}</a> {{ comment.created_on|date:"F j Y H:i"}} UTC</span>
 
-      {{ comment.content|safe }}
+      <p>{{ comment.content|safe }}</p>
 
       <a href="javascript:void(0)" class="task-btn task-btn-comment-reply">Reply</a>
       <div class="single-comment-reply">
