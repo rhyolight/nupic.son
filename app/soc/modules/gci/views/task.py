@@ -97,6 +97,7 @@ class TaskViewPage(RequestHandler):
       'task_info': TaskInformation(self.data),
       'work_submissions': WorkSubmissions(self.data),
       'comments': CommentsTemplate(self.data),
+      'is_mentor': self.data.mentorFor(self.data.task.org)
     }
 
     return context
@@ -116,6 +117,10 @@ class TaskInformation(Template):
     # the program's timeline.
     task = self.data.task
     mentors = [m.public_name for m in db.get(task.mentors)]
+
+    # We count everyone from the org as a mentor, the mentors property
+    # is just who best to contact about this task
+    is_mentor = self.data.mentorFor(task.org)
 
     return {'task': task,
             'mentors': mentors}
