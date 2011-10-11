@@ -221,7 +221,7 @@ class ProfilePage(object):
     if self.data.profile:
       profile_form = self._getEditProfileForm()
     else:
-      profile_form = self._getEditProfileForm()
+      profile_form = self._getCreateProfileForm()
 
     if not profile_form.is_valid():
       return profile_form, None
