@@ -21,8 +21,8 @@
                 <li><a href="../task-student-open/">Student Task, open</a></li>
                 <li><a href="../task-student-owned/">Student Task, owned</a></li>
                 <li><a href="../task-student-owned-completed/">Student Task, owned &amp; completed</a></li>
-                <li><a href="../delete-account/">Delete Acccount</a></li>
-                <li><a href="../delete-account-confirm/">Delete Acccount Confirmation</a></li>
+                <li><a href="../delete-account/">Delete Account</a></li>
+                <li><a href="../delete-account-confirm/">Delete Account Confirmation</a></li>
                 <li><a href="../jquery-ui/">jQuery UI Demo</a></li>
                 <!--<li><a href="../formatting/">Basic page</a></li>-->
             </ul>            

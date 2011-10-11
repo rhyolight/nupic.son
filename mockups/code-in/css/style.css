@@ -170,7 +170,7 @@ figure {
     margin-bottom: 10px;
 }
 
-a, a:visited { color: #0f649d; text-decoration: none; }
+a, a:visited, .ui-widget-content a { color: #0f649d; text-decoration: none; }
 a:hover {  }
 
 /*Link hover styles*/
@@ -293,7 +293,7 @@ body {
     .logo {
         background-image:url(../images/google_code-in.png);
         height: 127px;
-        margin: 10px 0 0 125px;
+        margin: 10px 0 0 58px;
         width: 266px;
     }
 #footer {
@@ -807,6 +807,34 @@ body {
 		margin: 0 auto;
 		padding: 10px 18px;
 		text-align: center;
+	}
+.block-filter {
+	background: #59bbff;
+	padding: 8px;
+}
+	.block-filter .block-filter-option {
+		float: left;
+		margin: 0 17px 0 0;
+	}
+	.block-filter .block-filter-option-search .form-row input[type="text"] {
+		color: #666;
+		height: 26px;
+		line-height: 26px;
+		margin-top: 1px;
+		width: 150px;
+	}
+.block-filter-sort {
+	background: #d3d3d3;
+	font-size: 12px;
+	line-height: 1em;
+	padding: 8px 8px 8px 13px;
+	text-transform: uppercase;
+}
+	.block-filter-sort a.block-filter-sort-link {
+		background:url(../images/arrow-blue-sm.png) right center no-repeat;
+		color: #0f649d;
+		font-weight: bold;
+		padding-right: 13px;
 	}
 /* @end */
 
@@ -1362,8 +1390,53 @@ body {
 .block-user-tabs {/*Dashboard-specific tab styles*/
         
 }
+	.block-user-tabs.ui-tabs {
+		border: none;
+		border-radius: 0px;
+		-moz-border-radius: 0px;
+		-webkit-border-radius: 0px;
+		padding: 0;
+	}
+    .block-user-tabs.ui-tabs .ui-tabs-nav {
+    	background: none;
+    	border: none;
+    	border-bottom: 6px solid #0082c8;
+    	border-radius: 0px;
+    	-moz-border-radius: 0px;
+    	-webkit-border-radius: 0px;
+    	font-weight: normal;
+        padding: 0;
+    }
+    	.block-user-tabs.ui-tabs .ui-tabs-nav li {
+    		background: #e0e0e0;
+    		border: none;
+    		border-top-left-radius: 10px;
+    		border-top-right-radius: 10px;
+    		-moz-border-radius-topleft: 10px;
+    		-moz-border-radius-topright: 10px;
+    		-webkit-border-top-left-radius: 10px;
+    		-webkit-border-top-right-radius: 10px;
+    		font-family: 'Oswald', sans-serif;
+    		font-size: 20px;
+    		font-weight: normal;
+    		text-transform: uppercase;
+    	}
+	    	.block-user-tabs.ui-tabs .ui-tabs-nav li a {
+	    		color: #6d6e71;
+	    		padding: 7px 15px 0px 15px;
+	    	}
+    	.block-user-tabs.ui-tabs .ui-tabs-nav li.ui-state-active {
+    		background: #0082c8;
+    	}
+    		.block-user-tabs.ui-tabs .ui-tabs-nav li.ui-state-active a {
+    			color: #fff;
+    		}
     .block-user-tabs.ui-tabs .ui-tabs-panel {
-        padding: 0;   
+    	border: none;
+    	border-radius: 0px;
+    	-moz-border-radius: 0px;
+    	-webkit-border-radius: 0px;
+    	padding: 0;
     }
     .block-user-tabs .task-group {
         
@@ -1380,7 +1453,6 @@ body {
         background:url(../images/dashboard-task-single-bg.gif) 0 0 repeat-y;
         background-color: #e0e0e0;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
-        font-weight: bold;
         padding: 3px 0;
     }
         .task-single.even {
@@ -1488,7 +1560,11 @@ body {
             }
         .task-group .task-group-pager {
             background: #ebebeb;
+            padding: 5px 0;
         }
+        	.task-group .task-group-pager ul {
+        		margin-bottom: 0;
+        	}
         	.task-group .task-group-pager ul li {
         	    font-size: 17px;
         	    font-weight: bold;
@@ -1960,13 +2036,27 @@ body {
 form {
     
 }
-form legend {
-    color: #0f649d;
-    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
-    font-size: 25px;
-    font-weight: bold;
-    line-height: 32px;
+form fieldset {
+	margin-bottom: 15px;
+	position: relative;
 }
+form fieldset legend {
+    display: block;
+    float: left;
+    height: 36px;
+    position: relative;
+    width: 100%;
+}
+	form fieldset legend span {
+	  color: #0f649d;
+	  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+	  font-size: 25px;
+	  font-weight: bold;
+	  line-height: 32px;
+	  position: absolute;
+	  top: 0;
+	  left: 2px;
+	}
 .form-row {/*Default form row styles*/
     color: #666;
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
@@ -1975,6 +2065,9 @@ form legend {
     margin-bottom: 15px;
     width: 100%;
 }
+	.form-row:last-child {
+		margin-bottom: 0;
+	}
     .form-row .add-field-link {
         clear: both;
         display: block;

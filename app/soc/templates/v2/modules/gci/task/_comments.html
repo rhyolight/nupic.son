@@ -1,53 +1,41 @@
 <div class="block-comments clearfix">
   <span class="block-comments-title">Comments</span>
-  <a href="javascript:void(0)" class="task-btn task-btn-comment-new">Post new comment</a>
-  <div class="block-comments-post-new">
-    <span class="block-comments-post-new-title">Post new comment</span>
 
-    <form action="#" method="post" class="form-comment-post-new clearfix">
-      <div class="form-row">
-        <label for="comment-reply-title" class="form-label">Title</label>
-        <input name="comment-reply-title" value="" type="text">
-      </div>
-      <div class="form-row">
-        <label for="comment-reply-body" class="form-label">Body</label>
-        <textarea id="comment-reply-body" name="comment-reply-body"></textarea>
-      </div>
-      <div class="form-row form-row-buttons">
-        <input value="Submit" class="button" type="submit">
-      </div>
-    </form>
-  </div>
-  <!--end .block-comments-post-new-->  
+  {% if profile %}
+    <a href="javascript:void(0)" class="task-btn task-btn-comment-new">Post new comment</a>
+    <div class="block-comments-post-new">
+      <span class="block-comments-post-new-title">Post new comment</span>
+      <form action="#" method="post" class="form-comment-post-new clearfix">
+        {{ comment_form.render }}
+        <div class="form-row form-row-buttons">
+          <input value="Submit" class="button" type="submit">
+        </div>
+      </form>
+    </div>
+    <!--end .block-comments-post-new-->
+  {% else %}
+    {% comment %} Show registration link for students and mentors {% endcomment %}
+  {% endif %}
 
   {% for comment in comments %}
     <div class="single-comment">
-      <span class="single-comment-title">{{ comment.title }}</span>
-      <span class="single-comment-meta">by <a href="javascript:void(0)">{{ comment.created_by.name }}</a> {{ comment.created_on|date:"F j Y H:i"}} UTC</span>
-      {{ comment.content|safe }}
 
-      {% comment %}
-       TODO: Uncomment this bit when uncollapse works and we have a proper form for it.
+      <span class="single-comment-title">{{ comment.title|default:"No Title" }}</span>
+      <span class="single-comment-meta">by <a href="javascript:void(0)">{{ comment.created_by.name }}</a> {{ comment.created_on|date:"F j Y H:i"}} UTC</span>
+
+      <p>{{ comment.content|safe }}</p>
+
       <a href="javascript:void(0)" class="task-btn task-btn-comment-reply">Reply</a>
       <div class="single-comment-reply">
         <span class="single-comment-reply-title">Reply</span>
         <form action="#" method="post" class="form-comment-reply clearfix">
-          <div class="form-row">
-            <label for="comment-reply-title" class="form-label">Title</label>
-             <input name="comment-reply-title" value="" type="text">
-          </div>
-          <div class="form-row">
-            <label for="comment-reply-body" class="form-label">Body</label>
-            <textarea id="comment-reply-body" name="comment-reply-body"></textarea>
-          </div>
+          {{ comment_form.render }}
           <div class="form-row form-row-buttons">
             <input value="Submit" class="button" type="submit">
           </div>
         </form>
       </div>
       <!--end .single-comment-reply-->
-      {% endcomment %}
-
     </div>
     <!-- end .single-comment -->
   {% empty %}
