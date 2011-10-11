@@ -59,9 +59,9 @@ class GCIProfileForm(profile.ProfileForm):
   """Django form to edit GCI profile page.
   """
 
-  def __init__(self, *args, **kwargs):
-    super(profile.ProfileForm, self).__init__(
-        gci_forms.GCIBoundField, *args, **kwargs)
+  def __init__(self, request_data=None, *args, **kwargs):
+    super(GCIProfileForm, self).__init__(
+        gci_forms.GCIBoundField, request_data, *args, **kwargs)
 
   class Meta:
     model = GCIProfile
@@ -90,8 +90,8 @@ class CreateGCIProfileForm(GCIProfileForm):
     exclude = PROFILE_EXCLUDE
     widgets = GCIProfileForm.Meta.widgets
 
-  def __init__(self, tos_content, *args, **kwargs):
-    super(CreateGCIProfileForm, self).__init__(*args, **kwargs)
+  def __init__(self, tos_content, request_data=None, *args, **kwargs):
+    super(CreateGCIProfileForm, self).__init__(request_data, *args, **kwargs)
     self.tos_content = tos_content
     self.fields['agreed_to_tos'].widget = forms.TOSWidget(tos_content)
 
@@ -208,11 +208,13 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
     return GCIUserForm(self.data.POST)
 
   def _getEditProfileForm(self):
-    return GCIProfileForm(self.data.POST or None, instance=self.data.profile)
+    return GCIProfileForm(data=self.data.POST or None,
+        request_data=self.data, instance=self.data.profile)
 
   def _getCreateProfileForm(self):
     tos_content = self._getTOSContent()
-    return CreateGCIProfileForm(tos_content, self.data.POST or None)
+    return CreateGCIProfileForm(tos_content, data=self.data.POST or None,
+        request_data=self.data)
 
   def _getNotificationForm(self):
     return NotificationForm

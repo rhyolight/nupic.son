@@ -71,6 +71,7 @@ class ProfileForm(forms.ModelForm):
     super(ProfileForm, self).__init__(bound_field_class, *args, **kwargs)
     self.fields['given_name'].group = "2. Contact Info (Private)"
     self.fields['surname'].group = "2. Contact Info (Private)"
+    self.program = request_data.program if request_data else None
 
   public_name = fields.CharField(required=True)
 

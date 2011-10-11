@@ -100,9 +100,9 @@ class GSoCProfileForm(profile.ProfileForm):
   """Django form for profile page.
   """
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, request_data=None, *args, **kwargs):
     super(GSoCProfileForm, self).__init__(
-        gsoc_forms.GSoCBoundField, *args, **kwargs)
+        gsoc_forms.GSoCBoundField, request_data, *args, **kwargs)
 
   class Meta:
     model = GSoCProfile
@@ -131,8 +131,8 @@ class CreateGSoCProfileForm(GSoCProfileForm):
     exclude = PROFILE_EXCLUDE
     widgets = GSoCProfileForm.Meta.widgets
 
-  def __init__(self, tos_content, *args, **kwargs):
-    super(CreateGSoCProfileForm, self).__init__(*args, **kwargs)
+  def __init__(self, tos_content, request_data=None, *args, **kwargs):
+    super(CreateGSoCProfileForm, self).__init__(request_data, *args, **kwargs)
     self.tos_content = tos_content
     self.fields['agreed_to_tos'].widget = forms.TOSWidget(tos_content)
 
@@ -242,11 +242,12 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     return GSoCUserForm(self.data.POST or None)
 
   def _getEditProfileForm(self):
-    return GSoCProfileForm(self.data.POST or None, instance=self.data.profile)
+    return GSoCProfileForm(data=self.data.POST or None,
+        instance=self.data.profile)
 
   def _getCreateProfileForm(self):
     tos_content = self._getTOSContent()
-    return CreateGSoCProfileForm(tos_content, self.data.POST or None)
+    return CreateGSoCProfileForm(tos_content, data=self.data.POST or None)
 
   def _getNotificationForm(self):
     if self.data.student_info or self.data.kwargs.get('role') == 'student':
