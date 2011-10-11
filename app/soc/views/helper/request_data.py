@@ -305,7 +305,7 @@ class RedirectHelper(object):
     """Sets kwargs for an url_patterns.SPONSOR redirect.
     """
     if not program:
-      assert self._data.program
+      assert isSet(self._data.program)
       program = self._data.program
     self._clear()
     self.kwargs['sponsor'] = program.scope_path
@@ -315,7 +315,7 @@ class RedirectHelper(object):
     """Sets kwargs for an url_patterns.PROGRAM redirect.
     """
     if not program:
-      assert self._data.program
+      assert isSet(self._data.program)
       program = self._data.program
     self.sponsor(program)
     self.kwargs['program'] = program.link_id
