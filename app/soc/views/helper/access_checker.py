@@ -1151,15 +1151,28 @@ class AccessChecker(BaseAccessChecker):
           }
       raise AccessViolation(error_msg)
 
-  def canAccessOrgApp(self):
-    """Checks if the user can edit the org app record if it exists.
+  def canEditOrgApp(self):
+    """Checks if the user can edit the org app record.
     """
     assert isSet(self.data.org_app_record)
 
     self.isLoggedIn()
 
-    if self.data.org_app_record:
-      allowed_keys = [self.data.org_app_record.main_admin.key(),
-                      self.data.org_app_record.backup_admin.key()]
-      if self.data.user.key() not in allowed_keys:
-        raise AccessViolation(DEF_CANNOT_ACCESS_ORG_APP)
+    allowed_keys = [self.data.org_app_record.main_admin.key(),
+                    self.data.org_app_record.backup_admin.key()]
+    if self.data.user.key() not in allowed_keys:
+      raise AccessViolation(DEF_CANNOT_ACCESS_ORG_APP)
+
+  def canViewOrgApp(self):
+    """Checks if the user can view the org app record. Only the org admins and
+    hosts are allowed to view.
+    """
+    assert isSet(self.data.org_app_record)
+
+    try:
+      self.canEditOrgApp(self)
+      return
+    except AccessViolation:
+      pass
+
+    self.isHost()

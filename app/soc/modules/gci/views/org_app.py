@@ -163,7 +163,9 @@ class GCIOrgAppTakePage(RequestHandler):
       show_url = self.data.redirect.organization().urlOf('gci_show_org_app')
 
     self.check.isSurveyActive(self.data.org_app, show_url)
-    self.check.canAccessOrgApp()
+
+    if self.data.org_app_record:
+      self.check.canEditOrgApp()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'
@@ -284,9 +286,9 @@ class GCIOrgAppShowPage(RequestHandler):
   def checkAccess(self):
     self.mutator.orgAppFromKwargs()
     self.mutator.orgAppRecordIfIdInKwargs()
-    assert access_checker.isSet(self.data.org_app)
+    assert access_checker.isSet(self.data.org_app_record)
 
-    self.check.canAccessOrgApp()
+    self.check.canViewOrgApp()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/show.html'
