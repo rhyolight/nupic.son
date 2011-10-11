@@ -207,11 +207,11 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
   def _getCreateUserForm(self):
     return GCIUserForm(self.data.POST)
 
-  def _getEditProfileForm(self):
+  def _getEditProfileForm(self, check_age):
     return GCIProfileForm(data=self.data.POST or None,
         request_data=self.data, instance=self.data.profile)
 
-  def _getCreateProfileForm(self):
+  def _getCreateProfileForm(self, check_age):
     tos_content = self._getTOSContent()
     return CreateGCIProfileForm(tos_content, data=self.data.POST or None,
         request_data=self.data)

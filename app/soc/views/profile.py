@@ -171,9 +171,9 @@ class ProfilePage(object):
 
     if self.data.profile:
       self.data.profile._fix_name()
-      profile_form = self._getEditProfileForm()
+      profile_form = self._getEditProfileForm(check_age)
     else:
-      profile_form = self._getCreateProfileForm()
+      profile_form = self._getCreateProfileForm(check_age)
     error = user_form.errors or profile_form.errors or student_info_form.errors
 
     form = self._getNotificationForm()
@@ -219,9 +219,9 @@ class ProfilePage(object):
       check_age = False
       
     if self.data.profile:
-      profile_form = self._getEditProfileForm()
+      profile_form = self._getEditProfileForm(check_age)
     else:
-      profile_form = self._getCreateProfileForm()
+      profile_form = self._getCreateProfileForm(check_age)
 
     if not profile_form.is_valid():
       return profile_form, None
@@ -316,10 +316,10 @@ class ProfilePage(object):
   def _getCreateProfileURLPattern(self):
     raise NotImplementedError
 
-  def _getEditProfileForm(self):
+  def _getEditProfileForm(self, check_age):
     raise NotImplementedError
 
-  def _getCreateProfileForm(self):
+  def _getCreateProfileForm(self, check_age):
     raise NotImplementedError
 
   def _getNotificationForm(self):

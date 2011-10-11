@@ -241,11 +241,11 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
   def _getCreateUserForm(self):
     return GSoCUserForm(self.data.POST or None)
 
-  def _getEditProfileForm(self):
+  def _getEditProfileForm(self, check_age):
     return GSoCProfileForm(data=self.data.POST or None,
         instance=self.data.profile)
 
-  def _getCreateProfileForm(self):
+  def _getCreateProfileForm(self, check_age):
     tos_content = self._getTOSContent()
     return CreateGSoCProfileForm(tos_content, data=self.data.POST or None)
 
