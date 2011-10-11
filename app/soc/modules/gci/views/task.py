@@ -61,9 +61,7 @@ class CommentForm(gci_forms.GCIModelForm):
     self.fields['content'].required = True
 
   def clean_content(self):
-    field_name = 'content'
-    wrapped_clean_html_content = cleaning.clean_html_content(field_name)
-    content = wrapped_clean_html_content(self)
+    content = cleaning.clean_html_content('content')(self)
     if content:
       return content
     else:
@@ -94,10 +92,10 @@ class TaskViewPage(RequestHandler):
     context = {
       'page_name': '%s - %s' %(self.data.task.title, self.data.task.org.name),
       'task': self.data.task,
+      'is_mentor': self.data.mentorFor(self.data.task.org),
       'task_info': TaskInformation(self.data),
       'work_submissions': WorkSubmissions(self.data),
       'comments': CommentsTemplate(self.data),
-      'is_mentor': self.data.mentorFor(self.data.task.org)
     }
 
     return context
@@ -120,10 +118,15 @@ class TaskInformation(Template):
 
     # We count everyone from the org as a mentor, the mentors property
     # is just who best to contact about this task
-    is_mentor = self.data.mentorFor(task.org)
+    context = {
+        'task': task,
+        'mentors': mentors,
+        'is_mentor': self.data.mentorFor(task.org),
+        'is_student': self.data.is_student,
+        'profile': self.data.profile,
+    }
 
-    return {'task': task,
-            'mentors': mentors}
+    return context
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
