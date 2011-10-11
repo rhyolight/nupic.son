@@ -90,6 +90,19 @@
         <!-- end .block.block-featured-task -->
         <div class="block block-completed-tasks">
             <div class="block-title">My Completed Tasks</div>
+            <div class="block-filter clearfix">
+            	<div class="block-filter-option block-filter-option-difficulty">
+            		<select>
+            			<option>Difficulty: All</option>
+            			<option>Difficulty: Easy</option>
+            			<option>Difficulty: Medium</option>
+            			<option>Difficulty: Difficult</option>
+            		</select>
+            	</div>
+            </div>
+            <div class="block-filter-sort">
+            	Sort by: <a href="javascript:void(0)" class="block-filter-sort-link block-filter-sort-deadline">Deadline</a>
+            </div>
             <div class="task-single task-single-in-progress level-difficult clearfix">
                 <div class="cog"></div>
                 <div class="task-single-content clearfix">

@@ -38,6 +38,33 @@
             	<li><a href="#all-tasks">All tasks</a></li>
             </ul>
             <div id="active-tasks" class="task-group">
+            	<div class="block-filter clearfix">
+            		<div class="block-filter-option block-filter-option-search">
+            			<form action="#" method="post">
+            				<div class="form-row">
+            					<input type="text" onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'Search':this.value;" value="Search" />
+            				</div>
+            			</form>
+            		</div>
+            		<div class="block-filter-option block-filter-option-status">
+            			<select>
+            				<option>Status: All</option>
+            				<option>Status: Open</option>
+            				<option>Status: Closed</option>
+            			</select>
+            		</div>
+            		<div class="block-filter-option block-filter-option-difficulty">
+	            		<select>
+	            			<option>Difficulty: All</option>
+	            			<option>Difficulty: Easy</option>
+	            			<option>Difficulty: Medium</option>
+	            			<option>Difficulty: Difficult</option>
+	            		</select>
+            		</div>
+            	</div>
+            	<div class="block-filter-sort">
+            		Sort by: <a href="javascript:void(0)" class="block-filter-sort-link block-filter-sort-deadline">Deadline</a>
+            	</div>
                 <span class="task-group-title">Tasks pending my approval/publishing</span>
                 <div class="task-single task-single-admin task-single-in-progress level-difficult clearfix">
                     <div class="cog"></div>
@@ -110,6 +137,33 @@
                 <!-- end .task-group-pager -->
             </div>
             <div id="all-tasks" class="task-group">
+            	<div class="block-filter clearfix">
+            		<div class="block-filter-option block-filter-option-search">
+            			<form action="#" method="post">
+            				<div class="form-row">
+            					<input type="text" onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'Search':this.value;" value="Search" />
+            				</div>
+            			</form>
+            		</div>
+            		<div class="block-filter-option block-filter-option-status">
+            			<select>
+            				<option>Status: All</option>
+            				<option>Status: Open</option>
+            				<option>Status: Closed</option>
+            			</select>
+            		</div>
+            		<div class="block-filter-option block-filter-option-difficulty">
+            			<select>
+            				<option>Difficulty: All</option>
+            				<option>Difficulty: Easy</option>
+            				<option>Difficulty: Medium</option>
+            				<option>Difficulty: Difficult</option>
+            			</select>
+            		</div>
+            	</div>
+            	<div class="block-filter-sort">
+            		Sort by: <a href="javascript:void(0)" class="block-filter-sort-link block-filter-sort-deadline">Deadline</a>
+            	</div>
                 <span class="task-group-title">My Tasks</span>
                 <div class="task-single level-easy task-single-in-progress clearfix">
                     <div class="cog"></div>
