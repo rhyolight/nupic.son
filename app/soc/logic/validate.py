@@ -88,11 +88,15 @@ def isScopePathFormatValid(scope_path):
   return False
 
 
-def isAgeSufficient(birth_date, minimal_age, as_of_date):
+def isAgeSufficientForProgram(birth_date, program):
   """Returns True if the specified birth_date indicates that minimal_age
-  has been reached no later than on as_of_date. 
+  has been reached no later than on as_of_date for the specified program. 
   """
-  min_year = as_of_date.year - minimal_age
-  min_date = as_of_date.replace(year=min_year)
-
-  return True if birth_date <= min_date else False
+  
+  # do not check if the data is not present
+  if program.student_min_age_as_of and program.student_min_age:
+    min_year = program.student_min_age_as_of.year - program.student_min_age
+    min_date = program.student_min_age_as_of.replace(year=min_year)
+    return True if birth_date <= min_date else False
+  else:
+    return True
