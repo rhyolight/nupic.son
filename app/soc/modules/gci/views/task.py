@@ -48,12 +48,17 @@ class CommentForm(gci_forms.GCIModelForm):
   """Django form for the comment.
   """
 
-  template_path = 'v2/modules/gci/proposal/_comment_form.html'
-
   class Meta:
     model = GCIComment
     css_prefix = 'gci_comment'
-    fields = ['content']
+    fields = ['title', 'content']
+
+  def __init__(self, *args, **kwargs):
+    super(CommentForm, self).__init__(*args, **kwargs)
+
+    # TODO(ljvderijk): Test required parameter in validation
+    self.fields['title'].required = True
+    self.fields['content'].required = True
 
   def clean_content(self):
     field_name = 'content'
@@ -160,10 +165,13 @@ class CommentsTemplate(Template):
     """Returns the context for the current template.
     """
     context = {
-        'comments': self.data.comments
+        'profile': self.data.profile,
+        'comments': self.data.comments,
     }
 
     if self.data.task.status != 'Closed':
+      # TODO(ljvderijk): Change template to work when there is no form to be
+      # rendered.
       context['comment_form'] = CommentForm()
 
     return context
