@@ -36,7 +36,7 @@ class GCIStudentRanking(soc.models.base.ModelWithFieldAttributes):
   """
   #: Required reference to the program so we can query for all rankings
   #: in a single program at once.
-  program = db.ReferenceProperty(reference_class=GCIProgram, required=False)
+  program = db.ReferenceProperty(reference_class=GCIProgram, required=True)
 
   #: total number of points that the student gathered up
   points = db.IntegerProperty(required=True,
