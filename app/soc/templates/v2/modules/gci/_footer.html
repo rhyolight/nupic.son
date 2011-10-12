@@ -26,6 +26,9 @@
         {% if privacy_policy_link %}
           <li><a href="{{ privacy_policy_link }}">Privacy Policy</a></li>
         {% endif %}
+        {% if terms_link %}
+          <li><a href="{{ terms_link }}">Terms and Conditions</a></li>
+        {% endif %}
       </ul>
       <ul class="menu menu-center-inline menu-credit">
         <li class="menu-credit-melange">Powered by <a href="http://code.google.com/p/soc/wiki/MelangeIntro" target="_blank"><img src="/soc/content/{{ app_version }}/images/v2/gci/credit-melange.png" height="17" width="69" alt="Melange" /></a></li>

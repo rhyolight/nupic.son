@@ -39,9 +39,11 @@ def siteMenuContext(data):
   about_page = GCIProgram.about_page.get_value_for_datastore(program)
   connect = GCIProgram.connect_with_us_page.get_value_for_datastore(program)
   help_page = GCIProgram.help_page.get_value_for_datastore(program)
+  terms = GCIProgram.terms_and_conditions.get_value_for_datastore(program)
 
   context = {
       'about_link': redirect.document(about_page).url(),
+      'terms_link': redirect.document(terms).url(),
       'events_link': redirect.events().url(),
       'connect_link': redirect.document(connect).url(),
       'help_link': redirect.document(help_page).url(),
