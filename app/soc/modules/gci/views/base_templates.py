@@ -153,7 +153,10 @@ class Status(Template):
 
   def context(self):
     return {
+      'user_email': self.data.user.account.email(),
+      'logout_link': self.data.redirect.logout().url(),
     }
+
 
   def templatePath(self):
     return "v2/modules/gci/_status_block.html"
