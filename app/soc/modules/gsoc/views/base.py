@@ -76,12 +76,13 @@ class RequestHandler(RequestHandler):
       self.check = access_checker.AccessChecker(self.data)
 
   def error(self, status, message=None):
-    self.response.set_status(status)
+    # super will put error message as content
+    super(RequestHandler, self).error(status, message)
 
     template_path = "v2/modules/gsoc/error.html"
     context = {
         'page_name': self.response.content,
-        'message': message,
+        'message': self.response.content,
         'logged_in_msg': base_templates.LoggedInMsg(self.data, apply_link=False),
     }
 
