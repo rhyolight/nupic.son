@@ -102,8 +102,8 @@ def isAgeSufficientForProgram(birth_date, program):
       validation_result = birth_date <= min_date
 
     if validation_result and program.student_max_age:
-      max_year = program.student_min_age_as_of.year + program.student_max_age
-      max_date = program.student_max_age_as_of.replace(year=max_year)
+      max_year = program.student_min_age_as_of.year - program.student_max_age
+      max_date = program.student_min_age_as_of.replace(year=max_year)
       validation_result = birth_date > max_date
 
   return validation_result
