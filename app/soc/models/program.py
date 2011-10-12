@@ -194,12 +194,10 @@ class Program(soc.models.presence.Presence):
   help_page.help_text = ugettext(
       'The document for the <b>Help</b> page')
 
-  privacy_policy = db.ReferenceProperty(
-      reference_class=soc.models.document.Document,
-      verbose_name=ugettext("Privacy Policy Document"))
-  privacy_policy.collection_name = 'privacy_policy_page'
-  privacy_policy.help_text = ugettext(
-      "The document for the <b>Privacy Policy</b> page")
+  privacy_policy_url = db.LinkProperty(
+      verbose_name=ugettext("Privacy Policy"))
+  privacy_policy_url.help_text = ugettext(
+      "The url for the <b>Privacy Policy</b>")
 
   facebook = db.LinkProperty(
       required=False, verbose_name=ugettext("Facebook URL"))
