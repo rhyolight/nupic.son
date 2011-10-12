@@ -219,7 +219,7 @@ class PostComment(RequestHandler):
   def checkAccess(self):
     self.mutator.TaskFromKwargs()
     self.check.isTaskVisible()
-    self.check.isProgramActive()
+    self.check.isProgramRunning()
     self.check.isProfileActive()
 
   def post(self):
