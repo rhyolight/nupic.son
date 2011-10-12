@@ -139,7 +139,7 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
 
 
 class GCIProfilePage(profile.ProfilePage, RequestHandler):
-  """View for the GSoC participant profile.
+  """View for the GCI participant profile.
   """
 
   def checkAccess(self):
@@ -181,13 +181,9 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
       self.redirect.to(self._getEditProfileURLName(), validated=True)
       return
 
-    self.redirect.organization(organization)
+    self.redirect.homepage()
 
-    if self.data.student_info:
-      link = 'submit_gsoc_proposal'
-    else:
-      link = 'gsoc_org_home'
-
+    link = 'gci_homepage'
     self.redirect.to(link)
 
   def _getModulePrefix(self):
