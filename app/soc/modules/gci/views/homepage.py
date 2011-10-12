@@ -162,7 +162,7 @@ class Homepage(RequestHandler):
     ]
 
   def checkAccess(self):
-    pass
+    self.check.isProgramVisible()
 
   def context(self):
     context = {
