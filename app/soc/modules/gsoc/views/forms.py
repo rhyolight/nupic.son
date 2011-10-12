@@ -34,6 +34,19 @@ from soc.views import forms
 
 TEMPLATE_PATH = 'v2/modules/gsoc/_form.html'
 
+# The standard input fields should be available to all importing modules
+CharField = forms.CharField
+CheckboxInput = forms.CheckboxInput
+DateInput = forms.DateInput
+DateTimeInput = forms.DateTimeInput
+FileInput = forms.FileInput
+HiddenInput = forms.HiddenInput
+RadioSelect = forms.RadioSelect
+Select = forms.Select
+TextInput = forms.TextInput
+Textarea = forms.Textarea
+
+
 class GSoCModelForm(forms.ModelForm):
   """Django ModelForm class which uses our implementation of BoundField.
   """
