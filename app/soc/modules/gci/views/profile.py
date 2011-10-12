@@ -42,7 +42,7 @@ from soc.modules.gci.views.base import RequestHandler
 class GCIUserForm(gci_forms.GCIModelForm):
   """Django form for User model in GCI program.
   """
-
+  link_id = gci_forms.CharField(label='Username')
   class Meta:
     model = User
     css_prefix = 'user'
