@@ -32,9 +32,8 @@ from taggable.taggable import Tag
 from taggable.taggable import Taggable
 from taggable.taggable import tag_property
 
-import soc.models.linkable
+import soc.models.base
 import soc.models.role
-import soc.models.user
 
 import soc.modules.gci.models.program
 
@@ -50,9 +49,7 @@ UPLOAD_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork', 'NeedsReview']
 SEND_FOR_REVIEW_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork']
 
 
-# TODO(Madhu): after the data conversion inherit the model from
-# ModelFieldWithAttributes rather than Linkable.
-class GCITask(Taggable, soc.models.linkable.Linkable):
+class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
   """Model for a task used in GCI workflow.
 
   The scope property of Linkable will be set to the Organization to which
@@ -95,15 +92,7 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
   #: to assign a Mentor upon task creation.
   mentors = db.ListProperty(item_type=db.Key, default=[])
 
-  #: User profile by whom this task has been claimed by. This field
-  #: is mandatory for claimed tasks
-  user = db.ReferenceProperty(reference_class=soc.models.user.User,
-                              required=False,
-                              collection_name='assigned_tasks')
-
-  #: Student profile to whom this task is currently assigned to. If the user
-  #: has registered as a Student than this field will be filled in. This field
-  #: is mandatory for all Tasks in the closed state.
+  #: Student profile to whom this task is currently assigned to.
   student = db.ReferenceProperty(reference_class=soc.models.role.Role,
                                  required=False,
                                  collection_name='assigned_tasks')
@@ -135,6 +124,7 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
   #: Closed: Work on this Task has been completed to the org's content.
   #: AwaitingRegistration: Student has completed work on this task, but
   #:   needs to complete Student registration before this task is closed.
+  #:   This status is now deprecated since we register before any interaction.
   #: NeedsWork: This work on this Tasks needs a bit more brushing up. This
   #:   state is followed by a Mentor review.
   #: NeedsReview: Student has submitted work for this task and it should
@@ -191,29 +181,6 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
                                    verbose_name=ugettext('Featured'))
   is_featured.help_text = ugettext(
       'Should this task be featured on the program homepage.')
-
-  # TODO(Madhu): Remove after data conversion
-  #: A field which holds the entire history of this task in JSON. The
-  #: structure of this JSON string is as follows:
-  #: {
-  #:    timestamp1: {
-  #:                   "user": User reference
-  #:                   "student": Student reference
-  #:                   ...
-  #:                   "state": "Unapproved"
-  #:                   ...
-  #:                   "edited_by": Role reference
-  #:
-  #:               }
-  #:    timestamp2: {
-  #:                   "state": "Unpublished"
-  #:               }
-  #: }
-  #: First dictionary item holds the values for all the properties in this
-  #: model. The subsequent items hold the properties that changed at the
-  #: timestamp given by the key.
-  #: Reference properties will be stored by calling str() on their Key.
-  history = db.TextProperty(required=False, default='')
 
   def __init__(self, parent=None, key_name=None,
                app=None, **entity_values):
