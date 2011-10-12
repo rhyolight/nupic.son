@@ -60,18 +60,6 @@ def process_task(task):
       new_task_properties[prop] = getattr(task, prop)
       new_task_properties['org'] = task.scope
 
-
-    # We do not want a separate model for subscriptions because there
-    # is only one property that stores the list of all subscribers to
-    # the task which can be stored in the task itself. So moving it to
-    # the task.
-    q = GCITaskSubscription.all()
-    q.filter('task', task)
-    task_subscription = q.get()
-
-    new_task_properties['subscribers'] = task_subscription.subscribers if \
-        task_subscription else []
-
     new_task = GCITask(**new_task_properties)
     new_task_key = new_task.put()
 

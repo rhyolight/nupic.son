@@ -159,7 +159,7 @@ class GCITask(Taggable, soc.models.linkable.Linkable):
   deadline = db.DateTimeProperty(required=False,
                                  verbose_name=ugettext('Deadline'))
 
-  # Property holding the list of users who are subscribed to the task.
+  # Property holding the list of GCIProfiles who are subscribed to the task.
   subscribers = db.ListProperty(item_type=db.Key, default=[])
 
   #: Required field containing the Mentor/Org Admin who created this task.
