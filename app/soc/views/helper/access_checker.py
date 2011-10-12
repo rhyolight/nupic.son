@@ -621,7 +621,7 @@ class AccessChecker(BaseAccessChecker):
     normal users.
     """
     if not self.data.program:
-      raise AccessViolation(DEF_NO_SUCH_PROGRAM_MSG)
+      raise NotFound(DEF_NO_SUCH_PROGRAM_MSG)
 
     self.isProgramVisible()
 
@@ -636,7 +636,7 @@ class AccessChecker(BaseAccessChecker):
     Visible programs are either in the visible or inactive state.
     """
     if not self.data.program:
-      raise AccessViolation(DEF_NO_SUCH_PROGRAM_MSG)
+      raise NotFound(DEF_NO_SUCH_PROGRAM_MSG)
 
     if self.data.program.status in ['visible', 'inactive']:
       return
@@ -665,8 +665,6 @@ class AccessChecker(BaseAccessChecker):
 
     period = self.data.timeline.studentsAnnouncedOn()
     raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE_MSG_FMT % period)
-
-
 
   def canApplyNonStudent(self, role, edit_url):
     """Checks if the user can apply as a mentor or org admin.
