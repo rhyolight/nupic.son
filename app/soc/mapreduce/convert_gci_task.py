@@ -71,6 +71,11 @@ def process_task(task):
         for c_prop in COMMENT_PROPERTIES:
           new_comm_properties[c_prop] = getattr(c, c_prop)
         new_comment = GCIComment(parent=new_task_key, **new_comm_properties)
+
+        # set these fields to behave like last_modified_on/by
+        new_comment.modified_on = new_comment.created_on
+        new_comment.modified_by = new_comment.created_by
+
         yield operation.db.Put(new_comment)
         yield operation.counters.Increment("comment_updated")
 
