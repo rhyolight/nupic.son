@@ -33,7 +33,6 @@ from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.student import GCIStudent
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.student_ranking import GCIStudentRanking
 
 
 def getDjangoURLPatterns():
@@ -49,9 +48,6 @@ def getDjangoURLPatterns():
         'soc.modules.gci.tasks.updates.role_conversion.updateStudents'),
       (r'^tasks/gci/role_conversion/update_task_reference',
         'soc.modules.gci.tasks.updates.role_conversion.updateGCITaskReferences'),
-      (r'^tasks/gci/role_conversion/update_studentranking_reference',
-        'soc.modules.gci.tasks.updates.role_conversion.'
-        'updateGCIStudentRankingReferences'),
   ]
 
   return patterns
@@ -110,15 +106,5 @@ def updateGCITaskReferences(request):
   
   updater = role_conversion.ReferenceUpdater(GCITask, GCIProfile,
       ['student', 'created_by', 'modified_by'], ['mentors'])
-  updater.run()
-  return http.HttpResponse("Ok")
-
-def updateGCIStudentRankingReferences(request):
-  """Starts a bunch of iterative tasks which update references in
-     GCIStudentRanking.
-  """ 
-  
-  updater = role_conversion.ReferenceUpdater(GCIStudentRanking, GCIProfile,
-      ['student'])
   updater.run()
   return http.HttpResponse("Ok")
