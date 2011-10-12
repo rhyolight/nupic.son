@@ -140,6 +140,14 @@ class Program(soc.models.presence.Presence):
       'Document containing optional Student Agreement for participating as a '
       'Student.')
 
+  #: Document reference property used for the Student Agreement
+  terms_and_conditions = db.ReferenceProperty(
+    reference_class=soc.models.document.Document,
+    verbose_name=ugettext('Terms and Conditions'),
+    collection_name='terms_and_conditions')
+  terms_and_conditions.help_text = ugettext(
+      'Document containing Terms and Conditions for participants.')
+
   #: Status of the program
   #: Invisible: Program Stealth-Mode Visible to Hosts and Devs only
   #: Visible: Visible to everyone.
@@ -194,12 +202,10 @@ class Program(soc.models.presence.Presence):
   help_page.help_text = ugettext(
       'The document for the <b>Help</b> page')
 
-  privacy_policy = db.ReferenceProperty(
-      reference_class=soc.models.document.Document,
-      verbose_name=ugettext("Privacy Policy Document"))
-  privacy_policy.collection_name = 'privacy_policy_page'
-  privacy_policy.help_text = ugettext(
-      "The document for the <b>Privacy Policy</b> page")
+  privacy_policy_url = db.LinkProperty(
+      verbose_name=ugettext("Privacy Policy"))
+  privacy_policy_url.help_text = ugettext(
+      "The url for the <b>Privacy Policy</b>")
 
   facebook = db.LinkProperty(
       required=False, verbose_name=ugettext("Facebook URL"))

@@ -39,9 +39,11 @@ def siteMenuContext(data):
   about_page = GCIProgram.about_page.get_value_for_datastore(program)
   connect = GCIProgram.connect_with_us_page.get_value_for_datastore(program)
   help_page = GCIProgram.help_page.get_value_for_datastore(program)
+  terms = GCIProgram.terms_and_conditions.get_value_for_datastore(program)
 
   context = {
       'about_link': redirect.document(about_page).url(),
+      'terms_link': redirect.document(terms).url(),
       'events_link': redirect.events().url(),
       'connect_link': redirect.document(connect).url(),
       'help_link': redirect.document(help_page).url(),
@@ -127,16 +129,13 @@ class Footer(Template):
     redirect = self.data.redirect
     program = self.data.program
 
-    from soc.modules.gci.models.program import GCIProgram
-    policy = GCIProgram.privacy_policy.get_value_for_datastore(program)
-
     context.update({
-        'privacy_policy_url': redirect.document(policy).url(),
-        'facebook_url': program.facebook,
-        'twitter_url': program.twitter,
-        'blogger_url': program.blogger,
+        'privacy_policy_link': program.privacy_policy_url,
+        'facebook_link': program.facebook,
+        'twitter_link': program.twitter,
+        'blogger_link': program.blogger,
         'email_id': program.email,
-        'irc_url': program.irc,
+        'irc_link': program.irc,
         })
 
     return context
