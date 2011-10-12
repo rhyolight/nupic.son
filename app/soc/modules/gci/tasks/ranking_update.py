@@ -31,6 +31,7 @@ from google.appengine.ext import db
 from django.conf.urls.defaults import url
 
 from soc.tasks import responses
+from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import ranking as ranking_logic
 from soc.modules.gci.models.profile import GCIProfile
@@ -54,8 +55,8 @@ class RankingUpdater(object):
         url(r'^tasks/gci/ranking/recalculate_student$',
             self.recalculateForStudent,
             name='task_recalculate_gci_ranking_for_student'),
-        url(r'^tasks/gci/ranking/clear/(?P<key_name>.+)$', self.clearGCIRanking,
-            name='task_clear_gci_ranking')]
+        url(r'^tasks/gci/ranking/clear/%s$'%url_patterns.PROGRAM,
+            self.clearGCIRanking, name='task_clear_gci_ranking')]
     return patterns
 
   def updateRankingWithTask(self, request, *args, **kwargs):
@@ -132,7 +133,7 @@ class RankingUpdater(object):
   def clearGCIRanking(self, request, *args, **kwargs):
     """Clears student ranking for a program with the specified key_name.
     """
-    key_name = kwargs['key_name']
+    key_name = '%s/%s' %(kwargs['sponsor'], kwargs['program'])
 
     program = GCIProgram.get_by_key_name(key_name)
     if not program:
