@@ -634,12 +634,20 @@ class AccessChecker(BaseAccessChecker):
   def isProgramVisible(self):
     """Checks whether the program exists and is visible to the user. 
     Visible programs are either in the visible or inactive state.
+
+    Programs are always visible to hosts.
     """
     if not self.data.program:
       raise NotFound(DEF_NO_SUCH_PROGRAM_MSG)
 
     if self.data.program.status in ['visible', 'inactive']:
       return
+
+    try:
+      self.isHost()
+      return
+    except AccessViolation:
+      pass
 
     raise AccessViolation(
         DEF_PROGRAM_NOT_VISIBLE_MSG_FMT % self.data.program.name)
