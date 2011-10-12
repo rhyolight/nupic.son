@@ -129,11 +129,11 @@ class Footer(Template):
 
     context.update({
         'privacy_policy_link': program.privacy_policy_url,
-        'facebook_url': program.facebook,
-        'twitter_url': program.twitter,
-        'blogger_url': program.blogger,
+        'facebook_link': program.facebook,
+        'twitter_link': program.twitter,
+        'blogger_link': program.blogger,
         'email_id': program.email,
-        'irc_url': program.irc,
+        'irc_link': program.irc,
         })
 
     return context
