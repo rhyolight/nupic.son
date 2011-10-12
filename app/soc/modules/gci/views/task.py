@@ -31,7 +31,6 @@ from django import forms as django_forms
 
 from soc.logic import cleaning
 from soc.views.template import Template
-from soc.views.helper.access_checker import isSet
 
 from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import task as task_logic
@@ -146,7 +145,7 @@ class TaskViewPage(RequestHandler):
     comment = comment_form.create(commit=False, parent=self.data.task)
     comment_logic.storeAndNotify(comment)
 
-    # TODO(ljvderijk): Indicate that a comment was succesfully created to the
+    # TODO(ljvderijk): Indicate that a comment was successfully created to the
     # user.
     self.redirect.id().to('gci_view_task')
 
@@ -163,6 +162,8 @@ class TaskInformation(Template):
     """
     # TODO: Switches for control buttons that are based on role, status and 
     # the program's timeline.
+    # TODO(ljvderijk): Tasks may be unpublished as long as there is no comment
+    # and no claim by the org admin.
     task = self.data.task
     mentors = [m.public_name for m in db.get(task.mentors)]
 
@@ -225,11 +226,12 @@ class CommentsTemplate(Template):
     context = {
         'profile': self.data.profile,
         'comments': self.data.comments,
+        'login': self.data.redirect.login().url(),
+        'student_reg_link': self.data.redirect.createProfile('student')
+            .urlOf('create_gci_profile'),
     }
 
     if self.data.task.status != 'Closed':
-      # TODO(ljvderijk): Change template to work when there is no form to be
-      # rendered.
       if self.data.POST and 'post_comment' in self.data.GET:
         context['comment_form'] = CommentForm(self.data.POST)
       else:
