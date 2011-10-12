@@ -39,6 +39,18 @@ from soc.views import org_app
 
 TEMPLATE_PATH = 'v2/modules/gci/_form.html'
 
+# The standard input fields should be available to all importing modules
+CharField = forms.CharField
+CheckboxInput = forms.CheckboxInput
+DateInput = forms.DateInput
+DateTimeInput = forms.DateTimeInput
+FileInput = forms.FileInput
+HiddenInput = forms.HiddenInput
+RadioSelect = forms.RadioSelect
+Select = forms.Select
+TextInput = forms.TextInput
+Textarea = forms.Textarea
+
 
 class RadioInput(forms.RadioInput):
   """The rendering customization to be used for individual radio elements.
