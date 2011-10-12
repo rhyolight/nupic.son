@@ -53,4 +53,4 @@ def storeAndNotifyTxn(comment):
     #sub_txn()
     comment.put()
 
-  return store_comment_and_notify_txn()
+  return store_comment_and_notify_txn

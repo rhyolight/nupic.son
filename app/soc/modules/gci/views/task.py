@@ -56,7 +56,8 @@ class CommentForm(gci_forms.GCIModelForm):
   def __init__(self, *args, **kwargs):
     super(CommentForm, self).__init__(*args, **kwargs)
 
-    # TODO(ljvderijk): Test required parameter in validation
+    # For UI purposes we need to set this required, validation does not pick
+    # it up.
     self.fields['title'].required = True
     self.fields['content'].required = True
 
@@ -67,6 +68,15 @@ class CommentForm(gci_forms.GCIModelForm):
     else:
       raise django_forms.ValidationError(
           ugettext('Comment content cannot be empty.'), code='invalid')
+
+  def clean_title(self):
+    title = self.cleaned_data.get('title')
+
+    if not title:
+      raise django_forms.ValidationError(
+          ugettext('Comment title cannot be empty.'), code='invalid')
+
+    return title
 
 
 class TaskViewPage(RequestHandler):
@@ -81,10 +91,24 @@ class TaskViewPage(RequestHandler):
     ]
 
   def checkAccess(self):
-    """Checks whether this task is visible to the public.
+    """Checks whether this task is visible to the public and any other checks
+    if it is a POST request.
     """
     self.mutator.taskFromKwargs(comments=True, work_submissions=True)
     self.check.isTaskVisible()
+
+    if self.request.method == 'POST':
+      # Access checks for the different forms on this page. Note that there
+      # are no elif clauses because one could add multiple GET params :).
+
+      if 'post_comment' in self.data.GET:
+        # checks for posting comments
+        self.check.isProgramRunning()
+        self.check.isProfileActive()
+
+      if 'submit_work' in self.data.GET:
+        # TODO(ljvderijk): Checks for submitting work
+        pass
 
   def context(self):
     """Returns the context for this view.
@@ -99,6 +123,32 @@ class TaskViewPage(RequestHandler):
     }
 
     return context
+
+  def post(self):
+    """Handles all POST calls for the TaskViewPage.
+    """
+    if 'post_comment' in self.data.GET:
+      return self._postComment()
+    else:
+      self.error(405)
+
+  def _postComment(self):
+    """Handles the POST call for the form that creates comments.
+    """
+    comment_form = CommentForm(self.data.POST)
+
+    if not comment_form.is_valid():
+      return self.get()
+
+    comment_form.cleaned_data['created_by'] = self.data.user
+    comment_form.cleaned_data['modified_by'] = self.data.user
+
+    comment = comment_form.create(commit=False, parent=self.data.task)
+    comment_logic.storeAndNotify(comment)
+
+    # TODO(ljvderijk): Indicate that a comment was succesfully created to the
+    # user.
+    self.redirect.id().to('gci_view_task')
 
   def templatePath(self):
     return 'v2/modules/gci/task/public.html'
@@ -180,7 +230,10 @@ class CommentsTemplate(Template):
     if self.data.task.status != 'Closed':
       # TODO(ljvderijk): Change template to work when there is no form to be
       # rendered.
-      context['comment_form'] = CommentForm()
+      if self.data.POST and 'post_comment' in self.data.GET:
+        context['comment_form'] = CommentForm(self.data.POST)
+      else:
+        context['comment_form'] = CommentForm()
 
     return context
 
@@ -199,45 +252,6 @@ class PostUploadWork(RequestHandler):
         url_patterns.url(r'task/submit_work/%s$' % url_patterns.TASK,
             self, name='gci_task_submit_work'),
     ]
-
-  def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
-
-
-class PostComment(RequestHandler):
-  """View which handles publishing comments.
-  """
-
-  def djangoURLPatterns(self):
-    return [
-        url_patterns.url(r'task/post_comment/%s$' % url_patterns.TASK,
-            self, name='gci_task_post_comment'),
-    ]
-
-  def checkAccess(self):
-    self.mutator.TaskFromKwargs()
-    self.check.isTaskVisible()
-    self.check.isProgramRunning()
-    self.check.isProfileActive()
-
-  def post(self):
-    assert isSet(self.data.task)
-
-    comment_form = CommentForm(self.data.request.POST)
-
-    if not comment_form.is_valid():
-      # TODO(ljvderijk): Form error handling
-      return
-
-    self.cleaned_data['created_by'] = self.data.user
-    self.cleaned_data['modified_by'] = self.data.user
-
-    comment = comment_form.create(commit=False, parent=self.data.task)
-    comment_logic.storeAndNotify(comment)
-
-    self.redirect.to('gci_view_task', validated=True)
 
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.

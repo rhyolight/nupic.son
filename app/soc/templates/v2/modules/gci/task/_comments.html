@@ -5,7 +5,7 @@
     <a href="javascript:void(0)" class="task-btn task-btn-comment-new">Post new comment</a>
     <div class="block-comments-post-new">
       <span class="block-comments-post-new-title">Post new comment</span>
-      <form action="#" method="post" class="form-comment-post-new clearfix">
+      <form action="?post_comment" method="post" class="form-comment-post-new clearfix">
         {{ comment_form.render }}
         <div class="form-row form-row-buttons">
           <input value="Submit" class="button" type="submit">
@@ -28,7 +28,7 @@
       <a href="javascript:void(0)" class="task-btn task-btn-comment-reply">Reply</a>
       <div class="single-comment-reply">
         <span class="single-comment-reply-title">Reply</span>
-        <form action="#" method="post" class="form-comment-reply clearfix">
+        <form action="?post_comment" method="post" class="form-comment-reply clearfix">
           {{ comment_form.render }}
           <div class="form-row form-row-buttons">
             <input value="Submit" class="button" type="submit">
