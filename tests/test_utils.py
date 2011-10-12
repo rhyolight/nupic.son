@@ -424,7 +424,7 @@ class GSoCDjangoTestCase(DjangoTestCase):
                   'student_agreement': None, 'events_page': None,
                   'help_page': None, 'connect_with_us_page': None,
                   'mentor_agreement': None, 'org_admin_agreement': None,
-                  'privacy_policy': None, 'home': None, 'about_page': None}
+                  'terms_and_conditions': None, 'home': None, 'about_page': None}
     self.gsoc = self.seed(GSoCProgram, properties)
 
     properties = {
@@ -537,7 +537,7 @@ class GCIDjangoTestCase(DjangoTestCase):
                   'student_agreement': None, 'events_page': None,
                   'help_page': None, 'connect_with_us_page': None,
                   'mentor_agreement': None, 'org_admin_agreement': None,
-                  'privacy_policy': None, 'home': None, 'about_page': None,
+                  'terms_and_conditions': None, 'home': None, 'about_page': None,
                   'nr_simultaneous_tasks': 5,
                   'task_difficulties': ['easy', 'moderate', 'hard'],
                   'task_types': ['code', 'documentation', 'design']}
