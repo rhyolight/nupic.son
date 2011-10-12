@@ -216,7 +216,7 @@ class Homepage(RequestHandler):
   def checkAccess(self):
     """Access checks for GSoC Home page.
     """
-    pass
+    self.check.isProgramVisible()
 
   def context(self):
     """Handler to for GSoC Home page HTTP get request.
