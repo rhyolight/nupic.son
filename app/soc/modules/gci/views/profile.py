@@ -48,6 +48,7 @@ class GCIUserForm(gci_forms.GCIModelForm):
     css_prefix = 'user'
     fields = ['link_id']
 
+  link_id = gci_forms.CharField(label='Username')
   clean_link_id = cleaning.clean_user_not_exist('link_id')
 
 
