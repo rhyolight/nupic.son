@@ -121,6 +121,15 @@ class OrgAppRecordsList(object):
   """View for listing all records of a Organization Applications.
   """
 
+  def __init__(self, read_only_view):
+    """Initializes the OrgAppRecordsList.
+
+    Args:
+      read_only_view: Name of the url pattern for the read only view of a
+                      record.
+    """
+    self.read_only_view = read_only_view
+
   def checkAccess(self):
     """Defines access checks for this list, all hosts should be able to see it.
     """
@@ -173,7 +182,9 @@ class OrgAppRecordsList(object):
     record_list.list_config.setColumnEditable('status', True, 'select')
     record_list.list_config.addPostEditButton('save', 'Save')
 
-    # TODO: list should redirect to view record (read-only) page
+    record_list.list_config.setRowAction(
+        lambda e, *args: self.redirect.id(e.key().id_or_name()).
+            urlOf(self.read_only_view))
 
     return record_list
 

@@ -230,6 +230,10 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
   """View for listing all records of a GCI Organization application.
   """
 
+  def __init__(self, *args, **kwargs):
+    RequestHandler.__init__(self, *args, **kwargs)
+    org_app.OrgAppRecordsList.__init__(self, 'gci_show_org_app')
+
   def djangoURLPatterns(self):
     return [
          url(
@@ -255,11 +259,11 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
       record = OrgAppRecord.get_by_id(long(id))
 
       if not record:
-        logging.warning('%s is an invalid OrgAppRecord ID'%id)
+        logging.warning('%s is an invalid OrgAppRecord ID' %id)
         continue
 
       if record.survey.key() != self.data.org_app.key():
-        logging.warning('%s is not a record for the Org App in the URL'%record.key())
+        logging.warning('%s is not a record for the Org App in the URL' %record.key())
         continue
 
       new_status = properties['status']
