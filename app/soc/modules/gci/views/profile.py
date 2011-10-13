@@ -67,15 +67,12 @@ class GCIProfileForm(profile.ProfileForm):
   class Meta:
     model = GCIProfile
     css_prefix = 'gci_profile'
-    exclude = PROFILE_EXCLUDE + ['agreed_to_tos']
+    exclude = PROFILE_EXCLUDE + [
+        'agreed_to_tos', 'longtitude', 'latitude', 'publish_location']
 
-    _choiceWidgets = forms.choiceWidgets(model,
+    widgets = forms.choiceWidgets(model,
         ['res_country', 'ship_country',
          'tshirt_style', 'tshirt_size', 'gender'])
-    _hiddenWidgets = forms.hiddenWidgets(model,
-        ['longitude', 'latitude'])
-
-    widgets = forms.mergeWidgets(_choiceWidgets, _hiddenWidgets)
 
   def templatePath(self):
     return gci_forms.TEMPLATE_PATH
