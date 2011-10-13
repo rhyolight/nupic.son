@@ -207,11 +207,6 @@ class Program(soc.models.presence.Presence):
   privacy_policy_url.help_text = ugettext(
       "The url for the <b>Privacy Policy</b>")
 
-  twitter = db.LinkProperty(
-      required=False, verbose_name=ugettext("Twitter URL"))
-  twitter.help_text = ugettext("URL of the Twitter profile for the program")
-  twitter.group = ugettext("1. Public Info")
-
   blogger = db.LinkProperty(
       required=False, verbose_name=ugettext("Blogger URL"))
   blogger.help_text = ugettext("URL of the Blogger home page for the program")
