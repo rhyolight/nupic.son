@@ -290,12 +290,31 @@ body {
 .header {
     height: 143px;
 }
-    .logo {
+    .header .logo {
         background-image:url(../images/google_code-in.png);
+        float: left;
         height: 127px;
         margin: 10px 0 0 58px;
         width: 266px;
     }
+    .header .soc {
+    	float: right;
+    	font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+    	line-height: 1em;
+    	text-align: right;
+    }
+    	.header .soc a {
+    		background: #e0e0e0;
+    		display: block;
+    		padding: 6px 13px 10px 13px;
+    		-webkit-border-radius: 0 0 10px 10px;
+    		-moz-border-radius: 0 0 10px 10px;
+    		border-radius: 0 0 10px 10px;
+    	}
+    	.header .soc a:hover {
+    		background: #0082c8;
+    		color: #fff;
+    	}
 #footer {
     background: #bce1fb;
     border-top: 1px solid #89a4b7;

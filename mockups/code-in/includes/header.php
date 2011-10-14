@@ -104,6 +104,9 @@
 <div class="container_12">
     <div class="grid_12 header">
         <h1 class="logo ir"><a href="/">Google Code-In</a></h1>
+        <div class="soc">
+        	<a href="javascript:void(0)">Looking for Google Summer of Code? Click here!</a>
+        </div>
     </div>
     <!-- end .grid_12 -->
     <div class="clear"></div>
