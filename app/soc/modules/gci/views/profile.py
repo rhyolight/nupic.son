@@ -22,8 +22,10 @@ __authors__ = [
   ]
 
 
+from django import forms as django_forms
 from django.core.urlresolvers import reverse
 from django.forms import fields
+from django.utils.translation import ugettext
 
 from soc.logic import cleaning
 from soc.logic import dicts
@@ -60,6 +62,19 @@ class GCIProfileForm(profile.ProfileForm):
   """Django form to edit GCI profile page.
   """
 
+  # Most of these countries are not even in the countries model, but
+  # we still list them anyway.
+  GCI_UNALLOWED_COUNTRIES = ['Cuba', 'Iran', 'Syria', 'North Korea', 'Sudan',
+                             'Myanmar (Burma)', 'Brazil', 'Saudi Arabia',
+                             'Italy']
+
+  NOT_OPEN_TO_COUNTRY_MSG = ugettext(
+      'This contest is not open to residents of this country.')
+
+  NOT_OPEN_TO_QUEBEC_MSG = ugettext(
+      'This contest is not open to residents of Quebec.')
+
+
   def __init__(self, request_data=None, *args, **kwargs):
     super(GCIProfileForm, self).__init__(
         gci_forms.GCIBoundField, request_data, *args, **kwargs)
@@ -73,6 +88,48 @@ class GCIProfileForm(profile.ProfileForm):
     widgets = forms.choiceWidgets(model,
         ['res_country', 'ship_country',
          'tshirt_style', 'tshirt_size', 'gender'])
+
+  def clean_res_country(self):
+    """Validates the country against the list of unallowed countries.
+    """
+    country = self.cleaned_data.get('res_country')
+    if self.request_data.kwargs.get('role') == 'student' or \
+        (self.request_data.profile and self.request_data.profile.is_student):
+      if country in self.GCI_UNALLOWED_COUNTRIES:
+        raise django_forms.ValidationError(self.NOT_OPEN_TO_COUNTRY_MSG)
+
+    return country
+
+  def clean_ship_country(self):
+    """Validates the shipping country against the list of unallowed countries.
+    """
+    country = self.cleaned_data.get('ship_country')
+    if self.request_data.kwargs.get('role') == 'student' or \
+        (self.request_data.profile and self.request_data.profile.is_student):
+      if country in self.GCI_UNALLOWED_COUNTRIES:
+        raise django_forms.ValidationError(self.NOT_OPEN_TO_COUNTRY_MSG)
+
+    return country
+
+  def clean(self):
+    """Ensures that Canadian students fill in their province and produces errors
+    when they are from Quebec.
+    """
+    if self.request_data.kwargs.get('role') == 'student' or \
+        (self.request_data.profile and self.request_data.profile.is_student):
+      country = self.cleaned_data.get('res_country')
+      state = self.cleaned_data.get('res_state')
+      if country == 'Canada':
+        if state and state.lower().strip().startswith('q'):
+          self._errors['res_state'] = [self.NOT_OPEN_TO_QUEBEC_MSG]
+
+      country = self.cleaned_data.get('ship_country')
+      state = self.cleaned_data.get('ship_state')
+      if country == 'Canada':
+        if state and state.lower().strip().startswith('q'):
+          self._errors['ship_state'] = [self.NOT_OPEN_TO_QUEBEC_MSG]
+
+    return super(GCIProfileForm, self).clean()
 
   def templatePath(self):
     return gci_forms.TEMPLATE_PATH

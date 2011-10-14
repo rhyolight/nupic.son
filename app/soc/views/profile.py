@@ -26,17 +26,13 @@ from google.appengine.api import users
 from google.appengine.ext import db
 
 from django.forms import fields
-from django.core.urlresolvers import reverse
 
 from soc.logic import cleaning
 from soc.views import forms
 from soc.views.helper import url_patterns
 
-from soc.models.user import User
-from soc.models.universities import UNIVERSITIES
-
+# TODO: this import doesn't belong in core and should be moved
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
-from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class EmptyForm(forms.ModelForm):
@@ -66,11 +62,14 @@ class ProfileForm(forms.ModelForm):
   """Django form for profile page.
   """
 
+  TWO_LETTER_STATE_REQ = ['United States', 'Canada']
+
   def __init__(self, bound_field_class=None, request_data=None,
       *args, **kwargs):
     super(ProfileForm, self).__init__(bound_field_class, *args, **kwargs)
     self.fields['given_name'].group = "2. Contact Info (Private)"
     self.fields['surname'].group = "2. Contact Info (Private)"
+    self.request_data = request_data
     self.program = request_data.program if request_data else None
 
   public_name = fields.CharField(required=True)
@@ -102,13 +101,13 @@ class ProfileForm(forms.ModelForm):
   def clean(self):
     country = self.cleaned_data.get('res_country')
     state = self.cleaned_data.get('res_state')
-    if country == 'United States' and (not state or len(state) != 2):
-      self._errors['res_state'] = ["Please use a 2-letter state name"]
+    if country in self.TWO_LETTER_STATE_REQ and (not state or len(state) != 2):
+      self._errors['res_state'] = ["Please use a 2-letter state/province name"]
 
     country = self.cleaned_data.get('ship_country')
     state = self.cleaned_data.get('ship_state')
-    if country == 'United States' and (not state or len(state) != 2):
-      self._errors['ship_state'] = ["Please use a 2-letter state name"]
+    if country in self.TWO_LETTER_STATE_REQ and (not state or len(state) != 2):
+      self._errors['ship_state'] = ["Please use a 2-letter state/province name"]
     return self.cleaned_data
 
 
