@@ -184,8 +184,6 @@ class ConnectWithUs(Template):
 
   def context(self):
     return {
-        'facebook_link': self.data.program.facebook,
-        'twitter_link': self.data.program.twitter,
         'blogger_link': self.data.program.blogger,
         'email': self.data.program.email,
         'irc_channel_link': self.data.program.irc,
