@@ -70,8 +70,13 @@ class EditDocumentPage(RequestHandler):
   def context(self):
     form = GCIDocumentForm(self.data.POST or None, instance=self.data.document)
 
+    if self.data.document:
+      page_name = 'Edit %s' % self.data.document.title
+    else:
+      page_name = 'Create new Document'
+
     return {
-        'page_name': 'Edit document',
+        'page_name': page_name,
         'document_form': form,
     }
 
@@ -107,7 +112,7 @@ class DocumentPage(RequestHandler):
   def context(self):
     return {
         'tmpl': document.Document(self.data, self.data.document),
-        'page_name': 'Document',
+        'page_name': self.data.document.title,
     }
 
 
