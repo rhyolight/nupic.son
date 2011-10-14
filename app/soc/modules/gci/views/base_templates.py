@@ -75,7 +75,9 @@ class Header(Template):
 
   def context(self):
     return {
-        'home_link': self.data.redirect.homepage().url()
+        'home_link': self.data.redirect.homepage().url(),
+        # TODO(SRabbelier): make this dynamic somehow
+        'gsoc_link': '/gsoc/homepage/google/gsoc2011',
     }
 
 
