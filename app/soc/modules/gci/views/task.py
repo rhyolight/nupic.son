@@ -238,8 +238,8 @@ class TaskInformation(Template):
       context['button_unclaim'] = task.status in ACTIVE_CLAIMED_TASK
 
     if task.status != 'Closed':
-      context['button_subscribe'] = not profile.key in task.subscribers
-      context['button_unsubscribe'] = profile.key in task.subscribers
+      context['button_subscribe'] = not profile.key() in task.subscribers
+      context['button_unsubscribe'] = profile.key() in task.subscribers
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
