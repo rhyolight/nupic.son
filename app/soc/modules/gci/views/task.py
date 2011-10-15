@@ -32,11 +32,14 @@ from django.utils.translation import ugettext
 from django import forms as django_forms
 
 from soc.logic import cleaning
+from soc.views.helper import request_data
 from soc.views.template import Template
 
 from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment
+from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
+from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import UPLOAD_ALLOWED
 from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
 from soc.modules.gci.views import forms as gci_forms
@@ -176,10 +179,12 @@ class TaskInformation(Template):
         'mentors': mentors,
         'is_mentor': self.data.mentorFor(task.org),
         'is_student': self.data.is_student,
+        'is_owner': task_logic.isOwnerOfTask(task, self.data.profile),
         'profile': self.data.profile,
     }
 
     if task.deadline:
+      # TODO(ljvderijk): investigate django.utils.timesince.timeuntil
       # special formatting of the TimeDelta object for task view
       now = datetime.datetime.utcnow()
       time_remaining = task.deadline - now
@@ -188,7 +193,57 @@ class TaskInformation(Template):
       context['remaining_hours'] = time_remaining.seconds/3600
       context['remaining_minutes'] = (time_remaining.seconds/60)%60
 
+    self.setButtonControls(context)
+
     return context
+
+  def setButtonControls(self, context):
+    """Enables buttons on the TaskInformation block based on status and the
+    user.
+
+    Args:
+      context: Context dictionary which to write to.
+    """
+    profile = self.data.profile
+    if not profile:
+      # no buttons for someone without a profile
+      return
+
+    if request_data.isAfter(self.data.timeline.stopAllWorkOn()):
+      # no buttons after all worked has stopped
+      return
+
+    task = self.data.task
+
+    is_org_admin = self.data.orgAdminFor(task.org)
+    is_mentor = self.data.mentorFor(task.org)
+    is_student = self.data.is_student
+    is_owner = task_logic.isOwnerOfTask(task, profile)
+
+    if is_org_admin:
+      if task.status == 'Open' and not self.data.comments:
+        # tasks may be removed as long as there is no comment or claim
+        context['button_unpublish'] = True
+        context['button_delete'] = True
+
+    if is_mentor:
+      context['button_edit'] = task.status == 'Open' and not self.data.comments
+      context['button_assign'] = task.status == 'ClaimRequested'
+      context['button_unassign'] = task.status in ACTIVE_CLAIMED_TASK
+      context['button_close_task'] = task.status == 'NeedsReview'
+      context['button_extend_deadline'] = task.status == 'NeedsReview'
+
+    if is_student:
+      if request_data.isBefore(self.data.timeline.tasksClaimEndOn()):
+        context['button_claim'] = task_logic.canClaimRequestTask(task,
+                                                                 profile.user)
+
+    if is_owner:
+      context['button_unclaim'] = task.status in ACTIVE_CLAIMED_TASK
+
+    if task.status != 'Closed':
+      context['button_subscribe'] = not profile.key in task.subscribers
+      context['button_unsubscribe'] = profile.key in task.subscribers
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
