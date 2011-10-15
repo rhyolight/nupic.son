@@ -71,22 +71,22 @@ DEF_CLOSED_ON_REG_MSG = ugettext(
 
 # TODO(ljvderijk): Add basic subscribers when task is created
 
-def isOwnerOfTask(task, user):
+def isOwnerOfTask(task, profile):
   """Returns true if the given profile is owner/student of the task.
 
   Args:
     task: The GCITask entity
-    user: The User which might be the owner of the task
+    profile: The GCIProfile which might be the owner of the task
   """
-  return user and task.user and task.user.key() == user.key()
+  return profile and task.student and task.student.key() == profile.key()
 
 
-def canClaimRequestTask(task, user):
+def canClaimRequestTask(task, profile):
   """Returns true if the given profile is allowed to claim the task.
 
   Args:
     task: The GCITask entity
-    user: The User which we check whether it can claim the task.
+    profile: The GCIProfile which we check whether it can claim the task.
   """
 
   # check if the task can be claimed at all
@@ -95,7 +95,7 @@ def canClaimRequestTask(task, user):
 
   # check if the user is allowed to claim this task
   q = GCITask.all()
-  q.filter('user', user)
+  q.filter('student', profile)
   q.filter('program', task.program)
   q.filter('status IN', ACTIVE_CLAIMED_TASK)
 

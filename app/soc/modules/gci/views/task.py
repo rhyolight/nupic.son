@@ -209,7 +209,7 @@ class WorkSubmissions(Template):
     context = {'submissions': self.data.work_submissions}
 
     task = self.data.task
-    is_owner = task_logic.isOwnerOfTask(task, self.data.user)
+    is_owner = task_logic.isOwnerOfTask(task, self.data.profile)
 
     if is_owner:
       context['send_for_review'] = self.data.work_submissions and \
