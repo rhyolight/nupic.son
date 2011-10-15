@@ -27,29 +27,42 @@
 </div>
 
 <div class="block-content clearfix">
-  <div class="block-task-countdown">
-    <div class="stopwatch percent-33 clearfix">
-      <div class="stopwatch-watch"></div>
 
-      <div class="stopwatch-remaining clearfix">
-        <div class="stopwatch-time">
-          <div class="stopwatch-time-c">
-            <div class="time time-first">
-              <span class="number">35</span><span class="cap">days</span>
-            </div>
+  {% if task.deadline %}
+    <div class="block-task-countdown">
+      <div class="stopwatch percent-33 clearfix">
+        <div class="stopwatch-watch"></div>
 
-            <div class="time">
-              <span class="number">17</span><span class="cap">hours</span>
+        <div class="stopwatch-remaining clearfix">
+          <div class="stopwatch-time">
+            <div class="stopwatch-time-c">
+
+              {% if remaining_days %}
+                <div class="time time-first">
+                  <span class="number">{{ remaining_days }}</span><span class="cap">days</span>
+                </div>
+                <div class="time">
+                  <span class="number">{{ remaining_hours }}</span><span class="cap">hours</span>
+                </div>
+              {% else %}
+                <div class="time time-first">
+                  <span class="number">{{ remaining_hours }}</span><span class="cap">hours</span>
+                </div>
+                <div class="time">
+                  <span class="number">{{ remaining_minutes }}</span><span class="cap">minutes</span>
+                </div>
+              {% endif %}
+
             </div>
           </div>
+          <span class="remain">Remaining</span> <span class="timestamp">as of {{ now|date:"n/j @H:i"}}UTC</span>
         </div>
-        <span class="remain">Remaining</span> <span class="timestamp">as of 7/23 @3:30GMT</span>
+        <a href="javascript:void(0)" class="task-btn task-btn-extended-deadline">Extended deadline</a>
       </div>
-      <a href="javascript:void(0)" class="task-btn task-btn-extended-deadline">Extended deadline</a>
+      <!-- end .stockwatch -->
     </div>
-    <!-- end .stockwatch -->
-  </div>
-  <!-- end .block-task-countdown -->
+    <!-- end .block-task-countdown -->
+  {% endif %}
 
   <div class="block-task-description">
     {{ task.description|safe }}

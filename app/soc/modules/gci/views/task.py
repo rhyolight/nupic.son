@@ -180,11 +180,11 @@ class TaskInformation(Template):
     }
 
     if task.deadline:
-      time_remaining = task.deadline - datetime.datetime.utcnow()
-
-      if time_remaining.days:
-        context['remaining_days'] = time_remaining.days
-
+      # special formatting of the TimeDelta object for task view
+      now = datetime.datetime.utcnow()
+      time_remaining = task.deadline - now
+      context['now'] = now
+      context['remaining_days'] = time_remaining.days
       context['remaining_hours'] = time_remaining.seconds/3600
       context['remaining_minutes'] = (time_remaining.seconds/60)%60
 
