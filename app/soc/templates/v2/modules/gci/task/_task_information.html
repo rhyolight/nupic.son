@@ -18,8 +18,12 @@
 <div class="block-task-difficulty">
   <span class="difficulty">Difficulty: <span class="emph">{{ task.difficulty.0 }}</span></span>
   <span class="status">Status: <span class="emph">{{ task.status }}</span></span>
-  <span class="remaining">Time left: <span class="emph">5 hrs 6 min</span></span>
-  <span class="mentor">Mentor: <span class="emph">{{ mentors|join:", " }}</span></span>
+  {% if task.deadline %}
+    <span class="remaining">Time left: <span class="emph">{% if remaining_days %}{{ remaining_days }} days {% endif %}{{ remaining_hours }} hrs {{ remaining_minutes }} min</span></span>
+  {% else %}
+    <span class="remaining">Time to complete: <span class="emph">{{ task.time_to_complete }} hrs</span></span>
+  {% endif %}
+  <span class="mentor">Mentors: <span class="emph">{{ mentors|join:", " }}</span></span>
 </div>
 
 <div class="block-content clearfix">

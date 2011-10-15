@@ -24,6 +24,8 @@ __authors__ = [
   ]
 
 
+import datetime
+
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
@@ -176,6 +178,15 @@ class TaskInformation(Template):
         'is_student': self.data.is_student,
         'profile': self.data.profile,
     }
+
+    if task.deadline:
+      time_remaining = task.deadline - datetime.datetime.utcnow()
+
+      if time_remaining.days:
+        context['remaining_days'] = time_remaining.days
+
+      context['remaining_hours'] = time_remaining.seconds/3600
+      context['remaining_minutes'] = (time_remaining.seconds/60)%60
 
     return context
 
