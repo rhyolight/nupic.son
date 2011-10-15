@@ -148,7 +148,7 @@ class ConnectWithUs(Template):
 
 
 class Homepage(RequestHandler):
-  """Encapsulate all the methods required to generate GSoC Home page.
+  """Encapsulate all the methods required to generate GCI Home page.
   """
 
   def templatePath(self):

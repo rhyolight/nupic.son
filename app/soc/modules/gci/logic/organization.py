@@ -62,6 +62,6 @@ def participating(program):
   organizations.
 
   Args:
-    program: GSoCProgram entity for which the orgs need to be fetched.
+    program: GCIProgram entity for which the orgs need to be fetched.
   """
   return org_logic.participating(GCIOrganization, program)
