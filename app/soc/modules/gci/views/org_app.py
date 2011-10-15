@@ -158,6 +158,7 @@ class GCIOrgAppTakePage(RequestHandler):
     self.mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(self.data.org_app)
 
+    # FIXME: There will never be organization in kwargs
     show_url = None
     if 'organization' in self.kwargs:
       show_url = self.data.redirect.organization().urlOf('gci_show_org_app')
@@ -165,7 +166,9 @@ class GCIOrgAppTakePage(RequestHandler):
     self.check.isSurveyActive(self.data.org_app, show_url)
 
     if self.data.org_app_record:
-      self.check.canEditOrgApp()
+      self.check.canRetakeOrgApp()
+    else:
+      self.check.canTakeOrgApp()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'

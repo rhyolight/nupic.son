@@ -40,6 +40,9 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
     'You cannot register as a student since you are already a '
     'mentor or organization administrator in %s.')
 
+DEF_NO_GSOC_ORG_ADMIN = ugettext(
+    'To apply as an organization for GCI you must have been an organization '
+    'administrator in Google Summer of Code.')
 
 class Mutator(access_checker.Mutator):
   """Helper class for access checking.
@@ -138,6 +141,23 @@ class AccessChecker(access_checker.AccessChecker):
       kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
       age_check_url = reverse('gci_age_check', kwargs=kwargs)
       raise RedirectRequest(age_check_url)
+
+  def canTakeOrgApp(self):
+    """A user can take the GCI org app if he/she was an org admin for GSoC.
+    """
+    from soc.modules.gsoc.models.profile import GSoCProfile
+
+    self.isUser()
+
+    q = GSoCProfile.all()
+    q.filter('is_org_admin', True)
+    q.filter('status IN', ['active', 'inactive'])
+    q.filter('user', self.data.user)
+
+    profile = q.get()
+
+    if not profile:
+      raise AccessViolation(DEF_NO_GSOC_ORG_ADMIN)
 
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):

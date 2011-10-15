@@ -1157,12 +1157,12 @@ class AccessChecker(BaseAccessChecker):
           }
       raise AccessViolation(error_msg)
 
-  def canEditOrgApp(self):
+  def canRetakeOrgApp(self):
     """Checks if the user can edit the org app record.
     """
     assert isSet(self.data.org_app_record)
 
-    self.isLoggedIn()
+    self.isUser()
 
     allowed_keys = [self.data.org_app_record.main_admin.key(),
                     self.data.org_app_record.backup_admin.key()]
@@ -1176,7 +1176,7 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.org_app_record)
 
     try:
-      self.canEditOrgApp(self)
+      self.canRetakeOrgApp(self)
       return
     except AccessViolation:
       pass
