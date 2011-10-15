@@ -308,7 +308,9 @@ class DjangoTestCase(TestCase):
     """Asserts that the response status is OK.
     """
     if response.status_code != status_code:
-      verbose_codes = [httplib.BAD_REQUEST, httplib.NOT_FOUND]
+      verbose_codes = [
+          httplib.BAD_REQUEST, httplib.NOT_FOUND, httplib.FOUND,
+      ]
       message_codes = [httplib.FORBIDDEN]
 
       if response.status_code in verbose_codes:
