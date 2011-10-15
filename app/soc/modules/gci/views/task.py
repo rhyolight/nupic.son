@@ -174,8 +174,8 @@ class TaskInformation(Template):
         'task': task,
         'mentors': mentors,
         'is_mentor': self.data.mentorFor(task.org),
-        'is_student': self.data.is_student,
         'is_owner': task_logic.isOwnerOfTask(task, self.data.profile),
+        'is_claimed': task.status in ACTIVE_CLAIMED_TASK,
         'profile': self.data.profile,
     }
 

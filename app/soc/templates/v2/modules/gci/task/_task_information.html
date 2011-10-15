@@ -7,7 +7,17 @@
   </div>
 
   <div class="block-task-action">
-    <span class="block-task-action-title">You are mentor for this task.</span>
+    {% if is_mentor %}
+      <span class="block-task-action-title">You are mentor for this task.</span>
+    {% else %}
+      {% if is_owner %}
+        <span class="block-task-action-title">This is your current task!</span>
+      {% else %}
+        {% if is_claimed %}
+          <span class="block-task-action-title">This task is claimed.</span>
+        {% endif %}
+      {% endif %}
+    {% endif %}
     <a href="javascript:void(0)" class="task-btn task-btn-close">Mark task as closed</a>
     <a href="javascript:void(0)" class="task-btn task-btn-unassign">Unassign task</a>
     <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit task</a>
