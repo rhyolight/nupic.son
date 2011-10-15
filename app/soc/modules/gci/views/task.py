@@ -117,14 +117,29 @@ class TaskViewPage(RequestHandler):
   def context(self):
     """Returns the context for this view.
     """
+    task = self.data.task
+
     context = {
-      'page_name': '%s - %s' %(self.data.task.title, self.data.task.org.name),
-      'task': self.data.task,
-      'is_mentor': self.data.mentorFor(self.data.task.org),
+      'page_name': '%s - %s' %(task.title, task.org.name),
+      'task': task,
+      'is_mentor': self.data.mentorFor(task.org),
       'task_info': TaskInformation(self.data),
       'work_submissions': WorkSubmissions(self.data),
       'comments': CommentsTemplate(self.data),
     }
+
+    if not context['is_mentor']:
+      # Programmatically change css for non-mentors, to for instance show
+      # the open cog when a task can be claimed.
+      if task.status == 'Closed':
+        block_type = 'completed'
+      elif task_logic.isOwnerOfTask(task, self.data.profile):
+        block_type = 'owned'
+      elif task.status in ACTIVE_CLAIMED_TASK:
+        block_type = 'claimed'
+      else:
+        block_type = 'open'
+      context['block_task_type'] = block_type
 
     return context
 
