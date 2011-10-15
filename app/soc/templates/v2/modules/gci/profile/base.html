@@ -13,3 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block dependencies %}
+  [
+    dep.uniform,
+    dep.melange.main,
+    dep.jqueryui.datepicker,
+    null,
+    function () {
+      jQuery("select, input:radio, input:file, input:checkbox").uniform();
+      jQuery("#birth_date").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: "yy-mm-dd",
+        showButtonPanel: true,
+        minDate: "-90y",
+        maxDate: "+0D",
+        yearRange: "-90",
+        defaultDate: '1990-01-01'
+      });
+    },
+  ]
+{% endblock dependencies %}
