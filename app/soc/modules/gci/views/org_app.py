@@ -274,9 +274,9 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
 
       if record.status != new_status:
         # TODO(ljvderijk): Implement state change code with email if needed
-        # This is temporary code to check the workings of the page
-        record.status = new_status
-        record.put()
+        #record.status = new_status
+        #record.put()
+        pass
 
     self.response.set_status(200)
 
