@@ -73,6 +73,8 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     css_prefix = 'org-app-record'
     exclude = ['main_admin', 'backup_admin', 'status', 'user', 'survey',
                'created', 'modified']
+    widgets = forms.choiceWidgets(model,
+        ['license'])
 
   def clean_org_id(self):
     org_id = cleaning.clean_link_id('org_id')(self)
