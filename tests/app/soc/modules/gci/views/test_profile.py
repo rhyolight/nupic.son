@@ -23,6 +23,9 @@ __authors__ = [
   ]
 
 
+from datetime import date
+from datetime import timedelta
+
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests.test_utils import GCIDjangoTestCase
@@ -51,15 +54,9 @@ class ProfileViewTest(GCIDjangoTestCase):
         'program_suffix': program_suffix                                                            
         }
 
-    props = {
-        'student_info': None,
-        'status': 'active',
-        'is_org_admin': False,
-        'is_mentor': False,
-        'org_admin_for': [],
-        'mentor_for': [],
-        'scope': self.gci
-        }
+    birth_date = date.today() - timedelta(365*15)
+
+    props = {}
     # we do not want to seed the data in the datastore, we just
     # want to get the properties generated for seeding. The post
     # test will actually do the entity creation, so we reuse the
@@ -68,7 +65,23 @@ class ProfileViewTest(GCIDjangoTestCase):
     props.update(seeder_logic.seed_properties(GCIProfile))
     props.update(seeder_logic.seed_properties(GCIStudentInfo))
 
+    props.update({
+        'student_info': None,
+        'status': 'active',
+        'is_org_admin': False,
+        'is_mentor': False,
+        'org_admin_for': [],
+        'mentor_for': [],
+        'scope': self.gci,
+        'birth_date': birth_date,
+        'res_country': 'Netherlands',
+        'ship_country': 'Netherlands',
+    })
+
     self.default_props = props
+
+    # we have other tests that verify the age_check system
+    self.client.cookies['age_check'] = '1'
 
   def _updateDefaultProps(self, request_data):
     """Updates default_props variable with more personal data stored in

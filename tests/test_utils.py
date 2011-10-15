@@ -517,6 +517,7 @@ class GCIDjangoTestCase(DjangoTestCase):
       timeline: a GSoCTimelineHelper instance
       data: a GCIProfileHelper instance
     """
+    from datetime import date
     from soc.models.site import Site
     from soc.models.document import Document
     from soc.modules.gci.models.program import GCIProgram
@@ -531,16 +532,20 @@ class GCIDjangoTestCase(DjangoTestCase):
     properties = {'scope': self.sponsor}
     self.program_timeline = self.seed(GCITimeline, properties)
 
-    properties = {'timeline': self.program_timeline,
-                  'status': 'visible',
-                  'scope': self.sponsor,
-                  'student_agreement': None, 'events_page': None,
-                  'help_page': None, 'connect_with_us_page': None,
-                  'mentor_agreement': None, 'org_admin_agreement': None,
-                  'terms_and_conditions': None, 'home': None, 'about_page': None,
-                  'nr_simultaneous_tasks': 5,
-                  'task_difficulties': ['easy', 'moderate', 'hard'],
-                  'task_types': ['code', 'documentation', 'design']}
+    properties = {
+        'timeline': self.program_timeline,
+        'status': 'visible',
+        'scope': self.sponsor,
+        'student_agreement': None, 'events_page': None,
+        'help_page': None, 'connect_with_us_page': None,
+        'mentor_agreement': None, 'org_admin_agreement': None,
+        'terms_and_conditions': None, 'home': None, 'about_page': None,
+        'nr_simultaneous_tasks': 5,
+        'student_min_age': 13, 'student_max_age': 17,
+        'student_min_age_as_of': date.today(),
+        'task_difficulties': ['easy', 'moderate', 'hard'],
+        'task_types': ['code', 'documentation', 'design'],
+    }
     self.gci = self.seed(GCIProgram, properties)
 
     properties = {
