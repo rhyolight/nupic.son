@@ -39,7 +39,6 @@ from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
-from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import UPLOAD_ALLOWED
 from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
 from soc.modules.gci.views import forms as gci_forms
@@ -107,6 +106,7 @@ class TaskViewPage(RequestHandler):
 
       if 'post_comment' in self.data.GET:
         # checks for posting comments
+        # TODO(ljvderijk): isProgramRunning might not be strict enough
         self.check.isProgramRunning()
         self.check.isProfileActive()
 
@@ -165,10 +165,6 @@ class TaskInformation(Template):
   def context(self):
     """Returns the context for the current template.
     """
-    # TODO: Switches for control buttons that are based on role, status and 
-    # the program's timeline.
-    # TODO(ljvderijk): Tasks may be unpublished as long as there is no comment
-    # and no claim by the org admin.
     task = self.data.task
     mentors = [m.public_name for m in db.get(task.mentors)]
 
