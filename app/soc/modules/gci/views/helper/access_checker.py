@@ -143,14 +143,15 @@ class AccessChecker(access_checker.AccessChecker):
       raise RedirectRequest(age_check_url)
 
   def canTakeOrgApp(self):
-    """A user can take the GCI org app if he/she was an org admin for GSoC.
+    """A user can take the GCI org app if he/she participated in GSoC in a role
+    other than student.
     """
     from soc.modules.gsoc.models.profile import GSoCProfile
 
     self.isUser()
 
     q = GSoCProfile.all()
-    q.filter('is_org_admin', True)
+    q.filter('is_student', False)
     q.filter('status IN', ['active', 'inactive'])
     q.filter('user', self.data.user)
 
