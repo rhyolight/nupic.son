@@ -109,9 +109,7 @@ class MainMenu(Template):
 
     if self.data.is_host:
       self.data.redirect.program()
-      # TODO(Madhu): Replace with the proper redirect once the
-      # gci_admin_dashboard is implemented
-      context['admin_link'] = ''
+      context['admin_link'] = self.data.redirect.urlOf('gci_admin_dashboard')
 
     return context
 
