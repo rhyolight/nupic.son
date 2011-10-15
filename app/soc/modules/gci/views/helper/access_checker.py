@@ -40,9 +40,9 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
     'You cannot register as a student since you are already a '
     'mentor or organization administrator in %s.')
 
-DEF_NO_GSOC_ORG_ADMIN = ugettext(
-    'To apply as an organization for GCI you must have been an organization '
-    'administrator in Google Summer of Code.')
+DEF_NO_GSOC_ORG_MEMBER = ugettext(
+    'To apply as an organization for GCI you must have been a member of an '
+    'organization in Google Summer of Code.')
 
 class Mutator(access_checker.Mutator):
   """Helper class for access checking.
@@ -158,7 +158,7 @@ class AccessChecker(access_checker.AccessChecker):
     profile = q.get()
 
     if not profile:
-      raise AccessViolation(DEF_NO_GSOC_ORG_ADMIN)
+      raise AccessViolation(DEF_NO_GSOC_ORG_MEMBER)
 
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
