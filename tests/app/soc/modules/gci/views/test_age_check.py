@@ -20,8 +20,12 @@
 
 __authors__ = [
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
+  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   ]
 
+
+from datetime import date
+from datetime import timedelta
 
 from tests.test_utils import GCIDjangoTestCase
 
@@ -32,16 +36,32 @@ class AgeCheckTest(GCIDjangoTestCase):
 
   def setUp(self):
     self.init()
+    self.timeline.studentSignup()
 
-  def assertProgramTemplatesUsed(self, response):
+  def assertAgeCheckTemplatesUsed(self, response):
     """Asserts that all the templates were used.
     """
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gci/age_check/base.html')
 
-  def testAgeCheckViewable(self):
+  def testAgeCheckLogsOut(self):
     url = '/gci/age_check/' + self.gci.key().name()
     response = self.client.get(url)
-    self.assertTemplateUsed(response)
+    self.assertResponseRedirect(response)
 
-  # TODO(ljvderijk): Add more tests that also check the cookies that are set
+  def testAgeCheckPassedRedirects(self):
+    self.data.logout()
+    url = '/gci/age_check/' + self.gci.key().name()
+    response = self.client.get(url)
+    self.assertAgeCheckTemplatesUsed(response)
+
+    birth_date = date.today() - timedelta(365*15)
+    postdata = {'birthdate': birth_date}
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(response)
+    self.assertEqual('1', response.cookies['age_check'].value)
+
+    redirect_url = '/gci/profile/student/' + self.gci.key().name()
+    self.client.cookies['age_check'] = '1'
+    response = self.client.get(url)
+    self.assertResponseRedirect(response, redirect_url)
