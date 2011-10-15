@@ -213,6 +213,11 @@ def seed(request, *args, **kwargs):
         'link_id': 'gci2009',
         'scope_path': 'google',
         'scope': google,
+        'program_start': before,
+        'program_end': after,
+        'accepted_organization_announced_deadline': after,
+        'student_signup_start': after,
+        'student_signup_end': after,
   }
 
   gci2009_timeline = GCITimeline(**timeline_properties)
