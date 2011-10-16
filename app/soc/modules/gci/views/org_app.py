@@ -281,6 +281,13 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     self.response.set_status(200)
 
 
+class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):
+  """Template to construct readonly organization application record.
+  """
+
+  template_path = 'v2/modules/gci/org_app/readonly_template.html'
+
+
 class GCIOrgAppShowPage(RequestHandler):
   """View to display the readonly page for organization application.
   """
@@ -307,10 +314,10 @@ class GCIOrgAppShowPage(RequestHandler):
     context = {
         'page_name': 'Organization application - %s' % (record.name),
         'organization': record.name,
-        'css_prefix': org_app.OrgAppReadOnlyTemplate.Meta.css_prefix,
+        'css_prefix': OrgAppReadOnlyTemplate.Meta.css_prefix,
         }
 
     if record:
-      context['record'] = org_app.OrgAppReadOnlyTemplate(record)
+      context['record'] = OrgAppReadOnlyTemplate(record)
 
     return context
