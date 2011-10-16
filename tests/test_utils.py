@@ -513,10 +513,10 @@ class GCIDjangoTestCase(DjangoTestCase):
       dev_test: True iff DEV_TEST is in environment (in parent)
       founder: a founder instance (in parent)
       sponsor: a sponsor instance (in parent)
-      gci: a GSoCProgram instance
+      gci: a GCIProgram instance
       org_app: a OrgAppSurvey instance
-      org: a GSoCOrganization instance
-      timeline: a GSoCTimelineHelper instance
+      org: a GCIOrganization instance
+      timeline: a GCITimelineHelper instance
       data: a GCIProfileHelper instance
     """
     from datetime import date
