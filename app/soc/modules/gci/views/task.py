@@ -198,6 +198,24 @@ class TaskViewPage(RequestHandler):
       task_logic.delete(self.data.task)
       self.redirect.homepage().to()
       return
+    elif button_name == 'button_edit':
+      pass
+    elif button_name == 'button_assign':
+      pass
+    elif button_name == 'button_unassign':
+      pass
+    elif button_name == 'button_close_task':
+      pass
+    elif button_name == 'button_extend_deadline':
+      pass
+    elif button_name == 'button_claim':
+      pass
+    elif button_name == 'button_unclaim':
+      pass
+    elif button_name == 'button_subscribe':
+      pass
+    elif button_name == 'button_unsubscribe':
+      pass
 
     self.redirect.id().to('gci_view_task')
 
