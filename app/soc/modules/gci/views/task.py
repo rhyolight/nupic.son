@@ -191,6 +191,10 @@ class TaskViewPage(RequestHandler):
     button_name = self.data.GET.keys()[0]
     task = self.data.task
 
+    if button_name == 'button_unpublish':
+      task.status = 'Unpublished'
+      task.put()
+
     self.redirect.id().to('gci_view_task')
 
   def templatePath(self):
