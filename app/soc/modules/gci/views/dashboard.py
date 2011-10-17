@@ -18,16 +18,20 @@
 """
 
 __authors__ = [
+  '"Akeda Bagus" <admin@gedex.web.id>',
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
+from django.utils.translation import ugettext
+
+from soc.views.dashboard import Dashboard
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-class Dashboard(RequestHandler):
+class DashboardPage(RequestHandler):
   """View for the participant dashboard.
   """
 
@@ -51,14 +55,15 @@ class Dashboard(RequestHandler):
   def context(self):
     """Handler for default HTTP GET request.
     """
-    components = self.components()
+    dashboards = []
+    dashboards.append(MainDashboard(self.request, self.data))
 
     return {
         'page_name': self.data.program.name,
         'user_name': self.data.profile.name() if self.data.profile else None,
     # TODO(ljvderijk): Implement code for setting dashboard messages.
     #   'alert_msg': 'Default <strong>alert</strong> goes here',
-        'components': components
+        'dashboards': dashboards,
     }
 
   def components(self):
@@ -66,3 +71,39 @@ class Dashboard(RequestHandler):
     """
     return []
 
+
+class MainDashboard(Dashboard):
+  """Dashboard for admin's main-dashboard
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    super(MainDashboard, self).__init__(request, data)
+
+  def context(self):
+    """Returns the context of main dashboard.
+    """
+    r = self.data.redirect
+    r.program()
+
+    subpages = [
+        {
+            'name': 'org_app',
+            'description': ugettext(
+                'Take organization application survey.'),
+            'title': 'Organization application',
+            'link': r.urlOf('gci_take_org_app')
+        },
+    ]
+
+    return {
+        'title': 'Participant dashboard',
+        'name': 'main',
+        'subpages': self._divideSubPages(subpages),
+        'enabled': True
+    }
