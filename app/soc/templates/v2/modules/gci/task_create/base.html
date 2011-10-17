@@ -42,7 +42,11 @@ limitations under the License.
       <div class="form-checkboxes">
         {% for value, label in form.bound_fields.task_type.field.choices %}
           <div class="form-checkboxes-item">
-            <input name="{{ form.bound_fields.task_type.name }}" id="{{ value }}" value="{{ value }}" type="checkbox">
+            <input name="{{ form.bound_fields.task_type.name }}" id="{{ value }}" value="{{ value }}" type="checkbox"
+                {% if value in form.bound_fields.task_type.field.initial %}
+                  checked="checked"
+                {% endif %}
+            >
               <label for="code">{{ label }}</label>
           </div>
         {% endfor %}
@@ -76,7 +80,11 @@ limitations under the License.
       <div class="form-row-task-difficulty-inner">
         <select name="{{ form.bound_fields.difficulty.name }}">
         {% for value, label in form.bound_fields.difficulty.field.choices %}
-          <option value="{{ value }}">{{ label }}</option>
+          <option value="{{ value }}"
+              {% if form.bound_fields.difficulty.field.initial == value %}
+                selected="selected"
+              {% endif %}
+          >{{ label }}</option>
         {% endfor %}
         </select>
       </div>
