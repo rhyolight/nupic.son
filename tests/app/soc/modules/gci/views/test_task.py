@@ -23,6 +23,8 @@ __authors__ = [
   ]
 
 
+from soc.modules.gci.models.task import GCITask
+
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
 
@@ -32,26 +34,83 @@ class TaskViewTest(GCIDjangoTestCase):
   """
 
   def setUp(self):
+    """Creates a published task for self.org.
+    """
     self.init()
+    self.timeline.tasksPubliclyVisible()
+
+    # Create a task, status published
+    profile = GCIProfileHelper(self.gci, self.dev_test)
+    self.task = profile.createOtherUser('mentor@example.com').\
+        createMentorWithTask(self.org)
 
   def testBasicTaskView(self):
     """Tests the rendering of the task view.
     """
-    # Create a task, status published
-    profile = GCIProfileHelper(self.gci, self.dev_test)
-    task = profile.createOtherUser('mentor@example.com').\
-        createMentorWithTask(self.org)
-
-    # Set timeline to taskPubliclyVisible
-    self.timeline.tasksPubliclyVisible()
-
     # Use a non-logged-in request to the page for that task
     self.data.clear()
 
-    url = '/gci/task/view/%s/%s' %(task.program.key().name(), task.key().id())
+    url = self._taskPageUrl(self.task)
     response = self.client.get(url)
 
     # Expect a proper response (200)
     self.assertResponseOK(response)
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gci/task/public.html')
+
+  def testPostComment(self):
+    """Tests leaving a comment on a task.
+    """
+    self.data.createMentor(self.org)
+
+    no_comments = self.task.comments()
+    self.assertLength(no_comments, 0)
+
+    comment_title = 'Test Comment Title'
+    comment_content = 'Test Comment Content'
+
+    comment_data = {
+        'title': comment_title,
+        'content': comment_content,
+    }
+
+    url = '%s?post_comment' %self._taskPageUrl(self.task)
+    response = self.post(url, comment_data)
+
+    self.assertResponseRedirect(response)
+
+    one_comment = self.task.comments()
+    self.assertLength(one_comment, 1)
+
+    comment = one_comment[0]
+    self.assertEqual(comment_title, comment.title)
+    self.assertEqual(comment_content, comment.content)
+
+  def testPostButtonUnpublish(self):
+    """Tests the unpublish button.
+    """
+    self.data.createOrgAdmin(self.org)
+
+    url = '%s?button_unpublish' %self._taskPageUrl(self.task)
+    response = self.post(url)
+
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'Unpublished')
+
+  def testPostButtonDelete(self):
+    """Tests the delete button.
+    """
+    self.data.createOrgAdmin(self.org)
+
+    url = '%s?button_delete' %self._taskPageUrl(self.task)
+    response = self.post(url)
+
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task, None)
+
+  def _taskPageUrl(self, task):
+    """Returns the url of the task page.
+    """
+    return '/gci/task/view/%s/%s' %(task.program.key().name(), task.key().id())
