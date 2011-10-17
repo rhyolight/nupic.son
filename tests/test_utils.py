@@ -181,7 +181,9 @@ class DjangoTestCase(TestCase):
   def _post_teardown(self):
     """ Performs any post-test cleanup.
     """
-    pass
+    import os
+    os.environ['USER_EMAIL'] = 'test@example.com'
+    os.environ['USER_ID'] = '42'
 
   def init(self):
     """Performs test setup.
