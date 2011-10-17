@@ -48,10 +48,12 @@ class TaskCreateForm(gci_forms.GCIModelForm):
                          'Ex: Linux, Apache, C++, GUI'))
 
   time_to_complete_days = django_forms.IntegerField(
-      label=ugettext('Time to complete'))
+      label=ugettext('Time to complete'), min_value=0,
+      error_messages={'min_value': ugettext('Days cannot be negative.')})
 
   time_to_complete_hours = django_forms.IntegerField(
-      label=ugettext('Time to complete'))
+      label=ugettext('Time to complete'), min_value=0,
+      error_messages={'min_value': ugettext('Hours cannot be negative.')})
 
   def __init__(self, data, *args, **kwargs):
     super(TaskCreateForm, self).__init__(*args, **kwargs)
