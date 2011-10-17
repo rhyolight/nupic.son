@@ -48,6 +48,9 @@ DEF_NO_GSOC_ORG_MEMBER_MSG = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
     'organization in Google Summer of Code.')
 
+DEF_TASK_MAY_NOT_BE_IN_STATES_FMT = ugettext(
+    'The task may not be in any of the followings states %s')
+
 class Mutator(access_checker.Mutator):
   """Helper class for access checking.
 
@@ -122,6 +125,17 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.task.isPublished():
       error_msg = access_checker.DEF_PAGE_INACTIVE_MSG
       raise AccessViolation(error_msg)
+
+  def isTaskNotInStates(self, states):
+    """Checks if the task is not in any of the given states.
+
+    Args:
+      states: List of states in which a task may not be for this check to pass.
+    """
+    assert access_checker.isSet(self.data.task)
+
+    if self.data.task.status in states:
+      raise AccessViolation(DEF_TASK_MAY_NOT_BE_IN_STATES_FMT %states)
 
   def canApplyStudent(self, edit_url):
     """Checks if a user may apply as a student to the program.
