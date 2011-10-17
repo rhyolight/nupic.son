@@ -102,11 +102,10 @@ class TaskViewPage(RequestHandler):
     if self.request.method == 'POST':
       # Access checks for the different forms on this page. Note that there
       # are no elif clauses because one could add multiple GET params :).
+      self.check.isBeforeAllWorkStopped()
 
       if 'post_comment' in self.data.GET:
         # checks for posting comments
-        # TODO(ljvderijk): isProgramRunning might not be strict enough
-        self.check.isProgramRunning()
         self.check.isProfileActive()
 
       if 'submit_work' in self.data.GET:
