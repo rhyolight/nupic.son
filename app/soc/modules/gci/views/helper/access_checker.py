@@ -40,6 +40,10 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
     'You cannot register as a student since you are already a '
     'mentor or organization administrator in %s.')
 
+DEF_ALL_WORK_STOPPED_MSG = ugettext(
+    'All work on tasks have stopped. You can no longer make place comments, '
+    'submit work or make any changes to existing tasks.')
+
 DEF_NO_GSOC_ORG_MEMBER = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
     'organization in Google Summer of Code.')
@@ -159,6 +163,14 @@ class AccessChecker(access_checker.AccessChecker):
 
     if not profile:
       raise AccessViolation(DEF_NO_GSOC_ORG_MEMBER)
+
+  def isBeforeAllWorkStopped(self):
+    """Raises AccessViolation if all work on tasks has stopped.
+    """
+    if not self.data.timeline.allWorkStopped():
+      return
+
+    raise AccessViolation(DEF_ALL_WORK_STOPPED_MSG)
 
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
