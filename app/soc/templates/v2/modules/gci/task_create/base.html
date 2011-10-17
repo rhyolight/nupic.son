@@ -67,7 +67,19 @@ limitations under the License.
         {% if form.bound_fields.time_to_complete_days.errors or form.bound_fields.time_to_complete_hours.errors %}
           error
         {% endif %}">
-      <label for="complete-time" class="form-label">Time to complete<em>*</em></label>
+      <label for="complete-time" class="form-label">
+        Time to complete<em>*</em>
+        {% if form.bound_fields.time_to_complete_days.errors %}
+          <span class="form-row-error-msg">
+            <br />{{ form.bound_fields.time_to_complete_days.errors.0 }}
+          </span>
+        {% endif %}
+        {% if form.bound_fields.time_to_complete_hours.errors %}
+          <span class="form-row-error-msg">
+            <br />{{ form.bound_fields.time_to_complete_hours.errors.0 }}
+          </span>
+        {% endif %}
+        </label>
       <div class="form-row-task-completion-time-inner">
         {{ form.bound_fields.time_to_complete_days }} days
         {{ form.bound_fields.time_to_complete_hours }} hours
