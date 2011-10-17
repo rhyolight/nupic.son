@@ -219,7 +219,7 @@ class DjangoTestCase(TestCase):
     from soc.modules.seeder.logic.seeder import logic as seeder_logic
     return seeder_logic.seed_properties(model, properties, recurse=False)
 
-  def post(self, url, postdata):
+  def post(self, url, postdata={}):
     """Performs a post to the specified url with postdata.
 
     Takes care of setting the xsrf_token.
