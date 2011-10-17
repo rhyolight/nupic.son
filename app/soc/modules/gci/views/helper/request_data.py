@@ -32,7 +32,6 @@ from soc.views.helper import request_data
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.models.timeline import GCITimeline
 
 
 class TimelineHelper(request_data.TimelineHelper):
@@ -99,8 +98,14 @@ class TimelineHelper(request_data.TimelineHelper):
   def tasksClaimEndOn(self):
     return self.timeline.task_claim_deadline
 
+  def tasksClaimEnded(self):
+    return request_data.isAfter(self.tasksClaimEndOn())
+
   def stopAllWorkOn(self):
     return self.timeline.stop_all_work_deadline
+
+  def allWorkStopped(self):
+    return request_data.isAfter(self.stopAllWorkOn())
 
 
 class RequestData(request_data.RequestData):

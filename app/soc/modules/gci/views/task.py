@@ -32,7 +32,6 @@ from django.utils.translation import ugettext
 from django import forms as django_forms
 
 from soc.logic import cleaning
-from soc.views.helper import request_data
 from soc.views.template import Template
 
 from soc.modules.gci.logic import comment as comment_logic
@@ -220,7 +219,7 @@ class TaskInformation(Template):
       # no buttons for someone without a profile
       return
 
-    if request_data.isAfter(self.data.timeline.stopAllWorkOn()):
+    if self.data.timeline.allWorkStopped():
       # no buttons after all worked has stopped
       return
 
@@ -245,7 +244,7 @@ class TaskInformation(Template):
       context['button_extend_deadline'] = task.status == 'NeedsReview'
 
     if is_student:
-      if request_data.isBefore(self.data.timeline.tasksClaimEndOn()):
+      if self.data.timeline.tasksClaimEnded():
         context['button_claim'] = task_logic.canClaimRequestTask(task,
                                                                  profile.user)
 
