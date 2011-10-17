@@ -33,6 +33,7 @@ from soc.views import forms
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.models import task
+from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
@@ -117,10 +118,45 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     for name, field in self.fields.items():
       self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
 
-  class Meta:
-    model = task.GCITask
-    css_prefix = 'gci-task'
-    fields = ['title', 'description', 'difficulty' , 'task_type', 'arbit_tag']
+  def _save_extras(self, entity):
+    entity.difficulty = {
+        'tags': self.cleaned_data['difficulty'],
+        'scope': self.request_data.program,
+        }
+    entity.task_type = {
+        'tags': self.cleaned_data['task_type'],
+        'scope': self.request_data.program,
+        }
+    entity.arbit_tag = {
+        'tags': self.cleaned_data['tags'],
+        'scope': self.request_data.program,
+        }
+
+    org_key = self.cleaned_data['organization']
+    entity.org = GCIOrganization.get(org_key)
+
+  def create(self, commit=True, key_name=None, parent=None):
+    entity = super(TaskCreateForm, self).create(
+        commit=False, key_name=key_name, parent=parent)
+
+    if entity:
+      self._save_extras(entity)
+
+    if commit:
+      entity.put()
+
+    return entity
+
+  def save(self, commit=True):
+    entity = super(TaskCreateForm, self).save(commit=False)
+
+    if entity:
+      self._save_extras(entity)
+
+    if commit:
+      entity.put()
+
+    return entity
 
   clean_description = cleaning.clean_html_content('description')
 
@@ -156,6 +192,11 @@ class TaskCreateForm(gci_forms.GCIModelForm):
             "link id %s is not a valid mentor" % (link_id))
 
     return mentor_link_ids
+
+  class Meta:
+    model = task.GCITask
+    css_prefix = 'gci-task'
+    fields = ['title', 'description', 'difficulty' , 'task_type', 'arbit_tag']
 
 
 class TaskCreatePage(RequestHandler):
