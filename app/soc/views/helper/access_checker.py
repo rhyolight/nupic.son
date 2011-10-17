@@ -1176,7 +1176,7 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.org_app_record)
 
     try:
-      self.canRetakeOrgApp(self)
+      self.canRetakeOrgApp()
       return
     except AccessViolation:
       pass
