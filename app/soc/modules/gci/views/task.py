@@ -121,7 +121,7 @@ class TaskViewPage(RequestHandler):
         # check for any of the buttons
         button_name = self.data.GET.keys()[0]
 
-        if button_name.startsWith('button'):
+        if button_name.startswith('button'):
           buttons = {}
           TaskInformation(self.data).setButtonControls(buttons)
           if button_name not in buttons:
