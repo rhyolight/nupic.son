@@ -162,6 +162,8 @@ class TaskViewPage(RequestHandler):
     """
     if 'post_comment' in self.data.GET:
       return self._postComment()
+    elif self.data.GET.keys()[0].startswith('button'):
+      return self._postButton()
     else:
       self.error(405)
 
@@ -181,6 +183,14 @@ class TaskViewPage(RequestHandler):
 
     # TODO(ljvderijk): Indicate that a comment was successfully created to the
     # user.
+    self.redirect.id().to('gci_view_task')
+
+  def _postButton(self):
+    """Handles the POST call for any of the control buttons on the task page.
+    """
+    button_name = self.data.GET.keys()[0]
+    task = self.data.task
+
     self.redirect.id().to('gci_view_task')
 
   def templatePath(self):
