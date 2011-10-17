@@ -32,6 +32,7 @@ from django.utils.translation import ugettext
 from django import forms as django_forms
 
 from soc.logic import cleaning
+from soc.logic.exceptions import AccessViolation
 from soc.views.template import Template
 
 from soc.modules.gci.logic import comment as comment_logic
@@ -44,6 +45,10 @@ from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_patterns
 from soc.modules.gci.views.helper.url_patterns import url
+
+
+DEF_NOT_ALLOWED_TO_OPERATE_BUTTON_FMT = ugettext(
+    'You are not allowed to operate the button named %s')
 
 
 class CommentForm(gci_forms.GCIModelForm):
@@ -111,6 +116,17 @@ class TaskViewPage(RequestHandler):
       if 'submit_work' in self.data.GET:
         # TODO(ljvderijk): Checks for submitting work
         pass
+
+      if self.data.GET:
+        # check for any of the buttons
+        button_name = self.data.GET.keys()[0]
+
+        if button_name.startsWith('button'):
+          buttons = {}
+          TaskInformation(self.data).setButtonControls(buttons)
+          if button_name not in buttons:
+            raise AccessViolation(
+                DEF_NOT_ALLOWED_TO_OPERATE_BUTTON_FMT %button_name)
 
   def context(self):
     """Returns the context for this view.
