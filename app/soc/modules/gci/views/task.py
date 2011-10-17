@@ -306,7 +306,8 @@ class CommentsTemplate(Template):
             .urlOf('create_gci_profile'),
     }
 
-    if self.data.task.status != 'Closed':
+    if self.data.task.status != 'Closed' and \
+        not self.data.timeline.allWorkStopped():
       if self.data.POST and 'post_comment' in self.data.GET:
         context['comment_form'] = CommentForm(self.data.POST)
       else:

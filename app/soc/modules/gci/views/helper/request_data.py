@@ -56,7 +56,7 @@ class TimelineHelper(request_data.TimelineHelper):
 
     if self.tasksPubliclyVisible():
       return 'working_period'
-    
+
     return 'offseason'
 
   def nextDeadline(self):
