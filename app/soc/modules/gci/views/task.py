@@ -372,19 +372,3 @@ class CommentsTemplate(Template):
     """Returns the path to the template that should be used in render().
     """
     return 'v2/modules/gci/task/_comments.html'
-
-
-class PostUploadWork(RequestHandler):
-  """View which handles posting WorkSubmissions.
-  """
-
-  def djangoURLPatterns(self):
-    return [
-        url_patterns.url(r'task/submit_work/%s$' % url_patterns.TASK,
-            self, name='gci_task_submit_work'),
-    ]
-
-  def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
