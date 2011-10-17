@@ -41,7 +41,7 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
     'mentor or organization administrator in %s.')
 
 DEF_ALL_WORK_STOPPED_MSG = ugettext(
-    'All work on tasks have stopped. You can no longer place comments, '
+    'All work on tasks has stopped. You can no longer place comments, '
     'submit work or make any changes to existing tasks.')
 
 DEF_NO_GSOC_ORG_MEMBER_MSG = ugettext(
