@@ -311,6 +311,9 @@ def tag_property(tag_name):
 
   return property(get_tags, set_tags)
 
+  def __unicode__(self):
+    return self.tag
+
 
 class Taggable(object):
   """A mixin class that is used for making GAE Model classes taggable.
