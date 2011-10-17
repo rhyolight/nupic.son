@@ -34,8 +34,9 @@ from django.utils.translation import ugettext
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
-from soc.models.universities import UNIVERSITIES
+from soc.models.org_app_record import OrgAppRecord
 from soc.models.request import Request
+from soc.models.universities import UNIVERSITIES
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
 from soc.views.helper import lists
@@ -389,8 +390,7 @@ class MyOrgApplicationsComponent(Component):
     if lists.getListIndex(self.request) != 0:
       return None
 
-    # TODO(madhu): import the right class
-    q = GSoCOrgApp.all()
+    q = OrgAppRecord.all()
     q.filter('survey', self.org_app_survey)
     q.filter('main_admin', self.data.user)
 
