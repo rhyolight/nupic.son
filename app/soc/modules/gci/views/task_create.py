@@ -128,10 +128,14 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     super(TaskCreateForm, self).clean()
 
     cleaned_data = self.cleaned_data
-    ttc_days = cleaned_data.get("time_to_complete_days")
-    ttc_hours = cleaned_data.get("time_to_complete_hours")
+    ttc_days = cleaned_data.get("time_to_complete_days", 0)
+    ttc_hours = cleaned_data.get("time_to_complete_hours", 0)
 
-    cleaned_data['time_to_complete'] = ttc_days * 24 + ttc_hours
+    if ttc_days or ttc_hours:
+      cleaned_data['time_to_complete'] = ttc_days * 24 + ttc_hours
+    else:
+      raise django_forms.ValidationError(
+          ugettext('Time to complete must be specified.'))
 
     cleaned_data['program'] = self.request_data.program
 
