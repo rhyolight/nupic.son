@@ -44,7 +44,7 @@ DEF_ALL_WORK_STOPPED_MSG = ugettext(
     'All work on tasks have stopped. You can no longer make place comments, '
     'submit work or make any changes to existing tasks.')
 
-DEF_NO_GSOC_ORG_MEMBER = ugettext(
+DEF_NO_GSOC_ORG_MEMBER_MSG = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
     'organization in Google Summer of Code.')
 
@@ -162,7 +162,7 @@ class AccessChecker(access_checker.AccessChecker):
     profile = q.get()
 
     if not profile:
-      raise AccessViolation(DEF_NO_GSOC_ORG_MEMBER)
+      raise AccessViolation(DEF_NO_GSOC_ORG_MEMBER_MSG)
 
   def isBeforeAllWorkStopped(self):
     """Raises AccessViolation if all work on tasks has stopped.
