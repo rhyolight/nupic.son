@@ -84,7 +84,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     org_choices = []
     for org in set(data.org_admin_for + data.mentor_for):
-      org_choices.append((org.link_id, org.name))
+      org_choices.append((org.key(), org.name))
 
     self.fields['organization'] = django_forms.ChoiceField(
         label=ugettext('Organization'), choices=org_choices)
