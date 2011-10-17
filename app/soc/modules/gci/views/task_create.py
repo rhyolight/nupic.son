@@ -23,6 +23,8 @@ __authors__ = [
   ]
 
 
+import datetime
+
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
@@ -70,9 +72,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     self.fields['difficulty'] = django_forms.ChoiceField(
         label=ugettext('Difficulty'), choices=task_difficulties)
 
-    if self.instance:
-      self.fields['difficulty'].initial = self.instance.difficulty
-
     # get a list of task type tags stored for the program entity
     type_tags = task.TaskTypeTag.get_by_scope(data.program)
 
@@ -90,6 +89,24 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     self.fields['organization'] = django_forms.ChoiceField(
         label=ugettext('Organization'), choices=org_choices)
+
+    if self.instance:
+      difficulties = self.instance.difficulty
+      if difficulties:
+        self.fields['difficulty'].initial = difficulties[0].tag
+
+      task_types = self.instance.task_type
+      if task_types:
+        self.fields['task_type'].initial = [t.tag for t in task_types]
+
+      self.fields['organization'].initial = self.instance.org.key()
+
+      self.fields['tags'].initial = self.instance.tags_string(
+          self.instance.arbit_tag)
+
+      ttc = datetime.timedelta(hours=self.instance.time_to_complete)
+      self.fields['time_to_complete_days'].initial = ttc.days
+      self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
 
 #    self.fields['mentors'] = django_forms.ChoiceField(
 #        widget=django_forms.MultipleHiddenInput(), choices=)
