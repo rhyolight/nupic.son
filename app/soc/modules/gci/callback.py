@@ -57,7 +57,7 @@ class Callback(object):
     self.views.append(admin.LookupLinkIdPage())
     self.views.append(age_check.AgeCheck())
     self.views.append(bulk_create.BulkCreate())
-    self.views.append(dashboard.Dashboard())
+    self.views.append(dashboard.DashboardPage())
     self.views.append(document.DocumentPage())
     self.views.append(document.EditDocumentPage())
     self.views.append(document.EventsPage())
