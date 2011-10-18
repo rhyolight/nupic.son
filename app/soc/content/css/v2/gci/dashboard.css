@@ -12,7 +12,7 @@
 }
 /* dashboard head or title */
 .dashboard-head {
-  border-top: 1px solid #238BD2;
+  border-top: 1px solid #E0E0E0;
   font-weight:bold;
   line-height:1.2em;
   margin-bottom:0;
@@ -28,6 +28,9 @@
   padding-right: 0.4em;
   position: relative;
   top: -0.8em;
+}
+.dashboard-head span a {
+  text-decoration: underline;
 }
 /* admin dashboard container */
 .block-dashboard {
@@ -64,7 +67,7 @@
   padding-left: 10px;
 }
 /* title for column-entry */
-#main .column-entry h4 {
+.main .column-entry h4 {
   background: transparent;
   text-transform: none;
   padding: 0 0 0 10px;
@@ -73,13 +76,26 @@
   font-weight: bold;
 }
 /* description of column-entry */
-#main .column-entry p {
+.main .column-entry p {
   margin-bottom: 0;
 }
 /* container for column-entry's sublinks */
-#main .column-entry div {
+.main .column-entry div {
   font-size: 10px;
   color: #999;
+}
+/* content inside the dashboard */
+.block-dashboard .block-content {
+  padding-left: 15px;
+}
+.block-dashboard .block-text h4 {
+  padding-left: 15px;
+  background: #E0E0E0;
+  color: #333;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px #fff;
+  font-size: 15px;
+  line-height: 30px;
 }
 
 /* icons entry */

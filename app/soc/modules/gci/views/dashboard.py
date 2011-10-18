@@ -24,11 +24,163 @@ __authors__ = [
 
 from django.utils.translation import ugettext
 
+from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
+from soc.views.helper import lists
 from soc.views.helper import url_patterns
+from soc.models.org_app_record import OrgAppRecord
 
+from soc.modules.gci.logic import org_app as org_app_logic
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
+
+
+BACKLINKS_TO_MAIN = {'to': 'main', 'title': 'Main dashboard'}
+DATETIME_FORMAT = 'Y-m-d H:i:s'
+
+
+class MainDashboard(Dashboard):
+  """Dashboard for admin's main-dashboard
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    super(MainDashboard, self).__init__(request, data)
+    self.subpages = []
+
+  def context(self):
+    """Returns the context of main dashboard.
+    """
+    return {
+        'title': 'Participant dashboard',
+        'name': 'main',
+        'subpages': self._divideSubPages(self.subpages),
+        'enabled': True
+    }
+
+  def addSubpages(self, subpage):
+    self.subpages.append(subpage)
+
+
+class ComponentsDashboard(Dashboard):
+  """Dashboard that holds component list
+  """
+
+  def __init__(self, request, data, component_property):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+      component_property: Component property
+    """
+    super(ComponentsDashboard, self).__init__(request, data)
+    self.name = component_property.get('name')
+    self.title = component_property.get('title')
+    self.components = [component_property.get('component'),]
+    self.backlinks = [component_property.get('backlinks'),]
+
+  def context(self):
+    """Returns the context of components dashboard.
+    """
+    return {
+        'title': self.title,
+        'name': self.name,
+        'backlinks': self.backlinks,
+        'components': self.components,
+    }
+
+
+class MyOrgApplicationsComponent(Component):
+  """Component for listing the Organization Applications of the current user.
+  """
+
+  def __init__(self, request, data, org_app_survey):
+    """Initializes the component.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+      org_app_survey: the OrgApplicationSurvey entity
+    """
+    # passed in so we don't have to do double queries
+    self.org_app_survey = org_app_survey
+
+    list_config = lists.ListConfiguration()
+
+    list_config.addColumn(
+        'created', 'Created On',
+        lambda ent, *args: format(ent.created, DATETIME_FORMAT))
+    list_config.addColumn(
+        'modified', 'Last Modified On',
+        lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
+    list_config.addSimpleColumn('name', 'Name')
+    list_config.addSimpleColumn('org_id', 'Organization ID')
+
+    options = [
+        ('', 'All'),
+        ('(needs review)', 'needs review'),
+        ('(pre-accepted)', 'pre-accepted'),
+        ('(accepted)', 'accepted'),
+        ('(pre-rejected)', 'pre-rejected'),
+        ('(rejected)', 'rejected'),
+        ('(ignored)', 'ignored'),
+    ]
+
+    list_config.addSimpleColumn('status', 'Status', options=options)
+    list_config.setColumnEditable('status', True, 'select')
+    list_config.addPostEditButton('save', 'Save')
+    
+    list_config.setRowAction(
+        lambda e, *args: data.redirect.id(e.key().id_or_name()).
+            urlOf('gci_show_org_app'))
+
+    self._list_config = list_config
+
+    super(MyOrgApplicationsComponent, self).__init__(request, data)
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return'v2/modules/gci/dashboard/list_component.html'
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=0, preload_list=False)
+
+    return {
+        'name': 'org_app',
+        'title': 'My organization applications',
+        'lists': [list],
+        'description': ugettext('My organization applications'),
+        'idx': 0,
+        }
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    if lists.getListIndex(self.request) != 0:
+      return None
+
+    q = OrgAppRecord.all()
+    q.filter('survey', self.org_app_survey)
+    q.filter('main_admin', self.data.user)
+
+    starter = lists.keyStarter
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter)
+    return response_builder.build()
 
 
 class DashboardPage(RequestHandler):
@@ -55,8 +207,34 @@ class DashboardPage(RequestHandler):
   def context(self):
     """Handler for default HTTP GET request.
     """
+    # dashboard container, will hold each component list
     dashboards = []
-    dashboards.append(MainDashboard(self.request, self.data))
+
+    # main container that contains all component list
+    main = MainDashboard(self.request, self.data)
+
+    # retrieve active component(s) for currently logged-in user
+    components = self.components()
+
+    # add components as children of main dashboard and treat the component
+    # as dashboard element
+    for component in components:
+      c = {
+          'name': component.context().get('name'),
+          'description': component.context().get('description'),
+          'title': component.context().get('title'),
+          'component_link': True,
+          }
+      main.addSubpages(c)
+
+      dashboards.append(ComponentsDashboard(self.request, self.data, {
+          'name': component.context().get('name'),
+          'title': component.context().get('title'),
+          'component': component,
+          'backlinks': BACKLINKS_TO_MAIN,
+          }))
+
+    dashboards.append(main)
 
     return {
         'page_name': self.data.program.name,
@@ -66,44 +244,95 @@ class DashboardPage(RequestHandler):
         'dashboards': dashboards,
     }
 
+  def jsonContext(self):
+    """Handler for JSON requests.
+    """
+    components = self.components()
+
+    list_content = None
+    for component in components:
+      list_content = component.getListData()
+      if list_content:
+        break
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+    return list_content.content()
+
   def components(self):
+    """Returns the list components that are active on the page.
     """
+    components = []
+
+    if self.data.student_info:
+      #components.append(TodoComponent(self.request, self.data))
+      components += self._getStudentComponents()
+    elif self.data.is_mentor:
+      #components.append(TodoComponent(self.request, self.data))
+      components += self._getOrgMemberComponents()
+      #components.append(RequestComponent(self.request, self.data, False))
+    else:
+      components += self._getLoneUserComponents()
+      #components.append(RequestComponent(self.request, self.data, False))
+
+    if self.data.is_host:
+      components += self._getHostComponents()
+
+    return components
+
+  def _getHostComponents(self):
+    """Get the dashboard components for a host.
     """
-    return []
+    components = []
 
+    return components
 
-class MainDashboard(Dashboard):
-  """Dashboard for admin's main-dashboard
-  """
-
-  def __init__(self, request, data):
-    """Initializes the dashboard.
-
-    Args:
-      request: The HTTPRequest object
-      data: The RequestData object
+  def _getStudentComponents(self):
+    """Get the dashboard components for a student.
     """
-    super(MainDashboard, self).__init__(request, data)
+    components = []
 
-  def context(self):
-    """Returns the context of main dashboard.
+    return components
+
+  def _getOrgMemberComponents(self):
+    """Get the dashboard components for Organization members.
     """
-    r = self.data.redirect
-    r.program()
+    components = []
 
-    subpages = [
-        {
-            'name': 'org_app',
-            'description': ugettext(
-                'Take organization application survey.'),
-            'title': 'Organization application',
-            'link': r.urlOf('gci_take_org_app')
-        },
-    ]
+    org_app_survey = org_app_logic.getForProgram(self.data.program)
+    org_app_record = org_app_logic.getForSurvey(org_app_survey)
 
-    return {
-        'title': 'Participant dashboard',
-        'name': 'main',
-        'subpages': self._divideSubPages(subpages),
-        'enabled': True
-    }
+    if org_app_record:
+      # add a component showing the organization application of the user
+      components.append(MyOrgApplicationsComponent(self.request, self.data,
+                                                   org_app_survey))
+
+    return components
+
+  def _getLoneUserComponents(self):
+    """Get the dashboard components for users without any role.
+    """
+    components = []
+
+    #TODO(Madhu): Use the right query to fetch the required org app survey.
+    #org_app_survey = org_app_logic.getForProgram(self.data.program)
+
+    #fields = {'survey': org_app_survey}
+    #org_app_record = org_app_logic.getRecordLogic().getForFields(fields,
+    #                                                             unique=True)
+
+    #if org_app_record:
+      # add a component showing the organization application of the user
+    #  components.append(MyOrgApplicationsComponent(self.request, self.data,
+    #                                               org_app_survey))
+
+    org_app_survey = org_app_logic.getForProgram(self.data.program)
+    org_app_record = org_app_logic.getForSurvey(org_app_survey)
+
+    if org_app_record:
+      # add a component showing the organization application of the user
+      components.append(MyOrgApplicationsComponent(self.request, self.data,
+                                                   org_app_survey))
+
+    return components
