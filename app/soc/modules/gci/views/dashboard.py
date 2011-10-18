@@ -22,8 +22,10 @@ __authors__ = [
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
+from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from soc.logic.exceptions import AccessViolation
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
 from soc.views.helper import lists
@@ -40,7 +42,7 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 
 
 class MainDashboard(Dashboard):
-  """Dashboard for admin's main-dashboard
+  """Dashboard for user's main-dashboard
   """
 
   def __init__(self, request, data):
@@ -94,93 +96,6 @@ class ComponentsDashboard(Dashboard):
         'backlinks': self.backlinks,
         'components': self.components,
     }
-
-
-class MyOrgApplicationsComponent(Component):
-  """Component for listing the Organization Applications of the current user.
-  """
-
-  def __init__(self, request, data, org_app_survey):
-    """Initializes the component.
-
-    Args:
-      request: The HTTPRequest object
-      data: The RequestData object
-      org_app_survey: the OrgApplicationSurvey entity
-    """
-    # passed in so we don't have to do double queries
-    self.org_app_survey = org_app_survey
-
-    list_config = lists.ListConfiguration()
-
-    list_config.addColumn(
-        'created', 'Created On',
-        lambda ent, *args: format(ent.created, DATETIME_FORMAT))
-    list_config.addColumn(
-        'modified', 'Last Modified On',
-        lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
-    list_config.addSimpleColumn('name', 'Name')
-    list_config.addSimpleColumn('org_id', 'Organization ID')
-
-    options = [
-        ('', 'All'),
-        ('(needs review)', 'needs review'),
-        ('(pre-accepted)', 'pre-accepted'),
-        ('(accepted)', 'accepted'),
-        ('(pre-rejected)', 'pre-rejected'),
-        ('(rejected)', 'rejected'),
-        ('(ignored)', 'ignored'),
-    ]
-
-    list_config.addSimpleColumn('status', 'Status', options=options)
-    list_config.setColumnEditable('status', True, 'select')
-    list_config.addPostEditButton('save', 'Save')
-    
-    list_config.setRowAction(
-        lambda e, *args: data.redirect.id(e.key().id_or_name()).
-            urlOf('gci_show_org_app'))
-
-    self._list_config = list_config
-
-    super(MyOrgApplicationsComponent, self).__init__(request, data)
-
-  def templatePath(self):
-    """Returns the path to the template that should be used in render().
-    """
-    return'v2/modules/gci/dashboard/list_component.html'
-
-  def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=0, preload_list=False)
-
-    return {
-        'name': 'org_app',
-        'title': 'My organization applications',
-        'lists': [list],
-        'description': ugettext('My organization applications'),
-        'idx': 0,
-        }
-
-  def getListData(self):
-    """Returns the list data as requested by the current request.
-
-    If the lists as requested is not supported by this component None is
-    returned.
-    """
-    if lists.getListIndex(self.request) != 0:
-      return None
-
-    q = OrgAppRecord.all()
-    q.filter('survey', self.org_app_survey)
-    q.filter('main_admin', self.data.user)
-
-    starter = lists.keyStarter
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter)
-    return response_builder.build()
 
 
 class DashboardPage(RequestHandler):
@@ -239,8 +154,6 @@ class DashboardPage(RequestHandler):
     return {
         'page_name': self.data.program.name,
         'user_name': self.data.profile.name() if self.data.profile else None,
-    # TODO(ljvderijk): Implement code for setting dashboard messages.
-    #   'alert_msg': 'Default <strong>alert</strong> goes here',
         'dashboards': dashboards,
     }
 
@@ -266,15 +179,11 @@ class DashboardPage(RequestHandler):
     components = []
 
     if self.data.student_info:
-      #components.append(TodoComponent(self.request, self.data))
       components += self._getStudentComponents()
     elif self.data.is_mentor:
-      #components.append(TodoComponent(self.request, self.data))
       components += self._getOrgMemberComponents()
-      #components.append(RequestComponent(self.request, self.data, False))
     else:
       components += self._getLoneUserComponents()
-      #components.append(RequestComponent(self.request, self.data, False))
 
     if self.data.is_host:
       components += self._getHostComponents()
@@ -300,13 +209,9 @@ class DashboardPage(RequestHandler):
     """
     components = []
 
-    org_app_survey = org_app_logic.getForProgram(self.data.program)
-    org_app_record = org_app_logic.getForSurvey(org_app_survey)
-
-    if org_app_record:
-      # add a component showing the organization application of the user
-      components.append(MyOrgApplicationsComponent(self.request, self.data,
-                                                   org_app_survey))
+    component = self._getMyOrgApplicationsComponent()
+    if component:
+      components.append(component)
 
     return components
 
@@ -315,24 +220,112 @@ class DashboardPage(RequestHandler):
     """
     components = []
 
-    #TODO(Madhu): Use the right query to fetch the required org app survey.
-    #org_app_survey = org_app_logic.getForProgram(self.data.program)
-
-    #fields = {'survey': org_app_survey}
-    #org_app_record = org_app_logic.getRecordLogic().getForFields(fields,
-    #                                                             unique=True)
-
-    #if org_app_record:
-      # add a component showing the organization application of the user
-    #  components.append(MyOrgApplicationsComponent(self.request, self.data,
-    #                                               org_app_survey))
-
-    org_app_survey = org_app_logic.getForProgram(self.data.program)
-    org_app_record = org_app_logic.getForSurvey(org_app_survey)
-
-    if org_app_record:
-      # add a component showing the organization application of the user
-      components.append(MyOrgApplicationsComponent(self.request, self.data,
-                                                   org_app_survey))
+    component = self._getMyOrgApplicationsComponent()
+    if component:
+      components.append(component)
 
     return components
+
+  def _getMyOrgApplicationsComponent(self):
+    """Returns MyOrgApplicationsComponent iff this user is main_admin or
+    backup_admin in an application.
+    """
+    survey = org_app_logic.getForProgram(self.data.program)
+
+    # Test if this user is main admin or backup admin
+    q = OrgAppRecord.all()
+    q.filter('survey', survey)
+    q.filter('main_admin', self.data.user)
+
+    record = q.get()
+
+    q = OrgAppRecord.all()
+    q.filter('survey', survey)
+    q.filter('backup_admin', self.data.user)
+
+    if record or q.get():
+      # add a component showing the organization application of the user
+      return MyOrgApplicationsComponent(self.request, self.data, survey)
+
+    return None
+
+
+class MyOrgApplicationsComponent(Component):
+  """Component for listing the Organization Applications of the current user.
+  """
+
+  def __init__(self, request, data, survey):
+    """Initializes the component.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+      survey: the OrgApplicationSurvey entity
+    """
+    super(MyOrgApplicationsComponent, self).__init__(request, data)
+
+    # passed in so we don't have to do double queries
+    self.survey = survey
+
+    list_config = lists.ListConfiguration()
+
+    list_config.addSimpleColumn('name', 'Name')
+    list_config.addSimpleColumn('org_id', 'Organization ID')
+    list_config.addColumn(
+        'created', 'Created On',
+        lambda ent, *args: format(ent.created, DATETIME_FORMAT))
+    list_config.addColumn(
+        'modified', 'Last Modified On',
+        lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
+
+
+    if self.data.timeline.surveyPeriod(survey):
+      url_name = 'gci_retake_org_app'
+    else:
+      url_name = 'gci_show_org_app'
+
+    list_config.setRowAction(
+        lambda e, *args: data.redirect.id(e.key().id()).
+            urlOf(url_name))
+
+    self._list_config = list_config
+
+    super(MyOrgApplicationsComponent, self).__init__(request, data)
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return'v2/modules/gci/dashboard/list_component.html'
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=0, preload_list=False)
+
+    return {
+        'name': 'org_app',
+        'title': 'My organization applications',
+        'lists': [list],
+        'description': ugettext('My organization applications'),
+        'idx': 0,
+        }
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    if lists.getListIndex(self.request) != 0:
+      return None
+
+    q = OrgAppRecord.all()
+    q.filter('survey', self.survey)
+    q.filter('main_admin', self.data.user)
+
+    starter = lists.keyStarter
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter)
+    return response_builder.build()

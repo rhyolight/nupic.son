@@ -21,10 +21,7 @@ __authors__ = [
   '"Akeda Bagus" <admin@gedex.web.id>',
   ]
 
-from google.appengine.ext import db
-
 from soc.models.org_app_survey import OrgAppSurvey
-from soc.models.org_app_record import OrgAppRecord
 
 
 def getForProgram(program):
@@ -39,17 +36,3 @@ def getForProgram(program):
   survey = q.get()
 
   return survey
-
-
-def getForSurvey(org_app_survey):
-  """Return the org_app survey for a given program.
-
-  Args:
-    program: program entity for which the survey should be searched
-  """
-  # retrieve a GradingSurveyRecord
-  q = OrgAppRecord.all()
-  q.filter('survey', org_app_survey)
-  record = q.get()
-
-  return record
