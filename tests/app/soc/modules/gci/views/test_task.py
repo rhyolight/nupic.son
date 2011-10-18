@@ -129,14 +129,14 @@ class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
     self.data.createMentor(self.org)
 
     profile = self.data.profile
-    self.assertNotIn(profile.key(), self.task.subscribers)
+    self.assertFalse(profile.key() in self.task.subscribers)
 
     url = '%s?button_subscribe' %self._taskPageUrl(self.task)
     response = self.post(url)
 
     task = GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertIn(profile.key(), task.subscribers)
+    self.assertTrue(profile.key() in task.subscribers)
 
   def testPostButtonUnsubscribe(self):
     """Tests the unsubscribe button.
@@ -153,7 +153,7 @@ class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
 
     task = GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertNotIn(profile.key(), task.subscribers)
+    self.assertFalse(profile.key() in task.subscribers)
 
   def _taskPageUrl(self, task):
     """Returns the url of the task page.
