@@ -215,7 +215,8 @@ class TaskViewPage(RequestHandler):
     elif button_name == 'button_unclaim':
       pass
     elif button_name == 'button_subscribe':
-      pass
+      task.subscribers.append(self.data.profile.key())
+      task.put()
     elif button_name == 'button_unsubscribe':
       pass
 

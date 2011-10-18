@@ -123,6 +123,21 @@ class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
                                         self.task.key().id())
     self.assertResponseRedirect(response, edit_url)
 
+  def testPostButtonSubscribe(self):
+    """Tests the subscribe button.
+    """
+    self.data.createMentor(self.org)
+
+    profile = self.data.profile
+    self.assertNotIn(profile.key(), self.task.subscribers)
+
+    url = '%s?button_subscribe' %self._taskPageUrl(self.task)
+    response = self.post(url)
+
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertIn(profile.key(), task.subscribers)
+
   def _taskPageUrl(self, task):
     """Returns the url of the task page.
     """
