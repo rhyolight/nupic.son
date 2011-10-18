@@ -234,6 +234,7 @@ class TaskViewPage(RequestHandler):
           task.subscribers.remove(profile_key)
           task.put()
       db.run_in_transaction(txn)
+
     self.redirect.id().to('gci_view_task')
 
   def templatePath(self):
