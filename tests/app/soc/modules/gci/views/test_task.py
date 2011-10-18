@@ -111,6 +111,18 @@ class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
     self.assertResponseRedirect(response)
     self.assertEqual(task, None)
 
+  def testPostButtonEdit(self):
+    """Tests the edit button.
+    """
+    self.data.createMentor(self.org)
+
+    url = '%s?button_edit' %self._taskPageUrl(self.task)
+    response = self.post(url)
+
+    edit_url = '/gci/task/view/%s/%s' %(self.task.program.key().name(),
+                                        self.task.key().id())
+    self.assertResponseRedirect(response, edit_url)
+
   def _taskPageUrl(self, task):
     """Returns the url of the task page.
     """

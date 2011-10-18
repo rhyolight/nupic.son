@@ -200,7 +200,8 @@ class TaskViewPage(RequestHandler):
       self.redirect.homepage().to()
       return
     elif button_name == 'button_edit':
-      pass
+      self.redirect.id(self.task).to('gci_edit_task')
+      return
     elif button_name == 'button_assign':
       pass
     elif button_name == 'button_unassign':
