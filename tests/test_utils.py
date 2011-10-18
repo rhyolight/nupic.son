@@ -390,7 +390,6 @@ class DjangoTestCase(TestCase):
     if errors:
       self.fail("\n".join(errors))
 
-  assertLength = gaetestbed.base.BaseTestCase.assertLength
 
 class GSoCDjangoTestCase(DjangoTestCase):
   """DjangoTestCase specifically for GSoC view tests.

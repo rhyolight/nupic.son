@@ -22,6 +22,7 @@ __authors__ = [
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
+import gaetestbed
 
 from soc.modules.gci.models.task import GCITask
 
@@ -29,7 +30,7 @@ from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
 
 
-class TaskViewTest(GCIDjangoTestCase):
+class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
   """Tests GCITask public view.
   """
 
