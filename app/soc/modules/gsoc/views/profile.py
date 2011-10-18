@@ -40,6 +40,7 @@ from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base_templates import LoggedInMsg
 
 
 class StudentNotificationForm(gsoc_forms.GSoCModelForm):
@@ -187,6 +188,16 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
         self.check.canApplyNonStudent(role, edit_url)
     else:
       self.check.isProfileActive()
+
+  def context(self):
+    """Context for the profile page.
+    """
+    context = super(GSoCProfilePage, self).context()
+
+    # GSoC has a special "you are logged in" message on top of the form
+    context['form_top_msg'] = LoggedInMsg(self.data, apply_role=True)
+
+    return context
 
   def templatePath(self):
     return 'v2/modules/gsoc/profile/base.html'

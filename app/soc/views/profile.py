@@ -31,9 +31,6 @@ from soc.logic import cleaning
 from soc.views import forms
 from soc.views.helper import url_patterns
 
-# TODO: this import doesn't belong in core and should be moved
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
-
 
 class EmptyForm(forms.ModelForm):
   """Empty form that is always valid.
@@ -183,7 +180,6 @@ class ProfilePage(object):
 
     context = {
         'page_name': page_name,
-        'form_top_msg': LoggedInMsg(self.data, apply_role=True),
         'forms': forms,
         'error': error,
     }

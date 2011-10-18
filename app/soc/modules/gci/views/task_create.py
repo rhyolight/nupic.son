@@ -32,8 +32,6 @@ from soc.logic import cleaning
 from soc.views import forms
 from soc.views.helper import url_patterns
 
-from soc.views.base_templates import LoggedInMsg
-
 from soc.modules.gci.models import task
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
@@ -231,7 +229,6 @@ class TaskCreatePage(RequestHandler):
 
     context = {
       'page_name':  page_name,
-      'form_top_msg': LoggedInMsg(self.data, apply_link=False),
       'form': form,
       'error': form.errors,
     }
