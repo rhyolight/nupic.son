@@ -165,12 +165,13 @@ class NonFailingFakePayload(object):
     return self.__content.readline(length)
 
 
-class DjangoTestCase(TestCase):
+class DjangoTestCase(TestCase, gaetestbed.base.BaseTestCase):
   """Class extending Django TestCase in order to extend its functions.
 
   As well as remove the functions which are not supported by Google App Engine,
   e.g. database flush and fixtures loading without the assistance of Google
-  App Engine Helper for Django.
+  App Engine Helper for Django. And the gaetestbed mixin class for extra
+  assertions.
   """
 
   def _pre_setup(self):
