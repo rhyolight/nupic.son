@@ -206,7 +206,7 @@ class TaskCreatePage(RequestHandler):
     return [
         url(r'task/create/%s$' % url_patterns.PROGRAM,
             self, name='gci_create_task'),
-        url(r'task/create/%s$' % url_patterns.ID,
+        url(r'task/edit/%s$' % url_patterns.ID,
             self, name='gci_edit_task'),
     ]
 

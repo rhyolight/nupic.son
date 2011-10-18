@@ -119,7 +119,7 @@ class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
     url = '%s?button_edit' %self._taskPageUrl(self.task)
     response = self.post(url)
 
-    edit_url = '/gci/task/create/%s/%s' %(self.task.program.key().name(),
+    edit_url = '/gci/task/edit/%s/%s' %(self.task.program.key().name(),
                                         self.task.key().id())
     self.assertResponseRedirect(response, edit_url)
 
