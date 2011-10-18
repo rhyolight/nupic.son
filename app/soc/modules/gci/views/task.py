@@ -191,10 +191,14 @@ class TaskViewPage(RequestHandler):
     """
     button_name = self.data.GET.keys()[0]
     task = self.data.task
+    task_key = task.key()
 
     if button_name == 'button_unpublish':
-      task.status = 'Unpublished'
-      task.put()
+      def txn():
+        task = db.get(task_key)
+        task.status = 'Unpublished'
+        task.put()
+      db.run_in_transaction(txn)
     elif button_name == 'button_delete':
       task_logic.delete(task)
       self.redirect.homepage().to()
@@ -215,12 +219,21 @@ class TaskViewPage(RequestHandler):
     elif button_name == 'button_unclaim':
       pass
     elif button_name == 'button_subscribe':
-      task.subscribers.append(self.data.profile.key())
-      task.put()
+      profile_key = self.data.profile.key()
+      def txn():
+        task = db.get(task_key)
+        if profile_key not in task.subscribers:
+          task.subscribers.append(profile_key)
+          task.put()
+      db.run_in_transaction(txn)
     elif button_name == 'button_unsubscribe':
-      task.subscribers.remove(self.data.profile.key())
-      task.put()
-
+      profile_key = self.data.profile.key()
+      def txn():
+        task = db.get(task_key)
+        if profile_key in task.subscribers:
+          task.subscribers.remove(profile_key)
+          task.put()
+      db.run_in_transaction(txn)
     self.redirect.id().to('gci_view_task')
 
   def templatePath(self):
