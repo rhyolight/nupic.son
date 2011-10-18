@@ -30,7 +30,7 @@ from soc.views.base_templates import LoggedInMsg
 
 
 def siteMenuContext(data):
-  """Generates URL links for the hard-coded GSoC site menu items.
+  """Generates URL links for the hard-coded GCI site menu items.
   """
   redirect = data.redirect
   program = data.program
@@ -54,7 +54,7 @@ def siteMenuContext(data):
   else:
     context['login_link'] = redirect.login().url()
 
-  if data.profile:
+  if data.user:
     context['dashboard_link'] = redirect.dashboard().url()
 
   if data.timeline.tasksPubliclyVisible():
@@ -153,6 +153,7 @@ class Status(Template):
     return {
       'user_email': self.data.user.account.email(),
       'logout_link': self.data.redirect.logout().url(),
+      'dashboard_link': self.data.redirect.dashboard().url()
     }
 
 
