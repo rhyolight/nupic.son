@@ -278,7 +278,6 @@ class MyOrgApplicationsComponent(Component):
         'modified', 'Last Modified On',
         lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
 
-
     if self.data.timeline.surveyPeriod(survey):
       url_name = 'gci_retake_org_app'
     else:
@@ -324,8 +323,18 @@ class MyOrgApplicationsComponent(Component):
     q.filter('survey', self.survey)
     q.filter('main_admin', self.data.user)
 
-    starter = lists.keyStarter
+    records = q.fetch(1000)
 
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter)
-    return response_builder.build()
+    q = OrgAppRecord.all()
+    q.filter('survey', self.survey)
+    q.filter('backup_admin', self.data.user)
+
+    records.extend(q.fetch(1000))
+
+    response = lists.ListContentResponse(self.request, self._list_config)
+
+    for record in records:
+      response.addRow(record)
+    response.next = 'done'
+
+    return response
