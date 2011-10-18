@@ -218,7 +218,8 @@ class TaskViewPage(RequestHandler):
       task.subscribers.append(self.data.profile.key())
       task.put()
     elif button_name == 'button_unsubscribe':
-      pass
+      task.subscribers.remove(self.data.profile.key())
+      task.put()
 
     self.redirect.id().to('gci_view_task')
 

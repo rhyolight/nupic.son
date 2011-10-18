@@ -138,6 +138,23 @@ class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
     self.assertResponseRedirect(response)
     self.assertIn(profile.key(), task.subscribers)
 
+  def testPostButtonUnsubscribe(self):
+    """Tests the unsubscribe button.
+    """
+    self.data.createMentor(self.org)
+
+    # subscribe to the task manually
+    profile = self.data.profile
+    self.task.subscribers.append(profile.key())
+    self.task.put()
+
+    url = '%s?button_unsubscribe' %self._taskPageUrl(self.task)
+    response = self.post(url)
+
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertNotIn(profile.key(), task.subscribers)
+
   def _taskPageUrl(self, task):
     """Returns the url of the task page.
     """
