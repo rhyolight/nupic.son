@@ -196,11 +196,11 @@ class TaskViewPage(RequestHandler):
       task.status = 'Unpublished'
       task.put()
     elif button_name == 'button_delete':
-      task_logic.delete(self.data.task)
+      task_logic.delete(task)
       self.redirect.homepage().to()
       return
     elif button_name == 'button_edit':
-      self.redirect.id(self.task).to('gci_edit_task')
+      self.redirect.id(task).to('gci_edit_task')
       return
     elif button_name == 'button_assign':
       pass
