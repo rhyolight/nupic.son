@@ -32,12 +32,13 @@ from soc.logic import cleaning
 from soc.views import forms
 from soc.views.helper import url_patterns
 
+from soc.views.base_templates import LoggedInMsg
+
 from soc.modules.gci.models import task
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
-from soc.modules.gci.views.base_templates import LoggedInMsg
 from soc.modules.gci.views.helper.url_patterns import url
 
 
