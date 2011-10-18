@@ -207,7 +207,7 @@ class TaskCreatePage(RequestHandler):
         url(r'task/create/%s$' % url_patterns.PROGRAM,
             self, name='gci_create_task'),
         url(r'task/create/%s$' % url_patterns.ID,
-            self, name='gci_create_task'),
+            self, name='gci_edit_task'),
     ]
 
   def checkAccess(self):
@@ -261,6 +261,6 @@ class TaskCreatePage(RequestHandler):
     task = self.createTaskFromForm()
     if task:
       r = self.redirect.id(id=task.key().id_or_name())
-      r.to('gci_create_task', validated=True)
+      r.to('gci_edit_task', validated=True)
     else:
       self.get()
