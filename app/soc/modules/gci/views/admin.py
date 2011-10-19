@@ -106,6 +106,7 @@ class DashboardPage(RequestHandler):
 
     dashboards.append(MainDashboard(self.request, self.data))
     dashboards.append(ProgramSettingsDashboard(self.request, self.data))
+    dashboards.append(OrgAppSurveyDashboard(self.request, self.data))
 
     return {
         'colorbox': self.data.GET.get('colorbox'),
@@ -142,6 +143,7 @@ class MainDashboard(Dashboard):
     r.program()
 
     program_settings = ProgramSettingsDashboard(self.request, self.data)
+    org_app = OrgAppSurveyDashboard(self.request, self.data)
 
     subpages = [
         {
@@ -158,6 +160,14 @@ class MainDashboard(Dashboard):
             'title': 'Program settings',
             'link': '',
             'subpage_links': program_settings.getSubpagesLink(),
+        },
+        {
+            'name': 'org_app',
+            'description': ugettext(
+                'Edit organization opplication'),
+            'title': 'Organization Application',
+            'link': '',
+            'subpage_links': org_app.getSubpagesLink(),
         },
     ]
 
@@ -219,6 +229,57 @@ class ProgramSettingsDashboard(Dashboard):
     return {
         'title': 'Program Settings',
         'name': 'program_settings',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+        ],
+        'subpages': subpages
+    }
+
+
+class OrgAppSurveyDashboard(Dashboard):
+  """Dashboard for admin's OrgAppSurvey-dashboard
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    r = data.redirect
+    r.program()
+
+    subpages = [
+        {
+            'name': 'edit_org_app',
+            'description': ugettext(
+                'Create or edit organization application'),
+            'title': 'Edit organization application',
+            'link': r.urlOf('gci_edit_org_app')
+        },
+        {
+            'name': 'org_app_records',
+            'description': ugettext(
+                'List of submitted organization application'),
+            'title': 'Organization application records',
+            'link': r.urlOf('gci_list_org_app_records')
+        },
+    ]
+
+    super(OrgAppSurveyDashboard, self).__init__(request, data, subpages)
+
+  def context(self):
+    """Returns the context of OrgAppSurvey dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Organization Application',
+        'name': 'org_app',
         'backlinks': [
             {
                 'to': 'main',
