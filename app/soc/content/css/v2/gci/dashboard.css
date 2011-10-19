@@ -155,7 +155,8 @@
 .column-entry.evaluations,
 .column-entry.mentor_evaluations,
 .column-entry.student_evaluations,
-.column-entry.org_app
+.column-entry.org_app,
+.column-entry.take_org_app
 {
   background-image: url(../../../images/v2/soc/dashboard/todo.png);
 }
