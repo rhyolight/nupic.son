@@ -128,6 +128,11 @@ class DashboardPage(RequestHandler):
     # main container that contains all component list
     main = MainDashboard(self.request, self.data)
 
+    # retrieve active links and add it to the main dashboard
+    links = self.links()
+    for link in links:
+      main.addSubpages(link)
+
     # retrieve active component(s) for currently logged-in user
     components = self.components()
 
@@ -248,6 +253,52 @@ class DashboardPage(RequestHandler):
       return MyOrgApplicationsComponent(self.request, self.data, survey)
 
     return None
+
+  def links(self):
+    """Returns additional links of main dashboard that are active on the page.
+    """
+    links = []
+
+    if self.data.is_mentor:
+      links += self._getOrgMemberLinks()
+    else:
+      links += self._getLoneUserLinks()
+
+    return links
+
+  def _getOrgMemberLinks(self):
+    """Get the main dashboard links for Organization members.
+    """
+    links = []
+
+    link = self._getAddNewOrgAppLink()
+    if link:
+      links.append(link)
+
+    return links
+
+  def _getLoneUserLinks(self):
+    """Get the main dashboard links for users without any role.
+    """
+    links = []
+
+    link = self._getAddNewOrgAppLink()
+    if link:
+      links.append(link)
+
+    return links
+
+  def _getAddNewOrgAppLink(self):
+    r = self.data.redirect
+    r.program()
+
+    return {
+        'name': 'take_org_app',
+        'description': ugettext(
+            'Take organization application survey.'),
+        'title': 'Take organization application',
+        'link': r.urlOf('gci_take_org_app')
+        }
 
 
 class MyOrgApplicationsComponent(Component):
