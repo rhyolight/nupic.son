@@ -196,16 +196,18 @@ a.btn:hover,
 form input[type=submit]:hover, 
 form input[type=button]:hover, 
 input.button:hover,
-.block-delete-account .block-content .delete-btn:hover {/*Dark blue background*/
+input.btn:hover {/*Dark blue background*/
     background-color: #0F649D;
 }
 /* @end */
 
 /* @group Buttons */
+button::-moz-focus-inner, input[type="button"]::-moz-focus-inner, input[type="submit"]::-moz-focus-inner { border: 0 !important; padding: 0 !important; }
 a.btn, 
 form input[type=submit],  
 form input[type=button], 
-input.button {
+input.button,
+input.btn {
     background: #c53926 url(../../../images/v2/gci/arrow-white-lg.png) 95% 50% no-repeat;
     border: none;
         border-radius: 3px;
@@ -220,7 +222,6 @@ input.button {
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
     font-size: 17px;
     font-weight: bold;
-    line-height: 18px;
     padding: 4px 25px 5px 10px;
 }
     .block-task-uploaded-code input[type=submit], 
@@ -231,17 +232,20 @@ input.button {
         -webkit-box-shadow: 1px 2px 3px #295c77;
     }
 .task-btn {
-    background: #fff url(../../../images/v2/gci/dashboard-task-icons.png) 7px 4px no-repeat;
+    background: #fff url(../../../images/v2/gci/dashboard-task-icons.png) 7px 5px no-repeat;
+    border: none;
     border-radius: 10px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
+    color: #0F649D;
     display: block;
     float: left;
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
     font-weight: bold;
-    line-height: 12px;
+    line-height: normal !important;
     margin: 7px 8px 0 0;
     padding: 3px 8px 4px 20px;
+    text-decoration: none;
     text-transform: uppercase;
 }
     .task-btn-edit {
@@ -249,22 +253,22 @@ input.button {
     }
     .task-btn-delete, 
     .task-btn-unclaim {
-        background-position: 7px -17px;
+        background-position: 7px -16px;
         padding-left: 18px;
     }
     .task-btn-close {
-        background-position: 7px -38px;
+        background-position: 7px -37px;
         padding-left: 23px;
     }
     .task-btn-approve {
-        background-position: 7px -38px;
+        background-position: 7px -37px;
         padding-left: 20px;
     }
     .task-btn-unassign {
-        background-position: 7px -59px;
+        background-position: 7px -58px;
     }
     .task-btn-extended-deadline {
-        background-position: 7px -81px;
+        background-position: 7px -80px;
     }
     .task-btn-subscribe-updates {
         background: #fff;
@@ -272,15 +276,28 @@ input.button {
         padding-right: 15px;
     }
     .task-btn-publish {
-        background-position: 7px -104px;
+        background-position: 7px -103px;
     }
-.delete-btn {
+input.delete-btn[type=button], input.delete-btn[type=submit] {
 	background: #eac0c0;
+		border-radius: none;
+		-moz-border-radius: none;
+		-webkit-border-radius: none;
+		box-shadow: none;
+		-moz-box-shadow: none;
+		-webkit-box-shadow: none;
 	color: #8a0005;
 	float: right;
+	font-family: "Trebuchet MS","Lucida Sans Unicode","Lucida Grande","Lucida Sans",Arial,sans-serif;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 15px;
 	padding: 3px 6px;
 	text-transform: uppercase;
 }
+	input.delete-btn[type=button]:hover, input.delete-btn[type=submit]:hover {
+		background: #eac0c0;
+	}
 /* @end */
 
 /* @group Layout */
@@ -817,7 +834,8 @@ body {
 	.block-delete-account .block-content .delete-btn-p {
 		text-align: center;
 	}
-	.block-delete-account .block-content .delete-btn {
+	.block-delete-account .block-content input.delete-btn[type=button],
+	.block-delete-account .block-content input.delete-btn[type=submit] {
 		background: #c32d00;
 		color: #fff;
 		display: inline;
@@ -1538,7 +1556,8 @@ body {
                 margin: 7px 8px 3px 0;
                 padding-left: 20px;
                 padding-right: 0;
-                width: 65px;
+                text-align: left;
+                width: 85px;
             }
         .task-single .task-single-info {
             display: block;
@@ -1842,7 +1861,7 @@ body {
         text-align: center;
     }
     .block-task-owned .block-title .block-task-action .task-btn {
-        background-position: 12px -17px;
+        background-position: 12px -16px;
         display: inline-block;
         float: none;
         margin: 0;
@@ -2032,7 +2051,7 @@ body {
 	.block-leaderboard-your-score .user-ranking {
 		margin: 12px 0 0 18px;
 	}
-	.block-leaderboard-your-score a.btn {
+	.block-leaderboard-your-score .btn {
 		margin-top: 15px;
 		margin-left: 13px;
 	}
@@ -2217,16 +2236,6 @@ form fieldset legend {
 form input[type=submit], 
 form input[type=button] {
     background: #c53926 url(../../../images/v2/gci/arrow-white-lg.png) 90% 50% no-repeat;
-}
-
-.form-row-organization label.form-label {/*Default form label*/
-    color: #0f649d;
-    display: block;
-    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
-    font-size: 18px;
-    line-height: 22px;
-    padding: 0 0 0 2px;
-    float: left;
 }
 
 /* @group Task creation */
