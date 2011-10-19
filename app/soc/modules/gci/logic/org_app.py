@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GradingRecord related functions.
+"""OrgAppSurvey related functions.
 """
 
 __authors__ = [
@@ -30,7 +30,7 @@ def getForProgram(program):
   Args:
     program: program entity for which the survey should be searched
   """
-  # retrieve a GradingSurveyRecord
+  # retrieve a OrgAppSurvey
   q = OrgAppSurvey.all()
   q.filter('program', program)
   survey = q.get()
