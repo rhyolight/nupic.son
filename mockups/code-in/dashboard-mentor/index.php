@@ -33,7 +33,7 @@
                 <span class="subhead">Mentor name</span>
                 <span class="name">Maya Jones</span>
             </div>
-            <a href="javascript:void(0)" class="btn">Create a task</a>
+            <input type="submit" class="btn" value="Create a task" />
         </div>
         <!-- end .block.block-user-welcome -->
         <div class="block block-tabs block-user-tabs">
@@ -75,8 +75,8 @@
                     <div class="cog"></div>
                     <div class="task-single-content clearfix">
                         <span class="task-single-title"><a href="javascript:void(0)">Update Image Import Module</a></span>
-                        <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
-                        <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit Task</a>
+                        <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+                        <input type="submit" class="task-btn task-btn-edit" value="Edit Task" />
                         <div class="task-single-content-bottom clearfix">
                             <div class="task-single-content-col1">
                                 <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Alex Berkman</a></span>
@@ -96,8 +96,8 @@
                     <div class="cog"></div>
                     <div class="task-single-content clearfix">
                         <span class="task-single-title"><a href="javascript:void(0)">Translate Documentation from English to Arabic</a></span>
-                        <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
-                        <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit Task</a>
+                        <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+                        <input type="submit" class="task-btn task-btn-edit" value="Edit Task" />
                         <div class="task-single-content-bottom clearfix">
                             <div class="task-single-content-col1">
                                 <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Emma Goldman</a></span>
@@ -117,8 +117,8 @@
                     <div class="cog"></div>
                     <div class="task-single-content clearfix">
                         <span class="task-single-title"><a href="javascript:void(0)">Translate Upload Documentation from English to Arabic</a></span>
-                        <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
-                        <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit Task</a>
+                        <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+                        <input type="submit" class="task-btn task-btn-edit" value="Edit Task" />
                         <div class="task-single-content-bottom clearfix">
                             <div class="task-single-content-col1">
                                 <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Mike Bakunin</a></span>
@@ -139,8 +139,8 @@
             	    <div class="cog"></div>
             	    <div class="task-single-content clearfix">
             	        <span class="task-single-title"><a href="javascript:void(0)">Update Image Import Module</a></span>
-            	        <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
-            	        <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit Task</a>
+            	        <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+            	        <input type="submit" class="task-btn task-btn-edit" value="Edit Task" />
             	        <div class="task-single-content-bottom clearfix">
             	            <div class="task-single-content-col1">
             	                <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Alex Berkman</a></span>
@@ -160,8 +160,8 @@
             	    <div class="cog"></div>
             	    <div class="task-single-content clearfix">
             	        <span class="task-single-title"><a href="javascript:void(0)">Translate Documentation from English to Arabic</a></span>
-            	        <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
-            	        <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit Task</a>
+            	        <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+            	        <input type="submit" class="task-btn task-btn-edit" value="Edit Task" />
             	        <div class="task-single-content-bottom clearfix">
             	            <div class="task-single-content-col1">
             	                <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Emma Goldman</a></span>
@@ -181,8 +181,8 @@
             	    <div class="cog"></div>
             	    <div class="task-single-content clearfix">
             	        <span class="task-single-title"><a href="javascript:void(0)">Translate Upload Documentation from English to Arabic</a></span>
-            	        <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
-            	        <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit Task</a>
+            	        <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+            	        <input type="submit" class="task-btn task-btn-edit" value="Edit Task" />
             	        <div class="task-single-content-bottom clearfix">
             	            <div class="task-single-content-col1">
             	                <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Mike Bakunin</a></span>
@@ -232,8 +232,8 @@
                     <div class="cog"></div>
                     <div class="task-single-content clearfix">
                         <span class="task-single-title"><a href="javascript:void(0)">Translate Documentation from English to Arabic</a></span>
-                        <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
-                        <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit Task</a>
+                        <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+                        <input type="submit" class="task-btn task-btn-edit" value="Edit Task" />
                         <div class="task-single-content-bottom clearfix">
                             <div class="task-single-content-col1">
                                 <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Emma Goldman</a></span>
@@ -253,8 +253,8 @@
                     <div class="cog"></div>
                     <div class="task-single-content clearfix">
                         <span class="task-single-title"><a href="javascript:void(0)">Update Image Import Module</a></span>
-                        <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
-                        <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit Task</a>
+                        <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+                        <input type="submit" class="task-btn task-btn-edit" value="Edit Task" />
                         <div class="task-single-content-bottom clearfix">
                             <div class="task-single-content-col1">
                                 <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Alex Berkman</a></span>
@@ -304,8 +304,8 @@
             	    <div class="cog"></div>
             	    <div class="task-single-content clearfix">
             	        <span class="task-single-title"><a href="javascript:void(0)">Update Image Import Module</a></span>
-            	        <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
-            	        <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit Task</a>
+            	        <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+            	        <input type="submit" class="task-btn task-btn-edit" value="Edit Task" />
             	        <div class="task-single-content-bottom clearfix">
             	            <div class="task-single-content-col1">
             	                <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Alex Berkman</a></span>

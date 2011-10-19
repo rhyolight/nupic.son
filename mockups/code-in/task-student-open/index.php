@@ -33,8 +33,8 @@
                     <span class="project">Drupal Foundation</span>
                 </div>
                 <div class="block-task-action">
-                    <a href="javascript:void(0)" class="btn btn-claim-task">Claim this task!</a>
-                    <a href="javascript:void(0)" class="task-btn task-btn-subscribe-updates">Subscribe to updates</a>
+                	<input type="submit" class="btn btn-claim-task" value="Claim this task!" />
+                	<input type="submit" class="task-btn task-btn-subscribe-updates" value="Subscribe to updates" />
                 </div>
             </div>
         	<div class="block-task-difficulty">
@@ -52,7 +52,7 @@
         	</div>
         	<div class="block-comments clearfix">
         	    <span class="block-comments-title">Comments</span>
-        	    <a href="javascript:void(0)" class="task-btn task-btn-comment-new">Post new comment</a>
+        	    <input type="submit" class="task-btn task-btn-comment-new" value="Post new comment" />
         	    <div class="block-comments-post-new">
         	        <span class="block-comments-post-new-title">Post new comment</span>
         	        <form action="#" method="post" class="form-comment-post-new clearfix">

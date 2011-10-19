@@ -128,7 +128,7 @@
         	    <div class="form-row form-row-buttons">
         	    	<input value="Save" class="button" type="submit">
         	    	<input value="Discard" class="button" type="button">
-        	    	<a href="javascript:void(0)" class="delete-btn">Delete Account</a>
+        	    	<input value="Delete Account" class="delete-btn" type="button" />
         	    </div>
         	    
         	</form>

@@ -34,7 +34,7 @@
                 </div>
                 <div class="block-task-action">
                     <span class="block-task-action-title">This task is claimed.</span>
-                    <a href="javascript:void(0)" class="task-btn task-btn-subscribe-updates">Subscribe to updates</a>
+                    <input type="submit" class="task-btn task-btn-subscribe-updates" value="Subscribe to updates" />
                 </div>
             </div>
         	<div class="block-task-difficulty">
@@ -76,7 +76,7 @@
         	<!-- end .block-task-uploaded-code -->
         	<div class="block-comments clearfix">
         	    <span class="block-comments-title">Comments</span>
-        	    <a href="javascript:void(0)" class="task-btn task-btn-comment-new">Post new comment</a>
+        	    <input type="submit" class="task-btn task-btn-comment-new" value="Post new comment" />
         	    <div class="block-comments-post-new">
         	        <span class="block-comments-post-new-title">Post new comment</span>
         	        <form action="#" method="post" class="form-comment-post-new clearfix">
@@ -98,7 +98,7 @@
         	        <span class="single-comment-title">This is a great task idea.</span>
         	        <span class="single-comment-meta">by <a href="javascript:void(0)">Eric Schmidt</a> July 28 2011 10:57 GMT</span>
         	        <p>Praesent porta nunc diam, sed ullamcorper turpis. Praesent dignissim eleifend sapien pellentesque fermentum. Etiam feugiat lacinia lorem, semper varius ligula ornare eget. Nunc at risus ante. Maecenas vehicula lacinia vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; aliquam erat volutpat!</p>
-        	        <a href="javascript:void(0)" class="task-btn task-btn-comment-reply">Reply</a>
+        	        <input type="submit" class="task-btn task-btn-comment-reply" value="Reply" />
         	        <div class="single-comment-reply">
         	            <span class="single-comment-reply-title">Reply</span>
         	            <form action="#" method="post" class="form-comment-reply clearfix">

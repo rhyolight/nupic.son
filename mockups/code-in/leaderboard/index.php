@@ -270,7 +270,7 @@
                 	        <span class="count">Top 5%</span>
                 	    </div>
                 	</div>
-                	<a href="javascript:void(0)" class="btn">View my tasks</a>
+                	<input type="submit" class="btn" value="View my tasks" />
                 </div>
             </div>
             <!-- end .block.block-leaderboard-your-score -->

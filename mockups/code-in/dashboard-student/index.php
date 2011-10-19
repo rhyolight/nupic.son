@@ -41,7 +41,7 @@
                     <span class="count">Top 5%</span>
                 </div>
             </div>
-            <a href="javascript:void(0)" class="btn">Search for tasks</a>
+            <input type="submit" class="btn" value="Search for tasks" />
         </div>
         <!-- end .block.block-user-welcome -->
         <div class="block block-task block-featured-task block-student-featured-task level-difficult">

@@ -36,7 +36,9 @@
 				<p>Once your account is deleted, all your information will be gone forever.</p>
 				<p>Una vez que su cuenta se elimina toda la información se ha ido para siempre.</p>
 				<p>Une fois que votre compte est supprimé, toutes vos informations auront disparu pour toujours.</p>
-				<p class="delete-btn-p"><a href="javascript:void(0)" class="delete-btn">Delete Account</a></p>
+				<form action="#" method="post" class="clearfix">
+				<p class="delete-btn-p"><input value="Delete Account" class="delete-btn" type="button" /></p>
+				</form>
 			</div>
 		</div>
     </div>
