@@ -26,16 +26,16 @@ from google.appengine.ext import blobstore
 
 from django.forms import fields
 
-from soc.views import forms
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class TaxForm(forms.ModelForm):
+class TaxForm(GSoCModelForm):
   """Django form for the student tax form.
   """
 
@@ -79,7 +79,7 @@ class TaxForm(forms.ModelForm):
       field._link = self._r().urlOf(self._urlName())
 
 
-class EnrollmentForm(forms.ModelForm):
+class EnrollmentForm(GSoCModelForm):
   """Django form for the student enrollment form.
   """
 
