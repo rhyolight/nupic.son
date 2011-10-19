@@ -108,7 +108,7 @@ def setupRemote(app_id, host=None):
   from google.appengine.ext.remote_api import remote_api_stub
 
   if not host:
-    host = '%s.appspot.com' % app_id
+    host = '%s.appspot.com' % app_id.split("~")[-1]
 
   remote_api_stub.ConfigureRemoteDatastore(app_id, '/_ah/remote_api', auth_func, host)
 
