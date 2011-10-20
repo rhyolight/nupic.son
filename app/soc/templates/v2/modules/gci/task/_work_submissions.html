@@ -7,20 +7,27 @@
       {% if send_for_review %}
         <span class="block-task-uploaded-code-note">If you have finished the task, click <strong>Mark Task as Complete</strong> to submit your work for review.</span>
       {% endif %}
-
       <table border="0" cellpadding="0" cellspacing="0" width="100%" class="block-task-uploaded-code-listing">
         <tr>
-          <th>File name</th>
+          <th>File name/URL</th>
           <th>File size</th>
           <th>Date submitted</th>
           <th></th>
         </tr>
-        <tr>
-          <td><a href="javascript:void(0)">Documentation-v2.rtf</a></td>
-          <td>190 kb</td>
-          <td>July 29 2011 15:45 GMT</td>
-          <td><a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a></td>
-        </tr>
+        {% for submission in submissions %}
+          <tr>
+            {% if submission.upload_of_work %}
+              <td><a href="javascript:void(0)">{{ submission.upload_of_work.file_name }}</a></td>
+              <td>{{ submission.upload_of_work.size|filesizeformat }}</td>
+            {% else %}
+              <td><a href="{{ submission.url_to_work }}">Click here</a></td>
+              <td>n/a</td>
+            {% endif %}
+            <td>{{ submission.submitted_on|time:"F d Y H:i" }} UTC</td>
+            <td></td>
+            {% comment %}<td><a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a></td>{% endcomment %}
+          </tr>
+        {% endfor %}
       </table>
 
       {% if send_for_review %}
