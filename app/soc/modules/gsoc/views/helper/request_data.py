@@ -33,6 +33,7 @@ from soc.views.helper import request_data
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models.timeline import GSoCTimeline
 
 
 class TimelineHelper(request_data.TimelineHelper):
