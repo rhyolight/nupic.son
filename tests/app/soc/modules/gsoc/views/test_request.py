@@ -71,7 +71,7 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     # test GET
     self.data.createProfile()
     url = '/gsoc/request/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertRequestTemplatesUsed(response)
 
     # test POST
@@ -106,7 +106,7 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     other_data, request = self.createRequest()
     other_data.notificationSettings(request_handled=True)
     url = '/gsoc/request/%s/%s' % (self.gsoc.key().name(), request.key().id())
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/soc/request/base.html')
 

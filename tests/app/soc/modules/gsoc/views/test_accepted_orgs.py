@@ -57,13 +57,13 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     the organizations have been announced.
     """
     self.timeline.orgSignup()
-    response = self.client.get(self.url3)
+    response = self.get(self.url3)
     self.assertResponseForbidden(response)
     
-    response = self.client.get(self.url2)
+    response = self.get(self.url2)
     self.assertResponseForbidden(response)
     
-    response = self.client.get(self.url1)
+    response = self.get(self.url1)
     self.assertResponseForbidden(response)
     
   def testAcceptedOrgsAreDisplayedAfterOrganizationsHaveBeenAnnounced(self):
@@ -75,20 +75,20 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     seeder_logic.seed(GSoCOrganization, org_properties)
     self.timeline.orgsAnnounced()
     
-    response = self.client.get(self.url1)
+    response = self.get(self.url1)
     self.assertResponseOK(response)
     self.assertAcceptedOrgsPageTemplatesUsed(response)
     list_data = self.getListData(self.url1, 0)
     #Third organization is self.gsoc
     self.assertEqual(len(list_data), 3)
     
-    response = self.client.get(self.url2)
+    response = self.get(self.url2)
     self.assertResponseOK(response)
     self.assertAcceptedOrgsPageTemplatesUsed(response)
     list_data = self.getListData(self.url2, 0)
     self.assertEqual(len(list_data), 3)
 
-    response = self.client.get(self.url3)
+    response = self.get(self.url3)
     self.assertResponseOK(response)
     self.assertAcceptedOrgsPageTemplatesUsed(response)
     list_data = self.getListData(self.url3, 0)

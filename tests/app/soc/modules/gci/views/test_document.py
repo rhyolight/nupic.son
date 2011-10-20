@@ -42,7 +42,7 @@ class ListDocumentTest(GCIDjangoTestCase):
 
   def testListDocument(self):
     url = '/gci/documents/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertGCITemplatesUsed(response)
 
     response = self.getListResponse(url, 0)
@@ -72,7 +72,7 @@ class EditProgramTest(GCIDjangoTestCase):
 
   def testShowDocument(self):
     url = '/gci/document/show/' + self.document.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertGCITemplatesUsed(response)
 
   def testCreateDocumentRestriction(self):
@@ -82,7 +82,7 @@ class EditProgramTest(GCIDjangoTestCase):
   def testCreateDocument(self):
     self.data.createHost()
     url = '/gci/document/edit/gci_program/%s/doc' % self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gci/document/base.html')
     self.assertTemplateUsed(response, 'v2/modules/gci/_form.html')

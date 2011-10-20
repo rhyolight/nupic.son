@@ -81,7 +81,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     # test review GET
     url = '/gsoc/proposal/review/' + suffix
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertReviewTemplateUsed(response)
 
     self.assertNotContains(
@@ -152,7 +152,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     # test review GET
     url = '/gsoc/proposal/review/' + suffix
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/review.html')
 
@@ -275,7 +275,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     proposal.put()
 
     url = '/gsoc/proposal/review/' + suffix
-    response = self.client.get(url)
+    response = self.get(url)
 
     proposal = GSoCProposal.all().get()
     self.assertFalse(other_mentor.profile.key() in proposal.possible_mentors)

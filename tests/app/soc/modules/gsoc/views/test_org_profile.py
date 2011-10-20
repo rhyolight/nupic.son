@@ -53,11 +53,11 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     self.data.createOrgAdmin(self.org)
     #Profile creation URL is not implemented currently.
     url = '/gsoc/profile/organization/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
     url = '/gsoc/profile/organization/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
   """
   
@@ -70,11 +70,11 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
       os.environ['USER_EMAIL'] = ''
       #TODO(Praveen): Activate code below when org profile creation is implemented.
       #url = '/gsoc/profile/organization/' + self.gsoc.key().name()
-      #response = self.client.get(url)
+      #response = self.get(url)
       #self.assertResponseRedirect(response)
 
       url = '/gsoc/profile/organization/' + self.org.key().name()
-      response = self.client.get(url)
+      response = self.get(url)
       self.assertResponseRedirect(response)
       expected_redirect_address = 'https://www.google.com/accounts/Login?'\
           +'continue=http%3A//Foo%3A8080' + url
@@ -92,7 +92,7 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     self.timeline.kickoff()
     url = '/gsoc/profile/organization/' + self.org.key().name()
     self.data.createUser()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testOrgProfilePageInactiveProfile(self):
@@ -100,7 +100,7 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     """
     self.data.createInactiveProfile()
     url = '/gsoc/profile/organization/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testOnlyACorrectOrgAdminCanEditAnrOrgProfilePage(self):
@@ -112,14 +112,14 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     self.data.createMentor(self.org)
     url = '/gsoc/profile/organization/' + self.org.key().name()
     self.timeline.orgSignup()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
     from soc.modules.gsoc.models.organization import GSoCOrganization
     other_organization = seeder_logic.seed(GSoCOrganization)
     self.data.createOrgAdmin(other_organization)
     url = '/gsoc/profile/organization/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
     #make the current logged in user to be admin for self.org.
@@ -128,7 +128,7 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     self.gsoc.put()
 
     url = '/gsoc/profile/organization/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseOK(response)
     self.assertOrgProfilePageTemplatesUsed(response)
 
@@ -140,13 +140,13 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
 
     self.gsoc.allocations_visible = True
     self.gsoc.put()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseOK(response)
     self.assertOrgProfilePageTemplatesUsed(response)
     self.assertTrue('slot_transfer_page_link' in response.context)
 
     self.timeline.studentsAnnounced()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseOK(response)
     self.assertOrgProfilePageTemplatesUsed(response)
     self.assertFalse('slot_transfer_page_link' in response.context)
@@ -160,7 +160,7 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
                            'non_existing_link_id')
     url = '/gsoc/profile/organization/' + suffix
     import httplib
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseCode(response, httplib.NOT_FOUND)
     
   def testAnOrgAdminCanUpdateOrgProfile(self):

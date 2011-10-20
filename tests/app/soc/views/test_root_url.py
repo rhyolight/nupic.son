@@ -37,6 +37,6 @@ class RootUrlViewTest(GSoCDjangoTestCase):
     """Tests that the root url redirects to the gsoc homepage.
     """
     url = '/'
-    response = self.client.get(url)
+    response = self.get(url)
     homepage = '/gsoc/homepage/' + self.gsoc.key().name()
     self.assertResponseRedirect(response, homepage)

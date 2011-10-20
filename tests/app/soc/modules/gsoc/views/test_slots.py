@@ -48,7 +48,7 @@ class SlotsTest(GSoCDjangoTestCase):
   def testAllocateSlots(self):
     self.data.createHost()
     url = '/gsoc/admin/slots/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProjectTemplatesUsed(response)
 
     data = self.getListData(url, 0)

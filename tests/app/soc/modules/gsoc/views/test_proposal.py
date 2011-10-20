@@ -60,7 +60,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     self.data.notificationSettings()
     self.timeline.studentSignup()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProposalTemplatesUsed(response)
 
     # test proposal POST
@@ -85,27 +85,27 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     self.data.createStudent()
     self.timeline.orgSignup()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
     self.timeline.offSeason()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
     self.timeline.kickoff()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
     self.timeline.orgsAnnounced()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
     self.timeline.studentsAnnounced()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testUpdateProposal(self):
@@ -124,7 +124,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     url = '/gsoc/proposal/update/%s/%s' % (
         self.gsoc.key().name(), proposal.key().id())
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProposalTemplatesUsed(response)
 
     override = {

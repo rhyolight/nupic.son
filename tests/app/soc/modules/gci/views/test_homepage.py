@@ -55,35 +55,35 @@ class HomepageViewTest(GCIDjangoTestCase):
     url = '/gci/homepage/' + self.gci.key().name()
 
     self.timeline.offSeason()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.kickoff()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.orgSignup()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.orgsAnnounced()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.studentSignup()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.tasksPubliclyVisible()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.taskClaimEnded()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.pencilDown()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
   def testHomepageDuringSignup(self):
@@ -91,7 +91,7 @@ class HomepageViewTest(GCIDjangoTestCase):
     """
     self.timeline.studentSignup()
     url = '/gci/homepage/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
     # TOOD
     #timeline_tmpl = response.context['timeline']
@@ -105,7 +105,7 @@ class HomepageViewTest(GCIDjangoTestCase):
     self.data.createProfile()
     self.timeline.studentSignup()
     url = '/gci/homepage/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
     # TOOD
     #apply_tmpl = response.context['apply']

@@ -64,7 +64,7 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     self.timeline.studentsAnnounced()
 
     url = '/gsoc/withdraw_projects/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertWithdrawProjects(response)
 
     # list response without any projects

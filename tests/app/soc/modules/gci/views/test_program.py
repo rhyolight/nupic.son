@@ -42,20 +42,20 @@ class EditProgramTest(GCIDjangoTestCase):
 
   def testEditProgramHostOnly(self):
     url = '/gci/program/edit/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
   def testEditProgramAsDeveloper(self):
     self.data.createDeveloper()
     url = '/gci/program/edit/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProgramTemplatesUsed(response)
 
   def testEditProgram(self):
     from soc.models.document import Document
     self.data.createHost()
     url = '/gci/program/edit/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProgramTemplatesUsed(response)
 
     response = self.getJsonResponse(url)

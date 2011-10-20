@@ -40,7 +40,7 @@ class AdminDashboardTest(GSoCDjangoTestCase):
     url = '/gsoc/admin/' + self.gsoc.key().name()
     if colorbox:
       url += '?colorbox=true'
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseOK(response)
     return response.context
 
@@ -66,7 +66,7 @@ class AdminDashboardTest(GSoCDjangoTestCase):
     self.data.createHost()
 
     url = '/gsoc/admin/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertDashboardTemplatesUsed(response)
     self.assertUserActionsTemplatesUsed(response)
 
@@ -122,12 +122,12 @@ class LookupProfileTest(GSoCDjangoTestCase):
 
     # rendered with default base layout
     url = '/gsoc/admin/lookup/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertLookupProfile(response)
 
     # rendered inside cbox iframe
     url = '/gsoc/admin/lookup/' + self.gsoc.key().name() + '?cbox=true'
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertLookupProfile(response)
 
     post_url = '/gsoc/admin/lookup/' + self.gsoc.key().name()
@@ -196,14 +196,14 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     for base in bases:
       # rendered with default base layout
       url = ('/gsoc/admin/%s/' % base) + self.gsoc.key().name()
-      response = self.client.get(url)
+      response = self.get(url)
       self.assertAcceptedOrgs(response, base)
       response = self.getListResponse(url, 0)
       self.assertIsJsonResponse(response)
 
       # rendered inside cbox iframe
       url += '?cbox=true'
-      response = self.client.get(url)
+      response = self.get(url)
       self.assertAcceptedOrgs(response, base)
 
 
@@ -238,7 +238,7 @@ class ProposalsPageTest(GSoCDjangoTestCase):
     self.timeline.studentSignup()
 
     url = '/gsoc/admin/proposals/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProposalsPage(response)
 
     response = self.getListResponse(url, 0)
@@ -257,7 +257,7 @@ class ProposalsPageTest(GSoCDjangoTestCase):
 
     # rendered inside cbox iframe
     url += '?cbox=true'
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProposalsPage(response)
 
 
@@ -292,7 +292,7 @@ class ProjectsPageTest(GSoCDjangoTestCase):
     self.timeline.studentsAnnounced()
 
     url = '/gsoc/admin/projects/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProjectsPage(response)
 
     response = self.getListResponse(url, 0)
@@ -311,5 +311,5 @@ class ProjectsPageTest(GSoCDjangoTestCase):
 
     # rendered inside cbox iframe
     url += '?cbox=true'
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProjectsPage(response)

@@ -46,13 +46,13 @@ class AgeCheckTest(GCIDjangoTestCase):
 
   def testAgeCheckLogsOut(self):
     url = '/gci/age_check/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseRedirect(response)
 
   def testAgeCheckPassedRedirects(self):
     self.data.logout()
     url = '/gci/age_check/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertAgeCheckTemplatesUsed(response)
 
     birth_date = date.today() - timedelta(365*15)
@@ -63,5 +63,5 @@ class AgeCheckTest(GCIDjangoTestCase):
 
     redirect_url = '/gci/profile/student/' + self.gci.key().name()
     self.client.cookies['age_check'] = '1'
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseRedirect(response, redirect_url)

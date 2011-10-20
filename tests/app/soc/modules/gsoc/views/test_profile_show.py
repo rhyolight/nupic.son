@@ -45,7 +45,7 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     """
     self.data.createUser()
     url = '/gsoc/profile/show/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testAUserNotLoggedInIsRedirectedToLoginPage(self):
@@ -57,7 +57,7 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     try:
       os.environ['USER_EMAIL'] = ''
       url = '/gsoc/profile/show/' + self.gsoc.key().name()
-      response = self.client.get(url)
+      response = self.get(url)
       expected_redirect_url = 'https://www.google.com/accounts/Login?'+\
           'continue=http%3A//Foo%3A8080'+url
       actual_redirect_url = response.get('location', None)
@@ -74,7 +74,7 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     """
     self.data.createStudent()
     url = '/gsoc/profile/show/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseOK(response)
     self.assertProfileShowTemplateUsed(response)
 
@@ -124,7 +124,7 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     try:
       os.environ['USER_EMAIL'] = ''
       url = '/gsoc/profile/admin/' + profile_helper.profile.key().name()
-      response = self.client.get(url)
+      response = self.get(url)
       self.assertResponseRedirect(response)
       expected_redirect_url = 'https://www.google.com/accounts/Login?'+\
           'continue=http%3A//Foo%3A8080'+url
@@ -141,23 +141,23 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     """
     self.data.createStudent()
     url = '/gsoc/profile/admin/'+self.data.profile.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
     
     self.data.createInactiveProfile()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
     
     self.data.deleteProfile().createMentor(self.org)
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
     
     self.data.createOrgAdmin(self.org)
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
     
     self.data.deleteProfile().createInactiveProfile()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
     
   def testOnlyAHostCanAccessTheAdminProfilePage(self):
@@ -172,29 +172,29 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     url = '/gsoc/profile/admin/' + student.profile.key().name()
 
     self.data.createStudent()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
     
     self.data.deleteProfile().createInactiveStudent()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
     
     self.data.deleteProfile().createInactiveProfile()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
     
     self.data.deleteProfile().createMentor(self.org)
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
     
     self.data.createOrgAdmin(self.org)
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
     self.data.deleteProfile().createProfile()
     self.data.createHost()
 
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseOK(response)
     self.assertProfileShowPageTemplatesUsed(response)
 

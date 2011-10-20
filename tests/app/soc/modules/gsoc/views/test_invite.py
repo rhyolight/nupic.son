@@ -56,14 +56,14 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
 
   def testInviteOrgAdminNoAdmin(self):
     url = '/gsoc/invite/org_admin/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testInviteOrgAdmin(self):
     # test GET
     self.data.createOrgAdmin(self.org)
     url = '/gsoc/invite/org_admin/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertInviteTemplatesUsed(response)
 
     # create other user to send invite to
@@ -130,14 +130,14 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
   def testInviteMentor(self):
     self.data.createOrgAdmin(self.org)
     url = '/gsoc/invite/mentor/' + self.org.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertInviteTemplatesUsed(response)
 
   def testViewInvite(self):
     self.data.createProfile()
     invitation = self.createInvitation()
     url = '/gsoc/invitation/%s/%s' % (self.gsoc.key().name(), invitation.key().id())
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/soc/request/base.html')
 

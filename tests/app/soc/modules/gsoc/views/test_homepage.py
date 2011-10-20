@@ -51,27 +51,27 @@ class HomepageViewTest(GSoCDjangoTestCase):
     url = '/gsoc/homepage/' + self.gsoc.key().name()
 
     self.timeline.offSeason()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.kickoff()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.orgSignup()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.orgsAnnounced()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.studentSignup()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline.studentsAnnounced()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
   def testHomepageDuringSignup(self):
@@ -79,7 +79,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     """
     self.timeline.studentSignup()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
     timeline_tmpl = response.context['timeline']
     apply_context = response.context['apply'].context()
@@ -92,7 +92,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.data.createProfile()
     self.timeline.studentSignup()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
     apply_tmpl = response.context['apply']
     self.assertTrue(apply_tmpl.data.profile)

@@ -52,7 +52,7 @@ class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
     self.data.clear()
 
     url = self._taskPageUrl(self.task)
-    response = self.client.get(url)
+    response = self.get(url)
 
     # Expect a proper response (200)
     self.assertResponseOK(response)

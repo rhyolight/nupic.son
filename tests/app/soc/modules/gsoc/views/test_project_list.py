@@ -46,7 +46,7 @@ class ProjectListTest(GSoCDjangoTestCase):
   def testListProjects(self):
     self.timeline.studentsAnnounced()
     url = '/gsoc/projects/list/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProjectTemplatesUsed(response)
 
     response = self.getListResponse(url, 0)

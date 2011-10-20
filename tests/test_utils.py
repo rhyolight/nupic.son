@@ -221,6 +221,12 @@ class DjangoTestCase(TestCase):
     from soc.modules.seeder.logic.seeder import logic as seeder_logic
     return seeder_logic.seed_properties(model, properties, recurse=False)
 
+  def get(self, url):
+    """Performs a get to the specified url.
+    """
+    response = self.client.get(url)
+    return response
+
   def post(self, url, postdata={}):
     """Performs a post to the specified url with postdata.
 

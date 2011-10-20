@@ -42,7 +42,7 @@ class ListDocumentTest(GSoCDjangoTestCase):
 
   def testListDocument(self):
     url = '/gsoc/documents/' + self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
 
     response = self.getListResponse(url, 0)
@@ -72,7 +72,7 @@ class EditProgramTest(GSoCDjangoTestCase):
 
   def testShowDocument(self):
     url = '/gsoc/document/show/' + self.document.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
 
   def testCreateDocumentRestriction(self):
@@ -82,7 +82,7 @@ class EditProgramTest(GSoCDjangoTestCase):
   def testCreateDocument(self):
     self.data.createHost()
     url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/document/base.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')

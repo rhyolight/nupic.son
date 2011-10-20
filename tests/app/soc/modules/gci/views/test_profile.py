@@ -103,20 +103,20 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.timeline.studentSignup()
     url = '/gci/profile/student/' + self.gci.key().name()
     self.client.cookies['age_check'] = '1'
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProfileTemplatesUsed(response)
 
   def testCreateMentorProfilePage(self):
     self.timeline.studentSignup()
     url = '/gci/profile/mentor/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProfileTemplatesUsed(response)
 
   def testRedirectWithStudentProfilePage(self):
     self.timeline.studentSignup()
     self.data.createStudent()
     url = '/gci/profile/student/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     redirect_url = '/gci/profile/' + self.gci.key().name()
     self.assertResponseRedirect(response, redirect_url)
 
@@ -124,7 +124,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.timeline.studentSignup()
     self.data.createMentor(self.org)
     url = '/gci/profile/mentor/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     response_url = '/gci/profile/' + self.gci.key().name()
     self.assertResponseRedirect(response, response_url)
 
@@ -132,24 +132,24 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.timeline.studentSignup()
     self.data.createStudent()
     url = '/gci/profile/mentor/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
     url = '/gci/profile/org_admin/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testForbiddenWithMentorProfilePage(self):
     self.timeline.studentSignup()
     self.data.createMentor(self.org)
     url = '/gci/profile/student/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testEditProfilePage(self):
     self.timeline.studentSignup()
     self.data.createProfile()
     url = '/gci/profile/' + self.gci.key().name()
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertResponseOK(response)
 
   #TODO(daniel): this test should work, when we disable edition of profiles
@@ -158,7 +158,7 @@ class ProfileViewTest(GCIDjangoTestCase):
   #  self.timeline.offSeason()
   #  self.data.createProfile()
   #  url = '/gci/profile/' + self.gci.key().name()
-  #  response = self.client.get(url)
+  #  response = self.get(url)
   #  self.assertResponseForbidden(response)
 
   def testCreateUser(self):

@@ -70,7 +70,7 @@ class ProjectDetailsTest(GSoCDjangoTestCase):
 
     # test project details GET
     url = '/gsoc/project/' + suffix
-    response = self.client.get(url)
+    response = self.get(url)
     self.assertProjectDetailsTemplateUsed(response)
 
   def testFeaturedProjectButton(self):
