@@ -72,6 +72,12 @@ DELETE_ITEM_MISSING = 1
 DELETE_SUCCESSFUL = 2
 
 
+STORED = MemcacheSetResponse.STORED
+NOT_STORED = MemcacheSetResponse.NOT_STORED
+ERROR = MemcacheSetResponse.ERROR
+EXISTS = MemcacheSetResponse.EXISTS
+
+
 MAX_KEY_SIZE = 250
 MAX_VALUE_SIZE = 10 ** 6
 
@@ -464,7 +470,13 @@ class Client(object):
     return rpc.get_result()
 
   def get_stats_async(self, rpc=None):
-    """Async version of get_stats()."""
+    """Async version of get_stats().
+
+    Returns:
+      A UserRPC instance whose get_result() method returns None if
+      there was a network error, otherwise a dict just like
+      get_stats() returns.
+    """
     request = MemcacheStatsRequest()
     self._add_app_id(request)
     response = MemcacheStatsResponse()
@@ -507,7 +519,12 @@ class Client(object):
     return rpc.get_result()
 
   def flush_all_async(self, rpc=None):
-    """Async version of flush_all()."""
+    """Async version of flush_all().
+
+    Returns:
+      A UserRPC instance whose get_result() method returns True on
+      success, False on RPC or server error.
+    """
     request = MemcacheFlushRequest()
     self._add_app_id(request)
     response = MemcacheFlushResponse()
@@ -577,7 +594,13 @@ class Client(object):
 
   def get_multi_async(self, keys, key_prefix='', namespace=None,
                       for_cas=False, rpc=None):
-    """Async version of get_multi()."""
+    """Async version of get_multi().
+
+    Returns:
+      A UserRPC instance whose get_result() method returns None if
+      there was a network error, otherwise a dict just like
+      get_multi() returns.
+    """
     request = MemcacheGetRequest()
     self._add_app_id(request)
     _add_name_space(request, namespace)
@@ -640,12 +663,7 @@ class Client(object):
     results = rpc.get_result()
     if not results:
       return DELETE_NETWORK_FAILURE
-    status = results[0]
-    if status == MemcacheDeleteResponse.DELETED:
-      return DELETE_SUCCESSFUL
-    elif status == MemcacheDeleteResponse.NOT_FOUND:
-      return DELETE_ITEM_MISSING
-    assert False, 'Unexpected deletion status code.'
+    return results[0]
 
   def delete_multi(self, keys, seconds=0, key_prefix='', namespace=None):
     """Delete multiple keys at once.
@@ -678,8 +696,9 @@ class Client(object):
     Returns:
       A UserRPC instance whose get_result() method returns None if
       there was a network error, or a list of status values otherwise,
-      where each status corresponds to a key and is either DELETED or
-      NOT_FOUND.
+      where each status corresponds to a key and is either
+      DELETE_SUCCESSFUL, DELETE_ITEM_MISSING, or DELETE_NETWORK_FAILURE
+      (see delete() docstring for details).
     """
     if not isinstance(seconds, (int, long, float)):
       raise TypeError('Delete timeout must be a number.')
@@ -704,7 +723,15 @@ class Client(object):
       rpc.check_success()
     except apiproxy_errors.Error:
       return None
-    return rpc.response.delete_status_list()
+    result = []
+    for status in rpc.response.delete_status_list():
+      if status == MemcacheDeleteResponse.DELETED:
+        result.append(DELETE_SUCCESSFUL)
+      elif status == MemcacheDeleteResponse.NOT_FOUND:
+        result.append(DELETE_ITEM_MISSING)
+      else:
+        result.append(DELETE_NETWORK_FAILURE)
+    return result
 
 
 
@@ -1145,7 +1172,12 @@ class Client(object):
 
   def incr_async(self, key, delta=1, namespace=None, initial_value=None,
                  rpc=None):
-    """Async version of incr()."""
+    """Async version of incr().
+
+    Returns:
+      A UserRPC instance whose get_result() method returns the same
+      kind of value as incr() returns.
+    """
     return self._incrdecr_async(key, False, delta, namespace=namespace,
                                 initial_value=initial_value, rpc=rpc)
 
@@ -1187,7 +1219,12 @@ class Client(object):
 
   def decr_async(self, key, delta=1, namespace=None, initial_value=None,
                  rpc=None):
-    """Async version of decr()."""
+    """Async version of decr().
+
+    Returns:
+      A UserRPC instance whose get_result() method returns the same
+      kind of value as decr() returns.
+    """
     return self._incrdecr_async(key, True, delta, namespace=namespace,
                                 initial_value=initial_value, rpc=rpc)
 
@@ -1221,7 +1258,12 @@ class Client(object):
 
   def _incrdecr_async(self, key, is_negative, delta, namespace=None,
                 initial_value=None, rpc=None):
-    """Async version of _incrdecr()."""
+    """Async version of _incrdecr().
+
+    Returns:
+      A UserRPC instance whose get_result() method returns the same
+      kind of value as _incrdecr() returns.
+    """
     if not isinstance(delta, (int, long)):
       raise TypeError('Delta must be an integer or long, received %r' % delta)
     if delta < 0:
@@ -1296,7 +1338,12 @@ class Client(object):
 
   def offset_multi_async(self, mapping, key_prefix='',
                          namespace=None, initial_value=None, rpc=None):
-    """Async version of offset_multi()."""
+    """Async version of offset_multi().
+
+    Returns:
+      A UserRPC instance whose get_result() method returns a dict just
+      like offset_multi() returns.
+    """
     if initial_value is not None:
       if not isinstance(initial_value, (int, long)):
         raise TypeError('initial_value must be an integer')

@@ -72,7 +72,7 @@ SOCKET_API = os.path.join(tempfile.gettempdir(), 'dev_appserver_%s_socket_api')
 HEALTH_CHECK_PATH = '/_appengine_delegate_health_check'
 INTERNAL_SERVER_ERROR = ('Status: 500 Internal Server Error\r\n' +
     'Content-Type: text/plain\r\n\r\nInternal Server Error')
-MAX_START_TIME = 1
+MAX_START_TIME = 10
 
 
 
@@ -242,7 +242,11 @@ def find_app_files(basedir):
       ename = os.path.join(dname, entry)
       if APP_CONFIG.skip_files.match(ename):
         continue
-      s = os.stat(ename)
+      try:
+        s = os.stat(ename)
+      except OSError, e:
+        logging.warn('%s', e)
+        continue
       if stat.S_ISDIR(s[stat.ST_MODE]):
         dirs.append(ename)
         continue

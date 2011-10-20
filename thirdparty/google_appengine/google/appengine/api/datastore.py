@@ -482,6 +482,30 @@ def CreateConfig(**kwds):
   return datastore_rpc.Configuration(**kwds)
 
 
+def CreateTransactionOptions(**kwds):
+  """Create a configuration object for use in configuring transactions.
+
+  This configuration can be passed as run_in_transaction_option's first
+  argument.
+
+  Args:
+    deadline: Optional deadline; default None (which means the
+      system default deadline will be used, typically 5 seconds).
+    on_completion: Optional callback function; default None.  If
+      specified, it will be called with a UserRPC object as argument
+      when an RPC completes.
+    xg: set to true to allow cross-group transactions (high replication
+      datastore only)
+    retries: set the number of retries for a transaction
+    **kwds: Other keyword arguments as long as they are supported by
+      datastore_rpc.TransactionOptions().
+
+  Returns:
+    A datastore_rpc.TransactionOptions instance.
+  """
+  return datastore_rpc.TransactionOptions(**kwds)
+
+
 def _Rpc2Config(rpc):
   """Internal helper to construct a Configuration from a UserRPC object.
 
@@ -1016,7 +1040,8 @@ class Entity(dict):
         properties = [properties]
 
       for prop in properties:
-        if (prop.meaning() in datastore_types._RAW_PROPERTY_MEANINGS or
+        if ((prop.has_meaning() and
+             prop.meaning() in datastore_types._RAW_PROPERTY_MEANINGS) or
             name in self.unindexed_properties()):
           pb.raw_property_list().append(prop)
         else:

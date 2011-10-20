@@ -34,8 +34,7 @@ import copy
 import random
 import string
 import urllib
-
-from whoosh import analysis
+import uuid
 
 from google.appengine.datastore import document_pb
 from google.appengine.api import apiproxy_stub
@@ -53,8 +52,8 @@ __all__ = ['IndexConsistencyError',
            'RamInvertedIndex',
            'SearchServiceStub',
            'SimpleIndex',
+           'SimpleTokenizer',
            'Token',
-           'WhooshTokenizer',
           ]
 
 
@@ -97,9 +96,13 @@ class Token(object):
   @property
   def chars(self):
     """Returns a list of fields of the document."""
+    if type(self._chars) is unicode:
+      value = self._chars
+    else:
+      value = str(self._chars)
     if self._field_name:
-      return self._field_name + ':' + str(self._chars)
-    return str(self._chars)
+      return self._field_name + ':' + value
+    return value
 
   @property
   def position(self):
@@ -187,23 +190,25 @@ class Posting(object):
     return _Repr(self, [('doc_id', self.doc_id), ('positions', self.positions)])
 
 
-class WhooshTokenizer(object):
-  """A wrapper around whoosh tokenizer pipeline."""
+class SimpleTokenizer(object):
+  """A tokenizer which converts text to lower case and splits on whitespace."""
 
   def __init__(self, split_restricts=True):
-    self._tokenizer = analysis.RegexTokenizer() | analysis.LowercaseFilter()
     self._split_restricts = split_restricts
 
   def TokenizeText(self, text, token_position=0):
     """Tokenizes the text into a sequence of Tokens."""
     return self._TokenizeForType(field_type=document_pb.FieldValue.TEXT,
-                                value=text, token_position=token_position)
+                                 value=text, token_position=token_position)
 
   def TokenizeValue(self, field_value, token_position=0):
     """Tokenizes a document_pb.FieldValue into a sequence of Tokens."""
     return self._TokenizeForType(field_type=field_value.type(),
-                                value=field_value.string_value(),
-                                token_position=token_position)
+                                 value=field_value.string_value(),
+                                 token_position=token_position)
+
+  def _TokenizeString(self, value):
+    return value.lower().split()
 
   def _TokenizeForType(self, field_type, value, token_position=0):
     """Tokenizes value into a sequence of Tokens."""
@@ -215,7 +220,7 @@ class WhooshTokenizer(object):
     if not self._split_restricts:
       token_strings = value.lower().split()
     else:
-      token_strings = [token.text for token in self._tokenizer(unicode(value))]
+      token_strings = self._TokenizeString(unicode(value))
     for token in token_strings:
       if ':' in token and self._split_restricts:
         for subtoken in token.split(':'):
@@ -284,9 +289,8 @@ class RamInvertedIndex(object):
     self._tokenizer = tokenizer
     self._inverted_index = {}
 
-  def AddDocument(self, document):
+  def AddDocument(self, doc_id, document):
     """Adds a document into the index."""
-    doc_id = document.id()
     token_position = 0
     for field in document.field_list():
       self._AddTokens(doc_id, field.name(), field.value(),
@@ -341,8 +345,8 @@ class SimpleIndex(object):
   def __init__(self, index_spec):
     self._index_spec = index_spec
     self._documents = {}
-    self._parser = WhooshTokenizer(split_restricts=False)
-    self._inverted_index = RamInvertedIndex(WhooshTokenizer())
+    self._parser = SimpleTokenizer(split_restricts=False)
+    self._inverted_index = RamInvertedIndex(SimpleTokenizer())
 
   @property
   def IndexSpec(self):
@@ -353,13 +357,17 @@ class SimpleIndex(object):
     """Indexes an iterable DocumentPb.Document."""
     for document in documents:
       doc_id = document.id()
+      if not doc_id:
+        doc_id = str(uuid.uuid4())
+        document.set_id(doc_id)
+      response.add_doc_id(doc_id)
       if doc_id in self._documents:
         old_document = self._documents[doc_id]
         self._inverted_index.RemoveDocument(old_document)
       self._documents[doc_id] = document
       new_status = response.add_status()
-      new_status.set_status(search_service_pb.SearchServiceError.OK)
-      self._inverted_index.AddDocument(document)
+      new_status.set_code(search_service_pb.SearchServiceError.OK)
+      self._inverted_index.AddDocument(doc_id, document)
 
   def DeleteDocuments(self, document_ids, response):
     """Deletes documents for the given document_ids."""
@@ -369,7 +377,11 @@ class SimpleIndex(object):
         self._inverted_index.RemoveDocument(document)
         del self._documents[document_id]
       delete_status = response.add_status()
-      delete_status.set_status(search_service_pb.SearchServiceError.OK)
+      delete_status.set_code(search_service_pb.SearchServiceError.OK)
+
+  def Documents(self):
+    """Returns the documents in the index."""
+    return self._documents.values()
 
   def _DocumentsForPostings(self, postings):
     """Returns the documents for the given postings."""
@@ -443,7 +455,7 @@ class SimpleIndex(object):
 
   def _PostingsForFieldToken(self, field, value):
     """Returns postings for the value occurring in the given field."""
-    token = field + ':' + str(value)
+    token = field + ':' + value
     token = self._MakeToken(token)
     return self._PostingsForToken(token)
 
@@ -486,7 +498,7 @@ class SimpleIndex(object):
     query = query.strip()
     if not query:
       return copy.copy(self._documents.values())
-    query_tree = query_parser.Parse(query)
+    query_tree = query_parser.Simplify(query_parser.Parse(query))
     postings = self._Evaluate(query_tree)
     return self._DocumentsForPostings(postings)
 
@@ -514,11 +526,11 @@ class SearchServiceStub(apiproxy_stub.APIProxyStub):
     super(SearchServiceStub, self).__init__(service_name)
 
   def _InvalidRequest(self, status, exception):
-    status.set_status(search_service_pb.SearchServiceError.INVALID_REQUEST)
+    status.set_code(search_service_pb.SearchServiceError.INVALID_REQUEST)
     status.set_error_detail(exception.message)
 
   def _UnknownIndex(self, status, index_spec):
-    status.set_status(search_service_pb.SearchServiceError.INVALID_REQUEST)
+    status.set_code(search_service_pb.SearchServiceError.OK)
     status.set_error_detail('no index for %r' % index_spec)
 
   def _GetIndex(self, index_spec, create=False):
@@ -592,7 +604,7 @@ class SearchServiceStub(apiproxy_stub.APIProxyStub):
         new_index_spec.set_consistency(random.choice([
             search_service_pb.IndexSpec.GLOBAL,
             search_service_pb.IndexSpec.PER_DOCUMENT]))
-      response.mutable_status().set_status(
+      response.mutable_status().set_code(
           random.choice([search_service_pb.SearchServiceError.OK] * 10 +
                         [search_service_pb.SearchServiceError.TRANSIENT_ERROR] +
                         [search_service_pb.SearchServiceError.INTERNAL_ERROR]))
@@ -603,7 +615,45 @@ class SearchServiceStub(apiproxy_stub.APIProxyStub):
       new_index_spec = response.add_index_metadata().mutable_index_spec()
       new_index_spec.set_name(index_spec.name())
       new_index_spec.set_consistency(index_spec.consistency())
-    response.mutable_status().set_status(
+    response.mutable_status().set_code(
+        search_service_pb.SearchServiceError.OK)
+
+  def _AddDocument(self, response, document, keys_only):
+    doc = response.add_document()
+    if keys_only:
+      doc.set_id(document.id())
+    else:
+      doc.MergeFrom(document)
+
+  def _Dynamic_ListDocuments(self, request, response):
+    """A local implementation of SearchService.ListDocuments RPC.
+
+    Args:
+      request: A search_service_pb.ListDocumentsRequest.
+      response: An search_service_pb.ListDocumentsResponse.
+    """
+    params = request.params()
+    index = self._GetIndex(params.index_spec(), create=True)
+    if index is None:
+      self._UnknownIndex(response.mutable_status(), params.index_spec())
+      return
+
+    num_docs = 0
+    start = not params.has_start_doc_id()
+    for document in index.Documents():
+      if start:
+        if num_docs < params.limit():
+          self._AddDocument(response, document, params.keys_only())
+          num_docs += 1
+      else:
+        if params.has_start_doc_id():
+          if document.id() is params.start_doc_id():
+            start = True
+            if params.include_start_doc():
+              self._AddDocument(response, document, params.keys_only())
+              num_docs += 1
+
+    response.mutable_status().set_code(
         search_service_pb.SearchServiceError.OK)
 
   def _RandomSearchResponse(self, request, response):
@@ -611,7 +661,7 @@ class SearchServiceStub(apiproxy_stub.APIProxyStub):
     random.seed()
     if random.random() < 0.03:
       raise apiproxy_errors.ResponseTooLargeError()
-    response.mutable_status().set_status(
+    response.mutable_status().set_code(
         random.choice([search_service_pb.SearchServiceError.OK] * 30 +
                       [search_service_pb.SearchServiceError.TRANSIENT_ERROR] +
                       [search_service_pb.SearchServiceError.INTERNAL_ERROR]))
@@ -676,6 +726,21 @@ class SearchServiceStub(apiproxy_stub.APIProxyStub):
 
     response.set_matched_count(matched_count)
 
+  def _DefaultFillSearchResponse(self, params, results, response):
+    """Fills the SearchResponse with the first set of results."""
+    position_range = range(0, min(params.limit(), len(results)))
+    self._FillSearchResponse(results, position_range, params.cursor_type(),
+                             response)
+
+  def _FillSearchResponse(self, results, position_range, cursor_type, response):
+    """Fills the SearchResponse with a selection of results."""
+    for i in position_range:
+      result = results[i]
+      search_result = response.add_result()
+      search_result.mutable_document().CopyFrom(result)
+      if cursor_type is search_service_pb.SearchParams.PER_RESULT:
+        search_result.set_cursor(result.id())
+
   def _Dynamic_Search(self, request, response):
     """A local implementation of SearchService.Search RPC.
 
@@ -697,27 +762,34 @@ class SearchServiceStub(apiproxy_stub.APIProxyStub):
     except IndexConsistencyError, exception:
       self._InvalidRequest(response.mutable_status(), exception)
 
-
-
-
     params = request.params()
-    docs_to_return = 20
-    if params.has_limit():
-      docs_to_return = params.limit()
-
     results = index.Search(params)
-
     response.set_matched_count(len(results))
 
-    count = 0
-    for i in xrange(len(results)):
-      result = results[i]
-      search_result = response.add_result()
-      search_result.mutable_document().CopyFrom(result)
-      count += 1
-      if count >= docs_to_return:
-        break
-    response.status().set_status(search_service_pb.SearchServiceError.OK)
+    offset = 0
+    if params.has_cursor():
+      positions = [i for i in range(len(results)) if results[i].id() is
+                   params.cursor()]
+      if positions:
+        offset = positions[0] + 1
+    elif params.has_offset():
+      offset = params.offset()
+
+
+
+    if offset < len(results):
+      position_range = range(
+          offset,
+          min(offset + params.limit(), len(results)))
+    else:
+      position_range = range(0)
+    self._FillSearchResponse(results, position_range, params.cursor_type(),
+                             response)
+    if (params.cursor_type() is search_service_pb.SearchParams.SINGLE and
+        len(position_range)):
+      response.set_cursor(results[position_range[len(position_range) - 1]].id())
+
+    response.status().set_code(search_service_pb.SearchServiceError.OK)
 
   def __repr__(self):
     return _Repr(self, [('__indexes', self.__indexes)])

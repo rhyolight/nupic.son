@@ -56,6 +56,9 @@ LOG_LEVEL = logging.DEBUG - 1
 
 _EPOCH = datetime.datetime.utcfromtimestamp(0)
 
+
+_EMPTY_LIST_PROPERTY_NAME = '__empty_IN_list__'
+
 def Execute(query_string, *args, **keyword_args):
   """Execute command to parse and run the query.
 
@@ -227,8 +230,7 @@ class GQL(object):
       datastore_errors.BadQueryError: if the query is not parsable.
     """
 
-    self._entity = ''
-
+    self._kind = ''
     self.__filters = {}
 
 
@@ -286,7 +288,7 @@ class GQL(object):
       query_count = 1
 
     for i in xrange(query_count):
-      queries.append(datastore.Query(self._entity,
+      queries.append(datastore.Query(self._kind,
                                      _app=self.__app,
                                      keys_only=self._keys_only,
                                      namespace=self.__namespace,
@@ -636,7 +638,7 @@ class GQL(object):
       assert False, 'Unknown reference %s' % reference
 
   def __AddMultiQuery(self, identifier, condition, value, enumerated_queries):
-    """Helper function to add a muti-query to previously enumerated queries.
+    """Helper function to add a multi-query to previously enumerated queries.
 
     Args:
       identifier: property being filtered by this condition
@@ -694,6 +696,14 @@ class GQL(object):
       if len(enumerated_queries) * in_list_size > self.MAX_ALLOWABLE_QUERIES:
         raise datastore_errors.BadArgumentError(
           'Cannot satisfy query -- too many IN/!= values.')
+
+      if in_list_size == 0:
+
+        num_iterations = CloneQueries(enumerated_queries, 1)
+        for clone_num in xrange(num_iterations):
+
+          enumerated_queries[clone_num][_EMPTY_LIST_PROPERTY_NAME] = True
+        return
 
       num_iterations = CloneQueries(enumerated_queries, in_list_size)
       for clone_num in xrange(num_iterations):
@@ -790,6 +800,16 @@ class GQL(object):
   def is_keys_only(self):
     """Returns True if this query returns Keys, False if it returns Entities."""
     return self._keys_only
+
+  def kind(self):
+    return self._kind
+
+
+
+  @property
+  def _entity(self):
+    logging.warning('GQL._entity is deprecated. Please use GQL.kind().')
+    return self._kind
 
 
   __iter__ = Run
@@ -928,12 +948,12 @@ class GQL(object):
     if self.__Accept('FROM'):
       kind = self.__Identifier()
       if kind:
-        self._entity = kind
+        self._kind = kind
       else:
         self.__Error('Identifier Expected')
         return False
     else:
-      self._entity = None
+      self._kind = None
     return self.__Where()
 
   def __Where(self):

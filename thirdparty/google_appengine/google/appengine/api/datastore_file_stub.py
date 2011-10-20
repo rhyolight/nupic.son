@@ -488,7 +488,7 @@ class DatastoreFileStub(datastore_stub_util.BaseDatastore,
     self.__WriteDatastore()
 
   def __WriteDatastore(self):
-    """ Writes out the datastore file. Be careful! If the file already exist,
+    """ Writes out the datastore file. Be careful! If the file already exists,
     this method overwrites it!
     """
     if (self.__datastore_file and self.__datastore_file != '/dev/null' and
@@ -669,7 +669,7 @@ class DatastoreFileStub(datastore_stub_util.BaseDatastore,
     finally:
       self.__entities_lock.release()
 
-    return datastore_stub_util._GetQueryCursor(results, query, filters, orders)
+    return datastore_stub_util._ExecuteQuery(results, query, filters, orders)
 
   def _AllocateIds(self, reference, size=1, max_id=None):
     datastore_stub_util.Check(not (size and max_id),
