@@ -207,15 +207,10 @@ def transitFromClaimed(task):
   task.status = 'ActionNeeded'
   task.deadline = task.deadline + datetime.timedelta(hours=24)
 
-  changes = [ugettext('User-MelangeAutomatic'),
-             ugettext('Action-Warned for action'),
-             ugettext('Status-%s' %task.status)]
-
   comment_props = {
       'parent': task,
       'title': DEF_ACTION_NEEDED_TITLE,
       'content': DEF_ACTION_NEEDED_MSG,
-      'changes': changes
   }
   comment = GCIComment(**comment_props)
 
@@ -237,15 +232,10 @@ def transitFromNeedsReview(task):
   # certain period.
   task.deadline = None
 
-  changes = [ugettext('User-MelangeAutomatic'),
-             ugettext('Action-Deadline passed'),
-             ugettext('Status-%s' %task.status)]
-
   comment_props = {
       'parent': task,
       'title': DEF_NO_MORE_WORK_TITLE,
       'content': DEF_NO_MORE_WORK_MSG,
-      'changes': changes
   }
   comment = GCIComment(**comment_props)
 
@@ -264,15 +254,10 @@ def transitFromActionNeeded(task):
   task.status = 'Reopened'
   task.deadline = None
 
-  changes = [ugettext('User-MelangeAutomatic'),
-             ugettext('Action-Forcibly reopened'),
-             ugettext('Status-%s' %task.status)]
-
   comment_props = {
       'parent': task,
       'title': DEF_REOPENED_TITLE,
       'content': DEF_REOPENED_MSG,
-      'changes': changes
   }
   comment = GCIComment(**comment_props)
 
@@ -293,15 +278,10 @@ def transitFromNeedsWork(task):
   task.status = 'Reopened'
   task.deadline = None
 
-  changes = [ugettext('User-MelangeAutomatic'),
-             ugettext('Action-Forcibly reopened'),
-             ugettext('Status-%s'% task.status)]
-
   comment_props = {
       'parent': task,
       'title': DEF_REOPENED_TITLE,
       'content': DEF_REOPENED_MSG,
-      'changes': changes
   }
   comment = GCIComment(**comment_props)
 
