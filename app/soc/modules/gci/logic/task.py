@@ -105,20 +105,6 @@ def canClaimRequestTask(task, profile):
   return count < max
 
 
-def canAdministrateTask(task, profile):
-  """Returns true if the given profile is allowed to administrate the task.
-
-  Args:
-    task: The GCITask entity
-    profile: The GCIProfile which we check whether it can administrate the task.
-  """
-  if profile.is_student:
-    return False
-
-  org = task.org.key()
-  return org in profile.is_mentor_for or org in profile.is_org_admin_for
-
-
 def updateTaskStatus(task):
   """Method used to transit a task from a state to another state
   depending on the context. Whenever the deadline has passed.
