@@ -104,10 +104,10 @@ def canClaimRequestTask(task, profile):
   q.filter('program', task.program)
   q.filter('status IN', ACTIVE_CLAIMED_TASK)
 
-  max = task.program.nr_simultaneous_tasks
-  count = q.count(max)
+  max_tasks = task.program.nr_simultaneous_tasks
+  count = q.count(max_tasks)
 
-  return count < max
+  return count < max_tasks
 
 
 def assignTask(task, student, assigner):
