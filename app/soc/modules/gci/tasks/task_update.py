@@ -209,13 +209,13 @@ class TaskUpdate(object):
     return http.HttpResponse()
 
 
-def spawnUpdateTask(entity):
+def spawnUpdateTask(entity, transactional=False):
   """Spawns a task to update the state of the task.
   """
   update_url = '/tasks/gci/task/update/%s' %entity.key().id()
   new_task = taskqueue.Task(eta=entity.deadline,
                             url=update_url)
-  new_task.add('gci-update')
+  new_task.add('gci-update', transactional=transactional)
 
 
 def spawnCreateNotificationMail(comment):
