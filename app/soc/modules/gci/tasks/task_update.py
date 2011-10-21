@@ -24,8 +24,6 @@ __authors__ = [
   ]
 
 
-import datetime
-
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
@@ -39,10 +37,9 @@ from soc.tasks.helper import error_handler
 
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment
-from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task_subscription import GCITaskSubscription
-from soc.modules.gci.tasks import ranking_update
+
 
 class TaskUpdate(object):
   """Tasks that are involved in dealing with GCITasks.
