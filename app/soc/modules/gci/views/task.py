@@ -207,7 +207,7 @@ class TaskViewPage(RequestHandler):
       self.redirect.id().to('gci_edit_task')
       return
     elif button_name == 'button_assign':
-      pass
+      task_logic.assignTask(task, task.student, self.data.profile)
     elif button_name == 'button_unassign':
       pass
     elif button_name == 'button_close_task':

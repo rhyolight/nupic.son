@@ -22,15 +22,14 @@ __authors__ = [
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
-import gaetestbed
-
 from soc.modules.gci.models.task import GCITask
 
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
+from tests.test_utils import TaskQueueTestCase
 
 
-class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
+class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
   """Tests GCITask public view.
   """
 
@@ -123,6 +122,35 @@ class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
                                         self.task.key().id())
     self.assertResponseRedirect(response, edit_url)
 
+  def testPostButtonAssign(self):
+    """Tests the assign button.
+    """
+    self.data.createMentor(self.org)
+
+    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
+    profile_helper.createOtherUser('student@example.com').createStudent()
+    student = profile_helper.profile
+
+    self.task.status = 'ClaimRequested'
+    self.task.student = student
+
+    url = '%s?button_assign' %self._taskPageUrl(self.task)
+    response = self.post(url)
+
+    # check if the task is properly assigned and a deadline has been set
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'Claimed')
+    self.assertEqual(task.student.key(), student.key())
+    self.assertTrue(task.deadline)
+
+    # check if a comment has been created
+    comments = self.task.comments()
+    self.assertLength(comments, 1)
+
+    # check if the update task has been enqueued
+    self.assertTasksInQueue(n=1, url=self._taskUpdateUrl(task))
+
   def testPostButtonSubscribe(self):
     """Tests the subscribe button.
     """
@@ -159,3 +187,8 @@ class TaskViewTest(GCIDjangoTestCase, gaetestbed.base.BaseTestCase):
     """Returns the url of the task page.
     """
     return '/gci/task/view/%s/%s' %(task.program.key().name(), task.key().id())
+
+  def _taskUpdateUrl(self, task):
+    """Returns the url to the task update GAE Task.
+    """
+    return '/tasks/gci/task/update/%s' %task.key().id()

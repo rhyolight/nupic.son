@@ -50,6 +50,12 @@ DEF_ACTION_NEEDED_MSG = ugettext(
     'ActionNeeded.)')
 
 
+DEF_ASSIGNED_TITLE = ugettext('Task Assigned')
+DEF_ASSIGNED_MSG_FMT = ugettext(
+    'This task has been assigned to %s. '
+    'You have %i hours to complete this task, good luck!')
+
+
 DEF_NO_MORE_WORK_TITLE = ugettext('No more Work can be submitted')
 DEF_NO_MORE_WORK_MSG = ugettext(
     '(The Melange Automated System has detected that the deadline '
@@ -88,7 +94,6 @@ def canClaimRequestTask(task, profile):
     task: The GCITask entity
     profile: The GCIProfile which we check whether it can claim the task.
   """
-
   # check if the task can be claimed at all
   if task.status not in CLAIMABLE:
     return False
@@ -103,6 +108,43 @@ def canClaimRequestTask(task, profile):
   count = q.count(max)
 
   return count < max
+
+
+def assignTask(task, student, assigner):
+  """Assigns the task to the student.
+
+  This will put the task in the Claimed state and set the student and deadline
+  property. A comment will also be generated to record this event.
+
+  Args:
+    task: GCITask entity.
+    student: GCIProfile entity of a student.
+    assigner: GCIProfile of the user that assigns the student.
+  """
+  from soc.modules.gci.tasks import task_update
+
+  task.student = student
+  task.status = 'Claimed'
+  task.deadline = datetime.datetime.now() + \
+      datetime.timedelta(hours=task.time_to_complete)
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_ASSIGNED_TITLE,
+      'content': DEF_ASSIGNED_MSG_FMT %(
+          student.public_name, task.time_to_complete),
+      'created_by': assigner.user,
+  }
+  comment = GCIComment(**comment_props)
+
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+
+  def assignTaskTxn():
+    task.put()
+    comment_txn()
+    task_update.spawnUpdateTask(task, transactional=True)
+
+  return db.run_in_transaction(assignTaskTxn)
 
 
 def updateTaskStatus(task):
