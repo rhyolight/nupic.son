@@ -310,28 +310,6 @@ def transitFromNeedsWork(task):
   return task, comment
 
 
-def closeTaskOnRegistration(task, student):
-  """Closes the given task after the student has registered.
-  """
-  task.student = student
-  task.status = 'Closed'
-  task.closed_on = datetime.datetime().utcnow()
-
-  changes = [ugettext('User-MelangeAutomatic'),
-             ugettext('Action-Student registered'),
-             ugettext('Status-%s' % (task.status))]
-
-  comment_props = {
-      'parent': task,
-      'title': DEF_CLOSED_ON_REG_TITLE,
-      'content': DEF_CLOSED_ON_REG_MSG,
-      'changes': changes,
-      }
-  comment = GCIComment(**comment_props)
-
-  _storeTaskAndComment(task, comment)
-
-
 def delete(task):
   """Delete existing task from datastore.
   """

@@ -58,9 +58,8 @@ class TaskUpdate(object):
         url(r'^tasks/gci/task/update/(?P<id>(\d+))$', self.updateGCITask,
             name='task_update_GCI_task'),
         url(r'^tasks/gci/task/mail/comment', self.sendCommentNotificationMail,
-            name='task_create_GCI_comment_notification'),
-        url(r'^tasks/gci/task/update/student_status$',
-            self.updateTasksPostStudentSignUp, name='task_gci_post_sign_up')]
+            name='task_create_GCI_comment_notification')
+        ]
     return patterns
 
   def updateGCITask(self, request, id, *args, **kwargs):
@@ -165,45 +164,6 @@ class TaskUpdate(object):
 
       new_task = taskqueue.Task(params=task_params, url=task_url)
       new_task.add('mail')
-
-    # return OK
-    return http.HttpResponse()
-
-  def updateTasksPostStudentSignUp(self, request, *args, **kwargs):
-    """Appengine task that updates the GCI Tasks after the student signs up.
-
-    Expects the following to be present in the POST dict:
-      student_key: Specifies the student key who registered
-
-    Args:
-      request: Django Request object
-    """
-    post_dict = request.POST
-
-    student_key = db.Key(post_dict.get('student_key'))
-
-    student = GCIProfile.get(student_key)
-    if not student:
-      # invalid student data, log and return OK
-      return error_handler.logErrorAndReturnOK(
-          'Invalid Student data: %s' % post_dict)
-
-    # retrieve all tasks currently assigned to the user
-    q = GCITask.all()
-    q.filter('user', student.parent())
-    tasks = q.fetch(1000)
-
-    # Make sure the tasks store references to the student as well as
-    # closing all tasks that are AwaitingRegistration.
-    for task in tasks:
-      if task.status == 'AwaitingRegistration':
-        task_logic.closeTaskOnRegistration(task, student)
-        # TODO(ljvderijk): Better solution would be to integrate the next
-        # call into a transaction with storing task+comment
-        ranking_update.startUpdatingTask(task)
-      else:
-        task.student = student
-        task.put()
 
     # return OK
     return http.HttpResponse()
