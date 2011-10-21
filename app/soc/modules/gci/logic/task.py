@@ -45,9 +45,9 @@ TAGS_SERVICE = tags.TagsService(TAG_NAMES)
 
 DEF_ACTION_NEEDED_TITLE = ugettext('Initial Deadline passed')
 DEF_ACTION_NEEDED_MSG = ugettext(
-    '(The Melange Automated System has detected that the intial '
-    'deadline has been passed and it has set the task status to '
-    'ActionNeeded.)')
+    'Melange has detected that the initial deadline has passed and it has '
+    'set the task status to ActionNeeded. You have 24 hours to submit work '
+    'before it is reopened.')
 
 
 DEF_ASSIGNED_TITLE = ugettext('Task Assigned')
@@ -58,21 +58,14 @@ DEF_ASSIGNED_MSG_FMT = ugettext(
 
 DEF_NO_MORE_WORK_TITLE = ugettext('No more Work can be submitted')
 DEF_NO_MORE_WORK_MSG = ugettext(
-    '(The Melange Automated System has detected that the deadline '
-    'has passed and no more work can be submitted. The submitted work should '
-    'be reviewed.)')
+    'Melange has detected that the deadline has passed and no more work can '
+    'be submitted. The submitted work should be reviewed.')
 
 
-DEF_REOPENED_TITLE = ugettext('Task has been Reopened')
+DEF_REOPENED_TITLE = ugettext('Task Reopened')
 DEF_REOPENED_MSG = ugettext(
-    '(The Melange Automated System has detected that the final '
-    'deadline has passed and it has Reopened the task.)')
-
-
-DEF_CLOSED_ON_REG_TITLE = ugettext('Task has Closed')
-DEF_CLOSED_ON_REG_MSG = ugettext(
-    '(The Melange Automated System has detected that the student '
-    'has signed up for the program and hence has closed this task.')
+    'Melange has detected that the final deadline has passed and it has '
+    'reopened the task.')
 
 
 # TODO(ljvderijk): Add basic subscribers when task is created
