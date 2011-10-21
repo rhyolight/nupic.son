@@ -260,7 +260,6 @@ def transitFromActionNeeded(task):
     task: The GCITask entity
   """
   # reopen the task
-  task.user = None
   task.student = None
   task.status = 'Reopened'
   task.deadline = None
@@ -290,7 +289,6 @@ def transitFromNeedsWork(task):
   Args:
     task: The GCITask entity
   """
-  task.user = None
   task.student = None
   task.status = 'Reopened'
   task.deadline = None
