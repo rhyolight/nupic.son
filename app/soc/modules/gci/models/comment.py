@@ -46,7 +46,7 @@ class GCIComment(soc.models.base.ModelWithFieldAttributes):
   #: Property containing the human readable string that should be
   #: shown for the comment when something in the task changes, 
   #: code.google.com issue tracker style
-  changes = db.StringListProperty(required=True, default=[],
+  changes = db.StringListProperty(required=False, default=[],
                                   verbose_name=ugettext('Changes in the task'))
 
   #: Property storing the status of the comment.
