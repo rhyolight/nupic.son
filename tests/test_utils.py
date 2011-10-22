@@ -25,6 +25,7 @@ __authors__ = [
   ]
 
 
+import hashlib
 import os
 import datetime
 import httplib
@@ -173,6 +174,8 @@ class DjangoTestCase(TestCase):
   App Engine Helper for Django.
   """
 
+  _request_id = 0
+
   def _pre_setup(self):
     """Performs any pre-test setup.
     """
@@ -221,9 +224,17 @@ class DjangoTestCase(TestCase):
     from soc.modules.seeder.logic.seeder import logic as seeder_logic
     return seeder_logic.seed_properties(model, properties, recurse=False)
 
+  def gen_request_id(self):
+    """Generate a request id.
+    """
+    os.environ['REQUEST_ID_HASH'] = hashlib.sha1(str(
+        DjangoTestCase._request_id)).hexdigest()[:8].upper()
+    DjangoTestCase._request_id += 1
+
   def get(self, url):
     """Performs a get to the specified url.
     """
+    self.gen_request_id()
     response = self.client.get(url)
     return response
 
@@ -232,6 +243,7 @@ class DjangoTestCase(TestCase):
 
     Takes care of setting the xsrf_token.
     """
+    self.gen_request_id()
     postdata['xsrf_token'] = self.getXsrfToken(url, site=self.site)
     response = self.client.post(url, postdata)
     postdata.pop('xsrf_token')
