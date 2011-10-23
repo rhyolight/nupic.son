@@ -133,6 +133,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
 
     self.task.status = 'ClaimRequested'
     self.task.student = student
+    self.task.put()
 
     url = '%s?button_assign' %self._taskPageUrl(self.task)
     response = self.post(url)
