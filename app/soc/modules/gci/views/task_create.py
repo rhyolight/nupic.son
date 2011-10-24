@@ -83,13 +83,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         label=ugettext('Type'), choices=task_type_tags,
         widget=forms.CheckboxSelectMultiple)
 
-    org_choices = []
-    for org in set(data.org_admin_for + data.mentor_for):
-      org_choices.append((org.key(), org.name))
-
-    self.fields['organization'] = django_forms.ChoiceField(
-        label=ugettext('Organization'), choices=org_choices)
-
     if self.instance:
       difficulties = self.instance.difficulty
       if difficulties:
@@ -98,8 +91,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
       task_types = self.instance.task_type
       if task_types:
         self.fields['task_type'].initial = [t.tag for t in task_types]
-
-      self.fields['organization'].initial = self.instance.org.key()
 
       self.fields['tags'].initial = self.instance.tags_string(
           self.instance.arbit_tag)
@@ -131,9 +122,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         'scope': self.request_data.program,
         }
 
-    org_key = self.cleaned_data['organization']
-    entity.org = GCIOrganization.get(org_key)
-
   def create(self, commit=True, key_name=None, parent=None):
     entity = super(TaskCreateForm, self).create(
         commit=False, key_name=key_name, parent=parent)
@@ -144,13 +132,24 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     if commit:
       entity.put()
 
+    # organization and status are in this create method and not in cleaner
+    # because we want to store it in the entity only when it is created an
+    # not while editing.
+    organization = self.request_data.organization
+    entity.org = organization
+
+    if organization.key() in self.request_data.org_admin_for:
+      entity.status = 'Unpublished'
+    elif organization.key() in self.request_data.mentor_for:
+      entity.status = 'Unapproved'
+
+    if entity:
+      self._save_extras(entity)
+
     return entity
 
   def save(self, commit=True):
     entity = super(TaskCreateForm, self).save(commit=False)
-
-    if entity:
-      self._save_extras(entity)
 
     if commit:
       entity.put()

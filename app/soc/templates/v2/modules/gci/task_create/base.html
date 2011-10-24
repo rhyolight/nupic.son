@@ -26,11 +26,6 @@ limitations under the License.
   </div>
   <form action="#" method="post" class="form-create-task clearfix">
     {{ form.non_field_errors }}
-     <div class="form-row form-row-organization {{ form.bound_fields.organization.div_class }}">
-      <label for="long-organization" class="form-label">Organization:<em>*</em></label>
-      {{ form.bound_fields.organization }}
-      {{ form.bound_fields.organization.error }}
-    </div>
 
     <div class="form-row {{ form.bound_fields.title.div_class }}">
       {{ form.bound_fields.title.render }}
