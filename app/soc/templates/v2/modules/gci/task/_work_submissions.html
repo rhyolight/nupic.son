@@ -23,7 +23,7 @@
               <td><a href="{{ submission.url_to_work }}">Click here</a></td>
               <td>n/a</td>
             {% endif %}
-            <td>{{ submission.submitted_on|time:"F d Y H:i" }} UTC</td>
+            <td>{{ submission.submitted_on|date:"F d Y H:i" }} UTC</td>
             <td></td>
             {% comment %}<td><a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a></td>{% endcomment %}
           </tr>
