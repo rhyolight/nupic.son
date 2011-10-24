@@ -29,7 +29,7 @@ from django.utils.translation import ugettext
 
 import soc.models.role
 
-from soc.modules.gci.models import avatar
+from soc.modules.gci.models import avatars
 
 
 class GCIProfile(soc.models.role.Profile):
@@ -44,9 +44,7 @@ class GCIProfile(soc.models.role.Profile):
   automatic_task_subscription.group = ugettext("6. Notification settings")
 
   avatar = db.StringProperty(
-      required=False, default=True,
-      verbose_name=ugettext('Avatar'),
-      choices=avatar.AVATARS)
+      required=False, verbose_name=ugettext('Avatar'), choices=avatars.AVATARS)
   avatar.group = ugettext("1. Public Info")
 
 
