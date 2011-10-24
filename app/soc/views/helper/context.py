@@ -60,6 +60,10 @@ def default(data):
   else:
     gdata_is_logged_in = 'false'
 
+  css_path = '/'.join([
+      'soc', 'content', system.getMelangeVersion(), 'css', 'v2',
+      data.css_path])
+
   return {
       'app_version': system.getMelangeVersion(),
       'is_local': system.isLocal(),
@@ -69,5 +73,5 @@ def default(data):
       'ga_tracking_num': data.site.ga_tracking_num,
       'ds_write_disabled': data.ds_write_disabled,
       'gdata_is_logged_in': gdata_is_logged_in,
-      'css_path': data.css_path
+      'css_path': css_path
   }
