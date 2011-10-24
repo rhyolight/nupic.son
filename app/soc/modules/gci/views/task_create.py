@@ -30,6 +30,7 @@ from django.utils.translation import ugettext
 
 from soc.logic import cleaning
 from soc.views import forms
+from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.models import task
@@ -213,6 +214,13 @@ class TaskCreatePage(RequestHandler):
     self.mutator.taskFromKwargsIfId()
 
     self.check.isLoggedIn()
+
+    assert access_checker.isSet(self.data.task)
+
+    if self.data.task:
+      self.check.canEditTask()
+    else:
+      self.check.canCreateTask()
 
   def templatePath(self):
     return 'v2/modules/gci/task_create/base.html'
