@@ -203,7 +203,7 @@ class TaskCreatePage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'task/create/%s$' % url_patterns.PROGRAM,
+        url(r'task/create/%s$' % url_patterns.ORG,
             self, name='gci_create_task'),
         url(r'task/edit/%s$' % url_patterns.ID,
             self, name='gci_edit_task'),
