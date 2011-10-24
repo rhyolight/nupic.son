@@ -109,7 +109,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     for name, field in self.fields.items():
       self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
 
-  def _save_extras(self, entity):
+  def _save_tags(self, entity):
     entity.difficulty = {
         'tags': self.cleaned_data['difficulty'],
         'scope': self.request_data.program,
@@ -127,9 +127,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     entity = super(TaskCreateForm, self).create(
         commit=False, key_name=key_name, parent=parent)
 
-    if entity:
-      self._save_extras(entity)
-
     if commit:
       entity.put()
 
@@ -145,7 +142,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
       entity.status = 'Unapproved'
 
     if entity:
-      self._save_extras(entity)
+      self._save_tags(entity)
 
     return entity
 
@@ -154,6 +151,9 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     if commit:
       entity.put()
+
+    if entity:
+      self._save_tags(entity)
 
     return entity
 
