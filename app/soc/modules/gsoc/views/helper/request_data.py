@@ -138,6 +138,7 @@ class RequestData(request_data.RequestData):
   Fields:
     site: The Site entity
     user: The user entity (if logged in)
+    css_path: a part of the css to fetch the GSoC specific CSS resources
     program: The GSoC program entity that the request is pointing to
     programs: All GSoC programs.
     program_timeline: The GSoCTimeline entity
@@ -160,6 +161,9 @@ class RequestData(request_data.RequestData):
     """Constructs an empty RequestData object.
     """
     super(RequestData, self).__init__()
+    # module wide fields
+    self.css_path = 'gsoc'
+
     # program wide fields
     self._programs = None
     self.program = None
