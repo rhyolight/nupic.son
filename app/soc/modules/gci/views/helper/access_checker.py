@@ -44,6 +44,14 @@ DEF_ALL_WORK_STOPPED_MSG = ugettext(
     'All work on tasks has stopped. You can no longer place comments, '
     'submit work or make any changes to existing tasks.')
 
+DEF_CANT_CREATE_TASK_MSG_FMT = ugettext(
+    'You do not have sufficient privileges to create a new task for '
+    'the organization %s.' )
+
+DEF_CANT_EDIT_TASK_MSG_FMT = ugettext(
+    'You do not have sufficient privileges to edit a new task for '
+    'the organization %s.' )
+
 DEF_NO_GSOC_ORG_MEMBER_MSG = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
     'organization in Google Summer of Code.')
@@ -186,6 +194,27 @@ class AccessChecker(access_checker.AccessChecker):
 
     raise AccessViolation(DEF_ALL_WORK_STOPPED_MSG)
 
+  def canCreateTask(self):
+    """Checks whether the currently logged in user can edit the task.
+    """
+    assert access_checker.isSet(self.data.organization)
+    assert access_checker.isSet(self.data.mentor_for)
+
+    valid_org_keys = [o.key() for o in self.data.mentor_for]
+    if self.data.organization.key() not in valid_org_keys:
+      raise AccessViolation(DEF_CANT_CREATE_TASK_MSG_FMT % (
+          self.data.organization.name))
+
+  def canEditTask(self):
+    """Checks whether the currently logged in user can edit the task.
+    """
+    assert access_checker.isSet(self.data.task)
+    assert access_checker.isSet(self.data.mentor_for)
+
+    valid_org_keys = [o.key() for o in self.data.mentor_for]
+    if self.data.task.org.key() not in valid_org_keys:
+      raise AccessViolation(DEF_CANT_EDIT_TASK_MSG_FMT % (
+          self.data.task.org.name))
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   """Developer access checker for GCI specific methods.
