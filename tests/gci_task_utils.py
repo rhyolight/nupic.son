@@ -47,8 +47,19 @@ class GCITaskHelper(object):
     return seeder_logic.seed(model, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
 
-  def createTask(self, status, org, mentors, student=None):
-    """Creates a GCI task, i.e. it is associated with a student.
+  def createTask(self, status, org, mentor, student=None):
+    """Creates a GCI task with only one mentor.
+
+    Args:
+      status: the status of the task
+      org: the org under which the task is created
+      mentor: mentor for the task
+      student: student who claimed the task
+    """
+    return self.createTaskWithMentors(status, org, [mentor], student)
+
+  def createTaskWithMentors(self, status, org, mentors, student=None):
+    """Creates a GCI task with mentors.
 
     Args:
       status: the status of the task
@@ -56,8 +67,6 @@ class GCITaskHelper(object):
       mentors: mentors for the task
       student: student who claimed the task
     """
-    if isinstance(mentors, GCIMentor):
-        mentors = [mentors]
     properties = {'program': self.program, 'org': org, 'status': status,
         'difficulty': self.program.task_difficulties[0],
         'task_type': self.program.task_types[0],
