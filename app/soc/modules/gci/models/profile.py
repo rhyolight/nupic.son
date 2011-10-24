@@ -29,6 +29,8 @@ from django.utils.translation import ugettext
 
 import soc.models.role
 
+from soc.modules.gci.models import avatar
+
 
 class GCIProfile(soc.models.role.Profile):
   """GCIProfile Model.
@@ -40,6 +42,12 @@ class GCIProfile(soc.models.role.Profile):
       'Whether to subscribe to tasks of interest automatically. These are '
       'tasks which you have claimed or are mentoring.')
   automatic_task_subscription.group = ugettext("6. Notification settings")
+
+  avatar = db.StringProperty(
+      required=False, default=True,
+      verbose_name=ugettext('Avatar'),
+      choices=avatar.AVATARS)
+  avatar.group = ugettext("1. Public Info")
 
 
 class GCIStudentInfo(soc.models.role.StudentInfo):
