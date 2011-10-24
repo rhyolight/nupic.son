@@ -22,21 +22,16 @@ __authors__ = [
 ]
 
 
-from soc.logic.system import getMelangeVersion
-
-
-AVATAR_PATH = 'soc/content/%s/images/v2/gci/avatars' % getMelangeVersion()
-
 # mapping of avatar colors to their relative path
 AVATAR_COLORS = {
-    'blue': '%s/%d-blue.jpg',
-    'brown': '%s/%d-brown.jpg',
-    'green': '%s/%d-green.jpg',
-    'orange': '%s/%d-orange.jpg',
-    'pink': '%s/%d-pink.jpg',
-    'purple': '%s/%d-purple.jpg',
-    'red': '%s/%d-red.jpg',
+    'blue': '%d-blue.jpg',
+    'brown': '%d-brown.jpg',
+    'green': '%d-green.jpg',
+    'orange': '%d-orange.jpg',
+    'pink': '%d-pink.jpg',
+    'purple': '%d-purple.jpg',
+    'red': '%d-red.jpg',
     }
 
 # List of avatars
-AVATARS = [c % (AVATAR_PATH, i) for i in range(1, 26) for _, c in AVATAR_COLORS.items()]
+AVATARS = [c % i for i in range(1, 26) for _, c in AVATAR_COLORS.items()]
