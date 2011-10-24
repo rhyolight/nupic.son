@@ -100,7 +100,8 @@
   background-image: url(../../../images/v2/soc/dashboard/proposals.png);
 }
 .column-entry.accept_proposals,
-.column-entry.manage_projects
+.column-entry.manage_projects,
+.column-entry.mentoring_projects
 {
   background-image: url(../../../images/v2/soc/dashboard/accept_proposals.png);
 }
