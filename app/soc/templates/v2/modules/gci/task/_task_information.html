@@ -18,10 +18,12 @@
         {% endif %}
       {% endif %}
     {% endif %}
-    <a href="javascript:void(0)" class="task-btn task-btn-close">Mark task as closed</a>
-    <a href="javascript:void(0)" class="task-btn task-btn-unassign">Unassign task</a>
-    <a href="javascript:void(0)" class="task-btn task-btn-edit">Edit task</a>
-    <a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a>
+    <form action="?button" method="post">
+      <input type="submit" class="task-btn task-btn-close" value="Mark task as closed">
+      <input type="submit" class="task-btn task-btn-unassign" value="Unassign task">
+      <input type="submit" class="task-btn task-btn-edit" name="button_edit" value="Edit task">
+      <input type="submit" class="task-btn task-btn-delete" value="Delete">
+    </form>
   </div>
 </div>
 

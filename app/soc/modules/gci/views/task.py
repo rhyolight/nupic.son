@@ -118,16 +118,15 @@ class TaskViewPage(RequestHandler):
         # TODO(ljvderijk): Checks for submitting work
         pass
 
-      if self.data.GET:
+      if 'button' in self.data.GET:
         # check for any of the buttons
-        button_name = self.data.GET.keys()[0]
+        button_name = self._buttonName()
 
-        if button_name.startswith('button'):
-          buttons = {}
-          TaskInformation(self.data).setButtonControls(buttons)
-          if button_name not in buttons:
-            raise AccessViolation(
-                DEF_NOT_ALLOWED_TO_OPERATE_BUTTON_FMT %button_name)
+        buttons = {}
+        TaskInformation(self.data).setButtonControls(buttons)
+        if button_name not in buttons:
+          raise AccessViolation(
+              DEF_NOT_ALLOWED_TO_OPERATE_BUTTON_FMT %button_name)
 
   def context(self):
     """Returns the context for this view.
@@ -163,7 +162,7 @@ class TaskViewPage(RequestHandler):
     """
     if 'post_comment' in self.data.GET:
       return self._postComment()
-    elif self.data.GET.keys()[0].startswith('button'):
+    elif 'button' in self.data.GET:
       return self._postButton()
     else:
       self.error(405)
@@ -189,7 +188,7 @@ class TaskViewPage(RequestHandler):
   def _postButton(self):
     """Handles the POST call for any of the control buttons on the task page.
     """
-    button_name = self.data.GET.keys()[0]
+    button_name = self._buttonName()
     task = self.data.task
     task_key = task.key()
 
@@ -236,6 +235,15 @@ class TaskViewPage(RequestHandler):
       db.run_in_transaction(txn)
 
     self.redirect.id().to('gci_view_task')
+
+  def _buttonName(self):
+    """Returns the name of the button specified in the POST dict.
+    """
+    for key in self.data.POST.keys():
+      if key.startswith('button'):
+        return key
+
+    return None
 
   def templatePath(self):
     return 'v2/modules/gci/task/public.html'
