@@ -51,6 +51,7 @@ class Callback(object):
     from soc.modules.gci.views import profile
     from soc.modules.gci.views import program
     from soc.modules.gci.views import task
+    from soc.modules.gci.views import task_list
     from soc.modules.gci.views import task_create
 
     self.views.append(admin.DashboardPage())
@@ -72,6 +73,7 @@ class Callback(object):
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
     self.views.append(task.TaskViewPage())
+    self.views.append(task_list.TaskListPage())
     self.views.append(task_create.TaskCreatePage())
 
     # Google Appengine Tasks
