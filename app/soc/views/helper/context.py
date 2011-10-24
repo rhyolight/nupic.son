@@ -43,6 +43,7 @@ def default(data):
       google_api_key: the google api key for this website
       ga_tracking_num: the google tracking number for this website
       ds_write_disabled: if datastore writes are disabled
+      css_path: part of the path to the css files to distinguish modules  
   """
   posted = data.request.POST or 'validated' in data.request.GET
 
@@ -68,4 +69,5 @@ def default(data):
       'ga_tracking_num': data.site.ga_tracking_num,
       'ds_write_disabled': data.ds_write_disabled,
       'gdata_is_logged_in': gdata_is_logged_in,
+      'css_path': data.css_path
   }
