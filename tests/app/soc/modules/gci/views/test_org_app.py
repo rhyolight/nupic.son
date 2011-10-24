@@ -35,6 +35,14 @@ class GCIOrgAppEditPageTest(GCIDjangoTestCase):
   def setUp(self):
     self.init()
     self.url = '/gci/org/application/edit/%s' % self.gci.key().name()
+    self.post_params = {
+        'title': 'Test Title',
+        'short_name': 'Test Short Name',
+        'content': 'Test Content',
+        'survey_start': '2011-10-13 00:00:00',
+        'survey_finish': '2011-10-13 00:00:00',
+        'schema': 'Test Scheme',
+    }
 
   def assertTemplatesUsed(self, response):
     """Asserts all the templates for edit page were used.
@@ -48,30 +56,26 @@ class GCIOrgAppEditPageTest(GCIDjangoTestCase):
     """Asserts only the host can access the page.
     """
 
-    response = self.client.get(self.url)
+    response = self.get(self.url)
+    self.assertResponseForbidden(response)
+
+    response = self.post(self.url, self.post_params)
     self.assertResponseForbidden(response)
 
     self.data.createHost()
-    response = self.client.get(self.url)
+
+    response = self.get(self.url)
     self.assertResponseOK(response)
 
-  def testPage(self):
+  def testEditPage(self):
     """Tests organization applications edit page.
     """
 
     self.data.createHost()
-    response = self.client.get(self.url)
+    response = self.get(self.url)
     self.assertTemplatesUsed(response)
 
-    postdata = {
-        'title': 'Test Title',
-        'short_name': 'Test Short Name',
-        'content': 'Test Content',
-        'survey_start': '2011-10-13 00:00:00',
-        'survey_finish': '2011-10-13 00:00:00',
-        'schema': 'Test Scheme',
-    }
-    response = self.post(self.url, postdata)
+    response = self.post(self.url, self.post_params)
     self.assertResponseRedirect(response, '%s?validated' % self.url)
 
     query = OrgAppSurvey.all().filter('program = ', self.gci)
@@ -80,5 +84,5 @@ class GCIOrgAppEditPageTest(GCIDjangoTestCase):
                       'instance for the program.'))
 
     survey = query.get()
-    self.assertEqual(survey.title, 'Test Title')
+    self.assertEqual(survey.title, self.post_params['title'])
     self.assertEqual(survey.modified_by.key(), self.data.user.key())
