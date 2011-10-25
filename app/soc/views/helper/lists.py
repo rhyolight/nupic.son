@@ -459,8 +459,8 @@ class ListFeatures(object):
     features.setColumnShowHide(True)
     features.setSearchDialog(True)
     features.setCsvExport(True)
-    features.setGlobalSearch(False, None)
-    features.setGloablSort(False, None)
+    features.setGlobalSearch(False, '')
+    features.setGloablSort(False, '')
     return features
 
   def __init__(self):
@@ -490,12 +490,12 @@ class ListFeatures(object):
 
     self._global_search = {
         'enabled': False,
-        'element_path': None
+        'element_path': ''
         }
 
     self._global_sort = {
         'enabled': False,
-        'element_paths': None
+        'element_paths': ''
         }
 
   def setCookieService(self, enabled):
@@ -516,10 +516,10 @@ class ListFeatures(object):
 
   def setGlobalSearch(self, enabled, element_path):
     if enabled:
-      if element_path is None:
+      if not element_path:
         logging.warning('Trying to enable global search with no element_path')
     else:
-      if element_path is not None:
+      if element_path:
         logging.warining('Non empty element_path in disabled global search')
 
     self._global_search['enabled'] = enabled
@@ -527,15 +527,28 @@ class ListFeatures(object):
 
   def setGloablSort(self, enabled, element_paths):
     if enabled:
-      if element_paths is None:
+      if not element_paths:
         logging.warning('Trying to enable global sort with no element_paths')
     else:
-      if element_paths is not None:
+      if element_paths:
         logging.warining('Non empty element_paths in disabled global sort')
 
     self._global_sort['enabled'] = enabled
     self._global_sort['element_paths'] = element_paths
 
+  def get(self):
+    """Returns a dictionary which contains all the features.
+    """
+
+    return {
+        'cookie_service': self._cookie_service,
+        'column_search': self._column_search,
+        'columns_show_hide': self._columns_show_hide,
+        'search_dialog': self._search_dialog,
+        'csv_export': self._csv_export,
+        'global_search': self._global_search,
+        'global_sort': self._global_sort,
+        }
 
 class ListConfigurationResponse(Template):
   """Class that builds the template for configuring a list.
@@ -612,7 +625,7 @@ class ListConfigurationResponse(Template):
 
     listConfiguration = {
       'configuration': configuration,
-      'features': features,
+      'features': features.get(),
       'operations': operations,
       'templates': self._config._templates,
     }
