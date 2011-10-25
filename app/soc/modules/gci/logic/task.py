@@ -292,7 +292,7 @@ def _storeTaskAndComment(task, comment):
     db.put(task)
     comment_txn()
 
-  db.run_in_transaction(updateTaskAndCreateCommentTxn())
+  db.run_in_transaction(updateTaskAndCreateCommentTxn)
 
 def transitFromClaimed(task):
   """Makes a state transition of a GCI Task from Claimed state
