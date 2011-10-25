@@ -44,11 +44,11 @@ DEF_ALL_WORK_STOPPED_MSG = ugettext(
     'All work on tasks has stopped. You can no longer place comments, '
     'submit work or make any changes to existing tasks.')
 
-DEF_CANT_CREATE_TASK_MSG_FMT = ugettext(
+DEF_NO_TASK_CREATE_PRIV_MSG_FMT = ugettext(
     'You do not have sufficient privileges to create a new task for '
     'the organization %s.' )
 
-DEF_CANT_EDIT_TASK_MSG_FMT = ugettext(
+DEF_NO_TASK_EDIT_PRIV_MSG_FMT = ugettext(
     'You do not have sufficient privileges to edit a new task for '
     'the organization %s.' )
 
@@ -202,7 +202,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     valid_org_keys = [o.key() for o in self.data.mentor_for]
     if self.data.organization.key() not in valid_org_keys:
-      raise AccessViolation(DEF_CANT_CREATE_TASK_MSG_FMT % (
+      raise AccessViolation(DEF_NO_TASK_CREATE_PRIV_MSG_FMT % (
           self.data.organization.name))
 
   def canEditTask(self):
@@ -211,10 +211,13 @@ class AccessChecker(access_checker.AccessChecker):
     assert access_checker.isSet(self.data.task)
     assert access_checker.isSet(self.data.mentor_for)
 
+    task = self.data.task
+
     valid_org_keys = [o.key() for o in self.data.mentor_for]
-    if self.data.task.org.key() not in valid_org_keys:
-      raise AccessViolation(DEF_CANT_EDIT_TASK_MSG_FMT % (
-          self.data.task.org.name))
+    if task.org.key() not in valid_org_keys:
+      raise AccessViolation(DEF_NO_TASK_EDIT_PRIV_MSG_FMT % (
+          task.org.name))
+
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   """Developer access checker for GCI specific methods.
