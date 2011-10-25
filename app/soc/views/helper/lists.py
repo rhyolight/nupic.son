@@ -461,7 +461,7 @@ class ListFeatures(object):
     features.setCsvExport(True)
     features.setGlobalSearch(False, None)
     features.setGloablSort(False, None)
-    
+
   def __init__(self):
     """Initializes values of the newly created object.
     """
@@ -599,6 +599,11 @@ class ListConfigurationResponse(Template):
     if self._config._footer_row:
       configuration['footerrow'] = self._config._footer_row
 
+    if self._config._features:
+      features = self._config._features
+    else:
+      features = ListFeatures.defaultFeatures()
+
     operations = {
         'buttons': self._config._buttons,
         'row': self._config._row_operation,
@@ -606,6 +611,7 @@ class ListConfigurationResponse(Template):
 
     listConfiguration = {
       'configuration': configuration,
+      'features': features,
       'operations': operations,
       'templates': self._config._templates,
     }
