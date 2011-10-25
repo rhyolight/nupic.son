@@ -218,11 +218,12 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     profile_helper.createOtherUser('student@example.com').createStudent()
     student = profile_helper.profile
 
-    now = datetime.datetime.utcnow()
+    # set it in the future so that the auto state transfer doesn't trigger
+    deadline = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
 
     self.task.status = 'Claimed'
     self.task.student = student
-    self.task.deadline = now
+    self.task.deadline = deadline
     self.task.put()
 
     url = '%s?button' %self._taskPageUrl(self.task)
@@ -232,7 +233,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     task = GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
 
-    delta = now - task.deadline
+    delta = deadline - task.deadline
     self.assertTrue(delta.seconds == 3600)
 
     # check if a comment has been created
