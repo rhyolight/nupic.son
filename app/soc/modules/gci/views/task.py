@@ -33,6 +33,7 @@ from django import forms as django_forms
 
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
+from soc.logic.exceptions import RedirectRequest
 from soc.views.template import Template
 
 from soc.modules.gci.logic import comment as comment_logic
@@ -103,6 +104,11 @@ class TaskViewPage(RequestHandler):
     """
     self.mutator.taskFromKwargs(comments=True, work_submissions=True)
     self.check.isTaskVisible()
+
+    if task_logic.updateTaskStatus(self.data.task):
+      # The task logic updated the status of the task since the deadline passed
+      # in other words the GAE task was late to run. Reload the page.
+      raise RedirectRequest('')
 
     if self.request.method == 'POST':
       # Access checks for the different forms on this page. Note that there
