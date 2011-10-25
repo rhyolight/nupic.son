@@ -233,7 +233,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     task = GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
 
-    delta = deadline - task.deadline
+    delta = task.deadline - deadline
     self.assertTrue(delta.seconds == 3600)
 
     # check if a comment has been created
