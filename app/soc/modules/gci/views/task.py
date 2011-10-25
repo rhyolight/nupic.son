@@ -107,7 +107,7 @@ class TaskViewPage(RequestHandler):
 
     if task_logic.updateTaskStatus(self.data.task):
       # The task logic updated the status of the task since the deadline passed
-      # in other words the GAE task was late to run. Reload the page.
+      # and the GAE task was late to run. Reload the page.
       raise RedirectRequest('')
 
     if self.request.method == 'POST':
@@ -332,8 +332,8 @@ class TaskInformation(Template):
 
     if is_student:
       if self.data.timeline.tasksClaimEnded():
-        context['button_claim'] = task_logic.canClaimRequestTask(task,
-                                                                 profile.user)
+        context['button_claim'] = task_logic.canClaimRequestTask(
+            task, profile.user)
 
     if is_owner:
       context['button_unclaim'] = task.status in ACTIVE_CLAIMED_TASK
@@ -367,8 +367,8 @@ class WorkSubmissions(Template):
       context['send_for_review'] = self.data.work_submissions and \
           task.status in SEND_FOR_REVIEW_ALLOWED
 
-      if task.status in UPLOAD_ALLOWED:
-        # TODO(ljvderijk): Add deadline check as well
+      if task.status in UPLOAD_ALLOWED and \
+          datetime.datetime.utcnow() < task.deadline:
         # Add the form for allowing uploads
         context['upload_form'] = True
 
