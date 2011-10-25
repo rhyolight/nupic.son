@@ -219,7 +219,7 @@ class TaskViewPage(RequestHandler):
       task_logic.closeTask(task, self.data.profile)
     elif button_name == 'button_extend_deadline':
       # TODO(ljvderijk): Update this when ED delivers design
-      hours = self.data.POST.get('hours', 0)
+      hours = int(self.data.POST.get('hours', 0))
       if hours > 0:
         delta = datetime.timedelta(hours=hours)
         task_logic.extendDeadline(task, delta, self.data.profile)
