@@ -65,7 +65,7 @@
   var mpjs = "/soc/content/" + melange.config.app_version + "/js/";
 
   // Melange CSS URL prefix
-  var mcss = "/soc/content/" + melange.config.app_version + "/css/";
+  var mcss = "/" + melange.config.css_path + "/";
 
   if (melange.config.google_api_key !== undefined) {
     s.google = [
@@ -236,7 +236,7 @@
   s.jqgrid = [
     s.jqueryui.core,
     null,
-    new $m.cssFile(mcss + "v2/gsoc/ui.jqgrid.css"),
+    new $m.cssFile(mcss + "ui.jqgrid.css"),
     tpjs + "jquery/jquery-jqgrid.locale-en.js",
     null,
     tpjs + "jquery/jquery-jqgrid.base.js",
@@ -303,7 +303,7 @@
   s.melange.list = [
     s.jqgrid,
     s.jlinq,
-    new $m.cssFile(mcss + "v2/gsoc/others.css"),
+    new $m.cssFile(mcss + "others.css"),
     null,
     s.jqueryui.dialog,
     s.jqueryui.button,
