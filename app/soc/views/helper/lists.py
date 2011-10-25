@@ -435,6 +435,46 @@ class ListConfiguration(object):
     self._sortorder = order
 
 
+class ListFeatures(object):
+  """Represents features of the list which define, for instance, which
+  elements should be displayed.
+  """
+
+  def __init__(self):
+    """Initializes values of the newly created object.
+    """
+
+    self._cookie_service = {
+        'enabled': False,
+        }
+
+    self._column_search = {
+        'enabled': False,
+        'regexp': False
+        }
+
+    self._columns_show_hide = {
+        'enabled': False
+        }
+
+    self._search_dialog = {
+        'enabled': False
+        }
+
+    self._csv_export = {
+        'enabled': False
+        }
+
+    self._global_search = {
+        'enabled': False,
+        'element_path': None
+        }
+
+    self._global_sort = {
+        'enabled': False,
+        'element_paths': None
+        }
+
 class ListConfigurationResponse(Template):
   """Class that builds the template for configuring a list.
   """
