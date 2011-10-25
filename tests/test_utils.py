@@ -368,6 +368,12 @@ class DjangoTestCase(TestCase):
     """
     self.assertResponseCode(response, httplib.BAD_REQUEST)
 
+  def assertResponseNotFound(self, response):
+    """Asserts that the response status is NOT_FOUND.
+    """
+
+    self.assertResponseCode(response, httplib.NOT_FOUND)
+
   def assertIsJsonResponse(self, response):
     """Asserts that all the templates from the base view were used.
     """
