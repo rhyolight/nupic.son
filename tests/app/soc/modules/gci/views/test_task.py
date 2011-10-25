@@ -152,6 +152,34 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # check if the update task has been enqueued
     self.assertTasksInQueue(n=1, url=self._taskUpdateUrl(task))
 
+
+  def testPostButtonUnassign(self):
+    """Tests the unassign button.
+    """
+    self.data.createMentor(self.org)
+
+    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
+    profile_helper.createOtherUser('student@example.com').createStudent()
+    student = profile_helper.profile
+
+    self.task.status = 'Claimed'
+    self.task.student = student
+    self.task.put()
+
+    url = '%s?button' %self._taskPageUrl(self.task)
+    response = self.post(url, {'button_unassign': ''})
+
+    # check if the task is properly unassigned
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'Reopened')
+    self.assertEqual(task.student, None)
+    self.assertEqual(task.deadline, None)
+
+    # check if a comment has been created
+    comments = self.task.comments()
+    self.assertLength(comments, 1)
+
   def testPostButtonSubscribe(self):
     """Tests the subscribe button.
     """

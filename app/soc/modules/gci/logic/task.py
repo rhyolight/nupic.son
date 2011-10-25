@@ -68,6 +68,10 @@ DEF_REOPENED_MSG = ugettext(
     'reopened the task.')
 
 
+DEF_UNASSIGNED_TITLE = ugettext('Task Reopened')
+DEF_UNASSIGNED_MSG = ugettext('This task has been Reopened.')
+
+
 # TODO(ljvderijk): Add basic subscribers when task is created
 
 def isOwnerOfTask(task, profile):
@@ -138,6 +142,37 @@ def assignTask(task, student, assigner):
     task_update.spawnUpdateTask(task, transactional=True)
 
   return db.run_in_transaction(assignTaskTxn)
+
+
+def unassignTask(task, user):
+  """Unassigns a task.
+
+  This will put the task in the Reopened state and reset the student and
+  deadline property. A comment will also be generated to record this event.
+
+  Args:
+    task: GCITask entity.
+    user: GCIProfile of the user that unassigns the task.
+  """
+  task.student = None
+  task.status = 'Reopened'
+  task.deadline = None
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_UNASSIGNED_TITLE,
+      'content': DEF_UNASSIGNED_MSG,
+      'created_by': user.user
+  }
+  comment = GCIComment(**comment_props)
+
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+
+  def unassignTaskTxn():
+    task.put()
+    comment_txn()
+
+  return db.run_in_transaction(unassignTaskTxn)
 
 
 def updateTaskStatus(task):
