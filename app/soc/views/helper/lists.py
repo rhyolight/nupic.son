@@ -519,6 +519,7 @@ class ListFeatures(object):
     self._global_sort['enabled'] = enabled
     self._global_sort['element_paths'] = element_paths
 
+
 class ListConfigurationResponse(Template):
   """Class that builds the template for configuring a list.
   """
