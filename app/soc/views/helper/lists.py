@@ -447,6 +447,21 @@ class ListFeatures(object):
   elements should be displayed.
   """
 
+  @classmethod
+  def defaultFeatures(cls):
+    """Constructs a default ListFeatures object which may be used, when a list
+    does not define one on its own.
+    """
+
+    features = cls()
+    features.setCookieService(True)
+    features.setColumnSearch(True, True)
+    features.setColumnShowHide(True)
+    features.setSearchDialog(True)
+    features.setCsvExport(True)
+    features.setGlobalSearch(False, None)
+    features.setGloablSort(False, None)
+    
   def __init__(self):
     """Initializes values of the newly created object.
     """
@@ -485,8 +500,9 @@ class ListFeatures(object):
   def setCookieService(self, enabled):
     self._cookie_service['enabled'] = enabled
 
-  def setColumnSearch(self, enabled):
+  def setColumnSearch(self, enabled, regexp):
     self._column_search['enabled'] = enabled
+    self._column_search['regexp'] = regexp
 
   def setColumnShowHide(self, enabled):
     self._columns_show_hide['enabled'] = enabled
