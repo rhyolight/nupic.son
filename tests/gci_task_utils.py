@@ -25,7 +25,6 @@ __authors__ = [
 
 import datetime
 
-from soc.modules.gci.models.mentor import GCIMentor
 from soc.modules.gci.models.task import GCITask
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
