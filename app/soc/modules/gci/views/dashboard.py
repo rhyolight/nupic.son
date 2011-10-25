@@ -158,7 +158,7 @@ class DashboardPage(RequestHandler):
 
     return {
         'page_name': self.data.program.name,
-        'user_name': self.data.profile.name() if self.data.profile else None,
+        'user_name': self.data.user.name if self.data.user else None,
         'dashboards': dashboards,
     }
 
