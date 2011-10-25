@@ -44,7 +44,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # Create a task, status published
     profile = GCIProfileHelper(self.gci, self.dev_test)
     self.task = profile.createOtherUser('mentor@example.com').\
-        createMentorWithTask(self.org)
+        createMentorWithTask('Open', self.org)
 
   def testBasicTaskView(self):
     """Tests the rendering of the task view.

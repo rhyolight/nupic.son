@@ -421,43 +421,38 @@ class GCIProfileHelper(ProfileHelper):
     self.profile.put()
     return self.profile
 
-  def createStudentWithTask(self, org, mentor):
+  def createStudentWithTask(self, status, org, mentor):
     """Sets the current user to be a student with a task for the 
     current program.
     """
-    return self.createStudentWithTasks(org, mentor, 1)[0]
+    return self.createStudentWithTasks(status, org, mentor, 1)[0]
 
-  def createStudentWithTasks(self, org, mentor, n=1):
+  def createStudentWithTasks(self, status, org, mentor, n=1):
     """Sets the current user to be a student with specified number of 
     tasks for the current program.
     """
+    from tests.gci_task_utils import GCITaskHelper
     student = self.createStudent()
     student.student_info.put()
-    properties = {'program': self.program, 'org': org, 'status': 'Claimed',
-        'difficulty': self.program.task_difficulties[0],
-        'task_type': self.program.task_types[0],
-        'mentors': [mentor.key()], 'student': student, 'user': student.user,
-        'created_by': mentor, 'modified_by': mentor,
-        'created_on': datetime.datetime.now() - datetime.timedelta(20),
-        'modified_on': datetime.datetime.now() - datetime.timedelta(10)
-    }
-    return self.seedn(GCITask, properties, n)
+    gci_task_helper = GCITaskHelper(self.program)
+    tasks = []
+    for _ in xrange(n):
+        tasks.append(gci_task_helper.createTask(status, org, mentor, student))
+    return tasks
 
-  def createMentorWithTask(self, org):
+  def createMentorWithTask(self, status, org):
     """Creates an mentor profile with a task for the current user.
     """
-    return self.createMentorWithTasks(org, 1)[0]
+    return self.createMentorWithTasks(status, org, 1)[0]
 
-  def createMentorWithTasks(self, org, n=1):
+  def createMentorWithTasks(self, status, org, n=1):
     """Creates an mentor profile with a task for the current user.
     """
+    from tests.gci_task_utils import GCITaskHelper
     self.createMentor(org)
-    properties = {'mentors': [self.profile.key()], 'program': self.program,
-        'difficulty': self.program.task_difficulties[0],
-        'task_type': self.program.task_types[0],
-        'org': org, 'status': 'Open', 'created_by': self.profile,
-        'modified_by': self.profile, 'student': None, 'user': None,
-        'created_on': datetime.datetime.now() - datetime.timedelta(20),
-        'modified_on': datetime.datetime.now() - datetime.timedelta(10)
-    }
-    return self.seedn(GCITask, properties, n)
+    gci_task_helper = GCITaskHelper(self.program)
+    tasks = []
+    for _ in xrange(n):
+        tasks.append(gci_task_helper.createTask(status, org,
+                                                self.profile))
+    return tasks
