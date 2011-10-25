@@ -224,7 +224,7 @@ class TaskViewPage(RequestHandler):
         delta = datetime.timedelta(hours=hours)
         task_logic.extendDeadline(task, delta, self.data.profile)
     elif button_name == 'button_claim':
-      pass
+      task_logic.claimRequestTask(task, self.data.profile)
     elif button_name == 'button_unclaim':
       pass
     elif button_name == 'button_subscribe':

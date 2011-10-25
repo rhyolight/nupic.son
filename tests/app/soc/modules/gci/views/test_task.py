@@ -240,6 +240,23 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     comments = self.task.comments()
     self.assertLength(comments, 1)
 
+  def testPostButtonClaim(self):
+    """Tests the claim task button.
+    """
+    self.data.createStudent()
+
+    url = '%s?button' %self._taskPageUrl(self.task)
+    response = self.post(url, {'button_claim': ''})
+
+    # check if the task is properly claimed
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'ClaimRequested')
+    self.assertEqual(task.student.key(), self.data.profile.key())
+
+    # check if a comment has been created
+    comments = self.task.comments()
+    self.assertLength(comments, 1)
 
   def testPostButtonSubscribe(self):
     """Tests the subscribe button.

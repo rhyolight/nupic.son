@@ -56,6 +56,10 @@ DEF_ASSIGNED_MSG_FMT = ugettext(
     'You have %i hours to complete this task, good luck!')
 
 
+DEF_CLAIM_REQUEST_TITLE = ugettext('Task Claimed')
+DEF_CLAIM_REQUEST_MSG = ugettext('I would like to work on this task.')
+
+
 DEF_CLOSED_TITLE = ugettext('Task Closed')
 DEF_CLOSED_MSG = ugettext(
     'Congratulations, this task has been successfully completed.')
@@ -213,6 +217,7 @@ def closeTask(task, user):
 
   return db.run_in_transaction(closeTaskTxn)
 
+
 def extendDeadline(task, delta, user):
   """Extends the deadline of a task.
 
@@ -243,6 +248,36 @@ def extendDeadline(task, delta, user):
     comment_txn()
 
   return db.run_in_transaction(extendDeadlineTxn)
+
+
+def claimRequestTask(task, student):
+  """Used when a student requests to claim a task.
+
+  Updates the status of the tasks and places a comment notifying the org
+  that someone wants to work on this task.
+
+  Args:
+    task: The task to extend the deadline for.
+    student: GCIProfile of the student that wants to claim the task.
+  """
+  task.status = 'ClaimRequested'
+  task.student = student
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_CLAIM_REQUEST_TITLE,
+      'content': DEF_CLAIM_REQUEST_MSG,
+      'created_by': student.user
+  }
+  comment = GCIComment(**comment_props)
+
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+
+  def claimRequestTaskTxn():
+    task.put()
+    comment_txn()
+
+  return db.run_in_transaction(claimRequestTaskTxn)
 
 
 def updateTaskStatus(task):
