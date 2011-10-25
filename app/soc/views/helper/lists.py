@@ -287,6 +287,20 @@ class ListConfiguration(object):
 
     model['extra'] = kwargs
 
+  def setColumnTemplate(self, col_id, template):
+    """Sets a template for the column.
+    """
+    model = self._col_map.get(col_id)
+
+    if not model:
+      raise ValueError('Id %s is not a defined column (Known columns %s)'
+                       % (col_id, self._col_map.keys()))
+
+    if model.get('template'):
+      logging.warning('Column with id %s already has template defined.')
+
+    model['template'] = template
+
   def addSimpleRedirectButton(self, button_id, caption, url, new_window=True):
     """Adds a button to the list that simply opens a URL.
 
