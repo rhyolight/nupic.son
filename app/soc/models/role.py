@@ -150,8 +150,8 @@ class Role(soc.models.linkable.Linkable):
   #: Required field storing publicly-displayed name.  Can be a real name
   #: (though this is not recommended), or a nick name or some other public
   #: alias.  Public names can be any valid UTF-8 text.
-  public_name = db.StringProperty(required=False,
-      verbose_name=ugettext('Public name'))
+  public_name = db.StringProperty(
+      required=True, verbose_name=ugettext('Public name'))
   public_name.help_text = ugettext(
       'Human-readable name (UTF-8) that will be displayed publicly on the'
       ' site.')
