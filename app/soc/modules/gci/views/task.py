@@ -209,7 +209,7 @@ class TaskViewPage(RequestHandler):
       task_logic.assignTask(task, task.student, self.data.profile)
     elif button_name == 'button_unassign':
       task_logic.unassignTask(task, self.data.profile)
-    elif button_name == 'button_close_task':
+    elif button_name == 'button_close':
       task_logic.closeTask(task, self.data.profile)
     elif button_name == 'button_extend_deadline':
       pass
@@ -317,7 +317,7 @@ class TaskInformation(Template):
       context['button_edit'] = task.status == 'Open' and not self.data.comments
       context['button_assign'] = task.status == 'ClaimRequested'
       context['button_unassign'] = task.status in ACTIVE_CLAIMED_TASK
-      context['button_close_task'] = task.status == 'NeedsReview'
+      context['button_close'] = task.status == 'NeedsReview'
       context['button_extend_deadline'] = task.status == 'NeedsReview'
 
     if is_student:
