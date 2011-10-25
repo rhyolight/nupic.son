@@ -22,6 +22,8 @@ __authors__ = [
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
+import datetime
+
 from soc.modules.gci.models.task import GCITask
 
 from tests.profile_utils import GCIProfileHelper
@@ -206,6 +208,37 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # check if a comment has been created
     comments = self.task.comments()
     self.assertLength(comments, 1)
+
+  def testPostButtonExtendDeadline(self):
+    """Tests the extend deadline button.
+    """
+    self.data.createMentor(self.org)
+
+    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
+    profile_helper.createOtherUser('student@example.com').createStudent()
+    student = profile_helper.profile
+
+    now = datetime.datetime.utcnow()
+
+    self.task.status = 'Claimed'
+    self.task.student = student
+    self.task.deadline = now
+    self.task.put()
+
+    url = '%s?button' %self._taskPageUrl(self.task)
+    response = self.post(
+        url, {'button_extend_deadline': '', 'hours': 1})
+
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+
+    delta = now - task.deadline
+    self.assertTrue(delta.seconds == 3600)
+
+    # check if a comment has been created
+    comments = self.task.comments()
+    self.assertLength(comments, 1)
+
 
   def testPostButtonSubscribe(self):
     """Tests the subscribe button.

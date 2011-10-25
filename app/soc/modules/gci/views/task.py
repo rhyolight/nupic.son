@@ -212,7 +212,11 @@ class TaskViewPage(RequestHandler):
     elif button_name == 'button_close':
       task_logic.closeTask(task, self.data.profile)
     elif button_name == 'button_extend_deadline':
-      pass
+      # TODO(ljvderijk): Update this when ED delivers design
+      hours = self.data.POST.get('hours', 0)
+      if hours > 0:
+        delta = datetime.timedelta(hours=hours)
+        task_logic.extendDeadline(task, delta, self.data.profile)
     elif button_name == 'button_claim':
       pass
     elif button_name == 'button_unclaim':
@@ -318,7 +322,7 @@ class TaskInformation(Template):
       context['button_assign'] = task.status == 'ClaimRequested'
       context['button_unassign'] = task.status in ACTIVE_CLAIMED_TASK
       context['button_close'] = task.status == 'NeedsReview'
-      context['button_extend_deadline'] = task.status == 'NeedsReview'
+      context['button_extend_deadline'] = task.status in UPLOAD_ALLOWED
 
     if is_student:
       if self.data.timeline.tasksClaimEnded():
@@ -358,6 +362,7 @@ class WorkSubmissions(Template):
           task.status in SEND_FOR_REVIEW_ALLOWED
 
       if task.status in UPLOAD_ALLOWED:
+        # TODO(ljvderijk): Add deadline check as well
         # Add the form for allowing uploads
         context['upload_form'] = True
 

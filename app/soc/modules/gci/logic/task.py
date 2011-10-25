@@ -61,6 +61,11 @@ DEF_CLOSED_MSG = ugettext(
     'Congratulations, this task has been successfully completed.')
 
 
+DEF_EXTEND_DEADLINE_TITLE = ugettext('Deadline extended')
+DEF_EXTEND_DEADLINE_FMT = ugettext(
+    'The deadline of the task has been extended with %i days and %i hours.')
+
+
 DEF_NO_MORE_WORK_TITLE = ugettext('No more Work can be submitted')
 DEF_NO_MORE_WORK_MSG = ugettext(
     'Melange has detected that the deadline has passed and no more work can '
@@ -207,6 +212,37 @@ def closeTask(task, user):
     comment_txn()
 
   return db.run_in_transaction(closeTaskTxn)
+
+def extendDeadline(task, delta, user):
+  """Extends the deadline of a task.
+
+  Args:
+    task: The task to extend the deadline for.
+    delta: The timedelta object to be added to the current deadline.
+    user: GCIProfile of the user that extends the deadline.
+  """
+  if task.deadline:
+    deadline = task.deadline + delta
+  else:
+    deadline = datetime.datetime.utcnow() + delta
+
+  task.deadline = deadline
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_EXTEND_DEADLINE_TITLE,
+      'content': DEF_EXTEND_DEADLINE_FMT %(delta.days, delta.seconds/3600),
+      'created_by': user.user
+  }
+  comment = GCIComment(**comment_props)
+
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+
+  def extendDeadlineTxn():
+    task.put()
+    comment_txn()
+
+  return db.run_in_transaction(extendDeadlineTxn)
 
 
 def updateTaskStatus(task):
