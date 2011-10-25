@@ -788,10 +788,6 @@ class ProposalsAcceptedOrgsList(AcceptedOrgsList):
   """
 
   def extraColumn(self, list_config):
-    list_config.addColumn('name', 'Name',
-        (lambda e, *args: e.short_name.strip()), width=75)
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-
     use_cbox = False
     if self.request.GET.get('cbox'):
       use_cbox = True
