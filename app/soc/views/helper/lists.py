@@ -503,9 +503,15 @@ class ListConfigurationResponse(Template):
         'row': self._config._row_operation,
     }
 
+    templates = {}
+    for col_id, col_model in self._config._col_map.iteritems():
+      if col_model.get('template'):
+        templates[col_id] = col_model.get('template')
+
     listConfiguration = {
       'configuration': configuration,
       'operations': operations,
+      'templates': templates,
     }
     return listConfiguration
 
