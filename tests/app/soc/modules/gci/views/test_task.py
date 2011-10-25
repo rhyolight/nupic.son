@@ -180,6 +180,33 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     comments = self.task.comments()
     self.assertLength(comments, 1)
 
+  def testPostButtonClose(self):
+    """Tests the close task button.
+    """
+    self.data.createMentor(self.org)
+
+    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
+    profile_helper.createOtherUser('student@example.com').createStudent()
+    student = profile_helper.profile
+
+    self.task.status = 'NeedsReview'
+    self.task.student = student
+    self.task.put()
+
+    url = '%s?button' %self._taskPageUrl(self.task)
+    response = self.post(url, {'button_close': ''})
+
+    # check if the task is properly closed
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'Closed')
+    self.assertEqual(task.student.key(), student.key())
+    self.assertEqual(task.deadline, None)
+
+    # check if a comment has been created
+    comments = self.task.comments()
+    self.assertLength(comments, 1)
+
   def testPostButtonSubscribe(self):
     """Tests the subscribe button.
     """

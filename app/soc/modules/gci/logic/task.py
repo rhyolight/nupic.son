@@ -56,6 +56,11 @@ DEF_ASSIGNED_MSG_FMT = ugettext(
     'You have %i hours to complete this task, good luck!')
 
 
+DEF_CLOSED_TITLE = ugettext('Task Closed')
+DEF_CLOSED_MSG = ugettext(
+    'Congratulations, this task has been successfully completed.')
+
+
 DEF_NO_MORE_WORK_TITLE = ugettext('No more Work can be submitted')
 DEF_NO_MORE_WORK_MSG = ugettext(
     'Melange has detected that the deadline has passed and no more work can '
@@ -173,6 +178,35 @@ def unassignTask(task, user):
     comment_txn()
 
   return db.run_in_transaction(unassignTaskTxn)
+
+
+def closeTask(task, user):
+  """Closes the task.
+
+  Args:
+    task: GCITask entity.
+    user: GCIProfile of the user that closes the task.
+  """
+  task.status = 'Closed'
+  task.deadline = None
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_CLOSED_TITLE,
+      'content': DEF_CLOSED_MSG,
+      'created_by': user.user
+  }
+  comment = GCIComment(**comment_props)
+
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+
+  # TODO(ljvderijk): If this is the student's first task send email about
+  # the forms they need to fill in. See Issue 1308.
+  def closeTaskTxn():
+    task.put()
+    comment_txn()
+
+  return db.run_in_transaction(closeTaskTxn)
 
 
 def updateTaskStatus(task):

@@ -210,7 +210,7 @@ class TaskViewPage(RequestHandler):
     elif button_name == 'button_unassign':
       task_logic.unassignTask(task, self.data.profile)
     elif button_name == 'button_close_task':
-      pass
+      task_logic.closeTask(task, self.data.profile)
     elif button_name == 'button_extend_deadline':
       pass
     elif button_name == 'button_claim':
