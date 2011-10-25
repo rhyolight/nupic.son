@@ -55,7 +55,7 @@ DEF_NO_TASK_EDIT_PRIV_MSG_FMT = ugettext(
 
 DEF_NO_GSOC_ORG_MEMBER_MSG = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
-    'organization in Google Summer of Code.')
+    'organization in Google Code In.')
 
 DEF_TASK_UNEDITABLE_STATUS_MSG = ugettext(
     'The task cannot be edited because it is already claimed once.')
