@@ -19,10 +19,17 @@
       {% endif %}
     {% endif %}
     <form action="?button" method="post">
-      <input type="submit" class="task-btn task-btn-close" value="Mark task as closed">
-      <input type="submit" class="task-btn task-btn-unassign" value="Unassign task">
-      <input type="submit" class="task-btn task-btn-edit" name="button_edit" value="Edit task">
-      <input type="submit" class="task-btn task-btn-delete" value="Delete">
+      {% if button_unpublish %}<input type="submit" class="task-btn task-btn-publish" name="button_unpublish" value="Unpublish">{% endif %}
+      {% if button_delete %}<input type="submit" class="task-btn task-btn-delete" name="button_delete" value="Delete">{% endif %}
+      {% if button_close_task %}<input type="submit" class="task-btn task-btn-close" name="button_close_task" value="Mark task as closed">{% endif %}
+      {% if button_assign %}<input type="submit" class="task-btn task-btn-approve" name="button_assign" value="Assign">{% endif %}
+      {% if button_unassign %}<input type="submit" class="task-btn task-btn-unassign" name="button_unassign" value="Unassign task">{% endif %}
+      {% if button_close_task %}<input type="submit" class="task-btn task-btn-approve" name="button_close_task" value="Close task">{% endif %}
+      {% if button_edit %}<input type="submit" class="task-btn task-btn-edit" name="button_edit" value="Edit task">{% endif %}
+      {% if button_claim %}<input type="submit" class="btn btn-claim-task" name="button_claim" value="Claim this task!">{% endif %}
+      {% if button_unclaim %}<input type="submit" class="task-btn task-btn-unclaim" name="button_unclaim" value="Unclaim task">{% endif %}
+      {% if button_subscribe %}<input type="submit" class="task-btn task-btn-subscribe-updates" name="button_subscribe" value="Subscribe to updates">{% endif %}
+      {% if button_unsubscribe %}<input type="submit" class="task-btn task-btn-subscribe-updates" name="button_unsubscribe" value="Unsubscribe from updates">{% endif %}
     </form>
   </div>
 </div>
