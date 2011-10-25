@@ -1440,7 +1440,7 @@
       // Global Sort
 
       var gs = _self.features.global_sort;
-      if (gs.enabled && _self.getIdx()===6) {
+      if (gs.enabled) {
         if (gs.element_paths.column !== undefined) {
           var select = jQuery(gs.element_paths.column);
           jQuery(' option', select).remove();
