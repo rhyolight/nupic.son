@@ -436,6 +436,11 @@ class ListConfiguration(object):
     self._sortname = col_id if col_id else ''
     self._sortorder = order
 
+  def setFeatures(self, features):
+    """Sets features for the list.
+    """
+    self._features = features
+
 
 class ListFeatures(object):
   """Represents features of the list which define, for instance, which
