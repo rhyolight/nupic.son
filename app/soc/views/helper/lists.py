@@ -93,6 +93,8 @@ class ListConfiguration(object):
     self._row_operation_func = None
 
     self._templates = {}
+    
+    self._features = None
 
     if add_key_column:
       self._addKeyColumn()
