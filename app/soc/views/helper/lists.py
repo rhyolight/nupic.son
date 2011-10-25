@@ -482,6 +482,43 @@ class ListFeatures(object):
         'element_paths': None
         }
 
+  def setCookieService(self, enabled):
+    self._cookie_service['enabled'] = enabled
+
+  def setColumnSearch(self, enabled):
+    self._column_search['enabled'] = enabled
+
+  def setColumnShowHide(self, enabled):
+    self._columns_show_hide['enabled'] = enabled
+
+  def setSearchDialog(self, enabled):
+    self._search_dialog['enabled'] = enabled
+
+  def setCsvExport(self, enabled):
+    self._csv_export['enabled'] = enabled
+
+  def setGlobalSearch(self, enabled, element_path):
+    if enabled:
+      if element_path is None:
+        logging.warning('Trying to enable global search with no element_path')
+    else:
+      if element_path is not None:
+        logging.warining('Non empty element_path in disabled global search')
+
+    self._global_search['enabled'] = enabled
+    self._global_search['element_path'] = element_path
+
+  def setGloablSort(self, enabled, element_paths):
+    if enabled:
+      if element_paths is None:
+        logging.warning('Trying to enable global sort with no element_paths')
+    else:
+      if element_paths is not None:
+        logging.warining('Non empty element_paths in disabled global sort')
+
+    self._global_sort['enabled'] = enabled
+    self._global_sort['element_paths'] = element_paths
+
 class ListConfigurationResponse(Template):
   """Class that builds the template for configuring a list.
   """
