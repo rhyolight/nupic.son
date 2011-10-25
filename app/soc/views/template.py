@@ -24,7 +24,6 @@ __authors__ = [
 
 from django.template import loader
 
-
 from soc.views.helper import context as context_helper
 
 
