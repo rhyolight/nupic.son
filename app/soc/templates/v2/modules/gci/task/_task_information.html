@@ -76,7 +76,7 @@
           </div>
           <span class="remain">Remaining</span> <span class="timestamp">as of {{ now|date:"n/j @H:i"}}UTC</span>
         </div>
-        <a href="javascript:void(0)" class="task-btn task-btn-extended-deadline">Extended deadline</a>
+        {% if button_extend_deadline %}<input type="submit" class="task-btn task-btn-extended-deadline" name="button_extend_deadline" value="Extend deadline">{% endif %}
       </div>
       <!-- end .stockwatch -->
     </div>
