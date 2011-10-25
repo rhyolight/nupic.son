@@ -32,6 +32,7 @@ from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import RedirectRequest
 from soc.views.helper import access_checker
+from soc.views.helper import request_data
 
 from soc.modules.gci.models.task import GCITask
 
@@ -55,6 +56,9 @@ DEF_NO_TASK_EDIT_PRIV_MSG_FMT = ugettext(
 DEF_NO_GSOC_ORG_MEMBER_MSG = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
     'organization in Google Summer of Code.')
+
+DEF_TASK_UNEDITABLE_STATUS_MSG = ugettext(
+    'The task cannot be edited because it is already claimed once.')
 
 DEF_TASK_MAY_NOT_BE_IN_STATES_FMT = ugettext(
     'The task may not be in any of the followings states %s')
@@ -205,6 +209,10 @@ class AccessChecker(access_checker.AccessChecker):
       raise AccessViolation(DEF_NO_TASK_CREATE_PRIV_MSG_FMT % (
           self.data.organization.name))
 
+    if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
+        or self.data.timeline.tasksClaimEnded()):
+      raise AccessViolation(access_checker.DEF_PAGE_INACTIVE_MSG)
+
   def canEditTask(self):
     """Checks whether the currently logged in user can edit the task.
     """
@@ -218,6 +226,12 @@ class AccessChecker(access_checker.AccessChecker):
       raise AccessViolation(DEF_NO_TASK_EDIT_PRIV_MSG_FMT % (
           task.org.name))
 
+    if task.status not in ['Unapproved', 'Unpublished', 'Open']:
+      raise AccessViolation(DEF_TASK_UNEDITABLE_STATUS_MSG)
+
+    if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
+        or self.data.timeline.tasksClaimEnded()):
+      raise AccessViolation(access_checker.DEF_PAGE_INACTIVE_MSG)
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   """Developer access checker for GCI specific methods.
