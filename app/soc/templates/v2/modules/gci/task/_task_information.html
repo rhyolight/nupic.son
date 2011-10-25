@@ -21,10 +21,9 @@
     <form action="?button" method="post">
       {% if button_unpublish %}<input type="submit" class="task-btn task-btn-publish" name="button_unpublish" value="Unpublish">{% endif %}
       {% if button_delete %}<input type="submit" class="task-btn task-btn-delete" name="button_delete" value="Delete">{% endif %}
-      {% if button_close_task %}<input type="submit" class="task-btn task-btn-close" name="button_close_task" value="Mark task as closed">{% endif %}
+      {% if button_close %}<input type="submit" class="task-btn task-btn-close" name="button_close" value="Mark task as closed">{% endif %}
       {% if button_assign %}<input type="submit" class="task-btn task-btn-approve" name="button_assign" value="Assign">{% endif %}
       {% if button_unassign %}<input type="submit" class="task-btn task-btn-unassign" name="button_unassign" value="Unassign task">{% endif %}
-      {% if button_close %}<input type="submit" class="task-btn task-btn-approve" name="button_close" value="Close task">{% endif %}
       {% if button_edit %}<input type="submit" class="task-btn task-btn-edit" name="button_edit" value="Edit task">{% endif %}
       {% if button_claim %}<input type="submit" class="btn btn-claim-task" name="button_claim" value="Claim this task!">{% endif %}
       {% if button_unclaim %}<input type="submit" class="task-btn task-btn-unclaim" name="button_unclaim" value="Unclaim task">{% endif %}
