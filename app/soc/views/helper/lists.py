@@ -92,6 +92,8 @@ class ListConfiguration(object):
     self._row_operation = {}
     self._row_operation_func = None
 
+    self._templates = {}
+
     if add_key_column:
       self._addKeyColumn()
 
@@ -287,19 +289,17 @@ class ListConfiguration(object):
 
     model['extra'] = kwargs
 
-  def setColumnTemplate(self, col_id, template):
-    """Sets a template for the column.
+  def addTemplateColumn(self, col_id, name, template, **kwargs):
+    """Adds a new template column.
     """
-    model = self._col_map.get(col_id)
+      
+    self.addColumn(col_id, name, lambda **kwargs: '' , **kwargs)
 
-    if not model:
-      raise ValueError('Id %s is not a defined column (Known columns %s)'
-                       % (col_id, self._col_map.keys()))
+    if self._templates.get(col_id):
+      logging.warning(
+          'Template column with id %s already has template defined.' % col_id)
 
-    if model.get('template'):
-      logging.warning('Column with id %s already has template defined.')
-
-    model['template'] = template
+    self._templates[col_id] = template
 
   def addSimpleRedirectButton(self, button_id, caption, url, new_window=True):
     """Adds a button to the list that simply opens a URL.
@@ -503,15 +503,10 @@ class ListConfigurationResponse(Template):
         'row': self._config._row_operation,
     }
 
-    templates = {}
-    for col_id, col_model in self._config._col_map.iteritems():
-      if col_model.get('template'):
-        templates[col_id] = col_model.get('template')
-
     listConfiguration = {
       'configuration': configuration,
       'operations': operations,
-      'templates': templates,
+      'templates': self._config._templates,
     }
     return listConfiguration
 
