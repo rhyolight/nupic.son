@@ -102,11 +102,10 @@ class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
       reference_class=soc.modules.gci.models.program.GCIProgram,
       required=True, collection_name='tasks')
 
-  # TODO(Madhu): Make it required after data conversion
   #: Program in which this Task has been created
   org = db.ReferenceProperty(
       reference_class=soc.modules.gci.models.organization.GCIOrganization,
-      required=False, collection_name='org_tasks')
+      required=True, collection_name='org_tasks')
 
   #: Required property which holds the state, the Task is currently in.
   #: This is a hidden field not shown on forms. Handled by logic internally.
