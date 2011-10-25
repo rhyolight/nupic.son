@@ -1,0 +1,4 @@
+/* No underline for <a> elements inside lists */
+.ui-jqgrid a.listsnoul {
+  text-decoration: none;
+}
