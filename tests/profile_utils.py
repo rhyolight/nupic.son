@@ -134,6 +134,15 @@ class ProfileHelper(object):
     """
     pass
 
+  def removeStudent(self):
+    """Removes the student profile from the current user.
+    """
+    if not self.profile:
+      return self
+    if self.profile.student_info:
+      self.profile.student_info.delete()
+    return self.profile
+
   def createInactiveStudent(self):
     """Sets the current user to be an inactive student for the current program.
     """
@@ -148,6 +157,15 @@ class ProfileHelper(object):
     self.user.put()
     return self.user
 
+  def removeHost(self):
+    """Removes the host profile from the current user.
+    """
+    if not self.user:
+      return self
+    self.user.host_for = []
+    self.user.put()
+    return self.user
+
   def createOrgAdmin(self, org):
     """Creates an org admin profile for the current user.
     """
@@ -156,6 +174,18 @@ class ProfileHelper(object):
     self.profile.org_admin_for = [org.key()]
     self.profile.is_mentor = True
     self.profile.is_org_admin = True
+    self.profile.put()
+    return self.profile
+
+  def removeOrgAdmin(self):
+    """Removes the org admin profile from the current user.
+    """
+    if not self.profile:
+      return self
+    self.profile.mentor_for = []
+    self.profile.org_admin_for = []
+    self.profile.is_mentor = False
+    self.profile.is_org_admin = False
     self.profile.put()
     return self.profile
 
@@ -190,6 +220,26 @@ class ProfileHelper(object):
     self.profile.mentor_for = [org.key()]
     self.profile.is_mentor = True
     self.profile.put()
+    return self.profile
+
+  def removeMentor(self):
+    """Removes the mentor profile from the current user.
+    """
+    if not self.profile:
+      return self
+    self.profile.mentor_for = []
+    self.profile.is_mentor = False
+    self.profile.put()
+    return self.profile
+
+  def removeAllRoles(self):
+    """Removes all profile roles from the current user excluding host.
+    """
+    if not self.profile:
+      return self
+    self.removeMentor()
+    self.removeOrgAdmin()
+    self.removeStudent()
     return self.profile
 
   def clear(self):
