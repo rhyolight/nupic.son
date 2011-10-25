@@ -480,6 +480,8 @@ class GSoCDjangoTestCase(DjangoTestCase):
                   'modified_by': self.founder,
                   'created_by': self.founder,
                   'author': self.founder,
+                  'schema': ('[["item"],{"item":{"field_type":"input_text",'
+                             '"required":false, "label":"test"}}]'),
                   'survey_content': None,}
     self.org_app = self.seed(OrgAppSurvey, properties)
 
@@ -601,6 +603,8 @@ class GCIDjangoTestCase(DjangoTestCase):
                   'modified_by': self.founder,
                   'created_by': self.founder,
                   'author': self.founder,
+                  'schema': ('[["item"],{"item":{"field_type":"input_text",'
+                             '"required":false, "label":"test"}}]'),
                   'survey_content': None,}
     self.org_app = self.seed(OrgAppSurvey, properties)
 
