@@ -461,6 +461,7 @@ class ListFeatures(object):
     features.setCsvExport(True)
     features.setGlobalSearch(False, None)
     features.setGloablSort(False, None)
+    return features
 
   def __init__(self):
     """Initializes values of the newly created object.
