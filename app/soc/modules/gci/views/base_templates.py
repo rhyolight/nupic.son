@@ -107,7 +107,7 @@ class MainMenu(Template):
         # org admin profile and is an org admin of some organization
         if self.data.is_org_admin:
           context['org_dashboard_link'] = self.data.redirect.urlOf(
-              'gci_org_dashboard')
+              'gci_dashboard')
       else:
         context['profile_link'] = self.data.redirect.urlOf('show_gci_profile')
 
