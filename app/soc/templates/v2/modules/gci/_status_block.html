@@ -1,15 +1,15 @@
-{% if task_status %}
+{% if task %}
   <div class="block block-status level-easy">
     <div class="cog"></div>
     <div class="block-title">My Current Task</div>
     <div class="block-status-top">
-    <span class="block-status-status"><span class="emph">Status:</span> In Progress</span>
-    <span class="block-status-time"><span class="emph">Time Left:</span> 5 hrs 6 min</span>
+    <span class="block-status-status"><span class="emph">Status:</span> {{ task.status }}</span>
+    {% if time_left %}<span class="block-status-time"><span class="emph">Time Left:</span>{{ time_left }}</span>{% endif %}
   </div>
   <div class="block-content">
     <div class="block-status-task">
-      <span class="block-status-task-link"><a href="javascript:void(0)">Write Documentation for Export Function</a></span>
-      <span class="block-status-task-project">Drupal Foundation</span>
+      <span class="block-status-task-link"><a href="{{ task_url }}">{{ task.title }}</a></span>
+      <span class="block-status-task-project">{{ task.org.name }}</span>
     </div>
   </div>
   <div class="block-status-action clearfix">

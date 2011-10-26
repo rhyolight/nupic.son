@@ -23,9 +23,14 @@ __authors__ = [
 ]
 
 
+import datetime
+
 from google.appengine.api import users
 
 from soc.views.template import Template
+
+from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
+from soc.modules.gci.models.task import GCITask
 
 
 def siteMenuContext(data):
@@ -147,13 +152,39 @@ class Status(Template):
   def __init__(self, data):
     self.data = data
 
+  def getTimeLeftForTask(self, task):
+    """Time left to complete the task in human readable format.
+    """
+    if not task.deadline:
+      return ""
+
+    time_now = datetime.datetime.utcnow()
+    time_left = task.deadline - time_now
+    days_left = time_left.days
+    hours_left = time_left.seconds/3600
+    minutes_left = (time_left.seconds/60)%60
+    return "%s days %s hrs %s min" % (days_left, hours_left, minutes_left)
+
   def context(self):
-    return {
-      'user_email': self.data.user.account.email(),
-      'logout_link': self.data.redirect.logout().url(),
-      'dashboard_link': self.data.redirect.dashboard().url()
+    context = {
+        'user_email': self.data.user.account.email(),
+        'logout_link': self.data.redirect.logout().url(),
+        'dashboard_link': self.data.redirect.dashboard().url()
     }
 
+    if self.data.profile:
+      if self.data.is_student and self.data.profile.status == 'active':
+        q = GCITask.all()
+        q.filter('student', self.data.profile)
+        q.filter('status IN', ACTIVE_CLAIMED_TASK)
+        task = q.get()
+        if task:
+          context['task'] = task
+          context['time_left'] = self.getTimeLeftForTask(task)
+          task_url = self.data.redirect.id(
+              task.key().id()).urlOf('gci_view_task')
+          context['task_url'] = task_url
+    return context
 
   def templatePath(self):
     return "v2/modules/gci/_status_block.html"
