@@ -188,20 +188,19 @@ class ProfilePage(object):
 
   def validateUser(self, dirty):
     if self.data.user:
-      user_form = EmptyForm()
+      return EmptyForm()
     else:
       user_form = self._getCreateUserForm()
 
     if not user_form.is_valid():
       return user_form
 
-    if self.data.user:
-      return user_form
-
     key_name = user_form.cleaned_data['link_id']
     account = users.get_current_user()
     user_form.cleaned_data['account'] = account
     user_form.cleaned_data['user_id'] = account.user_id()
+    user_form.cleaned_data['name'] = ''
+    # set the new user entity in self.data.user
     self.data.user = user_form.create(commit=False, key_name=key_name)
     dirty.append(self.data.user)
     return user_form
@@ -212,7 +211,7 @@ class ProfilePage(object):
       check_age = True
     else:
       check_age = False
-      
+
     if self.data.profile:
       profile_form = self._getEditProfileForm(check_age)
     else:
@@ -223,8 +222,10 @@ class ProfilePage(object):
 
     key_name = '%s/%s' % (self.data.program.key().name(),
                           self.data.user.link_id)
-    profile_form.cleaned_data['link_id'] = self.data.user.link_id
-    profile_form.cleaned_data['user'] = self.data.user
+
+    user = self.data.user
+    profile_form.cleaned_data['user'] = user
+    profile_form.cleaned_data['link_id'] = user.link_id
     profile_form.cleaned_data['scope'] = self.data.program
 
     if self.data.profile:
@@ -234,6 +235,10 @@ class ProfilePage(object):
                                     parent=self.data.user)
 
     dirty.append(profile)
+
+    # synchronize the public name in the profile with the one in user
+    user.name = profile_form.cleaned_data['public_name']
+    dirty.append(user)
 
     return profile_form, profile
 
