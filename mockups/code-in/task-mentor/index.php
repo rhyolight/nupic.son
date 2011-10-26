@@ -64,7 +64,21 @@
         	                <span class="remain">Remaining</span>
         	                <span class="timestamp">as of 7/23 @3:30GMT</span>
         	            </div>
-        	            <a href="javascript:void(0)" class="task-btn task-btn-extended-deadline">Extended deadline</a>
+        	            <input type="submit" class="task-btn task-btn-extended-deadline" value="Extend deadline" />
+        	            <div id="deadline-extend">
+        	            	<div class="deadline-extend-top"></div>
+        	            	<div class="deadline-extend-content">
+	        	            	<span class="plus">+ </span>
+		        	            <form action="#" method="post" class="clearfix">
+		        	            	<fieldset id="fieldset-error">
+		        	            		<div class="form-row">
+		        	            		    <input value="" type="text"> <span class="time">hours</span>
+		        	            		</div>
+		        	            		<input value="Confirm" class="task-btn task-btn-confirm-extended-deadline" type="submit">
+		        	            	</fieldset>
+		        	            </form>
+	        	            </div>
+        	            </div>
         	        </div>
         	        <!-- end .stockwatch -->
         	    </div>

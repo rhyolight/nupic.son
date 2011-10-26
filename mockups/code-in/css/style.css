@@ -183,7 +183,8 @@ a:hover {  }
 .block-task-uploaded-code table td a:hover, 
 .form-row .add-field-link a:hover, 
 .block-pager a:hover, 
-.block-leaderboard-scores table a:hover {/*Red text*/
+.block-leaderboard-scores table a:hover, 
+.block-task .block-task-countdown #deadline-extend form .task-btn:hover {/*Red text*/
     color: #d14936;
 }
 .block-status .block-status-user a:hover, 
@@ -1704,6 +1705,7 @@ body {
         .block-task .block-task-countdown {
             background: #b6dcf7;
             float: right;
+            position: relative;
             width: 250px;
         }
             .block-task .block-task-countdown .stopwatch {
@@ -1717,6 +1719,80 @@ body {
             padding-left: 35px;
             padding-right: 25px;
         }
+        .block-task .block-task-countdown #deadline-extend {
+        	display: none;
+        	position: absolute;
+        	bottom: -55px;
+        	left: 18px;
+        	height: 76px;
+        	width: 213px;
+        }
+        	.block-task .block-task-countdown #deadline-extend .deadline-extend-top {
+        		background:url(../images/extend-deadline-top-arrow.png) top center no-repeat;
+        		display: block;
+        		height: 20px;
+        		width: 100%;
+        	}
+        	.block-task .block-task-countdown #deadline-extend .deadline-extend-content {
+        		background: #0082c8;
+        		-moz-border-radius: 7px;
+        		-webkit-border-radius: 7px;
+        		border-radius: 7px;
+        		color: #fff;
+        		height: 56px;
+        	}
+        	.block-task .block-task-countdown #deadline-extend form {
+        		
+        	}
+        	.block-task .block-task-countdown #deadline-extend form .form-row {
+        		color: #fff;
+        		float: left;
+        		font-size: 18px;
+        		margin: 0;
+        		width: auto;
+        	}
+        	.block-task .block-task-countdown #deadline-extend form .form-row input[type="text"] {
+        		float: left;
+        		font-size: 24px;
+        		margin: 12px 0 0 0;
+        		width: 30px;
+        	}
+        	.block-task .block-task-countdown #deadline-extend span.plus, 
+        	.block-task .block-task-countdown #deadline-extend span.time {
+        		float: left;
+        		font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+        		font-weight: normal !important;
+        	}
+        	.block-task .block-task-countdown #deadline-extend span.plus {
+        		font-size: 26px;
+        		line-height: 56px;
+        		margin: 0 4px 0 8px;
+        	}
+        	.block-task .block-task-countdown #deadline-extend span.time {
+        		line-height: 56px;
+        		margin: 0 7px;
+        	}
+        	.block-task .block-task-countdown #deadline-extend form .task-btn {
+        		background: #fff url(../images/dashboard-task-icons.png) no-repeat scroll 8px -81px;
+        		-moz-box-shadow: none;
+        		-webkit-box-shadow: none;
+        		box-shadow: none;
+        		border: none;
+        		border-radius: 10px;
+        		-moz-border-radius: 10px;
+        		-webkit-border-radius: 10px;
+        		color: #0F649D;
+        		display: block;
+        		float: left;
+        		font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+        		font-size: 12px;
+        		font-weight: bold;
+        		line-height: normal !important;
+        		margin: 17px 0 0 0;
+        		padding: 3px 13px 4px 20px;
+        		text-decoration: none;
+        		text-transform: uppercase;
+        	}
 .block-student-featured-task {/*Student featured task*/
     border-top-right-radius: 12px;
     -moz-border-radius-topright: 12px;
@@ -2265,3 +2341,13 @@ form input[type=button] {
 /* @end */
 
 /* @end */
+
+
+
+#preview {
+	display: block;
+	height: 80px;
+	width: 80px;
+}
+
+

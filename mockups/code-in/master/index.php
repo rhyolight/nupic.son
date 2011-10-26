@@ -16,6 +16,7 @@
                 <li><a href="../leaderboard/">Leaderboard</a></li>
                 <li><a href="../form/">Form</a></li>
                 <li><a href="../form-task/">Create a Task Form</a></li>
+                <li><a href="../form-avatar/">Avatar Selection Form</a></li>
                 <li><a href="../task-mentor/">Mentor Task</a></li>
                 <li><a href="../task-student-claimed/">Student Task, claimed</a></li>
                 <li><a href="../task-student-open/">Student Task, open</a></li>
