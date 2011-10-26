@@ -57,7 +57,7 @@ options(
                  "jquery.min", "ranklist", "shell", "json.min", "jlinq",
                  "htmlsanitizer", "LABjs.min", "taggable", "gviz",
                  "webmaster", "gdata", "atom"],
-    css_dir = "soc/content/css",
+    css_dir = "soc/content/css/v2/gsoc/",
     css_files = {
         "jquery-ui/jquery.ui.merged.css": [
             "jquery-ui/jquery.ui.core.css",
