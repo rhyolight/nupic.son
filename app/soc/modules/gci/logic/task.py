@@ -62,7 +62,7 @@ DEF_CLAIM_REQUEST_MSG = ugettext('I would like to work on this task.')
 
 DEF_CLOSED_TITLE = ugettext('Task Closed')
 DEF_CLOSED_MSG = ugettext(
-    'Congratulations, this task has been successfully completed.')
+    'Congratulations, this task has been completed successfully.')
 
 
 DEF_EXTEND_DEADLINE_TITLE = ugettext('Deadline extended')
