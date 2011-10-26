@@ -151,6 +151,10 @@
     tpjs + "jquery/jquery.colorbox.js"
   ];
 
+  s.hashchange = [
+    tpjs + "jquery/jquery.ba-hashchange.js"
+  ];
+
   s.jqueryui = {}
 
   if (melange.config.is_local !== undefined && melange.config.is_local === true) {
