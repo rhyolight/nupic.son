@@ -51,6 +51,9 @@ Select = forms.Select
 TextInput = forms.TextInput
 Textarea = forms.Textarea
 
+# The standard error classes should be available to all importing modules
+ValidationError = forms.ValidationError
+
 
 class RadioInput(forms.RadioInput):
   """The rendering customization to be used for individual radio elements.

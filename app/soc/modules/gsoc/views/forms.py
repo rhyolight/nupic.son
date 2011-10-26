@@ -46,6 +46,9 @@ Select = forms.Select
 TextInput = forms.TextInput
 Textarea = forms.Textarea
 
+# The standard error classes should be available to all importing modules
+ValidationError = forms.ValidationError
+
 
 class GSoCModelForm(forms.ModelForm):
   """Django ModelForm class which uses our implementation of BoundField.
