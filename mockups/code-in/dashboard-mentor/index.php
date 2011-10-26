@@ -54,14 +54,14 @@
             			</form>
             		</div>
             		<div class="block-filter-option block-filter-option-status">
-            			<select>
+            			<select class="uniform">
             				<option>Status: All</option>
             				<option>Status: Open</option>
             				<option>Status: Closed</option>
             			</select>
             		</div>
             		<div class="block-filter-option block-filter-option-difficulty">
-            			<select>
+            			<select class="uniform">
             				<option>Difficulty: All</option>
             				<option>Difficulty: Easy</option>
             				<option>Difficulty: Medium</option>
@@ -223,14 +223,14 @@
             			</form>
             		</div>
             		<div class="block-filter-option block-filter-option-status">
-            			<select>
+            			<select class="uniform">
             				<option>Status: All</option>
             				<option>Status: Open</option>
             				<option>Status: Closed</option>
             			</select>
             		</div>
             		<div class="block-filter-option block-filter-option-difficulty">
-            			<select>
+            			<select class="uniform">
             				<option>Difficulty: All</option>
             				<option>Difficulty: Easy</option>
             				<option>Difficulty: Medium</option>
@@ -299,14 +299,14 @@
             			</form>
             		</div>
             		<div class="block-filter-option block-filter-option-status">
-            			<select>
+            			<select class="uniform">
             				<option>Status: All</option>
             				<option>Status: Open</option>
             				<option>Status: Closed</option>
             			</select>
             		</div>
             		<div class="block-filter-option block-filter-option-difficulty">
-            			<select>
+            			<select class="uniform">
             				<option>Difficulty: All</option>
             				<option>Difficulty: Easy</option>
             				<option>Difficulty: Medium</option>

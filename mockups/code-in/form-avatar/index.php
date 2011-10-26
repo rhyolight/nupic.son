@@ -46,15 +46,78 @@
 	        	    <div class="form-row grid_4 alpha form-row-task-type">
 	        	        <label for="type" class="form-label">Avatar</label>
 	        	        <span class="note">The icon to represent you on various pages on this site</span>
-	        	        
-	        	        <select id="user-avatar" class="mydds">
-	        	              <option value="calendar" selected="selected">Calendar</option>
-	        	              <option value="shopping_cart" title="../images/avatar-test2.png">Shopping Cart</option>
-	        	              <option value="cd" title="../images/avatar-test.png">CD</option>
-	        	              <option value="email" title="../images/avatar-test2.png">Email</option>
-	        	         </select>
-	        	         
-	        	    	<div id="preview"><img src="../images/avatar-test.png" width="80" height="80"></div>
+	        	        <span class="current-avatar-text">Current avatar:</span>
+	        	        <div id="avatar-preview"><img src="../images/avatar-test.png" width="80" height="80"></div>
+	        	        <div id="avatar-picker-container">
+		        	        <div id="avatar-picker">
+		        	        	<select name="avatar" id="avatar">
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    <option value="avatar3" title="../images/avatar-sm-3.png"></option>
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    <option value="avatar3" title="../images/avatar-sm-3.png"></option>
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    <option value="avatar3" title="../images/avatar-sm-3.png"></option>
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    <option value="avatar3" title="../images/avatar-sm-3.png"></option>
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    <option value="avatar3" title="../images/avatar-sm-3.png"></option>
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    <option value="avatar3" title="../images/avatar-sm-3.png"></option>
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    <option value="avatar3" title="../images/avatar-sm-3.png"></option>
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    <option value="avatar3" title="../images/avatar-sm-3.png"></option>
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	    <option value="avatar3" title="../images/avatar-sm-3.png"></option>
+		        	        	    <option value="avatar1" title="../images/avatar-sm-1.png"></option>
+		        	        	    <option value="avatar2" title="../images/avatar-sm-2.png"></option>
+		        	        	  </select>
+		        	        </div>
+		        	        <div id="avatar-color-picker">
+		        	        	<select name="avatar-color" id="avatar-color">
+		        	        	    <option value="blue" title="../images/avatar-color-blue.png">Blue</option>
+		        	        	    <option value="green" title="../images/avatar-color-green.png">Green</option>
+		        	        	    <option value="brown" title="../images/avatar-color-brown.png">Brown</option>
+		        	        	    <option value="orange" title="../images/avatar-color-orange.png">Orange</option>
+		        	        	    <option value="red" title="../images/avatar-color-red.png">Red</option>
+		        	        	    <option value="pink" title="../images/avatar-color-pink.png">Pink</option>
+		        	        	    <option value="purple" title="../images/avatar-color-purple.png">Purple</option>
+		        	        	  </select>
+		        	        </div>
+		        	       </div>
 	        	    </div>
 	
 	        	    <div class="form-row grid_4 omega form-row-task-tags">

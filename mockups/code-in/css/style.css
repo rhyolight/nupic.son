@@ -1710,7 +1710,7 @@ body {
         .block-task .block-task-countdown .task-btn-extended-deadline {
             background-position: 20px -81px;
             margin-top: 0;
-            margin-left: 17px;
+            margin-left: 22px;
             margin-right: 0;
             padding-left: 35px;
             padding-right: 25px;
@@ -2337,12 +2337,36 @@ form fieldset legend {
 
 /* @end */
 
-
-
-#preview {
-	display: block;
+/* @group Avatar picker */
+#avatar-preview {
+	background: #fff;
+	border: 1px solid #c5c5c5;
+		-moz-border-radius: 3px;
+		-webkit-border-radius: 3px;
+		border-radius: 3px;
+	float: left;
 	height: 80px;
+	padding: 5px;
 	width: 80px;
 }
+#avatar-picker-container {
+	float: left;
+	margin-left: 10px;
+}
+#avatar-picker {
+	float: left;
+}
+#avatar-color-picker {
+	float: left;
+	clear: left;
+	margin-top: 10px;
+}
+span.current-avatar-text {
+	color: #656565;
+	display: block;
+	margin: 5px 0 5px 0;
+	font-size: 14px;
+}
+/* @end */
 
 

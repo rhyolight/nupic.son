@@ -55,7 +55,7 @@
     <script src="../js/jquery.uniform.min.js" type="text/javascript"></script>
     <script type="text/javascript">
       $(function(){
-        $("input:checkbox, input:radio, select").uniform();
+        $("input:checkbox, input:radio, select.uniform").uniform();
       });
     </script>
     
@@ -85,6 +85,9 @@
         });
     });
     </script>
+    
+    <script src="../js/jquery.dd.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dd.css" />
     
     <!-- 
     ////////////////////////

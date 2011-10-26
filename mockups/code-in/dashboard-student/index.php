@@ -94,7 +94,7 @@
             <div class="block-title">My Completed Tasks</div>
             <div class="block-filter clearfix">
             	<div class="block-filter-option block-filter-option-difficulty">
-            		<select>
+            		<select class="uniform">
             			<option>Difficulty: All</option>
             			<option>Difficulty: Easy</option>
             			<option>Difficulty: Medium</option>
