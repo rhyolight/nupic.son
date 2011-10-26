@@ -28,7 +28,7 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 from soc.models.base import ModelWithFieldAttributes
-from soc.models.group import Group
+from soc.models.organization import Organization
 from soc.models.user import User
 
 
@@ -64,9 +64,8 @@ class Request(ModelWithFieldAttributes):
       verbose_name=ugettext('User'))
 
   #: The group this request is for
-  group = db.ReferenceProperty(
-      reference_class=Group,
-      required=True, collection_name='requests',
+  org = db.ReferenceProperty(
+      reference_class=Organization, required=True, collection_name='requests',
       verbose_name=ugettext('Group'))
 
   #: An optional message shown to the receiving end of this request

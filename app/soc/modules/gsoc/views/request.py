@@ -78,7 +78,7 @@ class RequestPage(RequestHandler):
     query = db.Query(Request)
     query.filter('type = ', 'Request')
     query.filter('user = ', self.data.user)
-    query.filter('group = ', self.data.organization)
+    query.filter('org = ', self.data.organization)
     if query.get():
       raise AccessViolation(
           'You have already sent a request to this organization.')
@@ -120,7 +120,7 @@ class RequestPage(RequestHandler):
 
     # create a new invitation entity
     request_form.cleaned_data['user'] = self.data.user
-    request_form.cleaned_data['group'] = self.data.organization
+    request_form.cleaned_data['org'] = self.data.organization
     request_form.cleaned_data['role'] = 'mentor'
     request_form.cleaned_data['type'] = 'Request'
 
@@ -167,7 +167,7 @@ class ShowRequest(RequestHandler):
     self.data.invite = self.data.request_entity = Request.get_by_id(id)
     self.check.isRequestPresent(self.data.request_entity, id)
 
-    self.data.organization = self.data.request_entity.group
+    self.data.organization = self.data.request_entity.org
     self.data.invited_user = self.data.requester = self.data.request_entity.user
 
     if self.data.POST:

@@ -123,7 +123,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
     query.filter('type', 'Invitation')
     query.filter('user', invited_user)
     query.filter('role', self.request_data.kwargs['role'])
-    query.filter('group', self.request_data.organization)
+    query.filter('org', self.request_data.organization)
     if query.get():
       raise djangoforms.ValidationError(
           'An invitation to this user has already been sent.')
@@ -207,7 +207,7 @@ class InvitePage(RequestHandler):
 
     # create a new invitation entity
 
-    invite_form.cleaned_data['group'] = self.data.organization
+    invite_form.cleaned_data['org'] = self.data.organization
     invite_form.cleaned_data['role'] = self.data.kwargs['role']
     invite_form.cleaned_data['type'] = 'Invitation'
 
@@ -264,7 +264,7 @@ class ShowInvite(RequestHandler):
     self.data.invite = Request.get_by_id(id)
     self.check.isRequestPresent(self.data.invite, id)
 
-    self.data.organization = self.data.invite.group
+    self.data.organization = self.data.invite.org
     self.data.invited_user = self.data.invite.user
 
     if self.data.POST:
