@@ -42,6 +42,7 @@ from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
 from soc.modules.gci.models.task import TASK_IN_PROGRESS
+from soc.modules.gci.models.work_submission import GCIWorkSubmission
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_patterns
@@ -85,6 +86,16 @@ class CommentForm(gci_forms.GCIModelForm):
           ugettext('Comment title cannot be empty.'), code='invalid')
 
     return title
+
+
+class WorkSubmissionForm(gci_forms.GCIModelForm):
+  """Django form for submitting work.
+  """
+
+  class Meta:
+    model = GCIWorkSubmission
+    css_prefix = 'gci_work_submission'
+    fields = ['url_to_work', 'upload_of_work']
 
 
 class TaskViewPage(RequestHandler):
@@ -369,8 +380,10 @@ class WorkSubmissions(Template):
 
       if task.status in TASK_IN_PROGRESS and \
           datetime.datetime.utcnow() < task.deadline:
-        # Add the form for allowing uploads
-        context['upload_form'] = True
+        if self.data.POST and 'submit_work' in self.data.GET:
+          context['work_form'] = WorkSubmissionForm(self.data.POST)
+        else:
+          context['work_form'] = WorkSubmissionForm()
 
     return context
 

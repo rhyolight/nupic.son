@@ -34,6 +34,7 @@ from soc.logic.exceptions import RedirectRequest
 from soc.views.helper import access_checker
 from soc.views.helper import request_data
 
+from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
 
 
@@ -53,9 +54,9 @@ DEF_NO_TASK_EDIT_PRIV_MSG_FMT = ugettext(
     'You do not have sufficient privileges to edit a new task for '
     'the organization %s.' )
 
-DEF_NO_GSOC_ORG_MEMBER_MSG = ugettext(
+DEF_NO_PREV_ORG_MEMBER_MSG = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
-    'organization in Google Code In.')
+    'organization in Google Summer of Code or Google Code In.')
 
 DEF_TASK_UNEDITABLE_STATUS_MSG = ugettext(
     'The task cannot be edited because it is already claimed once.')
@@ -173,8 +174,8 @@ class AccessChecker(access_checker.AccessChecker):
       raise RedirectRequest(age_check_url)
 
   def canTakeOrgApp(self):
-    """A user can take the GCI org app if he/she participated in GSoC in a role
-    other than student.
+    """A user can take the GCI org app if he/she participated in GSoC or GCI
+    as a non-student.
     """
     from soc.modules.gsoc.models.profile import GSoCProfile
 
@@ -184,11 +185,16 @@ class AccessChecker(access_checker.AccessChecker):
     q.filter('is_student', False)
     q.filter('status IN', ['active', 'inactive'])
     q.filter('user', self.data.user)
+    gsoc_profile = q.get()
 
-    profile = q.get()
+    q = GCIProfile.all()
+    q.filter('is_student', False)
+    q.filter('status IN', ['active', 'inactive'])
+    q.filter('user', self.data.user)
+    gci_profile = q.get()
 
-    if not profile:
-      raise AccessViolation(DEF_NO_GSOC_ORG_MEMBER_MSG)
+    if not (gsoc_profile or gci_profile):
+      raise AccessViolation(DEF_NO_PREV_ORG_MEMBER_MSG)
 
   def isBeforeAllWorkStopped(self):
     """Raises AccessViolation if all work on tasks has stopped.
