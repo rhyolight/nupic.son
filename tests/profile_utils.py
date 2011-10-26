@@ -137,7 +137,8 @@ class ProfileHelper(object):
     if not self.profile:
       return self
     if self.profile.student_info:
-      self.profile.student_info.delete()
+      self.profile.student_info = None
+      self.profile.put()
     return self.profile
 
   def createInactiveStudent(self):
