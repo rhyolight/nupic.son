@@ -324,7 +324,7 @@ class TaskInformation(Template):
         context['button_delete'] = True
 
     if is_mentor:
-      context['button_edit'] = task.status == 'Open' and not self.data.comments
+      context['button_edit'] = task.status not in ['Closed', 'Invalid']
       context['button_assign'] = task.status == 'ClaimRequested'
       context['button_unassign'] = task.status in ACTIVE_CLAIMED_TASK
       context['button_close'] = task.status == 'NeedsReview'
