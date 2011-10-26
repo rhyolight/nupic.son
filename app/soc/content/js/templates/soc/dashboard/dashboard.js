@@ -18,27 +18,40 @@
 
 melange.templates.inherit(
   function (_self, context) {
-    jQuery('.' + context.dashboard_link_class).bind('click', function() {
-      var target_str = jQuery(this).attr('href') + context.dashboard_id_suffix;
-      var dashboard = jQuery(target_str);
+    // Bind an event to window.onhashchange that, when the hash changes, gets
+    // the hash and shows the related dashboard
+    jQuery(window).hashchange(function() {
+      var hash = location.hash;
+
+      // targets the link to dashboard of current hash
+      var dashboard_link = jQuery('.' + context.dashboard_link_class + '[href="' + hash + '"]');
+      if ( !dashboard_link.length ) {
+        // if nothing is targeted, targets the link to main dashboard
+        hash = '#main';
+        dashboard_link = jQuery('.' + context.dashboard_link_class + '[href="' + hash + '"]');
+      }
+
+      var current_dasboard = jQuery(hash + context.dashboard_id_suffix);
 
       // hide other dashboards
       jQuery('.' + context.dashboard_class).addClass('disabled');
-      // show clicked dashboard
-      dashboard.removeClass('disabled').show();
+      // show current dashboard
+      current_dasboard.removeClass('disabled').show();
 
-      // check if this dashboard contain components
-      if (jQuery(this).hasClass(context.component_link_class)) {
-        jQuery('.' + context.list_container_class, dashboard).each(function() {
+      // check if this dashboard contains components
+      if (dashboard_link.hasClass(context.component_link_class)) {
+        // if it does then trigger the list to be loaded
+        jQuery('.' + context.list_container_class, current_dasboard).each(function() {
           var extracted_id = /^(\w+[^\d+])(\d+)$/.exec(jQuery(this).attr('id'));
           if (extracted_id !== null) {
             melange.list.list_objects.get(extracted_id[2]).init();
           }
         });
       }
-
-      return false;
     });
+
+    // Since the event is only triggered when the hash changes, we need to
+    // trigger the event now, to handle the hash the page may have loaded with.
+    jQuery(window).hashchange();
   }
 );
-
