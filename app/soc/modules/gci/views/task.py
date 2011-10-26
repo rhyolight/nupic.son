@@ -219,9 +219,6 @@ class TaskViewPage(RequestHandler):
       task_logic.delete(task)
       self.redirect.homepage().to()
       return
-    elif button_name == 'button_edit':
-      self.redirect.id().to('gci_edit_task')
-      return
     elif button_name == 'button_assign':
       task_logic.assignTask(task, task.student, self.data.profile)
     elif button_name == 'button_unassign':
@@ -329,13 +326,10 @@ class TaskInformation(Template):
     is_owner = task_logic.isOwnerOfTask(task, profile)
 
     if is_org_admin:
-      if task.status == 'Open' and not self.data.comments:
-        # tasks may be removed as long as there is no comment or claim
-        context['button_unpublish'] = True
-        context['button_delete'] = True
+      context['button_unpublish'] = not task.student
+      context['button_delete'] = not task.student
 
     if is_mentor:
-      context['button_edit'] = task.status not in ['Closed', 'Invalid']
       context['button_assign'] = task.status == 'ClaimRequested'
       context['button_unassign'] = task.status in ACTIVE_CLAIMED_TASK
       context['button_close'] = task.status == 'NeedsReview'
