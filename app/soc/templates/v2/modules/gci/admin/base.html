@@ -107,10 +107,14 @@ limitations under the License.
             });
       {% endfor %}
     },
-    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/admin.js", {
+    dep.hashchange,
+    null,
+    tc("/soc/content/{{ app_version }}/js/templates/soc/dashboard/dashboard.js", {
       'dashboard_class': 'dashboard',
       'dashboard_link_class': 'dashboard-link',
-      'dashboard_id_suffix': '-dashboard'
+      'dashboard_id_suffix': '-dashboard',
+      'component_link_class': 'component-link',
+      'list_container_class': 'melange-list-container',
     })
   ]
 {% endblock dependencies %}
