@@ -472,11 +472,10 @@ def delete(task):
   db.run_in_transaction(task_delete_txn, task)
 
 
-def getFeaturedTask(current_timeline, program):
+def getFeaturedTask(program):
   """Return a featured task for a given program.
 
   Args:
-    current_timeline: where we are currently on the program timeline
     program: entity representing the program from which the featured
         tasks should be fetched
   """

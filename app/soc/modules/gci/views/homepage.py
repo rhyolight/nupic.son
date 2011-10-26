@@ -178,11 +178,11 @@ class Homepage(RequestHandler):
     if current_timeline == 'student_signup_period':
       context['timeline'] = Timeline(self.data)
 
-    featured_task = task_logic.getFeaturedTask(
-        current_timeline, self.data.program)
+    if current_timeline in ['student_signup_period',
+        'working_period', 'offseason']:
+      featured_task = task_logic.getFeaturedTask(self.data.program)
 
-    if featured_task:
-      context['featured_task'] = FeaturedTask(
-        self.data, featured_task)
+      if featured_task:
+        context['featured_task'] = FeaturedTask(self.data, featured_task)
 
     return context
