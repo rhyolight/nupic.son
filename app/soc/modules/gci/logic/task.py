@@ -507,15 +507,8 @@ def getFeaturedTask(current_timeline, program):
       if q.count() == 0:
         q = queryForTask()
 
-  if current_timeline == 'student_signup_period':
-    task_status = ['Open', 'Reopened', 'ClaimRequested', 'Claimed',
-                   'ActionNeeded', 'AwaitingRegistration', 'NeedsWork',
-                   'NeedsReview']
-  else:
-    task_status = ['Closed']
-
   for task in q:
-    if task.status in task_status:
+    if task.status in CLAIMABLE + ACTIVE_CLAIMED_TASK:
       new_task = task
       break
   else:
