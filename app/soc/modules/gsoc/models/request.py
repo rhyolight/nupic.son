@@ -26,6 +26,7 @@ from soc.models.request import Request
 
 class GSoCRequest(Request):
   """GSoCequest model.
+
   See soc.models.request.Request model for details.
   """
   pass

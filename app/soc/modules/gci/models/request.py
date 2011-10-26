@@ -26,6 +26,7 @@ from soc.models.request import Request
 
 class GCIRequest(Request):
   """GCIRequest model.
+
   See soc.models.request.Request model for details.
   """
   pass
