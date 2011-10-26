@@ -137,6 +137,7 @@ class ProfileHelper(object):
     if not self.profile:
       return self
     if self.profile.student_info:
+      self.profile.student_info.delete()
       self.profile.student_info = None
       self.profile.put()
     return self.profile
@@ -435,7 +436,8 @@ class GCIProfileHelper(ProfileHelper):
     gci_task_helper = GCITaskHelper(self.program)
     tasks = []
     for _ in xrange(n):
-        tasks.append(gci_task_helper.createTask(status, org, mentor, student))
+        task = gci_task_helper.createTask(status, org, mentor, student)
+        tasks.append(task)
     return tasks
 
   def createMentorWithTask(self, status, org):
@@ -451,6 +453,6 @@ class GCIProfileHelper(ProfileHelper):
     gci_task_helper = GCITaskHelper(self.program)
     tasks = []
     for _ in xrange(n):
-        tasks.append(gci_task_helper.createTask(status, org,
-                                                self.profile))
+        task = gci_task_helper.createTask(status, org, self.profile)
+        tasks.append(task)
     return tasks
