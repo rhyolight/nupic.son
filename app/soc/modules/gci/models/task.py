@@ -41,11 +41,18 @@ from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
 
+# states in which a task does not show up publicly
 UNPUBLISHED = ['Unpublished', 'Unapproved']
+# states in which a student can claim a task
 CLAIMABLE = ['Open', 'Reopened']
+# States in which we consider the task to count towards the task quota of
+# the student.
 ACTIVE_CLAIMED_TASK = ['ClaimRequested', 'Claimed', 'ActionNeeded',
                        'AwaitingRegistration', 'NeedsWork', 'NeedsReview']
-UPLOAD_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork', 'NeedsReview']
+# States in which we consider that the student can work on a task as long
+# as the deadline has not passed.
+TASK_IN_PROGRESS = ['Claimed', 'ActionNeeded', 'NeedsWork', 'NeedsReview']
+# states in which the student is allowed to transition the task to NeedsReview
 SEND_FOR_REVIEW_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork']
 
 

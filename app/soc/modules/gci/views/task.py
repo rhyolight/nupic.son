@@ -40,8 +40,8 @@ from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
-from soc.modules.gci.models.task import UPLOAD_ALLOWED
 from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
+from soc.modules.gci.models.task import TASK_IN_PROGRESS
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_patterns
@@ -328,7 +328,7 @@ class TaskInformation(Template):
       context['button_assign'] = task.status == 'ClaimRequested'
       context['button_unassign'] = task.status in ACTIVE_CLAIMED_TASK
       context['button_close'] = task.status == 'NeedsReview'
-      context['button_extend_deadline'] = task.status in UPLOAD_ALLOWED
+      context['button_extend_deadline'] = task.status in TASK_IN_PROGRESS
 
     if is_student:
       if not self.data.timeline.tasksClaimEnded():
@@ -367,7 +367,7 @@ class WorkSubmissions(Template):
       context['send_for_review'] = self.data.work_submissions and \
           task.status in SEND_FOR_REVIEW_ALLOWED
 
-      if task.status in UPLOAD_ALLOWED and \
+      if task.status in TASK_IN_PROGRESS and \
           datetime.datetime.utcnow() < task.deadline:
         # Add the form for allowing uploads
         context['upload_form'] = True
