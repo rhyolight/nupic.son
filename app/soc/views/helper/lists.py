@@ -679,7 +679,8 @@ class ListContentResponse(object):
     """
     columns = {}
     for col_id, func in self._config._col_functions.iteritems():
-      columns[col_id] = func(entity, *args, **kwargs)
+      val = func(entity, *args, **kwargs)
+      columns[col_id] = val if val != None else ''
 
     row = {}
     buttons= {}
