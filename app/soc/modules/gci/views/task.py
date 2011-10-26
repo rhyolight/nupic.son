@@ -331,7 +331,7 @@ class TaskInformation(Template):
       context['button_extend_deadline'] = task.status in UPLOAD_ALLOWED
 
     if is_student:
-      if self.data.timeline.tasksClaimEnded():
+      if not self.data.timeline.tasksClaimEnded():
         context['button_claim'] = task_logic.canClaimRequestTask(
             task, profile.user)
 
