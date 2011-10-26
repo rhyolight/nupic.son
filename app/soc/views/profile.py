@@ -199,7 +199,6 @@ class ProfilePage(object):
     account = users.get_current_user()
     user_form.cleaned_data['account'] = account
     user_form.cleaned_data['user_id'] = account.user_id()
-    user_form.cleaned_data['name'] = ''
     # set the new user entity in self.data.user
     self.data.user = user_form.create(commit=False, key_name=key_name)
     dirty.append(self.data.user)

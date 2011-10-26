@@ -81,7 +81,7 @@ class User(soc.models.linkable.Linkable):
   #: (though this is not recommended), or a nick name or some other public
   #: alias.  Public names can be any valid UTF-8 text.
   name = db.StringProperty(
-      required=True, verbose_name=ugettext('Public name'))
+      default='', required=False, verbose_name=ugettext('Public name'))
   name.help_text = ugettext(
       'Human-readable name (UTF-8) that will be displayed publicly on the'
       ' site.')
