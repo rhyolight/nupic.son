@@ -84,6 +84,9 @@ class TimelineHelper(object):
   def orgsAnnouncedOn(self):
     return self.timeline.accepted_organization_announced_deadline
 
+  def beforeProgramStart(self):
+    return isBefore(self.timeline.program_start)
+
   def programActiveBetween(self):
     return (self.timeline.program_start, self.timeline.program_end)
 

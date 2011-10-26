@@ -42,19 +42,22 @@ class TimelineHelper(request_data.TimelineHelper):
   def currentPeriod(self):
     """Return where we are currently on the timeline.
     """
-    if not self.programActive():
-      return 'offseason'
+    # This is required as a protection against the cases when the
+    # org apps are not created for the program and hence there is
+    # no way we can determine if the org app has started.
+    if self.beforeProgramStart():
+      return 'kickoff_period'
 
     if self.beforeOrgSignupStart():
       return 'kickoff_period'
 
-    if self.afterOrgSignupStart():
+    if self.orgSignup():
       return 'org_signup_period'
 
-    if self.afterStudentSignupStart():
+    if self.studentSignup():
       return 'student_signup_period'
 
-    if self.tasksPubliclyVisible():
+    if self.tasksPubliclyVisible() and self.programActive():
       return 'working_period'
 
     return 'offseason'
