@@ -57,7 +57,7 @@ options(
                  "jquery.min", "ranklist", "shell", "json.min", "jlinq",
                  "htmlsanitizer", "LABjs.min", "taggable", "gviz",
                  "webmaster", "gdata", "atom"],
-    css_dir = "soc/content/css/v2/gsoc/",
+    css_dirs = ["soc/content/css/v2/gsoc/", "soc/content/css/v2/gci"],
     css_files = {
         "jquery-ui/jquery.ui.merged.css": [
             "jquery-ui/jquery.ui.core.css",
@@ -276,15 +276,16 @@ def build_symlinks(options):
 def build_css(options):
   """Compiles the css files into one."""
 
-  for target, components in options.css_files.iteritems():
-    target = options.app_folder / options.css_dir / target
-    f = target.open('w')
+  for css_dir in options.css_dirs:
+    for target, components in options.css_files.iteritems():
+      target = options.app_folder / css_dir / target
+      f = target.open('w')
 
-    for component in components:
-      source = options.app_folder / options.css_dir / component
-      dry("cat %s >> %s" % (source, target),
-          lambda: shutil.copyfileobj(source.open('r'), f))
-    f.close()
+      for component in components:
+        source = options.app_folder / css_dir / component
+        dry("cat %s >> %s" % (source, target),
+            lambda: shutil.copyfileobj(source.open('r'), f))
+      f.close()
 
 
 @task
