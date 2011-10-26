@@ -226,7 +226,7 @@ class TaskViewPage(RequestHandler):
     elif button_name == 'button_claim':
       task_logic.claimRequestTask(task, self.data.profile)
     elif button_name == 'button_unclaim':
-      pass
+      task_logic.unclaimTask(task)
     elif button_name == 'button_subscribe':
       profile_key = self.data.profile.key()
       def txn():

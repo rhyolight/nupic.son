@@ -258,6 +258,29 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     comments = self.task.comments()
     self.assertLength(comments, 1)
 
+  def testPostButtonUnclaim(self):
+    """Tests the unclaim task button.
+    """
+    self.data.createStudent()
+
+    self.task.status = 'ClaimRequested'
+    self.task.student = self.data.profile
+    self.task.put()
+
+    url = '%s?button' %self._taskPageUrl(self.task)
+    response = self.post(url, {'button_unclaim': ''})
+
+    # check if the task is properly opened
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'Reopened')
+    self.assertEqual(task.student, None)
+    self.assertEqual(task.deadline, None)
+
+    # check if a comment has been created
+    comments = self.task.comments()
+    self.assertLength(comments, 1)
+
   def testPostButtonSubscribe(self):
     """Tests the subscribe button.
     """

@@ -86,6 +86,10 @@ DEF_UNASSIGNED_TITLE = ugettext('Task Reopened')
 DEF_UNASSIGNED_MSG = ugettext('This task has been Reopened.')
 
 
+DEF_UNCLAIMED_TITLE = ugettext('Claim Removed')
+DEF_UNCLAIMED_MSG = ugettext(
+    'The claim on this task has been removed, someone else can claim it now.')
+
 # TODO(ljvderijk): Add basic subscribers when task is created
 
 def isOwnerOfTask(task, profile):
@@ -257,7 +261,7 @@ def claimRequestTask(task, student):
   that someone wants to work on this task.
 
   Args:
-    task: The task to extend the deadline for.
+    task: The task to claim.
     student: GCIProfile of the student that wants to claim the task.
   """
   task.status = 'ClaimRequested'
@@ -278,6 +282,35 @@ def claimRequestTask(task, student):
     comment_txn()
 
   return db.run_in_transaction(claimRequestTaskTxn)
+
+
+def unclaimTask(task):
+  """Used when a student requests to unclaim a task.
+
+  Args:
+    task: The task to unclaim.
+  """
+  student = task.student
+
+  task.student = None
+  task.status = 'Reopened'
+  task.deadline = None
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_UNCLAIMED_TITLE,
+      'content': DEF_UNCLAIMED_MSG,
+      'created_by': student.user
+  }
+  comment = GCIComment(**comment_props)
+
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+
+  def unclaimTaskTxn():
+    task.put()
+    comment_txn()
+
+  return db.run_in_transaction(unclaimTaskTxn)
 
 
 def updateTaskStatus(task):
