@@ -25,7 +25,7 @@
                 <li><a href="../delete-account/">Delete Account</a></li>
                 <li><a href="../delete-account-confirm/">Delete Account Confirmation</a></li>
                 <li><a href="../jquery-ui/">jQuery UI Demo</a></li>
-                <!--<li><a href="../formatting/">Basic page</a></li>-->
+                <li><a href="../404/">404 Error</a></li>
             </ul>            
         </div>
         <!--
