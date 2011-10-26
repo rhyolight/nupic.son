@@ -41,7 +41,9 @@
                     <span class="count">Top 5%</span>
                 </div>
             </div>
+            <form action="#" method="post">
             <input type="submit" class="btn" value="Search for tasks" />
+            </form>
         </div>
         <!-- end .block.block-user-welcome -->
         <div class="block block-task block-featured-task block-student-featured-task level-difficult">

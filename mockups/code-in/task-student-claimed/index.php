@@ -34,7 +34,9 @@
                 </div>
                 <div class="block-task-action">
                     <span class="block-task-action-title">This task is claimed.</span>
+                    <form action="#" method="post">
                     <input type="submit" class="task-btn task-btn-subscribe-updates" value="Subscribe to updates" />
+                    </form>
                 </div>
             </div>
         	<div class="block-task-difficulty">

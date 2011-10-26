@@ -34,10 +34,12 @@
                 </div>
                 <div class="block-task-action">
                     <span class="block-task-action-title">You are mentor for this task.</span>
+                    <form action="#" method="post">
                     <input type="submit" class="task-btn task-btn-close" value="Mark task as closed" />
                     <input type="submit" class="task-btn task-btn-unassign" value="Unassign task" />
                     <input type="submit" class="task-btn task-btn-edit" value="Edit task" />
                     <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+                    </form>
                 </div>
             </div>
         	<div class="block-task-difficulty">

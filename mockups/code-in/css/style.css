@@ -178,13 +178,13 @@ a:hover {  }
 .block-news .block-news-item a:hover, 
 .block-featured-task .block-featured-task-link a:hover, 
 .task-single a:hover, 
-.task-btn:hover, 
+input.task-btn:hover, 
 .single-comment a:hover, 
 .block-task-uploaded-code table td a:hover, 
 .form-row .add-field-link a:hover, 
 .block-pager a:hover, 
 .block-leaderboard-scores table a:hover, 
-.block-task .block-task-countdown #deadline-extend form .task-btn:hover {/*Red text*/
+.block-task .block-task-countdown #deadline-extend form input.task-btn:hover {/*Red text*/
     color: #d14936;
 }
 .block-status .block-status-user a:hover, 
@@ -194,8 +194,6 @@ a:hover {  }
 }
 .block-how-it-works .block-how-it-works-start a:hover, 
 a.btn:hover, 
-form input[type=submit]:hover, 
-form input[type=button]:hover, 
 input.button:hover, 
 input.btn:hover {/*Dark blue background*/
     background-color: #0F649D;
@@ -205,8 +203,6 @@ input.btn:hover {/*Dark blue background*/
 /* @group Buttons */
 button::-moz-focus-inner, input[type="button"]::-moz-focus-inner, input[type="submit"]::-moz-focus-inner { border: 0 !important; padding: 0 !important; }
 a.btn, 
-form input[type=submit],  
-form input[type=button], 
 input.button, 
 input.btn {
     background: #c53926 url(../images/arrow-white-lg.png) 95% 50% no-repeat;
@@ -232,7 +228,7 @@ input.btn {
         -moz-box-shadow: 1px 2px 3px #295c77;
         -webkit-box-shadow: 1px 2px 3px #295c77;
     }
-.task-btn {
+input.task-btn {
     background: #fff url(../images/dashboard-task-icons.png) 7px 5px no-repeat;
     border: none;
     border-radius: 10px;
@@ -249,37 +245,37 @@ input.btn {
     text-decoration: none;
     text-transform: uppercase;
 }
-    .task-btn-edit {
+    input.task-btn-edit {
         
     }
-    .task-btn-delete, 
-    .task-btn-unclaim {
+    input.task-btn-delete, 
+    input.task-btn-unclaim {
         background-position: 7px -16px;
         padding-left: 18px;
     }
-    .task-btn-close {
+    input.task-btn-close {
         background-position: 7px -37px;
         padding-left: 23px;
     }
-    .task-btn-approve {
+    input.task-btn-approve {
         background-position: 7px -37px;
         padding-left: 20px;
     }
-    .task-btn-unassign {
+    input.task-btn-unassign {
         background-position: 7px -58px;
     }
-    .task-btn-extended-deadline {
+    input.task-btn-extended-deadline {
         background-position: 7px -80px;
     }
-    .task-btn-subscribe-updates {
+    input.task-btn-subscribe-updates {
         background: #fff;
         padding-left: 15px;
         padding-right: 15px;
     }
-    .task-btn-publish {
+    input.task-btn-publish {
         background-position: 7px -103px;
     }
-input.delete-btn[type=button], input.delete-btn[type=submit] {
+input.delete-btn {
 	background: #eac0c0;
 		border-radius: none;
 		-moz-border-radius: none;
@@ -287,6 +283,7 @@ input.delete-btn[type=button], input.delete-btn[type=submit] {
 		box-shadow: none;
 		-moz-box-shadow: none;
 		-webkit-box-shadow: none;
+	border: none;
 	color: #8a0005;
 	float: right;
 	font-family: "Trebuchet MS","Lucida Sans Unicode","Lucida Grande","Lucida Sans",Arial,sans-serif;
@@ -296,7 +293,7 @@ input.delete-btn[type=button], input.delete-btn[type=submit] {
 	padding: 3px 6px;
 	text-transform: uppercase;
 }
-	input.delete-btn[type=button]:hover, input.delete-btn[type=submit]:hover {
+	input.delete-btn:hover {
 		background: #eac0c0;
 	}
 /* @end */
@@ -835,8 +832,7 @@ body {
 	.block-delete-account .block-content .delete-btn-p {
 		text-align: center;
 	}
-	.block-delete-account .block-content input.delete-btn[type=button], 
-	.block-delete-account .block-content input.delete-btn[type=submit] {
+	.block-delete-account .block-content input.delete-btn {
 		background: #c32d00;
 		color: #fff;
 		display: inline;
@@ -2294,13 +2290,12 @@ form fieldset legend {
     clear: both;
     margin-top: 10px;
 }
-    .form-row-buttons input:first-child {
+    .form-row-buttons input.button:first-child {
         margin-right: 20px;
     }
-form input[type=submit], 
-form input[type=button] {
-    background: #c53926 url(../images/arrow-white-lg.png) 90% 50% no-repeat;
-}
+    .form-row-buttons input.button {
+    	background-position: 90% 50%;
+    }
 
 /* @group Task creation */
 .form-row-task-completion-time, 
