@@ -47,6 +47,7 @@ class Callback(object):
     from soc.modules.gci.views import dashboard
     from soc.modules.gci.views import document
     from soc.modules.gci.views import homepage
+    from soc.modules.gci.views import invite
     from soc.modules.gci.views import org_app
     from soc.modules.gci.views import profile
     from soc.modules.gci.views import program
@@ -64,6 +65,8 @@ class Callback(object):
     self.views.append(document.EventsPage())
     self.views.append(document.DocumentListPage())
     self.views.append(homepage.Homepage())
+    self.views.append(invite.InvitePage())
+    self.views.append(invite.ManageInvite())
     self.views.append(org_app.GCIOrgAppEditPage())
     self.views.append(org_app.GCIOrgAppPreviewPage())
     self.views.append(org_app.GCIOrgAppRecordsList())
