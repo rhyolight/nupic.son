@@ -96,6 +96,9 @@ DEF_REQUEST_NOT_EXISTS_MSG_FMT = ugettext(
 DEF_INVITE_DOES_NOT_EXIST = ugettext(
     'There is no invite with id %(id)s.')
 
+DEF_INVITE_CANNOT_BE_WITHDRAWN = ugettext(
+    'Only pending invitations may be withdrawn.')
+
 DEF_IS_NOT_STUDENT_MSG = ugettext(
     'This page is inaccessible because you do not have a student role '
     'in the program.')
@@ -942,6 +945,20 @@ class AccessChecker(BaseAccessChecker):
     # only withdrawn requests may be resubmitted
     if self.data.invite.status != 'withdrawn':
       raise AccessViolation(DEF_NOT_VALID_REQUEST_MSG)
+
+  def canInviteBeWithdrawn(self):
+    """Checks if the invitation may be withdrawn.
+    """
+
+    assert isSet(self.data.invite)
+
+    # check if the entity represents an invitation
+    if self.data.invite.type != INVITATION_TYPE:
+      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
+
+    # only pending requests may be withdrawn
+    if self.data.invite.status != 'pending':
+      raise AccessViolation(DEF_INVITE_CANNOT_BE_WITHDRAWN)
 
   def canRespondToRequest(self):
     """Checks if the current user can accept/reject the request.
