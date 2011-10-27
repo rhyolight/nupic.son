@@ -48,7 +48,7 @@ class GCITaskHelper(object):
     return seeder_logic.seed(model, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
 
-  def createTask(self, status, org, mentor, student=None):
+  def createTask(self, status, org, mentor, student=None, override={}):
     """Creates a GCI task with only one mentor.
 
     Args:
@@ -57,9 +57,9 @@ class GCITaskHelper(object):
       mentor: mentor for the task
       student: student who claimed the task
     """
-    return self.createTaskWithMentors(status, org, [mentor], student)
+    return self.createTaskWithMentors(status, org, [mentor], student, override)
 
-  def createTaskWithMentors(self, status, org, mentors, student=None):
+  def createTaskWithMentors(self, status, org, mentors, student=None, override={}):
     """Creates a GCI task with mentors.
 
     Args:
@@ -77,6 +77,7 @@ class GCITaskHelper(object):
         'created_on': datetime.datetime.now() - datetime.timedelta(20),
         'modified_on': datetime.datetime.now() - datetime.timedelta(10)
     }
+    properties.update(override)
     return self.seed(GCITask, properties)
 
   def createWorkSubmission(self, task, student, url='http://www.example.com/'):
