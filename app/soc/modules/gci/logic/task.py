@@ -35,6 +35,7 @@ from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import CLAIMABLE
+from soc.modules.gci.models.task import TASK_IN_PROGRESS
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
@@ -124,6 +125,20 @@ def canClaimRequestTask(task, profile):
 
   return count < max_tasks
 
+
+def canSubmitWork(task, profile):
+  """Returns true if the given profile can submit work to this task.
+
+  Args:
+    task: The GCITask entity
+    profile: The GCIProfile to check
+
+  """
+  if not task.deadline or datetime.datetime.utcnow() > task.deadline:
+    # deadline has passed
+    return False
+
+  return isOwnerOfTask(task, profile) and task.status in TASK_IN_PROGRESS
 
 def assignTask(task, student, assigner):
   """Assigns the task to the student.

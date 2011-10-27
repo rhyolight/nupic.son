@@ -53,6 +53,9 @@ from soc.modules.gci.views.helper.url_patterns import url
 DEF_NOT_ALLOWED_TO_OPERATE_BUTTON_FMT = ugettext(
     'You are not allowed to operate the button named %s')
 
+DEF_NOT_ALLOWED_TO_UPLOAD_WORK_MSG = ugettext(
+    'You are not allowed to upload work')
+
 DEF_NO_URL_OR_UPLOAD_MSG = ugettext(
     'An error occurred, please use a valid URL or upload a file.')
 
@@ -152,8 +155,8 @@ class TaskViewPage(RequestHandler):
         self.check.isTaskNotInStates(['Closed'])
 
       if 'submit_work' in self.data.GET:
-        # TODO(ljvderijk): Checks for submitting work
-        self.check.fail('Not yet implemented')
+        if not task_logic.canSubmitWork(self.data.task, self.data.profile):
+          self.check.fail(DEF_NOT_ALLOWED_TO_UPLOAD_WORK_MSG)
 
       if 'button' in self.data.GET:
         # check for any of the buttons
@@ -419,8 +422,7 @@ class WorkSubmissions(Template):
       context['send_for_review'] = self.data.work_submissions and \
           task.status in SEND_FOR_REVIEW_ALLOWED
 
-    if task.status in TASK_IN_PROGRESS and \
-        datetime.datetime.utcnow() < task.deadline:
+    if task_logic.canSubmitWork(task, self.data.profile)
       if self.data.POST and 'submit_work' in self.data.GET:
         context['work_form'] = WorkSubmissionForm(self.data.POST)
       else:

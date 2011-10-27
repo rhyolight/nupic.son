@@ -61,8 +61,11 @@ DEF_NO_PREV_ORG_MEMBER_MSG = ugettext(
 DEF_TASK_UNEDITABLE_STATUS_MSG = ugettext(
     'The task cannot be edited because it is already claimed once.')
 
+DEF_TASK_MUST_BE_IN_STATES_FMT = ugettext(
+    'The task must be in one of the followings states %s')
+
 DEF_TASK_MAY_NOT_BE_IN_STATES_FMT = ugettext(
-    'The task may not be in any of the followings states %s')
+    'The task may not be in one of the followings states %s')
 
 class Mutator(access_checker.Mutator):
   """Helper class for access checking.
@@ -138,6 +141,17 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.task.isPublished():
       error_msg = access_checker.DEF_PAGE_INACTIVE_MSG
       raise AccessViolation(error_msg)
+
+  def isTaskInState(self, states):
+    """Checks if the task is in any of the given states.
+
+    Args:
+      states: List of states in which a task may be for this check to pass.
+    """
+    assert access_checker.isSet(self.data.task)
+
+    if self.data.task.status not in states:
+      raise AccessViolation(DEF_TASK_MUST_BE_IN_STATES_FMT %states)
 
   def isTaskNotInStates(self, states):
     """Checks if the task is not in any of the given states.
