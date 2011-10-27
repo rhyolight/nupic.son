@@ -246,6 +246,7 @@
     tpjs + "jquery/jquery-jqgrid.base.js",
     null,
     tpjs + "jquery/jquery-jqgrid.custom.js",
+    tpjs + "jquery/jquery-jqgrid.filter.js",
     tpjs + "jquery/jquery-jqgrid.setcolumns.js"
   ];
 
