@@ -929,6 +929,20 @@ class AccessChecker(BaseAccessChecker):
     # check if the user is an admin for the organization
     self.isOrgAdmin()
 
+  def canInviteBeResubmitted(self):
+    """Checks if the invitation may be resubmitted.
+    """
+
+    assert isSet(self.data.invite)
+
+    # check if the entity represents an invitation
+    if self.data.invite.type != INVITATION_TYPE:
+      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
+
+    # only withdrawn requests may be resubmitted
+    if self.data.invite.status != 'withdrawn':
+      raise AccessViolation(DEF_NOT_VALID_REQUEST_MSG)
+
   def canRespondToRequest(self):
     """Checks if the current user can accept/reject the request.
     """
