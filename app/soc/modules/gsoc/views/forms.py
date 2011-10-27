@@ -238,7 +238,7 @@ class GSoCBoundField(forms.BoundField):
         'size': defaultfilters.filesizeformat(self.field._file.size),
         'uploaded': dateformat.format(
               self.field._file.creation, 'M jS Y, h:i:sA'),
-    } if self.field._file else ""
+    } if getattr(self.field, '_file', False) else ""
 
     return mark_safe('%s%s%s%s%s' % (
         self._render_label(),
