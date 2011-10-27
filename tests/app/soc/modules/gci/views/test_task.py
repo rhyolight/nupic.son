@@ -301,6 +301,36 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertResponseRedirect(response)
     self.assertFalse(profile.key() in task.subscribers)
 
+  def testPostSubmitWork(self):
+    """Tests for submitting work.
+    """
+    self.data.createStudent()
+
+    self.task.status = 'Claimed'
+    self.task.student = self.data.profile
+    # set deadline to far future
+    self.task.deadline = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+    self.task.put()
+
+    no_work = self.task.workSubmissions()
+    self.assertLength(no_work, 0)
+
+    work_url = 'http://www.example.com'
+    work_data = {
+        'url_to_work': work_url
+    }
+
+    url = '%s?submit_work' %self._taskPageUrl(self.task)
+    response = self.post(url, work_data)
+
+    self.assertResponseRedirect(response)
+
+    one_work = self.task.workSubmissions()
+    self.assertLength(one_work, 1)
+
+    work = one_work[0]
+    self.assertEqual(work_url, work.url_to_work)
+
   def _taskPageUrl(self, task):
     """Returns the url of the task page.
     """

@@ -26,6 +26,7 @@ __authors__ = [
 
 import datetime
 
+from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
@@ -51,6 +52,9 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 DEF_NOT_ALLOWED_TO_OPERATE_BUTTON_FMT = ugettext(
     'You are not allowed to operate the button named %s')
+
+DEF_NO_URL_OR_UPLOAD_MSG = ugettext(
+    'An error occurred, please use a valid URL or upload a file.')
 
 
 class CommentForm(gci_forms.GCIModelForm):
@@ -95,7 +99,23 @@ class WorkSubmissionForm(gci_forms.GCIModelForm):
   class Meta:
     model = GCIWorkSubmission
     css_prefix = 'gci_work_submission'
-    fields = ['url_to_work', 'upload_of_work']
+    fields = ['upload_of_work', 'url_to_work']
+
+  upload_of_work = django_forms.FileField(
+      label='Upload work', required=False)
+
+  def clean(self):
+    """Ensure that at least one of the fields has data.
+    """
+    cleaned_data = self.cleaned_data
+
+    upload = cleaned_data.get('upload_of_work')
+    url = cleaned_data.get('url_to_work')
+
+    if not (upload or url):
+      raise gci_forms.ValidationError(DEF_NO_URL_OR_UPLOAD_MSG)
+
+    return cleaned_data
 
 
 class TaskViewPage(RequestHandler):
@@ -133,7 +153,7 @@ class TaskViewPage(RequestHandler):
 
       if 'submit_work' in self.data.GET:
         # TODO(ljvderijk): Checks for submitting work
-        pass
+        self.check.fail('Not yet implemented')
 
       if 'button' in self.data.GET:
         # check for any of the buttons
@@ -181,6 +201,8 @@ class TaskViewPage(RequestHandler):
       return self._postComment()
     elif 'button' in self.data.GET:
       return self._postButton()
+    elif 'submit_work' in self.data.GET:
+      return self._postSubmitWork()
     else:
       self.error(405)
 
@@ -262,6 +284,31 @@ class TaskViewPage(RequestHandler):
         return key
 
     return None
+
+  def _postSubmitWork(self):
+    """POST handler for the work submission form.
+    """
+    form = WorkSubmissionForm(
+        data=self.data.POST,
+        files=self.data.request.file_uploads)
+
+    if not form.is_valid():
+      # we are not storing this form, remove the uploaded blob from the cloud
+      for file in self.data.request.file_uploads.itervalues():
+        file.delete()
+
+      return self.get()
+
+    task = self.data.task
+    # TODO(ljvderijk): Add a non-required profile property?
+    form.cleaned_data['user'] = self.data.profile.user
+    form.cleaned_data['org'] =  task.org
+    form.cleaned_data['program'] = task.program
+
+    # store the submission, parented by the task
+    form.create(parent=task)
+
+    return self.redirect.id().to('gci_view_task')
 
   def templatePath(self):
     return 'v2/modules/gci/task/public.html'
@@ -372,12 +419,16 @@ class WorkSubmissions(Template):
       context['send_for_review'] = self.data.work_submissions and \
           task.status in SEND_FOR_REVIEW_ALLOWED
 
-      if task.status in TASK_IN_PROGRESS and \
-          datetime.datetime.utcnow() < task.deadline:
-        if self.data.POST and 'submit_work' in self.data.GET:
-          context['work_form'] = WorkSubmissionForm(self.data.POST)
-        else:
-          context['work_form'] = WorkSubmissionForm()
+    if task.status in TASK_IN_PROGRESS and \
+        datetime.datetime.utcnow() < task.deadline:
+      if self.data.POST and 'submit_work' in self.data.GET:
+        context['work_form'] = WorkSubmissionForm(self.data.POST)
+      else:
+        context['work_form'] = WorkSubmissionForm()
+
+      url = '%s?submit_work' %(
+          self.data.redirect.id().urlOf('gci_view_task'))
+      context['upload_url'] = blobstore.create_upload_url(url)
 
     return context
 

@@ -38,19 +38,15 @@
 
     {% endif %}
 
-    {% if upload_form %}
-      <span class="block-task-uploaded-code-status">Upload your final work file or paste in its URL, then click Submit.</span>
-      <form action="#" method="post" class="form-upload-code clearfix">
-        <div class="form-row form-row-file-upload">
-          <input type="file" name="datafile">
-        </div>
-        <div class="form-row form-row-student-work-url">
-          <input name="final-work-url" value="http://" type="text">
-        </div>
+    {% if work_form %}
+      <span class="block-task-uploaded-code-note">Upload your final work file or paste in its URL, then click Submit.</span>
+      <form action="{{ upload_url }}" method="post" enctype="multipart/form-data" class="form-upload-code clearfix">
+        {{ work_form.non_field_errors }}
+        {{ work_form.render }}
         <div class="form-row form-row-buttons">
           <input value="Submit" class="button" type="submit">
         </div>
-    </form>
+      </form>
     {% endif %}
 
   </div>
