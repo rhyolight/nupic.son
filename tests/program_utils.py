@@ -128,7 +128,7 @@ class GSoCProgramHelper(ProgramHelper):
     """
     if self.program:
       return self.program
-    super(GCIProgramHelper, self).createProgram()
+    super(GSoCProgramHelper, self).createProgram()
     properties = {'scope': self.sponsor}
     self.program_timeline = self.seed(GSoCTimeline, properties)
 
@@ -164,7 +164,7 @@ class GSoCProgramHelper(ProgramHelper):
     """
     if self.org:
       return self.org
-    super(GCIProgramHelper, self).createOrg()
+    super(GSoCProgramHelper, self).createOrg()
     properties = {'scope': self.program, 'status': 'active',
                   'scoring_disabled': False, 'max_score': 5,
                   'founder': self.founder, 'home': None,}
