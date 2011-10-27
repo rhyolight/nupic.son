@@ -166,6 +166,84 @@ class NonFailingFakePayload(object):
     return self.__content.readline(length)
 
 
+class SoCTestCase(unittest.TestCase):
+  """Base test case to be subclassed.
+
+  Common data are seeded and common helpers are created to make testing easier.
+  """
+  def init(self):
+    """Performs test setup.
+
+    Sets the following attributes:
+      dev_test: True iff DEV_TEST is in environment (in parent)
+    """
+    self.dev_test = 'DEV_TEST' in os.environ
+
+
+class GSoCTestCase(SoCTestCase):
+  """GSoCTestCase for GSoC tests.
+
+  Common data are seeded and common helpers are created to make testing easier.
+  """
+  def init(self):
+    """Performs test setup.
+
+    Sets the following attributes:
+      program_helper: a GSoCProgramHelper instance
+      gsoc/program: a GSoCProgram instance
+      site: a Site instance
+      org: a GSoCOrganization instance
+      org_app: a OrgAppSurvey instance
+      timeline: a GSoCTimelineHelper instance
+      data: a GSoCProfileHelper instance
+    """
+    from tests.program_utils import GSoCProgramHelper
+    from tests.timeline_utils import GSoCTimelineHelper
+    from tests.profile_utils import GSoCProfileHelper
+    super(GSoCTestCase, self).init()
+    self.program_helper = GSoCProgramHelper()
+    self.founder = self.program_helper.createFounder()
+    self.sponsor = self.program_helper.createSponsor()
+    self.gsoc = self.program = self.program_helper.createProgram()
+    self.site = self.program_helper.createSite()
+    self.org = self.program_helper.createOrg()
+    self.org_app = self.program_helper.createOrgApp()
+    self.timeline = GSoCTimelineHelper(self.gsoc.timeline, self.org_app)
+    self.data = GSoCProfileHelper(self.gsoc, self.dev_test)
+
+
+class GCITestCase(SoCTestCase):
+  """GCITestCase for GCI tests.
+
+  Common data are seeded and common helpers are created to make testing easier.
+  """
+  def init(self):
+    """Performs test setup.
+
+    Sets the following attributes:
+      program_helper: a GCIProgramHelper instance
+      gci/program: a GCIProgram instance
+      site: a Site instance
+      org: a GCIOrganization instance
+      org_app: a OrgAppSurvey instance
+      timeline: a GCITimelineHelper instance
+      data: a GCIProfileHelper instance
+    """
+    from tests.program_utils import GCIProgramHelper
+    from tests.timeline_utils import GCITimelineHelper
+    from tests.profile_utils import GCIProfileHelper
+    super(GCITestCase, self).init()
+    self.program_helper = GCIProgramHelper()
+    self.founder = self.program_helper.createFounder()
+    self.sponsor = self.program_helper.createSponsor()
+    self.gci = self.program = self.program_helper.createProgram()
+    self.site = self.program_helper.createSite()
+    self.org = self.program_helper.createOrg()
+    self.org_app = self.program_helper.createOrgApp()
+    self.timeline = GCITimelineHelper(self.gci.timeline, self.org_app)
+    self.data = GCIProfileHelper(self.gci, self.dev_test)
+
+
 class DjangoTestCase(TestCase):
   """Class extending Django TestCase in order to extend its functions.
 
@@ -187,25 +265,6 @@ class DjangoTestCase(TestCase):
     import os
     os.environ['USER_EMAIL'] = 'test@example.com'
     os.environ['USER_ID'] = '42'
-
-  def init(self):
-    """Performs test setup.
-
-    Sets the following attributes:
-      dev_test: True iff DEV_TEST is in environment
-      founder: a founder instance
-      sponsor: a sponsor instance
-    """
-    from soc.models.user import User
-    from soc.models.sponsor import Sponsor
-
-    self.dev_test = 'DEV_TEST' in os.environ
-
-    properties = {}
-    self.founder = self.seed(User, properties)
-
-    properties = {'founder': self.founder, 'home': None}
-    self.sponsor = self.seed(Sponsor, properties)
 
   def createOrg(self, override={}):
     """Creates an organization for the defined properties.
@@ -415,80 +474,15 @@ class DjangoTestCase(TestCase):
       self.fail("\n".join(errors))
 
 
-class GSoCDjangoTestCase(DjangoTestCase):
+class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
   """DjangoTestCase specifically for GSoC view tests.
   """
 
   def init(self):
     """Performs test setup.
-
-    Sets the following attributes:
-      dev_test: True iff DEV_TEST is in environment (in parent)
-      founder: a founder instance (in parent)
-      sponsor: a sponsor instance (in parent)
-      gsoc: a GSoCProgram instance
-      org_app: a OrgAppSurvey instance
-      org: a GSoCOrganization instance
-      timeline: a GSoCTimelineHelper instance
-      data: a GSoCProfileHelper instance
     """
-    from soc.models.site import Site
-    from soc.models.document import Document
-    from soc.modules.gsoc.models.program import GSoCProgram
-    from soc.modules.gsoc.models.timeline import GSoCTimeline
-    from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
-    from soc.models.org_app_survey import OrgAppSurvey
-    from tests.timeline_utils import GSoCTimelineHelper
-    from tests.profile_utils import GSoCProfileHelper
-
     # Initialize instances in the parent first
     super(GSoCDjangoTestCase, self).init()
-    properties = {'scope': self.sponsor}
-    self.program_timeline = self.seed(GSoCTimeline, properties)
-
-    properties = {'timeline': self.program_timeline,
-                  'status': 'visible', 'apps_tasks_limit': 20,
-                  'scope': self.sponsor,
-                  'student_agreement': None, 'events_page': None,
-                  'help_page': None, 'connect_with_us_page': None,
-                  'mentor_agreement': None, 'org_admin_agreement': None,
-                  'terms_and_conditions': None, 'home': None, 'about_page': None}
-    self.gsoc = self.seed(GSoCProgram, properties)
-
-    properties = {
-        'prefix': 'gsoc_program', 'scope': self.gsoc,
-        'read_access': 'public', 'key_name': DocumentKeyNameProvider(),
-        'modified_by': self.founder, 'author': self.founder,
-        'home_for': None,
-    }
-    document = self.seed(Document, properties=properties)
-
-    self.gsoc.about_page = document
-    self.gsoc.events_page = document
-    self.gsoc.help_page = document
-    self.gsoc.connect_with_us_page = document
-    self.gsoc.privacy_policy = document
-    self.gsoc.put()
-
-    self.site = Site(key_name='site', link_id='site',
-                     active_program=self.gsoc)
-    self.site.put()
-
-    # TODO (Madhu): Remove scope and author fields once the data
-    # conversion is done.
-    properties = {'scope': self.gsoc, 'program': self.gsoc,
-                  'modified_by': self.founder,
-                  'created_by': self.founder,
-                  'author': self.founder,
-                  'schema': ('[["item"],{"item":{"field_type":"input_text",'
-                             '"required":false, "label":"test"}}]'),
-                  'survey_content': None,}
-    self.org_app = self.seed(OrgAppSurvey, properties)
-
-    self.org = self.createOrg()
-
-    self.timeline = GSoCTimelineHelper(self.gsoc.timeline, self.org_app)
-    self.data = GSoCProfileHelper(self.gsoc, self.dev_test)
 
   def createOrg(self, override={}):
     """Creates an organization for the defined properties.
@@ -530,100 +524,15 @@ class GSoCDjangoTestCase(DjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/base_colorbox.html')
 
 
-class GCIDjangoTestCase(DjangoTestCase):
+class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
   """DjangoTestCase specifically for GCI view tests.
   """
 
   def init(self):
     """Performs test setup.
-
-    Sets the following attributes:
-      dev_test: True iff DEV_TEST is in environment (in parent)
-      founder: a founder instance (in parent)
-      sponsor: a sponsor instance (in parent)
-      gci: a GCIProgram instance
-      org_app: a OrgAppSurvey instance
-      org: a GCIOrganization instance
-      timeline: a GCITimelineHelper instance
-      data: a GCIProfileHelper instance
     """
-    from datetime import date
-    from soc.models.site import Site
-    from soc.models.document import Document
-    from soc.modules.gci.models.program import GCIProgram
-    from soc.modules.gci.models.timeline import GCITimeline
-    from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
-    from soc.models.org_app_survey import OrgAppSurvey
-    from tests.timeline_utils import GCITimelineHelper
-    from tests.profile_utils import GCIProfileHelper
-
     # Initialize instances in the parent first
     super(GCIDjangoTestCase, self).init()
-    properties = {'scope': self.sponsor}
-    self.program_timeline = self.seed(GCITimeline, properties)
-
-    properties = {
-        'timeline': self.program_timeline,
-        'status': 'visible',
-        'scope': self.sponsor,
-        'student_agreement': None, 'events_page': None,
-        'help_page': None, 'connect_with_us_page': None,
-        'mentor_agreement': None, 'org_admin_agreement': None,
-        'terms_and_conditions': None, 'home': None, 'about_page': None,
-        'nr_simultaneous_tasks': 5,
-        'student_min_age': 13, 'student_max_age': 17,
-        'student_min_age_as_of': date.today(),
-        'task_difficulties': ['easy', 'moderate', 'hard'],
-        'task_types': ['code', 'documentation', 'design'],
-    }
-    self.gci = self.seed(GCIProgram, properties)
-
-    properties = {
-        'prefix': 'gci_program', 'scope': self.gci,
-        'read_access': 'public', 'key_name': DocumentKeyNameProvider(),
-        'modified_by': self.founder, 'author': self.founder,
-        'home_for': None,
-    }
-    document = self.seed(Document, properties=properties)
-
-    self.gci.about_page = document
-    self.gci.events_page = document
-    self.gci.help_page = document
-    self.gci.connect_with_us_page = document
-    self.gci.privacy_policy = document
-    self.gci.put()
-
-    self.site = Site(key_name='site', link_id='site',
-                     active_program=self.gci)
-    self.site.put()
-
-    # TODO (Madhu): Remove scope and author fields once the data
-    # conversion is done.
-    properties = {'scope': self.gci, 'program': self.gci,
-                  'modified_by': self.founder,
-                  'created_by': self.founder,
-                  'author': self.founder,
-                  'schema': ('[["item"],{"item":{"field_type":"input_text",'
-                             '"required":false, "label":"test"}}]'),
-                  'survey_content': None,}
-    self.org_app = self.seed(OrgAppSurvey, properties)
-
-    self.org = self.createOrg()
-
-    self.timeline = GCITimelineHelper(self.gci.timeline, self.org_app)
-    self.data = GCIProfileHelper(self.gci, self.dev_test)
-
-  def createOrg(self, override={}):
-    """Creates an organization for the defined properties.
-    """
-    from soc.modules.gci.models.organization import GCIOrganization
-
-    properties = {'scope': self.gci, 'status': 'active',
-                  'founder': self.founder,
-                  'home': None,
-                  'task_quota_limit': 100}
-    properties.update(override)
-    return self.seed(GCIOrganization, properties)
 
   def assertGCITemplatesUsed(self, response):
     """Asserts that all the templates from the base view were used.
