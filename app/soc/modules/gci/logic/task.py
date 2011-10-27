@@ -145,6 +145,7 @@ def canSubmitWork(task, profile):
 
   return isOwnerOfTask(task, profile) and task.status in TASK_IN_PROGRESS
 
+
 def assignTask(task, student, assigner):
   """Assigns the task to the student.
 
