@@ -315,6 +315,8 @@
     null,
     mpjs + "melange.list.js",
     null,
+    mpjs + "melange.list.process_data.js",
+    null,
     function () {
       if (window.melange_list_queue !== undefined && window.melange_list_queue instanceof Array) {
         jQuery.each(window.melange_list_queue, function (index, function_to_call) {
