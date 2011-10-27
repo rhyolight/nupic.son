@@ -29,6 +29,7 @@ from google.appengine.ext import db
 
 from soc.logic import accounts
 from soc.logic import cleaning
+from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.helper import notifications
 
@@ -292,17 +293,26 @@ class ManageInvite(RequestHandler):
     form = ManageInviteForm(
         self.data.POST or None, instance=self.data.invite)
 
+    button_name = self._constructButtonName()
     button_value = self._constructButtonValue()
 
     return {
         'page_name': page_name,
         'forms': [form],
+        'button_name': button_name,
         'button_value': button_value
         }
 
   def _constructPageName(self):
     invite = self.data.invite
     return "%s Invite For %s" % (invite.role, self.data.invited_user.name)
+
+  def _constructButtonName(self):
+    invite = self.data.invite
+    if invite.status == 'pending':
+      return 'withdraw'
+    if invite.status == 'withdrawn':
+      return 'resubmit'
 
   def _constructButtonValue(self):
     invite = self.data.invite
