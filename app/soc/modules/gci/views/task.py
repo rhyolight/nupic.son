@@ -59,6 +59,11 @@ DEF_NOT_ALLOWED_TO_UPLOAD_WORK_MSG = ugettext(
 DEF_NO_URL_OR_UPLOAD_MSG = ugettext(
     'An error occurred, please use a valid URL or upload a file.')
 
+DEF_NO_WORK_FOUND_FMT = ugettext('No submission found with id %i')
+
+DEF_NOT_ALLOWED_TO_DELETE_MSG = ugettext(
+    'You are not allowed to delete this submission')
+
 DEF_CANT_SEND_FOR_REVIEW_MSG = ugettext(
     'Only a task that you own and that has submitted work can be send in '
     'for review.')
@@ -175,6 +180,19 @@ class TaskViewPage(RequestHandler):
             not self.data.work_submissions:
           self.check.fail(DEF_CANT_SEND_FOR_REVIEW_MSG)
 
+      if 'delete_submission' in self.data.GET:
+        id = self._submissionId()
+        work = GCIWorkSubmission.get_by_id(id, parent=self.data.task)
+
+        if not work:
+          self.check.fail(DEF_NO_WORK_FOUND_FMT %id)
+
+        time_expired = work.submitted_on - datetime.datetime.now()
+        if work.user.key() != self.data.user.key() or \
+            time_expired < task_logic.DELETE_EXPIRATION:
+          self.check.fail(DEF_NOT_ALLOWED_TO_DELETE_MSG)
+
+
   def context(self):
     """Returns the context for this view.
     """
@@ -215,6 +233,8 @@ class TaskViewPage(RequestHandler):
       return self._postSubmitWork()
     elif 'send_for_review' in self.data.GET:
       return self._postSendForReview()
+    elif 'delete_submission' in self.data.GET:
+      return self._postDeleteSubmission()
     else:
       self.error(405)
 
@@ -328,6 +348,20 @@ class TaskViewPage(RequestHandler):
     task_logic.sendForReview(self.data.task, self.data.profile)
 
     self.redirect.id().to('gci_view_task')
+
+  def _postDeleteSubmission(self):
+    """POST handler to delete a GCIWorkSubmission.
+    """
+    pass
+
+  def _submissionId(self):
+    """Retrieves the submission id from the POST data.
+    """
+    for key in self.data.POST.keys():
+      if key.isDigit():
+        return int(key)
+
+    return -1
 
   def templatePath(self):
     return 'v2/modules/gci/task/public.html'
@@ -527,7 +561,7 @@ class WorkSubmissionDownload(RequestHandler):
     work = GCIWorkSubmission.get_by_id(id, self.data.task)
 
     if not work or not work.upload_of_work:
-      return self.error(400, 'No work found with id %i' %id)
+      return self.error(400, DEF_NO_WORK_FOUND_FMT %id)
 
     upload = work.upload_of_work
     self.response = bs_helper.send_blob(upload, save_as=upload.filename)
