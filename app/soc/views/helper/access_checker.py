@@ -919,8 +919,8 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.invite)
 
     # check if the entity represents an invitation
-    if self.data.invite.type != 'Invitation':
-      raise AccessViolation(DEF_NOT_VALID_INVITATION_MSG)
+    if self.data.invite.type != INVITATION_TYPE:
+      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
 
     # only withdrawn requests may be resubmitted
     if self.data.invite.status != 'withdrawn':
