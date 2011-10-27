@@ -69,7 +69,8 @@ def calculateRankingForStudent(student, tasks, prefetched_difficulties=None):
   """Calculates ranking for the specified student with the specified
   list of tasks.
 
-  It is assumed that all the tasks from the list belong to the student.
+  It is assumed that all the tasks from the list belong to the student. Any
+  existing ranking for this student will be overwritten.
 
   Args:
     student: GCIProfile entity representing the student
