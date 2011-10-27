@@ -312,7 +312,15 @@ class ManageInvite(RequestHandler):
         }
 
   def post(self):
-    pass
+    # it is needed to handle notifications
+    self.data.invited_profile = self._getInvitedProfile()
+
+    if 'withdraw' in self.data.POST:
+      self._withdrawInvitation()
+    elif 'resubmit' in self.data.POST:
+      self._resubmitInvitation()
+
+    self.redirect.id().to('manage_gci_invite')
 
   def _constructPageName(self):
     invite = self.data.invite
@@ -366,6 +374,11 @@ class ManageInvite(RequestHandler):
 
     db.run_in_transaction(resubmit_invite_txn)
 
+  def _getInvitedProfile(self):
+    key_name = '/'.join([
+        self.data.program.key().name(),
+        self.data.invited_user.link_id])
+    return GCIProfile.get_by_key_name(key_name, parent=self.data.invited_user)
 
 class RespondInvite(RequestHandler):
   """View to respond to the invitation by the user.
