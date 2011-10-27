@@ -30,6 +30,7 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.hashchange,
     dep.melange.action,
     {% if colorbox %}
     css("/soc/content/{{ app_version }}/css/v2/gsoc/colorbox.css"),
@@ -107,8 +108,6 @@ limitations under the License.
             });
       {% endfor %}
     },
-    dep.hashchange,
-    null,
     tc("/soc/content/{{ app_version }}/js/templates/soc/dashboard/dashboard.js", {
       'dashboard_class': 'dashboard',
       'dashboard_link_class': 'dashboard-link',
