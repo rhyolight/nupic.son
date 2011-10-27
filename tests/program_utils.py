@@ -54,6 +54,8 @@ class ProgramHelper(object):
       org: an organization
       site: a site
     """
+    self.founder = None
+    self.sponsor = None
     self.program = None
     self.org_app = None
     self.org = None
