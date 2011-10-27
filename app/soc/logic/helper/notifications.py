@@ -206,7 +206,7 @@ def handledInviteContext(data):
 
   message_properties = {
       'role_verbose' : data.invite.roleName(),
-      'group': data.invite.group.name,
+      'group': data.invite.org.name,
       'action': action,
       }
 
