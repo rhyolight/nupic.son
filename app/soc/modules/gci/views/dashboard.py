@@ -289,6 +289,12 @@ class DashboardPage(RequestHandler):
     return links
 
   def _getAddNewOrgAppLink(self):
+    """Get the link for org admins to take organization application survey.
+    """
+    survey = org_app_logic.getForProgram(self.data.program)
+    if not survey or not self.data.timeline.surveyPeriod(survey):
+      return []
+
     r = self.data.redirect
     r.program()
 
