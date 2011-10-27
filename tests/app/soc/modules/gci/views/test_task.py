@@ -315,7 +315,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     no_work = self.task.workSubmissions()
     self.assertLength(no_work, 0)
 
-    work_url = 'http://www.example.com'
+    work_url = 'http://www.example.com/'
     work_data = {
         'url_to_work': work_url
     }
