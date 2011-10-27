@@ -37,6 +37,7 @@ from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import GDocsLoginRequest
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
+from soc.models.request import INVITATION_TYPE
 from soc.models.user import User
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
@@ -91,6 +92,9 @@ DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
 
 DEF_REQUEST_NOT_EXISTS_MSG_FMT = ugettext(
     'There is no request with id %(id)s.')
+
+DEF_INVITE_DOES_NOT_EXIST = ugettext(
+    'There is no invite with id %(id)s.')
 
 DEF_IS_NOT_STUDENT_MSG = ugettext(
     'This page is inaccessible because you do not have a student role '
@@ -580,6 +584,17 @@ class BaseAccessChecker(object):
       return
 
     raise AccessViolation(DEF_REQUEST_NOT_EXISTS_MSG_FMT % request_id)
+
+  def isInvitePresent(self, invite_id):
+    """Checks if the invite entity is not None.
+    """
+    assert isSet(self.data.invite)
+
+    if self.data.invite is None:
+      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST % invite_id)
+
+    if self.data.invite.type != INVITATION_TYPE:
+      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST % invite_id)
 
   def canAccessGoogleDocs(self):
     """Checks if user has a valid access token to access Google Documents.
