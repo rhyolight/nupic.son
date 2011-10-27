@@ -23,9 +23,16 @@ __authors__ = [
   ]
 
 
+from datetime import datetime
+from datetime import timedelta
+
 from soc.models.org_app_survey import OrgAppSurvey
+from soc.models.org_app_record import OrgAppRecord
+
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests.test_utils import GCIDjangoTestCase
+from tests.profile_utils import GCIProfileHelper
 
 
 class GCIOrgAppEditPageTest(GCIDjangoTestCase):
@@ -86,3 +93,123 @@ class GCIOrgAppEditPageTest(GCIDjangoTestCase):
     survey = query.get()
     self.assertEqual(survey.title, self.post_params['title'])
     self.assertEqual(survey.modified_by.key(), self.data.user.key())
+
+
+class GCIOrgAppTakePageTest(GCIDjangoTestCase):
+  """Tests for organizations to submit and edit their application.
+  """
+
+  def setUp(self):
+    self.init()
+
+    self.take_url = '/gci/org/application/%s' % self.gci.key().name()
+    self.retake_url_raw = '/gci/org/application/%s/%s'
+
+    self.post_params = {
+      'org_id': 'melange',
+      'name': 'Melange',
+      'description': 'Melange',
+      'home_page': 'code.google.com/p/soc',
+      'license': 'Apache License, 2.0',
+      'agreed_to_admin_agreement': 'on',
+      'item': 'test',
+    }
+
+  def assertTemplatesUsed(self, response):
+    """Asserts all the templates for edit page were used.
+    """
+
+    self.assertGCITemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/modules/gci/org_app/take.html')
+
+  def updateOrgAppSurvey(self, survey_start=None, survey_end=None):
+    """Create an organization application survey.
+    """
+
+    if survey_start is None:
+      survey_start = datetime.now()
+
+    if survey_end is None:
+      survey_end = survey_start + timedelta(days=10)
+
+    self.org_app.survey_start = survey_start
+    self.org_app.survey_end = survey_end
+    self.org_app.put()
+
+  def testAccessCheckWithoutSurvey(self):
+    self.org_app.delete()
+
+    response = self.get(self.take_url)
+    self.assertResponseNotFound(response)
+
+    self.data.createOrgAdmin(self.org)
+    response = self.get(self.take_url)
+    self.assertResponseNotFound(response)
+
+  def testAccessCheckForNonOrgMembers(self):
+    self.updateOrgAppSurvey()
+
+    #Check for non-org members
+    self.data.createStudent()
+    response = self.get(self.take_url)
+    self.assertResponseForbidden(response)
+    self.data.removeStudent()
+
+  def testAccessCheckForOrgMembers(self):
+    self.updateOrgAppSurvey()
+
+    #OK
+    self.data.createOrgAdmin(self.org)
+    response = self.get(self.take_url)
+    self.assertResponseOK(response)
+    self.data.removeOrgAdmin()
+
+    #also check for a mentor who is not admin
+    self.data.createMentor(self.org)
+    response = self.get(self.take_url)
+    self.assertResponseOK(response)
+
+  def testOrgAppSurveyTakePage(self):
+    """Tests organizationn application survey take/retake page.
+    """
+    self.updateOrgAppSurvey()
+
+    self.data.createOrgAdmin(self.org)
+    backup_admin = GCIProfileHelper(self.gci, self.dev_test)
+    backup_admin.createMentor(self.org)
+
+    response = self.get(self.take_url)
+    self.assertTemplatesUsed(response)
+
+    params = {'admin_id': self.data.user.link_id,
+              'backup_admin_id': backup_admin.user.link_id}
+    params.update(self.post_params)
+    response = self.post(self.take_url, params)
+    print response
+    query = OrgAppRecord.all()
+    query.filter('main_admin = ', self.data.user)
+    self.assertEqual(query.count(), 1, 'Survey record is not created.')
+
+    record = query.get()
+    self.assertEqual(record.org_id, self.post_params['org_id'])
+    self.assertEqual(record.name, self.post_params['name'])
+    self.assertEqual(record.description, self.post_params['description'])
+    self.assertEqual(record.license, self.post_params['license'])
+    self.assertEqual(record.main_admin.key(), self.data.user.key())
+    self.assertEqual(record.backup_admin.key(), backup_admin.user.key())
+
+    retake_url = self.retake_url_raw % (self.gci.key().name(),
+                                        record.key().id())
+    self.assertResponseRedirect(response, retake_url + '?validated')
+
+    response = self.get(retake_url)
+    self.assertResponseOK(response)
+
+    params = {'backup_admin_id': backup_admin.user.link_id}
+    params.update(self.post_params)
+    params['name'] = 'New title'
+
+    response = self.post(retake_url, params)
+    self.assertResponseRedirect(response, retake_url + '?validated')
+    record = OrgAppRecord.get_by_id(record.key().id())
+    self.assertEqual(record.name, params['name'])
