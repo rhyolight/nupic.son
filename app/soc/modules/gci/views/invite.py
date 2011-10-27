@@ -397,6 +397,55 @@ class RespondInvite(RequestHandler):
     self.data.invite = GCIRequest.get_by_id(invite_id)
     self.check.isInvitePresent(invite_id)
 
+  def _acceptInvitation(self):
+    """Accepts an invitation.
+    """
+
+    assert isSet(self.data.organization)
+
+    if not self.data.profile:
+      self.redirect.program()
+      self.redirect.to('edit_gsoc_profile')
+
+    invite_key = self.data.invite.key()
+    profile_key = self.data.profile.key()
+    organization_key = self.data.organization.key()
+
+    def accept_invitation_txn():
+      invite = db.get(invite_key)
+      profile = db.get(profile_key)
+
+      invite.status = 'accepted'
+
+      if invite.role != 'mentor':
+        profile.is_org_admin = True
+        profile.org_admin_for.append(organization_key)
+        profile.org_admin_for = list(set(profile.org_admin_for))
+
+      profile.is_mentor = True
+      profile.mentor_for.append(organization_key)
+      profile.mentor_for = list(set(profile.mentor_for))
+
+      invite.put()
+      profile.put()
+
+    accept_invitation_txn()
+    # TODO(SRabbelier): run in txn as soon as we make User Request's parent
+    # db.run_in_transaction(accept_invitation_txn)
+
+  def _rejectInvitation(self):
+    """Rejects a invitation. 
+    """
+    assert isSet(self.data.invite)
+    invite_key = self.data.invite.key()
+
+    def reject_invite_txn():
+      invite = db.get(invite_key)
+      invite.status = 'rejected'
+      invite.put()
+
+    db.run_in_transaction(reject_invite_txn)
+
 
 class ShowInvite(RequestHandler):
   """Encapsulate all the methods required to generate Show Invite page.
@@ -534,52 +583,3 @@ class ShowInvite(RequestHandler):
 
     self.redirect.dashboard()
     self.redirect.to()
-
-  def _acceptInvitation(self):
-    """Accepts an invitation.
-    """
-
-    assert isSet(self.data.organization)
-
-    if not self.data.profile:
-      self.redirect.program()
-      self.redirect.to('edit_gsoc_profile')
-
-    invite_key = self.data.invite.key()
-    profile_key = self.data.profile.key()
-    organization_key = self.data.organization.key()
-
-    def accept_invitation_txn():
-      invite = db.get(invite_key)
-      profile = db.get(profile_key)
-
-      invite.status = 'accepted'
-
-      if invite.role != 'mentor':
-        profile.is_org_admin = True
-        profile.org_admin_for.append(organization_key)
-        profile.org_admin_for = list(set(profile.org_admin_for))
-
-      profile.is_mentor = True
-      profile.mentor_for.append(organization_key)
-      profile.mentor_for = list(set(profile.mentor_for))
-
-      invite.put()
-      profile.put()
-
-    accept_invitation_txn()
-    # TODO(SRabbelier): run in txn as soon as we make User Request's parent
-    # db.run_in_transaction(accept_invitation_txn)
-
-  def _rejectInvitation(self):
-    """Rejects a invitation. 
-    """
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
-
-    def reject_invite_txn():
-      invite = db.get(invite_key)
-      invite.status = 'rejected'
-      invite.put()
-
-    db.run_in_transaction(reject_invite_txn)
