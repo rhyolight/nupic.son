@@ -220,6 +220,8 @@ def closeTask(task, user):
     task: GCITask entity.
     user: GCIProfile of the user that closes the task.
   """
+  from soc.modules.gci.tasks.ranking_update import startUpdatingTask
+
   task.status = 'Closed'
   task.deadline = None
 
@@ -235,10 +237,10 @@ def closeTask(task, user):
 
   # TODO(ljvderijk): If this is the student's first task send email about
   # the forms they need to fill in. See Issue 1308.
-  # TODO(ljvderijk): Closing a task needs to calculate score
   def closeTaskTxn():
     task.put()
     comment_txn()
+    startUpdatingTask(task, transactional=True)
 
   return db.run_in_transaction(closeTaskTxn)
 

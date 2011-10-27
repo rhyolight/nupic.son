@@ -182,14 +182,19 @@ class RankingUpdater(object):
     return responses.terminateTask()
 
 
-def startUpdatingTask(task):
+def startUpdatingTask(task, transactional=False):
   """Starts a new task which updates ranking entity for the specified task.
+
+  Args:
+    task: The GCI task to update the ranking for
+    transactional: Whether this task is enqueued in a transaction.
   """
   url = '/tasks/gci/ranking/update'
   params = {
       'id': task.key().id_or_name()
       }
-  taskqueue.add(queue_name='gci-update', url=url, params=params)
+  taskqueue.add(queue_name='gci-update', url=url, params=params,
+                transactional=transactional)
 
 
 def startClearingTask(program):
