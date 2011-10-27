@@ -422,7 +422,7 @@ class WorkSubmissions(Template):
       context['send_for_review'] = self.data.work_submissions and \
           task.status in SEND_FOR_REVIEW_ALLOWED
 
-    if task_logic.canSubmitWork(task, self.data.profile)
+    if task_logic.canSubmitWork(task, self.data.profile):
       if self.data.POST and 'submit_work' in self.data.GET:
         context['work_form'] = WorkSubmissionForm(self.data.POST)
       else:
