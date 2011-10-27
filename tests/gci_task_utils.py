@@ -26,6 +26,8 @@ __authors__ = [
 import datetime
 
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.work_submission import GCIWorkSubmission
+
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
@@ -76,3 +78,15 @@ class GCITaskHelper(object):
         'modified_on': datetime.datetime.now() - datetime.timedelta(10)
     }
     return self.seed(GCITask, properties)
+
+  def createWorkSubmission(self, task, student, url='http://www.example.com/'):
+    """Creates a GCIWorkSubmission.
+
+    Args:
+      task: The task to create a worksubmission for.
+      student: The student whose work it is.
+      url: The url to the work.
+    """
+    return GCIWorkSubmission(
+        parent=task, program=task.program, org=task.org, user=student.user,
+        url_to_work=url).put()

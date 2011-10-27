@@ -32,7 +32,11 @@
 
       {% if send_for_review %}
         <div class="block-task-uploaded-code-btns">
-          <a href="javascript:void(0)" class="btn btn-task-mark-complete">Mark task as complete</a>
+          <form action="?send_for_review" method="post" class="form-send-for-review clearfix">
+            <div class="form-row form-row-buttons">
+              <input value="Mark task as complete" class="btn btn-task-mark-complete" type="submit">
+            </div>
+          </form>
         </div>
       {% endif %}
 

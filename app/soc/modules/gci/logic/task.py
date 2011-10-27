@@ -83,6 +83,11 @@ DEF_REOPENED_MSG = ugettext(
     'reopened the task.')
 
 
+DEF_SEND_FOR_REVIEW_TITLE = ugettext('Ready for review')
+DEF_SEND_FOR_REVIEW_MSG = ugettext(
+    'The work on this task is ready to be reviewed.')
+
+
 DEF_UNASSIGNED_TITLE = ugettext('Task Reopened')
 DEF_UNASSIGNED_MSG = ugettext('This task has been Reopened.')
 
@@ -230,6 +235,7 @@ def closeTask(task, user):
 
   # TODO(ljvderijk): If this is the student's first task send email about
   # the forms they need to fill in. See Issue 1308.
+  # TODO(ljvderijk): Closing a task needs to calculate score
   def closeTaskTxn():
     task.put()
     comment_txn()
@@ -326,6 +332,32 @@ def unclaimTask(task):
     comment_txn()
 
   return db.run_in_transaction(unclaimTaskTxn)
+
+
+def sendForReview(task, student):
+  """Send in a task for review.
+
+  Args:
+    task: the task to send for review
+    student: GCIProfile of the student that is sending in the work
+  """
+  task.status = 'NeedsReview'
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_SEND_FOR_REVIEW_TITLE,
+      'content': DEF_SEND_FOR_REVIEW_MSG,
+      'created_by': student.user
+  }
+  comment = GCIComment(**comment_props)
+
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+
+  def sendForReviewTxn():
+    task.put()
+    comment_txn()
+
+  return db.run_in_transaction(sendForReviewTxn)
 
 
 def updateTaskStatus(task):

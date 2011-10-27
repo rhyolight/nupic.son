@@ -25,7 +25,9 @@ __authors__ = [
 import datetime
 
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
+from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
 from tests.test_utils import TaskQueueTestCase
@@ -330,6 +332,27 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
 
     work = one_work[0]
     self.assertEqual(work_url, work.url_to_work)
+
+  def testPostSendForReview(self):
+    """Tests for submitting work.
+    """
+    self.data.createStudent()
+
+    self.task.status = 'Claimed'
+    self.task.student = self.data.profile
+    # set deadline to far future
+    self.task.deadline = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+    self.task.put()
+
+    GCITaskHelper(self.program).createWorkSubmission(
+        self.task, self.data.profile)
+
+    url = '%s?send_for_review' %self._taskPageUrl(self.task)
+    response = self.post(url)
+
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'NeedsReview')
 
   def _taskPageUrl(self, task):
     """Returns the url of the task page.

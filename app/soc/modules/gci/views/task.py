@@ -33,7 +33,6 @@ from django.utils.translation import ugettext
 from django import forms as django_forms
 
 from soc.logic import cleaning
-from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import RedirectRequest
 from soc.views.helper import blobstore as bs_helper
 from soc.views.template import Template
@@ -60,6 +59,9 @@ DEF_NOT_ALLOWED_TO_UPLOAD_WORK_MSG = ugettext(
 DEF_NO_URL_OR_UPLOAD_MSG = ugettext(
     'An error occurred, please use a valid URL or upload a file.')
 
+DEF_CANT_SEND_FOR_REVIEW_MSG = ugettext(
+    'Only a task that you own and that has submitted work can be send in '
+    'for review.')
 
 class CommentForm(gci_forms.GCIModelForm):
   """Django form for the comment.
@@ -166,8 +168,12 @@ class TaskViewPage(RequestHandler):
         buttons = {}
         TaskInformation(self.data).setButtonControls(buttons)
         if button_name not in buttons:
-          raise AccessViolation(
-              DEF_NOT_ALLOWED_TO_OPERATE_BUTTON_FMT %button_name)
+          self.check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON_FMT %button_name)
+
+      if 'send_for_review' in self.data.GET:
+        if not task_logic.isOwnerOfTask(self.data.task, self.data.profile) or \
+            not self.data.work_submissions:
+          self.check.fail(DEF_CANT_SEND_FOR_REVIEW_MSG)
 
   def context(self):
     """Returns the context for this view.
@@ -207,6 +213,8 @@ class TaskViewPage(RequestHandler):
       return self._postButton()
     elif 'submit_work' in self.data.GET:
       return self._postSubmitWork()
+    elif 'send_for_review' in self.data.GET:
+      return self._postSendForReview()
     else:
       self.error(405)
 
@@ -313,6 +321,13 @@ class TaskViewPage(RequestHandler):
     form.create(parent=task)
 
     return self.redirect.id().to('gci_view_task')
+
+  def _postSendForReview(self):
+    """POST handler for the mark as complete button.
+    """
+    task_logic.sendForReview(self.data.task, self.data.profile)
+
+    self.redirect.id().to('gci_view_task')
 
   def templatePath(self):
     return 'v2/modules/gci/task/public.html'
