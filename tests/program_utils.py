@@ -84,7 +84,7 @@ class ProgramHelper(object):
       return self.org_app
     if self.program is None:
       self.createProgram()
-    properties = {'scope': self.gci, 'program': self.gci,
+    properties = {'scope': self.program, 'program': self.program,
                   'modified_by': self.founder,
                   'created_by': self.founder,
                   'author': self.founder,
