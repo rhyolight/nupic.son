@@ -441,6 +441,16 @@ class WorkSubmissions(Template):
       context['send_for_review'] = self.data.work_submissions and \
           task.status in SEND_FOR_REVIEW_ALLOWED
 
+    deleteable = []
+    for work in self.data.work_submissions:
+      if work.user.key() == self.data.user.key():
+        # Ensure that it is the work from the current user in case the task
+        # got re-assigned.
+        time_expired = work.submitted_on - datetime.datetime.now()
+        if time_expired < task_logic.DELETE_EXPIRATION:
+          deleteable.append(work)
+    context['deleteable'] = deleteable
+
     if task_logic.canSubmitWork(task, self.data.profile):
       if self.data.POST and 'submit_work' in self.data.GET:
         context['work_form'] = WorkSubmissionForm(self.data.POST)

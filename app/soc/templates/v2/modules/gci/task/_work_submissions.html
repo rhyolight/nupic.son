@@ -24,8 +24,7 @@
               <td>n/a</td>
             {% endif %}
             <td>{{ submission.submitted_on|date:"F d Y H:i" }} UTC</td>
-            <td></td>
-            {% comment %}<td><a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a></td>{% endcomment %}
+            {% if submission in deleteable %}<td><a href="javascript:void(0)" class="task-btn task-btn-delete">Delete</a></td>{% endif %}
           </tr>
         {% endfor %}
       </table>
