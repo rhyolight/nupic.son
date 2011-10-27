@@ -40,7 +40,7 @@ limitations under the License.
 
     {% block form_button %}
       <div class="form-row form-row-buttons">
-        <input value="{{button_value|default:'Submit'}}" class="button" type="submit">
+        <input value="{{button_value|default:'Submit'}}" class="button" type="submit" name="{{button_name}}">
       </div>
     {% endblock form_button %}
   </form>
