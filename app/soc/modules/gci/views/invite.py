@@ -303,6 +303,9 @@ class ManageInvite(RequestHandler):
         'button_value': button_value
         }
 
+  def post(self):
+    pass
+
   def _constructPageName(self):
     invite = self.data.invite
     return "%s Invite For %s" % (invite.role, self.data.invited_user.name)
