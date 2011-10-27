@@ -309,3 +309,14 @@ class RedirectHelper(request_data.RedirectHelper):
     super(RedirectHelper, self).orgHomepage(link_id)
     self._url_name = 'gci_org_home'
     return self
+
+  def request(self, request):
+    """Sets the _url_name for a request.
+    """
+    assert request
+    self.id(request.key().id())
+    if request.type == 'Request':
+      self._url_name = 'show_gci_request'
+    else:
+      self._url_name = 'show_gci_invitation'
+    return self
