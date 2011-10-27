@@ -25,11 +25,7 @@ __authors__ = [
 import unittest
 
 from soc.modules.gci.logic import ranking as ranking_logic
-from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.models.profile import GCIProfile
-from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
@@ -43,8 +39,8 @@ class RankingTest(unittest.TestCase):
   def setUp(self):
     self.gci_program_helper = GCIProgramHelper()
     self.program = self.gci_program_helper.createProgram()
-    student_profile_helper = GCIProfileHelper(self.program, False)
-    self.student = student_profile_helper.createStudent()
+    current_user_profile_helper = GCIProfileHelper(self.program, False)
+    self.student = current_user_profile_helper.createStudent()
     self.task_helper = GCITaskHelper(self.program)
 
   def testGetOrCreateForStudent(self):
@@ -66,6 +62,7 @@ class RankingTest(unittest.TestCase):
     
     #GCIStudentRanking object already exists for a student.
     student_profile_helper = GCIProfileHelper(self.program, False)
+    student_profile_helper.createOtherUser('student@gmail.com')
     student = student_profile_helper.createStudent()
     ranking = GCIStudentRanking(program=student.scope, student=student)
     ranking.put()
@@ -79,6 +76,7 @@ class RankingTest(unittest.TestCase):
     org = self.gci_program_helper.createOrg()
     
     mentor_profile_helper = GCIProfileHelper(self.program, False)
+    mentor_profile_helper.createOtherUser('mentor@gmail.com')
     mentor = mentor_profile_helper.createMentor(org)
     
     task = self.task_helper.createTask('Closed', org, mentor, self.student)
@@ -95,13 +93,16 @@ class RankingTest(unittest.TestCase):
     
     #Test with an existing GCIStudentRanking object.
     student_profile_helper = GCIProfileHelper(self.program, False)
+    student_profile_helper.createOtherUser('student@gmail.com')
     another_student = student_profile_helper.createStudent()
     
     ranking = GCIStudentRanking(program=self.program, student=another_student)
     ranking.points = 5
     ranking.put()
-    org = self.gci_program_helper.createOrg()
+    gci_program_helper = GCIProgramHelper()
+    org = gci_program_helper.createOrg()
     mentor_profile_helper = GCIProfileHelper(self.program, False)
+    mentor_profile_helper.createOtherUser('men@g.com')
     mentor = mentor_profile_helper.createMentor(org)
     
     task = self.task_helper.createTask('Closed', org, mentor, another_student)
@@ -115,10 +116,11 @@ class RankingTest(unittest.TestCase):
     """
     org = self.gci_program_helper.createOrg()
     mentor_profile_helper = GCIProfileHelper(self.program, False)
+    mentor_profile_helper.createOtherUser('mentot@gmail.com')
     mentor = mentor_profile_helper.createMentor(org)
     createTask = self.task_helper.createTask
     tasks = [
-        createTask('Closed', org, mentor, self.student) for i in range(5)
+        createTask('Closed', org, mentor, self.student) for _ in range(5)
     ]
     
     expected_value = 0
@@ -129,20 +131,24 @@ class RankingTest(unittest.TestCase):
     
     #Test with an already existing GCIStudentRanking object.
     student_profile_helper = GCIProfileHelper(self.program, False)
+    student_profile_helper.createOtherUser('stud@c.com')
     another_student = student_profile_helper.createStudent()
     
     ranking = GCIStudentRanking(program=self.program, student=another_student)
     ranking.points = 5
     ranking.put()
     
-    org = self.gci_program_helper.createOrg()
+    gci_program_helper = GCIProgramHelper()
+    org = gci_program_helper.createOrg()
     mentor_profile_helper = GCIProfileHelper(self.program, False)
+    mentor_profile_helper.createOtherUser('praveen@gm.com')
     mentor = mentor_profile_helper.createMentor(org)
     tasks = [
-        createTask('Closed', org, mentor, another_student) for i in range(5)
+        createTask('Closed', org, mentor, another_student) for _ in range(5)
     ]
     expected_value = 0
     for task in tasks:
       expected_value += task.taskDifficulty().value
     actual = ranking_logic.calculateRankingForStudent(another_student, tasks)
     self.assertEquals(expected_value, actual.points)
+
