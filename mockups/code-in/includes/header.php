@@ -81,7 +81,15 @@
     $(document).ready(function() {
         $(".task-btn-extended-deadline").click(function() {
             var test = $(this).val();
-            $("#deadline-extend").show();
+            $("#deadline-extend").toggle();
+        });
+    });
+    </script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $("#deadline-extend-close").click(function() {
+            var test = $(this).val();
+            $("#deadline-extend").toggle();
         });
     });
     </script>

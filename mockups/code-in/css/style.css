@@ -1737,6 +1737,19 @@ body {
         		color: #fff;
         		height: 56px;
         	}
+        	.block-task .block-task-countdown #deadline-extend #deadline-extend-close {
+        		cursor: pointer;
+        		position: absolute;
+        		top: 19px;
+        		right: 5px;
+        		color: #fff;
+        		display: block;
+        		font-size: 12px;
+        		font-weight: bold;
+        		text-decoration: none;
+        		text-transform: none;
+        		z-index: 100;
+        	}
         	.block-task .block-task-countdown #deadline-extend form {
         		
         	}
@@ -2363,7 +2376,7 @@ form fieldset legend {
 #error-not-found-content a:hover,
 #error-not-found-content a:visited,
 #error-not-found-content a:active {
-	color:#0074c1;
+	color: #0074c1;
 }
 /* @end */
 

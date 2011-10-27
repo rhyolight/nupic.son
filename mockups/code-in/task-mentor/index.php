@@ -68,6 +68,7 @@
         	            </div>
         	            <input type="submit" class="task-btn task-btn-extended-deadline" value="Extend deadline" />
         	            <div id="deadline-extend">
+        	            	<div id="deadline-extend-close">x</div>
         	            	<div class="deadline-extend-top"></div>
         	            	<div class="deadline-extend-content">
 	        	            	<span class="plus">+ </span>
