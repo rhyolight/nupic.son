@@ -316,9 +316,9 @@ class ManageInvite(RequestHandler):
     self.data.invited_profile = self._getInvitedProfile()
 
     if 'withdraw' in self.data.POST:
-      self._withdrawInvitation()
+      self._withdrawInvite()
     elif 'resubmit' in self.data.POST:
-      self._resubmitInvitation()
+      self._resubmitInvite()
 
     self.redirect.id().to('manage_gci_invite')
 
@@ -340,7 +340,7 @@ class ManageInvite(RequestHandler):
     if invite.status == 'withdrawn':
       return 'Resubmit'
 
-  def _withdrawInvitation(self):
+  def _withdrawInvite(self):
     """Withdraws an invitation.
     """
     assert isSet(self.data.invite)
@@ -357,7 +357,7 @@ class ManageInvite(RequestHandler):
 
     db.run_in_transaction(withdraw_invite_txn)
 
-  def _resubmitInvitation(self):
+  def _resubmitInvite(self):
     """Resubmits an invitation. 
     """
     assert isSet(self.data.invite)
@@ -397,7 +397,7 @@ class RespondInvite(RequestHandler):
     self.data.invite = GCIRequest.get_by_id(invite_id)
     self.check.isInvitePresent(invite_id)
 
-  def _acceptInvitation(self):
+  def _acceptInvite(self):
     """Accepts an invitation.
     """
 
@@ -433,7 +433,7 @@ class RespondInvite(RequestHandler):
     # TODO(SRabbelier): run in txn as soon as we make User Request's parent
     # db.run_in_transaction(accept_invitation_txn)
 
-  def _rejectInvitation(self):
+  def _rejectInvite(self):
     """Rejects a invitation. 
     """
     assert isSet(self.data.invite)
