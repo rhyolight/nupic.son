@@ -49,7 +49,7 @@ def getRemainingTaskQuota(org):
                   'NeedsWork', 'NeedsReview']
 
   q = GCITask.all()
-  q.filter('scope', org)
+  q.filter('org', org)
   q.filter('status IN', valid_status)
 
   return org.task_quota_limit - q.count()
