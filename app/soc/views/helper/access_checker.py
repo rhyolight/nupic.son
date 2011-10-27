@@ -949,6 +949,9 @@ class AccessChecker(BaseAccessChecker):
     if self.data.invite.status != 'withdrawn':
       raise AccessViolation(DEF_INVITE_CANNOT_RESUBMITTED)
 
+    #TODO(dhans): actually it needs to be checked if the user has not accepted
+    # a request in the meantime.
+
   def canInviteBeWithdrawn(self):
     """Checks if the invitation may be withdrawn.
     """
