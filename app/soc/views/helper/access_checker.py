@@ -96,6 +96,9 @@ DEF_REQUEST_NOT_EXISTS_MSG_FMT = ugettext(
 DEF_INVITE_DOES_NOT_EXIST = ugettext(
     'There is no invite with id %(id)s.')
 
+DEF_INVITE_CANNOT_RESUBMITTED = ugettext(
+    'Only withdrawn invitations may be resubmitted.')
+
 DEF_INVITE_CANNOT_BE_WITHDRAWN = ugettext(
     'Only pending invitations may be withdrawn.')
 
@@ -944,7 +947,7 @@ class AccessChecker(BaseAccessChecker):
 
     # only withdrawn requests may be resubmitted
     if self.data.invite.status != 'withdrawn':
-      raise AccessViolation(DEF_NOT_VALID_REQUEST_MSG)
+      raise AccessViolation(DEF_INVITE_CANNOT_RESUBMITTED)
 
   def canInviteBeWithdrawn(self):
     """Checks if the invitation may be withdrawn.
