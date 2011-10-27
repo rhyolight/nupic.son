@@ -287,6 +287,14 @@ class ManageInvite(RequestHandler):
     self.data.organization = self.data.invite.org
     self.check.isOrgAdmin()
 
+    if self.data.POST:
+      if 'withdraw' in self.data.POST:
+        self.check.canInviteBeWithdrawn()
+      elif 'resubmit' in self.data.POST:
+        self.check.canInviteBeResubmitted()
+      else:
+        raise BadRequest('No action specified in manage_gci_invite request.')
+
   def context(self):
     page_name = self._constructPageName()
 
