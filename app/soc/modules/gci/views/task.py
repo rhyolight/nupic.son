@@ -35,6 +35,7 @@ from django import forms as django_forms
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import RedirectRequest
+from soc.views.helper import blobstore as bs_helper
 from soc.views.template import Template
 
 from soc.modules.gci.logic import comment as comment_logic
@@ -468,3 +469,37 @@ class CommentsTemplate(Template):
     """Returns the path to the template that should be used in render().
     """
     return 'v2/modules/gci/task/_comments.html'
+
+
+class WorkSubmissionDownload(RequestHandler):
+  """Request handler for downloading blobs from a GCIWorkSubmission.
+  """
+
+  def djangoURLPatterns(self):
+    """URL pattern for this view.
+    """
+    return [
+        url(r'work/download/%s$' % url_patterns.TASK, self,
+            name='gci_download_work'),
+    ]
+
+  def checkAccess(self):
+    """Checks whether this task is visible to the public.
+    """
+    self.mutator.taskFromKwargs()
+    self.check.isTaskVisible()
+
+  def get(self):
+    """Attempts to download the blob in the worksubmission that is specified
+    in the GET argument.
+    """
+    id_s = self.request.GET.get('id', '')
+    id = int(id_s) if id_s.isdigit() else -1
+
+    work = GCIWorkSubmission.get_by_id(id, self.data.task)
+
+    if not work or not work.upload_of_work:
+      return self.error(400, 'No work found with id %i' %id)
+
+    upload = work.upload_of_work
+    self.response = bs_helper.send_blob(upload, save_as=upload.filename)

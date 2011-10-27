@@ -76,6 +76,7 @@ class Callback(object):
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
     self.views.append(task.TaskViewPage())
+    self.views.append(task.WorkSubmissionDownload())
     self.views.append(task_list.TaskListPage())
     self.views.append(task_create.TaskCreatePage())
 
