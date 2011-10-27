@@ -199,6 +199,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     comments = self.task.comments()
     self.assertLength(comments, 1)
 
+    self.assertTasksInQueue(n=1, url='/tasks/gci/ranking/update')
+
   def testPostButtonExtendDeadline(self):
     """Tests the extend deadline button.
     """
