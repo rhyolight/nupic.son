@@ -414,7 +414,10 @@ class WorkSubmissions(Template):
   def context(self):
     """Returns the context for the current template.
     """
-    context = {'submissions': self.data.work_submissions}
+    context = {
+        'submissions': self.data.work_submissions,
+        'download_url': self.data.redirect.id().urlOf('gci_download_work')
+        }
 
     task = self.data.task
     is_owner = task_logic.isOwnerOfTask(task, self.data.profile)

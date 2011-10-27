@@ -17,7 +17,7 @@
         {% for submission in submissions %}
           <tr>
             {% if submission.upload_of_work %}
-              <td><a href="javascript:void(0)">{{ submission.upload_of_work.file_name }}</a></td>
+              <td><a href="{{ download_url }}?id={{ submission.key.id }}">{{ submission.upload_of_work.filename }}</a></td>
               <td>{{ submission.upload_of_work.size|filesizeformat }}</td>
             {% else %}
               <td>{{ submission.url_to_work|urlizetrunc:45 }}</td>
