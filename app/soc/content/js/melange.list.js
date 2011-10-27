@@ -50,14 +50,6 @@
     "indexAlreadyExistent"
   ]);
 
-  var isEmptyObject = function (obj) {
-    //from jQuery 1.4 source, we can switch to it when we will upgrade to 1.4
-    for ( var name in obj ) {
-      return false;
-    }
-    return true;
-  }
-
   var retrieveData = function (postdata) {
     var my_index = postdata.my_index;
     var original_data = list_objects.get(my_index).data.data;
@@ -180,7 +172,7 @@
     }
     // Get only unique values
     temp_data = temp_data.filter(function (item, index, array) {
-      return index == array.indexOf(item) && !isEmptyObject(item);
+      return index == array.indexOf(item) && !jQuery.isEmptyObject(item);
     });
 
     // Process index/sorting filters
@@ -486,7 +478,7 @@
               if (operation.type === "post_edit") {
                 var button_object = jQuery("#" + list_object.jqgrid.id + "_buttonOp_" + operation.id);
                 // if this button is a post_edit button then disable or enable the button if dirty_fields apply
-                if (isEmptyObject(list_object.jqgrid.dirty_fields)) {
+                if (jQuery.isEmptyObject(list_object.jqgrid.dirty_fields)) {
                   button_object.attr("disabled","disabled");
                 }
                 else {
@@ -641,7 +633,7 @@
           return function () {
             var current_grid = list_objects.get(parameters.idx).jqgrid;
             var rows_to_send = {};
-            if (current_grid.editable_columns.length === 0 && isEmptyObject(current_grid.dirty_fields)) {
+            if (current_grid.editable_columns.length === 0 && jQuery.isEmptyObject(current_grid.dirty_fields)) {
               return;
             }
             // This is done to make sure we detect rows by key column and not by row id
@@ -1018,7 +1010,7 @@
 
               //Add row action if present
               /*var multiselect = _self.jqgrid.object.jqGrid('getGridParam','multiselect');
-              if (_self.operations !== undefined && _self.operations.row !== undefined && !isEmptyObject(_self.operations.row)) {
+              if (_self.operations !== undefined && _self.operations.row !== undefined && !jQuery.isEmptyObject(_self.operations.row)) {
 
                 // if row action is present, than change cursor
                 // FIXME: this is done by polling continuosly the body element
