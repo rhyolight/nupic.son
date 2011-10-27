@@ -45,6 +45,9 @@ ROLE_NAMES = {
     'org_admin': 'Organization Admin'
     }
 
+INVITATION_TYPE = 'Invitation'
+REQUEST_TYPE = 'Request'
+
 class Request(ModelWithFieldAttributes):
   """A request is made to allow a person to create a new Role entity.
   """
