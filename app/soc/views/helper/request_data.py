@@ -259,7 +259,7 @@ class RequestData(object):
     from soc.models.request import Request
     query = Request.all()
     query.filter('user', self.user)
-    query.filter('group', organization)
+    query.filter('org', organization)
 
     return query
 
