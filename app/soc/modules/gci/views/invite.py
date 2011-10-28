@@ -369,8 +369,15 @@ class RespondInvite(RequestHandler):
     self.check.canRespondInvite()
 
   def context(self):
+    page_name = self._constructPageName()
     return {
+        'page_name': page_name,
+        'request': self.data.invite
         }
+
+  def _constructPageName(self):
+    invite = self.data.invite
+    return "%s Invite" % (invite.role)
 
 class ShowInvite(RequestHandler):
   """Encapsulate all the methods required to generate Show Invite page.
