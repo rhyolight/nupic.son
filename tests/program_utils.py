@@ -60,6 +60,7 @@ class ProgramHelper(object):
     self.org_app = None
     self.org = None
     self.site = None
+    self.createOrg = self.createOrUpdateOrg
 
   def seed(self, model, properties,
            auto_seed_optional_properties=True):
@@ -119,11 +120,23 @@ class ProgramHelper(object):
     self.org_app = self.seed(OrgAppSurvey, properties)
     return self.org_app
 
-  def createOrg(self, override={}):
-    """Creates an organization for the defined properties.
+  def _updateOrg(self, override):
+    """Updates self.org with override.
+    """
+    properties = self.org.properties()
+    for name, value in override.iteritems():
+      properties[name].__set__(self.org, value)
+    self.org.put()
+    return self.org
+
+  def createOrUpdateOrg(self, override={}):
+    """Creates or updates an org (self.org) for the defined properties.
     """
     if self.org:
-      return self.org
+      if not override:
+        return self.org
+      else:
+        return self._updateOrg(override)
     self.org = self.createNewOrg(override)
     return self.org
 
