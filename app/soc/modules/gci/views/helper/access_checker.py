@@ -79,6 +79,11 @@ class Mutator(access_checker.Mutator):
     self.data.work_submissions = access_checker.unset
     super(Mutator, self).unsetAll()
 
+  def profileFromKwargs(self):
+    """Retrieves profile from the kwargs for GSoC.
+    """
+    self.profileFromKwargs(GCIProfile)
+
   def taskFromKwargs(self, comments=False, work_submissions=True):
     """Sets the GCITask entity in RequestData object.
 
