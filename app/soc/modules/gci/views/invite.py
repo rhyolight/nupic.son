@@ -366,6 +366,9 @@ class RespondInvite(RequestHandler):
     self.data.invite = GCIRequest.get_by_id(invite_id)
     self.check.isInvitePresent(invite_id)
 
+  def context(self):
+    return {
+        }
 
 class ShowInvite(RequestHandler):
   """Encapsulate all the methods required to generate Show Invite page.
