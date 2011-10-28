@@ -29,9 +29,9 @@ from google.appengine.ext import db
 
 from soc.logic import accounts
 from soc.logic import cleaning
+from soc.logic import invite as invite_logic
 from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
-from soc.logic.helper import notifications
 
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
@@ -316,9 +316,9 @@ class ManageInvite(RequestHandler):
     self.data.invited_profile = self._getInvitedProfile()
 
     if 'withdraw' in self.data.POST:
-      self._withdrawInvite()
+      invite_logic.withdrawInvite(self.data)
     elif 'resubmit' in self.data.POST:
-      self._resubmitInvite()
+      invite_logic.resubmitInvite(self.data)
 
     self.redirect.id().to('manage_gci_invite')
 
@@ -339,40 +339,6 @@ class ManageInvite(RequestHandler):
       return 'Withdraw'
     if invite.status == 'withdrawn':
       return 'Resubmit'
-
-  def _withdrawInvite(self):
-    """Withdraws an invitation.
-    """
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
-
-    def withdraw_invite_txn():
-      invite = db.get(invite_key)
-      invite.status = 'withdrawn'
-      invite.put()
-
-      context = notifications.handledInviteContext(self.data)
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
-      sub_txn()
-
-    db.run_in_transaction(withdraw_invite_txn)
-
-  def _resubmitInvite(self):
-    """Resubmits an invitation. 
-    """
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
-
-    def resubmit_invite_txn():
-      invite = db.get(invite_key)
-      invite.status = 'pending'
-      invite.put()
-
-      context = notifications.handledInviteContext(self.data)
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
-      sub_txn()
-
-    db.run_in_transaction(resubmit_invite_txn)
 
   def _getInvitedProfile(self):
     key_name = '/'.join([
@@ -396,55 +362,6 @@ class RespondInvite(RequestHandler):
     invite_id = int(self.data.kwargs['id'])
     self.data.invite = GCIRequest.get_by_id(invite_id)
     self.check.isInvitePresent(invite_id)
-
-  def _acceptInvite(self):
-    """Accepts an invitation.
-    """
-
-    assert isSet(self.data.organization)
-
-    if not self.data.profile:
-      self.redirect.program()
-      self.redirect.to('edit_gsoc_profile')
-
-    invite_key = self.data.invite.key()
-    profile_key = self.data.profile.key()
-    organization_key = self.data.organization.key()
-
-    def accept_invitation_txn():
-      invite = db.get(invite_key)
-      profile = db.get(profile_key)
-
-      invite.status = 'accepted'
-
-      if invite.role != 'mentor':
-        profile.is_org_admin = True
-        profile.org_admin_for.append(organization_key)
-        profile.org_admin_for = list(set(profile.org_admin_for))
-
-      profile.is_mentor = True
-      profile.mentor_for.append(organization_key)
-      profile.mentor_for = list(set(profile.mentor_for))
-
-      invite.put()
-      profile.put()
-
-    accept_invitation_txn()
-    # TODO(SRabbelier): run in txn as soon as we make User Request's parent
-    # db.run_in_transaction(accept_invitation_txn)
-
-  def _rejectInvite(self):
-    """Rejects a invitation. 
-    """
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
-
-    def reject_invite_txn():
-      invite = db.get(invite_key)
-      invite.status = 'rejected'
-      invite.put()
-
-    db.run_in_transaction(reject_invite_txn)
 
 
 class ShowInvite(RequestHandler):
