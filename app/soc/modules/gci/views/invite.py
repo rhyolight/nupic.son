@@ -330,14 +330,14 @@ class ManageInvite(RequestHandler):
     invite = self.data.invite
     if invite.status == 'pending':
       return 'withdraw'
-    if invite.status == 'withdrawn':
+    if invite.status in ['withdrawn', 'rejected']:
       return 'resubmit'
 
   def _constructButtonValue(self):
     invite = self.data.invite
     if invite.status == 'pending':
       return 'Withdraw'
-    if invite.status == 'withdrawn':
+    if invite.status in ['withdrawn', 'rejected']:
       return 'Resubmit'
 
   def _getInvitedProfile(self):
