@@ -35,7 +35,7 @@ from tests.program_utils import GCIProgramHelper
 class RankingTest(unittest.TestCase):
   """Tests the ranking methods for students in GCI.
   """
-  
+
   def setUp(self):
     self.gci_program_helper = GCIProgramHelper()
     self.program = self.gci_program_helper.createProgram()
@@ -50,48 +50,48 @@ class RankingTest(unittest.TestCase):
     q = GCIStudentRanking.all()
     q.filter('student', self.student)
     ranking = q.get()
-    
+
     self.assertEqual(ranking, None)
-    
+
     actual_ranking = ranking_logic.getOrCreateForStudent(self.student)
     q = GCIStudentRanking.all()
     q.filter('student', self.student)
     expected_ranking = q.get()
     self.assertEqual(expected_ranking.key(), actual_ranking.key())
-    
+
     #GCIStudentRanking object already exists for a student.
     student = GCIProfileHelper(self.program, False).createOtherUser(
         'student@gmail.com').createStudent()
     ranking = GCIStudentRanking(program=student.scope, student=student)
     ranking.put()
     actual_ranking = ranking_logic.getOrCreateForStudent(student)
-    
+
     self.assertEqual(ranking.key(), actual_ranking.key())
-    
+
   def testUpdateRankingWithTask(self):
     """Tests if the ranking of a specified task is updated.
     """
     org = self.gci_program_helper.createNewOrg()
-    
+
     mentor = GCIProfileHelper(self.program, False).createOtherUser(
         'mentor@gmail.com').createMentor(org)
-    
+
     task = self.task_helper.createTask('Closed', org, mentor, self.student)
-    
+
     expected_value = task.taskDifficulty().value
     actual = ranking_logic.updateRankingWithTask(task)
     self.assertEqual(expected_value, actual.points)
-    
+
     another_task = self.task_helper.createTask('Closed', org, 
                                                mentor, self.student)
     expected = expected_value + another_task.taskDifficulty().value
     actual = ranking_logic.updateRankingWithTask(another_task)
     self.assertEqual(expected, actual.points)
-    
+
     #Test with an existing GCIStudentRanking object.
     another_student = GCIProfileHelper(self.program, False).createOtherUser(
         'student@gmail.com').createStudent()
-    
+
     ranking = GCIStudentRanking(program=self.program, student=another_student)
     ranking.points = 5
     ranking.put()
@@ -99,9 +99,9 @@ class RankingTest(unittest.TestCase):
     org = self.gci_program_helper.createNewOrg()
     mentor = GCIProfileHelper(self.program, False).createOtherUser(
         'men@g.com').createMentor(org)
-    
+
     task = self.task_helper.createTask('Closed', org, mentor, another_student)
-    
+
     expected_value = ranking.points + task.taskDifficulty().value
     actual = ranking_logic.updateRankingWithTask(task)
     self.assertEqual(expected_value, actual.points)
@@ -116,17 +116,17 @@ class RankingTest(unittest.TestCase):
     tasks = [
         createTask('Closed', org, mentor, self.student) for _ in range(5)
     ]
-    
+
     expected_value = 0
     for task in tasks:
       expected_value+=task.taskDifficulty().value
     actual = ranking_logic.calculateRankingForStudent(self.student, tasks)
     self.assertEquals(expected_value, actual.points)
-    
+
     #Test with an already existing GCIStudentRanking object.
     another_student = GCIProfileHelper(self.program, False).createOtherUser(
         'stud@c.com').createStudent()
-    
+
     ranking = GCIStudentRanking(program=self.program, student=another_student)
     ranking.points = 5
     ranking.put()
@@ -142,4 +142,3 @@ class RankingTest(unittest.TestCase):
       expected_value += task.taskDifficulty().value
     actual = ranking_logic.calculateRankingForStudent(another_student, tasks)
     self.assertEquals(expected_value, actual.points)
-
