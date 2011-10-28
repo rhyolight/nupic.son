@@ -189,7 +189,7 @@ class TaskViewPage(RequestHandler):
 
         time_expired = work.submitted_on - datetime.datetime.now()
         if work.user.key() != self.data.user.key() or \
-            time_expired < task_logic.DELETE_EXPIRATION:
+            time_expired > task_logic.DELETE_EXPIRATION:
           self.check.fail(DEF_NOT_ALLOWED_TO_DELETE_MSG)
 
 
