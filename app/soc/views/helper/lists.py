@@ -228,12 +228,12 @@ class ListConfiguration(object):
     """Adds a simple redirect row button the the specified column with
     the same link for each entity.
     """
-    parameters = {
-        'link': url,
-        'new_window': new_window
-        }
-    self.__addRowButton(col_id, button_id, caption, 'redirect_simple',
-        classes, parameters)
+
+    # always return the static url
+    func = lambda e, *args: url
+
+    self.addCustomRedirectRowButton(col_id, button_id, caption, func,
+        classes, new_window)
 
   def addSimpleColumn(self, col_id, name, **kwargs):
     """Adds a column to the end of the list which uses the id of the column as
