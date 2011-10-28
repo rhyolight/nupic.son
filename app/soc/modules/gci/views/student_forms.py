@@ -184,9 +184,9 @@ class StudentFormDownload(RequestHandler):
     """
     download = None
     if 'consent_form' in self.data.GET:
-      download = self.data.student_info.consent_form
+      download = self.data.url_student_info.consent_form
     elif 'student_id_form' in self.data.GET:
-      download = self.data.student_info.student_id_form
+      download = self.data.url_student_info.student_id_form
     else:
       return self.error(httplib.BAD_REQUEST, 'No file requested')
 
