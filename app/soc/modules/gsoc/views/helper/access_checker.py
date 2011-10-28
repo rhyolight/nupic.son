@@ -32,6 +32,7 @@ from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import RedirectRequest
 from soc.views.helper import access_checker
 
+from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -228,6 +229,14 @@ class Mutator(access_checker.Mutator):
           'Requested GSoCGradingSurveyGroup does not exist in this program')
 
     self.data.survey_group = survey_group
+
+  def slotTransferEntities(self):
+    assert access_checker.isSet(self.data.organization)
+
+    self.data.slot_transfer_entities = \
+        slot_transfer_logic.getSlotTransferEntitiesForOrg(
+            self.data.organization)
+
 
 class DeveloperMutator(access_checker.DeveloperMutator, Mutator):
   pass

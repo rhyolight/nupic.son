@@ -41,7 +41,6 @@ from soc.models.request import INVITATION_TYPE
 from soc.models.user import User
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
-from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models.profile import GSoCProfile
 
 
@@ -360,13 +359,6 @@ class Mutator(object):
       self.data.public_comments_visible = True
       self.data.private_comments_visible = True
       return
-
-  def slotTransferEntities(self):
-    assert isSet(self.data.organization)
-
-    self.data.slot_transfer_entities = \
-        slot_transfer_logic.getSlotTransferEntitiesForOrg(
-            self.data.organization)
 
   def host(self):
     assert isSet(self.data.user)
