@@ -88,6 +88,8 @@ class GCITaskHelper(object):
       student: The student whose work it is.
       url: The url to the work.
     """
-    return GCIWorkSubmission(
+    work = GCIWorkSubmission(
         parent=task, program=task.program, org=task.org, user=student.user,
-        url_to_work=url).put()
+        url_to_work=url)
+    work.put()
+    return work
