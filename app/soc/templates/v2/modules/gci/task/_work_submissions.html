@@ -27,7 +27,7 @@
             {% if submission in deleteable %}
               <td>
                 <form action="?delete_submission" method="post">
-                  <input value="Delete" id="{{submission.key.id}}" class="task-btn task-btn-delete" type="submit">
+                  <input value="Delete" name="{{submission.key.id}}" class="task-btn task-btn-delete" type="submit">
                 </form>
               </td>
             {% endif %}
