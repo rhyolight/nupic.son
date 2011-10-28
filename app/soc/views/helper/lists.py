@@ -742,6 +742,7 @@ class ListContentResponse(object):
 
     row = {}
     buttons= {}
+    row_buttons = {}
 
     if self._config._row_operation_func:
       # perform the row operation function to retrieve the link
@@ -757,6 +758,7 @@ class ListContentResponse(object):
     operations = {
         'row': row,
         'buttons': buttons,
+        'row_buttons': row_buttons
     }
 
     data = {
