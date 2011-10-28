@@ -27,6 +27,17 @@ limitations under the License.
   <div class="block-form-title">
     <span class="title">{{ page_name }}</span>
   </div>
+  
+  <form action="#" method="post" class="form-create-task clearfix">
+    {% block form_button %}
+      {% if is_respondable %}
+      <div class="form-row form-row-buttons">
+        <input value="Accept" class="button" type="submit" name="accept">
+        <input value="Reject" class="button" type="submit" name="reject">
+      </div>
+      {% endif %}
+    {% endblock form_button %}
+  </form>
 </div>
 
 <div class="request-summary">
