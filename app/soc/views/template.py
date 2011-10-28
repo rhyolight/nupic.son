@@ -22,6 +22,9 @@ __authors__ = [
   ]
 
 
+import logging
+import traceback
+
 from django.template import loader
 
 from soc.views.helper import context as context_helper
@@ -40,9 +43,14 @@ class Template(object):
     Uses the context method to retrieve the appropriate context, uses the
     self.templatePath() method to retrieve the template that should be used.
     """
-    context = context_helper.default(self.data)
-    context.update(self.context())
-    rendered = loader.render_to_string(self.templatePath(), dictionary=context)
+    try:
+      context = context_helper.default(self.data)
+      context.update(self.context())
+      rendered = loader.render_to_string(self.templatePath(), dictionary=context)
+    except Exception, e:
+      logging.error(traceback.format_exc(e))
+      raise e
+
     return rendered
 
   def context(self):
