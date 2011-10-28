@@ -37,6 +37,7 @@ from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
@@ -56,6 +57,8 @@ DEF_NO_STUDENT_EVALUATION_MSG_FMT = ugettext(
 
 DEF_NO_MENTOR_EVALUATION_MSG_FMT = ugettext(
     'The project evaluation with name %s does not exist.')
+
+DEF_NO_PROJECT_MSG = ugettext('Requested project does not exist.')
 
 DEF_NO_RECORD_FOUND = ugettext(
     'The Record with the specified key was not found.')
@@ -106,6 +109,30 @@ class Mutator(access_checker.Mutator):
       self.data.proposer = self.data.profile
     else:
       self.data.proposer = self.data.proposal.parent()
+
+  def projectFromKwargs(self):
+    """Sets the project entity in RequestData object.
+    """
+    self.profileFromKwargs()
+    assert access_checker.isSet(self.data.url_profile)
+
+    # can safely call int, since regexp guarnatees a number
+    project_id = int(self.data.kwargs['id'])
+
+    if not project_id:
+      raise NotFound(ugettext('Proposal id must be a positive number'))
+
+    self.data.project = GSoCProject.get_by_id(
+        project_id, parent=self.data.url_profile)
+
+    if not self.data.project:
+      raise NotFound(DEF_NO_PROJECT_MSG)
+
+    parent_key = self.data.project.parent_key()
+    if self.data.profile and parent_key == self.data.profile.key():
+      self.data.project_owner = self.data.profile
+    else:
+      self.data.project_owner = self.data.project.parent()
 
   def studentEvaluationFromKwargs(self, raise_not_found=True):
     """Sets the student evaluation in RequestData object.
@@ -213,7 +240,6 @@ class AccessChecker(access_checker.AccessChecker):
   def canStudentPropose(self):
     """Checks if the student is eligible to submit a proposal.
     """
-
     # check if the timeline allows submitting proposals
     self.studentSignupActive()
 
