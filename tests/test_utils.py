@@ -582,11 +582,27 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
 
     super(MailTestCase, self).setUp()
 
-  def assertEmailSent(self, to=None, sender=None, subject=None,
-                      body=None, html=None, n=None, fullbody=False):
+  def get_sent_messages(self, to=None, cc=None, bcc=None, sender=None,
+                        subject=None, body=None, html=None):
+    """Override gaetestbed.mail.MailTestCase.get_sent_messages method.
+
+    Difference:
+    * It checks cc and bcc as well.
+    """
+    messages = super(MailTestCase, self).get_sent_messages(to, sender, subject,
+                                                           body, html)
+    if cc:
+      messages = [m for m in messages if cc in m.cc_list()]
+    if bcc:
+      messages = [m for m in messages if bcc in m.bcc_list()]
+    return messages
+
+  def assertEmailSent(self, to=None, cc=None, bcc=None, sender=None,
+      subject=None, body=None, html=None, n=None, fullbody=False):
     """Override gaetestbed.mail.MailTestCase.assertEmailSent method.
 
     Difference:
+    * It runs all mail tasks first.
     * It prints out all sent messages to facilitate debug in case of failure.
     * It accepts an optional argument n which is used to assert exactly n
     messages satisfying the criteria are sent out.
@@ -597,6 +613,8 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
     runTasks(url = '/tasks/mail/send_mail', queue_names = ['mail'])
     messages = self.get_sent_messages(
         to = to,
+        cc = cc,
+        bcc = bcc,
         sender = sender,
         subject = subject,
         body = body,
