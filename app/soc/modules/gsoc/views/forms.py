@@ -228,7 +228,7 @@ class GSoCBoundField(forms.BoundField):
         <p>
         File: <a href="%(link)s">%(name)s</a><br/>
         Size: %(size)s <br/>
-        Uploaded on: %(uploaded)s UTC)
+        Uploaded on: %(uploaded)s UTC
         <p>
     """
 
