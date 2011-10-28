@@ -97,8 +97,7 @@ DEF_UNCLAIMED_MSG = ugettext(
     'The claim on this task has been removed, someone else can claim it now.')
 
 
-# TODO(ljvderijk): Recalibrate
-DELETE_EXPIRATION = datetime.timedelta(days=10)
+DELETE_EXPIRATION = datetime.timedelta(minutes=10)
 
 # TODO(ljvderijk): Add basic subscribers when task is created
 
