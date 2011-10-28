@@ -99,6 +99,9 @@ DEF_INVITE_DOES_NOT_EXIST = ugettext(
 DEF_INVITE_CANNOT_RESUBMITTED = ugettext(
     'Only withdrawn invitations may be resubmitted.')
 
+DEF_INVITE_CANNOT_BE_ACCESSED = ugettext(
+    'This invite cannot be accessed by you.')
+
 DEF_INVITE_CANNOT_BE_WITHDRAWN = ugettext(
     'Only pending invitations may be withdrawn.')
 
@@ -966,6 +969,19 @@ class AccessChecker(BaseAccessChecker):
     if self.data.invite.status != 'pending':
       raise AccessViolation(DEF_INVITE_CANNOT_BE_WITHDRAWN)
 
+  def canRespondInvite(self):
+    """Checks if the current user may respond to invite entity.
+    """
+    assert isSet(self.data.invite)
+
+    # check if the entity represents an invitation
+    if self.data.invite.type != INVITATION_TYPE:
+      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
+
+    # only the invited user may respond to the invitation
+    if self.data.user.key() != self.data.invite.user.key():
+      raise AccessViolation(DEF_INVITE_CANNOT_BE_ACCESSED)
+    
   def canRespondToRequest(self):
     """Checks if the current user can accept/reject the request.
     """
