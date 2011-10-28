@@ -86,6 +86,16 @@ class Mutator(access_checker.Mutator):
   """Mutator for the GSoC module.
   """
 
+  def unsetAll(self):
+    """Clear the fields of the data object.
+    """
+    self.data.private_comments_visible = access_checker.unset
+    self.data.proposal = access_checker.unset
+    self.data.proposer = access_checker.unset
+    self.data.public_comments_visible = access_checker.unset
+    self.data.public_only = access_checker.unset
+    super(Mutator, self).unsetAll()
+
   def profileFromKwargs(self):
     """Retrieves profile from the kwargs for GSoC.
     """

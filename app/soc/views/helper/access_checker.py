@@ -253,11 +253,6 @@ class Mutator(object):
     self.data.invited_profile = unset
     self.data.invite = unset
     self.data.key_name = unset
-    self.data.private_comments_visible = unset
-    self.data.proposal = unset
-    self.data.proposer = unset
-    self.data.public_comments_visible = unset
-    self.data.public_only = unset
     self.data.request_entity = unset
     self.data.requester = unset
     self.data.scope_path = unset
