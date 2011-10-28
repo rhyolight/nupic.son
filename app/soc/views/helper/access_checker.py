@@ -42,7 +42,6 @@ from soc.models.user import User
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
-from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -359,22 +358,6 @@ class Mutator(object):
       self.data.proposer = self.data.profile
     else:
       self.data.proposer = self.data.proposal.parent()
-
-  def surveyGroupFromKwargs(self):
-    """Sets the GradingSurveyGroup from kwargs.
-    """
-    assert isSet(self.data.program)
-
-    survey_group = GSoCGradingSurveyGroup.get_by_id(int(self.data.kwargs['id']))
-
-    if not survey_group:
-      raise NotFound('Requested GSoCGradingSurveyGroup does not exist')
-
-    if survey_group.program.key() != self.data.program.key():
-      raise NotFound(
-          'Requested GSoCGradingSurveyGroup does not exist in this program')
-
-    self.data.survey_group = survey_group
 
   def canRespondForUser(self):
     assert isSet(self.data.invited_user)

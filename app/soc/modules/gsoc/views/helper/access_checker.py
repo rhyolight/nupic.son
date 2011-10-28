@@ -32,10 +32,11 @@ from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import RedirectRequest
 from soc.views.helper import access_checker
 
-from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
+from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
+from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
@@ -156,6 +157,22 @@ class Mutator(access_checker.Mutator):
       raise NotFound(DEF_NO_RECORD_FOUND) 
 
     self.data.record = record
+
+  def surveyGroupFromKwargs(self):
+    """Sets the GradingSurveyGroup from kwargs.
+    """
+    assert access_checker.isSet(self.data.program)
+
+    survey_group = GSoCGradingSurveyGroup.get_by_id(int(self.data.kwargs['id']))
+
+    if not survey_group:
+      raise NotFound('Requested GSoCGradingSurveyGroup does not exist')
+
+    if survey_group.program.key() != self.data.program.key():
+      raise NotFound(
+          'Requested GSoCGradingSurveyGroup does not exist in this program')
+
+    self.data.survey_group = survey_group
 
 class DeveloperMutator(access_checker.DeveloperMutator, Mutator):
   pass
