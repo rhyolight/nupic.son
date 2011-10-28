@@ -379,7 +379,7 @@ class RespondInvite(RequestHandler):
 
   def _constructPageName(self):
     invite = self.data.invite
-    return "%s Invite" % (invite.role)
+    return "%s Invite" % (invite.role.capitalize())
 
 class ShowInvite(RequestHandler):
   """Encapsulate all the methods required to generate Show Invite page.
