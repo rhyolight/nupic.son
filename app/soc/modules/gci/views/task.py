@@ -352,7 +352,20 @@ class TaskViewPage(RequestHandler):
   def _postDeleteSubmission(self):
     """POST handler to delete a GCIWorkSubmission.
     """
-    pass
+    id = self._submissionId()
+    work = GCIWorkSubmission.get_by_id(id, parent=self.data.task)
+
+    if not work:
+      return self.error(400, DEF_NO_WORK_FOUND_FMT %id)
+
+    # Deletion of blobs always runs separately from transaction so it has no
+    # added value to use it here.
+    upload = work.upload_of_work
+    work.delete()
+    if upload:
+      upload.delete()
+
+    self.redirect.id().to('gci_view_task')
 
   def _submissionId(self):
     """Retrieves the submission id from the POST data.
