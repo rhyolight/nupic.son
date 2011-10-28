@@ -80,9 +80,9 @@ class Mutator(access_checker.Mutator):
     super(Mutator, self).unsetAll()
 
   def profileFromKwargs(self):
-    """Retrieves profile from the kwargs for GSoC.
+    """Retrieves profile from the kwargs for GCI.
     """
-    self.profileFromKwargs(GCIProfile)
+    super(Mutator, self).profileFromKwargs(GCIProfile)
 
   def taskFromKwargs(self, comments=False, work_submissions=True):
     """Sets the GCITask entity in RequestData object.

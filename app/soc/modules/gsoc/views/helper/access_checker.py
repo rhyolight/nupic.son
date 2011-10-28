@@ -89,7 +89,7 @@ class Mutator(access_checker.Mutator):
   def profileFromKwargs(self):
     """Retrieves profile from the kwargs for GSoC.
     """
-    self.profileFromKwargs(GSoCProfile)
+    super(Mutator, self).profileFromKwargs(GSoCProfile)
 
   def proposalFromKwargs(self):
     self.profileFromKwargs()

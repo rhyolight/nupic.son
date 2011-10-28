@@ -302,17 +302,15 @@ class Mutator(object):
     self.data.key_name = '/'.join(fields)
     self.data.document = Document.get_by_key_name(self.data.key_name)
 
-  def profileFromKwargs(self):
-    """Should be implemented by subclasses that deal with profiles.
-    """
-    raise NotImplementedError()
-
-  def profileFromKwargs(self, profile_model):
+  def profileFromKwargs(self, profile_model=None):
     """Retrieves a profile from kwargs.
 
     Args:
       profile_model: The datastore model class
     """
+    if not profile_model:
+      raise Exception('No profile model specified')
+
     key_name = self.data.kwargs['user']
     self.data.url_user = User.get_by_key_name(key_name)
 
