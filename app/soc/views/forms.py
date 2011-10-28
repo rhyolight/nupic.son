@@ -47,13 +47,21 @@ from soc.views.helper.surveys import SurveySchema
 def choiceWidget(field):
   """Returns a Select widget for the specified field.
   """
-  label = field.verbose_name
+  choices = _generateChoices(field)
 
+  label = field.verbose_name
+  choices = [('', label)] + choices
+
+  return forms.Select(choices=choices)
+
+
+def _generateChoices(field):
+  """Generates possible choices from a Model field.
+  """
   choices = []
-  choices.append(('', label))
   for choice in field.choices:
     choices.append((str(choice), unicode(choice)))
-  return forms.Select(choices=choices)
+  return choices
 
 
 def choiceWidgets(model, fields):
