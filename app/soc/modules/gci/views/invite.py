@@ -350,6 +350,9 @@ class RespondInvite(RequestHandler):
   """View to respond to the invitation by the user.
   """
 
+  def templatePath(self):
+    return 'v2/modules/gci/invite/show.html'
+
   def djangoURLPatterns(self):
     return [
         url(r'invite/respond/%s$' % url_patterns.ID, self,
