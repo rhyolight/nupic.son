@@ -378,7 +378,6 @@ class MyOrgApplicationsComponent(Component):
         'title': 'My organization applications',
         'lists': [list],
         'description': ugettext('My organization applications'),
-        'idx': 0,
         }
 
   def getListData(self):
@@ -440,7 +439,6 @@ class MyProposalsComponent(Component):
         'title': 'PROPOSALS',
         'lists': [list],
         'description': ugettext('List of my submitted proposals'),
-        'idx': 1,
         }
 
   def getListData(self):
@@ -521,7 +519,6 @@ class MyProjectsComponent(Component):
         'title': 'Projects',
         'lists': [list],
         'description': ugettext('Projects'),
-        'idx': 2,
     }
 
 
@@ -615,7 +612,6 @@ class MyEvaluationsComponent(Component):
         'title': 'Evaluations',
         'lists': [list],
         'description': ugettext('Evaluations'),
-        'idx': 3,
     }
 
 
@@ -686,7 +682,6 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
         'title': 'Evaluations',
         'lists': [list],
         'description': ugettext('Evaluations'),
-        'idx': 3,
     }
 
 
@@ -869,7 +864,6 @@ class SubmittedProposalsComponent(Component):
         'lists': [list],
         'description': ugettext(
             'List of proposals submitted to my organizations'),
-        'idx': 4,
         }
 
   def post(self):
@@ -1086,7 +1080,6 @@ class ProjectsIMentorComponent(Component):
         'title': title,
         'lists': [list],
         'description': ugettext(title),
-        'idx': 5,
     }
 
 
@@ -1181,7 +1174,6 @@ class OrganizationsIParticipateInComponent(Component):
         'lists': [list],
         'description': ugettext(
             'List of organizations which I participate in'),
-        'idx': 6,
     }
 
 
@@ -1259,7 +1251,6 @@ class RequestComponent(Component):
         'lists': [list],
         'description': ugettext(
             'List of requests for my organizations.'),
-        'idx': self.idx,
     }
 
 
@@ -1388,7 +1379,6 @@ class ParticipantsComponent(Component):
         'lists': [list],
         'description': ugettext(
             'List of your organizations members'),
-        'idx': 9,
     }
 
 
@@ -1514,7 +1504,6 @@ class StudentsComponent(Component):
         'lists': [list],
         'description': ugettext(
             'List of participating students'),
-        'idx': 10,
     }
 
 
@@ -1609,5 +1598,4 @@ class TodoComponent(Component):
         'title': 'My todos',
         'lists': [list],
         'description': ugettext('List of my todos'),
-        'idx': 11,
     }

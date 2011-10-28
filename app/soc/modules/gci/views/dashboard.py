@@ -364,7 +364,6 @@ class MyOrgApplicationsComponent(Component):
         'title': 'My organization applications',
         'lists': [list],
         'description': ugettext('My organization applications'),
-        'idx': 0,
         }
 
   def getListData(self):
