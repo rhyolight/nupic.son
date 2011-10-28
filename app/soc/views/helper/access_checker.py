@@ -43,7 +43,6 @@ from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
 
 
@@ -332,32 +331,6 @@ class Mutator(object):
 
     if not self.data.url_student_info:
       raise NotFound('Requested user is not a student')
-
-  def proposalFromKwargs(self):
-    self.profileFromKwargs()
-    assert isSet(self.data.url_profile)
-
-    # can safely call int, since regexp guarnatees a number
-    proposal_id = int(self.data.kwargs['id'])
-
-    if not proposal_id:
-      raise NotFound('Proposal id must be a positive number')
-
-    self.data.proposal = GSoCProposal.get_by_id(
-        proposal_id, parent=self.data.url_profile)
-
-    if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
-
-    org_key = GSoCProposal.org.get_value_for_datastore(self.data.proposal)
-
-    self.data.proposal_org = self.data.getOrganization(org_key)
-
-    parent_key = self.data.proposal.parent_key()
-    if self.data.profile and parent_key == self.data.profile.key():
-      self.data.proposer = self.data.profile
-    else:
-      self.data.proposer = self.data.proposal.parent()
 
   def canRespondForUser(self):
     assert isSet(self.data.invited_user)

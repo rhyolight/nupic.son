@@ -40,6 +40,7 @@ from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
+from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.student_proposal import StudentProposal
 
 
@@ -78,6 +79,34 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
 
 
 class Mutator(access_checker.Mutator):
+  """Mutator for the GSoC module.
+  """
+
+  def proposalFromKwargs(self):
+    self.profileFromKwargs()
+    assert access_checker.isSet(self.data.url_profile)
+
+    # can safely call int, since regexp guarnatees a number
+    proposal_id = int(self.data.kwargs['id'])
+
+    if not proposal_id:
+      raise NotFound('Proposal id must be a positive number')
+
+    self.data.proposal = GSoCProposal.get_by_id(
+        proposal_id, parent=self.data.url_profile)
+
+    if not self.data.proposal:
+      raise NotFound('Requested proposal does not exist')
+
+    org_key = GSoCProposal.org.get_value_for_datastore(self.data.proposal)
+
+    self.data.proposal_org = self.data.getOrganization(org_key)
+
+    parent_key = self.data.proposal.parent_key()
+    if self.data.profile and parent_key == self.data.profile.key():
+      self.data.proposer = self.data.profile
+    else:
+      self.data.proposer = self.data.proposal.parent()
 
   def studentEvaluationFromKwargs(self, raise_not_found=True):
     """Sets the student evaluation in RequestData object.
