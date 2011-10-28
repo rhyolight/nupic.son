@@ -294,6 +294,9 @@ def claimRequestTask(task, student):
   task.status = 'ClaimRequested'
   task.student = student
 
+  if student.key() not in task.subscribers:
+    task.subscribers.append(student.key())
+
   comment_props = {
       'parent': task,
       'title': DEF_CLAIM_REQUEST_TITLE,
