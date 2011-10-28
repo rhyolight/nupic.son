@@ -122,6 +122,16 @@ class ProgramHelper(object):
   def createOrg(self, override={}):
     """Creates an organization for the defined properties.
     """
+    if self.org:
+      return self.org
+    self.org = self.createNewOrg(override)
+    return self.org
+
+  def createNewOrg(self, override={}):
+    """Creates a new organization for the defined properties.
+
+    This new organization will not be stored in self.org but returned.
+    """
     if self.program is None:
       self.createProgram()
 
@@ -183,18 +193,17 @@ class GSoCProgramHelper(ProgramHelper):
     self.program.put()
     return self.program
 
-  def createOrg(self, override={}):
-    """Creates an organization for the defined properties.
+  def createNewOrg(self, override={}):
+    """Creates a new organization for the defined properties.
+
+    This new organization will not be stored in self.org but returned.
     """
-    if self.org:
-      return self.org
-    super(GSoCProgramHelper, self).createOrg()
+    super(GSoCProgramHelper, self).createNewOrg(override)
     properties = {'scope': self.program, 'status': 'active',
                   'scoring_disabled': False, 'max_score': 5,
                   'founder': self.founder, 'home': None,}
     properties.update(override)
-    self.org = self.seed(GSoCOrganization, properties)
-    return self.org
+    return self.seed(GSoCOrganization, properties)
 
 class GCIProgramHelper(ProgramHelper):
   """Helper class to aid in manipulating GCI program data.
@@ -202,7 +211,6 @@ class GCIProgramHelper(ProgramHelper):
 
   def __init__(self):
     """Initializes the GCIProgramHelper.
-
     """
     super(GCIProgramHelper, self).__init__()
 
@@ -249,16 +257,15 @@ class GCIProgramHelper(ProgramHelper):
     self.program.put()
     return self.program
 
-  def createOrg(self, override={}):
-    """Creates an organization for the defined properties.
+  def createNewOrg(self, override={}):
+    """Creates a new organization for the defined properties.
+
+    This new organization will not be stored in self.org but returned.
     """
-    if self.org:
-      return self.org
-    super(GCIProgramHelper, self).createOrg()
+    super(GCIProgramHelper, self).createNewOrg(override)
     properties = {'scope': self.program, 'status': 'active',
                   'founder': self.founder,
                   'home': None,
                   'task_quota_limit': 100}
     properties.update(override)
-    self.org = self.seed(GCIOrganization, properties)
-    return self.org
+    return self.seed(GCIOrganization, properties)
