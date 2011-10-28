@@ -366,6 +366,8 @@ class RespondInvite(RequestHandler):
     self.data.invite = GCIRequest.get_by_id(invite_id)
     self.check.isInvitePresent(invite_id)
 
+    self.check.canRespondInvite()
+
   def context(self):
     return {
         }
