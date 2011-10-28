@@ -1008,16 +1008,16 @@
         caption: "Columns",
         buttonicon: "ui-icon-calculator",
         onClickButton: function () {
-          jQuery("#" + _self.jqgrid.id).setColumns({
-            colnameview: false,
-            jqModal: true,
-            ShrinkToFit: true,
-            afterSubmitForm: function() {
-                               melange.list.cookie_service.saveCurrentTableConfiguration(idx, _self.jqgrid.object)
-                             },
-            recreateForm: true
+          var original_width = jQuery("#" + _self.jqgrid.id).jqGrid("getGridParam","width");
+          jQuery("#" + _self.jqgrid.id).jqGrid('columnChooser', {
+            done: function(perm) {
+                if (perm) {
+                  this.jqGrid("remapColumns", perm, true);
+                  this.jqGrid("setGridWidth", original_width);
+                  melange.list.cookie_service.saveCurrentTableConfiguration(idx, _self.jqgrid.object);
+                }
+            }
           });
-          return false;
         },
         position: "last",
         title: "Show/Hide Columns",

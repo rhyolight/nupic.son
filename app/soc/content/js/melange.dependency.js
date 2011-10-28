@@ -220,6 +220,13 @@
     tpjs + "jquery/jquery.ui-checkboxes.js"
   ];
 
+  s.jqueryui.draggable = [
+    s.jqueryui.widget,
+    s.jqueryui.mouse,
+    null,
+    tpjs + "jquery/jquery-ui.draggable.js"
+  ];
+
   s.jqueryui.sortable = [
     s.jqueryui.widget,
     s.jqueryui.mouse,
@@ -239,6 +246,12 @@
 
   s.jqgrid = [
     s.jqueryui.core,
+    s.jqueryui.dialog,
+    s.jqueryui.draggable,
+    s.jqueryui.sortable,
+    null,
+    new $m.cssFile(mcss + "ui.multiselect.css"),
+    tpjs + "jquery/jquery-jqgrid.ui.multiselect.js",
     null,
     new $m.cssFile(mcss + "ui.jqgrid.css"),
     tpjs + "jquery/jquery-jqgrid.locale-en.js",
@@ -247,7 +260,7 @@
     null,
     tpjs + "jquery/jquery-jqgrid.custom.js",
     tpjs + "jquery/jquery-jqgrid.filter.js",
-    tpjs + "jquery/jquery-jqgrid.setcolumns.js"
+    tpjs + "jquery/jquery-jqgrid.jqueryui.js"
   ];
 
   s.jqgridediting = [
