@@ -160,3 +160,38 @@ class StudentFormUpload(RequestHandler):
     form.save()
 
     self.redirect.program().to('gci_student_form_upload')
+
+
+class StudentFormDownload(RequestHandler):
+  """View for uploading your student forms.
+  """
+
+  def djangoURLPatterns(self):
+    """The URL pattern for the view.
+    """
+    return [
+        url(r'student/forms/%s$' % url_patterns.PROFILE, self,
+            name='gci_student_form_download')]
+
+  def checkAccess(self):
+    """Denies access if you are not a host.
+    """
+    self.check.isHost()
+    # FIXME: this mutator is grabbing GSoC profiles!
+    self.mutator.studentFromKwargs()
+
+  def get(self):
+    """Allows hosts to download the student forms.
+    """
+
+    download = None
+    if 'consent_form' in self.data.GET:
+      download = self.data.student_info.consent_form
+    elif 'student_id_form' in self.data.GET:
+      download = self.data.student_info.student_id_form
+
+    # download has been requested
+    if not download:
+      self.error(httplib.NOT_FOUND, 'File not found')
+
+    self.response = bs_helper.send_blob(download, save_as=True)
