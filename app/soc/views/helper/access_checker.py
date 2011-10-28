@@ -41,8 +41,6 @@ from soc.models.request import INVITATION_TYPE
 from soc.models.user import User
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
-from soc.modules.gsoc.models.profile import GSoCProfile
-
 
 DEF_AGREE_TO_TOS_MSG_FMT = ugettext(
     'You must agree to the <a href="%(tos_link)s">site-wide Terms of'
@@ -305,6 +303,16 @@ class Mutator(object):
     self.data.document = Document.get_by_key_name(self.data.key_name)
 
   def profileFromKwargs(self):
+    """Should be implemented by subclasses that deal with profiles.
+    """
+    raise NotImplementedError()
+
+  def profileFromKwargs(self, profile_model):
+    """Retrieves a profile from kwargs.
+
+    Args:
+      profile_model: The datastore model class
+    """
     key_name = self.data.kwargs['user']
     self.data.url_user = User.get_by_key_name(key_name)
 
@@ -314,7 +322,7 @@ class Mutator(object):
     fields = ['sponsor', 'program', 'user']
     key_name = '/'.join(self.data.kwargs[i] for i in fields)
 
-    self.data.url_profile = GSoCProfile.get_by_key_name(
+    self.data.url_profile = profile_model.get_by_key_name(
         key_name, parent=self.data.url_user)
 
     if not self.data.url_profile:
