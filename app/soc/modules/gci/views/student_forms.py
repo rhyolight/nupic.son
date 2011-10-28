@@ -177,7 +177,6 @@ class StudentFormDownload(RequestHandler):
     """Denies access if you are not a host.
     """
     self.check.isHost()
-    # FIXME: this mutator is grabbing GSoC profiles!
     self.mutator.studentFromKwargs()
 
   def get(self):
