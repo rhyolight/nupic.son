@@ -27,7 +27,21 @@ limitations under the License.
   <div class="block-form-title">
     <span class="title">{{ page_name }}</span>
   </div>
-  
+
+  <div class="request-summary">
+    <p class="request-requester">
+      <strong>
+        {% if request.type == 'Request' %}From:{% else %}To:{% endif %}
+      </strong> {{ user_name }} {{ request.user.link_id }}
+    </p>
+    <p class="request-contact-info"><strong>Email:</strong> {{ user_email }}</p>
+    <p class="request-status"><strong>Status:</strong> {{ request.statusMessage }}</p>
+    {% if status_msg %}<p class="request-status-msg">{{ status_msg }}</p>{% endif %}
+    <p class="request-sent-on"><strong>Sent on:</strong> {{ request.created_on }}</p>
+    <p class="request-organization"><strong>Organization:</strong> {{ request.org.name }}</p>
+    <p class="request-message"><strong>Message:</strong> {{ request.message|default:"" }}</p>
+  </div>
+
   <form action="#" method="post" class="form-create-task clearfix">
     {% block form_button %}
       {% if is_respondable %}
@@ -38,32 +52,6 @@ limitations under the License.
       {% endif %}
     {% endblock form_button %}
   </form>
-</div>
-
-<div class="request-summary">
-  <p class="request-requester"><strong>
-      {% if request.type == 'Request' %}From:{% else %}To:{% endif %}
-  </strong> {{ user_name }} {{ request.user.link_id }}</p>
-  <p class="request-contact-info"><strong>Email:</strong> {{ user_email }}</p>
-  <p class="request-status"><strong>Status:</strong> {{ request.statusMessage }}</p>
-  {% if status_msg %}<p class="request-status-msg">{{ status_msg }}</p>{% endif %}
-  <p class="request-sent-on"><strong>Sent on:</strong> {{ request.created_on }}</p>
-  <p class="request-organization"><strong>Organization:</strong> {{ request.org.name }}</p>
-  <p class="request-message"><strong>Message:</strong> {{ request.message|default:"" }}</p>
-  {% if show_actions %}
-  <div class="request-response">
-    <form action="{{ response_action }}" method="post" id="form" class="form-project-comment">
-      <div id="request-respond-button-row" class="row button-row">
-        {% if can_accept %}
-          <input id="request-respond-accept-submit" name="action" type="submit" value="{{ actions.accept }}" class="submit"/>
-        {% endif %}
-        {% if can_reject %}
-          <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.reject }}" class="submit"/>
-        {% endif %}
-      </div>
-    </form>
-  </div>
-  {% endif %}
 </div>
 
 {% endblock page_content %}
