@@ -358,7 +358,7 @@ class TaskViewPage(RequestHandler):
     """Retrieves the submission id from the POST data.
     """
     for key in self.data.POST.keys():
-      if key.isDigit():
+      if key.isdigit():
         return int(key)
 
     return -1
