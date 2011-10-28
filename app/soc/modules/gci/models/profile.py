@@ -68,6 +68,7 @@ class GCIStudentInfo(soc.models.role.StudentInfo):
       'A signed Parental Consent Form from your legal parent or guardian')
 
   #: Property pointing to the second page of the consent form
+  #: (Deprecated since GCI2011)
   consent_form_two = blobstore.BlobReferenceProperty(
       required=False, verbose_name=ugettext('Parental Consent Form (page 2)'))
   consent_form_two.help_text = ugettext(

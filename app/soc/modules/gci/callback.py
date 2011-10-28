@@ -51,6 +51,7 @@ class Callback(object):
     from soc.modules.gci.views import org_app
     from soc.modules.gci.views import profile
     from soc.modules.gci.views import program
+    from soc.modules.gci.views import student_forms
     from soc.modules.gci.views import task
     from soc.modules.gci.views import task_list
     from soc.modules.gci.views import task_create
@@ -76,6 +77,7 @@ class Callback(object):
     self.views.append(profile.GCIProfilePage())
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
+    self.views.append(student_forms.StudentFormUpload())
     self.views.append(task.TaskViewPage())
     self.views.append(task.WorkSubmissionDownload())
     self.views.append(task_list.TaskListPage())
