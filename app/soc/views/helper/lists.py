@@ -755,6 +755,17 @@ class ListContentResponse(object):
       # an optional 'caption' as keys.
       buttons[button_id] = func(entity, *args, **kwargs)
 
+    for col_id, buttons in self._config._row_buttons.iteritems():
+      row_buttons[col_id] = {
+          'buttons_def': {},
+          }
+      for button_id, button_config in buttons.iteritems():
+        func = self._config._row_button_functions[col_id][button_id]
+        link = func(entity)
+        if link:
+          button_config['parameters']['link'] = link
+          row_buttons[col_id]['buttons_def'][button_id] = button_config
+
     operations = {
         'row': row,
         'buttons': buttons,
