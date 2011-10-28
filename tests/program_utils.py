@@ -123,14 +123,19 @@ class ProgramHelper(object):
     self.org_app = self.seed(OrgAppSurvey, properties)
     return self.org_app
 
+  def _updateEntity(self, entity, override):
+    """Updates self.<entity> with override.
+    """
+    properties = entity.properties()
+    for name, value in override.iteritems():
+      properties[name].__set__(entity, value)
+    entity.put()
+    return entity
+
   def _updateOrg(self, override):
     """Updates self.org with override.
     """
-    properties = self.org.properties()
-    for name, value in override.iteritems():
-      properties[name].__set__(self.org, value)
-    self.org.put()
-    return self.org
+    return self._updateEntity(self.org, override)
 
   def createOrUpdateOrg(self, override={}):
     """Creates or updates an org (self.org) for the defined properties.
