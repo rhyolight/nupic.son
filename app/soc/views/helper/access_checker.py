@@ -100,7 +100,7 @@ DEF_INVITE_CANNOT_BE_RESUBMITTED = ugettext(
     'Only withdrawn invitations may be resubmitted.')
 
 DEF_INVITE_CANNOT_BE_ACCESSED = ugettext(
-    'This invite cannot be accessed by you.')
+    'This invite cannot be accessed from this account.')
 
 DEF_INVITE_CANNOT_BE_WITHDRAWN = ugettext(
     'Only pending invitations may be withdrawn.')
