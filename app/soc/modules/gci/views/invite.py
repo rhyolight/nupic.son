@@ -367,10 +367,12 @@ class RespondInvite(RequestHandler):
     self.check.isInvitePresent(invite_id)
 
     self.check.canRespondInvite()
+    self.data.is_respondable = self.data.invite.status == 'pending'
 
   def context(self):
     page_name = self._constructPageName()
     return {
+        'is_respondable': self.data.is_respondable,
         'page_name': page_name,
         'request': self.data.invite
         }
