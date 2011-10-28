@@ -352,7 +352,7 @@ class RespondInvite(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'respond_invite/%s$' % url_patterns.ID, self,
+        url(r'invite/respond/%s$' % url_patterns.ID, self,
             name='respond_gci_invite')
     ]
 
