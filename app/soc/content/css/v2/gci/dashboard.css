@@ -180,7 +180,8 @@
 }
 .column-entry.view_mentor_evaluation,
 .column-entry.view_student_evaluation,
-.column-entry.view_evaluation_group
+.column-entry.view_evaluation_group,
+.column-entry.all_org_tasks
 {
   background-image: url(../../../images/v2/soc/dashboard/view.png);
 }

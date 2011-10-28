@@ -33,6 +33,8 @@ from soc.views.helper import url_patterns
 from soc.models.org_app_record import OrgAppRecord
 
 from soc.modules.gci.logic import org_app as org_app_logic
+from soc.modules.gci.models import task
+from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -218,6 +220,8 @@ class DashboardPage(RequestHandler):
     if component:
       components.append(component)
 
+    components.append(MyOrgsTaskList(self.request, self.data))
+
     return components
 
   def _getLoneUserComponents(self):
@@ -394,3 +398,66 @@ class MyOrgApplicationsComponent(Component):
     response.next = 'done'
 
     return response
+
+class MyOrgsTaskList(Component):
+  """Component for listing the tasks of the orgs of the current user.
+  """
+
+  def __init__(self, request, data):
+    """Initializes the component.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    super(MyOrgsTaskList, self).__init__(request, data)
+
+    list_config = lists.ListConfiguration()
+
+    list_config.addSimpleColumn('title', 'Title')
+    list_config.addSimpleColumn('status', 'Status')
+    list_config.addSimpleColumn('description', 'Description', hidden=True)
+
+    list_config.setRowAction(
+        lambda e, *args: data.redirect.id(e.key().id()).
+            urlOf('gci_view_task'))
+
+    self._list_config = list_config
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return'v2/modules/gci/dashboard/list_component.html'
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=1, preload_list=False)
+
+    return {
+        'name': 'all_org_tasks',
+        'title': 'All tasks of my organizations',
+        'lists': [list],
+        'description': ugettext('List of all tasks of my organization'),
+        }
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    if lists.getListIndex(self.request) != 1:
+      return None
+
+    q = GCITask.all()
+    q.filter('program', self.data.program)
+    q.filter('org IN', self.data.mentor_for)
+
+    starter = lists.keyStarter
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter)
+
+    return response_builder.build()
