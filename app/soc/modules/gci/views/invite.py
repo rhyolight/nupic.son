@@ -369,6 +369,10 @@ class RespondInvite(RequestHandler):
     self.check.canRespondInvite()
     self.data.is_respondable = self.data.invite.status == 'pending'
 
+    # actual response may be sent only to pending requests
+    if self.data.POST and not self.data.is_respondable:
+      raise BadRequest('This request cannot be responded at this moment.') 
+
   def context(self):
     page_name = self._constructPageName()
     return {
