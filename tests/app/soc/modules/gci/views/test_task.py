@@ -25,7 +25,6 @@ __authors__ = [
 import datetime
 
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
 from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
