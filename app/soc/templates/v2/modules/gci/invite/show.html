@@ -23,6 +23,12 @@ limitations under the License.
 
 <h1 id="show-review-page-title">{{ request.type }} to become {{ request.roleName }}</h1>
 
+<div class="block block-form">
+  <div class="block-form-title">
+    <span class="title">{{ page_name }}</span>
+  </div>
+</div>
+
 <div class="request-summary">
   <p class="request-requester"><strong>
       {% if request.type == 'Request' %}From:{% else %}To:{% endif %}
