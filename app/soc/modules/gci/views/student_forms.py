@@ -182,12 +182,13 @@ class StudentFormDownload(RequestHandler):
   def get(self):
     """Allows hosts to download the student forms.
     """
-
     download = None
     if 'consent_form' in self.data.GET:
       download = self.data.student_info.consent_form
     elif 'student_id_form' in self.data.GET:
       download = self.data.student_info.student_id_form
+    else:
+      return self.error(httplib.BAD_REQUEST, 'No file requested')
 
     # download has been requested
     if not download:
