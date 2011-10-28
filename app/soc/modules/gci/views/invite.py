@@ -360,7 +360,7 @@ class RespondInvite(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.check.isProfileActive()
+    self.check.isUser()
 
     invite_id = int(self.data.kwargs['id'])
     self.data.invite = GCIRequest.get_by_id(invite_id)
