@@ -91,6 +91,8 @@ class ListConfiguration(object):
     self._button_functions = {}
     self._row_operation = {}
     self._row_operation_func = None
+    self._row_buttons = {}
+    self._row_button_functions = {}
 
     self._templates = {}
     
@@ -176,6 +178,62 @@ class ListConfiguration(object):
     self._col_map[col_id] = model
     self._col_names.append(name)
     self._col_functions[col_id] = func
+
+  def __addRowButton(self, col_id, button_id, caption, type, classes,
+                     parameters):
+    """Internal method for adding row buttons so that the uniqueness of
+    the column id can be checked.
+
+    Args:
+      col_id: a unique identifier of the column that the button should be
+          displayed on
+      button_id: a unique identifier of the button which should be 
+          unique per column
+      type: type of the button
+      classes: css classes that should be appended to the button
+      parameters: a dictionary of parameters and their values which should be
+          associated with the button
+    """
+
+    column_row_buttons = self._row_buttons.get(col_id, {})
+    if column_row_buttons and column_row_buttons.get(name):
+      logging.warning('Button with name %s is already defined for column %s'
+          % (name, col_id))
+
+    button_config = {
+        'caption': caption,
+        'type': type,
+        'classes': classes if classes is not None else [],
+        'parameters': parameters
+        }
+
+    column_row_buttons[button_id] = button_config
+    self._row_buttons[col_id] = column_row_buttons
+
+  def addCustomRedirectRowButton(self, col_id, button_id, caption, func,
+                                 classes=None, new_window=False):
+    """Adds a custom redirect row button the the specified column.
+    """
+    parameters = {
+        'new_window': new_window
+        }
+    self.__addRowButton(col_id, button_id, caption, 'redirect_simple',
+        classes, parameters)
+    column_row_button_functions = self._row_button_functions.get(col_id, {})
+    column_row_button_functions[button_id] = func
+    self._row_button_functions[col_id] = column_row_button_functions
+
+  def addSimpleRedirectRowButton(self, col_id, button_id, caption, url,
+                                 classes=None, new_window=False):
+    """Adds a simple redirect row button the the specified column with
+    the same link for each entity.
+    """
+    parameters = {
+        'link': url,
+        'new_window': new_window
+        }
+    self.__addRowButton(col_id, button_id, caption, 'redirect_simple',
+        classes, parameters)
 
   def addSimpleColumn(self, col_id, name, **kwargs):
     """Adds a column to the end of the list which uses the id of the column as
@@ -295,7 +353,7 @@ class ListConfiguration(object):
     """Adds a new template column.
     """
       
-    self.addColumn(col_id, name, lambda **kwargs: '' , **kwargs)
+    self.addColumn(col_id, name, lambda *args, **kwargs: '' , **kwargs)
 
     if self._templates.get(col_id):
       logging.warning(
