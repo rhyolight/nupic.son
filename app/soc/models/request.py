@@ -55,7 +55,8 @@ class Request(ModelWithFieldAttributes):
   #: Type of the request:
   #: - invitations are sent by organization admins to users
   #: - requests are sent by wannabe mentors to organizations
-  type = db.StringProperty(required=False, choices=['Invitation', 'Request'])
+  type = db.StringProperty(
+      required=False, choices=[INVITATION_TYPE, REQUEST_TYPE])
 
   #: The internal name of the role
   role = db.StringProperty(required=True, choices=['mentor', 'org_admin'])
