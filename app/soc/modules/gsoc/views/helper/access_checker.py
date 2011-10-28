@@ -41,7 +41,6 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.proposal import GSoCProposal
-from soc.modules.gsoc.models.student_proposal import StudentProposal
 
 
 DEF_FAILED_PREVIOUS_EVAL_MSG_FMT = ugettext(
@@ -219,7 +218,7 @@ class AccessChecker(access_checker.AccessChecker):
     self.studentSignupActive()
 
     # check how many proposals the student has already submitted 
-    query = StudentProposal.all()
+    query = GSoCProposal.all()
     query.filter('scope = ', self.data.profile).ancestor(self.data.user)
 
     if query.count() >= self.data.program.apps_tasks_limit:
