@@ -355,6 +355,26 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'NeedsReview')
 
+  def testPostDeleteSubmission(self):
+    """Tests for deleting work.
+    """
+    self.data.createStudent()
+
+    self.task.status = 'Claimed'
+    self.task.student = self.data.profile
+    self.task.put()
+
+    work = GCITaskHelper(self.program).createWorkSubmission(
+        self.task, self.data.profile)
+
+    self.assertLength(self.task.workSubmissions(), 1)
+
+    url = '%s?delete_submission' %self._taskPageUrl(self.task)
+    response = self.post(url, {work.key().id(): ''})
+
+    self.assertResponseRedirect(response)
+    self.assertLength(self.task.workSubmissions(), 0)
+
   def _taskPageUrl(self, task):
     """Returns the url of the task page.
     """
