@@ -949,103 +949,6 @@
       fetchDataFromServer();
     }
 
-    var cookie_service = new function() {
-      var setTableColumns = function (colModel) {
-        var columns_configuration = {
-          hidden_columns: {}
-        };
-
-        jQuery.each(colModel, function(index, column) {
-          columns_configuration.hidden_columns[column.name] = column.hidden;
-        });
-
-        return columns_configuration;
-      };
-
-      var setTableOrder = function (sortname, sortorder) {
-        return {
-          sort_settings : {
-            "sortname": sortname,
-            "sortorder": sortorder
-          }
-        }
-      };
-
-      var setTableFilters = function (colModel, postData) {
-        var filters_configuration = {
-          filters: {}
-        };
-
-        if (postData._search === true) {
-          jQuery.each(colModel, function(index, column) {
-            if (postData[column.name] !== undefined) {
-              filters_configuration.filters[column.name] = postData[column.name];
-            }
-          });
-        }
-
-        return filters_configuration;
-      };
-
-      this.saveCurrentTableConfiguration = function () {
-        //TODO(Mario): insulate all the functions better.
-        var previous_configuration = melange.cookie.getCookie(melange.cookie.MELANGE_USER_PREFERENCES);
-        var colModel = _self.jqgrid.object.jqGrid('getGridParam', 'colModel');
-
-        // Retrieve sort options
-        var sortCol = _self.jqgrid.object.jqGrid('getGridParam', 'sortname');
-        var sortOrder = _self.jqgrid.object.jqGrid('getGridParam', 'sortorder');
-
-        // Retrieve search filters
-        var postData = _self.jqgrid.object.jqGrid('getGridParam', 'postData');
-
-        var configuration_to_save = setTableColumns(colModel);
-        configuration_to_save = jQuery.extend(setTableOrder(sortCol, sortOrder), configuration_to_save);
-        configuration_to_save = jQuery.extend(setTableFilters(colModel, postData), configuration_to_save);
-        var new_configuration = {
-          lists_configuration: {}
-        };
-        new_configuration.lists_configuration[idx] = configuration_to_save;
-        new_configuration.lists_configuration = jQuery.extend(previous_configuration.lists_configuration, new_configuration.lists_configuration);
-        melange.cookie.saveCookie(melange.cookie.MELANGE_USER_PREFERENCES, new_configuration, 14, window.location.pathname);
-      };
-
-      this.getPreviousTableConfiguration = function (configuration) {
-        var previous_configuration = melange.cookie.getCookie(melange.cookie.MELANGE_USER_PREFERENCES);
-        var colModel = configuration.colModel;
-        if (previous_configuration["lists_configuration"][idx] !== undefined) {
-          var this_list_preferences = previous_configuration["lists_configuration"][idx];
-          jQuery.each(this_list_preferences.hidden_columns, function (column_name, is_hidden) {
-            var column_from_colmodel = jLinq.from(colModel).equals("name",column_name).select()[0] || null;
-            if (column_from_colmodel !== null) {
-              column_from_colmodel.hidden = is_hidden;
-            }
-          });
-          if (previous_configuration["lists_configuration"][idx].sort_settings !== undefined) {
-            var previous_sortname = previous_configuration.lists_configuration[idx].sort_settings.sortname;
-            var previous_sortorder = previous_configuration.lists_configuration[idx].sort_settings.sortorder;
-            var column_present = jLinq.from(colModel).equals("name",previous_sortname).select()[0] !== undefined ? true : false;
-            if (column_present) {
-              configuration.sortname = previous_sortname;
-              configuration.sortorder = previous_sortorder;
-            }
-          }
-          if (previous_configuration["lists_configuration"][idx].filters !== undefined) {
-            var previous_filters = previous_configuration["lists_configuration"][idx].filters;
-            jQuery.each(previous_filters, function (column_name, column_filter) {
-              var column = jLinq.from(colModel).equals("name",column_name).select()[0];
-              if (column !== undefined) {
-                column.searchoptions = {
-                  defaultValue: column_filter
-                }
-              }
-            });
-          }
-        }
-        return configuration;
-      };
-    };
-
     var footerAggregates = function () {
       /* Calculate aggregates if requested, using summaryType as a reference, since
          it won't work without grouping and so there's no harm on using it
@@ -1078,14 +981,14 @@
       footerAggregates();
       if (_self.features.cookie_service.enabled) {
         // Temporarily disable cookie service for new lists.
-        cookie_service.saveCurrentTableConfiguration();
+        melange.list.cookie_service.saveCurrentTableConfiguration(idx, _self.jqgrid.object);
       }
     };
 
     var initJQGrid = function () {
       if (_self.features.cookie_service.enabled) {
         // Temporarily disable cookie service for new lists.
-        _self.configuration = cookie_service.getPreviousTableConfiguration(_self.configuration);
+        _self.configuration = melange.list.cookie_service.getPreviousTableConfiguration(idx, _self.configuration);
       }
 
       var final_jqgrid_configuration = jQuery.extend(
@@ -1109,7 +1012,9 @@
             colnameview: false,
             jqModal: true,
             ShrinkToFit: true,
-            afterSubmitForm: cookie_service.saveCurrentTableConfiguration,
+            afterSubmitForm: function() {
+                               melange.list.cookie_service.saveCurrentTableConfiguration(idx, _self.jqgrid.object)
+                             },
             recreateForm: true
           });
           return false;
@@ -1156,7 +1061,9 @@
         jQuery("#" + _self.jqgrid.id).jqGrid(
           'filterToolbar',
           {
-            beforeSearch: cookie_service.saveCurrentTableConfiguration,
+            beforeSearch: function() {
+                            melange.list.cookie_service.saveCurrentTableConfiguration(idx, _self.jqgrid.object)
+                          },
             searchOnEnter: false,
             autosearch: true
           }

@@ -316,6 +316,7 @@
     null,
     mpjs + "melange.list.js",
     null,
+    mpjs + "melange.list.cookie_service.js",
     mpjs + "melange.list.process_data.js",
     null,
     function () {
