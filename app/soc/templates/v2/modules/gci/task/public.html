@@ -41,5 +41,21 @@ limitations under the License.
         jQuery(this).toggleClass("active").next().slideToggle("slow");
       });
     });
+  },
+  function () {
+    jQuery(document).ready(function() {
+        jQuery(".task-btn-extended-deadline").click(function() {
+            var test = $(this).val();
+            jQuery("#deadline-extend").toggle();
+        });
+    });
+  },
+  function() {
+    jQuery(document).ready(function() {
+        jQuery("#deadline-extend-close").click(function() {
+            var test = $(this).val();
+            jQuery("#deadline-extend").toggle();
+        });
+    });
   }
 {% endblock dependencies %}
