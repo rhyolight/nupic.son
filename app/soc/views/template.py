@@ -23,7 +23,6 @@ __authors__ = [
 
 
 import logging
-import traceback
 
 from django.template import loader
 
@@ -48,7 +47,7 @@ class Template(object):
       context.update(self.context())
       rendered = loader.render_to_string(self.templatePath(), dictionary=context)
     except Exception, e:
-      logging.error(traceback.format_exc(e))
+      logging.exception(e)
       raise e
 
     return rendered
