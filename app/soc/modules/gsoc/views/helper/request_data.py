@@ -250,6 +250,8 @@ class RequestData(request_data.RequestData):
       from soc.models.site import Site
       program_key = Site.active_program.get_value_for_datastore(self.site)
       program_key_name = program_key.name()
+      import logging
+      logging.error("No program specified")
 
     timeline_key = db.Key.from_path('GSoCTimeline', program_key_name)
 

@@ -508,7 +508,7 @@ class RedirectHelper(object):
   def searchpage(self):
     """Sets the _url_name for the searchpage of the current program.
     """
-    self._clear()
+    self.program()
     return self
 
   def orgHomepage(self, link_id):
