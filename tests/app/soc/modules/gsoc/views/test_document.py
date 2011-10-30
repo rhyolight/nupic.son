@@ -63,8 +63,8 @@ class EditProgramTest(GSoCDjangoTestCase):
         'modified_by': self.data.user,
         'author': self.data.user,
         'home_for': None,
-        'prefix': 'site',
-        'scope': self.site,
+        'prefix': 'gsoc_program',
+        'scope': self.program,
         'read_access': 'public',
         'key_name': DocumentKeyNameProvider(),
     }
