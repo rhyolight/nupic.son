@@ -331,6 +331,9 @@ class RequestHandler(object):
       self.check = None
       self.mutator = None
       self.redirect = None
+      if any(self.__dict__.values()):
+        import logging
+        logging.error("self: %s" % self.__dict__)
 
     return response
 
