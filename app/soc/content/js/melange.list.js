@@ -615,7 +615,7 @@
           url: [
             window.location.href.split('#')[0],
             ampersand_question,
-            "fmt=json&limit=150",
+            "fmt=json&limit=100",
             (start === "" ? "" : "&start=" + start),
             "&idx=", idx
           ].join(""),
