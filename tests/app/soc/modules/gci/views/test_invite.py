@@ -30,7 +30,19 @@ from tests.test_utils import GCIDjangoTestCase
 from tests.utils.invite_utils import GCIInviteHelper
 
 
-class InviteViewTest(GCIDjangoTestCase):
+class BaseInviteTest(GCIDjangoTestCase):
+  """Base class for invite tests.
+  """ 
+
+  def _invitee(self):
+    invitee_data = GCIProfileHelper(self.gci, self.dev_test)
+    invitee_data.createOtherUser('invitee@example.com')
+    invitee_data.createProfile()
+    invitee_data.notificationSettings(new_invites=True)
+    return invitee_data.profile
+
+
+class InviteViewTest(BaseInviteTest):
   """Tests user invite views.
   """
 
@@ -198,7 +210,7 @@ class InviteViewTest(GCIDjangoTestCase):
     assert response.context['form'].errors.get(error_field) is not None
 
 
-class ManageInviteTest(GCIDjangoTestCase):
+class ManageInviteTest(BaseInviteTest):
   """Tests for Manage Invite views.
   """
 
@@ -227,11 +239,5 @@ class ManageInviteTest(GCIDjangoTestCase):
     self.assertTrue(new_invite.status == 'withdrawn')
 
   def _manageInviteUrl(self, invite):
-    return '/gci/invite/manage/%s/%s' % (invite.org.scope.key().name(), invite.key().id())
-
-  def _invitee(self):
-    invitee_data = GCIProfileHelper(self.gci, self.dev_test)
-    invitee_data.createOtherUser('invitee@example.com')
-    invitee_data.createProfile()
-    invitee_data.notificationSettings(new_invites=True)
-    return invitee_data.profile
+    return '/gci/invite/manage/%s/%s' % (
+        invite.org.scope.key().name(), invite.key().id())
