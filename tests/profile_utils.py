@@ -205,7 +205,7 @@ class ProfileHelper(object):
     from soc.models.request import Request
     self.createProfile()
     properties = {
-        'role': role, 'user': self.user, 'group': org,
+        'role': role, 'user': self.user, 'org': org,
         'status': 'pending', 'type': 'Invitation'
         # TODO(SRabbelier): add this as soon as we make User Request's parent
         # 'parent': self.user,

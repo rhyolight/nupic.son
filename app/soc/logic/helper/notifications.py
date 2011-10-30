@@ -111,7 +111,7 @@ def inviteContext(data, invite):
 
   message_properties = {
       'role_verbose' : invite.roleName(),
-      'group': invite.group.name,
+      'group': invite.org.name,
       'invitation_url': invitation_url,
   }
 

@@ -1205,7 +1205,7 @@ class RequestComponent(Component):
     ]
     list_config.addSimpleColumn('status', 'Status', options=options)
     list_config.addColumn('org_name', 'Organization',
-                          lambda ent, *args: ent.group.name)
+                          lambda ent, *args: ent.org.name)
     list_config.setRowAction(
         lambda ent, *args: r.request(ent).url())
     self._list_config = list_config
@@ -1222,13 +1222,13 @@ class RequestComponent(Component):
     q = Request.all()
 
     if self.for_admin:
-      q.filter('group IN', self.data.org_admin_for)
+      q.filter('org IN', self.data.org_admin_for)
     else:
       q.filter('user', self.data.user)
 
     starter = lists.keyStarter
 
-    prefetcher = lists.modelPrefetcher(Request, ['user', 'group'])
+    prefetcher = lists.modelPrefetcher(Request, ['user', 'org'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter, prefetcher=prefetcher)

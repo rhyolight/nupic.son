@@ -76,7 +76,7 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     # test POST
     override = {
         'link_id': other_user.link_id, 'status': 'pending',
-        'role': 'org_admin', 'user': other_user, 'group': self.org,
+        'role': 'org_admin', 'user': other_user, 'org': self.org,
         'type': 'Invitation',
         # TODO(SRabbelier): add this as soon as we make User Request's parent
         # 'parent': other_user,
