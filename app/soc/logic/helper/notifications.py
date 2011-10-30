@@ -36,37 +36,37 @@ from soc.views.helper.access_checker import isSet
 
 
 DEF_INVITATION_MSG_FMT = ugettext(
-    '[%(group)s] Invitation to become a %(role_verbose)s.')
+    '[%(org)s] Invitation to become a %(role_verbose)s.')
 
 DEF_NEW_REQUEST_MSG_FMT = ugettext(
-    '[%(group)s] New request from %(requester)s to become a %(role_verbose)s')
+    '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
 DEF_NEW_ORG_MSG_FMT = ugettext(
-    '[%(group)s] Your organization application has been accepted.')
+    '[%(org)s] Your organization application has been accepted.')
 
 DEF_NEW_PROPOSAL_SUBJECT_FMT = ugettext(
-    '[%(group)s] New proposal by %(proposer_name)s: %(proposal_name)s')
+    '[%(org)s] New proposal by %(proposer_name)s: %(proposal_name)s')
 
 DEF_UPDATED_PROPOSAL_SUBJECT_FMT = ugettext(
-    '[%(group)s] Update by %(proposer_name)s to proposal: %(proposal_name)s')
+    '[%(org)s] Update by %(proposer_name)s to proposal: %(proposal_name)s')
 
 DEF_NEW_SLOT_TRANSFER_SUBJECT_FMT = ugettext(
-    '[%(group)s] New slot transfer request by %(org_name)s.')
+    '[%(org)s] New slot transfer request by %(org_name)s.')
 
 DEF_UPDATE_SLOT_TRANSFER_SUBJECT_FMT = ugettext(
-    '[%(group)s] Slot transfer request updated by %(org_name)s.')
+    '[%(org)s] Slot transfer request updated by %(org_name)s.')
 
 DEF_NEW_REVIEW_SUBJECT_FMT = ugettext(
-    '[%(group)s] New %(review_visibility)s review on %(reviewed_name)s '
+    '[%(org)s] New %(review_visibility)s review on %(reviewed_name)s '
     '(%(proposer_name)s) by %(reviewer_name)s')
 
 DEF_HANDLED_REQUEST_SUBJECT_FMT = ugettext(
-    '[%(group)s] Request to become a %(role_verbose)s has been %(action)s')
+    '[%(org)s] Request to become a %(role_verbose)s has been %(action)s')
 
 DEF_HANDLED_INVITE_SUBJECT_FMT = ugettext(
-    '[%(group)s] Invitation to become a %(role_verbose)s has been %(action)s')
+    '[%(org)s] Invitation to become a %(role_verbose)s has been %(action)s')
 
-DEF_GROUP_INVITE_NOTIFICATION_TEMPLATE = \
+DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/invitation.html'
 
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
@@ -111,13 +111,13 @@ def inviteContext(data, invite):
 
   message_properties = {
       'role_verbose' : invite.roleName(),
-      'group': invite.org.name,
+      'org': invite.org.name,
       'invitation_url': invitation_url,
   }
 
   subject = DEF_INVITATION_MSG_FMT % message_properties
 
-  template = DEF_GROUP_INVITE_NOTIFICATION_TEMPLATE
+  template = DEF_ORG_INVITE_NOTIFICATION_TEMPLATE
 
   to_email = data.invite_profile.email
 
@@ -143,7 +143,7 @@ def requestContext(data, request, admin_emails):
   message_properties = {
       'requester': data.profile.name(),
       'role_verbose': request.roleName(),
-      'group': request.group.name,
+      'org': request.org.name,
       'request_url': request_url,
       }
 
@@ -170,7 +170,7 @@ def handledRequestContext(data, status):
 
   message_properties = {
       'role_verbose' : data.request_entity.roleName(),
-      'group': data.request_entity.group.name,
+      'org': data.request_entity.org.name,
       'action': status,
       }
 
@@ -206,7 +206,7 @@ def handledInviteContext(data):
 
   message_properties = {
       'role_verbose' : data.invite.roleName(),
-      'group': data.invite.org.name,
+      'org': data.invite.org.name,
       'action': action,
       }
 
@@ -232,7 +232,7 @@ def newOrganizationContext(data):
   message_properties = {
       'url': url,
       'program_name': data.program.name,
-      'group': data.organization.name,
+      'org': data.organization.name,
   }
 
   subject = DEF_NEW_ORG_MSG_FMT % message_properties
@@ -262,7 +262,7 @@ def newProposalContext(data, proposal, to_emails):
       'proposer_name': data.profile.name(),
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
-      'group': proposal.org.name,
+      'org': proposal.org.name,
   }
 
   # determine the subject
@@ -291,7 +291,7 @@ def updatedProposalContext(data, proposal, to_emails):
       'proposer_name': data.profile.name(),
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
-      'group': data.organization.name,
+      'org': data.organization.name,
   }
 
   # determine the subject
@@ -323,7 +323,7 @@ def newCommentContext(data, comment, to_emails):
       'review_content': comment.content,
       'review_visibility': review_type,
       'proposer_name': data.proposer.name(),
-      'group': data.proposal.org.name,
+      'org': data.proposal.org.name,
       }
 
   # determine the subject
@@ -379,7 +379,7 @@ def createOrUpdateSlotTransferContext(data, slot_transfer,
       'gsoc_admin_slots_transfer', full=True)
 
   message_properties = {
-      'group': slot_transfer.program.short_name,
+      'org': slot_transfer.program.short_name,
       'slot_transfer_admin_url': slot_transfer_admin_url,
       'slot_transfer': slot_transfer,
       'org_name': slot_transfer.parent().name,

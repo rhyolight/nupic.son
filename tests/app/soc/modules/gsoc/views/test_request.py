@@ -76,7 +76,7 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
 
     # test POST
     override = {'status': 'pending', 'role': 'mentor', 'type': 'Request',
-                'user': self.data.user, 'group': self.org}
+                'user': self.data.user, 'org': self.org}
     response, properties = self.modelPost(url, Request, override)
 
     request = Request.all().get()
