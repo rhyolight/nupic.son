@@ -57,7 +57,9 @@ class EditDocumentPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'document/edit/%s$' % url_patterns.DOCUMENT, self,
-            name='edit_gci_document')
+            name='edit_gci_document'),
+        url(r'document/edit/%s$' % url_patterns.ORG_DOCUMENT, self,
+            name='edit_gci_document'),
     ]
 
   def checkAccess(self):
@@ -102,6 +104,8 @@ class DocumentPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'document/show/%s$' % url_patterns.DOCUMENT, self,
+            name='show_gci_document'),
+        url(r'document/show/%s$' % url_patterns.ORG_DOCUMENT, self,
             name='show_gci_document'),
     ]
 

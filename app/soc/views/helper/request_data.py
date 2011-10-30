@@ -386,9 +386,7 @@ class RedirectHelper(object):
     else:
       key = document
 
-    prefix, rest = key.name().split('/', 1)
-    scope_path, link_id = rest.rsplit('/', 1)
-    self.args = [prefix, scope_path + '/', link_id]
+    self.args = key.name().split('/')
 
     return self
 

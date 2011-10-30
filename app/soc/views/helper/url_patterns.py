@@ -74,16 +74,15 @@ def namedKeyBasedPattern(names):
 _role = r'(?P<role>%s)/' % ("student|mentor|org_admin")
 _document = ''.join([
     captureLinkId('prefix'), '/',
-    '(',
-      "(%s/)|" % captureLinkId('scope'),
-      '(',
-        "%s/" % captureLinkId('sponsor'),
-        '(',
-        "%s/" % captureLinkId('program'),
-          "(%s/)?" % captureLinkId('organization'),
-        ')?',
-      ')',
-    ')',
+    captureLinkId('sponsor'), '/',
+    captureLinkId('program'), '/',
+    captureLinkId('document'),
+])
+_org_document = ''.join([
+    captureLinkId('prefix'), '/',
+    captureLinkId('sponsor'), '/',
+    captureLinkId('program'), '/',
+    captureLinkId('organization'), '/',
     captureLinkId('document'),
 ])
 _mentor_role = r'(?P<role>%s)/' % ("org_admin|mentor")
@@ -95,6 +94,7 @@ PROGRAM   = namedLinkIdPattern(['sponsor', 'program'])
 CREATE_PROFILE = _role + namedLinkIdPattern(['sponsor', 'program'])
 PROFILE   = namedLinkIdPattern(['sponsor', 'program', 'user'])
 DOCUMENT  = _document
+ORG_DOCUMENT  = _org_document
 ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
 INVITE    = _mentor_role + ORG
 
