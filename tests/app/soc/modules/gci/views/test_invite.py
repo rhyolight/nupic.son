@@ -218,6 +218,10 @@ class ManageInviteTest(BaseInviteTest):
     super(ManageInviteTest, self).setUp()
     self.init()
 
+    self.invitee = self._invitee()
+    self.invite = GCIInviteHelper().createOrgAdminInvite(
+        self.org, self.invitee.user)
+
   def assertInviteTemplatesUsed(self, response):
     """Asserts that all the templates are used.
     """
@@ -226,18 +230,16 @@ class ManageInviteTest(BaseInviteTest):
 
   def testWithdrawInvite(self):
     self.data.createOrgAdmin(self.org)
-    invitee = self._invitee()
-    invite = GCIInviteHelper().createOrgAdminInvite(self.org, invitee.user)
 
     post_data = {
         'withdraw': ''
         }
-    response = self.post(self._manageInviteUrl(invite), post_data)
-    self.assertResponseRedirect(response, self._manageInviteUrl(invite))
+    response = self.post(self._manageInviteUrl(self.invite), post_data)
+    self.assertResponseRedirect(response, self._manageInviteUrl(self.invite))
 
     new_invite = GCIRequest.all().get()
     self.assertTrue(new_invite.status == 'withdrawn')
 
   def _manageInviteUrl(self, invite):
     return '/gci/invite/manage/%s/%s' % (
-        invite.org.scope.key().name(), invite.key().id())
+        self.invite.org.scope.key().name(), self.invite.key().id())
