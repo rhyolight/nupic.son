@@ -129,6 +129,7 @@ class InviteForm(gci_forms.GCIModelForm):
           USER_ALREADY_INVITED % (identifier, role))
 
     # check if the user that is invited does not have the role
+    # TODO(dhans): in the ideal world, we want to invite Users with no profiles
     profile = self.request_data.invite_profile \
         = self._getProfile(user_to_invite)
 
