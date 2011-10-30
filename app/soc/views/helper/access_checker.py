@@ -99,6 +99,9 @@ DEF_INVITE_CANNOT_BE_ACCESSED = ugettext(
 DEF_INVITE_CANNOT_BE_WITHDRAWN = ugettext(
     'Only pending invitations may be withdrawn.')
 
+DEF_INVITE_CANNOT_BE_RESPONDED = ugettext(
+    'This invite cannot be responded at this moment')
+
 DEF_IS_NOT_STUDENT_MSG = ugettext(
     'This page is inaccessible because you do not have a student role '
     'in the program.')
@@ -899,7 +902,16 @@ class AccessChecker(BaseAccessChecker):
     # only the invited user may respond to the invitation
     if self.data.user.key() != self.data.invite.user.key():
       raise AccessViolation(DEF_INVITE_CANNOT_BE_ACCESSED)
-    
+
+  def isInviteRespondable(self):
+    """Checks if the invite may be responded at this moment.
+    """
+    assert isSet(self.data.invite)
+
+    # only pending invites may be responded
+    if self.data.invite.status != 'pending':
+      raise AccessViolation(DEF_INVITE_CANNOT_BE_RESPONDED)
+
   def canRespondToRequest(self):
     """Checks if the current user can accept/reject the request.
     """
