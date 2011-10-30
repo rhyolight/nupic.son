@@ -44,6 +44,7 @@ limitations under the License.
   },
   function () {
     jQuery(document).ready(function() {
+        jQuery("#deadline-extend").toggle();
         jQuery(".task-btn-extended-deadline").click(function() {
             var test = $(this).val();
             jQuery("#deadline-extend").toggle();
