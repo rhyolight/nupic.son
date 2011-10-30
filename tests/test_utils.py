@@ -387,15 +387,19 @@ class DjangoTestCase(TestCase):
     """
     if response.status_code != status_code:
       verbose_codes = [
-          httplib.BAD_REQUEST, httplib.NOT_FOUND, httplib.FOUND,
+          httplib.BAD_REQUEST, httplib.FOUND,
       ]
       message_codes = [httplib.FORBIDDEN]
+      url_codes = [httplib.NOT_FOUND]
 
       if response.status_code in verbose_codes:
         print response
 
       if response.status_code in message_codes:
         print response.context['message']
+
+      if response.status_code in url_codes:
+        print response.request['PATH_INFO']
 
     self.assertEqual(status_code, response.status_code)
 
