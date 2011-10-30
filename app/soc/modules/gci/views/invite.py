@@ -371,6 +371,8 @@ class RespondInvite(RequestHandler):
 
     # actual response may be sent only to pending requests
     if self.data.POST:
+      if 'accept' not in self.data.POST and 'reject' not in self.data.POST:
+        raise BadRequest('Valid action is not specified in the request.')
       self.check.isInviteRespondable()
 
   def context(self):
