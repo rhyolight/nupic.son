@@ -196,3 +196,42 @@ class InviteViewTest(GCIDjangoTestCase):
 
   def _assertFormValidationError(self, response, error_field):
     assert response.context['form'].errors.get(error_field) is not None
+
+
+class ManageInviteTest(GCIDjangoTestCase):
+  """Tests for Manage Invite views.
+  """
+
+  def setUp(self):
+    super(ManageInviteTest, self).setUp()
+    self.init()
+
+  def assertInviteTemplatesUsed(self, response):
+    """Asserts that all the templates are used.
+    """
+    self.assertGCITemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/modules/gci/invite/base.html')
+
+  def testWithdrawInvite(self):
+    self.data.createOrgAdmin(self.org)
+    invitee = self._invitee()
+    invite = GCIInviteHelper().createOrgAdminInvite(self.org, invitee.user)
+
+    post_data = {
+        'withdraw': ''
+        }
+    response = self.post(self._manageInviteUrl(invite), post_data)
+    self.assertResponseRedirect(response, self._manageInviteUrl(invite))
+
+    new_invite = GCIRequest.all().get()
+    self.assertTrue(new_invite.status == 'withdrawn')
+
+  def _manageInviteUrl(self, invite):
+    return '/gci/invite/manage/%s/%s' % (invite.org.scope.key().name(), invite.key().id())
+
+  def _invitee(self):
+    invitee_data = GCIProfileHelper(self.gci, self.dev_test)
+    invitee_data.createOtherUser('invitee@example.com')
+    invitee_data.createProfile()
+    invitee_data.notificationSettings(new_invites=True)
+    return invitee_data.profile
