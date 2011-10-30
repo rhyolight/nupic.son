@@ -29,16 +29,14 @@ from soc.logic.helper import notifications
 from soc.tasks import mailer
 
 
-def acceptInvite(invite, organization=None):
+def acceptInvite(request_data):
   """Accepts an invitation.
   """
-
-  if not organization:
-    organization = invite.org
+  invite = request_data.invite
 
   invite_key = invite.key()
-  profile_key = self.data.profile.key()
-  organization_key = organization.key()
+  profile_key = request_data.profile.key()
+  organization_key = invite.org.key()
 
   def accept_invitation_txn():
     invite = db.get(invite_key)
