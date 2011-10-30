@@ -383,7 +383,16 @@ class RespondInvite(RequestHandler):
         'request': self.data.invite
         }
 
-  def post(self):    
+  def post(self):
+    if 'accept' in self.data.POST:
+      if not self.data.profile:
+        self.redirect.program()
+        self.redirect.to('edit_gsoc_profile')
+
+      invite_logic.acceptInvite(self.data)
+    else: # reject
+      invite_logic.rejectInvite(self.data)
+
     self.redirect.id().to('respond_gci_invite')
 
   def _constructPageName(self):
