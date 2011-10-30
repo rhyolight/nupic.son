@@ -38,13 +38,15 @@ class LoggedInMsg(Template):
   def context(self):
     context = {
         'logout_link': self.data.redirect.logout().url(),
-        'user_email': self.data.gae_user.email(),
         'has_profile': bool(self.data.profile),
         'div_name': self.div_name,
     }
 
     if self.apply_role and self.data.kwargs.get('role'):
       context['role'] = self.data.kwargs['role']
+
+    if self.data.gae_user:
+      context['user_email'] = self.data.gae_user.email()
 
     if self.data.user:
       context['link_id'] = " [link_id: %s]" % self.data.user.link_id
