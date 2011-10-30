@@ -23,6 +23,9 @@ __authors__ = [
   ]
 
 
+from soc.modules.gci.models.request import GCIRequest
+
+from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
 
 
@@ -33,6 +36,12 @@ class InviteViewTest(GCIDjangoTestCase):
   def setUp(self):
     super(InviteViewTest, self).setUp()
     self.init()
+
+  def assertInviteTemplatesUsed(self, response):
+    """Asserts that all the templates are used.
+    """
+    self.assertGCITemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/modules/gci/invite/base.html')
 
   def testLoggedInCannotInvite(self):
     url = self._inviteMentorUrl()
@@ -65,8 +74,73 @@ class InviteViewTest(GCIDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
+  def testOrgAdminCanInvite(self):
+    self.data.createOrgAdmin(self.org)
+
+    url = self._inviteMentorUrl()
+    response = self.get(url)
+    self.assertInviteTemplatesUsed(response)
+
+    url = self._inviteOrgAdminUrl()
+    response = self.get(url)
+    self.assertInviteTemplatesUsed(response)
+
+  def testInviteOrgAdmin(self):
+    self.data.createOrgAdmin(self.org)
+
+    invitee = self._invitee()
+    
+    post_data = {
+        'identifiers': invitee.user.link_id,
+        }
+    response = self.post(self._inviteOrgAdminUrl(), post_data)
+    self.assertResponseRedirect(response,
+        '/gci/dashboard/%s' % self.gci.key().name())
+
+    invite = GCIRequest.all().get()
+    self.assertPropertiesEqual(self._defaultOrgAdminInviteProperties(), invite)
+
+  def testInviteMentor(self):
+    self.data.createOrgAdmin(self.org)
+
+    invitee = self._invitee()
+    
+    post_data = {
+        'identifiers': invitee.user.link_id,
+        }
+    response = self.post(self._inviteMentorUrl(), post_data)
+    self.assertResponseRedirect(response,
+        '/gci/dashboard/%s' % self.gci.key().name())
+
+    invite = GCIRequest.all().get()
+    self.assertPropertiesEqual(self._defaultMentorInviteProperties(), invite)
+
+  def _invitee(self):
+    invitee_data = GCIProfileHelper(self.gci, self.dev_test)
+    invitee_data.createOtherUser('invitee@example.com')
+    invitee_data.createProfile()
+    invitee_data.notificationSettings(new_invites=True)
+    return invitee_data.profile
+
   def _inviteOrgAdminUrl(self):
     return '/gci/invite/org_admin/%s' % self.org.key().name()
 
   def _inviteMentorUrl(self):
     return '/gci/invite/mentor/%s' % self.org.key().name()
+
+  def _defaultMentorInviteProperties(self):
+    properties = self._defaultInviteProperties()
+    properties['role'] = 'mentor'
+    return properties
+
+  def _defaultOrgAdminInviteProperties(self):
+    properties = self._defaultInviteProperties()
+    properties['role'] = 'org_admin'
+    return properties
+
+  def _defaultInviteProperties(self):
+    return {
+        'org': self.org,
+        'type': 'Invitation',
+        'status': 'pending',
+        }
