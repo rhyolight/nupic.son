@@ -27,6 +27,7 @@ from soc.modules.gci.models.request import GCIRequest
 
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
+from tests.utils.invite_utils import GCIInviteHelper
 
 
 class InviteViewTest(GCIDjangoTestCase):
@@ -115,6 +116,20 @@ class InviteViewTest(GCIDjangoTestCase):
     invite = GCIRequest.all().get()
     self.assertPropertiesEqual(self._defaultMentorInviteProperties(), invite)
 
+  def testSecondInviteForbidden(self):
+    self.data.createOrgAdmin(self.org)
+
+    invitee = self._invitee()
+
+    GCIInviteHelper().createMentorInvite(self.org, invitee.user)
+
+    post_data = {
+        'identifiers': invitee.user.link_id,
+        }
+    response = self.post(self._inviteMentorUrl(), post_data)
+    self.assertResponseOK(response)
+    self._assertFormValidationError(response, 'identifiers')
+
   def _invitee(self):
     invitee_data = GCIProfileHelper(self.gci, self.dev_test)
     invitee_data.createOtherUser('invitee@example.com')
@@ -144,3 +159,6 @@ class InviteViewTest(GCIDjangoTestCase):
         'type': 'Invitation',
         'status': 'pending',
         }
+
+  def _assertFormValidationError(self, response, error_field):
+    assert response.context['form'].errors.get(error_field) is not None
