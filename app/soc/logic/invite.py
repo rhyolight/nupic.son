@@ -60,10 +60,10 @@ def acceptInvite(request_data):
   # TODO(SRabbelier): run in txn as soon as we make User Request's parent
   # db.run_in_transaction(accept_invitation_txn)
 
-def rejectInvite(invite):
+def rejectInvite(request_data):
   """Rejects a invitation. 
   """
-  invite_key = invite.key()
+  invite_key = request_data.invite.key()
 
   def reject_invite_txn():
     invite = db.get(invite_key)
