@@ -173,6 +173,7 @@ class ManageInviteForm(gci_forms.GCIModelForm):
     css_prefix = 'gci_intivation'
     fields = ['message']
 
+
 class InvitePage(RequestHandler):
   """Encapsulate all the methods required to generate Invite page.
   """
@@ -345,6 +346,7 @@ class ManageInvite(RequestHandler):
         self.data.program.key().name(),
         self.data.invited_user.link_id])
     return GCIProfile.get_by_key_name(key_name, parent=self.data.invited_user)
+
 
 class RespondInvite(RequestHandler):
   """View to respond to the invitation by the user.
