@@ -51,7 +51,7 @@ class GCIInviteHelper(object):
     properties = {
         'status': 'pending',
         'type': INVITATION_TYPE,
-        'role': 'mentor',
+        'role': 'org_admin',
         'org': org,
         'user': user
         }
