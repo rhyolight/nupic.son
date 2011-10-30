@@ -228,6 +228,32 @@ class ManageInviteTest(BaseInviteTest):
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gci/invite/base.html')
 
+  def testLoggedInCannotManageInvite(self):
+    url = self._manageInviteUrl(self.invite)
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+  def testUserCannotManageInvite(self):
+    self.data.createUser()
+
+    url = self._manageInviteUrl(self.invite)
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+  def testMentorCannotManageInvite(self):
+    self.data.createMentor(self.org)
+
+    url = self._manageInviteUrl(self.invite)
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+  def testOrgAdminCanInvite(self):
+    self.data.createOrgAdmin(self.org)
+
+    url = self._manageInviteUrl(self.invite)
+    response = self.get(url)
+    self.assertInviteTemplatesUsed(response)
+
   def testWithdrawInvite(self):
     self.data.createOrgAdmin(self.org)
 
