@@ -383,6 +383,9 @@ class RespondInvite(RequestHandler):
         'request': self.data.invite
         }
 
+  def post(self):    
+    self.redirect.id().to('respond_gci_invite')
+
   def _constructPageName(self):
     invite = self.data.invite
     return "%s Invite" % (invite.role.capitalize())
