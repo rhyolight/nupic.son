@@ -250,7 +250,6 @@ class InvitePage(RequestHandler):
   def post(self):
     """Handler to for GCI Invitation Page HTTP post request.
     """
-
     if not self.validate():
       self.get()
       return
