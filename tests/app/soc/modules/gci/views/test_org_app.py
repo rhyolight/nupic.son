@@ -185,7 +185,6 @@ class GCIOrgAppTakePageTest(GCIDjangoTestCase):
               'backup_admin_id': backup_admin.user.link_id}
     params.update(self.post_params)
     response = self.post(self.take_url, params)
-    print response
     query = OrgAppRecord.all()
     query.filter('main_admin = ', self.data.user)
     self.assertEqual(query.count(), 1, 'Survey record is not created.')

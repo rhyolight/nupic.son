@@ -219,7 +219,6 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     context = self.homepageContext()
     self.assertNoStudent(context)
 
-    print context
     self.assertTrue('mentor_apply_block' in context)
     self.assertFalse('mentor_profile_link' in context)
     self.assertFalse('role' in context)
