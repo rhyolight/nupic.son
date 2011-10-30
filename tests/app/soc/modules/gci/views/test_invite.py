@@ -145,6 +145,25 @@ class InviteViewTest(GCIDjangoTestCase):
     invite = GCIRequest.all().filter('role =', 'org_admin').get()
     self.assertPropertiesEqual(self._defaultOrgAdminInviteProperties(), invite)
 
+  def testMentorInviteAfterOrgAdminInvite(self):
+    # TODO(dhans): this test should fail in the future:
+    # a existing mentor invite should be extended to become org_admin one
+
+    self.data.createOrgAdmin(self.org)
+    invitee = self._invitee()
+
+    GCIInviteHelper().createOrgAdminInvite(self.org, invitee.user)
+
+    post_data = {
+        'identifiers': invitee.user.link_id,
+        }
+    response = self.post(self._inviteMentorUrl(), post_data)
+    self.assertResponseRedirect(response,
+        '/gci/dashboard/%s' % self.gci.key().name())
+
+    invite = GCIRequest.all().filter('role =', 'mentor').get()
+    self.assertPropertiesEqual(self._defaultMentorInviteProperties(), invite)
+
   def _invitee(self):
     invitee_data = GCIProfileHelper(self.gci, self.dev_test)
     invitee_data.createOtherUser('invitee@example.com')
