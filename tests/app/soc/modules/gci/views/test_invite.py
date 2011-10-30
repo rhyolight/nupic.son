@@ -118,7 +118,6 @@ class InviteViewTest(GCIDjangoTestCase):
 
   def testSecondInviteForbidden(self):
     self.data.createOrgAdmin(self.org)
-
     invitee = self._invitee()
 
     GCIInviteHelper().createMentorInvite(self.org, invitee.user)
@@ -129,6 +128,22 @@ class InviteViewTest(GCIDjangoTestCase):
     response = self.post(self._inviteMentorUrl(), post_data)
     self.assertResponseOK(response)
     self._assertFormValidationError(response, 'identifiers')
+
+  def testOrgAdminInviteAfterMentorInvite(self):
+    self.data.createOrgAdmin(self.org)
+    invitee = self._invitee()
+
+    GCIInviteHelper().createMentorInvite(self.org, invitee.user)
+
+    post_data = {
+        'identifiers': invitee.user.link_id,
+        }
+    response = self.post(self._inviteOrgAdminUrl(), post_data)
+    self.assertResponseRedirect(response,
+        '/gci/dashboard/%s' % self.gci.key().name())
+
+    invite = GCIRequest.all().filter('role =', 'org_admin').get()
+    self.assertPropertiesEqual(self._defaultOrgAdminInviteProperties(), invite)
 
   def _invitee(self):
     invitee_data = GCIProfileHelper(self.gci, self.dev_test)
