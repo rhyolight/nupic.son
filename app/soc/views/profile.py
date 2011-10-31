@@ -27,6 +27,7 @@ from google.appengine.ext import db
 
 from django.forms import fields
 
+from soc.logic import accounts
 from soc.logic import cleaning
 from soc.views import forms
 from soc.views.helper import url_patterns
@@ -196,8 +197,9 @@ class ProfilePage(object):
       return user_form
 
     key_name = user_form.cleaned_data['link_id']
-    account = users.get_current_user()
-    user_form.cleaned_data['account'] = account
+    account = self.data.gae_user
+    norm_account = accounts.normalizeAccount(account)
+    user_form.cleaned_data['account'] = norm_account
     user_form.cleaned_data['user_id'] = account.user_id()
     # set the new user entity in self.data.user
     self.data.user = user_form.create(commit=False, key_name=key_name)
