@@ -187,6 +187,7 @@ class RequestData(object):
     self.full_path = None
     self.is_developer = False
     self.gae_user = None
+    self.css_path = 'gsoc'
     self._login_url = None
     self._logout_url = None
     self._ds_write_disabled = None
