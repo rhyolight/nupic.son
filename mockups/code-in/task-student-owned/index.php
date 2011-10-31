@@ -34,7 +34,9 @@
                 </div>
                 <div class="block-task-action">
                     <span class="block-task-action-title">This is your current task!</span>
+                    <form action="#" method="post">
                     <input type="submit" class="task-btn task-btn-unclaim" value="Unclaim task" />
+                    </form>
                 </div>
             </div>
         	<div class="block-task-difficulty">

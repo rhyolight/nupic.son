@@ -112,12 +112,12 @@
 	        	    <div class="form-row form-row-task-difficulty">
 	        	        <label for="long-description" class="form-label">Difficulty<em>*</em></label>
 	        	        <div class="form-row-task-difficulty-inner">
-	            	        <select>
+	            	        <select class="uniform">
 	            	        	<option>Select</option>
 	            	        	<option>Easy</option>
 	            	        	<option>Medium</option>
 	            	        	<option>Difficult</option>
-	            	        </select>
+	            	        </select class="uniform">
 	        	        </div>
 	        	        <span class="note">The overall difficulty of the task</span>
 	        	    </div>
@@ -125,7 +125,7 @@
 	        	    <div class="form-row form-row-task-assigned-mentor">
 	        	        <label for="long-description" class="form-label">Assigned Mentor<em>*</em></label>
 	        	        <div class="form-row-task-assigned-mentor-inner">
-	            	        <select>
+	            	        <select class="uniform">
 	            	            <option>Select a mentor</option>
 	            	        	<option>Bill Atkinson</option>
 	            	        	<option>Mentor name, it's a long one!</option>

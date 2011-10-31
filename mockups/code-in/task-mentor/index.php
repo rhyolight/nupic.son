@@ -34,10 +34,12 @@
                 </div>
                 <div class="block-task-action">
                     <span class="block-task-action-title">You are mentor for this task.</span>
+                    <form action="#" method="post">
                     <input type="submit" class="task-btn task-btn-close" value="Mark task as closed" />
                     <input type="submit" class="task-btn task-btn-unassign" value="Unassign task" />
                     <input type="submit" class="task-btn task-btn-edit" value="Edit task" />
                     <input type="submit" class="task-btn task-btn-delete" value="Delete" />
+                    </form>
                 </div>
             </div>
         	<div class="block-task-difficulty">
@@ -64,7 +66,22 @@
         	                <span class="remain">Remaining</span>
         	                <span class="timestamp">as of 7/23 @3:30GMT</span>
         	            </div>
-        	            <a href="javascript:void(0)" class="task-btn task-btn-extended-deadline">Extended deadline</a>
+        	            <input type="submit" class="task-btn task-btn-extended-deadline" value="Extend deadline" />
+        	            <div id="deadline-extend">
+        	            	<div id="deadline-extend-close">x</div>
+        	            	<div class="deadline-extend-top"></div>
+        	            	<div class="deadline-extend-content">
+	        	            	<span class="plus">+ </span>
+		        	            <form action="#" method="post" class="clearfix">
+		        	            	<fieldset id="fieldset-error">
+		        	            		<div class="form-row">
+		        	            		    <input value="" type="text"> <span class="time">hours</span>
+		        	            		</div>
+		        	            		<input value="Confirm" class="task-btn task-btn-confirm-extended-deadline" type="submit">
+		        	            	</fieldset>
+		        	            </form>
+	        	            </div>
+        	            </div>
         	        </div>
         	        <!-- end .stockwatch -->
         	    </div>

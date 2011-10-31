@@ -33,8 +33,10 @@
                     <span class="project">Drupal Foundation</span>
                 </div>
                 <div class="block-task-action">
+                	<form action="#" method="post">
                 	<input type="submit" class="btn btn-claim-task" value="Claim this task!" />
                 	<input type="submit" class="task-btn task-btn-subscribe-updates" value="Subscribe to updates" />
+                	</form>
                 </div>
             </div>
         	<div class="block-task-difficulty">

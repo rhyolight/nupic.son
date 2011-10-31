@@ -55,7 +55,7 @@
     <script src="../js/jquery.uniform.min.js" type="text/javascript"></script>
     <script type="text/javascript">
       $(function(){
-        $("select, input:checkbox, input:radio").uniform();
+        $("input:checkbox, input:radio, select.uniform").uniform();
       });
     </script>
     
@@ -76,6 +76,27 @@
     	});
     });
     </script>
+    
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $(".task-btn-extended-deadline").click(function() {
+            var test = $(this).val();
+            $("#deadline-extend").toggle();
+        });
+    });
+    </script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $("#deadline-extend-close").click(function() {
+            var test = $(this).val();
+            $("#deadline-extend").toggle();
+        });
+    });
+    </script>
+    
+    <script src="../js/jquery.dd.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dd.css" />
+    
     <!-- 
     ////////////////////////
        END JAVASCRIPT

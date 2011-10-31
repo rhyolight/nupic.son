@@ -42,5 +42,16 @@
 ////////////////////////
 -->
 
+<script language="javascript">
+$(document).ready(function(e) {
+try {
+$("#avatar").msDropDown();
+$("#avatar-color").msDropDown();
+} catch(e) {
+alert(e.message);
+}
+});
+</script>
+
 </body>
 </html>

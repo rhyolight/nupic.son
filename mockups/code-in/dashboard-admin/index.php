@@ -29,7 +29,9 @@
                 <span class="subhead">Organization admin name</span>
                 <span class="name">Carol Smith</span>
             </div>
-            <input type="submit" class="btn" value="Create a task" />
+            <form action="#" method="post">
+            	<input type="submit" class="btn" value="Create a task" />
+            </form>
         </div>
         <!-- end .block.block-user-welcome -->
         <div class="block block-tabs block-user-tabs">
@@ -47,14 +49,14 @@
             			</form>
             		</div>
             		<div class="block-filter-option block-filter-option-status">
-            			<select>
+            			<select class="uniform">
             				<option>Status: All</option>
             				<option>Status: Open</option>
             				<option>Status: Closed</option>
             			</select>
             		</div>
             		<div class="block-filter-option block-filter-option-difficulty">
-	            		<select>
+	            		<select class="uniform">
 	            			<option>Difficulty: All</option>
 	            			<option>Difficulty: Easy</option>
 	            			<option>Difficulty: Medium</option>
@@ -71,10 +73,12 @@
                     <div class="task-single-check"><input type="checkbox" class="task-single-checkbox" /></div>
                     <div class="task-single-content clearfix">
                         <div class="task-single-admin-btns clearfix">
+                        	<form action="#" method="post">
                         	<input type="submit" class="task-btn task-btn-delete" value="Delete" />
                         	<input type="submit" class="task-btn task-btn-edit" value="Edit" />
                         	<input type="submit" class="task-btn task-btn-publish" value="Publish" />
                         	<input type="submit" class="task-btn task-btn-approve" value="Approve" />
+                        	</form>
                         </div>
                         <span class="task-single-title"><a href="javascript:void(0)">Update Image Import Module</a></span>
                         <div class="task-single-content-bottom clearfix">
@@ -96,10 +100,12 @@
                     <div class="task-single-check"><input type="checkbox" class="task-single-checkbox" /></div>
                     <div class="task-single-content clearfix">
                         <div class="task-single-admin-btns clearfix">
+                        	<form action="#" method="post">
                             <input type="submit" class="task-btn task-btn-delete" value="Delete" />
                         	<input type="submit" class="task-btn task-btn-edit" value="Edit" />
                         	<input type="submit" class="task-btn task-btn-publish" value="Publish" />
                         	<input type="submit" class="task-btn task-btn-approve" value="Approve" />
+                        	</form>
                         </div>
                         <span class="task-single-title"><a href="javascript:void(0)">Translate Documentation from English to Arabic</a></span>
                         <div class="task-single-content-bottom clearfix">
@@ -120,8 +126,10 @@
                     <div class="task-group-actions-select-all">
                         <span class="task-group-actions-select-all-text">All:</span> <input type="checkbox" name="chkall" class="task-group-actions-select-all-checkbox" />
                     </div>
+                    <form action="#" method="post">
                     <input type="submit" class="task-btn task-btn-approve" value="Approve" />
                     <input type="submit" class="task-btn task-btn-publish" value="Publish" />
+                    </form>
                 </div>
                 <!-- end .task-group-actions -->
                 <div class="task-group-pager block-pager clearfix">
@@ -146,14 +154,14 @@
             			</form>
             		</div>
             		<div class="block-filter-option block-filter-option-status">
-            			<select>
+            			<select class="uniform">
             				<option>Status: All</option>
             				<option>Status: Open</option>
             				<option>Status: Closed</option>
             			</select>
             		</div>
             		<div class="block-filter-option block-filter-option-difficulty">
-            			<select>
+            			<select class="uniform">
             				<option>Difficulty: All</option>
             				<option>Difficulty: Easy</option>
             				<option>Difficulty: Medium</option>
@@ -169,8 +177,10 @@
                     <div class="cog"></div>
                     <div class="task-single-content clearfix">
                         <span class="task-single-title"><a href="javascript:void(0)">Translate Documentation from English to Arabic</a></span>
+                        <form action="#" method="post">
                         <input type="submit" class="task-btn task-btn-delete" value="Delete" />
                         <input type="submit" class="task-btn task-btn-edit" value="Edit" />
+                        </form>
                         <div class="task-single-content-bottom clearfix">
                             <div class="task-single-content-col1">
                                 <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Emma Goldman</a></span>
@@ -190,8 +200,10 @@
                     <div class="cog"></div>
                     <div class="task-single-content clearfix">
                         <span class="task-single-title"><a href="javascript:void(0)">Update Image Import Module</a></span>
+                        <form action="#" method="post">
                         <input type="submit" class="task-btn task-btn-delete" value="Delete" />
                         <input type="submit" class="task-btn task-btn-edit" value="Edit" />
+                        </form>
                         <div class="task-single-content-bottom clearfix">
                             <div class="task-single-content-col1">
                                 <span class="task-single-info task-single-student">Student: <a href="javascript:void(0)">Alex Berkman</a></span>
