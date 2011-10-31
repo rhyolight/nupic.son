@@ -56,7 +56,8 @@ class GCIUserForm(gci_forms.GCIModelForm):
 
 PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
     'automatic_task_subscription', 'notify_comments'
-    ]
+    'agreed_to_tos', 'longtitude', 'latitude', 'publish_location']
+
 
 class GCIProfileForm(profile.ProfileForm):
   """Django form to edit GCI profile page.
@@ -82,9 +83,7 @@ class GCIProfileForm(profile.ProfileForm):
   class Meta:
     model = GCIProfile
     css_prefix = 'gci_profile'
-    exclude = PROFILE_EXCLUDE + [
-        'agreed_to_tos', 'longtitude', 'latitude', 'publish_location']
-
+    exclude = PROFILE_EXCLUDE
     widgets = forms.choiceWidgets(model,
         ['res_country', 'ship_country',
          'tshirt_style', 'tshirt_size', 'gender'])
