@@ -144,8 +144,11 @@ DEF_NO_SURVEY_ACCESS_MSG = ugettext (
     'your role in the program.')
 
 DEF_NO_USER_LOGIN_MSG = ugettext(
-    'Please create <a href="/user/create_profile">User Profile</a>'
+    'Please create <a href="/user/create">User Profile</a>'
     ' in order to view this page.')
+
+DEF_NO_USER_PROFILE_MSG = ugettext(
+    'You must not have a User profile to visit this page.')
 
 DEF_NO_USER_MSG_FMT = ugettext(
     'User with the Link ID %s does not exist.')
@@ -482,6 +485,19 @@ class BaseAccessChecker(object):
       return
 
     raise AccessViolation(DEF_NO_USER_LOGIN_MSG)
+
+  def isNotUser(self):
+    """Checks if the current user does not have an User entity.
+
+    To perform this check a User must be logged in.
+    """
+    self.isLoggedIn()
+
+    if not self.data.user:
+      return
+
+    raise AccessViolation(DEF_NO_USER_PROFILE_MSG)
+
 
   def isDeveloper(self):
     """Checks if the current user is a Developer.

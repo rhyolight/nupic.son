@@ -44,17 +44,20 @@ class Callback(object):
     """
     from soc.views import host
     from soc.views import legacy
-    from soc.views import site
-    from soc.views import oauth
     from soc.tasks import mailer
+    from soc.views import oauth
+    from soc.views import site
+    from soc.views import user
 
     self.views.append(host.HostProfilePage())
     self.views.append(legacy.Legacy())
-    self.views.append(site.EditSitePage())
-    self.views.append(site.SiteHomepage())
     self.views.append(mailer.MailerTask())
     self.views.append(oauth.PopupOAuthRedirectPage())
     self.views.append(oauth.PopupOAuthVerified())
+    self.views.append(site.EditSitePage())
+    self.views.append(site.SiteHomepage())
+    self.views.append(user.CreateUserPage())
+    self.views.append(user.EditUserPage())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.
