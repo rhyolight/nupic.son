@@ -37,3 +37,6 @@ def url(regex, view, kwargs=None, name=None):
 
 
 TASK = url_patterns.namedIdBasedPattern(['sponsor', 'program'])
+PREFIXES = "(gci_program|gci_org)"
+DOCUMENT = url_patterns.DOCUMENT_FMT % PREFIXES
+ORG_DOCUMENT = url_patterns.ORG_DOCUMENT_FMT % PREFIXES

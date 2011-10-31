@@ -33,6 +33,7 @@ from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.forms import GCIModelForm
 #from soc.modules.gci.views.base_templates import ProgramSelect
 from soc.modules.gci.views.helper.url_patterns import url
+from soc.modules.gci.views.helper import url_patterns as gci_url_patterns
 
 
 class GCIDocumentForm(GCIModelForm):
@@ -56,9 +57,9 @@ class EditDocumentPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'document/edit/%s$' % url_patterns.DOCUMENT, self,
+        url(r'document/edit/%s$' % gci_url_patterns.DOCUMENT, self,
             name='edit_gci_document'),
-        url(r'document/edit/%s$' % url_patterns.ORG_DOCUMENT, self,
+        url(r'document/edit/%s$' % gci_url_patterns.ORG_DOCUMENT, self,
             name='edit_gci_document'),
     ]
 
@@ -103,9 +104,9 @@ class DocumentPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'document/show/%s$' % url_patterns.DOCUMENT, self,
+        url(r'document/show/%s$' % gci_url_patterns.DOCUMENT, self,
             name='show_gci_document'),
-        url(r'document/show/%s$' % url_patterns.ORG_DOCUMENT, self,
+        url(r'document/show/%s$' % gci_url_patterns.ORG_DOCUMENT, self,
             name='show_gci_document'),
     ]
 

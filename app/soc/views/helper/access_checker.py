@@ -288,13 +288,8 @@ class Mutator(object):
     prefix = kwargs.pop('prefix', None)
     fields.append(prefix)
 
-    if prefix in ['site', 'user']:
-      fields.append(kwargs.pop('scope', None))
-
-    if prefix in ['sponsor', 'gsoc_program', 'gsoc_org', 'gci_program', 'gci_org']:
-      fields.append(kwargs.pop('sponsor', None))
-
     if prefix in ['gsoc_program', 'gsoc_org', 'gci_program', 'gci_org']:
+      fields.append(kwargs.pop('sponsor', None))
       fields.append(kwargs.pop('program', None))
 
     if prefix in ['gsoc_org', 'gci_org']:

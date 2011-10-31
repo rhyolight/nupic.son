@@ -35,6 +35,7 @@ from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
 
 class GSoCDocumentForm(GSoCModelForm):
@@ -58,9 +59,9 @@ class EditDocumentPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'document/edit/%s$' % url_patterns.DOCUMENT, self,
+        url(r'document/edit/%s$' % gsoc_url_patterns.DOCUMENT, self,
             name='edit_gsoc_document'),
-        url(r'document/edit/%s$' % url_patterns.ORG_DOCUMENT, self,
+        url(r'document/edit/%s$' % gsoc_url_patterns.ORG_DOCUMENT, self,
             name='edit_gsoc_document'),
     ]
 
@@ -105,12 +106,14 @@ class DocumentPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'document/show/%s$' % url_patterns.DOCUMENT, self,
+        url(r'document/show/%s$' % gsoc_url_patterns.DOCUMENT, self,
             name='show_gsoc_document'),
-        url(r'document/show/%s$' % url_patterns.ORG_DOCUMENT, self,
+        url(r'document/show/%s$' % gsoc_url_patterns.ORG_DOCUMENT, self,
             name='show_gsoc_document'),
-        django_url(r'^document/show/%s$' % url_patterns.DOCUMENT, self),
-        django_url(r'^document/show/%s$' % url_patterns.ORG_DOCUMENT, self),
+        django_url(r'^document/show/%s$' % gsoc_url_patterns.DOCUMENT,
+                   self),
+        django_url(r'^document/show/%s$' % gsoc_url_patterns.ORG_DOCUMENT,
+                   self),
     ]
 
   def checkAccess(self):

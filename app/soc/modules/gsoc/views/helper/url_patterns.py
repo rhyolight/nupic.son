@@ -27,6 +27,7 @@ from django.conf.urls.defaults import url as django_url
 
 from soc.views.helper.url_patterns import namedIdBasedPattern
 from soc.views.helper.url_patterns import namedLinkIdPattern
+from soc.views.helper import url_patterns
 
 
 def url(regex, view, kwargs=None, name=None):
@@ -43,3 +44,6 @@ REVIEW    = namedIdBasedPattern(['sponsor', 'program', 'user'])
 PROJECT   = namedIdBasedPattern(['sponsor', 'program', 'user'])
 SURVEY_RECORD = namedIdBasedPattern(['sponsor', 'program', 'survey', 'user'])
 GRADING_RECORD = '/'.join([PROJECT, r'(?P<group>(\d+))', r'(?P<record>(\d+))'])
+PREFIXES = "(gsoc_program|gsoc_org)"
+DOCUMENT = url_patterns.DOCUMENT_FMT % PREFIXES
+ORG_DOCUMENT = url_patterns.ORG_DOCUMENT_FMT % PREFIXES
