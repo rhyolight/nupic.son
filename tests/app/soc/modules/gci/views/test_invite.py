@@ -23,6 +23,7 @@ __authors__ = [
   ]
 
 
+from soc.logic.exceptions import BadRequest
 from soc.modules.gci.models.request import GCIRequest
 
 from tests.profile_utils import GCIProfileHelper
@@ -253,6 +254,15 @@ class ManageInviteTest(BaseInviteTest):
     url = self._manageInviteUrl(self.invite)
     response = self.get(url)
     self.assertInviteTemplatesUsed(response)
+
+  def testInvalidPostDataForbidden(self):
+    self.data.createOrgAdmin(self.org)
+
+    post_data = {
+        'invalid_field': ''
+        }
+    response = self.post(self._manageInviteUrl(self.invite), post_data)
+    self.assertResponseCode(response, BadRequest.status)
 
   def testWithdrawInvite(self):
     self.data.createOrgAdmin(self.org)
