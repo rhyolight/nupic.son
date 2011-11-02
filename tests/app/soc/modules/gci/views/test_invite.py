@@ -266,6 +266,30 @@ class ManageInviteTest(BaseInviteTest):
     new_invite = GCIRequest.all().get()
     self.assertTrue(new_invite.status == 'withdrawn')
 
+  def testPendingInviteCannotBeResubmitted(self):
+    self.data.createOrgAdmin(self.org)
+
+    post_data = {
+        'resubmit': ''
+        }
+    response = self.post(self._manageInviteUrl(self.invite), post_data)
+    self.assertResponseForbidden(response)
+
+  def testResubmitInvite(self):
+    self.data.createOrgAdmin(self.org)
+    
+    self.invite.status = 'withdrawn'
+    self.invite.put()
+
+    post_data = {
+        'resubmit': ''
+        }
+    response = self.post(self._manageInviteUrl(self.invite), post_data)
+    self.assertResponseRedirect(response, self._manageInviteUrl(self.invite))
+
+    new_invite = GCIRequest.all().get()
+    self.assertTrue(new_invite.status == 'pending')
+
   def _manageInviteUrl(self, invite):
     return '/gci/invite/manage/%s/%s' % (
         self.invite.org.scope.key().name(), self.invite.key().id())
