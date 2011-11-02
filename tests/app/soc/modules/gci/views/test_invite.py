@@ -277,7 +277,7 @@ class ManageInviteTest(BaseInviteTest):
 
   def testResubmitInvite(self):
     self.data.createOrgAdmin(self.org)
-    
+
     self.invite.status = 'withdrawn'
     self.invite.put()
 
