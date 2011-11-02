@@ -56,7 +56,7 @@ class GCIUserForm(gci_forms.GCIModelForm):
 
 PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
     'automatic_task_subscription', 'notify_comments'
-    'agreed_to_tos', 'longtitude', 'latitude', 'publish_location']
+    'agreed_to_tos', 'longitude', 'latitude', 'publish_location']
 
 
 class GCIProfileForm(profile.ProfileForm):
