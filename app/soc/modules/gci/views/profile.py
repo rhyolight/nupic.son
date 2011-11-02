@@ -56,7 +56,7 @@ class GCIUserForm(gci_forms.GCIModelForm):
 
 PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
     'automatic_task_subscription', 'notify_comments', 'birth_date',
-    'agreed_to_tos', 'longitude', 'latitude', 'publish_location']
+    'longitude', 'latitude', 'publish_location']
 
 
 class GCIProfileForm(profile.ProfileForm):
@@ -83,7 +83,7 @@ class GCIProfileForm(profile.ProfileForm):
   class Meta:
     model = GCIProfile
     css_prefix = 'gci_profile'
-    exclude = PROFILE_EXCLUDE
+    exclude = PROFILE_EXCLUDE + ['agreed_to_tos']
     widgets = forms.choiceWidgets(model,
         ['res_country', 'ship_country',
          'tshirt_style', 'tshirt_size', 'gender'])
