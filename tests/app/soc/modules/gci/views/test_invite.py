@@ -258,6 +258,12 @@ class ManageInviteTest(BaseInviteTest):
   def testInvalidPostDataForbidden(self):
     self.data.createOrgAdmin(self.org)
 
+    # empty post data
+    post_data = {}
+    response = self.post(self._manageInviteUrl(self.invite), post_data)
+    self.assertResponseCode(response, BadRequest.status)
+
+    # only invalid data
     post_data = {
         'invalid_field': ''
         }
