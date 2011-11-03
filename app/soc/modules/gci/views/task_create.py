@@ -120,6 +120,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
       self.fields['time_to_complete_days'].initial = ttc.days
       self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
 
+      self.assigned_mentors = [str(m) for m in self.instance.mentors]
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
