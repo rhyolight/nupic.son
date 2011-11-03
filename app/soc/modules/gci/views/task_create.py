@@ -76,6 +76,8 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     super(TaskCreateForm, self).__init__(*args, **kwargs)
 
     self.request_data = data
+    self.organization = self.request_data.organization if not self.instance \
+        else self.instance.org
 
     # get a list difficulty levels stored for the program entity
     difficulties = task.TaskDifficultyTag.get_by_scope(data.program)
@@ -98,6 +100,10 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         label=ugettext('Type'), choices=task_type_tags,
         widget=forms.CheckboxSelectMultiple)
 
+    self.fields['mentors'] = django_forms.ChoiceField(
+        label=ugettext('Difficulty'), choices=mentor_choices_for_org(
+        self.instance, self.organization))
+
     if self.instance:
       difficulties = self.instance.difficulty
       if difficulties:
@@ -114,8 +120,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
       self.fields['time_to_complete_days'].initial = ttc.days
       self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
 
-#    self.fields['mentors'] = django_forms.ChoiceField(
-#        widget=django_forms.MultipleHiddenInput(), choices=)
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
