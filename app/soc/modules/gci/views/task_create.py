@@ -25,6 +25,8 @@ __authors__ = [
 
 import datetime
 
+from google.appengine.ext import db
+
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
@@ -196,20 +198,22 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     return cleaned_data
 
   def clean_mentors(self):
-    program_key_name = self.request_data.program.key().name()
+    mentor_key_strs = self.data.getlist('mentors')
 
-    mentor_link_ids = self.cleaned_data['mentors']
-    split_link_ids = mentor_link_ids.split(',')
+    org_mentors_keys = profile_logic.queryAllMentorsForOrg(
+        self.organization, keys_only=True)
 
-    for link_id in split_link_ids:
-      link_id = link_id.strip()
-      mentor_key_name = '%s/%s' % (program_key_name, link_id)
-      mentor_entity = GCIProfile.get_by_key_name(mentor_key_name)
-      if self.request_data.organization.key() not in mentor_entity.mentor_for:
+    mentor_keys = []
+    for m_str in mentor_key_strs:
+      mentor_key = db.Key(m_str)
+      if mentor_key not in org_mentors_keys:
         raise django_forms.ValidationError(
-            "link id %s is not a valid mentor" % (link_id))
+            ugettext("One of the mentors doesn't belong to the organization "
+                     "that this task belongs to."))
 
-    return mentor_link_ids
+      mentor_keys.append(mentor_key)
+
+    return mentor_keys
 
   class Meta:
     model = task.GCITask
