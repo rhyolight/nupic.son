@@ -20,25 +20,31 @@
 
 __authors__ = [
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
+  '"Orcun Avsar" <orc.avs@gmail.com>',
   ]
 
 import datetime
 
+from soc.modules.gci.logic.helper.notifications \
+    import DEF_NEW_TASK_COMMENT_SUBJECT_FMT
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.profile import GCIProfile
 
 from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
+from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
 
 
-class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
+class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   """Tests GCITask public view.
   """
 
   def setUp(self):
     """Creates a published task for self.org.
     """
+    super(TaskViewTest, self).setUp()
     self.init()
     self.timeline.tasksPubliclyVisible()
 
@@ -46,6 +52,31 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     profile = GCIProfileHelper(self.gci, self.dev_test)
     self.task = profile.createOtherUser('mentor@example.com').\
         createMentorWithTask('Open', self.org)
+    self.createSubscribersForTask()
+
+  #TODO(orc.avs): move notification tests to logic
+  def createSubscribersForTask(self):
+    """Creates subscribers for the task.
+    """
+    for i in range(4):
+      email = 'subscriber%s@example.com' % str(i)
+      subscriber = GCIProfileHelper(self.gci, self.dev_test)
+      subscriber.createOtherUser(email)
+      subscriber.createProfile()
+      self.task.subscribers.append(subscriber.profile.key())
+    self.task.put()
+
+  def assertMailSentToSubscribers(self, comment):
+    """Check if a notification email sent to the subscribers of the task.
+    """
+    subscribers = GCIProfile.get(self.task.subscribers)
+    subject = DEF_NEW_TASK_COMMENT_SUBJECT_FMT % {
+        'commented_by': comment.created_by.name,
+        'program_name': self.task.program.name,
+        'task_title': self.task.title
+    }
+    for subscriber in subscribers:
+      self.assertEmailSent(bcc=subscriber.email, subject=subject)
 
   def testBasicTaskView(self):
     """Tests the rendering of the task view.
@@ -88,6 +119,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     comment = one_comment[0]
     self.assertEqual(comment_title, comment.title)
     self.assertEqual(comment_content, comment.content)
+    self.assertMailSentToSubscribers(comment)
 
   def testPostButtonUnpublish(self):
     """Tests the unpublish button.
@@ -139,9 +171,11 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # check if a comment has been created
     comments = self.task.comments()
     self.assertLength(comments, 1)
+    self.assertMailSentToSubscribers(comments[0])
 
     # check if the update task has been enqueued
     self.assertTasksInQueue(n=1, url=self._taskUpdateUrl(task))
+
 
 
   def testPostButtonUnassign(self):
@@ -170,6 +204,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # check if a comment has been created
     comments = self.task.comments()
     self.assertLength(comments, 1)
+    self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonClose(self):
     """Tests the close task button.
@@ -197,6 +232,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # check if a comment has been created
     comments = self.task.comments()
     self.assertLength(comments, 1)
+    self.assertMailSentToSubscribers(comments[0])
 
     self.assertTasksInQueue(n=1, url='/tasks/gci/ranking/update')
 
@@ -230,6 +266,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # check if a comment has been created
     comments = self.task.comments()
     self.assertLength(comments, 1)
+    self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonClaim(self):
     """Tests the claim task button.
@@ -248,6 +285,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # check if a comment has been created
     comments = self.task.comments()
     self.assertLength(comments, 1)
+    self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonUnclaim(self):
     """Tests the unclaim task button.
@@ -271,6 +309,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # check if a comment has been created
     comments = self.task.comments()
     self.assertLength(comments, 1)
+    self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonSubscribe(self):
     """Tests the subscribe button.
