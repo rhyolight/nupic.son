@@ -145,17 +145,17 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         }
 
   def create(self, commit=True, key_name=None, parent=None):
+    # organization and status are in this create method and not in cleaner
+    # because we want to store it in the entity only when it is created an
+    # not while editing.
+    organization = self.organization
+    self.cleaned_data['org'] = organization
+
     entity = super(TaskCreateForm, self).create(
         commit=False, key_name=key_name, parent=parent)
 
     if commit:
       entity.put()
-
-    # organization and status are in this create method and not in cleaner
-    # because we want to store it in the entity only when it is created an
-    # not while editing.
-    organization = self.request_data.organization
-    entity.org = organization
 
     if organization.key() in self.request_data.org_admin_for:
       entity.status = 'Unpublished'
