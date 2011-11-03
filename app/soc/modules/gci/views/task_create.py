@@ -33,12 +33,26 @@ from soc.views import forms
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
+from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models import task
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
+
+
+def mentor_choices_for_org(task, org):
+  """Builds the tuple of mentor choice 2-tuples for the Django choice field.
+
+  Args:
+    task: GCITask entity for which the create page is being created
+    org: The organization entity for which the mentor choices should be
+         constructed.
+  """
+  mentors = profile_logic.queryAllMentorsForOrg(org)
+
+  return ((str(m.key()), m.name()) for m in mentors)
 
 
 class TaskCreateForm(gci_forms.GCIModelForm):
