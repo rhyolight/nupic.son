@@ -101,15 +101,23 @@ limitations under the License.
     <div class="form-row form-row-task-assigned-mentor">
       <label for="long-description" class="form-label">Assigned Mentor<em>*</em></label>
       <div class="form-row-task-assigned-mentor-inner">
-        <select>
-          <option>Select a mentor</option>
-          <option>Bill Atkinson</option>
-          <option>Mentor name, it's a long one!</option>
-          <option>Mentor name</option>
-          <option>Mentor name</option>
-        </select>
+        <div id="select-mentors-wrapper">
+          {% for mentor in form.assigned_mentors %}
+          <select id="assign-mentor{% if forloop.counter > 1 %}-{{ forloop.counter|add:"-1" }}{% endif %}"
+              name="{{ form.bound_fields.mentors.name }}">
+            <option>Select a mentor</option>
+            {% for value, label in form.bound_fields.mentors.field.choices %}
+              <option value="{{ value }}"
+                  {% ifequal mentor value %}
+                    selected="selected"
+                  {% endifequal %}
+              >{{ label }}</option>
+            {% endfor %}
+          </select>
+          {% endfor %}
+        </div>
         <div class="add-field-link clearfix">
-          <a href="javascript:void(0)">+ add another mentor</a>
+          <a href="javascript:new_link()">+ add another mentor</a>
         </div>
       </div>
       <span class="note">Mentor who will oversee task's completion</span>
