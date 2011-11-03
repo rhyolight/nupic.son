@@ -23,13 +23,19 @@ __authors__ = [
   ]
 
 
+from django.template import loader
+from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
 
 from soc.logic import accounts
 from soc.logic import dicts
 from soc.logic import mail_dispatcher
+from soc.logic import site
+from soc.logic import system
 from soc.logic.helper import notifications
+from soc.tasks import mailer
+
 
 DEF_BULK_CREATE_COMPLETE_SUBJECT_MSG = ugettext(
     'Bulk creation of tasks completed')
@@ -44,6 +50,13 @@ DEF_TASK_REQUEST_TEMPLATE = \
 
 DEF_PARENTAL_FORM_SUBJECT_MSG = ugettext(
     '[%(program_name)s]: Parental Consent Form - Please Respond')
+
+DEF_NEW_TASK_COMMENT_SUBJECT_FMT = ugettext(
+    '[%(program_name)s] New comment on %(task_title)s by %(commented_by)s')
+
+DEF_NEW_TASK_COMMENT_NOTIFICATION_TEMPLATE = \
+    'v2/modules/gci/notification/new_task_comment.html'
+
 
 def sendMail(to_user, subject, message_properties, template):
   """Sends an email with the specified properties and mail content
@@ -173,3 +186,38 @@ def sendRequestTaskNotification(org_admins, message):
     properties['to_name'] = to.name
 
     notifications.sendNotification(to, None, properties, subject, template)
+
+
+def getTaskCommentContext(task, comment, to_emails):
+  """Sends out notifications to the subscribers.
+
+  Args:
+    task: task entity that comment made on.
+    comment: comment entity.
+    to_emails: list of recepients for the notification.
+  """
+  url_kwargs = {
+    'sponsor': task.program.scope_path,
+    'program': task.program.link_id,
+    'id': task.key().id(),
+  }
+
+  task_url = 'http://%(host)s%(task)s' % {
+      'host': system.getHostname(),
+      'task': reverse('gci_view_task', kwargs=url_kwargs)}
+
+  message_properties = {
+      'commented_by': comment.created_by.name,
+      'comment_content': comment.content,
+      'group': task.org.name,
+      'program_name': task.program.name,
+      'sender_name': 'The %s Team' % site.singleton().site_name,
+      'task_title': task.title,
+      'task_url': task_url,
+  }
+
+  subject = DEF_NEW_TASK_COMMENT_SUBJECT_FMT % message_properties
+  template = DEF_NEW_TASK_COMMENT_NOTIFICATION_TEMPLATE
+  body = loader.render_to_string(template, dictionary=message_properties)
+
+  return mailer.getMailContext(to=[], subject=subject, html=body, bcc=to_emails)

@@ -19,10 +19,16 @@
 
 __authors__ = [
     '"Lennard de Rijk" <ljvderijk@gmail.com>',
+    '"Orcun Avsar" <orc.avs@gmail.com>',
   ]
 
 
 from google.appengine.ext import db
+
+from soc.tasks import mailer
+
+from soc.modules.gci.logic.helper import notifications
+from soc.modules.gci.models.profile import GCIProfile
 
 
 def storeAndNotify(comment):
@@ -35,22 +41,21 @@ def storeAndNotify(comment):
 
 
 def storeAndNotifyTxn(comment):
-  """Returns a method that can run inside a transaction to store the comment
-  and notify those that are subscribed.
-
-  This is separated because we need to be able to update tasks or store a
-  worksubmission while posting a comment.
+  """Returns a method to be run in a transaction to notify subscribers.
   """
   task = comment.parent()
 
-  # TODO(ljvderijk): Only subscribers should be notified, maybe skip the user
-  # who made the comment.
   to_emails = []
+  profiles = GCIProfile.get(task.subscribers)
+  for profile in profiles:
+    if (not comment.created_by) or \
+       (profile.user.key().id_or_name() != comment.created_by.key().id_or_name()):
+      to_emails.append(profile.email)
 
-  #context = notifications.newCommentContext(data, comment, to_emails)
-  #sub_txn = mailer.getSpawnMailTaskTxn(context, parent=comment)
-  def store_comment_and_notify_txn():
-    #sub_txn()
+  context = notifications.getTaskCommentContext(task, comment, to_emails)
+  sub_txn = mailer.getSpawnMailTaskTxn(context, parent=task)
+  def txn():
+    sub_txn()
     comment.put()
 
-  return store_comment_and_notify_txn
+  return txn
