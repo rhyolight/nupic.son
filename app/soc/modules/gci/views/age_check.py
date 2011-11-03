@@ -69,7 +69,7 @@ class AgeCheck(RequestHandler):
     """Handler for default HTTP GET request.
     """
     context = {
-        'page_name': 'Age Verification for %s' %self.data.program.name,
+        'page_name': 'Age Verification for %s' % self.data.program.name,
         'program': self.data.program,
         'failed_check': False
         }
