@@ -25,6 +25,27 @@ __authors__ = [
 from soc.modules.gci.models.profile import GCIProfile
 
 
+def queryAllMentorsForOrg(org, keys_only=False, limit=1000):
+  """Returns a list of keys of all the mentors for the organization
+
+  Args:
+    org: the organization entity for which we need to get all the mentors
+    keys_only: True if only the entity keys must be fetched instead of the
+        entities themselves.
+    limit: the maximum number of entities that must be fetched
+
+  returns:
+    List of all the mentors for the organization
+  """
+
+  # get all mentors keys first
+  query = GCIProfile.all(keys_only=keys_only)
+  query.filter('mentor_for', org)
+  mentors = query.fetch(limit=limit)
+
+  return mentors
+
+
 def queryAllMentorsKeysForOrg(org, limit=1000):
   """Returns a list of keys of all the mentors for the organization
 
@@ -35,15 +56,4 @@ def queryAllMentorsKeysForOrg(org, limit=1000):
   returns:
     List of all the mentors for the organization
   """
-
-  # get all mentors keys first
-  query = GCIProfile.all(keys_only=True)
-  query.filter('mentor_for', org)
-  mentors_keys = query.fetch(limit=limit)
-
-  # get all org admins keys first
-  query = GCIProfile.all(keys_only=True)
-  query.filter('org_admin_for', org)
-  oa_keys = query.fetch(limit=limit)
-
-  return set(mentors_keys + oa_keys)
+  return queryAllMentorsForOrg(org, keys_only=True, limit=limit)
