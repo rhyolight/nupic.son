@@ -23,6 +23,8 @@ __authors__ = [
 
 from django import forms
 
+from soc.logic import validate
+
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.views import forms as gci_forms
@@ -37,10 +39,10 @@ class AgeCheckForm(gci_forms.GCIModelForm):
   class Meta:
     model = None
     css_prefix = 'gci_age_check'
-    fields = ['birthdate']
+    fields = ['birth_date']
 
-  birthdate = forms.DateField(label='Date of birth (YYYY-MM-DD)',
-                              required=True)
+  birth_date = forms.DateField(label='Date of birth (YYYY-MM-DD)',
+      required=True)
 
 
 class AgeCheck(RequestHandler):
@@ -99,17 +101,13 @@ class AgeCheck(RequestHandler):
     if not form.is_valid():
       return self.get()
 
-    birthdate = form.cleaned_data['birthdate']
-
     program = self.data.program
-    min_year = program.student_min_age_as_of.year - program.student_min_age
-    min_date = program.student_min_age_as_of.replace(year=min_year)
+    birth_date = form.cleaned_data['birth_date']
 
-    if birthdate <= min_date:
-      # old enough
+    age_sufficient = validate.isAgeSufficientForProgram(birth_date, program)
+    if age_sufficient:
       self.response.set_cookie('age_check', '1')
     else:
-      # not old enough
       self.response.set_cookie('age_check', '0')
 
     # redirect to the same page and have the cookies sent across
