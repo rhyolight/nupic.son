@@ -174,12 +174,14 @@ a:hover {  }
 .block-news .blog-item a:hover,
 .block-featured-task .block-featured-task-link a:hover, 
 .task-single a:hover, 
-.task-btn:hover, 
+input.task-btn:hover,
+form input[type="submit"].task-btn:hover,
 .single-comment a:hover, 
 .block-task-uploaded-code table td a:hover, 
 .form-row .add-field-link a:hover,
 .block-pager a:hover,
-.block-leaderboard-scores table a:hover {/*Red text*/
+.block-leaderboard-scores table a:hover,
+.block-task .block-task-countdown #deadline-extend form input.task-btn:hover {/*Red text*/
     color: #d14936;
 }
 .block-status .block-status-user a:hover, 
@@ -189,8 +191,6 @@ a:hover {  }
 }
 .block-how-it-works .block-how-it-works-start a:hover, 
 a.btn:hover, 
-form input[type=submit]:hover, 
-form input[type=button]:hover, 
 input.button:hover,
 input.btn:hover {/*Dark blue background*/
     background-color: #0F649D;
@@ -200,8 +200,6 @@ input.btn:hover {/*Dark blue background*/
 /* @group Buttons */
 button::-moz-focus-inner, input[type="button"]::-moz-focus-inner, input[type="submit"]::-moz-focus-inner { border: 0 !important; padding: 0 !important; }
 a.btn, 
-form input[type=submit],  
-form input[type=button], 
 input.button,
 input.btn {
     background: #c53926 url(../../../images/v2/gci/arrow-white-lg.png) 95% 50% no-repeat;
@@ -227,7 +225,8 @@ input.btn {
         -moz-box-shadow: 1px 2px 3px #295c77;
         -webkit-box-shadow: 1px 2px 3px #295c77;
     }
-.task-btn {
+form input[type="submit"].task-btn,
+input.task-btn {
     background: #fff url(../../../images/v2/gci/dashboard-task-icons.png) 7px 5px no-repeat;
     border: none;
     border-radius: 10px;
@@ -236,6 +235,7 @@ input.btn {
     color: #0F649D;
     display: block;
     float: left;
+    font-size: 12px;
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
     font-weight: bold;
     line-height: normal !important;
@@ -243,38 +243,47 @@ input.btn {
     padding: 3px 8px 4px 20px;
     text-decoration: none;
     text-transform: uppercase;
+
 }
-    .task-btn-edit {
+    input.task-btn-edit {
         
     }
-    .task-btn-delete, 
-    .task-btn-unclaim {
+    form input[type="submit"].task-btn-delete,
+    form input[type="submit"].task-btn-unclaim,
+    input.task-btn-delete,
+    input.task-btn-unclaim {
         background-position: 7px -16px;
         padding-left: 18px;
     }
-    .task-btn-close {
+    form input[type="submit"].task-btn-close,
+    input.task-btn-close {
         background-position: 7px -37px;
         padding-left: 23px;
     }
-    .task-btn-approve {
+    form input[type="submit"].task-btn-approve,
+    input.task-btn-approve {
         background-position: 7px -37px;
         padding-left: 20px;
     }
-    .task-btn-unassign {
+    form input[type="submit"].task-btn-unassign,
+    input.task-btn-unassign {
         background-position: 7px -58px;
     }
-    .task-btn-extended-deadline {
+    form input[type="submit"].task-btn-extended-deadline,
+    input.task-btn-extended-deadline {
         background-position: 7px -80px;
     }
-    .task-btn-subscribe-updates {
+    form input[type="submit"].task-btn-subscribe-updates,
+    input.task-btn-subscribe-updates {
         background: #fff;
         padding-left: 15px;
         padding-right: 15px;
     }
-    .task-btn-publish {
+    form input[type="submit"].task-btn-publish,
+    input.task-btn-publish {
         background-position: 7px -103px;
     }
-input.delete-btn[type=button], input.delete-btn[type=submit] {
+input.delete-btn {
 	background: #eac0c0;
 		border-radius: none;
 		-moz-border-radius: none;
@@ -282,6 +291,7 @@ input.delete-btn[type=button], input.delete-btn[type=submit] {
 		box-shadow: none;
 		-moz-box-shadow: none;
 		-webkit-box-shadow: none;
+	border: none;
 	color: #8a0005;
 	float: right;
 	font-family: "Trebuchet MS","Lucida Sans Unicode","Lucida Grande","Lucida Sans",Arial,sans-serif;
@@ -291,7 +301,7 @@ input.delete-btn[type=button], input.delete-btn[type=submit] {
 	padding: 3px 6px;
 	text-transform: uppercase;
 }
-	input.delete-btn[type=button]:hover, input.delete-btn[type=submit]:hover {
+	input.delete-btn:hover {
 		background: #eac0c0;
 	}
 /* @end */
@@ -830,8 +840,7 @@ body {
 	.block-delete-account .block-content .delete-btn-p {
 		text-align: center;
 	}
-	.block-delete-account .block-content input.delete-btn[type=button],
-	.block-delete-account .block-content input.delete-btn[type=submit] {
+	.block-delete-account .block-content input.delete-btn {
 		background: #c32d00;
 		color: #fff;
 		display: inline;
@@ -1545,6 +1554,7 @@ body {
             .task-single.task-single-admin .task-single-content-col2 {
                 width: 50%;
             }
+        .task-single form input[type="submit"].task-btn,
         .task-single .task-btn {
             float: right;
         }
@@ -1565,13 +1575,13 @@ body {
             .block-user-tabs .task-single-difficulty {
                 
             }
-                .block-user-tabs .task-single.level-difficult .task-single-difficulty .emph {
+                .task-single.level-difficult .task-single-difficulty .emph {
                     color: #ed174f;
                 }
-                .block-user-tabs .task-single.level-medium .task-single-difficulty .emph {
+                .task-single.level-medium .task-single-difficulty .emph {
                     color: #ae9300;
                 }
-                .block-user-tabs .task-single.level-easy .task-single-difficulty .emph {
+                .task-single.level-easy .task-single-difficulty .emph {
                     color: #218c1b;
                 }
             .block-user-tabs .task-single-deadline {
@@ -1580,10 +1590,10 @@ body {
             .block-user-tabs .task-single-status {
                 
             }
-                .block-user-tabs .task-single-in-progress .task-single-status .emph {
+                .task-single-in-progress .task-single-status .emph {
                     color: #0082c8;
                 }
-                .block-user-tabs .task-single-in-progress .task-single-complete .emph {
+                .task-single-in-progress .task-single-complete .emph {
                     color: #000;
                 }
         .task-group .task-group-actions {
@@ -1712,6 +1722,7 @@ body {
         .block-task .block-task-countdown {
             background: #b6dcf7;
             float: right;
+            position: relative;
             width: 250px;
         }
             .block-task .block-task-countdown .stopwatch {
@@ -1720,11 +1731,98 @@ body {
         .block-task .block-task-countdown .task-btn-extended-deadline {
             background-position: 20px -81px;
             margin-top: 0;
-            margin-left: 17px;
+            margin-left: 22px;
             margin-right: 0;
             padding-left: 35px;
             padding-right: 25px;
         }
+        .block-task .block-task-countdown #deadline-extend {
+		display: none;
+		position: absolute;
+		bottom: -55px;
+		left: 18px;
+		height: 76px;
+		width: 213px;
+        }
+		.block-task .block-task-countdown #deadline-extend .deadline-extend-top {
+			background:url(../images/extend-deadline-top-arrow.png) top center no-repeat;
+			display: block;
+			height: 20px;
+			width: 100%;
+		}
+		.block-task .block-task-countdown #deadline-extend .deadline-extend-content {
+			background: #0082c8;
+			-moz-border-radius: 7px;
+			-webkit-border-radius: 7px;
+			border-radius: 7px;
+			color: #fff;
+			height: 56px;
+		}
+		.block-task .block-task-countdown #deadline-extend #deadline-extend-close {
+			cursor: pointer;
+			position: absolute;
+			top: 19px;
+			right: 5px;
+			color: #fff;
+			display: block;
+			font-size: 12px;
+			font-weight: bold;
+			text-decoration: none;
+			text-transform: none;
+			z-index: 100;
+		}
+		.block-task .block-task-countdown #deadline-extend form {
+
+		}
+		.block-task .block-task-countdown #deadline-extend form .form-row {
+			color: #fff;
+			float: left;
+			font-size: 18px;
+			margin: 0;
+			width: auto;
+		}
+		.block-task .block-task-countdown #deadline-extend form .form-row input[type="text"] {
+			float: left;
+			font-size: 24px;
+			margin: 12px 0 0 0;
+			width: 30px;
+		}
+		.block-task .block-task-countdown #deadline-extend span.plus,
+		.block-task .block-task-countdown #deadline-extend span.time {
+			float: left;
+			font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+			font-weight: normal !important;
+		}
+		.block-task .block-task-countdown #deadline-extend span.plus {
+			font-size: 26px;
+			line-height: 56px;
+			margin: 0 4px 0 8px;
+		}
+		.block-task .block-task-countdown #deadline-extend span.time {
+			line-height: 56px;
+			margin: 0 7px;
+		}
+		.block-task .block-task-countdown #deadline-extend form .task-btn {
+			background: #fff url(../images/dashboard-task-icons.png) no-repeat scroll 8px -81px;
+			-moz-box-shadow: none;
+			-webkit-box-shadow: none;
+			box-shadow: none;
+			border: none;
+			border-radius: 10px;
+			-moz-border-radius: 10px;
+			-webkit-border-radius: 10px;
+			color: #0F649D;
+			display: block;
+			float: left;
+			font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+			font-size: 12px;
+			font-weight: bold;
+			line-height: normal !important;
+			margin: 17px 0 0 0;
+			padding: 3px 13px 4px 20px;
+			text-decoration: none;
+			text-transform: uppercase;
+		}
 .block-student-featured-task {/*Student featured task*/
     border-top-right-radius: 12px;
     -moz-border-radius-topright: 12px;
@@ -2226,13 +2324,12 @@ form fieldset legend {
     clear: both;
     margin-top: 10px;
 }
-    .form-row-buttons input:first-child {
+    .form-row-buttons input.button:first-child {
         margin-right: 20px;
     }
-form input[type=submit], 
-form input[type=button] {
-    background: #c53926 url(../../../images/v2/gci/arrow-white-lg.png) 90% 50% no-repeat;
-}
+    .form-row-buttons input.button {
+	background-position: 90% 50%;
+    }
 
 /* @group Task creation */
 .form-row-task-completion-time, 
@@ -2272,4 +2369,91 @@ form input[type=button] {
     }
 /* @end */
 
+/* @end */
+
+/* @group 404 error */
+#error-not-found {
+	background:url(../../../images/v2/gci/melange-404-bg.png) top center no-repeat;
+	color: #666;
+}
+#error-not-found-content {
+	margin: 275px auto 0 auto;
+	width: 650px;
+}
+#error-not-found-content h1 {
+	font-size:80px;
+	display:inline;
+	float:left;
+	padding-right:20px;
+	margin-top:0px;
+}
+#error-not-found-content p {
+	font-size:20px;
+	padding-top:15px;
+	font-weight:bold;
+	line-height:130%;
+}
+#error-not-found-content a:link,
+#error-not-found-content a:hover,
+#error-not-found-content a:visited,
+#error-not-found-content a:active {
+	color: #0074c1;
+}
+/* @end */
+
+/* @group Avatar picker */
+#avatar-preview {
+	background: #fff;
+	border: 1px solid #c5c5c5;
+		-moz-border-radius: 3px;
+		-webkit-border-radius: 3px;
+		border-radius: 3px;
+	float: left;
+	height: 80px;
+	padding: 5px;
+	width: 80px;
+}
+#avatar-picker-container {
+	float: left;
+	margin-left: 10px;
+}
+#avatar-picker {
+	float: left;
+}
+#avatar-color-picker {
+	float: left;
+	clear: left;
+	margin-top: 10px;
+}
+span.current-avatar-text {
+	color: #656565;
+	display: block;
+	margin: 5px 0 5px 0;
+	font-size: 14px;
+}
+/* @end */
+
+
+
+/* @group jqgrid cleanup */
+.ui-jqgrid.ui-widget-content,
+.ui-jqgrid .ui-widget-content {
+  border: none;
+}
+.ui-jqgrid tr.jqgrow td {
+  border: none;
+  padding: 0;
+}
+.task-single-content-bottom {
+  font-size: 12px;
+}
+.ui-widget-content .task-single a {
+  color: #0F649D;
+}
+.ui-widget-content .task-single a:hover {
+  color: #D14936;
+}
+.altrow .task-single {
+  background-color: #EBEBEB;
+}
 /* @end */
