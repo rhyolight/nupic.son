@@ -113,7 +113,7 @@ class InviteForm(gci_forms.GCIModelForm):
         if e.code != 'invalid':
           raise
 
-        account = users.User(email_address)
+        account = users.User(email)
         user_account = accounts.normalizeAccount(account)
         user_to_invite = User.all().filter('account', user_account).get()
 
