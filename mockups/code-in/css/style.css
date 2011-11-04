@@ -179,6 +179,7 @@ a:hover {  }
 .block-featured-task .block-featured-task-link a:hover, 
 .task-single a:hover, 
 input.task-btn:hover, 
+form input[type="submit"].task-btn:hover,
 .single-comment a:hover, 
 .block-task-uploaded-code table td a:hover, 
 .form-row .add-field-link a:hover, 
@@ -228,6 +229,7 @@ input.btn {
         -moz-box-shadow: 1px 2px 3px #295c77;
         -webkit-box-shadow: 1px 2px 3px #295c77;
     }
+form input[type="submit"].task-btn,
 input.task-btn {
     background: #fff url(../images/dashboard-task-icons.png) 7px 5px no-repeat;
     border: none;
@@ -237,6 +239,7 @@ input.task-btn {
     color: #0F649D;
     display: block;
     float: left;
+    font-size: 12px;
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
     font-weight: bold;
     line-height: normal !important;
@@ -244,34 +247,43 @@ input.task-btn {
     padding: 3px 8px 4px 20px;
     text-decoration: none;
     text-transform: uppercase;
+
 }
     input.task-btn-edit {
         
     }
+    form input[type="submit"].task-btn-delete,
+    form input[type="submit"].task-btn-unclaim,
     input.task-btn-delete, 
     input.task-btn-unclaim {
         background-position: 7px -16px;
         padding-left: 18px;
     }
+    form input[type="submit"].task-btn-close,
     input.task-btn-close {
         background-position: 7px -37px;
         padding-left: 23px;
     }
+    form input[type="submit"].task-btn-approve,
     input.task-btn-approve {
         background-position: 7px -37px;
         padding-left: 20px;
     }
+    form input[type="submit"].task-btn-unassign,
     input.task-btn-unassign {
         background-position: 7px -58px;
     }
+    form input[type="submit"].task-btn-extended-deadline,
     input.task-btn-extended-deadline {
         background-position: 7px -80px;
     }
+    form input[type="submit"].task-btn-subscribe-updates,
     input.task-btn-subscribe-updates {
         background: #fff;
         padding-left: 15px;
         padding-right: 15px;
     }
+    form input[type="submit"].task-btn-publish,
     input.task-btn-publish {
         background-position: 7px -103px;
     }
@@ -1534,6 +1546,7 @@ body {
             .task-single.task-single-admin .task-single-content-col2 {
                 width: 50%;
             }
+        .task-single form input[type="submit"].task-btn,
         .task-single .task-btn {
             float: right;
         }
@@ -1554,13 +1567,13 @@ body {
             .block-user-tabs .task-single-difficulty {
                 
             }
-                .block-user-tabs .task-single.level-difficult .task-single-difficulty .emph {
+                .task-single.level-difficult .task-single-difficulty .emph {
                     color: #ed174f;
                 }
-                .block-user-tabs .task-single.level-medium .task-single-difficulty .emph {
+                .task-single.level-medium .task-single-difficulty .emph {
                     color: #ae9300;
                 }
-                .block-user-tabs .task-single.level-easy .task-single-difficulty .emph {
+                .task-single.level-easy .task-single-difficulty .emph {
                     color: #218c1b;
                 }
             .block-user-tabs .task-single-deadline {
@@ -1569,10 +1582,10 @@ body {
             .block-user-tabs .task-single-status {
                 
             }
-                .block-user-tabs .task-single-in-progress .task-single-status .emph {
+                .task-single-in-progress .task-single-status .emph {
                     color: #0082c8;
                 }
-                .block-user-tabs .task-single-in-progress .task-single-complete .emph {
+                .task-single-in-progress .task-single-complete .emph {
                     color: #000;
                 }
         .task-group .task-group-actions {
@@ -2413,3 +2426,26 @@ span.current-avatar-text {
 /* @end */
 
 
+
+/* @group jqgrid cleanup */
+.ui-jqgrid.ui-widget-content,
+.ui-jqgrid .ui-widget-content {
+  border: none;
+}
+.ui-jqgrid tr.jqgrow td {
+  border: none;
+  padding: 0;
+}
+.task-single-content-bottom {
+  font-size: 12px;
+}
+.ui-widget-content .task-single a {
+  color: #0F649D;
+}
+.ui-widget-content .task-single a:hover {
+  color: #D14936;
+}
+.altrow .task-single {
+  background-color: #EBEBEB;
+}
+/* @end */
