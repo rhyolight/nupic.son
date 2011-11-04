@@ -33,6 +33,8 @@ from soc.logic import invite as invite_logic
 from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 
+from soc.models.user import User
+
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
