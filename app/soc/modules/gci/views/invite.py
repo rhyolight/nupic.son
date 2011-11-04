@@ -200,7 +200,7 @@ class InvitePage(RequestHandler):
     self.check.isOrgAdmin()
 
   def context(self):
-    """Handler to for GSoC Invitation Page HTTP get request.
+    """Handler to for GCI Invitation Page HTTP get request.
     """
 
     role = 'Org Admin' if self.data.kwargs['role'] == 'org_admin' else 'Mentor'
@@ -393,7 +393,7 @@ class RespondInvite(RequestHandler):
     if 'accept' in self.data.POST:
       if not self.data.profile:
         self.redirect.program()
-        self.redirect.to('edit_gsoc_profile')
+        self.redirect.to('edit_gci_profile')
 
       invite_logic.acceptInvite(self.data)
     else: # reject
