@@ -22,6 +22,8 @@ __authors__ = [
   ]
 
 
+import logging
+
 from django.utils.translation import ugettext
 
 from google.appengine.api import users
