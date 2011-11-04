@@ -2142,6 +2142,16 @@ body {
 		margin-left: 13px;
 	}
 /* @end */
+/* @group previous-leaderboards */
+.block-leaderboard-previous-leaderboards .block-title {
+  background: #c94837;
+}
+.block-leaderboard-previous-leaderboards .block-content {
+  background: #E3E3E3;
+  text-align: center;
+  padding: 10px;
+}
+/* @end */
 
 /* @group Forms */
 .block-form {
