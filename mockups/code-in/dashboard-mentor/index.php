@@ -26,7 +26,7 @@
     <div class="grid_9 main">
         <div class="block-filter-option block-filter-option-program-year">
           <label>Program Year:</label>
-          <select class="uniform" id="input-program-year">
+          <select class="uniform">
             <option>2011 (current)</option>
             <option>2010</option>
           </select>
