@@ -2449,3 +2449,17 @@ span.current-avatar-text {
   background-color: #EBEBEB;
 }
 /* @end */
+
+/* @group program group dropdown */
+.block-filter-option-program-year {
+  margin: -38px -2px 0 0;
+  float: right;
+  color: #666;
+  font-size: 13px;
+}
+.block-filter-option-program-year label {
+  display: inline-block;
+  padding-top: 1px;
+  vertical-align: middle;
+}
+/* @end */

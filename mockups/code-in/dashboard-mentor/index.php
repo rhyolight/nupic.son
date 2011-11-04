@@ -24,6 +24,13 @@
     </div>
     <!-- end .grid_3.side -->
     <div class="grid_9 main">
+        <div class="block-filter-option block-filter-option-program-year">
+          <label>Program Year:</label>
+          <select class="uniform" id="input-program-year">
+            <option>2011 (current)</option>
+            <option>2010</option>
+          </select>
+        </div>
         <div class="block block-user-message">
             You have 1 task that needs review. Let's test <a href="javascript:void(0)">another link</a>. <a href="javascript:void(0)" class="more">Click here</a>
         </div>
