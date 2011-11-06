@@ -375,6 +375,22 @@ class DjangoTestCase(TestCase):
 
     return result
 
+  def assertRenderAll(self, response):
+    """Calls render on all objects that are renderable.
+    """
+    for contexts in response.context or []:
+      for context in contexts:
+        values = context.values() if isinstance(context, dict) else [context]
+        for value in values:
+          try:
+            iterable = iter(value)
+          except TypeError:
+            iterable = [value]
+          for i in iterable:
+            # make it easier to debug render failures
+            if hasattr(i, 'render'):
+              i.render()
+
   def assertErrorTemplatesUsed(self, response):
     """Assert that all the error templates were used.
     """
@@ -383,8 +399,11 @@ class DjangoTestCase(TestCase):
     # self.assertTemplateUsed(response, 'soc/error.html')
 
   def assertResponseCode(self, response, status_code):
-    """Asserts that the response status is OK.
+    """Asserts that the response status is status_code.
     """
+    # first ensure that no render failures occured
+    self.assertRenderAll(response)
+
     if response.status_code != status_code:
       verbose_codes = [
           httplib.BAD_REQUEST, httplib.FOUND,
@@ -503,12 +522,6 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
     """Asserts that all the templates from the base view were used.
     """
     self.assertResponseOK(response)
-    for contexts in response.context:
-      for context in contexts:
-        for value in context.values():
-          # make it easier to debug render failures
-          if hasattr(value, 'render'):
-            value.render()
     self.assertTemplateUsed(response, 'v2/modules/gsoc/base.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/footer.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/header.html')
