@@ -251,7 +251,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise AccessViolation(DEF_NO_TASK_EDIT_PRIV_MSG_FMT % (
           task.org.name))
 
-    if task.status not in ['Unapproved', 'Unpublished', 'Open']:
+    if task.status not in ['Unapproved', 'Unpublished']:
       raise AccessViolation(DEF_TASK_UNEDITABLE_STATUS_MSG)
 
     if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
