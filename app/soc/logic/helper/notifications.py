@@ -18,11 +18,11 @@
 """
 
 __authors__ = [
+  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
 
-import logging
 import time
 
 from django.template import loader
@@ -194,11 +194,8 @@ def handledInviteContext(data):
   assert isSet(data.invite)
   assert isSet(data.invited_profile)
 
-  logging.warning("hIC:enter")
-
   # do not send notifications if the user has opted out
   if not data.invited_profile.notify_invite_handled:
-    logging.warning("hIC:abort")
     return {}
 
   status = data.invite.status
