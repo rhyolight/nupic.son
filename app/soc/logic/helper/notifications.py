@@ -217,14 +217,14 @@ def handledInviteContext(data):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
-def newOrganizationContext(data):
+def newOrganizationContext(data, apply_url_name):
   """Sends out an invite notification to the applicant of the Organization.
 
   Args:
     data: a RequestData object
   """
 
-  url = data.redirect.orgApp().urlOf('gsoc_org_app_apply', full=True)
+  url = data.redirect.orgApp().urlOf(apply_url_name, full=True)
 
   message_properties = {
       'url': url,

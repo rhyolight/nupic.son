@@ -19,9 +19,15 @@
 
 __authors__ = [
   '"Akeda Bagus" <admin@gedex.web.id>',
+  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   ]
 
+
+from google.appengine.ext import db
+
+from soc.logic.helper import notifications
 from soc.models.org_app_survey import OrgAppSurvey
+from soc.tasks import mailer
 
 
 def getForProgram(program):
@@ -36,3 +42,33 @@ def getForProgram(program):
   survey = q.get()
 
   return survey
+
+
+def setStatus(record, new_status):
+  """Updates the status of an org_app record.
+
+  Args:
+    record: an OrgAppRecord
+    new_status: the new status that should be assigned to the record
+  """
+  if record.status == new_status:
+    return
+
+  record_key = record.key()
+
+  context = None
+
+  if new_status == 'accepted':
+    context = notifications.newOrganizationContext(
+        self.data, 'gci_org_app_apply')
+
+  def txn():
+    record = db.get(record_key)
+    record.status = new_status
+    record.put()
+
+    if context:
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=record)
+      sub_txn()
+
+  db.run_in_transaction(txn)
