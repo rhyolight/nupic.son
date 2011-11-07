@@ -45,9 +45,9 @@ def __get_request_cpu_usage():
 
   Does nothing when used in the dev_appserver.
   """
-  warnings.warn('get_request_cpu_usage may not always return correct values',
-                DeprecationWarning,
-                stacklevel=2)
+  #warnings.warn('get_request_cpu_usage may not always return correct values',
+  #              DeprecationWarning,
+  #              stacklevel=2)
 
   if apiproxy:
     return apiproxy.GetRequestCpuUsage()
