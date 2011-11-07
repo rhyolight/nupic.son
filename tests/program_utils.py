@@ -109,13 +109,16 @@ class ProgramHelper(object):
       self.createProgram()
     # TODO (Madhu): Remove scope and author fields once the data
     # conversion is done.
-    properties = {'scope': self.program, 'program': self.program,
-                  'modified_by': self.founder,
-                  'created_by': self.founder,
-                  'author': self.founder,
-                  'schema': ('[["item"],{"item":{"field_type":"input_text",'
-                             '"required":false, "label":"test"}}]'),
-                  'survey_content': None,}
+    properties = {
+        'key_name': 'gci_program/%s/orgapp' % self.program.key().name(),
+        'scope': self.program, 'program': self.program,
+        'modified_by': self.founder,
+        'created_by': self.founder,
+        'author': self.founder,
+        'schema': ('[["item"],{"item":{"field_type":"input_text",'
+                   '"required":false, "label":"test"}}]'),
+        'survey_content': None,
+    }
     properties.update(override)
     self.org_app = self.seed(OrgAppSurvey, properties)
     return self.org_app
