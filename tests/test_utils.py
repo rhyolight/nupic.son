@@ -426,14 +426,19 @@ class DjangoTestCase(TestCase):
       verbose_codes = [
           httplib.FOUND,
       ]
-      message_codes = [httplib.FORBIDDEN, httplib.BAD_REQUEST]
+      message_codes = [
+          httplib.FORBIDDEN, httplib.BAD_REQUEST, httplib.NOT_FOUND,
+      ]
       url_codes = [httplib.NOT_FOUND]
 
       if response.status_code in verbose_codes:
         print response
 
-      if response.status_code in message_codes:
-        print response.context['message']
+      if response.context and response.status_code in message_codes:
+        try:
+          print response.context['message']
+        except KeyError:
+          pass
 
       if response.status_code in url_codes:
         print response.request['PATH_INFO']
