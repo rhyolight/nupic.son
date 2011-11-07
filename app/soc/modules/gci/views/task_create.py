@@ -44,7 +44,7 @@ from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-def mentor_choices_for_org(task, org):
+def mentorChoicesForOrg(task, org):
   """Builds the tuple of mentor choice 2-tuples for the Django choice field.
 
   Args:
@@ -103,7 +103,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         widget=forms.CheckboxSelectMultiple)
 
     self.fields['mentors'] = django_forms.ChoiceField(
-        label=ugettext('Difficulty'), choices=mentor_choices_for_org(
+        label=ugettext('Difficulty'), choices=mentorChoicesForOrg(
         self.instance, self.organization))
 
     if self.instance:
