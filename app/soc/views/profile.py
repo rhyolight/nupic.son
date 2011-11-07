@@ -150,10 +150,10 @@ class ProfilePage(object):
     if self.data.student_info or role == 'student':
       student_info_form = self._getStudentInfoForm()
       # student's age should be checked
-      check_age = True
+      is_student = True
     else:
       student_info_form = EmptyForm()
-      check_age = False
+      is_student = False
 
     if not role:
       page_name = 'Edit your Profile'
@@ -171,9 +171,9 @@ class ProfilePage(object):
 
     if self.data.profile:
       self.data.profile._fix_name()
-      profile_form = self._getEditProfileForm(check_age)
+      profile_form = self._getEditProfileForm(is_student)
     else:
-      profile_form = self._getCreateProfileForm(check_age)
+      profile_form = self._getCreateProfileForm(is_student)
     error = user_form.errors or profile_form.errors or student_info_form.errors
 
     form = self._getNotificationForm()

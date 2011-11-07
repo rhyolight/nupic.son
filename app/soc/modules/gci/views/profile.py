@@ -55,8 +55,12 @@ class GCIUserForm(gci_forms.GCIModelForm):
 
 
 PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
-    'automatic_task_subscription', 'notify_comments', 'birth_date',
-    'longitude', 'latitude', 'publish_location', 'photo_url',
+    'automatic_task_subscription', 'notify_comments',
+    'photo_url',
+]
+
+STUDENT_EXCLUDE = PROFILE_EXCLUDE + [
+    'birth_date', 'longitude', 'latitude', 'publish_location',
 ]
 
 
@@ -135,7 +139,7 @@ class GCIProfileForm(profile.ProfileForm):
     return gci_forms.TEMPLATE_PATH
 
 
-class CreateGCIProfileForm(GCIProfileForm):
+class GCICreateProfileForm(GCIProfileForm):
   """Django edit form to create GCI profile page.
   """
 
@@ -146,7 +150,7 @@ class CreateGCIProfileForm(GCIProfileForm):
     widgets = GCIProfileForm.Meta.widgets
 
   def __init__(self, tos_content, request_data=None, *args, **kwargs):
-    super(CreateGCIProfileForm, self).__init__(request_data, *args, **kwargs)
+    super(GCICreateProfileForm, self).__init__(request_data, *args, **kwargs)
     self.tos_content = tos_content
     self.fields['agreed_to_tos'].widget = forms.TOSWidget(tos_content)
 
@@ -161,6 +165,28 @@ class CreateGCIProfileForm(GCIProfileForm):
           "You cannot register without agreeing to the Terms of Service"]
 
     return value
+
+
+class GCIStudentProfileForm(GCIProfileForm):
+  """Django edit form to create GCI student profile page.
+  """
+
+  class Meta:
+    model = GCIProfileForm.Meta.model
+    css_prefix = GCIProfileForm.Meta.css_prefix
+    exclude = STUDENT_EXCLUDE
+    widgets = GCIProfileForm.Meta.widgets
+
+
+class GCICreateStudentProfileForm(GCICreateProfileForm):
+  """Django edit form to edit GCI student profile page.
+  """
+
+  class Meta:
+    model = GCICreateProfileForm.Meta.model
+    css_prefix = GCICreateProfileForm.Meta.css_prefix
+    exclude = STUDENT_EXCLUDE
+    widgets = GCICreateProfileForm.Meta.widgets
 
 
 class NotificationForm(gci_forms.GCIModelForm):
@@ -258,14 +284,26 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
   def _getCreateUserForm(self):
     return GCIUserForm(self.data.POST)
 
-  def _getEditProfileForm(self, check_age):
-    return GCIProfileForm(data=self.data.POST or None,
+  def _getEditProfileForm(self, is_student):
+    if is_student:
+      form = GCIStudentProfileForm
+    else:
+      form = GCIProfileForm
+    return form(data=self.data.POST or None,
         request_data=self.data, instance=self.data.profile)
 
-  def _getCreateProfileForm(self, check_age):
+  def _getCreateProfileForm(self, is_student):
+    if is_student:
+      form = GCICreateStudentProfileForm
+      if self.data.POST:
+        birth_date = self.data.request.COOKIES.get('age_check')
+        self.data.POST['birth_date'] = birth_date
+    else:
+      form = GCICreateProfileForm
+
     tos_content = self._getTOSContent()
-    return CreateGCIProfileForm(tos_content, data=self.data.POST or None,
-        request_data=self.data)
+    return form(tos_content, data=self.data.POST or None,
+                      request_data=self.data)
 
   def _getNotificationForm(self):
     return NotificationForm

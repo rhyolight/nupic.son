@@ -28,6 +28,8 @@ from datetime import timedelta
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from soc.modules.gci.models.profile import GCIProfile
+
 from tests.test_utils import GCIDjangoTestCase
 
 
@@ -54,7 +56,7 @@ class ProfileViewTest(GCIDjangoTestCase):
         'program_suffix': program_suffix                                                            
         }
 
-    birth_date = date.today() - timedelta(365*15)
+    self.birth_date = str(date.today() - timedelta(365*15))
 
     props = {}
     # we do not want to seed the data in the datastore, we just
@@ -73,7 +75,7 @@ class ProfileViewTest(GCIDjangoTestCase):
         'org_admin_for': [],
         'mentor_for': [],
         'scope': self.gci,
-        'birth_date': birth_date,
+        'birth_date': self.birth_date,
         'res_country': 'Netherlands',
         'ship_country': 'Netherlands',
     })
@@ -81,7 +83,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.default_props = props
 
     # we have other tests that verify the age_check system
-    self.client.cookies['age_check'] = '1'
+    self.client.cookies['age_check'] = self.birth_date
 
   def _updateDefaultProps(self, request_data):
     """Updates default_props variable with more personal data stored in
@@ -171,6 +173,11 @@ class ProfileViewTest(GCIDjangoTestCase):
     response = self.post(self.student_url, self.default_props)
     self.assertResponseRedirect(response, self.validated_url)
 
+    self.assertEqual(1, GCIProfile.all().count())
+    student = GCIProfile.all().get()
+
+    self.assertEqual(self.birth_date, str(student.birth_date))
+
   def testCreateUserNoLinkId(self):
     self.timeline.studentSignup()
 
@@ -182,7 +189,6 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.assertTrue('link_id' in response.context['error'])
 
   def testCreateProfile(self):
-    from soc.modules.gci.models.profile import GCIProfile
     from soc.modules.gci.models.profile import GCIStudentInfo
 
     self.timeline.studentSignup()
