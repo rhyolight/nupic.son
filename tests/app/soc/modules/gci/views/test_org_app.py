@@ -212,3 +212,24 @@ class GCIOrgAppTakePageTest(GCIDjangoTestCase):
     self.assertResponseRedirect(response, retake_url + '?validated')
     record = OrgAppRecord.get_by_id(record.key().id())
     self.assertEqual(record.name, params['name'])
+
+
+class GCIOrgAppRecordsPageTest(GCIDjangoTestCase):
+  """Tests for organization applications edit page.
+  """
+
+  def setUp(self):
+    self.init()
+    self.record = SurveyHelper(self.gci, self.dev_test, self.org_app)
+    self.url = '/gci/org/application/records/%s' % self.gci.key().name()
+
+  def assertTemplatesUsed(self, response):
+    """Asserts all the templates for edit page were used.
+    """
+    self.assertGCITemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/soc/org_app/records.html')
+
+  def testGetRecords(self):
+    self.data.createHost()
+    response = self.get(self.url)
+    self.assertTemplatesUsed(response)
