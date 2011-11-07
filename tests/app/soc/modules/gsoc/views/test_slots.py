@@ -63,9 +63,9 @@ class SlotsTest(GSoCDjangoTestCase):
     data = simplejson.dumps({org_name: org_data})
 
     postdata = {
-        'data': [data],
-        'button_id': ['save'],
-        'idx': ['0']
+        'data': data,
+        'button_id': 'save',
+        'idx': 0,
     }
     response = self.post(url, postdata)
     self.assertResponseOK(response)
