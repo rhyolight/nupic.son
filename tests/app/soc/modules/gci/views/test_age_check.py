@@ -56,7 +56,7 @@ class AgeCheckTest(GCIDjangoTestCase):
     self.assertAgeCheckTemplatesUsed(response)
 
     birth_date = date.today() - timedelta(365*15)
-    postdata = {'birthdate': birth_date}
+    postdata = {'birth_date': birth_date}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
     self.assertEqual('1', response.cookies['age_check'].value)
