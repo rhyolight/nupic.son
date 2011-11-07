@@ -79,12 +79,12 @@ class AgeCheck(RequestHandler):
     cookies = self.request.COOKIES
     age_check_result =  cookies.get('age_check', None)
 
-    if age_check_result == '1':
+    if age_check_result == '0':
+      context['failed_check'] = True
+    elif age_check_result:
       # age check passed, redirect to create profile page
       self.redirect.createProfile('student').to('create_gci_profile')
       return {}
-    elif age_check_result == '0':
-      context['failed_check'] = True
 
     if self.data.POST:
       context['form'] = AgeCheckForm(self.data.POST)
@@ -106,7 +106,7 @@ class AgeCheck(RequestHandler):
 
     age_sufficient = validate.isAgeSufficientForProgram(birth_date, program)
     if age_sufficient:
-      self.response.set_cookie('age_check', '1')
+      self.response.set_cookie('age_check', birth_date)
     else:
       self.response.set_cookie('age_check', '0')
 
