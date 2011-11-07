@@ -41,6 +41,23 @@ class OrgProfilePageTest(GCIDjangoTestCase):
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gci/org_profile/base.html')
 
+  def createOrgApp(self, link_id, override={}):
+    """Creates a new OrgAppRecord for the specified link_id.
+    """
+    from soc.models.org_app_record import OrgAppRecord
+    self.data.createUser()
+    properties = {
+      'org_id': link_id,
+      'survey': self.org_app,
+      'backup_admin': self.data.user,
+      'user': self.data.user,
+      'main_admin': self.data.user,
+      'status': 'accepted',
+    }
+    properties.update(override)
+    entity = self.seed(OrgAppRecord, properties)
+    return entity
+
   def testCreateOrgNoLinkid(self):
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url)
@@ -49,7 +66,22 @@ class OrgProfilePageTest(GCIDjangoTestCase):
   def testCreateOrgWrongLinkId(self):
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url + '?org_id=no_matching_proposal')
+    self.assertResponseNotFound(response)
+
+  def testCreateOrgRejectedApp(self):
+    self.createOrgApp('rejected', override={'status': 'rejected'})
+
+    url = '/gci/profile/organization/' + self.gci.key().name()
+    response = self.get(url + '?org_id=rejected')
     self.assertResponseForbidden(response)
+
+  def testCreateOrgNoProfile(self):
+    self.createOrgApp('new_org')
+
+    url = '/gci/profile/organization/' + self.gci.key().name()
+    response = self.get(url + '?org_id=new_org')
+
+    self.assertResponseRedirect(response)
 
   def testCreateOrg(self):
     """Tests that only the assigned org admin for an organization can edit the
@@ -57,6 +89,7 @@ class OrgProfilePageTest(GCIDjangoTestCase):
     """
     self.timeline.orgSignup()
     self.data.createProfile()
+    self.createOrgApp('new_org')
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     create_url = url + '?org_id=new_org'

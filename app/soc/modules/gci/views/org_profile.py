@@ -95,6 +95,7 @@ class OrgProfilePage(RequestHandler):
       #probably check if the org is active
     else:
       self.data.organization = None
+      self.mutator.orgAppFromOrgId()
       self.check.canCreateNewOrg()
 
   def templatePath(self):

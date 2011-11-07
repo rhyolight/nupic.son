@@ -70,6 +70,9 @@ DEF_TASK_MUST_BE_IN_STATES_FMT = ugettext(
 DEF_TASK_MAY_NOT_BE_IN_STATES_FMT = ugettext(
     'The task may not be in one of the followings states %s')
 
+DEF_ORG_APP_REJECTED_MSG = ugettext(
+    'This org application has been rejected')
+
 
 class Mutator(access_checker.Mutator):
   """Helper class for access checking.
@@ -127,17 +130,23 @@ class Mutator(access_checker.Mutator):
 
     self.taskFromKwargs()
 
-  def orgAppFromLinkId(self):
+  def orgAppFromOrgId(self):
     org_id = self.data.GET.get('org_id')
 
     if not org_id:
       raise BadRequest('Missing org_id')
 
     q = OrgAppRecord.all()
-    q.filter('program', self.data.program)
+    q.filter('survey', self.data.org_app)
     q.filter('org_id', org_id)
 
     self.data.org_app_record = q.get()
+
+    if not self.data.org_app_record:
+      raise NotFound("There is no org_app for the org_id %s" % org_id)
+
+    if self.data.org_app_record.status != 'accepted':
+      raise AccessViolation(DEF_ORG_APP_REJECTED_MSG)
 
 
 class DeveloperMutator(access_checker.DeveloperMutator,
