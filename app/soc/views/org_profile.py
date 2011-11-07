@@ -19,6 +19,7 @@
 
 __authors__ = [
   '"Daniel Hans" <daniel.m.hans@gmail.com>',
+  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   ]
 
 
@@ -52,6 +53,8 @@ class OrgProfileForm(forms.ModelForm):
     ]
 
     for field in homepage_fields:
+      if field not in self.fields:
+        continue
       self.fields[field].group = '1. Homepage Info (displayed on org homepage)'
 
     feed_url = self.fields.pop('feed_url')

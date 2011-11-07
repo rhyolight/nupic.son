@@ -29,8 +29,10 @@ from django.utils.translation import ugettext
 
 from soc.logic import dicts
 from soc.logic.exceptions import AccessViolation
+from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import RedirectRequest
+from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 from soc.views.helper import request_data
 
@@ -67,6 +69,7 @@ DEF_TASK_MUST_BE_IN_STATES_FMT = ugettext(
 
 DEF_TASK_MAY_NOT_BE_IN_STATES_FMT = ugettext(
     'The task may not be in one of the followings states %s')
+
 
 class Mutator(access_checker.Mutator):
   """Helper class for access checking.
@@ -123,6 +126,18 @@ class Mutator(access_checker.Mutator):
       return
 
     self.taskFromKwargs()
+
+  def orgAppFromLinkId(self):
+    org_id = self.data.GET.get('org_id')
+
+    if not org_id:
+      raise BadRequest('Missing org_id')
+
+    q = OrgAppRecord.all()
+    q.filter('program', self.data.program)
+    q.filter('org_id', org_id)
+
+    self.data.org_app_record = q.get()
 
 
 class DeveloperMutator(access_checker.DeveloperMutator,
@@ -215,6 +230,20 @@ class AccessChecker(access_checker.AccessChecker):
 
     if not (gsoc_profile or gci_profile):
       raise AccessViolation(DEF_NO_PREV_ORG_MEMBER_MSG)
+
+  def canCreateNewOrg(self):
+    """A user can create a new org if they have an accepted org app.
+    """
+    assert self.data.org_app
+
+#$    if 
+#      raise AccessDenied
+
+    if not self.data.profile:
+      org_id = self.data.GET['org_id']
+      profile_url = self.data.redirect.createProfile('org_admin').urlOf(
+          'create_gci_profile')
+      raise RedirectRequest(profile_url + '?new_org=' + org_id)
 
   def isBeforeAllWorkStopped(self):
     """Raises AccessViolation if all work on tasks has stopped.

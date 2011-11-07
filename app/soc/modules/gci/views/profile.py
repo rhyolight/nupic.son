@@ -29,6 +29,7 @@ from django.utils.translation import ugettext
 
 from soc.logic import cleaning
 from soc.logic import dicts
+from soc.logic.exceptions import RedirectRequest
 from soc.models.user import User
 from soc.views import forms
 from soc.views import profile
@@ -247,24 +248,14 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
       self.get()
       return
 
-    link_id = self.data.GET.get('org')
-    if link_id:
-      key_name = '%s/%s' % (
-          self.data.program.key().name(), link_id
-          )
-      organization = GCIOrganization.get_by_key_name(key_name)
-    else:
-      organization = None
+    org_id = self.data.GET.get('new_org')
 
-    if not organization:
-      self.redirect.program()
-      self.redirect.to(self._getEditProfileURLName(), validated=True)
-      return
+    if org_id:
+      create_url = self.redirect.program().urlOf('create_gci_org_profile')
+      raise RedirectRequest(create_url + '?org_id=' + org_id)
 
-    self.redirect.homepage()
-
-    link = 'gci_homepage'
-    self.redirect.to(link)
+    self.redirect.program()
+    self.redirect.to(self._getEditProfileURLName(), validated=True)
 
   def _getModulePrefix(self):
     return 'gci'
