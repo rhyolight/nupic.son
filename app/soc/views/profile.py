@@ -40,6 +40,9 @@ class EmptyForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
     super(EmptyForm, self).__init__(forms.BoundField, *args, **kwargs)
 
+  def render(self):
+    pass
+
   def is_valid(self):
     return True
 
