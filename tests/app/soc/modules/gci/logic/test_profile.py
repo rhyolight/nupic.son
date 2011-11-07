@@ -56,6 +56,7 @@ class ProfileTest(unittest.TestCase):
     foo_mentors = seeder_logic.seedn(GCIProfile, 5, mentor_properties)
     
     org_admin_properties = {'org_admin_for': [self.foo_org.key()],
+                            'mentor_for': [self.foo_org.key()],
                             'is_mentor': True, 'is_org_admin': True}
     foo_org_admin = seeder_logic.seed(GCIProfile, org_admin_properties)
     
@@ -63,16 +64,13 @@ class ProfileTest(unittest.TestCase):
     bar_mentors = seeder_logic.seedn(GCIProfile, 5, mentor_properties)
     
     org_admin_properties['org_admin_for'] = [self.bar_org.key()]
+    org_admin_properties['mentor_for'] = [self.bar_org.key()]
     bar_org_admin = seeder_logic.seed(GCIProfile, org_admin_properties)
     
-    expected = [mentor.key() for mentor in foo_mentors]
-    if not foo_org_admin.key() in expected:
-      expected.append(foo_org_admin.key())
+    expected = [mentor.key() for mentor in foo_mentors] + [foo_org_admin.key()]
     actual = profile_logic.queryAllMentorsKeysForOrg(self.foo_org)
     self.assertEqual(expected, actual)
     
-    expected = [mentor.key() for mentor in bar_mentors]
-    if not bar_org_admin.key() in expected:
-      expected.append(bar_org_admin.key())
+    expected = [mentor.key() for mentor in bar_mentors] + [bar_org_admin.key()]
     actual = profile_logic.queryAllMentorsKeysForOrg(self.bar_org)
     self.assertEqual(expected, actual)
