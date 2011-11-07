@@ -37,9 +37,10 @@ class SurveyHelper(object):
   """Helper class to aid in setting the survey.
   """
 
-  def __init__(self, program, dev_test):
+  def __init__(self, program, dev_test, org_app=None):
     self.program = program
     self.dev_test = dev_test
+    self.org_app = org_app
 
   def seed(self, model, properties):
     return seeder_logic.seed(model, properties, recurse=False)
@@ -97,3 +98,19 @@ class SurveyHelper(object):
   def createMentorEvaluation(self, host=None, override={}):
     return self.createEvaluation(GradingProjectSurvey, host=host,
                                  override=override)
+
+  def createOrgApp(self, link_id, user, override={}):
+    """Creates a new OrgAppRecord for the specified link_id.
+    """
+    from soc.models.org_app_record import OrgAppRecord
+    properties = {
+      'org_id': link_id,
+      'survey': self.org_app,
+      'backup_admin': user,
+      'user': user,
+      'main_admin': user,
+      'status': 'accepted',
+    }
+    properties.update(override)
+    entity = self.seed(OrgAppRecord, properties)
+    return entity

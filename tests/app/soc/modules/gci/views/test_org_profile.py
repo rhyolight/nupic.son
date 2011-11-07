@@ -26,6 +26,7 @@ __authors__ = [
 from google.appengine.ext import db
 
 from tests.test_utils import GCIDjangoTestCase
+from tests.survey_utils import SurveyHelper
 
 from soc.modules.gci.models.organization import GCIOrganization
 
@@ -36,27 +37,11 @@ class OrgProfilePageTest(GCIDjangoTestCase):
 
   def setUp(self):
     self.init()
+    self.record = SurveyHelper(self.gci, self.dev_test, self.org_app)
 
   def assertOrgProfilePageTemplatesUsed(self, response):
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gci/org_profile/base.html')
-
-  def createOrgApp(self, link_id, override={}):
-    """Creates a new OrgAppRecord for the specified link_id.
-    """
-    from soc.models.org_app_record import OrgAppRecord
-    self.data.createUser()
-    properties = {
-      'org_id': link_id,
-      'survey': self.org_app,
-      'backup_admin': self.data.user,
-      'user': self.data.user,
-      'main_admin': self.data.user,
-      'status': 'accepted',
-    }
-    properties.update(override)
-    entity = self.seed(OrgAppRecord, properties)
-    return entity
 
   def testCreateOrgNoLinkid(self):
     url = '/gci/profile/organization/' + self.gci.key().name()
@@ -69,14 +54,17 @@ class OrgProfilePageTest(GCIDjangoTestCase):
     self.assertResponseNotFound(response)
 
   def testCreateOrgRejectedApp(self):
-    self.createOrgApp('rejected', override={'status': 'rejected'})
+    self.data.createUser()
+    self.record.createOrgApp('rejected', self.data.user,
+                             override={'status': 'rejected'})
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url + '?org_id=rejected')
     self.assertResponseForbidden(response)
 
   def testCreateOrgNoProfile(self):
-    self.createOrgApp('new_org')
+    self.data.createUser()
+    self.record.createOrgApp('new_org', self.data.user)
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url + '?org_id=new_org')
@@ -89,7 +77,7 @@ class OrgProfilePageTest(GCIDjangoTestCase):
     """
     self.timeline.orgSignup()
     self.data.createProfile()
-    self.createOrgApp('new_org')
+    self.record.createOrgApp('new_org', self.data.user)
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     create_url = url + '?org_id=new_org'
