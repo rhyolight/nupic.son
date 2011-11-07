@@ -60,7 +60,7 @@ DEF_NO_PREV_ORG_MEMBER_MSG = ugettext(
     'organization in Google Summer of Code or Google Code In.')
 
 DEF_TASK_UNEDITABLE_STATUS_MSG = ugettext(
-    'The task cannot be edited because it is already claimed once.')
+    'You cannot edit a published task.')
 
 DEF_TASK_MUST_BE_IN_STATES_FMT = ugettext(
     'The task must be in one of the followings states %s')
