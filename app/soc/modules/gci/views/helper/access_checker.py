@@ -36,6 +36,7 @@ from soc.views.helper import request_data
 
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.task import UNPUBLISHED
 
 
 DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
@@ -251,7 +252,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise AccessViolation(DEF_NO_TASK_EDIT_PRIV_MSG_FMT % (
           task.org.name))
 
-    if task.status not in ['Unapproved', 'Unpublished']:
+    if task.status not in UNPUBLISHED:
       raise AccessViolation(DEF_TASK_UNEDITABLE_STATUS_MSG)
 
     if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
