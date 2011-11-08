@@ -27,6 +27,7 @@ from google.appengine.ext import db
 
 from soc.logic.helper import notifications
 from soc.models.org_app_survey import OrgAppSurvey
+from soc.models.org_app_record import OrgAppRecord
 from soc.tasks import mailer
 
 
@@ -44,7 +45,7 @@ def getForProgram(program):
   return survey
 
 
-def setStatus(record, new_status):
+def setStatus(data, record, new_status):
   """Updates the status of an org_app record.
 
   Args:
@@ -54,13 +55,16 @@ def setStatus(record, new_status):
   if record.status == new_status:
     return
 
+  if new_status not in OrgAppRecord.status.choices:
+    return
+
   record_key = record.key()
 
   context = None
 
-  if new_status == 'accepted':
-    context = notifications.newOrganizationContext(
-        self.data, 'gci_org_app_apply')
+  if new_status in ['accepted', 'rejected']:
+    context = notifications.orgAppContext(
+        data, record, new_status, 'create_gci_org_profile')
 
   def txn():
     record = db.get(record_key)

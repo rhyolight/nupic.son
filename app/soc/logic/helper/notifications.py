@@ -29,8 +29,8 @@ from django.template import loader
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
 
-from soc.logic import accounts
 from soc.logic import dicts
+from soc.logic.accounts import denormalizeAccount
 from soc.tasks import mailer
 from soc.views.helper.access_checker import isSet
 
@@ -41,8 +41,11 @@ DEF_INVITATION_MSG_FMT = ugettext(
 DEF_NEW_REQUEST_MSG_FMT = ugettext(
     '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
-DEF_NEW_ORG_MSG_FMT = ugettext(
+DEF_ACCEPTED_ORG_MSG_FMT = ugettext(
     '[%(org)s] Your organization application has been accepted.')
+
+DEF_REJECTED_ORG_MSG_FMT = ugettext(
+    '[%(org)s] Your organization application has been rejected.')
 
 DEF_NEW_PROPOSAL_SUBJECT_FMT = ugettext(
     '[%(org)s] New proposal by %(proposer_name)s: %(proposal_name)s')
@@ -81,8 +84,11 @@ DEF_UPDATED_PROPOSAL_NOTIFICATION_TEMPLATE = \
 DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/new_review.html'
 
-DEF_NEW_ORG_TEMPLATE = \
-    'v2/soc/notifications/org_accepted.html'
+DEF_ACCEPTED_ORG_TEMPLATE = \
+    'v2/soc/notification/org_accepted.html'
+
+DEF_REJECTED_ORG_TEMPLATE = \
+    'v2/soc/notification/org_rejected.html'
 
 DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/handled_request.html'
@@ -217,28 +223,31 @@ def handledInviteContext(data):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
-def newOrganizationContext(data, apply_url_name):
+def orgAppContext(data, record, new_status, apply_url_name):
   """Sends out an invite notification to the applicant of the Organization.
 
   Args:
     data: a RequestData object
   """
 
-  url = data.redirect.orgApp().urlOf(apply_url_name, full=True)
+  url = data.redirect.program().urlOf(apply_url_name, full=True)
 
   message_properties = {
-      'url': url,
+      'url': url + '?org_id=' + record.org_id,
       'program_name': data.program.name,
-      'org': data.organization.name,
+      'org': record.name,
   }
 
-  subject = DEF_NEW_ORG_MSG_FMT % message_properties
+  if new_status == 'accepted':
+    subject = DEF_ACCEPTED_ORG_MSG_FMT % message_properties
+    template = DEF_ACCEPTED_ORG_TEMPLATE
+  else:
+    subject = DEF_REJECTED_ORG_MSG_FMT % message_properties
+    template = DEF_REJECTED_ORG_TEMPLATE
 
-  template = DEF_NEW_ORG_TEMPLATE
+  roles = [record.main_admin, record.backup_admin]
 
-  roles = [entity.main_admin, entity.backup_admin]
-
-  emails = [i.email for i in roles if i]
+  emails = [denormalizeAccount(i.account).email() for i in roles if i]
 
   return getContext(data, emails, message_properties, subject, template)
 

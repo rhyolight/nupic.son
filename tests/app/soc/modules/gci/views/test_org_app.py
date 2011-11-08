@@ -26,12 +26,18 @@ __authors__ = [
 from datetime import datetime
 from datetime import timedelta
 
+from google.appengine.ext import db
+
+from django.utils import simplejson
+
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.models.org_app_record import OrgAppRecord
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests.test_utils import GCIDjangoTestCase
+from tests.test_utils import MailTestCase
+from tests.survey_utils import SurveyHelper
 from tests.profile_utils import GCIProfileHelper
 
 
@@ -214,11 +220,12 @@ class GCIOrgAppTakePageTest(GCIDjangoTestCase):
     self.assertEqual(record.name, params['name'])
 
 
-class GCIOrgAppRecordsPageTest(GCIDjangoTestCase):
+class GCIOrgAppRecordsPageTest(MailTestCase, GCIDjangoTestCase):
   """Tests for organization applications edit page.
   """
 
   def setUp(self):
+    super(GCIOrgAppRecordsPageTest, self).setUp()
     self.init()
     self.record = SurveyHelper(self.gci, self.dev_test, self.org_app)
     self.url = '/gci/org/application/records/%s' % self.gci.key().name()
@@ -229,7 +236,64 @@ class GCIOrgAppRecordsPageTest(GCIDjangoTestCase):
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/soc/org_app/records.html')
 
+  def dataPostSingle(self, url, record, status):
+    return self.dataPost(url, {record: status})
+
+  def dataPost(self, url, changes):
+    values = {}
+
+    for record, status in changes.iteritems():
+      record_data = {
+          'status': status,
+      }
+      record_id = record.key().id()
+
+      values[record_id] = record_data
+
+    data = simplejson.dumps(values)
+
+    postdata = {
+        'data': data,
+        'button_id': 'save',
+        'idx': 0,
+    }
+
+    return self.post(url, postdata)
+
   def testGetRecords(self):
     self.data.createHost()
+    record = self.record.createOrgApp('org1', self.data.user,
+                                      {'status': 'needs review'})
+
     response = self.get(self.url)
     self.assertTemplatesUsed(response)
+
+    list_data = self.getListData(self.url, 0)
+    self.assertEqual(1, len(list_data))
+
+    self.dataPostSingle(self.url, record, 'bogus')
+    record = db.get(record.key())
+    self.assertEqual('needs review', record.status)
+    self.assertEmailNotSent()
+
+    self.dataPostSingle(self.url, record, 'pre-accepted')
+    record = db.get(record.key())
+    self.assertEqual('pre-accepted', record.status)
+    self.assertEmailNotSent()
+
+    self.dataPostSingle(self.url, record, 'pre-rejected')
+    record = db.get(record.key())
+    self.assertEqual('pre-rejected', record.status)
+    self.assertEmailNotSent()
+
+    self.dataPostSingle(self.url, record, 'accepted')
+    record = db.get(record.key())
+    self.assertEqual('accepted', record.status)
+    url = 'gci/profile/organization/%s?org_id=org1' % self.gci.key().name()
+    self.assertEmailSent(n=1, html=url)
+
+    self.dataPostSingle(self.url, record, 'rejected')
+    record = db.get(record.key())
+    self.assertEqual('rejected', record.status)
+    self.assertEmailSent(n=1, html="unable")
+    self.assertEmailSent(n=2)
