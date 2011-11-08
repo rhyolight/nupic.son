@@ -103,8 +103,8 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         widget=forms.CheckboxSelectMultiple)
 
     self.fields['mentors'] = django_forms.ChoiceField(
-        label=ugettext('Difficulty'), choices=mentorChoicesForOrg(
-        self.instance, self.organization))
+        label=ugettext('Mentors'), required=False,
+        choices=mentorChoicesForOrg(self.instance, self.organization))
 
     if self.instance:
       difficulties = self.instance.difficulty
