@@ -199,11 +199,18 @@ class TaskCreateForm(gci_forms.GCIModelForm):
   def clean_mentors(self):
     mentor_key_strs = self.data.getlist('mentors')
 
+    if not mentor_key_strs:
+      raise django_forms.ValidationError(
+          ugettext("At least one mentor should be assigned to the task."))
+
     org_mentors_keys = profile_logic.queryAllMentorsForOrg(
         self.organization, keys_only=True)
 
     mentor_keys = []
     for m_str in mentor_key_strs:
+      if not m_str:
+        break
+
       mentor_key = db.Key(m_str)
       if mentor_key not in org_mentors_keys:
         raise django_forms.ValidationError(
