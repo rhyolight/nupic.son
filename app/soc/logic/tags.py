@@ -89,3 +89,16 @@ class TagsService(object):
         tags = cls.get_tags_for_key(entity.key())
         for tag in tags:
           tag.remove_tagged(entity.key())
+
+
+def getTagsForProgram(model, program, limit=1000):
+  """Fetches all the tag entities for the given program.
+
+  Args:
+    model: The tag model class for which the tags must be fetched
+    program: The program entity for which the tags must be fetched
+    limit: number of entities that must be fetched
+  """
+  q = model.all()
+  q.filter('scope', program)
+  return q.fetch(1000)
