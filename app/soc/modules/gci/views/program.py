@@ -22,10 +22,20 @@ __authors__ = [
   ]
 
 
+from google.appengine.ext import db
+
+from django import forms as django_forms
+from django.utils import simplejson as json
+from django.utils.translation import ugettext
+
+from soc.logic import tags as tags_logic
+from soc.models.document import Document
+from soc.views import forms
 from soc.views.helper import url_patterns
 
-from soc.models.document import Document
 from soc.modules.gci.models.program import GCIProgram
+from soc.modules.gci.models.task import TaskDifficultyTag
+from soc.modules.gci.models.task import TaskTypeTag
 from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.forms import GCIModelForm
@@ -111,14 +121,80 @@ class ProgramPage(RequestHandler):
     }
 
   def validate(self):
-    scope_path = self.data.program.key().id_or_name()
-    program_form = ProgramForm(scope_path, self.data.POST,
-                               instance=self.data.program)
+    program = self.data.program
+    to_put = []
+
+    scope_path = program.key().id_or_name()
+    program_form = ProgramForm(scope_path, self.data.POST, instance=program)
 
     if not program_form.is_valid():
       return False
 
+    task_difficulties = self.data.POST.getlist('task_difficulty_name')
+    task_difficulties_values = self.data.POST.getlist(
+        'task_difficulty_value')
+
+    try:
+      difficulties_dict = dict(
+          (name, {'value': int(value), 'order': i}) for i, (name, value)
+               in enumerate(zip(task_difficulties, task_difficulties_values)))
+    except ValueError:
+        raise django_forms.ValidationError(
+          ugettext('The value %s for the tag must be an integer.' % (
+              value)))
+
+    difficulty_tags = tags_logic.getTagsForProgram(TaskDifficultyTag, program)
+
+    for tag in difficulty_tags:
+      tag_name = tag.tag
+
+      if tag_name not in difficulties_dict:
+        continue
+
+      new_value = difficulties_dict.get(tag_name).get('value')
+      new_order = difficulties_dict.get(tag_name).get('order')
+
+      difficulties_dict.pop(tag_name)
+
+      if new_value == tag.value and new_order == tag.order:
+        continue
+
+      tag.value = new_value
+      tag.order = new_order
+      to_put.append(tag)
+
+    for name, props in difficulties_dict.items():
+      to_put.append(TaskDifficultyTag(
+          scope=program, tag=name, value=props.get('value'),
+          order=props.get('order')))
+
+
+    task_types = self.data.POST.getlist('task_type_name')
+
+    types_dict = dict((name, i) for i, name in enumerate(task_types))
+
+    type_tags = tags_logic.getTagsForProgram(TaskTypeTag, program)
+
+    for tag in type_tags:
+      tag_name = tag.tag
+
+      if tag_name not in types_dict:
+        continue
+
+      new_order = types_dict.pop(tag_name)
+
+      if new_order == tag.order:
+        continue
+
+      tag.order = new_order
+      to_put.append(tag)
+
+    for name, order in types_dict.items():
+      to_put.append(TaskTypeTag(scope=program, tag=name, order=order))
+
     program_form.save()
+    db.put(to_put)
+
     return True
 
   def post(self):
