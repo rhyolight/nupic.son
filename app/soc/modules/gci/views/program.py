@@ -50,6 +50,17 @@ class ProgramForm(GCIModelForm):
     self.scope_path = scope_path
     super(ProgramForm, self).__init__(*args, **kwargs)
 
+    if self.instance:
+      difficulty_tags = tags_logic.getTagsForProgram(
+          TaskDifficultyTag, self.instance)
+      self.task_difficulties_json = json.dumps(
+          [[t.tag, t.value] for t in difficulty_tags])
+
+      type_tags = tags_logic.getTagsForProgram(
+          TaskTypeTag, self.instance)
+      self.task_types_json = json.dumps([[t.tag] for t in type_tags])
+
+
   class Meta:
     css_prefix = 'program_form'
     model = GCIProgram
