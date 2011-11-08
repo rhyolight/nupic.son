@@ -53,8 +53,11 @@ class ProgramForm(GCIModelForm):
   class Meta:
     css_prefix = 'program_form'
     model = GCIProgram
-    exclude = ['link_id', 'scope', 'scope_path', 'timeline',
-               'home', 'slots_allocation']
+    exclude = ['link_id', 'scope', 'scope_path', 'timeline', 'home',
+               'slots_allocation']
+
+    widgets = forms.hiddenWidgets(
+        GCIProgram, ['task_difficulties', 'task_types'])
 
 
 class ProgramPage(RequestHandler):
