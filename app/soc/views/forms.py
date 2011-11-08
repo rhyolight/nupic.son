@@ -75,10 +75,12 @@ def hiddenWidget():
   """
   return forms.HiddenInput()
 
+
 def hiddenWidgets(model, fields):
   """Returns a dictionary of Select widgets for the specified fields.
   """
   return dict((i, hiddenWidget()) for i in fields)
+
 
 def mergeWidgets(*args):
   """Merges a list of widgets.

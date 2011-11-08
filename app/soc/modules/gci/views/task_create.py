@@ -53,7 +53,6 @@ def mentorChoicesForOrg(task, org):
          constructed.
   """
   mentors = profile_logic.queryAllMentorsForOrg(org)
-
   return ((str(m.key()), m.name()) for m in mentors)
 
 
