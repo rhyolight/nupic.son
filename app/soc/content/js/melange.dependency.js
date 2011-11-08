@@ -384,6 +384,10 @@
     mpjs + "melange.program_select.js"
   ];
 
+  s.melange.dynamicoptions = [
+    mpjs + "melange.dynamicoptions.js"
+  ];
+
   $m.s = s;
 
   var unpack = function (orig_array) {
