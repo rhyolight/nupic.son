@@ -34,6 +34,7 @@ from soc.views import org_app
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
+from soc.modules.gci.logic import org_app as org_app_logic
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
@@ -258,6 +259,8 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
       raise BadRequest('Missing data')
 
     parsed = simplejson.loads(data)
+    self.data.redirect.program()
+    url = self.data.redirect.urlOf('create_gci_org_profile', full=True)
 
     for id, properties in parsed.iteritems():
       record = OrgAppRecord.get_by_id(long(id))
@@ -271,12 +274,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
         continue
 
       new_status = properties['status']
-
-      if record.status != new_status:
-        # TODO(ljvderijk): Implement state change code with email if needed
-        #record.status = new_status
-        #record.put()
-        pass
+      org_app_logic.setStatus(self.data, record, new_status, url)
 
     self.response.set_status(200)
 

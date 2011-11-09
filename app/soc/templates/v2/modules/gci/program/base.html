@@ -13,15 +13,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/dynamicoptions.css" />
+{% endblock stylesheets %}
+
+{% block form_button %}
+  <fieldset>
+    <legend>
+      <span>Task Settings</span>
+    </legend>
+    <div id="form_row_task_difficulties" class="form-row task_difficulties"></div>
+    <div id="form_row_task_types" class="form-row task_types"></div>
+  </fieldset>
+
+  <div class="form-row form-row-buttons">
+    <input value="{{button_value|default:'Submit'}}" class="button" type="submit" name="{{button_name}}">
+  </div>
+{% endblock form_button %}
+
 {% block synchronous_scripts %}
   <script type='text/javascript' src="/tiny_mce/tiny_mce.js"></script>
   {{ block.super }}
 {% endblock synchronous_scripts %}
+
 {% block dependencies %}
   [
     dep.melange.autocomplete,
+    dep.jqueryui.sortable,
     dep.uniform,
-    null,
+    dep.melange.dynamicoptions,
     function () {
       jQuery("select, input:radio, input:file, input:checkbox").uniform();
       tinyMCE.init(melange.tinyMceConfig(["melange-description-textarea",
@@ -34,6 +55,23 @@ limitations under the License.
       melange.autocomplete.makeAutoComplete("connect_with_us_page");
       melange.autocomplete.makeAutoComplete("help_page");
       melange.autocomplete.makeAutoComplete("terms_and_conditions");
+
+      jQuery('#form_row_task_difficulties').dynamicoptions({
+        id: "task-difficulties",
+        label: "{{ forms.0.fields.task_difficulties.label }}",
+        initial: '{{ forms.0.task_difficulties_json|safe }}',
+        fields: {
+            task_difficulty_name: 'Tag name',
+            task_difficulty_value: 'Tag value'
+        }
+      });
+
+      jQuery('#form_row_task_types').dynamicoptions({
+        id: "task-types",
+        label: "{{ forms.0.fields.task_types.label }}",
+        initial: '{{ forms.0.task_types_json|safe }}',
+        fields: {task_type_name: 'Tag name'}
+      });
     }
   ]
 {% endblock dependencies %}

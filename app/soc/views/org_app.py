@@ -174,9 +174,9 @@ class OrgAppRecordsList(object):
         ('', 'All'),
         ('(needs review)', 'needs review'),
         ('(pre-accepted)', 'pre-accepted'),
-        ('(accepted)', 'accepted'),
+        #('(accepted)', 'accepted'),
         ('(pre-rejected)', 'pre-rejected'),
-        ('(rejected)', 'rejected'),
+        #('(rejected)', 'rejected'),
         ('(ignored)', 'ignored'),
     ]
 

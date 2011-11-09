@@ -58,17 +58,7 @@ class EditProgramTest(GSoCDjangoTestCase):
   def setUp(self):
     self.init()
     self.data.createUser()
-
-    properties = {
-        'modified_by': self.data.user,
-        'author': self.data.user,
-        'home_for': None,
-        'prefix': 'gsoc_program',
-        'scope': self.program,
-        'read_access': 'public',
-        'key_name': DocumentKeyNameProvider(),
-    }
-    self.document = self.seed(Document, properties)
+    self.document = self.createDocument()
 
   def testShowDocument(self):
     url = '/gsoc/document/show/' + self.document.key().name()

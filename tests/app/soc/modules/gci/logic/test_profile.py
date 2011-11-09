@@ -42,33 +42,35 @@ class ProfileTest(unittest.TestCase):
     """Tests if a list of keys of all the mentors for an organization is
     returned.
     """
-    #Since there are no mentors assigned to foo_org or bar_org, an empty set 
+    #Since there are no mentors assigned to foo_org or bar_org, an empty list
     #should be returned.
-    
-    expected_keys = set([])
+    expected_keys = []
     actual_keys = profile_logic.queryAllMentorsKeysForOrg(self.foo_org)
     self.assertEqual(expected_keys, actual_keys) 
-    
+
     actual_keys = profile_logic.queryAllMentorsKeysForOrg(self.bar_org)
     self.assertEqual(expected_keys,actual_keys)
-    
+
     mentor_properties = {'mentor_for': [self.foo_org.key()], 'is_mentor': True}
     foo_mentors = seeder_logic.seedn(GCIProfile, 5, mentor_properties)
-    
+
     org_admin_properties = {'org_admin_for': [self.foo_org.key()],
+                            'mentor_for': [self.foo_org.key()],
                             'is_mentor': True, 'is_org_admin': True}
     foo_org_admin = seeder_logic.seed(GCIProfile, org_admin_properties)
-    
+
     mentor_properties['mentor_for'] = [self.bar_org.key()]
     bar_mentors = seeder_logic.seedn(GCIProfile, 5, mentor_properties)
-    
+
     org_admin_properties['org_admin_for'] = [self.bar_org.key()]
+    org_admin_properties['mentor_for'] = [self.bar_org.key()]
     bar_org_admin = seeder_logic.seed(GCIProfile, org_admin_properties)
-    
+
     expected = [mentor.key() for mentor in foo_mentors] + [foo_org_admin.key()]
     actual = profile_logic.queryAllMentorsKeysForOrg(self.foo_org)
-    self.assertEqual(set(expected), actual)
-    
+    self.assertEqual(expected, actual)
+
     expected = [mentor.key() for mentor in bar_mentors] + [bar_org_admin.key()]
+
     actual = profile_logic.queryAllMentorsKeysForOrg(self.bar_org)
-    self.assertEqual(set(expected), actual)
+    self.assertEqual(expected, actual)

@@ -49,6 +49,7 @@ class Callback(object):
     from soc.modules.gci.views import homepage
     from soc.modules.gci.views import invite
     from soc.modules.gci.views import org_app
+    from soc.modules.gci.views import org_profile
     from soc.modules.gci.views import profile
     from soc.modules.gci.views import program
     from soc.modules.gci.views import request
@@ -71,6 +72,7 @@ class Callback(object):
     self.views.append(invite.ManageInvite())
     self.views.append(invite.RespondInvite())
     self.views.append(org_app.GCIOrgAppEditPage())
+    self.views.append(org_profile.OrgProfilePage())
     self.views.append(org_app.GCIOrgAppPreviewPage())
     self.views.append(org_app.GCIOrgAppRecordsList())
     self.views.append(org_app.GCIOrgAppShowPage())

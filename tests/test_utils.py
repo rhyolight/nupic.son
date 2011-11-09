@@ -316,6 +316,24 @@ class DjangoTestCase(TestCase):
     response = self.post(url, properties)
     return response, properties
 
+  def createDocumentForPrefix(self, prefix, override={}):
+    """Creates a document for the specified properties.
+    """
+    from soc.models.document import Document
+    from soc.modules.seeder.logic.providers.string import (
+        DocumentKeyNameProvider)
+    properties = {
+        'modified_by': self.data.user,
+        'author': self.data.user,
+        'home_for': None,
+        'prefix': prefix,
+        'scope': self.program,
+        'read_access': 'public',
+        'key_name': DocumentKeyNameProvider(),
+    }
+    properties.update(override)
+    return self.seed(Document, properties)
+
   @classmethod
   def getXsrfToken(cls, path=None, method='POST', data={}, site=None, **extra):
     """Returns an XSRF token for request context.
@@ -375,6 +393,22 @@ class DjangoTestCase(TestCase):
 
     return result
 
+  def assertRenderAll(self, response):
+    """Calls render on all objects that are renderable.
+    """
+    for contexts in response.context or []:
+      for context in contexts:
+        values = context.values() if isinstance(context, dict) else [context]
+        for value in values:
+          try:
+            iterable = iter(value)
+          except TypeError:
+            iterable = [value]
+          for i in iterable:
+            # make it easier to debug render failures
+            if hasattr(i, 'render'):
+              i.render()
+
   def assertErrorTemplatesUsed(self, response):
     """Assert that all the error templates were used.
     """
@@ -383,20 +417,28 @@ class DjangoTestCase(TestCase):
     # self.assertTemplateUsed(response, 'soc/error.html')
 
   def assertResponseCode(self, response, status_code):
-    """Asserts that the response status is OK.
+    """Asserts that the response status is status_code.
     """
+    # first ensure that no render failures occured
+    self.assertRenderAll(response)
+
     if response.status_code != status_code:
       verbose_codes = [
-          httplib.BAD_REQUEST, httplib.FOUND,
+          httplib.FOUND,
       ]
-      message_codes = [httplib.FORBIDDEN]
+      message_codes = [
+          httplib.FORBIDDEN, httplib.BAD_REQUEST, httplib.NOT_FOUND,
+      ]
       url_codes = [httplib.NOT_FOUND]
 
       if response.status_code in verbose_codes:
         print response
 
-      if response.status_code in message_codes:
-        print response.context['message']
+      if response.context and response.status_code in message_codes:
+        try:
+          print response.context['message']
+        except KeyError:
+          pass
 
       if response.status_code in url_codes:
         print response.request['PATH_INFO']
@@ -499,16 +541,13 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
     properties.update(override)
     return self.seed(GSoCOrganization, properties)
 
+  def createDocument(self, override={}):
+    return self.createDocumentForPrefix('gsoc_program', override)
+
   def assertGSoCTemplatesUsed(self, response):
     """Asserts that all the templates from the base view were used.
     """
     self.assertResponseOK(response)
-    for contexts in response.context:
-      for context in contexts:
-        for value in context.values():
-          # make it easier to debug render failures
-          if hasattr(value, 'render'):
-            value.render()
     self.assertTemplateUsed(response, 'v2/modules/gsoc/base.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/footer.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/header.html')
@@ -551,6 +590,9 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
     self.assertTemplateUsed(response, 'v2/modules/gci/_footer.html')
     self.assertTemplateUsed(response, 'v2/modules/gci/_header.html')
     self.assertTemplateUsed(response, 'v2/modules/gci/_mainmenu.html')
+
+  def createDocument(self, override={}):
+    return self.createDocumentForPrefix('gci_program', override)
 
 
 def runTasks(url = None, name=None, queue_names = None):

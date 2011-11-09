@@ -98,20 +98,36 @@ limitations under the License.
       <span class="note">The overall difficulty of the task</span>
     </div>
 
-    <div class="form-row form-row-task-assigned-mentor">
+    <div class="form-row form-row-task-assigned-mentor
+        {% if form.bound_fields.mentors.errors %}
+          error
+        {% endif %}">
       <label for="long-description" class="form-label">Assigned Mentor<em>*</em></label>
+      {% if form.bound_fields.mentors.errors %}
+        <span class="form-row-error-msg">
+          <br />{{ form.bound_fields.mentors.errors.0 }}
+        </span>
+      {% endif %}
       <div class="form-row-task-assigned-mentor-inner">
         <div id="select-mentors-wrapper">
           {% for mentor in form.assigned_mentors %}
           <select id="assign-mentor{% if forloop.counter > 1 %}-{{ forloop.counter|add:"-1" }}{% endif %}"
               name="{{ form.bound_fields.mentors.name }}">
-            <option>Select a mentor</option>
+            <option value="" disabled="disabled">Select a mentor</option>
             {% for value, label in form.bound_fields.mentors.field.choices %}
               <option value="{{ value }}"
                   {% ifequal mentor value %}
                     selected="selected"
                   {% endifequal %}
               >{{ label }}</option>
+            {% endfor %}
+          </select>
+          {% empty %}
+          <select id="assign-mentor{% if forloop.counter > 1 %}-{{ forloop.counter|add:"-1" }}{% endif %}"
+              name="{{ form.bound_fields.mentors.name }}">
+            <option value="" disabled="disabled" selected="selected">Select a mentor</option>
+            {% for value, label in form.bound_fields.mentors.field.choices %}
+              <option value="{{ value }}">{{ label }}</option>
             {% endfor %}
           </select>
           {% endfor %}

@@ -255,6 +255,16 @@
         </div>
         <!-- end .grid_6 -->
         <div class="grid_3 omega main-side">
+            <div class="block block-leaderboard-previous-leaderboards">
+                <div class="block-title">Previous Leaderboards</div>
+                <div class="block-content clearfix">
+                  <select class="uniform">
+                    <option>2011 (current)</option>
+                    <option>2010</option>
+                  </select>
+                </div>
+            </div>
+            <!-- end .block.block-leaderboard-previous-leaderboards -->
             <div class="block block-leaderboard-your-score">
                 <div class="block-title">Your Score</div>
                 <div class="block-content clearfix">

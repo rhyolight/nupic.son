@@ -29,13 +29,16 @@ from django.utils.translation import ugettext
 
 from soc.logic import dicts
 from soc.logic.exceptions import AccessViolation
+from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import RedirectRequest
+from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 from soc.views.helper import request_data
 
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.task import UNPUBLISHED
 
 
 DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
@@ -59,13 +62,17 @@ DEF_NO_PREV_ORG_MEMBER_MSG = ugettext(
     'organization in Google Summer of Code or Google Code In.')
 
 DEF_TASK_UNEDITABLE_STATUS_MSG = ugettext(
-    'The task cannot be edited because it is already claimed once.')
+    'You cannot edit a published task.')
 
 DEF_TASK_MUST_BE_IN_STATES_FMT = ugettext(
     'The task must be in one of the followings states %s')
 
 DEF_TASK_MAY_NOT_BE_IN_STATES_FMT = ugettext(
     'The task may not be in one of the followings states %s')
+
+DEF_ORG_APP_REJECTED_MSG = ugettext(
+    'This org application has been rejected')
+
 
 class Mutator(access_checker.Mutator):
   """Helper class for access checking.
@@ -122,6 +129,24 @@ class Mutator(access_checker.Mutator):
       return
 
     self.taskFromKwargs()
+
+  def orgAppFromOrgId(self):
+    org_id = self.data.GET.get('org_id')
+
+    if not org_id:
+      raise BadRequest('Missing org_id')
+
+    q = OrgAppRecord.all()
+    q.filter('survey', self.data.org_app)
+    q.filter('org_id', org_id)
+
+    self.data.org_app_record = q.get()
+
+    if not self.data.org_app_record:
+      raise NotFound("There is no org_app for the org_id %s" % org_id)
+
+    if self.data.org_app_record.status != 'accepted':
+      raise AccessViolation(DEF_ORG_APP_REJECTED_MSG)
 
 
 class DeveloperMutator(access_checker.DeveloperMutator,
@@ -215,6 +240,20 @@ class AccessChecker(access_checker.AccessChecker):
     if not (gsoc_profile or gci_profile):
       raise AccessViolation(DEF_NO_PREV_ORG_MEMBER_MSG)
 
+  def canCreateNewOrg(self):
+    """A user can create a new org if they have an accepted org app.
+    """
+    assert self.data.org_app
+
+#$    if 
+#      raise AccessDenied
+
+    if not self.data.profile:
+      org_id = self.data.GET['org_id']
+      profile_url = self.data.redirect.createProfile('org_admin').urlOf(
+          'create_gci_profile')
+      raise RedirectRequest(profile_url + '?new_org=' + org_id)
+
   def isBeforeAllWorkStopped(self):
     """Raises AccessViolation if all work on tasks has stopped.
     """
@@ -251,7 +290,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise AccessViolation(DEF_NO_TASK_EDIT_PRIV_MSG_FMT % (
           task.org.name))
 
-    if task.status not in ['Unapproved', 'Unpublished', 'Open']:
+    if task.status not in UNPUBLISHED:
       raise AccessViolation(DEF_TASK_UNEDITABLE_STATUS_MSG)
 
     if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \

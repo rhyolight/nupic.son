@@ -29,34 +29,26 @@ from django.utils.translation import ugettext
 
 from soc.logic import cleaning
 from soc.views.helper import url_patterns
-
-from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.views import org_profile
 
 from soc.modules.gsoc.logic import cleaning as gsoc_cleaning
+from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
-from soc.modules.gsoc.views.forms import GSoCModelForm
+from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
+    'proposal_extra',
+]
 
-class OrgProfileForm(GSoCModelForm):
+class OrgProfileForm(org_profile.OrgProfileForm):
   """Django form for the organization profile.
   """
 
   def __init__(self, *args, **kwargs):
-    super(OrgProfileForm, self).__init__(*args, **kwargs)
-
-    homepage_fields = [
-        'tags', 'name', 'feed_url', 'home_page', 'pub_mailing_list',
-        'description', 'ideas', 'contrib_template',
-        'facebook', 'twitter', 'blog'
-    ]
-
-    for field in homepage_fields:
-      self.fields[field].group = '1. Homepage Info (displayed on org homepage)'
-
-    feed_url = self.fields.pop('feed_url')
-    self.fields.insert(len(self.fields), 'feed_url', feed_url)
+    super(OrgProfileForm, self).__init__(
+        gsoc_forms.GSoCBoundField, *args, **kwargs)
 
     instance = self.instance
 
@@ -67,11 +59,7 @@ class OrgProfileForm(GSoCModelForm):
   class Meta:
     model = GSoCOrganization
     css_prefix = 'gsoc_org_page'
-    exclude = [
-        'status', 'scope', 'scope_path', 'founder', 'founder', 'slots', 'note',
-        'slots_calculated', 'nr_applications', 'nr_mentors', 'link_id',
-        'proposal_extra', 'new_org',
-    ]
+    exclude = PROFILE_EXCLUDE
     widgets = forms.choiceWidgets(GSoCOrganization,
         ['contact_country', 'shipping_country'])
 
@@ -82,15 +70,6 @@ class OrgProfileForm(GSoCModelForm):
   tags = django_forms.CharField(label='Tags')
   clean_tags = gsoc_cleaning.cleanTagsList(
       'tags', gsoc_cleaning.COMMA_SEPARATOR)
-  clean_description = cleaning.clean_html_content('description')
-  clean_contrib_template = cleaning.clean_html_content('contrib_template')
-  clean_facebook = cleaning.clean_url('facebook')
-  clean_twitter = cleaning.clean_url('twitter')
-  clean_blog = cleaning.clean_url('blog')
-  clean_logo_url = cleaning.clean_url('logo_url')
-  clean_ideas = cleaning.clean_url('ideas')
-  clean_pub_mailing_list = cleaning.clean_mailto('pub_mailing_list')
-  clean_irc_channel = cleaning.clean_irc('irc_channel')
 
   def clean_nonreq_proposal_extra(self):
     values = self.cleaned_data['nonreq_proposal_extra']
@@ -125,6 +104,8 @@ class OrgProfileForm(GSoCModelForm):
       return max_score
     raise django_forms.ValidationError("Specify a value between 1 and 12.")
 
+  def templatePath(self):
+    return gsoc_forms.TEMPLATE_PATH
 
 
 class OrgCreateProfileForm(OrgProfileForm):
@@ -134,12 +115,7 @@ class OrgCreateProfileForm(OrgProfileForm):
   class Meta:
     model = GSoCOrganization
     css_prefix = 'gsoc_org_page'
-    exclude = [
-        'status', 'scope', 'scope_path', 'founder', 'founder', 'slots', 'note',
-        'slots_calculated', 'nr_applications', 'nr_mentors', 'scoring_disabled',
-        'proposal_extra', 'new_org',
-    ]
-
+    exclude = PROFILE_EXCLUDE
     widgets = forms.choiceWidgets(GSoCOrganization,
         ['contact_country', 'shipping_country'])
 

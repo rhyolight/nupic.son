@@ -2142,6 +2142,16 @@ body {
 		margin-left: 13px;
 	}
 /* @end */
+/* @group previous-leaderboards */
+.block-leaderboard-previous-leaderboards .block-title {
+  background: #c94837;
+}
+.block-leaderboard-previous-leaderboards .block-content {
+  background: #E3E3E3;
+  text-align: center;
+  padding: 10px;
+}
+/* @end */
 
 /* @group Forms */
 .block-form {
@@ -2447,5 +2457,19 @@ span.current-avatar-text {
 }
 .altrow .task-single {
   background-color: #EBEBEB;
+}
+/* @end */
+
+/* @group program group dropdown */
+.block-filter-option-program-year {
+  margin: -38px -2px 0 0;
+  float: right;
+  color: #666;
+  font-size: 13px;
+}
+.block-filter-option-program-year label {
+  display: inline-block;
+  padding-top: 1px;
+  vertical-align: middle;
 }
 /* @end */

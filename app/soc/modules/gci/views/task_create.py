@@ -44,7 +44,7 @@ from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-def mentor_choices_for_org(task, org):
+def mentorChoicesForOrg(task, org):
   """Builds the tuple of mentor choice 2-tuples for the Django choice field.
 
   Args:
@@ -53,7 +53,6 @@ def mentor_choices_for_org(task, org):
          constructed.
   """
   mentors = profile_logic.queryAllMentorsForOrg(org)
-
   return ((str(m.key()), m.name()) for m in mentors)
 
 
@@ -103,8 +102,8 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         widget=forms.CheckboxSelectMultiple)
 
     self.fields['mentors'] = django_forms.ChoiceField(
-        label=ugettext('Difficulty'), choices=mentor_choices_for_org(
-        self.instance, self.organization))
+        label=ugettext('Mentors'), required=False,
+        choices=mentorChoicesForOrg(self.instance, self.organization))
 
     if self.instance:
       difficulties = self.instance.difficulty
@@ -200,11 +199,18 @@ class TaskCreateForm(gci_forms.GCIModelForm):
   def clean_mentors(self):
     mentor_key_strs = self.data.getlist('mentors')
 
+    if not mentor_key_strs:
+      raise django_forms.ValidationError(
+          ugettext("At least one mentor should be assigned to the task."))
+
     org_mentors_keys = profile_logic.queryAllMentorsForOrg(
         self.organization, keys_only=True)
 
     mentor_keys = []
     for m_str in mentor_key_strs:
+      if not m_str:
+        break
+
       mentor_key = db.Key(m_str)
       if mentor_key not in org_mentors_keys:
         raise django_forms.ValidationError(

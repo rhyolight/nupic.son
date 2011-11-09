@@ -109,25 +109,33 @@ class ProgramHelper(object):
       self.createProgram()
     # TODO (Madhu): Remove scope and author fields once the data
     # conversion is done.
-    properties = {'scope': self.program, 'program': self.program,
-                  'modified_by': self.founder,
-                  'created_by': self.founder,
-                  'author': self.founder,
-                  'schema': ('[["item"],{"item":{"field_type":"input_text",'
-                             '"required":false, "label":"test"}}]'),
-                  'survey_content': None,}
+    properties = {
+        'key_name': 'gci_program/%s/orgapp' % self.program.key().name(),
+        'scope': self.program, 'program': self.program,
+        'modified_by': self.founder,
+        'created_by': self.founder,
+        'author': self.founder,
+        'schema': ('[["item"],{"item":{"field_type":"input_text",'
+                   '"required":false, "label":"test"}}]'),
+        'survey_content': None,
+    }
     properties.update(override)
     self.org_app = self.seed(OrgAppSurvey, properties)
     return self.org_app
 
+  def _updateEntity(self, entity, override):
+    """Updates self.<entity> with override.
+    """
+    properties = entity.properties()
+    for name, value in override.iteritems():
+      properties[name].__set__(entity, value)
+    entity.put()
+    return entity
+
   def _updateOrg(self, override):
     """Updates self.org with override.
     """
-    properties = self.org.properties()
-    for name, value in override.iteritems():
-      properties[name].__set__(self.org, value)
-    self.org.put()
-    return self.org
+    return self._updateEntity(self.org, override)
 
   def createOrUpdateOrg(self, override={}):
     """Creates or updates an org (self.org) for the defined properties.

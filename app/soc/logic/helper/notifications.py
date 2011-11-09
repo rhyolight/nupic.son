@@ -18,19 +18,19 @@
 """
 
 __authors__ = [
+  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   '"Lennard de Rijk" <ljvderijk@gmail.com>',
   ]
 
 
-import logging
 import time
 
 from django.template import loader
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
 
-from soc.logic import accounts
 from soc.logic import dicts
+from soc.logic.accounts import denormalizeAccount
 from soc.tasks import mailer
 from soc.views.helper.access_checker import isSet
 
@@ -41,8 +41,11 @@ DEF_INVITATION_MSG_FMT = ugettext(
 DEF_NEW_REQUEST_MSG_FMT = ugettext(
     '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
-DEF_NEW_ORG_MSG_FMT = ugettext(
+DEF_ACCEPTED_ORG_MSG_FMT = ugettext(
     '[%(org)s] Your organization application has been accepted.')
+
+DEF_REJECTED_ORG_MSG_FMT = ugettext(
+    '[%(org)s] Your organization application has been rejected.')
 
 DEF_NEW_PROPOSAL_SUBJECT_FMT = ugettext(
     '[%(org)s] New proposal by %(proposer_name)s: %(proposal_name)s')
@@ -81,8 +84,11 @@ DEF_UPDATED_PROPOSAL_NOTIFICATION_TEMPLATE = \
 DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/new_review.html'
 
-DEF_NEW_ORG_TEMPLATE = \
-    'v2/soc/notifications/org_accepted.html'
+DEF_ACCEPTED_ORG_TEMPLATE = \
+    'v2/soc/notification/org_accepted.html'
+
+DEF_REJECTED_ORG_TEMPLATE = \
+    'v2/soc/notification/org_rejected.html'
 
 DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/handled_request.html'
@@ -109,10 +115,13 @@ def inviteContext(data, invite):
 
   invitation_url = data.redirect.request(invite).url(full=True)
 
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+
   message_properties = {
       'role_verbose' : invite.roleName(),
       'org': invite.org.name,
       'invitation_url': invitation_url,
+      'profile_edit_link': edit_link,
   }
 
   subject = DEF_INVITATION_MSG_FMT % message_properties
@@ -139,12 +148,14 @@ def requestContext(data, request, admin_emails):
   to_users = []
 
   request_url = data.redirect.request(request).url(full=True)
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
 
   message_properties = {
       'requester': data.profile.name(),
       'role_verbose': request.roleName(),
       'org': request.org.name,
       'request_url': request_url,
+      'profile_edit_link': edit_link,
       }
 
   subject = DEF_NEW_REQUEST_MSG_FMT % message_properties
@@ -168,10 +179,13 @@ def handledRequestContext(data, status):
   if not data.requester_profile.notify_request_handled:
     return {}
 
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+
   message_properties = {
       'role_verbose' : data.request_entity.roleName(),
       'org': data.request_entity.org.name,
       'action': status,
+      'profile_edit_link': edit_link,
       }
 
   subject = DEF_HANDLED_REQUEST_SUBJECT_FMT % message_properties
@@ -194,20 +208,19 @@ def handledInviteContext(data):
   assert isSet(data.invite)
   assert isSet(data.invited_profile)
 
-  logging.warning("hIC:enter")
-
   # do not send notifications if the user has opted out
   if not data.invited_profile.notify_invite_handled:
-    logging.warning("hIC:abort")
     return {}
 
   status = data.invite.status
   action = 'resubmitted' if status == 'pending' else status
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
 
   message_properties = {
       'role_verbose' : data.invite.roleName(),
       'org': data.invite.org.name,
       'action': action,
+      'profile_edit_link': edit_link,
       }
 
   subject = DEF_HANDLED_INVITE_SUBJECT_FMT % message_properties
@@ -220,28 +233,28 @@ def handledInviteContext(data):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
-def newOrganizationContext(data):
+def orgAppContext(data, record, new_status, apply_url):
   """Sends out an invite notification to the applicant of the Organization.
 
   Args:
     data: a RequestData object
   """
-
-  url = data.redirect.orgApp().urlOf('gsoc_org_app_apply', full=True)
-
   message_properties = {
-      'url': url,
+      'url': apply_url + '?org_id=' + record.org_id,
       'program_name': data.program.name,
-      'org': data.organization.name,
+      'org': record.name,
   }
 
-  subject = DEF_NEW_ORG_MSG_FMT % message_properties
+  if new_status == 'accepted':
+    subject = DEF_ACCEPTED_ORG_MSG_FMT % message_properties
+    template = DEF_ACCEPTED_ORG_TEMPLATE
+  else:
+    subject = DEF_REJECTED_ORG_MSG_FMT % message_properties
+    template = DEF_REJECTED_ORG_TEMPLATE
 
-  template = DEF_NEW_ORG_TEMPLATE
+  roles = [record.main_admin, record.backup_admin]
 
-  roles = [entity.main_admin, entity.backup_admin]
-
-  emails = [i.email for i in roles if i]
+  emails = [denormalizeAccount(i.account).email() for i in roles if i]
 
   return getContext(data, emails, message_properties, subject, template)
 
@@ -254,6 +267,7 @@ def newProposalContext(data, proposal, to_emails):
   """
   data.redirect.review(proposal.key().id(), data.user.link_id)
   proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
 
   proposal_name = proposal.title
 
@@ -263,6 +277,7 @@ def newProposalContext(data, proposal, to_emails):
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
       'org': proposal.org.name,
+      'profile_edit_link': edit_link,
   }
 
   # determine the subject
@@ -283,6 +298,7 @@ def updatedProposalContext(data, proposal, to_emails):
 
   data.redirect.review(proposal.key().id(), data.user.link_id)
   proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
 
   proposal_name = proposal.title
 
@@ -292,6 +308,7 @@ def updatedProposalContext(data, proposal, to_emails):
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
       'org': data.organization.name,
+      'profile_edit_link': edit_link,
   }
 
   # determine the subject
@@ -312,6 +329,7 @@ def newCommentContext(data, comment, to_emails):
   assert isSet(data.proposer)
 
   review_notification_url = data.redirect.comment(comment, full=True)
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
 
   review_type = 'private' if comment.is_private else 'public'
   reviewed_name = data.proposal.title
@@ -324,6 +342,7 @@ def newCommentContext(data, comment, to_emails):
       'review_visibility': review_type,
       'proposer_name': data.proposer.name(),
       'org': data.proposal.org.name,
+      'profile_edit_link': edit_link,
       }
 
   # determine the subject
@@ -346,12 +365,8 @@ def getContext(data, receivers, message_properties, subject, template):
     subject : subject of notification email
     template : template used for generating notification
   """
-
-  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
-
   message_properties['sender_name'] = 'The %s Team' % (data.site.site_name)
   message_properties['program_name'] = data.program.name
-  message_properties['profile_edit_link'] = edit_link
 
   body = loader.render_to_string(template, dictionary=message_properties)
 
