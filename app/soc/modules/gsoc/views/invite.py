@@ -260,9 +260,9 @@ class ShowInvite(RequestHandler):
   def checkAccess(self):
     self.check.isProfileActive()
     
-    id = int(self.data.kwargs['id'])
-    self.data.invite = Request.get_by_id(id)
-    self.check.isRequestPresent(self.data.invite, id)
+    invite_id = int(self.data.kwargs['id'])
+    self.data.invite = Request.get_by_id(invite_id)
+    self.check.isInvitePresent(invite_id)
 
     self.data.organization = self.data.invite.org
     self.data.invited_user = self.data.invite.user
