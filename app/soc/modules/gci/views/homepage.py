@@ -105,11 +105,11 @@ class ParticipatingOrgs(Template):
           'name': org.short_name,
           })
 
+    accepted_orgs_url = r.program().urlOf('gci_accepted_orgs')
+
     return {
         'participating_orgs': participating_orgs,
-        # TODO(madhu): Generate the URL for list of all
-        # participating organizations once the page is ready.
-        'org_list_url': '',
+        'org_list_url': accepted_orgs_url,
     }
 
   def templatePath(self):
