@@ -62,12 +62,12 @@ class ProgramForm(GCIModelForm):
 
     if self.instance:
       difficulty_tags = tags_logic.getTagsForProgram(
-          TaskDifficultyTag, self.instance)
+          TaskDifficultyTag, self.instance, order=['order'])
       self.task_difficulties_json = json.dumps(
           [[t.tag, t.value] for t in difficulty_tags])
 
       type_tags = tags_logic.getTagsForProgram(
-          TaskTypeTag, self.instance)
+          TaskTypeTag, self.instance, order=['order'])
       self.task_types_json = json.dumps([[t.tag] for t in type_tags])
 
 
