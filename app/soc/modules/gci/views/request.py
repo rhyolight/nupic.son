@@ -80,6 +80,23 @@ class SendRequestPage(RequestHandler):
     role = 'Mentor' if self.data.kwargs['role'] == 'mentor' else 'Org Admin'
     return "Request to become %s" % role
 
+  def validate(self):
+    """Validates the form data.
+    
+    Returns a newly created request entity or None if an error occurs.
+    """
+    return None
+
+  def post(self):
+    """Handler to for GCI Send Request Page HTTP post request.
+    """
+    request = self.validate()
+    if not request:
+      self.get()
+      return
+
+    self.redirect.id(request.key().id()).to()
+
 
 class ManageRequest(RequestHandler):
   """View to manage the invitation by the sender.
