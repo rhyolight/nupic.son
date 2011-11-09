@@ -233,17 +233,14 @@ def handledInviteContext(data):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
-def orgAppContext(data, record, new_status, apply_url_name):
+def orgAppContext(data, record, new_status, apply_url):
   """Sends out an invite notification to the applicant of the Organization.
 
   Args:
     data: a RequestData object
   """
-
-  url = data.redirect.program().urlOf(apply_url_name, full=True)
-
   message_properties = {
-      'url': url + '?org_id=' + record.org_id,
+      'url': apply_url + '?org_id=' + record.org_id,
       'program_name': data.program.name,
       'org': record.name,
   }

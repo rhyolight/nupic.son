@@ -259,6 +259,8 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
       raise BadRequest('Missing data')
 
     parsed = simplejson.loads(data)
+    self.data.redirect.program()
+    url = self.data.redirect.urlOf('create_gci_org_profile', full=True)
 
     for id, properties in parsed.iteritems():
       record = OrgAppRecord.get_by_id(long(id))
@@ -272,7 +274,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
         continue
 
       new_status = properties['status']
-      org_app_logic.setStatus(self.data, record, new_status)
+      org_app_logic.setStatus(self.data, record, new_status, url)
 
     self.response.set_status(200)
 

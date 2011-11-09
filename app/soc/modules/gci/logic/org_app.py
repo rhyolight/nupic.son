@@ -45,7 +45,7 @@ def getForProgram(program):
   return survey
 
 
-def setStatus(data, record, new_status):
+def setStatus(data, record, new_status, accept_url):
   """Updates the status of an org_app record.
 
   Args:
@@ -64,7 +64,7 @@ def setStatus(data, record, new_status):
 
   if new_status in ['accepted', 'rejected']:
     context = notifications.orgAppContext(
-        data, record, new_status, 'create_gci_org_profile')
+        data, record, new_status, accept_url)
 
   def txn():
     record = db.get(record_key)
