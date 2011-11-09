@@ -98,7 +98,8 @@ class GCIOrgAppEditPage(RequestHandler):
     if not self.data.org_app:
       form.cleaned_data['created_by'] = self.data.user
       form.cleaned_data['program'] = self.data.program
-      entity = form.create(commit=True)
+      key_name = 'gci_program/%s/orgapp' % self.data.program.key().name()
+      entity = form.create(key_name=key_name, commit=True)
     else:
       entity = form.save(commit=True)
 
