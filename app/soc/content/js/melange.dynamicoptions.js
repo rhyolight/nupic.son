@@ -28,7 +28,7 @@
     return this.each(function () {
       var addFieldHtml = function (values) {
         var field = '';
-        field += '<div>';
+        field += '<div class="options">';
         field += '<a href="#" class="remove" title="X">X</a>';
         var j = 0;
         jQuery.each(opts.fields, function(index, item) {
@@ -57,6 +57,12 @@
       field += '<div class="add-area clearfix"><a id=add-' + opts.id + ' href="#" class="add">Add</a></div>';
 
       jQuery(this).append(field);
+
+      jQuery('.options').live('hover', function () {
+        jQuery(this).css('cursor','move');
+      }, function() {
+        jQuery(this).css('cursor','auto');
+      });
 
       jQuery('#add-' + opts.id).live('click', function () {
         jQuery(this).parent().before(addFieldHtml());
