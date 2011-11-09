@@ -78,4 +78,24 @@ class SendRequestPage(RequestHandler):
     role = 'Mentor' if self.data.kwargs['role'] == 'mentor' else 'Org Admin'
 
     return "Request to become %s" % role
-  
+
+
+class ManageRequest(RequestHandler):
+  """View to manage the invitation by the sender.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/request/base.html'
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'request/manage/%s$' % url_patterns.ID, self,
+            name='manage_gci_request')
+    ]
+
+  def checkAccess(self):
+    self.check.isProfileActive()
+    
+    request_id = int(self.data.kwargs['id'])
+    self.data.request = GCIRequest.get_by_id(request_id)
+    self.check.isInvitePresent(request_id)
