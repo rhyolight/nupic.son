@@ -559,7 +559,7 @@ class BaseAccessChecker(object):
     if self.data.request_entity is None:
       raise AccessViolation(DEF_REQUEST_DOES_NOT_EXIST % request_id)
 
-    if self.data.request_entity != REQUEST_TYPE:
+    if self.data.request_entity.type != REQUEST_TYPE:
       raise AccessViolation(DEF_REQUEST_DOES_NOT_EXIST % request_id)
 
   def canAccessGoogleDocs(self):
