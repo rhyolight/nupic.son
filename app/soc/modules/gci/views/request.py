@@ -25,6 +25,7 @@ __authors__ = [
 from soc.logic.exceptions import BadRequest
 
 from soc.views.helper import url_patterns
+from soc.views.helper.access_checker import isSet
 
 from soc.modules.gci.models.request import GCIRequest
 
@@ -63,7 +64,6 @@ class SendRequestPage(RequestHandler):
     # check if the user is not a student
     # check if the user does not have role for the organization
 
-
   def context(self):
     """Handler to for GCI Send Request page HTTP get request.
     """
@@ -85,7 +85,20 @@ class SendRequestPage(RequestHandler):
     
     Returns a newly created request entity or None if an error occurs.
     """
-    return None
+    assert isSet(self.data.organization)
+    
+    request_form = RequestForm(self.data.POST)
+    
+    if not request_form.is_valid():
+      return None
+
+    request_form.cleaned_data['org'] = self.data.organization
+    request_form.cleaned_data['role'] = self.data.kwargs['role']
+    request_form.cleaned_data['type'] = 'Request'
+    request_form.cleaned_data['user'] = self.data.user
+
+    # consider sent some some notification to organization
+    return request_form.create()
 
   def post(self):
     """Handler to for GCI Send Request Page HTTP post request.
