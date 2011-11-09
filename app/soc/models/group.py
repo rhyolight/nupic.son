@@ -238,5 +238,5 @@ class Group(soc.models.presence.Presence):
   #: active: the group is active
   #: inactive: used to mark a group as read-only
   #: invalid: the group has been marked as removed
-  status = db.StringProperty(required=True, default='new',
+  status = db.StringProperty(required=True, default='active',
       choices=['new', 'active', 'inactive', 'invalid'])
