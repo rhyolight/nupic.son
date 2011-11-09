@@ -109,3 +109,37 @@ class ManageRequest(RequestHandler):
       if 'withdraw' not in self.data.POST and 'resubmit' not in self.data.POST:
         raise BadRequest('Valid action is not specified in the request.')
       self.check.isRequestManageable()
+
+  def context(self):
+    page_name = self._constructPageName()
+
+    form = RequestForm(
+        self.data.POST or None, instance=self.data.request_entity)
+
+    button_name = self._constructButtonName()
+    button_value = self._constructButtonValue()
+
+    return {
+        'page_name': page_name,
+        'forms': [form],
+        'button_name': button_name,
+        'button_value': button_value
+        }
+
+  def _constructPageName(self):
+    request = self.data.request_entity
+    return "%s Request To %s" % (request.role, request.org.name)
+
+  def _constructButtonName(self):
+    request = self.data.request_entity
+    if request.status == 'pending':
+      return 'withdraw'
+    if request.status in ['withdrawn', 'rejected']:
+      return 'resubmit'
+
+  def _constructButtonValue(self):
+    request = self.data.request_entity
+    if request.status == 'pending':
+      return 'Withdraw'
+    if request.status in ['withdrawn', 'rejected']:
+      return 'Resubmit'
