@@ -19,56 +19,57 @@
  * http://www.botsko.net/blog/2009/04/jquery-form-builder-plugin/
  */
 
-(function($){
-  $.fn.dynamicoptions = function(options) {
- // Extend the configuration options with user-provided
+(function(jQuery){
+  jQuery.fn.dynamicoptions = function(options) {
+    // Extend the configuration options with user-provided
     var defaults = {};
-    var opts = $.extend(defaults, options);
+    var opts = jQuery.extend(defaults, options);
 
     return this.each(function () {
       var addFieldHtml = function (values) {
-        field = '';
+        var field = '';
         field += '<div>';
         field += '<a href="#" class="remove" title="X">X</a>';
         var j = 0;
-        for (var i in opts.fields) {
-          if (!values) {
-            value = ''
+        jQuery.each(opts.fields, function(index, item) {
+          var value;
+          if (values !== undefined && values.length > j) {
+            value = values[j];
           }
           else {
-            value = values[j]
+            value = '';
           }
-          field += '<input type="text" name=' + i + ' class="tagfield" value="' + unescape(value) + '" />';
+          field += '<input type="text" name=' + index + ' class="tagfield" value="' + unescape(value) + '" />';
           j += 1;
-        }
+        });
         field += '</div>';
         return field;
       };
 
-      field = '<label class="form-label">' + opts.label + '</label>';
+      var field = '<label class="form-label">' + opts.label + '</label>';
 
       var initial = JSON.parse(opts.initial);
 
-      for (var i in initial) {
-        field += addFieldHtml(initial[i]);
-      }
+      jQuery.each(initial, function(index, item) {
+        field += addFieldHtml(item);
+      });
 
       field += '<div class="add-area clearfix"><a id=add-' + opts.id + ' href="#" class="add">Add</a></div>';
 
-      $(this).append(field);
+      jQuery(this).append(field);
 
-      $('#add-' + opts.id).live('click', function () {
-        $(this).parent().before(addFieldHtml());
+      jQuery('#add-' + opts.id).live('click', function () {
+        jQuery(this).parent().before(addFieldHtml());
         return false;
       });
 
-      $('.remove').live('click', function () {
-        $(this).parent('div').animate({
+      jQuery('.remove').live('click', function () {
+        jQuery(this).parent('div').animate({
           opacity: 'hide',
           height: 'hide',
           marginBottom: '0px'
         }, 'fast', function () {
-          $(this).remove();
+          jQuery(this).remove();
         });
         return false;
       });
