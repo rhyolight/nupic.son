@@ -108,7 +108,7 @@ class SendRequestPage(RequestHandler):
       self.get()
       return
 
-    self.redirect.id(request.key().id()).to()
+    self.redirect.id(request.key().id()).to('manage_gci_request')
 
 
 class ManageRequest(RequestHandler):
