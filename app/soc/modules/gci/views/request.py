@@ -111,7 +111,7 @@ class SendRequestPage(RequestHandler):
     self.redirect.id(request.key().id()).to('manage_gci_request')
 
 
-class ManageRequest(RequestHandler):
+class ManageRequestPage(RequestHandler):
   """View to manage the invitation by the sender.
   """
 
