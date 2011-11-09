@@ -112,6 +112,18 @@ DEF_INVITE_WITHDRAWN = ugettext(
 DEF_REQUEST_DOES_NOT_EXIST = ugettext(
     'There is no request with id %(id)s.')
 
+DEF_REQUEST_CANNOT_BE_ACCESSED = ugettext(
+    'This request cannot be accessed from this account.')
+
+DEF_ACCEPTED_REQUEST_CANNOT_BE_MANAGED = ugettext(
+    'This request cannot be managed because it is already been accepted.')
+
+DEF_REQUEST_CANNOT_BE_WITHDRAWN = ugettext(
+    'This %(status)s request cannot be withdrawn.')
+
+DEF_REQUEST_CANNOT_BE_RESUBMITTED = ugettext(
+    'This %(status)s request cannot be resubmitted.')
+
 DEF_IS_NOT_STUDENT_MSG = ugettext(
     'This page is inaccessible because you do not have a student role '
     'in the program.')
@@ -940,6 +952,31 @@ class AccessChecker(BaseAccessChecker):
     if self.data.invite.status == 'withdrawn':
       raise AccessViolation(DEF_INVITE_WITHDRAWN)
 
+  def canManageRequest(self):
+    """Checks if the current user may manage the specified request.
+    """
+    assert isSet(self.data.request_entity)
+
+    # only the author may manage their request
+    if self.data.user.key() != self.data.request_entity.user.key():
+      raise AccessViolation(DEF_REQUEST_CANNOT_BE_ACCESSED)
+
+    # accepted requests cannot be managed
+    if self.data.request_entity.status == 'accepted':
+      raise AccessViolation(DEF_ACCEPTED_REQUEST_CANNOT_BE_MANAGED)
+
+  def isRequestManageable(self):
+    """Checks if the request may be managed with the specified action.
+    """
+    assert isSet(self.data.request_entity)
+    current_status = self.data.request_entity.status
+
+    if 'withdraw' in self.data.POST and current_status != 'pending':
+      raise AccessViolation(DEF_REQUEST_CANNOT_BE_WITHDRAWN % current_status)
+
+    if 'resubmit' in self.data.POST and current_status != 'rejected':
+      raise AccessViolation(DEF_REQUEST_CANNOT_BE_RESUBMITTED % current_status)
+       
   def canRespondToRequest(self):
     """Checks if the current user can accept/reject the request.
     """
