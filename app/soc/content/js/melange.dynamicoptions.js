@@ -58,6 +58,8 @@
 
       jQuery(this).append(field);
 
+      jQuery(this).sortable({ opacity: 0.6, cursor: 'move'});
+
       jQuery('.options').live('hover', function () {
         jQuery(this).css('cursor','move');
       }, function() {
