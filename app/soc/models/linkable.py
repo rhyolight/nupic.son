@@ -115,7 +115,7 @@ class Linkable(base.ModelWithFieldAttributes):
       verbose_name=ugettext('Link ID'))
   link_id.example_text = ugettext('Unique Name, see tooltip.')
   link_id.help_text = ugettext(
-      'Link ID is used as part of various URL links throughout the site.'
+      'Used as part of various URL links throughout the site.'
       ' <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
       ' alphanumeric characters, digits, and underscores only.'
       ' The regexp used to validate is "%s".') % LINK_ID_PATTERN_CORE
