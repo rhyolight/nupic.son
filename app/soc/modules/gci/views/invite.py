@@ -99,8 +99,6 @@ class InviteForm(gci_forms.GCIModelForm):
     self.request_data.users_to_invite = users_to_invite
 
   def _clean_identifier(self, identifier):
-    link_id_cleaner = cleaning.clean_link_id('identifier')
-    
     # first check if the field represents a valid link_id
     try:
       existing_user_cleaner = cleaning.clean_existing_user('identifier')
