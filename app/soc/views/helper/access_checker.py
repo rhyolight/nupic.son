@@ -86,7 +86,7 @@ DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
     '%(model)s entity, whose id is %(id)s, is does not exist.')
 
 DEF_INVITE_DOES_NOT_EXIST = ugettext(
-    'There is no invite with id %(id)s.')
+    'There is no invite with id %s.')
 
 DEF_INVITE_CANNOT_BE_RESUBMITTED = ugettext(
     'Only withdrawn invitations may be resubmitted.')
@@ -110,7 +110,7 @@ DEF_INVITE_WITHDRAWN = ugettext(
     'This invite has been withdrawn.')
 
 DEF_REQUEST_DOES_NOT_EXIST = ugettext(
-    'There is no request with id %(id)s.')
+    'There is no request with id %s.')
 
 DEF_REQUEST_CANNOT_BE_ACCESSED = ugettext(
     'This request cannot be accessed from this account.')
@@ -119,10 +119,10 @@ DEF_ACCEPTED_REQUEST_CANNOT_BE_MANAGED = ugettext(
     'This request cannot be managed because it is already been accepted.')
 
 DEF_REQUEST_CANNOT_BE_WITHDRAWN = ugettext(
-    'This %(status)s request cannot be withdrawn.')
+    'This %s request cannot be withdrawn.')
 
 DEF_REQUEST_CANNOT_BE_RESUBMITTED = ugettext(
-    'This %(status)s request cannot be resubmitted.')
+    'This %s request cannot be resubmitted.')
 
 DEF_IS_NOT_STUDENT_MSG = ugettext(
     'This page is inaccessible because you do not have a student role '
