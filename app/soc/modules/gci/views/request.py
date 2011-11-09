@@ -22,6 +22,8 @@ __authors__ = [
   ]
 
 
+from soc.logic.exceptions import BadRequest
+
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.models.request import GCIRequest
@@ -97,5 +99,13 @@ class ManageRequest(RequestHandler):
     self.check.isProfileActive()
     
     request_id = int(self.data.kwargs['id'])
-    self.data.request = GCIRequest.get_by_id(request_id)
-    self.check.isInvitePresent(request_id)
+    self.data.request_entity = GCIRequest.get_by_id(request_id)
+    self.check.isRequestPresent(request_id)
+
+    self.check.canManageRequest()
+
+    # check if the submitted action is legal
+    if self.data.POST:
+      if 'withdraw' not in self.data.POST and 'resubmit' not in self.data.POST:
+        raise BadRequest('Valid action is not specified in the request.')
+      self.check.isRequestManageable()
