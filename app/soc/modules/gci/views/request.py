@@ -67,7 +67,6 @@ class SendRequestPage(RequestHandler):
   def context(self):
     """Handler to for GCI Send Request page HTTP get request.
     """
-
     request_form = RequestForm(self.data.POST or None)
 
     return {
@@ -172,3 +171,39 @@ class ManageRequestPage(RequestHandler):
       return 'Withdraw'
     if request.status in ['withdrawn', 'rejected']:
       return 'Resubmit'
+
+
+class RespondRequestPage(RequestHandler):
+  """View to accept or reject requests by organization admins. 
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/request/show.html'
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'request/respond/%s$' % url_patterns.ID, self,
+            name='respond_gci_request')
+    ]
+
+  def checkAccess(self):
+    self.check.isProfileActive()
+
+    # fetch the request entity based on the id
+    request_id = int(self.data.kwargs['id'])
+    self.data.request_entity = GCIRequest.get_by_id(request_id)
+    self.check.isRequestPresent(request_id)
+
+    # get the organization and check if the current user can manage the request
+    self.data.organization = self.data.request_entity.org
+    self.check.isOrgAdmin()
+
+  def context(self):
+    """Handler to for GCI Respond Request page HTTP get request.
+    """
+    pass
+
+  def post(self):
+    """Handler to for GCI Respond Request Page HTTP post request.
+    """
+    pass
