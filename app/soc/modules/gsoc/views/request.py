@@ -163,9 +163,9 @@ class ShowRequest(RequestHandler):
   def checkAccess(self):
     self.check.isProfileActive()
     
-    id = int(self.data.kwargs['id'])
-    self.data.invite = self.data.request_entity = Request.get_by_id(id)
-    self.check.isRequestPresent(self.data.request_entity, id)
+    request_id = int(self.data.kwargs['id'])
+    self.data.invite = self.data.request_entity = Request.get_by_id(request_id)
+    self.check.isRequestPresent(request_id)
 
     self.data.organization = self.data.request_entity.org
     self.data.invited_user = self.data.requester = self.data.request_entity.user
