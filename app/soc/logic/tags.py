@@ -91,7 +91,7 @@ class TagsService(object):
           tag.remove_tagged(entity.key())
 
 
-def getTagsForProgram(model, program, limit=1000):
+def getTagsForProgram(model, program, order=None, limit=1000):
   """Fetches all the tag entities for the given program.
 
   Args:
@@ -101,4 +101,8 @@ def getTagsForProgram(model, program, limit=1000):
   """
   q = model.all()
   q.filter('scope', program)
+  if order:
+    for o in order:
+      q.order(o)
+
   return q.fetch(1000)
