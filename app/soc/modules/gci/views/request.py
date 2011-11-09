@@ -59,7 +59,7 @@ class SendRequestPage(RequestHandler):
     """Access checks for GCI Send Request page.
     """
     #TODO(dhans): check if the program is visible
-    # check if the user has a profile
+    self.check.isProfileActive()
     # check if the user is not a student
     # check if the user does not have role for the organization
 
@@ -78,7 +78,6 @@ class SendRequestPage(RequestHandler):
 
   def _constructPageName(self):
     role = 'Mentor' if self.data.kwargs['role'] == 'mentor' else 'Org Admin'
-
     return "Request to become %s" % role
 
 
