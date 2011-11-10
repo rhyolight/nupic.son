@@ -45,7 +45,7 @@ class TaskUpdate(object):
   """Tasks that are involved in dealing with GCITasks.
   """
 
-  DEF_TASK_UPDATE_SUBJECT_FMT = ugettext(
+  DEF_TASK_UPDATE_SUBJECT = ugettext(
       '[%(program_name)s Task Update] %(title)s')
 
   def djangoURLPatterns(self):
@@ -138,7 +138,7 @@ class TaskUpdate(object):
         'task_entity': task,
     }
 
-    subject = self.DEF_TASK_UPDATE_SUBJECT_FMT % {
+    subject = self.DEF_TASK_UPDATE_SUBJECT % {
         'program_name': task.program.short_name,
         'title': task.title,
         }

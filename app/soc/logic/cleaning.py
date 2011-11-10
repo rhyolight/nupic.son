@@ -56,17 +56,17 @@ DEF_ORGANZIATION_NOT_ACTIVE_MSG = ugettext(
 DEF_NO_SUCH_DOCUMENT_MSG = ugettext(
     "There is no such document with that link ID under this entity.")
 
-DEF_MUST_BE_ABOVE_AGE_LIMIT_FMT = ugettext(
+DEF_MUST_BE_ABOVE_AGE_LIMIT = ugettext(
     "To sign up as a student for this program, you "
     "must be at least %d years of age, as of %s.")
 
-DEF_MUST_BE_ABOVE_LIMIT_FMT = ugettext(
+DEF_MUST_BE_ABOVE_LIMIT = ugettext(
     "Must be at least %d characters, it has %d characters.")
 
-DEF_MUST_BE_UNDER_LIMIT_FMT = ugettext(
+DEF_MUST_BE_UNDER_LIMIT = ugettext(
     "Must be under %d characters, it has %d characters.")
 
-DEF_2_LETTER_STATE_FMT = ugettext(
+DEF_2_LETTER_STATE = ugettext(
     "State should be 2-letter field since country is '%s'.")
 
 
@@ -339,11 +339,11 @@ def clean_content_length(field_name, min_length=0, max_length=500):
     value_length = len(value)
 
     if value_length < min_length:
-      raise forms.ValidationError(DEF_MUST_BE_ABOVE_LIMIT_FMT %(
+      raise forms.ValidationError(DEF_MUST_BE_ABOVE_LIMIT %(
           min_length, value_length))
 
     if value_length > max_length:
-      raise forms.ValidationError(DEF_MUST_BE_UNDER_LIMIT_FMT %(
+      raise forms.ValidationError(DEF_MUST_BE_UNDER_LIMIT %(
           max_length, value_length))
 
     return value

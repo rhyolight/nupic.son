@@ -42,7 +42,7 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
 
 
-DEF_CANNOT_ACCESS_EVALUATION_FMT = ugettext(
+DEF_CANNOT_ACCESS_EVALUATION = ugettext(
     'Organization Administrators can view this evaluation submitted by the '
     'student only after the evaluation deadline. Please visit this page '
     'after the evaluation deadline has passed.')
@@ -367,7 +367,7 @@ class GSoCStudentEvaluationShowPage(RequestHandler):
       if self.data.timeline.afterSurveyEnd(self.data.student_evaluation):
         return
       else:
-        raise AccessViolation(DEF_CANNOT_ACCESS_EVALUATION_FMT)
+        raise AccessViolation(DEF_CANNOT_ACCESS_EVALUATION)
 
     self.check.isStudentForSurvey()
     self.data.role = 'student'

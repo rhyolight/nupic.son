@@ -64,10 +64,10 @@ DEF_NO_PREV_ORG_MEMBER_MSG = ugettext(
 DEF_TASK_UNEDITABLE_STATUS_MSG = ugettext(
     'You cannot edit a published task.')
 
-DEF_TASK_MUST_BE_IN_STATES_FMT = ugettext(
+DEF_TASK_MUST_BE_IN_STATES = ugettext(
     'The task must be in one of the followings states %s')
 
-DEF_TASK_MAY_NOT_BE_IN_STATES_FMT = ugettext(
+DEF_TASK_MAY_NOT_BE_IN_STATES = ugettext(
     'The task may not be in one of the followings states %s')
 
 DEF_ORG_APP_REJECTED_MSG = ugettext(
@@ -181,7 +181,7 @@ class AccessChecker(access_checker.AccessChecker):
     assert access_checker.isSet(self.data.task)
 
     if self.data.task.status not in states:
-      raise AccessViolation(DEF_TASK_MUST_BE_IN_STATES_FMT %states)
+      raise AccessViolation(DEF_TASK_MUST_BE_IN_STATES %states)
 
   def isTaskNotInStates(self, states):
     """Checks if the task is not in any of the given states.
@@ -192,7 +192,7 @@ class AccessChecker(access_checker.AccessChecker):
     assert access_checker.isSet(self.data.task)
 
     if self.data.task.status in states:
-      raise AccessViolation(DEF_TASK_MAY_NOT_BE_IN_STATES_FMT %states)
+      raise AccessViolation(DEF_TASK_MAY_NOT_BE_IN_STATES %states)
 
   def canApplyStudent(self, edit_url):
     """Checks if a user may apply as a student to the program.

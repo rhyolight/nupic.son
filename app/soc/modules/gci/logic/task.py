@@ -67,7 +67,7 @@ DEF_CLOSED_MSG = ugettext(
 
 
 DEF_EXTEND_DEADLINE_TITLE = ugettext('Deadline extended')
-DEF_EXTEND_DEADLINE_FMT = ugettext(
+DEF_EXTEND_DEADLINE = ugettext(
     'The deadline of the task has been extended with %i days and %i hours.')
 
 
@@ -267,7 +267,7 @@ def extendDeadline(task, delta, user):
   comment_props = {
       'parent': task,
       'title': DEF_EXTEND_DEADLINE_TITLE,
-      'content': DEF_EXTEND_DEADLINE_FMT %(delta.days, delta.seconds/3600),
+      'content': DEF_EXTEND_DEADLINE %(delta.days, delta.seconds/3600),
       'created_by': user.user
   }
   comment = GCIComment(**comment_props)
