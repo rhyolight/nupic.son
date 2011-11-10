@@ -49,11 +49,11 @@ DEF_ALL_WORK_STOPPED_MSG = ugettext(
     'All work on tasks has stopped. You can no longer place comments, '
     'submit work or make any changes to existing tasks.')
 
-DEF_NO_TASK_CREATE_PRIV_MSG_FMT = ugettext(
+DEF_NO_TASK_CREATE_PRIV_MSG = ugettext(
     'You do not have sufficient privileges to create a new task for '
     'the organization %s.' )
 
-DEF_NO_TASK_EDIT_PRIV_MSG_FMT = ugettext(
+DEF_NO_TASK_EDIT_PRIV_MSG = ugettext(
     'You do not have sufficient privileges to edit a new task for '
     'the organization %s.' )
 
@@ -107,7 +107,7 @@ class Mutator(access_checker.Mutator):
 
     if not task or (task.program.key() != self.data.program.key()) or \
         task.status == 'invalid':
-      error_msg = access_checker.DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
+      error_msg = access_checker.DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG % {
           'model': 'GCITask',
           'id': id,
           }
@@ -166,7 +166,7 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.timeline.tasksPubliclyVisible():
       period = self.data.timeline.tasksPubliclyVisibleOn()
       raise AccessViolation(
-          access_checker.DEF_PAGE_INACTIVE_BEFORE_MSG_FMT % period)
+          access_checker.DEF_PAGE_INACTIVE_BEFORE_MSG % period)
 
     if not self.data.task.isPublished():
       error_msg = access_checker.DEF_PAGE_INACTIVE_MSG
@@ -270,7 +270,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     valid_org_keys = [o.key() for o in self.data.mentor_for]
     if self.data.organization.key() not in valid_org_keys:
-      raise AccessViolation(DEF_NO_TASK_CREATE_PRIV_MSG_FMT % (
+      raise AccessViolation(DEF_NO_TASK_CREATE_PRIV_MSG % (
           self.data.organization.name))
 
     if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
@@ -287,7 +287,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     valid_org_keys = [o.key() for o in self.data.mentor_for]
     if task.org.key() not in valid_org_keys:
-      raise AccessViolation(DEF_NO_TASK_EDIT_PRIV_MSG_FMT % (
+      raise AccessViolation(DEF_NO_TASK_EDIT_PRIV_MSG % (
           task.org.name))
 
     if task.status not in UNPUBLISHED:

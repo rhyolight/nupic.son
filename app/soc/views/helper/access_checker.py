@@ -43,7 +43,7 @@ from soc.models.user import User
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 
-DEF_AGREE_TO_TOS_MSG_FMT = ugettext(
+DEF_AGREE_TO_TOS_MSG = ugettext(
     'You must agree to the <a href="%(tos_link)s">site-wide Terms of'
     ' Service</a> in your <a href="/user/edit_profile">User Profile</a>'
     ' in order to view this page.')
@@ -68,7 +68,7 @@ DEF_CANNOT_ACCESS_ORG_APP = ugettext(
 DEF_CANNOT_UPDATE_ENTITY = ugettext(
     'This %(model)s cannot be updated.')
 
-DEF_DEV_LOGOUT_LOGIN_MSG_FMT = ugettext(
+DEF_DEV_LOGOUT_LOGIN_MSG = ugettext(
     'Please <a href="%%(sign_out)s">sign out</a>'
     ' and <a href="%%(sign_in)s">sign in</a>'
     ' again as %(role)s to view this page.')
@@ -79,10 +79,10 @@ DEF_ENTITY_DOES_NOT_BELONG_TO_YOU = ugettext(
 DEF_HAS_ALREADY_ROLE_FOR_ORG_MSG = ugettext(
     'You already have %(role)s role for %(org)s.')
 
-DEF_ID_BASED_ENTITY_INVALID_MSG_FMT = ugettext(
+DEF_ID_BASED_ENTITY_INVALID_MSG = ugettext(
     '%(model)s entity, whose id is %(id)s, is invalid at this time.')
 
-DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
+DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG = ugettext(
     '%(model)s entity, whose id is %(id)s, is does not exist.')
 
 DEF_INVITE_DOES_NOT_EXIST = ugettext(
@@ -141,10 +141,10 @@ DEF_NO_DOCUMENT = ugettext(
 DEF_NO_LINK_ID_MSG = ugettext(
     'Link ID should not be empty')
 
-DEF_NO_ORG_APP_MSG_FMT = ugettext(
+DEF_NO_ORG_APP_MSG = ugettext(
     'The organization application for the program %s does not exist.')
 
-DEF_NO_SLOT_TRANSFER_MSG_FMT = ugettext(
+DEF_NO_SLOT_TRANSFER_MSG = ugettext(
     'This page is inaccessible at this time. It is accessible only after '
     'the program administrator has made the slot allocations available and '
     'before %s')
@@ -163,7 +163,7 @@ DEF_NO_USER_LOGIN_MSG = ugettext(
 DEF_NO_USER_PROFILE_MSG = ugettext(
     'You must not have a User profile to visit this page.')
 
-DEF_NO_USER_MSG_FMT = ugettext(
+DEF_NO_USER_MSG = ugettext(
     'User with the Link ID %s does not exist.')
 
 DEF_NOT_ADMIN_MSG = ugettext(
@@ -194,26 +194,26 @@ DEF_NOT_VALID_INVITATION_MSG = ugettext(
 DEF_NOT_VALID_REQUEST_MSG = ugettext(
     'This is not a valid request.')
 
-DEF_ORG_DOES_NOT_EXISTS_MSG_FMT = ugettext(
+DEF_ORG_DOES_NOT_EXISTS_MSG = ugettext(
     'Organization, whose link_id is %(link_id)s, does not exist in '
     '%(program)s.')
 
-DEF_ORG_NOT_ACTIVE_MSG_FMT = ugettext(
+DEF_ORG_NOT_ACTIVE_MSG = ugettext(
     'Organization %(name)s is not active in %(program)s.')
 
 DEF_PAGE_INACTIVE_MSG = ugettext(
     'This page is inactive at this time.')
 
-DEF_PAGE_INACTIVE_BEFORE_MSG_FMT = ugettext(
+DEF_PAGE_INACTIVE_BEFORE_MSG = ugettext(
     'This page is inactive before %s')
 
-DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT = ugettext(
+DEF_PAGE_INACTIVE_OUTSIDE_MSG = ugettext(
     'This page is inactive before %s and after %s.')
 
-DEF_PROGRAM_NOT_VISIBLE_MSG_FMT = ugettext(
+DEF_PROGRAM_NOT_VISIBLE_MSG = ugettext(
     'This page is inaccessible because %s is not visible at this time.')
 
-DEF_PROGRAM_NOT_RUNNING_MSG_FMT = ugettext(
+DEF_PROGRAM_NOT_RUNNING_MSG = ugettext(
     'This page is inaccessible because %s is not running at this time.')
 
 DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
@@ -242,16 +242,16 @@ DEF_NO_PROFILE_MSG = ugettext(
 DEF_SCOPE_INACTIVE_MSG = ugettext(
     'The scope for this request is not active.')
 
-DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
+DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG = ugettext(
     'The requested %(model)s entity whose id is %(id)s does not exist.')
 
-DEF_STATISTIC_DOES_NOT_EXIST_MSG_FMT = ugettext(
+DEF_STATISTIC_DOES_NOT_EXIST_MSG = ugettext(
     'The statistic whose name is %(key_name)s does not exist.')
 
-DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS_MSG_FMT = ugettext(
+DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS_MSG = ugettext(
     'The requested %(model)s entity whose keyname is %(key_name)s does not exist.')
 
-DEF_KEYNAME_BASED_ENTITY_INVALID_MSG_FMT = ugettext(
+DEF_KEYNAME_BASED_ENTITY_INVALID_MSG = ugettext(
     '%(model)s entity, whose keyname is %(key_name)s, is invalid at this time.')
 
 unset = object()
@@ -401,7 +401,7 @@ class Mutator(object):
     self.data.org_app = q.get()
 
     if raise_not_found and not self.data.org_app:
-      raise NotFound(DEF_NO_ORG_APP_MSG_FMT % self.data.program.name)
+      raise NotFound(DEF_NO_ORG_APP_MSG % self.data.program.name)
 
   def orgAppRecordIfIdInKwargs(self):
     """Sets the organization application in RequestData object.
@@ -415,7 +415,7 @@ class Mutator(object):
       self.data.org_app_record = OrgAppRecord.get_by_id(int(id))
 
       if not self.data.org_app_record:
-        raise NotFound(DEF_NO_ORG_APP_MSG_FMT % self.data.program.name)
+        raise NotFound(DEF_NO_ORG_APP_MSG % self.data.program.name)
 
 
 class DeveloperMutator(Mutator):
@@ -442,7 +442,7 @@ class DeveloperMutator(Mutator):
     user_key = db.Key.from_path('User', key_name)
 
     if not user_key:
-      raise NotFound(DEF_NO_USER_MSG_FMT % key_name)
+      raise NotFound(DEF_NO_USER_MSG % key_name)
 
     self.data.host_user_key = user_key
     self.data.host = host_logic.getHostForUser(user_key)
@@ -610,7 +610,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise AccessViolation(
-        DEF_PROGRAM_NOT_RUNNING_MSG_FMT % self.data.program.name)
+        DEF_PROGRAM_NOT_RUNNING_MSG % self.data.program.name)
 
   def isProgramVisible(self):
     """Checks whether the program exists and is visible to the user. 
@@ -631,7 +631,7 @@ class AccessChecker(BaseAccessChecker):
       pass
 
     raise AccessViolation(
-        DEF_PROGRAM_NOT_VISIBLE_MSG_FMT % self.data.program.name)
+        DEF_PROGRAM_NOT_VISIBLE_MSG % self.data.program.name)
 
   def acceptedOrgsAnnounced(self):
     """Checks if the accepted orgs have been announced.
@@ -642,7 +642,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     period = self.data.timeline.orgsAnnouncedOn()
-    raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE_MSG_FMT % period)
+    raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE_MSG % period)
 
   def acceptedStudentsAnnounced(self):
     """Checks if the accepted students have been announced.
@@ -653,7 +653,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     period = self.data.timeline.studentsAnnouncedOn()
-    raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE_MSG_FMT % period)
+    raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE_MSG % period)
 
   def canApplyNonStudent(self, role, edit_url):
     """Checks if the user can apply as a mentor or org admin.
@@ -757,14 +757,14 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.organization)
 
     if not self.data.organization:
-      error_msg = DEF_ORG_DOES_NOT_EXISTS_MSG_FMT % {
+      error_msg = DEF_ORG_DOES_NOT_EXISTS_MSG % {
           'link_id': self.data.kwargs['organization'],
           'program': self.data.program.name
           }
       raise AccessViolation(error_msg)
 
     if self.data.organization.status != 'active':
-      error_msg = DEF_ORG_NOT_ACTIVE_MSG_FMT % {
+      error_msg = DEF_ORG_NOT_ACTIVE_MSG % {
           'name': self.data.organization.name,
           'program': self.data.program.name
           }
@@ -776,14 +776,14 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.proposal)
 
     if not self.data.proposal:
-      error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
+      error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG % {
           'model': 'GSoCProposal',
           'id': self.data.kwargs['id']
           }
       raise AccessViolation(error_msg)
 
     if self.data.proposal.status == 'invalid':
-      error_msg = DEF_ID_BASED_ENTITY_INVALID_MSG_FMT % {
+      error_msg = DEF_ID_BASED_ENTITY_INVALID_MSG % {
           'model': 'GSoCProposal',
           'id': self.data.kwargs['id'],
           }
@@ -797,7 +797,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.timeline.studentSignup():
       return
 
-    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT %
+    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG %
         self.data.timeline.studentsSignupBetween())
 
   def canStudentUpdateProposalPostSignup(self):
@@ -809,7 +809,7 @@ class AccessChecker(BaseAccessChecker):
         self.data.proposal.is_editable_post_deadline):
       return
 
-    violation_message = '%s %s'% ((DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT %
+    violation_message = '%s %s'% ((DEF_PAGE_INACTIVE_OUTSIDE_MSG %
         self.data.timeline.studentsSignupBetween()),
         DEF_PROPOSAL_MODIFICATION_REQUEST_MSG)
     raise AccessViolation(violation_message)
@@ -1114,7 +1114,7 @@ class AccessChecker(BaseAccessChecker):
         self.data.timeline.beforeStudentsAnnounced()):
       return
 
-    raise AccessViolation(DEF_NO_SLOT_TRANSFER_MSG_FMT % (
+    raise AccessViolation(DEF_NO_SLOT_TRANSFER_MSG % (
         self.data.timeline.studentsAnnouncedOn()))
 
   def isProjectInURLValid(self):
@@ -1123,14 +1123,14 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.project)
 
     if not self.data.project:
-      error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
+      error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG % {
           'model': 'GSoCProject',
           'id': self.data.kwargs['id']
           }
       raise AccessViolation(error_msg)
 
     if self.data.project.status == 'invalid':
-      error_msg = DEF_ID_BASED_ENTITY_INVALID_MSG_FMT % {
+      error_msg = DEF_ID_BASED_ENTITY_INVALID_MSG % {
           'model': 'GSoCProject',
           'id': self.data.kwargs['id'],
           }
@@ -1181,7 +1181,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.timeline.afterSurveyEnd(survey) and show_url:
       raise RedirectRequest(show_url)
 
-    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG_FMT %
+    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG %
         (survey.survey_start, survey.survey_end))
 
   def canUserTakeSurvey(self, survey, taking_access='user'):
@@ -1215,7 +1215,7 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.statistic)
     # check if the statistic exist
     if not self.data.statistic:
-      error_msg = DEF_STATISTIC_DOES_NOT_EXIST_MSG_FMT % {
+      error_msg = DEF_STATISTIC_DOES_NOT_EXIST_MSG % {
           'key_name': self.data.kwargs['id']
           }
       raise AccessViolation(error_msg)

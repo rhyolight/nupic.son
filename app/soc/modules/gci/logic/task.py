@@ -52,7 +52,7 @@ DEF_ACTION_NEEDED_MSG = ugettext(
 
 
 DEF_ASSIGNED_TITLE = ugettext('Task Assigned')
-DEF_ASSIGNED_MSG_FMT = ugettext(
+DEF_ASSIGNED_MSG = ugettext(
     'This task has been assigned to %s. '
     'You have %i hours to complete this task, good luck!')
 
@@ -170,7 +170,7 @@ def assignTask(task, student, assigner):
   comment_props = {
       'parent': task,
       'title': DEF_ASSIGNED_TITLE,
-      'content': DEF_ASSIGNED_MSG_FMT %(
+      'content': DEF_ASSIGNED_MSG %(
           student.public_name, task.time_to_complete),
       'created_by': assigner.user,
   }

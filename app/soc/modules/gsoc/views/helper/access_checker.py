@@ -46,7 +46,7 @@ from soc.modules.gsoc.models.project_survey_record import \
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
 
-DEF_FAILED_PREVIOUS_EVAL_MSG_FMT = ugettext(
+DEF_FAILED_PREVIOUS_EVAL_MSG = ugettext(
     'You cannot access %s for this project because this project was '
     'failed in the previous evaluation.')
 
@@ -54,10 +54,10 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
     'You have reached the maximum number of proposals allowed '
     'for this program.')
 
-DEF_NO_STUDENT_EVALUATION_MSG_FMT = ugettext(
+DEF_NO_STUDENT_EVALUATION_MSG = ugettext(
     'The project survey with name %s parameters does not exist.')
 
-DEF_NO_MENTOR_EVALUATION_MSG_FMT = ugettext(
+DEF_NO_MENTOR_EVALUATION_MSG = ugettext(
     'The project evaluation with name %s does not exist.')
 
 DEF_NO_PROJECT_MSG = ugettext('Requested project does not exist.')
@@ -165,7 +165,7 @@ class Mutator(access_checker.Mutator):
     self.data.student_evaluation = ProjectSurvey.get_by_key_name(key_name)
 
     if raise_not_found and not self.data.student_evaluation:
-      raise NotFound(DEF_NO_STUDENT_EVALUATION_MSG_FMT % key_name)
+      raise NotFound(DEF_NO_STUDENT_EVALUATION_MSG % key_name)
 
 
   def studentEvaluationRecordFromKwargs(self):
@@ -196,7 +196,7 @@ class Mutator(access_checker.Mutator):
         key_name)
 
     if raise_not_found and not self.data.mentor_evaluation:
-      raise NotFound(DEF_NO_MENTOR_EVALUATION_MSG_FMT % key_name)
+      raise NotFound(DEF_NO_MENTOR_EVALUATION_MSG % key_name)
 
   def mentorEvaluationRecordFromKwargs(self):
     """Sets the mentor evaluation record in RequestData object.
@@ -305,7 +305,7 @@ class AccessChecker(access_checker.AccessChecker):
       fe_keynames = [f.grading_survey_group.grading_survey.key(
           ).id_or_name() for f in failed_evals]
       if self.data.student_evaluation.key().id_or_name() not in fe_keynames:
-        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL_MSG_FMT % (
+        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL_MSG % (
             self.data.student_evaluation.short_name.lower()))
 
   def isMentorForSurvey(self):
@@ -330,7 +330,7 @@ class AccessChecker(access_checker.AccessChecker):
       fe_keynames = [f.grading_survey_group.grading_survey.key(
           ).id_or_name() for f in failed_evals]
       if self.data.mentor_evaluation.key().id_or_name() not in fe_keynames:
-        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL_MSG_FMT % (
+        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL_MSG % (
             self.data.mentor_evaluation.short_name.lower()))
 
     if self.data.orgAdminFor(self.data.organization):

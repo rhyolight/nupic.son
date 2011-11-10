@@ -35,16 +35,16 @@ from soc.tasks import mailer
 from soc.views.helper.access_checker import isSet
 
 
-DEF_INVITATION_MSG_FMT = ugettext(
+DEF_INVITATION_MSG = ugettext(
     '[%(org)s] Invitation to become a %(role_verbose)s.')
 
-DEF_NEW_REQUEST_MSG_FMT = ugettext(
+DEF_NEW_REQUEST_MSG = ugettext(
     '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
-DEF_ACCEPTED_ORG_MSG_FMT = ugettext(
+DEF_ACCEPTED_ORG_MSG = ugettext(
     '[%(org)s] Your organization application has been accepted.')
 
-DEF_REJECTED_ORG_MSG_FMT = ugettext(
+DEF_REJECTED_ORG_MSG = ugettext(
     '[%(org)s] Your organization application has been rejected.')
 
 DEF_NEW_PROPOSAL_SUBJECT_FMT = ugettext(
@@ -124,7 +124,7 @@ def inviteContext(data, invite):
       'profile_edit_link': edit_link,
   }
 
-  subject = DEF_INVITATION_MSG_FMT % message_properties
+  subject = DEF_INVITATION_MSG % message_properties
 
   template = DEF_ORG_INVITE_NOTIFICATION_TEMPLATE
 
@@ -158,7 +158,7 @@ def requestContext(data, request, admin_emails):
       'profile_edit_link': edit_link,
       }
 
-  subject = DEF_NEW_REQUEST_MSG_FMT % message_properties
+  subject = DEF_NEW_REQUEST_MSG % message_properties
 
   template = DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE
 
@@ -246,10 +246,10 @@ def orgAppContext(data, record, new_status, apply_url):
   }
 
   if new_status == 'accepted':
-    subject = DEF_ACCEPTED_ORG_MSG_FMT % message_properties
+    subject = DEF_ACCEPTED_ORG_MSG % message_properties
     template = DEF_ACCEPTED_ORG_TEMPLATE
   else:
-    subject = DEF_REJECTED_ORG_MSG_FMT % message_properties
+    subject = DEF_REJECTED_ORG_MSG % message_properties
     template = DEF_REJECTED_ORG_TEMPLATE
 
   roles = [record.main_admin, record.backup_admin]
