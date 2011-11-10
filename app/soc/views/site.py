@@ -44,7 +44,7 @@ from soc.views.forms import ModelForm
 from soc.modules import callback
 
 
-DEF_NO_DEVELOPER_MSG = ugettext(
+DEF_NO_DEVELOPER = ugettext(
     'This page is only accessible to developers.')
 
 
@@ -98,7 +98,7 @@ class EditSitePage(SiteRequestHandler):
 
   def checkAccess(self):
     if not self.data.is_developer:
-      raise AccessViolation(DEF_NO_DEVELOPER_MSG)
+      raise AccessViolation(DEF_NO_DEVELOPER)
 
   def templatePath(self):
     # TODO: make this specific to the current active program

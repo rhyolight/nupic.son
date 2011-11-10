@@ -31,11 +31,11 @@ class ButtonTemplate(Template):
   """Template to render buttons on proposal review page.
   """
 
-  DEF_ENABLE_BTN_DISABLED_MSG = ugettext(
+  DEF_ENABLE_BTN_DISABLED = ugettext(
       'This functionality is already enabled. To disable this functionality, '
       'press the button adjacent to this.')
 
-  DEF_DISABLE_BTN_DISABLED_MSG = ugettext(
+  DEF_DISABLE_BTN_DISABLED = ugettext(
       'This functionality is already disabled. To enable this functionality, '
       'press the button adjacent to this.')
 
@@ -100,7 +100,7 @@ class ButtonTemplate(Template):
     pressed when it is disabled.
     """
     msg = self._disabled_msgs.get('enable')
-    return msg if msg else self.DEF_ENABLE_BTN_DISABLED_MSG
+    return msg if msg else self.DEF_ENABLE_BTN_DISABLED
 
   @property
   def disable_btn_disabled_msg(self):
@@ -108,7 +108,7 @@ class ButtonTemplate(Template):
     pressed when it is disabled.
     """
     msg = self._disabled_msgs.get('disable')
-    return msg if msg else self.DEF_DISABLE_BTN_DISABLED_MSG
+    return msg if msg else self.DEF_DISABLE_BTN_DISABLED
 
   def templatePath(self):
     return 'v2/soc/_button.html'

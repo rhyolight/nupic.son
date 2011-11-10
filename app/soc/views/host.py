@@ -36,10 +36,10 @@ from soc.views.helper import url_patterns
 from soc.views.forms import ModelForm
 
 
-DEF_DEVELOPER_ONLY_MSG = ugettext(
+DEF_DEVELOPER_ONLY = ugettext(
     "You must be a developer to access other hosts' profile settings.")
 
-DEF_NO_HOST_MSG = ugettext(
+DEF_NO_HOST = ugettext(
     'You must be a host to access this page.')
 
 
@@ -70,13 +70,13 @@ class HostProfilePage(SiteRequestHandler):
 
     link_id = self.data.kwargs.get('link_id')
     if link_id and self.data.user.link_id != link_id:
-      raise AccessViolation(DEF_DEVELOPER_ONLY_MSG)
+      raise AccessViolation(DEF_DEVELOPER_ONLY)
 
     self.mutator.host()
     if self.data.is_host:
       return
 
-    raise AccessViolation(DEF_NO_HOST_MSG)
+    raise AccessViolation(DEF_NO_HOST)
 
   def templatePath(self):
     return 'v2/soc/host/base.html'

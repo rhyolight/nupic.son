@@ -45,24 +45,24 @@ TAGS_SERVICE = tags.TagsService(TAG_NAMES)
 
 
 DEF_ACTION_NEEDED_TITLE = ugettext('Initial Deadline passed')
-DEF_ACTION_NEEDED_MSG = ugettext(
+DEF_ACTION_NEEDED = ugettext(
     'Melange has detected that the initial deadline has passed and it has '
     'set the task status to ActionNeeded. You have 24 hours to submit work '
     'before it is reopened.')
 
 
 DEF_ASSIGNED_TITLE = ugettext('Task Assigned')
-DEF_ASSIGNED_MSG = ugettext(
+DEF_ASSIGNED = ugettext(
     'This task has been assigned to %s. '
     'You have %i hours to complete this task, good luck!')
 
 
 DEF_CLAIM_REQUEST_TITLE = ugettext('Task Claimed')
-DEF_CLAIM_REQUEST_MSG = ugettext('I would like to work on this task.')
+DEF_CLAIM_REQUEST = ugettext('I would like to work on this task.')
 
 
 DEF_CLOSED_TITLE = ugettext('Task Closed')
-DEF_CLOSED_MSG = ugettext(
+DEF_CLOSED = ugettext(
     'Congratulations, this task has been completed successfully.')
 
 
@@ -72,28 +72,28 @@ DEF_EXTEND_DEADLINE = ugettext(
 
 
 DEF_NO_MORE_WORK_TITLE = ugettext('No more Work can be submitted')
-DEF_NO_MORE_WORK_MSG = ugettext(
+DEF_NO_MORE_WORK = ugettext(
     'Melange has detected that the deadline has passed and no more work can '
     'be submitted. The submitted work should be reviewed.')
 
 
 DEF_REOPENED_TITLE = ugettext('Task Reopened')
-DEF_REOPENED_MSG = ugettext(
+DEF_REOPENED = ugettext(
     'Melange has detected that the final deadline has passed and it has '
     'reopened the task.')
 
 
 DEF_SEND_FOR_REVIEW_TITLE = ugettext('Ready for review')
-DEF_SEND_FOR_REVIEW_MSG = ugettext(
+DEF_SEND_FOR_REVIEW = ugettext(
     'The work on this task is ready to be reviewed.')
 
 
 DEF_UNASSIGNED_TITLE = ugettext('Task Reopened')
-DEF_UNASSIGNED_MSG = ugettext('This task has been Reopened.')
+DEF_UNASSIGNED = ugettext('This task has been Reopened.')
 
 
 DEF_UNCLAIMED_TITLE = ugettext('Claim Removed')
-DEF_UNCLAIMED_MSG = ugettext(
+DEF_UNCLAIMED = ugettext(
     'The claim on this task has been removed, someone else can claim it now.')
 
 
@@ -170,7 +170,7 @@ def assignTask(task, student, assigner):
   comment_props = {
       'parent': task,
       'title': DEF_ASSIGNED_TITLE,
-      'content': DEF_ASSIGNED_MSG %(
+      'content': DEF_ASSIGNED %(
           student.public_name, task.time_to_complete),
       'created_by': assigner.user,
   }
@@ -203,7 +203,7 @@ def unassignTask(task, user):
   comment_props = {
       'parent': task,
       'title': DEF_UNASSIGNED_TITLE,
-      'content': DEF_UNASSIGNED_MSG,
+      'content': DEF_UNASSIGNED,
       'created_by': user.user
   }
   comment = GCIComment(**comment_props)
@@ -232,7 +232,7 @@ def closeTask(task, user):
   comment_props = {
       'parent': task,
       'title': DEF_CLOSED_TITLE,
-      'content': DEF_CLOSED_MSG,
+      'content': DEF_CLOSED,
       'created_by': user.user
   }
   comment = GCIComment(**comment_props)
@@ -300,7 +300,7 @@ def claimRequestTask(task, student):
   comment_props = {
       'parent': task,
       'title': DEF_CLAIM_REQUEST_TITLE,
-      'content': DEF_CLAIM_REQUEST_MSG,
+      'content': DEF_CLAIM_REQUEST,
       'created_by': student.user
   }
   comment = GCIComment(**comment_props)
@@ -329,7 +329,7 @@ def unclaimTask(task):
   comment_props = {
       'parent': task,
       'title': DEF_UNCLAIMED_TITLE,
-      'content': DEF_UNCLAIMED_MSG,
+      'content': DEF_UNCLAIMED,
       'created_by': student.user
   }
   comment = GCIComment(**comment_props)
@@ -355,7 +355,7 @@ def sendForReview(task, student):
   comment_props = {
       'parent': task,
       'title': DEF_SEND_FOR_REVIEW_TITLE,
-      'content': DEF_SEND_FOR_REVIEW_MSG,
+      'content': DEF_SEND_FOR_REVIEW,
       'created_by': student.user
   }
   comment = GCIComment(**comment_props)
@@ -432,7 +432,7 @@ def transitFromClaimed(task):
   comment_props = {
       'parent': task,
       'title': DEF_ACTION_NEEDED_TITLE,
-      'content': DEF_ACTION_NEEDED_MSG,
+      'content': DEF_ACTION_NEEDED,
   }
   comment = GCIComment(**comment_props)
 
@@ -457,7 +457,7 @@ def transitFromNeedsReview(task):
   comment_props = {
       'parent': task,
       'title': DEF_NO_MORE_WORK_TITLE,
-      'content': DEF_NO_MORE_WORK_MSG,
+      'content': DEF_NO_MORE_WORK,
   }
   comment = GCIComment(**comment_props)
 
@@ -479,7 +479,7 @@ def transitFromActionNeeded(task):
   comment_props = {
       'parent': task,
       'title': DEF_REOPENED_TITLE,
-      'content': DEF_REOPENED_MSG,
+      'content': DEF_REOPENED,
   }
   comment = GCIComment(**comment_props)
 
@@ -503,7 +503,7 @@ def transitFromNeedsWork(task):
   comment_props = {
       'parent': task,
       'title': DEF_REOPENED_TITLE,
-      'content': DEF_REOPENED_MSG,
+      'content': DEF_REOPENED,
   }
   comment = GCIComment(**comment_props)
 

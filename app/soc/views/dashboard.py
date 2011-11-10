@@ -116,7 +116,7 @@ class DashboardUserActions(Template):
   """Template to render the left side user actions of dashboard.
   """
 
-  DEF_USE_COLORBOX_HELP_MSG = ugettext(
+  DEF_USE_COLORBOX_HELP = ugettext(
       'Choosing Yes will allow you to open link in the dashboard within '
       'a box without leaving the page.')
 
@@ -130,7 +130,7 @@ class DashboardUserActions(Template):
         self.data, 'on_off', 'Use colorbox', 'use-colorbox',
         self.actionURL(),
         checked=state,
-        help_text=self.DEF_USE_COLORBOX_HELP_MSG,
+        help_text=self.DEF_USE_COLORBOX_HELP,
         labels = {
             'checked': 'Yes',
             'unchecked': 'No'})

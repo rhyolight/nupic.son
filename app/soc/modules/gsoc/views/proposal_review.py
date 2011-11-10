@@ -128,35 +128,35 @@ class UserActions(Template):
   """Template to render the left side user actions.
   """
 
-  DEF_ACCEPT_PROPOSAL_HELP_MSG = ugettext(
+  DEF_ACCEPT_PROPOSAL_HELP = ugettext(
       'Choosing Yes will mark this proposal as accepted. The proposal is '
       'accepted when Yes is displayed in bright orange.')
 
-  DEF_IGNORE_PROPOSAL_HELP_MSG = ugettext(
+  DEF_IGNORE_PROPOSAL_HELP = ugettext(
       'Choosing Yes will mark this proposal as ignored. The student will be '
       'be able to see that this proposal is ignored when he/she visits this '
       'page. The proposal is ignored when Yes is displayed in bright orange.')
 
-  DEF_IGNORE_PROPOSAL_NOTE_MSG = ugettext(
+  DEF_IGNORE_PROPOSAL_NOTE = ugettext(
       'Please refresh this page after setting this preference.')
 
-  DEF_PROPOSAL_MODIFICATION_HELP_MSG = ugettext(
+  DEF_PROPOSAL_MODIFICATION_HELP = ugettext(
       'Choosing Enabled allows the student to edit this proposal. The '
       'student can edit the proposal when Enabled is displayed in bright '
       'orange.')
 
-  DEF_PUBLICLY_VISIBLE_HELP_MSG = ugettext(
+  DEF_PUBLICLY_VISIBLE_HELP = ugettext(
       'Choosing Yes will make this proposal publicly visible. The proposal '
       'will be visible to even those who do not have a user account on this '
       'site. The proposal is publicly visible when Yes is displayed in '
       'bright orange')
 
-  DEF_WISH_TO_MENTOR_HELP_MSG = ugettext(
+  DEF_WISH_TO_MENTOR_HELP = ugettext(
       'Choosing Yes will add your name to the list of possible mentors to '
       'this proposal. You will be listed as a possible mentor when Yes is '
       'displayed in bright orange.')
 
-  DEF_WITHDRAW_PROPOSAL_HELP_MSG = ugettext(
+  DEF_WITHDRAW_PROPOSAL_HELP = ugettext(
       'Choosing Yes, notifies your organization that you have withdrawn '
       'this proposal and no longer wish to participate in the program with '
       'this proposal. The proposal is withdrawn when the button displays '
@@ -176,7 +176,7 @@ class UserActions(Template):
         self.data, 'on_off', 'Wish to Mentor', 'wish-to-mentor',
         r.urlOf('gsoc_proposal_wish_to_mentor'),
         checked=self.data.isPossibleMentorForProposal(),
-        help_text=self.DEF_WISH_TO_MENTOR_HELP_MSG,
+        help_text=self.DEF_WISH_TO_MENTOR_HELP,
         labels = {
             'checked': 'Yes',
             'unchecked': 'No'})
@@ -187,7 +187,7 @@ class UserActions(Template):
           self.data, 'long', 'Proposal Modifications', 'proposal-modification',
           r.urlOf('gsoc_proposal_modification'),
           checked=self.data.proposal.is_editable_post_deadline,
-          help_text=self.DEF_PROPOSAL_MODIFICATION_HELP_MSG,
+          help_text=self.DEF_PROPOSAL_MODIFICATION_HELP,
           labels = {
             'checked': 'Enabled',
             'unchecked': 'Disabled'})
@@ -209,8 +209,8 @@ class UserActions(Template):
           self.data, 'on_off', 'Ignore Proposal', 'proposal-ignore',
           r.urlOf('gsoc_proposal_ignore'),
           checked=ignore_button_checked,
-          help_text=self.DEF_IGNORE_PROPOSAL_HELP_MSG,
-          note=self.DEF_IGNORE_PROPOSAL_NOTE_MSG,
+          help_text=self.DEF_IGNORE_PROPOSAL_HELP,
+          note=self.DEF_IGNORE_PROPOSAL_NOTE,
           labels={
               'checked': 'Yes',
               'unchecked': 'No'})
@@ -221,7 +221,7 @@ class UserActions(Template):
           self.data, 'on_off', 'Accept proposal', 'accept-proposal',
           r.urlOf('gsoc_proposal_accept'),
           checked=self.data.proposal.accept_as_project,
-          help_text=self.DEF_ACCEPT_PROPOSAL_HELP_MSG,
+          help_text=self.DEF_ACCEPT_PROPOSAL_HELP,
           labels = {
               'checked': 'Yes',
               'unchecked': 'No',})
@@ -247,7 +247,7 @@ class UserActions(Template):
         self.data, 'on_off', 'Publicly Visible', 'publicly-visible',
         r.urlOf('gsoc_proposal_publicly_visible'),
         checked=self.data.proposal.is_publicly_visible,
-        help_text=self.DEF_PUBLICLY_VISIBLE_HELP_MSG,
+        help_text=self.DEF_PUBLICLY_VISIBLE_HELP,
         labels = {
             'checked': 'Yes',
             'unchecked': 'No',})
@@ -261,7 +261,7 @@ class UserActions(Template):
       withdraw_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
           r.urlOf('gsoc_proposal_withdraw'), checked=checked,
-          help_text=self.DEF_WITHDRAW_PROPOSAL_HELP_MSG,
+          help_text=self.DEF_WITHDRAW_PROPOSAL_HELP,
           labels = {
               'checked': 'Yes',
               'unchecked': 'No',})

@@ -43,22 +43,22 @@ from soc.models.user import User
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 
-DEF_AGREE_TO_TOS_MSG = ugettext(
+DEF_AGREE_TO_TOS = ugettext(
     'You must agree to the <a href="%(tos_link)s">site-wide Terms of'
     ' Service</a> in your <a href="/user/edit_profile">User Profile</a>'
     ' in order to view this page.')
 
-DEF_ALREADY_ADMIN_MSG = ugettext(
+DEF_ALREADY_ADMIN = ugettext(
     'You cannot be a organization administrator for %s to access this page.')
 
-DEF_ALREADY_MENTOR_MSG = ugettext(
+DEF_ALREADY_MENTOR = ugettext(
     'You cannot be a mentor for %s to access this page.')
 
-DEF_ALREADY_PARTICIPATING_MSG = ugettext(
+DEF_ALREADY_PARTICIPATING = ugettext(
     'You cannot become a Student because you are already participating '
     'in this program.')
 
-DEF_ALREADY_PARTICIPATING_AS_STUDENT_MSG = ugettext(
+DEF_ALREADY_PARTICIPATING_AS_STUDENT = ugettext(
     'You cannot register as a %s since you are already a '
     'student in %s.')
 
@@ -68,7 +68,7 @@ DEF_CANNOT_ACCESS_ORG_APP = ugettext(
 DEF_CANNOT_UPDATE_ENTITY = ugettext(
     'This %(model)s cannot be updated.')
 
-DEF_DEV_LOGOUT_LOGIN_MSG = ugettext(
+DEF_DEV_LOGOUT_LOGIN = ugettext(
     'Please <a href="%%(sign_out)s">sign out</a>'
     ' and <a href="%%(sign_in)s">sign in</a>'
     ' again as %(role)s to view this page.')
@@ -76,13 +76,13 @@ DEF_DEV_LOGOUT_LOGIN_MSG = ugettext(
 DEF_ENTITY_DOES_NOT_BELONG_TO_YOU = ugettext(
     'This %(model)s entity does not belong to you.')
 
-DEF_HAS_ALREADY_ROLE_FOR_ORG_MSG = ugettext(
+DEF_HAS_ALREADY_ROLE_FOR_ORG = ugettext(
     'You already have %(role)s role for %(org)s.')
 
-DEF_ID_BASED_ENTITY_INVALID_MSG = ugettext(
+DEF_ID_BASED_ENTITY_INVALID = ugettext(
     '%(model)s entity, whose id is %(id)s, is invalid at this time.')
 
-DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG = ugettext(
+DEF_ID_BASED_ENTITY_NOT_EXISTS = ugettext(
     '%(model)s entity, whose id is %(id)s, is does not exist.')
 
 DEF_INVITE_DOES_NOT_EXIST = ugettext(
@@ -124,96 +124,96 @@ DEF_REQUEST_CANNOT_BE_WITHDRAWN = ugettext(
 DEF_REQUEST_CANNOT_BE_RESUBMITTED = ugettext(
     'This %s request cannot be resubmitted.')
 
-DEF_IS_NOT_STUDENT_MSG = ugettext(
+DEF_IS_NOT_STUDENT = ugettext(
     'This page is inaccessible because you do not have a student role '
     'in the program.')
 
-DEF_HAS_NO_PROJECT_MSG = ugettext(
+DEF_HAS_NO_PROJECT = ugettext(
     'This page is inaccessible because you do not have an accepted project '
     'in the program.')
 
-DEF_IS_STUDENT_MSG = ugettext(
+DEF_IS_STUDENT = ugettext(
     'This page is inaccessible because you are registered as a student.')
 
 DEF_NO_DOCUMENT = ugettext(
     'The document was not found')
 
-DEF_NO_LINK_ID_MSG = ugettext(
+DEF_NO_LINK_ID = ugettext(
     'Link ID should not be empty')
 
-DEF_NO_ORG_APP_MSG = ugettext(
+DEF_NO_ORG_APP = ugettext(
     'The organization application for the program %s does not exist.')
 
-DEF_NO_SLOT_TRANSFER_MSG = ugettext(
+DEF_NO_SLOT_TRANSFER = ugettext(
     'This page is inaccessible at this time. It is accessible only after '
     'the program administrator has made the slot allocations available and '
     'before %s')
 
-DEF_NO_SUCH_PROGRAM_MSG = ugettext(
+DEF_NO_SUCH_PROGRAM = ugettext(
     'The url is wrong (no program was found).')
 
-DEF_NO_SURVEY_ACCESS_MSG = ugettext (
+DEF_NO_SURVEY_ACCESS = ugettext (
     'You cannot take this survey because this survey is not created for'
     'your role in the program.')
 
-DEF_NO_USER_LOGIN_MSG = ugettext(
+DEF_NO_USER_LOGIN = ugettext(
     'Please create <a href="/user/create">User Profile</a>'
     ' in order to view this page.')
 
-DEF_NO_USER_PROFILE_MSG = ugettext(
+DEF_NO_USER_PROFILE = ugettext(
     'You must not have a User profile to visit this page.')
 
-DEF_NO_USER_MSG = ugettext(
+DEF_NO_USER = ugettext(
     'User with the Link ID %s does not exist.')
 
-DEF_NOT_ADMIN_MSG = ugettext(
+DEF_NOT_ADMIN = ugettext(
     'You need to be a organization administrator for %s to access this page.')
 
-DEF_NOT_DEVELOPER_MSG = ugettext(
+DEF_NOT_DEVELOPER = ugettext(
     'You need to be a site developer to access this page.')
 
-DEF_NOT_HOST_MSG = ugettext(
+DEF_NOT_HOST = ugettext(
     'You need to be a program adminstrator to access this page.')
 
-DEF_NOT_MENTOR_MSG = ugettext(
+DEF_NOT_MENTOR = ugettext(
     'You need to be a mentor for %s to access this page.')
 
-DEF_NOT_PARTICIPATING_MSG = ugettext(
+DEF_NOT_PARTICIPATING = ugettext(
     'You are not participating in this program and have no access.')
 
-DEF_NOT_PROPOSER_MSG = ugettext(
+DEF_NOT_PROPOSER = ugettext(
     'You are not allowed to perform this action since you are not the'
     'author(proposer) for this proposal.')
 
 DEF_NOT_PUBLIC_DOCUMENT = ugettext(
     'This document is not publically readable.')
 
-DEF_NOT_VALID_INVITATION_MSG = ugettext(
+DEF_NOT_VALID_INVITATION = ugettext(
     'This is not a valid invitation.')
 
-DEF_NOT_VALID_REQUEST_MSG = ugettext(
+DEF_NOT_VALID_REQUEST = ugettext(
     'This is not a valid request.')
 
-DEF_ORG_DOES_NOT_EXISTS_MSG = ugettext(
+DEF_ORG_DOES_NOT_EXISTS = ugettext(
     'Organization, whose link_id is %(link_id)s, does not exist in '
     '%(program)s.')
 
-DEF_ORG_NOT_ACTIVE_MSG = ugettext(
+DEF_ORG_NOT_ACTIVE = ugettext(
     'Organization %(name)s is not active in %(program)s.')
 
-DEF_PAGE_INACTIVE_MSG = ugettext(
+DEF_PAGE_INACTIVE = ugettext(
     'This page is inactive at this time.')
 
-DEF_PAGE_INACTIVE_BEFORE_MSG = ugettext(
+DEF_PAGE_INACTIVE_BEFORE = ugettext(
     'This page is inactive before %s')
 
-DEF_PAGE_INACTIVE_OUTSIDE_MSG = ugettext(
+DEF_PAGE_INACTIVE_OUTSIDE = ugettext(
     'This page is inactive before %s and after %s.')
 
-DEF_PROGRAM_NOT_VISIBLE_MSG = ugettext(
+DEF_PROGRAM_NOT_VISIBLE = ugettext(
     'This page is inaccessible because %s is not visible at this time.')
 
-DEF_PROGRAM_NOT_RUNNING_MSG = ugettext(
+DEF_PROGRAM_NOT_RUNNING = ugettext(
     'This page is inaccessible because %s is not running at this time.')
 
 DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
@@ -221,37 +221,37 @@ DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
     'ignored. If you think this is incorrect, contact an organization '
     'administrator to resolve the situation.')
 
-DEF_PROPOSAL_MODIFICATION_REQUEST_MSG = ugettext(
+DEF_PROPOSAL_MODIFICATION_REQUEST = ugettext(
     'If you would like to update this proposal, request your organization '
     'to which this proposal belongs, to grant permission to modify the '
     'proposal.')
 
-DEF_PROPOSAL_NOT_PUBLIC_MSG = ugettext(
+DEF_PROPOSAL_NOT_PUBLIC = ugettext(
     'This proposal is not made public, '
     'and you are not the student who submitted the proposal, '
     'nor are you a mentor for the organization it was submitted to.')
 
-DEF_PROFILE_INACTIVE_MSG = ugettext(
+DEF_PROFILE_INACTIVE = ugettext(
     'This page is inaccessible because your profile is inactive in '
     'the program at this time.')
 
-DEF_NO_PROFILE_MSG = ugettext(
+DEF_NO_PROFILE = ugettext(
     'This page is inaccessible because you do not have a profile '
     'in the program at this time.')
 
-DEF_SCOPE_INACTIVE_MSG = ugettext(
+DEF_SCOPE_INACTIVE = ugettext(
     'The scope for this request is not active.')
 
-DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG = ugettext(
+DEF_ID_BASED_ENTITY_NOT_EXISTS = ugettext(
     'The requested %(model)s entity whose id is %(id)s does not exist.')
 
-DEF_STATISTIC_DOES_NOT_EXIST_MSG = ugettext(
+DEF_STATISTIC_DOES_NOT_EXIST = ugettext(
     'The statistic whose name is %(key_name)s does not exist.')
 
-DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS_MSG = ugettext(
+DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS = ugettext(
     'The requested %(model)s entity whose keyname is %(key_name)s does not exist.')
 
-DEF_KEYNAME_BASED_ENTITY_INVALID_MSG = ugettext(
+DEF_KEYNAME_BASED_ENTITY_INVALID = ugettext(
     '%(model)s entity, whose keyname is %(key_name)s, is invalid at this time.')
 
 unset = object()
@@ -401,7 +401,7 @@ class Mutator(object):
     self.data.org_app = q.get()
 
     if raise_not_found and not self.data.org_app:
-      raise NotFound(DEF_NO_ORG_APP_MSG % self.data.program.name)
+      raise NotFound(DEF_NO_ORG_APP % self.data.program.name)
 
   def orgAppRecordIfIdInKwargs(self):
     """Sets the organization application in RequestData object.
@@ -415,7 +415,7 @@ class Mutator(object):
       self.data.org_app_record = OrgAppRecord.get_by_id(int(id))
 
       if not self.data.org_app_record:
-        raise NotFound(DEF_NO_ORG_APP_MSG % self.data.program.name)
+        raise NotFound(DEF_NO_ORG_APP % self.data.program.name)
 
 
 class DeveloperMutator(Mutator):
@@ -437,12 +437,12 @@ class DeveloperMutator(Mutator):
       if self.data.is_host:
         return
       else:
-        raise NotFound(DEF_NO_LINK_ID_MSG)
+        raise NotFound(DEF_NO_LINK_ID)
 
     user_key = db.Key.from_path('User', key_name)
 
     if not user_key:
-      raise NotFound(DEF_NO_USER_MSG % key_name)
+      raise NotFound(DEF_NO_USER % key_name)
 
     self.data.host_user_key = user_key
     self.data.host = host_logic.getHostForUser(user_key)
@@ -492,7 +492,7 @@ class BaseAccessChecker(object):
     if self.data.user:
       return
 
-    raise AccessViolation(DEF_NO_USER_LOGIN_MSG)
+    raise AccessViolation(DEF_NO_USER_LOGIN)
 
   def isNotUser(self):
     """Checks if the current user does not have an User entity.
@@ -504,7 +504,7 @@ class BaseAccessChecker(object):
     if not self.data.user:
       return
 
-    raise AccessViolation(DEF_NO_USER_PROFILE_MSG)
+    raise AccessViolation(DEF_NO_USER_PROFILE)
 
 
   def isDeveloper(self):
@@ -518,7 +518,7 @@ class BaseAccessChecker(object):
     if users.is_current_user_admin():
       return
 
-    raise AccessViolation(DEF_NOT_DEVELOPER_MSG)
+    raise AccessViolation(DEF_NOT_DEVELOPER)
 
   def hasProfile(self):
     """Checks if the user has a profile for the current program.
@@ -528,7 +528,7 @@ class BaseAccessChecker(object):
     if self.data.profile:
       return
 
-    raise AccessViolation(DEF_NO_PROFILE_MSG)
+    raise AccessViolation(DEF_NO_PROFILE)
 
   def isProfileActive(self):
     """Checks if the profile of the current user is active.
@@ -538,7 +538,7 @@ class BaseAccessChecker(object):
     if self.data.profile.status == 'active':
       return
 
-    raise AccessViolation(DEF_PROFILE_INACTIVE_MSG)
+    raise AccessViolation(DEF_PROFILE_INACTIVE)
 
   def isInvitePresent(self, invite_id):
     """Checks if the invite entity is not None.
@@ -594,7 +594,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.is_host:
       return
 
-    raise AccessViolation(DEF_NOT_HOST_MSG)
+    raise AccessViolation(DEF_NOT_HOST)
 
   def isProgramRunning(self):
     """Checks whether the program is running now by making sure the current 
@@ -602,7 +602,7 @@ class AccessChecker(BaseAccessChecker):
     normal users.
     """
     if not self.data.program:
-      raise NotFound(DEF_NO_SUCH_PROGRAM_MSG)
+      raise NotFound(DEF_NO_SUCH_PROGRAM)
 
     self.isProgramVisible()
 
@@ -610,7 +610,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise AccessViolation(
-        DEF_PROGRAM_NOT_RUNNING_MSG % self.data.program.name)
+        DEF_PROGRAM_NOT_RUNNING % self.data.program.name)
 
   def isProgramVisible(self):
     """Checks whether the program exists and is visible to the user. 
@@ -619,7 +619,7 @@ class AccessChecker(BaseAccessChecker):
     Programs are always visible to hosts.
     """
     if not self.data.program:
-      raise NotFound(DEF_NO_SUCH_PROGRAM_MSG)
+      raise NotFound(DEF_NO_SUCH_PROGRAM)
 
     if self.data.program.status in ['visible', 'inactive']:
       return
@@ -631,7 +631,7 @@ class AccessChecker(BaseAccessChecker):
       pass
 
     raise AccessViolation(
-        DEF_PROGRAM_NOT_VISIBLE_MSG % self.data.program.name)
+        DEF_PROGRAM_NOT_VISIBLE % self.data.program.name)
 
   def acceptedOrgsAnnounced(self):
     """Checks if the accepted orgs have been announced.
@@ -642,7 +642,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     period = self.data.timeline.orgsAnnouncedOn()
-    raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE_MSG % period)
+    raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE % period)
 
   def acceptedStudentsAnnounced(self):
     """Checks if the accepted students have been announced.
@@ -653,7 +653,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     period = self.data.timeline.studentsAnnouncedOn()
-    raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE_MSG % period)
+    raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE % period)
 
   def canApplyNonStudent(self, role, edit_url):
     """Checks if the user can apply as a mentor or org admin.
@@ -666,7 +666,7 @@ class AccessChecker(BaseAccessChecker):
     if not self.data.profile:
       return
 
-    raise AccessViolation(DEF_ALREADY_PARTICIPATING_AS_STUDENT_MSG % (
+    raise AccessViolation(DEF_ALREADY_PARTICIPATING_AS_STUDENT % (
         role, self.data.program.name))
 
   def isActiveStudent(self):
@@ -677,7 +677,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.student_info:
       return
 
-    raise AccessViolation(DEF_IS_NOT_STUDENT_MSG)
+    raise AccessViolation(DEF_IS_NOT_STUDENT)
 
   def isStudentWithProject(self):
     self.isActiveStudent()
@@ -685,7 +685,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.student_info.number_of_projects > 0:
       return
 
-    raise AccessViolation(DEF_HAS_NO_PROJECT_MSG)
+    raise AccessViolation(DEF_HAS_NO_PROJECT)
 
   def notStudent(self):
     """Checks if the current user has a non-student profile.
@@ -695,7 +695,7 @@ class AccessChecker(BaseAccessChecker):
     if not self.data.student_info:
       return
 
-    raise AccessViolation(DEF_IS_STUDENT_MSG)
+    raise AccessViolation(DEF_IS_STUDENT)
 
   def notOrgAdmin(self):
     """Checks if the user is not an admin.
@@ -706,7 +706,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.organization.key() not in self.data.profile.org_admin_for:
       return
 
-    raise AccessViolation(DEF_ALREADY_ADMIN_MSG % self.data.organization.name)
+    raise AccessViolation(DEF_ALREADY_ADMIN % self.data.organization.name)
 
   def notMentor(self):
     """Checks if the user is not a mentor.
@@ -717,7 +717,7 @@ class AccessChecker(BaseAccessChecker):
     if not self.data.mentorFor(self.data.organization):
       return
 
-    raise AccessViolation(DEF_ALREADY_MENTOR_MSG % self.data.organization.name)
+    raise AccessViolation(DEF_ALREADY_MENTOR % self.data.organization.name)
 
   def isOrgAdmin(self):
     """Checks if the user is an org admin.
@@ -739,7 +739,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.orgAdminFor(org):
       return
 
-    raise AccessViolation(DEF_NOT_ADMIN_MSG % org.name)
+    raise AccessViolation(DEF_NOT_ADMIN % org.name)
 
   def isMentorForOrganization(self, org):
     """Checks if the user is a mentor for the specified organiztaion.
@@ -749,7 +749,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.mentorFor(org):
       return
 
-    raise AccessViolation(DEF_NOT_MENTOR_MSG % org.name)
+    raise AccessViolation(DEF_NOT_MENTOR % org.name)
 
   def isOrganizationInURLActive(self):
     """Checks if the organization in URL exists and if its status is active.
@@ -757,14 +757,14 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.organization)
 
     if not self.data.organization:
-      error_msg = DEF_ORG_DOES_NOT_EXISTS_MSG % {
+      error_msg = DEF_ORG_DOES_NOT_EXISTS % {
           'link_id': self.data.kwargs['organization'],
           'program': self.data.program.name
           }
       raise AccessViolation(error_msg)
 
     if self.data.organization.status != 'active':
-      error_msg = DEF_ORG_NOT_ACTIVE_MSG % {
+      error_msg = DEF_ORG_NOT_ACTIVE % {
           'name': self.data.organization.name,
           'program': self.data.program.name
           }
@@ -776,14 +776,14 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.proposal)
 
     if not self.data.proposal:
-      error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG % {
+      error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS % {
           'model': 'GSoCProposal',
           'id': self.data.kwargs['id']
           }
       raise AccessViolation(error_msg)
 
     if self.data.proposal.status == 'invalid':
-      error_msg = DEF_ID_BASED_ENTITY_INVALID_MSG % {
+      error_msg = DEF_ID_BASED_ENTITY_INVALID % {
           'model': 'GSoCProposal',
           'id': self.data.kwargs['id'],
           }
@@ -797,7 +797,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.timeline.studentSignup():
       return
 
-    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG %
+    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE %
         self.data.timeline.studentsSignupBetween())
 
   def canStudentUpdateProposalPostSignup(self):
@@ -809,9 +809,9 @@ class AccessChecker(BaseAccessChecker):
         self.data.proposal.is_editable_post_deadline):
       return
 
-    violation_message = '%s %s'% ((DEF_PAGE_INACTIVE_OUTSIDE_MSG %
+    violation_message = '%s %s'% ((DEF_PAGE_INACTIVE_OUTSIDE %
         self.data.timeline.studentsSignupBetween()),
-        DEF_PROPOSAL_MODIFICATION_REQUEST_MSG)
+        DEF_PROPOSAL_MODIFICATION_REQUEST)
     raise AccessViolation(violation_message)
 
   def canStudentUpdateProposal(self):
@@ -859,11 +859,11 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the entity represents an invitation
     if self.data.invite.type != 'Invitation':
-      raise AccessViolation(DEF_NOT_VALID_INVITATION_MSG)
+      raise AccessViolation(DEF_NOT_VALID_INVITATION)
 
     # check if the entity can be responded
     if self.data.invite.status not in ['pending', 'rejected']:
-      raise AccessViolation(DEF_NOT_VALID_INVITATION_MSG)
+      raise AccessViolation(DEF_NOT_VALID_INVITATION)
 
     # check if the entity is addressed to the current user
     if self.data.invited_user.key() != self.data.user.key():
@@ -890,7 +890,7 @@ class AccessChecker(BaseAccessChecker):
 
     # only withdrawn requests may be resubmitted
     if self.data.invite.status != 'withdrawn':
-      raise AccessViolation(DEF_NOT_VALID_REQUEST_MSG)
+      raise AccessViolation(DEF_NOT_VALID_REQUEST)
 
     # check if the user is an admin for the organization
     self.isOrgAdmin()
@@ -985,11 +985,11 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the entity represents an invitation
     if self.data.request_entity.type != 'Request':
-      raise AccessViolation(DEF_NOT_VALID_REQUEST_MSG)
+      raise AccessViolation(DEF_NOT_VALID_REQUEST)
 
     # check if the entity can be responded
     if self.data.request_entity.status not in ['pending', 'rejected']:
-      raise AccessViolation(DEF_NOT_VALID_REQUEST_MSG)
+      raise AccessViolation(DEF_NOT_VALID_REQUEST)
 
     # check if the user is an admin for the organization
     self.isOrgAdmin()
@@ -1003,11 +1003,11 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the entity represents an invitation
     if self.data.request_entity.type != 'Request':
-      raise AccessViolation(DEF_NOT_VALID_REQUEST_MSG)
+      raise AccessViolation(DEF_NOT_VALID_REQUEST)
 
     # only withdrawn requests may be resubmitted
     if self.data.request_entity.status != 'withdrawn':
-      raise AccessViolation(DEF_NOT_VALID_REQUEST_MSG)
+      raise AccessViolation(DEF_NOT_VALID_REQUEST)
 
     # check if the request belongs to the current user
     if self.data.requester.key() != self.data.user.key():
@@ -1062,7 +1062,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     if not self.data.user:
-      raise AccessViolation(DEF_PROPOSAL_NOT_PUBLIC_MSG)
+      raise AccessViolation(DEF_PROPOSAL_NOT_PUBLIC)
 
     self.isProfileActive()
     # if the current user is the proposer, he or she may access it
@@ -1073,7 +1073,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.mentorFor(self.data.proposal_org):
       return
 
-    raise AccessViolation(DEF_PROPOSAL_NOT_PUBLIC_MSG)
+    raise AccessViolation(DEF_PROPOSAL_NOT_PUBLIC)
 
   def canEditDocument(self):
     self.isHost()
@@ -1102,7 +1102,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.proposer.key() == self.data.profile.key():
       return
 
-    raise AccessViolation(DEF_NOT_PROPOSER_MSG)
+    raise AccessViolation(DEF_NOT_PROPOSER)
 
   def isSlotTransferActive(self):
     """Checks if the slot transfers are active at the time.
@@ -1114,7 +1114,7 @@ class AccessChecker(BaseAccessChecker):
         self.data.timeline.beforeStudentsAnnounced()):
       return
 
-    raise AccessViolation(DEF_NO_SLOT_TRANSFER_MSG % (
+    raise AccessViolation(DEF_NO_SLOT_TRANSFER % (
         self.data.timeline.studentsAnnouncedOn()))
 
   def isProjectInURLValid(self):
@@ -1123,14 +1123,14 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.project)
 
     if not self.data.project:
-      error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG % {
+      error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS % {
           'model': 'GSoCProject',
           'id': self.data.kwargs['id']
           }
       raise AccessViolation(error_msg)
 
     if self.data.project.status == 'invalid':
-      error_msg = DEF_ID_BASED_ENTITY_INVALID_MSG % {
+      error_msg = DEF_ID_BASED_ENTITY_INVALID % {
           'model': 'GSoCProject',
           'id': self.data.kwargs['id'],
           }
@@ -1181,7 +1181,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.timeline.afterSurveyEnd(survey) and show_url:
       raise RedirectRequest(show_url)
 
-    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE_MSG %
+    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE %
         (survey.survey_start, survey.survey_end))
 
   def canUserTakeSurvey(self, survey, taking_access='user'):
@@ -1207,7 +1207,7 @@ class AccessChecker(BaseAccessChecker):
       self.isUser()
       return
 
-    raise AccessViolation(DEF_NO_SURVEY_ACCESS_MSG)
+    raise AccessViolation(DEF_NO_SURVEY_ACCESS)
 
   def isStatisticValid(self):
     """Checks if the URL refers to an existing statistic.
@@ -1215,7 +1215,7 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.statistic)
     # check if the statistic exist
     if not self.data.statistic:
-      error_msg = DEF_STATISTIC_DOES_NOT_EXIST_MSG % {
+      error_msg = DEF_STATISTIC_DOES_NOT_EXIST % {
           'key_name': self.data.kwargs['id']
           }
       raise AccessViolation(error_msg)

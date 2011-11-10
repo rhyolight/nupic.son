@@ -46,7 +46,7 @@ from soc.modules.gsoc.models.project_survey_record import \
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
 
-DEF_FAILED_PREVIOUS_EVAL_MSG = ugettext(
+DEF_FAILED_PREVIOUS_EVAL = ugettext(
     'You cannot access %s for this project because this project was '
     'failed in the previous evaluation.')
 
@@ -54,30 +54,30 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
     'You have reached the maximum number of proposals allowed '
     'for this program.')
 
-DEF_NO_STUDENT_EVALUATION_MSG = ugettext(
+DEF_NO_STUDENT_EVALUATION = ugettext(
     'The project survey with name %s parameters does not exist.')
 
-DEF_NO_MENTOR_EVALUATION_MSG = ugettext(
+DEF_NO_MENTOR_EVALUATION = ugettext(
     'The project evaluation with name %s does not exist.')
 
-DEF_NO_PROJECT_MSG = ugettext('Requested project does not exist.')
+DEF_NO_PROJECT = ugettext('Requested project does not exist.')
 
 DEF_NO_RECORD_FOUND = ugettext(
     'The Record with the specified key was not found.')
 
-DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU_MSG = ugettext(
+DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU = ugettext(
     'This evaluation does not correspond to the project you are mentor for, '
     'and hence you cannot access it.')
 
-DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU_MSG = ugettext(
+DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU = ugettext(
     'This evaluation does not correspond to your project, and hence you '
     'cannot access it.')
 
-DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT_MSG = ugettext(
+DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT = ugettext(
     'You cannot access this evaluation because you do not have any '
     'ongoing project.')
 
-DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
+DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
     'You cannot register as a student since you are already a '
     'mentor or organization administrator in %s.')
 
@@ -143,7 +143,7 @@ class Mutator(access_checker.Mutator):
         project_id, parent=self.data.url_profile)
 
     if not self.data.project:
-      raise NotFound(DEF_NO_PROJECT_MSG)
+      raise NotFound(DEF_NO_PROJECT)
 
     parent_key = self.data.project.parent_key()
     if self.data.profile and parent_key == self.data.profile.key():
@@ -165,7 +165,7 @@ class Mutator(access_checker.Mutator):
     self.data.student_evaluation = ProjectSurvey.get_by_key_name(key_name)
 
     if raise_not_found and not self.data.student_evaluation:
-      raise NotFound(DEF_NO_STUDENT_EVALUATION_MSG % key_name)
+      raise NotFound(DEF_NO_STUDENT_EVALUATION % key_name)
 
 
   def studentEvaluationRecordFromKwargs(self):
@@ -196,7 +196,7 @@ class Mutator(access_checker.Mutator):
         key_name)
 
     if raise_not_found and not self.data.mentor_evaluation:
-      raise NotFound(DEF_NO_MENTOR_EVALUATION_MSG % key_name)
+      raise NotFound(DEF_NO_MENTOR_EVALUATION % key_name)
 
   def mentorEvaluationRecordFromKwargs(self):
     """Sets the mentor evaluation record in RequestData object.
@@ -217,7 +217,7 @@ class Mutator(access_checker.Mutator):
     self.projectFromKwargs()
 
     if not ('group' in self.data.kwargs and 'id' in self.data.kwargs):
-      raise BadRequest(access_checker.DEF_NOT_VALID_REQUEST_MSG)
+      raise BadRequest(access_checker.DEF_NOT_VALID_REQUEST)
 
     # url regexp ensures that it is a digit
     record_id = long(self.data.kwargs['record'])
@@ -290,11 +290,11 @@ class AccessChecker(access_checker.AccessChecker):
     # can access the survey
     expected_profile_key = project.parent_key()
     if expected_profile_key != self.data.profile.key():
-      raise AccessViolation(DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU_MSG)
+      raise AccessViolation(DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU)
 
     # check if the project is still ongoing
     if project.status in ['invalid', 'withdrawn']:
-      raise AccessViolation(DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
+      raise AccessViolation(DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT)
 
     # check if the project has failed in a previous evaluation
     # TODO(Madhu): This still has a problem that when the project fails
@@ -305,7 +305,7 @@ class AccessChecker(access_checker.AccessChecker):
       fe_keynames = [f.grading_survey_group.grading_survey.key(
           ).id_or_name() for f in failed_evals]
       if self.data.student_evaluation.key().id_or_name() not in fe_keynames:
-        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL_MSG % (
+        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL % (
             self.data.student_evaluation.short_name.lower()))
 
   def isMentorForSurvey(self):
@@ -319,7 +319,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check if the project is still ongoing
     if project.status in ['invalid', 'withdrawn']:
-      raise AccessViolation(DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT_MSG)
+      raise AccessViolation(DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT)
 
     # check if the project has failed in a previous evaluation
     # TODO(Madhu): This still has a problem that when the project fails
@@ -330,7 +330,7 @@ class AccessChecker(access_checker.AccessChecker):
       fe_keynames = [f.grading_survey_group.grading_survey.key(
           ).id_or_name() for f in failed_evals]
       if self.data.mentor_evaluation.key().id_or_name() not in fe_keynames:
-        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL_MSG % (
+        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL % (
             self.data.mentor_evaluation.short_name.lower()))
 
     if self.data.orgAdminFor(self.data.organization):
@@ -339,7 +339,7 @@ class AccessChecker(access_checker.AccessChecker):
     # check if the currently logged in user is the mentor or co-mentor
     # for the project in request or the org admin for the org
     if self.data.profile.key() not in project.mentors:
-      raise AccessViolation(DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU_MSG)
+      raise AccessViolation(DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU)
 
   def canApplyStudent(self, edit_url):
     """Checks if the user can apply as a student.
@@ -355,7 +355,7 @@ class AccessChecker(access_checker.AccessChecker):
       return
 
     raise AccessViolation(
-        DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG % self.data.program.name)
+        DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT % self.data.program.name)
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass

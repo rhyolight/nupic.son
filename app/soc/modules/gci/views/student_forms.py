@@ -36,7 +36,7 @@ from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-DEF_NO_UPLOAD_MSG = ugettext('Please choose at least one file to upload.')
+DEF_NO_UPLOAD = ugettext('Please choose at least one file to upload.')
 
 
 class UploadForm(gci_forms.GCIModelForm):
@@ -74,7 +74,7 @@ class UploadForm(gci_forms.GCIModelForm):
     student_id_form = cleaned_data.get('student_id_form')
 
     if not (consent_form or student_id_form):
-      raise gci_forms.ValidationError(DEF_NO_UPLOAD_MSG)
+      raise gci_forms.ValidationError(DEF_NO_UPLOAD)
 
     return cleaned_data
 
