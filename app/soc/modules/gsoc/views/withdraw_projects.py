@@ -151,7 +151,7 @@ class ProjectList(Template):
       qp.ancestor(profile_key)
       qp.filter('org', project.org)
       # FIXME: ??? Mentors can change overtime so how does this work???
-      qp.filter('mentor', project.mentor)
+      qp.filter('mentor IN', project.mentors)
 
       if withdraw:
         qp.filter('status', 'accepted')
