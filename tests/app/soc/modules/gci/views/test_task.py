@@ -25,8 +25,8 @@ __authors__ = [
 
 import datetime
 
-from soc.modules.gci.logic.helper.notifications \
-    import DEF_NEW_TASK_COMMENT_SUBJECT_FMT
+from soc.modules.gci.logic.helper.notifications import (
+    DEF_NEW_TASK_COMMENT_SUBJECT)
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.profile import GCIProfile
 
@@ -70,7 +70,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """Check if a notification email sent to the subscribers of the task.
     """
     subscribers = GCIProfile.get(self.task.subscribers)
-    subject = DEF_NEW_TASK_COMMENT_SUBJECT_FMT % {
+    subject = DEF_NEW_TASK_COMMENT_SUBJECT % {
         'commented_by': comment.created_by.name,
         'program_name': self.task.program.name,
         'task_title': self.task.title
