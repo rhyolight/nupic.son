@@ -31,7 +31,7 @@
         field += '<div class="options">';
         field += '<a href="#" class="remove" title="X">X</a>';
         var j = 0;
-        jQuery.each(opts.fields, function(index, item) {
+        jQuery.each(opts.fields, function(field_name, item) {
           var value;
           if (values !== undefined && values.length > j) {
             value = values[j];
@@ -39,7 +39,7 @@
           else {
             value = '';
           }
-          field += '<input type="text" name=' + index + ' class="tagfield" value="' + unescape(value) + '" />';
+          field += '<input type="text" name=' + field_name + ' class="tagfield" value="' + unescape(value) + '" />';
           j += 1;
         });
         field += '</div>';
