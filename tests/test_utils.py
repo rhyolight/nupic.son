@@ -316,6 +316,15 @@ class DjangoTestCase(TestCase):
     response = self.post(url, properties)
     return response, properties
 
+  def buttonPost(self, url, button_name):
+    """Performs a post to url simulating that button_name is clicked.
+
+    Calls post().
+    """
+    url = '%s?button' % url
+    response = self.post(url, {button_name: ''})
+    return response
+
   def createDocumentForPrefix(self, prefix, override={}):
     """Creates a document for the specified properties.
     """
