@@ -316,13 +316,16 @@ class DjangoTestCase(TestCase):
     response = self.post(url, properties)
     return response, properties
 
-  def buttonPost(self, url, button_name):
+  def buttonPost(self, url, button_name, postdata=None):
     """Performs a post to url simulating that button_name is clicked.
 
     Calls post().
     """
+    combined_postdata = {button_name: ''}
+    if postdata is not None:
+      combined_postdata.update(postdata)
     url = '%s?button' % url
-    response = self.post(url, {button_name: ''})
+    response = self.post(url, combined_postdata)
     return response
 
   def createDocumentForPrefix(self, prefix, override={}):
