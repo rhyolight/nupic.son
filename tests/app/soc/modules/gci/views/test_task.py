@@ -253,9 +253,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.deadline = deadline
     self.task.put()
 
-    url = '%s?button' %self._taskPageUrl(self.task)
-    response = self.post(
-        url, {'button_extend_deadline': '', 'hours': 1})
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(
+        url, 'button_extend_deadline', {'hours': 1})
 
     task = GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
