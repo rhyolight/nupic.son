@@ -322,7 +322,7 @@ class DjangoTestCase(TestCase):
     Calls post().
     """
     combined_postdata = {button_name: ''}
-    if postdata is not None:
+    if postdata:
       combined_postdata.update(postdata)
     url = '%s?button' % url
     response = self.post(url, combined_postdata)
