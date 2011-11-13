@@ -126,8 +126,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     self.data.createOrgAdmin(self.org)
 
-    url = '%s?button' %self._taskPageUrl(self.task)
-    response = self.post(url, {'button_unpublish': ''})
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_unpublish')
 
     task = GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
@@ -138,8 +138,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     self.data.createOrgAdmin(self.org)
 
-    url = '%s?button' %self._taskPageUrl(self.task)
-    response = self.post(url, {'button_delete': ''})
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_delete')
 
     task = GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
@@ -158,8 +158,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.student = student
     self.task.put()
 
-    url = '%s?button' %self._taskPageUrl(self.task)
-    response = self.post(url, {'button_assign': ''})
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_assign')
 
     # check if the task is properly assigned and a deadline has been set
     task = GCITask.get(self.task.key())
@@ -191,8 +191,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.student = student
     self.task.put()
 
-    url = '%s?button' %self._taskPageUrl(self.task)
-    response = self.post(url, {'button_unassign': ''})
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_unassign')
 
     # check if the task is properly unassigned
     task = GCITask.get(self.task.key())
@@ -219,8 +219,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.student = student
     self.task.put()
 
-    url = '%s?button' %self._taskPageUrl(self.task)
-    response = self.post(url, {'button_close': ''})
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_close')
 
     # check if the task is properly closed
     task = GCITask.get(self.task.key())
@@ -273,8 +273,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     self.data.createStudent()
 
-    url = '%s?button' %self._taskPageUrl(self.task)
-    response = self.post(url, {'button_claim': ''})
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_claim')
 
     # check if the task is properly claimed
     task = GCITask.get(self.task.key())
@@ -296,8 +296,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.student = self.data.profile
     self.task.put()
 
-    url = '%s?button' %self._taskPageUrl(self.task)
-    response = self.post(url, {'button_unclaim': ''})
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_unclaim')
 
     # check if the task is properly opened
     task = GCITask.get(self.task.key())
@@ -319,8 +319,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     profile = self.data.profile
     self.assertFalse(profile.key() in self.task.subscribers)
 
-    url = '%s?button' %self._taskPageUrl(self.task)
-    response = self.post(url, {'button_subscribe': ''})
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_subscribe')
 
     task = GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
@@ -336,8 +336,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.subscribers.append(profile.key())
     self.task.put()
 
-    url = '%s?button' %self._taskPageUrl(self.task)
-    response = self.post(url, {'button_unsubscribe': ''})
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_unsubscribe')
 
     task = GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
