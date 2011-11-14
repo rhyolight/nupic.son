@@ -34,7 +34,7 @@ User %(link_id)s has requested account deletion.
 ADMIN_REQUEST_EMAIL_BODY = """
 Dear application admin,
 
-User %(name)s (%(email)s), whose username is %(link_id)s has 
+User %(name)s (%(email)s), whose username is %(link_id)s, has 
 requested their account to be deleted. 
 """
 
