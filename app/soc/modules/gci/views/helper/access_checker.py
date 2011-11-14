@@ -50,19 +50,17 @@ DEF_ALL_WORK_STOPPED = ugettext(
     'submit work or make any changes to existing tasks.')
 
 DEF_NO_TASK_CREATE_PRIV = ugettext(
-    'You do not have sufficient privileges to create a new task for '
-    'the organization %s.' )
+    'You do not have sufficient privileges to create a new task for %s.' )
 
 DEF_NO_TASK_EDIT_PRIV = ugettext(
-    'You do not have sufficient privileges to edit a new task for '
-    'the organization %s.' )
+    'You do not have sufficient privileges to edit a new task for %s.' )
 
 DEF_NO_PREV_ORG_MEMBER = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
     'organization in Google Summer of Code or Google Code In.')
 
 DEF_TASK_UNEDITABLE_STATUS = ugettext(
-    'You cannot edit a published task.')
+    'This task is already published and published tasks cannot be edited.')
 
 DEF_TASK_MUST_BE_IN_STATES = ugettext(
     'The task must be in one of the followings states %s')

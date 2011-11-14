@@ -13,6 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block form_button %}
+  {{ block.super }}
+  <input value="Delete Account" class="delete-btn" type="submit" name="delete_account">
+{% endblock form_button %}
+
 {% block dependencies %}
   [
     dep.uniform,

@@ -25,6 +25,7 @@ __authors__ = [
   ]
 
 
+import collections
 import hashlib
 import os
 import datetime
@@ -179,6 +180,46 @@ class SoCTestCase(unittest.TestCase):
     """
     self.dev_test = 'DEV_TEST' in os.environ
 
+  def assertItemsEqual(self, expected_seq, actual_seq, msg=''):
+    """Asserts expected_seq and actual_seq have the same element counts.
+
+    This method is heavily borrowed from Python 2.7 unittest
+    library (since Melange uses Python 2.5 for deployment):
+    http://svn.python.org/view/python/tags/r271/Lib/unittest/case.py?view=markup#l844
+    """
+
+    try:
+      actual = collections.Counter(iter(actual_seq))
+      expected = collections.Counter(iter(expected_seq))
+      missing = list(expected - actual)
+      unexpected = list(actual - expected)
+    except TypeError:
+      # Unsortable items (example: set(), complex(), ...)
+      missing = []
+
+      actual = list(actual_seq)
+      expected = list(expected_seq)
+      while expected:
+        item = expected.pop()
+        try:
+          actual.remove(item)
+        except ValueError:
+          missing.append(item)
+      #anything left in expected is unexpected
+      unexpected = expected
+
+    errors = []
+    if missing:
+      errors.append('Expected, but missing: %s' % str(missing))
+    if unexpected:
+      errors.append('Unexpected, but present: %s' % str(unexpected))
+
+    if errors:
+      if msg:
+        errors = [msg] + errors
+      error_message = '\n'.join(errors)
+      self.fail(error_message)
+
 
 class GSoCTestCase(SoCTestCase):
   """GSoCTestCase for GSoC tests.
@@ -315,6 +356,18 @@ class DjangoTestCase(TestCase):
     properties = self.seedProperties(model, properties)
     response = self.post(url, properties)
     return response, properties
+
+  def buttonPost(self, url, button_name, postdata=None):
+    """Performs a post to url simulating that button_name is clicked.
+
+    Calls post().
+    """
+    combined_postdata = {button_name: ''}
+    if postdata:
+      combined_postdata.update(postdata)
+    url = '%s?button' % url
+    response = self.post(url, combined_postdata)
+    return response
 
   def createDocumentForPrefix(self, prefix, override={}):
     """Creates a document for the specified properties.

@@ -39,13 +39,12 @@ limitations under the License.
   [
     dep.melange.list,
     css("/soc/content/{{ app_version }}/css/v2/gsoc/user-messages.css"),
+    dep.hashchange,
     dep.melange.program_select,
     null,
     function() {
       melange.program_select.makeSelector("#program_select");
     },
-    dep.hashchange,
-    null,
     tc("/soc/content/{{ app_version }}/js/templates/soc/dashboard/dashboard.js", {
       'dashboard_class': 'dashboard',
       'dashboard_link_class': 'dashboard-link',
