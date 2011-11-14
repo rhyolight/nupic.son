@@ -243,6 +243,22 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
 
   def post(self):
     """Handler for HTTP POST request.
+
+    Based on the action, the request is dispatched to a specific handler.
+    """
+    if 'delete_account' in self.data.POST:
+      self.deleteAccountPostAction()
+    else: # regular POST request
+      self.editProfilePostAction() 
+
+  def deleteAccountPostAction(self):
+    """Handler for Delete Account POST action.
+    """
+    self.redirect.program()
+    self.redirect.to('gci_delete_account')
+
+  def editProfilePostAction(self):
+    """Handler for regular (edit/create profile) POST action.
     """
     if not self.validate():
       self.get()
