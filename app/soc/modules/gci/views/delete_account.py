@@ -22,6 +22,8 @@ __authors__ = [
   ]
 
 
+from soc.logic import delete_account
+
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.views.base import RequestHandler
@@ -49,3 +51,5 @@ class DeleteAccountPage(RequestHandler):
         'page_name': 'Delete your account'
         }
 
+  def post(self):
+    delete_account.request_account_deletion(self.data.user)
