@@ -45,6 +45,7 @@ class Callback(object):
     from soc.modules.gci.views import age_check
     from soc.modules.gci.views import bulk_create
     from soc.modules.gci.views import dashboard
+    from soc.modules.gci.views import delete_account
     from soc.modules.gci.views import document
     from soc.modules.gci.views import homepage
     from soc.modules.gci.views import invite
@@ -63,6 +64,7 @@ class Callback(object):
     self.views.append(age_check.AgeCheck())
     self.views.append(bulk_create.BulkCreate())
     self.views.append(dashboard.DashboardPage())
+    self.views.append(delete_account.DeleteAccountPage())
     self.views.append(document.DocumentPage())
     self.views.append(document.EditDocumentPage())
     self.views.append(document.EventsPage())
