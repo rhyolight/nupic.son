@@ -257,7 +257,8 @@ class OrgHome(RequestHandler):
       student = project.parent()
       student_key = str(student.key())
 
-      mentor = project.mentor
+      # TODO(SRabbelier): also display secondary mentors
+      mentor = project.mentors[0]
       mentor_key = str(mentor.key())
 
       project_key_object = project.key()

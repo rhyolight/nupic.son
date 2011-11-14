@@ -44,33 +44,33 @@ from soc.logic import user
 
 DEF_VALID_SHIPPING_CHARS = re.compile('^[A-Za-z0-9\s-]+$')
 
-DEF_LINK_ID_IN_USE_MSG = ugettext(
+DEF_LINK_ID_IN_USE = ugettext(
     'This link ID is already in use, please specify another one')
 
-DEF_NO_RIGHTS_FOR_ACL_MSG = ugettext(
+DEF_NO_RIGHTS_FOR_ACL = ugettext(
     'You do not have the required rights for that ACL.')
 
-DEF_ORGANZIATION_NOT_ACTIVE_MSG = ugettext(
+DEF_ORGANZIATION_NOT_ACTIVE = ugettext(
     "This organization is not active or doesn't exist.")
 
-DEF_NO_SUCH_DOCUMENT_MSG = ugettext(
+DEF_NO_SUCH_DOCUMENT = ugettext(
     "There is no such document with that link ID under this entity.")
 
-DEF_MUST_BE_ABOVE_AGE_LIMIT_FMT = ugettext(
+DEF_MUST_BE_ABOVE_AGE_LIMIT = ugettext(
     "To sign up as a student for this program, you "
     "must be at least %d years of age, as of %s.")
 
-DEF_MUST_BE_ABOVE_LIMIT_FMT = ugettext(
+DEF_MUST_BE_ABOVE_LIMIT = ugettext(
     "Must be at least %d characters, it has %d characters.")
 
-DEF_MUST_BE_UNDER_LIMIT_FMT = ugettext(
+DEF_MUST_BE_UNDER_LIMIT = ugettext(
     "Must be under %d characters, it has %d characters.")
 
-DEF_2_LETTER_STATE_FMT = ugettext(
+DEF_2_LETTER_STATE = ugettext(
     "State should be 2-letter field since country is '%s'.")
 
 
-DEF_INVALID_SHIPPING_CHARS_MSG = ugettext(
+DEF_INVALID_SHIPPING_CHARS = ugettext(
     'Invalid characters, only A-z, 0-9, - and whitespace are allowed. '
     'See also <a href="http://code.google.com/p/soc/issues/detail?id=903">'
     'Issue 903</a>, in particular <a href="'
@@ -314,7 +314,7 @@ def clean_valid_shipping_chars(field_name):
     value = self.cleaned_data.get(field_name)
 
     if value and not DEF_VALID_SHIPPING_CHARS.match(value):
-      raise forms.ValidationError(DEF_INVALID_SHIPPING_CHARS_MSG)
+      raise forms.ValidationError(DEF_INVALID_SHIPPING_CHARS)
 
     return value
   return wrapper
@@ -339,11 +339,11 @@ def clean_content_length(field_name, min_length=0, max_length=500):
     value_length = len(value)
 
     if value_length < min_length:
-      raise forms.ValidationError(DEF_MUST_BE_ABOVE_LIMIT_FMT %(
+      raise forms.ValidationError(DEF_MUST_BE_ABOVE_LIMIT %(
           min_length, value_length))
 
     if value_length > max_length:
-      raise forms.ValidationError(DEF_MUST_BE_UNDER_LIMIT_FMT %(
+      raise forms.ValidationError(DEF_MUST_BE_UNDER_LIMIT %(
           max_length, value_length))
 
     return value

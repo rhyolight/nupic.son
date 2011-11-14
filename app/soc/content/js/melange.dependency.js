@@ -385,6 +385,8 @@
   ];
 
   s.melange.dynamicoptions = [
+    s.json,
+    null,
     mpjs + "melange.dynamicoptions.js"
   ];
 

@@ -41,6 +41,7 @@ def process(org_app):
   ctx = context.get()
   params = ctx.mapreduce_spec.mapper.params
   program_key = params['program_key']
+  # TODO(SRabbelier): should have been a full url
   url = 'gci/profile/organization/%s' % program_key
 
   # TODO(SRabbelier): create a MapReduce/Task RequestData

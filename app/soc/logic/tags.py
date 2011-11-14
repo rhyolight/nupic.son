@@ -97,6 +97,7 @@ def getTagsForProgram(model, program, order=None, limit=1000):
   Args:
     model: The tag model class for which the tags must be fetched
     program: The program entity for which the tags must be fetched
+    order: A list of model properties on which the query should be ordered
     limit: number of entities that must be fetched
   """
   q = model.all()

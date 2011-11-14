@@ -117,7 +117,7 @@ class UserActions(Template):
   """Template to render the left side user actions.
   """
 
-  DEF_FEATURED_PROJECT_HELP_MSG = ugettext(
+  DEF_FEATURED_PROJECT_HELP = ugettext(
       'Choosing Yes features this project on program home page. The '
       'project is featured when Yes is displayed in bright orange.')
 
@@ -134,7 +134,7 @@ class UserActions(Template):
         self.data, 'on_off', 'Featured', 'project-featured',
         r.urlOf('gsoc_featured_project'),
         checked=self.data.project.is_featured,
-        help_text=self.DEF_FEATURED_PROJECT_HELP_MSG,
+        help_text=self.DEF_FEATURED_PROJECT_HELP,
         labels={
             'checked': 'Yes',
             'unchecked': 'No'})
@@ -148,9 +148,8 @@ class UserActions(Template):
     r = self.data.redirect
     all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
         self.data.project.org)
-    mentors = [self.data.project.mentors] if self.data.project.mentor else []
     context['assign_mentor'] = assign_mentor.AssignMentorFields(
-        self.data, mentors,
+        self.data, self.data.project.mentors,
         r.project().urlOf('gsoc_project_assign_mentors'),
         all_mentors=all_mentors_keys, mentor_required=True)
 

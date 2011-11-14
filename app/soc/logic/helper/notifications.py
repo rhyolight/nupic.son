@@ -35,38 +35,38 @@ from soc.tasks import mailer
 from soc.views.helper.access_checker import isSet
 
 
-DEF_INVITATION_MSG_FMT = ugettext(
+DEF_INVITATION = ugettext(
     '[%(org)s] Invitation to become a %(role_verbose)s.')
 
-DEF_NEW_REQUEST_MSG_FMT = ugettext(
+DEF_NEW_REQUEST = ugettext(
     '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
-DEF_ACCEPTED_ORG_MSG_FMT = ugettext(
+DEF_ACCEPTED_ORG = ugettext(
     '[%(org)s] Your organization application has been accepted.')
 
-DEF_REJECTED_ORG_MSG_FMT = ugettext(
+DEF_REJECTED_ORG = ugettext(
     '[%(org)s] Your organization application has been rejected.')
 
-DEF_NEW_PROPOSAL_SUBJECT_FMT = ugettext(
+DEF_NEW_PROPOSAL_SUBJECT = ugettext(
     '[%(org)s] New proposal by %(proposer_name)s: %(proposal_name)s')
 
-DEF_UPDATED_PROPOSAL_SUBJECT_FMT = ugettext(
+DEF_UPDATED_PROPOSAL_SUBJECT = ugettext(
     '[%(org)s] Update by %(proposer_name)s to proposal: %(proposal_name)s')
 
-DEF_NEW_SLOT_TRANSFER_SUBJECT_FMT = ugettext(
+DEF_NEW_SLOT_TRANSFER_SUBJECT = ugettext(
     '[%(org)s] New slot transfer request by %(org_name)s.')
 
-DEF_UPDATE_SLOT_TRANSFER_SUBJECT_FMT = ugettext(
+DEF_UPDATE_SLOT_TRANSFER_SUBJECT = ugettext(
     '[%(org)s] Slot transfer request updated by %(org_name)s.')
 
-DEF_NEW_REVIEW_SUBJECT_FMT = ugettext(
+DEF_NEW_REVIEW_SUBJECT = ugettext(
     '[%(org)s] New %(review_visibility)s review on %(reviewed_name)s '
     '(%(proposer_name)s) by %(reviewer_name)s')
 
-DEF_HANDLED_REQUEST_SUBJECT_FMT = ugettext(
+DEF_HANDLED_REQUEST_SUBJECT = ugettext(
     '[%(org)s] Request to become a %(role_verbose)s has been %(action)s')
 
-DEF_HANDLED_INVITE_SUBJECT_FMT = ugettext(
+DEF_HANDLED_INVITE_SUBJECT = ugettext(
     '[%(org)s] Invitation to become a %(role_verbose)s has been %(action)s')
 
 DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
@@ -124,7 +124,7 @@ def inviteContext(data, invite):
       'profile_edit_link': edit_link,
   }
 
-  subject = DEF_INVITATION_MSG_FMT % message_properties
+  subject = DEF_INVITATION % message_properties
 
   template = DEF_ORG_INVITE_NOTIFICATION_TEMPLATE
 
@@ -158,7 +158,7 @@ def requestContext(data, request, admin_emails):
       'profile_edit_link': edit_link,
       }
 
-  subject = DEF_NEW_REQUEST_MSG_FMT % message_properties
+  subject = DEF_NEW_REQUEST % message_properties
 
   template = DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE
 
@@ -188,7 +188,7 @@ def handledRequestContext(data, status):
       'profile_edit_link': edit_link,
       }
 
-  subject = DEF_HANDLED_REQUEST_SUBJECT_FMT % message_properties
+  subject = DEF_HANDLED_REQUEST_SUBJECT % message_properties
 
   template = DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE
 
@@ -223,7 +223,7 @@ def handledInviteContext(data):
       'profile_edit_link': edit_link,
       }
 
-  subject = DEF_HANDLED_INVITE_SUBJECT_FMT % message_properties
+  subject = DEF_HANDLED_INVITE_SUBJECT % message_properties
 
   template = DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE
 
@@ -246,10 +246,10 @@ def orgAppContext(data, record, new_status, apply_url):
   }
 
   if new_status == 'accepted':
-    subject = DEF_ACCEPTED_ORG_MSG_FMT % message_properties
+    subject = DEF_ACCEPTED_ORG % message_properties
     template = DEF_ACCEPTED_ORG_TEMPLATE
   else:
-    subject = DEF_REJECTED_ORG_MSG_FMT % message_properties
+    subject = DEF_REJECTED_ORG % message_properties
     template = DEF_REJECTED_ORG_TEMPLATE
 
   roles = [record.main_admin, record.backup_admin]
@@ -281,7 +281,7 @@ def newProposalContext(data, proposal, to_emails):
   }
 
   # determine the subject
-  subject = DEF_NEW_PROPOSAL_SUBJECT_FMT % message_properties
+  subject = DEF_NEW_PROPOSAL_SUBJECT % message_properties
 
   template = DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE
 
@@ -312,7 +312,7 @@ def updatedProposalContext(data, proposal, to_emails):
   }
 
   # determine the subject
-  subject = DEF_UPDATED_PROPOSAL_SUBJECT_FMT % message_properties
+  subject = DEF_UPDATED_PROPOSAL_SUBJECT % message_properties
 
   template = DEF_UPDATED_PROPOSAL_NOTIFICATION_TEMPLATE
 
@@ -346,7 +346,7 @@ def newCommentContext(data, comment, to_emails):
       }
 
   # determine the subject
-  subject = DEF_NEW_REVIEW_SUBJECT_FMT % message_properties
+  subject = DEF_NEW_REVIEW_SUBJECT % message_properties
 
   template = DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE
 
@@ -404,9 +404,9 @@ def createOrUpdateSlotTransferContext(data, slot_transfer,
 
   # determine the subject
   if update:
-    subject = DEF_UPDATE_SLOT_TRANSFER_SUBJECT_FMT % message_properties
+    subject = DEF_UPDATE_SLOT_TRANSFER_SUBJECT % message_properties
   else:
-    subject = DEF_NEW_SLOT_TRANSFER_SUBJECT_FMT % message_properties
+    subject = DEF_NEW_SLOT_TRANSFER_SUBJECT % message_properties
 
   template = DEF_SLOT_TRANSFER_NOTIFICATION_TEMPLATE
 

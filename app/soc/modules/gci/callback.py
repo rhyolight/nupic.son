@@ -41,6 +41,7 @@ class Callback(object):
   def registerViews(self):
     """Instantiates all view objects.
     """
+    from soc.modules.gci.views import accepted_orgs
     from soc.modules.gci.views import admin
     from soc.modules.gci.views import age_check
     from soc.modules.gci.views import bulk_create
@@ -59,6 +60,7 @@ class Callback(object):
     from soc.modules.gci.views import task_list
     from soc.modules.gci.views import task_create
 
+    self.views.append(accepted_orgs.AcceptedOrgsPage())
     self.views.append(admin.DashboardPage())
     self.views.append(admin.LookupLinkIdPage())
     self.views.append(age_check.AgeCheck())

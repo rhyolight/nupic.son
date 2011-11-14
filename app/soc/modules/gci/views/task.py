@@ -50,21 +50,21 @@ from soc.modules.gci.views.helper import url_patterns
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-DEF_NOT_ALLOWED_TO_OPERATE_BUTTON_FMT = ugettext(
+DEF_NOT_ALLOWED_TO_OPERATE_BUTTON = ugettext(
     'You are not allowed to operate the button named %s')
 
-DEF_NOT_ALLOWED_TO_UPLOAD_WORK_MSG = ugettext(
+DEF_NOT_ALLOWED_TO_UPLOAD_WORK = ugettext(
     'You are not allowed to upload work')
 
-DEF_NO_URL_OR_UPLOAD_MSG = ugettext(
+DEF_NO_URL_OR_UPLOAD = ugettext(
     'An error occurred, please use a valid URL or upload a file.')
 
-DEF_NO_WORK_FOUND_FMT = ugettext('No submission found with id %i')
+DEF_NO_WORK_FOUND = ugettext('No submission found with id %i')
 
-DEF_NOT_ALLOWED_TO_DELETE_MSG = ugettext(
+DEF_NOT_ALLOWED_TO_DELETE = ugettext(
     'You are not allowed to delete this submission')
 
-DEF_CANT_SEND_FOR_REVIEW_MSG = ugettext(
+DEF_CANT_SEND_FOR_REVIEW = ugettext(
     'Only a task that you own and that has submitted work can be send in '
     'for review.')
 
@@ -124,7 +124,7 @@ class WorkSubmissionForm(gci_forms.GCIModelForm):
     url = cleaned_data.get('url_to_work')
 
     if not (upload or url):
-      raise gci_forms.ValidationError(DEF_NO_URL_OR_UPLOAD_MSG)
+      raise gci_forms.ValidationError(DEF_NO_URL_OR_UPLOAD)
 
     return cleaned_data
 
@@ -164,7 +164,7 @@ class TaskViewPage(RequestHandler):
 
       if 'submit_work' in self.data.GET:
         if not task_logic.canSubmitWork(self.data.task, self.data.profile):
-          self.check.fail(DEF_NOT_ALLOWED_TO_UPLOAD_WORK_MSG)
+          self.check.fail(DEF_NOT_ALLOWED_TO_UPLOAD_WORK)
 
       if 'button' in self.data.GET:
         # check for any of the buttons
@@ -173,24 +173,24 @@ class TaskViewPage(RequestHandler):
         buttons = {}
         TaskInformation(self.data).setButtonControls(buttons)
         if button_name not in buttons:
-          self.check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON_FMT %button_name)
+          self.check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON %button_name)
 
       if 'send_for_review' in self.data.GET:
         if not task_logic.isOwnerOfTask(self.data.task, self.data.profile) or \
             not self.data.work_submissions:
-          self.check.fail(DEF_CANT_SEND_FOR_REVIEW_MSG)
+          self.check.fail(DEF_CANT_SEND_FOR_REVIEW)
 
       if 'delete_submission' in self.data.GET:
         id = self._submissionId()
         work = GCIWorkSubmission.get_by_id(id, parent=self.data.task)
 
         if not work:
-          self.check.fail(DEF_NO_WORK_FOUND_FMT %id)
+          self.check.fail(DEF_NO_WORK_FOUND %id)
 
         time_expired = work.submitted_on - datetime.datetime.now()
         if work.user.key() != self.data.user.key() or \
             time_expired > task_logic.DELETE_EXPIRATION:
-          self.check.fail(DEF_NOT_ALLOWED_TO_DELETE_MSG)
+          self.check.fail(DEF_NOT_ALLOWED_TO_DELETE)
 
 
   def context(self):
@@ -355,7 +355,7 @@ class TaskViewPage(RequestHandler):
     work = GCIWorkSubmission.get_by_id(id, parent=self.data.task)
 
     if not work:
-      return self.error(400, DEF_NO_WORK_FOUND_FMT %id)
+      return self.error(400, DEF_NO_WORK_FOUND %id)
 
     # Deletion of blobs always runs separately from transaction so it has no
     # added value to use it here.
@@ -574,7 +574,7 @@ class WorkSubmissionDownload(RequestHandler):
     work = GCIWorkSubmission.get_by_id(id, self.data.task)
 
     if not work or not work.upload_of_work:
-      return self.error(400, DEF_NO_WORK_FOUND_FMT %id)
+      return self.error(400, DEF_NO_WORK_FOUND %id)
 
     upload = work.upload_of_work
     self.response = bs_helper.send_blob(upload, save_as=upload.filename)

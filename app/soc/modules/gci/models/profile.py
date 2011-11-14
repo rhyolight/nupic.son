@@ -43,10 +43,6 @@ class GCIProfile(soc.models.role.Profile):
       'tasks which you have claimed or are mentoring.')
   automatic_task_subscription.group = ugettext("6. Notification settings")
 
-  avatar = db.StringProperty(
-      required=False, verbose_name=ugettext('Avatar'), choices=avatars.AVATARS)
-  avatar.group = ugettext("1. Public Info")
-
 
 class GCIStudentInfo(soc.models.role.StudentInfo):
   """GCIStudentInfo Model.
@@ -60,6 +56,10 @@ class GCIStudentInfo(soc.models.role.StudentInfo):
   #: Set to True if the reminder mail to upload parental consent
   #: form is sent to students
   parental_form_mail = db.BooleanProperty(default=False)
+
+  # Avatar figure chosen by the student
+  avatar = db.StringProperty(
+      required=False, verbose_name=ugettext('Avatar'), choices=avatars.AVATARS)
 
   #: Property pointing to the consent form
   consent_form = blobstore.BlobReferenceProperty(

@@ -41,36 +41,34 @@ from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import UNPUBLISHED
 
 
-DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG = ugettext(
+DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
     'You cannot register as a student since you are already a '
     'mentor or organization administrator in %s.')
 
-DEF_ALL_WORK_STOPPED_MSG = ugettext(
+DEF_ALL_WORK_STOPPED = ugettext(
     'All work on tasks has stopped. You can no longer place comments, '
     'submit work or make any changes to existing tasks.')
 
-DEF_NO_TASK_CREATE_PRIV_MSG_FMT = ugettext(
-    'You do not have sufficient privileges to create a new task for '
-    'the organization %s.' )
+DEF_NO_TASK_CREATE_PRIV = ugettext(
+    'You do not have sufficient privileges to create a new task for %s.' )
 
-DEF_NO_TASK_EDIT_PRIV_MSG_FMT = ugettext(
-    'You do not have sufficient privileges to edit a new task for '
-    'the organization %s.' )
+DEF_NO_TASK_EDIT_PRIV = ugettext(
+    'You do not have sufficient privileges to edit a new task for %s.' )
 
-DEF_NO_PREV_ORG_MEMBER_MSG = ugettext(
+DEF_NO_PREV_ORG_MEMBER = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
     'organization in Google Summer of Code or Google Code In.')
 
-DEF_TASK_UNEDITABLE_STATUS_MSG = ugettext(
-    'You cannot edit a published task.')
+DEF_TASK_UNEDITABLE_STATUS = ugettext(
+    'This task is already published and published tasks cannot be edited.')
 
-DEF_TASK_MUST_BE_IN_STATES_FMT = ugettext(
+DEF_TASK_MUST_BE_IN_STATES = ugettext(
     'The task must be in one of the followings states %s')
 
-DEF_TASK_MAY_NOT_BE_IN_STATES_FMT = ugettext(
+DEF_TASK_MAY_NOT_BE_IN_STATES = ugettext(
     'The task may not be in one of the followings states %s')
 
-DEF_ORG_APP_REJECTED_MSG = ugettext(
+DEF_ORG_APP_REJECTED = ugettext(
     'This org application has been rejected')
 
 
@@ -107,7 +105,7 @@ class Mutator(access_checker.Mutator):
 
     if not task or (task.program.key() != self.data.program.key()) or \
         task.status == 'invalid':
-      error_msg = access_checker.DEF_ID_BASED_ENTITY_NOT_EXISTS_MSG_FMT % {
+      error_msg = access_checker.DEF_ID_BASED_ENTITY_NOT_EXISTS % {
           'model': 'GCITask',
           'id': id,
           }
@@ -146,7 +144,7 @@ class Mutator(access_checker.Mutator):
       raise NotFound("There is no org_app for the org_id %s" % org_id)
 
     if self.data.org_app_record.status != 'accepted':
-      raise AccessViolation(DEF_ORG_APP_REJECTED_MSG)
+      raise AccessViolation(DEF_ORG_APP_REJECTED)
 
 
 class DeveloperMutator(access_checker.DeveloperMutator,
@@ -166,10 +164,10 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.timeline.tasksPubliclyVisible():
       period = self.data.timeline.tasksPubliclyVisibleOn()
       raise AccessViolation(
-          access_checker.DEF_PAGE_INACTIVE_BEFORE_MSG_FMT % period)
+          access_checker.DEF_PAGE_INACTIVE_BEFORE % period)
 
     if not self.data.task.isPublished():
-      error_msg = access_checker.DEF_PAGE_INACTIVE_MSG
+      error_msg = access_checker.DEF_PAGE_INACTIVE
       raise AccessViolation(error_msg)
 
   def isTaskInState(self, states):
@@ -181,7 +179,7 @@ class AccessChecker(access_checker.AccessChecker):
     assert access_checker.isSet(self.data.task)
 
     if self.data.task.status not in states:
-      raise AccessViolation(DEF_TASK_MUST_BE_IN_STATES_FMT %states)
+      raise AccessViolation(DEF_TASK_MUST_BE_IN_STATES %states)
 
   def isTaskNotInStates(self, states):
     """Checks if the task is not in any of the given states.
@@ -192,7 +190,7 @@ class AccessChecker(access_checker.AccessChecker):
     assert access_checker.isSet(self.data.task)
 
     if self.data.task.status in states:
-      raise AccessViolation(DEF_TASK_MAY_NOT_BE_IN_STATES_FMT %states)
+      raise AccessViolation(DEF_TASK_MAY_NOT_BE_IN_STATES %states)
 
   def canApplyStudent(self, edit_url):
     """Checks if a user may apply as a student to the program.
@@ -204,7 +202,7 @@ class AccessChecker(access_checker.AccessChecker):
         raise RedirectRequest(edit_url)
       else:
         raise AccessViolation(
-            DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT_MSG % 
+            DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT % 
             self.data.program.name)
 
     self.studentSignupActive()
@@ -238,7 +236,7 @@ class AccessChecker(access_checker.AccessChecker):
     gci_profile = q.get()
 
     if not (gsoc_profile or gci_profile):
-      raise AccessViolation(DEF_NO_PREV_ORG_MEMBER_MSG)
+      raise AccessViolation(DEF_NO_PREV_ORG_MEMBER)
 
   def canCreateNewOrg(self):
     """A user can create a new org if they have an accepted org app.
@@ -260,7 +258,7 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.timeline.allWorkStopped():
       return
 
-    raise AccessViolation(DEF_ALL_WORK_STOPPED_MSG)
+    raise AccessViolation(DEF_ALL_WORK_STOPPED)
 
   def canCreateTask(self):
     """Checks whether the currently logged in user can edit the task.
@@ -270,12 +268,12 @@ class AccessChecker(access_checker.AccessChecker):
 
     valid_org_keys = [o.key() for o in self.data.mentor_for]
     if self.data.organization.key() not in valid_org_keys:
-      raise AccessViolation(DEF_NO_TASK_CREATE_PRIV_MSG_FMT % (
+      raise AccessViolation(DEF_NO_TASK_CREATE_PRIV % (
           self.data.organization.name))
 
     if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
         or self.data.timeline.tasksClaimEnded()):
-      raise AccessViolation(access_checker.DEF_PAGE_INACTIVE_MSG)
+      raise AccessViolation(access_checker.DEF_PAGE_INACTIVE)
 
   def canEditTask(self):
     """Checks whether the currently logged in user can edit the task.
@@ -287,15 +285,15 @@ class AccessChecker(access_checker.AccessChecker):
 
     valid_org_keys = [o.key() for o in self.data.mentor_for]
     if task.org.key() not in valid_org_keys:
-      raise AccessViolation(DEF_NO_TASK_EDIT_PRIV_MSG_FMT % (
+      raise AccessViolation(DEF_NO_TASK_EDIT_PRIV % (
           task.org.name))
 
     if task.status not in UNPUBLISHED:
-      raise AccessViolation(DEF_TASK_UNEDITABLE_STATUS_MSG)
+      raise AccessViolation(DEF_TASK_UNEDITABLE_STATUS)
 
     if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
         or self.data.timeline.tasksClaimEnded()):
-      raise AccessViolation(access_checker.DEF_PAGE_INACTIVE_MSG)
+      raise AccessViolation(access_checker.DEF_PAGE_INACTIVE)
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   """Developer access checker for GCI specific methods.

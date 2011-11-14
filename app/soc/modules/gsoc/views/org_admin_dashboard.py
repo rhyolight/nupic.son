@@ -44,7 +44,7 @@ from soc.modules.gsoc.views import dashboard
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-DEF_NOT_ADMIN_MSG = ugettext(
+DEF_NOT_ADMIN = ugettext(
     'You must be an organization administrator for at least one '
     'organization in the program to access this page.')
 
@@ -228,7 +228,7 @@ class Dashboard(dashboard.DashboardPage):
     if self.data.is_org_admin:
       return
 
-    raise AccessViolation(DEF_NOT_ADMIN_MSG)
+    raise AccessViolation(DEF_NOT_ADMIN)
 
   def components(self):
     """Returns the components that are active on the page.

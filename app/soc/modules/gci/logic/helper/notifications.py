@@ -37,21 +37,21 @@ from soc.logic.helper import notifications
 from soc.tasks import mailer
 
 
-DEF_BULK_CREATE_COMPLETE_SUBJECT_MSG = ugettext(
+DEF_BULK_CREATE_COMPLETE_SUBJECT = ugettext(
     'Bulk creation of tasks completed')
 
 DEF_BULK_CREATE_COMPLETE_TEMPLATE = 'v2/modules/gci/reminder/bulk_create.html'
 
-DEF_TASK_REQUEST_SUBJECT_MSG = ugettext(
+DEF_TASK_REQUEST_SUBJECT = ugettext(
     'A new task has been requested from your organization')
 
 DEF_TASK_REQUEST_TEMPLATE = \
     'modules/gci/notification/messages/task_request.html'
 
-DEF_PARENTAL_FORM_SUBJECT_MSG = ugettext(
+DEF_PARENTAL_FORM_SUBJECT = ugettext(
     '[%(program_name)s]: Parental Consent Form - Please Respond')
 
-DEF_NEW_TASK_COMMENT_SUBJECT_FMT = ugettext(
+DEF_NEW_TASK_COMMENT_SUBJECT = ugettext(
     '[%(program_name)s] New comment on %(task_title)s by %(commented_by)s')
 
 DEF_NEW_TASK_COMMENT_NOTIFICATION_TEMPLATE = \
@@ -129,7 +129,7 @@ def sendBulkCreationCompleted(bulk_data):
       'bulk_data' : bulk_data
       }
 
-  subject = DEF_BULK_CREATE_COMPLETE_SUBJECT_MSG
+  subject = DEF_BULK_CREATE_COMPLETE_SUBJECT
   template = DEF_BULK_CREATE_COMPLETE_TEMPLATE
 
   sendMail(bulk_data.created_by.user, subject, message_properties, template)
@@ -143,7 +143,7 @@ def sendParentalConsentFormRequired(user_entity, program_entity):
     program_entity: The entity for the program for which the task
                     was completed.
   """
-  subject = DEF_PARENTAL_FORM_SUBJECT_MSG % {
+  subject = DEF_PARENTAL_FORM_SUBJECT % {
       'program_name': program_entity.name
       }
   template = 'modules/gci/notification/messages/parental_form_required.html'
@@ -216,7 +216,7 @@ def getTaskCommentContext(task, comment, to_emails):
       'task_url': task_url,
   }
 
-  subject = DEF_NEW_TASK_COMMENT_SUBJECT_FMT % message_properties
+  subject = DEF_NEW_TASK_COMMENT_SUBJECT % message_properties
   template = DEF_NEW_TASK_COMMENT_NOTIFICATION_TEMPLATE
   body = loader.render_to_string(template, dictionary=message_properties)
 
