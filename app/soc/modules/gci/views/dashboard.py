@@ -414,9 +414,77 @@ class MyOrgsTaskList(Component):
 
     list_config = lists.ListConfiguration()
 
+    def mentorsFromPrefetchedList(entity, *args):
+      """Returns the comma separated list of mentor names for the entity.
+
+      Args:
+        entity: The task entity that is being considered for the row
+        args: list of prefetched entities
+        args[0]: Dictionary of mentors will be the first item of args.
+            In each key-value pair in the dictionary key will be the mentor
+            entity key and the value will be the entity itself.
+      """
+
+      mentor_names = []
+      for key in entity.mentors:
+        mentor = args[0].get(key)
+        mentor_names.append(mentor.name())
+
+      return ', '.join(mentor_names)
+
+
     list_config.addSimpleColumn('title', 'Title')
+    list_config.addColumn('org', 'Organization',
+                          lambda entity, *args: entity.org.name)
+    list_config.addColumn('difficulty', 'Difficulty',
+                          lambda entity, *args: entity.taskDifficultyName())
+    list_config.addColumn('task_type', 'Type',
+                          lambda entity, *args: entity.taskType())
+    list_config.addColumn('arbit_tag', 'Tags',
+                          lambda entity, *args: entity.taskArbitTag())
+    list_config.addColumn('time_to_complete', 'Time to complete',
+                          lambda entity, *args: entity.taskTimeToComplete())
+
+    # This complicated comma separated mentor names string construction
+    # is separated in an inline function.
+    list_config.addColumn('mentors', 'Mentors', mentorsFromPrefetchedList)
+
+    list_config.addColumn(
+        'student', 'Student',
+        lambda ent, *args: ent.student.name() if ent.student else '',
+        hidden=True)
+    list_config.addColumn(
+        'created_by', 'Created by',
+        lambda entity, *args: entity.created_by.name() \
+            if entity.created_by else '',
+        hidden=True)
+    list_config.addColumn(
+        'modified_by', 'Modified by',
+        lambda entity, *args: entity.modified_by.name() \
+            if entity.modified_by else '',
+        hidden=True)
+    list_config.addColumn(
+        'created_on', 'Created on',
+        lambda entity, *args: format(entity.created_on, DATETIME_FORMAT) \
+            if entity.created_on else '',
+        hidden=True)
+    list_config.addColumn(
+        'modified_on', 'Modified on',
+        lambda entity, *args: format(entity.modified_on, DATETIME_FORMAT) \
+            if entity.modified_on else '',
+        hidden=True)
+    list_config.addColumn('closed_on', 'Closed on',
+        lambda entity, *args: format(
+            entity.closed_on, DATETIME_FORMAT) if entity.closed_on else '',
+        hidden=True)
     list_config.addSimpleColumn('status', 'Status')
-    list_config.addSimpleColumn('description', 'Description', hidden=True)
+
+    # TODO (madhu): Super temporary solution until the pretty lists are up.
+    list_config.addColumn('edit', 'Edit',
+        lambda entity, *args: (
+          '<a href="%s" style="color:#0000ff;text-decoration:underline;">'
+          'Edit</a>' % (data.redirect.id(entity.key().id()).urlOf(
+              'gci_edit_task'))))
 
     list_config.setRowAction(
         lambda e, *args: data.redirect.id(e.key().id()).
@@ -456,8 +524,10 @@ class MyOrgsTaskList(Component):
     q.filter('org IN', self.data.mentor_for)
 
     starter = lists.keyStarter
+    prefetcher = lists.listModelPrefetcher(
+        GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter)
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
 
     return response_builder.build()
