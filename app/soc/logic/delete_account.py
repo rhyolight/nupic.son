@@ -24,6 +24,8 @@ __authors__ = [
 
 from google.appengine.api import mail
 
+from soc.logic import accounts
+
 
 ADMIN_REQUEST_EMAIL_SUBJEST = """
 User %(link_id)s has requested account deletion.
@@ -43,14 +45,15 @@ def request_account_deletion(user):
   
   This is a temporary method, until we have an automated solution.
   """
+  account = accounts.denormalizeAccount(user.account)
 
-  sender = user.account.email()
+  sender = account.email()
   subject = ADMIN_REQUEST_EMAIL_SUBJEST % {
       'link_id': user.link_id
       }
   body = ADMIN_REQUEST_EMAIL_BODY % {
       'name': user.name,
-      'email': user.account.email(),
+      'email': account.email(),
       'link_id': user.link_id
       }
 
