@@ -14,6 +14,11 @@ limitations under the License.
 {% endcomment %}
 
 {% block page_content %}
+{% if posted %}
+<div class="block block-user-message">
+  <p>You have requested your account to be deleted. All your information will be removed shortly.</p>
+</div>
+{% endif %}
 <div class="block block-page block-delete-account">
   <div class="block-form-title">
     <span class="title">Delete your account?</span>
