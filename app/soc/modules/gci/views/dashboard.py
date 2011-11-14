@@ -34,6 +34,7 @@ from soc.models.org_app_record import OrgAppRecord
 
 from soc.modules.gci.logic import org_app as org_app_logic
 from soc.modules.gci.models import task
+from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
@@ -222,6 +223,9 @@ class DashboardPage(RequestHandler):
 
     components.append(MyOrgsTaskList(self.request, self.data))
 
+    # add org list
+    components.append(MyOrgsList(self.request, self.data))
+
     return components
 
   def _getLoneUserComponents(self):
@@ -275,6 +279,7 @@ class DashboardPage(RequestHandler):
     """
     links = []
 
+    # org app link for
     link = self._getAddNewOrgAppLink()
     if link:
       links.append(link)
@@ -529,5 +534,71 @@ class MyOrgsTaskList(Component):
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter, prefetcher=prefetcher)
+
+    return response_builder.build()
+
+
+class MyOrgsList(Component):
+  """Component for listing the orgs of the current user.
+
+  Since mentor_for is a list of orgs, we need to give org selection first
+  """
+
+  def __init__(self, request, data):
+    """Initializes the component.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    super(MyOrgsList, self).__init__(request, data)
+
+    list_config = lists.ListConfiguration()
+
+    list_config.addSimpleColumn('name', 'Organization Name')
+
+    list_config.setRowAction(
+        lambda e, *args: data.redirect.organization(e).
+            urlOf('gci_create_task'))
+
+    self._list_config = list_config
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return'v2/modules/gci/dashboard/list_component.html'
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=2, preload_list=False)
+
+    return {
+        'name': 'create_tasks',
+        'title': 'Create Task',
+        'lists': [list],
+        'description': ugettext('Create task for students. Since you may '
+            'belong to more than one organizations, you need to choose one '
+            'organization you will create the tasks for.'),
+        }
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    if lists.getListIndex(self.request) != 2:
+      return None
+
+    q = GCIOrganization.all()
+    q.filter('scope', self.data.program)
+    q.filter('org IN', self.data.mentor_for)
+
+    starter = lists.keyStarter
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter)
 
     return response_builder.build()
