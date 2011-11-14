@@ -53,3 +53,4 @@ class DeleteAccountPage(RequestHandler):
 
   def post(self):
     delete_account.request_account_deletion(self.data.user)
+    self.redirect.program().to('gci_delete_account', validated=True)
