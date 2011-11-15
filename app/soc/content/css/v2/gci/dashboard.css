@@ -186,7 +186,8 @@
 {
   background-image: url(../../../images/v2/soc/dashboard/view.png);
 }
-.column-entry.requests
+.column-entry.requests,
+.column-entry.invite_mentor
 {
   background-image: url(../../../images/v2/soc/dashboard/requests.png);
 }
