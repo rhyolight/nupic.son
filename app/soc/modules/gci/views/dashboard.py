@@ -240,6 +240,9 @@ class DashboardPage(RequestHandler):
     # add invite mentors component
     components.append(MyOrgsListBeforeInviteMentor(self.request, self.data))
 
+    # add invite org admins component
+    components.append(MyOrgsListBeforeInviteOrgAdmin(self.request, self.data))
+
     # add bulk create tasks component 
     components.append(MyOrgsListBeforeBulkCreateTask(self.request, self.data))
 
