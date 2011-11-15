@@ -188,8 +188,11 @@ class DashboardPage(RequestHandler):
 
     if self.data.student_info:
       components += self._getStudentComponents()
+    elif self.data.is_org_admin:
+      components += self._getOrgAdminComponents()
+      components += self._getMentorComponents()
     elif self.data.is_mentor:
-      components += self._getOrgMemberComponents()
+      components += self._getMentorComponents()
     else:
       components += self._getLoneUserComponents()
 
@@ -212,7 +215,7 @@ class DashboardPage(RequestHandler):
 
     return components
 
-  def _getOrgMemberComponents(self):
+  def _getMentorComponents(self):
     """Get the dashboard components for Organization members.
     """
     components = []
@@ -226,6 +229,15 @@ class DashboardPage(RequestHandler):
     # add org list just before creating task and invitation, so mentor can
     # choose which organization the task or invitite will be created for
     components.append(MyOrgsListBeforeCreateTask(self.request, self.data))
+
+    return components
+
+  def _getOrgAdminComponents(self):
+    """Get the dashboard components for org admins.
+    """
+    components = []
+
+    # add invite mentors compontent
     components.append(MyOrgsListBeforeInviteMentor(self.request, self.data))
 
     return components
