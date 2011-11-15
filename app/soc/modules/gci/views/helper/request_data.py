@@ -318,7 +318,7 @@ class RedirectHelper(request_data.RedirectHelper):
     if request.type == 'Request':
       self._url_name = 'show_gci_request'
     else:
-      self._url_name = 'show_gci_invitation'
+      self._url_name = 'respond_gci_invite'
     return self
 
   def invite(self, role=None, organization=None):
