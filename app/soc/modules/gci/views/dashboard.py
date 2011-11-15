@@ -657,4 +657,4 @@ class MyOrgsListBeforeInviteMentor(MyOrgsList):
     r = data.redirect
 
     self._list_config.setRowAction(
-        lambda e, *args: r.organization(e).invite('mentor').urlOf('gci_invite'))
+        lambda e, *args: r.invite('mentor', e).urlOf('gci_invite'))
