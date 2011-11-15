@@ -223,8 +223,10 @@ class DashboardPage(RequestHandler):
 
     components.append(MyOrgsTaskList(self.request, self.data))
 
-    # add org list
-    components.append(MyOrgsList(self.request, self.data))
+    # add org list just before creating task and invitation, so mentor can
+    # choose which organization the task or invitite will be created for
+    components.append(MyOrgsListBeforeCreateTask(self.request, self.data))
+    components.append(MyOrgsListBeforeInviteMentor(self.request, self.data))
 
     return components
 
@@ -557,11 +559,22 @@ class MyOrgsList(Component):
 
     list_config.addSimpleColumn('name', 'Organization Name')
 
-    list_config.setRowAction(
-        lambda e, *args: data.redirect.organization(e).
-            urlOf('gci_create_task'))
-
     self._list_config = list_config
+
+    self._setRowAction(request, data)
+
+    self._setIdx()
+
+  def _setIdx(self):
+    raise NotImplemented
+
+  def _setRowAction(self, request, data):
+    """Since setRowAction can be vary, it must be implemented individually.
+    """
+    raise NotImplemented
+    
+  def _getContext(self):
+    raise NotImplemented
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
@@ -571,17 +584,8 @@ class MyOrgsList(Component):
   def context(self):
     """Returns the context of this component.
     """
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=2, preload_list=False)
+    return self._getContext()
 
-    return {
-        'name': 'create_tasks',
-        'title': 'Create Task',
-        'lists': [list],
-        'description': ugettext('Create task for students. Since you may '
-            'belong to more than one organizations, you need to choose one '
-            'organization you will create the tasks for.'),
-        }
 
   def getListData(self):
     """Returns the list data as requested by the current request.
@@ -589,12 +593,12 @@ class MyOrgsList(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 2:
+    if lists.getListIndex(self.request) != self.idx:
       return None
 
     q = GCIOrganization.all()
     q.filter('scope', self.data.program)
-    q.filter('org IN', self.data.mentor_for)
+    q.filter('__key__ IN', self.data.mentor_for)
 
     starter = lists.keyStarter
 
@@ -602,3 +606,55 @@ class MyOrgsList(Component):
         self.request, self._list_config, q, starter)
 
     return response_builder.build()
+
+
+class MyOrgsListBeforeCreateTask(MyOrgsList):
+  """Component for listing the orgs of the current user, just before creating
+  task.
+  """
+
+  def _setIdx(self):
+    self.idx = 2
+
+  def _getContext(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.idx, preload_list=False)
+
+    return {
+        'name': 'create_tasks',
+        'title': 'Create Task',
+        'lists': [list],
+        'description': ugettext('Create task for students. Since you may '
+            'belong to more than one organizations, you need to choose one '
+            'organization you will create the tasks for.')}
+
+  def _setRowAction(self, request, data):
+    self._list_config.setRowAction(
+        lambda e, *args: data.redirect.organization(e).
+            urlOf('gci_create_task'))
+
+
+class MyOrgsListBeforeInviteMentor(MyOrgsList):
+  """Component for listing the orgs of the current user, just before creating
+  invite.
+  """
+
+  def _setIdx(self):
+    self.idx = 3
+
+  def _getContext(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.idx, preload_list=False)
+
+    return {
+        'name': 'invite_mentor',
+        'title': 'Invite mentor',
+        'lists': [list],
+        'description': ugettext('Invite mentors to be part of your '
+            'organization.')}
+
+  def _setRowAction(self, request, data):
+    r = data.redirect
+
+    self._list_config.setRowAction(
+        lambda e, *args: r.organization(e).invite('mentor').urlOf('gci_invite'))
