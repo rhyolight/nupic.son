@@ -638,7 +638,7 @@ class MyOrgsListBeforeCreateTask(MyOrgsList):
         'lists': [list],
         'description': ugettext('Create task for students. Since you may '
             'belong to more than one organizations, you need to choose one '
-            'organization you will create the tasks for.')}
+            'organization you will create the task for.')}
 
   def _setRowAction(self, request, data):
     self._list_config.setRowAction(
