@@ -699,3 +699,30 @@ class MyOrgsListBeforeInviteMentor(MyOrgsList):
 
     self._list_config.setRowAction(
         lambda e, *args: r.invite('mentor', e).urlOf('gci_invite'))
+
+
+class MyOrgsListBeforeInviteOrgAdmin(MyOrgsList):
+  """Component for listing the organizations of the current user, just before
+  he or she creates a new org admin invite.
+  """
+
+  def _setIdx(self):
+    self.idx = 4
+
+  def _getContext(self):
+    org_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.idx, preload_list=False)
+
+    return {
+        'name': 'invite_org_admin',
+        'title': 'Invite Org Admin',
+        'lists': [org_list],
+        'description': ugettext('Invite org admins to be part of your '
+            'organization. Please note that once they accept your invitation, '
+            'they will become mentors too.')}
+
+  def _setRowAction(self, request, data):
+    r = data.redirect
+
+    self._list_config.setRowAction(
+        lambda e, *args: r.invite('org_admin', e).urlOf('gci_invite'))
