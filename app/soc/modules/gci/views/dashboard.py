@@ -514,7 +514,7 @@ class MyOrgsTaskList(Component):
         'name': 'all_org_tasks',
         'title': 'All tasks for my organizations',
         'lists': [list],
-        'description': ugettext('List of all tasks of my organization'),
+        'description': ugettext('List of all tasks for my organization'),
         }
 
   def getListData(self):
