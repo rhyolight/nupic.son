@@ -34,6 +34,7 @@ from soc.logic import cleaning
 from soc.logic import invite as invite_logic
 from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
+from soc.logic.helper import notifications
 
 from soc.models.user import User
 
@@ -237,9 +238,9 @@ class InvitePage(RequestHandler):
 
     def create_invite_txn():
       invite = invite_form.create(commit=True)
-      #context = notifications.inviteContext(self.data, invite)
-      #sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
-      #sub_txn()
+      context = notifications.inviteContext(self.data, invite)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
+      sub_txn()
       return invite
 
     for user in self.data.users_to_invite:
