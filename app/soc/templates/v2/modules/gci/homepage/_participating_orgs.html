@@ -3,7 +3,10 @@
     <div class="block-title">Participating Organizations</div>
     <div class="block-content">
       {% for org in participating_orgs %}
+        <img src="{{ org.logo }}" alt="{{ name }}"/>
+        <!-- Uncomment the line below, when organization home pages are ready
         <a href="{{ org.link }}"><img src="{{ org.logo }}" alt="{{ name }}" /></a>
+        -->
       {% endfor %}
     </div>
     <div class="block-footer"><a href="{{ org_list_url }}">See all participating organizations</a></div>
