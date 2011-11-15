@@ -237,7 +237,7 @@ class DashboardPage(RequestHandler):
     """
     components = []
 
-    # add invite mentors compontent
+    # add invite mentors component
     components.append(MyOrgsListBeforeInviteMentor(self.request, self.data))
 
     # add bulk create tasks component 
