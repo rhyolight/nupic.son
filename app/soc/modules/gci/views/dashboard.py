@@ -632,13 +632,13 @@ class MyOrgsListBeforeCreateTask(MyOrgsList):
     self.idx = 2
 
   def _getContext(self):
-    list = lists.ListConfigurationResponse(
+    org_list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.idx, preload_list=False)
 
     return {
         'name': 'create_tasks',
         'title': 'Create Task',
-        'lists': [list],
+        'lists': [org_list],
         'description': ugettext('Create task for students. Since you may '
             'belong to more than one organizations, you need to choose one '
             'organization you will create the task for.')}
@@ -684,13 +684,13 @@ class MyOrgsListBeforeInviteMentor(MyOrgsList):
     self.idx = 3
 
   def _getContext(self):
-    list = lists.ListConfigurationResponse(
+    org_list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.idx, preload_list=False)
 
     return {
         'name': 'invite_mentor',
         'title': 'Invite mentor',
-        'lists': [list],
+        'lists': [org_list],
         'description': ugettext('Invite mentors to be part of your '
             'organization.')}
 
