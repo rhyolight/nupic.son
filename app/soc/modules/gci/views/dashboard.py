@@ -692,7 +692,7 @@ class MyOrgsListBeforeInviteMentor(MyOrgsList):
 
     return {
         'name': 'invite_mentor',
-        'title': 'Invite mentor',
+        'title': 'Invite Mentor',
         'lists': [org_list],
         'description': ugettext('Invite mentors to be part of your '
             'organization.')}
