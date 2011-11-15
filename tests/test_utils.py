@@ -181,8 +181,9 @@ class SoCTestCase(unittest.TestCase):
     self.dev_test = 'DEV_TEST' in os.environ
 
   def assertItemsEqual(self, expected_seq, actual_seq, msg=''):
-    """Asserts expected_seq and actual_seq have the same element counts.
+    """An unordered sequence / set specific comparison.
 
+    It asserts that expected_seq and actual_seq contain the same elements.
     This method is heavily borrowed from Python 2.7 unittest
     library (since Melange uses Python 2.5 for deployment):
     http://svn.python.org/view/python/tags/r271/Lib/unittest/case.py?view=markup#l844

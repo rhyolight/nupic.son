@@ -34,6 +34,7 @@ from soc.models.org_app_record import OrgAppRecord
 
 from soc.modules.gci.logic import org_app as org_app_logic
 from soc.modules.gci.models import task
+from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
@@ -222,6 +223,11 @@ class DashboardPage(RequestHandler):
 
     components.append(MyOrgsTaskList(self.request, self.data))
 
+    # add org list just before creating task and invitation, so mentor can
+    # choose which organization the task or invitite will be created for
+    components.append(MyOrgsListBeforeCreateTask(self.request, self.data))
+    components.append(MyOrgsListBeforeInviteMentor(self.request, self.data))
+
     return components
 
   def _getLoneUserComponents(self):
@@ -275,6 +281,7 @@ class DashboardPage(RequestHandler):
     """
     links = []
 
+    # org app link for
     link = self._getAddNewOrgAppLink()
     if link:
       links.append(link)
@@ -414,9 +421,77 @@ class MyOrgsTaskList(Component):
 
     list_config = lists.ListConfiguration()
 
+    def mentorsFromPrefetchedList(entity, *args):
+      """Returns the comma separated list of mentor names for the entity.
+
+      Args:
+        entity: The task entity that is being considered for the row
+        args: list of prefetched entities
+        args[0]: Dictionary of mentors will be the first item of args.
+            In each key-value pair in the dictionary key will be the mentor
+            entity key and the value will be the entity itself.
+      """
+
+      mentor_names = []
+      for key in entity.mentors:
+        mentor = args[0].get(key)
+        mentor_names.append(mentor.name())
+
+      return ', '.join(mentor_names)
+
+
     list_config.addSimpleColumn('title', 'Title')
+    list_config.addColumn('org', 'Organization',
+                          lambda entity, *args: entity.org.name)
+    list_config.addColumn('difficulty', 'Difficulty',
+                          lambda entity, *args: entity.taskDifficultyName())
+    list_config.addColumn('task_type', 'Type',
+                          lambda entity, *args: entity.taskType())
+    list_config.addColumn('arbit_tag', 'Tags',
+                          lambda entity, *args: entity.taskArbitTag())
+    list_config.addColumn('time_to_complete', 'Time to complete',
+                          lambda entity, *args: entity.taskTimeToComplete())
+
+    # This complicated comma separated mentor names string construction
+    # is separated in an inline function.
+    list_config.addColumn('mentors', 'Mentors', mentorsFromPrefetchedList)
+
+    list_config.addColumn(
+        'student', 'Student',
+        lambda ent, *args: ent.student.name() if ent.student else '',
+        hidden=True)
+    list_config.addColumn(
+        'created_by', 'Created by',
+        lambda entity, *args: entity.created_by.name() \
+            if entity.created_by else '',
+        hidden=True)
+    list_config.addColumn(
+        'modified_by', 'Modified by',
+        lambda entity, *args: entity.modified_by.name() \
+            if entity.modified_by else '',
+        hidden=True)
+    list_config.addColumn(
+        'created_on', 'Created on',
+        lambda entity, *args: format(entity.created_on, DATETIME_FORMAT) \
+            if entity.created_on else '',
+        hidden=True)
+    list_config.addColumn(
+        'modified_on', 'Modified on',
+        lambda entity, *args: format(entity.modified_on, DATETIME_FORMAT) \
+            if entity.modified_on else '',
+        hidden=True)
+    list_config.addColumn('closed_on', 'Closed on',
+        lambda entity, *args: format(
+            entity.closed_on, DATETIME_FORMAT) if entity.closed_on else '',
+        hidden=True)
     list_config.addSimpleColumn('status', 'Status')
-    list_config.addSimpleColumn('description', 'Description', hidden=True)
+
+    # TODO (madhu): Super temporary solution until the pretty lists are up.
+    list_config.addColumn('edit', 'Edit',
+        lambda entity, *args: (
+          '<a href="%s" style="color:#0000ff;text-decoration:underline;">'
+          'Edit</a>' % (data.redirect.id(entity.key().id()).urlOf(
+              'gci_edit_task'))))
 
     list_config.setRowAction(
         lambda e, *args: data.redirect.id(e.key().id()).
@@ -456,8 +531,130 @@ class MyOrgsTaskList(Component):
     q.filter('org IN', self.data.mentor_for)
 
     starter = lists.keyStarter
+    prefetcher = lists.listModelPrefetcher(
+        GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+
+    return response_builder.build()
+
+
+class MyOrgsList(Component):
+  """Component for listing the orgs of the current user.
+
+  Since mentor_for is a list of orgs, we need to give org selection first
+  """
+
+  def __init__(self, request, data):
+    """Initializes the component.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    super(MyOrgsList, self).__init__(request, data)
+
+    list_config = lists.ListConfiguration()
+
+    list_config.addSimpleColumn('name', 'Organization Name')
+
+    self._list_config = list_config
+
+    self._setRowAction(request, data)
+
+    self._setIdx()
+
+  def _setIdx(self):
+    raise NotImplemented
+
+  def _setRowAction(self, request, data):
+    """Since setRowAction can be vary, it must be implemented individually.
+    """
+    raise NotImplemented
+    
+  def _getContext(self):
+    raise NotImplemented
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return'v2/modules/gci/dashboard/list_component.html'
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    return self._getContext()
+
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    if lists.getListIndex(self.request) != self.idx:
+      return None
+
+    q = GCIOrganization.all()
+    q.filter('scope', self.data.program)
+    q.filter('__key__ IN', self.data.mentor_for)
+
+    starter = lists.keyStarter
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter)
 
     return response_builder.build()
+
+
+class MyOrgsListBeforeCreateTask(MyOrgsList):
+  """Component for listing the orgs of the current user, just before creating
+  task.
+  """
+
+  def _setIdx(self):
+    self.idx = 2
+
+  def _getContext(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.idx, preload_list=False)
+
+    return {
+        'name': 'create_tasks',
+        'title': 'Create Task',
+        'lists': [list],
+        'description': ugettext('Create task for students. Since you may '
+            'belong to more than one organizations, you need to choose one '
+            'organization you will create the tasks for.')}
+
+  def _setRowAction(self, request, data):
+    self._list_config.setRowAction(
+        lambda e, *args: data.redirect.organization(e).
+            urlOf('gci_create_task'))
+
+
+class MyOrgsListBeforeInviteMentor(MyOrgsList):
+  """Component for listing the orgs of the current user, just before creating
+  invite.
+  """
+
+  def _setIdx(self):
+    self.idx = 3
+
+  def _getContext(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.idx, preload_list=False)
+
+    return {
+        'name': 'invite_mentor',
+        'title': 'Invite mentor',
+        'lists': [list],
+        'description': ugettext('Invite mentors to be part of your '
+            'organization.')}
+
+  def _setRowAction(self, request, data):
+    r = data.redirect
+
+    self._list_config.setRowAction(
+        lambda e, *args: r.organization(e).invite('mentor').urlOf('gci_invite'))
