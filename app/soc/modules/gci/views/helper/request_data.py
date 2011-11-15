@@ -321,12 +321,12 @@ class RedirectHelper(request_data.RedirectHelper):
       self._url_name = 'show_gci_invitation'
     return self
 
-  def invite(self, role=None):
+  def invite(self, role=None, organization=None):
     """Sets args for an url_patterns.INVITE redirect.
     """
     if not role:
       assert 'role' in self._data.kwargs
       role = self._data.kwargs['role']
-    self.organization()
+    self.organization(organization)
     self.kwargs['role'] = role
     return self
