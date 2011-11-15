@@ -240,6 +240,9 @@ class DashboardPage(RequestHandler):
     # add invite mentors compontent
     components.append(MyOrgsListBeforeInviteMentor(self.request, self.data))
 
+    # add bulk create tasks component 
+    components.append(MyOrgsListBeforeBulkCreateTask(self.request, self.data))
+
     return components
 
   def _getLoneUserComponents(self):
@@ -644,6 +647,32 @@ class MyOrgsListBeforeCreateTask(MyOrgsList):
     self._list_config.setRowAction(
         lambda e, *args: data.redirect.organization(e).
             urlOf('gci_create_task'))
+
+
+class MyOrgsListBeforeBulkCreateTask(MyOrgsList):
+  """Component for listing the orgs of the current user, just before creating
+  task.
+  """
+
+  def _setIdx(self):
+    self.idx = 2
+
+  def _getContext(self):
+    org_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.idx, preload_list=False)
+
+    return {
+        'name': 'bulk_create_tasks',
+        'title': 'Bulk Upload Tasks',
+        'lists': [org_list],
+        'description': ugettext('Bulk upload tasks. Since you may '
+            'belong to more than one organizations, you need to choose one '
+            'organization you will upload the tasks for.')}
+
+  def _setRowAction(self, request, data):
+    self._list_config.setRowAction(
+        lambda e, *args: data.redirect.organization(e).
+            urlOf('gci_bulk_create'))
 
 
 class MyOrgsListBeforeInviteMentor(MyOrgsList):
