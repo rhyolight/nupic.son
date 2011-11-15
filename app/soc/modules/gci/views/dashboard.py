@@ -512,7 +512,7 @@ class MyOrgsTaskList(Component):
 
     return {
         'name': 'all_org_tasks',
-        'title': 'All tasks of my organizations',
+        'title': 'All tasks for my organizations',
         'lists': [list],
         'description': ugettext('List of all tasks of my organization'),
         }
