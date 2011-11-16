@@ -177,6 +177,20 @@ class InviteViewTest(BaseInviteTest):
     invite = GCIRequest.all().filter('role =', 'mentor').get()
     self.assertPropertiesEqual(self._defaultMentorInviteProperties(), invite)
 
+  def testInviteByEmailAddress(self):
+    self.data.createOrgAdmin(self.org)
+    self._invitee()
+
+    post_data = {
+        'identifiers': 'invitee@example.com'
+        }
+    response = self.post(self._inviteMentorUrl(), post_data)
+    self.assertResponseRedirect(response,
+        '/gci/dashboard/%s' % self.gci.key().name())
+
+    invite = GCIRequest.all().get()
+    self.assertPropertiesEqual(self._defaultMentorInviteProperties(), invite)
+
   def _invitee(self):
     invitee_data = GCIProfileHelper(self.gci, self.dev_test)
     invitee_data.createOtherUser('invitee@example.com')
