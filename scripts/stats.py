@@ -877,6 +877,8 @@ def main(args):
   from soc.modules.gci.models.task import GCITask
   from soc.modules.gci.models.student import GCIStudent
   from soc.modules.gci.models.organization import GCIOrganization
+  from soc.modules.gci.models.profile import GCIProfile
+  from soc.modules.gci.models.program import GCIProgram
   from soc.modules.gci import tasks as gci_tasks
 
   def slotSaver(org, value):
@@ -947,7 +949,9 @@ def main(args):
       'GSoCMentor': GSoCMentor,
       'GSoCOrgAdmin': org_admin.GSoCOrgAdmin,
       'GSoCProgram': GSoCProgram,
+      'GCIProgram': GCIProgram,
       'GSoCProfile': GSoCProfile,
+      'GCIProfile': GCIProfile,
       'GCITask': GCITask,
       'Request': Request,
       'SRequest': StudentKeyRequest,
