@@ -41,6 +41,11 @@ from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 
 
+PARENTAL_CONSENT_ADVICE = ugettext(
+    'Please make sure that you have your parent or guardian\'s permission '
+    'to participate in Google Code-in before filling out your profile!')
+
+
 class GCIUserForm(gci_forms.GCIModelForm):
   """Django form for User model in GCI program.
   """
