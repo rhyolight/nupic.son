@@ -191,6 +191,50 @@ class InviteViewTest(BaseInviteTest):
     invite = GCIRequest.all().get()
     self.assertPropertiesEqual(self._defaultMentorInviteProperties(), invite)
 
+  def testInviteByEmailAddressNotExistingUserForbidden(self):
+    self.data.createOrgAdmin(self.org)
+
+    post_data = {
+        'identifiers': 'invitee@example.com'
+        }
+    response = self.post(self._inviteMentorUrl(), post_data)
+
+    self.assertResponseOK(response)
+    self._assertFormValidationError(response, 'identifiers')
+
+  def testInviteByEmailAndUsername(self):
+    # TODO(dhans): in the perfect world, only one invite should be sent
+    self.data.createOrgAdmin(self.org)
+    invitee = self._invitee()
+
+    post_data = {
+        'identifiers': 'invitee@example.com, %s' % invitee.user.link_id
+        }
+    response = self.post(self._inviteMentorUrl(), post_data)
+
+    self.assertResponseRedirect(response,
+        '/gci/dashboard/%s' % self.gci.key().name())
+
+    invite = GCIRequest.all().fetch(10)
+    self.assertEqual(len(invite), 2)
+    # we would prefer self.assertEqual(len(invite), 1) 
+
+  def testInviteByInvalidEmailAddressForbidden(self):
+    self.data.createOrgAdmin(self.org)
+    self._testInviteInvalidEmailAddress('@example.com')
+    self._testInviteInvalidEmailAddress('John Smith @example.com')
+    self._testInviteInvalidEmailAddress('test@example')
+    self._testInviteInvalidEmailAddress('test@example.com>')
+
+  def _testInviteInvalidEmailAddress(self, email):
+    post_data = {
+        'identifiers': email
+        }
+    response = self.post(self._inviteMentorUrl(), post_data)
+
+    self.assertResponseOK(response)
+    self._assertFormValidationError(response, 'identifiers')
+
   def _invitee(self):
     invitee_data = GCIProfileHelper(self.gci, self.dev_test)
     invitee_data.createOtherUser('invitee@example.com')
