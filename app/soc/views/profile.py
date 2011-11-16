@@ -145,6 +145,12 @@ class ProfilePage(object):
 
     return tos_content
 
+  def isCreateProfileRequest(self):
+    """Returns True if the current request is supposed to create a new profile.
+    Otherwise, the result is false.
+    """
+    return self.data.kwargs.get('role') is not None
+
   def context(self):
     role = self.data.kwargs.get('role')
     if self.data.student_info or role == 'student':
