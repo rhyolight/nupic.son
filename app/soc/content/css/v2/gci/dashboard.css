@@ -107,7 +107,9 @@
 {
   background-image: url(../../../images/v2/soc/dashboard/allocate.png);
 }
-.column-entry.slots_transfer {
+.column-entry.slots_transfer,
+.column-entry.bulk_create_tasks
+{
   background-image: url(../../../images/v2/soc/dashboard/transfer.png);
 }
 .column-entry.duplicates {
@@ -187,7 +189,8 @@
   background-image: url(../../../images/v2/soc/dashboard/view.png);
 }
 .column-entry.requests,
-.column-entry.invite_mentor
+.column-entry.invite_mentor,
+.column-entry.invite_org_admin
 {
   background-image: url(../../../images/v2/soc/dashboard/requests.png);
 }

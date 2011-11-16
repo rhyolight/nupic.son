@@ -41,6 +41,7 @@ from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
+from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
 from soc.modules.gci.models.task import TASK_IN_PROGRESS
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
@@ -438,7 +439,8 @@ class TaskInformation(Template):
     is_owner = task_logic.isOwnerOfTask(task, profile)
 
     if is_org_admin:
-      context['button_unpublish'] = not task.student
+      can_unpublish = (task.status in CLAIMABLE) and not task.student
+      context['button_unpublish'] = can_unpublish
       context['button_delete'] = not task.student
 
     if is_mentor:
