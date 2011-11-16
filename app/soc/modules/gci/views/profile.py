@@ -35,7 +35,6 @@ from soc.views import forms
 from soc.views import profile
 from soc.views.helper import url_patterns
 
-from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.views import forms as gci_forms
