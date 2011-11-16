@@ -658,7 +658,7 @@ class MyOrgsListBeforeBulkCreateTask(MyOrgsList):
   """
 
   def _setIdx(self):
-    self.idx = 2
+    self.idx = 3
 
   def _getContext(self):
     org_list = lists.ListConfigurationResponse(
@@ -684,7 +684,7 @@ class MyOrgsListBeforeInviteMentor(MyOrgsList):
   """
 
   def _setIdx(self):
-    self.idx = 3
+    self.idx = 4
 
   def _getContext(self):
     org_list = lists.ListConfigurationResponse(
@@ -710,7 +710,7 @@ class MyOrgsListBeforeInviteOrgAdmin(MyOrgsList):
   """
 
   def _setIdx(self):
-    self.idx = 4
+    self.idx = 5
 
   def _getContext(self):
     org_list = lists.ListConfigurationResponse(
