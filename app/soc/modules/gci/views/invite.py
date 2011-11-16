@@ -100,6 +100,8 @@ class InviteForm(gci_forms.GCIModelForm):
     self.request_data.users_to_invite = users_to_invite
 
   def _clean_identifier(self, identifier):
+    user_to_invite = None
+
     # first check if the field represents a valid link_id
     try:
       existing_user_cleaner = cleaning.clean_existing_user('identifier')
@@ -107,7 +109,7 @@ class InviteForm(gci_forms.GCIModelForm):
     except gci_forms.ValidationError, e:
       if e.code != 'invalid':
         raise
-      
+
       # otherwise check if the field represents a valid email address
       email_cleaner = cleaning.clean_email('identifier')
       try:
