@@ -28,11 +28,14 @@ limitations under the License.
   {% endif %}
   </div>
 {% endif %}
+
 <div class="block block-form">
   <div class="block-form-title">
     <span class="title">{{ page_name }}</span>
     <span class="req">* fields required</span>
   </div>
+  {% block form_instruction %}
+  {% endblock form_instruction %}
   <form action="#" method="post" class="form-create-task clearfix">
     {% for form in forms %}
       {{ form.render }}
