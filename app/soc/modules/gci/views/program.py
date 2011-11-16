@@ -56,8 +56,7 @@ class ProgramForm(GCIModelForm):
   """Django form for the program settings.
   """
 
-  def __init__(self, scope_path, *args, **kwargs):
-    self.scope_path = scope_path
+  def __init__(self, *args, **kwargs):
     super(ProgramForm, self).__init__(*args, **kwargs)
 
     if self.instance:
@@ -108,8 +107,7 @@ class ProgramPage(RequestHandler):
     return 'v2/modules/gci/program/base.html'
 
   def context(self):
-    scope_path = self.data.program.key().id_or_name()
-    program_form = ProgramForm(scope_path, self.data.POST or None,
+    program_form = ProgramForm(self.data.POST or None,
                                instance=self.data.program)
     return {
         'page_name': 'Edit program settings',
@@ -121,8 +119,7 @@ class ProgramPage(RequestHandler):
     program = self.data.program
     to_put = []
 
-    scope_path = program.key().id_or_name()
-    program_form = ProgramForm(scope_path, self.data.POST, instance=program)
+    program_form = ProgramForm(self.data.POST, instance=program)
 
     if not program_form.is_valid():
       return False

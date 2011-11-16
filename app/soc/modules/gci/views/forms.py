@@ -374,10 +374,14 @@ class GCIBoundField(forms.BoundField):
 
     if value:
       document = db.get(value)
-      args = [document.prefix, document.scope_path + '/', document.link_id]
+      program = document.scope
+      sponsor = program.scope
+      args = [document.prefix, sponsor.link_id,
+              program.link_id, document.link_id]
     else:
-      scope_path = self.form.scope_path
-      args = ['gci_program', scope_path + '/', self.name]
+      program = self.form.instance
+      sponsor = program.scope
+      args = ['gci_program', sponsor.link_id, program.link_id, self.name]
 
     edit_document_link = reverse('edit_gci_document', args=args)
     self.help_text = """<a href="%s">Click here to edit this document.</a>
