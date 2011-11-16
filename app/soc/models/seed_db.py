@@ -49,21 +49,17 @@ from soc.models.survey_record import SurveyRecord
 
 from soc.models.user import User
 
-from soc.modules.gci.models.mentor import GCIMentor
-from soc.modules.gci.models.org_admin import GCIOrgAdmin
 from soc.modules.gci.models.organization import GCIOrganization
+from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.student import GCIStudent
 from soc.modules.gci.models.timeline import GCITimeline
 
-from soc.modules.gsoc.models.mentor import GSoCMentor
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.proposal import GSoCProposal
-from soc.modules.gsoc.models.org_admin import GSoCOrgAdmin
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.student import GSoCStudent
 from soc.modules.gsoc.models.student_project import StudentProject
 from soc.modules.gsoc.models.student_proposal import StudentProposal
 from soc.modules.gsoc.models.timeline import GSoCTimeline
@@ -309,9 +305,11 @@ def seed(request, *args, **kwargs):
       'scope_path': 'google/gci2009',
       'scope': gci2009,
       'program': gci2009,
+      'org_admin_for': [melange.key()],
+      'mentor_for': [melange.key()],
       })
 
-  melange_admin = GSoCProfile(**role_properties)
+  melange_admin = GCIProfile(**role_properties)
   # TODO: add GCI orgs
   melange_admin.put()
 
@@ -486,14 +484,9 @@ def clear(*args, **kwargs):
   # call .all(), delete all those, and loop until .all() is empty.
   entities = itertools.chain(*[
       Notification.all(),
-      GSoCMentor.all(),
-      GCIMentor.all(),
-      GSoCStudent.all(),
       GCIStudent.all(),
       Survey.all(),
       SurveyRecord.all(),
-      GSoCOrgAdmin.all(),
-      GCIOrgAdmin.all(),
       StudentProposal.all(),
       GSoCOrganization.all(),
       GCIOrganization.all(),
