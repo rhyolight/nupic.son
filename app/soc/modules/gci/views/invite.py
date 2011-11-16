@@ -114,13 +114,15 @@ class InviteForm(gci_forms.GCIModelForm):
       email_cleaner = cleaning.clean_email('identifier')
       try:
         email = email_cleaner(self)
-      except:
+      except gci_forms.ValidationError, e:
         if e.code != 'invalid':
           raise
+        msg = ugettext(u'Enter a valid link_id or email address.')
+        raise gci_forms.ValidationError(msg, code='invalid')
 
-        account = users.User(email)
-        user_account = accounts.normalizeAccount(account)
-        user_to_invite = User.all().filter('account', user_account).get()
+      account = users.User(email)
+      user_account = accounts.normalizeAccount(account)
+      user_to_invite = User.all().filter('account', user_account).get()
 
     # check if the user entity has been found
     if not user_to_invite:
