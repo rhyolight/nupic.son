@@ -245,6 +245,16 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/profile/base.html'
 
+  def context(self):
+    context = super(GCIProfilePage, self).context()
+
+    if self.isCreateProfileRequest() and self.isStudentRequest():
+      context.update({
+          'form_instructions': PARENTAL_CONSENT_ADVICE
+          })
+
+    return context
+
   def post(self):
     """Handler for HTTP POST request.
 
