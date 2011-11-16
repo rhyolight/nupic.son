@@ -151,6 +151,13 @@ class ProfilePage(object):
     """
     return self.data.kwargs.get('role') is not None
 
+  def isStudentRequest(self):
+    """Returns True if the current request refers to a student which means it
+    is either Create or Edit Student Profile.
+    """
+    role = self.data.kwargs.get('role')
+    return self.data.student_info or role == 'student'
+
   def context(self):
     role = self.data.kwargs.get('role')
     if self.data.student_info or role == 'student':
