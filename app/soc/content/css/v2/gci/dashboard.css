@@ -107,7 +107,9 @@
 {
   background-image: url(../../../images/v2/soc/dashboard/allocate.png);
 }
-.column-entry.slots_transfer {
+.column-entry.slots_transfer,
+.column-entry.bulk_create_tasks
+{
   background-image: url(../../../images/v2/soc/dashboard/transfer.png);
 }
 .column-entry.duplicates {
