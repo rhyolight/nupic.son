@@ -33,6 +33,8 @@ from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.organization import GCIOrganization
 
+from soc.modules.gci.views.helper import url_names
+
 
 class TimelineHelper(request_data.TimelineHelper):
   """Helper class for the determination of the currently active period.
@@ -318,7 +320,7 @@ class RedirectHelper(request_data.RedirectHelper):
     if request.type == 'Request':
       self._url_name = 'show_gci_request'
     else:
-      self._url_name = 'respond_gci_invite'
+      self._url_name = url_names.GCI_RESPOND_INVITE
     return self
 
   def invite(self, role=None, organization=None):

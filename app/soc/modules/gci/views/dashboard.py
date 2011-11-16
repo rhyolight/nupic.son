@@ -37,6 +37,7 @@ from soc.modules.gci.models import task
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -701,7 +702,8 @@ class MyOrgsListBeforeInviteMentor(MyOrgsList):
     r = data.redirect
 
     self._list_config.setRowAction(
-        lambda e, *args: r.invite('mentor', e).urlOf('gci_invite'))
+        lambda e, *args: r.invite('mentor', e)
+            .urlOf(url_names.GCI_SEND_INVITE))
 
 
 class MyOrgsListBeforeInviteOrgAdmin(MyOrgsList):
@@ -728,4 +730,5 @@ class MyOrgsListBeforeInviteOrgAdmin(MyOrgsList):
     r = data.redirect
 
     self._list_config.setRowAction(
-        lambda e, *args: r.invite('org_admin', e).urlOf('gci_invite'))
+        lambda e, *args: r.invite('org_admin', e)
+            .urlOf(url_names.GCI_SEND_INVITE))

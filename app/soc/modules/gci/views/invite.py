@@ -48,6 +48,7 @@ from soc.modules.gci.models.request import GCIRequest
 
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -192,7 +193,7 @@ class InvitePage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'invite/%s$' % url_patterns.INVITE,
-            self, name='gci_invite')
+            self, name=url_names.GCI_SEND_INVITE)
     ]
 
   def checkAccess(self):
@@ -274,7 +275,7 @@ class ManageInvite(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'invite/manage/%s$' % url_patterns.ID, self,
-            name='manage_gci_invite')
+            name=url_names.GCI_MANAGE_INVITE)
     ]
 
   def checkAccess(self):
@@ -328,7 +329,7 @@ class ManageInvite(RequestHandler):
     elif 'resubmit' in self.data.POST:
       invite_logic.resubmitInvite(self.data)
 
-    self.redirect.id().to('manage_gci_invite')
+    self.redirect.id().to(url_names.GCI_MANAGE_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite
@@ -365,7 +366,7 @@ class RespondInvite(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'invite/respond/%s$' % url_patterns.ID, self,
-            name='respond_gci_invite')
+            name=url_names.GCI_RESPOND_INVITE)
     ]
 
   def checkAccess(self):
@@ -402,7 +403,7 @@ class RespondInvite(RequestHandler):
     else: # reject
       invite_logic.rejectInvite(self.data)
 
-    self.redirect.id().to('respond_gci_invite')
+    self.redirect.id().to(url_names.GCI_RESPOND_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite
