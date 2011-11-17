@@ -152,6 +152,10 @@ class BulkCreateTask(object):
         logging.info('Creating new task with fields: %s' %task)
         task_entity = GCITask(**task)
         task_entity.put()
+        # trigger tag saving logic, trice :(
+        task_entity.difficulty = task['difficulty']
+        task_entity.task_type = task['task_type']
+        task_entity.arbit_tag = task['abrit_tag']
         task_quota = task_quota - 1
       except DeadlineExceededError:
         # time to bail out
