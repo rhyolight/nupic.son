@@ -142,9 +142,7 @@ class BulkCreateTask(object):
           continue
 
         # set other properties
-        task['link_id'] = 't%i' % (int(time.time()*100))
-        task['scope'] = org
-        task['scope_path'] = org.key().id_or_name()
+        task['org'] = org
         task['program'] = org_admin.scope
         task['status'] = 'Unpublished'
         task['created_by'] = org_admin
