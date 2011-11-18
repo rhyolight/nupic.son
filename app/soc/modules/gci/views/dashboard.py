@@ -35,6 +35,7 @@ from soc.models.org_app_record import OrgAppRecord
 from soc.modules.gci.logic import org_app as org_app_logic
 from soc.modules.gci.models import task
 from soc.modules.gci.models.organization import GCIOrganization
+from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
@@ -237,6 +238,9 @@ class DashboardPage(RequestHandler):
     """Get the dashboard components for org admins.
     """
     components = []
+
+    # add list of mentors component
+    components.append(MyOrgsMentorsList(self.request, self.data))
 
     # add invite mentors component
     components.append(MyOrgsListBeforeInviteMentor(self.request, self.data))
@@ -732,3 +736,61 @@ class MyOrgsListBeforeInviteOrgAdmin(MyOrgsList):
     self._list_config.setRowAction(
         lambda e, *args: r.invite('org_admin', e)
             .urlOf(url_names.GCI_SEND_INVITE))
+
+
+class MyOrgsMentorsList(Component):
+  """Component for listing the mentors of the orgs of the current user.
+  """
+
+  def __init__(self, request, data):
+    """Initializes the component.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    super(MyOrgsMentorsList, self).__init__(request, data)
+
+    list_config = lists.ListConfiguration()
+
+    list_config.addSimpleColumn('public_name', 'Name')
+    list_config.addSimpleColumn('email', 'Email')
+
+    self._list_config = list_config
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return'v2/modules/gci/dashboard/list_component.html'
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=6, preload_list=False)
+
+    return {
+        'name': 'all_orgs_mentors',
+        'title': 'All mentors for my organizations',
+        'lists': [list],
+        'description': ugettext('List of all mentors for my organizations'),
+        }
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    if lists.getListIndex(self.request) != 6:
+      return None
+
+    q = GCIProfile.all()
+    q.filter('mentor_for IN', self.data.org_admin_for)
+
+    starter = lists.keyStarter
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter)
+
+    return response_builder.build()

@@ -58,10 +58,6 @@ SEND_FOR_REVIEW_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork']
 
 class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
   """Model for a task used in GCI workflow.
-
-  The scope property of Linkable will be set to the Organization to which
-  this task belongs to. A link_id will be generated automatically and will
-  have no specific meaning other than identification.
   """
 
   #: Required field indicating the "title" of the task

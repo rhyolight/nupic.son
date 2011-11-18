@@ -29,6 +29,7 @@ from google.appengine.api import users
 
 from soc.views.template import Template
 
+from soc.logic import accounts
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import GCITask
 
@@ -167,7 +168,8 @@ class Status(Template):
 
   def context(self):
     context = {
-        'user_email': self.data.user.account.email(),
+        'user_email': accounts.denormalizeAccount(self.data.user.account).email(),
+        'link_id': self.data.user.link_id,
         'logout_link': self.data.redirect.logout().url(),
         'dashboard_link': self.data.redirect.dashboard().url()
     }

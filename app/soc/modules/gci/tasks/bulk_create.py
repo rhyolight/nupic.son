@@ -142,9 +142,7 @@ class BulkCreateTask(object):
           continue
 
         # set other properties
-        task['link_id'] = 't%i' % (int(time.time()*100))
-        task['scope'] = org
-        task['scope_path'] = org.key().id_or_name()
+        task['org'] = org
         task['program'] = org_admin.scope
         task['status'] = 'Unpublished'
         task['created_by'] = org_admin
@@ -152,8 +150,12 @@ class BulkCreateTask(object):
 
         # create the new task
         logging.info('Creating new task with fields: %s' %task)
-        task_entity = GCITask(key_name='%(scope_path)s/%(link_id)s'%task, **task)
+        task_entity = GCITask(**task)
         task_entity.put()
+        # trigger tag saving logic, trice :(
+        task_entity.difficulty = task['difficulty']
+        task_entity.task_type = task['task_type']
+        task_entity.arbit_tag = task['arbit_tag']
         task_quota = task_quota - 1
       except DeadlineExceededError:
         # time to bail out

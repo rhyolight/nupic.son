@@ -147,6 +147,10 @@ limitations under the License.
 </div>
 {% endblock page_content %}
 
+{% block synchronous_scripts %}
+  <script type='text/javascript' src="/tiny_mce/tiny_mce.js"></script>
+  {{ block.super }}
+{% endblock synchronous_scripts %}
 {% block dependencies %}
   [
     dep.uniform,
@@ -168,6 +172,7 @@ limitations under the License.
         new_mentor.uniform();
         last_id++;
       }
+      tinyMCE.init(melange.tinyMceConfig(["melange-description-textarea"], "advanced"));
     }
   ]
 {% endblock dependencies %}
