@@ -90,6 +90,7 @@ class Callback(object):
     self.views.append(program.TimelinePage())
     self.views.append(request.SendRequestPage())
     self.views.append(request.ManageRequestPage())
+    self.views.append(request.RespondRequestPage())
     self.views.append(student_forms.StudentFormUpload())
     self.views.append(student_forms.StudentFormDownload())
     self.views.append(task.TaskViewPage())
