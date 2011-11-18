@@ -504,7 +504,7 @@ class OrgAdminInvitesList(Template):
 
 
 class ListUserInvitesPage(RequestHandler):
-  """View for the page that lists all the invites which has been sent to
+  """View for the page that lists all the invites which have been sent to
   the current user.
   """
 
