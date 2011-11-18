@@ -22,6 +22,8 @@ __authors__ = [
   ]
 
 
+from google.appengine.ext import db
+
 from soc.logic.exceptions import BadRequest
 
 from soc.views.helper import url_patterns
@@ -154,6 +156,22 @@ class ManageRequestPage(RequestHandler):
         'button_name': button_name,
         'button_value': button_value
         }
+
+  def post(self):
+    if 'withdraw' in self.data.POST:
+      def withdraw_request_txn():
+        request = db.get(self.data.request_entity.key())
+        request.status = 'withdrawn'
+        request.put()
+      db.run_in_transaction(withdraw_request_txn)
+    elif 'resubmit' in self.data.POST:
+      def resubmit_request_txn():
+        request = db.get(self.data.request_entity.key())
+        request.status = 'pending'
+        request.put()
+      db.run_in_transaction(resubmit_request_txn)
+
+    self.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
 
   def _constructPageName(self):
     request = self.data.request_entity
