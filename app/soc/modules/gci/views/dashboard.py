@@ -609,7 +609,6 @@ class MyOrgsList(Component):
     """
     return self._getContext()
 
-
   def getListData(self):
     """Returns the list data as requested by the current request.
 
