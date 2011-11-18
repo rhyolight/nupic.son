@@ -533,3 +533,35 @@ class ListUserInvitesPage(RequestHandler):
         'page_name': 'Invitations to you',
         'invite_list': UserInvitesList(self.request, self.data),
     }
+
+
+class ListOrgAdminInvitesPage(RequestHandler):
+  """View for the page that lists all the invites which have been sent by
+  one of the organizations that the current user is org admin for.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/invite/invite_list.html'
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'invite/list_org/%s$' % url_patterns.PROGRAM, self,
+            name=url_names.GCI_LIST_INVITES),
+    ]
+
+  def checkAccess(self):
+    self.check.isProfileActive()
+
+  def jsonContext(self):
+    list_content = OrgAdminInvitesList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation('You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    return {
+        'page_name': 'Invitations sent by your organizations',
+        'invite_list': OrgAdminInvitesList(self.request, self.data),
+    }
