@@ -202,7 +202,7 @@ class RespondRequestPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'request/respond/%s$' % url_patterns.ID, self,
-            name='respond_gci_request')
+            name=url_names.GCI_RESPOND_REQUEST)
     ]
 
   def checkAccess(self):

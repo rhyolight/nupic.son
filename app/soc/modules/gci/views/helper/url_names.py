@@ -29,3 +29,4 @@ GCI_RESPOND_INVITE = 'gci_respond_invite'
 GCI_SEND_INVITE = 'gci_send_invite'
 
 GCI_MANAGE_REQUEST = 'gci_manage_request'
+GCI_RESPOND_REQUEST = 'gci_respond_request'
