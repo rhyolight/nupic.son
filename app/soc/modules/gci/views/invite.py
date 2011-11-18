@@ -546,7 +546,7 @@ class ListOrgAdminInvitesPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'invite/list_org/%s$' % url_patterns.PROGRAM, self,
-            name=url_names.GCI_LIST_INVITES),
+            name=url_names.GCI_LIST_ORG_INVITES),
     ]
 
   def checkAccess(self):
