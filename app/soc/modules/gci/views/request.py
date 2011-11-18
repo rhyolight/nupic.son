@@ -217,10 +217,7 @@ class RespondRequestPage(RequestHandler):
     self.data.organization = self.data.request_entity.org
     self.check.isOrgAdmin()
 
-  def context(self):
-    """Handler to for GCI Respond Request page HTTP get request.
-    """
-    pass
+    self.data.is_respondable = self.data.request_entity.status == 'pending'
 
   def post(self):
     """Handler to for GCI Respond Request Page HTTP post request.
