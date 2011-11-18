@@ -77,6 +77,7 @@ class Callback(object):
     self.views.append(invite.ManageInvite())
     self.views.append(invite.RespondInvite())
     self.views.append(invite.ListUserInvitesPage())
+    self.views.append(invite.ListOrgAdminInvitesPage())
     self.views.append(org_app.GCIOrgAppEditPage())
     self.views.append(org_profile.OrgProfilePage())
     self.views.append(org_app.GCIOrgAppPreviewPage())
