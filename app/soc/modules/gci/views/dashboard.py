@@ -752,6 +752,7 @@ class MyOrgsMentorsList(Component):
     list_config = lists.ListConfiguration()
 
     list_config.addSimpleColumn('public_name', 'Name')
+    list_config.addSimpleColumn('link_id', 'Username')
     list_config.addSimpleColumn('email', 'Email')
 
     self._list_config = list_config
