@@ -33,7 +33,6 @@ from soc.views.helper import url_patterns
 from soc.models.org_app_record import OrgAppRecord
 
 from soc.modules.gci.logic import org_app as org_app_logic
-from soc.modules.gci.models import task
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
