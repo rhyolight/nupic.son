@@ -22,6 +22,7 @@ __authors__ = [
   ]
 
 
+GCI_LIST_INVITES = 'gci_list_invites'
 GCI_MANAGE_INVITE = 'gci_manage_invite'
 GCI_RESPOND_INVITE = 'gci_respond_invite'
 GCI_SEND_INVITE = 'gci_send_invite'

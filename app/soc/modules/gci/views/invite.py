@@ -32,14 +32,17 @@ from google.appengine.ext import db
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import invite as invite_logic
+from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.helper import notifications
 
 from soc.models.user import User
 
+from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
+from soc.views.template import Template
 
 from soc.tasks import mailer
 
@@ -408,3 +411,76 @@ class RespondInvite(RequestHandler):
   def _constructPageName(self):
     invite = self.data.invite
     return "%s Invite" % (invite.role.capitalize())
+
+
+class UserInvitesList(Template):
+  """Template for list of invites that have been sent to the current user.
+  """
+
+  def __init__(self, request, data):
+    self.request = request
+    self.data = data
+    r = data.redirect
+
+    list_config = lists.ListConfiguration()
+    list_config.addColumn('org', 'From',
+        lambda entity, *args: entity.org.name)
+    list_config.addSimpleColumn('status', 'Status')
+    list_config.setRowAction(
+        lambda e, *args: r.id(e.key().id())
+            .urlOf(url_names.GCI_RESPOND_INVITE))
+
+    self._list_config = list_config
+
+  def getListData(self):
+    q = GCIRequest.all()
+    q.filter('type', 'Invitation')
+    q.filter('user', self.data.user)
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, lists.keyStarter)
+
+    return response_builder.build()
+
+  def context(self):
+    invite_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0)
+
+    return {
+        'lists': [invite_list],
+    }
+
+  def templatePath(self):
+    return 'v2/modules/gci/invite/_invite_list.html'
+
+
+class ListUserInvitesPage(RequestHandler):
+  """View for the page that lists all the invites which has been sent to
+  the current user.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/invite/invite_list.html'
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'invite/list_user/%s$' % url_patterns.PROGRAM, self,
+            name=url_names.GCI_LIST_INVITES),
+    ]
+
+  def checkAccess(self):
+    pass
+
+  def jsonContext(self):
+    list_content = UserInvitesList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation('You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    return {
+        'page_name': 'Invitations to you',
+        'invite_list': UserInvitesList(self.request, self.data),
+    }
