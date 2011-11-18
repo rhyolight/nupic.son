@@ -201,7 +201,7 @@ class NotificationForm(gci_forms.GCIModelForm):
   class Meta:
     model = GCIProfile
     css_prefix = 'gci_profile'
-    fields = ['automatic_task_subscription', 'notify_comments']
+    fields = ['automatic_task_subscription']
 
 
 class GCIStudentInfoForm(gci_forms.GCIModelForm):
