@@ -31,6 +31,7 @@ from soc.modules.gci.models.request import GCIRequest
 
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -120,7 +121,7 @@ class ManageRequestPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'request/manage/%s$' % url_patterns.ID, self,
-            name='manage_gci_request')
+            name=url_names.GCI_MANAGE_REQUEST)
     ]
 
   def checkAccess(self):
