@@ -219,6 +219,16 @@ class RespondRequestPage(RequestHandler):
 
     self.data.is_respondable = self.data.request_entity.status == 'pending'
 
+  def context(self):
+    """Handler to for GCI Respond Request page HTTP get request.
+    """
+    
+    return {
+        'request': self.data.request_entity,
+        'page_name': 'Respond to request',
+        'is_respondable': self.data.is_respondable
+        }
+
   def post(self):
     """Handler to for GCI Respond Request Page HTTP post request.
     """
