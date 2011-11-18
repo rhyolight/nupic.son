@@ -222,7 +222,6 @@ class RespondRequestPage(RequestHandler):
   def context(self):
     """Handler to for GCI Respond Request page HTTP get request.
     """
-    
     return {
         'request': self.data.request_entity,
         'page_name': 'Respond to request',
@@ -232,4 +231,18 @@ class RespondRequestPage(RequestHandler):
   def post(self):
     """Handler to for GCI Respond Request Page HTTP post request.
     """
-    pass
+    if 'accept' in self.data.POST:
+      raise NotImplementedError
+      #options = db.create_transaction_options(xg=True)
+      #def accept_request_txn():
+      #  pass
+      #db.run_in_transaction(accept_request_txn, options)
+      #pass
+    else: # reject
+      def reject_request_txn():
+        request = db.get(self.data.request_entity.key())
+        request.status = 'rejected'
+        request.put()
+      db.run_in_transaction(reject_request_txn)
+
+    self.redirect.id().to(url_names.GCI_RESPOND_REQUEST)
