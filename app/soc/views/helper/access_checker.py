@@ -974,7 +974,8 @@ class AccessChecker(BaseAccessChecker):
     if 'withdraw' in self.data.POST and current_status != 'pending':
       raise AccessViolation(DEF_REQUEST_CANNOT_BE_WITHDRAWN % current_status)
 
-    if 'resubmit' in self.data.POST and current_status != 'rejected':
+    if 'resubmit' in self.data.POST and \
+        current_status not in ['rejected', 'withdrawn']:
       raise AccessViolation(DEF_REQUEST_CANNOT_BE_RESUBMITTED % current_status)
        
   def canRespondToRequest(self):
