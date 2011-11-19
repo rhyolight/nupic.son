@@ -159,7 +159,7 @@ class BulkCreateTask(object):
         task_quota = task_quota - 1
       except DeadlineExceededError:
         # time to bail out
-        pass
+        break
 
     if len(tasks) == 0:
       # send out a message
