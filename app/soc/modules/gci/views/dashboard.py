@@ -611,6 +611,8 @@ class MyOrgsList(Component):
     if lists.getListIndex(self.request) != self.idx:
       return None
 
+    response = lists.ListContentResponse(self.request, self._list_config)
+
     for org in self.data.mentor_for:
       response.addRow(org)
 
