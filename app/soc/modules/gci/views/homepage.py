@@ -23,8 +23,6 @@ __authors__ = [
   ]
 
 
-import datetime
-
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
@@ -128,25 +126,11 @@ class Timeline(Template):
     self.current_timeline = self.data.timeline.currentPeriod()
 
   def context(self):
-    start = self.data.timeline.tasksPubliclyVisibleOn()
-    _, end = self.data.timeline.programActiveBetween()
-    now = datetime.datetime.utcnow()
-    remaining = end - now if end>now else datetime.timedelta(0)
-    remaining_seconds = remaining.seconds + remaining.days*24*3600
-    duration = end-start
-    total_seconds = duration.seconds + duration.days*24*3600
-    percentage_complete = 0
-    if remaining_seconds == 0:
-      percentage_complete = 100
-    elif total_seconds and total_seconds > remaining_seconds > 0:
-      percentage_complete = 100 - remaining_seconds*100/total_seconds
+    remaining = self.data.timeline.remainingTime()
     remaining_days = remaining.days
     remaining_hours = remaining.seconds/3600
-    stopwatch_percentages = [25, 33, 50, 75, 100]
-    for p in stopwatch_percentages:
-      if percentage_complete <= p:
-        stopwatch_percentage = p
-        break
+    percentage_complete = self.data.timeline.completePercentage()
+    stopwatch_percentage = self.data.timeline.stopwatchPercentage()
     return {
         'remaining_days': remaining_days,
         'remaining_hours': remaining_hours,

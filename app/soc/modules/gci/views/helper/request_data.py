@@ -20,8 +20,11 @@ request in the GCI module.
 
 __authors__ = [
   '"Selwyn Jacob" <selwynjacob90@gmail.com>',
+  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
 ]
 
+
+import datetime
 
 from google.appengine.ext import db
 
@@ -111,6 +114,49 @@ class TimelineHelper(request_data.TimelineHelper):
 
   def allWorkStopped(self):
     return request_data.isAfter(self.stopAllWorkOn())
+
+  def remainingTime(self):
+    _, end = self.programActiveBetween()
+    now = datetime.datetime.utcnow()
+    remaining = end - now if end>now else datetime.timedelta(0)
+    return remaining
+
+  def totalRemainingSeconds(self):
+    remaining = self.remainingTime()
+    total_remaining_seconds = remaining.seconds + remaining.days*24*3600
+    return total_remaining_seconds
+
+  def duration(self):
+    start = self.tasksPubliclyVisibleOn()
+    _, end = self.programActiveBetween()
+    duration = end-start
+    return duration
+
+  def totalDurationSeconds(self):
+    duration = self.duration()
+    total_duration_seconds = duration.seconds + duration.days*24*3600
+    return total_duration_seconds
+
+  def completePercentage(self):
+    total_remaining_seconds = self.totalRemainingSeconds()
+    total_duration_seconds = self.totalDurationSeconds()
+    percentage_complete = 0
+    if total_remaining_seconds == 0:
+      percentage_complete = 100
+    elif total_duration_seconds and \
+        total_duration_seconds > total_remaining_seconds > 0:
+      percentage_complete = \
+          100 - total_remaining_seconds*100/total_duration_seconds
+    return percentage_complete
+
+  def stopwatchPercentage(self):
+    percentage_complete = self.completePercentage()
+    stopwatch_percentages = [25, 33, 50, 75, 100]
+    for p in stopwatch_percentages:
+      if percentage_complete <= p:
+        stopwatch_percentage = p
+        break
+    return stopwatch_percentage
 
 
 class RequestData(request_data.RequestData):
