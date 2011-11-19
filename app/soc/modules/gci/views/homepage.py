@@ -128,13 +128,15 @@ class Timeline(Template):
     self.current_timeline = self.data.timeline.currentPeriod()
 
   def context(self):
-    start, end = self.data.timeline.programActiveBetween()
+    start = self.data.timeline.tasksPubliclyVisibleOn()
+    _, end = self.data.timeline.programActiveBetween()
     remaining = end - datetime.utcnow()
     remaining_seconds = remaining.seconds + remaining.days*24*3600
     duration = end-start
     total_seconds = duration.seconds + duration.days*24*3600
-    percentage_complete = 100 - remaining_seconds*100/total_seconds \
-        if total_seconds != 0 else 0
+    percentage_complete = 0
+    if total_seconds and total_seconds > remaining_seconds:
+      percentage_complete = 100 - remaining_seconds*100/total_seconds
     remaining_days = remaining.days
     remaining_hours = remaining.seconds/3600
     stopwatch_percentages = [25, 33, 50, 75]
