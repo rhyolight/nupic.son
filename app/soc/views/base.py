@@ -200,14 +200,21 @@ class RequestHandler(object):
     self.error(405)
 
   def error(self, status, message=None):
-    """Sets the error response code and the message when the HTTP
-    Request should get an error response.
+    """Sets the error response code and message when an error is encountered.
 
     Args:
       status: the HTTP status error code
       message: the message to set, uses default if None
     """
     self.response.set_status(status, message=message)
+    template_path = "v2/error.html"
+    context = {
+        'page_name': self.response.content,
+        'message': self.response.content,
+    }
+
+    self.response.content = ''
+    self.render(template_path, context)
 
   def djangoURLPatterns(self):
     """Returns a list of Django URL pattern tuples.

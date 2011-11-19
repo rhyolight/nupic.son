@@ -76,8 +76,10 @@ class RequestHandler(RequestHandler):
       self.check = access_checker.AccessChecker(self.data)
 
   def error(self, status, message=None):
-    # super will put error message as content
-    super(RequestHandler, self).error(status, message)
+    if not self.data.program:
+      return super(RequestHandler, self).error(status, message)
+
+    self.response.set_status(status, message=message)
 
     template_path = "v2/modules/gsoc/error.html"
     context = {
