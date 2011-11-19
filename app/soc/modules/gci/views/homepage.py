@@ -129,12 +129,12 @@ class Timeline(Template):
     remaining = self.data.timeline.remainingTime()
     remaining_days = remaining.days
     remaining_hours = remaining.seconds/3600
-    percentage_complete = self.data.timeline.completePercentage()
+    complete_percentage = self.data.timeline.completePercentage()
     stopwatch_percentage = self.data.timeline.stopwatchPercentage()
     return {
         'remaining_days': remaining_days,
         'remaining_hours': remaining_hours,
-        'percentage_complete': percentage_complete,
+        'complete_percentage': complete_percentage,
         'stopwatch_percentage': stopwatch_percentage
     }
 
