@@ -136,7 +136,9 @@ class Timeline(Template):
     duration = end-start
     total_seconds = duration.seconds + duration.days*24*3600
     percentage_complete = 0
-    if total_seconds and total_seconds > remaining_seconds > 0:
+    if remaining_seconds == 0:
+      percentage_complete = 100
+    elif total_seconds and total_seconds > remaining_seconds > 0:
       percentage_complete = 100 - remaining_seconds*100/total_seconds
     remaining_days = remaining.days
     remaining_hours = remaining.seconds/3600
