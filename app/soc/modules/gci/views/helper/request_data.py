@@ -140,11 +140,11 @@ class TimelineHelper(request_data.TimelineHelper):
   def completePercentage(self):
     total_remaining_seconds = self.totalRemainingSeconds()
     total_duration_seconds = self.totalDurationSeconds()
-    complete_percentage = 0
     if total_remaining_seconds == 0:
       complete_percentage = 100
-    elif total_duration_seconds and \
-        total_duration_seconds > total_remaining_seconds > 0:
+    elif total_remaining_seconds >= total_duration_seconds:
+      complete_percentage = 0
+    else:
       complete_percentage = \
           100 - total_remaining_seconds*100/total_duration_seconds
     return complete_percentage
