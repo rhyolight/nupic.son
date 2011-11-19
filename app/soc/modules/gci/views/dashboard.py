@@ -599,16 +599,12 @@ class MyOrgsList(Component):
     if lists.getListIndex(self.request) != self.idx:
       return None
 
-    q = GCIOrganization.all()
-    q.filter('scope', self.data.program)
-    q.filter('__key__ IN', self.data.mentor_for)
+    for org in self.data.mentor_for:
+      response.addRow(org)
 
-    starter = lists.keyStarter
+    response.next = 'done'
 
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter)
-
-    return response_builder.build()
+    return response
 
 
 class MyOrgsListBeforeCreateTask(MyOrgsList):
