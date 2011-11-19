@@ -307,6 +307,7 @@ def seed(request, *args, **kwargs):
       'program': gci2009,
       'org_admin_for': [melange.key()],
       'mentor_for': [melange.key()],
+      'parent': current_user,
       })
 
   melange_admin = GCIProfile(**role_properties)
