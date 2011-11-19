@@ -36,6 +36,8 @@ from soc.modules.gci.logic import org_app as org_app_logic
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.task import TaskDifficultyTag
+from soc.modules.gci.models.task import TaskTypeTag
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
@@ -446,10 +448,12 @@ class MyOrgsTaskList(Component):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
                           lambda entity, *args: entity.org.name)
-    list_config.addColumn('difficulty', 'Difficulty',
-                          lambda entity, *args: entity.taskDifficultyName())
-    list_config.addColumn('task_type', 'Type',
-                          lambda entity, *args: entity.taskType())
+    list_config.addColumn(
+        'difficulty', 'Difficulty',
+        lambda entity, _, all_d, *args: entity.taskDifficultyName(all_d))
+    list_config.addColumn(
+        'task_type', 'Type',
+        lambda entity, _, all_d, all_t, *args: entity.taskType(all_t))
     list_config.addColumn('arbit_tag', 'Tags',
                           lambda entity, *args: entity.taskArbitTag())
     list_config.addColumn('time_to_complete', 'Time to complete',
@@ -535,8 +539,16 @@ class MyOrgsTaskList(Component):
     q.filter('org IN', self.data.mentor_for)
 
     starter = lists.keyStarter
-    prefetcher = lists.listModelPrefetcher(
+    basic_prefetcher = lists.listModelPrefetcher(
         GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
+
+    all_d = TaskDifficultyTag.all().fetch(100)
+    all_t = TaskTypeTag.all().fetch(100)
+
+    def prefetcher(entities):
+      args, kwargs = basic_prefetcher(entities)
+      args += [all_d, all_t]
+      return (args, kwargs)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter, prefetcher=prefetcher)
