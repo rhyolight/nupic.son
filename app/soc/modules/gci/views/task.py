@@ -146,7 +146,7 @@ class TaskViewPage(RequestHandler):
     if it is a POST request.
     """
     self.mutator.taskFromKwargs(comments=True, work_submissions=True)
-    self.check.isTaskVisible()
+    self.data.is_visible = self.check.isTaskVisible()
 
     if task_logic.updateTaskStatus(self.data.task):
       # The task logic updated the status of the task since the deadline passed
@@ -204,9 +204,11 @@ class TaskViewPage(RequestHandler):
       'task': task,
       'is_mentor': self.data.mentorFor(task.org),
       'task_info': TaskInformation(self.data),
-      'work_submissions': WorkSubmissions(self.data),
-      'comments': CommentsTemplate(self.data),
     }
+
+    if self.data.is_visible:
+      context['work_submissions'] = WorkSubmissions(self.data)
+      context['comments'] = CommentsTemplate(self.data)
 
     if not context['is_mentor']:
       # Programmatically change css for non-mentors, to for instance show
@@ -226,7 +228,7 @@ class TaskViewPage(RequestHandler):
   def post(self):
     """Handles all POST calls for the TaskViewPage.
     """
-    if 'post_comment' in self.data.GET:
+    if self.data.is_visible and 'post_comment' in self.data.GET:
       return self._postComment()
     elif 'button' in self.data.GET:
       return self._postButton()

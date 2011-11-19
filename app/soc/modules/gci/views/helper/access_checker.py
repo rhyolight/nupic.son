@@ -82,6 +82,7 @@ class Mutator(access_checker.Mutator):
     self.data.task = access_checker.unset
     self.data.comments = access_checker.unset
     self.data.work_submissions = access_checker.unset
+    self.data.is_visible = access_checker.unset
     super(Mutator, self).unsetAll()
 
   def profileFromKwargs(self):
@@ -158,17 +159,33 @@ class AccessChecker(access_checker.AccessChecker):
 
   def isTaskVisible(self):
     """Checks if the task is visible to the public.
+
+    Returns: True if the task is visible, if the task is not visible
+        but the user can edit the task, False.
     """
     assert access_checker.isSet(self.data.task)
 
+    can_edit = False
+    try:
+      self.canEditTask()
+      can_edit = True
+    except AccessViolation, e:
+      pass
+
     if not self.data.timeline.tasksPubliclyVisible():
+      if can_edit:
+        return
       period = self.data.timeline.tasksPubliclyVisibleOn()
       raise AccessViolation(
           access_checker.DEF_PAGE_INACTIVE_BEFORE % period)
 
     if not self.data.task.isPublished():
+      if can_edit:
+        return False
       error_msg = access_checker.DEF_PAGE_INACTIVE
       raise AccessViolation(error_msg)
+
+    return True
 
   def isTaskInState(self, states):
     """Checks if the task is in any of the given states.
