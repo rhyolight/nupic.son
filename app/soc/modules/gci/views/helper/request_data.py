@@ -123,8 +123,9 @@ class TimelineHelper(request_data.TimelineHelper):
 
   def totalRemainingSeconds(self):
     remaining = self.remainingTime()
-    total_remaining_seconds = remaining.seconds + remaining.days*24*3600
-    return total_remaining_seconds
+    remaining_seconds = remaining.seconds + remaining.days * 24 * 3600
+
+    return remaining_seconds
 
   def duration(self):
     start = self.tasksPubliclyVisibleOn()
@@ -134,28 +135,32 @@ class TimelineHelper(request_data.TimelineHelper):
 
   def totalDurationSeconds(self):
     duration = self.duration()
-    total_duration_seconds = duration.seconds + duration.days*24*3600
+    total_duration_seconds = duration.seconds + duration.days * 24 * 3600
+
     return total_duration_seconds
 
   def completePercentage(self):
-    total_remaining_seconds = self.totalRemainingSeconds()
-    total_duration_seconds = self.totalDurationSeconds()
-    if total_remaining_seconds == 0:
-      complete_percentage = 100
-    elif total_remaining_seconds >= total_duration_seconds:
-      complete_percentage = 0
+    remaining = self.totalRemainingSeconds()
+    duration = self.totalDurationSeconds()
+
+    if remaining == 0:
+      percentage = 100
+    elif remaining >= duration:
+      percentage = 0
     else:
-      complete_percentage = \
-          100 - total_remaining_seconds*100/total_duration_seconds
-    return complete_percentage
+      percentage = 100 - (remaining * 100 / duration)
+
+    return percentage
 
   def stopwatchPercentage(self):
     complete_percentage = self.completePercentage()
     stopwatch_percentages = [25, 33, 50, 75, 100]
+
     for p in stopwatch_percentages:
       if complete_percentage <= p:
         stopwatch_percentage = p
         break
+
     return stopwatch_percentage
 
 
