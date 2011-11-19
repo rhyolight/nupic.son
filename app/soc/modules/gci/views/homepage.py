@@ -23,7 +23,7 @@ __authors__ = [
   ]
 
 
-from datetime import datetime
+import datetime
 
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -130,7 +130,8 @@ class Timeline(Template):
   def context(self):
     start = self.data.timeline.tasksPubliclyVisibleOn()
     _, end = self.data.timeline.programActiveBetween()
-    remaining = end - datetime.utcnow()
+    now = datetime.datetime.utcnow()
+    remaining = end - now if end>now else datetime.timedelta(0)
     remaining_seconds = remaining.seconds + remaining.days*24*3600
     duration = end-start
     total_seconds = duration.seconds + duration.days*24*3600
