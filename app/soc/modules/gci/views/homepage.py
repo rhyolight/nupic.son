@@ -135,17 +135,15 @@ class Timeline(Template):
     duration = end-start
     total_seconds = duration.seconds + duration.days*24*3600
     percentage_complete = 0
-    if total_seconds and total_seconds > remaining_seconds:
+    if total_seconds and total_seconds > remaining_seconds > 0:
       percentage_complete = 100 - remaining_seconds*100/total_seconds
     remaining_days = remaining.days
     remaining_hours = remaining.seconds/3600
-    stopwatch_percentages = [25, 33, 50, 75]
-    min_diff = 100
+    stopwatch_percentages = [25, 33, 50, 75, 100]
     for p in stopwatch_percentages:
-      diff = abs(p-percentage_complete)
-      if diff < min_diff:
-        min_diff = diff
+      if percentage_complete <= p:
         stopwatch_percentage = p
+        break
     return {
         'remaining_days': remaining_days,
         'remaining_hours': remaining_hours,
@@ -201,9 +199,6 @@ class Homepage(RequestHandler):
     }
 
     current_timeline = self.data.timeline.currentPeriod()
-
-    if current_timeline == 'student_signup_period':
-      context['timeline'] = Timeline(self.data)
 
     if current_timeline in ['student_signup_period',
         'working_period', 'offseason']:

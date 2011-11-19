@@ -637,6 +637,9 @@ body {
     .stopwatch.percent-75 .stopwatch-watch {
         background-image:url(../../../images/v2/gci/block-timeline-watch-percent-75.png);
     }
+    .stopwatch.percent-100 .stopwatch-watch {
+        background-image:url(../../../images/v2/gci/block-timeline-watch-quarter4.png);
+    }
     .stopwatch .stopwatch-remaining {
         float: right;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
