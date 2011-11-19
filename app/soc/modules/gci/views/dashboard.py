@@ -443,25 +443,6 @@ class MyOrgsTaskList(Component):
 
     list_config = lists.ListConfiguration()
 
-    def mentorsFromPrefetchedList(entity, *args):
-      """Returns the comma separated list of mentor names for the entity.
-
-      Args:
-        entity: The task entity that is being considered for the row
-        args: list of prefetched entities
-        args[0]: Dictionary of mentors will be the first item of args.
-            In each key-value pair in the dictionary key will be the mentor
-            entity key and the value will be the entity itself.
-      """
-
-      mentor_names = []
-      for key in entity.mentors:
-        mentor = args[0].get(key)
-        mentor_names.append(mentor.name())
-
-      return ', '.join(mentor_names)
-
-
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
                           lambda entity, *args: entity.org.name)
@@ -474,9 +455,10 @@ class MyOrgsTaskList(Component):
     list_config.addColumn('time_to_complete', 'Time to complete',
                           lambda entity, *args: entity.taskTimeToComplete())
 
-    # This complicated comma separated mentor names string construction
-    # is separated in an inline function.
-    list_config.addColumn('mentors', 'Mentors', mentorsFromPrefetchedList)
+    list_config.addColumn(
+        'mentors', 'Mentors',
+        lambda entity, mentors, *args: ', '.join(
+            mentors[i].name() for i in entity.mentors))
 
     list_config.addColumn(
         'student', 'Student',
