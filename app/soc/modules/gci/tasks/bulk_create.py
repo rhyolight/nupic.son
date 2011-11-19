@@ -86,11 +86,11 @@ class BulkCreateTask(object):
     post_dict = request.POST
 
     bulk_create_key = post_dict.get('bulk_create_key')
-    if not (bulk_create_key and bulk_create_key.isdigit()):
+    if not bulk_create_key:
       return error_handler.logErrorAndReturnOK(
                  'Not all POST data specified in: %s' % post_dict)
 
-    bulk_data = GCIBulkCreateData.get_by_id(int(bulk_create_key))
+    bulk_data = GCIBulkCreateData.get(bulk_create_key)
     if not bulk_data:
       return error_handler.logErrorAndReturnOK(
                  'No valid data found for key: %s' % bulk_create_key)
@@ -168,7 +168,7 @@ class BulkCreateTask(object):
     else:
       # there is still work to be done, do a non 500 response and requeue
       task_params = {
-          'bulk_create_key': bulk_data.key().id_or_name()
+          'bulk_create_key': bulk_data.key()
           }
       new_task = taskqueue.Task(params=task_params,
                                 url=BULK_CREATE_URL)
