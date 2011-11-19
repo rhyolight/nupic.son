@@ -47,7 +47,7 @@ class HomepageViewTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gci/homepage/_connect_with_us.html')
     self.assertTemplateUsed(response, 'v2/modules/gci/homepage/_how_it_works.html')
     # not always
-    # self.assertTemplateUsed(response, 'v2/modules/gci/homepage/_timeline.html')
+    self.assertTemplateUsed(response, 'v2/modules/gci/homepage/_timeline.html')
 
   def testHomepageAnonymous(self):
     """Tests the homepage as an anonymous user throughout the program.
@@ -94,9 +94,10 @@ class HomepageViewTest(GCIDjangoTestCase):
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
     # TOOD
-    #timeline_tmpl = response.context['timeline']
+    timeline_tmpl = response.context['timeline']
+    self.assertEqual(timeline_tmpl.current_timeline,
+                     'student_signup_period')
     #apply_context = response.context['apply'].context()
-    #self.assertEqual(timeline_tmpl.current_timeline, 'student_signup_period')
     #self.assertTrue('profile_link' in apply_context)
 
   def testHomepageDuringSignupExistingUser(self):

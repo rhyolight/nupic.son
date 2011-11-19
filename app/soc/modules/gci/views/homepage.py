@@ -18,9 +18,12 @@
 """
 
 __authors__ = [
+  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
   '"Madhusudan.C.S" <madhusudancs@gmail.com>',
   ]
 
+
+from datetime import datetime
 
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -117,14 +120,35 @@ class ParticipatingOrgs(Template):
 
 
 class Timeline(Template):
-  """News template.
+  """Timeline template.
   """
 
   def __init__(self, data):
     self.data = data
+    self.current_timeline = self.data.timeline.currentPeriod()
 
   def context(self):
+    start, end = self.data.timeline.programActiveBetween()
+    remaining = end - datetime.utcnow()
+    remaining_seconds = remaining.seconds + remaining.days*24*3600
+    duration = end-start
+    total_seconds = duration.seconds + duration.days*24*3600
+    percentage_complete = 100 - remaining_seconds*100/total_seconds \
+        if total_seconds != 0 else 0
+    remaining_days = remaining.days
+    remaining_hours = remaining.seconds/3600
+    stopwatch_percentages = [25, 33, 50, 75]
+    min_diff = 100
+    for p in stopwatch_percentages:
+      diff = abs(p-percentage_complete)
+      if diff < min_diff:
+        min_diff = diff
+        stopwatch_percentage = p
     return {
+        'remaining_days': remaining_days,
+        'remaining_hours': remaining_hours,
+        'percentage_complete': percentage_complete,
+        'stopwatch_percentage': stopwatch_percentage
     }
 
   def templatePath(self):
@@ -169,6 +193,7 @@ class Homepage(RequestHandler):
         'page_name': '%s - Home page' % (self.data.program.name),
         'how_it_works': HowItWorks(self.data),
         'participating_orgs': ParticipatingOrgs(self.data),
+        'timeline': Timeline(self.data),
         'connect_with_us': ConnectWithUs(self.data),
         'program': self.data.program,
     }
