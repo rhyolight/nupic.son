@@ -2374,36 +2374,6 @@ form fieldset legend {
 
 /* @end */
 
-/* @group 404 error */
-#error-not-found {
-	background:url(../../../images/v2/gci/melange-404-bg.png) top center no-repeat;
-	color: #666;
-}
-#error-not-found-content {
-	margin: 275px auto 0 auto;
-	width: 650px;
-}
-#error-not-found-content h1 {
-	font-size:80px;
-	display:inline;
-	float:left;
-	padding-right:20px;
-	margin-top:0px;
-}
-#error-not-found-content p {
-	font-size:20px;
-	padding-top:15px;
-	font-weight:bold;
-	line-height:130%;
-}
-#error-not-found-content a:link,
-#error-not-found-content a:hover,
-#error-not-found-content a:visited,
-#error-not-found-content a:active {
-	color: #0074c1;
-}
-/* @end */
-
 /* @group Avatar picker */
 #avatar-preview {
 	background: #fff;
