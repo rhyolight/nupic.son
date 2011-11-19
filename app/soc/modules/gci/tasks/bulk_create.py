@@ -86,11 +86,11 @@ class BulkCreateTask(object):
     post_dict = request.POST
 
     bulk_create_key = post_dict.get('bulk_create_key')
-    if not bulk_create_key:
+    if not (bulk_create_key and bulk_create_key.isdigit()):
       return error_handler.logErrorAndReturnOK(
                  'Not all POST data specified in: %s' % post_dict)
 
-    bulk_data = GCIBulkCreateData.get(bulk_create_key)
+    bulk_data = GCIBulkCreateData.get_by_id(int(bulk_create_key))
     if not bulk_data:
       return error_handler.logErrorAndReturnOK(
                  'No valid data found for key: %s' % bulk_create_key)
