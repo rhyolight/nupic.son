@@ -252,6 +252,9 @@ class DashboardPage(RequestHandler):
     # add bulk create tasks component 
     components.append(MyOrgsListBeforeBulkCreateTask(self.request, self.data))
 
+    # add edit org profile component
+    components.append(MyOrgsListBeforeOrgProfile(self.request, self.data))
+
     return components
 
   def _getLoneUserComponents(self):
@@ -840,3 +843,29 @@ class MyOrgsMentorsList(Component):
         self.request, self._list_config, q, starter)
 
     return response_builder.build()
+
+
+class MyOrgsListBeforeOrgProfile(MyOrgsList):
+  """Component for listing the orgs of the current user, just before
+  create/edit org's profile.
+  """
+
+  def _setIdx(self):
+    self.idx = 7
+
+  def _getContext(self):
+    org_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.idx, preload_list=False)
+
+    return {
+        'name': 'edit_org_profile',
+        'title': 'Edit organization profile',
+        'lists': [org_list],
+        'description': ugettext('Bulk upload tasks. Since you may '
+            'belong to more than one organizations, you need to choose one '
+            'organization you will edit the profile for.')}
+
+  def _setRowAction(self, request, data):
+    self._list_config.setRowAction(
+        lambda e, *args: data.redirect.organization(e).
+            urlOf(url_names.EDIT_GCI_ORG_PROFILE))
