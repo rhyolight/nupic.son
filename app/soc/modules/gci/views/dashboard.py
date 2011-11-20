@@ -861,7 +861,7 @@ class MyOrgsListBeforeOrgProfile(MyOrgsList):
         'name': 'edit_org_profile',
         'title': 'Edit organization profile',
         'lists': [org_list],
-        'description': ugettext('Bulk upload tasks. Since you may '
+        'description': ugettext('Edit organization profile. Since you may '
             'belong to more than one organizations, you need to choose one '
             'organization you will edit the profile for.')}
 
