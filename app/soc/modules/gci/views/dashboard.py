@@ -512,8 +512,8 @@ class MyOrgsTaskList(Component):
     list_config.addColumn(
         'task_type', 'Type',
         lambda entity, _, all_d, all_t, *args: entity.taskType(all_t))
-    list_config.addColumn('arbit_tag', 'Tags',
-                          lambda entity, *args: entity.taskArbitTag())
+    #list_config.addColumn('arbit_tag', 'Tags',
+    #                      lambda entity, *args: entity.taskArbitTag())
     list_config.addColumn('time_to_complete', 'Time to complete',
                           lambda entity, *args: entity.taskTimeToComplete())
 
