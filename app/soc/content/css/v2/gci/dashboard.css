@@ -161,7 +161,8 @@
 .column-entry.take_org_app,
 .column-entry.edit_org_app,
 .column-entry.org_app_records,
-.column-entry.create_tasks
+.column-entry.create_tasks,
+.column-entry.edit_org_profile
 {
   background-image: url(../../../images/v2/soc/dashboard/todo.png);
 }
