@@ -324,6 +324,9 @@ class DashboardPage(RequestHandler):
     # add link to my invitations list
     links.append(self._getMyInvitationsLink())
 
+    # add link to org's outgoing invitations
+    links.append(self._getMyOrgInvitationsLink())
+
     return links
 
   def _getMentorLinks(self):
@@ -377,6 +380,20 @@ class DashboardPage(RequestHandler):
             'List of all invites which have been sent to me.'),
         'title': 'My incoming invitation',
         'link': r.urlOf(url_names.GCI_LIST_INVITES)
+        }
+
+  def _getMyOrgInvitationsLink(self):
+    """Get the link of outgoing invitations list (invitations sent by my orgs).
+    """
+    r = self.data.redirect
+    r.program()
+
+    return {
+        'name': 'list_org_invites',
+        'description': ugettext(
+            'List of all invites which have been sent by my organizations.'),
+        'title': 'My organization outgoing invitations',
+        'link': r.urlOf(url_names.GCI_LIST_ORG_INVITES)
         }
 
 
