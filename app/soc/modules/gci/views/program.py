@@ -56,8 +56,9 @@ class ProgramForm(GCIModelForm):
   """Django form for the program settings.
   """
 
-  def __init__(self, scope_path, *args, **kwargs):
-    self.scope_path = scope_path
+  def __init__(self, data, *args, **kwargs):
+    self.request_data = data
+
     super(ProgramForm, self).__init__(*args, **kwargs)
 
     if self.instance:

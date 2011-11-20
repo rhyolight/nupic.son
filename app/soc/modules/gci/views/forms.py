@@ -377,7 +377,8 @@ class GCIBoundField(forms.BoundField):
       sponsor, program = document.scope_path.split('/')
       args = [document.prefix, sponsor, program, document.link_id]
     else:
-      sponsor, program = self.form.scope_path.split('/')
+      scope_path = self.form.request_data.program.key().id_or_name()
+      sponsor, program = scope_path.split('/')
       args = ['gci_program', sponsor, program, self.name]
 
     edit_document_link = reverse('edit_gci_document', args=args)
