@@ -293,22 +293,40 @@ class DashboardPage(RequestHandler):
     """
     links = []
 
-    if self.data.is_mentor:
-      links += self._getOrgMemberLinks()
+    if self.data.student_info:
+      links += self._getStudentLinks()
+    elif self.data.is_org_admin:
+      links += self._getOrgAdminLinks()
+    elif self.data.is_mentor:
+      links += self._getMentorLinks()
     else:
       links += self._getLoneUserLinks()
 
     return links
 
-  def _getOrgMemberLinks(self):
-    """Get the main dashboard links for Organization members.
+  def _getStudentLinks(self):
+    """Get the main dashboard links for student.
     """
     links = []
 
-    # org app link for
+    return links
+
+  def _getOrgAdminLinks(self):
+    """Get the main dashboard links for org-admin.
+    """
+    links = []
+
+    # add link to take organization application
     link = self._getAddNewOrgAppLink()
     if link:
-      links.append(link)
+      links.append(self._getAddNewOrgAppLink())
+
+    return links
+
+  def _getMentorLinks(self):
+    """Get the main dashboard links for mentor.
+    """
+    links = []
 
     return links
 
