@@ -263,6 +263,11 @@ Enjoy!
           if(!$(elem).attr("checked")){
             //box was just unchecked, uncheck span
             spanTag.removeClass(options.checkedClass);
+            // Added by John to look for checkboxes with the attr "checked" that have been click to uncheck
+            // And this John is: http://stackoverflow.com/questions/6637723/jquery-uniform-checkbox-does-not-uncheck
+            }else if(!$(elem).is(':checked')){
+              spanTag.removeClass(options.checkedClass);
+           // end addition by john
           }else{
             //box was just checked, check span.
             spanTag.addClass(options.checkedClass);
