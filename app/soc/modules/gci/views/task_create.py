@@ -150,6 +150,10 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     organization = self.organization
     self.cleaned_data['org'] = organization
 
+    profile = self.request_data.profile
+    self.cleaned_data['created_by'] = profile
+    self.cleaned_data['modified_by'] = profile
+
     entity = super(TaskCreateForm, self).create(
         commit=False, key_name=key_name, parent=parent)
 
@@ -167,6 +171,8 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     return entity
 
   def save(self, commit=True):
+    self.cleaned_data['modified_by'] = self.request_data.profile
+
     entity = super(TaskCreateForm, self).save(commit=False)
 
     if commit:
