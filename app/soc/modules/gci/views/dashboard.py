@@ -321,12 +321,18 @@ class DashboardPage(RequestHandler):
     if link:
       links.append(self._getAddNewOrgAppLink())
 
+    # add link to my invitations list
+    links.append(self._getMyInvitationsLink())
+
     return links
 
   def _getMentorLinks(self):
     """Get the main dashboard links for mentor.
     """
     links = []
+
+    # add link to my invitations list
+    links.append(self._getMyInvitationsLink())
 
     return links
 
@@ -357,6 +363,20 @@ class DashboardPage(RequestHandler):
             'Take organization application survey.'),
         'title': 'Take organization application',
         'link': r.urlOf('gci_take_org_app')
+        }
+
+  def _getMyInvitationsLink(self):
+    """Get the link of incoming invitations list (invitations sent to me).
+    """
+    r = self.data.redirect
+    r.program()
+
+    return {
+        'name': 'list_invites',
+        'description': ugettext(
+            'List of all invites which have been sent to me.'),
+        'title': 'My incoming invitation',
+        'link': r.urlOf(url_names.GCI_LIST_INVITES)
         }
 
 
