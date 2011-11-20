@@ -36,6 +36,7 @@ from soc.views import org_profile
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views import forms as gci_forms
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
@@ -80,9 +81,9 @@ class OrgProfilePage(RequestHandler):
   def djangoURLPatterns(self):
     return [
          url(r'profile/organization/%s$' % url_patterns.PROGRAM,
-         self, name='create_gci_org_profile'),
+         self, name=url_names.CREATE_GCI_ORG_PROFILE),
          url(r'profile/organization/%s$' % url_patterns.ORG,
-         self, name='edit_gci_org_profile'),
+         self, name=url_names.EDIT_GCI_ORG_PROFILE),
     ]
 
   def checkAccess(self):
