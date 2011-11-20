@@ -30,3 +30,6 @@ GCI_SEND_INVITE = 'gci_send_invite'
 
 GCI_MANAGE_REQUEST = 'gci_manage_request'
 GCI_RESPOND_REQUEST = 'gci_respond_request'
+
+CREATE_GCI_ORG_PROFILE = 'create_gci_org_profile'
+EDIT_GCI_ORG_PROFILE = 'edit_gci_org_profile'
