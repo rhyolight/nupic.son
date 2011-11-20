@@ -38,8 +38,8 @@ from soc.views.helper import request_data
 
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import UNPUBLISHED
-
 
 DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
     'You cannot register as a student since you are already a '
@@ -305,7 +305,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise AccessViolation(DEF_NO_TASK_EDIT_PRIV % (
           task.org.name))
 
-    if task.status not in UNPUBLISHED:
+    if task.status not in (UNPUBLISHED + CLAIMABLE):
       raise AccessViolation(DEF_TASK_UNEDITABLE_STATUS)
 
     if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
