@@ -517,25 +517,37 @@ class MyOrgsTaskList(Component):
     list_config.addColumn('time_to_complete', 'Time to complete',
                           lambda entity, *args: entity.taskTimeToComplete())
 
+    # assigned mentor column
+    def split_key(key):
+      split_name = key.name().split('/')
+      return split_name[-1]
+
+    def mentor_keys(ent, *args):
+      return ', '.join(split_key(i) for i in ent.possible_mentors)
+
     list_config.addColumn(
-        'mentors', 'Mentors',
-        lambda entity, mentors, *args: ', '.join(
-            mentors[i].name() for i in entity.mentors))
+        'mentor', 'Mentor usernames',
+        lambda ent, *args: ', '.join(split_key(i) for i in ent.mentors))
+
+    #list_config.addColumn(
+    #    'mentors', 'Mentors',
+    #    lambda entity, mentors, *args: ', '.join(
+    #        mentors[i].name() for i in entity.mentors))
 
     list_config.addColumn(
         'student', 'Student',
         lambda ent, *args: ent.student.name() if ent.student else '',
         hidden=True)
-    list_config.addColumn(
-        'created_by', 'Created by',
-        lambda entity, *args: entity.created_by.name() \
-            if entity.created_by else '',
-        hidden=True)
-    list_config.addColumn(
-        'modified_by', 'Modified by',
-        lambda entity, *args: entity.modified_by.name() \
-            if entity.modified_by else '',
-        hidden=True)
+    #list_config.addColumn(
+    #    'created_by', 'Created by',
+    #    lambda entity, *args: entity.created_by.name() \
+    #        if entity.created_by else '',
+    #    hidden=True)
+    #list_config.addColumn(
+    #    'modified_by', 'Modified by',
+    #    lambda entity, *args: entity.modified_by.name() \
+    #        if entity.modified_by else '',
+    #    hidden=True)
     list_config.addColumn(
         'created_on', 'Created on',
         lambda entity, *args: format(entity.created_on, DATETIME_FORMAT) \
@@ -597,14 +609,16 @@ class MyOrgsTaskList(Component):
     q.filter('org IN', self.data.mentor_for)
 
     starter = lists.keyStarter
-    basic_prefetcher = lists.listModelPrefetcher(
-        GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
+    #basic_prefetcher = lists.listModelPrefetcher(
+    #    GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
 
     all_d = TaskDifficultyTag.all().fetch(100)
     all_t = TaskTypeTag.all().fetch(100)
 
     def prefetcher(entities):
-      args, kwargs = basic_prefetcher(entities)
+      #args, kwargs = basic_prefetcher(entities)
+      args = [{}]
+      kwargs = {}
       args += [all_d, all_t]
       return (args, kwargs)
 
