@@ -119,3 +119,12 @@ mapreduce:
     - name: entity_kind
       value: soc.models.org_app_record.OrgAppRecord
     - name: program_key
+
+- name: InitGCITaskAuthorship
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.init_gci_task_authorship.process
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.task.GCITask
+
