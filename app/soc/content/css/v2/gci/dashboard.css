@@ -185,7 +185,9 @@
 .column-entry.view_student_evaluation,
 .column-entry.view_evaluation_group,
 .column-entry.all_org_tasks,
-.column-entry.all_orgs_mentors
+.column-entry.all_orgs_mentors,
+.column-entry.list_invites,
+.column-entry.list_org_invites
 {
   background-image: url(../../../images/v2/soc/dashboard/view.png);
 }
