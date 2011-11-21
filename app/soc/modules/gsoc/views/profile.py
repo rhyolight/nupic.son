@@ -119,6 +119,9 @@ class GSoCProfileForm(profile.ProfileForm):
 
     widgets = forms.mergeWidgets(_choiceWidgets, _hiddenWidgets)
 
+  # TODO
+  # clean_birth_date = cleaning.clean_birth_date('birth_date')
+
   def templatePath(self):
     return gsoc_forms.TEMPLATE_PATH
 

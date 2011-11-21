@@ -97,7 +97,6 @@ class ProfileForm(forms.ModelForm):
   clean_home_page = cleaning.clean_url('home_page')
   clean_blog = cleaning.clean_url('blog')
   clean_photo_url = cleaning.clean_url('photo_url')
-  clean_birth_date = cleaning.clean_birth_date('birth_date')
 
   def clean(self):
     country = self.cleaned_data.get('res_country')
