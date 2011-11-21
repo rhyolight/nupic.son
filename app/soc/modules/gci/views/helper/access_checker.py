@@ -229,6 +229,8 @@ class AccessChecker(access_checker.AccessChecker):
       kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
       age_check_url = reverse('gci_age_check', kwargs=kwargs)
       raise RedirectRequest(age_check_url)
+    else:
+      self.isLoggedIn()
 
   def canTakeOrgApp(self):
     """A user can take the GCI org app if he/she participated in GSoC or GCI
