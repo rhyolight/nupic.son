@@ -503,9 +503,15 @@ class MyOrgsTaskList(Component):
 
     list_config = lists.ListConfiguration()
 
+    # assigned mentor column
+    def split_key(key):
+      split_name = key.name().split('/')
+      return split_name[-1]
+
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
-                          lambda entity, *args: entity.org.name)
+                          (lambda entity, *args: split_key(entity.org.key())),
+                          hidden=True)
     list_config.addColumn(
         'difficulty', 'Difficulty',
         lambda entity, _, all_d, *args: entity.taskDifficultyName(all_d))
@@ -517,10 +523,6 @@ class MyOrgsTaskList(Component):
     list_config.addColumn('time_to_complete', 'Time to complete',
                           lambda entity, *args: entity.taskTimeToComplete())
 
-    # assigned mentor column
-    def split_key(key):
-      split_name = key.name().split('/')
-      return split_name[-1]
 
     def mentor_keys(ent, *args):
       return ', '.join(split_key(i) for i in ent.possible_mentors)
