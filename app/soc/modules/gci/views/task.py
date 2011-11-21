@@ -175,8 +175,8 @@ class TaskViewPage(RequestHandler):
 
         buttons = {}
         TaskInformation(self.data).setButtonControls(buttons)
-        if button_name not in buttons:
-          self.check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON %button_name)
+        if not buttons.get(button_name):
+          self.check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON % button_name)
 
       if 'send_for_review' in self.data.GET:
         if not task_logic.isOwnerOfTask(self.data.task, self.data.profile) or \
@@ -393,6 +393,7 @@ class TaskInformation(Template):
     """
     task = self.data.task
     mentors = [m.public_name for m in db.get(task.mentors)]
+    profile = self.data.profile
 
     # We count everyone from the org as a mentor, the mentors property
     # is just who best to contact about this task
@@ -400,7 +401,7 @@ class TaskInformation(Template):
         'task': task,
         'mentors': mentors,
         'is_mentor': self.data.mentorFor(task.org),
-        'is_task_mentor': self.data.profile.key() in task.mentors,
+        'is_task_mentor': profile.key() in task.mentors if profile else None,
         'is_owner': task_logic.isOwnerOfTask(task, self.data.profile),
         'is_claimed': task.status in ACTIVE_CLAIMED_TASK,
         'profile': self.data.profile,
@@ -479,11 +480,28 @@ class WorkSubmissions(Template):
   button for students.
   """
 
+  def _buildWorkSubmissionContext(self):
+    """Builds a list containing the info related to each work submission.
+    """
+    submissions = []
+    for submission in self.data.work_submissions:
+      submission_info = {
+          'entity': submission
+          }
+      upload_of_work = submission.upload_of_work
+      submission_info['upload_of_work'] = upload_of_work
+      if upload_of_work:
+        uploaded_blob = blobstore.BlobInfo.get(upload_of_work.key())
+        submission_info['is_blob_valid'] = True if uploaded_blob else False
+      submissions.append(submission_info)
+
+    return submissions
+
   def context(self):
     """Returns the context for the current template.
     """
     context = {
-        'submissions': self.data.work_submissions,
+        'submissions': self._buildWorkSubmissionContext(),
         'download_url': self.data.redirect.id().urlOf('gci_download_work')
         }
 

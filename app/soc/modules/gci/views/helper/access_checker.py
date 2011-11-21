@@ -174,7 +174,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     if not self.data.timeline.tasksPubliclyVisible():
       if can_edit:
-        return
+        return False
       period = self.data.timeline.tasksPubliclyVisibleOn()
       raise AccessViolation(
           access_checker.DEF_PAGE_INACTIVE_BEFORE % period)
@@ -315,4 +315,5 @@ class AccessChecker(access_checker.AccessChecker):
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   """Developer access checker for GCI specific methods.
   """
-  pass
+  def isTaskVisible(self):
+    return True

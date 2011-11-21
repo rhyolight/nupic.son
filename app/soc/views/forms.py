@@ -374,21 +374,27 @@ class ModelForm(djangoforms.ModelForm):
         'group': 'group',
         }
 
+    opts = ModelFormOptions(getattr(self, 'Meta', None))
+
     for field_name in self.fields.iterkeys():
       field = self.fields[field_name]
 
       # Since fields can be added only to the ModelForm subclass, check to
       # see if the Model has a corresponding field first.
       # pylint: disable=E1101
-      if not hasattr(self.Meta.model, field_name):
+      if not hasattr(opts.model, field_name):
         continue
 
-      model_prop = getattr(self.Meta.model, field_name)
+      model_prop = getattr(opts.model, field_name)
 
       for old, new in renames.iteritems():
         value = getattr(model_prop, old, None)
         if value and not getattr(field, new, None):
           setattr(field, new, value)
+
+    for field_name in opts.exclude or []:
+      if field_name in self.fields:
+        del self.fields[field_name]
 
   def __iter__(self):
     grouping = collections.defaultdict(list)

@@ -65,7 +65,11 @@ PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
 ]
 
 STUDENT_EXCLUDE = PROFILE_EXCLUDE + [
-    'birth_date', 'longitude', 'latitude', 'publish_location',
+    'longitude', 'latitude', 'publish_location',
+]
+
+SHOW_STUDENT_EXCLUDE = STUDENT_EXCLUDE + [
+    'birth_date',
 ]
 
 
@@ -194,6 +198,16 @@ class GCICreateStudentProfileForm(GCICreateProfileForm):
     widgets = GCICreateProfileForm.Meta.widgets
 
 
+class GCIShowCreateStudentProfileForm(GCICreateProfileForm):
+  """Django edit form to edit GCI student profile page.
+  """
+
+  class Meta:
+    model = GCICreateProfileForm.Meta.model
+    css_prefix = GCICreateProfileForm.Meta.css_prefix
+    exclude = SHOW_STUDENT_EXCLUDE
+    widgets = GCICreateProfileForm.Meta.widgets
+
 class NotificationForm(gci_forms.GCIModelForm):
   """Django form for the notifications.
   """
@@ -314,9 +328,12 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
     return form(data=self.data.POST or None,
         request_data=self.data, instance=self.data.profile)
 
-  def _getCreateProfileForm(self, is_student):
+  def _getCreateProfileForm(self, is_student, save=False):
     if is_student:
-      form = GCICreateStudentProfileForm
+      if save:
+        form = GCICreateStudentProfileForm
+      else:
+        form = GCIShowCreateStudentProfileForm
       if self.data.POST:
         birth_date = self.data.request.COOKIES.get('age_check')
         self.data.POST = self.data.POST.copy()
