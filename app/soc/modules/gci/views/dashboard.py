@@ -443,7 +443,7 @@ class MyOrgApplicationsComponent(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return'v2/modules/gci/dashboard/list_component.html'
+    return 'v2/modules/gci/dashboard/list_component.html'
 
   def context(self):
     """Returns the context of this component.
