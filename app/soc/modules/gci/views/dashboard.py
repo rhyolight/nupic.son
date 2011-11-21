@@ -977,7 +977,7 @@ class OrgAdminInvitesList(Component):
     }
 
   def templatePath(self):
-    return 'v2/modules/gci/invite/_invite_list.html'
+    return 'v2/modules/gci/dashboard/list_component.html'
 
 
 class OrgAdminRequestsList(Component):
