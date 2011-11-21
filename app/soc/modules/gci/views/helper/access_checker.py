@@ -212,8 +212,6 @@ class AccessChecker(access_checker.AccessChecker):
   def canApplyStudent(self, edit_url):
     """Checks if a user may apply as a student to the program.
     """
-    self.isLoggedIn()
-
     if self.data.profile:
       if self.data.profile.student_info:
         raise RedirectRequest(edit_url)

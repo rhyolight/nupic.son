@@ -228,7 +228,6 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
   """
 
   def checkAccess(self):
-    self.check.isLoggedIn()
     self.check.isProgramVisible()
   
     if 'role' in self.data.kwargs:
@@ -238,8 +237,10 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
       if role == 'student':
         self.check.canApplyStudent(edit_url)
       else:
+        self.check.isLoggedIn()
         self.check.canApplyNonStudent(role, edit_url)
     else:
+      self.check.isLoggedIn()
       self.check.isProfileActive()
 
   def templatePath(self):
