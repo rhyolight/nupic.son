@@ -63,7 +63,7 @@ def siteMenuContext(data):
     context['dashboard_link'] = redirect.dashboard().url()
 
   if data.timeline.tasksPubliclyVisible():
-    context['tasks_link'] = ''
+    context['tasks_link'] = redirect.program().urlOf('gci_list_tasks')
 
   return context
 
