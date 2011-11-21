@@ -33,3 +33,4 @@ GCI_RESPOND_REQUEST = 'gci_respond_request'
 
 CREATE_GCI_ORG_PROFILE = 'create_gci_org_profile'
 EDIT_GCI_ORG_PROFILE = 'edit_gci_org_profile'
+GCI_ORG_HOME = 'gci_org_home'

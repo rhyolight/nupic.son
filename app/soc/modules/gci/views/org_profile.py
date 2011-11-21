@@ -117,7 +117,7 @@ class OrgProfilePage(RequestHandler):
 
     if self.data.organization:
       r = self.data.redirect.organization()
-      #context['org_home_page_link'] = r.urlOf('gci_org_home')
+      context['org_home_page_link'] = r.urlOf('gci_org_home')
 
     return context
 

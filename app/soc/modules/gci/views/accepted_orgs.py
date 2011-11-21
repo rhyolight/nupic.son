@@ -34,6 +34,7 @@ from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.views.base import RequestHandler
 #from soc.modules.gci.views.base_templates import ProgramSelect
 from soc.modules.gci.views.helper.url_patterns import url
+from soc.modules.gci.views.helper import url_names
 
 
 class AcceptedOrgsList(Template):
@@ -49,9 +50,8 @@ class AcceptedOrgsList(Template):
     list_config.addColumn('name', 'Name',
         lambda e, *args: e.name.strip())
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-    # TODO(SRabbelier): enable once gci_org_home is written
-    #list_config.setRowAction(
-    #    lambda e, *args: r.organization(e).urlOf('gci_org_home'))
+    list_config.setRowAction(
+        lambda e, *args: r.organization(e).urlOf(url_names.GCI_ORG_HOME))
     list_config.addColumn(
         'ideas', 'Ideas',
         (lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]")),
