@@ -66,6 +66,14 @@ DEF_CLOSED = ugettext(
     'Congratulations, this task has been completed successfully.')
 
 
+DEF_NEEDS_WORK_TITLE = ugettext('Task Needs More Work')
+DEF_NEEDS_WORK = ugettext(
+    'One of the mentors has sent this task back for more work. Talk to '
+    'the mentor(s) assigned to this task to satisfy the requirements needed '
+    'to complete this task, submit your work again and mark the task as '
+    'complete once you re-submit your work.')
+
+
 DEF_EXTEND_DEADLINE_TITLE = ugettext('Deadline extended')
 DEF_EXTEND_DEADLINE = ugettext(
     'The deadline of the task has been extended with %i days and %i hours.')
@@ -247,6 +255,32 @@ def closeTask(task, user):
     startUpdatingTask(task, transactional=True)
 
   return db.run_in_transaction(closeTaskTxn)
+
+
+def needsWorkTask(task, user):
+  """Closes the task.
+
+  Args:
+    task: GCITask entity.
+    user: GCIProfile of the user that marks this task as needs more work.
+  """
+  task.status = 'NeedsWork'
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_NEEDS_WORK_TITLE,
+      'content': DEF_NEEDS_WORK,
+      'created_by': user.user
+  }
+  comment = GCIComment(**comment_props)
+
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+
+  def needsWorkTaskTxn():
+    task.put()
+    comment_txn()
+
+  return db.run_in_transaction(needsWorkTaskTxn)
 
 
 def extendDeadline(task, delta, user):
