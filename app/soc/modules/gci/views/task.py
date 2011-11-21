@@ -175,8 +175,8 @@ class TaskViewPage(RequestHandler):
 
         buttons = {}
         TaskInformation(self.data).setButtonControls(buttons)
-        if button_name not in buttons:
-          self.check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON %button_name)
+        if not buttons.get(button_name):
+          self.check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON % button_name)
 
       if 'send_for_review' in self.data.GET:
         if not task_logic.isOwnerOfTask(self.data.task, self.data.profile) or \
