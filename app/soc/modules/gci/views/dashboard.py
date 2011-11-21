@@ -508,10 +508,14 @@ class MyOrgsTaskList(Component):
       split_name = key.name().split('/')
       return split_name[-1]
 
+    def org_key(ent, *args):
+      key = GCITask.org.get_value_for_datastore(ent)
+      if not key:
+        return ""
+      return split_key(key)
+
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org', 'Organization',
-                          (lambda entity, *args: split_key(entity.org.key())),
-                          hidden=True)
+    list_config.addColumn('org', 'Organization', org_key, hidden=True)
     list_config.addColumn(
         'difficulty', 'Difficulty',
         lambda entity, _, all_d, *args: entity.taskDifficultyName(all_d))
