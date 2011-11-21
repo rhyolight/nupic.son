@@ -43,7 +43,9 @@
     <span class="remaining">Time to complete: <span class="emph">{{ task.time_to_complete }} hrs</span></span>
   {% endif %}
   <span class="mentor">Mentors: <span class="emph">{{ mentors|join:", " }}</span></span>
+  {% if task.taskArbitTag %}
   <span class="tags">Tags: <span class="emph">{{ task.taskArbitTag }}</span></span>
+  {% endif %}
 </div>
 
 <div class="block-content clearfix">
