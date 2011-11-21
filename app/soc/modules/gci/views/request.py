@@ -25,9 +25,12 @@ __authors__ = [
 from google.appengine.ext import db
 
 from soc.logic.exceptions import BadRequest
+from soc.logic.helper import notifications
 
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
+
+from soc.tasks import mailer
 
 from soc.modules.gci.models.request import GCIRequest
 
@@ -232,12 +235,36 @@ class RespondRequestPage(RequestHandler):
     """Handler to for GCI Respond Request Page HTTP post request.
     """
     if 'accept' in self.data.POST:
-      raise NotImplementedError
-      #options = db.create_transaction_options(xg=True)
-      #def accept_request_txn():
-      #  pass
-      #db.run_in_transaction(accept_request_txn, options)
-      #pass
+      options = db.create_transaction_options(xg=True)
+
+      request_key = self.data.request_entity.key()
+      organization_key = self.data.organization.key()
+
+      user_key = GCIRequest.user.get_value_for_datastore(
+          self.data.request_entity)
+      link_id = user_key.name()
+      profile_key_name = '/'.join([self.data.program.key().name(), link_id])
+      profile_key = db.Key.from_path(
+          'GCIProfile', profile_key_name, parent=user_key)
+
+      def accept_request_txn():
+        request = db.get(request_key)
+        self.data.requester_profile = profile = db.get(profile_key)
+
+        request.status = 'accepted'
+        profile.is_mentor = True
+        profile.mentor_for.append(organization_key)
+        profile.mentor_for = list(set(profile.mentor_for))
+
+        profile.put()
+        request.put()
+
+        context = notifications.handledRequestContext(self.data, request.status)
+        sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
+        sub_txn()
+
+      db.run_in_transaction_options(options, accept_request_txn)
+
     else: # reject
       def reject_request_txn():
         request = db.get(self.data.request_entity.key())
