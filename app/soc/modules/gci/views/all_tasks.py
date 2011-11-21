@@ -49,13 +49,17 @@ class TaskList(Template):
     list_config.addColumn(
         'org', 'Organization', lambda entity, *args: entity.org.name)
     list_config.addColumn(
-        'difficulty', 'Difficulty',
-        lambda entity, _, all_d, *args: entity.taskDifficultyName(all_d))
-    list_config.addColumn(
-        'task_type', 'Type',
-        lambda entity, _, all_d, all_t, *args: entity.taskType(all_t))
-    list_config.addColumn('time_to_complete', 'Time to complete',
-                          lambda entity, *args: entity.taskTimeToComplete())
+        'mentors', 'Mentors',
+        lambda entity, mentors, *args: ', '.join(
+            mentors[i].name() for i in entity.mentors))
+    #list_config.addColumn(
+    #    'difficulty', 'Difficulty',
+    #    lambda entity, _, all_d, *args: entity.taskDifficultyName(all_d))
+    #list_config.addColumn(
+    #    'task_type', 'Type',
+    #    lambda entity, _, all_d, all_t, *args: entity.taskType(all_t))
+    #list_config.addColumn('time_to_complete', 'Time to complete',
+    #                      lambda entity, *args: entity.taskTimeToComplete())
 
     list_config.addSimpleColumn('status', 'Status')
 
@@ -83,16 +87,16 @@ class TaskList(Template):
       q.filter('status IN', CLAIMABLE)
 
       starter = lists.keyStarter
-      basic_prefetcher = lists.listModelPrefetcher(
-          GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
+      prefetcher = lists.listModelPrefetcher(
+          GCITask, ['org'], ['mentors'])
 
-      all_d = TaskDifficultyTag.all().fetch(100)
-      all_t = TaskTypeTag.all().fetch(100)
+      #all_d = TaskDifficultyTag.all().fetch(100)
+      #all_t = TaskTypeTag.all().fetch(100)
 
-      def prefetcher(entities):
-        args, kwargs = basic_prefetcher(entities)
-        args += [all_d, all_t]
-        return (args, kwargs)
+      #def prefetcher(entities):
+      #  args, kwargs = basic_prefetcher(entities)
+      #  args += [all_d, all_t]
+      #  return (args, kwargs)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, q,

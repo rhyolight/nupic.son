@@ -502,58 +502,48 @@ class MyOrgsTaskList(Component):
     super(MyOrgsTaskList, self).__init__(request, data)
 
     list_config = lists.ListConfiguration()
-
-    # assigned mentor column
-    def split_key(key):
-      split_name = key.name().split('/')
-      return split_name[-1]
-
-    def org_key(ent, *args):
-      key = GCITask.org.get_value_for_datastore(ent)
-      if not key:
-        return ""
-      return split_key(key)
-
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org', 'Organization', org_key, hidden=True)
     list_config.addColumn(
-        'difficulty', 'Difficulty',
-        lambda entity, _, all_d, *args: entity.taskDifficultyName(all_d))
-    list_config.addColumn(
-        'task_type', 'Type',
-        lambda entity, _, all_d, all_t, *args: entity.taskType(all_t))
+        'org', 'Organization',
+        lambda ent, *args: ent.org.name)
+    #list_config.addColumn(
+    #    'difficulty', 'Difficulty',
+    #    lambda entity, _, all_d, *args: entity.taskDifficultyName(all_d))
+    #list_config.addColumn(
+    #    'task_type', 'Type',
+    #    lambda entity, _, all_d, all_t, *args: entity.taskType(all_t))
     #list_config.addColumn('arbit_tag', 'Tags',
     #                      lambda entity, *args: entity.taskArbitTag())
     list_config.addColumn('time_to_complete', 'Time to complete',
                           lambda entity, *args: entity.taskTimeToComplete())
 
 
-    def mentor_keys(ent, *args):
-      return ', '.join(split_key(i) for i in ent.possible_mentors)
-
-    list_config.addColumn(
-        'mentor', 'Mentor usernames',
-        lambda ent, *args: ', '.join(split_key(i) for i in ent.mentors))
+    #def mentor_keys(ent, *args):
+    #  return ', '.join(split_key(i) for i in ent.possible_mentors)
 
     #list_config.addColumn(
-    #    'mentors', 'Mentors',
-    #    lambda entity, mentors, *args: ', '.join(
-    #        mentors[i].name() for i in entity.mentors))
+    #    'mentor', 'Mentor usernames',
+    #    lambda ent, *args: ', '.join(split_key(i) for i in ent.mentors))
+
+    list_config.addColumn(
+        'mentors', 'Mentors',
+        lambda entity, mentors, *args: ', '.join(
+            mentors[i].name() for i in entity.mentors))
 
     list_config.addColumn(
         'student', 'Student',
         lambda ent, *args: ent.student.name() if ent.student else '',
         hidden=True)
-    #list_config.addColumn(
-    #    'created_by', 'Created by',
-    #    lambda entity, *args: entity.created_by.name() \
-    #        if entity.created_by else '',
-    #    hidden=True)
-    #list_config.addColumn(
-    #    'modified_by', 'Modified by',
-    #    lambda entity, *args: entity.modified_by.name() \
-    #        if entity.modified_by else '',
-    #    hidden=True)
+    list_config.addColumn(
+        'created_by', 'Created by',
+        lambda entity, *args: entity.created_by.name() \
+            if entity.created_by else '',
+        hidden=True)
+    list_config.addColumn(
+        'modified_by', 'Modified by',
+        lambda entity, *args: entity.modified_by.name() \
+            if entity.modified_by else '',
+        hidden=True)
     list_config.addColumn(
         'created_on', 'Created on',
         lambda entity, *args: format(entity.created_on, DATETIME_FORMAT) \
@@ -615,18 +605,18 @@ class MyOrgsTaskList(Component):
     q.filter('org IN', self.data.mentor_for)
 
     starter = lists.keyStarter
-    #basic_prefetcher = lists.listModelPrefetcher(
-    #    GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
+    prefetcher = lists.listModelPrefetcher(
+        GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
 
-    all_d = TaskDifficultyTag.all().fetch(100)
-    all_t = TaskTypeTag.all().fetch(100)
+    #all_d = TaskDifficultyTag.all().fetch(100)
+    #all_t = TaskTypeTag.all().fetch(100)
 
-    def prefetcher(entities):
-      #args, kwargs = basic_prefetcher(entities)
-      args = [{}]
-      kwargs = {}
-      args += [all_d, all_t]
-      return (args, kwargs)
+    #def prefetcher(entities):
+    #  #args, kwargs = basic_prefetcher(entities)
+    #  args = [{}]
+    #  kwargs = {}
+    #  args += [all_d, all_t]
+    #  return (args, kwargs)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter, prefetcher=prefetcher)

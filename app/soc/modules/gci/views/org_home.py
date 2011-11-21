@@ -68,12 +68,12 @@ class OpenTasksList(Template):
     list_config = lists.ListConfiguration()
     
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn(
-        'difficulty', 'Difficulty',
-        lambda entity, all_d, *args: entity.taskDifficultyName(all_d))
-    list_config.addColumn(
-        'task_type', 'Type',
-        lambda entity, all_d, all_t, *args: entity.taskType(all_t))
+    #list_config.addColumn(
+    #    'difficulty', 'Difficulty',
+    #    lambda entity, all_d, *args: entity.taskDifficultyName(all_d))
+    #list_config.addColumn(
+    #    'task_type', 'Type',
+    #    lambda entity, all_d, all_t, *args: entity.taskType(all_t))
     #list_config.addColumn('arbit_tag', 'Tags', lambda entity,
     #                      *args: entity.taskArbitTag())
     list_config.addColumn('time_to_complete', 'Time to complete',
@@ -101,15 +101,15 @@ class OpenTasksList(Template):
     q.filter('status IN', CLAIMABLE)
     starter = lists.keyStarter
 
-    all_d = TaskDifficultyTag.all().fetch(100)
-    all_t = TaskTypeTag.all().fetch(100)
+    #all_d = TaskDifficultyTag.all().fetch(100)
+    #all_t = TaskTypeTag.all().fetch(100)
 
-    def prefetcher(entities):
-      args = [all_d, all_t]
-      return (args, {})
+    #def prefetcher(entities):
+    #  args = [all_d, all_t]
+    #  return (args, {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self.list_config, q, starter, prefetcher=prefetcher)
+        self.request, self.list_config, q, starter)#, prefetcher=prefetcher)
     return response_builder.build()
   
   def templatePath(self):
