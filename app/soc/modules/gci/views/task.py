@@ -287,7 +287,8 @@ class TaskViewPage(RequestHandler):
     elif button_name == 'button_needs_work':
       task_logic.needsWorkTask(task, self.data.profile)
     elif button_name == 'button_extend_deadline':
-      hours = int(self.data.POST.get('hours', 0))
+      hours = self.data.POST.get('hours', '')
+      hours = int(hours) if hours.isdigit() else 0
       if hours > 0:
         delta = datetime.timedelta(hours=hours)
         task_logic.extendDeadline(task, delta, self.data.profile)
