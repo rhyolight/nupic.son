@@ -30,6 +30,7 @@ from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
+from soc.modules.gci.views.helper import url_names
 
 
 class HowItWorks(Template):
@@ -100,8 +101,7 @@ class ParticipatingOrgs(Template):
     current_orgs = org_logic.participating(self.data.program)
     for org in current_orgs:
       participating_orgs.append({
-          # TODO(madhu): Put the URL bank once the org home page appears.
-          #'link': r.orgHomepage(org.link_id).url(),
+          'link': r.orgHomepage(org.link_id).url(),
           'logo': org.logo_url,
           'name': org.short_name,
           })
