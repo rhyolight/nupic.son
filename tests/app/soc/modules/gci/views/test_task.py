@@ -236,6 +236,34 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     self.assertTasksInQueue(n=1, url='/tasks/gci/ranking/update')
 
+  def testPostButtonNeedsWork(self):
+    """Tests the needs more work for task button.
+    """
+    self.data.createMentor(self.org)
+
+    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
+    profile_helper.createOtherUser('student@example.com').createStudent()
+    student = profile_helper.profile
+
+    self.task.status = 'NeedsReview'
+    self.task.student = student
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_needs_work')
+
+    # check if the task is properly closed
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'NeedsWork')
+    self.assertEqual(task.student.key(), student.key())
+    self.assertEqual(task.deadline, None)
+
+    # check if a comment has been created
+    comments = self.task.comments()
+    self.assertLength(comments, 1)
+    self.assertMailSentToSubscribers(comments[0])
+
   def testPostButtonExtendDeadline(self):
     """Tests the extend deadline button.
     """
