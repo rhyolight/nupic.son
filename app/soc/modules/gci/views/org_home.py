@@ -19,6 +19,7 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
+from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import TaskDifficultyTag
 from soc.modules.gci.models.task import TaskTypeTag
@@ -97,6 +98,7 @@ class OpenTasksList(Template):
       return None
     q = GCITask.all()
     q.filter('org', self.data.organization)
+    q.filter('status IN', CLAIMABLE)
     starter = lists.keyStarter
 
     all_d = TaskDifficultyTag.all().fetch(100)
