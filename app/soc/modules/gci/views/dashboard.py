@@ -234,6 +234,9 @@ class DashboardPage(RequestHandler):
     # choose which organization the task or invitite will be created for
     components.append(MyOrgsListBeforeCreateTask(self.request, self.data))
 
+    # add request to become mentor component
+    components.append(AllOrgsListBeforeRequestRole(self.request, self.data))
+
     return components
 
   def _getOrgAdminComponents(self):
@@ -269,6 +272,9 @@ class DashboardPage(RequestHandler):
     component = self._getMyOrgApplicationsComponent()
     if component:
       components.append(component)
+
+    # add request to become mentor component
+    components.append(AllOrgsListBeforeRequestRole(self.request, self.data))
 
     return components
 
@@ -871,6 +877,48 @@ class MyOrgsListBeforeOrgProfile(MyOrgsList):
             urlOf(url_names.EDIT_GCI_ORG_PROFILE))
 
 
+class AllOrgsListBeforeRequestRole(MyOrgsList):
+  """Component for listing all the organizations that the current user may
+  request to become mentor for.
+  """
+
+  def _getContext(self):
+    org_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.idx, preload_list=False)
+
+  def _setIdx(self):
+    self.idx = 8
+
+  def _setRowAction(self, request, data):
+    self._list_config.setRowAction(
+        lambda e, *args: data.redirect.invite('mentor', e)
+            .urlOf(url_names.GCI_SEND_REQUEST))
+
+  def getListData(self):
+    if lists.getListIndex(self.request) != self.idx:
+      return None
+
+    q = GCIOrganization.all()
+    q.filter('scope', self.data.program)
+    q.filter('status IN', ['new', 'active', 'inactive'])
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, lists.keyStarter)
+
+    return response_builder.build()
+
+  def _getContext(self):
+    org_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.idx, preload_list=False)
+
+    return {
+        'name': 'request_to_become_mentor',
+        'title': 'Request to become a mentor',
+        'lists': [org_list],
+        'description': ugettext('Request to become a mentor for one of '
+            'the participating organizations.')}
+
+
 class OrgAdminInvitesList(Component):
   """Template for list of invites that have been sent by the organizations
   that the current user is organization admin for.
@@ -896,7 +944,7 @@ class OrgAdminInvitesList(Component):
         lambda e, *args: r.id(e.key().id())
             .urlOf(url_names.GCI_MANAGE_INVITE))
 
-    self.idx = 8
+    self.idx = 9
     self._list_config = list_config
 
   def getListData(self):
