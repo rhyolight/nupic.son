@@ -44,6 +44,7 @@ class Callback(object):
     from soc.modules.gci.views import accepted_orgs
     from soc.modules.gci.views import admin
     from soc.modules.gci.views import age_check
+    from soc.modules.gci.views import all_tasks
     from soc.modules.gci.views import bulk_create
     from soc.modules.gci.views import dashboard
     from soc.modules.gci.views import delete_account
@@ -64,6 +65,7 @@ class Callback(object):
     self.views.append(accepted_orgs.AcceptedOrgsPage())
     self.views.append(admin.DashboardPage())
     self.views.append(admin.LookupLinkIdPage())
+    self.views.append(all_tasks.TaskListPage())
     self.views.append(age_check.AgeCheck())
     self.views.append(bulk_create.BulkCreate())
     self.views.append(dashboard.DashboardPage())
