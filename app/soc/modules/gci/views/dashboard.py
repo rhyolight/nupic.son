@@ -972,7 +972,7 @@ class OrgAdminInvitesList(Component):
         'title': 'Outgoing Invitations',
         'lists': [invite_list],
         'description': ugettext(
-            'See all the invitations that have been sent sent '
+            'See all the invitations that have been sent '
             'by your organizations.')
     }
 
