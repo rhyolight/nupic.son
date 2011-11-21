@@ -250,6 +250,7 @@ input.task-btn {
     }
     form input[type="submit"].task-btn-delete,
     form input[type="submit"].task-btn-unclaim,
+    form input[type="submit"].task-btn-needswork,
     input.task-btn-delete,
     input.task-btn-unclaim {
         background-position: 7px -16px;
