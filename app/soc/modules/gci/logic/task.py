@@ -217,12 +217,12 @@ def unassignTask(task, user):
   return db.run_in_transaction(unassignTaskTxn)
 
 
-def closeTask(task, user):
+def closeTask(task, profile):
   """Closes the task.
 
   Args:
     task: GCITask entity.
-    user: GCIProfile of the user that closes the task.
+    profile: GCIProfile of the user that closes the task.
   """
   from soc.modules.gci.tasks.ranking_update import startUpdatingTask
 
@@ -233,7 +233,7 @@ def closeTask(task, user):
       'parent': task,
       'title': DEF_CLOSED_TITLE,
       'content': DEF_CLOSED,
-      'created_by': user.user
+      'created_by': profile.user
   }
   comment = GCIComment(**comment_props)
 
