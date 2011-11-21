@@ -206,8 +206,10 @@ def getTaskCommentContext(task, comment, to_emails):
       'host': system.getHostname(),
       'task': reverse('gci_view_task', kwargs=url_kwargs)}
 
+  commented_by = comment.created_by.name if comment.created_by else "Melange"
+
   message_properties = {
-      'commented_by': comment.created_by.name,
+      'commented_by': commented_by,
       'comment_content': comment.content,
       'group': task.org.name,
       'program_name': task.program.name,
