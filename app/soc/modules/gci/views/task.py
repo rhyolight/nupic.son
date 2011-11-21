@@ -49,6 +49,7 @@ from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_patterns
 from soc.modules.gci.views.helper.url_patterns import url
+from soc.modules.gci.views.helper import url_names
 
 
 DEF_NOT_ALLOWED_TO_OPERATE_BUTTON = ugettext(
@@ -138,7 +139,8 @@ class TaskViewPage(RequestHandler):
     """URL pattern for this view.
     """
     return [
-        url(r'task/view/%s$' % url_patterns.TASK, self, name='gci_view_task'),
+        url(r'task/view/%s$' % url_patterns.TASK, self,
+            name=url_names.GCI_VIEW_TASK),
     ]
 
   def checkAccess(self):
