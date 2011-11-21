@@ -37,12 +37,7 @@ def process(task):
   params = ctx.mapreduce_spec.mapper.params
   program_key = params['program_key']
 
-  # TODO(SRabbelier): create a MapReduce/Task RequestData
-  data = RequestData()
-  data.program = GCIProgram.get_by_key_name(program_key)
-  data.site = Site.get_by_key_name('site')
-
-  program = data.program
+  program = GCIProgram.get_by_key_name(program_key)
 
   if (task.program.key() == program.key() and 
       (task.status == 'Unapproved'or task.status == 'Unpublished')):
