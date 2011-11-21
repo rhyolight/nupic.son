@@ -22,6 +22,7 @@ from soc.views.template import Template
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
+from soc.modules.gci.views.helper import url_names
 
 
 class AboutUs(Template):
@@ -116,7 +117,7 @@ class OrgHomepage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'org/%s$' % url_patterns.ORG, self,
-            name='gci_org_homepage'),
+            name=url_names.GCI_ORG_HOME),
     ]
     
   def checkAccess(self):
@@ -136,6 +137,7 @@ class OrgHomepage(RequestHandler):
         'about_us': AboutUs(self.data),
         'contact_us': ContactUs(self.data),
         'open_tasks_list': OpenTasksList(self.request, self.data),
+        'feed_url': self.data.organization.feed_url,
     }
     
     return context

@@ -2,7 +2,7 @@
   <div class="block-title">About Us</div>
   <div class="block-content">
     {% if description %}
-      <p>{{ description }}</p>
+      <p>{{ description|safe }}</p>
     {% endif %}
    </div>
  </div>

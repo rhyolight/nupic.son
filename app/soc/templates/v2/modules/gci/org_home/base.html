@@ -15,20 +15,31 @@ limitations under the License.
 
 
 {% block page_content %}
+  <div class="grid_6 alpha main-content">
     {{ about_us.render }}
+    <!-- begin .block.block-news -->
+    <div id="blog-feed" class="block block-news"></div>
+    <!-- end .block.block-news -->
+  </div>
+  <!-- end .grid_6 -->
+  <div class="grid_3 omega main-side">
     {{ contact_us.render }}
-    {{ open_tasks_list.render }}
+  </div>
+  <!-- end .grid_3 -->
+  <div class="clear"></div>
+{{ open_tasks_list.render }}
 {% endblock page_content %}
 
 {% block dependencies %}
   [
-  {% if program.feed_url %}
+    dep.melange.list,
+    {% if feed_url %}
     dep.melange.blog,
     null,
     function () {
       function initialize() {
         var blog = new BlogPreview(document.getElementById("blog-feed"));
-        blog.show("{{ program.feed_url|safe }}", 3, "What's New");
+        blog.show("{{ feed_url|safe }}", 3, "What's New");
       }
 
       jQuery(
