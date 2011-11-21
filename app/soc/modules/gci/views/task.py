@@ -284,6 +284,8 @@ class TaskViewPage(RequestHandler):
       task_logic.unassignTask(task, self.data.profile)
     elif button_name == 'button_close':
       task_logic.closeTask(task, self.data.profile)
+    elif button_name == 'button_needs_work':
+      task_logic.needsWorkTask(task, self.data.profile)
     elif button_name == 'button_extend_deadline':
       hours = int(self.data.POST.get('hours', 0))
       if hours > 0:
@@ -453,6 +455,7 @@ class TaskInformation(Template):
       context['button_assign'] = task.status == 'ClaimRequested'
       context['button_unassign'] = task.status in ACTIVE_CLAIMED_TASK
       context['button_close'] = task.status == 'NeedsReview'
+      context['button_needs_work'] = task.status == 'NeedsReview'
       context['button_extend_deadline'] = task.status in TASK_IN_PROGRESS
 
     if is_student:
