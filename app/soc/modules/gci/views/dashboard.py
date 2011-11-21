@@ -298,12 +298,11 @@ class DashboardPage(RequestHandler):
 
     if self.data.student_info:
       links += self._getStudentLinks()
-    elif self.data.is_org_admin:
+    if self.data.is_org_admin:
       links += self._getOrgAdminLinks()
-    elif self.data.is_mentor:
+    if self.data.is_mentor:
       links += self._getMentorLinks()
-    else:
-      links += self._getLoneUserLinks()
+    links += self._getLoneUserLinks()
 
     return links
 
@@ -319,14 +318,6 @@ class DashboardPage(RequestHandler):
     """
     links = []
 
-    # add link to take organization application
-    link = self._getAddNewOrgAppLink()
-    if link:
-      links.append(self._getAddNewOrgAppLink())
-
-    # add link to my invitations list
-    links.append(self._getMyInvitationsLink())
-
     # add link to org's outgoing invitations
     links.append(self._getMyOrgInvitationsLink())
 
@@ -336,10 +327,6 @@ class DashboardPage(RequestHandler):
     """Get the main dashboard links for mentor.
     """
     links = []
-
-    # add link to my invitations list
-    links.append(self._getMyInvitationsLink())
-
     return links
 
   def _getLoneUserLinks(self):
@@ -350,6 +337,9 @@ class DashboardPage(RequestHandler):
     link = self._getAddNewOrgAppLink()
     if link:
       links.append(link)
+
+    # add link to my invitations list
+    links.append(self._getMyInvitationsLink())
 
     return links
 
