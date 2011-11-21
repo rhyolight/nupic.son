@@ -948,6 +948,9 @@ class OrgAdminInvitesList(Component):
     self._list_config = list_config
 
   def getListData(self):
+    if lists.getListIndex(self.request) != self.idx:
+      return None
+
     q = GCIRequest.all()
     q.filter('type', 'Invitation')
     q.filter('org IN', [e.key() for e in self.data.org_admin_for])
