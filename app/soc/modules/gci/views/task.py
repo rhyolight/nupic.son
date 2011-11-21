@@ -393,6 +393,7 @@ class TaskInformation(Template):
     """
     task = self.data.task
     mentors = [m.public_name for m in db.get(task.mentors)]
+    profile = self.data.profile
 
     # We count everyone from the org as a mentor, the mentors property
     # is just who best to contact about this task
@@ -400,7 +401,7 @@ class TaskInformation(Template):
         'task': task,
         'mentors': mentors,
         'is_mentor': self.data.mentorFor(task.org),
-        'is_task_mentor': self.data.profile.key() in task.mentors,
+        'is_task_mentor': profile.key() in task.mentors if profile else None,
         'is_owner': task_logic.isOwnerOfTask(task, self.data.profile),
         'is_claimed': task.status in ACTIVE_CLAIMED_TASK,
         'profile': self.data.profile,
