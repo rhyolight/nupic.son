@@ -256,6 +256,9 @@ class DashboardPage(RequestHandler):
     # add list of all the invitations
     components.append(OrgAdminInvitesList(self.request, self.data))
 
+    # add list of all the requests
+    components.append(OrgAdminRequestsList(self.request, self.data))
+
     # add bulk create tasks component 
     components.append(MyOrgsListBeforeBulkCreateTask(self.request, self.data))
 
@@ -975,3 +978,61 @@ class OrgAdminInvitesList(Component):
 
   def templatePath(self):
     return 'v2/modules/gci/invite/_invite_list.html'
+
+
+class OrgAdminRequestsList(Component):
+  """Template for list of requests that have been sent to the organizations
+  that the current user is organization admin for.
+  """
+
+  def __init__(self, request, data):
+    self.request = request
+    self.data = data
+    r = data.redirect
+
+    list_config = lists.ListConfiguration()
+    list_config.addColumn('from', 'From',
+        lambda entity, *args: entity.user.name)
+    list_config.addSimpleColumn('status', 'Status')
+
+    # organization column should be added only if the user is an administrator
+    # for more than one organization
+    if len(self.data.org_admin_for) > 1:
+      list_config.addColumn('org', 'Organization',
+        lambda entity, *args: entity.org.name)
+
+    list_config.setRowAction(
+        lambda e, *args: r.id(e.key().id())
+            .urlOf(url_names.GCI_RESPOND_REQUEST))
+
+    self.idx = 10
+    self._list_config = list_config
+
+  def getListData(self):
+    if lists.getListIndex(self.request) != self.idx:
+      return None
+
+    q = GCIRequest.all()
+    q.filter('type', 'Request')
+    q.filter('org IN', [e.key() for e in self.data.org_admin_for])
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, lists.keyStarter)
+
+    return response_builder.build()
+
+  def context(self):
+    request_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, self.idx)
+
+    return {
+        'name': 'incoming_requests',
+        'title': 'Incoming Requests',
+        'lists': [request_list],
+        'description': ugettext(
+            'See all the requests that have been sent to '
+            'your organizations.')
+    }
+
+  def templatePath(self):
+    return 'v2/modules/gci/dashboard/list_component.html'
