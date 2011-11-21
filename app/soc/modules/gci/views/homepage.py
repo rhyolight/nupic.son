@@ -51,7 +51,7 @@ class HowItWorks(Template):
       start_text = 'Sign up as organization'
       start_link = r.program().urlOf('gci_take_org_app')
     elif self.data.timeline.tasksPubliclyVisible():
-      start_text = 'List of tasks'
+      start_text = 'Search for tasks'
       start_link = self.data.redirect.program().urlOf('gci_list_tasks')
     else:
       start_text = start_link = ''
