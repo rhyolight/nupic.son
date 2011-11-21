@@ -56,7 +56,7 @@ class SendRequestPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'request/send/%s$' % url_patterns.REQUEST,
-            self, name='gci_send_request')
+            self, name=url_names.GCI_SEND_REQUEST)
     ]
 
   def checkAccess(self):
