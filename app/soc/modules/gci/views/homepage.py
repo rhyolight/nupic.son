@@ -50,6 +50,9 @@ class HowItWorks(Template):
     if self.data.timeline.orgSignup():
       start_text = 'Sign up as organization'
       start_link = r.program().urlOf('gci_take_org_app')
+    elif self.data.timeline.studentSignup() and not self.data.profile:
+      start_text = 'Register As Student'
+      start_link = r.createProfile('student').urlOf('create_gci_profile')
     elif self.data.timeline.tasksPubliclyVisible():
       start_text = 'Search for tasks'
       start_link = self.data.redirect.program().urlOf('gci_list_tasks')
