@@ -17,22 +17,22 @@
         {% for submission in submissions %}
           <tr>
             {% if submission.upload_of_work %}
-              {% if submission.upload_of_work.get %}
-              <td><a href="{{ download_url }}?id={{ submission.key.id }}">{{ submission.upload_of_work.filename }}</a></td>
+              {% if submission.is_blob_valid %}
+              <td><a href="{{ download_url }}?id={{ submission.entity.key.id }}">{{ submission.upload_of_work.filename }}</a></td>
               <td>{{ submission.upload_of_work.size|filesizeformat }}</td>
               {% else %}
                 <td> Download Broken </td>
                 <td></td>
               {% endif %}
             {% else %}
-              <td>{{ submission.url_to_work|urlizetrunc:45 }}</td>
+              <td>{{ submission.entity.url_to_work|urlizetrunc:45 }}</td>
               <td>n/a</td>
             {% endif %}
-            <td>{{ submission.submitted_on|date:"F d Y H:i" }} UTC</td>
+            <td>{{ submission.entity.submitted_on|date:"F d Y H:i" }} UTC</td>
             {% if submission in deleteable %}
               <td>
                 <form action="?delete_submission" method="post">
-                  <input value="Delete" name="{{submission.key.id}}" class="task-btn task-btn-delete" type="submit">
+                  <input value="Delete" name="{{submission.entity.key.id}}" class="task-btn task-btn-delete" type="submit">
                 </form>
               </td>
             {% endif %}

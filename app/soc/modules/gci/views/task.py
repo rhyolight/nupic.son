@@ -480,11 +480,28 @@ class WorkSubmissions(Template):
   button for students.
   """
 
+  def _buildWorkSubmissionContext(self):
+    """Builds a list containing the info related to each work submission.
+    """
+    submissions = []
+    for submission in self.data.work_submissions:
+      submission_info = {
+          'entity': submission
+          }
+      upload_of_work = submission.upload_of_work
+      submission_info['upload_of_work'] = upload_of_work
+      if upload_of_work:
+        uploaded_blob = blobstore.BlobInfo.get(upload_of_work.key())
+        submission_info['is_blob_valid'] = True if uploaded_blob else False
+      submissions.append(submission_info)
+
+    return submissions
+
   def context(self):
     """Returns the context for the current template.
     """
     context = {
-        'submissions': self.data.work_submissions,
+        'submissions': self._buildWorkSubmissionContext(),
         'download_url': self.data.redirect.id().urlOf('gci_download_work')
         }
 
