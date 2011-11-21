@@ -454,55 +454,6 @@ class UserInvitesList(Template):
     return 'v2/modules/gci/invite/_invite_list.html'
 
 
-class OrgAdminInvitesList(Template):
-  """Template for list of invites that have been sent by the organizations
-  that the current user is organization admin for.
-  """
-
-  def __init__(self, request, data):
-    self.request = request
-    self.data = data
-    r = data.redirect
-
-    list_config = lists.ListConfiguration()
-    list_config.addColumn('to', 'To',
-        lambda entity, *args: entity.user.name)
-    list_config.addSimpleColumn('status', 'Status')
-
-    # organization column should be added only if the user is an administrator
-    # for more than one organization
-    if len(self.data.org_admin_for) > 1:
-      list_config.addColumn('org', 'From',
-        lambda entity, *args: entity.org.name)
-
-    list_config.setRowAction(
-        lambda e, *args: r.id(e.key().id())
-            .urlOf(url_names.GCI_MANAGE_INVITE))
-
-    self._list_config = list_config
-
-  def getListData(self):
-    q = GCIRequest.all()
-    q.filter('type', 'Invitation')
-    q.filter('org IN', [e.key() for e in self.data.org_admin_for])
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
-
-    return response_builder.build()
-
-  def context(self):
-    invite_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0)
-
-    return {
-        'lists': [invite_list],
-    }
-
-  def templatePath(self):
-    return 'v2/modules/gci/invite/_invite_list.html'
-
-
 class ListUserInvitesPage(RequestHandler):
   """View for the page that lists all the invites which have been sent to
   the current user.
@@ -532,36 +483,4 @@ class ListUserInvitesPage(RequestHandler):
     return {
         'page_name': 'Invitations to you',
         'invite_list': UserInvitesList(self.request, self.data),
-    }
-
-
-class ListOrgAdminInvitesPage(RequestHandler):
-  """View for the page that lists all the invites which have been sent by
-  one of the organizations that the current user is org admin for.
-  """
-
-  def templatePath(self):
-    return 'v2/modules/gci/invite/invite_list.html'
-
-  def djangoURLPatterns(self):
-    return [
-        url(r'invite/list_org/%s$' % url_patterns.PROGRAM, self,
-            name=url_names.GCI_LIST_ORG_INVITES),
-    ]
-
-  def checkAccess(self):
-    self.check.isProfileActive()
-
-  def jsonContext(self):
-    list_content = OrgAdminInvitesList(self.request, self.data).getListData()
-
-    if not list_content:
-      raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
-
-  def context(self):
-    return {
-        'page_name': 'Invitations sent by your organizations',
-        'invite_list': OrgAdminInvitesList(self.request, self.data),
     }

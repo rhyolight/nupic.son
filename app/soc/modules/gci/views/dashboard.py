@@ -33,6 +33,7 @@ from soc.views.helper import url_patterns
 from soc.models.org_app_record import OrgAppRecord
 
 from soc.modules.gci.logic import org_app as org_app_logic
+from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
@@ -249,6 +250,9 @@ class DashboardPage(RequestHandler):
     # add invite org admins component
     components.append(MyOrgsListBeforeInviteOrgAdmin(self.request, self.data))
 
+    # add list of all the invitations
+    components.append(OrgAdminInvitesList(self.request, self.data))
+
     # add bulk create tasks component 
     components.append(MyOrgsListBeforeBulkCreateTask(self.request, self.data))
 
@@ -317,10 +321,6 @@ class DashboardPage(RequestHandler):
     """Get the main dashboard links for org-admin.
     """
     links = []
-
-    # add link to org's outgoing invitations
-    links.append(self._getMyOrgInvitationsLink())
-
     return links
 
   def _getMentorLinks(self):
@@ -869,3 +869,58 @@ class MyOrgsListBeforeOrgProfile(MyOrgsList):
     self._list_config.setRowAction(
         lambda e, *args: data.redirect.organization(e).
             urlOf(url_names.EDIT_GCI_ORG_PROFILE))
+
+
+class OrgAdminInvitesList(Component):
+  """Template for list of invites that have been sent by the organizations
+  that the current user is organization admin for.
+  """
+
+  def __init__(self, request, data):
+    self.request = request
+    self.data = data
+    r = data.redirect
+
+    list_config = lists.ListConfiguration()
+    list_config.addColumn('to', 'To',
+        lambda entity, *args: entity.user.name)
+    list_config.addSimpleColumn('status', 'Status')
+
+    # organization column should be added only if the user is an administrator
+    # for more than one organization
+    if len(self.data.org_admin_for) > 1:
+      list_config.addColumn('org', 'From',
+        lambda entity, *args: entity.org.name)
+
+    list_config.setRowAction(
+        lambda e, *args: r.id(e.key().id())
+            .urlOf(url_names.GCI_MANAGE_INVITE))
+
+    self.idx = 8
+    self._list_config = list_config
+
+  def getListData(self):
+    q = GCIRequest.all()
+    q.filter('type', 'Invitation')
+    q.filter('org IN', [e.key() for e in self.data.org_admin_for])
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, lists.keyStarter)
+
+    return response_builder.build()
+
+  def context(self):
+    invite_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, self.idx)
+
+    return {
+        'name': 'outgoing_invitations',
+        'title': 'Outgoing Invitations',
+        'lists': [invite_list],
+        'description': ugettext(
+            'See all the invitations that have been sent sent '
+            'by your organizations.')
+    }
+
+  def templatePath(self):
+    return 'v2/modules/gci/invite/_invite_list.html'
