@@ -260,7 +260,7 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     return GSoCProfileForm(data=self.data.POST or None,
         instance=self.data.profile)
 
-  def _getCreateProfileForm(self, check_age):
+  def _getCreateProfileForm(self, check_age, save=False):
     tos_content = self._getTOSContent()
     return CreateGSoCProfileForm(tos_content, data=self.data.POST or None)
 

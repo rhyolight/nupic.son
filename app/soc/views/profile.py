@@ -231,7 +231,7 @@ class ProfilePage(object):
     if self.data.profile:
       profile_form = self._getEditProfileForm(check_age)
     else:
-      profile_form = self._getCreateProfileForm(check_age)
+      profile_form = self._getCreateProfileForm(check_age, save=True)
 
     if not profile_form.is_valid():
       return profile_form, None
