@@ -376,6 +376,10 @@ body {
         #footer .menu-credit li.menu-credit-echoditto img {
             vertical-align: top;
         }
+        #footer .menu-credit li.menu-credit-version {
+            display: block;
+            font-size: 10px;
+        }
 .main {
     
 }
