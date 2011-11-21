@@ -64,6 +64,9 @@ def siteMenuContext(data):
 
   if data.timeline.tasksPubliclyVisible():
     context['tasks_link'] = redirect.program().urlOf('gci_list_tasks')
+    if not data.user:
+      context['register_as_student_link'] = redirect.createProfile(
+          'student').urlOf('create_gci_profile')
 
   return context
 
