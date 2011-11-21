@@ -400,6 +400,7 @@ class TaskInformation(Template):
         'task': task,
         'mentors': mentors,
         'is_mentor': self.data.mentorFor(task.org),
+        'is_task_mentor': self.data.profile.key() in task.mentors,
         'is_owner': task_logic.isOwnerOfTask(task, self.data.profile),
         'is_claimed': task.status in ACTIVE_CLAIMED_TASK,
         'profile': self.data.profile,
