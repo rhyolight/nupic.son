@@ -32,6 +32,7 @@ from django.utils.translation import ugettext
 from soc.logic import tags
 
 from soc.modules.gci.logic import comment as comment_logic
+from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import CLAIMABLE
@@ -239,12 +240,19 @@ def closeTask(task, profile):
 
   comment_txn = comment_logic.storeAndNotifyTxn(comment)
 
-  # TODO(ljvderijk): If this is the student's first task send email about
-  # the forms they need to fill in. See Issue 1308.
+  # student, who worked on the task, should receive a confirmation
+  # having submitted his first task
+  query = profile_logic.queryAllTasksClosedByStudent(task.student)
+  if query.get() is None: # this is the first task
+    first_task_confirmation = profile_logic.sendFirstTaskConfirmationTxn()
+  else:
+    first_task_confirmation = lambda: None
+  
   def closeTaskTxn():
     task.put()
     comment_txn()
     startUpdatingTask(task, transactional=True)
+    first_task_confirmation()
 
   return db.run_in_transaction(closeTaskTxn)
 

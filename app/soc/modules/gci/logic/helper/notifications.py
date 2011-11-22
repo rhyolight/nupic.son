@@ -42,6 +42,12 @@ DEF_BULK_CREATE_COMPLETE_SUBJECT = ugettext(
 
 DEF_BULK_CREATE_COMPLETE_TEMPLATE = 'v2/modules/gci/reminder/bulk_create.html'
 
+DEF_FIRST_TASK_CONFIRMATION_SUBJECT = ugettext(
+    'You have completed your first task in Google Code In program')
+
+DEF_FIRST_TASK_CONFIRMATION_TEMPLATE = \
+    'v2/modules/gci/notification/first_task_confirmation.html'
+
 DEF_TASK_REQUEST_SUBJECT = ugettext(
     'A new task has been requested from your organization')
 
@@ -187,6 +193,23 @@ def sendRequestTaskNotification(org_admins, message):
 
     notifications.sendNotification(to, None, properties, subject, template)
 
+def getFirstTaskConfirmationContext(student):
+  """Sends notification to the GCI student, when he or she completes their
+  first task.
+  
+  Args:
+    student: the student who should receive the confirmation
+  """
+
+  user = student.parent()
+  to = accounts.denormalizeAccount(user.account).email()
+  
+  subject = DEF_FIRST_TASK_CONFIRMATION_SUBJECT
+
+  template = DEF_FIRST_TASK_CONFIRMATION_TEMPLATE
+  body = loader.render_to_string(template)
+
+  return mailer.getMailContext(to=to, subject=subject, html=body, bcc=[])
 
 def getTaskCommentContext(task, comment, to_emails):
   """Sends out notifications to the subscribers.

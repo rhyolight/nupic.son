@@ -22,7 +22,11 @@ __authors__ = [
     ]
 
 
+from soc.tasks import mailer
+
+from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.task import GCITask
 
 
 def queryAllMentorsForOrg(org, keys_only=False, limit=1000):
@@ -57,3 +61,25 @@ def queryAllMentorsKeysForOrg(org, limit=1000):
     List of all the mentors for the organization
   """
   return queryAllMentorsForOrg(org, keys_only=True, limit=limit)
+
+
+def queryAllTasksClosedByStudent(profile):
+  """Returns a query for all the tasks that have been closed by the
+  specified profile.
+  """
+  if not profile.student_info:
+    raise ValueError('Only students can be queried for closed tasks.')
+
+  return GCITask.all().filter('student', profile).filter('status', 'Closed')
+
+
+def sendFirstTaskConfirmationTxn(profile, task):
+  """Returns a transaction which sends a confirmation email to a student who
+  completes their first task.
+  """
+
+  if not profile.student_info:
+    raise ValueError('Only students can be queried for closed tasks.')
+  
+  context = notifications.getFirstTaskConfirmationContext(profile)
+  return mailer.getSpawnMailTaskTxn(context, parent=task)
