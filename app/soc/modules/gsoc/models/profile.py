@@ -91,3 +91,9 @@ class GSoCStudentInfo(soc.models.role.StudentInfo):
       required=False, verbose_name=ugettext('Proof of Enrollment Form'))
   enrollment_form.help_text = ugettext(
       'A proof of enrollment form')
+
+  #: School home page URL, not required here but enforced in the form for
+  #: backwards compatibility.
+  school_home_page = db.LinkProperty(
+      required=False, verbose_name=ugettext("School Home Page URL"))
+  school_home_page.group = ugettext("5. Education")
