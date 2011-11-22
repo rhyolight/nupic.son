@@ -58,8 +58,8 @@ class ValidateTest(unittest.TestCase):
     #invalid: starts with an underscore
     self.assertFalse(validate.isLinkIdFormatValid('_jhja87'))
 
-    #invalid: double underscore
-    self.assertFalse(validate.isLinkIdFormatValid('kjnask__j87'))
+    #valid: double underscore
+    self.assertTrue(validate.isLinkIdFormatValid('kjnask__j87'))
 
     #invalid: trailing underscore
     self.assertFalse(validate.isLinkIdFormatValid('jhsdfj_'))
@@ -93,8 +93,8 @@ class ValidateTest(unittest.TestCase):
     #valid: chunks separated by '/'
     self.assertTrue(validate.isScopePathFormatValid('adhcd/dfds'))
 
-    #invalid: has a double underscore
-    self.assertFalse(validate.isScopePathFormatValid('ndfnsj__nj'))
+    #valid: has a double underscore
+    self.assertTrue(validate.isScopePathFormatValid('ndfnsj__nj'))
 
     #invalid: starts with a capital letter
     self.assertFalse(validate.isScopePathFormatValid('Usdn_/sdfa'))
