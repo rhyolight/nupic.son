@@ -3,7 +3,7 @@
   <div class="block-content">
     <ul class="menu menu-center-inline">
       {% if organization.email %}
-        <li><a href="{{ organization.email }}">
+        <li><a href="mailto:{{ organization.email }}">
           <img src="/soc/content/{{ app_version }}/images/v2/gci/block-connect-em.gif" height="29" width="29" alt="Email" />
         </a></li>
       {% endif %}
