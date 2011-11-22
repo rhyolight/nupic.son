@@ -462,7 +462,7 @@ class TaskInformation(Template):
     if is_student:
       if not self.data.timeline.tasksClaimEnded():
         context['button_claim'] = task_logic.canClaimRequestTask(
-            task, profile.user)
+            task, profile)
 
     if is_owner:
       context['button_unclaim'] = task.status in ACTIVE_CLAIMED_TASK
