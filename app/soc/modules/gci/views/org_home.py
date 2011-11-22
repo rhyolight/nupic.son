@@ -35,8 +35,12 @@ class AboutUs(Template):
     self.data = data
     
   def context(self):
+    org = self.data.organization
     return {
-        'description': self.data.organization.description,
+        'description': org.description,
+        'logo_url': org.logo_url,
+        'homepage': org.home_page,
+        'short_name': org.short_name,
     }
   
   def templatePath(self):
@@ -82,7 +86,6 @@ class OpenTasksList(Template):
     list_config.setRowAction(
         lambda e, *args: data.redirect.id(e.key().id()).urlOf(url_names.GCI_VIEW_TASK))
 
-    #raise Exception
     self.list_config = list_config
   
   def context(self):

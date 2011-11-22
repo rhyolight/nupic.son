@@ -1,6 +1,9 @@
 <div class="block">
   <div class="block-title">About Us</div>
   <div class="block-content">
+    <a href="{{ homepage }}">
+      <img src="{{ logo_url }}" alt="{{ short_name }}" width="65" height="65" />
+    </a>
     {% if description %}
       <p>{{ description|safe }}</p>
     {% endif %}
