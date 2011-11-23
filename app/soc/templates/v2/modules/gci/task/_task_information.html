@@ -50,6 +50,7 @@
 </div>
 
 <div class="block-content clearfix">
+  {% if task.deadline or button_extend_deadline  %}
   <div class="block-task-countdown">
     <div class="stopwatch percent-33 clearfix">
       {% if task.deadline %}
@@ -102,6 +103,7 @@
     <!-- end .stockwatch -->
   </div>
     <!-- end .block-task-countdown -->
+  {% endif %}
 
   <div class="block-task-description">
     {{ task.description|safe }}
