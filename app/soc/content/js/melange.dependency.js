@@ -155,6 +155,10 @@
     tpjs + "jquery/jquery.ba-hashchange.js"
   ];
 
+  s.dd = [
+    tpjs + "jquery/jquery.dd.js"
+  ];
+
   s.jqueryui = {}
 
   if (melange.config.is_local !== undefined && melange.config.is_local === true) {
