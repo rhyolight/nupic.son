@@ -23,6 +23,7 @@ __authors__ = [
 
 
 import itertools
+import re
 
 from google.appengine.ext import db
 
@@ -37,6 +38,10 @@ from soc.views import forms
 from soc.views import org_app
 
 
+AVATAR_LOWER_BOUND = 1
+AVATAR_UPPER_BOUND = 26
+AVATAR_DEFAULT_COLOR = 'blue'
+RE_AVATAR_COLOR = re.compile(r'(\d\d?)-(\w+)\.jpg$')
 TEMPLATE_PATH = 'v2/modules/gci/_form.html'
 
 # The standard input fields should be available to all importing modules
@@ -53,6 +58,73 @@ Textarea = forms.Textarea
 
 # The standard error classes should be available to all importing modules
 ValidationError = forms.ValidationError
+
+
+class AvatarWidget(HiddenInput):
+  """The rendering customization to be used for avatar.
+  """
+
+  def __init__(self, attrs=None, avatars=(), colors=()):
+    super(AvatarWidget, self).__init__(attrs=attrs)
+    self.avatars = avatars
+    self.colors = colors
+
+  def render(self, name, value, attrs={}):
+    # make sure value is basestring instance
+    if not isinstance(value, basestring):
+      value = ''
+
+    # determine the right value
+    match = RE_AVATAR_COLOR.match(value)
+    if not match:
+      value = '%d-%s.jpg' % (AVATAR_LOWER_BOUND, AVATAR_DEFAULT_COLOR)
+      color = AVATAR_DEFAULT_COLOR
+    else:
+      number, color = match.groups()
+      number = int(number)
+      if number < AVATAR_LOWER_BOUND or number > AVATAR_UPPER_BOUND:
+        number = AVATAR_LOWER_BOUND
+      if color not in self.colors:
+        color = AVATAR_DEFAULT_COLOR
+      value = '%d-%s.jpg' % (number, color)
+
+    # the returned avatar in partial html
+    output = []
+
+    # preview
+    output.append(self._renderPreview(value))
+
+    # picker container
+    output.append('<div id="avatar-picker-container">')
+
+    # avatar picker
+    output.append(self._renderPicker('avatar-icon', value, self.avatars[color]))
+
+    # color picker
+    output.append(self._renderPicker('avatar-color', color, self.colors))
+
+    # hidden value
+    w = HiddenInput(attrs=attrs)
+    attrs['value'] = value
+    w_html = w.render(name, value, attrs=attrs)
+    output.append(w_html)
+
+    # close the picker container
+    output.append('</div>')
+
+    return mark_safe(u'\n'.join(output))
+
+  def _renderPreview(self, value):
+    return mark_safe(
+        '<div id="avatar-preview-container"><img id="avatar-preview" '
+        'src="%s" width="80" height="80"></div>' % value)
+
+  def _renderPicker(self, name, value, choices=()):
+    options = [(i, i) for i in choices]
+    picker = Select(choices=options)
+    picker_html = picker.render(name, value, attrs={'id': name})
+
+    return mark_safe('<div id="%s-picker">%s</div>' % (name, picker_html))
 
 
 class RadioInput(forms.RadioInput):
