@@ -13,6 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/dd.css" />
+{% endblock stylesheets %}
+
 {% block form_button %}
   {{ block.super }}
   {% if edit_profile %}
@@ -31,11 +36,11 @@ limitations under the License.
 {% block dependencies %}
   [
     dep.uniform,
-    dep.melange.main,
     dep.jqueryui.datepicker,
+    dep.dd,
     null,
     function () {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
+      jQuery("select, input:radio, input:file, input:checkbox").not('select[id^=avatar]').uniform();
       jQuery("#birth_date").datepicker({
         changeMonth: true,
         changeYear: true,
@@ -47,5 +52,8 @@ limitations under the License.
         defaultDate: '1990-01-01'
       });
     },
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/avatar.js", {
+      'prefix_path': "/soc/content/{{ app_version }}/images/v2/gci/avatars/"
+    })
   ]
 {% endblock dependencies %}
