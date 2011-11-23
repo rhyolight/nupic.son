@@ -588,11 +588,15 @@ body {
             float: none;
         }
         .block-task-uploaded-code form.form-upload-code {
-            
+            margin-bottom: 20px;
         }
             .block-task-uploaded-code form.form-upload-code .form-row input[type="file"] {
                 color: #666;
             }
+
+        .block-task-uploaded-code form.form-upload-url {
+        }
+
         .block-task-uploaded-code form.form-student-upload-code {
             position: relative;
         }
