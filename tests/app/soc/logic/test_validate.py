@@ -61,8 +61,8 @@ class ValidateTest(unittest.TestCase):
     #valid: double underscore
     self.assertTrue(validate.isLinkIdFormatValid('kjnask__j87'))
 
-    #invalid: trailing underscore
-    self.assertFalse(validate.isLinkIdFormatValid('jhsdfj_'))
+    #valid: trailing underscore
+    self.assertTrue(validate.isLinkIdFormatValid('jhsdfj_'))
 
     #invalid: starting and trailing underscores
     self.assertFalse(validate.isLinkIdFormatValid('_jhsj38_'))
