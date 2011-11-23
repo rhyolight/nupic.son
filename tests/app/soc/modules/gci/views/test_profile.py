@@ -169,7 +169,6 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.default_props.update({
         'link_id': 'test',
         })
-    self.default_props['school_home_page'] = 'http://example.com'
 
     response = self.post(self.student_url, self.default_props)
     self.assertResponseRedirect(response, self.validated_url)
@@ -196,7 +195,6 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.data.createUser()
     self._updateDefaultProps(self.data)
     postdata = self.default_props
-    postdata['school_home_page'] = 'http://example.com'
 
     response = self.post(self.student_url, postdata)
     self.assertResponseRedirect(response, self.validated_url)
