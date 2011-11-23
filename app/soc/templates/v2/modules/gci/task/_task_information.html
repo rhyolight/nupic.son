@@ -50,10 +50,9 @@
 </div>
 
 <div class="block-content clearfix">
-
-  {% if task.deadline %}
-    <div class="block-task-countdown">
-      <div class="stopwatch percent-33 clearfix">
+  <div class="block-task-countdown">
+    <div class="stopwatch percent-33 clearfix">
+      {% if task.deadline %}
         <div class="stopwatch-watch"></div>
 
         <div class="stopwatch-remaining clearfix">
@@ -80,29 +79,29 @@
           </div>
           <span class="remain">Remaining</span> <span class="timestamp">as of {{ now|date:"n/j @H:i"}}UTC</span>
         </div>
-        {% if button_extend_deadline %}
-          <input type="submit" class="task-btn task-btn-extended-deadline" value="Extend deadline" />
-          <div id="deadline-extend">
-            <div id="deadline-extend-close">x</div>
-            <div class="deadline-extend-top"></div>
-            <div class="deadline-extend-content">
-              <span class="plus">+ </span>
-              <form action="?button" method="post" class="clearfix">
-                <fieldset id="fieldset-error">
-                  <div class="form-row">
-                    <input value="" name="hours" id="hours" type="text"> <span class="time">hours</span>
-                  </div>
-                  <input value="Confirm" class="task-btn task-btn-confirm-extended-deadline" name="button_extend_deadline" type="submit">
-                </fieldset>
-              </form>
-            </div>
+      {% endif %}
+      {% if button_extend_deadline %}
+        <input type="submit" class="task-btn task-btn-extended-deadline" value="Extend deadline" />
+        <div id="deadline-extend">
+          <div id="deadline-extend-close">x</div>
+          <div class="deadline-extend-top"></div>
+          <div class="deadline-extend-content">
+            <span class="plus">+ </span>
+            <form action="?button" method="post" class="clearfix">
+              <fieldset id="fieldset-error">
+                <div class="form-row">
+                  <input value="" name="hours" id="hours" type="text"> <span class="time">hours</span>
+                </div>
+                <input value="Confirm" class="task-btn task-btn-confirm-extended-deadline" name="button_extend_deadline" type="submit">
+              </fieldset>
+            </form>
           </div>
-        {% endif %}
-      </div>
-      <!-- end .stockwatch -->
+        </div>
+      {% endif %}
     </div>
+    <!-- end .stockwatch -->
+  </div>
     <!-- end .block-task-countdown -->
-  {% endif %}
 
   <div class="block-task-description">
     {{ task.description|safe }}
