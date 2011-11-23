@@ -582,6 +582,7 @@ body {
             }
         .block-task-uploaded-code .block-task-uploaded-code-btns {
             margin-top: 5px;
+            margin-bottom: 20px;
             text-align: center;
         }
         .block-task-uploaded-code .block-task-uploaded-code-btns .btn {
