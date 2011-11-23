@@ -25,6 +25,7 @@ Credits and big thanks to to: sebastian.serrano and emi420
 
 __authors__ = [
   '"Madhusudan.C.S" <madhusudancs@gmail.com>',
+  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
   ]
 
 
@@ -35,10 +36,60 @@ import urllib
 from google.appengine.ext import blobstore
 
 from soc.logic.exceptions import BadRequest
-from soc.views.helper.reponse import Response
+from soc.views.helper.response import Response
 
 
-def get_uploads(request, field_name=None):
+def _parseField(request, key, field):
+  """Parses one field.
+
+  Handles BlobInfo objects and adds the 'name' field for Django.
+  """
+  if isinstance(field, cgi.FieldStorage) and 'blob-key' in field.type_options:
+    blob_info = blobstore.parse_blob_info(field)
+    uploads = request.__uploads.setdefault(key, [])
+    uploads.append(blob_info)
+
+    # Put the BlobInfo in the POST data and format it for Django by
+    # adding the name property.
+    blob_info.name = blob_info.filename
+    request.file_uploads[key] = blob_info
+  elif isinstance(field, list):
+    request.POST[key] = [f.value for f in field]
+  else:
+    request.POST[key] = field.value
+
+
+def cacheUploads(request):
+  """Caches uploads in the request.__uploads field.
+
+  Also recreates the POST dictionary.
+
+  The __uploads attribute in the request object is used only to cache
+  the file uploads so that we do not have to go through the process of
+  reading HTTP request original file if it has already been read in
+  the same request.
+
+  Args:
+    request: a django Request object
+  """
+  if hasattr(request, '__uploads'):
+    return
+
+  wsgi_input = request.META['wsgi.input']
+  wsgi_input.seek(0)
+
+  fields = cgi.FieldStorage(wsgi_input, environ=request.META)
+
+  request.POST = {}
+  request.file_uploads = {}
+  request.__uploads = {}
+
+  for key in fields.keys():
+    field = fields[key]
+    _parseField(request, key, field)
+
+
+def getUploads(request, field_name=None):
   """Get uploads sent to this handler.
 
   Args:
@@ -49,50 +100,18 @@ def get_uploads(request, field_name=None):
   """
 
   results = []
-
-  # the __uploads attribute in the request object is used
-  # only to cache the file uploads so that we need not
-  # have to go through the process of reading HTTP request
-  # original file if it has already been read in the same request.
-  if hasattr(request, '__uploads') == False:
-      request.META['wsgi.input'].seek(0)
-      fields = cgi.FieldStorage(request.META['wsgi.input'],
-                                environ=request.META)
-
-      request.__uploads = {}
-
-      request.POST = {}
-      request.file_uploads = {}
-
-      for key in fields.keys():
-        field = fields[key]
-        if isinstance(
-            field, cgi.FieldStorage) and 'blob-key' in field.type_options:
-          request.__uploads.setdefault(key, []).append(
-              blobstore.parse_blob_info(field))
-          # Put the BlobInfo in the POST data and format it for Django by
-          # adding the name property.
-          blobInfo = request.__uploads[key][0]
-          blobInfo.name = blobInfo.filename
-          request.file_uploads[key] = blobInfo
-        elif isinstance(field, list):
-          request.POST[key] = [f.value for f in field]
-        else:
-          request.POST[key] = field.value
+  cacheUploads(request)
 
   if field_name:
-    try:
-      results = list(request.__uploads[field_name])
-    except KeyError:
-      return []
-  else:
-    for uploads in request.__uploads.itervalues():
-      results += uploads
+    return request.file_uploads.get(field_name, [])
+
+  for uploads in request.__uploads.itervalues():
+    results += uploads
 
   return results
 
 
-def send_blob(blob_key_or_info, content_type=None, save_as=None):
+def sendBlob(blob_info):
   """Send a blob-response based on a blob_key.
 
   Sets the correct response header for serving a blob.  If BlobInfo
@@ -100,72 +119,31 @@ def send_blob(blob_key_or_info, content_type=None, save_as=None):
   to BlobInfo's content type.
 
   Args:
-    blob_key_or_info: BlobKey or BlobInfo record to serve
-    content_type: Content-type to override when known
-    save_as: If True, and BlobInfo record is provided, use BlobInfos
-      filename to save-as.  If string is provided, use string as filename.
-      If None or False, do not send as attachment.
+    blob_info: BlobInfo record to serve
 
-    Raises:
-      ValueError on invalid save_as parameter or blob key.
+  Raises:
+    BadRequest: on missing filename in blob_info
   """
-
-  CONTENT_DISPOSITION_FORMAT = 'attachment; filename="%s"'
-  if isinstance(blob_key_or_info, blobstore.BlobInfo):
-    blob_key = blob_key_or_info.key()
-    blob_info = blob_key_or_info
-  else:
-    blob_key = blob_key_or_info
-    blob_info = None
-
   logging.debug(blob_info)
+  assert isinstance(blob_info, blobstore.BlobInfo)
+
+  CONTENT_DISPOSITION = 'attachment; filename="%s"'
+
+  content_type = blob_info.content_type
+  filename = blob_info.filename
+
+  if isinstance(content_type, unicode):
+    content_type = content_type.encode('utf-8')
+
+  if not filename:
+    raise BadRequest('No filename in blob_info.')
+
+  if isinstance(filename, unicode):
+    filename = filename.encode('utf-8')
+
   response = Response()
-  response[blobstore.BLOB_KEY_HEADER] = str(blob_key)
-
-  if content_type:
-    if isinstance(content_type, unicode):
-      content_type = content_type.encode('utf-8')
-    response['Content-Type'] = content_type
-  else:
-    del response['Content-Type']
-
-  def send_attachment(filename):
-    if isinstance(filename, unicode):
-      filename = filename.encode('utf-8')
-    response['Content-Disposition'] = (CONTENT_DISPOSITION_FORMAT % filename)
-
-  if save_as:
-    if isinstance(save_as, basestring):
-      send_attachment(save_as)
-    elif blob_info and save_as is True:
-      send_attachment(blob_info.filename)
-    else:
-      if not blob_info:
-        raise ValueError('The specified file is not found.')
-      else:
-        raise ValueError(
-            'Unexpected value for the name in which file is '
-            'expected to be downloaded')
+  response['Content-Type'] = content_type
+  response['Content-Disposition'] = (CONTENT_DISPOSITION % filename)
+  response[blobstore.BLOB_KEY_HEADER] = str(blob_info.key())
 
   return response
-
-def download_blob(blob_key_str):
-  """A function which provides the boiler plate required to process
-  the blob key string and calls the actual function which sends the
-  blob as the HTTP Response.
-
-  Args:
-    blob_key_str: The blob key for which the blob must be retrieved
-        in the normal string format
-  """
-
-  if not blob_key_str:
-    raise BadRequest('No blob key present')
-
-  blob_key = str(urllib.unquote(blob_key_str))
-  blob = blobstore.BlobInfo.get(blob_key)
-
-  try:
-    return send_blob(blob, save_as=True)
-  except ValueError, error:
-    raise BadRequest(str(error))

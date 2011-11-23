@@ -606,4 +606,4 @@ class WorkSubmissionDownload(RequestHandler):
       return self.error(400, DEF_NO_WORK_FOUND %id)
 
     upload = work.upload_of_work
-    self.response = bs_helper.send_blob(upload, save_as=upload.filename)
+    self.response = bs_helper.sendBlob(upload)

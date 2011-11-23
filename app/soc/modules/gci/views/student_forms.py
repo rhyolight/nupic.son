@@ -115,7 +115,7 @@ class StudentFormUpload(RequestHandler):
     if not download:
       self.error(httplib.NOT_FOUND, 'File not found')
 
-    self.response = bs_helper.send_blob(download, save_as=True)
+    self.response = bs_helper.sendBlob(download)
 
   def context(self):
     """Handler for default HTTP GET request.
@@ -195,4 +195,4 @@ class StudentFormDownload(RequestHandler):
     if not download:
       self.error(httplib.NOT_FOUND, 'File not found')
 
-    self.response = bs_helper.send_blob(download, save_as=True)
+    self.response = bs_helper.sendBlob(download)

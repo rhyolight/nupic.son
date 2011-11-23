@@ -242,8 +242,7 @@ class DownloadForm(RequestHandler):
         url(r'student_forms/tax/download/%s$' % url_patterns.PROGRAM,
             self, name='gsoc_tax_form_download',
             kwargs=dict(form='tax', admin=False)),
-        url(
-            r'student_forms/admin/enrollment/download/%s$' % 
+        url(r'student_forms/admin/enrollment/download/%s$' %
                 url_patterns.PROFILE,
             self, name='gsoc_enrollment_form_download_admin',
             kwargs=dict(form='enrollment', admin=True)),
@@ -273,7 +272,8 @@ class DownloadForm(RequestHandler):
 
   def get(self):
     if self._tax():
-      blob_key = str(self._studentInfo().tax_form.key())
+      blob_info = str(self._studentInfo().tax_form)
     else:
-      blob_key = str(self._studentInfo().enrollment_form.key())
-    self.response = bs_helper.download_blob(blob_key)
+      blob_info = str(self._studentInfo().enrollment_form)
+
+    self.response = bs_helper.sendBlob(blob_info)

@@ -55,6 +55,6 @@ class BlobStoreMiddleware(object):
 
     # rewrite request.POST with the form data with file_uploads
     # blob info as a dictionary in request.file_uploads
-    bs_helper.get_uploads(request)
+    bs_helper.cacheUploads(request)
 
     return None
