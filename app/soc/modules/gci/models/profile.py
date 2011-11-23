@@ -46,6 +46,7 @@ class GCIProfile(soc.models.role.Profile):
   # Avatar figure chosen by student and mentor
   avatar = db.StringProperty(
       required=False, verbose_name=ugettext('Avatar'))
+  avatar.group = ugettext("1. Public Info")
 
 
 class GCIStudentInfo(soc.models.role.StudentInfo):
