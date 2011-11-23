@@ -43,9 +43,9 @@ class GCIProfile(soc.models.role.Profile):
       'tasks which you have claimed or are mentoring.')
   automatic_task_subscription.group = ugettext("6. Notification settings")
 
-  # Avatar figure chosen by the student
+  # Avatar figure chosen by student and mentor
   avatar = db.StringProperty(
-      required=False, verbose_name=ugettext('Avatar'), choices=avatars.AVATARS)
+      required=False, verbose_name=ugettext('Avatar'))
 
 
 class GCIStudentInfo(soc.models.role.StudentInfo):
