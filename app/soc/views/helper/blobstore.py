@@ -34,9 +34,8 @@ import urllib
 
 from google.appengine.ext import blobstore
 
-from django.http import HttpResponse
-
 from soc.logic.exceptions import BadRequest
+from soc.views.helper.reponse import Response
 
 
 def get_uploads(request, field_name=None):
@@ -120,7 +119,7 @@ def send_blob(blob_key_or_info, content_type=None, save_as=None):
     blob_info = None
 
   logging.debug(blob_info)
-  response = HttpResponse()
+  response = Response()
   response[blobstore.BLOB_KEY_HEADER] = str(blob_key)
 
   if content_type:
