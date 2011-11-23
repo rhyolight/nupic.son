@@ -29,7 +29,7 @@
       <span class="single-comment-title">{{ comment.title|default:"No Title" }}</span>
       <span class="single-comment-meta">by <a href="javascript:void(0)">{% if comment.created_by %}{{ comment.created_by.name }}{% else %}Melange{% endif %}</a> {{ comment.created_on|date:"F j Y H:i"}} UTC</span>
 
-      <p>{{ comment.content|default:""|safe }}</p>
+      <p>{{ comment.content|default:""|safe|linebreaks }}</p>
       {% if comment.changes %}
         <p><b>Changes:</b> {{ comment.changes|join:"; " }}</p>
       {% endif %}
