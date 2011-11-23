@@ -105,14 +105,14 @@ class CommentForm(gci_forms.GCIModelForm):
     return title
 
 
-class WorkSubmissionForm(gci_forms.GCIModelForm):
-  """Django form for submitting work.
+class WorkSubmissionFileForm(gci_forms.GCIModelForm):
+  """Django form for submitting work as file.
   """
 
   class Meta:
     model = GCIWorkSubmission
     css_prefix = 'gci_work_submission'
-    fields = ['upload_of_work', 'url_to_work']
+    fields = ['upload_of_work']
 
   upload_of_work = django_forms.FileField(
       label='Upload work', required=False)
@@ -123,12 +123,27 @@ class WorkSubmissionForm(gci_forms.GCIModelForm):
     cleaned_data = self.cleaned_data
 
     upload = cleaned_data.get('upload_of_work')
+
+class WorkSubmissionURLForm(gci_forms.GCIModelForm):
+  """Django form for submitting work as URL.
+  """
+
+  class Meta:
+    model = GCIWorkSubmission
+    css_prefix = 'gci_work_submission'
+    fields = ['url_to_work']
+
+  def clean_url_to_work(self):
+    """Ensure that at least one of the fields has data.
+    """
+    cleaned_data = self.cleaned_data
+
     url = cleaned_data.get('url_to_work')
 
-    if not (upload or url):
-      raise gci_forms.ValidationError(DEF_NO_URL_OR_UPLOAD)
+    if not url:
+      raise gci_forms.ValidationError(DEF_NO_URL)
 
-    return cleaned_data
+    return url
 
 
 class TaskViewPage(RequestHandler):
@@ -328,16 +343,20 @@ class TaskViewPage(RequestHandler):
   def _postSubmitWork(self):
     """POST handler for the work submission form.
     """
-    form = WorkSubmissionForm(
-        data=self.data.POST,
-        files=self.data.request.file_uploads)
+    if 'url_to_work' in self.data.POST:
+      form = WorkSubmissionURLForm(data=self.data.POST)
+      if not form.is_valid():
+        return self.get()
+    elif 'work_file_submit' in self.data.POST:
+      form = WorkSubmissionFileForm(
+          data=self.data.POST,
+          files=self.data.request.file_uploads)
+      if not form.is_valid():
+        # we are not storing this form, remove the uploaded blob from the cloud
+        for file in self.data.request.file_uploads.itervalues():
+          file.delete()
+        return self.redirect.id().to('gci_view_task', extra=['file=0'])
 
-    if not form.is_valid():
-      # we are not storing this form, remove the uploaded blob from the cloud
-      for file in self.data.request.file_uploads.itervalues():
-        file.delete()
-
-      return self.get()
 
     task = self.data.task
     # TODO(ljvderijk): Add a non-required profile property?
@@ -530,12 +549,23 @@ class WorkSubmissions(Template):
 
     if task_logic.canSubmitWork(task, self.data.profile):
       if self.data.POST and 'submit_work' in self.data.GET:
-        context['work_form'] = WorkSubmissionForm(self.data.POST)
+        # File form doesn't have any POST parameters so it should not be
+        # passed while reconstructing the form. So only URL form is
+        # constructed from POST data
+        context['work_url_form'] = WorkSubmissionURLForm(self.data.POST)
       else:
-        context['work_form'] = WorkSubmissionForm()
+        context['work_url_form'] = WorkSubmissionURLForm()
+
+      # As mentioned in the comment above since there is no POST data to
+      # be passed to the file form, it is constructed in the same way
+      # in either cases.
+      context['work_file_form'] = WorkSubmissionFileForm()
+      if self.data.GET.get('file', None) == '0':
+        context['work_file_form'].addFileRequiredError()
 
       url = '%s?submit_work' %(
           self.data.redirect.id().urlOf('gci_view_task'))
+      context['direct_post_url'] = url
       context['upload_url'] = blobstore.create_upload_url(url)
 
     return context
