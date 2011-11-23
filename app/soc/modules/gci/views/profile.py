@@ -35,6 +35,8 @@ from soc.views import forms
 from soc.views import profile
 from soc.views.helper import url_patterns
 
+from soc.modules.gci.models.avatars import AVATARS_BY_COLOR
+from soc.modules.gci.models.avatars import COLORS
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.views import forms as gci_forms
@@ -93,6 +95,8 @@ class GCIProfileForm(profile.ProfileForm):
   def __init__(self, request_data=None, *args, **kwargs):
     super(GCIProfileForm, self).__init__(
         gci_forms.GCIBoundField, request_data, *args, **kwargs)
+    self.fields['avatar'].widget = gci_forms.AvatarWidget(
+        avatars=AVATARS_BY_COLOR, colors=COLORS)
 
   class Meta:
     model = GCIProfile
