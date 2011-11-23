@@ -34,4 +34,10 @@ AVATAR_COLORS = {
     }
 
 # List of avatars
-AVATARS = [c % i for i in range(1, 26) for _, c in AVATAR_COLORS.items()]
+AVATARS = [c % i for i in range(1, 27) for _, c in AVATAR_COLORS.items()]
+
+# List of avatars grouped by color
+AVATARS_BY_COLOR = dict((k, [c % i for i in range(1, 27)]) for k, c in AVATAR_COLORS.items())
+
+# List of available colors
+COLORS = sorted(AVATAR_COLORS.keys())
