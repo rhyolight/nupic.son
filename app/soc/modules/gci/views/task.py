@@ -121,8 +121,6 @@ class WorkSubmissionFileForm(gci_forms.GCIModelForm):
   upload_of_work = django_forms.FileField(
       label='Upload work', required=False)
 
-  def clean(self):
-    """Ensure that at least one of the fields has data.
   def addFileRequiredError(self):
     """Appends a form error message indicating that this field is required.
     """
@@ -131,10 +129,22 @@ class WorkSubmissionFileForm(gci_forms.GCIModelForm):
 
     self._errors["upload_of_work"] = self.error_class([DEF_NO_UPLOAD])
 
+  def clean_upload_of_work(self):
+    """Ensure that file field has data.
     """
     cleaned_data = self.cleaned_data
 
     upload = cleaned_data.get('upload_of_work')
+
+    # Although we need the ValidationError exception the message there
+    # is dummy because it won't pass through the Appengine's Blobstore
+    # API. We use the same error message when adding the form error.
+    # See self.addFileRequiredError method.
+    if not upload:
+      raise gci_forms.ValidationError(DEF_NO_UPLOAD)
+
+    return upload
+
 
 class WorkSubmissionURLForm(gci_forms.GCIModelForm):
   """Django form for submitting work as URL.
