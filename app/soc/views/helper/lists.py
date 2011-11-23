@@ -736,13 +736,9 @@ class ListContentResponse(object):
       kwargs: The kwargs passed to the render functions defined in the config.
     """
     columns = {}
-    import logging
     key = entity.key()
-    logging.debug("Adding a row for entity %r..." % key)
     for col_id, func in self._config._col_functions.iteritems():
-      logging.debug("Adding column %s..." % col_id)
       val = func(entity, *args, **kwargs)
-      logging.debug("Added column %s" % col_id)
       columns[col_id] = val if val != None else ''
 
     row = {}
@@ -751,18 +747,14 @@ class ListContentResponse(object):
 
     if self._config._row_operation_func:
       # perform the row operation function to retrieve the link
-      logging.debug("Adding row link...")
       link = self._config._row_operation_func(entity, *args, **kwargs)
-      logging.debug("Added row link")
       if link:
         row['link'] = link
 
     for button_id, func in self._config._button_functions.iteritems():
       # The function called here should return a dictionary with 'link' and
       # an optional 'caption' as keys.
-      logging.debug("Adding button %s..." % col_id)
       buttons[button_id] = func(entity, *args, **kwargs)
-      logging.debug("Added button %s" % button_id)
 
     for col_id, buttons in self._config._row_buttons.iteritems():
       row_buttons[col_id] = {
@@ -786,7 +778,6 @@ class ListContentResponse(object):
       'operations': operations,
     }
     self.__rows.append(data)
-    logging.debug("Added row for entity %r" % key)
 
   def content(self):
     """Returns the object that should be parsed to JSON.
