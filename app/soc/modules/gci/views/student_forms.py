@@ -27,6 +27,7 @@ from django.utils.translation import ugettext
 from google.appengine.dist import httplib
 from google.appengine.ext import blobstore
 
+from soc.logic.exceptions import BadRequest
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
@@ -188,7 +189,7 @@ class StudentFormDownload(RequestHandler):
     elif 'student_id_form' in self.data.GET:
       download = self.data.url_student_info.student_id_form
     else:
-      return self.error(httplib.BAD_REQUEST, 'No file requested')
+      raise BadRequest('No file requested')
 
     # download has been requested
     if not download:
