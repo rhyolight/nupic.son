@@ -29,8 +29,9 @@ import datetime
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
-from django.utils.translation import ugettext
 from django import forms as django_forms
+from django.forms.util import ErrorDict
+from django.utils.translation import ugettext
 
 from soc.logic import cleaning
 from soc.logic.exceptions import RedirectRequest
@@ -58,8 +59,11 @@ DEF_NOT_ALLOWED_TO_OPERATE_BUTTON = ugettext(
 DEF_NOT_ALLOWED_TO_UPLOAD_WORK = ugettext(
     'You are not allowed to upload work')
 
-DEF_NO_URL_OR_UPLOAD = ugettext(
-    'An error occurred, please use a valid URL or upload a file.')
+DEF_NO_UPLOAD = ugettext(
+    'An error occurred, please upload a file.')
+
+DEF_NO_URL = ugettext(
+    'An error occurred, please submit a valid URL.')
 
 DEF_NO_WORK_FOUND = ugettext('No submission found with id %i')
 
@@ -119,6 +123,14 @@ class WorkSubmissionFileForm(gci_forms.GCIModelForm):
 
   def clean(self):
     """Ensure that at least one of the fields has data.
+  def addFileRequiredError(self):
+    """Appends a form error message indicating that this field is required.
+    """
+    if not self._errors:
+      self._errors = ErrorDict()
+
+    self._errors["upload_of_work"] = self.error_class([DEF_NO_UPLOAD])
+
     """
     cleaned_data = self.cleaned_data
 
