@@ -248,19 +248,21 @@ def closeTask(task, profile):
 
   comment_txn = comment_logic.storeAndNotifyTxn(comment)
 
+  student = task.student
+
   # student, who worked on the task, should receive a confirmation
   # having submitted his first task
-  query = profile_logic.queryAllTasksClosedByStudent(task.student)
+  query = profile_logic.queryAllTasksClosedByStudent(student)
   if query.get() is None: # this is the first task
-    first_task_confirmation = profile_logic.sendFirstTaskConfirmationTxn()
+    confirmation = profile_logic.sendFirstTaskConfirmationTxn(student, task)
   else:
-    first_task_confirmation = lambda: None
+    confirmation = lambda: None
   
   def closeTaskTxn():
     task.put()
     comment_txn()
     startUpdatingTask(task, transactional=True)
-    first_task_confirmation()
+    confirmation()
 
   return db.run_in_transaction(closeTaskTxn)
 
