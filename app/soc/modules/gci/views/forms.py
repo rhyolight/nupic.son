@@ -409,10 +409,9 @@ class GCIBoundField(forms.BoundField):
               self.field._file.creation, 'M jS Y, h:i:sA'),
     } if getattr(self.field, '_file', False) else ""
 
-    return mark_safe('%s%s%s%s%s' % (
+    return mark_safe('%s%s%s%s' % (
         self._render_label(),
         self.as_widget(attrs=attrs),
-        self._render_error(),
         self._render_note(),
         current_file,
     ))
