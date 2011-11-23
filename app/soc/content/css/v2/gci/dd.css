@@ -110,7 +110,7 @@
 /************** Avatar color picker *********************/
 #avatar-color-picker .dd .ddTitle {
 	height: 25px !important;
-	width: 100px !important;
+	width: 120px !important;
 }
 #avatar-color-picker .dd .ddTitle span.ddTitleText {
 	padding: 4px 0 0 4px;
@@ -130,5 +130,5 @@
 	}
 #avatar-color-picker .dd .ddChild {
 	height: 90px !important;
-	width: 100px !important;
+	width: 120px !important;
 }
