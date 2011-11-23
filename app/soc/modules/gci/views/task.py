@@ -163,7 +163,8 @@ class TaskViewPage(RequestHandler):
 
       if 'post_comment' in self.data.GET:
         # checks for posting comments
-        self.check.isTaskNotInStates(['Closed'])
+        # valid tasks, profile and program timeline are already checked
+        pass
 
       if 'submit_work' in self.data.GET:
         if not task_logic.canSubmitWork(self.data.task, self.data.profile):
@@ -560,8 +561,7 @@ class CommentsTemplate(Template):
             .urlOf('create_gci_profile'),
     }
 
-    if self.data.task.status != 'Closed' and \
-        not self.data.timeline.allWorkStopped():
+    if not self.data.timeline.allWorkStopped():
       if self.data.POST and 'post_comment' in self.data.GET:
         context['comment_form'] = CommentForm(self.data.POST)
       else:
