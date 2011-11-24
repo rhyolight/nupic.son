@@ -52,7 +52,7 @@ limitations under the License.
         jQuery(this).toggleClass("active").next().slideToggle("slow");
       });
 
-      jQuery("#deadline-extend").toggle();
+      jQuery("#deadline-extend").hide();
       jQuery(".task-btn-extended-deadline").click(function() {
           var test = $(this).val();
           jQuery("#deadline-extend").toggle();
