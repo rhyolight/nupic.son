@@ -1761,7 +1761,7 @@ body {
 		width: 213px;
         }
 		.block-task .block-task-countdown #deadline-extend .deadline-extend-top {
-			background:url(../images/extend-deadline-top-arrow.png) top center no-repeat;
+			background:url(../../../images/v2/gci/extend-deadline-top-arrow.png) top center no-repeat;
 			display: block;
 			height: 20px;
 			width: 100%;
@@ -1819,7 +1819,7 @@ body {
 			margin: 0 7px;
 		}
 		.block-task .block-task-countdown #deadline-extend form .task-btn {
-			background: #fff url(../images/dashboard-task-icons.png) no-repeat scroll 8px -81px;
+			background: #fff url(../../../images/v2/gci/dashboard-task-icons.png) no-repeat scroll 8px -81px;
 			-moz-box-shadow: none;
 			-webkit-box-shadow: none;
 			box-shadow: none;
