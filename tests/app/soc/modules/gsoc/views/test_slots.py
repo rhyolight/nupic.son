@@ -17,11 +17,6 @@
 """Tests for slots view.
 """
 
-__authors__ = [
-  '"Akeda Bagus" <admin@gedex.web.id>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from django.utils import simplejson
 

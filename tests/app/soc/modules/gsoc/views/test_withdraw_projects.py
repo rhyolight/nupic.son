@@ -17,10 +17,6 @@
 """Tests for withdraw projects view.
 """
 
-__authors__ = [
-  '"Akeda Bagus" <admin@gedex.web.id>',
-  ]
-
 
 import httplib
 import urllib

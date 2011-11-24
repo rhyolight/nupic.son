@@ -18,11 +18,6 @@
 """Utils for manipulating profile data.
 """
 
-__authors__ = [
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 

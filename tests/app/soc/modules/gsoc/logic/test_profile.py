@@ -17,10 +17,6 @@
 """Tests for soc.modules.gsoc.logic.profile.
 """
 
-__authors__ = [
-  '"Praveen Kumar" <praveen97uma@gmail.com>',
-  ]
-
 
 import unittest
 

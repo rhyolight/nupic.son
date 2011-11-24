@@ -18,10 +18,6 @@
 """Tests for user profile related views.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 

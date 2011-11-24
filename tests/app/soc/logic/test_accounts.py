@@ -18,10 +18,6 @@
 """Tests for soc.logic.accounts.
 """
 
-__authors__ = [
-  '"Praveen Kumar" <praveen97uma@gmail.com>',
-  ]
-
 
 import os
 import unittest

@@ -18,10 +18,6 @@
 """Utils for manipulating program data.
 """
 
-__authors__ = [
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  ]
-
 
 from datetime import date
 

@@ -17,10 +17,6 @@
 """Tests for invite view.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from google.appengine.ext import db
 

@@ -17,14 +17,6 @@
 """
 
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Augie Fackler" <durin42@gmail.com>',
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
-
 import collections
 import hashlib
 import os

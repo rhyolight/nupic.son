@@ -18,10 +18,6 @@
 """Tests for the root url.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from tests.test_utils import GSoCDjangoTestCase
 

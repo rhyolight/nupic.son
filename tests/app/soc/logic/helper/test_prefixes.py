@@ -17,9 +17,6 @@
 """Tests for soc.logic.helper.prefixes.
 """
 
-__authors__ = [
-  '"Praveen Kumar" <praveen97uma@gmail.com>',
-  ]
 
 import unittest
 

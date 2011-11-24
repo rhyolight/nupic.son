@@ -17,10 +17,6 @@
 """Tests for cleaning methods in GSoC.
 """
 
-__authors__ = [
-  '"Praveen Kumar" <praveen97uma@gmail.com>'
-  ]
-
 
 import unittest
 

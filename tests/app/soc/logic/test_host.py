@@ -18,9 +18,6 @@
 """Tests for soc.logic.host.
 """
 
-__authors__ = [
-    '"Praveen Kumar" <praveen97uma@gmail.com>',
-    ]
 
 import unittest
 

@@ -18,10 +18,6 @@
 """Tests for user profile related views.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from datetime import date
 from datetime import timedelta

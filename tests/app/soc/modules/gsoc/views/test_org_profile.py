@@ -18,10 +18,6 @@
 """Tests for GSoC Organization profile related views.
 """
 
-__authors__ = [
-  '"Praveen Kumar" <praveen97uma@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 

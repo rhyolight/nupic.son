@@ -15,10 +15,6 @@
 # limitations under the License.
 
 
-__authors__ = [
-  '"Praveen Kumar" <praveen97uma@gmail.com>',
-  ]
-
 
 import unittest
 

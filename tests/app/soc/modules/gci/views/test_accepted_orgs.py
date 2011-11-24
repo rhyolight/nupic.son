@@ -18,10 +18,6 @@
 """Tests the view for GCI accepted orgs.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.modules.gci.models.organization import GCIOrganization
 

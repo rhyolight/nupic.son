@@ -17,10 +17,6 @@
 """Test for sending Survey reminders.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>'
-]
-
 
 import httplib
 import urllib

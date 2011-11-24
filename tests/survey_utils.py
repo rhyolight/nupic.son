@@ -18,10 +18,6 @@
 """Utils for manipulating the survey.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from tests.profile_utils import GSoCProfileHelper
 from tests import timeline_utils

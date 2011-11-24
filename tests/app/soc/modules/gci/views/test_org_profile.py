@@ -18,10 +18,6 @@
 """Tests for GCI Organization profile related views.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from google.appengine.ext import db
 

@@ -15,10 +15,6 @@
 # limitations under the License.
 
 
-__authors__ = [
-  '"Matthew Wilkes" <matthew@matthewwilkes.co.uk>',
-  ]
-
 
 from gaeftest.test import FunctionalTestCase
 

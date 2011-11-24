@@ -18,10 +18,6 @@
 """Tests for GCITask public view.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"Orcun Avsar" <orc.avs@gmail.com>',
-  ]
 
 import datetime
 

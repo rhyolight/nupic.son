@@ -18,10 +18,6 @@
 """Utils for manipulating GCI task data.
 """
 
-__authors__ = [
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  ]
-
 
 import datetime
 

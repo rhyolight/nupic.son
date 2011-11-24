@@ -18,10 +18,6 @@
 """Tests for invite related views.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from soc.logic.exceptions import BadRequest
 from soc.modules.gci.models.request import GCIRequest

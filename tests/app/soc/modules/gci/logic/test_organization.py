@@ -17,10 +17,6 @@
 """Tests for GCI logic for organizations.
 """
 
-__authors__ = [
-    '"Praveen Kumar" <praveen97uma@gmail.com>',
-    ]
-
 
 import unittest
 

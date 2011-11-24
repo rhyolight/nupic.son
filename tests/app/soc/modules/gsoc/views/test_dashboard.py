@@ -17,10 +17,6 @@
 """Tests for dashboard view.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from django.utils import simplejson as json
 

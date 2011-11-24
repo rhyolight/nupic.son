@@ -18,10 +18,6 @@
 """Utils for manipulating invite data.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from soc.models.request import INVITATION_TYPE
 

@@ -17,10 +17,6 @@
 """Tests for GCIStudentRanking methods.
 """
 
-__authors__ = [
-    '"Praveen Kumar" <praveen97uma@gmail.com>',
-    ]
-
 
 import unittest
 

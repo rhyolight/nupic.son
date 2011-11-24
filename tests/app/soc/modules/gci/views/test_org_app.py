@@ -18,10 +18,6 @@
 """Tests for organization applications.
 """
 
-__authors__ = [
-  '"Orcun Avsar" <orc.avs@gmail.com>',
-  ]
-
 
 from datetime import datetime
 from datetime import timedelta

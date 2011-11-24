@@ -18,9 +18,6 @@
 """Tests for soc.modules.gsoc.logic.slot_transfer.
 """
 
-__authors__ = [
-  '"Praveen Kumar" <praveen97uma@gmail.com>'
-  ]
 
 import unittest
 

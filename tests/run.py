@@ -15,10 +15,6 @@
 # limitations under the License.
 
 
-__authors__ = [
-  '"Augie Fackler" <durin42@gmail.com>',
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  ]
 
 import sys
 import os

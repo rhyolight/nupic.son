@@ -18,10 +18,6 @@
 """Tests for program related views.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.models.document import Document
 

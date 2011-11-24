@@ -18,10 +18,6 @@
 """Tests for program homepage related views.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from tests.test_utils import GSoCDjangoTestCase
 

@@ -18,10 +18,6 @@
 """Tests the view for GSoC accepted orgs.
 """
 
-__authors__ = [
-  '"Praveen Kumar" <praveen97uma@gmail.com>',
-  ]
-
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.seeder.logic.seeder import logic as seeder_logic

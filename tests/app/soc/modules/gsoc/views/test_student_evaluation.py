@@ -17,10 +17,6 @@
 """Tests for student_evaluation views.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 import urllib
 

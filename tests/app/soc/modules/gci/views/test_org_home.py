@@ -18,10 +18,6 @@
 """Tests the view for GCI org homepage.
 """
 
-__authors__ = [
-  '"Praveen Kumar" <praveen97uma@gmail.com>',
-  ]
-
 
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.task import GCITask

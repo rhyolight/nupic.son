@@ -15,11 +15,6 @@
 # limitations under the License.
 
 
-__authors__ = [
-    '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-    '"Praveen Kumar" <praveen97uma@gmail.com>'
-    ]
-
 
 from django import forms
 

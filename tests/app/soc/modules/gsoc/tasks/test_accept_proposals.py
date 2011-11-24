@@ -17,11 +17,6 @@
 '''Tests for accept_proposals task
 '''
 
-__authors__ = [
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  '"Orcun Avsar" <orc.avs@gmail.com>',
-]
-
 
 import httplib
 import urllib

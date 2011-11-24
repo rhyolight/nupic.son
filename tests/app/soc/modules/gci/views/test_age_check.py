@@ -18,11 +18,6 @@
 """Tests for age check related views.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from datetime import date
 from datetime import timedelta

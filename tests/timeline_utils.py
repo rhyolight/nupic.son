@@ -18,10 +18,6 @@
 """Utils for manipulating the timeline.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from datetime import datetime
 from datetime import timedelta
