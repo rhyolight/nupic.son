@@ -41,36 +41,27 @@ limitations under the License.
     tinyMCE.init(melange.tinyMceConfig(["melange-content-textarea"]));
     {% endif %}
     <!-- Task pages: Hide/show reply box -->
-     jQuery(document).ready(function(){
-     jQuery(".single-comment-reply").hide();
-     jQuery(".task-btn-comment-reply").click(function(){
-       jQuery(this).toggleClass("active").next().slideToggle("slow");
-       });
-     });
-  },
-  function () {
     jQuery(document).ready(function(){
+      jQuery(".single-comment-reply").hide();
+      jQuery(".task-btn-comment-reply").click(function(){
+        jQuery(this).toggleClass("active").next().slideToggle("slow");
+      });
+
       jQuery(".block-comments-post-new").hide();
       jQuery(".task-btn-comment-new").click(function(){
         jQuery(this).toggleClass("active").next().slideToggle("slow");
       });
-    });
-  },
-  function () {
-    jQuery(document).ready(function() {
-        jQuery("#deadline-extend").toggle();
-        jQuery(".task-btn-extended-deadline").click(function() {
-            var test = $(this).val();
-            jQuery("#deadline-extend").toggle();
-        });
-    });
-  },
-  function() {
-    jQuery(document).ready(function() {
-        jQuery("#deadline-extend-close").click(function() {
-            var test = $(this).val();
-            jQuery("#deadline-extend").toggle();
-        });
+
+      jQuery("#deadline-extend").toggle();
+      jQuery(".task-btn-extended-deadline").click(function() {
+          var test = $(this).val();
+          jQuery("#deadline-extend").toggle();
+      });
+
+      jQuery("#deadline-extend-close").click(function() {
+          var test = $(this).val();
+          jQuery("#deadline-extend").toggle();
+      });
     });
   }
 {% endblock dependencies %}
