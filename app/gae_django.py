@@ -21,11 +21,6 @@ import logging
 import os
 import sys
 
-__authors__ = [
-  # alphabetical order by last name, please
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
 
 # Must set this env var before importing any part of Django
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'

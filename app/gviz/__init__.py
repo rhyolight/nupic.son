@@ -15,7 +15,3 @@
 # limitations under the License.
 
 """Gviz module."""
-
-__authors__ = [
-  '"Daniel Hans" <dhans@google.com>',
-]

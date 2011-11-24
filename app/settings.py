@@ -15,13 +15,6 @@
 """Module containing Melange Django settings.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Augie Fackler" <durin42@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-  ]
 
 import os
 

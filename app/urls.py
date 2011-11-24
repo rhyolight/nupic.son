@@ -15,14 +15,6 @@
 """Module containing Melange URL patterns definition.
 """
 
-__authors__ = [
-  '"Augie Fackler" <durin42@gmail.com>',
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-  ]
-
 
 from soc.modules import callback
 

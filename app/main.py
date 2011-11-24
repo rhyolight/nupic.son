@@ -17,12 +17,6 @@
 """Main Melange module with profiling support.
 """
 
-__authors__ = [
-  # alphabetical order by last name, please
-  '"Augie Fackler" <durin42@gmail.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-  ]
-
 
 import logging
 

@@ -18,7 +18,3 @@
 """
 
 import gae_django
-
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
