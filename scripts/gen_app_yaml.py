@@ -25,11 +25,6 @@ Arguments:
 
 from __future__ import with_statement
 
-__authors__ = [
-    # alphabetical order by last name, please
-    '"Dan Bentley" <dbentley@google.com>',
-    ]
-
 
 import os
 import sys

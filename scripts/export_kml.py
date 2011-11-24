@@ -17,10 +17,6 @@
 """The script which generates KML file for Google Summer of Code 2009 program.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-]
-
 
 import sys
 import codecs

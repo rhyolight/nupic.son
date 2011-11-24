@@ -17,9 +17,6 @@
 """Downloads student forms.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-]
 
 import optparse
 import os

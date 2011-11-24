@@ -21,9 +21,6 @@ The output can be found in a file called model-map.png in the same directory as
 this file.
 """
 
-__authors__ = [
-  '"Tim \'mithro\' Ansell" <mithro@mithis.com>',
-]
 
 import os
 import os.path

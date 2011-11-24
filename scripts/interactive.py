@@ -25,11 +25,6 @@ App Engine interactive console
 >>> result = [i for i in it]
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-]
-
 
 import code
 import getpass

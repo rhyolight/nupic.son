@@ -17,10 +17,6 @@
 """Starts an interactive shell with statistic helpers.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-]
-
 
 import cPickle
 import datetime

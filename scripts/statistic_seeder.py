@@ -33,10 +33,6 @@ In order to terminate the script:
 >>> exit()
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-]
-
 
 import sys
 import interactive
