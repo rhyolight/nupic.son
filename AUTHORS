@@ -2,6 +2,10 @@
 # Please only include one name per line.  If an (optional) email address is
 # included, it must be RFC 2821 compliant (properly quoted, escaped, etc.).
 # Lines beginning with # can be stripped from the file, as can blank lines.
+#
+# To find the who authored an individual file use:
+#
+# $ git blame -C -C -M path/to/file
 
 "Akeda Bagus" <admin@gedex.web.id>
 "Haoyu Bai" <baihaoyu@gmail.com>
