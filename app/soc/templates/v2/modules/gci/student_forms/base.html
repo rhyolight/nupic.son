@@ -22,16 +22,20 @@ limitations under the License.
 {% block page_content %}
 {% if posted %}
   <div class="block block-user-message">
-    {% if form.non_field_errors %}
-      <p>{{ form.non_field_errors }}</p>
-    {% else %}
-      {% if form.errors %}
-        <p>Sorry, we could not save your data. Please fix the errors mentioned below.</p>
-      {% else %}
-        <p>Data saved successfully.</p>
-      {% endif %}
-    {% endif %}
+    <p>Data saved successfully.</p>
   </div>
+{% else %}
+  {% if form.non_field_errors %}
+    <div class="block block-user-message">
+      <p>{{ form.non_field_errors }}</p>
+    </div>
+  {% else %}
+    {% if form.errors %}
+      <div class="block block-user-message">
+        <p>Sorry, we could not save your data. Please fix the errors mentioned below.</p>
+      </div>
+    {% endif %}
+  {% endif %}
 {% endif %}
 
 <div class="block block-form">

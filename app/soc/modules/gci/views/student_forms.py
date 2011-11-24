@@ -124,11 +124,16 @@ class StudentFormUpload(RequestHandler):
         'page_name': 'Student form upload'
         }
 
-    if self.data.POST:
-      upload_form = UploadForm(self.redirect, self.data.POST,
-                               instance=self.data.student_info)
-    else:
-      upload_form = UploadForm(self.redirect, instance=self.data.student_info)
+    upload_form = UploadForm(self.redirect, instance=self.data.student_info)
+
+    # TODO(ljvderijk): This can be removed when AppEngine supports 200 response
+    # in the BlobStore API.
+    if self.data.GET:
+      for key, error in self.data.GET.iteritems():
+        if not key.startswith('error_'):
+          continue
+        field_name = key.split('error_', 1)[1]
+        upload_form.errors[field_name] = upload_form.error_class([error])
 
     context['form'] = upload_form
     url = self.redirect.program().urlOf('gci_student_form_upload')
@@ -148,7 +153,13 @@ class StudentFormUpload(RequestHandler):
       for file in self.data.request.file_uploads.itervalues():
         file.delete()
 
-      return self.get()
+      # since this is a file upload we must return a 300 response
+      extra_args = []
+      for field, error in form.errors.iteritems():
+        extra_args.append('error_%s=%s' %(field, error.as_text()))
+
+      self.data.redirect.to('gci_student_form_upload', extra=extra_args)
+      return
 
     # delete existing data
     cleaned_data = form.cleaned_data
