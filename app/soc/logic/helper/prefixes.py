@@ -17,11 +17,6 @@
 """Prefix helper module for models with document prefixes.
 """
 
-__authors__ = [
-  '"James Levy" <jamesalexanderlevy@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 def getOrSetScope(entity):
   """Gets or sets scope for the given entity.

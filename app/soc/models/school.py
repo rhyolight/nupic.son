@@ -16,10 +16,6 @@
 
 """This module contains the School Model."""
 
-__authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-]
-
 
 import soc.models.group
 

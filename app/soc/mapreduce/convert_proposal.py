@@ -17,10 +17,6 @@
 """GSoCProposal updating mapreduce.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import logging
 

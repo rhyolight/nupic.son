@@ -16,10 +16,6 @@
 
 """Helper methods for creating & verifying XSRF tokens."""
 
-__authors__ = [
-  '"Doug Coker" <dcoker@google.com>',
-]
-
 
 import base64
 import hmac

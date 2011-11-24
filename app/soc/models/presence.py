@@ -16,11 +16,6 @@
 
 """This module contains the Presence Model."""
 
-__authors__ = [
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-  '"Todd Larsen" <tlarsen@google.com>',
-]
-
 
 from google.appengine.ext import db
 

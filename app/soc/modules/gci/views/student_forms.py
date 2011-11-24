@@ -17,9 +17,6 @@
 """Module for students in GCI to upload their forms.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
 
 from django import forms
 from django.utils.translation import ugettext

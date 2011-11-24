@@ -17,10 +17,6 @@
 """Module containing the view for GSoC invitation page.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 from google.appengine.api import users

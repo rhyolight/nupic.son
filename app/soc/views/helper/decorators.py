@@ -17,10 +17,6 @@
 """Views decorators.
 """
 
-__authors__ = [
-  '"Doug Coker" <dcoker@google.com>',
-  ]
-
 
 from functools import wraps
 

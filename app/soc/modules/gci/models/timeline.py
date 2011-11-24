@@ -17,11 +17,6 @@
 """This module contains the GCI specific Timeline Model.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

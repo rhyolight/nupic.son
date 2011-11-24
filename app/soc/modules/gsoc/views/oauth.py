@@ -17,10 +17,6 @@
 """Module containing views for Open Auth.
 """
 
-__authors__ = [
-  '"Orcun Avsar" <orc.avs@gmail.com>',
-]
-
 
 from soc.views import oauth
 

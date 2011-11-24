@@ -15,11 +15,6 @@
 """The Melange Core module.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import logging
 

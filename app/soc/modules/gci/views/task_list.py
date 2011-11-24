@@ -17,10 +17,6 @@
 """Module containing the views for GCI historic task page.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import url_patterns

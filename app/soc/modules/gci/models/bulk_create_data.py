@@ -17,10 +17,6 @@
 """This module contains the Model to bulk create Tasks.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 from soc.modules.gci.models.organization import GCIOrganization

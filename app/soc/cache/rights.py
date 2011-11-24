@@ -17,10 +17,6 @@
 """Module contains rights memcache functions.
 """
 
-__authors__ = [
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from google.appengine.api import memcache
 

@@ -17,10 +17,6 @@
 """Module for the GSoC student forms.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from google.appengine.ext import blobstore
 

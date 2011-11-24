@@ -16,10 +16,6 @@
 """Module containing basic data provider classes.
 """
 
-__authors__ = [
-  '"Felix Kerekes" <sttwister@gmail.com>',
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  ]
 
 class Error(Exception):
   """Error class for the data provider module.

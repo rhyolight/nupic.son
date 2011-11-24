@@ -17,10 +17,6 @@
 """GSOC module cleaning methods.
 """
 
-__authors__ = [
-    '"Daniel Hans" <daniel.m.hans@gmail.com>',
-    ]
-
 
 import re
 

@@ -16,12 +16,6 @@
 
 """This module contains the Group Model."""
 
-__authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

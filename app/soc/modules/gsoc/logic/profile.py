@@ -17,10 +17,6 @@
 """GSOC logic for profiles.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    ]
-
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 

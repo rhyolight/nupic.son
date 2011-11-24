@@ -17,10 +17,6 @@
 """Module for the profile page.
 """
 
-__authors__ = [
-    '"Daniel Hans" <daniel.m.hans@gmail.com>'
-  ]
-
 
 from google.appengine.api import users
 from google.appengine.ext import db

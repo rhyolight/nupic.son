@@ -15,11 +15,6 @@
 """Module containing the core callback.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from soc.tasks.updates import project_conversion
 from soc.tasks.updates import proposal_conversion

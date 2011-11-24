@@ -16,10 +16,6 @@
 """Module containing data providers for ReferenceProperty.
 """
 
-__authors__ = [
-  '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
-
 
 from google.appengine.ext.db import Model
 

@@ -17,10 +17,6 @@
 """Module for the GSoC organization page listing all evaluations.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from django.utils.dateformat import format
 from django.utils.translation import ugettext

@@ -19,10 +19,6 @@
 See StatisticInfo class for more details.
 """
 
-__authors__ = [
-  '"Daniel Hans" <dhans@google.com>',
-]
-
 
 import soc.models.statistic_info
 

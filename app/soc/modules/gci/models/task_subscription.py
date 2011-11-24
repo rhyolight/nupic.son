@@ -17,10 +17,6 @@
 """This module contains the GCI Task Subscription Model.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

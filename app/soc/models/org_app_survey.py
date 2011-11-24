@@ -17,10 +17,6 @@
 """This module contains the OrgAppSurvey model.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from soc.models.survey import Survey
 

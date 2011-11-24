@@ -18,12 +18,6 @@
 for an evaluation period.
 """
 
-__authors__ = [
-  '"Daniel Diniz" <ajaksu@gmail.com>',
-  '"James Levy" <jamesalexanderlevy@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

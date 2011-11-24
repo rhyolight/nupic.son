@@ -17,10 +17,6 @@
 """GSOC logic for proposals.
 """
 
-__authors__ = [
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-    ]
-
 
 from soc.modules.gsoc.models.proposal import GSoCProposal
 

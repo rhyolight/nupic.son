@@ -17,10 +17,6 @@
 """Module containing the view for GCI tasks list page.
 """
 
-__authors__ = [
-  '"Madhusudan C.S." <madhusudancs@gmail.com>',
-  ]
-
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import url_patterns

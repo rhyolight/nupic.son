@@ -16,10 +16,6 @@
 
 """This module contains the Linkable base class Model."""
 
-__authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-]
-
 
 import re
 

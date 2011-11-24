@@ -17,10 +17,6 @@
 """Logic for SurveyRecord Models.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    ]
-
 
 from google.appengine.ext import db
 

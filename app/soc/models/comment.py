@@ -16,11 +16,6 @@
 
 """This module contains the comment Model."""
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  '"Matthew Wilkes" <matthew@matthewwilkes.co.uk>',
-]
-
 
 from google.appengine.ext import db
 

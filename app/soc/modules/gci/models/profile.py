@@ -16,11 +16,6 @@
 
 """This module contains the  GCIProfile Model."""
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Selwyn Jacob" <selwynjacob90@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 from google.appengine.ext import blobstore

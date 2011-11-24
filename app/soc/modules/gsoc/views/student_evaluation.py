@@ -17,10 +17,6 @@
 """Module for the GSoC project student survey.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from soc.views import forms
 from soc.views import survey

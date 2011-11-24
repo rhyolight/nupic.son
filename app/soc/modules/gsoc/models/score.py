@@ -16,10 +16,6 @@
 
 """This module contains the Score Model."""
 
-__authors__ = [
-  '"Daniel Hans <daniel.m.hans@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

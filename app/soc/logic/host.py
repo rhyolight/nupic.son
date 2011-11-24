@@ -17,10 +17,6 @@
 """Logic for Host Model.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    ]
-
 
 from soc.models.host import Host
 from soc.models.program import Program

@@ -17,9 +17,6 @@
 """This module contains the PresenceWithToS Model.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-]
 
 from google.appengine.ext import db
 

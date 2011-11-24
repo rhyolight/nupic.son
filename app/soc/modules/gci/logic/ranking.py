@@ -17,11 +17,6 @@
 """GCIStudentRanking logic methods.
 """
 
-__authors__ = [
-    '"Daniel Hans" <dhans@google.com>'
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
 

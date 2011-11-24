@@ -17,11 +17,6 @@
 """This module contains the Student Proposal Model.
 """
 
-__authors__ = [
-  '"Daniel Hans <daniel.m.hans@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

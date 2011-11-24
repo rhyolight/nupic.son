@@ -16,13 +16,6 @@
 
 """This module contains the Role Model."""
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

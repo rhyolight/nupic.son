@@ -17,11 +17,6 @@
 """Decorators for the Task API.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import logging
 import pickle

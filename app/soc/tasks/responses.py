@@ -17,10 +17,6 @@
 """Helpers functions for dealing with task queue api
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from django import http
 

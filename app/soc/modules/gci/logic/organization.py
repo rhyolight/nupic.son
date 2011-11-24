@@ -17,11 +17,6 @@
 """GCIOrganization logic methods.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from soc.logic import organization as org_logic
 

@@ -16,10 +16,6 @@
 
 """Tasks related to collection of statistic for GSoC programs"""
 
-__authors__ = [
-  '"Daniel Hans" <dhans@google.com>',
-  ]
-
 
 from google.appengine.ext import db
 from google.appengine.ext import deferred

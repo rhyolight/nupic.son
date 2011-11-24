@@ -17,9 +17,6 @@
 """Module for the GCI view to bulk create GCITasks.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
 
 from django import forms
 

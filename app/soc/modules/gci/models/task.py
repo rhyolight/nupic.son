@@ -17,12 +17,6 @@
 """This module contains the GCI Task Model.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

@@ -17,10 +17,6 @@
 """Module for rendering toggle buttons for enabling/disabling feature.
 """
 
-__authors__ = [
-  '"Madhusudan C.S." <madhusudancs@gmail.com>',
-  ]
-
 
 from soc.views.template import Template
 

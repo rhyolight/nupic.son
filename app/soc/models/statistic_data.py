@@ -20,10 +20,6 @@ The entities contain all the data which is necessary to gather actual
 statistics.
 """
 
-__authors__ = [
-  '"Daniel Hans" <dhans@google.com>',
-]
-
 
 from google.appengine.ext import db
 

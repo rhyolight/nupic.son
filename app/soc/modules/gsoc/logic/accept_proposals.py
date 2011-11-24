@@ -17,11 +17,6 @@
 """Functions that help with accept proposals status.
 """
 
-__authors__ = [
-  '"Akeda Bagus" <admin@gedex.web.id>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 

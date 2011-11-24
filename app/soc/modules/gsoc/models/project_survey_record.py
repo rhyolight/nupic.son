@@ -17,11 +17,6 @@
 """ProjectSurveyRecord allows linking two result sets by StudentProject.
 """
 
-__authors__ = [
-  '"Daniel Diniz" <ajaksu@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

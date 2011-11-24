@@ -16,12 +16,6 @@
 
 """This module contains the Review Model."""
 
-__authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

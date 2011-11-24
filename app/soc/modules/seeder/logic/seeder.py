@@ -16,11 +16,6 @@
 """Logic for data seeding operations.
 """
 
-__authors__ = [
-    '"Felix Kerekes" <sttwister@gmail.com>',
-    '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  ]
-
 
 import random
 

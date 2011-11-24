@@ -16,11 +16,6 @@
 
 """Tasks related to accepting and rejecting student proposals"""
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"John Westbrook" <johnwestbrook@google.com>',
-  ]
-
 
 import datetime
 import logging

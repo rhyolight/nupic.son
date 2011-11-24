@@ -17,10 +17,6 @@
 """Slot allocation logic.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import math
 

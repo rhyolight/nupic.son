@@ -17,11 +17,6 @@
 """Module containing some basic caching functions.
 """
 
-__authors__ = [
-    '"Daniel Hans" <daniel.m.hans@gmail.com>',
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from functools import wraps
 

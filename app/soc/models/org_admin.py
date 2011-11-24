@@ -16,12 +16,6 @@
 
 """This module contains the Organization Administrator Model."""
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

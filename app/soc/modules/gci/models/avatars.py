@@ -17,10 +17,6 @@
 """Set of available avatars to choose.
 """
 
-__authors__ = [
-  '"Akeda Bagus" <admin@gedex.web.id>',
-]
-
 
 # mapping of avatar colors to their relative path
 AVATAR_COLORS = {

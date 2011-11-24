@@ -14,10 +14,6 @@
 """Defines a Mapper API input reader for the data seeder.
 """
 
-__authors__ = [
-    '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
-
 
 from django.utils import simplejson
 

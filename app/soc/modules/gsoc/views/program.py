@@ -17,10 +17,6 @@
 """Module for the program settings pages.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.views.helper import url_patterns
 

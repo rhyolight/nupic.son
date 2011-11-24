@@ -17,10 +17,6 @@
 """Module for handling errors while running a Task.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import logging
 

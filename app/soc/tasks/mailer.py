@@ -17,10 +17,6 @@
 """Task to send out an email message.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import logging
 

@@ -17,11 +17,6 @@
 """Helpers for manipulating templates.
 """
 
-__authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>'
-  ]
-
 
 def makeSiblingTemplatesList(templates, new_template_file,
                              default_template=None):

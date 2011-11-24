@@ -17,9 +17,6 @@
 """This module contains the Notification Model.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
 
 from google.appengine.ext import db
 

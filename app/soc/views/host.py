@@ -17,10 +17,6 @@
 """Module for the program host views.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 

@@ -17,10 +17,6 @@
 """Module for the GSoC slot transfer page.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 

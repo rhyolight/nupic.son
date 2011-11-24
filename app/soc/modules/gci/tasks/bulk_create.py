@@ -17,10 +17,6 @@
 """Appengine Tasks related to GCI Task bulk create.
 """
 
-__authors__ = [
-    '"Lennard de Rijk" <ljvderijk@gmail.com>'
-  ]
-
 
 import csv
 import logging

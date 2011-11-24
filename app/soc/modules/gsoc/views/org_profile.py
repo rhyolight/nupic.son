@@ -17,10 +17,6 @@
 """Module for the GSoC organization profile page.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from soc.views import forms
 

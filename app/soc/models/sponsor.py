@@ -16,10 +16,6 @@
 
 """This module contains the Sponsor Model."""
 
-__authors__ = [
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-]
-
 
 import soc.models.group
 

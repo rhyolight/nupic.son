@@ -15,12 +15,6 @@
 """Module containing the GCI Callback.
 """
 
-__authors__ = [
-  '"Madhusudan C.S." <madhusudancs@gmail.com>',
-  '"Daniel Hans" <dhans@google.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from soc.modules.gci.tasks.updates import role_conversion
 

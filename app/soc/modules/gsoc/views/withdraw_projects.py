@@ -18,11 +18,6 @@
 into a GSoC program.
 """
 
-__authors__ = [
-  '"Akeda Bagus" <admin@gedex.web.id>',
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 import logging
 

@@ -17,10 +17,6 @@
 """A Django template tag library containing list helpers.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from django import template
 

@@ -17,10 +17,6 @@
 """GCI module cleaning methods.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    ]
-
 
 from django import forms
 from django.utils.translation import ugettext

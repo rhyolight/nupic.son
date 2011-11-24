@@ -17,10 +17,6 @@
 """Set of licenses that have been approved by the OSI.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-]
-
 
 LICENSES = (
   'Academic Free License 3.0 (AFL 3.0)',

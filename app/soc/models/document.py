@@ -16,12 +16,6 @@
 
 """This module contains the Document Model."""
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-]
-
 
 from google.appengine.ext import db
 

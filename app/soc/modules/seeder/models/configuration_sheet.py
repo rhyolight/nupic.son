@@ -16,10 +16,6 @@
 """This module contains the model holding a configuration sheet for the seeder.
 """
 
-__authors__ = [
-    '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 

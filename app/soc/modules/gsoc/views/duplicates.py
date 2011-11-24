@@ -17,11 +17,6 @@
 """Module containing the views for GSoC proposal duplicates.
 """
 
-__authors__ = [
-  '"Madhusudan C.S." <madhusudancs@gmail.com>'
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db

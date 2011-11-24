@@ -18,10 +18,6 @@
 into a GSoC program.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import lists

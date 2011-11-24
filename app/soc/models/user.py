@@ -16,12 +16,6 @@
 
 """This module contains the User Model."""
 
-__authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-]
-
 
 from google.appengine.api import users
 from google.appengine.ext import db

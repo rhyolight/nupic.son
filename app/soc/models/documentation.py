@@ -16,11 +16,6 @@
 
 """This module contains the Documentation Model."""
 
-__authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-]
-
 
 from google.appengine.ext import db
 

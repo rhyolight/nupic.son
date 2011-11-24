@@ -17,10 +17,6 @@
 """This module contains the GCI specific Mentor Model.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 import soc.models.mentor
 

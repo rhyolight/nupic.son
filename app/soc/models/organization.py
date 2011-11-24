@@ -17,10 +17,6 @@
 """This module contains the Organization Model.
 """
 
-__authors__ = [
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

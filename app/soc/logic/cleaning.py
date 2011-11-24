@@ -17,14 +17,6 @@
 """Generic cleaning methods.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    '"Daniel Hans" <daniel.m.hans@gmail.com>',
-    '"Todd Larsen" <tlarsen@google.com>',
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-    '"Pawel Solyga" <pawel.solyga@gmail.com>',
-    ]
 
 import re
 

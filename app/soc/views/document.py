@@ -17,10 +17,6 @@
 """Module containing the template for documents.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.views.template import Template
 from soc.logic.helper import prefixes

@@ -18,10 +18,6 @@
 and Projects.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 

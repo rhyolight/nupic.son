@@ -17,10 +17,6 @@
 """Module for the GSoC slot transfer admin page.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 import logging
 

@@ -16,10 +16,6 @@
 
 """This module contains the GSoCStatistic Model."""
 
-__authors__ = [
-  '"Daniel Hans" <dhans@google.com>',
-]
-
 
 import soc.models.statistic_data
 

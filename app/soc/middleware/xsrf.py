@@ -20,11 +20,6 @@ token to any <form> sent to the browser, and any (non-AppEngine) POST requests
 will be rejected if the provided token is invalid.
 """
 
-__authors__ = [
-  '"Doug Coker" <dcoker@google.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import itertools
 import logging

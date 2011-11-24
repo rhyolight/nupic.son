@@ -17,10 +17,6 @@
 """Logic for evaluations.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    ]
-
 
 from soc.views.helper.request_data import isAfter
 

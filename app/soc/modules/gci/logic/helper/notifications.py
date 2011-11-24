@@ -17,11 +17,6 @@
 """Notifications for the GCI module.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from django.template import loader
 from django.core.urlresolvers import reverse

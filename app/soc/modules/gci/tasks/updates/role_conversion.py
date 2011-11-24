@@ -17,10 +17,6 @@
 """The role conversion updates for GCI are defined in this module.
 """
 
-__authors__ = [
-    '"Selwyn Jacob" <selwynjacob90@gmail.com>',
-  ]
-
 
 from django import http
 

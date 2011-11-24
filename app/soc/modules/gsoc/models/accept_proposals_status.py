@@ -17,11 +17,6 @@
 """This module contains the ProposalDuplicatesStatus Model.
 """
 
-__authors__ = [
-  '"Akeda Bagus" <admin@gedex.web.id>',
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

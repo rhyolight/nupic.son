@@ -18,11 +18,6 @@
 request in the GCI module.
 """
 
-__authors__ = [
-  '"Selwyn Jacob" <selwynjacob90@gmail.com>',
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-]
-
 
 import datetime
 

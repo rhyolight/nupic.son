@@ -14,10 +14,6 @@
 """This is the Data Seeder Model Logic module.
 """
 
-__authors__ = [
-    '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
-
 
 import os
 

@@ -17,11 +17,6 @@
 """Module containing the view for GSoC project details page.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 

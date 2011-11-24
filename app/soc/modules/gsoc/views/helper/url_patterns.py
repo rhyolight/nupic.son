@@ -17,11 +17,6 @@
 """Module for constructing GSoC related URL patterns
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from django.conf.urls.defaults import url as django_url
 

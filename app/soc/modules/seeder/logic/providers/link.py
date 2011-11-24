@@ -23,10 +23,6 @@ from soc.modules.seeder.logic.providers.string import RandomWordProvider
 import random
 
 
-__authors__ = [
-  '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
-
 
 # pylint: disable=W0223
 class LinkProvider(BaseDataProvider):

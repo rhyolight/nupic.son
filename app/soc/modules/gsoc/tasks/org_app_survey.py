@@ -17,10 +17,6 @@
 """Tasks related to OrgAppSurveys for the GSoC module.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from soc.tasks.org_app_survey import BulkProcessing
 

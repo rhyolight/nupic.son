@@ -17,11 +17,6 @@
 """Site (Model) query functions.
 """
 
-__authors__ = [
-  '"Doug Coker" <dcoker@google.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from google.appengine.api import memcache
 

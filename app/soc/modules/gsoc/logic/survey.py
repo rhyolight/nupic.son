@@ -17,10 +17,6 @@
 """Logic for Survey related models which stores evaluation survey for projects.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    ]
-
 
 from google.appengine.ext import db
 

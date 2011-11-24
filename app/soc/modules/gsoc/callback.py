@@ -15,13 +15,6 @@
 """Module containing the GSoC Callback.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 class Callback(object):
   """Callback object that handles interaction between the core.

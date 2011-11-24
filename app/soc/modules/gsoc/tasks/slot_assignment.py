@@ -16,9 +16,6 @@
 
 """Tasks related to slot assignment for organizations"""
 
-__authors__ = [
-  '"John Westbrook" <johnwestbrook@google.com>',
-  ]
 
 import logging
 

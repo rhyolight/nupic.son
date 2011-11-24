@@ -17,10 +17,6 @@
 """The role conversion updates are defined in this module.
 """
 
-__authors__ = [
-    '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 import gae_django
 

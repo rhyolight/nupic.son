@@ -17,11 +17,6 @@
 """Module for the admin pages.
 """
 
-__authors__ = [
-  '"Akeda Bagus" <admin@gedex.web.id>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import logging
 import math

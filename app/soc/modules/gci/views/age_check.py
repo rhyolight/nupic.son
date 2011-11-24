@@ -17,9 +17,6 @@
 """Module for the GCI age check.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
 
 from django import forms
 

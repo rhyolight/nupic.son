@@ -17,11 +17,6 @@
 """Views for creating/editing GCI Tasks.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Selwyn Jacob" <selwynjacob90@gmail.com>',
-  ]
-
 
 import datetime
 

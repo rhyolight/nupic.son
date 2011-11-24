@@ -17,10 +17,6 @@
 """Module containing the views for GSoC documents page.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from django.conf.urls.defaults import url as django_url
 

@@ -18,10 +18,6 @@
 """General Views/Templates for surveys are in this module.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from django.utils.dateformat import format
 

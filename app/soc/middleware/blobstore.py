@@ -24,10 +24,6 @@ TODO: Remove this middleware as soon as the above mentioned issue in Appengine
 is fixed.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 import re
 

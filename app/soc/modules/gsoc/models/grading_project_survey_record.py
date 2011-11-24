@@ -17,11 +17,6 @@
 """GradingProjectSurveyRecord extends ProjectSurveyRecord to store the grade.
 """
 
-__authors__ = [
-  '"Daniel Diniz" <ajaksu@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

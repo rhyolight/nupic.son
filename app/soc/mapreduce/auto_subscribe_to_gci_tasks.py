@@ -18,9 +18,6 @@
 """Mapreduce to subscribe all the mentors to the tasks.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
 
 from google.appengine.ext import db
 from google.appengine.ext.mapreduce import context

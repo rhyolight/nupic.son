@@ -15,11 +15,6 @@
 """Module containing Melange callbacks.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 CORE = None
 

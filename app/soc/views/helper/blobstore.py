@@ -23,11 +23,6 @@ flicked from http://appengine-cookbook.appspot.com/recipe/blobstore-get_uploads-
 Credits and big thanks to to: sebastian.serrano and emi420
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import cgi
 import logging

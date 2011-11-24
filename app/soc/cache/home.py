@@ -17,10 +17,6 @@
 """Module contains homepage memcaching functions.
 """
 
-__authors__ = [
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import logging
 

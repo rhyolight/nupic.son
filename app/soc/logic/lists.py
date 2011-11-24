@@ -17,10 +17,6 @@
 """List generation logic.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 class Lists(object):
   """List array suitable for enumerating over with just 'for in'.

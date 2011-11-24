@@ -17,10 +17,6 @@
 """GCI org proposal processing mapreduce.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import logging
 

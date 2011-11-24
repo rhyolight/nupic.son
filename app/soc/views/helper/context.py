@@ -17,10 +17,6 @@
 """Module containing the boiler plate required to construct templates
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import os
 

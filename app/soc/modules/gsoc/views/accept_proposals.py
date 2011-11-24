@@ -17,12 +17,6 @@
 """Module containing the views for GSoC accept proposals.
 """
 
-__authors__ = [
-  '"Akeda Bagus" <admin@gedex.web.id>',
-  '"Madhusudan C.S." <madhusudancs@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from google.appengine.api import taskqueue
 

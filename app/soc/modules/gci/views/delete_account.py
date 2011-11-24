@@ -17,10 +17,6 @@
 """Module for the GCI delete account page.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from soc.logic import delete_account
 

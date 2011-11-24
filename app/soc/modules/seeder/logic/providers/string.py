@@ -23,11 +23,6 @@ from soc.modules.seeder.logic.providers.provider import FixedValueProvider
 from soc.modules.seeder.logic.providers.provider import ParameterValueError
 
 
-__authors__ = [
-  '"Felix Kerekes" <sttwister@gmail.com>',
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  ]
-
 
 # pylint: disable=W0223
 class StringProvider(BaseDataProvider):

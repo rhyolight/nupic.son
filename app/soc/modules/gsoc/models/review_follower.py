@@ -16,10 +16,6 @@
 
 """This module contains the Review Follower Model."""
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

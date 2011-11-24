@@ -17,10 +17,6 @@
 """Logic for GSoC Project Model.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    ]
-
 
 import datetime
 

@@ -16,10 +16,6 @@
 
 """The presentation module for GSoC statistics."""
 
-__authors__ = [
-  '"Daniel Hans" <dhans@google.com>',
-]
-
 
 from gviz import gviz_api
 from django.utils import simplejson

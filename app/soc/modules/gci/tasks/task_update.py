@@ -17,12 +17,6 @@
 """Appengine Tasks related to GCI Task handling.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    '"Daniel Hans" <dhans@google.com>',
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db

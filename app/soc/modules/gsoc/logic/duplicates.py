@@ -17,10 +17,6 @@
 """Functions that help with duplicate detection.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 

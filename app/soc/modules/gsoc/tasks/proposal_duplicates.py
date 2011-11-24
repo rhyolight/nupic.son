@@ -17,11 +17,6 @@
 """Tasks related to Calculating duplicate proposals.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import datetime
 

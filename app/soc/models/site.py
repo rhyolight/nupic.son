@@ -16,14 +16,6 @@
 
 """This module contains the Site Model."""
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  '"Doug Coker" <dcoker@google.com>',
-  '"Leon Palm" <lpalm@google.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

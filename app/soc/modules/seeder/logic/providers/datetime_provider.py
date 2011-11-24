@@ -25,9 +25,6 @@ import random
 import time
 
 
-__authors__ = [
-  '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
 
 # pylint: disable=W0223
 class DateTimeProvider(BaseDataProvider):

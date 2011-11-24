@@ -20,10 +20,6 @@ The classes in this module are intended to serve as base classes for
 iconic dashboard (Dashboard) and component list (Component).
 """
 
-__authors__ = [
-  '"Akeda Bagus" <admin@gedex.web.id>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
 
 from django.utils.translation import ugettext
 

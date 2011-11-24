@@ -17,11 +17,6 @@
 """Module for the GSoC profile page.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from django.forms import fields
 from django.core.urlresolvers import reverse

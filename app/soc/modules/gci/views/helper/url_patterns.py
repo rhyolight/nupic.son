@@ -17,11 +17,6 @@
 """Module for constructing GCI related URL patterns
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"Selwyn Jacob" <selwynjacob90@gmail.com>',
-  ]
-
 
 from django.conf.urls.defaults import url as django_url
 

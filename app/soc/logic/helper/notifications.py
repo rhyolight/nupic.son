@@ -17,11 +17,6 @@
 """Helper functions for sending out notifications.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import time
 

@@ -24,10 +24,6 @@ from soc.modules.seeder.logic.providers.email import FixedEmailProvider
 from soc.modules.seeder.logic.providers.email import RandomEmailProvider
 
 
-__authors__ = [
-  '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
-
 
 # pylint: disable=W0223
 class UserProvider(BaseDataProvider):

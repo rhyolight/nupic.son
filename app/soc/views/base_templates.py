@@ -16,10 +16,6 @@
 
 """This module contains the view for the site menus."""
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-]
-
 
 from soc.views.template import Template
 

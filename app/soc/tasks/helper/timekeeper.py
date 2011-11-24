@@ -16,9 +16,6 @@
 
 """Helper class for deadline-based batch processing using the Task API"""
 
-__authors__ = [
-  '"John Westbrook" <johnwestbrook@google.com>',
-  ]
 
 import datetime
 

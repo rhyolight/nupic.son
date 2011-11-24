@@ -17,11 +17,6 @@
 """GCIComment logic methods.
 """
 
-__authors__ = [
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-    '"Orcun Avsar" <orc.avs@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 

@@ -22,10 +22,6 @@ available.
 Only one singleton entity should exist across the page. 
 """
 
-__authors__ = [
-  '"Daniel Hans" <dhans@google.com>',
-]
-
 
 from google.appengine.ext import db
 from django.utils import simplejson

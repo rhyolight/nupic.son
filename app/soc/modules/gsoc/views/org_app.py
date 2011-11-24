@@ -17,10 +17,6 @@
 """Module containing the views for GSoC Organization Application.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from soc.views import forms
 

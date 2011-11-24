@@ -18,10 +18,6 @@
 parental consent forms.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 from google.appengine.api import taskqueue

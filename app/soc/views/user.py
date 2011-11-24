@@ -17,10 +17,6 @@
 """Module for the User related pages.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import os
 

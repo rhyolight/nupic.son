@@ -17,10 +17,6 @@
 """This module contains the Program Model.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-]
-
 
 from google.appengine.ext import db
 

@@ -16,10 +16,6 @@
 
 """This module contains the GSoCRequest Model."""
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-]
-
 
 from soc.models.request import Request
 

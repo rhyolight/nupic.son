@@ -17,11 +17,6 @@
 """Common validation helper functions.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-  ]
-
 
 import feedparser
 

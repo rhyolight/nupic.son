@@ -17,10 +17,6 @@
 """Module for displaying GradingSurveyGroups and records.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from google.appengine.api import taskqueue
 

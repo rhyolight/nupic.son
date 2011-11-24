@@ -17,10 +17,6 @@
 """User (Model) query functions.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from google.appengine.api import users
 from google.appengine.ext import db

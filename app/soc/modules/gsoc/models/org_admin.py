@@ -17,10 +17,6 @@
 """This module contains the GSoC specific Org Admin Model.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 import soc.models.org_admin
 

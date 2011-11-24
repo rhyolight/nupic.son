@@ -18,11 +18,6 @@
 request in the GSoC module.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import datetime
 

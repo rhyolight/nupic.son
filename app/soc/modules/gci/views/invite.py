@@ -17,10 +17,6 @@
 """Module containing the view for GCI invitation page.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 import logging
 

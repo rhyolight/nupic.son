@@ -17,10 +17,6 @@
 """Module containing the exceptions from the AccessChecker class.
 """
 
-__authors__ = [
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-]
-
 
 class Error(Exception):
   """Error class for the access_exception module.

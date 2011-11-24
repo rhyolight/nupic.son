@@ -17,11 +17,6 @@
 """Module for the org applications.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from django import forms as django_forms
 from django.utils.translation import ugettext

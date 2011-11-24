@@ -16,10 +16,6 @@
 
 """Module for the GSoC statistics page."""
 
-__authors__ = [
-  '"Daniel Hans" <dhans@google.com>',
-]
-
 
 from django.utils import simplejson
 from django.core.urlresolvers import reverse

@@ -15,10 +15,6 @@
 """Module containing the Data Seeder Callback.
 """
 
-__authors__ = [
-    '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
-
 
 class Callback(object):
   """Callback object that handles interaction between the core.

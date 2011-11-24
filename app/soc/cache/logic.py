@@ -17,11 +17,6 @@
 """Module contains logic memcaching functions.
 """
 
-__authors__ = [
-    '"Daniel Hans" <daniel.m.hans@gmail.com>',
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from google.appengine.api import memcache
 from google.appengine.ext import db

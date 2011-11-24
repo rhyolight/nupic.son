@@ -17,10 +17,6 @@
 """Module that generates the lists.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import logging
 

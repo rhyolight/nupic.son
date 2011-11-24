@@ -17,10 +17,6 @@
 """Helpers used to construct urls.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 def trim_url_to(url, limit):
   """Returns a version of url at most limit long.

@@ -17,11 +17,6 @@
 """Module for the GCI organization profile page.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.views import forms
 

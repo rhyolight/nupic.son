@@ -17,10 +17,6 @@
 """Module for displaying the GSoC profile read only page.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from soc.models.user import User
 from soc.views import readonly_template

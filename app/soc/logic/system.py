@@ -17,10 +17,6 @@
 """Basic system information functions.
 """
 
-__authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-  ]
-
 
 import os
 import settings

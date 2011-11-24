@@ -17,9 +17,6 @@
 """Module containing the boiler plate required to construct GCI views.
 """
 
-__authors__ = [
-  '"Selwyn Jacob" <selwynjacob90@gmail.com>',
-  ]
 
 from soc.views.base import RequestHandler
 

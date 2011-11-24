@@ -23,9 +23,6 @@ from soc.modules.seeder.logic.providers.provider import ParameterValueError
 from django.core.validators import email_re
 
 
-__authors__ = [
-  '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
 
 # pylint: disable=W0223
 class EmailProvider(BaseDataProvider):

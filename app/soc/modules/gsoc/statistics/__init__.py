@@ -16,6 +16,3 @@
 
 """The Statistic module for GSoC."""
 
-__authors__ = [
-  '"Daniel Hans" <dhans@google.com>',
-]

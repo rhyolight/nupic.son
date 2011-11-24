@@ -16,10 +16,6 @@
 
 """This module contains the Club Member Model."""
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 import soc.models.role
 

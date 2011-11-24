@@ -17,12 +17,6 @@
 """Module containing the boiler plate required to construct GSoC views.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Mario Ferraro" <fadinlight@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
 
 from soc.views.base import RequestHandler
 

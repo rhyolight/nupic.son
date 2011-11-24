@@ -17,10 +17,6 @@
 """The module which contains functions to manage tags in Melange.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-]
-
 
 class TagsService(object):
   """Helper class for tags corresponding to a model.

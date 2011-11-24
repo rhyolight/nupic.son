@@ -17,10 +17,6 @@
 """Module containing the views for GCI documents page.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.logic.exceptions import AccessViolation
 from soc.models.document import Document

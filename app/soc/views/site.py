@@ -17,10 +17,6 @@
 """Module for the site global pages.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import os
 

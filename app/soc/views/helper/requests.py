@@ -17,10 +17,6 @@
 """Helpers for manipulating HTTP requests.
 """
 
-__authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-  ]
-
 
 import urlparse
 

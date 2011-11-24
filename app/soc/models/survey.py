@@ -20,13 +20,6 @@ Survey describes meta-information and permissions.
 SurveyContent contains the fields (questions) and their metadata.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Daniel Diniz" <ajaksu@gmail.com>',
-  '"James Levy" <jamesalexanderlevy@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

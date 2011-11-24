@@ -17,10 +17,6 @@
 """Functions that are useful when dealing with timelines.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import datetime
 

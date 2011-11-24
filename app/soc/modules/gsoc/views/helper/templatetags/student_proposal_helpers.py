@@ -17,10 +17,6 @@
 """A Django template tag library containing StudentProposal helpers.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from google.appengine.ext import db
 

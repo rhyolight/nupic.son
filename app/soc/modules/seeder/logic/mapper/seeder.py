@@ -14,9 +14,6 @@
 """Contains logic for seeding data using the Mapper API.
 """
 
-__authors__ = [
-    '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
 
 from django.utils import simplejson
 

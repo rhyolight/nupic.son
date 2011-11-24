@@ -58,11 +58,6 @@ Usage:
   sendMailFromTemplate('soc/mail/invitation.html', context)
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com',
-  ]
-
 
 import logging
 

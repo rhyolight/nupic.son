@@ -17,10 +17,6 @@
 """Logic for GSoC slot transfers.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    ]
-
 
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 

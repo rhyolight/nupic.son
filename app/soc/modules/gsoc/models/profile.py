@@ -16,10 +16,6 @@
 
 """This module contains the  GSoCProfile Model."""
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 from google.appengine.ext import blobstore

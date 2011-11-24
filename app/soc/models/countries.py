@@ -23,11 +23,6 @@ Commerce Department export-controlled countries:
   Cuba, Iran, Myanmar (formerly Burma), North Korea, Sudan, Syria
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Todd Larsen" <tlarsen@google.com>',
-]
 
 COUNTRY_INFO = {
     "Afghanistan, Islamic State of": ('.af', 'Asia'),

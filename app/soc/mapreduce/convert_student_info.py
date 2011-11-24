@@ -17,10 +17,6 @@
 """GSoCStudentInfo updating MapReduce.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import logging
 

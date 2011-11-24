@@ -17,10 +17,6 @@
 """Generic tools for GDocs. Contains helper functions to handle documents.
 """
 
-__authors__ = [
-  '"Orcun Avsar" <orc.avs@gmail.com>',
-  ]
-
 
 import StringIO
 import re

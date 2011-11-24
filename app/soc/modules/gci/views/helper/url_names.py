@@ -17,10 +17,6 @@
 """Module for storing GCI related URL names.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>'
-  ]
-
 
 GCI_LIST_ORG_INVITES = 'gci_list_org_invites'
 GCI_LIST_INVITES = 'gci_list_invites'

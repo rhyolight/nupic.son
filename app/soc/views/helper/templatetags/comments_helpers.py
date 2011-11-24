@@ -17,11 +17,6 @@
 """A Django template tag library containing Comments helpers.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <srabbelier@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from django import template
 

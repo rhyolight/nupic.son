@@ -17,11 +17,6 @@
 """Module containing the views for GCI home page.
 """
 
-__authors__ = [
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from soc.views.helper import url_patterns
 from soc.views.template import Template

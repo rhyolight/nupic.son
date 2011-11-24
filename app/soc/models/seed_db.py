@@ -17,11 +17,6 @@
 """Seeds or clears the datastore.
 """
 
-__authors__ = [
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-    '"James Levy" <jamesalexanderlevy@gmail.com>',
-  ]
-
 
 import itertools
 import logging

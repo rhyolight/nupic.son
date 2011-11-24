@@ -17,10 +17,6 @@
 """Tasks related to OrgAppSurveys.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from soc.tasks import responses
 from soc.tasks.helper import error_handler

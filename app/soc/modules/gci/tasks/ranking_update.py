@@ -17,11 +17,6 @@
 """Appengine Tasks related to GCI Ranking.
 """
 
-__authors__ = [
-    '"Daniel Hans" <dhans@google.com>'
-    '"Lennard de Rijk" <ljvderijk@gmail.com>'
-  ]
-
 
 import logging
 

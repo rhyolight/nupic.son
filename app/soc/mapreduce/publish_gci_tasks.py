@@ -18,10 +18,6 @@
 """Surveys model updating MapReduce.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from google.appengine.ext.mapreduce import context
 from google.appengine.ext.mapreduce import operation

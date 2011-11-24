@@ -17,10 +17,6 @@
 """Module for the GCI participant dashboard.
 """
 
-__authors__ = [
-  '"Akeda Bagus" <admin@gedex.web.id>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
 
 from django.utils.dateformat import format
 from django.utils.translation import ugettext

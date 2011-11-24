@@ -17,10 +17,6 @@
 """Tasks related to Grading Survey Groups and Records.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import datetime
 import logging

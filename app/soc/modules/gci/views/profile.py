@@ -17,10 +17,6 @@
 """Module for the GCI profile page.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from django import forms as django_forms
 from django.core.urlresolvers import reverse

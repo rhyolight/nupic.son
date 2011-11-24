@@ -20,10 +20,6 @@ This was not being recorded for GCI 2011 program because it was not being
 handled in the code before.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from google.appengine.ext.mapreduce import operation
 

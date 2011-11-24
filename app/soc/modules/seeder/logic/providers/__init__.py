@@ -14,10 +14,6 @@
 """Contains data providers implementations and utilities.
 """
 
-__authors__ = [
-    '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
-
 
 # pylint: disable=C0301
 from soc.modules.seeder.logic.providers.string import FixedStringProvider

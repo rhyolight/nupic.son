@@ -17,10 +17,6 @@
 """A Django filter library.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from django import template
 from django.template.defaultfilters import stringfilter

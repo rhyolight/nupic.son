@@ -17,10 +17,6 @@
 """Module with rights related methods.
 """
 
-__authors__ = [
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.logic import dicts
 

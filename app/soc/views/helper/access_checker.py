@@ -18,10 +18,6 @@
 for checking access.
 """
 
-__authors__ = [
-    '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from django.utils.translation import ugettext
 

@@ -17,10 +17,6 @@
 """Module for constructing core URL patterns
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from django.conf.urls.defaults import url as django_url
 

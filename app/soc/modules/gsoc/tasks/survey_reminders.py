@@ -17,10 +17,6 @@
 """Tasks related to sending out survey reminders.
 """
 
-__authors__ = [
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import logging
 

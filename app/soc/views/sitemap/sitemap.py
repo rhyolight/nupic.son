@@ -17,10 +17,6 @@
 """Module contains sidemap related functions.
 """
 
-__authors__ = [
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 def getDjangoURLPatterns(params):
   """Retrieves a list of sidebar entries for this View.

@@ -18,10 +18,6 @@
 pages for models.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 import collections
 import re

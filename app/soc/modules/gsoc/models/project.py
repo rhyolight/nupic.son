@@ -17,11 +17,6 @@
 """This module contains the GSoCProject Model.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

@@ -16,10 +16,6 @@
 
 """The mapping module for GSoC statistics."""
 
-__authors__ = [
-  '"Daniel Hans" <dhans@google.com>',
-]
-
 
 _COUNTRY_PER_PROGRAM_DESCRIPTION = [
     ('program', 'string', 'Program'),

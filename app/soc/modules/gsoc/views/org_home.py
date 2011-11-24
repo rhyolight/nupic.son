@@ -17,10 +17,6 @@
 """Module containing the views for GSoC Homepage Application.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from django.conf.urls.defaults import url as django_url
 from django.utils import simplejson

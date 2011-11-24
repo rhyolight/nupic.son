@@ -16,10 +16,6 @@
 """GCITask logic methods.
 """
 
-__authors__ = [
-    '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
 
 import datetime
 import logging

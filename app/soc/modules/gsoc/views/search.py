@@ -17,10 +17,6 @@
 """Module for the GSoC search page.
 """
 
-__authors__ = [
-  '"Leo (Chong Liu)" <HiddenPython@gmail.com>',
-  ]
-
 
 import os
 

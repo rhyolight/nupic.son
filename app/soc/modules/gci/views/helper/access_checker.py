@@ -18,11 +18,6 @@
 for checking access.
 """
 
-__authors__ = [
-    '"Selwyn Jacob" <selwynjacob90@gmail.com>',
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext

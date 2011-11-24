@@ -17,13 +17,6 @@
 """A Django template tag library containing forms helpers.
 """
 
-__authors__ = [
-  '"Mario Ferraro" <fadinlight@gmail.com>',
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Pawel Solyga" <pawel.solyga@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import re
 

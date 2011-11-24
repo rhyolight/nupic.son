@@ -17,10 +17,6 @@
 """Generic views and tools for OAuth.
 """
 
-__authors__ = [
-  '"Orcun Avsar" <orc.avs@gmail.com',
-  ]
-
 
 from gdata import auth
 from gdata.alt import appengine

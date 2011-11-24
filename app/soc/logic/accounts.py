@@ -17,12 +17,6 @@
 """Basic Google Account and User (Model) query functions.
 """
 
-__authors__ = [
-  '"Chen Lunpeng" <forever.clp@gmail.com>',
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from google.appengine.api import users
 

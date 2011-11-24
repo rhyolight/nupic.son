@@ -17,12 +17,6 @@
 """This module contains the GradingProjectSurvey model.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Daniel Diniz" <ajaksu@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 

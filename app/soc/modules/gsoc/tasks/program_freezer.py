@@ -17,11 +17,6 @@
 """Set of functions for tasks to freeze the data within a GSoCProgram.
 """
 
-__authors__ = [
-    '"Daniel Hans" <daniel.m.hans@gmail.com>',
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import pickle
 

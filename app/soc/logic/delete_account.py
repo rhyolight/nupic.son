@@ -17,10 +17,6 @@
 """Logic related to handling deletion of user accounts.
 """
 
-__authors__ = [
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  ]
-
 
 from google.appengine.api import mail
 

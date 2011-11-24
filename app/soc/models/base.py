@@ -20,11 +20,6 @@ The classes in this module are intended to serve as base classes for all
 Melange Datastore Models.
 """
 
-__authors__ = [
-  '"Todd Larsen" <tlarsen@google.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-]
-
 
 from google.appengine.ext import db
 

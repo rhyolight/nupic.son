@@ -17,10 +17,6 @@
 """Module for rendering dual buttons for enabling/disabling feature.
 """
 
-__authors__ = [
-  '"Madhusudan C.S." <madhusudancs@gmail.com>',
-  ]
-
 
 from django.utils.translation import ugettext
 

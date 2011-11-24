@@ -17,10 +17,6 @@
 """Map reduce to merge mentor and co-mentors properties in GSoCProject.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from google.appengine.ext.mapreduce import operation
 

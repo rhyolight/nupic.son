@@ -17,12 +17,6 @@
 """Module containing the boiler plate required to construct templates
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 import collections
 import datetime

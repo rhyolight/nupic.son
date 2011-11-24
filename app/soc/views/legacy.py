@@ -17,10 +17,6 @@
 """Url registration for legacy views.
 """
 
-__authors__ = [
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  ]
-
 
 from soc.logic import system
 

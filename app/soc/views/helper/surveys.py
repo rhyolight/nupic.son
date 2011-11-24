@@ -17,14 +17,6 @@
 """Helper classes that abstract survey form structure and fields meta data.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  '"Daniel Diniz" <ajaksu@gmail.com>',
-  '"Daniel Hans" <daniel.m.hans@gmail.com>',
-  '"James Levy" <jamesalexanderlevy@gmail.com>',
-  '"Lennard de Rijk" <ljvderijk@gmail.com>',
-  ]
-
 
 import urllib
 

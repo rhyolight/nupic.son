@@ -17,10 +17,6 @@
 """Module for the GSoC project evaluations.
 """
 
-__authors__ = [
-  '"Madhusudan.C.S" <madhusudancs@gmail.com>',
-  ]
-
 
 from django.utils.translation import ugettext
 
