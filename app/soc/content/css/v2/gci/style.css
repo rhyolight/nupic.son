@@ -3,7 +3,7 @@ cog colors
 
 easy: 2ea828
 medium: ffd800
-difficult: f51a4a
+hard: f51a4a
 
 */  
 
@@ -728,7 +728,7 @@ body {
     .block-featured-task.level-medium .cog {
         background-position: 0 -77px;
     }
-    .block-featured-task.level-difficult .cog {
+    .block-featured-task.level-hard .cog {
         background-position: 0 -155px;
     }
 .block-student-featured-task .cog {/*Featured task, student dashboard block*/
@@ -742,7 +742,7 @@ body {
     .block-student-featured-task.level-medium .cog {
         background-position: 0 -79px;
     }
-    .block-student-featured-task.level-difficult .cog {
+    .block-student-featured-task.level-hard .cog {
         background-position: 0 -158px;
     }
 .block-status .cog {/*Sidebar current task block*/
@@ -756,7 +756,7 @@ body {
     .block-status.level-medium .cog {
         background-position: 0 -62px;
     }
-    .block-status.level-difficult .cog {
+    .block-status.level-hard .cog {
         background-position: 0 -124px;
     }
 .task-single .cog {/*Mentor dashboard tasks*/
@@ -768,8 +768,8 @@ body {
     position: static;
     width: 70px;
 }
-    .task-single.level-difficult .cog {
-        background-image:url(../../../images/v2/gci/dashboard-task-cog-difficult.png);
+    .task-single.level-hard .cog {
+        background-image:url(../../../images/v2/gci/dashboard-task-cog-hard.png);
     }
     .task-single.level-medium .cog {
         background-image:url(../../../images/v2/gci/dashboard-task-cog-medium.png);
@@ -780,8 +780,8 @@ body {
 .block-completed-tasks .task-single {/*Student completed tasks*/
     
 }
-    .block-completed-tasks .task-single.level-difficult .cog {
-        background-image:url(../../../images/v2/gci/dashboard-task-cog-difficult-complete.png);
+    .block-completed-tasks .task-single.level-hard .cog {
+        background-image:url(../../../images/v2/gci/dashboard-task-cog-hard-complete.png);
     }
     .block-completed-tasks .task-single.level-medium .cog {
         background-image:url(../../../images/v2/gci/dashboard-task-cog-medium-complete.png);
@@ -1591,7 +1591,7 @@ body {
             .block-user-tabs .task-single-difficulty {
                 
             }
-                .task-single.level-difficult .task-single-difficulty .emph {
+                .task-single.level-hard .task-single-difficulty .emph {
                     color: #ed174f;
                 }
                 .task-single.level-medium .task-single-difficulty .emph {
@@ -1722,7 +1722,7 @@ body {
         .block-task.level-medium .block-task-difficulty .difficulty .emph {
             color: #ffd800;
         }
-        .block-task.level-difficult .block-task-difficulty .difficulty .emph {
+        .block-task.level-hard .block-task-difficulty .difficulty .emph {
             color: #751204;
         }
     .block-task .block-content {
@@ -1884,8 +1884,8 @@ body {
         .block-task-student.level-medium .cog {
             background-position: 0 -103px;
         }
-        .block-task-mentor.level-difficult .cog, 
-        .block-task-student.level-difficult .cog {
+        .block-task-mentor.level-hard .cog,
+        .block-task-student.level-hard .cog {
             background-position: 0 -206px;
         }
     .block-task-mentor .block-title, 
