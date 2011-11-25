@@ -68,5 +68,8 @@ class GCIComment(soc.models.base.ModelWithFieldAttributes):
                                      collection_name="comment_modified_by",
                                      verbose_name=ugettext('Modified by'))
 
+  # The id of the comment this is a reply to.
+  reply = db.IntegerProperty()
+
   #: date when the work was last modified
   modified_on = db.DateTimeProperty(auto_now=True)
