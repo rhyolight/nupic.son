@@ -49,6 +49,10 @@ from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.student import GCIStudent
 from soc.modules.gci.models.timeline import GCITimeline
+from soc.modules.gci.models.profile import GCIStudentInfo
+from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.task import TaskDifficultyTag
+from soc.modules.gci.models.task import TaskTypeTag
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
@@ -141,8 +145,9 @@ def seed(request, *args, **kwargs):
   from datetime import datetime
   from datetime import timedelta
 
-  before = datetime.now() - timedelta(365)
-  after = datetime.now() + timedelta(365)
+  now = datetime.now()
+  before = now - timedelta(365)
+  after = now + timedelta(365)
 
   timeline_properties = {
       'key_name': 'google/gsoc2009',
@@ -206,9 +211,12 @@ def seed(request, *args, **kwargs):
         'scope': google,
         'program_start': before,
         'program_end': after,
-        'accepted_organization_announced_deadline': after,
-        'student_signup_start': after,
+        'accepted_organization_announced_deadline': before,
+        'student_signup_start': before,
         'student_signup_end': after,
+        'tasks_publicly_visible': before,
+        'task_claim_deadline': after,
+        'stop_all_work_deadline': after,
   }
 
   gci2009_timeline = GCITimeline(**timeline_properties)
@@ -227,7 +235,6 @@ def seed(request, *args, **kwargs):
 
   gci2009 = GCIProgram(**program_properties)
   gci2009.put()
-
 
   site.active_program = gci2009
   site.put()
@@ -309,6 +316,44 @@ def seed(request, *args, **kwargs):
   # TODO: add GCI orgs
   melange_admin.put()
 
+  task_properties = {
+      'status': 'Open',
+      'modified_by': melange_admin.key(),
+      'subscribers': [melange_admin.key()],
+      'title': 'Awesomeness',
+      'created_by': melange_admin.key(),
+      'created_on': now,
+      'program': gci2009,
+      'time_to_complete': 1337,
+      'modified_on': now,
+      'org': melange.key(),
+      'description': '<p>AWESOME</p>',
+  }
+
+  gci_task = GCITask(**task_properties)
+  gci_task.put()
+
+  tag_properties = {
+      'key_name': gci2009.key().name() + '/Easy',
+      'added': now,
+      'value': 1,
+      'tag': 'Easy',
+      'scope': gci2009.key(),
+      'tagged': [gci_task.key()],
+      'tagged_count': 1,
+      'order': 0,
+  }
+
+  easy = TaskDifficultyTag(**tag_properties)
+  easy.put()
+
+  tag_properties.update({
+      'key_name': gci2009.key().name() + 'Code',
+      'tag': 'Code'
+  })
+
+  code = TaskTypeTag(**tag_properties)
+  code.put()
   user_properties = {
       'key_name': 'student',
       'link_id': 'student',
@@ -430,7 +475,26 @@ def seed(request, *args, **kwargs):
 
   melange_project2 = StudentProject(**project_properties)
   melange_project2.put()
-    
+
+  student_id = 'student'
+  student_properties.update({
+      'key_name': gci2009.key().name() + '/' + student_id,
+      'parent': student_user,
+      'scope': gci2009,
+      'scope_path': gci2009.key().name(),
+  })
+  gci_student = GCIProfile(**student_properties)
+  gci_student.put()
+
+  student_info_properties.update({
+      'key_name': gci_student.key().name(),
+      'parent': gci_student,
+  })
+  student_info = GCIStudentInfo(**student_info_properties)
+  student_info.put()
+  gci_student.student_info = student_info
+  gci_student.put()
+
   document_properties = {
       'key_name': 'site/site/home',
       'link_id': 'home',
@@ -490,14 +554,19 @@ def clear(*args, **kwargs):
       GCITimeline.all(),
       GSoCProgram.all(),
       GSoCProfile.all(),
+      GCIProfile.all(),
       GSoCProposal.all(),
       GCIProgram.all(),
       GSoCStudentInfo.all(),
+      GCIStudentInfo.all(),
+      GCITask.all(),
       Host.all(),
       Sponsor.all(),
       User.all(),
       Site.all(),
       Document.all(),
+      TaskDifficultyTag.all(),
+      TaskTypeTag.all(),
       ])
 
   try:
