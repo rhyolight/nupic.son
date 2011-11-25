@@ -699,6 +699,9 @@ class HardenedModulesHook(object):
       'RIPEMD',
       'SHA256',
       'XOR',
+	  '_counter',
+	  '_fastmath',
+	  'strxor',
 
       '_Crypto_Cipher__AES',
       '_Crypto_Cipher__ARC2',
