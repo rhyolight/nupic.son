@@ -481,6 +481,7 @@ body {
                 clear: both;
                 padding-top: 10px;
                 width: 585px;
+                display: none;
             }
                 .block-comments .single-comment .single-comment-reply {
                     margin-left: 20px;

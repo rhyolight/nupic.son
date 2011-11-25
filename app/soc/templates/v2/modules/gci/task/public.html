@@ -42,17 +42,14 @@ limitations under the License.
     {% endif %}
     <!-- Task pages: Hide/show reply box -->
     jQuery(document).ready(function(){
-      jQuery(".single-comment-reply").hide();
       jQuery(".task-btn-comment-reply").click(function(){
         jQuery(this).toggleClass("active").next().slideToggle("slow");
       });
 
-      jQuery(".block-comments-post-new").hide();
       jQuery(".task-btn-comment-new").click(function(){
         jQuery(this).toggleClass("active").next().slideToggle("slow");
       });
 
-      jQuery("#deadline-extend").hide();
       jQuery(".task-btn-extended-deadline").click(function() {
           var test = $(this).val();
           jQuery("#deadline-extend").toggle();
