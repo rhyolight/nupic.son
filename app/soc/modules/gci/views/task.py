@@ -524,7 +524,8 @@ class WorkSubmissions(Template):
     """Builds a list containing the info related to each work submission.
     """
     submissions = []
-    for submission in self.data.work_submissions:
+    source = self.data.work_submissions
+    for submission in sorted(source, key=lambda e: e.submitted_on):
       submission_info = {
           'entity': submission
           }
