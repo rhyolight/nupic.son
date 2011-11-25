@@ -305,10 +305,9 @@ class GCIBoundField(forms.BoundField):
         'class': 'textarea'
         }
 
-    return mark_safe('%s%s%s%s' % (
+    return mark_safe('%s%s%s' % (
         self._render_label(),
         self.as_widget(attrs=attrs),
-        self._render_error(),  
         self._render_note(),
     ))
 
@@ -338,11 +337,10 @@ class GCIBoundField(forms.BoundField):
     pretty = self.as_widget(attrs=attrs)
     self.form.initial[self.name] = original
 
-    return mark_safe('%s%s%s%s%s' % (
+    return mark_safe('%s%s%s%s' % (
         self._render_label(),
         pretty,
         hidden,
-        self._render_error(),
         self._render_note(),
     ))
 
@@ -417,10 +415,9 @@ class GCIBoundField(forms.BoundField):
         'id': self.name,
         }
 
-    return mark_safe('%s%s%s%s' % (
+    return mark_safe('%s%s%s' % (
         self._render_label(),
         self.as_widget(attrs=attrs),
-        self._render_error(),
         self._render_note(),
     ))
 
@@ -429,10 +426,9 @@ class GCIBoundField(forms.BoundField):
         'id': self.name,
         }
 
-    return mark_safe('%s%s%s%s' % (
+    return mark_safe('%s%s%s' % (
         self._render_label(),
         self.as_widget(attrs=attrs),
-        self._render_error(),
         self._render_note(),
     ))
 
