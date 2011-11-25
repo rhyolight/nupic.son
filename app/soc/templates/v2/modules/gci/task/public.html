@@ -38,7 +38,10 @@ limitations under the License.
   null,
   function () {
     {% if comments %}
-    tinyMCE.init(melange.tinyMceConfig(["melange-content-textarea"]));
+    fields = ["melange-content-textarea"
+{% for id in comment_ids %},"melange-content-textarea-{{ id }}"{% endfor %}
+    ];
+    tinyMCE.init(melange.tinyMceConfig(fields));
     {% endif %}
     <!-- Task pages: Hide/show reply box -->
     jQuery(document).ready(function(){

@@ -78,6 +78,15 @@ class CommentForm(gci_forms.GCIModelForm):
     css_prefix = 'gci_comment'
     fields = ['title', 'content']
 
+  def idSuffix(self, field):
+    if field.name != 'content':
+      return ''
+
+    if not self.reply:
+      return ''
+
+    return "-%d" % self.reply
+
   def __init__(self, reply, *args, **kwargs):
     super(CommentForm, self).__init__(*args, **kwargs)
     self.reply = reply
@@ -244,6 +253,7 @@ class TaskViewPage(RequestHandler):
 
     if self.data.is_visible:
       context['work_submissions'] = WorkSubmissions(self.data)
+      context['comment_ids'] = [i.key().id() for i in self.data.comments]
       context['comments'] = CommentsTemplate(self.data)
 
     if not context['is_mentor']:
