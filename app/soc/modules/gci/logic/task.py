@@ -44,8 +44,9 @@ TAGS_SERVICE = tags.TagsService(TAG_NAMES)
 DEF_ACTION_NEEDED_TITLE = ugettext('Initial Deadline passed')
 DEF_ACTION_NEEDED = ugettext(
     'Melange has detected that the initial deadline has passed and it has '
-    'set the task status to ActionNeeded. You have 24 hours to submit work '
-    'before it is reopened.')
+    'set the task status to ActionNeeded. The student has 24 hours to submit '
+    'the work before the task is reopened and sent back to the pool for '
+    'other students to claim.')
 
 
 DEF_ASSIGNED_TITLE = ugettext('Task Assigned')
