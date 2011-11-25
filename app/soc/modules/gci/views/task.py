@@ -68,6 +68,7 @@ DEF_CANT_SEND_FOR_REVIEW = ugettext(
     'Only a task that you own and that has submitted work can be send in '
     'for review.')
 
+
 class CommentForm(gci_forms.GCIModelForm):
   """Django form for the comment.
   """
@@ -77,8 +78,9 @@ class CommentForm(gci_forms.GCIModelForm):
     css_prefix = 'gci_comment'
     fields = ['title', 'content']
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, reply, *args, **kwargs):
     super(CommentForm, self).__init__(*args, **kwargs)
+    self.reply = reply
 
     # For UI purposes we need to set this required, validation does not pick
     # it up.
@@ -192,7 +194,7 @@ class TaskViewPage(RequestHandler):
       self.check.isBeforeAllWorkStopped()
       self.check.isProfileActive()
 
-      if 'post_comment' in self.data.GET:
+      if 'reply' in self.data.GET:
         # checks for posting comments
         # valid tasks, profile and program timeline are already checked
         pass
@@ -262,7 +264,7 @@ class TaskViewPage(RequestHandler):
   def post(self):
     """Handles all POST calls for the TaskViewPage.
     """
-    if self.data.is_visible and 'post_comment' in self.data.GET:
+    if self.data.is_visible and 'reply' in self.data.GET:
       return self._postComment()
     elif 'button' in self.data.GET:
       return self._postButton()
@@ -278,11 +280,16 @@ class TaskViewPage(RequestHandler):
   def _postComment(self):
     """Handles the POST call for the form that creates comments.
     """
-    comment_form = CommentForm(self.data.POST)
+    reply = self.data.GET.get('reply', '')
+    reply = int(reply) if reply.isdigit() else None
+    import logging
+    logging.error(reply)
+    comment_form = CommentForm(reply, self.data.POST)
 
     if not comment_form.is_valid():
       return self.get()
 
+    comment_form.cleaned_data['reply'] = reply
     comment_form.cleaned_data['created_by'] = self.data.user
     comment_form.cleaned_data['modified_by'] = self.data.user
 
@@ -600,19 +607,33 @@ class CommentsTemplate(Template):
   def context(self):
     """Returns the context for the current template.
     """
+    comments = []
+    reply = self.data.GET.get('reply')
+
+    for comment in self.data.comments:
+      comment_key = comment.key().id()
+      form = None
+      if not self.data.timeline.allWorkStopped():
+        if self.data.POST and reply == str(comment_key):
+          form = CommentForm(comment_key, self.data.POST)
+        else:
+          form = CommentForm(comment_key)
+      item = (comment, form)
+      comments.append(item)
+
     context = {
         'profile': self.data.profile,
-        'comments': self.data.comments,
+        'comments': comments,
         'login': self.data.redirect.login().url(),
         'student_reg_link': self.data.redirect.createProfile('student')
             .urlOf('create_gci_profile'),
     }
 
     if not self.data.timeline.allWorkStopped():
-      if self.data.POST and 'post_comment' in self.data.GET:
-        context['comment_form'] = CommentForm(self.data.POST)
+      if self.data.POST and reply == 'self':
+        context['comment_form'] = CommentForm(None, self.data.POST)
       else:
-        context['comment_form'] = CommentForm()
+        context['comment_form'] = CommentForm(None)
 
     return context
 

@@ -104,7 +104,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
         'content': comment_content,
     }
 
-    url = '%s?post_comment' %self._taskPageUrl(self.task)
+    url = '%s?reply' %self._taskPageUrl(self.task)
     response = self.post(url, comment_data)
 
     self.assertResponseRedirect(response)

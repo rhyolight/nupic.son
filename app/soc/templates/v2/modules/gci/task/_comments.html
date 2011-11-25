@@ -6,7 +6,7 @@
       <a href="javascript:void(0)" class="task-btn task-btn-comment-new">Post new comment</a>
       <div class="block-comments-post-new">
         <span class="block-comments-post-new-title">Post new comment</span>
-        <form action="?post_comment" method="post" class="form-comment-post-new clearfix">
+        <form action="?reply=self" method="post" class="form-comment-post-new clearfix">
           {{ comment_form.render }}
           <div class="form-row form-row-buttons">
             <input value="Submit" class="button" type="submit">
@@ -23,7 +23,7 @@
     {% endif %}
   {% endif %}
 
-  {% for comment in comments %}
+  {% for comment, form in comments %}
     <div id="c{{ comment.key.id }}" class="single-comment">
 
       <span class="single-comment-title">{{ comment.title|default:"No Title" }}</span>
@@ -34,12 +34,12 @@
         <p><b>Changes:</b> {{ comment.changes|join:"; " }}</p>
       {% endif %}
 
-      {% if comment_form and profile %}
+      {% if form and profile %}
         <a href="javascript:void(0)" class="task-btn task-btn-comment-reply">Reply</a>
         <div class="single-comment-reply">
           <span class="single-comment-reply-title">Reply</span>
-          <form action="?post_comment" method="post" class="form-comment-reply clearfix">
-            {{ comment_form.render }}
+          <form action="?reply={{ comment.key.id }}" method="post" class="form-comment-reply clearfix">
+            {{ form.render }}
             <div class="form-row form-row-buttons">
               <input value="Submit" class="button" type="submit">
             </div>
