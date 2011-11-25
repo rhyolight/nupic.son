@@ -144,6 +144,10 @@ class BulkCreateTask(object):
         task['created_by'] = org_admin
         task['modified_by'] = org_admin
 
+        subscribers_entities = task['mentor_entities'] + [org_admin]
+        task['subscribers'] = list(set([ent.key() for ent in
+            subscribers_entities if ent.automatic_task_subscription]))
+
         # create the new task
         logging.info('Creating new task with fields: %s' %task)
         task_entity = GCITask(**task)
@@ -214,6 +218,7 @@ class BulkCreateTask(object):
     mentor_ids = set(task['mentors'].split(','))
 
     mentors = []
+    mentor_entities = []
     for mentor_id in mentor_ids:
       q = GCIProfile.all()
       q.filter('link_id', mentor_id.strip())
@@ -222,10 +227,12 @@ class BulkCreateTask(object):
       mentor = q.get()
       if mentor:
         mentors.append(mentor.key())
+        mentor_entities.append(mentor)
       else:
         errors.append('%s is not a mentor.' % mentor_id)
 
     task['mentors'] = mentors
+    task['mentor_entites'] = mentor_entities
 
     program_entity = org.scope
 

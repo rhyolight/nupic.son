@@ -195,6 +195,13 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     cleaned_data['program'] = self.request_data.program
 
+    # Subscribe both the creater and all the mentors for the task who have
+    # have enabled subscribe automatically for the tasks.
+    subscriber_entities = db.get(cleaned_data['mentors']) + [
+        self.request_data.profile]
+    cleaned_data['subscribers'] = list(set([ent.key() for ent in
+            subscriber_entities if ent.automatic_task_subscription]))
+
     return cleaned_data
 
   def clean_mentors(self):
