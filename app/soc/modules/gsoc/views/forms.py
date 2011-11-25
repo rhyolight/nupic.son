@@ -158,7 +158,7 @@ class GSoCBoundField(forms.BoundField):
 
   def renderCheckboxInput(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         'style': 'opacity: 100;',
         }
 
@@ -173,7 +173,7 @@ class GSoCBoundField(forms.BoundField):
 
   def renderTextArea(self):
     attrs = {
-        'id': 'melange-%s-textarea' % self.name,
+        'id': 'melange-%s-textarea%s' % (self.name, self.idSuffix(self)),
         'class': 'textarea'
         }
 
@@ -186,7 +186,7 @@ class GSoCBoundField(forms.BoundField):
 
   def renderTextInput(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         'class': 'text',
         }
 
@@ -213,7 +213,7 @@ class GSoCBoundField(forms.BoundField):
 
   def renderSelect(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         'style': 'opacity: 100;',
         }
 
@@ -226,7 +226,7 @@ class GSoCBoundField(forms.BoundField):
 
   def renderTOSWidget(self):
     checkbox_attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         'style': 'opacity: 100;',
         }
 
@@ -241,7 +241,7 @@ class GSoCBoundField(forms.BoundField):
 
   def renderHiddenInput(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         'name': self.name,
         'type': 'hidden',
         'value': self.field.initial or '',
@@ -250,7 +250,7 @@ class GSoCBoundField(forms.BoundField):
 
   def renderFileInput(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         }
 
     current_file_fmt = """
@@ -280,7 +280,7 @@ class GSoCBoundField(forms.BoundField):
 
   def renderRadioSelect(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         }
 
     return mark_safe('%s%s%s%s' % (
@@ -292,7 +292,7 @@ class GSoCBoundField(forms.BoundField):
 
   def renderCheckSelectMultiple(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         }
 
     return mark_safe('%s%s%s%s' % (

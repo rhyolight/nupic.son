@@ -458,6 +458,9 @@ class ModelForm(djangoforms.ModelForm):
 
     return rendered
 
+  def idSuffix(self, field):
+    return ""
+
 
 class SurveyEditForm(ModelForm):
   """Django form for creating and/or editing survey.
@@ -630,6 +633,9 @@ class BoundField(forms.forms.BoundField):
   """
 
   NOT_SUPPORTED_MSG_FMT = ugettext('Widget %s is not supported.')
+
+  def idSuffix(self, field):
+    return self.form.idSuffix(field)
 
   def is_required(self):
     return self.field.required

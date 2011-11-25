@@ -275,7 +275,7 @@ class GCIBoundField(forms.BoundField):
 
   def renderTextInput(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         }
 
     return mark_safe('%s%s%s' % (
@@ -286,7 +286,7 @@ class GCIBoundField(forms.BoundField):
 
   def renderCheckboxInput(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         'style': 'opacity: 100;',
         }
 
@@ -301,7 +301,7 @@ class GCIBoundField(forms.BoundField):
 
   def renderTextArea(self):
     attrs = {
-        'id': 'melange-%s-textarea' % self.name,
+        'id': 'melange-%s-textarea%s' % (self.name, self.idSuffix(self)),
         'class': 'textarea'
         }
 
@@ -313,7 +313,7 @@ class GCIBoundField(forms.BoundField):
 
   def renderReferenceWidget(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         'name': self.name,
         'type': "hidden",
         'class': 'text',
@@ -330,7 +330,7 @@ class GCIBoundField(forms.BoundField):
         self.form.initial[self.name] = entity.key().name()
 
     attrs = {
-        'id': self.name + "-pretty",
+        'id': self.name + "-pretty" + self.idSuffix(self),
         'name': self.name + "-pretty",
         'class': 'text',
         }
@@ -346,7 +346,7 @@ class GCIBoundField(forms.BoundField):
 
   def renderSelect(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         'style': 'opacity: 100;',
         }
 
@@ -359,7 +359,7 @@ class GCIBoundField(forms.BoundField):
 
   def renderTOSWidget(self):
     checkbox_attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         'style': 'opacity: 100;',
         }
 
@@ -374,7 +374,7 @@ class GCIBoundField(forms.BoundField):
 
   def renderHiddenInput(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         'name': self.name,
         'type': 'hidden',
         'value': self.field.initial or '',
@@ -383,7 +383,7 @@ class GCIBoundField(forms.BoundField):
 
   def renderFileInput(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         }
 
     current_file_fmt = """
@@ -412,7 +412,7 @@ class GCIBoundField(forms.BoundField):
 
   def renderRadioSelect(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         }
 
     return mark_safe('%s%s%s' % (
@@ -423,7 +423,7 @@ class GCIBoundField(forms.BoundField):
 
   def renderCheckSelectMultiple(self):
     attrs = {
-        'id': self.name,
+        'id': self.name + self.idSuffix(self),
         }
 
     return mark_safe('%s%s%s' % (
