@@ -81,9 +81,7 @@ class RankingUpdater(object):
     """
 
     key_name = '%s/%s' % (kwargs['sponsor'], kwargs['program'])
-    post_dict = request.POST
-    #key_name = post_dict['program']
-    cursor = post_dict.get('cursor')
+    cursor = request.POST.get('cursor')
 
     program = GCIProgram.get_by_key_name(key_name)
     if not program:
