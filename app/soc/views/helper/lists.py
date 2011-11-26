@@ -732,7 +732,6 @@ class ListContentResponse(object):
       kwargs: The kwargs passed to the render functions defined in the config.
     """
     columns = {}
-    key = entity.key()
     for col_id, func in self._config._col_functions.iteritems():
       val = func(entity, *args, **kwargs)
       columns[col_id] = val if val != None else ''
