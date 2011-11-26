@@ -192,9 +192,9 @@ class ListConfiguration(object):
     """
 
     column_row_buttons = self._row_buttons.get(col_id, {})
-    if column_row_buttons and column_row_buttons.get(name):
+    if column_row_buttons and column_row_buttons.get(button_id):
       logging.warning('Button with name %s is already defined for column %s'
-          % (name, col_id))
+          % (button_id, col_id))
 
     button_config = {
         'caption': caption,
