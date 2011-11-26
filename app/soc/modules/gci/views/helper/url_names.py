@@ -29,6 +29,7 @@ GCI_RESPOND_REQUEST = 'gci_respond_request'
 GCI_SEND_REQUEST = 'gci_send_request'
 
 GCI_LEADERBOARD = 'gci_leaderboard'
+GCI_STUDENT_TASKS = 'gci_student_tasks'
 
 CREATE_GCI_ORG_PROFILE = 'create_gci_org_profile'
 EDIT_GCI_ORG_PROFILE = 'edit_gci_org_profile'

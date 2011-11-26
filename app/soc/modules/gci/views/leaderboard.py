@@ -22,8 +22,11 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
+from soc.modules.gci.logic import task as task_logic
+
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
 
+from soc.modules.gci.views.all_tasks import TaskList
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
@@ -77,6 +80,21 @@ class LeaderboardList(Template):
     return 'v2/modules/gci/leaderboard/_leaderboard_list.html'
 
 
+class AllStudentTasksList(TaskList):
+  """Template for list of all tasks which have been completed by
+  the specified student.
+  """
+
+  _LIST_COLUMNS = ['title', 'organization']
+
+  def __init__(self, request, data):
+    super(AllStudentTasksList, self).__init__(
+        request, data, self._LIST_COLUMNS)
+
+  def _getQueryForTasks(self):
+    return task_logic.queryAllTasksClosedByStudent(self.data.url_profile)
+
+
 class LeaderboardPage(RequestHandler):
   """View for the leaderboard page.
   """
@@ -106,4 +124,37 @@ class LeaderboardPage(RequestHandler):
         'page_name': "Leaderboard for %s" % self.data.program.name,
         'leaderboard_list': LeaderboardList(self.request, self.data),
 #        'program_select': ProgramSelect(self.data, 'list_gci_finished_tasks'),
+    }
+
+
+class StudentTasksPage(RequestHandler):
+  """View for the list of all the tasks closed by the specified student.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/leaderboard/student_tasks.html'
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'student_tasks/%s$' % url_patterns.PROFILE, self,
+            name=url_names.GCI_STUDENT_TASKS),
+    ]
+
+  def checkAccess(self):
+    pass
+
+  def jsonContext(self):
+    self.mutator.studentFromKwargs()
+    list_content = AllStudentTasksList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation('You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    self.mutator.studentFromKwargs()
+    return {
+        'page_name': "Tasks closed by %s" % self.data.url_profile.name(),
+        'tasks_list': AllStudentTasksList(self.request, self.data),
     }
