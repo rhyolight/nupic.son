@@ -625,3 +625,10 @@ STATE_TRANSITIONS = {
     'ActionNeeded': transitFromActionNeeded,
     'NeedsWork': transitFromNeedsWork,
     }
+
+# useful queries for tasks
+def queryClaimableTasksForProgram(program):
+  q = GCITask.all()
+  q.filter('program', program)
+  q.filter('status IN', CLAIMABLE)
+  return q
