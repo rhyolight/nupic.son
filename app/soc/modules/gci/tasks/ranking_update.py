@@ -45,8 +45,8 @@ class RankingUpdater(object):
     patterns = [
         url(r'^tasks/gci/ranking/update$', self.updateRankingWithTask,
             name='task_update_gci_ranking_with_task'),
-        url(r'^tasks/gci/ranking/recalculate$', self.recalculateGCIRanking,
-            name='task_recalculate_gci_ranking'),
+        url(r'^tasks/gci/ranking/recalculate/%s$' % url_patterns.PROGRAM,
+            self.recalculateGCIRanking, name='task_recalculate_gci_ranking'),
         url(r'^tasks/gci/ranking/recalculate_student$',
             self.recalculateForStudent,
             name='task_recalculate_gci_ranking_for_student'),
@@ -73,15 +73,17 @@ class RankingUpdater(object):
 
     return responses.terminateTask()
 
-  def recalculateGCIRanking(self, request):
+  def recalculateGCIRanking(self, request, *args, **kwargs):
     """Recalculates student ranking for an entire program.
 
     Args in POST dict:
       program: The key name of the GCIProgram to recalculate the rankings for
       cursor: Query cursor to figure out where we need to start processing
     """
+
+    key_name = '%s/%s' % (kwargs['sponsor'], kwargs['program'])
     post_dict = request.POST
-    key_name = post_dict['program']
+    #key_name = post_dict['program']
     cursor = post_dict.get('cursor')
 
     program = GCIProgram.get_by_key_name(key_name)
@@ -118,7 +120,6 @@ class RankingUpdater(object):
     if students:
       # schedule task to do the rest of the students
       params = {
-          'program': key_name,
           'cursor': q.cursor(),
           }
       taskqueue.add(queue_name='gci-update', url=request.path, params=params)
