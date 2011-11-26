@@ -292,8 +292,6 @@ class TaskViewPage(RequestHandler):
     """
     reply = self.data.GET.get('reply', '')
     reply = int(reply) if reply.isdigit() else None
-    import logging
-    logging.error(reply)
     comment_form = CommentForm(reply, self.data.POST)
 
     if not comment_form.is_valid():
