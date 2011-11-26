@@ -30,7 +30,7 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 class LeaderboardList(Template):
-  """Template for list of tasks.
+  """Template for the leaderboard list.
   """
 
   LEADERBOARD_LIST_IDX = 0
