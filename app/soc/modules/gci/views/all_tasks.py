@@ -23,6 +23,7 @@ from soc.views.helper import url_patterns
 from soc.views.helper import lists
 from soc.views.template import Template
 
+from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import TaskDifficultyTag
@@ -120,10 +121,21 @@ class TaskList(Template):
     self._list_config.addSimpleColumn('title', 'Title')
 
   def _getQueryForTasks(self):
-    query = GCITask.all()
-    query.filter('program', self.data.program)
-    query.filter('status IN', CLAIMABLE)
-    return query
+    raise NotImplementedError
+
+
+class AllTasksList(TaskList):
+  """Template for list of all tasks which are claimable for the program.
+  """
+
+  _LIST_COLUMNS = ['title', 'organization', 'mentors' 'status']
+
+  def __init__(self, request, data):
+    super(AllTasksList, self).__init__(request, data, self._LIST_COLUMNS)
+
+  def _getQueryForTasks(self):
+    return task_logic.queryClaimableTasksForProgram(self.data.program)
+
 
 class TaskListPage(RequestHandler):
   """View for the list task page.
@@ -144,8 +156,7 @@ class TaskListPage(RequestHandler):
     pass
 
   def jsonContext(self):
-    list_content = TaskList(
-        self.request, self.data, self.TASK_LIST_COLUMNS).getListData()
+    list_content = AllTasksList(self.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -155,5 +166,5 @@ class TaskListPage(RequestHandler):
   def context(self):
     return {
         'page_name': "Tasks for %s" % self.data.program.name,
-        'task_list': TaskList(self.request, self.data, self.TASK_LIST_COLUMNS),
+        'task_list': AllTasksList(self.request, self.data),
     }
