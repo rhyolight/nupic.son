@@ -40,14 +40,11 @@ class TaskList(Template):
     self.data = data
     r = data.redirect
 
-    list_config = lists.ListConfiguration()
-    list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn(
-        'org', 'Organization', lambda entity, *args: entity.org.name)
-    list_config.addColumn(
-        'mentors', 'Mentors',
-        lambda entity, mentors, *args: ', '.join(
-            mentors[i].name() for i in entity.mentors))
+    self._list_config = lists.ListConfiguration()
+    self._addTitleColumn()
+    self._addOrganizationColumn()
+    self._addMentorsColumn()
+    self._addStatusColumn()
     #list_config.addColumn(
     #    'difficulty', 'Difficulty',
     #    lambda entity, _, all_d, *args: entity.taskDifficultyName(all_d))
@@ -57,12 +54,8 @@ class TaskList(Template):
     #list_config.addColumn('time_to_complete', 'Time to complete',
     #                      lambda entity, *args: entity.taskTimeToComplete())
 
-    list_config.addSimpleColumn('status', 'Status')
-
-    list_config.setRowAction(
+    self._list_config.setRowAction(
         lambda e, *args: r.id(e.key().id()).urlOf('gci_view_task'))
-
-    self._list_config = list_config
 
   def context(self):
     description = 'List of tasks for %s' % (
@@ -105,6 +98,20 @@ class TaskList(Template):
   def templatePath(self):
     return 'v2/modules/gci/task/_task_list.html'
 
+  def _addMentorsColumn(self):
+    self._list_config.addColumn('mentors', 'Mentors',
+        lambda entity, mentors, *args: ', '.join(
+            mentors[i].name() for i in entity.mentors))
+
+  def _addOrganizationColumn(self):
+    self._list_config.addColumn(
+        'org', 'Organization', lambda entity, *args: entity.org.name)
+
+  def _addStatusColumn(self):
+    self._list_config.addSimpleColumn('status', 'Status')
+
+  def _addTitleColumn(self):
+    self._list_config.addSimpleColumn('title', 'Title')
 
 class TaskListPage(RequestHandler):
   """View for the list task page.
