@@ -77,7 +77,6 @@ class RankingUpdater(object):
     """Recalculates student ranking for an entire program.
 
     Args in POST dict:
-      program: The key name of the GCIProgram to recalculate the rankings for
       cursor: Query cursor to figure out where we need to start processing
     """
 
