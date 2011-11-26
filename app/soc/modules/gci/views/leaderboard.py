@@ -45,6 +45,7 @@ class LeaderboardList(Template):
         lambda e, *args: e.student.name())
     list_config.addSimpleColumn('points', 'Points')
     list_config.addColumn('tasks', 'Tasks', lambda e, *args: len(e.tasks))
+    list_config.setDefaultSort('points', 'desc')
 
     self._list_config = list_config
 
