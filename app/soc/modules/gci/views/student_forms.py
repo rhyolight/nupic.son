@@ -56,11 +56,13 @@ class UploadForm(gci_forms.GCIModelForm):
 
     if self.instance:
       self.fields['consent_form']._file = self.instance.consent_form
-      download_url = '%s?consent_form' %r.program().urlOf('gci_student_form_upload')
+      download_url = '%s?consent_form' % r.program().urlOf(
+          'gci_student_form_upload')
       self.fields['consent_form']._link = download_url
 
       self.fields['student_id_form']._file = self.instance.student_id_form
-      download_url = '%s?student_id_form' %r.program().urlOf('gci_student_form_upload')
+      download_url = '%s?student_id_form' % r.program().urlOf(
+          'gci_student_form_upload')
       self.fields['student_id_form']._link = download_url
 
   def clean(self):
@@ -142,7 +144,7 @@ class StudentFormUpload(RequestHandler):
     """Handles POST requests for the bulk create page.
     """
     form = UploadForm(
-        self.redirect,data=self.data.POST, instance=self.data.student_info,
+        self.redirect, data=self.data.POST, instance=self.data.student_info,
         files=self.data.request.file_uploads)
 
     if not form.is_valid():
