@@ -141,7 +141,7 @@ class TaskListPage(RequestHandler):
   """View for the list task page.
   """
 
-  TASK_LIST_COLUMNS = ['title', 'organization', 'mentors' 'status']
+  TASK_LIST_COLUMNS = ['title', 'organization', 'mentors', 'status']
 
   def templatePath(self):
     return 'v2/modules/gci/task/task_list.html'
