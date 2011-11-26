@@ -249,7 +249,7 @@ def closeTask(task, profile):
 
   # student, who worked on the task, should receive a confirmation
   # having submitted his first task
-  query = profile_logic.queryAllTasksClosedByStudent(student, keys_only=True)
+  query = queryAllTasksClosedByStudent(student, keys_only=True)
   if query.get() is None: # this is the first task
     confirmation = profile_logic.sendFirstTaskConfirmationTxn(student, task)
   else:
@@ -632,3 +632,15 @@ def queryClaimableTasksForProgram(program):
   q.filter('program', program)
   q.filter('status IN', CLAIMABLE)
   return q
+
+
+def queryAllTasksClosedByStudent(profile, keys_only=False):
+  """Returns a query for all the tasks that have been closed by the
+  specified profile.
+  """
+  if not profile.student_info:
+    raise ValueError('Only students can be queried for closed tasks.')
+
+  return GCITask.all(keys_only=keys_only).filter(
+      'student', profile).filter('status', 'Closed')
+  
