@@ -79,9 +79,7 @@ class TaskList(Template):
   def getListData(self):
     idx = lists.getListIndex(self.request)
     if idx == 0:
-      q = GCITask.all()
-      q.filter('program', self.data.program)
-      q.filter('status IN', CLAIMABLE)
+      q = self._getQueryForTasks()
 
       starter = lists.keyStarter
       prefetcher = lists.listModelPrefetcher(
@@ -120,6 +118,12 @@ class TaskList(Template):
 
   def _addTitleColumn(self):
     self._list_config.addSimpleColumn('title', 'Title')
+
+  def _getQueryForTasks(self):
+    query = GCITask.all()
+    query.filter('program', self.data.program)
+    query.filter('status IN', CLAIMABLE)
+    return query
 
 class TaskListPage(RequestHandler):
   """View for the list task page.
