@@ -85,7 +85,7 @@ class LeaderboardPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'leaderbaord/%s$' % url_patterns.PROGRAM, self,
+        url(r'leaderboard/%s$' % url_patterns.PROGRAM, self,
             name=url_names.GCI_LEADERBOARD),
     ]
 
