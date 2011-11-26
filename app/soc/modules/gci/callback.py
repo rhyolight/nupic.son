@@ -45,6 +45,7 @@ class Callback(object):
     from soc.modules.gci.views import document
     from soc.modules.gci.views import homepage
     from soc.modules.gci.views import invite
+    from soc.modules.gci.views import leaderboard
     from soc.modules.gci.views import org_app
     from soc.modules.gci.views import org_home
     from soc.modules.gci.views import org_profile
@@ -73,6 +74,7 @@ class Callback(object):
     self.views.append(invite.ManageInvite())
     self.views.append(invite.RespondInvite())
     self.views.append(invite.ListUserInvitesPage())
+    self.views.append(leaderboard.LeaderboardPage())
     self.views.append(org_app.GCIOrgAppEditPage())
     self.views.append(org_profile.OrgProfilePage())
     self.views.append(org_app.GCIOrgAppPreviewPage())
