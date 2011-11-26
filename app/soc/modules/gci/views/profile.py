@@ -260,10 +260,11 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
   def context(self):
     context = super(GCIProfilePage, self).context()
 
-    if self.isCreateProfileRequest() and self.isStudentRequest():
-      context.update({
-          'form_instructions': PARENTAL_CONSENT_ADVICE
-          })
+    if self.isCreateProfileRequest():
+      if self.isStudentRequest():
+        context['form_instructions'] = PARENTAL_CONSENT_ADVICE
+    else:
+      context['edit_profile'] = True
 
     return context
 
