@@ -249,7 +249,7 @@ def closeTask(task, profile):
 
   # student, who worked on the task, should receive a confirmation
   # having submitted his first task
-  query = profile_logic.queryAllTasksClosedByStudent(student)
+  query = profile_logic.queryAllTasksClosedByStudent(student, keys_only=True)
   if query.get() is None: # this is the first task
     confirmation = profile_logic.sendFirstTaskConfirmationTxn(student, task)
   else:
