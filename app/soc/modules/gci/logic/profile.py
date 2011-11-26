@@ -59,14 +59,15 @@ def queryAllMentorsKeysForOrg(org, limit=1000):
   return queryAllMentorsForOrg(org, keys_only=True, limit=limit)
 
 
-def queryAllTasksClosedByStudent(profile):
+def queryAllTasksClosedByStudent(profile, keys_only=False):
   """Returns a query for all the tasks that have been closed by the
   specified profile.
   """
   if not profile.student_info:
     raise ValueError('Only students can be queried for closed tasks.')
 
-  return GCITask.all().filter('student', profile).filter('status', 'Closed')
+  return GCITask.all(keys_only=keys_only).filter(
+      'student', profile).filter('status', 'Closed')
 
 
 def sendFirstTaskConfirmationTxn(profile, task):
