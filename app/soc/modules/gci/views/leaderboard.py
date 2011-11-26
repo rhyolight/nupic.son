@@ -50,6 +50,10 @@ class LeaderboardList(Template):
     list_config.addColumn('tasks', 'Tasks', lambda e, *args: len(e.tasks))
     list_config.setDefaultSort('points', 'desc')
 
+    list_config.setRowAction(
+        lambda e, *args: r.profile(e.student.link_id).urlOf(
+            url_names.GCI_STUDENT_TASKS))
+
     self._list_config = list_config
 
   def context(self):
