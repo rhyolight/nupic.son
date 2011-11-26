@@ -195,10 +195,17 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     cleaned_data['program'] = self.request_data.program
 
-    # Subscribe both the creater and all the mentors for the task who have
-    # have enabled subscribe automatically for the tasks.
-    subscriber_entities = db.get(cleaned_data.get('mentors', [])) + [
-        self.request_data.profile]
+    # The creator of the task and all the mentors for the task who have
+    # have enabled "Subscribe automatically for the tasks" should be
+    # subscribed to this task.
+    subscriber_entities = [self.request_data.profile]
+
+    # Get all the mentor Key instances after they are cleaned from the form
+    # and extend the subscriber entities with the entities for these Keys.
+    mentor_keys = cleaned_data.get('mentors', None)
+    if mentor_keys:
+      subscriber_entities.extend(db.get(mentor_keys))
+
     cleaned_data['subscribers'] = list(set([ent.key() for ent in
             subscriber_entities if ent.automatic_task_subscription]))
 
