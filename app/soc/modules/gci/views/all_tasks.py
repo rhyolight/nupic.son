@@ -35,16 +35,24 @@ class TaskList(Template):
   """Template for list of tasks.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, request, data, columns):
     self.request = request
     self.data = data
     r = data.redirect
 
     self._list_config = lists.ListConfiguration()
-    self._addTitleColumn()
-    self._addOrganizationColumn()
-    self._addMentorsColumn()
-    self._addStatusColumn()
+
+    if 'title' in columns:
+      self._addTitleColumn()
+
+    if 'organization' in columns:
+      self._addOrganizationColumn()
+    
+    if 'mentors' in columns:
+      self._addMentorsColumn()
+    
+    if 'status' in columns:
+      self._addStatusColumn()
     #list_config.addColumn(
     #    'difficulty', 'Difficulty',
     #    lambda entity, _, all_d, *args: entity.taskDifficultyName(all_d))
@@ -117,6 +125,8 @@ class TaskListPage(RequestHandler):
   """View for the list task page.
   """
 
+  TASK_LIST_COLUMNS = ['title', 'organization', 'mentors' 'status']
+
   def templatePath(self):
     return 'v2/modules/gci/task/task_list.html'
 
@@ -130,7 +140,8 @@ class TaskListPage(RequestHandler):
     pass
 
   def jsonContext(self):
-    list_content = TaskList(self.request, self.data).getListData()
+    list_content = TaskList(
+        self.request, self.data, self.TASK_LIST_COLUMNS).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -140,5 +151,5 @@ class TaskListPage(RequestHandler):
   def context(self):
     return {
         'page_name': "Tasks for %s" % self.data.program.name,
-        'task_list': TaskList(self.request, self.data),
+        'task_list': TaskList(self.request, self.data, self.TASK_LIST_COLUMNS),
     }
