@@ -232,7 +232,7 @@ class BulkCreateTask(object):
         errors.append('%s is not a mentor.' % mentor_id)
 
     task['mentors'] = mentors
-    task['mentor_entites'] = mentor_entities
+    task['mentor_entities'] = mentor_entities
 
     program_entity = org.scope
 
