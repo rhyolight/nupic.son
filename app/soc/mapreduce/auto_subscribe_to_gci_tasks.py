@@ -32,11 +32,11 @@ def process(task):
   params = ctx.mapreduce_spec.mapper.params
   program_key = params['program_key']
 
-  if not program_key:
-    yield operation.counters.Increment("program key is empty, nothing to do.")
+  try:
+    program = GCIProgram.get_by_key_name(program_key)
+  except db.BadValueError:
+    yield operation.counters.Increment('program_key_is_empty_or_invalid')
     return
-
-  program = GCIProgram.get_by_key_name(program_key)
 
   def subscribe_to_task_txn(task_key, subscribe):
     task = GCITask.get(task_key)
