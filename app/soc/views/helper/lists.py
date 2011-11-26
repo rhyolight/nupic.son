@@ -574,7 +574,7 @@ class ListFeatures(object):
         logging.warning('Trying to enable global search with no element_path')
     else:
       if element_path:
-        logging.warining('Non empty element_path in disabled global search')
+        logging.warning('Non empty element_path in disabled global search')
 
     self._global_search['enabled'] = enabled
     self._global_search['element_path'] = element_path
@@ -585,7 +585,7 @@ class ListFeatures(object):
         logging.warning('Trying to enable global sort with no element_paths')
     else:
       if element_paths:
-        logging.warining('Non empty element_paths in disabled global sort')
+        logging.warning('Non empty element_paths in disabled global sort')
 
     self._global_sort['enabled'] = enabled
     self._global_sort['element_paths'] = element_paths
