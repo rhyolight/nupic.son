@@ -22,11 +22,11 @@ from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation
+from soc.models.org_app_record import OrgAppRecord
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
-from soc.models.org_app_record import OrgAppRecord
 
 from soc.modules.gci.logic import org_app as org_app_logic
 from soc.modules.gci.models.request import GCIRequest
