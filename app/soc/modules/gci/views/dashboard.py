@@ -174,7 +174,7 @@ class DashboardPage(RequestHandler):
     # not completed even a single task successfully he/she need not submit
     # any forms.
     if not self.data.student_info or query.count() < 1:
-      return student_id_form, consent_form
+      return False, False
 
     if not self.data.student_info.student_id_form:
       student_id_form = True
