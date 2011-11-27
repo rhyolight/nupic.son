@@ -19,10 +19,6 @@ limitations under the License.
 {% endblock stylesheets %}
 
 {% block page_content %}
-  {% if alert_msg %}
-    <div id="user-message" class="error">
-      {{ alert_msg|safe }}
-    </div>
   {% endif %}
 
   <h1 id="main-page-title">{{ user_name }}'s Dashboard</h1>
