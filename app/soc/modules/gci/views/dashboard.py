@@ -122,8 +122,8 @@ class DashboardPage(RequestHandler):
     """
     return 'v2/modules/gci/dashboard/base.html'
 
-  def context(self):
-    """Handler for default HTTP GET request.
+  def populateDashboards(self):
+    """Populates the various dashboard subpages and components for each subpage.
     """
     # dashboard container, will hold each component list
     dashboards = []
@@ -159,11 +159,19 @@ class DashboardPage(RequestHandler):
 
     dashboards.append(main)
 
-    return {
+    return dashboards
+
+  def context(self):
+    """Handler for default HTTP GET request.
+    """
+    context = {
         'page_name': self.data.program.name,
         'user_name': self.data.user.name if self.data.user else None,
-        'dashboards': dashboards,
-    }
+        }
+
+    context['dashboards'] = self.populateDashboards()
+
+    return context
 
   def jsonContext(self):
     """Handler for JSON requests.
