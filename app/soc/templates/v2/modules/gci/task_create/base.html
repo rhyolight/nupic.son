@@ -87,12 +87,7 @@ limitations under the License.
             <br />{{ form.bound_fields.time_to_complete_days.errors.0 }}
           </span>
         {% endif %}
-        {% if form.bound_fields.time_to_complete_hours.errors %}
-          <span class="form-row-error-msg">
-            <br />{{ form.bound_fields.time_to_complete_hours.errors.0 }}
-          </span>
-        {% endif %}
-        </label>
+      </label>
       <div class="form-row-task-completion-time-inner">
         {{ form.bound_fields.time_to_complete_days }} days
         {{ form.bound_fields.time_to_complete_hours }} hours
