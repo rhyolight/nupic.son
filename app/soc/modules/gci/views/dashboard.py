@@ -29,6 +29,7 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import org_app as org_app_logic
+from soc.modules.gci.logic.task import queryAllTasksClosedByStudent
 from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
@@ -161,6 +162,28 @@ class DashboardPage(RequestHandler):
 
     return dashboards
 
+  def shouldSubmitForms(self):
+    """Checks if the current user should submit the student forms
+    """
+    student_id_form = False
+    consent_form = False
+
+    query = queryAllTasksClosedByStudent(self.data.profile, keys_only=True)
+
+    # If the current user is not a student or if he is a student and has
+    # not completed even a single task successfully he/she need not submit
+    # any forms.
+    if not self.data.student_info or query.count() < 1:
+      return student_id_form, consent_form
+
+    if not self.data.student_info.student_id_form:
+      student_id_form = True
+
+    if not self.data.student_info.consent_form:
+      consent_form = True
+
+    return student_id_form, consent_form
+
   def context(self):
     """Handler for default HTTP GET request.
     """
@@ -168,6 +191,14 @@ class DashboardPage(RequestHandler):
         'page_name': self.data.program.name,
         'user_name': self.data.user.name if self.data.user else None,
         }
+
+    # Check if the student should submit either of the forms
+    student_id_form, consent_form = self.shouldSubmitForms()
+    context['student_id_form'] = student_id_form
+    context['consent_form'] = consent_form
+    if student_id_form or consent_form:
+      context['student_forms_link'] = self.redirect.program().urlOf(
+          'gci_student_form_upload')
 
     context['dashboards'] = self.populateDashboards()
 
