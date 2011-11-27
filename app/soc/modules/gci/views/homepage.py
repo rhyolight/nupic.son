@@ -23,6 +23,7 @@ from soc.views.template import Template
 
 from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.logic import task as task_logic
+from soc.modules.gci.views import common_templates
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
@@ -115,31 +116,6 @@ class ParticipatingOrgs(Template):
     return "v2/modules/gci/homepage/_participating_orgs.html"
 
 
-class Timeline(Template):
-  """Timeline template.
-  """
-
-  def __init__(self, data):
-    self.data = data
-    self.current_timeline = self.data.timeline.currentPeriod()
-
-  def context(self):
-    remaining = self.data.timeline.remainingTime()
-    remaining_days = remaining.days
-    remaining_hours = remaining.seconds/3600
-    complete_percentage = self.data.timeline.completePercentage()
-    stopwatch_percentage = self.data.timeline.stopwatchPercentage()
-    return {
-        'remaining_days': remaining_days,
-        'remaining_hours': remaining_hours,
-        'complete_percentage': complete_percentage,
-        'stopwatch_percentage': stopwatch_percentage
-    }
-
-  def templatePath(self):
-    return "v2/modules/gci/homepage/_timeline.html"
-
-
 class ConnectWithUs(Template):
   """Connect with us template.
   """
@@ -178,7 +154,7 @@ class Homepage(RequestHandler):
         'page_name': '%s - Home page' % (self.data.program.name),
         'how_it_works': HowItWorks(self.data),
         'participating_orgs': ParticipatingOrgs(self.data),
-        'timeline': Timeline(self.data),
+        'timeline': common_templates.Timeline(self.data),
         'connect_with_us': ConnectWithUs(self.data),
         'program': self.data.program,
     }
