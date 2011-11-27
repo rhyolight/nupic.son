@@ -105,6 +105,7 @@ limitations under the License.
       </label>
       <div class="form-row-task-difficulty-inner">
         <select name="{{ form.bound_fields.difficulty.name }}">
+        <option value="" selected="selected" disabled="disabled">Difficulty</option>
         {% for value, label in form.bound_fields.difficulty.field.choices %}
           <option value="{{ value }}"
               {% if form.bound_fields.difficulty.field.initial == value %}
