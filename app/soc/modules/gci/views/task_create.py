@@ -102,23 +102,24 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         label=ugettext('Mentors'), required=False,
         choices=mentorChoicesForOrg(self.instance, self.organization))
 
+    self.fields['task_type'].initial = self._getInitialValuesForList(
+        'task_type')
+
+    self.assigned_mentors = self._getInitialValuesForList(
+        'mentors')
+
+    difficulties = self._getInitialValuesForList('difficulty')
+    if difficulties:
+      self.fields['difficulty'].initial = difficulties[0]
+
     if self.instance:
-      difficulties = self.instance.difficulty
-      if difficulties:
-        self.fields['difficulty'].initial = difficulties[0].tag
-
-      task_types = self.instance.task_type
-      if task_types:
-        self.fields['task_type'].initial = [t.tag for t in task_types]
-
-      self.fields['tags'].initial = self.instance.tags_string(
-          self.instance.arbit_tag)
-
       ttc = datetime.timedelta(hours=self.instance.time_to_complete)
       self.fields['time_to_complete_days'].initial = ttc.days
       self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
 
-      self.assigned_mentors = [str(m) for m in self.instance.mentors]
+      self.fields['tags'].initial = self.instance.tags_string(
+          self.instance.arbit_tag)
+
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
