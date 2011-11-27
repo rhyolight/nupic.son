@@ -196,9 +196,8 @@ class DashboardPage(RequestHandler):
     student_id_form, consent_form = self.shouldSubmitForms()
     context['student_id_form'] = student_id_form
     context['consent_form'] = consent_form
-    if student_id_form or consent_form:
-      context['student_forms_link'] = self.redirect.program().urlOf(
-          'gci_student_form_upload')
+    context['student_forms_link'] = self.redirect.program().urlOf(
+        'gci_student_form_upload')
 
     context['dashboards'] = self.populateDashboards()
 
