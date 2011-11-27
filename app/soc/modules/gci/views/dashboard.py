@@ -168,12 +168,15 @@ class DashboardPage(RequestHandler):
     student_id_form = False
     consent_form = False
 
+    if not self.data.student_info:
+      return False, False, False
+
     query = queryAllTasksClosedByStudent(self.data.profile, keys_only=True)
 
     # If the current user is not a student or if he is a student and has
     # not completed even a single task successfully he/she need not submit
     # any forms.
-    if not self.data.student_info or query.count() < 1:
+    if query.count() < 1:
       return False, False, False
 
     has_completed_task = True
