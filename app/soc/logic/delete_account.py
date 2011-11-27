@@ -41,7 +41,7 @@ def request_account_deletion(user):
   
   This is a temporary method, until we have an automated solution.
   """
-  account = accounts.denormalizeAccount(user.account)
+  account = accounts.getCurrentAccount(normalize=False)
 
   sender = account.email()
   subject = ADMIN_REQUEST_EMAIL_SUBJEST % {
@@ -49,7 +49,7 @@ def request_account_deletion(user):
       }
   body = ADMIN_REQUEST_EMAIL_BODY % {
       'name': user.name,
-      'email': account.email(),
+      'email': sender,
       'link_id': user.link_id
       }
 
