@@ -198,11 +198,26 @@ def getFirstTaskConfirmationContext(student):
 
   user = student.parent()
   to = accounts.denormalizeAccount(user.account).email()
-  
+
   subject = DEF_FIRST_TASK_CONFIRMATION_SUBJECT
 
+  program = student.scope
+
+  kwargs = {
+      'sponsor': program.scope_path,
+      'program': program.link_id
+  }
+  url = reverse('gci_student_form_upload', kwargs=kwargs)
+
+  protocol = 'http'
+  hostname = system.getHostname()
+
+  context = {
+      'student_forms_link': '%s://%s%s' % (protocol, hostname, url),
+      }
+
   template = DEF_FIRST_TASK_CONFIRMATION_TEMPLATE
-  body = loader.render_to_string(template)
+  body = loader.render_to_string(template, context)
 
   return mailer.getMailContext(to=to, subject=subject, html=body, bcc=[])
 
