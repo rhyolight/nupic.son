@@ -49,14 +49,13 @@ def updateRankingWithTask(task, prefetched_difficulties=None):
   # get current ranking for the student if it is not specified
   ranking = getOrCreateForStudent(task.student)
 
-  if task.key() in ranking.tasks:
-    # already considered
-    return ranking
-
-  #: update total number of points with number of points for this task
-  task_value = task.taskDifficulty(prefetched_difficulties).value
-  ranking.points = ranking.points + task_value
-  ranking.tasks.append(task.key())
+  # check if the task has not been considered
+  if task.key() not in ranking.tasks:
+    #: update total number of points with number of points for this task
+    task_value = task.taskDifficulty(prefetched_difficulties).value
+    ranking.points = ranking.points + task_value
+    ranking.tasks.append(task.key())
+    ranking.put()
 
   return ranking
 
