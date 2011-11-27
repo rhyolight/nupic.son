@@ -14,6 +14,13 @@ limitations under the License.
 {% endcomment %}
 
 {% block page_content %}
+<div class="block block-leaderboard-top">
+  <div class="block-leaderboard-top-title">
+    <h1><span class="leaderboard-title-left">The Official</span><span class="leaderboard-title-right">Leaderboard</span></h1>
+	<span class="trophy"></span>
+  </div>
+</div>
+<!-- end .block.block-leaderboard-top -->
   {{ leaderboard_list.render|safe }}
 {% endblock page_content %}
 
