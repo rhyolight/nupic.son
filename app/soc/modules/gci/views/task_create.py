@@ -75,6 +75,8 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     self.organization = self.request_data.organization if not self.instance \
         else self.instance.org
 
+    self.POST = args[0] if len(args) > 0 and args[0] else None
+
     # get a list difficulty levels stored for the program entity
     difficulties = task.TaskDifficultyTag.get_by_scope(data.program)
 
@@ -123,6 +125,35 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     self.bound_fields = {}
     for name, field in self.fields.items():
       self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
+
+  def _getInitialValuesForList(self, field):
+    """Returns the initial values for the field which take list of values.
+
+    One of the following 3 cases can happen:
+    1. If POST attribute exists and there are are no values for the given
+       field empty list is returned.
+    2. It checks if the POST data contains some value(s) for the given field,
+       if so the method returns that as the intial value.
+    3. If the POST attribute is None, it means that the request is a GET
+       request and hence if there are any values stored in the instance
+       those values are returned
+
+    Args:
+      field: the name of the field
+    """
+    try:
+      initial = self.POST.getlist(field)
+      if initial:
+        return initial
+      else:
+        return []
+    except AttributeError:
+      pass
+
+    if self.instance:
+      return [str(t) for t in getattr(self.instance, field)]
+
+    return []
 
   def _saveTags(self, entity):
     entity.difficulty = {
