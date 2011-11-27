@@ -142,14 +142,9 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     Args:
       field: the name of the field
     """
-    try:
+    if self.request_data.request.method == 'POST':
       initial = self.POST.getlist(field)
-      if initial:
-        return initial
-      else:
-        return []
-    except AttributeError:
-      pass
+      return initial if initial else []
 
     if self.instance:
       return [str(t) for t in getattr(self.instance, field)]
@@ -324,10 +319,11 @@ class TaskCreatePage(RequestHandler):
     # subscribed to this task.
     mentor_keys = form.cleaned_data.get('mentors', None)
     mentor_entities = db.get(mentor_keys)
-    subscriber_entities = mentor_entities + [self.data.profile]
+    subscribers = mentor_entities + [self.data.profile]
 
-    form.cleaned_data['subscribers'] = list(set([ent.key() for ent in
-            subscriber_entities if ent.automatic_task_subscription]))
+    keys = [i.key() for i in subscribers if i.automatic_task_subscription]
+
+    form.cleaned_data['subscribers'] = list(set(keys))
 
     if not self.data.task:
       entity = form.create(commit=True)
