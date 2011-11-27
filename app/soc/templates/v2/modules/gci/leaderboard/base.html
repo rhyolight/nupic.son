@@ -21,7 +21,14 @@ limitations under the License.
   </div>
 </div>
 <!-- end .block.block-leaderboard-top -->
+<div class="clear"></div>
+<div class="grid_6 alpha main-content">
+  <div class="block block-leaderboard-scores block-leaderboard-all-scores">
   {{ leaderboard_list.render|safe }}
+  </div>
+  <!-- end .block.block-leaderboard-all-scores -->
+</div>
+<!-- end .grid_6 -->
 {% endblock page_content %}
 
 {% block dependencies %}
