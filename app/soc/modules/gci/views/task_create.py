@@ -193,22 +193,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
       raise django_forms.ValidationError(
           ugettext('Time to complete must be specified.'))
 
-    cleaned_data['program'] = self.request_data.program
-
-    # The creator of the task and all the mentors for the task who have
-    # have enabled "Subscribe automatically for the tasks" should be
-    # subscribed to this task.
-    subscriber_entities = [self.request_data.profile]
-
-    # Get all the mentor Key instances after they are cleaned from the form
-    # and extend the subscriber entities with the entities for these Keys.
-    mentor_keys = cleaned_data.get('mentors', None)
-    if mentor_keys:
-      subscriber_entities.extend(db.get(mentor_keys))
-
-    cleaned_data['subscribers'] = list(set([ent.key() for ent in
-            subscriber_entities if ent.automatic_task_subscription]))
-
     return cleaned_data
 
   def clean_mentors(self):
@@ -300,6 +284,18 @@ class TaskCreatePage(RequestHandler):
 
     if not form.is_valid():
       return None
+
+    form.cleaned_data['program'] = self.data.program
+
+    # The creator of the task and all the mentors for the task who have
+    # have enabled "Subscribe automatically for the tasks" should be
+    # subscribed to this task.
+    mentor_keys = form.cleaned_data.get('mentors', None)
+    mentor_entities = db.get(mentor_keys)
+    subscriber_entities = mentor_entities + [self.data.profile]
+
+    form.cleaned_data['subscribers'] = list(set([ent.key() for ent in
+            subscriber_entities if ent.automatic_task_subscription]))
 
     if not self.data.task:
       entity = form.create(commit=True)
