@@ -24,10 +24,6 @@ class Timeline(Template):
   """Timeline template.
   """
 
-  def __init__(self, data):
-    self.data = data
-    self.current_timeline = self.data.timeline.currentPeriod()
-
   def context(self):
     remaining = self.data.timeline.remainingTime()
     remaining_days = remaining.days
