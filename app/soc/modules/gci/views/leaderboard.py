@@ -22,6 +22,7 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
+from soc.modules.gci.logic import ranking as ranking_logic
 from soc.modules.gci.logic import task as task_logic
 
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
@@ -100,6 +101,40 @@ class AllStudentTasksList(TaskList):
     return task_logic.queryAllTasksClosedByStudent(self.data.url_profile)
 
 
+class YourScore(Template):
+  """Template that is used to show score of the current user, provided
+  he or she is a student.
+  """
+
+  def __init__(self, data):
+    self.data = data
+    self.student_ranking = None
+
+    if self.data.profile and self.data.profile.student_info:
+      self.student_ranking = ranking_logic.getOrCreateForStudent(
+          self.data.profile)
+
+  def context(self):
+    return {} if not self.student_ranking else {
+        'points': self.student_ranking.points,
+        'tasks': len(self.student_ranking.tasks),
+        'my_tasks_link': self.data.redirect.profile(
+            self.data.profile.link_id).urlOf(url_names.GCI_STUDENT_TASKS)
+        }
+
+  def render(self):
+    """This template should only render to a non-empty string, if the
+    current user is a student.
+    """
+    if not self.student_ranking:
+      return ''
+
+    return super(YourScore, self).render()
+
+  def templatePath(self):
+    return "v2/modules/gci/leaderboard/_your_score.html"
+
+
 class LeaderboardPage(RequestHandler):
   """View for the leaderboard page.
   """
@@ -128,7 +163,8 @@ class LeaderboardPage(RequestHandler):
     return {
         'page_name': "Leaderboard for %s" % self.data.program.name,
         'leaderboard_list': LeaderboardList(self.request, self.data),
-        'timeline': common_templates.Timeline(self.data)
+        'timeline': common_templates.Timeline(self.data),
+        'your_score': YourScore(self.data)
 #        'program_select': ProgramSelect(self.data, 'list_gci_finished_tasks'),
     }
 
