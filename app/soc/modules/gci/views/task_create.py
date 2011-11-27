@@ -75,6 +75,8 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     self.organization = self.request_data.organization if not self.instance \
         else self.instance.org
 
+    self.POST = args[0] if len(args) > 0 and args[0] else None
+
     # get a list difficulty levels stored for the program entity
     difficulties = task.TaskDifficultyTag.get_by_scope(data.program)
 
@@ -100,29 +102,54 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         label=ugettext('Mentors'), required=False,
         choices=mentorChoicesForOrg(self.instance, self.organization))
 
+    self.fields['task_type'].initial = self._getInitialValuesForList(
+        'task_type')
+
+    self.assigned_mentors = self._getInitialValuesForList(
+        'mentors')
+
+    difficulties = self._getInitialValuesForList('difficulty')
+    if difficulties:
+      self.fields['difficulty'].initial = difficulties[0]
+
     if self.instance:
-      difficulties = self.instance.difficulty
-      if difficulties:
-        self.fields['difficulty'].initial = difficulties[0].tag
-
-      task_types = self.instance.task_type
-      if task_types:
-        self.fields['task_type'].initial = [t.tag for t in task_types]
-
-      self.fields['tags'].initial = self.instance.tags_string(
-          self.instance.arbit_tag)
-
       ttc = datetime.timedelta(hours=self.instance.time_to_complete)
       self.fields['time_to_complete_days'].initial = ttc.days
       self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
 
-      self.assigned_mentors = [str(m) for m in self.instance.mentors]
+      self.fields['tags'].initial = self.instance.tags_string(
+          self.instance.arbit_tag)
+
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
     self.bound_fields = {}
     for name, field in self.fields.items():
       self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
+
+  def _getInitialValuesForList(self, field):
+    """Returns the initial values for the field which take list of values.
+
+    One of the following 3 cases can happen:
+    1. If POST attribute exists and there are are no values for the given
+       field empty list is returned.
+    2. It checks if the POST data contains some value(s) for the given field,
+       if so the method returns that as the intial value.
+    3. If the POST attribute is None, it means that the request is a GET
+       request and hence if there are any values stored in the instance
+       those values are returned
+
+    Args:
+      field: the name of the field
+    """
+    if self.request_data.request.method == 'POST':
+      initial = self.POST.getlist(field)
+      return initial if initial else []
+
+    if self.instance:
+      return [str(t) for t in getattr(self.instance, field)]
+
+    return []
 
   def _saveTags(self, entity):
     entity.difficulty = {
@@ -192,15 +219,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     else:
       raise django_forms.ValidationError(
           ugettext('Time to complete must be specified.'))
-
-    cleaned_data['program'] = self.request_data.program
-
-    # Subscribe both the creater and all the mentors for the task who have
-    # have enabled subscribe automatically for the tasks.
-    subscriber_entities = db.get(cleaned_data.get('mentors', [])) + [
-        self.request_data.profile]
-    cleaned_data['subscribers'] = list(set([ent.key() for ent in
-            subscriber_entities if ent.automatic_task_subscription]))
 
     return cleaned_data
 
@@ -293,6 +311,19 @@ class TaskCreatePage(RequestHandler):
 
     if not form.is_valid():
       return None
+
+    form.cleaned_data['program'] = self.data.program
+
+    # The creator of the task and all the mentors for the task who have
+    # have enabled "Subscribe automatically for the tasks" should be
+    # subscribed to this task.
+    mentor_keys = form.cleaned_data.get('mentors', None)
+    mentor_entities = db.get(mentor_keys)
+    subscribers = mentor_entities + [self.data.profile]
+
+    keys = [i.key() for i in subscribers if i.automatic_task_subscription]
+
+    form.cleaned_data['subscribers'] = list(set(keys))
 
     if not self.data.task:
       entity = form.create(commit=True)

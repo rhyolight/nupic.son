@@ -15,24 +15,42 @@ limitations under the License.
 
 {% block stylesheets %}
   {{ block.super }}
-  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gci/uniform.default.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/uniform.default.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/forms.css" />
 {% endblock stylesheets %}
 
 {% block page_content %}
+
+{% if posted %}
+  {% if error %}
+    <div class="block block-flash error">
+      Sorry, we could not save your form. Please fix the errors mentioned below.
+    </div>
+  {% else %}
+    <div class="block block-flash success">
+      The form was successfully saved.
+    </div>
+  {% endif %}
+{% endif %}
+
 <div class="block block-form">
   <div class="block-form-title">
     <span class="title">{{ page_name }}</span>
     <span class="req">* fields required</span>
   </div>
   <form action="#" method="post" class="form-create-task clearfix">
-    {{ form.non_field_errors }}
-
     <div class="form-row {{ form.bound_fields.title.div_class }}">
       {{ form.bound_fields.title.render }}
     </div>
 
     <div class="form-row grid_4 alpha {{ form.bound_fields.task_type.div_class }}">
-      <label for="type" class="form-label">Type<em>*</em></label>
+      <label for="type" class="form-label">Type<em>*</em>
+        {% if form.bound_fields.task_type.errors %}
+          <span class="form-row-error-msg">
+            {{ form.bound_fields.task_type.errors.0 }}
+          </span>
+        {% endif %}
+      </label>
       <span class="note">The kind of work to be done. Can be of more than one type</span>
       <div class="form-checkboxes">
         {% for value, label in form.bound_fields.task_type.field.choices %}
@@ -69,12 +87,7 @@ limitations under the License.
             <br />{{ form.bound_fields.time_to_complete_days.errors.0 }}
           </span>
         {% endif %}
-        {% if form.bound_fields.time_to_complete_hours.errors %}
-          <span class="form-row-error-msg">
-            <br />{{ form.bound_fields.time_to_complete_hours.errors.0 }}
-          </span>
-        {% endif %}
-        </label>
+      </label>
       <div class="form-row-task-completion-time-inner">
         {{ form.bound_fields.time_to_complete_days }} days
         {{ form.bound_fields.time_to_complete_hours }} hours
@@ -83,9 +96,16 @@ limitations under the License.
     </div>
 
     <div class="form-row form-row-task-difficulty {{ form.bound_fields.difficulty.div_class }}">
-      <label for="long-description" class="form-label">Difficulty<em>*</em></label>
+      <label for="long-description" class="form-label">Difficulty<em>*</em>
+        {% if form.bound_fields.difficulty.errors %}
+          <span class="form-row-error-msg">
+            <br />{{ form.bound_fields.difficulty.errors.0 }}
+          </span>
+        {% endif %}
+      </label>
       <div class="form-row-task-difficulty-inner">
         <select name="{{ form.bound_fields.difficulty.name }}">
+        <option value="" selected="selected" disabled="disabled">Difficulty</option>
         {% for value, label in form.bound_fields.difficulty.field.choices %}
           <option value="{{ value }}"
               {% if form.bound_fields.difficulty.field.initial == value %}
