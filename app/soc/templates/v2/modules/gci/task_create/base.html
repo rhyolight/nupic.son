@@ -20,14 +20,25 @@ limitations under the License.
 {% endblock stylesheets %}
 
 {% block page_content %}
+
+{% if posted %}
+  {% if error %}
+    <div class="block block-flash error">
+      Sorry, we could not save your form. Please fix the errors mentioned below.
+    </div>
+  {% else %}
+    <div class="block block-flash success">
+      The form was successfully saved.
+    </div>
+  {% endif %}
+{% endif %}
+
 <div class="block block-form">
   <div class="block-form-title">
     <span class="title">{{ page_name }}</span>
     <span class="req">* fields required</span>
   </div>
   <form action="#" method="post" class="form-create-task clearfix">
-    {{ form.non_field_errors }}
-
     <div class="form-row {{ form.bound_fields.title.div_class }}">
       {{ form.bound_fields.title.render }}
     </div>
