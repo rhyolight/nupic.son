@@ -44,7 +44,13 @@ limitations under the License.
     </div>
 
     <div class="form-row grid_4 alpha {{ form.bound_fields.task_type.div_class }}">
-      <label for="type" class="form-label">Type<em>*</em></label>
+      <label for="type" class="form-label">Type<em>*</em>
+        {% if form.bound_fields.task_type.errors %}
+          <span class="form-row-error-msg">
+            {{ form.bound_fields.task_type.errors.0 }}
+          </span>
+        {% endif %}
+      </label>
       <span class="note">The kind of work to be done. Can be of more than one type</span>
       <div class="form-checkboxes">
         {% for value, label in form.bound_fields.task_type.field.choices %}
@@ -95,7 +101,13 @@ limitations under the License.
     </div>
 
     <div class="form-row form-row-task-difficulty {{ form.bound_fields.difficulty.div_class }}">
-      <label for="long-description" class="form-label">Difficulty<em>*</em></label>
+      <label for="long-description" class="form-label">Difficulty<em>*</em>
+        {% if form.bound_fields.difficulty.errors %}
+          <span class="form-row-error-msg">
+            <br />{{ form.bound_fields.difficulty.errors.0 }}
+          </span>
+        {% endif %}
+      </label>
       <div class="form-row-task-difficulty-inner">
         <select name="{{ form.bound_fields.difficulty.name }}">
         {% for value, label in form.bound_fields.difficulty.field.choices %}
