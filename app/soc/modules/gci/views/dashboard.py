@@ -174,7 +174,9 @@ class DashboardPage(RequestHandler):
     # not completed even a single task successfully he/she need not submit
     # any forms.
     if not self.data.student_info or query.count() < 1:
-      return False, False
+      return False, False, False
+
+    has_completed_task = True
 
     if not self.data.student_info.student_id_form:
       student_id_form = True
@@ -182,7 +184,7 @@ class DashboardPage(RequestHandler):
     if not self.data.student_info.consent_form:
       consent_form = True
 
-    return student_id_form, consent_form
+    return has_completed_task, student_id_form, consent_form
 
   def context(self):
     """Handler for default HTTP GET request.
@@ -193,11 +195,13 @@ class DashboardPage(RequestHandler):
         }
 
     # Check if the student should submit either of the forms
-    student_id_form, consent_form = self.shouldSubmitForms()
+    has_completed_task, student_id_form, consent_form = self.shouldSubmitForms()
     context['student_id_form'] = student_id_form
     context['consent_form'] = consent_form
-    context['student_forms_link'] = self.redirect.program().urlOf(
-        'gci_student_form_upload')
+
+    if has_completed_task:
+      context['student_forms_link'] = self.redirect.program().urlOf(
+          'gci_student_form_upload')
 
     context['dashboards'] = self.populateDashboards()
 
