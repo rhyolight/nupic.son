@@ -27,6 +27,7 @@ from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
 
 from soc.modules.gci.views.all_tasks import TaskList
+from soc.modules.gci.views import common_templates
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
@@ -127,6 +128,7 @@ class LeaderboardPage(RequestHandler):
     return {
         'page_name': "Leaderboard for %s" % self.data.program.name,
         'leaderboard_list': LeaderboardList(self.request, self.data),
+        'timeline': common_templates.Timeline(self.data)
 #        'program_select': ProgramSelect(self.data, 'list_gci_finished_tasks'),
     }
 
