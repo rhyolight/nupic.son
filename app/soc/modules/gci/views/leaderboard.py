@@ -74,6 +74,7 @@ class LeaderboardList(Template):
     if idx == self.LEADERBOARD_LIST_IDX:
       q = GCIStudentRanking.all()
       q.filter('program', self.data.program)
+      q.filter('points >', 0)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, q, lists.keyStarter)
