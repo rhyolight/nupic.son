@@ -150,16 +150,17 @@ class Homepage(RequestHandler):
     self.check.isProgramVisible()
 
   def context(self):
+    current_timeline = self.data.timeline.currentPeriod()
+
     context = {
         'page_name': '%s - Home page' % (self.data.program.name),
         'how_it_works': HowItWorks(self.data),
         'participating_orgs': ParticipatingOrgs(self.data),
         'timeline': common_templates.Timeline(self.data),
+        'current_timeline': current_timeline,
         'connect_with_us': ConnectWithUs(self.data),
         'program': self.data.program,
     }
-
-    current_timeline = self.data.timeline.currentPeriod()
 
     if current_timeline in ['student_signup_period',
         'working_period', 'offseason']:
