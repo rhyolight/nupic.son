@@ -223,6 +223,10 @@ class TaskCreateForm(gci_forms.GCIModelForm):
       raise django_forms.ValidationError(
           ugettext('Time to complete must be specified.'))
 
+    # Disallow "Unknown" difficulty
+    if cleaned_data['difficulty'] == 'Unknown':
+      raise django_forms.ValidationError('Unknown difficulty is not supported')
+
     return cleaned_data
 
   def clean_mentors(self):
