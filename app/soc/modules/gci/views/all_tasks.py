@@ -128,7 +128,7 @@ class AllTasksList(TaskList):
   """Template for list of all tasks which are claimable for the program.
   """
 
-  _LIST_COLUMNS = ['title', 'organization', 'mentors' 'status']
+  _LIST_COLUMNS = ['title', 'organization', 'mentors', 'status']
 
   def __init__(self, request, data):
     super(AllTasksList, self).__init__(request, data, self._LIST_COLUMNS)
