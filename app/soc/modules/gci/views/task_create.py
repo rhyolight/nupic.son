@@ -367,20 +367,14 @@ class TaskCreatePage(RequestHandler):
 
   def context(self):
     if self.data.task:
-      form = TaskCreateForm(self.data, self.data.POST or None,
-                            instance=self.data.task)
       page_name = "Edit task - %s" % (self.data.task.title)
     else:
-      form = TaskCreateForm(self.data, self.data.POST or None)
       page_name = "Create a new task"
 
-    context = {
+    return {
       'page_name':  page_name,
-      'form': form,
-      'error': form.errors,
+      'task_edit_form_template': TaskEditFormTemplate(self.data),
     }
-
-    return context
 
   def createTaskFromForm(self):
     """Creates a new task based on the data inserted in the form.
