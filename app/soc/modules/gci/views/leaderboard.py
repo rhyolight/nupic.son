@@ -75,8 +75,10 @@ class LeaderboardList(Template):
       q = GCIStudentRanking.all()
       q.filter('program', self.data.program)
 
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, lists.keyStarter)
+      skipper = lambda entity, start: entity.points <= 0
+
+      response_builder = lists.RawQueryContentResponseBuilder(self.request,
+          self._list_config, q, lists.keyStarter, skipper=skipper)
 
       return response_builder.build()
     else:
