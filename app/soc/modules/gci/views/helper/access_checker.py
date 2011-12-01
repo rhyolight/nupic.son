@@ -168,7 +168,9 @@ class AccessChecker(access_checker.AccessChecker):
 
     can_edit = False
     try:
-      self.canEditTask()
+      self.checkCanUserEditTask()
+      self.checkHasTaskEditableStatus()
+      self.checkTimelineAllowsTaskEditing()
       can_edit = True
     except AccessViolation, e:
       pass

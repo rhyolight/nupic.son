@@ -281,7 +281,11 @@ class TaskCreatePage(RequestHandler):
     assert access_checker.isSet(self.data.task)
 
     if self.data.task:
-      self.check.canEditTask()
+      self.check.checkCanUserEditTask()
+      self.check.checkTimelineAllowsTaskEditing()
+
+      # Set full_edit status depending on the task status
+      self.mutator.fullEdit(self.check.hasTaskEditableStatus())
     else:
       self.check.canCreateTask()
 
