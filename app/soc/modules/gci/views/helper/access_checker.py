@@ -287,8 +287,9 @@ class AccessChecker(access_checker.AccessChecker):
         or self.data.timeline.tasksClaimEnded()):
       raise AccessViolation(access_checker.DEF_PAGE_INACTIVE)
 
-  def canEditTask(self):
-    """Checks whether the currently logged in user can edit the task.
+  def canUserEditTask(self):
+    """Returns True/False depending on whether the currently logged in user
+    can edit the task.
     """
     assert access_checker.isSet(self.data.task)
     assert access_checker.isSet(self.data.mentor_for)
@@ -297,15 +298,56 @@ class AccessChecker(access_checker.AccessChecker):
 
     valid_org_keys = [o.key() for o in self.data.mentor_for]
     if task.org.key() not in valid_org_keys:
-      raise AccessViolation(DEF_NO_TASK_EDIT_PRIV % (
-          task.org.name))
+      return False
+
+    return True
+
+  def checkCanUserEditTask(self):
+    """Checks whether the currently logged in user can edit the task.
+    """
+    assert access_checker.isSet(self.data.task)
+
+    if not self.canUserEditTask():
+      raise AccessViolation(DEF_NO_TASK_EDIT_PRIV % (self.data.task.org.name))
+
+  def hasTaskEditableStatus(self):
+    """Returns True/False depending on whether the task is in one of the
+    editable states.
+    """
+    assert access_checker.isSet(self.data.task)
+
+    task = self.data.task
 
     if task.status not in (UNPUBLISHED + CLAIMABLE):
+      return False
+
+    return True
+
+  def checkHasTaskEditableStatus(self):
+    """Checks whether the task is in one of the editable states.
+
+    We specifically do not allow editing of tasks which are already claimed.
+    """
+    if not self.hasTaskEditableStatus():
       raise AccessViolation(DEF_TASK_UNEDITABLE_STATUS)
 
+  def timelineAllowsTaskEditing(self):
+    """Returns True/False depending on whether orgs can edit task depending
+    on where in the program timeline we are currently in.
+    """
     if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
         or self.data.timeline.tasksClaimEnded()):
+      return False
+
+    return True
+
+  def checkTimelineAllowsTaskEditing(self):
+    """Checks if organizations can edit tasks at the current time in
+    the program.
+    """
+    if not self.timelineAllowsTaskEditing():
       raise AccessViolation(access_checker.DEF_PAGE_INACTIVE)
+
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   """Developer access checker for GCI specific methods.
