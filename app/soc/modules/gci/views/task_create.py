@@ -80,7 +80,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     # get a list difficulty levels stored for the program entity
     difficulties = task.TaskDifficultyTag.get_by_scope(data.program)
-    
+
     # explicitly remove "Unknown" difficulty which is disabled now
     difficulties = [d for d in difficulties if d.tag != 'Unknown']
 
