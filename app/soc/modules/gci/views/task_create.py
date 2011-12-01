@@ -29,6 +29,7 @@ from soc.logic import cleaning
 from soc.views import forms
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
+from soc.views.template import Template
 
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models import task
@@ -296,6 +297,41 @@ class TaskEditPostClaimForm(TaskCreateForm):
     model = task.GCITask
     css_prefix = 'gci-task'
     fields = ['arbit_tag']
+
+
+class TaskEditFormTemplate(Template):
+  """Task edit form template to use.
+  """
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    if self.data.task:
+      if self.data.full_edit:
+        form_class = TaskCreateForm
+      else:
+        form_class = TaskEditPostClaimForm
+
+      form = form_class(self.data, self.data.POST or None,
+                        instance=self.data.task)
+      title = "Edit task - %s" % (self.data.task.title)
+    else:
+      form = TaskCreateForm(self.data, self.data.POST or None)
+      title = "Create a new task"
+
+    return {
+      'title':  title,
+      'form': form,
+      'full_edit': self.data.full_edit,
+      'error': form.errors,
+    }
+
+  def templatePath(self):
+    if self.data.task and not self.data.full_edit:
+      return "v2/modules/gci/task_create/_post_claim_edit.html"
+    else:
+      return "v2/modules/gci/task_create/_full_edit.html"
 
 
 class TaskCreatePage(RequestHandler):
