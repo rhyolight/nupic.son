@@ -78,6 +78,7 @@ class Mutator(access_checker.Mutator):
     self.data.comments = access_checker.unset
     self.data.work_submissions = access_checker.unset
     self.data.is_visible = access_checker.unset
+    self.data.full_edit = access_checker.unset
     super(Mutator, self).unsetAll()
 
   def profileFromKwargs(self):
@@ -141,6 +142,11 @@ class Mutator(access_checker.Mutator):
 
     if self.data.org_app_record.status != 'accepted':
       raise AccessViolation(DEF_ORG_APP_REJECTED)
+
+  def fullEdit(self, full_edit=False):
+    """Sets full_edit to True/False depending on the status of the task.
+    """
+    self.data.full_edit = full_edit
 
 
 class DeveloperMutator(access_checker.DeveloperMutator,
