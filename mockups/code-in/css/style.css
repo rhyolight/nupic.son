@@ -440,50 +440,6 @@ body {
         color: #fff;
         padding-right: 9px;
     }
-    .block-changelog {
-      background: #e0e0e0;
-      padding: 12px 32px 32px;
-    }
-    .single-changelog {
-      margin: 20px 0 0 0;
-      padding: 10px;
-      clear: left;
-      background: #fff;
-      font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
-    }
-    .single-changelog a {
-      font-weight: bold;
-    }
-    .single-changelog-action {
-      font-weight: bold;
-    }
-    .single-changelog.changelog-self {
-      border: 2px solid #1e80cd;
-      padding: 8px;
-    }
-    .single-changelog-avatar img {
-      float: left;
-      width: 30px;
-      height: 30px;
-    }
-    .single-changelog-heading {
-      margin: 0 0 0 38px;
-      font-size: 18px;
-      line-height: 1.1em;
-    }
-    .single-changelog-date {
-      margin: 0 0 0 38px;
-      font-size: 10px;
-      line-height: 1em;
-    }
-    .single-changelog-comment {
-      clear: left;
-      font-family: Arial, sans-serif;
-      background: #dedede;
-      padding: 20px;
-      margin-top: 8px;
-      font-size: 13px;
-    }
     .block-comments {
         background: #e0e0e0 url(../images/block-comments-bg.gif) 0 0 repeat-x;
         padding: 15px 20px 20px 38px;
@@ -749,6 +705,53 @@ body {
             font-size: 11px;
             line-height: 12px;
         }
+
+/* BEGIN changelog block */
+.block-changelog {
+  background: #e0e0e0;
+  padding: 12px 32px 32px;
+}
+.single-changelog {
+  margin: 20px 0 0 0;
+  padding: 10px;
+  clear: left;
+  background: #fff;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+}
+.single-changelog a {
+  font-weight: bold;
+}
+.single-changelog-action {
+  font-weight: bold;
+}
+.single-changelog.changelog-self {
+  border: 2px solid #1e80cd;
+  padding: 8px;
+}
+.single-changelog-avatar img {
+  float: left;
+  width: 30px;
+  height: 30px;
+}
+.single-changelog-heading {
+  margin: 0 0 0 38px;
+  font-size: 18px;
+  line-height: 1.1em;
+}
+.single-changelog-date {
+  margin: 0 0 0 38px;
+  font-size: 10px;
+  line-height: 1em;
+}
+.single-changelog-comment {
+  clear: left;
+  font-family: Arial, sans-serif;
+  background: #dedede;
+  padding: 20px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+/* END changelog block */
 
 /*Difficulties*/
 .block-featured-task .cog {/*Featured task, homepage block*/
