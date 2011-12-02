@@ -50,6 +50,18 @@ TASK_IN_PROGRESS = ['Claimed', 'ActionNeeded', 'NeedsWork', 'NeedsReview']
 SEND_FOR_REVIEW_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork']
 
 
+class DifficultyLevel(object):
+  """Enumerates all difficulty levels for GCI Tasks.
+  """
+
+  EASY = 'Easy'
+  MEDOIM = 'Medium'
+  HARD = 'Hard'
+
+DIFFICULTIES = [
+    DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD]
+
+
 class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
   """Model for a task used in GCI workflow.
   """
@@ -64,9 +76,11 @@ class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
                                 verbose_name=ugettext('Description'))
   description.help_text = ugettext('Complete description of the task')
 
-  #: Field indicating the difficulty level of the Task. This is not
-  #: mandatory so the it can be assigned at any later stage.
-  #: The options are configured by a Program Admin.
+  #: Field indicating the difficulty level of the Task.
+  difficulty_level = db.StringProperty(required=True, 
+      verbose_name=('Difficulty'), choices=DIFFICULTIES)
+
+  #: To be removed, when conversion is done.
   difficulty = tag_property('difficulty')
 
   #: Required field which contains the type of the task. These types are
