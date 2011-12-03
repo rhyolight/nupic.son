@@ -55,7 +55,7 @@ class DifficultyLevel(object):
   """
 
   EASY = 'Easy'
-  MEDOIM = 'Medium'
+  MEDIUM = 'Medium'
   HARD = 'Hard'
 
 DIFFICULTIES = [
