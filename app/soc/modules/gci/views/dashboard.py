@@ -420,7 +420,7 @@ class DashboardPage(RequestHandler):
         'name': 'list_invites',
         'description': ugettext(
             'List of all invites which have been sent to me.'),
-        'title': 'My incoming invitation',
+        'title': 'Invites to me',
         'link': r.urlOf(url_names.GCI_LIST_INVITES)
         }
 
