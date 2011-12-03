@@ -57,9 +57,18 @@ class DifficultyLevel(object):
   EASY = 'Easy'
   MEDIUM = 'Medium'
   HARD = 'Hard'
+  UNKNOWN = 'Unknown'
 
 DIFFICULTIES = [
-    DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD]
+    DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD,
+    DifficultyLevel.UNKNOWN]
+
+POINTS = {
+    DifficultyLevel.EASY: 1,
+    DifficultyLevel.MEDIUM: 2,
+    DifficultyLevel.HARD: 4,
+    DifficultyLevel.UNKNOWN: 0
+    }
 
 
 class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):

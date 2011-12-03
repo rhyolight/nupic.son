@@ -21,7 +21,6 @@ from soc.views.template import Template
 
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import TaskDifficultyTag
 from soc.modules.gci.models.task import TaskTypeTag
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
@@ -73,9 +72,6 @@ class OpenTasksList(Template):
     
     list_config.addSimpleColumn('title', 'Title')
     #list_config.addColumn(
-    #    'difficulty', 'Difficulty',
-    #    lambda entity, all_d, *args: entity.taskDifficultyName(all_d))
-    #list_config.addColumn(
     #    'task_type', 'Type',
     #    lambda entity, all_d, all_t, *args: entity.taskType(all_t))
     #list_config.addColumn('arbit_tag', 'Tags', lambda entity,
@@ -104,11 +100,10 @@ class OpenTasksList(Template):
     q.filter('status IN', CLAIMABLE)
     starter = lists.keyStarter
 
-    #all_d = TaskDifficultyTag.all().fetch(100)
     #all_t = TaskTypeTag.all().fetch(100)
 
     #def prefetcher(entities):
-    #  args = [all_d, all_t]
+    #  args = [all_t]
     #  return (args, {})
 
     response_builder = lists.RawQueryContentResponseBuilder(

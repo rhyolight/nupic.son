@@ -34,7 +34,6 @@ from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import TaskDifficultyTag
 from soc.modules.gci.models.task import TaskTypeTag
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
@@ -546,9 +545,7 @@ class MyOrgsTaskList(Component):
     list_config.addColumn(
         'org', 'Organization',
         lambda ent, *args: ent.org.name)
-    #list_config.addColumn(
-    #    'difficulty', 'Difficulty',
-    #    lambda entity, _, all_d, *args: entity.taskDifficultyName(all_d))
+
     #list_config.addColumn(
     #    'task_type', 'Type',
     #    lambda entity, _, all_d, all_t, *args: entity.taskType(all_t))
@@ -648,14 +645,13 @@ class MyOrgsTaskList(Component):
     prefetcher = lists.listModelPrefetcher(
         GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
 
-    #all_d = TaskDifficultyTag.all().fetch(100)
     #all_t = TaskTypeTag.all().fetch(100)
 
     #def prefetcher(entities):
     #  #args, kwargs = basic_prefetcher(entities)
     #  args = [{}]
     #  kwargs = {}
-    #  args += [all_d, all_t]
+    #  args += [all_t]
     #  return (args, kwargs)
 
     response_builder = lists.RawQueryContentResponseBuilder(

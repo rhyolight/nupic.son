@@ -15,7 +15,7 @@ limitations under the License.
 
 {% block page_content %}
 
-  <div class="block block-task block-task-{%if is_mentor %}mentor{% else %}student{% endif %} {%if block_task_type %}block-task-{{ block_task_type }}{% endif %} level-{{ task.difficulty.0|lower }}">
+  <div class="block block-task block-task-{%if is_mentor %}mentor{% else %}student{% endif %} {%if block_task_type %}block-task-{{ block_task_type }}{% endif %} level-{{ task.difficulty_level|lower }}">
     {{ task_info.render }}
     {% if work_submissions %}
       {{ work_submissions.render }}

@@ -33,7 +33,7 @@ from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import TaskDifficultyTag
+
 
 class RankingUpdater(object):
   """Appengine tasks for updating the rankings for a GCI program.
@@ -90,9 +90,6 @@ class RankingUpdater(object):
           'program: %s' %key_name)
       return responses.terminateTask()
 
-    # prefetch all task difficulties to speedup processing
-    all_d = TaskDifficultyTag.all().fetch(1000)
-
     # Retrieve the students for the program
     q = GCIProfile.all()
     q.filter('scope', program)
@@ -112,7 +109,7 @@ class RankingUpdater(object):
       tasks = task_q.fetch(1000)
 
       # calculate ranking with all the tasks
-      ranking_logic.calculateRankingForStudent(student, tasks, all_d)
+      ranking_logic.calculateRankingForStudent(student, tasks)
 
     if students:
       # schedule task to do the rest of the students
@@ -167,10 +164,7 @@ class RankingUpdater(object):
     q.filter('status', 'Closed')
     tasks = q.fetch(1000)
 
-    # prefetch all task difficulties to speedup processing
-    all_d = TaskDifficultyTag.all().fetch(1000)
-
-    ranking_logic.calculateRankingForStudent(student, tasks, all_d)
+    ranking_logic.calculateRankingForStudent(student, tasks)
 
     return responses.terminateTask()
 

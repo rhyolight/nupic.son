@@ -43,8 +43,8 @@ from soc.modules.gci.logic.organization import getRemainingTaskQuota
 from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models.bulk_create_data import GCIBulkCreateData
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.task import DIFFICULTIES
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import TaskDifficultyTag
 from soc.modules.gci.models.task import TaskTypeTag
 
 
@@ -153,7 +153,6 @@ class BulkCreateTask(object):
         task_entity = GCITask(**task)
         task_entity.put()
         # trigger tag saving logic, trice :(
-        task_entity.difficulty = task['difficulty']
         task_entity.task_type = task['task_type']
         task_entity.arbit_tag = task['arbit_tag']
         task_quota = task_quota - 1
@@ -238,17 +237,11 @@ class BulkCreateTask(object):
 
     # clean task difficulty
     difficulty = task['difficulty'].strip()
-    allowed_difficulties = [
-        str(x) for x in TaskDifficultyTag.get_by_scope(program_entity)]
-
-    if not difficulty or difficulty not in allowed_difficulties:
+    if not difficulty or difficulty not in DIFFICULTIES:
       # no valid difficulty found
       errors.append('No valid task difficulty found, given %s.' % difficulty)
     else:
-      task['difficulty'] = {
-          'tags': task['difficulty'],
-          'scope': program_entity
-          }
+      task['difficulty_level'] = difficulty
 
     # clean task types
     task_types = []

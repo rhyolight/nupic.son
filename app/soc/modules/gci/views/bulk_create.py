@@ -23,7 +23,7 @@ from django import forms
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.models.bulk_create_data import GCIBulkCreateData
-from soc.modules.gci.models.task import TaskDifficultyTag
+from soc.modules.gci.models.task import DIFFICULTIES
 from soc.modules.gci.models.task import TaskTypeTag
 from soc.modules.gci.tasks import bulk_create
 from soc.modules.gci.views import forms as gci_forms
@@ -73,8 +73,7 @@ class BulkCreate(RequestHandler):
         }
 
     # get a list difficulty levels stored for the program entity
-    tds = TaskDifficultyTag.get_by_scope(self.data.program)
-    context['difficulties'] = ', '.join([str(x) for x in tds])
+    context['difficulties'] = DIFFICULTIES[:-1]
 
     # get a list of task type tags stored for the program entity
     tts = TaskTypeTag.get_by_scope(self.data.program)

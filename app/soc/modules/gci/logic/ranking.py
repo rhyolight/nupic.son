@@ -19,6 +19,7 @@
 
 
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
+from soc.modules.gci.models.task import POINTS
 
 
 def getOrCreateForStudent(student):
@@ -38,13 +39,13 @@ def getOrCreateForStudent(student):
 
   return ranking
 
-def updateRankingWithTask(task, prefetched_difficulties=None):
+def updateRankingWithTask(task):
   """Updates ranking with the specified task.
 
   Args:
     task: GCITask that has been completed and should be taken into account in
           the ranking.
-    prefetched_difficulties: optional, list of prefetched TaskDifficultyTags
+
   """
   # get current ranking for the student if it is not specified
   ranking = getOrCreateForStudent(task.student)
@@ -52,14 +53,13 @@ def updateRankingWithTask(task, prefetched_difficulties=None):
   # check if the task has not been considered
   if task.key() not in ranking.tasks:
     #: update total number of points with number of points for this task
-    task_value = task.taskDifficulty(prefetched_difficulties).value
-    ranking.points = ranking.points + task_value
+    ranking.points = ranking.points + POINTS[task.difficulty_level]
     ranking.tasks.append(task.key())
     ranking.put()
 
   return ranking
 
-def calculateRankingForStudent(student, tasks, prefetched_difficulties=None):
+def calculateRankingForStudent(student, tasks):
   """Calculates ranking for the specified student with the specified
   list of tasks.
 
@@ -69,13 +69,12 @@ def calculateRankingForStudent(student, tasks, prefetched_difficulties=None):
   Args:
     student: GCIProfile entity representing the student
     tasks: List of GCITasks that have been completed by the student
-    prefetched_difficulties: optional, list of prefetched TaskDifficultyTags
   """
   ranking = getOrCreateForStudent(student)
 
   points = 0
   for task in tasks:
-    points += task.taskDifficulty(prefetched_difficulties).value
+    points += POINTS[task.difficulty_level]
 
   ranking.points = points
   ranking.tasks = [task.key() for task in tasks]

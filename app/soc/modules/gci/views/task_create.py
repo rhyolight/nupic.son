@@ -33,6 +33,7 @@ from soc.views.template import Template
 
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models import task
+from soc.modules.gci.models.task import DIFFICULTIES
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.views import forms as gci_forms
@@ -78,18 +79,9 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     self.POST = args[0] if len(args) > 0 and args[0] else None
 
-    # get a list difficulty levels stored for the program entity
-    difficulties = task.TaskDifficultyTag.get_by_scope(data.program)
-
-    # explicitly remove "Unknown" difficulty which is disabled now
-    difficulties = [d for d in difficulties if d.tag != 'Unknown']
-
-    task_difficulties = []
-    for difficulty in difficulties:
-      task_difficulties.append((difficulty.tag, difficulty.tag))
-
-    self.fields['difficulty'] = django_forms.ChoiceField(
-        label=ugettext('Difficulty'), choices=task_difficulties)
+    difficulties = [(d, d) for d in DIFFICULTIES[:-1]]
+    self.fields['difficulty_level'] = django_forms.ChoiceField(
+        label=ugettext('Difficulty'), choices=difficulties)
 
     # get a list of task type tags stored for the program entity
     type_tags = task.TaskTypeTag.get_by_scope(data.program)
@@ -112,10 +104,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     self.assigned_mentors = self._getInitialValuesForList(
         'mentors')
 
-    difficulties = self._getInitialValuesForList('difficulty')
-    if difficulties:
-      self.fields['difficulty'].initial = difficulties[0]
-
     if self.instance:
       ttc = datetime.timedelta(hours=self.instance.time_to_complete)
       self.fields['time_to_complete_days'].initial = ttc.days
@@ -124,6 +112,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
       self.fields['tags'].initial = self.instance.tags_string(
           self.instance.arbit_tag)
 
+      self.fields['difficulty_level'].initial = self.instance.difficulty_level
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
@@ -156,10 +145,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     return []
 
   def _saveTags(self, entity):
-    entity.difficulty = {
-        'tags': self.cleaned_data['difficulty'],
-        'scope': self.request_data.program,
-        }
     entity.task_type = {
         'tags': self.cleaned_data['task_type'],
         'scope': self.request_data.program,
@@ -226,7 +211,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     # Disallow "Unknown" difficulty
     if 'difficulty' in cleaned_data and \
-        cleaned_data['difficulty'] == 'Unknown':
+        cleaned_data['difficulty'] not in DIFFICULTIES[:-1]:
       raise django_forms.ValidationError('Unknown difficulty is not supported')
 
     return cleaned_data
@@ -259,7 +244,8 @@ class TaskCreateForm(gci_forms.GCIModelForm):
   class Meta:
     model = task.GCITask
     css_prefix = 'gci-task'
-    fields = ['title', 'description', 'difficulty' , 'task_type', 'arbit_tag']
+    fields = ['title', 'description', 'difficulty_level', 
+        'task_type', 'arbit_tag']
 
 
 class TaskEditPostClaimForm(TaskCreateForm):

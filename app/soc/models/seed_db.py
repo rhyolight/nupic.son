@@ -50,8 +50,8 @@ from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.student import GCIStudent
 from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gci.models.profile import GCIStudentInfo
+from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import TaskDifficultyTag
 from soc.modules.gci.models.task import TaskTypeTag
 
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -328,6 +328,7 @@ def seed(request, *args, **kwargs):
       'modified_on': now,
       'org': melange.key(),
       'description': '<p>AWESOME</p>',
+      'difficulty_level': DifficultyLevel.MEDIUM,
   }
 
   gci_task = GCITask(**task_properties)
@@ -343,9 +344,6 @@ def seed(request, *args, **kwargs):
       'tagged_count': 1,
       'order': 0,
   }
-
-  easy = TaskDifficultyTag(**tag_properties)
-  easy.put()
 
   tag_properties.update({
       'key_name': gci2009.key().name() + 'Code',
@@ -565,7 +563,6 @@ def clear(*args, **kwargs):
       User.all(),
       Site.all(),
       Document.all(),
-      TaskDifficultyTag.all(),
       TaskTypeTag.all(),
       ])
 

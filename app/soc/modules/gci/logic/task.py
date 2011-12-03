@@ -37,7 +37,7 @@ from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
 
-TAG_NAMES = ['arbit_tag', 'difficulty', 'task_type']
+TAG_NAMES = ['arbit_tag', 'task_type']
 TAGS_SERVICE = tags.TagsService(TAG_NAMES)
 
 
