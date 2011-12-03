@@ -77,7 +77,7 @@ class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
   description.help_text = ugettext('Complete description of the task')
 
   #: Field indicating the difficulty level of the Task.
-  difficulty_level = db.StringProperty(required=True, 
+  difficulty_level = db.StringProperty(required=False, 
       verbose_name=('Difficulty'), choices=DIFFICULTIES)
 
   #: To be removed, when conversion is done.
