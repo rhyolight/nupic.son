@@ -124,3 +124,19 @@ def process_task_children_delete(task):
   task_logic.delete(task)
 
   yield operation.counters.Increment("task_with_key_deleted")
+
+
+def process_difficulty(task):
+  """Copy task difficulties stored in TaskDifficultyTask to the task entity.
+  """
+
+  difficulty = task.taskDifficultyName()
+
+  # difficult tasks should be explicitly renamed to 'Hard'
+  if difficulty == 'Difficult':
+    difficulty = 'Hard'
+
+  task.difficulty_level = difficulty
+
+  yield operation.db.Put(task)
+  yield operation.counters.Increment('difficulty_updated')

@@ -146,3 +146,10 @@ mapreduce:
       value: soc.modules.gci.models.task.GCITask
     - name: program_key
 
+- name: UpdateTaskDifficulties
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_gci_task.process_difficulty
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.task.GCITask
