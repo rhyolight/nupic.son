@@ -89,6 +89,9 @@ class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
   difficulty_level = db.StringProperty(required=False, 
       verbose_name=('Difficulty'), choices=DIFFICULTIES)
 
+  #: Field indicating the type of the Task
+  type = db.StringProperty(required=False, verbose_name=ugettext('Type'))
+
   #: To be removed, when conversion is done.
   difficulty = tag_property('difficulty')
 
