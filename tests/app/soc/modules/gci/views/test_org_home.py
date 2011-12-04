@@ -49,6 +49,16 @@ class OrgHomeTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'v2/soc/list/list.html')
     
 
+  def testAboutUs(self):
+    """Tests if all the required data of an org is displayed.
+    """
+    response = self.get(self.url)
+    context = response.context
+    self.assertEqual(context['description'], self.org.description)
+    self.assertEqual(context['logo_url'], self.org.logo_url)
+    self.assertEqual(context['homepage'], self.org.home_page)
+    self.assertEqual(context['short_name'], self.org.short_name)
+
   def testOpenTasksList(self):
     """Tests if the list of open tasks is rendered.
     """
@@ -58,7 +68,19 @@ class OrgHomeTest(GCIDjangoTestCase):
     response = self.get(self.url)
     self.assertResponseOK(response)
     self.assertTemplatesUsed(response)
-    #list = self.getListResponse(self.url, idx=0)
-    #print list
-    list_data = self.getListData(self.url, 0)
+    idx = 0
+    list_data = self.getListData(self.url, idx)
+    self.assertEqual(len(list_data), 2)
+
+  def testClosedTasksList(self):
+    """Tests if the list of open tasks is rendered.
+    """
+    task_prop = {'status': 'Closed', 'program': self.gci, 'org': self.org}
+    seeder_logic.seed(GCITask, task_prop)
+    seeder_logic.seed(GCITask, task_prop)
+    response = self.get(self.url)
+    self.assertResponseOK(response)
+    self.assertTemplatesUsed(response)
+    idx = 1
+    list_data = self.getListData(self.url, idx)
     self.assertEqual(len(list_data), 2)
