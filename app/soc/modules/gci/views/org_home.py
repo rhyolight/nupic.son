@@ -113,6 +113,47 @@ class OpenTasksList(Template):
   def templatePath(self):
     return 'v2/modules/gci/org_home/_open_tasks.html'
 
+class CompletedTasksList(Template):
+  """List to display all the closed/completed tasks for the current organization.
+  """
+  def __init__(self, request, data):
+    self.request = request
+    self.data = data
+    
+    list_config = lists.ListConfiguration()
+    
+    list_config.addSimpleColumn('title', 'Title')
+    list_config.addColumn('student', 'Student',
+                          lambda entity, *args: entity.student.name())
+    
+    list_config.setRowAction(
+        lambda e, *args: data.redirect.id(e.key().id()).urlOf(url_names.GCI_VIEW_TASK))
+
+    self.list_config = list_config
+  
+  def context(self):
+    description = 'List of all Completed tasks.'
+    list = lists.ListConfigurationResponse(
+        self.data, self.list_config, 1, description)
+    return {
+        'lists': [list],
+    }
+  
+  def getListData(self):
+    if lists.getListIndex(self.request) != 1:
+      return None
+    q = GCITask.all()
+    q.filter('org', self.data.organization)
+    q.filter('status', 'Closed')
+    starter = lists.keyStarter
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self.list_config, q, starter)
+    return response_builder.build()
+  
+  def templatePath(self):
+    return 'v2/modules/gci/org_home/_closed_tasks.html'
+
 
 class OrgHomepage(RequestHandler):
   """Encapsulates all the methods required to render the org homepage.
@@ -130,7 +171,12 @@ class OrgHomepage(RequestHandler):
     pass
   
   def jsonContext(self):
-    list_content = OpenTasksList(self.request, self.data).getListData()
+    idx = lists.getListIndex(self.request)
+    list_content = None
+    if idx == 0:
+      list_content = OpenTasksList(self.request, self.data).getListData()
+    elif idx == 1:
+      list_content = CompletedTasksList(self.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -143,6 +189,7 @@ class OrgHomepage(RequestHandler):
         'about_us': AboutUs(self.data),
         'contact_us': ContactUs(self.data),
         'open_tasks_list': OpenTasksList(self.request, self.data),
+        'completed_tasks_list': CompletedTasksList(self.request, self.data),
         'feed_url': self.data.organization.feed_url,
     }
     
