@@ -87,7 +87,7 @@ class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
 
   #: Field indicating the difficulty level of the Task.
   difficulty_level = db.StringProperty(required=False, 
-      verbose_name=('Difficulty'), choices=DIFFICULTIES)
+      verbose_name=ugettext('Difficulty'), choices=DIFFICULTIES)
 
   #: Field indicating the type of the Task
   type = db.StringProperty(required=False, verbose_name=ugettext('Type'))
