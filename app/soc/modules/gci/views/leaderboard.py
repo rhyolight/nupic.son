@@ -76,9 +76,10 @@ class LeaderboardList(Template):
       q.filter('program', self.data.program)
 
       skipper = lambda entity, start: entity.points <= 0
+      prefetcher = lists.modelPrefetcher(GCIScore, [], True)
 
       response_builder = lists.RawQueryContentResponseBuilder(self.request,
-          self._list_config, q, lists.keyStarter, skipper=skipper)
+          self._list_config, q, lists.keyStarter, skipper=skipper, prefetcher=prefetcher)
 
       return response_builder.build()
     else:
