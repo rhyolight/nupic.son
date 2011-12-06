@@ -45,6 +45,16 @@ def getOrCreateForStudent(student):
   return ranking
 
 
+def get(profile):
+  """Gets the score entity associated with the specified profile.
+
+  Args:
+    profile: GCIProfile entity to retrieve a score for
+  """
+  query = GCIScore.all().ancestor(profile)
+  return query.get()
+
+
 def updateScore(task):
   """Updates score for a student who worked on the specified task.
 

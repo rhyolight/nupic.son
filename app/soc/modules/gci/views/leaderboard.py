@@ -110,16 +110,15 @@ class YourScore(Template):
 
   def __init__(self, data):
     self.data = data
-    self.student_ranking = None
+    self.score = None
 
     if self.data.profile and self.data.profile.student_info:
-      self.student_ranking = ranking_logic.getOrCreateForStudent(
-          self.data.profile)
+      self.score = ranking_logic.get(self.data.profile)
 
   def context(self):
-    return {} if not self.student_ranking else {
-        'points': self.student_ranking.points,
-        'tasks': len(self.student_ranking.tasks),
+    return {} if not self.score else {
+        'points': self.score.points,
+        'tasks': len(self.score.tasks),
         'my_tasks_link': self.data.redirect.profile(
             self.data.profile.link_id).urlOf(url_names.GCI_STUDENT_TASKS)
         }
@@ -128,7 +127,7 @@ class YourScore(Template):
     """This template should only render to a non-empty string, if the
     current user is a student.
     """
-    if not self.student_ranking:
+    if not self.score:
       return ''
 
     return super(YourScore, self).render()
