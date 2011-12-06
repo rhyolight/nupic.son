@@ -135,6 +135,10 @@ def calculateScore(student, tasks, program):
     program: GCIProgram entity that all the tasks refer to
   """
 
+  # do not calculate score for students who have not completed any tasks
+  if not tasks:
+    return None
+
   points = 0
   for task in tasks:
     points += POINTS[task.difficulty_level]
