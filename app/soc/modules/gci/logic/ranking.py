@@ -56,6 +56,7 @@ def updateScore(task):
     logging.warning('Trying to update score for a task that is not closed.')
 
   student = task.student
+  program = task.program
   task_key = task.key()
 
   def update_ranking_txn():
@@ -64,7 +65,7 @@ def updateScore(task):
 
     # create a new GCIStore entity if one does not exist yet
     if not score:
-      score = GCIScore(parent=student)
+      score = GCIScore(parent=student, program=program)
 
     # check if the task has been included in the score
     if task_key not in score.tasks:
@@ -121,7 +122,7 @@ def calculateRankingForStudent(student, tasks):
   return ranking
 
 
-def calculateScore(student, tasks):
+def calculateScore(student, tasks, program):
   """Calculates score for the specified student with the specified
   list of tasks.
 
@@ -131,6 +132,7 @@ def calculateScore(student, tasks):
   Args:
     student: GCIProfile entity representing the student
     tasks: List of GCITasks that have been completed by the student
+    program: GCIProgram entity that all the tasks refer to
   """
 
   points = 0
@@ -143,7 +145,7 @@ def calculateScore(student, tasks):
 
     # create a new GCIStore entity if one does not exist yet
     if not score:
-      score = GCIScore(parent=student)
+      score = GCIScore(parent=student, program=program)
 
     score.points = points
     score.tasks = [task.key() for task in tasks]

@@ -109,7 +109,8 @@ class RankingUpdater(object):
       tasks = task_q.fetch(1000)
 
       # calculate ranking with all the tasks
-      ranking_logic.calculateRankingForStudent(student, tasks)
+     # ranking_logic.calculateRankingForStudent(student, tasks)
+      ranking_logic.calculateScore(student, tasks, program)
 
     if students:
       # schedule task to do the rest of the students
