@@ -26,7 +26,6 @@ from soc.modules.gci.logic import ranking as ranking_logic
 from soc.modules.gci.logic import task as task_logic
 
 from soc.modules.gci.models.score import GCIScore
-from soc.modules.gci.models.student_ranking import GCIStudentRanking
 
 from soc.modules.gci.views.all_tasks import TaskList
 from soc.modules.gci.views import common_templates
