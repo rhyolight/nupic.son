@@ -18,6 +18,11 @@
 """
 
 
+import logging
+
+from google.appengine.ext import db
+
+from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
 from soc.modules.gci.models.task import POINTS
 
@@ -39,14 +44,46 @@ def getOrCreateForStudent(student):
 
   return ranking
 
+
+def updateScore(task):
+  """Updates score for a student who worked on the specified task.
+
+  Args:
+    task: GCITask that has been completed and should be taken into account in
+          the score.
+  """
+  if task.status != 'Closed':
+    logging.warning('Trying to update score for a task that is not closed.')
+
+  student = task.student
+  task_key = task.key()
+
+  def update_ranking_txn():
+    query = GCIScore.all().ancestor(student)
+    score = query.get()
+
+    # create a new GCIStore entity if one does not exist yet
+    if not score:
+      score = GCIScore(parent=student)
+
+    # check if the task has been included in the score
+    if task_key not in score.tasks:
+      score.points += POINTS[task.difficulty_level]
+
+    # TODO(dhans): optimize it; sometimes, put may not be needed
+    score.put()
+
+  db.run_in_transaction(update_ranking_txn)
+
+
 def updateRankingWithTask(task):
   """Updates ranking with the specified task.
 
   Args:
     task: GCITask that has been completed and should be taken into account in
           the ranking.
-
   """
+
   # get current ranking for the student if it is not specified
   ranking = getOrCreateForStudent(task.student)
 
@@ -58,6 +95,7 @@ def updateRankingWithTask(task):
     ranking.put()
 
   return ranking
+
 
 def calculateRankingForStudent(student, tasks):
   """Calculates ranking for the specified student with the specified
