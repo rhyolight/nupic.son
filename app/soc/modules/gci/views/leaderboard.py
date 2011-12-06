@@ -25,6 +25,7 @@ from soc.views.template import Template
 from soc.modules.gci.logic import ranking as ranking_logic
 from soc.modules.gci.logic import task as task_logic
 
+from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
 
 from soc.modules.gci.views.all_tasks import TaskList
@@ -47,13 +48,13 @@ class LeaderboardList(Template):
 
     list_config = lists.ListConfiguration()
     list_config.addColumn('student', 'Student',
-        lambda e, *args: e.student.name())
+        lambda e, *args: e.parent().name())
     list_config.addSimpleColumn('points', 'Points')
     list_config.addColumn('tasks', 'Tasks', lambda e, *args: len(e.tasks))
     list_config.setDefaultSort('points', 'desc')
 
     list_config.setRowAction(
-        lambda e, *args: r.profile(e.student.link_id).urlOf(
+        lambda e, *args: r.profile(e.parent().link_id).urlOf(
             url_names.GCI_STUDENT_TASKS))
 
     self._list_config = list_config
@@ -72,7 +73,7 @@ class LeaderboardList(Template):
   def getListData(self):
     idx = lists.getListIndex(self.request)
     if idx == self.LEADERBOARD_LIST_IDX:
-      q = GCIStudentRanking.all()
+      q = GCIScore.all()
       q.filter('program', self.data.program)
 
       skipper = lambda entity, start: entity.points <= 0
