@@ -871,6 +871,7 @@ def main(args):
   from soc.modules.gsoc.tasks.accept_proposals import ProposalAcceptanceTask
 
   from soc.modules.gci.models.task import GCITask
+  from soc.modules.gci.models.comment import GCIComment
   from soc.modules.gci.models.student import GCIStudent
   from soc.modules.gci.models.organization import GCIOrganization
   from soc.modules.gci.models.profile import GCIProfile
@@ -952,6 +953,7 @@ def main(args):
       'Request': Request,
       'SRequest': StudentKeyRequest,
       'GCIStudent': GCIStudent,
+      'GCIComment': GCIComment,
       'GCIOrganization': GCIOrganization,
       'GSoCStudentInfo': GSoCStudentInfo,
       'GSoCProposal': GSoCProposal,
