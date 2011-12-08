@@ -112,6 +112,7 @@
     <script type="text/javascript" src="../js/selectivizr-min.js"></script>
     <![endif]-->
     
+    <link type="text/css" rel="alternate stylesheet" title="low vision" href="../css/style-lowvision.css" />
 </head>
 <body>
 
