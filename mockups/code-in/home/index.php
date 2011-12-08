@@ -124,8 +124,64 @@
             <div class="block block-timeline">
                 <div class="block-title">Code-In Timeline</div>
                 <div class="block-content clearfix">
+                  <script type="text/javascript">
+                    jQuery('document').ready(function(){
+                      $('.stopwatch-front').hide();
+                      $('.stopwatch-front-mask').svg();
+                      setInterval(rotateProgress, 200);
+                    });
+                    
+                    angle = 0;
+                    function rotateProgress() {
+                      angle += 2;
+                      if (angle > 360) angle = angle - 360;
+                      var percent = angle / 360;
+                      
+                      var svg = jQuery('.stopwatch-front-mask').svg('get');
+                      svg.clear();
+                      var defs = svg.defs();
+                      var mask = svg.mask(defs, 'mask', 0, 0, 96, 96, {maskUnits: 'userSpaceOnUse'}); 
+                      
+                      var bg = $('.stopwatch-front').css('background-image');
+                      bg = bg.replace(/"/g,"").replace(/url\(|\)$/ig, "");
+                      svg.image(defs, 0, 0, 91, 91, bg, {id: 'bg'});
+                      
+                      var path = svg.createPath(); 
+                      var ratio = 2 * Math.PI * (percent-.25);
+                      svg.path(mask, path
+                        .move(46, 0)
+                        .line(46, 46)
+                        .line(46 + 46 * Math.cos(ratio), 46 + 46 * Math.sin(ratio))
+                        //.line(46 + 46 * Math.cos(ratio), 46 + 46 * Math.sin(ratio))
+                        .arc(46, 46, 60, true, 0, 46, 0)
+                        .line(46, 0)
+                        .close(),  
+                        {fill: '#ffdddd', stroke: 'none', strokeWidth: 1}
+                      );
+                      
+                      svg.use('#bg', {mask:'url(#mask)'});
+                      
+                      var e = jQuery('.stopwatch-dial');
+                      e.css( 'transform', 'rotate(' + angle + 'deg)' );   
+                      e.css( '-moz-transform', 'rotate(' + angle + 'deg)' );   
+                      e.css( '-webkit-transform', 'rotate(' + angle + 'deg)' );
+                      e.css( '-o-transform', 'rotate(' + angle + 'deg)' );
+                    }
+                  </script>
                     <div class="stopwatch percent-33">
+                        <!--
                         <div class="stopwatch-watch"></div>
+                        -->
+                      
+                        <div class="stopwatch-back">
+                        </div>
+                        <div class="stopwatch-front">
+                        </div>
+                        <div class="stopwatch-front-mask">
+                        </div>
+                        <div class="stopwatch-dial">
+                        </div>
+                        
                         <div class="stopwatch-remaining clearfix">
                             <div class="stopwatch-time">
                                 <div class="stopwatch-time-c">
