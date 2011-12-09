@@ -629,6 +629,35 @@ body {
     float: left;
     position: relative;
 }
+
+.stopwatch-back {
+    background-image:url(../images/block-timeline-watch-back.png);
+    height: 91px;
+    width: 91px;
+    position: absolute;
+    left: 22px;
+}
+.stopwatch-front {
+    background-image:url(../images/block-timeline-watch-front.png);
+    height: 91px;
+    width: 91px;
+    position: absolute;
+    left: 22px;
+}
+.stopwatch-front-mask {
+    height: 91px;
+    width: 91px;
+    position: absolute;
+    left: 22px;
+}
+.stopwatch-dial {
+    background-image:url(../images/block-timeline-watch-dial.png);
+    height: 91px;
+    width: 91px;
+    position: absolute;
+    left: 22px;
+}
+
     .stopwatch.percent-25 .stopwatch-watch {
         background-image:url(../images/block-timeline-watch-percent-25.png);
     }
