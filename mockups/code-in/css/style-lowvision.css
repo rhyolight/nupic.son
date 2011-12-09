@@ -166,7 +166,7 @@ figure {
     margin-bottom: 10px;
 }
 
-a, a:visited, .ui-widget-content a { color: #0f649d; text-decoration: none; }
+a, a:visited, .ui-widget-content a { color: black; text-decoration: underline; }
 a:hover {  }
 
 /*Link hover styles*/
@@ -212,7 +212,7 @@ input.btn {
         -webkit-box-shadow: 1px 2px 3px #999;
     color: #fff;
     display: block;
-    float: left;
+    float: none;
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
     font-size: 17px;
     font-weight: bold;
@@ -229,11 +229,11 @@ form input[type="submit"].task-btn,
 a.task-btn,
 input.task-btn {
     background: #fff url(../images/dashboard-task-icons.png) 7px 10px no-repeat;
-    border: none;
+    border: 2px solid black;
     border-radius: 10px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
-    color: #0F649D;
+    color: black;
     display: block;
     float: left;
     font-size: 18px;
@@ -293,8 +293,8 @@ input.delete-btn {
 		box-shadow: none;
 		-moz-box-shadow: none;
 		-webkit-box-shadow: none;
-	border: none;
-	color: #8a0005;
+	border: 2px solid black;
+	color: black;
 	float: right;
 	font-family: "Trebuchet MS","Lucida Sans Unicode","Lucida Grande","Lucida Sans",Arial,sans-serif;
     font-size: 18px;
@@ -329,9 +329,11 @@ body {
 	text-align: right;
     }
 	.header .soc a {
-		background: #e0e0e0;
+		background: white;
+		color: black;
+		border: 2px solid black;
 		display: block;
-		padding: 6px 13px 10px 13px;
+		padding: 16px 23px 20px 23px;
 		-webkit-border-radius: 0 0 10px 10px;
 		-moz-border-radius: 0 0 10px 10px;
 		border-radius: 0 0 10px 10px;
@@ -409,25 +411,30 @@ body {
         left: 0;
     }
     .block .block-title {
-        background: #0082c8;
+        background: white;
         border-top-left-radius: 3px;
         border-top-right-radius: 3px;
         -moz-border-radius-topleft: 3px;
         -moz-border-radius-topright: 3px;
         -webkit-border-top-left-radius: 3px;
         -webkit-border-top-right-radius: 3px;
-        color: #fff;
+        color: black;
         font-family: 'Arial', sans-serif;
         font-size: 18px;
         line-height: 1.5em;
         padding: 15px 0 15px 10px;
         text-transform: uppercase;
+	border: 2px solid black;
+	border-width: 2px 2px 0;
     }
     .block .block-content {
         padding: 5px 15px 15px 25px;
     }
     .block .block-content p {
         margin: 0;
+	color: black;
+	background: white;
+	padding: 10px;
     }
     .block .block-footer {
         background: #0f649d;
@@ -438,16 +445,18 @@ body {
         padding: 14px 0 14px 25px;
     }
     .block .block-footer a {
-        background:url(../images/arrow-white-sm.png) right center no-repeat;
-        color: #fff;
-        padding-right: 9px;
+	color: black;
+	background: white;
+	padding: 10px;
     }
     .block-comments {
         background: #e0e0e0 url(../images/block-comments-bg.gif) 0 0 repeat-x;
         padding: 15px 20px 20px 38px;
     }
         .block-comments .block-comments-title {
-            color: #0082c8;
+            color: black;
+	    background: white;
+	    padding: 10px;
             display: block;
             font-family: 'Arial', sans-serif;
             font-size: 24px;
@@ -466,16 +475,23 @@ body {
                 font-size: 20px;
                 font-weight: bold;
                 line-height: 2em;
+		color: black;
+		background: white;
             }
             .block-comments .single-comment .single-comment-meta {
                 display: block;
                 font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
                 font-size: 18px;
                 line-height: 2em;
+		color: black;
+		background: white;
             }
             .block-comments .single-comment {
                 font-size: 18px;
                 line-height: 1.5em;
+		color: black;
+		background: white;
+		padding: 10px;
 	    }
                 .block-comments .single-comment .single-comment-meta a {
                     font-weight: bold;
@@ -528,6 +544,7 @@ body {
             background: #fff;
             margin: 0;
             padding-left: 10px;
+	    border: 2px solid black;
         }
     .block-task-uploaded-code {
         background: #52b8ef url(../images/block-task-uploaded-code-bg.gif) 0 0 repeat-x;
@@ -540,6 +557,9 @@ body {
             font-size: 24px;
             line-height: 30px;
             text-transform: uppercase;
+	    color: black;
+	    background: white;
+	    padding: 10px;
         }
         .block-task-uploaded-code .block-task-uploaded-code-content {
             padding: 10px 20px 0 0;
@@ -550,9 +570,14 @@ body {
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 10px;
+	    color: black;
+	    background: white;
+	    padding: 10px;
         }
         .block-task-uploaded-code .block-task-uploaded-code-note {
-            color: #000;
+            color: black;
+	    background: white;
+	    padding: 10px;
             display: block;
             font-size: 18px;
             margin-bottom: 10px;
@@ -561,7 +586,7 @@ body {
             width: 100%;
         }
             .block-task-uploaded-code table th {
-                background: #87ceff;
+                background: white;
                 color: #000;
                 font-weight: normal;
                 text-align: left;
@@ -574,12 +599,13 @@ body {
             .block-task-uploaded-code table th, 
             .block-task-uploaded-code table td {
                 padding: 10px 0 10px 7px;
+		border: 1px solid black;
             }
             .block-task-uploaded-code table tr.even td {
                 background: #eee;
             }
             .block-task-uploaded-code table td a {
-                color: #188dd0;
+                color: black;
             }
             .block-task-uploaded-code table td a.task-btn {
                 background-color: #d0e8f9;
@@ -663,9 +689,11 @@ body {
         margin: 10px 0 10px 0;
         text-align: center;
         text-transform: uppercase;
+	background: white;
+	padding: 20px;
     }
         .stopwatch .stopwatch-remaining .stopwatch-time {
-            color: #c53926;
+            color: black;
             float: left;
             width: 100%;
             overflow: hidden;
@@ -710,13 +738,13 @@ body {
             text-transform: uppercase;
         }
         .stopwatch .stopwatch-remaining .remain {
-            color: #0f649d;
+            color: black;
             clear: both;
             font-size: 16px;
             padding-top: 4px;
         }
         .stopwatch .stopwatch-remaining .timestamp {
-            color: #717171;
+            color: black;
             font-size: 18px;
             line-height: 1.5em;
         }
@@ -761,10 +789,11 @@ body {
 .single-changelog-comment {
   clear: left;
   font-family: Arial, sans-serif;
-  background: #dedede;
+  background: white;
   padding: 20px;
   margin-top: 8px;
   font-size: 18px;
+  border: 2px solid black;
 }
 /* END changelog block */
 
@@ -775,8 +804,8 @@ body {
   padding: 13px 20px;
 }
 .block-accepted-organizations-title {
-  color: #C53926;
-  font-family: 'Oswald', sans-serif;
+  color: black;
+  font-family: Arial, sans-serif;
   font-size: 38px;
   line-height: 40px;
   text-transform: uppercase;
@@ -920,8 +949,10 @@ body {
     }
     .user-ranking-item .number,
     .user-ranking-item .count {
-        color: #c53926;
         text-transform: uppercase;
+        color: black;
+	background: white;
+	padding: 10px;
     }
     .user-ranking-item .number {
         font-size: 25px;
@@ -958,8 +989,8 @@ body {
 		text-align: center;
 	}
 	.block-delete-account .block-content input.delete-btn {
-		background: #c32d00;
-		color: #fff;
+		background: #f3cdc0;
+		color: black;
 		display: inline;
 		float: none;
 		font-size: 18px;
@@ -983,7 +1014,10 @@ body {
 		width: 150px;
 	}
 .block-filter-sort {
-	background: #d3d3d3;
+	background: white;
+	color: black;
+	border: 1px solid black;
+	border-width: 0 2px;
 	font-size: 18px;
 	line-height: 1em;
 	padding: 13px 8px 13px 13px;
@@ -991,7 +1025,7 @@ body {
 }
 	.block-filter-sort a.block-filter-sort-link {
 		background:url(../images/arrow-blue-sm.png) right center no-repeat;
-		color: #0f649d;
+		color: black;
 		font-weight: bold;
 		padding-right: 13px;
 	}
@@ -1003,6 +1037,7 @@ body {
     border-radius: 3px;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
+    border: 2px solid black;
 }
     .block-main-nav ul {
         list-style: none;
@@ -1031,19 +1066,19 @@ body {
         -webkit-border-bottom-right-radius: 3px;
     }
     .block-main-nav ul li a {
-        background: #e0e0e0;
-        color: #0075b4;
+        background: white;
+        color: black;
         display: block;
         padding: 8px 13px 6px 13px;
     }
     .block-main-nav ul li a:hover {
-        background: #59bbff;
-        color: #fff;
+        background: black;
+        color: white;
     }
     .block-main-nav ul li.active a, 
     .block-main-nav ul li.menu-login-register a {
-        background: #59bbff;
-        color: #fff;
+        background: black;
+        color: white;
     }
     .block-main-nav ul li ul {/*Second level*/
         margin: 0;
@@ -1072,12 +1107,19 @@ body {
         color: #faafa5;
         text-transform: uppercase;
     }
+    .block-status .block-status-top .block-status-status .emph, 
+    .block-status .block-status-top .block-status-time .emph {
+      color: black;
+    }
     .block-status .block-status-top .block-status-status, 
     .block-status .block-status-top .block-status-time {
         display: block;
         font-weight: bold;
         line-height: 1.5em;
         margin-left: 68px;
+      color: black;
+      background: white;
+      padding: 10px;
     }
     .block-status .block-status-top .block-status-status {
         text-transform: uppercase;
@@ -1089,6 +1131,9 @@ body {
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         font-weight: bold;
         line-height: 20px;
+      color: black;
+      background: white;
+      padding: 10px;
     }
         .block-status .block-status-task .block-status-task-link, 
         .block-status .block-status-task .block-status-task-project {
@@ -1107,9 +1152,9 @@ body {
         .block-status .block-status-action a {
             background: #0f649d;
             border-bottom: 1px solid #0b4973;
-            color: #fff;
+            color: black;
             display: block;
-            float: left;
+	    float: none;
             padding: 3px 0;
             text-align: center;
         }
@@ -1120,6 +1165,10 @@ body {
         .block-status .block-status-action a span {
             background:url(../images/arrow-white-sm.png) right center no-repeat;
             padding-right: 10px;
+      color: black;
+      background: white;
+      padding: 10px;
+      display: block;
         }
         .block-status .block-status-action a:first-child {
             border-right: 1px solid #0b4973;
@@ -1148,14 +1197,14 @@ body {
             border-right: none;
         }
     .block-status .block-status-user {
-        background: #e2e2e2;
+        background: white;
         border-bottom: 1px solid #a5a5a5;
-        color: #000;
+        color: black;
         line-height: 1.5em;
         padding: 7px 7px 7px 13px;
     }
         .block-status .block-status-user a {
-            color: #0a5d94;
+            color: black;
         }
 .block-status-sm {/*Same as current task block, condensed content*/
     background: #E2E2E2;
@@ -1180,7 +1229,7 @@ body {
     padding: 8px 18px 18px 18px;
 }
     .block-how-it-works .block-how-it-works-title {
-        color: #c53926;
+        color: black;
         font-family: 'Arial', sans-serif;
         font-size: 38px;
         text-transform: uppercase;
@@ -1205,7 +1254,9 @@ body {
         .block-how-it-works-step1 span, 
         .block-how-it-works-step2 span, 
         .block-how-it-works-step3 span {
-            color: #fff;
+            color: black;
+	    background: white;
+	    padding: 10px;
             font-size: 22px;
             line-height: 1.5em;
             width: 130px;
@@ -1300,6 +1351,9 @@ body {
             .block-how-it-works-repeat .block-how-it-works-repeat-caption span {
                 font-size: 22px;
                 line-height: 42px;
+		padding: 10px;
+		color: black;
+		background: white;
             }
             .block-how-it-works-repeat .block-how-it-works-repeat-caption span em {
                 font-size: 23px;
@@ -1368,6 +1422,8 @@ body {
         .block-how-it-works .block-how-it-works-more .block-how-it-works-more-caption span {
             display: block;
             padding: 4px 8px;
+	    color: black;
+	    background: white;
         }
     .block-how-it-works .block-how-it-works-start {
         background:url(../images/block-how-it-works-start.png) top right no-repeat;
@@ -1376,7 +1432,7 @@ body {
         width: 320px;
     }
         .block-how-it-works .block-how-it-works-start span {
-            color: #c53926;
+            color: black;
             display: block;
             font-family: 'Arial', sans-serif;
             font-size: 27px;
@@ -1416,6 +1472,8 @@ body {
         font-size: 20px;
         font-weight: bold;
         line-height: 1.5em;
+	background: white;
+	padding: 10px;
     }
     .block-featured-task .block-featured-task-org {
         display: block;
@@ -1423,6 +1481,9 @@ body {
         font-size: 18px;
         font-weight: bold;
         margin-bottom: 10px;
+	color: black;
+	background: white;
+	padding: 10px;
     }
     .block-featured-task .block-featured-task-org em {
         font-style: normal;
@@ -1446,18 +1507,25 @@ body {
     }
 .block-news {/*News*/
 }
+    .block-news .block-news-item,
     .block-news .blog-item {
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         font-weight: bold;
-        padding-bottom: 7px;
+        margin-bottom: 7px;
+      color: black;
+      background: white;
+      padding: 10px;
     }
+    .block-news .block-news-item:last-child,
     .block-news .blog-item:last-child {
-        padding-bottom: 0;
+        padding-bottom: 10px;
     }
+    .block-news .block-news-item .date,
     .block-news .blog-item .date {
-        color: #666;
         display: block;
+	color: black;
     }
+    .block-news .block-news-item a,
     .block-news .blog-item a {
         font-size: 16px;
         line-height: 18px;
@@ -1491,6 +1559,11 @@ body {
         padding-right: 0;
         text-align: center;
         text-transform: uppercase;
+	color: black;
+	background: white;
+	padding: 10px;
+	border: 1px solid black;
+	border-width: 0 2px 2px;
     }
 .block-connect {/*Connect with us*/
     
@@ -1506,13 +1579,14 @@ body {
 
 /* @group Dashboard blocks */
 .block-user-message {/*User messages*/
-    background: #ffeb8e;
+    background: white;
+    color: black;
     border: 1px solid #ff9c00;
     padding: 10px 15px;
     text-align: center;
 }
     .block-user-message a {
-        color: #d14936;
+        color: black;
     }
     .block-user-message a.more {
         background:url(../images/arrow-red-sm.png) right center no-repeat;
@@ -1534,7 +1608,9 @@ body {
     }
     .block-user-welcome .subhead, 
     .user-ranking-item .cap {
-        color: #0f649d;
+        color: black;
+	background: white;
+	padding: 10px;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         font-size: 18px;
         font-weight: bold;
@@ -1543,7 +1619,9 @@ body {
     }
     .block-user-welcome .name {
         clear: left;
-        color: #c53926;
+        color: black;
+	background: white;
+	padding: 10px;
         font-family: 'Arial', sans-serif;
         font-size: 38px;
         line-height: 38px;
@@ -1593,16 +1671,19 @@ body {
 		font-size: 20px;
 		font-weight: normal;
 		text-transform: uppercase;
+		padding: 10px;
 	}
 		.block-user-tabs.ui-tabs .ui-tabs-nav li a {
-			color: #6d6e71;
+			color: black;
+			background: white;
 			padding: 7px 15px 0px 15px;
 		}
 	.block-user-tabs.ui-tabs .ui-tabs-nav li.ui-state-active {
 		background: #0082c8;
 	}
 		.block-user-tabs.ui-tabs .ui-tabs-nav li.ui-state-active a {
-			color: #fff;
+			color: black;
+			background: white;
 		}
     .block-user-tabs.ui-tabs .ui-tabs-panel {
 	border: none;
@@ -1615,8 +1696,10 @@ body {
         
     }
     .block-user-tabs .task-group-title {
-        background: #59bbff;
-        color: #fff;
+        background: white;
+        color: black;
+	border: 1px solid black;
+	border-width: 0 2px;
         display: block;
         font-size: 18px;
         font-weight: bold;
@@ -1637,11 +1720,17 @@ body {
             font-size: 18px;
             line-height: 18px;
             margin: 6px 0 2px 0;
-            width: 440px;
+            width: 420px;
+	    color: black;
+	    background: white;
+	    padding: 10px;
         }
             .task-single.task-single-admin .task-single-title,
             .task-single.task-single-admin .task-single-content-bottom {
-                width: 380px;
+                width: 360px;
+		color: black;
+		background: white;
+		padding: 10px;
             }
             .task-single.task-single-admin .task-single-content-bottom {
                 float: left;
@@ -1683,10 +1772,14 @@ body {
                 padding-right: 10px;
                 text-align: left;
                 width: auto;
+		border: 2px solid black;
             }
         .task-single .task-single-info {
             display: block;
             text-transform: uppercase;
+	    color: black;
+	    background: white;
+	    padding: 10px;
         }
             .block-user-tabs .task-single-student {
                 
@@ -1694,14 +1787,15 @@ body {
             .block-user-tabs .task-single-difficulty {
                 
             }
+                .task-single.level-difficult .task-single-difficulty .emph,
                 .task-single.level-hard .task-single-difficulty .emph {
-                    color: #ed174f;
+                    color: black;
                 }
                 .task-single.level-medium .task-single-difficulty .emph {
-                    color: #ae9300;
+                    color: black;
                 }
                 .task-single.level-easy .task-single-difficulty .emph {
-                    color: #218c1b;
+                    color: black;
                 }
             .block-user-tabs .task-single-deadline {
                 
@@ -1710,7 +1804,7 @@ body {
                 
             }
                 .task-single-in-progress .task-single-status .emph {
-                    color: #0082c8;
+                    color: black;
                 }
                 .task-single-in-progress .task-single-complete .emph {
                     color: #000;
@@ -1748,14 +1842,17 @@ body {
     
 }
     .block-task .block-title {
-        color: #fff;
+        color: black;
     }
         .block-task .block-title .block-task-title {
             display: block;
             float: left;
             padding-top: 20px;
             padding-bottom: 15px;
-            width: 350px;
+            width: 330px;
+	    color: black;
+	    background: white;
+	    padding-left: 20px;
         }
             .block-task .block-title .block-task-title .title {
                 font-family: 'Arial', sans-serif;
@@ -1780,7 +1877,8 @@ body {
         }
             .block-task .block-title .block-task-action .block-task-action-title {
                 display: block;
-                color: #d14936;
+                color: black;
+		background: white;
                 font-size: 18px;
                 font-weight: bold;
                 line-height: 1.5em;
@@ -1791,6 +1889,7 @@ body {
                 float: left;
                 margin-bottom: 2px;
                 margin-left: 37px;
+		border: 2px solid black;
             }
             .block-task .block-title .block-task-action .task-btn-edit {
                 clear: left;
@@ -2010,6 +2109,19 @@ body {
         padding-left: 105px;
         padding-right: 10px;
     }
+    .block-task-difficulty .difficulty,
+    .block-task-difficulty .status,
+    .block-task-difficulty .remaining,
+    .block-task-difficulty .mentor {
+      display: block;
+	background: white;
+	color: black;
+	padding: 5px 20px;
+    }
+    #wrap .block-task-difficulty .emph {
+      color: black;
+      padding-left: 20px;
+    }
 .block-completed-tasks {/*Student completed task*/
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
@@ -2042,9 +2154,10 @@ body {
     
 }
     .block-task-claimed .block-title .block-task-action .block-task-action-title {
-        color: #666;
+        color: black;
         font-size: 18px;
         margin-top: 10px;
+	padding: 10px;
     }
 .block-task-open {/*Student open task*/
     
@@ -2065,7 +2178,8 @@ body {
     
 }
     .block-task-owned .block-title .block-task-action .block-task-action-title {
-        color: #d14936;
+        color: black;
+	padding: 10px;
         font-size: 22px;
         line-height: 22px;
         margin: 7px 20px 10px 20px;
@@ -2126,7 +2240,9 @@ body {
 		padding: 25px 35px 10px 39px;
 	}
 		.block-leaderboard-top .block-leaderboard-top-content p {
-
+		  color: black;
+		  background: white;
+		  padding: 10px;
 		}
 .block-leaderboard-scores {/*Generic leaderboard scores*/
 	border-bottom: 1px solid #a6a6a6;
@@ -2145,7 +2261,7 @@ body {
 .block-leaderboard-top-scores {/*Leaderboard top scores*/
 }
 	.block-leaderboard-top-scores .block-title {
-		background: #c94837;
+		background: white;
 	}
 	.block-leaderboard-top-scores .block-content {
 		background: #e3e3e3;
@@ -2206,6 +2322,7 @@ body {
 		font-size: 16px;
 		padding-left: 8px;
 		width: 200px;
+		background: white;
 	}
 		.block-leaderboard-top-scores .leaderboard-top-name a {
 
@@ -2216,9 +2333,11 @@ body {
 	}
 	.block-leaderboard-top-scores .leaderboard-top-points {
 		width: 90px;
+		background: white;
 	}
 	.block-leaderboard-top-scores .leaderboard-top-tasks {
 		width: 70px;
+		background: white;
 	}
 .block-leaderboard-all-scores {/*Leaderboard all scores*/
 
@@ -2233,16 +2352,18 @@ body {
 		background: #fff;
 		display: block;
 		padding: 10px 5px 10px 10px;
+		border: 1px solid black;
+		border-width: 1px 0;
 	}
 	.block-leaderboard-all-scores table tr.even {
-		background: #eee;
+		background: white;
 	}
 	.block-leaderboard-all-scores .leaderboard-all-number,
 	.block-leaderboard-all-scores .leaderboard-all-name {
 		font-weight: bold;
 	}
 	.block-leaderboard-all-scores .leaderboard-all-number {
-		color: #c94837;
+		color: black;
 		width: 24px;
 	}
 	.block-leaderboard-all-scores .leaderboard-all-name {
@@ -2280,14 +2401,16 @@ body {
         margin-bottom: 15px;
     }
         .block-form-title .title {
-            color: #c53926;
+	    color: black;
+	    background: white;
+	    padding: 10px;
             font-family: 'Arial', sans-serif;
             font-size: 38px;
             line-height: 40px;
             text-transform: uppercase;
         }
         .block-form-title .req {
-            color: #d5620e;
+            color: black;
             font-size: 18px;
             font-style: italic;
             font-weight: bold;
@@ -2321,7 +2444,9 @@ form fieldset legend {
 	  left: 2px;
 	}
 .form-row {/*Default form row styles*/
-    color: #666;
+    color: black;
+    background: white;
+    padding: 10px;
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
     font-size: 18px;
     line-height: 1.5em;
@@ -2335,12 +2460,13 @@ form fieldset legend {
         clear: both;
         display: block;
         padding: 4px 0 0 4px;
+	background: white;
     }
         .form-row .add-field-link a {
-            color: #238bd2;
+            color: black;
         }
     .form-row label.form-label {/*Default form label*/
-        color: #0f649d;
+        color: black;
         display: block;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         font-size: 18px;
@@ -2356,7 +2482,7 @@ form fieldset legend {
         vertical-align: top;
     }
     .form-row .note {/*Default form note*/
-        color: #d5620e;
+        color: black;
         display: block;
         font-size: 18px;
         font-style: italic;
@@ -2465,7 +2591,8 @@ form fieldset legend {
     width: 220px;
 }
     .form-row-task-completion-time .form-row-task-completion-time-inner {
-        background: #b6dcf7 url(../images/stopwatch-sm.png) 5px 5px no-repeat;
+        color: black;
+	background: white;
         font-size: 18px;
         padding: 10px 0 10px 50px;
     }
@@ -2547,7 +2674,7 @@ span.current-avatar-text {
   padding-left: 20px;
 }
 .ui-widget-content .task-single a {
-  color: #0F649D;
+  color: black;
 }
 .ui-widget-content .task-single a:hover {
   color: #D14936;
