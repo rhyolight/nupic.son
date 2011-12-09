@@ -2474,7 +2474,7 @@ form fieldset legend {
         padding: 0 0 0 2px;
     }
     .form-row label.form-label em {/*Required asterisk*/
-        color: #d5620e;
+        color: black;
         font-family: Arial, "Helvetica Neue", "Liberation Sans", FreeSans, sans-serif;
         font-size: 12px;
         font-style: italic;
@@ -2556,7 +2556,7 @@ form fieldset legend {
     
 }
     .form-row.error .form-row-error-msg {
-        color: #ff0000;
+        color: black;
         font-family: Arial, "Helvetica Neue", "Liberation Sans", FreeSans, sans-serif;
         font-size: 18px;
         font-weight: bold;
