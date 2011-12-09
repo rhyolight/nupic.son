@@ -199,6 +199,16 @@
                 <div class="block-footer">33% complete</div>
             </div>
             <!-- end .block.block-timeline -->
+            <div class="block block-leaderboard-link">
+                <div class="block-title">Leaderboard</div>
+                <div class="block-content">
+                  <a href="javascript:void(0)">See who is in the lead!</a>
+                </div>
+                <div class="leaderboard-link-image">
+                  <img src="../images/block-leaderboard-link-trophy.png" />
+                </div>
+            </div>
+            <!-- end .block.block-leaderboard-link -->
             <div class="block block-connect">
                 <div class="block-title">Connect With Us</div>
                 <div class="block-content">
