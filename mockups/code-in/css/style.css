@@ -629,35 +629,22 @@ body {
     float: left;
     position: relative;
 }
-.stopwatch-svg {
+.stopwatch-svgcanvas {
+  background-image:url(../images/block-timeline-watch-back.png);
+  height: 91px;
+  width: 91px;
+  position: relative;
   display: none;
-}
-.stopwatch-back {
-    background-image:url(../images/block-timeline-watch-back.png);
-    height: 91px;
-    width: 91px;
-    position: absolute;
-    left: 22px;
+  float: left;
+  margin-left: -7px;
 }
 .stopwatch-front {
-    background-image:url(../images/block-timeline-watch-front.png);
-    height: 91px;
-    width: 91px;
-    position: absolute;
-    left: 22px;
-}
-.stopwatch-front-mask {
-    height: 91px;
-    width: 91px;
-    position: absolute;
-    left: 22px;
+  background-image:url(../images/block-timeline-watch-front.png);
+  display: none;
 }
 .stopwatch-dial {
-    background-image:url(../images/block-timeline-watch-dial.png);
-    height: 91px;
-    width: 91px;
-    position: absolute;
-    left: 22px;
+  background-image:url(../images/block-timeline-watch-dial.png);
+  display: none;
 }
 
     .stopwatch.percent-25 .stopwatch-watch {

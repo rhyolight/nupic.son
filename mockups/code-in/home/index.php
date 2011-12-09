@@ -127,25 +127,30 @@
                   <script type="text/javascript">
                     jQuery('document').ready(function(){
                       if (Modernizr.svg && Modernizr.svgclippaths) {
-                        $('.stopwatch-nosvg').hide();
-                        $('.stopwatch-svg').show();
-                        $('.stopwatch-front').hide();
-                        $('.stopwatch-dial').hide();
-                        $('.stopwatch-front-mask').svg();
+                        
+                        var back_image = $('.stopwatch-svgcanvas').css('background-image');
+                        back_image = back_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
+                        
+                        var front_image = $('.stopwatch-front').css('background-image');
+                        front_image = front_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
+                        
+                        var dial_image = $('.stopwatch-dial').css('background-image');
+                        dial_image = dial_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
+                        
+                        $('.stopwatch-watch').hide();
+                        $('.stopwatch-svgcanvas').css('background-image', 'none');
+                        $('.stopwatch-svgcanvas').show();
+                        $('.stopwatch-svgcanvas').svg();
                         
                         var percent = 33; // change this
                         percent = percent / 100;
                         var angle = percent * 360;
-                        var svg = jQuery('.stopwatch-front-mask').svg('get');
+                        var svg = jQuery('.stopwatch-svgcanvas').svg('get');
                         var defs = svg.defs();
-                        var mask = svg.mask(defs, 'mask', 0, 0, 96, 96, {maskUnits: 'userSpaceOnUse'}); 
+                        var mask = svg.mask(defs, 'mask', 0, 0, 96, 96, {maskUnits: 'userSpaceOnUse'});
                         
-                        var front_image = $('.stopwatch-front').css('background-image');
-                        front_image = front_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
+                        svg.image(defs, 0, 0, 91, 91, back_image, {id: 'back_image'});
                         svg.image(defs, 0, 0, 91, 91, front_image, {id: 'front_image'});
-                        
-                        var dial_image = $('.stopwatch-dial').css('background-image');
-                        dial_image = dial_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
                         svg.image(defs, 0, 0, 91, 91, dial_image, {id: 'dial_image', transform: 'rotate(' + angle + ', 46, 46)'});
                         
                         var path = svg.createPath(); 
@@ -160,20 +165,19 @@
                           {fill: '#ffffff', stroke: 'none', strokeWidth: 1}
                         );
                         
+                        svg.use('#back_image');
                         svg.use('#front_image', {mask:'url(#mask)'});
                         svg.use('#dial_image');
                       }
                     });
                   </script>
                     <div class="stopwatch percent-33">
-                        <div class="stopwatch-watch stopwatch-nosvg"></div>
-                        <div class="stopwatch-back stopwatch-svg">
+                        <div class="stopwatch-watch"></div>
+                        <div class="stopwatch-svgcanvas">
                         </div>
-                        <div class="stopwatch-front stopwatch-svg">
+                        <div class="stopwatch-front">
                         </div>
-                        <div class="stopwatch-front-mask stopwatch-svg">
-                        </div>
-                        <div class="stopwatch-dial stopwatch-svg">
+                        <div class="stopwatch-dial">
                         </div>
                         
                         <div class="stopwatch-remaining clearfix">
