@@ -41,10 +41,10 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 DEF_STATUS_FOR_USER_MSG = ugettext(
-    "You are now %s for this organization.")
+    'You are now %s for this organization.')
 
 DEF_STATUS_FOR_ADMIN_MSG = ugettext(
-    "This user is now %s with your organization.")
+    'This user is now %s with your organization.')
 
 
 class InviteForm(gsoc_forms.GSoCModelForm):
@@ -68,8 +68,8 @@ class InviteForm(gsoc_forms.GSoCModelForm):
     field = self.fields.pop('link_id')
     self.fields.insert(0, 'link_id', field)
     field.help_text = ugettext(
-        "The link_id or email address of the invitee, "
-        " separate multiple values with a comma")
+        'The link_id or email address of the invitee, '
+        ' separate multiple values with a comma')
     
   def clean_link_id(self):
     """Accepts link_id of users which may be invited.
@@ -112,7 +112,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
 
       if not invited_user:
         raise djangoforms.ValidationError(
-            "There is no user with that email address")
+            'There is no user with that email address')
 
     # get the user entity that the invitation is to
     if not invited_user:
@@ -139,13 +139,13 @@ class InviteForm(gsoc_forms.GSoCModelForm):
         key_name, parent=invited_user)
 
     if not profile:
-      msg = ("The specified user has a User account (the link_id is valid), "
-             "but they do not yet have a profile for this %s. "
-             "You cannot invite them until they create a profile.")
+      msg = ('The specified user has a User account (the link_id is valid), '
+             'but they do not yet have a profile for this %s. '
+             'You cannot invite them until they create a profile.')
       raise djangoforms.ValidationError(msg % self.request_data.program.name)
 
     if profile.student_info:
-      raise djangoforms.ValidationError("That user is a student")
+      raise djangoforms.ValidationError('That user is a student')
 
     if self.request_data.kwargs['role'] == 'org_admin':
       role_for = profile.org_admin_for
@@ -342,7 +342,7 @@ class ShowInvite(RequestHandler):
 
     return {
         'request': self.data.invite,
-        'page_name': "Invite",
+        'page_name': 'Invite',
         'org': self.data.organization,
         'actions': self.ACTIONS,
         'status_msg': status_msg,
