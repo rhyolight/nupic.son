@@ -47,6 +47,7 @@ from soc.models.user import User
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.program import GCIProgram
+from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.student import GCIStudent
 from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gci.models.profile import GCIStudentInfo
@@ -493,6 +494,15 @@ def seed(request, *args, **kwargs):
   gci_student.student_info = student_info
   gci_student.put()
 
+  score_properties = {
+      'parent': gci_student,
+      'program': gci2009,
+      'points': 5,
+      'tasks': [gci_task.key()]
+      }
+  score = GCIScore(**score_properties)
+  score.put()
+
   document_properties = {
       'key_name': 'site/site/home',
       'link_id': 'home',
@@ -555,6 +565,7 @@ def clear(*args, **kwargs):
       GCIProfile.all(),
       GSoCProposal.all(),
       GCIProgram.all(),
+      GCIScore.all(),
       GSoCStudentInfo.all(),
       GCIStudentInfo.all(),
       GCITask.all(),
