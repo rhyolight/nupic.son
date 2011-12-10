@@ -40,6 +40,13 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
+DEF_STATUS_FOR_USER_MSG = ugettext(
+    "You are now %s for this organization.")
+
+DEF_STATUS_FOR_ADMIN_MSG = ugettext(
+    "This user is now %s with your organization.")
+
+
 class InviteForm(gsoc_forms.GSoCModelForm):
   """Django form for the invite page.
   """
@@ -324,14 +331,14 @@ class ShowInvite(RequestHandler):
 
     if self.data.invited_profile.key() == self.data.profile.key():
       if org_key in self.data.invited_profile.org_admin_for:
-        status_msg = "You are now an organization administrator for this organization."
+        status_msg =  DEF_STATUS_FOR_USER_MSG % 'an organization administrator'
       elif org_key in self.data.invited_profile.mentor_for:
-        status_msg = "You are now a mentor for this organization."
+        status_msg =  DEF_STATUS_FOR_USER_MSG % 'a mentor'
     else:
       if org_key in self.data.invited_profile.org_admin_for:
-        status_msg = "This user is now an organization administrator with your organization."
+        status_msg = DEF_STATUS_FOR_ADMIN_MSG % 'an organization administrator'
       elif org_key in self.data.invited_profile.mentor_for:
-        status_msg = "This user is now a mentor with your organization."
+        status_msg = DEF_STATUS_FOR_ADMIN_MSG % 'a mentor'
 
     return {
         'request': self.data.invite,
