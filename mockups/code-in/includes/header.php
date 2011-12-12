@@ -97,6 +97,7 @@
     </script>
     
     <script src="../js/jquery.dd.js" type="text/javascript"></script>
+    <script src="../js/style-switcher.js" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" href="../css/dd.css" />
     
     <!-- 
