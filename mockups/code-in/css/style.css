@@ -736,9 +736,10 @@ body {
   line-height: 1.2em;
   font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
   font-weight: bold;
-  padding: 10px 115px 0 15px;
+  padding: 10px 0 0 15px;
   z-index: 200;
   position: relative;
+  margin-right: 115px;
 }
 .leaderboard-link-image {
   position: absolute;

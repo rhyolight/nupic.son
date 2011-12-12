@@ -202,10 +202,10 @@
             <div class="block block-leaderboard-link">
                 <div class="block-title">Leaderboard</div>
                 <div class="block-content">
-                  <a href="javascript:void(0)">See who is in the lead!</a>
+                  <a href="javascript:void(0)">See the Leaders!</a>
                 </div>
                 <div class="leaderboard-link-image">
-                  <img src="../images/block-leaderboard-link-trophy.png" />
+                  <a href="javascript:void(0)"><img src="../images/block-leaderboard-link-trophy.png" /></a>
                 </div>
             </div>
             <!-- end .block.block-leaderboard-link -->
