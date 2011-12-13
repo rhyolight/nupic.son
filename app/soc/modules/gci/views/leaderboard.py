@@ -100,6 +100,17 @@ class AllStudentTasksList(TaskList):
     super(AllStudentTasksList, self).__init__(
         request, data, self._LIST_COLUMNS)
 
+  def context(self):
+    description = 'List of tasks closed by %s' % (
+            self.data.url_profile.name())
+
+    task_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, description)
+
+    return {
+        'lists': [task_list],
+    }
+
   def _getQueryForTasks(self):
     return task_logic.queryAllTasksClosedByStudent(self.data.url_profile)
 
