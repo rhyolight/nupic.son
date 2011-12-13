@@ -193,7 +193,7 @@ form input[type="submit"].task-btn:hover,
 a.btn:hover, 
 input.button:hover,
 input.btn:hover {/*Dark blue background*/
-    background-color: #0F649D;
+    background-color: inherit;
 }
 /* @end */
 
@@ -202,7 +202,7 @@ button::-moz-focus-inner, input[type="button"]::-moz-focus-inner, input[type="su
 a.btn, 
 input.button,
 input.btn {
-    background: #c53926 url(../images/arrow-white-lg.png) 95% 50% no-repeat;
+    background: white url(../images/arrow-white-lg.png) 95% 50% no-repeat;
     border: none;
         border-radius: 3px;
         -moz-border-radius: 3px;
@@ -210,7 +210,8 @@ input.btn {
         box-shadow: 1px 2px 3px #999;
         -moz-box-shadow: 1px 2px 3px #999;
         -webkit-box-shadow: 1px 2px 3px #999;
-    color: #fff;
+    color: black;
+    border: 2px solid black;
     display: block;
     float: none;
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
@@ -1440,14 +1441,14 @@ body {
             text-transform: uppercase;
         }
         .block-how-it-works .block-how-it-works-start a {
-            background: #c53926 url(../images/arrow-white-lg.png) 95% 50% no-repeat;
+            background: white url(../images/arrow-white-lg.png) 95% 50% no-repeat;
                 border-radius: 3px;
                 -moz-border-radius: 3px;
                 -webkit-border-radius: 3px;
                 box-shadow: 1px 1px 5px #999;
                 -moz-box-shadow: 1px 2px 3px #999;
                 -webkit-box-shadow: 1px 1px 5px #999;
-            color: #fff;
+            color: black;
             display: block;
             float: left;
             font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
@@ -1456,6 +1457,7 @@ body {
             line-height: 18px;
             margin-left: 70px;
             padding: 4px 25px 5px 10px;
+	    border: 2px solid black;
         }
 .block-featured-task {/*Featured Task*/
 }
