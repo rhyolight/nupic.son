@@ -17,6 +17,7 @@
 """Module for the GCI participant dashboard.
 """
 
+from google.appengine.ext import db
 
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
@@ -33,6 +34,8 @@ from soc.modules.gci.logic.task import queryAllTasksClosedByStudent
 from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.score import GCIScore
+from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import TaskTypeTag
 from soc.modules.gci.views.base import RequestHandler
@@ -41,6 +44,7 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 BACKLINKS_TO_MAIN = {'to': 'main', 'title': 'Main dashboard'}
+BIRTHDATE_FORMAT = 'd-m-Y'
 DATETIME_FORMAT = 'Y-m-d H:i:s'
 
 
@@ -249,6 +253,7 @@ class DashboardPage(RequestHandler):
     """Get the dashboard components for a host.
     """
     components = []
+    components.append(StudentsInfoList(self.request, self.data))
 
     return components
 
@@ -1073,3 +1078,204 @@ class OrgAdminRequestsList(Component):
 
   def templatePath(self):
     return 'v2/modules/gci/dashboard/list_component.html'
+
+def addAddressColumns(list_config):
+  """Adds address columns to the specified list config.
+
+  Columns added:
+    * res_street
+    * res_street_extra
+    * res_city
+    * res_state
+    * res_country
+    * res_postalcode
+    * phone
+    * ship_name
+    * ship_street
+    * ship_street_extra
+    * ship_city
+    * ship_state
+    * ship_country
+    * ship_postalcode
+    * tshirt_style
+    * tshirt_size
+  """
+  list_config.addColumn('res_street', "res_street",
+      (lambda e, sp, *args: sp[e.parent_key()].res_street), hidden=True)
+  list_config.addColumn('res_street_extra', "res_street_extra", 
+      (lambda e, sp, *args: sp[e.parent_key()].res_street_extra), hidden=True)
+  list_config.addColumn('res_city', "res_city",
+      (lambda e, sp, *args: sp[e.parent_key()].res_city), hidden=True)
+  list_config.addColumn('res_state', "res_state",
+      (lambda e, sp, *args: sp[e.parent_key()].res_state), hidden=True)
+  list_config.addColumn('res_country', "res_country",
+      (lambda e, sp, *args: sp[e.parent_key()].res_country), hidden=True)
+  list_config.addColumn('res_postalcode', "res_postalcode",
+      (lambda e, sp, *args: sp[e.parent_key()].res_postalcode), hidden=True)
+  list_config.addColumn('phone', "phone",
+      (lambda e, sp, *args: sp[e.parent_key()].phone), hidden=True)
+  list_config.addColumn(
+      'ship_name', "ship_name",
+      (lambda e, sp, *args: sp[e.parent_key()].shipping_name()), hidden=True)
+  list_config.addColumn(
+      'ship_street', "ship_street",
+      (lambda e, sp, *args: sp[e.parent_key()].shipping_street()), hidden=True)
+  list_config.addColumn(
+      'ship_street_extra', "ship_street_extra",
+      (lambda e, sp, *args: sp[e.parent_key()].shipping_street_extra()), 
+      hidden=True)
+  list_config.addColumn(
+      'ship_city', "ship_city",
+      (lambda e, sp, *args: sp[e.parent_key()].shipping_city()), hidden=True)
+  list_config.addColumn(
+      'ship_state', "ship_state",
+      (lambda e, sp, *args: sp[e.parent_key()].shipping_state()), hidden=True)
+  list_config.addColumn(
+      'ship_country', "ship_country",
+      (lambda e, sp, *args: sp[e.parent_key()].shipping_country()), hidden=True)
+  list_config.addColumn(
+      'ship_postalcode', "ship_postalcode",
+      (lambda e, sp, *args: sp[e.parent_key()].shipping_postalcode()), 
+      hidden=True)
+  list_config.addColumn(
+      'tshirt_style', "Tshirt Style",
+      (lambda e, sp, *args: sp[e.parent_key()].tshirt_style), hidden=True)
+  list_config.addColumn(
+      'tshirt_size', "Tshirt Size",
+      (lambda e, sp, *args: sp[e.parent_key()].tshirt_size), hidden=True)
+
+
+class StudentsInfoList(Component):
+  """Component for listing all the students in GCI.
+  """
+  
+  def __init__(self, request, data):
+    self.data = data
+    self.request = request
+    self.idx = 11
+    
+    list_config = lists.ListConfiguration()
+    list_config.addColumn(
+        'name', 'Name', lambda e, sp, *args: sp[e.parent_key()].name())
+    list_config.addColumn(
+        'link_id', "Link ID", lambda e, sp, *args: sp[e.parent_key()].link_id)
+    list_config.addColumn(
+        'email', "Email", lambda e, sp, *args: sp[e.parent_key()].email)
+    list_config.addColumn(
+        'given_name', "Given name", 
+        (lambda e, sp, *args: sp[e.parent_key()].given_name), 
+        hidden=True)
+    list_config.addColumn(
+        'surname', "Surname", 
+        (lambda e, sp, *args: sp[e.parent_key()].surname), 
+        hidden=True)
+    list_config.addColumn(
+        'name_on_documents', "Legal name", 
+        (lambda e, sp, *args: sp[e.parent_key()].name_on_documents), 
+        hidden=True)
+    list_config.addColumn(
+        'birth_date', "Birthdate",
+        (lambda e, sp, *args: format(
+            sp[e.parent_key()].birth_date, BIRTHDATE_FORMAT)),
+        hidden=True)
+    
+    addAddressColumns(list_config)
+    
+    list_config.addColumn('school_name', "School ame",
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_name), 
+        hidden=True)
+    list_config.addColumn('school_country', "School Country",
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_country), 
+        hidden=True)
+    list_config.addColumn('school_type', "School Type",
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_type), 
+        hidden=True)
+    list_config.addColumn('major', "Major",
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.major), 
+        hidden=True)
+    list_config.addColumn('degree', "Degree",
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.degree), 
+        hidden=True)
+    list_config.addColumn('grade', "Grade",
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.grade),
+        hidden=True)
+    list_config.addColumn('expected_graduation', "Expected Graduation",
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.expected_graduation), 
+        hidden=True)
+    
+    list_config.addSimpleColumn('points', 'Points')
+    list_config.addColumn(
+        'no_of_tasks_completed', 'no_of_tasks_completed',
+        (lambda e, *args: len(e.tasks)))
+    
+    def formsSubmitted(e, sp, form):
+      """Returns "Yes" if form has been submitted otherwise "No".
+      
+      form takes either 'consent' or 'student_id' as values which stand
+      for parental consent form and student id form respectively.
+      """
+      info = sp[e.parent_key()].student_info
+      if form == 'consent':
+        consent = GCIStudentInfo.consent_form.get_value_for_datastore(info)
+        if consent:
+          return 'Yes'
+      if form == 'student_id':
+        student_id = GCIStudentInfo.student_id_form.get_value_for_datastore(info)
+        if student_id:
+          return 'Yes'
+      return 'No'
+      
+    list_config.addColumn(
+        'consent_form', 'Consent Form Submitted',
+        (lambda e, sp, *args: formsSubmitted(e, sp, 'consent')))
+    list_config.addColumn(
+        'student_id_form', 'Student ID Form Submitted',
+        (lambda e, sp, *args: formsSubmitted(e, sp, 'student_id')))
+    
+    self.list_config = list_config
+    super(StudentsInfoList, self).__init__(request, data)
+
+  def getListData(self):
+    idx = lists.getListIndex(self.request)
+
+    if idx != 11:
+      return None
+
+    q = GCIScore.all()
+
+    q.filter('program', self.data.program)
+
+    starter = lists.keyStarter
+
+    def prefetcher(entities):
+      keys = []
+
+      for entity in entities:
+        key = entity.parent_key()
+        if key:
+          keys.append(key)
+      
+      entities = db.get(keys)
+      sp = dict((i.key(), i) for i in entities if i)
+
+      return ([sp], {})
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self.list_config, q, starter, prefetcher=prefetcher)
+
+    return response_builder.build()
+
+  def templatePath(self):
+    return'v2/modules/gci/dashboard/list_component.html'
+  
+  def context(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self.list_config, idx=11, preload_list=False)
+
+    return {
+        'name': 'students',
+        'title': 'Participating students',
+        'lists': [list],
+        'description': ugettext(
+            'List of participating students'),
+    }
