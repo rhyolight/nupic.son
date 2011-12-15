@@ -81,7 +81,8 @@ class LeaderboardList(Template):
       prefetcher = lists.modelPrefetcher(GCIScore, [], True)
 
       response_builder = lists.RawQueryContentResponseBuilder(self.request,
-          self._list_config, q, lists.keyStarter, skipper=skipper, prefetcher=prefetcher)
+          self._list_config, q, lists.keyStarter,
+          skipper=skipper, prefetcher=prefetcher)
 
       return response_builder.build()
     else:
