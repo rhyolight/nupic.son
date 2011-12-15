@@ -45,7 +45,9 @@ class LeaderboardList(Template):
     self.data = data
     r = data.redirect
 
-    list_config = lists.ListConfiguration()
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s" % (
+        ent.parent().key().id_or_name())), hidden=True)
     list_config.addColumn('student', 'Student',
         lambda e, *args: e.parent().name())
     list_config.addSimpleColumn('points', 'Points')
