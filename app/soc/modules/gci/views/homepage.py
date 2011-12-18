@@ -116,6 +116,23 @@ class ParticipatingOrgs(Template):
     return "v2/modules/gci/homepage/_participating_orgs.html"
 
 
+class Leaderboard(Template):
+  """Leaderboard template.
+  """
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    r = self.data.redirect
+    return {
+        'leaderboard_url': r.program().urlOf(url_names.GCI_LEADERBOARD),
+    }
+
+  def templatePath(self):
+    return "v2/modules/gci/homepage/_leaderboard.html"
+
+
 class ConnectWithUs(Template):
   """Connect with us template.
   """
@@ -164,6 +181,7 @@ class Homepage(RequestHandler):
 
     if current_timeline in ['student_signup_period',
         'working_period', 'offseason']:
+      context['leaderboard'] = Leaderboard(self.data)
       featured_task = task_logic.getFeaturedTask(self.data.program)
 
       if featured_task:
