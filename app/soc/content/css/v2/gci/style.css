@@ -717,6 +717,30 @@ body {
             line-height: 12px;
         }
 
+/* BEGIN block-leaderboard-link block */
+.block-leaderboard-link {
+    min-height: 91px;
+    border-bottom: 1px solid #89A4B7;
+}
+    .block-leaderboard-link .block-content {
+        color: #0F649D;
+        font-size: 15px;
+        line-height: 1.2em;
+        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+        font-weight: bold;
+        padding: 10px 0 0 15px;
+        z-index: 200;
+        position: relative;
+        margin-right: 115px;
+    }
+.leaderboard-link-image {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 100;
+}
+/* END block-leaderboard-link block */
+
 /*Difficulties*/
 .block-featured-task .cog {/*Featured task, homepage block*/
     background-image:url(../../../images/v2/gci/block-cog-featured.png);
