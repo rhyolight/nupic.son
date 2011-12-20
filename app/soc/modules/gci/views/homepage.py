@@ -174,6 +174,7 @@ class Homepage(RequestHandler):
         'how_it_works': HowItWorks(self.data),
         'participating_orgs': ParticipatingOrgs(self.data),
         'timeline': common_templates.Timeline(self.data),
+        'complete_percentage': self.data.timeline.completePercentage(),
         'current_timeline': current_timeline,
         'connect_with_us': ConnectWithUs(self.data),
         'program': self.data.program,
