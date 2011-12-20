@@ -630,13 +630,33 @@ body {
                 top: 15px;
                 right: 245px;
             }
-.stopwatch .stopwatch-watch {/*Stopwatch and countdown*/
+
+/* BEGIN Stopwatch and countdown*/
+.stopwatch .stopwatch-watch {
     background:url(../../../images/v2/gci/block-timeline-watch.png) 0 0 no-repeat;
     height: 85px;
     width: 79px;
     float: left;
     position: relative;
 }
+.stopwatch-svgcanvas {
+  background-image:url(../../../images/v2/gci/block-timeline-watch-back.png);
+  height: 91px;
+  width: 91px;
+  position: relative;
+  display: none;
+  float: left;
+  margin-left: -10px;
+}
+.stopwatch-front {
+  background-image:url(../../../images/v2/gci/block-timeline-watch-front.png);
+  display: none;
+}
+.stopwatch-dial {
+  background-image:url(../../../images/v2/gci/block-timeline-watch-dial.png);
+  display: none;
+}
+
     .stopwatch.percent-25 .stopwatch-watch {
         background-image:url(../../../images/v2/gci/block-timeline-watch-percent-25.png);
     }
@@ -648,9 +668,6 @@ body {
     }
     .stopwatch.percent-75 .stopwatch-watch {
         background-image:url(../../../images/v2/gci/block-timeline-watch-percent-75.png);
-    }
-    .stopwatch.percent-100 .stopwatch-watch {
-        background-image:url(../../../images/v2/gci/block-timeline-watch-quarter4.png);
     }
     .stopwatch .stopwatch-remaining {
         float: right;
@@ -716,6 +733,7 @@ body {
             font-size: 11px;
             line-height: 12px;
         }
+/* END Stopwatch and countdown*/
 
 /* BEGIN block-leaderboard-link block */
 .block-leaderboard-link {
