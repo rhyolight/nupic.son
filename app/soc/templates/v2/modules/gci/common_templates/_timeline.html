@@ -1,24 +1,31 @@
-            <div class="block block-timeline">
-                <div class="block-title">Code-In Timeline</div>
-                <div class="block-content clearfix">
-                  <div class="stopwatch percent-{{ stopwatch_percentage }}">
-                        <div class="stopwatch-watch"></div>
-                        <div class="stopwatch-remaining clearfix">
-                            <div class="stopwatch-time">
-                                <div class="stopwatch-time-c">
-                                    <div class="time time-first">
-                                      <span class="number">{{ remaining_days }}</span><span class="cap">days</span>
-                                    </div>
-                                    <div class="time">
-                                        <span class="number">{{ remaining_hours }}</span><span class="cap">hours</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="remain">Remaining</span>
+<div class="block block-timeline">
+    <div class="block-title">Code-In Timeline</div>
+    <div class="block-content clearfix">
+        <div class="stopwatch percent-{{ stopwatch_percentage }}">
+            <div class="stopwatch-watch"></div>
+            <div class="stopwatch-svgcanvas">
+            </div>
+            <div class="stopwatch-front">
+            </div>
+            <div class="stopwatch-dial">
+            </div>
+
+            <div class="stopwatch-remaining clearfix">
+                <div class="stopwatch-time">
+                    <div class="stopwatch-time-c">
+                        <div class="time time-first">
+                            <span class="number">{{ remaining_days }}</span><span class="cap">days</span>
+                        </div>
+                        <div class="time">
+                            <span class="number">17</span><span class="cap">hours</span>
                         </div>
                     </div>
-                    <!-- end .stopwatch -->
                 </div>
-                <div class="block-footer">{{ complete_percentage }}% complete</div>
+                <span class="remain">Remaining</span>
             </div>
-            <!-- end .block.block-timeline -->
+        </div>
+        <!-- end .stockwatch -->
+    </div>
+    <div class="block-footer">{{ complete_percentage }}% complete</div>
+</div>
+<!-- end .block.block-timeline -->
