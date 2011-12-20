@@ -55,8 +55,8 @@ options(
                  'gae_django.py', 'profiler.py', 'appengine_config.py'],
     app_dirs =  ["soc", "feedparser", "python25src",
                  "jquery.min", "ranklist", "shell", "json.min", "jlinq",
-                 "htmlsanitizer", "LABjs.min", "taggable", "gviz",
-                 "webmaster", "gdata", "atom"],
+                 "modernizr.min", "htmlsanitizer", "LABjs.min", "taggable",
+				 "gviz", "webmaster", "gdata", "atom"],
     css_dirs = ["soc/content/css/v2/gsoc/", "soc/content/css/v2/gci"],
     css_files = {
         "jquery-ui/jquery.ui.merged.css": [
@@ -117,7 +117,8 @@ options(
   closure = Bunch(
     js_filter = None,
     js_dir = None,
-    js_dirs = ["soc/content/js", "jquery", "jlinq", "json", "LABjs"],
+    js_dirs = ["soc/content/js", "jquery", "jlinq",
+               "modernizr", "json", "LABjs"],
     closure_bin = PROJECT_DIR / "thirdparty/closure/compiler.jar",
     no_optimize = ["jquery-spin-1.1.1.js", "jquery-jqgrid.base.js"],
     **options.build
