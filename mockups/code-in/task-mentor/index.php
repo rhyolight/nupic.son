@@ -109,54 +109,184 @@
         	    </div>
         	</div>
         	<!-- end .block-task-uploaded-code -->
-        	<div class="block-comments clearfix">
-        	    <span class="block-comments-title">Comments</span>
-        	    <input type="submit" class="task-btn task-btn-comment-new" value="Post new comment" />
-        	    <div class="block-comments-post-new">
-        	        <span class="block-comments-post-new-title">Post new comment</span>
-        	        <form action="#" method="post" class="form-comment-post-new clearfix">
-        	            <div class="form-row">
-        	                <label for="comment-reply-title" class="form-label">Title</label>
-        	                <input name="comment-reply-title" value="" type="text">
-        	            </div>
-        	            <div class="form-row">
-        	                <label for="comment-reply-body" class="form-label">Body</label>
-        	                <textarea id="comment-reply-body" name="comment-reply-body"></textarea>
-        	            </div>
-        	            <div class="form-row form-row-buttons">
-        	            	<input value="Submit" class="button" type="submit">
-        	            </div>
-        	        </form>
-        	    </div>
-        	    <!--end .block-comments-post-new-->  
-        	    <div class="single-comment">
-        	        <span class="single-comment-title">This is a great task idea.</span>
-        	        <span class="single-comment-meta">by <a href="javascript:void(0)">Eric Schmidt</a> July 28 2011 10:57 GMT</span>
-        	        <p>Praesent porta nunc diam, sed ullamcorper turpis. Praesent dignissim eleifend sapien pellentesque fermentum. Etiam feugiat lacinia lorem, semper varius ligula ornare eget. Nunc at risus ante. Maecenas vehicula lacinia vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; aliquam erat volutpat!</p>
-        	        <input type="submit" class="task-btn task-btn-comment-reply" value="Reply" />
-        	        <div class="single-comment-reply">
-        	            <span class="single-comment-reply-title">Reply</span>
-        	            <form action="#" method="post" class="form-comment-reply clearfix">
-        	                <div class="form-row">
-        	                    <label for="comment-reply-title" class="form-label">Title</label>
-        	                    <input name="comment-reply-title" value="" type="text">
-        	                </div>
-        	                <div class="form-row">
-        	                    <label for="comment-reply-body" class="form-label">Body</label>
-        	                    <textarea id="comment-reply-body" name="comment-reply-body"></textarea>
-        	                </div>
-        	                <div class="form-row form-row-buttons">
-        	                	<input value="Submit" class="button" type="submit">
-        	                </div>
-        	            </form>
-        	        </div>
-        	        <!--end .single-comment-reply-->    
-        	    </div>
-        	    <!-- end .single-comment -->
-        	</div>
-        	<!-- end .block-comments -->
         </div>
         <!-- end .block.block-task.block-task-mentor -->
+        <div class="block block-tabs block-user-tabs block-secondary-tabs">
+          <ul>
+            <li><a href="#comments">Comments</a></li>
+            <li><a href="#changelog">Change Log</a></li>
+          </ul>
+          <div id="comments" class="task-group">
+            <div class="block-comments clearfix">
+                <input type="submit" class="task-btn task-btn-comment-new" value="Post new comment" />
+                <div class="block-comments-post-new">
+                    <span class="block-comments-post-new-title">Post new comment</span>
+                    <form action="#" method="post" class="form-comment-post-new clearfix">
+                        <div class="form-row">
+                            <label for="comment-reply-title" class="form-label">Title</label>
+                            <input name="comment-reply-title" value="" type="text">
+                        </div>
+                        <div class="form-row">
+                            <label for="comment-reply-body" class="form-label">Body</label>
+                            <textarea id="comment-reply-body" name="comment-reply-body"></textarea>
+                        </div>
+                        <div class="form-row form-row-buttons">
+                          <input value="Submit" class="button" type="submit">
+                        </div>
+                    </form>
+                </div>
+                <!--end .block-comments-post-new-->  
+                <div class="single-comment">
+                    <span class="single-comment-title">This is a great task idea.</span>
+                    <span class="single-comment-meta">by <a href="javascript:void(0)">Eric Schmidt</a> July 28 2011 10:57 GMT</span>
+                    <p>Praesent porta nunc diam, sed ullamcorper turpis. Praesent dignissim eleifend sapien pellentesque fermentum. Etiam feugiat lacinia lorem, semper varius ligula ornare eget. Nunc at risus ante. Maecenas vehicula lacinia vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; aliquam erat volutpat!</p>
+                    <input type="submit" class="task-btn task-btn-comment-reply" value="Reply" />
+                    <div class="single-comment-reply">
+                        <span class="single-comment-reply-title">Reply</span>
+                        <form action="#" method="post" class="form-comment-reply clearfix">
+                            <div class="form-row">
+                                <label for="comment-reply-title" class="form-label">Title</label>
+                                <input name="comment-reply-title" value="" type="text">
+                            </div>
+                            <div class="form-row">
+                                <label for="comment-reply-body" class="form-label">Body</label>
+                                <textarea id="comment-reply-body" name="comment-reply-body"></textarea>
+                            </div>
+                            <div class="form-row form-row-buttons">
+                              <input value="Submit" class="button" type="submit">
+                            </div>
+                        </form>
+                    </div>
+                    <!--end .single-comment-reply-->    
+                </div>
+                <!-- end .single-comment -->
+            </div>
+            <!-- end .block-comments -->
+          </div>
+          <div id="changelog" class="task-group">
+            <div class="block-changelog clearfix">
+              <div class="single-changelog changelog-student">
+                <div class="single-changelog-avatar">
+                  <img src="../images/avatar-30-eric-schmidt.png"/>
+                </div>
+                <div class="single-changelog-heading">
+                  Student <a href="javascript:void(0)">Eric Schmidt</a> <span class="single-changelog-action">requested</span> to <span class="single-changelog-action">claim</span> this task. 
+                </div>
+                <div class="single-changelog-date">
+                  July 28 2011 10:57 UTC
+                </div>
+              </div>
+              <!-- end .single-changelog -->
+              <div class="single-changelog changelog-student">
+                <div class="single-changelog-avatar">
+                  <img src="../images/avatar-30-eric-schmidt.png"/>
+                </div>
+                <div class="single-changelog-heading">
+                  Student <a href="javascript:void(0)">Eric Schmidt</a> <span class="single-changelog-action">commented</span> on this task. 
+                </div>
+                <div class="single-changelog-date">
+                  July 28 2011 10:57 UTC
+                </div>
+                <div class="single-changelog-comment">
+                  I have worked with wordpress before and have wrote plugins/edited existing plugins. I have read over some of the core classes, and am familiar with how they work. I have been doing PHP for 4+ years, and believe I can write this patch.
+                </div>
+              </div>
+              <!-- end .single-changelog -->
+              <div class="single-changelog changelog-student">
+                <div class="single-changelog-avatar">
+                  <img src="../images/avatar-30-travis-ralston.png"/>
+                </div>
+                <div class="single-changelog-heading">
+                  Student <a href="javascript:void(0)">Travis Ralston</a> <span class="single-changelog-action">requested</span> to <span class="single-changelog-action">claim</span> this task. 
+                </div>
+                <div class="single-changelog-date">
+                  July 28 2011 11:33 UTC
+                </div>
+              </div>
+              <!-- end .single-changelog -->
+              <div class="single-changelog changelog-student">
+                <div class="single-changelog-avatar">
+                  <img src="../images/avatar-30-travis-ralston.png"/>
+                </div>
+                <div class="single-changelog-heading">
+                  Student <a href="javascript:void(0)">Travis Ralston</a> <span class="single-changelog-action">commented</span> on this task. 
+                </div>
+                <div class="single-changelog-date">
+                  July 28 2011 11:33 UTC
+                </div>
+                <div class="single-changelog-comment">
+                  I use WordPress a lot, I've used it for my own personal blog, set some up for others, and I am working on trying to create a plugin for it. I have extensive knowledge in PHP, and other languages.
+                </div>
+              </div>
+              <!-- end .single-changelog -->
+              <div class="single-changelog changelog-student">
+                <div class="single-changelog-avatar">
+                  <img src="../images/avatar-30-eric-schmidt.png"/>
+                </div>
+                <div class="single-changelog-heading">
+                  Student <a href="javascript:void(0)">Eric Schmidt</a> <span class="single-changelog-action">withdrew</span> his <span class="single-changelog-action">claim request</span>. 
+                </div>
+                <div class="single-changelog-date">
+                  July 29 2011 12:41 UTC
+                </div>
+              </div>
+              <!-- end .single-changelog -->
+              <div class="single-changelog changelog-mentor changelog-self">
+                <div class="single-changelog-avatar">
+                  <img src="../images/avatar-30-maya-smith.png"/>
+                </div>
+                <div class="single-changelog-heading">
+                  Mentor <a href="javascript:void(0)">Maya Smith</a> <span class="single-changelog-action">assigned</span> <a href="javascript:void(0)">Travis Ralston</a> to this task. 
+                </div>
+                <div class="single-changelog-date">
+                  July 30 2011 2:20 UTC
+                </div>
+              </div>
+              <!-- end .single-changelog -->
+              <div class="single-changelog changelog-mentor changelog-self">
+                <div class="single-changelog-avatar">
+                  <img src="../images/avatar-30-maya-smith.png"/>
+                </div>
+                <div class="single-changelog-heading">
+                  Mentor <a href="javascript:void(0)">Maya Smith</a> <span class="single-changelog-action">extended</span> the <span class="single-changelog-action">task deadline</span> to July 31 2011 7:00 UTC.
+                </div>
+                <div class="single-changelog-date">
+                  July 30 2011 2:20 UTC
+                </div>
+              </div>
+              <!-- end .single-changelog -->
+              <div class="single-changelog changelog-student">
+                <div class="single-changelog-avatar">
+                  <img src="../images/avatar-30-travis-ralston.png"/>
+                </div>
+                <div class="single-changelog-heading">
+                  Student <a href="javascript:void(0)">Travis Ralston</a> uploaded work. (<a href="javascript:void(0)">Download here</a>)
+                </div>
+                <div class="single-changelog-date">
+                  July 31 2011 6:27 UTC
+                </div>
+              </div>
+              <!-- end .single-changelog -->
+              <div class="single-changelog changelog-mentor changelog-self">
+                <div class="single-changelog-avatar">
+                  <img src="../images/avatar-30-maya-smith.png"/>
+                </div>
+                <div class="single-changelog-heading">
+                  Mentor <a href="javascript:void(0)">Maya Smith</a> <span class="single-changelog-action">commented</span> on this task. 
+                </div>
+                <div class="single-changelog-date">
+                  July 31 2011 10:20 UTC
+                </div>
+                <div class="single-changelog-comment">
+                  Great work, Travis!
+                </div>
+              </div>
+              <!-- end .single-changelog -->
+            </div>
+            <!-- end .block-changelog -->
+          </div>
+        </div>
+        <!-- end .block.block-secondary-tabs -->
     </div>
     <!-- end .grid_9.main -->
 

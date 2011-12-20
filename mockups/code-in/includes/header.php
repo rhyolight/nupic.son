@@ -19,6 +19,8 @@
     -->
     <script type="text/javascript" src="../js/jquery-1.6.2.min.js" type=""></script>
     <script type="text/javascript" src="../js/jquery-ui-1.8.16.custom.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.svg.pack.js"></script>
+    <script type="text/javascript" src="../js/modernizr-svg.js"></script>
     
     <!--
         Tab interface (Dashboards)
@@ -95,6 +97,7 @@
     </script>
     
     <script src="../js/jquery.dd.js" type="text/javascript"></script>
+    <script src="../js/style-switcher.js" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" href="../css/dd.css" />
     
     <!-- 
@@ -112,6 +115,7 @@
     <script type="text/javascript" src="../js/selectivizr-min.js"></script>
     <![endif]-->
     
+    <link type="text/css" rel="alternate stylesheet" title="low vision" href="../css/style-lowvision.css" />
 </head>
 <body>
 

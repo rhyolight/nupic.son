@@ -10,6 +10,8 @@
         <div style="margin: 20px 0 50px 0;">
             <ul>
                 <li><a href="../home/">Homepage</a></li>
+                <li><a href="../accepted-organizations/">Accepted Organizations</a></li>
+                <li><a href="../accessibility/">Accessibility</a></li>
                 <li><a href="../dashboard-admin/">Admin Dashboard</a></li>
                 <li><a href="../dashboard-mentor/">Mentor Dashboard</a></li>
                 <li><a href="../dashboard-student/">Student Dashboard</a></li>

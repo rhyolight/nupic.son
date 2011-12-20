@@ -124,8 +124,62 @@
             <div class="block block-timeline">
                 <div class="block-title">Code-In Timeline</div>
                 <div class="block-content clearfix">
+                  <script type="text/javascript">
+                    jQuery('document').ready(function(){
+                      if (Modernizr.svg && Modernizr.svgclippaths) {
+                        
+                        var back_image = $('.stopwatch-svgcanvas').css('background-image');
+                        back_image = back_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
+                        
+                        var front_image = $('.stopwatch-front').css('background-image');
+                        front_image = front_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
+                        
+                        var dial_image = $('.stopwatch-dial').css('background-image');
+                        dial_image = dial_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
+                        
+                        $('.stopwatch-watch').hide();
+                        $('.stopwatch-svgcanvas').css('background-image', 'none');
+                        $('.stopwatch-svgcanvas').show();
+                        $('.stopwatch-svgcanvas').svg();
+                        
+                        var percent = 33; // change this
+                        percent = percent / 100;
+                        var angle = percent * 360;
+                        var svg = jQuery('.stopwatch-svgcanvas').svg('get');
+                        var defs = svg.defs();
+                        var mask = svg.mask(defs, 'mask', 0, 0, 96, 96, {maskUnits: 'userSpaceOnUse'});
+                        
+                        svg.image(defs, 0, 0, 91, 91, back_image, {id: 'back_image'});
+                        svg.image(defs, 0, 0, 91, 91, front_image, {id: 'front_image'});
+                        svg.image(defs, 0, 0, 91, 91, dial_image, {id: 'dial_image', transform: 'rotate(' + angle + ', 46, 46)'});
+                        
+                        var path = svg.createPath(); 
+                        var ratio = 2 * Math.PI * (percent-.25);
+                        svg.path(mask, path
+                          .move(46, 0)
+                          .line(46, 46)
+                          .line(46 + 46 * Math.cos(ratio), 46 + 46 * Math.sin(ratio))
+                          .arc(46, 46, 60, true, 0, 46, 0)
+                          .line(46, 0)
+                          .close(),  
+                          {fill: '#ffffff', stroke: 'none', strokeWidth: 1}
+                        );
+                        
+                        svg.use('#back_image');
+                        svg.use('#front_image', {mask:'url(#mask)'});
+                        svg.use('#dial_image');
+                      }
+                    });
+                  </script>
                     <div class="stopwatch percent-33">
                         <div class="stopwatch-watch"></div>
+                        <div class="stopwatch-svgcanvas">
+                        </div>
+                        <div class="stopwatch-front">
+                        </div>
+                        <div class="stopwatch-dial">
+                        </div>
+                        
                         <div class="stopwatch-remaining clearfix">
                             <div class="stopwatch-time">
                                 <div class="stopwatch-time-c">
@@ -145,6 +199,16 @@
                 <div class="block-footer">33% complete</div>
             </div>
             <!-- end .block.block-timeline -->
+            <div class="block block-leaderboard-link">
+                <div class="block-title">Leaderboard</div>
+                <div class="block-content">
+                  <a href="javascript:void(0)">See the Leaders!</a>
+                </div>
+                <div class="leaderboard-link-image">
+                  <a href="javascript:void(0)"><img src="../images/block-leaderboard-link-trophy.png" /></a>
+                </div>
+            </div>
+            <!-- end .block.block-leaderboard-link -->
             <div class="block block-connect">
                 <div class="block-title">Connect With Us</div>
                 <div class="block-content">

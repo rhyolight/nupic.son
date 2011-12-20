@@ -26,6 +26,7 @@
                 <li class="social"><a href="javascript:void(0)"><img src="../images/icon-em.gif" height="17" width="17" alt="Email" /></a></li>
                 <li class="social"><a href="javascript:void(0)"><img src="../images/icon-irc.gif" height="17" width="17" alt="IRC" /></a></li>
                 <li><a href="javascript:void(0)">Privacy Policy</a></li>
+                <li><a href="../accessibility/">Accessibility</a></li>
             </ul>
             <ul class="menu menu-center-inline menu-credit">
                 <li class="menu-credit-melange">Powered by <a href="javascript:void(0)" target="_blank"><img src="../images/credit-melange.png" height="17" width="69" alt="Melange" /></a></li>
