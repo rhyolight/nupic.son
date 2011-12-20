@@ -159,6 +159,10 @@
     tpjs + "jquery/jquery.dd.js"
   ];
 
+  s.modernizr = [
+    tpjs + "modernizr/modernizr-svg.js"
+  ];
+
   s.jqueryui = {}
 
   if (melange.config.is_local !== undefined && melange.config.is_local === true) {
@@ -284,6 +288,10 @@
 
   s.cookie = [
     tpjs + "jquery/jquery-cookie.js"
+  ];
+
+  s.jquery.svg = [
+    tpjs + "jquery/jquery.svg.pack.js"
   ];
 
   s.jlinq = [
