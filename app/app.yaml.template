@@ -65,6 +65,11 @@ handlers:
   upload: json.min/(.*)
   expiration: 30d
 
+- url: /js/(.*?)/modernizr/(.*)
+  static_files: modernizr.min/\2
+  upload: modernizr.min/(.*)
+  expiration: 30d
+
 - url: /js/(.*?)/LABjs/(.*)
   static_files: LABjs.min/\2
   upload: LABjs.min/(.*)
