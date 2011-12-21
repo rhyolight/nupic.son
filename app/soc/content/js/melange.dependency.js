@@ -402,6 +402,13 @@
     mpjs + "melange.dynamicoptions.js"
   ];
 
+  s.melange.clock = [
+    s.modernizr,
+    s.jquery.svg,
+    null,
+    mpjs + "melange.clock.js"
+  ];
+
   $m.s = s;
 
   var unpack = function (orig_array) {
