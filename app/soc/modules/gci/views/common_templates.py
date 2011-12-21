@@ -25,14 +25,13 @@ class Timeline(Template):
   """
 
   def context(self):
-    remaining = self.data.timeline.remainingTime()
-    remaining_days = remaining.days
-    remaining_hours = remaining.seconds / 3600
+    rem_days, rem_hours, rem_mins = self.data.timeline.remainingTime()
     complete_percentage = self.data.timeline.completePercentage()
     stopwatch_percentage = self.data.timeline.stopwatchPercentage()
     return {
-        'remaining_days': remaining_days,
-        'remaining_hours': remaining_hours,
+        'remaining_days': rem_days,
+        'remaining_hours': rem_hours,
+        'remaining_minutes': rem_mins,
         'complete_percentage': complete_percentage,
         'stopwatch_percentage': stopwatch_percentage
     }
