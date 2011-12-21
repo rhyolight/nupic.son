@@ -52,9 +52,15 @@
 <div class="block-content clearfix">
   {% if task.deadline or button_extend_deadline  %}
   <div class="block-task-countdown">
-    <div class="stopwatch percent-33 clearfix">
+    <div class="stopwatch percent-{{ stopwatch_percentage }} clearfix">
       {% if task.deadline %}
         <div class="stopwatch-watch"></div>
+        <div class="stopwatch-svgcanvas">
+        </div>
+        <div class="stopwatch-front">
+        </div>
+        <div class="stopwatch-dial">
+        </div>
 
         <div class="stopwatch-remaining clearfix">
           <div class="stopwatch-time">
