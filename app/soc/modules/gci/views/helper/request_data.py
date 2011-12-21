@@ -27,6 +27,7 @@ from soc.logic.exceptions import NotFound
 from soc.models.site import Site
 from soc.views.helper import request_data
 
+from soc.modules.gci.logic.helper import timeline as timeline_helper
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.organization import GCIOrganization
@@ -111,54 +112,31 @@ class TimelineHelper(request_data.TimelineHelper):
     return request_data.isAfter(self.stopAllWorkOn())
 
   def remainingTime(self):
-    _, end = self.programActiveBetween()
-    now = datetime.datetime.utcnow()
-    remaining = end - now if end>now else datetime.timedelta(0)
-    return remaining
-
-  def totalRemainingSeconds(self):
-    remaining = self.remainingTime()
-    remaining_seconds = remaining.seconds + remaining.days * 24 * 3600
-
-    return remaining_seconds
-
-  def duration(self):
+    """Returns the remaining time in the program a tuple of days, hrs and mins.
+    """
     start = self.tasksPubliclyVisibleOn()
-    _, end = self.programActiveBetween()
-    duration = end-start
-    return duration
-
-  def totalDurationSeconds(self):
-    duration = self.duration()
-    total_duration_seconds = duration.seconds + duration.days * 24 * 3600
-
-    return total_duration_seconds
+    end = self.tasksClaimEndOn()
+    return timeline_helper.remainingTimeSplit(start, end)
 
   def completePercentage(self):
-    remaining = self.totalRemainingSeconds()
-    duration = self.totalDurationSeconds()
+    """Computes the remaining time percentage
 
-    if remaining == 0:
-      percentage = 100
-    elif remaining >= duration:
-      percentage = 0
-    else:
-      percentage = 100 - (remaining * 100 / duration)
+    It is VERY IMPORTANT TO NOTE here that this percentage is between the
+    task opening date and the date task can be last claimed.
 
-    return percentage
+    However if the all work stop deadline is set after the task claim date
+    that will only be visible on per task basis, this percentage would still
+    return zero.
+    """
+    start = self.tasksPubliclyVisibleOn()
+    end = self.tasksClaimEndOn()
+    return timeline_helper.completePercentage(start, end)
 
   def stopwatchPercentage(self):
+    """Computes the closest matching percentage for the static clock images.
+    """
     complete_percentage = self.completePercentage()
-    stopwatch_percentages = [25, 33, 50, 75, 100]
-
-    for p in stopwatch_percentages:
-      # The 15 percent allowance is added so as to NOT make the clock
-      # look to be at 75% when the time is just 51%
-      if complete_percentage <= p + 15:
-        stopwatch_percentage = p
-        break
-
-    return stopwatch_percentage
+    return timeline_helper.stopwatchPercentage(complete_percentage)
 
 
 class RequestData(request_data.RequestData):
