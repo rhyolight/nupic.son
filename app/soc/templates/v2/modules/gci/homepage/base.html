@@ -36,22 +36,25 @@ limitations under the License.
 
 {% block dependencies %}
   [
-  {% if program.feed_url %}
-    dep.melange.blog,
+    {% if program.feed_url %}
+      dep.melange.blog,
+    {% endif %}
     dep.modernizr,
     dep.jquery.svg,
     null,
     function () {
-      function initialize() {
-        var blog = new BlogPreview(document.getElementById("blog-feed"));
-        blog.show("{{ program.feed_url|safe }}", 3, "What's New");
-      }
-
-      jQuery(
-        function () {
-          google.load("feeds","1", {callback:initialize});
+      {% if program.feed_url %}
+        function initialize() {
+          var blog = new BlogPreview(document.getElementById("blog-feed"));
+          blog.show("{{ program.feed_url|safe }}", 3, "What's New");
         }
-      );
+
+        jQuery(
+          function () {
+            google.load("feeds","1", {callback:initialize});
+          }
+        );
+      {% endif %}
 
       jQuery('document').ready(function(){
         if (Modernizr.svg && Modernizr.svgclippaths) {
@@ -98,6 +101,5 @@ limitations under the License.
         }
       });
     }
-  {% endif %}
   ]
 {% endblock dependencies %}
