@@ -13,12 +13,21 @@
             <div class="stopwatch-remaining clearfix">
                 <div class="stopwatch-time">
                     <div class="stopwatch-time-c">
-                        <div class="time time-first">
-                            <span class="number">{{ remaining_days }}</span><span class="cap">days</span>
-                        </div>
-                        <div class="time">
-                            <span class="number">17</span><span class="cap">hours</span>
-                        </div>
+                        {% if remaining_days == 0 %}
+                            <div class="time time-first">
+                                <span class="number">{{ remaining_hours }}</span><span class="cap">hours</span>
+                            </div>
+                            <div class="time">
+                                <span class="number">{{ remaining_minutes }}</span><span class="cap">minutes</span>
+                            </div>
+                        {% else %}
+                            <div class="time time-first">
+                                <span class="number">{{ remaining_days }}</span><span class="cap">days</span>
+                            </div>
+                            <div class="time">
+                                <span class="number">{{ remaining_hours }}</span><span class="cap">hours</span>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
                 <span class="remain">Remaining</span>
