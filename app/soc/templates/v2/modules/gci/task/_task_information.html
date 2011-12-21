@@ -84,7 +84,7 @@
 
             </div>
           </div>
-          <span class="remain">Remaining</span> <span class="timestamp">as of {{ now|date:"n/j @H:i"}}UTC</span>
+          <span class="remain">Remaining</span> <span class="timestamp">as of {% now "n/j @H:i" %}UTC</span>
         </div>
       {% endif %}
       {% if button_extend_deadline %}
