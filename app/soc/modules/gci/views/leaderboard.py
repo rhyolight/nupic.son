@@ -180,6 +180,7 @@ class LeaderboardPage(RequestHandler):
         'page_name': "Leaderboard for %s" % self.data.program.name,
         'leaderboard_list': LeaderboardList(self.request, self.data),
         'timeline': common_templates.Timeline(self.data),
+        'complete_percentage': self.data.timeline.completePercentage(),
         'your_score': YourScore(self.data)
 #        'program_select': ProgramSelect(self.data, 'list_gci_finished_tasks'),
     }

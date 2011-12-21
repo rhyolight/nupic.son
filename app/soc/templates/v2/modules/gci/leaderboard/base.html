@@ -39,6 +39,10 @@ limitations under the License.
 {% block dependencies %}
   [
     dep.melange.list,
+    dep.melange.clock,
     null,
+    function () {
+      melange.clock.loadClock({{ complete_percentage }});
+    }
   ]
 {% endblock dependencies %}
