@@ -74,7 +74,7 @@ class RankingUpdater(object):
     return responses.terminateTask()
 
   def recalculateGCIRanking(self, request, *args, **kwargs):
-    """Recalculates student ranking for an entire program.
+    """Recalculates student ranking for the entire program.
 
     Args in POST dict:
       cursor: Query cursor to figure out where we need to start processing
