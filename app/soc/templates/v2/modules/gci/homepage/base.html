@@ -39,8 +39,7 @@ limitations under the License.
     {% if program.feed_url %}
       dep.melange.blog,
     {% endif %}
-    dep.modernizr,
-    dep.jquery.svg,
+    dep.melange.clock,
     null,
     function () {
       {% if program.feed_url %}
@@ -56,50 +55,7 @@ limitations under the License.
         );
       {% endif %}
 
-      jQuery('document').ready(function(){
-        if (Modernizr.svg && Modernizr.svgclippaths) {
-          var back_image = $('.stopwatch-svgcanvas').css('background-image');
-          back_image = back_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
-
-          var front_image = $('.stopwatch-front').css('background-image');
-          front_image = front_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
-
-          var dial_image = $('.stopwatch-dial').css('background-image');
-          dial_image = dial_image.replace(/"/g,"").replace(/url\(|\)$/ig, "");
-
-          $('.stopwatch-watch').hide();
-          $('.stopwatch-svgcanvas').css('background-image', 'none');
-          $('.stopwatch-svgcanvas').show();
-          $('.stopwatch-svgcanvas').svg();
-
-          var percent = {{ complete_percentage }}; // change this
-          percent = percent / 100;
-          var angle = percent * 360;
-          var svg = jQuery('.stopwatch-svgcanvas').svg('get');
-          var defs = svg.defs();
-          var mask = svg.mask(defs, 'mask', 0, 0, 96, 96, {maskUnits: 'userSpaceOnUse'});
-
-          svg.image(defs, 0, 0, 91, 91, back_image, {id: 'back_image'});
-          svg.image(defs, 0, 0, 91, 91, front_image, {id: 'front_image'});
-          svg.image(defs, 0, 0, 91, 91, dial_image, {id: 'dial_image', transform: 'rotate(' + angle + ', 46, 46)'});
-
-          var path = svg.createPath();
-          var ratio = 2 * Math.PI * (percent-.25);
-          svg.path(mask, path
-            .move(46, 0)
-            .line(46, 46)
-            .line(46 + 46 * Math.cos(ratio), 46 + 46 * Math.sin(ratio))
-            .arc(46, 46, 60, true, 0, 46, 0)
-            .line(46, 0)
-            .close(),
-            {fill: '#ffffff', stroke: 'none', strokeWidth: 1}
-          );
-
-          svg.use('#back_image');
-          svg.use('#front_image', {mask:'url(#mask)'});
-          svg.use('#dial_image');
-        }
-      });
+      melange.clock.loadClock({{ complete_percentage }});
     }
   ]
 {% endblock dependencies %}
