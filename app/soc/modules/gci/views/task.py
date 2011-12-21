@@ -34,6 +34,7 @@ from soc.views.template import Template
 
 from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import task as task_logic
+from soc.modules.gci.logic.helper import timeline as timeline_helper
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import CLAIMABLE
@@ -251,6 +252,10 @@ class TaskViewPage(RequestHandler):
       'task_info': TaskInformation(self.data),
     }
 
+    if task.deadline:
+      context['complete_percentage'] = timeline_helper.completePercentage(
+          end=task.deadline, duration=(task.time_to_complete*3600))
+
     if self.data.is_visible:
       context['work_submissions'] = WorkSubmissions(self.data)
       context['comment_ids'] = [i.key().id() for i in self.data.comments]
@@ -462,14 +467,10 @@ class TaskInformation(Template):
     }
 
     if task.deadline:
-      # TODO(ljvderijk): investigate django.utils.timesince.timeuntil
-      # special formatting of the TimeDelta object for task view
-      now = datetime.datetime.utcnow()
-      time_remaining = task.deadline - now
-      context['now'] = now
-      context['remaining_days'] = time_remaining.days
-      context['remaining_hours'] = time_remaining.seconds/3600
-      context['remaining_minutes'] = (time_remaining.seconds/60)%60
+      rdays, rhrs, rmins = timeline_helper.remainingTimeSplit(task.deadline)
+      context['remaining_days'] = rdays
+      context['remaining_hours'] = rhrs
+      context['remaining_minutes'] = rmins
 
     self.setButtonControls(context)
 
