@@ -61,8 +61,10 @@ class RankingUpdater(object):
       id: The (numeric) id of the task to update the ranking for
     """
     post_dict = request.POST
+    logging.info("ranking_update updateRankingWithTask starts")
 
     id = int(post_dict.get('id'))
+    logging.info("ranking_update updateRankingWithTask taskId %s" % id)
     task = GCITask.get_by_id(id)
 
     if not task:
@@ -71,6 +73,7 @@ class RankingUpdater(object):
 
     ranking_logic.updateRankingWithTask(task)
 
+    logging.info("ranking_update updateRankingWithTask ends")
     return responses.terminateTask()
 
   def recalculateGCIRanking(self, request, *args, **kwargs):
