@@ -638,6 +638,7 @@ body {
     width: 79px;
     float: left;
     position: relative;
+    margin-left: -15px;
 }
 .stopwatch-svgcanvas {
   background-image:url(../../../images/v2/gci/block-timeline-watch-back.png);
@@ -646,7 +647,7 @@ body {
   position: relative;
   display: none;
   float: left;
-  margin-left: -10px;
+  margin-left: -15px;
 }
 .stopwatch-front {
   background-image:url(../../../images/v2/gci/block-timeline-watch-front.png);
