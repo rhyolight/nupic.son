@@ -71,7 +71,7 @@ class RankingUpdater(object):
       logging.warning('Ranking update queued for non-existing task: %s' %id)
       responses.terminateTask()
 
-    ranking_logic.updateRankingWithTask(task)
+    ranking_logic.updateScore(task)
 
     logging.info("ranking_update updateRankingWithTask ends")
     return responses.terminateTask()
