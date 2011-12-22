@@ -110,6 +110,8 @@ def stopwatchPercentage(complete_percentage):
   """
   stopwatch_percentages = [25, 33, 50, 75, 100]
 
+  stopwatch_percentage = 0
+
   for p in stopwatch_percentages:
     # The 15 percent allowance is added so as to NOT make the clock
     # look to be at 75% when the time is just 51%
