@@ -69,3 +69,15 @@ def sendFirstTaskConfirmationTxn(profile, task):
   
   context = notifications.getFirstTaskConfirmationContext(profile)
   return mailer.getSpawnMailTaskTxn(context, parent=task)
+
+
+def orgAdminsForOrg(org, limit=1000):
+  """Returns the organization administrators for the given GCI Organization.
+
+  Args:
+    org: The GCIOrganization entity for which the admins should be found.
+  """
+  query = GCIProfile.all()
+  query.filter('org_admin_for', org)
+
+  return query.fetch(limit)
