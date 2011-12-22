@@ -58,6 +58,7 @@ class Callback(object):
     from soc.modules.gci.views import task_create
 
     self.views.append(accepted_orgs.AcceptedOrgsPage())
+    self.views.append(accepted_orgs.AcceptedOrgsAdminPage())
     self.views.append(admin.DashboardPage())
     self.views.append(admin.LookupLinkIdPage())
     self.views.append(all_tasks.TaskListPage())
