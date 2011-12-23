@@ -101,7 +101,7 @@ class DashboardPage(RequestHandler):
 
     dashboards.append(MainDashboard(self.request, self.data))
     dashboards.append(ProgramSettingsDashboard(self.request, self.data))
-    dashboards.append(OrgAppSurveyDashboard(self.request, self.data))
+    dashboards.append(OrgDashboard(self.request, self.data))
 
     return {
         'colorbox': self.data.GET.get('colorbox'),
@@ -138,7 +138,7 @@ class MainDashboard(Dashboard):
     r.program()
 
     program_settings = ProgramSettingsDashboard(self.request, self.data)
-    org_app = OrgAppSurveyDashboard(self.request, self.data)
+    organizations = OrgDashboard(self.request, self.data)
 
     subpages = [
         {
@@ -160,9 +160,9 @@ class MainDashboard(Dashboard):
             'name': 'org_app',
             'description': ugettext(
                 'Edit organization opplication'),
-            'title': 'Organization Application',
+            'title': 'Organizations',
             'link': '',
-            'subpage_links': org_app.getSubpagesLink(),
+            'subpage_links': organizations.getSubpagesLink(),
         },
     ]
 
@@ -234,8 +234,10 @@ class ProgramSettingsDashboard(Dashboard):
     }
 
 
-class OrgAppSurveyDashboard(Dashboard):
-  """Dashboard for admin's OrgAppSurvey-dashboard
+class OrgDashboard(Dashboard):
+  """Dashboard for admin's Organization related information.
+
+  This page includes links for Org app surveys, participating org info, etc.
   """
 
   def __init__(self, request, data):
@@ -265,10 +267,10 @@ class OrgAppSurveyDashboard(Dashboard):
         },
     ]
 
-    super(OrgAppSurveyDashboard, self).__init__(request, data, subpages)
+    super(OrgDashboard, self).__init__(request, data, subpages)
 
   def context(self):
-    """Returns the context of OrgAppSurvey dashboard.
+    """Returns the context of organization dashboard.
     """
     subpages = self._divideSubPages(self.subpages)
 
