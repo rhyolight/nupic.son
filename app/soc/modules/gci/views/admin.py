@@ -159,7 +159,7 @@ class MainDashboard(Dashboard):
         {
             'name': 'org_app',
             'description': ugettext(
-                'Edit organization opplication'),
+                'Edit organization application'),
             'title': 'Organizations',
             'link': '',
             'subpage_links': organizations.getSubpagesLink(),
