@@ -265,6 +265,13 @@ class OrgDashboard(Dashboard):
             'title': 'Organization application records',
             'link': r.urlOf('gci_list_org_app_records')
         },
+        {
+            'name': 'accepted_orgs',
+            'description': ugettext(
+                'List of accepted organizations'),
+            'title': 'Accepted Organizations',
+            'link': r.urlOf('gci_admin_accepted_orgs')
+        },
     ]
 
     super(OrgDashboard, self).__init__(request, data, subpages)
