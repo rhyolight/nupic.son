@@ -62,6 +62,7 @@ def updateScore(task):
     task: GCITask that has been completed and should be taken into account in
           the score.
   """
+  logging.info("updateScore starts for task %s" % task.key().id())
   if task.status != 'Closed':
     logging.warning('Trying to update score for a task that is not closed.')
 
@@ -70,11 +71,13 @@ def updateScore(task):
   task_key = task.key()
 
   def update_ranking_txn():
+    logging.info("updateScore txn starts for task %s" % task_key.id())
     query = GCIScore.all().ancestor(student)
     score = query.get()
 
     # create a new GCIStore entity if one does not exist yet
     if not score:
+      logging.info("score entity is being created")
       score = GCIScore(parent=student, program=program)
 
     # check if the task has been included in the score
@@ -82,7 +85,9 @@ def updateScore(task):
       score.points += POINTS[task.difficulty_level]
 
     # TODO(dhans): optimize it; sometimes, put may not be needed
+    logging.info("score put")
     score.put()
+    logging.info("score put returned")
 
   db.run_in_transaction(update_ranking_txn)
 
