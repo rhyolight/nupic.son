@@ -13,6 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/uniform.default.css" />
+{% endblock stylesheets %}
+
 {% block page_content %}
   <div id="user-message" class="notice">
     <p>Click on an organization to go to their details page. <br/>
@@ -25,11 +31,14 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.uniform,
     dep.melange.list,
     css("/soc/content/{{ app_version }}/css/v2/gsoc/user-messages.css"),
     dep.melange.program_select,
     null,
     function() {
+      jQuery("select, input:radio, input:file, input:checkbox").uniform();
+
       melange.program_select.makeSelector("#program_select");
     }
   ]

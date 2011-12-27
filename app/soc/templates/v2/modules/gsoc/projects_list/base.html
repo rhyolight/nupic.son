@@ -14,6 +14,11 @@ limitations under the License.
 {% endcomment %}
 
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/uniform.default.css" />
+{% endblock stylesheets %}
+
 {% block page_content %}
 <div id="program-name" class="block full home-block-1">
   <h2 id="title-section-program-name">{{ program_name }}</h2>
@@ -29,11 +34,14 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.uniform,
     dep.melange.list,
     css("/soc/content/{{ app_version }}/css/v2/gsoc/user-messages.css"),
     dep.melange.program_select,
     null,
     function() {
+      jQuery("select, input:radio, input:file, input:checkbox").uniform();
+
       melange.program_select.makeSelector("#program_select");
     }
   ]
