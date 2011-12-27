@@ -58,9 +58,8 @@ ACTION_TITLES = {
     # User can be either mentor or melange automatic system
     # Action can be one of Claim Rejected from ClaimRequested/Reopened
     # from other states/Forcibly Reopened from NeedsWork and Claimed
-    'Task Reopened': [ugettext('User-Mentor'),
-                      ugettext('Action-Task Reopened'),
-                      ugettext('Status-Not Inferable')
+    'Task Reopened': [ugettext('Action-Task Reopened'),
+                      ugettext('Status-Reopened')
                       ]
     }
 
@@ -80,7 +79,20 @@ def process(comment):
     yield operation.counters.Increment("user_comment_not_converted")
     return
 
-  comment.changes = ACTION_TITLES[comment.title]
+  comment_title = ACTION_TITLES[comment.title]
+
+  changes = ACTION_TITLES[comment_title]
+  # Task reopening is a special case which could have been performed
+  # either by a mentor or by the automated system after the passing of
+  # the deadline. So additional inference of the user has to be made.
+  if comment_title == 'Task Reopened':
+    if comment.created_by:
+      user_info = ugettext('User-Mentor')
+    else:
+      user_info = ugettext('MelangeAutomatic')
+    changes = [user_info] + changes
+
+  comment.changes = changes
 
   yield operation.db.Put(comment)
   yield operation.counters.Increment("action_comment_converted")
