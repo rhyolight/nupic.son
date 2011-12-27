@@ -153,3 +153,13 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.modules.gci.models.task.GCITask
+
+- name: AddGCIChangesToComments
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.add_gci_changes_to_comments.process
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.comment.GCIComment
+    - name: program_key
+
