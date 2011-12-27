@@ -54,9 +54,7 @@ ACTION_TITLES = {
                     ugettext('Action-Closed the task'),
                     ugettext('Status-Closed')],
     'Deadline extended': [ugettext('User-Mentor'),
-                          ugettext('Action-Deadline extended'),
-                          ugettext('Status-Not Inferable')
-                          ],
+                          ugettext('Action-Deadline extended')],
     # User can be either mentor or melange automatic system
     # Action can be one of Claim Rejected from ClaimRequested/Reopened
     # from other states/Forcibly Reopened from NeedsWork and Claimed
