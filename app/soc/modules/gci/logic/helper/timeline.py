@@ -19,6 +19,7 @@
 
 
 from datetime import datetime
+from datetime import timedelta
 
 
 def remainingTime(*args):
@@ -35,7 +36,7 @@ def remainingTime(*args):
   elif len(args) == 2:
     start, end = args
 
-  return end - start
+  return end - start if end > start else timedelta(0)
 
 
 def remainingTimeSplit(*args):
