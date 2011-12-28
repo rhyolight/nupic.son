@@ -42,7 +42,7 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/accepted_orgs/base.html')
     self.assertTemplateUsed(response, 
                             'v2/modules/gsoc/accepted_orgs/_project_list.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_program_select.html') 
+    self.assertTemplateUsed(response, 'v2/soc/_program_select.html')
     self.assertTemplateUsed(response, 
                             'v2/modules/gsoc/accepted_orgs/_project_list.html') 
     self.assertTemplateUsed(response, 'v2/soc/list/lists.html') 
