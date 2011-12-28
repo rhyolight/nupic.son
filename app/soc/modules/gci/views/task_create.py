@@ -285,6 +285,23 @@ class TaskEditPostClaimForm(TaskCreateForm):
     fields = ['arbit_tag']
 
 
+class TaskFormErrorTemplate(Template):
+  """Task forms error message template.
+  """
+
+  def __init__(self, data, error):
+    self.data = data
+    self.error = error
+
+  def context(self):
+    return {
+      'error': self.error,
+    }
+
+  def templatePath(self):
+    return "v2/modules/gci/task_create/_error_msg.html"
+
+
 class TaskEditFormTemplate(Template):
   """Task edit form template to use.
   """
@@ -310,7 +327,7 @@ class TaskEditFormTemplate(Template):
       'title':  title,
       'form': form,
       'full_edit': self.data.full_edit,
-      'error': form.errors,
+      'error': TaskFormErrorTemplate(self.data, form.errors),
     }
 
   def templatePath(self):

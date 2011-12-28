@@ -21,18 +21,6 @@ limitations under the License.
 
 {% block page_content %}
 
-{% if posted %}
-  {% if error %}
-    <div class="block block-flash error">
-      Sorry, we could not save your form. Please fix the errors mentioned below.
-    </div>
-  {% else %}
-    <div class="block block-flash success">
-      The form was successfully saved.
-    </div>
-  {% endif %}
-{% endif %}
-
 <div class="block block-form">
   {{ task_edit_form_template.render }}
 </div>
