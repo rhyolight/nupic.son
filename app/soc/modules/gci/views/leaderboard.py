@@ -35,6 +35,14 @@ from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
+class ProgramSelect(ProgramSelect):
+  """Program select template.
+  """
+
+  def templatePath(self):
+    return "v2/modules/gci/leaderboard/_program_select.html"
+
+
 class LeaderboardList(Template):
   """Template for the leaderboard list.
   """
