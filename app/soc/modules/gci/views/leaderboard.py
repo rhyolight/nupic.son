@@ -18,6 +18,7 @@
 
 from soc.logic.exceptions import AccessViolation
 
+from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -181,8 +182,8 @@ class LeaderboardPage(RequestHandler):
         'leaderboard_list': LeaderboardList(self.request, self.data),
         'timeline': common_templates.Timeline(self.data),
         'complete_percentage': self.data.timeline.completePercentage(),
-        'your_score': YourScore(self.data)
-#        'program_select': ProgramSelect(self.data, 'list_gci_finished_tasks'),
+        'your_score': YourScore(self.data),
+        'program_select': ProgramSelect(self.data, url_names.GCI_LEADERBOARD),
     }
 
 

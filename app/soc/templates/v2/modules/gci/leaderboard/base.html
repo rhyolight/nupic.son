@@ -13,6 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/uniform.default.css" />
+{% endblock stylesheets %}
+
 {% block page_content %}
 <div class="block block-leaderboard-top">
   <div class="block-leaderboard-top-title">
@@ -30,6 +36,7 @@ limitations under the License.
 </div>
 <!-- end .grid_6 -->
 <div class="grid_3 omega main-side">
+  {{ program_select.render }}
   {{ your_score.render }}
   {{ timeline.render }}
 </div>
@@ -38,10 +45,16 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.uniform,
     dep.melange.list,
+    dep.melange.program_select,
     dep.melange.clock,
     null,
     function () {
+      melange.program_select.makeSelector("#program_select");
+
+      jQuery("select, input:radio, input:file, input:checkbox").uniform();
+
       melange.clock.loadClock({{ complete_percentage }});
     }
   ]
