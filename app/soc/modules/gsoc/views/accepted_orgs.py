@@ -21,6 +21,7 @@
 from django.conf.urls.defaults import url as django_url
 
 from soc.logic.exceptions import AccessViolation
+from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
 from soc.views.template import Template
 from soc.views.helper import url as url_helper
@@ -28,7 +29,6 @@ from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 

@@ -24,12 +24,12 @@ from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
 from soc.models.document import Document
 from soc.views import document
+from soc.views.base_templates import ProgramSelect
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
-from soc.modules.gsoc.views.base_templates import ProgramSelect
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
