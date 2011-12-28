@@ -391,8 +391,7 @@ class TaskCreatePage(RequestHandler):
       else:
         form_class = TaskEditPostClaimForm
 
-      form = form_class(self.data, self.data.POST,
-                            instance=self.data.task)
+      form = form_class(self.data, self.data.POST, instance=self.data.task)
     else:
       form = TaskCreateForm(self.data, self.data.POST)
 
