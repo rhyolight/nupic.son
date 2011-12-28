@@ -17,6 +17,8 @@
 """This module contains the view for the site menus."""
 
 
+from soc.models.site import Site
+
 from soc.views.template import Template
 
 
@@ -72,7 +74,14 @@ class ProgramSelect(Template):
         return "selected=selected"
       return ""
 
-    programs = [(i.short_name, url(i), attr(i)) for i in self.data.programs]
+    program_key = Site.active_program.get_value_for_datastore(self.data.site)
+
+    programs = []
+    for p in self.data.programs:
+      name = p.short_name
+      if p.key() == program_key:
+        name += ' (current)'
+      programs.append((name, url(p), attr(p)))
 
     return {
         'programs': programs,
