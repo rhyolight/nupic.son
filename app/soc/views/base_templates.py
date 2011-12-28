@@ -78,6 +78,9 @@ class ProgramSelect(Template):
 
     programs = []
     for p in self.data.programs:
+      if p.status == 'invisible':
+        continue
+
       name = p.short_name
       if p.key() == program_key:
         name += ' (current)'
