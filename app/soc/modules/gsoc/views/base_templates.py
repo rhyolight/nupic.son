@@ -68,7 +68,8 @@ class Header(Template):
 
   def context(self):
     return {
-        'home_link': self.data.redirect.homepage().url()
+        'home_link': self.data.redirect.homepage().url(),
+        'program_link_id': self.data.program.link_id,
     }
 
 
