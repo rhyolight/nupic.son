@@ -243,6 +243,7 @@ def getTaskCommentContext(task, comment, to_emails):
 
   message_properties = {
       'commented_by': commented_by,
+      'comment_title': comment.title,
       'comment_content': comment.content,
       'group': task.org.name,
       'program_name': task.program.name,
