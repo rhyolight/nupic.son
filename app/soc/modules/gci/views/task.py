@@ -40,6 +40,7 @@ from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
 from soc.modules.gci.models.task import TASK_IN_PROGRESS
+from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
@@ -326,6 +327,10 @@ class TaskViewPage(RequestHandler):
         task.status = 'Unpublished'
         task.put()
       db.run_in_transaction(txn)
+    elif button_name == 'button_edit':
+      r = self.redirect.id(id=task.key().id_or_name())
+      r.to('gci_edit_task')
+      return
     elif button_name == 'button_delete':
       task_logic.delete(task)
       self.redirect.homepage().to()
@@ -505,6 +510,8 @@ class TaskInformation(Template):
       context['button_delete'] = not task.student
 
     if is_mentor:
+      context['button_edit'] = task.status in \
+          UNPUBLISHED + CLAIMABLE + ACTIVE_CLAIMED_TASK
       context['button_assign'] = task.status == 'ClaimRequested'
       context['button_unassign'] = task.status in ACTIVE_CLAIMED_TASK
       context['button_close'] = task.status == 'NeedsReview'
