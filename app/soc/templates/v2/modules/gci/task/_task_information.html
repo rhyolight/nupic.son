@@ -22,6 +22,7 @@
       {% if button_unpublish %}<input type="submit" class="task-btn task-btn-publish" name="button_unpublish" value="Unpublish">
       {% else %}{% if button_delete %}<div class="task-btn task-tbn-publish"></div>{% endif %}
       {% endif %}
+      {% if button_edit %}<input type="submit" class="task-btn task-btn-edit" name="button_edit" value="Edit Task">{% endif %}
       {% if button_delete %}<input type="submit" class="task-btn task-btn-delete" name="button_delete" value="Delete">{% endif %}
       {% if button_close %}<input type="submit" class="task-btn task-btn-close" name="button_close" value="Mark task as closed">{% endif %}
       {% if button_needs_work %}<input type="submit" class="task-btn task-btn-needswork" name="button_needs_work" value="Needs more work">{% endif %}
