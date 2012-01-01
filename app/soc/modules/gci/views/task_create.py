@@ -101,7 +101,8 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         widget=gci_forms.MultipleSelectWidget(
         attrs={
             'select_id': 'assign-mentor',
-            'wrapper_id': 'select-mentors-wrapper'
+            'wrapper_id': 'select-mentors-wrapper',
+            'add_new_text': 'add another mentor',
             }, choices=mentor_choices),
         initial=self._getInitialValuesForList('mentors'),
         choices=mentor_choices)

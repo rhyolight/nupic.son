@@ -137,6 +137,7 @@ class MultipleSelectWidget(Select):
     wrapper_id = final_attrs.pop('wrapper_id', 'multiple-select-wrapper')
     output = [u'<div id="%s">' % (wrapper_id)]
 
+    add_new_text = final_attrs.pop('add_new_text', 'add another select widget')
 
     for i, value in enumerate(values):
       select_id = final_attrs.pop('select_id', 'select-field')
@@ -148,7 +149,7 @@ class MultipleSelectWidget(Select):
 
     output.append(u'</div>')
     output.append(u'<div class="add-field-link clearfix">')
-    output.append(u'<a href="javascript:new_link()">+ add another mentor</a>')
+    output.append(u'<a href="javascript:new_link()">+ %s</a>' % (add_new_text))
     output.append(u'</div>')
 
     return mark_safe(u'\n'.join(output))
