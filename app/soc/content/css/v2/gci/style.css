@@ -281,6 +281,13 @@ input.task-btn {
         padding-left: 15px;
         padding-right: 15px;
     }
+    form input[type="submit"].task-btn-unsubscribe-updates,
+    input.task-btn-unsubscribe-updates {
+        background: #fff;
+        padding-left: 15px;
+        padding-right: 15px;
+        font-size: 10px;
+    }
     form input[type="submit"].task-btn-publish,
     input.task-btn-publish {
         background-position: 7px -103px;
