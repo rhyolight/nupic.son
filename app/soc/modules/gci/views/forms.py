@@ -123,6 +123,41 @@ class AvatarWidget(HiddenInput):
     return mark_safe('<div id="%s-picker">%s</div>' % (name, picker_html))
 
 
+class MultipleSelectWidget(Select):
+  """Extends the Django's Select widget to have multiple dynamic select widgets.
+  """
+
+  def __init__(self, attrs=None, choices=()):
+    super(MultipleSelectWidget, self).__init__(attrs, choices)
+
+  def render(self, name, values, attrs=None, choices=()):
+    final_attrs = self.build_attrs(attrs)
+
+    if not values: values = ['']
+    output = [u'<div id="%(wrapper_id)s">' % final_attrs]
+
+    for i, value in enumerate(values):
+      select_id = final_attrs.get('select_id', 'select-field')
+      attr_dict = {
+          'id': '%s-%d' % (select_id, i)
+          }
+      output.append(super(MultipleSelectWidget, self).render(
+          name, value, attr_dict, choices=choices))
+
+    output.append(u'</div>')
+    output.append(u'<div class="add-field-link clearfix">')
+    output.append(u'<a href="javascript:new_link()">+ add another mentor</a>')
+    output.append(u'</div>')
+
+    return mark_safe(u'\n'.join(output))
+
+  def value_from_datadict(self, data, files, name):
+    """Given a dictionary of data and this widget's name, returns the value
+    of this widget. Returns None if it's not provided.
+    """
+    return data.getlist(name)
+
+
 class RadioInput(forms.RadioInput):
   """The rendering customization to be used for individual radio elements.
   """
