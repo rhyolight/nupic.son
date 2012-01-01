@@ -94,15 +94,19 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         label=ugettext('Type'), choices=task_type_tags,
         widget=forms.CheckboxSelectMultiple)
 
-    self.fields['mentors'] = django_forms.ChoiceField(
+
+    self.fields['mentors'] = django_forms.MultipleChoiceField(
         label=ugettext('Mentors'), required=False,
-        choices=mentorChoicesForOrg(self.instance, self.organization))
+        widget=gci_forms.MultipleSelectWidget(
+        attrs={
+            'select_id': 'assign-mentor',
+            'wrapper_id': 'select-mentors-wrapper'
+            }, choices=mentor_choices),
+        initial=self._getInitialValuesForList('mentors'),
+        choices=mentor_choices)
 
     self.fields['task_type'].initial = self._getInitialValuesForList(
         'task_type')
-
-    self.assigned_mentors = self._getInitialValuesForList(
-        'mentors')
 
     if self.instance:
       ttc = datetime.timedelta(hours=self.instance.time_to_complete)
