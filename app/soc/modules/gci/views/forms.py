@@ -134,10 +134,12 @@ class MultipleSelectWidget(Select):
     final_attrs = self.build_attrs(attrs)
 
     if not values: values = ['']
-    output = [u'<div id="%(wrapper_id)s">' % final_attrs]
+    wrapper_id = final_attrs.pop('wrapper_id', 'multiple-select-wrapper')
+    output = [u'<div id="%s">' % (wrapper_id)]
+
 
     for i, value in enumerate(values):
-      select_id = final_attrs.get('select_id', 'select-field')
+      select_id = final_attrs.pop('select_id', 'select-field')
       attr_dict = {
           'id': '%s-%d' % (select_id, i)
           }
