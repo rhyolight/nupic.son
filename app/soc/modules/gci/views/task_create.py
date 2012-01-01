@@ -94,6 +94,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         label=ugettext('Type'), choices=task_type_tags,
         widget=forms.CheckboxSelectMultiple)
 
+    mentor_choices = list(mentorChoicesForOrg(self.instance, self.organization))
 
     self.fields['mentors'] = django_forms.MultipleChoiceField(
         label=ugettext('Mentors'), required=False,
