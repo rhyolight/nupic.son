@@ -250,39 +250,12 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     model = task.GCITask
     css_prefix = 'gci-task'
     fields = ['title', 'description', 'difficulty_level', 
-        'task_type', 'arbit_tag']
+              'task_type', 'arbit_tag']
 
 
 class TaskEditPostClaimForm(TaskCreateForm):
   """Django form for the task editing after the task is published page.
   """
-
-  def __init__(self, data, *args, **kwargs):
-    super(TaskCreateForm, self).__init__(*args, **kwargs)
-
-    self.request_data = data
-    self.organization = self.request_data.organization if not self.instance \
-        else self.instance.org
-
-    self.POST = args[0] if len(args) > 0 and args[0] else None
-
-    self.fields['mentors'] = django_forms.ChoiceField(
-        label=ugettext('Mentors'), required=False,
-        choices=mentorChoicesForOrg(self.instance, self.organization))
-
-    self.assigned_mentors = self._getInitialValuesForList(
-        'mentors')
-
-    if self.instance:
-      self.fields['tags'].initial = self.instance.tags_string(
-          self.instance.arbit_tag)
-
-    # Bind all the fields here to boundclass since we do not iterate
-    # over the fields using iterator for this form.
-    self.bound_fields = {}
-    for name, field in self.fields.items():
-      self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
-
 
   class Meta:
     model = task.GCITask
