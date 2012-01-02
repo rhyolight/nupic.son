@@ -208,7 +208,7 @@ class ListConfiguration(object):
 
   def addCustomRedirectRowButton(self, col_id, button_id, caption, func,
                                  classes=None, new_window=False):
-    """Adds a custom redirect row button the the specified column.
+    """Adds a custom redirect row button to the specified column.
     """
     parameters = {
         'new_window': new_window
