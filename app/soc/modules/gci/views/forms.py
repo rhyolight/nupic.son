@@ -163,8 +163,6 @@ class MultipleSelectWidget(Select):
     return data.getlist(name)
 
   def render_options(self, choices, selected_choices):
-    # Normalize to strings.
-    selected_choices = set([force_unicode(v) for v in selected_choices])
     output = []
     if self.disabled_option:
       disabled_value, disabled_label = self.disabled_option
@@ -172,14 +170,9 @@ class MultipleSelectWidget(Select):
           escape(disabled_value),
           conditional_escape(force_unicode(disabled_label))))
 
-    for option_value, option_label in itertools.chain(self.choices, choices):
-      if isinstance(option_label, (list, tuple)):
-        output.append(u'<optgroup label="%s">' % escape(force_unicode(option_value)))
-        for option in option_label:
-          output.append(self.render_option(selected_choices, *option))
-        output.append(u'</optgroup>')
-      else:
-        output.append(self.render_option(selected_choices, option_value, option_label))
+    output.append(super(MultipleSelectWidget, self).render_options(
+        choices, selected_choices))
+
     return u'\n'.join(output)
 
 class RadioInput(forms.RadioInput):
