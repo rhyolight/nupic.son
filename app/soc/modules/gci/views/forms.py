@@ -26,6 +26,7 @@ from google.appengine.ext import db
 from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
+from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.template import defaultfilters
 from django.utils.formats import dateformat
@@ -127,8 +128,9 @@ class MultipleSelectWidget(Select):
   """Extends the Django's Select widget to have multiple dynamic select widgets.
   """
 
-  def __init__(self, attrs=None, choices=()):
+  def __init__(self, attrs=None, choices=(), disabled_option=()):
     super(MultipleSelectWidget, self).__init__(attrs, choices)
+    self.disabled_option = disabled_option
 
   def render(self, name, values, attrs=None, choices=()):
     final_attrs = self.build_attrs(attrs)
@@ -160,6 +162,25 @@ class MultipleSelectWidget(Select):
     """
     return data.getlist(name)
 
+  def render_options(self, choices, selected_choices):
+    # Normalize to strings.
+    selected_choices = set([force_unicode(v) for v in selected_choices])
+    output = []
+    if self.disabled_option:
+      disabled_value, disabled_label = self.disabled_option
+      output.append(u'<option value="%s" disabled=disabled>%s</option>' % (
+          escape(disabled_value),
+          conditional_escape(force_unicode(disabled_label))))
+
+    for option_value, option_label in itertools.chain(self.choices, choices):
+      if isinstance(option_label, (list, tuple)):
+        output.append(u'<optgroup label="%s">' % escape(force_unicode(option_value)))
+        for option in option_label:
+          output.append(self.render_option(selected_choices, *option))
+        output.append(u'</optgroup>')
+      else:
+        output.append(self.render_option(selected_choices, option_value, option_label))
+    return u'\n'.join(output)
 
 class RadioInput(forms.RadioInput):
   """The rendering customization to be used for individual radio elements.
