@@ -172,3 +172,12 @@ def calculateScore(student, tasks, program):
     score.put()
 
   return db.run_in_transaction(calculate_score_txn)
+
+
+def allScoresForProgramQuery(program):
+  """Returns the query to fetch all the scores for the specified program.
+
+  Args:
+    program: GCIProgram entity for which the query should filter the program 
+  """
+  return GCIScore.all().filter('program =', program)
