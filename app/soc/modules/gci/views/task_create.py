@@ -195,7 +195,9 @@ class TaskCreateForm(TaskEditPostClaimForm):
 
     self.fields['task_type'] = django_forms.MultipleChoiceField(
         label=ugettext('Type'), choices=task_type_tags,
-        widget=forms.CheckboxSelectMultiple)
+        widget=gci_forms.CheckboxSelectMultiple,
+        help_text=ugettext(
+            'The kind of work to be done. Can be of more than one type'))
 
     self.fields['task_type'].initial = self._getInitialValuesForList(
         'task_type')
