@@ -486,8 +486,8 @@ class GCIBoundField(forms.BoundField):
 
     return mark_safe('%s%s%s' % (
         self._render_label(),
-        self.as_widget(attrs=attrs),
         self._render_note(),
+        self.as_widget(attrs=attrs),
     ))
 
   def setDocumentWidgetHelpText(self):
