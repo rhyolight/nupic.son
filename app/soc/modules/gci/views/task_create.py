@@ -93,30 +93,6 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
     for name, field in self.fields.items():
       self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
 
-  def _getInitialValuesForList(self, field):
-    """Returns the initial values for the field which take list of values.
-
-    One of the following 3 cases can happen:
-    1. If POST attribute exists and there are are no values for the given
-       field empty list is returned.
-    2. It checks if the POST data contains some value(s) for the given field,
-       if so the method returns that as the intial value.
-    3. If the POST attribute is None, it means that the request is a GET
-       request and hence if there are any values stored in the instance
-       those values are returned
-
-    Args:
-      field: the name of the field
-    """
-    if self.request_data.request.method == 'POST':
-      initial = self.POST.getlist(field)
-      return initial if initial else []
-
-    if self.instance:
-      return [str(t) for t in getattr(self.instance, field)]
-
-    return []
-
   def _saveTags(self, entity):
     entity.arbit_tag = {
         'tags': self.cleaned_data['tags'],
