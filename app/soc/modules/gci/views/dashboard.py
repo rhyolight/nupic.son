@@ -257,6 +257,8 @@ class DashboardPage(RequestHandler):
     """
     components = []
 
+    components.append(AllStudentsList(self.request, self.data))
+
     return components
 
   def _getStudentComponents(self):
@@ -1072,6 +1074,64 @@ class OrgAdminRequestsList(Component):
         'description': ugettext(
             'See all the requests that have been sent to '
             'your organizations.')
+    }
+
+  def templatePath(self):
+    return 'v2/modules/gci/dashboard/list_component.html'
+
+
+class AllStudentsList(Component):
+  """Component for the list of all the students who have completed at least
+  one task in the program.
+  """
+
+  """The default index number for this component.
+  """
+  COMPONTENT_IDX = 11
+
+  def __init__(self, request, data):
+    self.request = request
+    self.data = data
+    r = data.redirect
+
+    list_config = lists.ListConfiguration()
+    list_config.addColumn('name', 'Student name',
+        lambda entity, *args: entity.parent().name())
+    list_config.addColumn('student_id', 'Student ID',
+        lambda entity, *args: 'Yes' 
+            if entity.parent().student_info.student_id_form else 'No')
+    list_config.addColumn('consent_form', 'Parental Consent',
+        lambda entity, *args: 'Yes' 
+            if entity.parent().student_info.consent_form else 'No')
+
+    list_config.setRowAction(
+        lambda e, *args: r.profile(e.parent().link_id).urlOf(
+            url_names.GCI_STUDENT_TASKS))
+
+    self.idx = self.COMPONTENT_IDX
+    self._list_config = list_config
+
+  def getListData(self):
+    if lists.getListIndex(self.request) != self.idx:
+      return None
+
+    query = scores_logic.allScoresForProgramQuery(self.data.program)
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, query, lists.keyStarter)
+
+    return response_builder.build()
+
+  def context(self):
+    request_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, self.idx)
+
+    return {
+        'name': 'all_students_with_tasks',
+        'title': 'All students',
+        'lists': [request_list],
+        'description': ugettext(
+            'See all the students who have completed at least one task.')
     }
 
   def templatePath(self):
