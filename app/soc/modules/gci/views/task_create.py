@@ -53,8 +53,8 @@ def mentorChoicesForOrg(task, org):
   return ((str(m.key()), m.name()) for m in mentors)
 
 
-class TaskCreateForm(gci_forms.GCIModelForm):
-  """Django form for the task creation page.
+class TaskEditPostClaimForm(gci_forms.GCIModelForm):
+  """Django form for the task editing after the task is published page.
   """
 
   tags = django_forms.CharField(
@@ -62,37 +62,14 @@ class TaskCreateForm(gci_forms.GCIModelForm):
       help_text=ugettext('Describe this task with tags (comma separated). '
                          'Ex: Linux, Apache, C++, GUI'))
 
-  time_to_complete_days = django_forms.IntegerField(
-      label=ugettext('Time to complete'), min_value=0,
-      error_messages={'min_value': ugettext('Days cannot be negative.')})
-
-  time_to_complete_hours = django_forms.IntegerField(
-      label=ugettext('Time to complete'), min_value=0,
-      error_messages={'min_value': ugettext('Hours cannot be negative.')})
-
   def __init__(self, data, *args, **kwargs):
-    super(TaskCreateForm, self).__init__(*args, **kwargs)
+    super(TaskEditPostClaimForm, self).__init__(*args, **kwargs)
 
     self.request_data = data
     self.organization = self.request_data.organization if not self.instance \
         else self.instance.org
 
     self.POST = args[0] if len(args) > 0 and args[0] else None
-
-    difficulties = [(d, d) for d in DIFFICULTIES[:-1]]
-    self.fields['difficulty_level'] = django_forms.ChoiceField(
-        label=ugettext('Difficulty'), choices=difficulties)
-
-    # get a list of task type tags stored for the program entity
-    type_tags = task.TaskTypeTag.get_by_scope(data.program)
-
-    task_type_tags = []
-    for type_tag in type_tags:
-      task_type_tags.append((type_tag.tag, type_tag.tag))
-
-    self.fields['task_type'] = django_forms.MultipleChoiceField(
-        label=ugettext('Type'), choices=task_type_tags,
-        widget=forms.CheckboxSelectMultiple)
 
     mentor_choices = list(mentorChoicesForOrg(self.instance, self.organization))
 
@@ -107,18 +84,9 @@ class TaskCreateForm(gci_forms.GCIModelForm):
         initial=self._getInitialValuesForList('mentors'),
         choices=mentor_choices)
 
-    self.fields['task_type'].initial = self._getInitialValuesForList(
-        'task_type')
-
     if self.instance:
-      ttc = datetime.timedelta(hours=self.instance.time_to_complete)
-      self.fields['time_to_complete_days'].initial = ttc.days
-      self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
-
       self.fields['tags'].initial = self.instance.tags_string(
           self.instance.arbit_tag)
-
-      self.fields['difficulty_level'].initial = self.instance.difficulty_level
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
@@ -151,12 +119,105 @@ class TaskCreateForm(gci_forms.GCIModelForm):
     return []
 
   def _saveTags(self, entity):
-    entity.task_type = {
-        'tags': self.cleaned_data['task_type'],
-        'scope': self.request_data.program,
-        }
     entity.arbit_tag = {
         'tags': self.cleaned_data['tags'],
+        'scope': self.request_data.program,
+        }
+
+  def save(self, commit=True):
+    self.cleaned_data['modified_by'] = self.request_data.profile
+
+    entity = super(TaskEditPostClaimForm, self).save(commit=False)
+
+    if commit:
+      entity.put()
+
+    if entity:
+      self._saveTags(entity)
+
+    return entity
+
+  def clean_mentors(self):
+    mentor_key_strs = self.data.getlist('mentors')
+
+    if not mentor_key_strs:
+      raise django_forms.ValidationError(
+          ugettext("At least one mentor should be assigned to the task."))
+
+    org_mentors_keys = profile_logic.queryAllMentorsForOrg(
+        self.organization, keys_only=True)
+
+    mentor_keys = []
+    for m_str in mentor_key_strs:
+      if not m_str:
+        break
+
+      mentor_key = db.Key(m_str)
+      if mentor_key not in org_mentors_keys:
+        raise django_forms.ValidationError(
+            ugettext("One of the mentors doesn't belong to the organization "
+                     "that this task belongs to."))
+
+      mentor_keys.append(mentor_key)
+
+    return mentor_keys
+
+  class Meta:
+    model = task.GCITask
+    css_prefix = 'gci-task'
+    fields = ['arbit_tag']
+
+
+class TaskCreateForm(TaskEditPostClaimForm):
+  """Django form for the task creation page.
+  """
+
+  time_to_complete_days = django_forms.IntegerField(
+      label=ugettext('Time to complete'), min_value=0,
+      error_messages={'min_value': ugettext('Days cannot be negative.')})
+
+  time_to_complete_hours = django_forms.IntegerField(
+      label=ugettext('Time to complete'), min_value=0,
+      error_messages={'min_value': ugettext('Hours cannot be negative.')})
+
+  def __init__(self, data, *args, **kwargs):
+    super(TaskCreateForm, self).__init__(data, *args, **kwargs)
+
+    difficulties = [(d, d) for d in DIFFICULTIES[:-1]]
+    self.fields['difficulty_level'] = django_forms.ChoiceField(
+        label=ugettext('Difficulty'), choices=difficulties)
+
+    # get a list of task type tags stored for the program entity
+    type_tags = task.TaskTypeTag.get_by_scope(data.program)
+
+    task_type_tags = []
+    for type_tag in type_tags:
+      task_type_tags.append((type_tag.tag, type_tag.tag))
+
+    self.fields['task_type'] = django_forms.MultipleChoiceField(
+        label=ugettext('Type'), choices=task_type_tags,
+        widget=forms.CheckboxSelectMultiple)
+
+    self.fields['task_type'].initial = self._getInitialValuesForList(
+        'task_type')
+
+    if self.instance:
+      ttc = datetime.timedelta(hours=self.instance.time_to_complete)
+      self.fields['time_to_complete_days'].initial = ttc.days
+      self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
+
+      self.fields['difficulty_level'].initial = self.instance.difficulty_level
+
+    # Bind all the fields here to boundclass since we do not iterate
+    # over the fields using iterator for this form.
+    for name, field in self.fields.items():
+      self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
+
+  def _saveTags(self, entity):
+    super(TaskCreateForm, self)._saveTags(entity)
+
+    entity.task_type = {
+        'tags': self.cleaned_data['task_type'],
         'scope': self.request_data.program,
         }
 
@@ -187,19 +248,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     return entity
 
-  def save(self, commit=True):
-    self.cleaned_data['modified_by'] = self.request_data.profile
-
-    entity = super(TaskCreateForm, self).save(commit=False)
-
-    if commit:
-      entity.put()
-
-    if entity:
-      self._saveTags(entity)
-
-    return entity
-
   clean_description = cleaning.clean_html_content('description')
 
   def clean(self):
@@ -222,46 +270,11 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     return cleaned_data
 
-  def clean_mentors(self):
-    mentor_key_strs = self.data.getlist('mentors')
-
-    if not mentor_key_strs:
-      raise django_forms.ValidationError(
-          ugettext("At least one mentor should be assigned to the task."))
-
-    org_mentors_keys = profile_logic.queryAllMentorsForOrg(
-        self.organization, keys_only=True)
-
-    mentor_keys = []
-    for m_str in mentor_key_strs:
-      if not m_str:
-        break
-
-      mentor_key = db.Key(m_str)
-      if mentor_key not in org_mentors_keys:
-        raise django_forms.ValidationError(
-            ugettext("One of the mentors doesn't belong to the organization "
-                     "that this task belongs to."))
-
-      mentor_keys.append(mentor_key)
-
-    return mentor_keys
-
   class Meta:
     model = task.GCITask
     css_prefix = 'gci-task'
     fields = ['title', 'description', 'difficulty_level', 
               'task_type', 'arbit_tag']
-
-
-class TaskEditPostClaimForm(TaskCreateForm):
-  """Django form for the task editing after the task is published page.
-  """
-
-  class Meta:
-    model = task.GCITask
-    css_prefix = 'gci-task'
-    fields = ['arbit_tag']
 
 
 class TaskFormErrorTemplate(Template):
