@@ -926,10 +926,6 @@ class AllOrgsListBeforeRequestRole(MyOrgsList):
   request to become mentor for.
   """
 
-  def _getContext(self):
-    org_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=self.idx, preload_list=False)
-
   def _setIdx(self):
     self.idx = 8
 
