@@ -24,6 +24,8 @@ import re
 from google.appengine.ext import db
 
 from django.core.urlresolvers import reverse
+from django.utils.datastructures import MergeDict
+from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
 from django.utils.html import escape
@@ -160,7 +162,9 @@ class MultipleSelectWidget(Select):
     """Given a dictionary of data and this widget's name, returns the value
     of this widget. Returns None if it's not provided.
     """
-    return data.getlist(name)
+    if isinstance(data, (MultiValueDict, MergeDict)):
+      return data.getlist(name)
+    return data.get(name, None)
 
   def render_options(self, choices, selected_choices):
     output = []
