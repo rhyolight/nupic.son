@@ -46,12 +46,14 @@ TEMPLATE_PATH = 'v2/modules/gci/_form.html'
 # The standard input fields should be available to all importing modules
 CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
+CheckboxSelectMultiple = forms.CheckboxSelectMultiple
 DateInput = forms.DateInput
 DateTimeInput = forms.DateTimeInput
 FileInput = forms.FileInput
 HiddenInput = forms.HiddenInput
 RadioSelect = forms.RadioSelect
 Select = forms.Select
+SelectMultiple = forms.SelectMultiple
 TextInput = forms.TextInput
 Textarea = forms.Textarea
 
@@ -210,7 +212,7 @@ class RadioFieldRenderer(forms.RadioFieldRenderer):
         % (w.attrs.get('id', ''), force_unicode(w)) for w in self]))
 
 
-class CheckboxSelectMultiple(forms.CheckboxSelectMultiple):
+class CheckboxSelectMultiple(CheckboxSelectMultiple):
   def render(self, name, value, attrs=None, choices=()):
     if value is None:
       value = []

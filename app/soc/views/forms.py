@@ -97,6 +97,7 @@ FileInput = forms.FileInput
 HiddenInput = forms.HiddenInput
 RadioSelect = forms.RadioSelect
 Select = forms.Select
+SelectMultiple = forms.SelectMultiple
 TextInput = forms.TextInput
 Textarea = forms.Textarea
 
@@ -136,7 +137,7 @@ class RadioFieldRenderer(forms.widgets.RadioFieldRenderer):
         % (w.attrs.get('id', ''), force_unicode(w)) for w in self]))
 
 
-class CheckboxSelectMultiple(forms.SelectMultiple):
+class CheckboxSelectMultiple(SelectMultiple):
   def render(self, name, value, attrs=None, choices=()):
     if value is None:
       value = []
