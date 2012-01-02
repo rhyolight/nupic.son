@@ -43,7 +43,7 @@ limitations under the License.
     <span class="title">{{ page_name }}</span>
     <span class="req">* fields required</span>
   </div>
-  <form action="{{ upload_url}}" method="post" enctype="multipart/form-data" class="form-submit-forms clearfix">
+  <form method="post" enctype="multipart/form-data" id="form" class="form-submit-forms clearfix">
     {{ form.render }}
     <div class="form-row form-row-buttons">
       <input value="Submit" class="button" type="submit">
@@ -51,3 +51,19 @@ limitations under the License.
   </form>
 </div>
 {% endblock page_content %}
+
+{% block dependencies %}
+  [
+    dep.melange.main,
+    dep.melange.uploadform,
+    null,
+    function() {
+      var form_name = '#form';
+      jQuery(form_name).submit(function() {
+        var url = melange.getUploadUrl();
+        jQuery(form_name).get(0).setAttribute('action', url);
+        return true;
+      });
+    }
+  ]
+{% endblock dependencies %}
