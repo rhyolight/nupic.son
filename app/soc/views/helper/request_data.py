@@ -386,7 +386,7 @@ class RedirectHelper(object):
 
     return self
 
-  def urlOf(self, name, full=False, secure=False, cbox=False):
+  def urlOf(self, name, full=False, secure=False, cbox=False, extra=[]):
     """Returns the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -398,9 +398,12 @@ class RedirectHelper(object):
     else:
       url = reverse(name)
 
+    get_args = extra
     if cbox:
-      url = url + '?cbox=true'
+      get_args = extra[:]
+      extra.append('?cbox=true')
 
+    url = self._appendGetArgs(url, get_args)
     return self._fullUrl(url, full, secure)
 
   def url(self, full=False, secure=False):
@@ -429,6 +432,14 @@ class RedirectHelper(object):
       hostname = system.getHostname(self._data)
 
     return '%s://%s%s' % (protocol, hostname, url)
+
+  def _appendGetArgs(self, url, get_args):
+    """Appends GET arguments to the specified URL.
+    """
+    if get_args:
+      url = url + '?' + '&'.join(get_args)
+
+    return url
 
   def to(self, name=None, validated=False, full=False, secure=False,
          cbox=False, extra=[]):
@@ -460,9 +471,7 @@ class RedirectHelper(object):
 
     get_args.extend(extra)
 
-    if get_args:
-      url = url + '?' + '&'.join(get_args)
-
+    url = self._appendGetArgs(url, get_args)
     self.toUrl(url, full=full, secure=secure)
 
   def toUrl(self, url, full=False, secure=False):
