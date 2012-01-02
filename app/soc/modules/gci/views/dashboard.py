@@ -22,7 +22,9 @@ from google.appengine.ext import db
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from soc.logic import user as user_logic
 from soc.logic.exceptions import AccessViolation
+
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
@@ -30,6 +32,7 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import org_app as org_app_logic
+from soc.modules.gci.logic import ranking as scores_logic
 from soc.modules.gci.logic.task import queryAllTasksClosedByStudent
 from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
@@ -244,7 +247,7 @@ class DashboardPage(RequestHandler):
     else:
       components += self._getLoneUserComponents()
 
-    if self.data.is_host:
+    if self.data.is_host or user_logic.isDeveloper():
       components += self._getHostComponents()
 
     return components
