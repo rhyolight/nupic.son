@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from soc.modules.gci.views.helper import url_names
 
 """Module for students in GCI to upload their forms.
 """
@@ -182,7 +183,7 @@ class StudentFormDownload(RequestHandler):
     """
     return [
         url(r'student/forms/%s$' % url_patterns.PROFILE, self,
-            name='gci_student_form_download')]
+            name=url_names.GCI_STUDENT_FORM_DOWNLOAD)]
 
   def checkAccess(self):
     """Denies access if you are not a host.
