@@ -80,8 +80,7 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
             'select_id': 'assign-mentor',
             'wrapper_id': 'select-mentors-wrapper',
             'add_new_text': 'add another mentor',
-            }, choices=mentor_choices),
-        initial=self._getInitialValuesForList('mentors'),
+            }, disabled_option=('', 'Select a mentor')),
         choices=mentor_choices)
 
     if self.instance:
