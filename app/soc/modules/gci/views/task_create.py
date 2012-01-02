@@ -199,10 +199,9 @@ class TaskCreateForm(TaskEditPostClaimForm):
         help_text=ugettext(
             'The kind of work to be done. Can be of more than one type'))
 
-    self.fields['task_type'].initial = self._getInitialValuesForList(
-        'task_type')
-
     if self.instance:
+      self.fields['task_type'].initial = [str(t) for t in getattr(
+          self.instance, 'task_type')]
       ttc = datetime.timedelta(hours=self.instance.time_to_complete)
       self.fields['time_to_complete_days'].initial = ttc.days
       self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
