@@ -1094,7 +1094,9 @@ class AllStudentsList(Component):
     self.data = data
     r = data.redirect
 
-    list_config = lists.ListConfiguration()
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda entity, *args: "%s" % (
+        entity.parent().key().id_or_name())), hidden=True)
     list_config.addColumn('name', 'Student name',
         lambda entity, *args: entity.parent().name())
     list_config.addColumn('student_id', 'Student ID',
@@ -1104,9 +1106,19 @@ class AllStudentsList(Component):
         lambda entity, *args: 'Yes' 
             if entity.parent().student_info.consent_form else 'No')
 
-    list_config.setRowAction(
-        lambda e, *args: r.profile(e.parent().link_id).urlOf(
-            url_names.GCI_STUDENT_TASKS))
+    list_config.addCustomRedirectRowButton('student_id',
+        'download_student_id', 'Download',
+        lambda entity, *args, **kwargs: r.profile(
+            entity.parent().link_id).urlOf(
+            url_names.GCI_STUDENT_FORM_DOWNLOAD,
+            extra=[url_names.STUDENT_ID_FORM_GET_PARAM]))
+
+    list_config.addCustomRedirectRowButton('consent_form',
+        'download_consent_form', 'Download',
+        lambda entity, *args, **kwargs: r.profile(
+            entity.parent().link_id).urlOf(
+            url_names.GCI_STUDENT_FORM_DOWNLOAD,
+            extra=[url_names.CONSENT_FORM_GET_PARAM]))    
 
     self.idx = self.COMPONTENT_IDX
     self._list_config = list_config
