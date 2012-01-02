@@ -195,9 +195,9 @@ class StudentFormDownload(RequestHandler):
     """Allows hosts to download the student forms.
     """
     download = None
-    if 'consent_form' in self.data.GET:
+    if url_names.CONSENT_FORM_GET_PARAM in self.data.GET:
       download = self.data.url_student_info.consent_form
-    elif 'student_id_form' in self.data.GET:
+    elif url_names.STUDENT_ID_FORM_GET_PARAM in self.data.GET:
       download = self.data.url_student_info.student_id_form
     else:
       raise BadRequest('No file requested')

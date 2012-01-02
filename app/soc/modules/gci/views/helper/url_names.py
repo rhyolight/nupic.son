@@ -37,3 +37,14 @@ EDIT_GCI_ORG_PROFILE = 'edit_gci_org_profile'
 GCI_ORG_HOME = 'gci_org_home'
 
 GCI_VIEW_TASK = 'gci_view_task'
+
+
+# GET PARAMETERS WHICH ARE USED THROUGHOUT THE MODULE
+#TODO(dhans): consider creation of a separate module for that
+"""GET parameter which should be set in order to download Consent Form.
+"""
+CONSENT_FORM_GET_PARAM = 'consent_form'
+
+"""GET parameter which should be set in order to download Student ID Form.
+"""
+STUDENT_ID_FORM_GET_PARAM = 'student_id_form'
