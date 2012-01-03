@@ -289,12 +289,12 @@ class TaskViewPage(RequestHandler):
       return self._postComment()
     elif 'button' in self.data.GET:
       return self._postButton()
-    elif 'submit_work' in self.data.GET:
-      return self._postSubmitWork()
     elif 'send_for_review' in self.data.GET:
       return self._postSendForReview()
     elif 'delete_submission' in self.data.GET:
       return self._postDeleteSubmission()
+    elif 'work_file_submit' in self.data.POST or 'submit_work' in self.data.GET:
+      return self._postSubmitWork()
     else:
       self.error(405)
 
