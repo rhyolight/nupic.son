@@ -54,7 +54,7 @@
 
     {% if work_file_form %}
       <span class="block-task-uploaded-code-note">Upload your final work file or paste in its URL, then click Submit.</span>
-      <form action="{{ upload_url }}" method="post" enctype="multipart/form-data" class="form-upload-code clearfix">
+      <form method="post" enctype="multipart/form-data" id="file-form" class="form-upload-code clearfix">
         {{ work_file_form.render }}
         <div class="form-row form-row-buttons">
           <input value="Submit File" name="work_file_submit" class="button" type="submit">
