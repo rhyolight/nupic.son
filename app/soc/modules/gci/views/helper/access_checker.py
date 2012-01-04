@@ -326,7 +326,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     task = self.data.task
 
-    if task.status not in (UNPUBLISHED + CLAIMABLE):
+    if task.status not in (UNPUBLISHED + ['Open']):
       return False
 
     return True

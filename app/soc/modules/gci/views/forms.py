@@ -24,8 +24,11 @@ import re
 from google.appengine.ext import db
 
 from django.core.urlresolvers import reverse
+from django.utils.datastructures import MergeDict
+from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
+from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.template import defaultfilters
 from django.utils.formats import dateformat
@@ -43,12 +46,14 @@ TEMPLATE_PATH = 'v2/modules/gci/_form.html'
 # The standard input fields should be available to all importing modules
 CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
+CheckboxSelectMultiple = forms.CheckboxSelectMultiple
 DateInput = forms.DateInput
 DateTimeInput = forms.DateTimeInput
 FileInput = forms.FileInput
 HiddenInput = forms.HiddenInput
 RadioSelect = forms.RadioSelect
 Select = forms.Select
+SelectMultiple = forms.SelectMultiple
 TextInput = forms.TextInput
 Textarea = forms.Textarea
 
@@ -123,6 +128,59 @@ class AvatarWidget(HiddenInput):
     return mark_safe('<div id="%s-picker">%s</div>' % (name, picker_html))
 
 
+class MultipleSelectWidget(Select):
+  """Extends the Django's Select widget to have multiple dynamic select widgets.
+  """
+
+  def __init__(self, attrs=None, choices=(), disabled_option=()):
+    super(MultipleSelectWidget, self).__init__(attrs, choices)
+    self.disabled_option = disabled_option
+
+  def render(self, name, values, attrs=None, choices=()):
+    final_attrs = self.build_attrs(attrs)
+
+    if not values: values = ['']
+    wrapper_id = final_attrs.pop('wrapper_id', 'multiple-select-wrapper')
+    output = [u'<div id="%s">' % (wrapper_id)]
+
+    add_new_text = final_attrs.pop('add_new_text', 'add another select widget')
+
+    for i, value in enumerate(values):
+      select_id = final_attrs.pop('select_id', 'select-field')
+      attr_dict = {
+          'id': '%s-%d' % (select_id, i)
+          }
+      output.append(super(MultipleSelectWidget, self).render(
+          name, value, attr_dict, choices=choices))
+
+    output.append(u'</div>')
+    output.append(u'<div class="add-field-link clearfix">')
+    output.append(u'<a href="javascript:new_link()">+ %s</a>' % (add_new_text))
+    output.append(u'</div>')
+
+    return mark_safe(u'\n'.join(output))
+
+  def value_from_datadict(self, data, files, name):
+    """Given a dictionary of data and this widget's name, returns the value
+    of this widget. Returns None if it's not provided.
+    """
+    if isinstance(data, (MultiValueDict, MergeDict)):
+      return data.getlist(name)
+    return data.get(name, None)
+
+  def render_options(self, choices, selected_choices):
+    output = []
+    if self.disabled_option:
+      disabled_value, disabled_label = self.disabled_option
+      output.append(u'<option value="%s" disabled=disabled>%s</option>' % (
+          escape(disabled_value),
+          conditional_escape(force_unicode(disabled_label))))
+
+    output.append(super(MultipleSelectWidget, self).render_options(
+        choices, selected_choices))
+
+    return u'\n'.join(output)
+
 class RadioInput(forms.RadioInput):
   """The rendering customization to be used for individual radio elements.
   """
@@ -154,7 +212,7 @@ class RadioFieldRenderer(forms.RadioFieldRenderer):
         % (w.attrs.get('id', ''), force_unicode(w)) for w in self]))
 
 
-class CheckboxSelectMultiple(forms.CheckboxSelectMultiple):
+class CheckboxSelectMultiple(CheckboxSelectMultiple):
   def render(self, name, value, attrs=None, choices=()):
     if value is None:
       value = []
@@ -428,8 +486,8 @@ class GCIBoundField(forms.BoundField):
 
     return mark_safe('%s%s%s' % (
         self._render_label(),
-        self.as_widget(attrs=attrs),
         self._render_note(),
+        self.as_widget(attrs=attrs),
     ))
 
   def setDocumentWidgetHelpText(self):

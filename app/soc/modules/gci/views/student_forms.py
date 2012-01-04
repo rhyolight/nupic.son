@@ -101,6 +101,11 @@ class StudentFormUpload(RequestHandler):
     """
     return 'v2/modules/gci/student_forms/base.html'
 
+  def json(self):
+    url = self.redirect.program().urlOf('gci_student_form_upload', secure=True)
+    upload_url = blobstore.create_upload_url(url)
+    self.response.write(upload_url)
+
   def get(self):
     """Handles download of the forms otherwise resumes normal rendering.
     """
@@ -136,8 +141,6 @@ class StudentFormUpload(RequestHandler):
         upload_form.errors[field_name] = upload_form.error_class([error])
 
     context['form'] = upload_form
-    url = self.redirect.program().urlOf('gci_student_form_upload')
-    context['upload_url'] = blobstore.create_upload_url(url)
 
     return context
 

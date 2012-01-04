@@ -41,6 +41,7 @@ from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
 from soc.modules.gci.models.task import TASK_IN_PROGRESS
+from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
@@ -240,6 +241,11 @@ class TaskViewPage(RequestHandler):
             time_expired > task_logic.DELETE_EXPIRATION:
           self.check.fail(DEF_NOT_ALLOWED_TO_DELETE)
 
+  def json(self):
+    url = '%s?submit_work' %(
+          self.data.redirect.id().urlOf('gci_view_task'))
+    upload_url = blobstore.create_upload_url(url)
+    self.response.write(upload_url)
 
   def context(self):
     """Returns the context for this view.
@@ -284,12 +290,12 @@ class TaskViewPage(RequestHandler):
       return self._postComment()
     elif 'button' in self.data.GET:
       return self._postButton()
-    elif 'submit_work' in self.data.GET:
-      return self._postSubmitWork()
     elif 'send_for_review' in self.data.GET:
       return self._postSendForReview()
     elif 'delete_submission' in self.data.GET:
       return self._postDeleteSubmission()
+    elif 'work_file_submit' in self.data.POST or 'submit_work' in self.data.GET:
+      return self._postSubmitWork()
     else:
       self.error(405)
 
@@ -327,6 +333,10 @@ class TaskViewPage(RequestHandler):
         task.status = 'Unpublished'
         task.put()
       db.run_in_transaction(txn)
+    elif button_name == 'button_edit':
+      r = self.redirect.id(id=task.key().id_or_name())
+      r.to('gci_edit_task')
+      return
     elif button_name == 'button_delete':
       task_logic.delete(task)
       self.redirect.homepage().to()
@@ -506,6 +516,8 @@ class TaskInformation(Template):
       context['button_delete'] = not task.student
 
     if is_mentor:
+      context['button_edit'] = task.status in \
+          UNPUBLISHED + CLAIMABLE + ACTIVE_CLAIMED_TASK
       context['button_assign'] = task.status == 'ClaimRequested'
       context['button_unassign'] = task.status in ACTIVE_CLAIMED_TASK
       context['button_close'] = task.status == 'NeedsReview'
@@ -600,7 +612,6 @@ class WorkSubmissions(Template):
       url = '%s?submit_work' %(
           self.data.redirect.id().urlOf('gci_view_task'))
       context['direct_post_url'] = url
-      context['upload_url'] = blobstore.create_upload_url(url)
 
     return context
 

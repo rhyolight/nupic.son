@@ -37,6 +37,7 @@ limitations under the License.
 {% block dependencies %}
   [
     dep.melange.clock,
+    dep.melange.uploadform,
     null,
     function () {
       {% if comments %}
@@ -69,6 +70,13 @@ limitations under the License.
 
         /* Fancy dynamic remaining time displaying clock */
         melange.clock.loadClock({{ complete_percentage }});
+
+        var form_name = "#file-form";
+        jQuery(form_name).submit(function() {
+          var url = melange.getUploadUrl();
+          jQuery(form_name).get(0).setAttribute('action', url);
+          return true;
+        });
       });
     }
   ]

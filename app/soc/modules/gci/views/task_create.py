@@ -53,14 +53,99 @@ def mentorChoicesForOrg(task, org):
   return ((str(m.key()), m.name()) for m in mentors)
 
 
-class TaskCreateForm(gci_forms.GCIModelForm):
-  """Django form for the task creation page.
+class TaskEditPostClaimForm(gci_forms.GCIModelForm):
+  """Django form for the task editing after the task is published page.
   """
 
   tags = django_forms.CharField(
       label=ugettext('Tags'),
       help_text=ugettext('Describe this task with tags (comma separated). '
                          'Ex: Linux, Apache, C++, GUI'))
+
+  def __init__(self, data, *args, **kwargs):
+    super(TaskEditPostClaimForm, self).__init__(*args, **kwargs)
+
+    self.request_data = data
+    self.organization = self.request_data.organization if not self.instance \
+        else self.instance.org
+
+    self.POST = args[0] if len(args) > 0 and args[0] else None
+
+    mentor_choices = list(mentorChoicesForOrg(self.instance, self.organization))
+
+    self.fields['mentors'] = django_forms.MultipleChoiceField(
+        label=ugettext('Mentors'), required=False,
+        widget=gci_forms.MultipleSelectWidget(
+        attrs={
+            'select_id': 'assign-mentor',
+            'wrapper_id': 'select-mentors-wrapper',
+            'add_new_text': 'add another mentor',
+            }, disabled_option=('', 'Select a mentor')),
+        choices=mentor_choices)
+
+    if self.instance:
+      self.fields['tags'].initial = self.instance.tags_string(
+          self.instance.arbit_tag)
+
+    # Bind all the fields here to boundclass since we do not iterate
+    # over the fields using iterator for this form.
+    self.bound_fields = {}
+    for name, field in self.fields.items():
+      self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
+
+  def _saveTags(self, entity):
+    entity.arbit_tag = {
+        'tags': self.cleaned_data['tags'],
+        'scope': self.request_data.program,
+        }
+
+  def save(self, commit=True):
+    self.cleaned_data['modified_by'] = self.request_data.profile
+
+    entity = super(TaskEditPostClaimForm, self).save(commit=False)
+
+    if commit:
+      entity.put()
+
+    if entity:
+      self._saveTags(entity)
+
+    return entity
+
+  def clean_mentors(self):
+    mentor_key_strs = self.data.getlist('mentors')
+
+    if not mentor_key_strs:
+      raise django_forms.ValidationError(
+          ugettext("At least one mentor should be assigned to the task."))
+
+    org_mentors_keys = profile_logic.queryAllMentorsForOrg(
+        self.organization, keys_only=True)
+
+    mentor_keys = []
+    for m_str in mentor_key_strs:
+      if not m_str:
+        break
+
+      mentor_key = db.Key(m_str)
+      if mentor_key not in org_mentors_keys:
+        raise django_forms.ValidationError(
+            ugettext("One of the mentors doesn't belong to the organization "
+                     "that this task belongs to."))
+
+      mentor_keys.append(mentor_key)
+
+    return mentor_keys
+
+  class Meta:
+    model = task.GCITask
+    css_prefix = 'gci-task'
+    fields = ['arbit_tag', 'mentors']
+
+
+class TaskCreateForm(TaskEditPostClaimForm):
+  """Django form for the task creation page.
+  """
 
   time_to_complete_days = django_forms.IntegerField(
       label=ugettext('Time to complete'), min_value=0,
@@ -71,13 +156,7 @@ class TaskCreateForm(gci_forms.GCIModelForm):
       error_messages={'min_value': ugettext('Hours cannot be negative.')})
 
   def __init__(self, data, *args, **kwargs):
-    super(TaskCreateForm, self).__init__(*args, **kwargs)
-
-    self.request_data = data
-    self.organization = self.request_data.organization if not self.instance \
-        else self.instance.org
-
-    self.POST = args[0] if len(args) > 0 and args[0] else None
+    super(TaskCreateForm, self).__init__(data, *args, **kwargs)
 
     difficulties = [(d, d) for d in DIFFICULTIES[:-1]]
     self.fields['difficulty_level'] = django_forms.ChoiceField(
@@ -92,65 +171,29 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     self.fields['task_type'] = django_forms.MultipleChoiceField(
         label=ugettext('Type'), choices=task_type_tags,
-        widget=forms.CheckboxSelectMultiple)
-
-    self.fields['mentors'] = django_forms.ChoiceField(
-        label=ugettext('Mentors'), required=False,
-        choices=mentorChoicesForOrg(self.instance, self.organization))
-
-    self.fields['task_type'].initial = self._getInitialValuesForList(
-        'task_type')
-
-    self.assigned_mentors = self._getInitialValuesForList(
-        'mentors')
+        widget=gci_forms.CheckboxSelectMultiple,
+        help_text=ugettext(
+            'The kind of work to be done. Can be of more than one type'))
 
     if self.instance:
+      self.fields['task_type'].initial = [str(t) for t in getattr(
+          self.instance, 'task_type')]
       ttc = datetime.timedelta(hours=self.instance.time_to_complete)
       self.fields['time_to_complete_days'].initial = ttc.days
       self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
-
-      self.fields['tags'].initial = self.instance.tags_string(
-          self.instance.arbit_tag)
 
       self.fields['difficulty_level'].initial = self.instance.difficulty_level
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
-    self.bound_fields = {}
     for name, field in self.fields.items():
       self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
 
-  def _getInitialValuesForList(self, field):
-    """Returns the initial values for the field which take list of values.
-
-    One of the following 3 cases can happen:
-    1. If POST attribute exists and there are are no values for the given
-       field empty list is returned.
-    2. It checks if the POST data contains some value(s) for the given field,
-       if so the method returns that as the intial value.
-    3. If the POST attribute is None, it means that the request is a GET
-       request and hence if there are any values stored in the instance
-       those values are returned
-
-    Args:
-      field: the name of the field
-    """
-    if self.request_data.request.method == 'POST':
-      initial = self.POST.getlist(field)
-      return initial if initial else []
-
-    if self.instance:
-      return [str(t) for t in getattr(self.instance, field)]
-
-    return []
-
   def _saveTags(self, entity):
+    super(TaskCreateForm, self)._saveTags(entity)
+
     entity.task_type = {
         'tags': self.cleaned_data['task_type'],
-        'scope': self.request_data.program,
-        }
-    entity.arbit_tag = {
-        'tags': self.cleaned_data['tags'],
         'scope': self.request_data.program,
         }
 
@@ -181,19 +224,6 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     return entity
 
-  def save(self, commit=True):
-    self.cleaned_data['modified_by'] = self.request_data.profile
-
-    entity = super(TaskCreateForm, self).save(commit=False)
-
-    if commit:
-      entity.put()
-
-    if entity:
-      self._saveTags(entity)
-
-    return entity
-
   clean_description = cleaning.clean_html_content('description')
 
   def clean(self):
@@ -216,73 +246,11 @@ class TaskCreateForm(gci_forms.GCIModelForm):
 
     return cleaned_data
 
-  def clean_mentors(self):
-    mentor_key_strs = self.data.getlist('mentors')
-
-    if not mentor_key_strs:
-      raise django_forms.ValidationError(
-          ugettext("At least one mentor should be assigned to the task."))
-
-    org_mentors_keys = profile_logic.queryAllMentorsForOrg(
-        self.organization, keys_only=True)
-
-    mentor_keys = []
-    for m_str in mentor_key_strs:
-      if not m_str:
-        break
-
-      mentor_key = db.Key(m_str)
-      if mentor_key not in org_mentors_keys:
-        raise django_forms.ValidationError(
-            ugettext("One of the mentors doesn't belong to the organization "
-                     "that this task belongs to."))
-
-      mentor_keys.append(mentor_key)
-
-    return mentor_keys
-
   class Meta:
     model = task.GCITask
     css_prefix = 'gci-task'
     fields = ['title', 'description', 'difficulty_level', 
-        'task_type', 'arbit_tag']
-
-
-class TaskEditPostClaimForm(TaskCreateForm):
-  """Django form for the task editing after the task is published page.
-  """
-
-  def __init__(self, data, *args, **kwargs):
-    super(TaskCreateForm, self).__init__(*args, **kwargs)
-
-    self.request_data = data
-    self.organization = self.request_data.organization if not self.instance \
-        else self.instance.org
-
-    self.POST = args[0] if len(args) > 0 and args[0] else None
-
-    self.fields['mentors'] = django_forms.ChoiceField(
-        label=ugettext('Mentors'), required=False,
-        choices=mentorChoicesForOrg(self.instance, self.organization))
-
-    self.assigned_mentors = self._getInitialValuesForList(
-        'mentors')
-
-    if self.instance:
-      self.fields['tags'].initial = self.instance.tags_string(
-          self.instance.arbit_tag)
-
-    # Bind all the fields here to boundclass since we do not iterate
-    # over the fields using iterator for this form.
-    self.bound_fields = {}
-    for name, field in self.fields.items():
-      self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
-
-
-  class Meta:
-    model = task.GCITask
-    css_prefix = 'gci-task'
-    fields = ['arbit_tag']
+              'task_type', 'arbit_tag', 'mentors']
 
 
 class TaskFormErrorTemplate(Template):

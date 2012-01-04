@@ -36,32 +36,7 @@ limitations under the License.
       </span>
     {% endif %}
     <div class="form-row-task-assigned-mentor-inner">
-      <div id="select-mentors-wrapper">
-        {% for mentor in form.assigned_mentors %}
-        <select id="assign-mentor{% if forloop.counter > 1 %}-{{ forloop.counter|add:"-1" }}{% endif %}"
-            name="{{ form.bound_fields.mentors.name }}">
-          <option value="" disabled="disabled">Select a mentor</option>
-          {% for value, label in form.bound_fields.mentors.field.choices %}
-            <option value="{{ value }}"
-                {% ifequal mentor value %}
-                  selected="selected"
-                {% endifequal %}
-            >{{ label }}</option>
-          {% endfor %}
-        </select>
-        {% empty %}
-        <select id="assign-mentor{% if forloop.counter > 1 %}-{{ forloop.counter|add:"-1" }}{% endif %}"
-            name="{{ form.bound_fields.mentors.name }}">
-          <option value="" disabled="disabled" selected="selected">Select a mentor</option>
-          {% for value, label in form.bound_fields.mentors.field.choices %}
-            <option value="{{ value }}">{{ label }}</option>
-          {% endfor %}
-        </select>
-        {% endfor %}
-      </div>
-      <div class="add-field-link clearfix">
-        <a href="javascript:new_link()">+ add another mentor</a>
-      </div>
+      {{ form.bound_fields.mentors.render }}
     </div>
     <span class="note">Mentor who will oversee task's completion</span>
   </div>
