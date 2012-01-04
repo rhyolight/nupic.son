@@ -23,15 +23,21 @@
     {% endif %}
   {% endif %}
 
-  {% for comment, form in comments %}
+  {% for comment_item in comments %}
     <div id="c{{ comment.key.id }}" class="single-comment">
 
-      <span class="single-comment-title">{{ comment.title|default:"No Title" }}</span>
-      <span class="single-comment-meta">by <a href="javascript:void(0)">{% if comment.created_by %}{{ comment.created_by.name }}{% else %}Melange{% endif %}</a> {{ comment.created_on|date:"F j Y H:i"}} UTC</span>
+      <span class="single-comment-title">{{ comment_item.entity.title|default:"No Title" }}</span>
+      <span class="single-comment-meta">by 
+      {% if comment_item.author_link %}
+      <a href="{{ comment_item.author_link }}">{{ comment_item.entity.created_by.name }}</a>
+      {% else %}
+        {% if comment_item.entity.created_by %}{{ comment_item.entity.created_by.name }}{% else %}Melange{% endif %}
+      {% endif %}
+      {{ comment_item.entity.created_on|date:"F j Y H:i"}} UTC</span>
 
-      <p>{{ comment.content|default:""|safe|linebreaks }}</p>
-      {% if comment.changes %}
-        <p><b>Changes:</b> {{ comment.changes|join:"; " }}</p>
+      <p>{{ comment_item.entity.content|default:""|safe|linebreaks }}</p>
+      {% if comment_item.entity.changes %}
+        <p><b>Changes:</b> {{ comment_item.entity.changes|join:"; " }}</p>
       {% endif %}
 
       {% if form and profile %}
@@ -39,7 +45,7 @@
         <div class="single-comment-reply">
           <span class="single-comment-reply-title">Reply</span>
           <form action="?reply={{ comment.key.id }}" method="post" class="form-comment-reply clearfix">
-            {{ form.render }}
+            {{ comment_item.form.render }}
             <div class="form-row form-row-buttons">
               <input value="Submit" class="button" type="submit">
             </div>

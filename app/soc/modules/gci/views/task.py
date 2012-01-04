@@ -33,6 +33,7 @@ from soc.views.helper import blobstore as bs_helper
 from soc.views.template import Template
 
 from soc.modules.gci.logic import comment as comment_logic
+from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.logic.helper import timeline as timeline_helper
 from soc.modules.gci.models.comment import GCIComment
@@ -613,6 +614,12 @@ class CommentsTemplate(Template):
   """Template for rendering and adding comments.
   """
 
+  class CommentItem(object):
+    def __init__(self, entity, form, author_link):
+      self.entity = entity
+      self.form = form
+      self.author_link = author_link
+
   def context(self):
     """Returns the context for the current template.
     """
@@ -621,13 +628,26 @@ class CommentsTemplate(Template):
 
     for comment in self.data.comments:
       comment_key = comment.key().id()
+
+      # generate Reply form, if needed
       form = None
       if not self.data.timeline.allWorkStopped():
         if self.data.POST and reply == str(comment_key):
           form = CommentForm(comment_key, self.data.POST)
         else:
           form = CommentForm(comment_key)
-      item = (comment, form)
+
+      # generate author link, if comment sent by a student
+      author_link = None
+      author = comment.created_by
+      if author:
+        profile = profile_logic.queryProfileForUserAndProgram(
+            author, self.data.program).get()
+        if profile and profile.is_student:
+          author_link = self.data.redirect.profile(profile.link_id).urlOf(
+              url_names.GCI_STUDENT_TASKS)
+
+      item = self.CommentItem(comment, form, author_link)
       comments.append(item)
 
     context = {
