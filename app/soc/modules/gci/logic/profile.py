@@ -81,3 +81,14 @@ def orgAdminsForOrg(org, limit=1000):
   query.filter('org_admin_for', org)
 
   return query.fetch(limit)
+
+
+def queryProfileForUserAndProgram(user, program):
+  """Returns the query to fetch GCIProfile entity for the specified user
+  and program.
+
+  Args:
+    user: User entity for which the profile should be found
+    program: GCIProgram entity for which the profile should be found
+  """
+  return GCIProfile.all().ancestor(user).filter('scope = ', program)
