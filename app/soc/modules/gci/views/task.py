@@ -630,11 +630,11 @@ class CommentsTemplate(Template):
       # generate Reply form, if needed
       form = None
       if not self.data.timeline.allWorkStopped():
-        comment_key = comment.key().id()
-        if self.data.POST and reply == str(comment_key):
-          form = CommentForm(comment_key, self.data.POST)
+        comment_id = comment.key().id()
+        if self.data.POST and reply == str(comment_id):
+          form = CommentForm(comment_id, self.data.POST)
         else:
-          form = CommentForm(comment_key)
+          form = CommentForm(comment_id)
 
       # generate author link, if comment sent by a student
       author_link = None
