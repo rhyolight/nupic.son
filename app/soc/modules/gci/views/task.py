@@ -627,11 +627,10 @@ class CommentsTemplate(Template):
     reply = self.data.GET.get('reply')
 
     for comment in self.data.comments:
-      comment_key = comment.key().id()
-
       # generate Reply form, if needed
       form = None
       if not self.data.timeline.allWorkStopped():
+        comment_key = comment.key().id()
         if self.data.POST and reply == str(comment_key):
           form = CommentForm(comment_key, self.data.POST)
         else:
