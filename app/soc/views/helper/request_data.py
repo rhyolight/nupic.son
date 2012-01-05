@@ -401,7 +401,7 @@ class RedirectHelper(object):
     get_args = extra
     if cbox:
       get_args = extra[:]
-      extra.append('?cbox=true')
+      extra.append('cbox=true')
 
     url = self._appendGetArgs(url, get_args)
     return self._fullUrl(url, full, secure)
