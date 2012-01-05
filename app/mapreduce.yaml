@@ -163,3 +163,10 @@ mapreduce:
       value: soc.modules.gci.models.comment.GCIComment
     - name: program_key
 
+- name: MigrateBlobs
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.migrate_blobs.process
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.profile.GSoCStudentInfo
