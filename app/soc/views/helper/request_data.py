@@ -469,7 +469,7 @@ class RedirectHelper(object):
       url = self._url
     else:
       assert name or self._url_name
-      url = self.urlOf(name or self._url_name, cbox=cbox, extra=get_args)
+      url = self.urlOf(name or self._url_name)
 
     url = self._appendGetArgs(url, cbox=cbox, validated=validated,
         extra_get_args=extra)
