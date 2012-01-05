@@ -459,12 +459,9 @@ class RedirectHelper(object):
       url = self._url
     else:
       assert name or self._url_name
-      url = self.urlOf(name or self._url_name)
+      url = self.urlOf(name or self._url_name, cbox=cbox)
 
     get_args = []
-
-    if cbox:
-      get_args.append('cbox=true')
 
     if validated:
       get_args.append('validated')
