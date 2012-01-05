@@ -1355,19 +1355,19 @@ class StudentsComponent(Component):
       enroll = GSoCStudentInfo.enrollment_form.get_value_for_datastore(info)
       return [tax, enroll]
 
-    #list_config.addColumn(
-    #    'tax_submitted', "Tax form submitted",
-    #    (lambda ent, si, *args: bool(formsSubmitted(ent, si)[0])),
-    #    hidden=True)
+    list_config.addColumn(
+        'tax_submitted', "Tax form submitted",
+        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[0])),
+        hidden=True)
 
-    #list_config.addColumn(
-    #    'enroll_submitted', "Enrollment form submitted",
-    #    (lambda ent, si, *args: bool(formsSubmitted(ent, si)[1])),
-    #    hidden=True)
+    list_config.addColumn(
+        'enroll_submitted', "Enrollment form submitted",
+        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[1])),
+        hidden=True)
 
-    #list_config.addColumn(
-    #    'forms_submitted', "Forms submitted",
-    #    lambda ent, si, *args: all(formsSubmitted(ent, si)))
+    list_config.addColumn(
+        'forms_submitted', "Forms submitted",
+        lambda ent, si, *args: all(formsSubmitted(ent, si)))
 
     addresses.addAddressColumns(list_config)
 
@@ -1501,19 +1501,19 @@ class TodoComponent(Component):
     isgood = lambda x: x and x.size and x.filename
 
     if self.data.is_student and info.number_of_projects:
-      #status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
-      #response.addRow({
-      #    'key': 'tax_form',
-      #    'name': 'Tax form',
-      #    'status': status,
-      #})
+      status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
+      response.addRow({
+          'key': 'tax_form',
+          'name': 'Tax form',
+          'status': status,
+      })
 
-      #status = colorize(isgood(info.enrollment_form), "Submitted", "Not submitted")
-      #response.addRow({
-      #    'key': 'enrollment_form',
-      #    'name': 'Enrollment form',
-      #    'status': status,
-      #})
+      status = colorize(isgood(info.enrollment_form), "Submitted", "Not submitted")
+      response.addRow({
+          'key': 'enrollment_form',
+          'name': 'Enrollment form',
+          'status': status,
+      })
 
       matches = info.school_name in UNIVERSITIES.get(info.school_country, [])
       status = colorize(matches, "Yes", "No")
