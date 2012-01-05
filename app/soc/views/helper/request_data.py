@@ -398,12 +398,8 @@ class RedirectHelper(object):
     else:
       url = reverse(name)
 
-    get_args = extra
-    if cbox:
-      get_args = extra[:]
-      extra.append('cbox=true')
+    url = self._appendGetArgs(url, cbox=cbox, extra_get_args=extra)
 
-    url = self._appendGetArgs(url, get_args)
     return self._fullUrl(url, full, secure)
 
   def url(self, full=False, secure=False):
@@ -433,16 +429,25 @@ class RedirectHelper(object):
 
     return '%s://%s%s' % (protocol, hostname, url)
 
-  def _appendGetArgs(self, url, get_args):
+  def _appendGetArgs(self, url, cbox=False, validated=False,
+      extra_get_args=[]):
     """Appends GET arguments to the specified URL.
     """
-    # check if the url has already a question mark
-    if url.find('?') == -1:
-      url = url + '?'
+    get_args = extra_get_args[:]
+    if cbox:
+      get_args.append('cbox=true')
 
-    # append all the GET arguments at the end of the URL
+    if validated:
+      get_args.append('validated')
+
     if get_args:
-      url = '&'.join(get_args)
+      # check if the url has already a question mark
+      if url.find('?') == -1:
+        url = url + '?'
+
+      # append all the GET arguments at the end of the URL
+      if get_args:
+        url = '&'.join(get_args)
 
     return url
 
@@ -464,16 +469,11 @@ class RedirectHelper(object):
       url = self._url
     else:
       assert name or self._url_name
-      url = self.urlOf(name or self._url_name, cbox=cbox)
+      url = self.urlOf(name or self._url_name, cbox=cbox, extra=get_args)
 
-    get_args = []
+    url = self._appendGetArgs(url, cbox=cbox, validated=validated,
+        extra_get_args=extra)
 
-    if validated:
-      get_args.append('validated')
-
-    get_args.extend(extra)
-
-    url = self._appendGetArgs(url, get_args)
     self.toUrl(url, full=full, secure=secure)
 
   def toUrl(self, url, full=False, secure=False):
