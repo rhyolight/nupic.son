@@ -22,6 +22,8 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from soc.models import countries
+
 from taggable.taggable import Tag
 from taggable.taggable import Taggable
 from taggable.taggable import tag_property

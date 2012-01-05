@@ -21,8 +21,6 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.models import countries
-
 import soc.models.presence
 import soc.models.user
 
