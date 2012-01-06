@@ -41,6 +41,10 @@ from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
+DEF_TASK_TYPE_HELP_MSG = ugettext(
+    'The kind of work to be done. Can be of more than one type')
+
+
 def mentorChoicesForOrg(task, org):
   """Builds the tuple of mentor choice 2-tuples for the Django choice field.
 
@@ -172,8 +176,7 @@ class TaskCreateForm(TaskEditPostClaimForm):
     self.fields['task_type'] = django_forms.MultipleChoiceField(
         label=ugettext('Type'), choices=task_type_tags,
         widget=gci_forms.CheckboxSelectMultiple,
-        help_text=ugettext(
-            'The kind of work to be done. Can be of more than one type'))
+        help_text=DEF_TASK_TYPE_HELP_MSG)
 
     if self.instance:
       self.fields['task_type'].initial = [str(t) for t in getattr(
