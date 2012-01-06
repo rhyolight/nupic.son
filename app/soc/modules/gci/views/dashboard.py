@@ -1106,19 +1106,24 @@ class AllStudentsList(Component):
         lambda entity, *args: 'Yes' 
             if entity.parent().student_info.consent_form else 'No')
     list_config.addColumn('email', 'Email',
-        lambda entity, *args: entity.parent().email)
+        lambda entity, *args: entity.parent().email,
+        hidden=True)
     list_config.addColumn('street', 'Street',
         lambda entity, *args: entity.parent().res_street + ' ' +
-            str(entity.parent().res_street_extra or ''))
+            str(entity.parent().res_street_extra or ''),
+        hidden=True)
     list_config.addColumn('city', 'City',
-        lambda entity, *args: entity.parent().res_city)
+        lambda entity, *args: entity.parent().res_city,
+        hidden=True)
     list_config.addColumn('state', 'State/Province',
-        lambda entity, *args: entity.parent().res_state)
+        lambda entity, *args: entity.parent().res_state,
+        hidden=True)
     list_config.addColumn('postalcode', 'Postal Code',
-        lambda entity, *args: entity.parent().res_postalcode)
-
+        lambda entity, *args: entity.parent().res_postalcode,
+        hidden=True)
     list_config.addColumn('country', 'Country',
-        lambda entity, *args: entity.parent().res_country)
+        lambda entity, *args: entity.parent().res_country,
+        hidden=True)
 
     list_config.addCustomRedirectRowButton('student_id',
         'download_student_id', 'Download',
