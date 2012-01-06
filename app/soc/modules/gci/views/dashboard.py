@@ -1107,6 +1107,18 @@ class AllStudentsList(Component):
             if entity.parent().student_info.consent_form else 'No')
     list_config.addColumn('email', 'Email',
         lambda entity, *args: entity.parent().email)
+    list_config.addColumn('street', 'Street',
+        lambda entity, *args: entity.parent().res_street + ' ' +
+            str(entity.parent().res_street_extra or ''))
+    list_config.addColumn('city', 'City',
+        lambda entity, *args: entity.parent().res_city)
+    list_config.addColumn('state', 'State/Province',
+        lambda entity, *args: entity.parent().res_state)
+    list_config.addColumn('postalcode', 'Postal Code',
+        lambda entity, *args: entity.parent().res_postalcode)
+
+    list_config.addColumn('country', 'Country',
+        lambda entity, *args: entity.parent().res_country)
 
     list_config.addCustomRedirectRowButton('student_id',
         'download_student_id', 'Download',
