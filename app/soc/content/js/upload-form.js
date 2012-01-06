@@ -27,7 +27,8 @@
     if (window.location.href.indexOf("?") !== -1) {
       ampersand_question = "&";
     }
-    return jQuery.ajax({
+    var upload_link;
+    jQuery.ajax({
       async: false,
       cache: false,
       url: [
@@ -35,9 +36,14 @@
         ampersand_question,
         "fmt=json"
       ].join(""),
+      dataType: "json",
+      success: function( data ) {
+        upload_link = data.upload_link;
+      },
       error: function(msg, text, e) {
         alert("Could not retrieve upload url: '" + e + "'.");
       }
-    }).responseText;
+    });
+    return upload_link;
   }
 }(jQuery));
