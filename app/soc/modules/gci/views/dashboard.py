@@ -1105,6 +1105,8 @@ class AllStudentsList(Component):
     list_config.addColumn('consent_form', 'Parental Consent',
         lambda entity, *args: 'Yes' 
             if entity.parent().student_info.consent_form else 'No')
+    list_config.addColumn('number_of_tasks', 'Number of tasks',
+        lambda entity, *args: len(entity.tasks))
     list_config.addColumn('email', 'Email',
         lambda entity, *args: entity.parent().email,
         hidden=True)
