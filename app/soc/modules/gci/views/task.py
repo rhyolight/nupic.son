@@ -241,11 +241,12 @@ class TaskViewPage(RequestHandler):
             time_expired > task_logic.DELETE_EXPIRATION:
           self.check.fail(DEF_NOT_ALLOWED_TO_DELETE)
 
-  def json(self):
+  def jsonContext(self):
     url = '%s?submit_work' %(
           self.data.redirect.id().urlOf('gci_view_task'))
-    upload_url = blobstore.create_upload_url(url)
-    self.response.write(upload_url)
+    return {
+        'upload_link': blobstore.create_upload_url(url),
+        }
 
   def context(self):
     """Returns the context for this view.

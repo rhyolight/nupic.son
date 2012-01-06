@@ -194,10 +194,11 @@ class FormPage(RequestHandler):
   def _r(self):
     return self.redirect.profile() if self._admin() else self.redirect.program()
 
-  def json(self):
+  def jsonContext(self):
     url = self._r().urlOf(self._urlName(), secure=True)
-    upload_url = blobstore.create_upload_url(url)
-    self.response.write(upload_url)
+    return {
+        'upload_link': blobstore.create_upload_url(url),
+        }
 
   def post(self):
     Form = self._form()
