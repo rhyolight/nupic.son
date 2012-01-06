@@ -1123,21 +1123,7 @@ class AllStudentsList(Component):
         hidden=True)
     list_config.addColumn('country', 'Country',
         lambda entity, *args: entity.parent().res_country,
-        hidden=True)
-
-    list_config.addCustomRedirectRowButton('student_id',
-        'download_student_id', 'Download',
-        lambda entity, *args, **kwargs: r.profile(
-            entity.parent().link_id).urlOf(
-            url_names.GCI_STUDENT_FORM_DOWNLOAD,
-            extra=[url_names.STUDENT_ID_FORM_GET_PARAM]))
-
-    list_config.addCustomRedirectRowButton('consent_form',
-        'download_consent_form', 'Download',
-        lambda entity, *args, **kwargs: r.profile(
-            entity.parent().link_id).urlOf(
-            url_names.GCI_STUDENT_FORM_DOWNLOAD,
-            extra=[url_names.CONSENT_FORM_GET_PARAM]))    
+        hidden=True)   
 
     self.idx = self.COMPONTENT_IDX
     self._list_config = list_config
