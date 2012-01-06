@@ -50,8 +50,6 @@ class OrgProfileForm(org_profile.OrgProfileForm):
     model = GCIOrganization
     css_prefix = 'gci_org_page'
     exclude = PROFILE_EXCLUDE
-    widgets = forms.choiceWidgets(GCIOrganization,
-        ['contact_country', 'shipping_country'])
 
   def templatePath(self):
     return gci_forms.TEMPLATE_PATH
@@ -65,8 +63,6 @@ class OrgCreateProfileForm(OrgProfileForm):
     model = GCIOrganization
     css_prefix = 'gci_org_page'
     exclude = PROFILE_EXCLUDE
-    widgets = forms.choiceWidgets(GCIOrganization,
-        ['contact_country', 'shipping_country'])
 
 
 class OrgProfilePage(RequestHandler):
