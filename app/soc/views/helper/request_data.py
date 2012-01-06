@@ -447,7 +447,7 @@ class RedirectHelper(object):
 
       # append all the GET arguments at the end of the URL
       if get_args:
-        url = '&'.join(get_args)
+        url = url + '&'.join(get_args)
 
     return url
 
