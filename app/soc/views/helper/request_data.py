@@ -444,6 +444,8 @@ class RedirectHelper(object):
       # check if the url has already a question mark
       if url.find('?') == -1:
         url = url + '?'
+      else:
+        url = url + '&'
 
       # append all the GET arguments at the end of the URL
       if get_args:
