@@ -53,6 +53,9 @@ class GCIStudentInfo(soc.models.role.StudentInfo):
   #: number of tasks completed
   number_of_tasks_completed = db.IntegerProperty(default=0)
 
+  #: Property determining whether the student has closed at least one task
+  task_closed = db.BooleanProperty(default=False)
+
   #: Set to True if the reminder mail to upload parental consent
   #: form is sent to students
   parental_form_mail = db.BooleanProperty(default=False)

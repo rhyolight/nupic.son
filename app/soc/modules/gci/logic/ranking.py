@@ -22,6 +22,7 @@ import logging
 
 from google.appengine.ext import db
 
+from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
 from soc.modules.gci.models.task import POINTS
@@ -90,6 +91,14 @@ def updateScore(task):
     score.put()
     logging.info("score put returned")
 
+    query = GCIStudentInfo.all().ancestor(student)
+    student_info = query.get()
+
+    # set in student info that the student has completed a task
+    if not student_info.task_closed:
+      student_info.task_closed = True
+      student_info.put()
+
   db.run_in_transaction(update_ranking_txn)
 
 
@@ -150,7 +159,6 @@ def calculateScore(student, tasks, program):
     tasks: List of GCITasks that have been completed by the student
     program: GCIProgram entity that all the tasks refer to
   """
-
   # do not calculate score for students who have not completed any tasks
   if not tasks:
     return None
@@ -170,6 +178,12 @@ def calculateScore(student, tasks, program):
     score.points = points
     score.tasks = [task.key() for task in tasks]
     score.put()
+
+    # set that the student closed a task in GCIStudentInfo
+    query = GCIStudentInfo.all().ancestor(student)
+    student_info = query.get()
+    student_info.task_closed = True
+    student_info.put()
 
   return db.run_in_transaction(calculate_score_txn)
 
