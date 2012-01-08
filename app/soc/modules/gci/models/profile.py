@@ -22,11 +22,10 @@ from google.appengine.ext import blobstore
 
 from django.utils.translation import ugettext
 
+from soc.modules.gci.models import avatars
 from soc.modules.gci.models.progtam import GCIProgram
 
 import soc.models.role
-
-from soc.modules.gci.models import avatars
 
 
 class GCIProfile(soc.models.role.Profile):
