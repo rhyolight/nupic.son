@@ -22,6 +22,7 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 from soc.models import countries
+from soc.models.program import Program
 
 import soc.models.linkable
 import soc.models.school
@@ -90,6 +91,11 @@ class StudentInfo(soc.models.base.ModelWithFieldAttributes):
       'Please enter your grade in the school, e.g. 8 if you are in 8th'
       ' grade. In some parts of the world it is called as, e.g. 8th'
       ' Standard')
+
+  #: Program that the entity has been created for
+  program = db.ReferenceProperty(
+      reference_class=soc.models.program.Program,
+      required=True, collection_name='student_infos')
 
 
 class Role(soc.models.linkable.Linkable):
