@@ -159,7 +159,7 @@ class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
     exclude = [
         'school', 'school_type', 'number_of_proposals', 'number_of_projects',
         'tax_form', 'enrollment_form', 'project_for_orgs', 'passed_evaluations',
-        'failed_evaluations', 'grade'
+        'failed_evaluations', 'grade', 'program',
     ]
     widgets = forms.choiceWidgets(GSoCStudentInfo,
         ['school_country', 'school_type', 'degree'])
