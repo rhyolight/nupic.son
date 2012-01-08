@@ -22,6 +22,8 @@ from google.appengine.ext import blobstore
 
 from django.utils.translation import ugettext
 
+from soc.modules.gci.models.progtam import GCIProgram
+
 import soc.models.role
 
 from soc.modules.gci.models import avatars
@@ -78,3 +80,8 @@ class GCIStudentInfo(soc.models.role.StudentInfo):
       required=False, verbose_name=ugettext('Student ID form'))
   student_id_form.help_text = ugettext(
       'A scan of your student ID to verify your student status and birthday.')
+
+  #: Program that the entity has been created for
+  program = db.ReferenceProperty(
+      reference_class=soc.modules.gci.models.program.GCIProgram,
+      required=True, collection_name='student_infos')
