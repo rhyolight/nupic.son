@@ -288,6 +288,7 @@ class ProfilePage(object):
     else:
       student_info = student_form.create(
           commit=False, key_name=key_name, parent=profile)
+      student_info.program = self.data.program
       profile.is_student = True
       profile.student_info = student_info
 
