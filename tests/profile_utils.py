@@ -301,7 +301,8 @@ class GSoCProfileHelper(ProfileHelper):
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
                   'school': None, 'tax_form': None, 'enrollment_form': None,
                   'number_of_projects': 0, 'number_of_proposals': 0,
-                  'passed_evaluations': 0, 'failed_evaluations': 0,}
+                  'passed_evaluations': 0, 'failed_evaluations': 0,
+                  'program': self.program}
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()
@@ -409,7 +410,8 @@ class GCIProfileHelper(ProfileHelper):
     self.createProfile()
     from soc.modules.gci.models.profile import GCIStudentInfo
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
-                  'school': None, 'number_of_tasks_completed': 0}
+                  'school': None, 'number_of_tasks_completed': 0,
+                  'program': self.program}
     self.profile.student_info = self.seed(GCIStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()
