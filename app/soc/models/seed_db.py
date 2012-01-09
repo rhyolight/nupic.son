@@ -407,6 +407,7 @@ def seed(request, *args, **kwargs):
       'school_country': 'United States',
       'school_name': 'Test School',
       'school_home_page': 'http://www.example.com',
+      'program': gsoc2009,
   }
   student_info = GSoCStudentInfo(**student_info_properties)
   student_info.put()
