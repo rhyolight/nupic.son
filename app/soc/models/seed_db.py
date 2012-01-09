@@ -404,6 +404,7 @@ def seed(request, *args, **kwargs):
       'key_name': melange_student.key().name(),
       'parent': melange_student,
       'expected_graduation': 2009,
+      'program': gsoc2009,
       'school_country': 'United States',
       'school_name': 'Test School',
       'school_home_page': 'http://www.example.com',
@@ -489,6 +490,7 @@ def seed(request, *args, **kwargs):
   student_info_properties.update({
       'key_name': gci_student.key().name(),
       'parent': gci_student,
+      'program': gci2009,
   })
   student_info = GCIStudentInfo(**student_info_properties)
   student_info.put()
