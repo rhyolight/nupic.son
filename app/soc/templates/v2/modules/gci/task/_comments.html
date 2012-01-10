@@ -40,7 +40,7 @@
         <p><b>Changes:</b> {{ comment_item.entity.changes|join:"; " }}</p>
       {% endif %}
 
-      {% if form and profile %}
+      {% if comment_item.form and profile %}
         <a href="javascript:void(0)" class="task-btn task-btn-comment-reply">Reply</a>
         <div class="single-comment-reply">
           <span class="single-comment-reply-title">Reply</span>
