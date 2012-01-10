@@ -56,7 +56,7 @@ DEF_UPDATE_SLOT_TRANSFER_SUBJECT = ugettext(
 
 DEF_NEW_REVIEW_SUBJECT = ugettext(
     '[%(org)s] New %(review_visibility)s review on %(reviewed_name)s '
-    '(%(proposer_name)s) by %(reviewer_name)s')
+    '(%(proposer_name)s)')
 
 DEF_HANDLED_REQUEST_SUBJECT = ugettext(
     '[%(org)s] Request to become a %(role_verbose)s has been %(action)s')

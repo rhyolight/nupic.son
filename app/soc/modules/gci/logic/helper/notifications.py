@@ -53,7 +53,7 @@ DEF_PARENTAL_FORM_SUBJECT = ugettext(
     '[%(program_name)s]: Parental Consent Form - Please Respond')
 
 DEF_NEW_TASK_COMMENT_SUBJECT = ugettext(
-    '[%(program_name)s] New comment on %(task_title)s by %(commented_by)s')
+    '[%(program_name)s] New comment on %(task_title)s')
 
 DEF_NEW_TASK_COMMENT_NOTIFICATION_TEMPLATE = \
     'v2/modules/gci/notification/new_task_comment.html'
