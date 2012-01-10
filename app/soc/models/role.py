@@ -95,7 +95,7 @@ class StudentInfo(soc.models.base.ModelWithFieldAttributes):
   #: Program that the entity has been created for
   program = db.ReferenceProperty(
       reference_class=soc.models.program.Program,
-      required=True, collection_name='student_infos')
+      required=False, collection_name='student_infos')
 
 
 class Role(soc.models.linkable.Linkable):
