@@ -102,6 +102,7 @@ class DashboardPage(RequestHandler):
     dashboards.append(MainDashboard(self.request, self.data))
     dashboards.append(ProgramSettingsDashboard(self.request, self.data))
     dashboards.append(OrgDashboard(self.request, self.data))
+    dashboards.append(ParticipantsDashboard(self.request, self.data))
 
     return {
         'colorbox': self.data.GET.get('colorbox'),
@@ -139,6 +140,7 @@ class MainDashboard(Dashboard):
 
     program_settings = ProgramSettingsDashboard(self.request, self.data)
     organizations = OrgDashboard(self.request, self.data)
+    participants = ParticipantsDashboard(self.request, self.data)
 
     subpages = [
         {
@@ -163,6 +165,14 @@ class MainDashboard(Dashboard):
             'title': 'Organizations',
             'link': '',
             'subpage_links': organizations.getSubpagesLink(),
+        },
+        {
+            'name': 'participants',
+            'description': ugettext(
+                'List of organization admins, mentors and students'),
+            'title': 'Particiapnts',
+            'link': '',
+            'subpage_links': participants.getSubpagesLink(),
         },
     ]
 
@@ -294,6 +304,50 @@ class OrgDashboard(Dashboard):
     }
 
 
+class ParticipantsDashboard(Dashboard):
+  """Dashboard for admin's all participants dashboard
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    r = data.redirect
+    r.program()
+
+    subpages = [
+        {
+            'name': 'list_mentors',
+            'description': ugettext(
+                'List of all the organization admins and mentors'),
+            'title': 'List mentors',
+            'link': r.urlOf('gci_list_mentors')
+        },
+    ]
+
+    super(ParticipantsDashboard, self).__init__(request, data, subpages)
+
+  def context(self):
+    """Returns the context of participants dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Participants',
+        'name': 'participants',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+        ],
+        'subpages': subpages
+    }
+
+
 class LookupLinkIdPage(RequestHandler):
   """View for the participant profile.
   """
@@ -337,3 +391,4 @@ class LookupLinkIdPage(RequestHandler):
       'posted': error,
       'page_name': 'Lookup profile',
     }
+
