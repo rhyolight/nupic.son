@@ -120,7 +120,7 @@ class TimelineHelper(request_data.TimelineHelper):
   def remainingTime(self):
     """Returns the remaining time in the program a tuple of days, hrs and mins.
     """
-    end = self.tasksClaimEndOn()
+    end = self.stopAllWorkOn()
     return timeline_helper.remainingTimeSplit(end)
 
   def completePercentage(self):
