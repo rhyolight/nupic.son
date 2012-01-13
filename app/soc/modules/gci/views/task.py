@@ -209,6 +209,7 @@ class TaskViewPage(RequestHandler):
         # checks for posting comments
         # valid tasks and profile are already checked.
         self.check.isBeforeAllWorkStopped()
+        self.check.isCommentingAllowed()
 
       if 'submit_work' in self.data.GET:
         self.check.isBeforeAllWorkStopped()
