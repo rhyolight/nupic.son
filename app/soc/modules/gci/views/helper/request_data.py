@@ -111,6 +111,12 @@ class TimelineHelper(request_data.TimelineHelper):
   def allWorkStopped(self):
     return request_data.isAfter(self.stopAllWorkOn())
 
+  def stopAllReviewsOn(self):
+    return self.timeline.stop.work_review_deadline
+
+  def allReviewsStopped(self):
+    return request_data.isAfter(self.stopAllReviewsOn())
+
   def remainingTime(self):
     """Returns the remaining time in the program a tuple of days, hrs and mins.
     """
