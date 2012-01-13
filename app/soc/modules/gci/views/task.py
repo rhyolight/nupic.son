@@ -203,15 +203,15 @@ class TaskViewPage(RequestHandler):
     if self.request.method == 'POST':
       # Access checks for the different forms on this page. Note that there
       # are no elif clauses because one could add multiple GET params :).
-      self.check.isBeforeAllWorkStopped()
       self.check.isProfileActive()
 
       if 'reply' in self.data.GET:
         # checks for posting comments
-        # valid tasks, profile and program timeline are already checked
-        pass
+        # valid tasks and profile are already checked.
+        self.check.isBeforeAllWorkStopped()
 
       if 'submit_work' in self.data.GET:
+        self.check.isBeforeAllWorkStopped()
         if not task_logic.canSubmitWork(self.data.task, self.data.profile):
           self.check.fail(DEF_NOT_ALLOWED_TO_UPLOAD_WORK)
 
@@ -225,11 +225,13 @@ class TaskViewPage(RequestHandler):
           self.check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON % button_name)
 
       if 'send_for_review' in self.data.GET:
+        self.check.isBeforeAllWorkStopped()
         if not task_logic.isOwnerOfTask(self.data.task, self.data.profile) or \
             not self.data.work_submissions:
           self.check.fail(DEF_CANT_SEND_FOR_REVIEW)
 
       if 'delete_submission' in self.data.GET:
+        self.check.isBeforeAllWorkStopped()
         id = self._submissionId()
         work = GCIWorkSubmission.get_by_id(id, parent=self.data.task)
 
@@ -500,8 +502,8 @@ class TaskInformation(Template):
       # no buttons for someone without a profile
       return
 
-    if self.data.timeline.allWorkStopped():
-      # no buttons after all worked has stopped
+    if self.data.timeline.allReviewsStopped():
+      # no buttons after all reviews has stopped
       return
 
     task = self.data.task
@@ -531,7 +533,8 @@ class TaskInformation(Template):
             task, profile)
 
     if is_owner:
-      context['button_unclaim'] = task.status in ACTIVE_CLAIMED_TASK
+      if not self.data.timeline.tasksClaimEnded():
+        context['button_unclaim'] = task.status in ACTIVE_CLAIMED_TASK
 
     if task.status != 'Closed':
       context['button_subscribe'] = not profile.key() in task.subscribers
@@ -641,7 +644,7 @@ class CommentsTemplate(Template):
     for comment in self.data.comments:
       # generate Reply form, if needed
       form = None
-      if not self.data.timeline.allWorkStopped():
+      if self._commentingAllowed():
         comment_id = comment.key().id()
         if self.data.POST and reply == str(comment_id):
           form = CommentForm(comment_id, self.data.POST)
@@ -669,13 +672,20 @@ class CommentsTemplate(Template):
             .urlOf('create_gci_profile'),
     }
 
-    if not self.data.timeline.allWorkStopped():
+    if self._commentingAllowed():
       if self.data.POST and reply == 'self':
         context['comment_form'] = CommentForm(None, self.data.POST)
       else:
         context['comment_form'] = CommentForm(None)
 
     return context
+
+  def _commentingAllowed(self):
+    """Returns true iff the comments are allowed to be posted at this time.
+    """
+    return not self.data.timeline.allWorkStopped() or (
+        not self.data.timeline.allReviewsStopped() and
+        self.data.mentorFor(self.data.task.org))
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().

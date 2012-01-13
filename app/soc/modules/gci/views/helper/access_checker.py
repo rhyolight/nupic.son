@@ -33,7 +33,6 @@ from soc.views.helper import request_data
 
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import UNPUBLISHED
 
 DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
@@ -43,6 +42,9 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
 DEF_ALL_WORK_STOPPED = ugettext(
     'All work on tasks has stopped. You can no longer place comments, '
     'submit work or make any changes to existing tasks.')
+
+DEF_COMMENTING_NOT_ALLOWED = ugettext(
+    "No more comments can be placed at this time.")
 
 DEF_NO_TASK_CREATE_PRIV = ugettext(
     'You do not have sufficient privileges to create a new task for %s.' )
@@ -172,7 +174,7 @@ class AccessChecker(access_checker.AccessChecker):
       self.checkHasTaskEditableStatus()
       self.checkTimelineAllowsTaskEditing()
       can_edit = True
-    except AccessViolation, e:
+    except AccessViolation:
       pass
 
     if not self.data.timeline.tasksPubliclyVisible():
@@ -263,9 +265,6 @@ class AccessChecker(access_checker.AccessChecker):
     """
     assert self.data.org_app
 
-#$    if 
-#      raise AccessDenied
-
     if not self.data.profile:
       org_id = self.data.GET['org_id']
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
@@ -279,6 +278,16 @@ class AccessChecker(access_checker.AccessChecker):
       return
 
     raise AccessViolation(DEF_ALL_WORK_STOPPED)
+
+  def isCommentingAllowed(self):
+    """Raises AccessViolation if commenting is not allowed.
+    """
+    if not self.data.timeline.allWorkStopped() or (
+        not self.data.timeline.allReviewsStopped() and
+        self.data.mentorFor(self.data.task.org)):
+      return
+
+    raise AccessViolation(DEF_COMMENTING_NOT_ALLOWED)
 
   def canCreateTask(self):
     """Checks whether the currently logged in user can edit the task.
