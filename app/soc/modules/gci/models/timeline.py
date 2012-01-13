@@ -46,3 +46,8 @@ class GCITimeline(soc.models.timeline.Timeline):
       verbose_name=ugettext('Work Submission Deadline date'))
   stop_all_work_deadline.help_text = ugettext(
       'All work must stop by this date.')
+
+  work_review_deadline = db.DateTimeProperty(
+      verbose_name=ugettext('Work Review Deadline date'))
+  work_review_deadline.help_text = ugettext(
+      'No more work can be reviewed by mentors after this date.')
