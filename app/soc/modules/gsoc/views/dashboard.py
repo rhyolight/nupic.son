@@ -35,6 +35,7 @@ from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
+from soc.views.helper import address_utils
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
@@ -1249,59 +1250,6 @@ class RequestComponent(Component):
     }
 
 
-def addAddressColumns(list_config):
-  """Adds address columns to the specified list config.
-
-  Columns added:
-    * res_street
-    * res_street_extra
-    * res_city
-    * res_state
-    * res_country
-    * res_postalcode
-    * phone
-    * ship_name
-    * ship_street
-    * ship_street_extra
-    * ship_city
-    * ship_state
-    * ship_country
-    * ship_postalcode
-    * tshirt_style
-    * tshirt_size
-  """
-  list_config.addSimpleColumn('res_street', "res_street", hidden=True)
-  list_config.addSimpleColumn('res_street_extra', "res_street_extra", hidden=True)
-  list_config.addSimpleColumn('res_city', "res_city", hidden=True)
-  list_config.addSimpleColumn('res_state', "res_state", hidden=True)
-  list_config.addSimpleColumn('res_country', "res_country", hidden=True)
-  list_config.addSimpleColumn('res_postalcode', "res_postalcode", hidden=True)
-  list_config.addSimpleColumn('phone', "phone", hidden=True)
-  list_config.addColumn(
-      'ship_name', "ship_name",
-      (lambda ent, *args: ent.shipping_name()), hidden=True)
-  list_config.addColumn(
-      'ship_street', "ship_street",
-      (lambda ent, *args: ent.shipping_street()), hidden=True)
-  list_config.addColumn(
-      'ship_street_extra', "ship_street_extra",
-      (lambda ent, *args: ent.shipping_street_extra()), hidden=True)
-  list_config.addColumn(
-      'ship_city', "ship_city",
-      (lambda ent, *args: ent.shipping_city()), hidden=True)
-  list_config.addColumn(
-      'ship_state', "ship_state",
-      (lambda ent, *args: ent.shipping_state()), hidden=True)
-  list_config.addColumn(
-      'ship_country', "ship_country",
-      (lambda ent, *args: ent.shipping_country()), hidden=True)
-  list_config.addColumn(
-      'ship_postalcode', "ship_postalcode",
-      (lambda ent, *args: ent.shipping_postalcode()), hidden=True)
-  list_config.addSimpleColumn('tshirt_style', "tshirt_style", hidden=True)
-  list_config.addSimpleColumn('tshirt_size', "tshirt_size", hidden=True)
-
-
 class ParticipantsComponent(Component):
   """Component for listing all the participants for all organizations.
   """
@@ -1330,7 +1278,7 @@ class ParticipantsComponent(Component):
             [get(i, orgs) for i in ent.org_admin_for if data.orgAdminFor(i)]))
 
     if self.data.is_host:
-      addAddressColumns(list_config)
+      address_utils.addAddressColumns(list_config)
 
     self._list_config = list_config
 
@@ -1421,7 +1369,7 @@ class StudentsComponent(Component):
     #    'forms_submitted', "Forms submitted",
     #    lambda ent, si, *args: all(formsSubmitted(ent, si)))
 
-    addAddressColumns(list_config)
+    address_utils.addAddressColumns(list_config)
 
     list_config.addColumn('school_name', "school_name",
         (lambda ent, si, *args: si[ent.key()].school_name), hidden=True)
