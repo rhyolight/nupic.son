@@ -112,7 +112,7 @@ class TimelineHelper(request_data.TimelineHelper):
     return request_data.isAfter(self.stopAllWorkOn())
 
   def stopAllReviewsOn(self):
-    return self.timeline.stop.work_review_deadline
+    return self.timeline.work_review_deadline
 
   def allReviewsStopped(self):
     return request_data.isAfter(self.stopAllReviewsOn())
