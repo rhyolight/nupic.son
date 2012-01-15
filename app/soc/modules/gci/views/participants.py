@@ -19,6 +19,7 @@
 
 
 from soc.logic.exceptions import AccessViolation
+from soc.views.helper import addresses
 from soc.views.helper import url_patterns
 from soc.views.helper import lists
 from soc.views.template import Template
@@ -51,24 +52,8 @@ class MentorsList(Template):
         'mentor_for', 'Mentor For',
         lambda e, mentor_for, *args: ', '.join(
             [mentor_for[k].name for k in e.mentor_for]))
-    list_config.addSimpleColumn('res_street', 'Residence Street Address 1')
-    list_config.addSimpleColumn('res_street_extra',
-                                'Residence Street Address 2')
-    list_config.addSimpleColumn('res_city', 'Residence City')
-    list_config.addSimpleColumn('res_state', 'Residence State')
-    list_config.addSimpleColumn('res_country', 'Residence Country')
-    list_config.addSimpleColumn('res_postalcode', 'Recidence Postal Code')
-    list_config.addSimpleColumn('ship_name', 'Recipient Name')
-    list_config.addSimpleColumn('ship_street', 'Shipping Street Address 1')
-    list_config.addSimpleColumn('ship_street_extra',
-                                'Shipping Street Address 2')
-    list_config.addSimpleColumn('ship_city', 'Shipping City')
-    list_config.addSimpleColumn('ship_state', 'Shipping State')
-    list_config.addSimpleColumn('ship_country', 'Shipping Country')
-    list_config.addSimpleColumn('ship_postalcode', 'Shipping Postal Code')
-    list_config.addSimpleColumn('phone', 'Phone')
-    list_config.addSimpleColumn('tshirt_style', 'T-shirt Style')
-    list_config.addSimpleColumn('tshirt_size', 'T-shirt Size')
+
+    addresses.addAddressColumns(list_config)
 
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
