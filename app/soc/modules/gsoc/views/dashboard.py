@@ -35,7 +35,7 @@ from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
-from soc.views.helper import address_utils
+from soc.views.helper import addresses
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
@@ -1278,7 +1278,7 @@ class ParticipantsComponent(Component):
             [get(i, orgs) for i in ent.org_admin_for if data.orgAdminFor(i)]))
 
     if self.data.is_host:
-      address_utils.addAddressColumns(list_config)
+      addresses.addAddressColumns(list_config)
 
     self._list_config = list_config
 
@@ -1369,7 +1369,7 @@ class StudentsComponent(Component):
     #    'forms_submitted', "Forms submitted",
     #    lambda ent, si, *args: all(formsSubmitted(ent, si)))
 
-    address_utils.addAddressColumns(list_config)
+    addresses.addAddressColumns(list_config)
 
     list_config.addColumn('school_name', "school_name",
         (lambda ent, si, *args: si[ent.key()].school_name), hidden=True)
