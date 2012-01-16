@@ -63,9 +63,10 @@ class ProgramForm(GCIModelForm):
       self.task_difficulties_json = json.dumps(
           [[t.tag, t.value] for t in difficulty_tags])
 
-      type_tags = tags_logic.getTagsForProgram(
-          TaskTypeTag, self.instance, order=['order'])
-      self.task_types_json = json.dumps([[t.tag] for t in type_tags])
+      self.task_types_json = json.dumps(self.instance.task_types)
+#      type_tags = tags_logic.getTagsForProgram(
+#          TaskTypeTag, self.instance, order=['order'])
+#      self.task_types_json = json.dumps([[t.tag] for t in type_tags])
 
 
   class Meta:
@@ -122,41 +123,6 @@ class ProgramForm(GCIModelForm):
 
     self.cleaned_data['task_difficulty_entities'] = to_put
 
-  def clean_task_types(self):
-    """Retrieve and validate task type tags and its value from the form.
-    """
-    program = self.request_data.program
-    to_put = []
-
-    task_types = self.request_data.POST.getlist('task_type_name')
-
-    types_dict = dict((name, i) for i, name in enumerate(task_types))
-
-    type_tags = tags_logic.getTagsForProgram(TaskTypeTag, program)
-
-    for tag in type_tags:
-      tag_name = tag.tag
-
-      if tag_name not in types_dict:
-        continue
-
-      new_order = types_dict.pop(tag_name)
-
-      if new_order == tag.order:
-        continue
-
-      tag.order = new_order
-      to_put.append(tag)
-
-    scope_path = program.key().id_or_name()
-
-    for name, order in types_dict.items():
-      to_put.append(TaskTypeTag(
-          key_name=TaskTypeTag._key_name(scope_path, name),
-          scope=program, tag=name, order=order))
-
-    self.cleaned_data['task_type_entities'] = to_put
-
   def clean(self):
     """Cleans the data input by the user as a response to the form.
 
@@ -170,7 +136,9 @@ class ProgramForm(GCIModelForm):
     super(ProgramForm, self).clean()
 
     self.clean_difficulty()
-    self.clean_task_types()
+
+    self.cleaned_data['task_types'] = self.request_data.POST.getlist(
+        'task_type_name')
 
     return self.cleaned_data
 
@@ -189,8 +157,7 @@ class ProgramForm(GCIModelForm):
     # properties are not regular Appengine property types. So we are happy
     # handling them separately!
     db.put(
-        self.cleaned_data['task_difficulty_entities'] +
-        self.cleaned_data['task_type_entities'])
+        self.cleaned_data['task_difficulty_entities'])
 
 
 class ProgramPage(RequestHandler):
