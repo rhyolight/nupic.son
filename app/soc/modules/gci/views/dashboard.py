@@ -555,27 +555,15 @@ class MyOrgsTaskList(Component):
         'org', 'Organization',
         lambda ent, *args: ent.org.name)
 
-    #list_config.addColumn(
-    #    'task_type', 'Type',
-    #    lambda entity, _, all_d, all_t, *args: entity.taskType(all_t))
-    #list_config.addColumn('arbit_tag', 'Tags',
-    #                      lambda entity, *args: entity.taskArbitTag())
     list_config.addColumn('time_to_complete', 'Time to complete',
                           lambda entity, *args: entity.taskTimeToComplete())
-
-
-    #def mentor_keys(ent, *args):
-    #  return ', '.join(split_key(i) for i in ent.possible_mentors)
-
-    #list_config.addColumn(
-    #    'mentor', 'Mentor usernames',
-    #    lambda ent, *args: ', '.join(split_key(i) for i in ent.mentors))
 
     list_config.addColumn(
         'mentors', 'Mentors',
         lambda entity, mentors, *args: ', '.join(
             mentors[i].name() for i in entity.mentors))
 
+    list_config.addSimpleColumn('description', 'Description', hidden=True)
     list_config.addColumn(
         'student', 'Student',
         lambda ent, *args: ent.student.name() if ent.student else '',
