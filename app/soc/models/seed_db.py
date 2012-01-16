@@ -436,12 +436,6 @@ def seed(request, *args, **kwargs):
   melange_student2 = GSoCProfile(**student_properties)
   melange_student2.put()
 
-  student_info_properties.update({
-      'key_name': gsoc2009.key().name() + "/" + student_id,
-      'link_id': student_id,
-      'parent': melange_student2,
-  })
-                                       
   project_id = 'test_project'
   project_properties = {
       'key_name':  gsoc2009.key().name() + "/org_1/" + project_id,
@@ -459,6 +453,13 @@ def seed(request, *args, **kwargs):
 
   melange_project = StudentProject(**project_properties)
   melange_project.put()
+  student_info_properties.update({'number_of_projects': 1,
+                                  'project_for_orgs': [orgs[1].key()]})
+  student_info2 = GSoCStudentInfo(**student_info_properties)
+  student_info2.put()
+
+  melange_student.student_info = student_info2
+  melange_student.put()
 
   project_id = 'test_project2'
   project_properties.update({
@@ -468,6 +469,11 @@ def seed(request, *args, **kwargs):
       'title': 'test project2'
       })
       
+  student_info_properties.update({
+      'key_name': gsoc2009.key().name() + "/" + student_id,
+      'link_id': student_id,
+      'parent': melange_student2,
+  })
   student_info2 = GSoCStudentInfo(**student_info_properties)
   student_info2.put()
 
