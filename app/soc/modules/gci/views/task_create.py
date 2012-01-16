@@ -170,12 +170,12 @@ class TaskCreateForm(TaskEditPostClaimForm):
     # get a list of task type tags stored for the program entity
     type_tags = task.TaskTypeTag.get_by_scope(data.program)
 
-    task_type_tags = []
-    for type_tag in type_tags:
-      task_type_tags.append((type_tag.tag, type_tag.tag))
+    types = []
+    for t in data.program.types:
+      types.append((t, t))
 
-    self.fields['task_type'] = django_forms.MultipleChoiceField(
-        label=ugettext('Type'), choices=task_type_tags,
+    self.fields['types'] = django_forms.MultipleChoiceField(
+        label=ugettext('Type'), choices=types,
         widget=gci_forms.CheckboxSelectMultiple,
         help_text=DEF_TASK_TYPE_HELP_MSG)
 
