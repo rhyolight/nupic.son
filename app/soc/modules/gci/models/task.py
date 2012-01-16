@@ -89,8 +89,8 @@ class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
   difficulty_level = db.StringProperty(required=False, 
       verbose_name=ugettext('Difficulty'), choices=DIFFICULTIES)
 
-  #: Field indicating the type of the Task
-  type = db.StringProperty(required=False, verbose_name=ugettext('Type'))
+  #: Field indicating the types of the Task
+  type = db.StringListProperty(required=False, verbose_name=ugettext('Type'))
 
   #: Required field which contains the type of the task. These types are
   #: configured by a Program Admin.
