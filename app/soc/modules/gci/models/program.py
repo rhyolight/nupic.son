@@ -40,14 +40,6 @@ class GCIProgram(soc.models.program.Program):
   nr_simultaneous_tasks.help_text = ugettext(
       'Number of tasks students can work on simultaneously in the program.')
 
-  #: A list of difficulty levels that can be assigned for each Task created
-  task_difficulties = db.StringListProperty(
-      required=True, default=[''],
-      verbose_name=ugettext('Difficulty levels'))
-  task_difficulties.group = ugettext('Task Settings')
-  task_difficulties.help_text = ugettext(
-      'List all the difficulty levels that can be assigned to a task.')
-
   #: A list of task types that a Task can belong to
   task_types = db.StringListProperty(
       required=True, default=['Any'],
