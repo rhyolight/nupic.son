@@ -283,7 +283,7 @@ class RequestData(request_data.RequestData):
       host_key = GCIProgram.scope.get_value_for_datastore(self.program)
       self.is_host = host_key in self.user.host_for
 
-    if self.profile:
+    if self.profile and self.profile.status != 'invalid':
       org_keys = set(self.profile.mentor_for + self.profile.org_admin_for)
 
       prop = GCIProfile.student_info
