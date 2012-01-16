@@ -31,7 +31,6 @@ from soc.views.helper import url_patterns
 
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.task import TaskDifficultyTag
-from soc.modules.gci.models.task import TaskTypeTag
 from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.forms import GCIModelForm
@@ -64,10 +63,6 @@ class ProgramForm(GCIModelForm):
           [[t.tag, t.value] for t in difficulty_tags])
 
       self.task_types_json = json.dumps(self.instance.task_types)
-#      type_tags = tags_logic.getTagsForProgram(
-#          TaskTypeTag, self.instance, order=['order'])
-#      self.task_types_json = json.dumps([[t.tag] for t in type_tags])
-
 
   class Meta:
     css_prefix = 'program_form'
