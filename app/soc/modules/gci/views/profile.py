@@ -240,7 +240,7 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
 
   def checkAccess(self):
     self.check.isProgramVisible()
-  
+
     if 'role' in self.data.kwargs:
       role = self.data.kwargs['role']
       kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
@@ -251,8 +251,8 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
         self.check.isLoggedIn()
         self.check.canApplyNonStudent(role, edit_url)
     else:
-      self.check.isLoggedIn()
       self.check.isProfileActive()
+      self.check.isProgramRunning()
 
   def templatePath(self):
     return 'v2/modules/gci/profile/base.html'

@@ -186,6 +186,7 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
         self.check.canApplyNonStudent(role, edit_url)
     else:
       self.check.isProfileActive()
+      self.check.isProgramRunning()
 
   def context(self):
     """Context for the profile page.
