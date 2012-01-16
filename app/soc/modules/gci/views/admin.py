@@ -35,6 +35,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -221,6 +222,13 @@ class ProgramSettingsDashboard(Dashboard):
                 'List of documents from various program.'),
             'title': 'List of documents',
             'link': r.urlOf('list_gci_documents')
+        },
+        {
+            'name': 'students_info',
+            'description': ugettext(
+                'Details of students participating in the current program.'),
+            'title': 'Details of students',
+            'link': r.urlOf(url_names.GCI_STUDENTS_INFO) 
         },
     ]
 
