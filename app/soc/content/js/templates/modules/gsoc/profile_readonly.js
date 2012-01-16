@@ -18,7 +18,7 @@
 
 melange.templates.inherit(
   function (_self, context) {
-    var css_prefix = "gsoc_profile_show";
+    var css_prefix = "profile_show";
   
     // Create global variables
     var map;
