@@ -92,9 +92,11 @@ class StudentFormUpload(RequestHandler):
             name='gci_student_form_upload')]
 
   def checkAccess(self):
-    """Denies access if you are not a student.
+    """Denies access if you are not a student or the program is not running.
     """
     self.check.isActiveStudent()
+    if self.data.POST:
+      self.check.isProgramRunning()
 
   def templatePath(self):
     """Returns the path to the template.
