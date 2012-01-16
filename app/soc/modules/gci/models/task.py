@@ -92,9 +92,6 @@ class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
   #: Field indicating the type of the Task
   type = db.StringProperty(required=False, verbose_name=ugettext('Type'))
 
-  #: To be removed, when conversion is done.
-  difficulty = tag_property('difficulty')
-
   #: Required field which contains the type of the task. These types are
   #: configured by a Program Admin.
   task_type = tag_property('task_type')
