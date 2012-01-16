@@ -245,11 +245,9 @@ class BulkCreateTask(object):
 
     # clean task types
     task_types = []
-    allowed_types = [
-        str(x) for x in TaskTypeTag.get_by_scope(program_entity)]
     for task_type in set(task['task_type'].split(',')):
       task_type = task_type.strip()
-      if task_type in allowed_types:
+      if task_type in program_entity.task_types:
         task_types.append(task_type)
       else:
         errors.append('%s is not a valid task type.' % task_type)
