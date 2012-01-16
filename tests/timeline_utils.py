@@ -275,6 +275,7 @@ class GCITimelineHelper(TimelineHelper):
     self.timeline.tasks_publicly_visible = past()
     self.timeline.task_claim_deadline = future()
     self.timeline.stop_all_work_deadline = future()
+    self.timeline.work_review_deadline = future()
     self.timeline.put()
     self.org_appl.put()
 
