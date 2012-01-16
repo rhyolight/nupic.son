@@ -835,6 +835,45 @@ def surveyRecordCSVExport(csv_filename, survey_record_model,
   print "Survey Records exported to %s file." % csv_filename
 
 
+def turnaroundTime(task):
+  from soc.modules.gci.logic import task as task_logic
+  from soc.modules.gci.models.comment import GCIComment
+
+  q = GCIComment.all()
+  q.ancestor(task)
+  q.filter('modified_by', None)
+  q.filter('title', task_logic.DEF_ASSIGNED_TITLE)
+  comments = sorted(q, key=lambda x: x.created_on)
+  started = comments[-1]
+
+  q = GCIComment.all()
+  q.ancestor(task)
+  q.filter('modified_by', None)
+  q.filter('title', task_logic.DEF_SEND_FOR_REVIEW_TITLE)
+  comments = sorted(q, key=lambda x: x.created_on)
+  finished = comments[-1]
+
+  q = GCIComment.all()
+  q.ancestor(task)
+  q.filter('modified_by', None)
+  q.filter('title', task_logic.DEF_CLOSED_TITLE)
+  approved = q.get() # there can only be one
+
+  implementation = finished.created_on - started.created_on
+  turnaround = approved.created_on - finished.created_on
+  url = "http://www.google-melange.com/gci/task/view/google/gci2011/%d"
+  return (url % task.key().id(),
+          str(started.created_on),
+          str(finished.created_on),
+          str(approved.created_on),
+          str(implementation),
+          str(turnaround),
+          task.difficulty_level,
+          finished.created_by.name,
+          approved.created_by.name,
+         )
+
+
 class Request(object):
   def __init__(self, **kwargs):
     self.method = kwargs.get('method', "GET")
@@ -969,6 +1008,7 @@ def main(args):
       'exportOrgsForGoogleCode': exportOrgsForGoogleCode,
       'exportRolesForGoogleCode': exportRolesForGoogleCode,
       'surveyRecordCSVExport': surveyRecordCSVExport,
+      'turnaroundTime': turnaroundTime,
   }
 
   interactive.remote(args, context)
