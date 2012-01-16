@@ -18,8 +18,8 @@
 """
 
 
-from soc.models.user import User
 from soc.views import readonly_template
+from soc.views import profile_show
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
@@ -30,22 +30,8 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class UserReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
-  """Template to construct readonly Profile data.
-  """
-
-  class Meta:
-    model = User
-    css_prefix = 'gsoc_profile_show'
-    fields = ['link_id']
-
-  def __init__(self, *args, **kwargs):
-    super(UserReadOnlyTemplate, self).__init__(*args, **kwargs)
-    self.fields['link_id'].group = "1. User info"
-
-
-class ProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
-  """Template to construct readonly Profile data.
+class GSoCProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
+  """Template to construct read-only GSoCProfile data.
   """
 
   class Meta:
@@ -62,8 +48,8 @@ class ProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
     hidden_fields = ['latitude', 'longitude']
 
 
-class ProfileShowPage(RequestHandler):
-  """View to display the readonly profile page.
+class GSoCProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
+  """View to display the read-only profile page.
   """
 
   def djangoURLPatterns(self):
@@ -72,29 +58,11 @@ class ProfileShowPage(RequestHandler):
          self, name='show_gsoc_profile'),
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.hasProfile()
-
   def templatePath(self):
     return 'v2/modules/gsoc/profile_show/base.html'
 
-  def context(self):
-    assert isSet(self.data.program)
-    assert isSet(self.data.profile)
-    assert isSet(self.data.user)
-
-    profile = self.data.profile
-    program = self.data.program
-
-    return {
-        'page_name': '%s Profile - %s' % (program.short_name, profile.name()),
-        'program_name': program.name,
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False),
-        'user': UserReadOnlyTemplate(self.data.user),
-        'profile': ProfileReadOnlyTemplate(profile),
-        'css_prefix': ProfileReadOnlyTemplate.Meta.css_prefix,
-        }
+  def _getProfileReadOnlyTemplate(self, profile):
+    return GSoCProfileReadOnlyTemplate(profile)
 
 
 class ProfileAdminPage(RequestHandler):
@@ -136,7 +104,7 @@ class ProfileAdminPage(RequestHandler):
         'page_name': '%s Profile - %s' % (program.short_name, profile.name()),
         'program_name': program.name,
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
-        'user': UserReadOnlyTemplate(user),
+        'user': profile_show.UserReadOnlyTemplate(user),
         'profile': ProfileReadOnlyTemplate(profile),
         'links': links,
         'css_prefix': ProfileReadOnlyTemplate.Meta.css_prefix,

@@ -34,7 +34,6 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/profile_show/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_loggedin_msg.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_readonly_template.html')
 
   def testUserWithoutAProfileCanNotAccessItsProfile(self):
@@ -78,7 +77,6 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     context = response.context
     self.assertTrue('page_name' in context)
     self.assertTrue('program_name' in context)
-    self.assertTrue('form_top_msg' in context)
     self.assertTrue('profile' in context)
     self.assertTrue('css_prefix' in context)
     self.assertFalse('submit_tax_link' in context)
@@ -198,7 +196,6 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     context = response.context
     self.assertTrue('page_name' in context)
     self.assertTrue('program_name' in context)
-    self.assertTrue('form_top_msg' in context)
     self.assertTrue('profile' in context)
     self.assertTrue('user' in context)
     self.assertTrue('links' in context)

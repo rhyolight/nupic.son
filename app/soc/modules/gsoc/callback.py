@@ -95,7 +95,7 @@ class Callback(object):
     self.views.append(org_profile.OrgProfilePage())
     self.views.append(profile.GSoCProfilePage())
     self.views.append(profile_show.ProfileAdminPage())
-    self.views.append(profile_show.ProfileShowPage())
+    self.views.append(profile_show.GSoCProfileShowPage())
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
     self.views.append(project_details.AssignMentors())
