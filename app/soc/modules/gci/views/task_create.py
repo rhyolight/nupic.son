@@ -23,6 +23,7 @@ import datetime
 from google.appengine.ext import db
 
 from django import forms as django_forms
+from django.forms.util import ErrorList
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
@@ -237,10 +238,20 @@ class TaskCreateForm(TaskEditPostClaimForm):
     ttc_hours = cleaned_data.get("time_to_complete_hours", 0)
 
     if ttc_days or ttc_hours:
-      cleaned_data['time_to_complete'] = ttc_days * 24 + ttc_hours
+      ttc_total = ttc_days * 24 + ttc_hours
+      # We check if the time to complete is under 30 days because Google
+      # Appengine task queue API doesn't let us to add a Appengine task
+      # the queue with an ETA longer than 30 days. We use this ETA feature
+      # for GCI tasks to automatically trigger the reminders for the task
+      # after the deadline.
+      if ttc_total <= 720:
+        cleaned_data['time_to_complete'] = ttc_days * 24 + ttc_hours
+      else:
+        errors = self._errors.setdefault('time_to_complete_days', ErrorList())
+        errors.append(ugettext('Time to complete must be less than 30 days.'))
     else:
-      raise django_forms.ValidationError(
-          ugettext('Time to complete must be specified.'))
+      errors = self._errors.setdefault('time_to_complete_days', ErrorList())
+      errors.append(ugettext('Time to complete must be specified.'))
 
     # Disallow "Unknown" difficulty
     if 'difficulty' in cleaned_data and \
