@@ -244,18 +244,14 @@ class BulkCreateTask(object):
       task['difficulty_level'] = difficulty
 
     # clean task types
-    task_types = []
+    types = []
     for task_type in set(task['task_type'].split(',')):
       task_type = task_type.strip()
       if task_type in program_entity.task_types:
-        task_types.append(task_type)
+        types.append(task_type)
       else:
         errors.append('%s is not a valid task type.' % task_type)
-
-    task['task_type'] = {
-        'tags': task_types,
-        'scope': program_entity
-        }
+    task['types'] = types
 
     # clean task tags
     arbit_tags = []
