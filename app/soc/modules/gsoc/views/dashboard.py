@@ -1398,6 +1398,9 @@ class StudentsComponent(Component):
     list_config.addColumn(
         'failed_evaluations', "#failed",
         lambda ent, si, *args: si[ent.key()].failed_evaluations)
+    list_config.addColumn(
+        'project_for_orgs', "Organizations",
+        lambda ent, si, *args: ', '.join([db.get(org_key).name for org_key in si[ent.key()].project_for_orgs]))
 
     self._list_config = list_config
 
