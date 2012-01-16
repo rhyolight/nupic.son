@@ -51,6 +51,7 @@ class Callback(object):
     from soc.modules.gci.views import org_profile
     from soc.modules.gci.views import participants
     from soc.modules.gci.views import profile
+    from soc.modules.gci.views import profile_show
     from soc.modules.gci.views import program
     from soc.modules.gci.views import request
     from soc.modules.gci.views import student_forms
@@ -87,6 +88,7 @@ class Callback(object):
     self.views.append(org_home.OrgHomepage())
     self.views.append(participants.MentorsListAdminPage())
     self.views.append(profile.GCIProfilePage())
+    self.views.append(profile_show.GCIProfileShowPage())
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
     self.views.append(request.SendRequestPage())
