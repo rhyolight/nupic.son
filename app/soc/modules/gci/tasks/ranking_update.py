@@ -134,7 +134,7 @@ class RankingUpdater(object):
           'program: %s' %key_name)
       return responses.terminateTask()
 
-    q = GCIStudentRanking.all()
+    q = GCIScore.all()
     q.filter('program', program)
 
     rankings = q.fetch(500)
