@@ -152,7 +152,6 @@ class BulkCreateTask(object):
         task_entity = GCITask(**task)
         task_entity.put()
         # trigger tag saving logic, trice :(
-        task_entity.task_type = task['task_type']
         task_entity.arbit_tag = task['arbit_tag']
         task_quota = task_quota - 1
       except DeadlineExceededError:
