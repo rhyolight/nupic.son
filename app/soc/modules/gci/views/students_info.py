@@ -15,6 +15,7 @@
 """Module containing the Students Info view for the admin.
 """
 
+
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
@@ -186,7 +187,7 @@ class StudentsList(Template):
         'student_id_form', 'Student ID Form Submitted',
         (lambda e, sp, *args: formsSubmitted(e, sp, 'student_id')))
    
-    self.list_config = list_config
+    self._list_config = list_config
 
   def getListData(self):
     idx = lists.getListIndex(self.request)
@@ -214,7 +215,7 @@ class StudentsList(Template):
       return ([sp], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self.list_config, q, starter, prefetcher=prefetcher)
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -223,7 +224,7 @@ class StudentsList(Template):
  
   def context(self):
     list = lists.ListConfigurationResponse(
-        self.data, self.list_config, idx=self.idx, preload_list=False)
+        self.data, self._list_config, idx=self.idx)
 
     return {
         'name': 'students',
