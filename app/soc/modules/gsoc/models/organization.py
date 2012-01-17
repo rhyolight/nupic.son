@@ -311,6 +311,8 @@ class GSoCOrganization(Taggable, soc.models.organization.Organization):
 
   org_tag = tag_property('org_tag')
 
+  tags = db.StringListProperty(verbose_name=ugettext('Tags'))
+
   proposal_extra = db.StringListProperty(
       required=True, verbose_name=ugettext("Additional proposal columns"))
   proposal_extra.help_text = ugettext(
