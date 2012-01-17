@@ -53,48 +53,39 @@ def addAddressColumns(list_config):
     * tshirt_style
     * tshirt_size
   """
-  list_config.addColumn('res_street', "res_street",
+  list_config.addColumn('res_street', 'Street',
       (lambda e, sp, *args: sp[e.parent_key()].res_street), hidden=True)
-  list_config.addColumn('res_street_extra', "res_street_extra", 
+  list_config.addColumn('res_street_extra', 'Street Extra', 
       (lambda e, sp, *args: sp[e.parent_key()].res_street_extra), hidden=True)
-  list_config.addColumn('res_city', "res_city",
+  list_config.addColumn('res_city', 'City',
       (lambda e, sp, *args: sp[e.parent_key()].res_city), hidden=True)
-  list_config.addColumn('res_state', "res_state",
+  list_config.addColumn('res_state', 'State',
       (lambda e, sp, *args: sp[e.parent_key()].res_state), hidden=True)
-  list_config.addColumn('res_country', "res_country",
+  list_config.addColumn('res_country', 'Country',
       (lambda e, sp, *args: sp[e.parent_key()].res_country), hidden=True)
-  list_config.addColumn('res_postalcode', "res_postalcode",
+  list_config.addColumn('res_postalcode', 'Postalcode',
       (lambda e, sp, *args: sp[e.parent_key()].res_postalcode), hidden=True)
-  list_config.addColumn('phone', "phone",
+  list_config.addColumn('phone', 'Phone',
       (lambda e, sp, *args: sp[e.parent_key()].phone), hidden=True)
-  list_config.addColumn(
-      'ship_name', "ship_name",
+  list_config.addColumn('ship_name', 'Ship Name',
       (lambda e, sp, *args: sp[e.parent_key()].shipping_name()), hidden=True)
-  list_config.addColumn(
-      'ship_street', "ship_street",
+  list_config.addColumn('ship_street', 'Ship Street',
       (lambda e, sp, *args: sp[e.parent_key()].shipping_street()), hidden=True)
-  list_config.addColumn(
-      'ship_street_extra', "ship_street_extra",
+  list_config.addColumn('ship_street_extra', 'Ship Street Extra',
       (lambda e, sp, *args: sp[e.parent_key()].shipping_street_extra()), 
       hidden=True)
-  list_config.addColumn(
-      'ship_city', "ship_city",
+  list_config.addColumn('ship_city', 'Ship City',
       (lambda e, sp, *args: sp[e.parent_key()].shipping_city()), hidden=True)
-  list_config.addColumn(
-      'ship_state', "ship_state",
+  list_config.addColumn('ship_state', 'Ship State', 
       (lambda e, sp, *args: sp[e.parent_key()].shipping_state()), hidden=True)
-  list_config.addColumn(
-      'ship_country', "ship_country",
+  list_config.addColumn('ship_country', 'Ship Country',
       (lambda e, sp, *args: sp[e.parent_key()].shipping_country()), hidden=True)
-  list_config.addColumn(
-      'ship_postalcode', "ship_postalcode",
+  list_config.addColumn('ship_postalcode', 'Ship Postalcode',
       (lambda e, sp, *args: sp[e.parent_key()].shipping_postalcode()), 
       hidden=True)
-  list_config.addColumn(
-      'tshirt_style', "Tshirt Style",
+  list_config.addColumn('tshirt_style', 'T-Shirt Style',
       (lambda e, sp, *args: sp[e.parent_key()].tshirt_style), hidden=True)
-  list_config.addColumn(
-      'tshirt_size', "Tshirt Size",
+  list_config.addColumn('tshirt_size', 'T-Shirt Size',
       (lambda e, sp, *args: sp[e.parent_key()].tshirt_size), hidden=True)
  
  
@@ -111,53 +102,48 @@ class StudentsList(Template):
     list_config.addColumn(
         'name', 'Name', lambda e, sp, *args: sp[e.parent_key()].name())
     list_config.addColumn(
-        'link_id', "Link ID", lambda e, sp, *args: sp[e.parent_key()].link_id)
+        'link_id', 'Link ID', lambda e, sp, *args: sp[e.parent_key()].link_id)
     list_config.addColumn(
-        'email', "Email", lambda e, sp, *args: sp[e.parent_key()].email)
-    list_config.addColumn(
-        'given_name', "Given name", 
-        (lambda e, sp, *args: sp[e.parent_key()].given_name), 
+        'email', 'Email', lambda e, sp, *args: sp[e.parent_key()].email)
+    list_config.addColumn('given_name', 'Given name', 
+        (lambda e, sp, *args: sp[e.parent_key()].given_name), hidden=True)
+    list_config.addColumn('surname', 'Surname', 
+        (lambda e, sp, *args: sp[e.parent_key()].surname), hidden=True)
+    list_config.addColumn('name_on_documents', 'Legal name', 
+        (lambda e, sp, *args: sp[e.parent_key()].name_on_documents),
         hidden=True)
     list_config.addColumn(
-        'surname', "Surname", 
-        (lambda e, sp, *args: sp[e.parent_key()].surname), 
-        hidden=True)
-    list_config.addColumn(
-        'name_on_documents', "Legal name", 
-        (lambda e, sp, *args: sp[e.parent_key()].name_on_documents), 
-        hidden=True)
-    list_config.addColumn(
-        'birth_date', "Birthdate",
+        'birth_date', 'Birthdate',
         (lambda e, sp, *args: sp[e.parent_key()].birth_date.strftime(
         "%B %d, %Y")), hidden=True)
    
     addAddressColumns(list_config)
    
-    list_config.addColumn('school_name', "School name",
+    list_config.addColumn('school_name', 'School name',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.school_name), 
         hidden=True)
-    list_config.addColumn('school_country', "School Country",
+    list_config.addColumn('school_country', 'School Country',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.school_country), 
         hidden=True)
-    list_config.addColumn('school_type', "School Type",
+    list_config.addColumn('school_type', 'School Type',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.school_type), 
         hidden=True)
-    list_config.addColumn('major', "Major",
+    list_config.addColumn('major', 'Major',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.major), 
         hidden=True)
-    list_config.addColumn('degree', "Degree",
+    list_config.addColumn('degree', 'Degree',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.degree), 
         hidden=True)
-    list_config.addColumn('grade', "Grade",
+    list_config.addColumn('grade', 'Grade',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.grade),
         hidden=True)
-    list_config.addColumn('expected_graduation', "Expected Graduation",
+    list_config.addColumn('expected_graduation', 'Expected Graduation',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.expected_graduation), 
         hidden=True)
    
     list_config.addSimpleColumn('points', 'Points')
     list_config.addColumn(
-        'no_of_tasks_completed', 'no_of_tasks_completed',
+        'no_of_tasks_completed', 'No of completed tasks',
         (lambda e, *args: len(e.tasks)))
    
     def formsSubmitted(e, sp, form):
