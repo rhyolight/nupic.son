@@ -247,13 +247,13 @@ class AccessChecker(access_checker.AccessChecker):
 
     q = GSoCProfile.all()
     q.filter('is_student', False)
-    q.filter('status IN', ['active', 'inactive'])
+    q.filter('status', 'active')
     q.filter('user', self.data.user)
     gsoc_profile = q.get()
 
     q = GCIProfile.all()
     q.filter('is_student', False)
-    q.filter('status IN', ['active', 'inactive'])
+    q.filter('status', 'active')
     q.filter('user', self.data.user)
     gci_profile = q.get()
 

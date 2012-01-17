@@ -74,7 +74,7 @@ class AcceptedOrgsList(Template):
     if idx == 0:
       q = GCIOrganization.all()
       q.filter('scope', self.data.program)
-      q.filter('status IN', ['new', 'active', 'inactive'])
+      q.filter('status IN', ['new', 'active'])
 
       starter = lists.keyStarter
 
@@ -161,7 +161,7 @@ class AcceptedOrgsAdminList(Template):
     if idx == 0:
       q = GCIOrganization.all()
       q.filter('scope', self.data.program)
-      q.filter('status IN', ['new', 'active', 'inactive'])
+      q.filter('status IN', ['new', 'active'])
 
       starter = lists.keyStarter
 

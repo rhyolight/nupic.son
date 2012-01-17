@@ -147,11 +147,10 @@ class Program(soc.models.presence.Presence):
   #: Status of the program
   #: Invisible: Program Stealth-Mode Visible to Hosts and Devs only
   #: Visible: Visible to everyone.
-  #: Inactive: Not visible in sidebar but can be reached for date retention
   #: Invalid: Not visible or editable by anyone
   status = db.StringProperty(required=True, default='invisible',
       verbose_name=ugettext('Program Status'),
-      choices=['invisible', 'visible', 'inactive', 'invalid'])
+      choices=['invisible', 'visible', 'invalid'])
   status.example_text = ugettext(
       '<tt>Invisible: Program Stealth-Mode Visible to Hosts and Devs only.<br/>'
       'Visible: Visible to everyone.<br/>'

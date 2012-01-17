@@ -923,7 +923,7 @@ class AllOrgsListBeforeRequestRole(MyOrgsList):
 
     q = GCIOrganization.all()
     q.filter('scope', self.data.program)
-    q.filter('status IN', ['new', 'active', 'inactive'])
+    q.filter('status IN', ['new', 'active'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, lists.keyStarter)

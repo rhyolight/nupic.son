@@ -482,13 +482,10 @@ class Role(soc.models.linkable.Linkable):
 
   #: field storing the status of this role
   #: Active means that this role can exercise all it's privileges.
-  #: Invalid mean that this role cannot exercise it's privileges.
-  #: Inactive means that this role cannot exercise it's data-editing
-  #: privileges but should be able to see the data. For instance when a program
-  #: has been marked inactive an Organization Admin should still be able to see
-  #: the student applications.
+  #: Invalid means that a role should not be able to excercise any
+  #: priviliges.
   status = db.StringProperty(default='active',
-      choices=['active','invalid','inactive'],
+      choices=['active','invalid'],
       verbose_name=ugettext('Status of this Role'))
   status.help_text = ugettext('Indicates the status of the role '
       'concerning which privileges may be used.')
