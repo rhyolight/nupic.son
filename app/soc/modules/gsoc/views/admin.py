@@ -582,7 +582,7 @@ class StudentEvaluationsDashboard(Dashboard):
         {
             'name': 'view_student_evaluation',
             'description': ugettext('View midterm evaluation for students'),
-            'title': 'View',
+            'title': 'View Midterm Records',
             'link': r.urlOf('gsoc_list_student_eval_records')
         },
     ]
