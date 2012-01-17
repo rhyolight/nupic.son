@@ -89,8 +89,7 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
         choices=mentor_choices)
 
     if self.instance:
-      self.fields['tags'].initial = self.instance.tags_string(
-          self.instance.arbit_tag)
+      self.fields['tags'].initial = ', '.join(self.instance.tags)
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
