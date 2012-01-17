@@ -77,6 +77,9 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
     'You cannot register as a student since you are already a '
     'mentor or organization administrator in %s.')
 
+DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM = ugettext(
+    'You are not allowed to download the form.')
+
 
 class Mutator(access_checker.Mutator):
   """Mutator for the GSoC module.
@@ -352,6 +355,16 @@ class AccessChecker(access_checker.AccessChecker):
 
     raise AccessViolation(
         DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT % self.data.program.name)
-
+    
+  def canStudentDownloadForms(self):
+    """Checks if the user can download the forms.
+    """
+    self.isProfileActive()
+    si = self.data.profile.student_info
+    if si:
+      if si.number_of_projects > 0:
+        return
+    raise AccessViolation(DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM)
+  
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass
