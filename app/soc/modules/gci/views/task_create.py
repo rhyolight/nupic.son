@@ -255,7 +255,7 @@ class TaskCreateForm(TaskEditPostClaimForm):
     model = task.GCITask
     css_prefix = 'gci-task'
     fields = ['title', 'description', 'difficulty_level', 
-              'task_type', 'arbit_tag', 'mentors']
+        'arbit_tag', 'mentors']
 
 
 class TaskFormErrorTemplate(Template):
