@@ -81,7 +81,11 @@
         );
 
         svg.use('#back_image');
-        svg.use('#front_image', {mask:'url(#mask)'});
+        if (percent == 1.0) {
+          svg.use('#front_image');
+        } else {
+          svg.use('#front_image', {mask:'url(#mask)'});
+        }
         svg.use('#dial_image');
       }
     });
