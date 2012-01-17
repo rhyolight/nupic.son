@@ -21,6 +21,7 @@
 
 import datetime
 
+from soc.modules.gci.models.task import DIFFICULTIES
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
@@ -65,7 +66,7 @@ class GCITaskHelper(object):
       student: student who claimed the task
     """
     properties = {'program': self.program, 'org': org, 'status': status,
-        'difficulty': self.program.task_difficulties[0],
+        'difficulty': DIFFICULTIES[0],
         'task_type': self.program.task_types[0],
         'mentors': [mentor.key() for mentor in mentors], 'student': student,
         'user': student.user if student else None,

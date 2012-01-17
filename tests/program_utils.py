@@ -252,7 +252,6 @@ class GCIProgramHelper(ProgramHelper):
         'nr_simultaneous_tasks': 5,
         'student_min_age': 13, 'student_max_age': 17,
         'student_min_age_as_of': date.today(),
-        'task_difficulties': ['easy', 'moderate', 'hard'],
         'task_types': ['code', 'documentation', 'design'],
     }
     properties.update(override)
