@@ -267,10 +267,10 @@ def tag_property(tag_name):
     specified entity.
     """
 
-    if self._tags[tag_name] is None or len(self._tags[tag_name]) == 0:
-      self._tags[tag_name] = self._tag_model[
+    if self._ttags[tag_name] is None or len(self._ttags[tag_name]) == 0:
+      self._ttags[tag_name] = self._tag_model[
           tag_name].get_tags_for_key(self.key())
-    return self._tags[tag_name]
+    return self._ttags[tag_name]
 
   def set_tags(self, seed):
     """Set a list of Tag objects for all Tags that apply to
@@ -287,25 +287,25 @@ def tag_property(tag_name):
     if type(seed['tags']) is types.ListType:
       get_tags(self)
       # Firstly, we will check to see if any tags have been removed.
-      # Iterate over a copy of _tags, as we may need to modify _tags
-      for each_tag in self._tags[tag_name][:]:
+      # Iterate over a copy of _ttags, as we may need to modify _ttags
+      for each_tag in self._ttags[tag_name][:]:
         if each_tag not in seed['tags']:
           # A tag that was previously assigned to this entity is
           # missing in the list that is being assigned, so we
           # disassocaite this entity and the tag.
           each_tag.remove_tagged(self.key())
-          self._tags[tag_name].remove(each_tag)
+          self._ttags[tag_name].remove(each_tag)
       # Secondly, we will check to see if any tags have been added.
       for each_tag in seed['tags']:
         each_tag = string.strip(each_tag)
-        if len(each_tag) > 0 and each_tag not in self._tags[tag_name]:
+        if len(each_tag) > 0 and each_tag not in self._ttags[tag_name]:
           # A tag that was not previously assigned to this entity
           # is present in the list that is being assigned, so we
           # associate this entity with the tag.
           tag = self._tag_model[tag_name].get_or_create(
               seed['scope'], each_tag)
           tag.add_tagged(self.key())
-          self._tags[tag_name].append(tag)
+          self._ttags[tag_name].append(tag)
     else:
       raise Exception, "tags must be either a unicode, a string or a list"
 
@@ -334,11 +334,11 @@ class Taggable(object):
           containing tag model to be used.
     """
 
-    self._tags = {}
+    self._ttags = {}
     self._tag_model = {}
 
     for tag_name in kwargs:
-      self._tags[tag_name] = None
+      self._ttags[tag_name] = None
       self._tag_model[tag_name] = kwargs[tag_name]
 
     self.tag_separator = ", "
