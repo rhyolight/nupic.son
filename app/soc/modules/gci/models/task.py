@@ -71,7 +71,7 @@ POINTS = {
     }
 
 
-class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
+class GCITask(soc.models.base.ModelWithFieldAttributes):
   """Model for a task used in GCI workflow.
   """
 
@@ -196,24 +196,6 @@ class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
                                    verbose_name=ugettext('Featured'))
   is_featured.help_text = ugettext(
       'Should this task be featured on the program homepage.')
-
-  def __init__(self, parent=None, key_name=None,
-               app=None, **entity_values):
-    """Constructor for GCITask Model.
-
-    Args:
-        See Google App Engine APIs.
-    """
-
-    # explicitly call the AppEngine datastore Model constructor
-    # pylint: disable=W0233
-    db.Model.__init__(self, parent, key_name, app, **entity_values)
-
-    # call the Taggable constructor to initialize the tags specified as
-    # keyword arguments
-    Taggable.__init__(self, task_type=TaskTypeTag,
-                      difficulty=TaskDifficultyTag,
-                      arbit_tag=TaskArbitraryTag)
 
   def taskDifficulty(self, all_difficulties=None):
     if all_difficulties:
