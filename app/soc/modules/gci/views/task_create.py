@@ -192,11 +192,6 @@ class TaskCreateForm(TaskEditPostClaimForm):
   def _saveTags(self, entity):
     super(TaskCreateForm, self)._saveTags(entity)
 
-    entity.task_type = {
-        'tags': self.cleaned_data['task_type'],
-        'scope': self.request_data.program,
-        }
-
   def create(self, commit=True, key_name=None, parent=None):
     # organization and status are in this create method and not in cleaner
     # because we want to store it in the entity only when it is created an
