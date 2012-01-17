@@ -44,6 +44,6 @@ class GCIProgram(soc.models.program.Program):
   task_types = db.StringListProperty(
       required=True, default=['Any'],
       verbose_name=ugettext('Task Types'))
-  task_types.group = ugettext('Task Settings')
+  task_types.group = ugettext('Task Types')
   task_types.help_text = ugettext(
       'List all the types a task can be in.')
