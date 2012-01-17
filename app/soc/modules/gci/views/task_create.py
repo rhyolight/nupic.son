@@ -97,9 +97,6 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
     for name, field in self.fields.items():
       self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
 
-  def _saveTags(self, entity):
-    pass
-
   def save(self, commit=True):
     self.cleaned_data['modified_by'] = self.request_data.profile
 
@@ -107,9 +104,6 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
 
     if commit:
       entity.put()
-
-    if entity:
-      self._saveTags(entity)
 
     return entity
 
@@ -185,9 +179,6 @@ class TaskCreateForm(TaskEditPostClaimForm):
     for name, field in self.fields.items():
       self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
 
-  def _saveTags(self, entity):
-    super(TaskCreateForm, self)._saveTags(entity)
-
   def create(self, commit=True, key_name=None, parent=None):
     # organization and status are in this create method and not in cleaner
     # because we want to store it in the entity only when it is created an
@@ -209,9 +200,6 @@ class TaskCreateForm(TaskEditPostClaimForm):
       entity.status = 'Unpublished'
     elif organization.key() in self.request_data.mentor_for:
       entity.status = 'Unapproved'
-
-    if entity:
-      self._saveTags(entity)
 
     return entity
 
