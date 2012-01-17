@@ -1000,7 +1000,10 @@
           onSelectAll: jqgrid_functions.enableDisableButtons,
           onSelectRow: jqgrid_functions.enableDisableButtons,
           // When something changes in the list, update the cookie
-          gridComplete: gridCompletionTasks
+          gridComplete: gridCompletionTasks,
+          // Zebra striping
+          altRows: true,
+          altclass: 'alternate_row'
         }
       );
 

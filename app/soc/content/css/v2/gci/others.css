@@ -2,3 +2,6 @@
 .ui-jqgrid a.listsnoul {
   text-decoration: none;
 }
+.alternate_row {
+  background: #F4F4F4;
+}
