@@ -86,19 +86,22 @@ class MainMenu(Template):
         'home_link': self.data.redirect.homepage().url(),
         'search_link': self.data.redirect.searchpage().url(),
     })
-    
+
     if self.data.profile:
       self.data.redirect.program()
       if self.data.profile.status == 'active':
-        context['profile_link'] = self.data.redirect.urlOf('edit_gsoc_profile')
+        if self.data.timeline.programActive():
+          context['profile_link'] = self.data.redirect.urlOf(
+              'edit_gsoc_profile')
+        else:
+          context['profile_link'] = self.data.redirect.urlOf(
+              'show_gsoc_profile')
 
         # Add org admin dashboard link if the user has active
         # org admin profile and is an org admin of some organization
         if self.data.is_org_admin:
           context['org_dashboard_link'] = self.data.redirect.urlOf(
               'gsoc_org_dashboard')
-      else:
-        context['profile_link'] = self.data.redirect.urlOf('show_gsoc_profile')
 
     if self.data.is_host:
       self.data.redirect.program()
