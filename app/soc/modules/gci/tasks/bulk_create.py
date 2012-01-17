@@ -45,7 +45,6 @@ from soc.modules.gci.models.bulk_create_data import GCIBulkCreateData
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import DIFFICULTIES
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import TaskTypeTag
 
 
 BULK_CREATE_URL = '/tasks/gci/task/bulk_create'
