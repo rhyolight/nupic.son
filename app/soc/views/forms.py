@@ -192,6 +192,7 @@ class TOSWidget(forms.CheckboxInput):
   def render(self, name, value, attrs=None):
     readonly_attrs = {
         'id': 'tos-content',
+        'class': 'tos',
         }
     if self.tos_text:
       text = mark_safe(

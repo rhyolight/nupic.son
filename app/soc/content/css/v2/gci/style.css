@@ -2408,6 +2408,14 @@ form fieldset legend {
     .form-row-buttons input.button {
 	background-position: 90% 50%;
     }
+div.tos {
+  border: 2px solid #D2D2D2;
+  height: 250px;
+  margin-bottom: 10px;
+  overflow: auto;
+  padding: 10px;
+  width: 640px;
+}
 
 /* @group Task creation */
 .form-row-task-completion-time, 
