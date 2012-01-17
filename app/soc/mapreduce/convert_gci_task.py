@@ -140,3 +140,20 @@ def process_difficulty(task):
 
   yield operation.db.Put(task)
   yield operation.counters.Increment('difficulty_updated')
+
+
+def process_task_types(task):
+  """Copy task types stored in TaskTypeTag to the task entity.
+  """
+
+  type_tags = task.task_type
+  types = []
+
+  for type_tag in type_tags:
+    types.append(type_tag.tag)
+
+  types = list(set(types))
+  task.types = types
+
+  yield operation.db.Put(task)
+  yield operation.counters.Increment('task_type_updated')

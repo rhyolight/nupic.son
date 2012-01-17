@@ -154,6 +154,14 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.task.GCITask
 
+- name: UpdateTaskTypes
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_gci_task.process_task_types
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.task.GCITask
+
 - name: AddGCIChangesToComments
   mapper:
     input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
