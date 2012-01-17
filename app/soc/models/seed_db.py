@@ -53,7 +53,6 @@ from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import TaskTypeTag
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
@@ -330,29 +329,12 @@ def seed(request, *args, **kwargs):
       'org': melange.key(),
       'description': '<p>AWESOME</p>',
       'difficulty_level': DifficultyLevel.MEDIUM,
+      'types': ['Code']
   }
 
   gci_task = GCITask(**task_properties)
   gci_task.put()
 
-  tag_properties = {
-      'key_name': gci2009.key().name() + '/Easy',
-      'added': now,
-      'value': 1,
-      'tag': 'Easy',
-      'scope': gci2009.key(),
-      'tagged': [gci_task.key()],
-      'tagged_count': 1,
-      'order': 0,
-  }
-
-  tag_properties.update({
-      'key_name': gci2009.key().name() + 'Code',
-      'tag': 'Code'
-  })
-
-  code = TaskTypeTag(**tag_properties)
-  code.put()
   user_properties = {
       'key_name': 'student',
       'link_id': 'student',
@@ -583,7 +565,6 @@ def clear(*args, **kwargs):
       User.all(),
       Site.all(),
       Document.all(),
-      TaskTypeTag.all(),
       ])
 
   try:
