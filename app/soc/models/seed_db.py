@@ -437,10 +437,10 @@ def seed(request, *args, **kwargs):
   melange_project.put()
   student_info_properties.update({'number_of_projects': 1,
                                   'project_for_orgs': [orgs[1].key()]})
-  student_info2 = GSoCStudentInfo(**student_info_properties)
-  student_info2.put()
+  student_info = GSoCStudentInfo(**student_info_properties)
+  student_info.put()
 
-  melange_student.student_info = student_info2
+  melange_student.student_info = student_info
   melange_student.put()
 
   project_id = 'test_project2'
