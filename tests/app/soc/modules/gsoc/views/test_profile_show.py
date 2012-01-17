@@ -104,7 +104,6 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/profile_show/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_loggedin_msg.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_readonly_template.html')
 
   def testAUserNotLoggedInIsRedirectedToLoginPage(self):
