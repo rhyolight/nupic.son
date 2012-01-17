@@ -74,7 +74,7 @@
           .move(46, 0)
           .line(46, 46)
           .line(46 + 46 * Math.cos(ratio), 46 + 46 * Math.sin(ratio))
-          .arc(46, 46, 60, true, 0, 46, 0)
+          .arc(46, 46, 60, true, false, 46, 0)
           .line(46, 0)
           .close(),
           {fill: '#ffffff', stroke: 'none', strokeWidth: 1}
