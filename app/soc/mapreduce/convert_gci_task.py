@@ -157,3 +157,17 @@ def process_task_types(task):
 
   yield operation.db.Put(task)
   yield operation.counters.Increment('task_type_updated')
+
+
+def process_arbit_tags(task):
+  """Copy task types stored in TaskArbitTag to the task entity.
+  """
+  tags = []
+
+  for arbit_tag in task.arbit_tag:
+    tags.append(arbit_tag.tag)
+
+  task.tags = list(set(tags))
+
+  yield operation.db.Put(task)
+  yield operation.counters.Increment('task_tags_updated')

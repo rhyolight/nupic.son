@@ -162,6 +162,14 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.task.GCITask
 
+- name: UpdateTaskArbitTags
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_gci_task.process_arbit_tags
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.task.GCITask
+
 - name: AddGCIChangesToComments
   mapper:
     input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
