@@ -20,8 +20,6 @@
 
 from google.appengine.ext import db
 
-import soc.models.base
-
 import soc.modules.gsoc.models.program
 
 
