@@ -193,7 +193,7 @@ mapreduce:
     handler: soc.mapreduce.unfreeze_entities
     params:
     - name: entity_kind
-      value: soc.modules.gsoc.models.GSoCProfile
+      value: soc.modules.gsoc.models.profile.GSoCProfile
 
 - name: UnfreezeGSoCOrgs
   mapper:
@@ -201,4 +201,4 @@ mapreduce:
     handler: soc.mapreduce.unfreeze_entities
     params:
     - name: entity_kind
-      value: soc.modules.gsoc.organization.GSoCOrganization
+      value: soc.modules.gsoc.models.organization.GSoCOrganization
