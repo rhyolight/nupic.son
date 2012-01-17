@@ -31,8 +31,6 @@ from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
-BIRTHDATE_FORMAT = 'd-m-Y'
-
 
 def addAddressColumns(list_config):
   """Adds address columns to the specified list config.
@@ -130,9 +128,8 @@ class StudentsList(Template):
         hidden=True)
     list_config.addColumn(
         'birth_date', "Birthdate",
-        (lambda e, sp, *args: format(
-            sp[e.parent_key()].birth_date, BIRTHDATE_FORMAT)),
-        hidden=True)
+        (lambda e, sp, *args: sp[e.parent_key()].birth_date.strftime(
+        "%B %d, %Y")), hidden=True)
    
     addAddressColumns(list_config)
    
