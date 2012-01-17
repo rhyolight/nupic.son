@@ -1400,7 +1400,8 @@ class StudentsComponent(Component):
         lambda ent, si, *args: si[ent.key()].failed_evaluations)
     list_config.addColumn(
         'project_for_orgs', "Organizations",
-        lambda ent, si, *args: ', '.join([db.get(org_key).name for org_key in si[ent.key()].project_for_orgs]))
+        lambda ent, si, o, *args: ', '.join(
+            [o[i].name for i in si[ent.key()].project_for_orgs]))
 
     self._list_config = list_config
 
@@ -1433,7 +1434,10 @@ class StudentsComponent(Component):
       entities = db.get(keys)
       si = dict((i.parent_key(), i) for i in entities if i)
 
-      return ([si], {})
+      entities = db.get(set(sum((i.project_for_orgs for i in entities), [])))
+      o = dict((i.key(), i) for i in entities if i)
+
+      return ([si, o], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter, prefetcher=prefetcher)
