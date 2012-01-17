@@ -167,9 +167,6 @@ class TaskCreateForm(TaskEditPostClaimForm):
     self.fields['difficulty_level'] = django_forms.ChoiceField(
         label=ugettext('Difficulty'), choices=difficulties)
 
-    # get a list of task type tags stored for the program entity
-    type_tags = task.TaskTypeTag.get_by_scope(data.program)
-
     types = []
     for t in data.program.task_types:
       types.append((t, t))
