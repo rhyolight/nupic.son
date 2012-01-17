@@ -331,8 +331,15 @@ class ParticipantsDashboard(Dashboard):
             'name': 'list_mentors',
             'description': ugettext(
                 'List of all the organization admins and mentors'),
-            'title': 'List mentors',
+            'title': 'List mentors and admins',
             'link': r.urlOf('gci_list_mentors')
+        },
+        {
+            'name': 'list_students',
+            'description': ugettext(
+                'List of all participating students'),
+            'title': 'List students',
+            'link': r.urlOf(url_names.GCI_STUDENTS_INFO)
         },
     ]
 
