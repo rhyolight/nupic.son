@@ -25,8 +25,6 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.logic import tags
-
 from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.comment import GCIComment
@@ -35,10 +33,6 @@ from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import TASK_IN_PROGRESS
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
-
-
-TAG_NAMES = ['arbit_tag', 'task_type']
-TAGS_SERVICE = tags.TagsService(TAG_NAMES)
 
 
 DEF_ACTION_NEEDED_TITLE = ugettext('Initial Deadline passed')
@@ -565,7 +559,6 @@ def delete(task):
 
     db.delete(to_delete)
 
-  TAGS_SERVICE.removeAllTagsForEntity(task)
   db.run_in_transaction(task_delete_txn, task)
 
 
