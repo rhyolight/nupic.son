@@ -151,8 +151,6 @@ class BulkCreateTask(object):
         logging.info('Creating new task with fields: %s' %task)
         task_entity = GCITask(**task)
         task_entity.put()
-        # trigger tag saving logic, trice :(
-        task_entity.arbit_tag = task['arbit_tag']
         task_quota = task_quota - 1
       except DeadlineExceededError:
         # time to bail out
@@ -252,13 +250,10 @@ class BulkCreateTask(object):
     task['types'] = types
 
     # clean task tags
-    arbit_tags = []
+    tags = []
     for tag in set(task['arbit_tag'].split(',')):
-      arbit_tags.append(tag.strip())
-    task['arbit_tag'] = {
-        'tags': arbit_tags,
-        'scope': program_entity
-        }
+      tags.append(tag.strip())
+    task['tags'] = tags
 
     return errors
 
