@@ -107,6 +107,12 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
 
     return entity
 
+  def clean_tags(self):
+    tags = []
+    for tag in self.data.get('tags').split(','):
+      tags.append(tag.strip())
+    return tags
+    
   def clean_mentors(self):
     mentor_key_strs = self.data.getlist('mentors')
 
