@@ -56,7 +56,8 @@ class ProgramForm(GCIModelForm):
     super(ProgramForm, self).__init__(*args, **kwargs)
 
     if self.instance:
-      self.task_types_json = json.dumps(self.instance.task_types)
+      self.task_types_json = json.dumps(
+          [[t] for t in self.instance.task_types])
 
   class Meta:
     css_prefix = 'program_form'
