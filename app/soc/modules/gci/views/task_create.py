@@ -99,10 +99,7 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
       self.bound_fields[name] = gci_forms.GCIBoundField(self, field, name)
 
   def _saveTags(self, entity):
-    entity.arbit_tag = {
-        'tags': self.cleaned_data['tags'],
-        'scope': self.request_data.program,
-        }
+    pass
 
   def save(self, commit=True):
     self.cleaned_data['modified_by'] = self.request_data.profile
