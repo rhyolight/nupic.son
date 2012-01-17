@@ -22,10 +22,8 @@ from google.appengine.ext import db
 
 from soc.modules.gci.models.program import GCIProgram
 
-import soc.models.base
 
-
-class GCIScore(soc.models.base.ModelWithFieldAttributes):
+class GCIScore(db.Model):
   """GCIScore model.
 
   It is applicable to students in order to keep track on the points

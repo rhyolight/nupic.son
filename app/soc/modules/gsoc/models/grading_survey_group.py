@@ -23,7 +23,6 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.models import base
 from soc.models import linkable
 
 from soc.modules.gsoc.models.program import GSoCProgram
@@ -72,7 +71,7 @@ class GradingSurveyGroup(linkable.Linkable):
       verbose_name=ugettext('Last Record update completed'))
 
 
-class GSoCGradingSurveyGroup(base.ModelWithFieldAttributes):
+class GSoCGradingSurveyGroup(db.Model):
   """The GradingSurveyGroups links a ProjectSurvey with a GradingProjectSurvey.
 
   The purpose of this model is to be able to link two different types of

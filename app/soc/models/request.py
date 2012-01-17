@@ -21,7 +21,6 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.models.base import ModelWithFieldAttributes
 from soc.models.organization import Organization
 from soc.models.user import User
 
@@ -42,7 +41,7 @@ ROLE_NAMES = {
 INVITATION_TYPE = 'Invitation'
 REQUEST_TYPE = 'Request'
 
-class Request(ModelWithFieldAttributes):
+class Request(db.Model):
   """A request is made to allow a person to create a new Role entity.
   """
 

@@ -26,6 +26,8 @@ import time
 
 import interactive
 
+from soc.logic import dicts
+
 
 def dateFetch(queryGen, last=None, batchSize=100):
   """Iterator that yields an entity in batches.
@@ -40,7 +42,7 @@ def dateFetch(queryGen, last=None, batchSize=100):
 
   from google.appengine.ext import db
 
-   # AppEngine will not fetch more than 1000 results
+  # AppEngine will not fetch more than 1000 results
   batchSize = min(batchSize,1000)
 
   query = None
@@ -108,7 +110,7 @@ def getProps(last=None):
 
   it = dateFetch(gen, last)
 
-  proposals = [(i.key().name(), i.toDict(key_order)) for i in it]
+  proposals = [(i.key().name(), dicts.toDict(i, key_order) for i in it]
   if proposals:
     last = i.last_modified_on # last modified entity
   else:
@@ -401,7 +403,7 @@ def exportStudentsWithProjects(csv_filename, scope_path_start=''):
 
   for student_key, student_entity in accepted_students.iteritems():
     # transform the Student into a set of dict entries
-    prepared_data = student_entity.toDict(students_key_order)
+    prepared_data = dicts.toDict(student_entity, students_key_order)
 
     # add the additional fields
     extra_data = student_extra_data[student_key]
@@ -461,7 +463,7 @@ def exportUniqueOrgAdminsAndMentors(csv_filename, scope_path_start=''):
       'shipping_postalcode', 'birth_date', 'tshirt_size', 'tshirt_style']
 
   print 'Preparing the data for export'
-  data = [user.toDict(field_names=export_fields) for user in \
+  data = [dicts.toDict(user, field_names=export_fields) for user in \
           unique_users.values()]
 
   print 'Exporting the data to CSV'

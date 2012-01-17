@@ -25,7 +25,6 @@ from django.utils.translation import ugettext
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
-import soc.models.base
 import soc.models.role
 import soc.modules.gci.models.program
 
@@ -66,7 +65,7 @@ POINTS = {
     }
 
 
-class GCITask(soc.models.base.ModelWithFieldAttributes):
+class GCITask(db.Model):
   """Model for a task used in GCI workflow.
   """
 

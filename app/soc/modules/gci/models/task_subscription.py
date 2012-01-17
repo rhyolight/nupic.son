@@ -20,10 +20,8 @@
 
 from google.appengine.ext import db
 
-import soc.models.base
 
-
-class GCITaskSubscription(soc.models.base.ModelWithFieldAttributes):
+class GCITaskSubscription(db.Model):
   """GCI Subscription model for tasks.
 
   Parent:

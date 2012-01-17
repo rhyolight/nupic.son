@@ -22,14 +22,13 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 from soc.models import countries
-from soc.models.program import Program
 
 import soc.models.linkable
 import soc.models.school
 import soc.models.user
 
 
-class StudentInfo(soc.models.base.ModelWithFieldAttributes):
+class StudentInfo(db.Model):
   """The model which contains some detailed information which are necessary
   only when the user has a student role. 
 

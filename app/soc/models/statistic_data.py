@@ -23,10 +23,8 @@ statistics.
 
 from google.appengine.ext import db
 
-import soc.models.base
 
-
-class StatisticData(soc.models.base.ModelWithFieldAttributes):
+class StatisticData(db.Model):
   """Model class for StatisticData.
   """
 

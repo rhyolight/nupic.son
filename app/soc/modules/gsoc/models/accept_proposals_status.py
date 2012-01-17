@@ -23,10 +23,9 @@ from google.appengine.ext import db
 import soc.models.base
 
 import soc.modules.gsoc.models.program
-import soc.modules.gsoc.models.proposal
 
 
-class GSoCAcceptProposalsStatus(soc.models.base.ModelWithFieldAttributes):
+class GSoCAcceptProposalsStatus(db.Model):
   """Model used to store the status of the proposals conversion to projects.
   """
 

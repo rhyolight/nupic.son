@@ -22,13 +22,12 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.base
 import soc.modules.gsoc.models.organization
 import soc.modules.gsoc.models.profile
 import soc.modules.gsoc.models.program
 
 
-class GSoCProposal(soc.models.base.ModelWithFieldAttributes):
+class GSoCProposal(db.Model):
   """Model for a student proposal used in the GSoC workflow.
 
   Parent:

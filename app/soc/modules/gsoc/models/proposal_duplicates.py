@@ -20,13 +20,11 @@
 
 from google.appengine.ext import db
 
-import soc.models.base
-
 import soc.modules.gsoc.models.profile
 import soc.modules.gsoc.models.program
 
 
-class GSoCProposalDuplicate(soc.models.base.ModelWithFieldAttributes):
+class GSoCProposalDuplicate(db.Model):
   """Model used to store the duplicate proposals for a student
      in a Project-Based Program.
   """

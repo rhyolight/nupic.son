@@ -19,9 +19,7 @@
 
 from google.appengine.ext import db
 
-import soc.models.base
-
-class DataSeederConfigurationSheet(soc.models.base.ModelWithFieldAttributes):
+class DataSeederConfigurationSheet(db.Model):
   """Holds a configuration sheet for the data seeder.
   """
 

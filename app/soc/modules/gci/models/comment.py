@@ -24,10 +24,9 @@ from django.utils.translation import ugettext
 
 from soc.models.user import User
 
-import soc.models.base
 
 
-class GCIComment(soc.models.base.ModelWithFieldAttributes):
+class GCIComment(db.Model):
   """GCI Comment model for tasks, extends the basic Comment model.
 
     Parent:

@@ -19,11 +19,10 @@
 
 from google.appengine.ext import db
 
-import soc.models.base
 import soc.modules.gsoc.models.profile
 
 
-class GSoCScore(soc.models.base.ModelWithFieldAttributes):
+class GSoCScore(db.Model):
   """Model of a Score.
 
   Parent:

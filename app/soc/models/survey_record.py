@@ -22,13 +22,12 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.models.expando_base import ExpandoBase
 from soc.models.survey import Survey
 
 import soc.models.user
 
 
-class BaseSurveyRecord(ExpandoBase):
+class BaseSurveyRecord(db.Expando):
   """Record produced each time Survey is taken.
 
   Like SurveyContent, this model includes dynamic properties

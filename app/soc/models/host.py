@@ -21,10 +21,8 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.base
 
-
-class Host(soc.models.base.ModelWithFieldAttributes):
+class Host(db.Model):
   """Model containing host specific data.
 
   The User entity corresponding to this host will be the parent of this entity.

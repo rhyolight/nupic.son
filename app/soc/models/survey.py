@@ -25,12 +25,11 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.models.base import ModelWithFieldAttributes
 from soc.models.program import Program
 from soc.models.user import User
 
 
-class Survey(ModelWithFieldAttributes):
+class Survey(db.Model):
   """Model of a Survey.
 
   This model describes meta-information and permissions.

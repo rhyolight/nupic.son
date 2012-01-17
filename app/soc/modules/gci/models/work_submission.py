@@ -23,14 +23,13 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.base
 import soc.models.user
 
 from soc.modules.gci.models import organization as gci_org_model
 from soc.modules.gci.models import program as gci_program_model
 
 
-class GCIWorkSubmission(soc.models.base.ModelWithFieldAttributes):
+class GCIWorkSubmission(db.Model):
   """Model for work submissions for a task by students.
 
   Parent:

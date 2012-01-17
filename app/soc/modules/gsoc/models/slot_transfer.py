@@ -22,11 +22,9 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.base
-
 import soc.modules.gsoc.models.program
 
-class GSoCSlotTransfer(soc.models.base.ModelWithFieldAttributes):
+class GSoCSlotTransfer(db.Model):
   """Model that stores the organization has decided to give up.
   """
 

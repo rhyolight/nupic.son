@@ -20,13 +20,12 @@
 
 from google.appengine.ext import db
 
-import soc.models.base
 import soc.models.role
 
 from soc.modules.gci.models.program import GCIProgram
 
 
-class GCIStudentRanking(soc.models.base.ModelWithFieldAttributes):
+class GCIStudentRanking(db.Model):
   """GCI Student Ranking model.
   """
   #: Required reference to the program so we can query for all rankings

@@ -26,10 +26,8 @@ Only one singleton entity should exist across the page.
 from google.appengine.ext import db
 from django.utils import simplejson
 
-import soc.models.base
 
-
-class StatisticInfo(soc.models.base.ModelWithFieldAttributes):
+class StatisticInfo(db.Model):
   """Model class for StatisticInfo.
   """
 

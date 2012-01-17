@@ -21,11 +21,10 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.base
 import soc.models.role
 
 
-class GSoCComment(soc.models.base.ModelWithFieldAttributes):
+class GSoCComment(db.Model):
   """Model of a comment on a work.
 
   A comment is usually associated with a Work or a Proposal,

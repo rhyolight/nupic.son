@@ -23,8 +23,6 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.models import base
-
 from soc.modules.gsoc.models.grading_project_survey_record \
     import GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.models.grading_project_survey_record \
@@ -36,7 +34,7 @@ from soc.modules.gsoc.models.project_survey_record import ProjectSurveyRecord
 from soc.modules.gsoc.models.student_project import StudentProject
 
 
-class GradingRecord(base.ModelWithFieldAttributes):
+class GradingRecord(db.Model):
   """Explicitly group SurveyRecords with a common project.
 
   Because Mentors and Students take different surveys,
@@ -101,7 +99,7 @@ class GradingRecord(base.ModelWithFieldAttributes):
   modified = db.DateTimeProperty(auto_now=True)
 
 
-class GSoCGradingRecord(base.ModelWithFieldAttributes):
+class GSoCGradingRecord(db.Model):
   """Explicitly group SurveyRecords with a common project.
 
   Because Mentors and Students take different surveys,
