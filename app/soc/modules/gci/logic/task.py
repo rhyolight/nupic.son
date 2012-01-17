@@ -227,6 +227,7 @@ def closeTask(task, profile):
   from soc.modules.gci.tasks.ranking_update import startUpdatingTask
 
   task.status = 'Closed'
+  task.closed_on = datetime.datetime.now()
   task.deadline = None
 
   comment_props = {
