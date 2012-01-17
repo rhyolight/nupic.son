@@ -21,7 +21,6 @@ from soc.views.template import Template
 
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import TaskTypeTag
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
@@ -100,14 +99,8 @@ class OpenTasksList(Template):
     q.filter('status IN', CLAIMABLE)
     starter = lists.keyStarter
 
-    #all_t = TaskTypeTag.all().fetch(100)
-
-    #def prefetcher(entities):
-    #  args = [all_t]
-    #  return (args, {})
-
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self.list_config, q, starter)#, prefetcher=prefetcher)
+        self.request, self.list_config, q, starter)
     return response_builder.build()
   
   def templatePath(self):

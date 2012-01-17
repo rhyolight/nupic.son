@@ -22,17 +22,12 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from taggable.taggable import Tag
-from taggable.taggable import Taggable
-from taggable.taggable import tag_property
+from soc.modules.gci.models.comment import GCIComment
+from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
 import soc.models.base
 import soc.models.role
-
 import soc.modules.gci.models.program
-
-from soc.modules.gci.models.comment import GCIComment
-from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
 
 # states in which a task does not show up publicly
@@ -238,84 +233,3 @@ class GCITask(soc.models.base.ModelWithFieldAttributes):
     q.ancestor(self)
     q.order('created_on')
     return q.fetch(1000)
-
-
-class TaskTag(Tag):
-  """Model for storing all Task tags.
-  """
-
-  order = db.IntegerProperty(required=True, default=0)
-
-  @classmethod
-  def get_by_scope(cls, scope):
-    """Get the list of tag objects that has the given scope and sorts the
-       result by order values.
-    """
-
-    tags = db.Query(cls).filter('scope =', scope).order('order').fetch(1000)
-    return tags
-
-  @classmethod
-  def get_highest_order(cls, scope):
-    """Get a tag with highest order.
-    """
-
-    tag = db.Query(cls).filter('scope =', scope).order('-order').get()
-    if tag:
-      return tag.order
-    else:
-      return -1
-
-  @classmethod
-  def update_order(cls, scope, tag_name, order):
-    """Updates the order of the tag.
-    """
-
-    tag = cls.get_by_scope_and_name(scope, tag_name)
-    if tag:
-      tag.order = order
-      tag.put()
-    return tag
-
-  @classmethod
-  def get_or_create(cls, scope, tag_name, order=0):
-    """Get the Tag object that has the tag value given by tag_value.
-    """
-
-    tag_key_name = cls._key_name(scope.key().name(), tag_name)
-    existing_tag = cls.get_by_key_name(tag_key_name)
-    if existing_tag is None:
-      # the tag does not yet exist, so create it.
-      if not order:
-        order = cls.get_highest_order(scope=scope) + 1
-      def create_tag_txn():
-        new_tag = cls(key_name=tag_key_name, tag=tag_name,
-                      scope=scope, order=order)
-        new_tag.put()
-        return new_tag
-      existing_tag = db.run_in_transaction(create_tag_txn)
-    return existing_tag
-
-
-class TaskTypeTag(TaskTag):
-  """Model for storing of task type tags.
-  """
-  pass
-
-
-class TaskDifficultyTag(TaskTag):
-  """Model for storing of task difficulty level tags.
-  """
-  value = db.IntegerProperty(default=0, verbose_name=ugettext('value'))
-
-
-class TaskArbitraryTag(TaskTag):
-  """Model for storing of arbitrary tags.
-  """
-
-  def __init__(self, *args, **kwds):
-    """Initialization function.
-    """
-
-    TaskTag.__init__(self, *args, **kwds)
-    self.auto_delete = True

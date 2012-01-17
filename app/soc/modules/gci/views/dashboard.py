@@ -40,7 +40,6 @@ from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import TaskTypeTag
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
@@ -641,15 +640,6 @@ class MyOrgsTaskList(Component):
     starter = lists.keyStarter
     prefetcher = lists.listModelPrefetcher(
         GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
-
-    #all_t = TaskTypeTag.all().fetch(100)
-
-    #def prefetcher(entities):
-    #  #args, kwargs = basic_prefetcher(entities)
-    #  args = [{}]
-    #  kwargs = {}
-    #  args += [all_t]
-    #  return (args, kwargs)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter, prefetcher=prefetcher)

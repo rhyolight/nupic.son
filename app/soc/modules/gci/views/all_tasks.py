@@ -26,7 +26,6 @@ from soc.views.template import Template
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import TaskTypeTag
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -82,13 +81,6 @@ class TaskList(Template):
       starter = lists.keyStarter
       prefetcher = lists.listModelPrefetcher(
           GCITask, ['org'], ['mentors'])
-
-      #all_t = TaskTypeTag.all().fetch(100)
-
-      #def prefetcher(entities):
-      #  args, kwargs = basic_prefetcher(entities)
-      #  args += [all_t]
-      #  return (args, kwargs)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, q,
