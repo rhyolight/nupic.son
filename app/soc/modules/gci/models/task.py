@@ -92,14 +92,6 @@ class GCITask(Taggable, soc.models.base.ModelWithFieldAttributes):
   #: Field indicating the types of the Task
   types = db.StringListProperty(verbose_name=ugettext('Type'))
 
-  #: Required field which contains the type of the task. These types are
-  #: configured by a Program Admin.
-  task_type = tag_property('task_type')
-
-  #: Field which contains the arbitrary tags for the task. These tags can
-  #: be assigned by Org Admins and mentors.
-  arbit_tag = tag_property('arbit_tag')
-
   #: Field which contains the arbitrary tags for the task. These tags can
   #: be assigned by org admins and mentors.
   tags = db.StringListProperty(verbose_name=ugettext('Tags'))
