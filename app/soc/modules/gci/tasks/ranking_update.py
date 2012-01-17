@@ -31,7 +31,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.logic import ranking as ranking_logic
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.program import GCIProgram
-from soc.modules.gci.models.student_ranking import GCIStudentRanking
+from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.task import GCITask
 
 
