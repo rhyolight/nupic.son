@@ -256,7 +256,7 @@ class DownloadForm(RequestHandler):
       self.check.isHost()
       self.mutator.studentFromKwargs()
     else:
-      self.check.canDownloadForms()
+      self.check.canStudentDownloadForms()
 
   def _admin(self):
     return self.kwargs['admin']
