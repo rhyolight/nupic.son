@@ -170,3 +170,19 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.profile.GSoCStudentInfo
+
+- name: UnfreezeGSoCProfiles
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.unfreeze_entities
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.GSoCProfile
+
+- name: UnfreezeGSoCOrgs
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.unfreeze_entities
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.organization.GSoCOrganization
