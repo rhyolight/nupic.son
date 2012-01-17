@@ -56,16 +56,6 @@ limitations under the License.
       melange.autocomplete.makeAutoComplete("help_page");
       melange.autocomplete.makeAutoComplete("terms_and_conditions");
 
-      jQuery('#form_row_task_difficulties').dynamicoptions({
-        id: "task-difficulties",
-        label: "{{ forms.0.fields.task_difficulties.label }}",
-        initial: '{{ forms.0.task_difficulties_json|safe }}',
-        fields: {
-            task_difficulty_name: 'Tag name',
-            task_difficulty_value: 'Tag value'
-        }
-      });
-
       jQuery('#form_row_task_types').dynamicoptions({
         id: "task-types",
         label: "{{ forms.0.fields.task_types.label }}",
