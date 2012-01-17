@@ -105,9 +105,9 @@ class ProfileAdminPage(RequestHandler):
         'program_name': program.name,
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'user': profile_show.UserReadOnlyTemplate(user),
-        'profile': ProfileReadOnlyTemplate(profile),
+        'profile': GSoCProfileReadOnlyTemplate(profile),
         'links': links,
-        'css_prefix': ProfileReadOnlyTemplate.Meta.css_prefix,
+        'css_prefix': GSoCProfileReadOnlyTemplate.Meta.css_prefix,
         'submit_tax_link': r.urlOf('gsoc_tax_form_admin'),
         'submit_enrollment_link': r.urlOf('gsoc_enrollment_form_admin'),
         }
