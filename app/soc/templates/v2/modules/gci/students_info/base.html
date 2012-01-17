@@ -15,5 +15,17 @@ limitations under the License.
 
 {% block page_content %}
   <p id="user-logged-in">
-  {{ students_info_list.render }}
+  {{ students_info_list.render|safe }}
 {% endblock page_content %}
+
+{% block dependencies %}
+  [
+    dep.melange.list,
+    css("/soc/content/{{ app_version }}/css/v2/gsoc/user-messages.css"),
+    /*dep.melange.program_select,
+    null,
+    function() {
+      melange.program_select.makeSelector("#program_select");
+    }*/
+  ]
+{% endblock dependencies %}
