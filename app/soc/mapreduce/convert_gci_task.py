@@ -130,7 +130,7 @@ def process_difficulty(task):
   """Copy task difficulties stored in TaskDifficultyTask to the task entity.
   """
 
-  difficulty = task.taskDifficultyName()
+  difficulty = task.difficulty[0].tag
 
   # difficult tasks should be explicitly renamed to 'Hard'
   if difficulty == 'Difficult':

@@ -219,10 +219,6 @@ class GCITask(soc.models.base.ModelWithFieldAttributes):
 
     return self.tags_string(types, ret_list=ret_list)
 
-  def taskDifficultyName(self, all_difficulties=None):
-    difficulty = self.taskDifficulty(all_difficulties)
-    return difficulty.tag
-
   def taskDifficultyValue(self, all_difficulties=None):
     difficulty = self.taskDifficulty(all_difficulties)
     return "%s (%s)" % (difficulty.value, difficulty.tag)
