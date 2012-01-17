@@ -197,32 +197,6 @@ class GCITask(soc.models.base.ModelWithFieldAttributes):
   is_featured.help_text = ugettext(
       'Should this task be featured on the program homepage.')
 
-  def taskDifficulty(self, all_difficulties=None):
-    if all_difficulties:
-      key = self.key()
-      difficulties = [i for i in all_difficulties if key in i.tagged]
-    else:
-      difficulties = self.difficulty
-
-    if len(difficulties) == 1:
-      return difficulties[0]
-
-    self.difficulty = {'tags': ['Unknown'], 'scope': self.program}
-    return self.difficulty[0]
-
-  def taskType(self, all_types=None, ret_list=False):
-    if all_types:
-      key = self.key()
-      types = [i for i in all_types if key in i.tagged]
-    else:
-      types = self.task_type
-
-    return self.tags_string(types, ret_list=ret_list)
-
-  def taskDifficultyValue(self, all_difficulties=None):
-    difficulty = self.taskDifficulty(all_difficulties)
-    return "%s (%s)" % (difficulty.value, difficulty.tag)
-
   def taskTimeToComplete(self):
     days = self.time_to_complete / 24
     hours = self.time_to_complete % 24
