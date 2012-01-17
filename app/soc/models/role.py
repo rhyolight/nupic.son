@@ -25,6 +25,7 @@ from soc.models import countries
 
 import soc.models.linkable
 import soc.models.school
+import soc.models.program
 import soc.models.user
 
 
