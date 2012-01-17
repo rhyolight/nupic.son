@@ -171,7 +171,7 @@ class TaskCreateForm(TaskEditPostClaimForm):
     type_tags = task.TaskTypeTag.get_by_scope(data.program)
 
     types = []
-    for t in data.program.types:
+    for t in data.program.task_types:
       types.append((t, t))
 
     self.fields['types'] = django_forms.MultipleChoiceField(
@@ -180,8 +180,7 @@ class TaskCreateForm(TaskEditPostClaimForm):
         help_text=DEF_TASK_TYPE_HELP_MSG)
 
     if self.instance:
-      self.fields['task_type'].initial = [str(t) for t in getattr(
-          self.instance, 'task_type')]
+      self.fields['types'].initial = [str(t) for t in self.instance.types]
       ttc = datetime.timedelta(hours=self.instance.time_to_complete)
       self.fields['time_to_complete_days'].initial = ttc.days
       self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
