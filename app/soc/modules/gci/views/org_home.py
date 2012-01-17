@@ -158,6 +158,7 @@ class OrgHomepage(RequestHandler):
     return [
         url(r'org/%s$' % url_patterns.ORG, self,
             name=url_names.GCI_ORG_HOME),
+        url(r'org/home/%s' % url_patterns.ORG, self),
     ]
     
   def checkAccess(self):
