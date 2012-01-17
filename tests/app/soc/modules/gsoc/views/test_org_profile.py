@@ -91,14 +91,6 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-  def testOrgProfilePageInactiveProfile(self):
-    """Tests that a user with an inactive profile can not access a profile.
-    """
-    self.data.createInactiveProfile()
-    url = '/gsoc/profile/organization/' + self.org.key().name()
-    response = self.get(url)
-    self.assertResponseForbidden(response)
-
   def testOnlyACorrectOrgAdminCanEditAnrOrgProfilePage(self):
     """Tests that only the assigned org admin for an organization can edit the
     org profile.

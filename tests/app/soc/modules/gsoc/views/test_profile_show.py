@@ -137,23 +137,15 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     url = '/gsoc/profile/admin/'+self.data.profile.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
-    
-    self.data.createInactiveProfile()
-    response = self.get(url)
-    self.assertResponseForbidden(response)
-    
+
     self.data.deleteProfile().createMentor(self.org)
     response = self.get(url)
     self.assertResponseForbidden(response)
-    
+
     self.data.createOrgAdmin(self.org)
     response = self.get(url)
     self.assertResponseForbidden(response)
-    
-    self.data.deleteProfile().createInactiveProfile()
-    response = self.get(url)
-    self.assertResponseForbidden(response)
-    
+
   def testOnlyAHostCanAccessTheAdminProfilePage(self):
     """Tests that only the host is allowed to access profile pages.
     """
@@ -168,15 +160,7 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     self.data.createStudent()
     response = self.get(url)
     self.assertResponseForbidden(response)
-    
-    self.data.deleteProfile().createInactiveStudent()
-    response = self.get(url)
-    self.assertResponseForbidden(response)
-    
-    self.data.deleteProfile().createInactiveProfile()
-    response = self.get(url)
-    self.assertResponseForbidden(response)
-    
+
     self.data.deleteProfile().createMentor(self.org)
     response = self.get(url)
     self.assertResponseForbidden(response)

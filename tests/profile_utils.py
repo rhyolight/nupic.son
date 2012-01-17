@@ -113,14 +113,6 @@ class ProfileHelper(object):
     """
     pass
 
-  def createInactiveProfile(self):
-    """Creates an inactive profile for the current user.
-    """
-    self.createProfile()
-    self.profile.status = 'inactive'
-    self.profile.put()
-    return self.profile
-
   def createStudent(self):
     """Sets the current user to be a student for the current program.
     """
@@ -136,12 +128,6 @@ class ProfileHelper(object):
       self.profile.student_info = None
       self.profile.put()
     return self.profile
-
-  def createInactiveStudent(self):
-    """Sets the current user to be an inactive student for the current program.
-    """
-    self.createInactiveProfile()
-    return self.createStudent()
 
   def createHost(self):
     """Sets the current user to be a host for the current program.
