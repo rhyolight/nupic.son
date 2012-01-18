@@ -20,7 +20,7 @@
 
 from google.appengine.ext import db
 
-from soc.models.request import Request
+from soc.modules.gsoc.models.request import GSoCRequest
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
@@ -77,10 +77,10 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
         # TODO(SRabbelier): add this as soon as we make User Request's parent
         # 'parent': other_user,
     }
-    response, properties = self.modelPost(url, Request, override)
+    response, properties = self.modelPost(url, GSoCRequest, override)
     self.assertEmailSent(to=other_data.profile.email, n=1)
 
-    invitation = Request.all().get()
+    invitation = GSoCRequest.all().get()
     properties.pop('link_id')
     self.assertPropertiesEqual(properties, invitation)
 
@@ -92,10 +92,10 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     invitation.delete()
     override['link_id'] = 'to_be_admin@example.com, to_be_admin2@example.com'
     other_data.notificationSettings()
-    response, properties = self.modelPost(url, Request, override)
+    response, properties = self.modelPost(url, GSoCRequest, override)
     self.assertEmailSent(to=other_data.profile.email, n=1)
 
-    invitations = Request.all().fetch(2)
+    invitations = GSoCRequest.all().fetch(2)
     self.assertEqual(2, len(invitations))
     invitation = invitations[0]
     properties.pop('link_id')
@@ -111,7 +111,7 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     postdata = {'action': 'Withdraw'}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
-    invite = Request.all().get()
+    invite = GSoCRequest.all().get()
     self.assertEqual('withdrawn', invite.status)
     self.assertEmailSent(to=other_data.profile.email, n=2)
 
@@ -119,7 +119,7 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     postdata = {'action': 'Resubmit'}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
-    invite = Request.all().get()
+    invite = GSoCRequest.all().get()
     self.assertEqual('pending', invite.status)
     self.assertEmailSent(to=other_data.profile.email, n=3)
 
@@ -140,7 +140,7 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     postdata = {'action': 'Reject'}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
-    invitation = Request.all().get()
+    invitation = GSoCRequest.all().get()
     self.assertEqual('rejected', invitation.status)
 
     # test that you can change after the fact

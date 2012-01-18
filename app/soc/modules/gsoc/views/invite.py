@@ -27,17 +27,16 @@ from django.utils.translation import ugettext
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic.helper import notifications
-from soc.models.request import Request
 from soc.models.user import User
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.tasks import mailer
 
-from soc.modules.gsoc.views.base import RequestHandler
-
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.views import forms as gsoc_forms
+from soc.modules.gsoc.models.request import GSoCRequest
+from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gsoc.views import forms as gsoc_forms
 
 
 DEF_STATUS_FOR_USER_MSG = ugettext(
@@ -54,7 +53,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
   link_id = gsoc_forms.CharField(label='Link ID/Email')
 
   class Meta:
-    model = Request
+    model = GSoCRequest
     css_prefix = 'gsoc_intivation'
     fields = ['message']
 
@@ -122,7 +121,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
     self.request_data.invited_user.append(invited_user)
     
     # check if the organization has already sent an invitation to the user
-    query = db.Query(Request)
+    query = db.Query(GSoCRequest)
     query.filter('type', 'Invitation')
     query.filter('user', invited_user)
     query.filter('role', self.request_data.kwargs['role'])
@@ -264,7 +263,7 @@ class ShowInvite(RequestHandler):
     self.check.isProfileActive()
     
     invite_id = int(self.data.kwargs['id'])
-    self.data.invite = Request.get_by_id(invite_id)
+    self.data.invite = GSoCRequest.get_by_id(invite_id)
     self.check.isInvitePresent(invite_id)
 
     self.data.organization = self.data.invite.org

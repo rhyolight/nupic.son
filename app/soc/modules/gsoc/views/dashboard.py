@@ -30,7 +30,6 @@ from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.models.org_app_record import OrgAppRecord
-from soc.models.request import Request
 from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
 from soc.views.dashboard import Component
@@ -40,10 +39,10 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
 
-from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.evaluations import evaluationRowAdder
-from soc.modules.gsoc.logic.survey_record import getEvalRecord
+from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
+from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -56,6 +55,7 @@ from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
+from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -1215,7 +1215,7 @@ class RequestComponent(Component):
     if lists.getListIndex(self.request) != self.idx:
       return None
 
-    q = Request.all()
+    q = GSoCRequest.all()
 
     if self.for_admin:
       q.filter('org IN', self.data.org_admin_for)
@@ -1224,7 +1224,7 @@ class RequestComponent(Component):
 
     starter = lists.keyStarter
 
-    prefetcher = lists.modelPrefetcher(Request, ['user', 'org'])
+    prefetcher = lists.modelPrefetcher(GSoCRequest, ['user', 'org'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter, prefetcher=prefetcher)
