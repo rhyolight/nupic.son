@@ -104,6 +104,142 @@ class AppEngineDatastoreClearPlugin(plugins.Plugin):
       datastore.Clear()
 
 
+def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
+           keyboardCaught, shouldStop, loaderClass, resultClass, config):
+  """To replace the test runner of multiprocess.
+  """
+  from nose import failure
+  from nose.pyversion import bytes_
+  import time
+  import pickle
+  try:
+    from cStringIO import StringIO
+  except ImportError:
+    import StringIO
+  from nose.plugins.multiprocess import _instantiate_plugins, \
+    NoSharedFixtureContextSuite, _WritelnDecorator, TestLet
+  config = pickle.loads(config)
+  dummy_parser = config.parserClass()
+  if _instantiate_plugins is not None:
+    for pluginclass in _instantiate_plugins:
+      plugin = pluginclass()
+      plugin.addOptions(dummy_parser,{})
+      config.plugins.addPlugin(plugin)
+  config.plugins.configure(config.options,config)
+  config.plugins.begin()
+  log.debug("Worker %s executing, pid=%d", ix,os.getpid())
+  loader = loaderClass(config=config)
+  loader.suiteClass.suiteClass = NoSharedFixtureContextSuite
+
+  def get():
+    return testQueue.get(timeout=config.multiprocess_timeout)
+
+  def makeResult():
+    stream = _WritelnDecorator(StringIO())
+    result = resultClass(stream, descriptions=1,
+               verbosity=config.verbosity,
+               config=config)
+    plug_result = config.plugins.prepareTestResult(result)
+    if plug_result:
+      return plug_result
+    return result
+
+  def batch(result):
+    failures = [(TestLet(c), err) for c, err in result.failures]
+    errors = [(TestLet(c), err) for c, err in result.errors]
+    errorClasses = {}
+    for key, (storage, label, isfail) in result.errorClasses.items():
+      errorClasses[key] = ([(TestLet(c), err) for c, err in storage],
+                 label, isfail)
+    return (
+      result.stream.getvalue(),
+      result.testsRun,
+      failures,
+      errors,
+      errorClasses)
+
+  def setup_process_env():
+    """Runs just after the process starts to setup services.
+    """
+    from google.appengine.api import apiproxy_stub_map
+    from google.appengine.api import mail_stub
+    from google.appengine.api import user_service_stub
+    from google.appengine.api import urlfetch_stub
+    from google.appengine.api.capabilities import capability_stub
+    from google.appengine.api.memcache import memcache_stub
+    from google.appengine.api.taskqueue import taskqueue_stub
+    from google.appengine.api import datastore_file_stub
+    apiproxy_stub_map.apiproxy = apiproxy_stub_map.APIProxyStubMap()
+    apiproxy_stub_map.apiproxy.RegisterStub(
+        'urlfetch', urlfetch_stub.URLFetchServiceStub())
+    apiproxy_stub_map.apiproxy.RegisterStub(
+        'user', user_service_stub.UserServiceStub())
+    apiproxy_stub_map.apiproxy.RegisterStub(
+        'memcache', memcache_stub.MemcacheServiceStub())
+    apiproxy_stub_map.apiproxy.RegisterStub('datastore',
+        datastore_file_stub.DatastoreFileStub('test-app-run', None, None))
+    apiproxy_stub_map.apiproxy.RegisterStub('mail', mail_stub.MailServiceStub())
+    yaml_location = os.path.join(HERE, 'app')
+    apiproxy_stub_map.apiproxy.RegisterStub(
+        'taskqueue', taskqueue_stub.TaskQueueServiceStub(root_path=yaml_location))
+    apiproxy_stub_map.apiproxy.RegisterStub(
+        'capability_service', capability_stub.CapabilityServiceStub())
+
+  def after_each_test():
+    """Runs after each test to clean datastore.
+    """
+    from google.appengine.api import apiproxy_stub_map
+    datastore = apiproxy_stub_map.apiproxy.GetStub('datastore')
+    # clear datastore iff one is available
+    if datastore is not None:
+      datastore.Clear()
+
+  setup_process_env()
+  for test_addr, arg in iter(get, 'STOP'):
+    if shouldStop.is_set():
+      log.exception('Worker %d STOPPED',ix)
+      break
+    result = makeResult()
+    test = loader.loadTestsFromNames([test_addr])
+    test.testQueue = testQueue
+    test.tasks = []
+    test.arg = arg
+    log.debug("Worker %s Test is %s (%s)", ix, test_addr, test)
+    try:
+      if arg is not None:
+        test_addr = test_addr + str(arg)
+      currentaddr.value = bytes_(test_addr)
+      currentstart.value = time.time()
+      test(result)
+      currentaddr.value = bytes_('')
+      resultQueue.put((ix, test_addr, test.tasks, batch(result)))
+      after_each_test()
+    except KeyboardInterrupt:
+      keyboardCaught.set()
+      if len(currentaddr.value) > 0:
+        log.exception('Worker %s keyboard interrupt, failing '
+                'current test %s',ix,test_addr)
+        currentaddr.value = bytes_('')
+        failure.Failure(*sys.exc_info())(result)
+        resultQueue.put((ix, test_addr, test.tasks, batch(result)))
+      else:
+        log.debug('Worker %s test %s timed out',ix,test_addr)
+        resultQueue.put((ix, test_addr, test.tasks, batch(result)))
+    except SystemExit:
+      currentaddr.value = bytes_('')
+      log.exception('Worker %s system exit',ix)
+      raise
+    except:
+      currentaddr.value = bytes_('')
+      log.exception("Worker %s error running test or returning "
+                    "results",ix)
+      failure.Failure(*sys.exc_info())(result)
+      resultQueue.put((ix, test_addr, test.tasks, batch(result)))
+    if config.multiprocess_restartworker:
+      break
+  log.debug("Worker %s ending", ix)
+
+
 def main():
   sys.path = extra_paths + sys.path
   os.environ['SERVER_SOFTWARE'] = 'Development via nose'
@@ -143,7 +279,7 @@ def main():
   django.test.utils.setup_test_environment()
 
   plugins = [AppEngineDatastoreClearPlugin()]
-
+  # For coverage
   if '--coverage' in sys.argv:
     from nose.plugins import cover
     plugin = cover.Coverage()
@@ -162,6 +298,20 @@ def main():
     sys.argv += args
   else:
     load_melange()
+
+  # For multiprocess
+  will_multiprocess = False
+  for arg in sys.argv[1:]:
+    if '--processes' in arg:
+      will_multiprocess = True
+      break
+  if will_multiprocess:
+    from mox import stubout
+    from nose.plugins import multiprocess
+    stubout_obj = stubout.StubOutForTesting()
+    stubout_obj.SmartSet(multiprocess, '__runner', multiprocess_runner)
+    # The default --process-timeout (10s) is too short
+    sys.argv += ['--process-timeout=300']
 
   # Ignore functional and old_app tests
   args = ['--exclude=functional',
