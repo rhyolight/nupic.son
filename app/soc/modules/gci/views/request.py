@@ -277,6 +277,11 @@ class RespondRequestPage(RequestHandler):
         request = db.get(self.data.request_entity.key())
         request.status = 'rejected'
         request.put()
+
+        context = notifications.handledRequestContext(self.data, request.status)
+        sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
+        sub_txn()
+
       db.run_in_transaction(reject_request_txn)
 
     self.redirect.id().to(url_names.GCI_RESPOND_REQUEST)
