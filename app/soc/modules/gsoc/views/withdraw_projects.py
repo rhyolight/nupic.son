@@ -141,9 +141,12 @@ class ProjectList(Template):
         logging.warning("Project '%s' already accepted" % project_key)
         continue
 
+      # key of the organization for the project 
+      org_key = GSoCProject.org.get_value_for_datastore(project)
+
       qp = GSoCProposal.all()
       qp.ancestor(project.parent_key())
-      qp.filter('org', project.org)
+      qp.filter('org', org_key)
       # FIXME: ??? Mentors can change overtime so how does this work???
       qp.filter('mentor IN', project.mentors)
 
@@ -167,6 +170,8 @@ class ProjectList(Template):
         profile.number_of_projects = new_number
 
         db.put([proposal, project, profile])
+
+        
 
       db.run_in_transaction(withdraw_or_accept_project_txn)
 
