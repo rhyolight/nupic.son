@@ -551,11 +551,15 @@ class MyOrgsTaskList(Component):
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn(
-        'org', 'Organization',
-        lambda ent, *args: ent.org.name)
+        'org', 'Organization', lambda ent, *args: ent.org.name)
+    list_config.addColumn(
+        'type', 'Type', lambda entity, *args: ", ".join(entity.types))
+    list_config.addColumn(
+        'tags', 'Tags', lambda entity, *args: ", ".join(entity.tags))
+    list_config.addColumn(
+        'time_to_complete', 'Time to complete',
+        lambda entity, *args: entity.taskTimeToComplete())
 
-    list_config.addColumn('time_to_complete', 'Time to complete',
-                          lambda entity, *args: entity.taskTimeToComplete())
 
     list_config.addColumn(
         'mentors', 'Mentors',
