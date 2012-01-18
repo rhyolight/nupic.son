@@ -35,7 +35,7 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
-    'proposal_extra',
+    'proposal_extra', 'tags',
 ]
 
 class OrgProfileForm(org_profile.OrgProfileForm):
@@ -52,6 +52,14 @@ class OrgProfileForm(org_profile.OrgProfileForm):
     field.group = ugettext("4. Organization Preferences")
     field.initial = ', '.join(instance.proposal_extra) if instance else ''
 
+    self.fields['tags'] = django_forms.CharField(
+        required=False,
+        label=ugettext('Tags'))
+
+    if self.instance:
+      self.fields['tags'].initial = ', '.join(self.instance.tags)
+      self.fields['tags'].group = org_profile.HOMEPAGE_INFO_GROUP
+
   class Meta:
     model = GSoCOrganization
     css_prefix = 'gsoc_org_page'
@@ -62,10 +70,6 @@ class OrgProfileForm(org_profile.OrgProfileForm):
   nonreq_proposal_extra = django_forms.CharField(
       label='Extra columns', required=False)
   nonreq_proposal_extra.help_text = ugettext('Comma separated list of values.')
-
-  tags = django_forms.CharField(
-      required=False,
-      label=ugettext('Tags'))
   
   def clean_tags(self):
     tags = []
