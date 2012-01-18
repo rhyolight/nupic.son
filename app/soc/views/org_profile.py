@@ -33,6 +33,8 @@ PROFILE_EXCLUDE = [
     'proposal_extra', 'new_org',
 ]
 
+HOMEPAGE_INFO_GROUP = ugettext('1. Homepage Info (displayed on org homepage)')
+
 
 class OrgProfileForm(forms.ModelForm):
   """Django form for the organization profile.
@@ -50,7 +52,7 @@ class OrgProfileForm(forms.ModelForm):
     for field in homepage_fields:
       if field not in self.fields:
         continue
-      self.fields[field].group = '1. Homepage Info (displayed on org homepage)'
+      self.fields[field].group = HOMEPAGE_INFO_GROUP
 
     feed_url = self.fields.pop('feed_url')
     self.fields.insert(len(self.fields), 'feed_url', feed_url)
