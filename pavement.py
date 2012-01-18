@@ -55,7 +55,7 @@ options(
                  'gae_django.py', 'profiler.py', 'appengine_config.py'],
     app_dirs =  ["soc", "feedparser", "python25src",
                  "jquery.min", "ranklist", "shell", "json.min", "jlinq",
-                 "modernizr.min", "htmlsanitizer", "LABjs.min", "taggable",
+                 "modernizr.min", "htmlsanitizer", "LABjs.min",
 				 "gviz", "webmaster", "gdata", "atom"],
     css_dirs = ["soc/content/css/v2/gsoc/", "soc/content/css/v2/gci"],
     css_files = {
