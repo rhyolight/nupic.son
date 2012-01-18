@@ -143,7 +143,7 @@ def requestContext(data, request, admin_emails):
   to_users = []
 
   request_url = data.redirect.request(request).url(full=True)
-  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+  edit_link = data.redirect.editProfile(data.profile).url(full=True)
 
   message_properties = {
       'requester': data.profile.name(),
