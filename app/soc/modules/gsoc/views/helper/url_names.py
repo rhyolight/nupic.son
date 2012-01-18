@@ -16,3 +16,6 @@
 
 """Module for storing GSoC related URL names.
 """
+
+
+GSOC_EDIT_PROGRAM_MESSAGES = 'gsoc_edit_program_messages'

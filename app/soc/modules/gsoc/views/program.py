@@ -18,13 +18,17 @@
 """
 
 
+from google.appengine.ext import db
+
 from soc.views.helper import url_patterns
 
 from soc.models.document import Document
 from soc.modules.gsoc.models.program import GSoCProgram
+from soc.modules.gsoc.models.program import GSoCProgramMessages
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -51,6 +55,19 @@ class ProgramForm(GSoCModelForm):
     model = GSoCProgram
     exclude = ['link_id', 'scope', 'scope_path', 'timeline',
                'home', 'slots_allocation']
+
+
+class GSoCProgramMessagesForm(GSoCModelForm):
+  """Django form for the program settings.
+  """
+
+  def __init__(self, request_data, *args, **kwargs):
+    self.request_data = request_data
+    super(GSoCProgramMessagesForm, self).__init__(*args, **kwargs)
+
+  class Meta:
+    css_prefix = 'program_messages_form'
+    model = GSoCProgramMessages
 
 
 class ProgramPage(RequestHandler):
@@ -167,3 +184,69 @@ class TimelinePage(RequestHandler):
       self.redirect.to('edit_gsoc_timeline', validated=True, cbox=cbox)
     else:
       self.get()
+
+
+class GSoCProgramMessagesPage(RequestHandler):
+  """View for the content of program specific messages to be sent.
+  """
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'program/messages/edit/%s$' % url_patterns.PROGRAM, self,
+            name=url_names.GSOC_EDIT_PROGRAM_MESSAGES),
+    ]
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/program/messages.html'
+
+  def context(self):    
+    entity = self._getSingletonEntity(self.data.program)
+    form = self._getForm(entity)
+    
+    return {
+        'page_name': 'Edit program messages',
+        'forms': [form],
+        'error': form.errors,
+        }
+
+  def post(self):
+    """Handler for HTTP POST request.
+    """
+    if self.data.GET.get('cbox'):
+      cbox = True
+    else:
+      cbox = False
+
+    if self.validate():
+      self.redirect.program()
+      self.redirect.to(url_names.GSOC_EDIT_PROGRAM_MESSAGES,
+          validated=True, cbox=cbox)
+    else:
+      self.get()
+
+  def validate(self):
+    entity = self._getSingletonEntity(self.data.program)
+    form = self._getForm(entity)
+
+    if not form.is_valid():
+      return False
+
+    form.save()
+    return True
+
+  def _getForm(self, entity):
+    return GSoCProgramMessagesForm(self.data, self.data.POST or None,
+        instance=entity)
+
+  def _getSingletonEntity(self, program):
+    def get_or_create_txn():
+      entity = GSoCProgramMessages.all().ancestor(program).get()
+      if not entity:
+        entity = GSoCProgramMessages(parent=program)
+        entity.put()
+      return entity
+
+    return db.run_in_transaction(get_or_create_txn)
