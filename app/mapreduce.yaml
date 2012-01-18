@@ -202,3 +202,11 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.organization.GSoCOrganization
+
+- name: ConvertOrgTags
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_gsoc_organizations.process_org_tags
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.organization.GSoCOrganization
