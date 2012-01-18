@@ -87,9 +87,9 @@ class SendRequestPage(RequestHandler):
     Returns a newly created request entity or None if an error occurs.
     """
     assert isSet(self.data.organization)
-    
+
     request_form = RequestForm(self.data.POST)
-    
+
     if not request_form.is_valid():
       return None
 
@@ -138,7 +138,7 @@ class ManageRequestPage(RequestHandler):
 
   def checkAccess(self):
     self.check.isProfileActive()
-    
+
     request_id = int(self.data.kwargs['id'])
     self.data.request_entity = GCIRequest.get_by_id(request_id)
     self.check.isRequestPresent(request_id)
