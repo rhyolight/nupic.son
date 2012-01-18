@@ -76,3 +76,16 @@ class GSoCProgram(soc.models.program.Program):
   duplicates_visible.help_text = ugettext(
       'Field used to indicate if duplicate proposals should be made visible '
       'to org admins.')
+
+
+class GSoCProgramMessages(soc.models.program.ProgramMessages):
+  """The GSoCProgramMessages model.
+  """
+
+  #: Message sent to the students that are accepted for the program.
+  accepted_students_msg = db.TextProperty(required=False,
+      verbose_name=ugettext('Accepted Students Message'))
+
+  #: Message sent to the students that are rejected for the program.
+  rejected_students_msg = db.TextProperty(required=False,
+      verbose_name=ugettext('Rejected Students Message'))

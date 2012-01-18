@@ -22,6 +22,7 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+import soc.models.document
 import soc.models.presence
 import soc.models.timeline
 
@@ -217,3 +218,20 @@ class Program(soc.models.presence.Presence):
   irc.help_text = ugettext("URL of the irc channel for the program in "
                            "the format irc://<channel>@server")
   irc.group = ugettext("1. Public Info")
+
+
+class ProgramMessages(db.Model):
+  """The ProgramMessages model.
+
+  This model contains the specific messages whose content may be customized
+  by program administrators and which may be sent because of various reasons
+  throughout the program.
+  """
+
+  #: Message sent to the organizations that are accepted for the program.
+  accepted_orgs_msg = db.TextProperty(required=False,
+      verbose_name=ugettext('Accepted Organizations Message'))
+
+  #: Message sent to the organizations that are rejected for the program.
+  rejected_orgs_msg = db.TextProperty(required=False,
+      verbose_name=ugettext('Rejected Organizations Message'))
