@@ -418,11 +418,25 @@ def seed(request, *args, **kwargs):
   melange_student2 = GSoCProfile(**student_properties)
   melange_student2.put()
 
+  proposal_properties = {
+      'title': 'test proposal',
+      'abstract': 'test abstract',
+      'content': 'test content',
+      'mentor': profile,
+      'status': 'accepted',
+      'parent': melange_student,
+      'has_mentor': True,
+      'org': orgs[1],
+      'program': gsoc2009,
+      }
+  melange_proposal = GSoCProposal(**proposal_properties)
+  melange_proposal.put()
+
   project_properties = {
       'title': 'test project',
       'abstract': 'test abstract',
       'status': 'accepted',
-      'student': melange_student,
+      'parent': melange_student,
       'mentors': [profile.key()],
       'program':  gsoc2009,
       'org': orgs[1].key(),
@@ -433,8 +447,11 @@ def seed(request, *args, **kwargs):
   orgs[1].slots = 1
   orgs[1].put()
 
-  student_info_properties.update({'number_of_projects': 1,
-                                  'project_for_orgs': [orgs[1].key()]})
+  student_info_properties.update({
+      'number_of_projects': 1,
+      'number_of_proposals': 1,
+      'project_for_orgs': [orgs[1].key()]
+      })
   student_info = GSoCStudentInfo(**student_info_properties)
   student_info.put()
 
