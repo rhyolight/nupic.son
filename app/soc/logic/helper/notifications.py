@@ -137,11 +137,6 @@ def requestContext(data, request, admin_emails):
 
   assert isSet(data.organization)
 
-  from soc.logic.helper import notifications
-
-  # get the users who should get the notification
-  to_users = []
-
   request_url = data.redirect.request(request).url(full=True)
   edit_link = data.redirect.editProfile(data.profile).url(full=True)
 
