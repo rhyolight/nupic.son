@@ -349,7 +349,7 @@ class RedirectHelper(request_data.RedirectHelper):
     assert request
     self.id(request.key().id())
     if request.type == 'Request':
-      self._url_name = 'show_gci_request'
+      self._url_name = url_names.GCI_RESPOND_REQUEST
     else:
       self._url_name = url_names.GCI_RESPOND_INVITE
     return self
