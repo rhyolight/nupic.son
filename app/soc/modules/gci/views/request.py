@@ -28,8 +28,8 @@ from soc.views.helper.access_checker import isSet
 
 from soc.tasks import mailer
 
+from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.request import GCIRequest
-
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
@@ -98,8 +98,19 @@ class SendRequestPage(RequestHandler):
     request_form.cleaned_data['type'] = 'Request'
     request_form.cleaned_data['user'] = self.data.user
 
-    # consider sent some some notification to organization
-    return request_form.create()
+    q = GCIProfile.all().filter('org_admin_for', self.data.organization)
+    q = q.filter('status', 'active').filter('notify_new_requests', True)
+    admins = q.fetch(1000)
+    admin_emails = [i.email for i in admins]
+
+    def create_request_txn():
+      request = request_form.create(commit=True)
+      context = notifications.requestContext(self.data, request, admin_emails)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
+      sub_txn()
+      return request
+
+    return db.run_in_transaction(create_request_txn)
 
   def post(self):
     """Handler to for GCI Send Request Page HTTP post request.
