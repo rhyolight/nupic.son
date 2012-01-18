@@ -59,6 +59,8 @@ class OrgProfileForm(org_profile.OrgProfileForm):
     if self.instance:
       self.fields['tags'].initial = ', '.join(self.instance.tags)
       self.fields['tags'].group = org_profile.HOMEPAGE_INFO_GROUP
+      self.fields['tags'].help_text = ugettext(
+          'Comma separated list of organization tags')
 
   class Meta:
     model = GSoCOrganization
