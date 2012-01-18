@@ -34,7 +34,6 @@ extra_paths = [HERE,
 
 import nose
 from nose import plugins
-#print os.path.abspath(plugins)
 
 import logging
 # Disable the messy logging information
@@ -151,9 +150,6 @@ def main():
     from mox import stubout
     stubout_obj = stubout.StubOutForTesting()
     stubout_obj.SmartSet(plugin, 'begin', begin)
-    plugins.append(plugin)
-    from nose.plugins.multiprocess import MultiProcess
-    plugin = MultiProcess()
     plugins.append(plugin)
 
     args = ['--with-coverage',
