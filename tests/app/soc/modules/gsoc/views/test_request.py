@@ -20,7 +20,7 @@
 
 from google.appengine.ext import db
 
-from soc.models.request import Request
+from soc.modules.gsoc.models.request import GSoCRequest
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
@@ -73,9 +73,9 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     # test POST
     override = {'status': 'pending', 'role': 'mentor', 'type': 'Request',
                 'user': self.data.user, 'org': self.org}
-    response, properties = self.modelPost(url, Request, override)
+    response, properties = self.modelPost(url, GSoCRequest, override)
 
-    request = Request.all().get()
+    request = GSoCRequest.all().get()
     self.assertPropertiesEqual(properties, request)
 
     self.assertEmailSent(to=admin.profile.email, n=1)
@@ -87,14 +87,14 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     postdata = {'action': 'Withdraw'}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
-    request = Request.all().get()
+    request = GSoCRequest.all().get()
     self.assertEqual('withdrawn', request.status)
 
     # test that you can resubmit
     postdata = {'action': 'Resubmit'}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
-    request = Request.all().get()
+    request = GSoCRequest.all().get()
     self.assertEqual('pending', request.status)
 
   def testAcceptRequest(self):
@@ -109,7 +109,7 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     postdata = {'action': 'Reject'}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
-    request = Request.all().get()
+    request = GSoCRequest.all().get()
     self.assertEqual('rejected', request.status)
 
     self.assertEmailSent(to=other_data.profile.email, n=1)
@@ -120,7 +120,7 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
 
     def checkPostAccept():
       self.assertResponseRedirect(response)
-      request = Request.all().get()
+      request = GSoCRequest.all().get()
       self.assertEqual('accepted', request.status)
 
       profile = db.get(other_data.profile.key())
