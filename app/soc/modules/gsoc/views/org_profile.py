@@ -162,10 +162,6 @@ class OrgProfilePage(RequestHandler):
       form = OrgProfileForm(self.data.POST or None,
                             instance=self.data.organization)
 
-    if self.data.organization.org_tag:
-      tags = self.data.organization.tags_string(self.data.organization.org_tag)
-      form.fields['tags'].initial = tags
-
     context = {
         'page_name': "Organization profile",
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
