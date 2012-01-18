@@ -53,6 +53,7 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -304,6 +305,14 @@ class ProgramSettingsDashboard(Dashboard):
                 'student signup start/end date, etc.'),
             'title': 'Edit timeline',
             'link': r.urlOf('edit_gsoc_timeline')
+        },
+        {
+            'name': 'edit_program_messages',
+            'description': ugettext(
+                'Edit program messages which will be sent in emails '
+                'to the specified participants.'),
+            'title': 'Edit messages',
+            'link': r.urlOf(url_names.GSOC_EDIT_PROGRAM_MESSAGES)
         },
         {
             'name': 'documents',
