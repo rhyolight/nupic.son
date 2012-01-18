@@ -64,15 +64,6 @@ class Program(soc.models.presence.Presence):
       ' but in <u>2009</u>!</tt><br><br>'
       '<small><i>(rich text formatting is supported)</i></small>')
 
-  #: Message displayed at the top of the accepted organizations page.
-  accepted_orgs_msg = db.TextProperty(required=False,
-      verbose_name=ugettext('Accepted Organizations Message'))
-  accepted_orgs_msg.example_text = ugettext(
-      '<small><i>for example:</i></small><br>'
-      '<tt>Students who wish to participate can find out more about'
-      ' each mentoring organization below.</tt><br><br>'
-      '<small><i>(rich text formatting is supported)</i></small>')
-
   #: Number of accepted organizations
   nr_accepted_orgs = db.IntegerProperty(
       required=False, verbose_name=ugettext('#accepted orgs'))
