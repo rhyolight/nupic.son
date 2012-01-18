@@ -110,7 +110,7 @@ def getProps(last=None):
 
   it = dateFetch(gen, last)
 
-  proposals = [(i.key().name(), dicts.toDict(i, key_order) for i in it]
+  proposals = [(i.key().name(), dicts.toDict(i, key_order)) for i in it]
   if proposals:
     last = i.last_modified_on # last modified entity
   else:
