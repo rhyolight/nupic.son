@@ -104,7 +104,7 @@ class SendRequestPage(RequestHandler):
     admin_emails = [i.email for i in admins]
 
     def create_request_txn():
-      request = request_form.create(commit=True)
+      request = request_form.create(commit=True, parent=self.data.user)
       context = notifications.requestContext(self.data, request, admin_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
       sub_txn()

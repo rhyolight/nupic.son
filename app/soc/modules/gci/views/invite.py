@@ -240,8 +240,8 @@ class InvitePage(RequestHandler):
     invite_form.cleaned_data['role'] = self.data.kwargs['role']
     invite_form.cleaned_data['type'] = 'Invitation'
 
-    def create_invite_txn():
-      invite = invite_form.create(commit=True)
+    def create_invite_txn(user):
+      invite = invite_form.create(commit=True, parent=user)
       context = notifications.inviteContext(self.data, invite)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()
@@ -250,7 +250,7 @@ class InvitePage(RequestHandler):
     for user in self.data.users_to_invite:
       invite_form.instance = None
       invite_form.cleaned_data['user'] = user
-      db.run_in_transaction(create_invite_txn)
+      db.run_in_transaction(create_invite_txn, user)
 
     return True
 
