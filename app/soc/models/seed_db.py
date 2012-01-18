@@ -57,9 +57,9 @@ from soc.modules.gci.models.task import GCITask
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.student_project import StudentProject
 from soc.modules.gsoc.models.student_proposal import StudentProposal
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 
@@ -348,7 +348,7 @@ def seed(request, *args, **kwargs):
   student_id = 'student'
   student_properties = {
       'key_name': gsoc2009.key().name() + "/" + student_id,
-      'link_id': student_id, 
+      'link_id': student_id,
       'scope_path': gsoc2009.key().name(),
       'parent': student_user,
       'scope': gsoc2009,
@@ -376,7 +376,7 @@ def seed(request, *args, **kwargs):
       'tshirt_style': 'male',
       'degree': 'Undergraduate',
       'phone': '1650253000',
-      'can_we_contact_you': True, 
+      'can_we_contact_you': True,
       'program_knowledge': 'I heard about this program through a friend.'
       }
 
@@ -418,23 +418,21 @@ def seed(request, *args, **kwargs):
   melange_student2 = GSoCProfile(**student_properties)
   melange_student2.put()
 
-  project_id = 'test_project'
   project_properties = {
-      'key_name':  gsoc2009.key().name() + "/org_1/" + project_id,
-      'link_id': project_id, 
-      'scope_path': gsoc2009.key().name() + "/org_1",
-      'scope': orgs[1].key(),
-
       'title': 'test project',
       'abstract': 'test abstract',
       'status': 'accepted',
       'student': melange_student,
-      'mentor': profile,
-      'program':  gsoc2009
+      'mentors': [profile.key()],
+      'program':  gsoc2009,
+      'org': orgs[1].key(),
        }
 
-  melange_project = StudentProject(**project_properties)
+  melange_project = GSoCProject(**project_properties)
   melange_project.put()
+  orgs[1].slots = 1
+  orgs[1].put()
+
   student_info_properties.update({'number_of_projects': 1,
                                   'project_for_orgs': [orgs[1].key()]})
   student_info = GSoCStudentInfo(**student_info_properties)
@@ -443,14 +441,11 @@ def seed(request, *args, **kwargs):
   melange_student.student_info = student_info
   melange_student.put()
 
-  project_id = 'test_project2'
   project_properties.update({
-      'key_name':  gsoc2009.key().name() + "/org_1/" + project_id,
-      'link_id': project_id,
       'student': melange_student2,
       'title': 'test project2'
       })
-      
+
   student_info_properties.update({
       'key_name': gsoc2009.key().name() + "/" + student_id,
       'link_id': student_id,
@@ -462,8 +457,10 @@ def seed(request, *args, **kwargs):
   melange_student2.student_info = student_info2
   melange_student2.put()
 
-  melange_project2 = StudentProject(**project_properties)
+  melange_project2 = GSoCProject(**project_properties)
   melange_project2.put()
+  orgs[1].slots += 1
+  orgs[1].put()
 
   student_id = 'student'
   student_properties.update({
@@ -529,6 +526,7 @@ def seed(request, *args, **kwargs):
 
   site.home = home_document
   site.put()
+
   # pylint: disable=E1101
   memcache.flush_all()
 
@@ -554,6 +552,7 @@ def clear(*args, **kwargs):
       GSoCProgram.all(),
       GSoCProfile.all(),
       GCIProfile.all(),
+      GSoCProject.all(),
       GSoCProposal.all(),
       GCIProgram.all(),
       GCIScore.all(),
