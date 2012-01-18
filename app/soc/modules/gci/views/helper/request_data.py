@@ -363,3 +363,11 @@ class RedirectHelper(request_data.RedirectHelper):
     self.organization(organization)
     self.kwargs['role'] = role
     return self
+
+  def editProfile(self, profile):
+    """Returns the URL for the edit profile page for the given profile.
+    """
+    self.program()
+    self._url_name = 'edit_gci_profile'
+
+    return self

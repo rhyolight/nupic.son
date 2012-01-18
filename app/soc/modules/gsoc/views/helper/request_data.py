@@ -471,3 +471,11 @@ class RedirectHelper(request_data.RedirectHelper):
     self.kwargs['record'] = record.key().id()
 
     return self
+
+  def editProfile(self, profile):
+    """Returns the URL for the edit profile page for the given profile.
+    """
+    self.program()
+    self._url_name = 'edit_gsoc_profile'
+
+    return self
