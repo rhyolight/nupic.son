@@ -20,12 +20,13 @@
 
 from google.appengine.ext import db
 
-from soc.logic import accounts
 from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import notifications
-from soc.views.helper import url_patterns
-from soc.views.helper.access_checker import isSet
+from soc.logic import accounts
+from soc.models.user import User
 from soc.tasks import mailer
+from soc.views.helper.access_checker import isSet
+from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.request import GSoCRequest
@@ -96,7 +97,7 @@ class RequestPage(RequestHandler):
     """
     request = self._createFromForm()
     if request:
-      self.redirect.id(request.key().id())
+      self.redirect.request(request)
       self.redirect.to('show_gsoc_request')
     else:
       self.get()
@@ -126,7 +127,7 @@ class RequestPage(RequestHandler):
     admin_emails = [i.email for i in admins]
 
     def create_request_txn():
-      request = request_form.create(commit=True)
+      request = request_form.create(commit=True, parent=self.data.user)
       context = notifications.requestContext(self.data, request, admin_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
       sub_txn()
@@ -152,7 +153,7 @@ class ShowRequest(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'request/%s$' % url_patterns.ID, self,
+        url(r'request/%s$' % url_patterns.USER_ID, self,
             name='show_gsoc_request')
     ]
 
@@ -160,8 +161,14 @@ class ShowRequest(RequestHandler):
     self.check.isProfileActive()
 
     request_id = int(self.data.kwargs['id'])
+    invited_user_link_id = self.data.kwargs['user']
+    if invited_user_link_id == self.data.user.link_id:
+      invited_user = self.data.user
+    else:
+      invited_user = User.get_by_key_name(invited_user_link_id)
+
     self.data.invite = self.data.request_entity = GSoCRequest.get_by_id(
-        request_id)
+        request_id, parent=invited_user)
     self.check.isRequestPresent(request_id)
 
     self.data.organization = self.data.request_entity.org

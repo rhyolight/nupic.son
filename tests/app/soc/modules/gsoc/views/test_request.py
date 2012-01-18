@@ -82,7 +82,10 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     self.assertEmailNotSent(to=other_admin.profile.email)
 
     # test withdrawing a request
-    url = '/gsoc/request/%s/%s' % (self.gsoc.key().name(), request.key().id())
+    url = '/gsoc/request/%s/%s/%s' % (
+        self.gsoc.key().name(),
+        request.parent_key().name(),
+        request.key().id())
 
     postdata = {'action': 'Withdraw'}
     response = self.post(url, postdata)
@@ -101,7 +104,10 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     self.data.createOrgAdmin(self.org)
     other_data, request = self.createRequest()
     other_data.notificationSettings(request_handled=True)
-    url = '/gsoc/request/%s/%s' % (self.gsoc.key().name(), request.key().id())
+    url = '/gsoc/request/%s/%s/%s' % (
+        self.gsoc.key().name(),
+        request.parent_key().name(),
+        request.key().id())
     response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/soc/request/base.html')
