@@ -63,6 +63,7 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
   """
 
   tags = django_forms.CharField(
+      required=False,
       label=ugettext('Tags'),
       help_text=ugettext('Describe this task with tags (comma separated). '
                          'Ex: Linux, Apache, C++, GUI'))
