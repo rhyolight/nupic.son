@@ -111,7 +111,7 @@ class TimelineHelper(request_data.TimelineHelper):
     return self.timeline.student_application_matched_deadline
 
   def mentorSignup(self):
-    return self.programActiveBetween() and self.orgsAnnounced()
+    return self.programActive() and self.orgsAnnounced()
 
   def afterFirstSurveyStart(self, surveys):
     """Returns True if we are past at least one survey has start date.
