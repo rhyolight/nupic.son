@@ -26,8 +26,6 @@ import time
 
 import interactive
 
-from soc.logic import dicts
-
 
 def dateFetch(queryGen, last=None, batchSize=100):
   """Iterator that yields an entity in batches.
@@ -98,6 +96,8 @@ def getEntities(model, fields=None):
 def getProps(last=None):
   """Returns all proposals as a list of dictionaries.
   """
+
+  from soc.logic import dicts
 
   key_order = [
       'link_id', 'scope_path', 'title', 'abstract', 'content',
