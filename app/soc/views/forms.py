@@ -221,10 +221,10 @@ class ReferenceProperty(djangoforms.ReferenceProperty):
 
     if self.data_type is Document:
       return forms.CharField(required=self.required,
-                                    widget=DocumentWidget)
+                             widget=DocumentWidget)
     else:
       return forms.CharField(required=self.required,
-                                    widget=ReferenceWidget)
+                             widget=ReferenceWidget)
 
   def make_value_from_form(self, value):
     """Convert a form value to a property value.
