@@ -74,8 +74,7 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
         'link_id': other_user.link_id, 'status': 'pending',
         'role': 'org_admin', 'user': other_user, 'org': self.org,
         'type': 'Invitation',
-        # TODO(SRabbelier): add this as soon as we make User Request's parent
-        # 'parent': other_user,
+        'parent': other_user,
     }
     response, properties = self.modelPost(url, GSoCRequest, override)
     self.assertEmailSent(to=other_data.profile.email, n=1)
@@ -101,10 +100,14 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     properties.pop('link_id')
     self.assertPropertiesEqual(properties, invitation)
     properties['user'] = other_data2.user
+    properties['parent'] = other_data2.user
     self.assertPropertiesEqual(properties, invitations[1])
 
     # test withdraw/resubmit invite
-    url = '/gsoc/invitation/%s/%s' % (self.gsoc.key().name(), invitation.key().id())
+    url = '/gsoc/invitation/%s/%s/%s' % (
+	self.gsoc.key().name(),
+	invitation.parent_key().name(),
+	invitation.key().id())
 
     other_data.notificationSettings(invite_handled=True)
 
@@ -132,7 +135,10 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
   def testViewInvite(self):
     self.data.createProfile()
     invitation = self.createInvitation()
-    url = '/gsoc/invitation/%s/%s' % (self.gsoc.key().name(), invitation.key().id())
+    url = '/gsoc/invitation/%s/%s/%s' % (
+	self.gsoc.key().name(),
+	invitation.parent_key().name(),
+	invitation.key().id())
     response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/soc/request/base.html')

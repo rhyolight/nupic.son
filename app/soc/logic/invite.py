@@ -52,9 +52,8 @@ def acceptInvite(request_data):
     invite.put()
     profile.put()
 
-  accept_invitation_txn()
-  # TODO(SRabbelier): run in txn as soon as we make User Request's parent
-  # db.run_in_transaction(accept_invitation_txn)
+  db.run_in_transaction(accept_invitation_txn)
+
 
 def rejectInvite(request_data):
   """Rejects a invitation. 
@@ -67,6 +66,7 @@ def rejectInvite(request_data):
     invite.put()
 
   db.run_in_transaction(reject_invite_txn)
+
 
 def withdrawInvite(request_data):
   """Withdraws an invitation.
@@ -83,6 +83,7 @@ def withdrawInvite(request_data):
     sub_txn()
 
   db.run_in_transaction(withdraw_invite_txn)
+
 
 def resubmitInvite(request_data):
   """Resubmits an invitation. 

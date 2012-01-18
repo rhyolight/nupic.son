@@ -290,12 +290,9 @@ class ShowRequest(RequestHandler):
 
       context = notifications.handledRequestContext(self.data, request.status)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
-      # TODO(SRabbelier): just call as soon as we make User Request's parent
-      db.run_in_transaction(sub_txn)
+      sub_txn()
 
-    accept_request_txn()
-    # TODO(SRabbelier): run in txn as soon as we make User Request's parent
-    # db.run_in_transaction(accept_request_txn)
+    db.run_in_transaction(accept_request_txn)
 
   def _rejectRequest(self):
     """Rejects a request. 

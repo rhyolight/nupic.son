@@ -331,8 +331,7 @@ class GSoCProfileHelper(ProfileHelper):
     properties = {
         'role': 'mentor', 'user': self.user, 'org': org,
         'status': 'pending', 'type': 'Request',
-        # TODO(SRabbelier): add this as soon as we make User Request's parent
-        # 'parent': self.user,
+        'parent': self.user,
     }
     return seeder_logic.seed(GSoCRequest, properties=properties)
 
@@ -341,9 +340,8 @@ class GSoCProfileHelper(ProfileHelper):
     self.createProfile()
     properties = {
         'role': role, 'user': self.user, 'org': org,
-        'status': 'pending', 'type': 'Invitation'
-        # TODO(SRabbelier): add this as soon as we make User Request's parent
-        # 'parent': self.user,
+        'status': 'pending', 'type': 'Invitation',
+        'parent': self.user,
     }
     return seeder_logic.seed(GSoCRequest, properties=properties)
 

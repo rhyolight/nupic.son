@@ -412,6 +412,7 @@ class RedirectHelper(request_data.RedirectHelper):
     """
     assert request
     self.id(request.key().id())
+    self.kwargs['user'] = request.parent_key().name()
     if request.type == 'Request':
       self._url_name = 'show_gsoc_request'
     else:

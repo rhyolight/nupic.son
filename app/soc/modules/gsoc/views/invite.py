@@ -213,8 +213,12 @@ class InvitePage(RequestHandler):
     invite_form.cleaned_data['role'] = self.data.kwargs['role']
     invite_form.cleaned_data['type'] = 'Invitation'
 
-    def create_invite_txn():
-      invite = invite_form.create(commit=True)
+    import logging
+    logging.warning('hi')
+
+    def create_invite_txn(user):
+      invite = invite_form.create(commit=True, parent=user)
+      logging.warning("%r" % user.key())
       context = notifications.inviteContext(self.data, invite)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()
@@ -223,7 +227,7 @@ class InvitePage(RequestHandler):
     for user in self.data.invited_user:
       invite_form.instance = None
       invite_form.cleaned_data['user'] = user
-      db.run_in_transaction(create_invite_txn)
+      db.run_in_transaction(create_invite_txn, user)
 
     return True
 
@@ -255,7 +259,7 @@ class ShowInvite(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'invitation/%s$' % url_patterns.ID, self,
+        url(r'invitation/%s$' % url_patterns.USER_ID, self,
             name='gsoc_invitation')
     ]
 
@@ -263,11 +267,17 @@ class ShowInvite(RequestHandler):
     self.check.isProfileActive()
     
     invite_id = int(self.data.kwargs['id'])
-    self.data.invite = GSoCRequest.get_by_id(invite_id)
+    invited_user_link_id = self.data.kwargs['user']
+    if invited_user_link_id == self.data.user.link_id:
+      invited_user = self.data.user
+    else:
+      invited_user = User.get_by_key_name(invited_user_link_id)
+
+    self.data.invite = GSoCRequest.get_by_id(invite_id, parent=invited_user)
     self.check.isInvitePresent(invite_id)
 
     self.data.organization = self.data.invite.org
-    self.data.invited_user = self.data.invite.user
+    self.data.invited_user = invited_user
 
     if self.data.POST:
       self.data.action = self.data.POST['action']
@@ -407,9 +417,7 @@ class ShowInvite(RequestHandler):
       invite.put()
       profile.put()
 
-    accept_invitation_txn()
-    # TODO(SRabbelier): run in txn as soon as we make User Request's parent
-    # db.run_in_transaction(accept_invitation_txn)
+    db.run_in_transaction(accept_invitation_txn)
 
   def _rejectInvitation(self):
     """Rejects a invitation. 

@@ -94,5 +94,7 @@ ORG_DOCUMENT_FMT  = _org_document
 ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
 INVITE    = _mentor_role + ORG
 REQUEST   = _mentor_role + ORG
+USER_ID	  = namedIdBasedPattern(['sponsor', 'program', 'user'])
+
 
 USER = namedLinkIdPattern(['link_id'])
