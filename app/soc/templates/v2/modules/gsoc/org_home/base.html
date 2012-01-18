@@ -85,11 +85,11 @@ limitations under the License.
 
 <div class="content_column_2">
   <!-- begin block -->
-  {% if tags %}
+  {% if organization.tags %}
       <div id="tags" class="block block-tags">
         <h4 id="title-section-connect-with-us">Tags</h4>
         <div id="block-tags" class="block-content">
-          {{ tags }}
+          {{ organization.tags|join:", " }}
         </div>
       </div>
   {% endif %}

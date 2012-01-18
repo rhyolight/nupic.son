@@ -322,7 +322,6 @@ class OrgHome(RequestHandler):
         'page_name': '%s - Homepage' % organization.short_name,
         'organization': organization,
         'contact': Contact(self.data),
-        'tags': organization.tags_string(organization.org_tag),
         'apply': Apply(self.data, current_timeline),
     }
 
