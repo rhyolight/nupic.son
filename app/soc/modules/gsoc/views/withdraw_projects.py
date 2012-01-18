@@ -33,6 +33,8 @@ from soc.views.helper import url_patterns
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
+from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.views.base import RequestHandler
@@ -143,9 +145,11 @@ class ProjectList(Template):
 
       # key of the organization for the project 
       org_key = GSoCProject.org.get_value_for_datastore(project)
+      # key of the student profile for the project
+      profile_key = project.parent_key()
 
       qp = GSoCProposal.all()
-      qp.ancestor(project.parent_key())
+      qp.ancestor(profile_key)
       qp.filter('org', org_key)
       # FIXME: ??? Mentors can change overtime so how does this work???
       qp.filter('mentor IN', project.mentors)
@@ -158,22 +162,27 @@ class ProjectList(Template):
       proposal = qp.get()
 
       def withdraw_or_accept_project_txn():
+        org = GSoCOrganization.get(org_key)
+
         if withdraw:
           new_status = 'withdrawn'
           new_number = 0
+          org.slots -= 1
         else:
           new_status = 'accepted'
           new_number = 1
+          org.slots += 1
 
         project.status = new_status
         proposal.status = new_status
-        profile.number_of_projects = new_number
+        #profile.number_of_projects = new_number
+        student_info = GSoCStudentInfo.all().ancestor(profile_key).get()
+        student_info.number_of_project = new_number
 
-        db.put([proposal, project, profile])
+        db.put([proposal, project, student_info, org])
 
-        
-
-      db.run_in_transaction(withdraw_or_accept_project_txn)
+      xg_on = db.create_transaction_options(xg=True)
+      db.run_in_transaction_options(xg_on, withdraw_or_accept_project_txn)
 
     return True
 
