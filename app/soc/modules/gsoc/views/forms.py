@@ -202,10 +202,12 @@ class GSoCBoundField(forms.BoundField):
 
     if value:
       document = db.get(value)
-      args = [document.prefix, document.scope_path + '/', document.link_id]
+      sponsor, program = document.scope_path.split('/')
+      args = [document.prefix, sponsor, program, document.link_id]
     else:
-      scope_path = self.form.scope_path
-      args = ['gsoc_program', scope_path + '/', self.name]
+      scope_path = self.form.request_data.program.key().id_or_name()
+      sponsor, program = scope_path.split('/')
+      args = ['gsoc_program', sponsor, program, self.name]
 
     edit_document_link = reverse('edit_gsoc_document', args=args)
     self.help_text = """<a href="%s">Click here to edit this document.</a>

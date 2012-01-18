@@ -42,8 +42,8 @@ class ProgramForm(GSoCModelForm):
   """Django form for the program settings.
   """
 
-  def __init__(self, scope_path, *args, **kwargs):
-    self.scope_path = scope_path
+  def __init__(self, request_data, *args, **kwargs):
+    self.request_data = request_data
     super(ProgramForm, self).__init__(*args, **kwargs)
 
   class Meta:
@@ -84,7 +84,7 @@ class ProgramPage(RequestHandler):
 
   def context(self):
     scope_path = self.data.program.key().id_or_name()
-    program_form = ProgramForm(scope_path, self.data.POST or None,
+    program_form = ProgramForm(self.data, self.data.POST or None,
                                instance=self.data.program)
     return {
         'page_name': 'Edit program settings',
@@ -94,7 +94,7 @@ class ProgramPage(RequestHandler):
 
   def validate(self):
     scope_path = self.data.program.key().id_or_name()
-    program_form = ProgramForm(scope_path, self.data.POST,
+    program_form = ProgramForm(self.data, self.data.POST,
                                instance=self.data.program)
 
     if not program_form.is_valid():
