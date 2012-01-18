@@ -141,10 +141,8 @@ class ProjectList(Template):
         logging.warning("Project '%s' already accepted" % project_key)
         continue
 
-      profile = project.parent()
-      profile_key = profile.key()
       qp = GSoCProposal.all()
-      qp.ancestor(profile_key)
+      qp.ancestor(project.parent_key())
       qp.filter('org', project.org)
       # FIXME: ??? Mentors can change overtime so how does this work???
       qp.filter('mentor IN', project.mentors)
