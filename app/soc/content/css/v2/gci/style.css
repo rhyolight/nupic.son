@@ -767,6 +767,57 @@ body {
 }
 /* END block-leaderboard-link block */
 
+/* BEGIN accepted organizations block */
+.block-accepted-organizations {
+  background: #E0E0E0 url(../images/block-form-bg.png) 0 0 repeat-x;
+  border: 1px solid #B4B4B4;
+  padding: 13px 20px;
+}
+.block-accepted-organizations-title {
+  color: #C53926;
+  font-family: 'Oswald', sans-serif;
+  font-size: 38px;
+  line-height: 40px;
+  text-transform: uppercase;
+}
+.block-accepted-organizations-subtitle {
+  font-weight: bold;
+  font-size: 14px;
+  margin-top: 10px;
+}
+.accepted-organizations-grid {
+  margin: 0 -21px;
+}
+.accepted-organizations-grid-row {
+  margin-top: 30px;
+  width: 680px;
+  overflow: hidden;
+  padding: 0 10px;
+}
+.single-accepted-organizations {
+  display: inline-block;
+  width: 123px;
+  padding: 0 5px;
+  text-align: center;
+  vertical-align: top;
+}
+.single-accepted-organizations-logo img {
+  height: 64px;
+  max-width: 64px;
+}
+.single-accepted-organizations-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 4px;
+}
+.block-accepted-organizations .block-pager {
+  margin-top: 30px;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+}
+/* END accepted organizations block */
+
 /*Difficulties*/
 .block-featured-task .cog {/*Featured task, homepage block*/
     background-image:url(../../../images/v2/gci/block-cog-featured.png);
