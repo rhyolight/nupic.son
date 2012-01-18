@@ -63,9 +63,15 @@ class OrgProfileForm(org_profile.OrgProfileForm):
       label='Extra columns', required=False)
   nonreq_proposal_extra.help_text = ugettext('Comma separated list of values.')
 
-  tags = django_forms.CharField(label='Tags')
-  clean_tags = gsoc_cleaning.cleanTagsList(
-      'tags', gsoc_cleaning.COMMA_SEPARATOR)
+  tags = django_forms.CharField(
+      required=False,
+      label=ugettext('Tags'))
+  
+  def clean_tags(self):
+    tags = []
+    for tag in self.data.get('tags').split(','):
+      tags.append(tag.strip())
+    return tags
 
   def clean_nonreq_proposal_extra(self):
     values = self.cleaned_data['nonreq_proposal_extra']
@@ -177,16 +183,6 @@ class OrgProfilePage(RequestHandler):
     else:
       self.get()
 
-  def putWithOrgTags(self, form, entity):
-    fields = form.cleaned_data
-
-    entity.org_tag = {
-        'tags': fields['tags'],
-        'scope': entity.scope if entity else fields['scope']
-    }
-
-    entity.put()
-
   def createOrgProfileFromForm(self):
     """Creates a new organization based on the data inserted in the form.
 
@@ -210,12 +206,10 @@ class OrgProfilePage(RequestHandler):
           self.data.program.key().name(),
           form.cleaned_data['link_id']
           )
-      entity = form.create(commit=False, key_name=key_name)
-      self.putWithOrgTags(form, entity)
+      entity = form.create(commit=True, key_name=key_name)
       self.data.profile.org_admin_for.append(entity.key())
       self.data.profile.put()
     else:
-      entity = form.save(commit=False)
-      self.putWithOrgTags(form, entity)
+      entity = form.save(commit=True)
 
     return entity
