@@ -48,7 +48,7 @@ class AcceptedOrgsList(Template):
     list_config.setRowAction(
         lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
     list_config.addColumn('tags', 'Tags',
-                          lambda e, *args: e.tags_string(e.org_tag))
+                          lambda e, *args: ", ".join(e.tags))
     list_config.addColumn(
         'ideas', 'Ideas',
         (lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]")),
