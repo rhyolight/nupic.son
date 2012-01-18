@@ -552,7 +552,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     response = self.get(url)
 
     self.assertResponseOK(response)
-    self.assertFullEditTemplatesUsed(response)
+    self.assertPostClaimEditTemplatesUsed(response)
 
   def testFullEditTaskDuringProgramForMentor(self):
     """Tests the task full editing view during the program for mentor.
