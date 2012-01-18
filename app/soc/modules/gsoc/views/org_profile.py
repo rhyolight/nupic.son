@@ -76,7 +76,8 @@ class OrgProfileForm(org_profile.OrgProfileForm):
   def clean_tags(self):
     tags = []
     for tag in self.data.get('tags').split(','):
-      tags.append(tag.strip())
+      if tag:
+        tags.append(tag.strip())
     return tags
 
   def clean_nonreq_proposal_extra(self):
