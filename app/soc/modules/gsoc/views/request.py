@@ -23,12 +23,12 @@ from google.appengine.ext import db
 from soc.logic import accounts
 from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import notifications
-from soc.models.request import Request
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.tasks import mailer
 
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
@@ -39,7 +39,7 @@ class RequestForm(GSoCModelForm):
   """Django form for the request page.
   """
   class Meta:
-    model = Request
+    model = GSoCRequest
     css_prefix = 'gsoc_request'
     fields = ['message']
 
@@ -71,7 +71,7 @@ class RequestPage(RequestHandler):
     self.check.notMentor()
 
     # check if there is already a request
-    query = db.Query(Request)
+    query = db.Query(GSoCRequest)
     query.filter('type = ', 'Request')
     query.filter('user = ', self.data.user)
     query.filter('org = ', self.data.organization)
@@ -158,9 +158,10 @@ class ShowRequest(RequestHandler):
 
   def checkAccess(self):
     self.check.isProfileActive()
-    
+
     request_id = int(self.data.kwargs['id'])
-    self.data.invite = self.data.request_entity = Request.get_by_id(request_id)
+    self.data.invite = self.data.request_entity = GSoCRequest.get_by_id(
+        request_id)
     self.check.isRequestPresent(request_id)
 
     self.data.organization = self.data.request_entity.org
