@@ -96,10 +96,10 @@ def sendMailFromTemplate(template, context):
   sendMail(dicts.filter(context, mail.EmailMessage.PROPERTIES))
 
 
-def getSendMailFromTemplateTxn(template, context, parent=None,
-                               transactional=True):
+def getSendMailFromTemplateNameTxn(template_name, context, parent=None,
+    transactional=True):
   """Returns a method that is safe to be run in a transaction to sent out an
-     email using a Django template.
+     email using a Django template_name.
 
   See sendMailFromTemplate() for more information.
 
@@ -110,7 +110,7 @@ def getSendMailFromTemplateTxn(template, context, parent=None,
     transactional: Whether the task should be created transactionally.
   """
   # render the template and put in context with 'html' as key
-  context['html'] = loader.render_to_string(template, dictionary=context)
+  context['html'] = loader.render_to_string(template_name, dictionary=context)
 
   # filter out the unneeded values in context to keep sendMail happy
   return sendMail(dicts.filter(context, mail.EmailMessage.PROPERTIES),

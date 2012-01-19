@@ -225,7 +225,7 @@ class ProposalAcceptanceTask(object):
       }
 
     template = 'v2/soc/notification/gsoc2011_accepted_student.html'
-    return mail_dispatcher.getSendMailFromTemplateTxn(
+    return mail_dispatcher.getSendMailFromTemplateNameTxn(
         template, context, parent=proposal.parent(),
         transactional=transactional)
 
@@ -251,8 +251,8 @@ class ProposalAcceptanceTask(object):
       }
 
     template = 'v2/soc/notification/gsoc2011_rejected_student.html'
-    return mail_dispatcher.getSendMailFromTemplateTxn(template, context,
-                                                      parent=proposal.parent())
+    return mail_dispatcher.getSendMailFromTemplateNameTxn(template, context,
+        parent=proposal.parent())
 
   def acceptProposal(self, proposal, transactional=True):
     """Accept a single proposal.
