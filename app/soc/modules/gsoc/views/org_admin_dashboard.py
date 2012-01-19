@@ -22,6 +22,7 @@ from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation
+from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
@@ -215,6 +216,14 @@ class Dashboard(dashboard.DashboardPage):
     return [
         url(r'dashboard/org/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_org_dashboard')]
+
+  def context(self):
+    """Handler for default HTTP GET request.
+    """
+    context_dict = super(Dashboard, self).context()
+    context_dict.update({'program_select':
+        ProgramSelect(self.data, 'gsoc_org_dashboard')})
+    return context_dict
 
   def checkAccess(self):
     """Denies access if the user is not an org admin.
