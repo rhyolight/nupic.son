@@ -48,7 +48,6 @@ from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.score import GCIScore
-from soc.modules.gci.models.student import GCIStudent
 from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.task import DifficultyLevel

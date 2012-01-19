@@ -346,7 +346,6 @@ class Logic(object):
     from soc.modules.gci.models.program import GCIProgram
     from soc.modules.gsoc.models.organization import GSoCOrganization
     from soc.modules.gsoc.models.program import GSoCProgram
-    from soc.modules.gsoc.models.student import GSoCStudent
     scopes_dict = {'User': None,
                    'Sponsor': None,
                    'Host': Sponsor,
@@ -361,10 +360,8 @@ class Logic(object):
                    'GSoCOrganization': GSoCProgram,
                    'GSoCOrgAdmin': GSoCOrganization,
                    'GSoCMentor': GSoCOrganization,
-                   'GSoCStudent': GSoCOrganization,
                    'GSoCProfile': GSoCProgram,
                    'StudentProject': GSoCOrganization,
-                   'StudentProposal': GSoCStudent,
                    'GCIProgram': Sponsor,
                    'GCITimeline': Sponsor,
                    'GCIOrganization': GCIProgram,

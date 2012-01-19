@@ -31,9 +31,6 @@ class Legacy(object):
     patterns = [
     ]
 
-    from soc.tasks.updates import role_conversion
-    patterns += role_conversion.getDjangoURLPatterns()
-
     if system.isDebug():
       patterns += [
           ('^seed_db$', 'soc.models.seed_db.seed'),

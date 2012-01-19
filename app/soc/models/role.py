@@ -24,7 +24,6 @@ from django.utils.translation import ugettext
 from soc.models import countries
 
 import soc.models.linkable
-import soc.models.school
 import soc.models.program
 import soc.models.user
 
@@ -76,11 +75,6 @@ class StudentInfo(db.Model):
       verbose_name=ugettext('Expected Graduation Year'))
   expected_graduation.help_text = ugettext("Pick your expected graduation year")
   expected_graduation.group = ugettext("5. Education")
-
-  #: A many:1 relationship that ties multiple Students to the
-  #: School that they attend.
-  school = db.ReferenceProperty(reference_class=soc.models.school.School,
-                                required=False, collection_name='students')
 
   #: Property containing the Grade of the student if the school type
   #: is High School.

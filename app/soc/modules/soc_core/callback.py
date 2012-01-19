@@ -18,7 +18,6 @@
 
 from soc.tasks.updates import project_conversion
 from soc.tasks.updates import proposal_conversion
-from soc.tasks.updates import role_conversion
 
 
 class Callback(object):
@@ -64,6 +63,5 @@ class Callback(object):
     for view in self.views:
       self.core.registerSitemapEntry(view.djangoURLPatterns())
 
-    self.core.registerSitemapEntry(role_conversion.getDjangoURLPatterns())
     self.core.registerSitemapEntry(proposal_conversion.getDjangoURLPatterns())
     self.core.registerSitemapEntry(project_conversion.getDjangoURLPatterns())

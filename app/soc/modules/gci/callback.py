@@ -16,9 +16,6 @@
 """
 
 
-from soc.modules.gci.tasks.updates import role_conversion
-
-
 class Callback(object):
   """Callback object that handles interaction between the core.
   """
@@ -121,8 +118,6 @@ class Callback(object):
     # Redesigned view registration
     for view in self.views:
       self.core.registerSitemapEntry(view.djangoURLPatterns())
-
-    self.core.registerSitemapEntry(role_conversion.getDjangoURLPatterns())
 
   def registerWithProgramMap(self):
     """Called by the server when program_map entries should be registered.

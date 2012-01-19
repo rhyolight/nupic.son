@@ -28,8 +28,6 @@ from soc.logic import site
 from soc.logic import user
 from soc.models import user
 from soc.models import group
-from soc.models import school
-from soc.models import student
 from soc.models import organization
 from tests.test_utils import GSoCDjangoTestCase
 
