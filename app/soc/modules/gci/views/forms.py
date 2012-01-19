@@ -408,7 +408,8 @@ class GCIBoundField(forms.BoundField):
         'style': 'opacity: 100;',
         }
 
-    return mark_safe('%s%s%s%s' % (
+    return mark_safe('%s%s%s%s%s' % (
+        self._render_label(),
         self.as_widget(attrs=attrs),
         self._render_is_required(),
         self._render_error(),
