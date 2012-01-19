@@ -320,6 +320,10 @@
         },
         post: function (parameters) {
           return function () {
+            // Disable button to avoid accidental double clicking.
+            var this_button = jQuery(this);
+            var this_button_color = this_button.css("color");
+            this_button.attr("disabled", "disabled").css("color", "grey");
             var option_name = list_objects.get(parameters.idx).jqgrid.object.jqGrid('getGridParam','multiselect') ? 'selarrrow' : 'selrow'
             var selected_ids = list_objects.get(parameters.idx).jqgrid.object.jqGrid('getGridParam',option_name);
             if (!(selected_ids instanceof Array)) {
@@ -389,8 +393,13 @@
                     jQuery("#" + list_objects.get(list_index).jqgrid.id).trigger("reloadGrid");
                   });
                 }
+                // Re-enable button
+                this_button.removeAttr("disabled").css("color", this_button_color);
               }
-            )
+            ).error(function () {
+                // Re-enable button even if an error happens.
+                this_button.removeAttr("disabled").css("color", this_button_color);
+            });
           }
         },
         post_edit: function (parameters) {

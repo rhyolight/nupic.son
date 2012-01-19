@@ -43,10 +43,26 @@ limitations under the License.
     $LAB
       .script("/js/{{ app_version }}/json/json2.js")
       {% if is_local %}
-      .script("/js/{{ app_version }}/jquery/jquery-1.6.4.js").wait()
+      .script("/js/{{ app_version }}/jquery/jquery-1.6.4.js")
       {% else %}
-      .script("https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js").wait()
+      .script("https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js")
       {% endif %}
+      .wait(
+        // Post jQuery loading activities.
+        function () {
+          /* If there are forms, make all the submit buttons in the page
+             disabled if the form is going to be submitted to avoid accidental
+             double clicking. See Issue 980. */
+          jQuery(function() {
+            jQuery("form").submit(function () {
+              jQuery(this)
+                .find(":submit")
+                .attr("disabled", "disabled")
+                .css("color", "grey");
+            });
+          });
+        }
+      )
       .script("/js/{{ app_version }}/jquery/jquery-cookie.js").wait()
       .script("/soc/content/{{ app_version }}/js/melange.js").wait(
         function () {
