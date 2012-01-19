@@ -191,6 +191,11 @@ class GCITask(db.Model):
   is_featured.help_text = ugettext(
       'Should this task be featured on the program homepage.')
 
+  #: Determines whether the student who completed this task should
+  #: receive points for it
+  points_invalidated = db.BooleanProperty(default=False,
+      verbose_name=ugettext('Points invalidated.'))
+
   def taskTimeToComplete(self):
     days = self.time_to_complete / 24
     hours = self.time_to_complete % 24
