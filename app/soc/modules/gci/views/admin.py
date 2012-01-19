@@ -171,7 +171,7 @@ class MainDashboard(Dashboard):
             'name': 'participants',
             'description': ugettext(
                 'List of organization admins, mentors and students'),
-            'title': 'Particiapnts',
+            'title': 'Participants',
             'link': '',
             'subpage_links': participants.getSubpagesLink(),
         },
