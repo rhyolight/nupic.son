@@ -39,7 +39,26 @@ class StudentsInfoTest(GCIDjangoTestCase):
     """
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gci/students_info/base.html')
+  
+  def testAccessToTheList(self):
+    """Tests only the host can access the list.
+    """
+    self.data.createStudent()
+    response = self.get(self.url)
+    self.assertResponseForbidden(response)
     
+    self.data.createMentor(self.org)
+    response = self.get(self.url)
+    self.assertResponseForbidden(response)
+    
+    self.data.createOrgAdmin(self.org)
+    response = self.get(self.url)
+    self.assertResponseForbidden(response)
+    
+    self.data.createHost()
+    response = self.get(self.url)
+    self.assertResponseOK(response)
+  
   def testStudentsInfoList(self):
     """Tests the studentsInfoList component of the dashboard.
     """
@@ -62,16 +81,14 @@ class StudentsInfoTest(GCIDjangoTestCase):
     #Set the current user to be the host.
     self.data.createHost()
     response = self.get(self.url)
-    #print response
     self.assertStudentsInfoTemplatesUsed(response)
-    response = self.getListResponse(self.url, idx)
-    #print response
     
+    response = self.getListResponse(self.url, idx)
     self.assertIsJsonResponse(response)
     
     data = self.getListData(self.url, idx)
-    #print data
     self.assertEqual(len(data), 1)
+    
     #Only the consent form has been submitted.
     self.assertEqual(data[0]['columns']['consent_form'], 'Yes')
     self.assertEqual(data[0]['columns']['student_id_form'], 'No')
@@ -85,7 +102,7 @@ class StudentsInfoTest(GCIDjangoTestCase):
     self.assertEqual(data[0]['columns']['consent_form'], 'Yes')
     self.assertEqual(data[0]['columns']['student_id_form'], 'Yes')
     
-    #Case when none of the two forms are submitted.
+    #Case when none of the two forms have been submitted.
     info.consent_form = None
     info.student_id_form = None
     info.put()
