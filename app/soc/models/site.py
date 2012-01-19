@@ -21,17 +21,25 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.presence_with_tos
+import soc.models.presence
 import soc.models.program
 
 
-class Site(soc.models.presence_with_tos.PresenceWithToS):
+class Site(soc.models.presence.Presence):
   """Model of a Site, which stores per site configuration.
 
   The Site Model stores configuration information unique to the Melange
   web site as a whole (in addition to any configuration that is common to
   any "presence" on the site, such as a Group or Program).
   """
+
+  #: Reference to Document containing optional Terms of Service
+  tos = db.ReferenceProperty(
+    reference_class=soc.models.document.Document,
+    verbose_name=ugettext('Terms of Service'),
+    collection_name='tos')
+  tos.help_text = ugettext(
+      'Document containing optional Terms of Service for participating.')
 
   #: The official name of the site
   site_name = db.StringProperty(default="Melange",
