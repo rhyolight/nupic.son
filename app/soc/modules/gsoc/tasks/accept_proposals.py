@@ -258,8 +258,8 @@ class ProposalAcceptanceTask(object):
         program_entity).get()
     template_string = messages.rejected_students_msg
 
-    return mail_dispatcher.getSendMailFromTemplateNameTxn(template, context,
-        parent=proposal.parent())
+    return mail_dispatcher.getSendMailFromTemplateStringTxn(
+        template_string, context, parent=proposal.parent())
 
   def acceptProposal(self, proposal, transactional=True):
     """Accept a single proposal.

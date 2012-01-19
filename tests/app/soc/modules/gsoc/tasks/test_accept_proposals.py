@@ -156,6 +156,12 @@ class AcceptProposalsTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
   def testAcceptProposals(self):
     """Tests accept task for an organization.
     """
+    from soc.modules.gsoc.models.program import GSoCProgramMessages
+    properties = {
+        'parent': self.gsoc,
+    }
+    self.seed(GSoCProgramMessages, properties)
+
     #assert current status of proposal to be accepted
     self.assertEqual(self.student1_proposals[0].status, 'pending')
 
@@ -196,10 +202,9 @@ class AcceptProposalsTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
 
         self.assertEqual(expected_params, task_params)
 
-  def testRejectProposals(self):
-    """Tests reject task for an organization.
-    """
-    self.testAcceptProposals()
+
+    # test reject proposals
+
     post_data = {'org_key': self.org.key().name(),
                  'program_key': self.gsoc.key().name()}
     response = self.post(self.REJECT_URL, post_data)
