@@ -175,6 +175,7 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
   def checkAccess(self):
     self.check.isLoggedIn()
     self.check.isProgramVisible()
+    self.check.isProgramRunning()
 
     if 'role' in self.data.kwargs:
       role = self.data.kwargs['role']
@@ -186,7 +187,6 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
         self.check.canApplyNonStudent(role, edit_url)
     else:
       self.check.isProfileActive()
-      self.check.isProgramRunning()
 
   def context(self):
     """Context for the profile page.
