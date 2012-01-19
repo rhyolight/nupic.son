@@ -432,6 +432,10 @@ def updateTaskStatus(task):
     logging.warning('Invalid state to transfer from %s' %task.status)
     return False
 
+  if task.program.timeline.stop_all_work_deadline < datetime.datetime.now():
+    # do not change the status of the task after the work deadline ends
+    return False
+
   # update the task and create a comment
   task, comment = transit_func(task)
 
