@@ -70,6 +70,14 @@ def setup_gae_services():
       'capability_service', capability_stub.CapabilityServiceStub())
 
 
+def clean_datastore():
+  from google.appengine.api import apiproxy_stub_map
+  datastore = apiproxy_stub_map.apiproxy.GetStub('datastore')
+  # clear datastore iff one is available
+  if datastore is not None:
+    datastore.Clear()
+
+
 def begin(self):
   """Used to stub out nose.plugins.cover.Coverage.begin.
 
@@ -125,11 +133,7 @@ class AppEngineDatastoreClearPlugin(plugins.Plugin):
     self.enabled = True
 
   def afterTest(self, test):
-    from google.appengine.api import apiproxy_stub_map
-    datastore = apiproxy_stub_map.apiproxy.GetStub('datastore')
-    # clear datastore iff one is available
-    if datastore is not None:
-      datastore.Clear()
+    clean_datastore()
 
 
 def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
@@ -194,11 +198,7 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
   def after_each_test():
     """Runs after each test to clean datastore.
     """
-    from google.appengine.api import apiproxy_stub_map
-    datastore = apiproxy_stub_map.apiproxy.GetStub('datastore')
-    # clear datastore iff one is available
-    if datastore is not None:
-      datastore.Clear()
+    clean_datastore()
 
   setup_process_env()
   for test_addr, arg in iter(get, 'STOP'):
