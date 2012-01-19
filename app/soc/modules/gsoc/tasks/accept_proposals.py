@@ -34,6 +34,7 @@ from soc.tasks.helper import error_handler
 from soc.tasks import responses
 
 from soc.modules.gsoc.logic import accept_proposals as conversion_logic
+from soc.modules.gsoc.logic import program as program_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
@@ -224,9 +225,12 @@ class ProposalAcceptanceTask(object):
       'org_entity': org_entity,
       }
 
-    template = 'v2/soc/notification/gsoc2011_accepted_student.html'
-    return mail_dispatcher.getSendMailFromTemplateNameTxn(
-        template, context, parent=proposal.parent(),
+    messages = program_logic.queryProgramMessagesForProgram(
+        program_entity).get()
+    template_string = messages.accepted_students_msg
+
+    return mail_dispatcher.getSendMailFromTemplateStringTxn(
+        template_string, context, parent=proposal.parent(),
         transactional=transactional)
 
   def getRejectProposalMailTxn(self, proposal):
