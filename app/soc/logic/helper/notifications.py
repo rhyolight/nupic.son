@@ -110,7 +110,7 @@ def inviteContext(data, invite):
 
   invitation_url = data.redirect.request(invite).url(full=True)
 
-  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+  edit_link = data.redirect.editProfile().url(full=True)
 
   message_properties = {
       'role_verbose' : invite.roleName(),
@@ -138,7 +138,7 @@ def requestContext(data, request, admin_emails):
   assert isSet(data.organization)
 
   request_url = data.redirect.request(request).url(full=True)
-  edit_link = data.redirect.editProfile(data.profile).url(full=True)
+  edit_link = data.redirect.editProfile().url(full=True)
 
   message_properties = {
       'requester': data.profile.name(),
@@ -169,7 +169,7 @@ def handledRequestContext(data, status):
   if not data.requester_profile.notify_request_handled:
     return {}
 
-  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+  edit_link = data.redirect.editProfile().url(full=True)
 
   message_properties = {
       'role_verbose' : data.request_entity.roleName(),
@@ -204,7 +204,7 @@ def handledInviteContext(data):
 
   status = data.invite.status
   action = 'resubmitted' if status == 'pending' else status
-  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+  edit_link = data.redirect.editProfile().url(full=True)
 
   message_properties = {
       'role_verbose' : data.invite.roleName(),
@@ -257,7 +257,7 @@ def newProposalContext(data, proposal, to_emails):
   """
   data.redirect.review(proposal.key().id(), data.user.link_id)
   proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
-  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+  edit_link = data.redirect.editProfile().url(full=True)
 
   proposal_name = proposal.title
 
@@ -288,7 +288,7 @@ def updatedProposalContext(data, proposal, to_emails):
 
   data.redirect.review(proposal.key().id(), data.user.link_id)
   proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
-  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+  edit_link = data.redirect.editProfile().url(full=True)
 
   proposal_name = proposal.title
 
@@ -319,7 +319,7 @@ def newCommentContext(data, comment, to_emails):
   assert isSet(data.proposer)
 
   review_notification_url = data.redirect.comment(comment, full=True)
-  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+  edit_link = data.redirect.editProfile().url(full=True)
 
   review_type = 'private' if comment.is_private else 'public'
   reviewed_name = data.proposal.title
