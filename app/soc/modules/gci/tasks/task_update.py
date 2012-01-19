@@ -44,8 +44,6 @@ class TaskUpdate(object):
     patterns = [
         url(r'^tasks/gci/task/update/(?P<id>(\d+))$', self.updateGCITask,
             name='task_update_GCI_task'),
-        url(r'^tasks/gci/task/mail/comment', self.sendCommentNotificationMail,
-            name='task_create_GCI_comment_notification')
         ]
     return patterns
 
