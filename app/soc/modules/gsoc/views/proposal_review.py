@@ -27,7 +27,6 @@ from django.utils.translation import ugettext
 
 from soc.logic import cleaning
 from soc.logic.exceptions import BadRequest
-from soc.logic.helper import notifications
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -35,6 +34,7 @@ from soc.views.toggle_button import ToggleButtonTemplate
 from soc.tasks import mailer
 
 from soc.modules.gsoc.logic import profile as profile_logic
+from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -547,7 +547,7 @@ class PostComment(RequestHandler):
 
     def create_comment_txn():
       comment = comment_form.create(commit=True, parent=self.data.proposal)
-      context = notifications.newCommentContext(self.data, comment, to_emails)
+      context = notifications.newReviewContext(self.data, comment, to_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=comment)
       sub_txn()
       return comment

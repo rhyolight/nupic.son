@@ -24,10 +24,10 @@ from django.utils.translation import ugettext
 
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
-from soc.logic.helper import notifications
 from soc.views.helper import url_patterns
 from soc.tasks import mailer
 
+from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.base import RequestHandler
