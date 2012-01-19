@@ -139,6 +139,9 @@ class AppEngineDatastoreClearPlugin(plugins.Plugin):
 def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
            keyboardCaught, shouldStop, loaderClass, resultClass, config):
   """To replace the test runner of multiprocess.
+
+  * Setup gae services at the beginning of every process
+  * Clean datastore after each test
   """
   from nose import failure
   from nose.pyversion import bytes_
@@ -200,6 +203,7 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
     """
     clean_datastore()
 
+  # Setup gae services at the beginning of every process
   setup_process_env()
   for test_addr, arg in iter(get, 'STOP'):
     if shouldStop.is_set():
@@ -219,6 +223,7 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
       test(result)
       currentaddr.value = bytes_('')
       resultQueue.put((ix, test_addr, test.tasks, batch(result)))
+      # Clean datastore after each test
       after_each_test()
     except KeyboardInterrupt:
       keyboardCaught.set()
