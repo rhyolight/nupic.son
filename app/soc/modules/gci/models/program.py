@@ -47,3 +47,8 @@ class GCIProgram(soc.models.program.Program):
   task_types.group = ugettext('Task Types')
   task_types.help_text = ugettext(
       'List all the types a task can be in.')
+
+
+class GCIProgramMessages(soc.models.program.ProgramMessages):
+  """The GCIProgramMessages model.
+  """
