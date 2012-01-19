@@ -28,7 +28,6 @@ from soc.logic import dicts
 from soc.logic import mail_dispatcher
 from soc.logic import site
 from soc.logic import system
-from soc.logic.helper import notifications
 from soc.tasks import mailer
 
 
@@ -42,12 +41,6 @@ DEF_FIRST_TASK_CONFIRMATION_SUBJECT = ugettext(
 
 DEF_FIRST_TASK_CONFIRMATION_TEMPLATE = \
     'v2/modules/gci/notification/first_task_confirmation.html'
-
-DEF_TASK_REQUEST_SUBJECT = ugettext(
-    'A new task has been requested from your organization')
-
-DEF_TASK_REQUEST_TEMPLATE = \
-    'modules/gci/notification/messages/task_request.html'
 
 DEF_PARENTAL_FORM_SUBJECT = ugettext(
     '[%(program_name)s]: Parental Consent Form - Please Respond')
@@ -69,8 +62,6 @@ def sendMail(to_user, subject, message_properties, template):
                         customized
     template: template that holds the content of the mail
   """
-
-  from soc.logic import site
 
   site_entity = site.singleton()
   site_name = site_entity.site_name
@@ -152,41 +143,6 @@ def sendParentalConsentFormRequired(user_entity, program_entity):
   # delegate sending mail to the helper function
   sendMail(user_entity, subject, {}, template)
 
-def sendRequestTaskNotification(org_admins, message):
-  """Sends notifications to org admins that there is a student who requested
-  more tasks from them.
-
-  Args:
-    org_admins: a list of org admins who the notification should be sent to
-    message: a short message that will be included to the notification
-  """
-
-  from soc.logic import site
-
-  # get the default mail sender
-  default_sender = mail_dispatcher.getDefaultMailSender()
-
-  if not default_sender:
-    # no valid sender found, abort
-    return
-  else:
-    (sender_name, sender) = default_sender
-
-  # get site name
-  site_entity = site.singleton()
-  template = DEF_TASK_REQUEST_TEMPLATE
-
-  properties = {
-      'message': message,
-      'sender_name': sender_name,
-      }
-
-  for org_admin in org_admins:
-    to = org_admin.user
-    properties['to'] = to
-    properties['to_name'] = to.name
-
-    notifications.sendNotification(to, None, properties, subject, template)
 
 def getFirstTaskConfirmationContext(student):
   """Sends notification to the GCI student, when he or she completes their
