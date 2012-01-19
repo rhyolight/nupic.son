@@ -42,10 +42,6 @@ def choiceWidget(field):
   """Returns a Select widget for the specified field.
   """
   choices = _generateChoices(field)
-
-  label = field.verbose_name
-  choices = [('', label)] + choices
-
   return forms.Select(choices=choices)
 
 
