@@ -21,7 +21,7 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.role
+import soc.models.profile
 
 
 class GSoCComment(db.Model):
@@ -39,7 +39,7 @@ class GSoCComment(db.Model):
 
   #: A required many:1 relationship with a comment entity indicating
   #: the user who provided that comment.
-  author = db.ReferenceProperty(reference_class=soc.models.role.Profile,
+  author = db.ReferenceProperty(reference_class=soc.models.profile.Profile,
       required=True, collection_name="commented")
 
   #: The rich textual content of this comment

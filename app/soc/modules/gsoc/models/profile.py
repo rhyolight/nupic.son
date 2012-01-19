@@ -22,10 +22,10 @@ from google.appengine.ext import blobstore
 
 from django.utils.translation import ugettext
 
-import soc.models.role
+import soc.models.profile
 
 
-class GSoCProfile(soc.models.role.Profile):
+class GSoCProfile(soc.models.profile.Profile):
   """GSoCProfile Model.
   """
 
@@ -54,7 +54,7 @@ class GSoCProfile(soc.models.role.Profile):
   notify_private_comments.group = ugettext("6. Notification settings")
 
 
-class GSoCStudentInfo(soc.models.role.StudentInfo):
+class GSoCStudentInfo(soc.models.profile.StudentInfo):
   """GSoCStudentInfo Model.
 
   Parent:

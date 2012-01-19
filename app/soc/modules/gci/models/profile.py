@@ -24,10 +24,10 @@ from django.utils.translation import ugettext
 
 from soc.modules.gci.models import avatars
 
-import soc.models.role
+import soc.models.profile
 
 
-class GCIProfile(soc.models.role.Profile):
+class GCIProfile(soc.models.profile.Profile):
   """GCIProfile Model.
   """
   automatic_task_subscription = db.BooleanProperty(
@@ -44,7 +44,7 @@ class GCIProfile(soc.models.role.Profile):
   avatar.group = ugettext("1. Public Info")
 
 
-class GCIStudentInfo(soc.models.role.StudentInfo):
+class GCIStudentInfo(soc.models.profile.StudentInfo):
   """GCIStudentInfo Model.
 
   Parent:

@@ -22,7 +22,7 @@ from google.appengine.ext import db
 from google.appengine.ext.mapreduce import operation
 
 from soc.models.host import Host
-from soc.models.role import Role
+from soc.models.profile import Role
 
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.comment import GCIComment

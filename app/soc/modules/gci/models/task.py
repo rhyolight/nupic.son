@@ -25,7 +25,7 @@ from django.utils.translation import ugettext
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
-import soc.models.role
+import soc.models.profile
 import soc.modules.gci.models.program
 
 
@@ -103,7 +103,7 @@ class GCITask(db.Model):
   mentors = db.ListProperty(item_type=db.Key, default=[])
 
   #: Student profile to whom this task is currently assigned to.
-  student = db.ReferenceProperty(reference_class=soc.models.role.Role,
+  student = db.ReferenceProperty(reference_class=soc.models.profile.Profile,
                                  required=False,
                                  collection_name='assigned_tasks')
 
@@ -163,7 +163,7 @@ class GCITask(db.Model):
 
   #: Required field containing the Mentor/Org Admin who created this task.
   #: If site developer has created the task, it is empty.
-  created_by = db.ReferenceProperty(reference_class=soc.models.role.Role,
+  created_by = db.ReferenceProperty(reference_class=soc.models.profile.Profile,
                                     required=False,
                                     collection_name='created_tasks',
                                     verbose_name=ugettext('Created by'))
@@ -176,7 +176,7 @@ class GCITask(db.Model):
   #: task. It changes only when Mentor/Org Admin changes title, description,
   #: difficulty, task_type, time_to_complete. If site developer has modified
   #: the task, it is empty.
-  modified_by = db.ReferenceProperty(reference_class=soc.models.role.Role,
+  modified_by = db.ReferenceProperty(reference_class=soc.models.profile.Profile,
                                      required=False,
                                      collection_name='edited_tasks',
                                      verbose_name=ugettext('Modified by'))

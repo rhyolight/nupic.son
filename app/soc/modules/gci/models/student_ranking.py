@@ -20,7 +20,7 @@
 
 from google.appengine.ext import db
 
-import soc.models.role
+import soc.models.profile
 
 from soc.modules.gci.models.program import GCIProgram
 
@@ -37,7 +37,7 @@ class GCIStudentRanking(db.Model):
      verbose_name=('Points'), default=0)
 
   #: student entity that the ranking refers to
-  student = db.ReferenceProperty(reference_class=soc.models.role.Role,
+  student = db.ReferenceProperty(reference_class=soc.models.profile.Profile,
                                  required=True)
 
   #: tasks that have been taken into account when calculating the score

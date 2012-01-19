@@ -92,39 +92,11 @@ class StudentInfo(db.Model):
       required=False, collection_name='student_infos')
 
 
-class Role(soc.models.linkable.Linkable):
-  """Information common to Program participation for all Roles.
+class Profile(soc.models.linkable.Linkable):
+  """Per-program user information.
 
-  Some details of a Role are considered "public" information, and nearly
-  all of these are optional (except for given_name, surname, and email).
-  Other details of a Role are kept "private" and are only provided to
-  other Users in roles that "need to know" this information.  How these
-  fields are revealed is usually covered by Program terms of service.
-
-  Role is the entity that is created when a User actually participates
-  in some fashion in a Program. Role details could *possibly* be collected
-  without actual participation (voluntary, opt-in, of course).
-
-  A Role is a User's participation in a single Program.  To avoid
-  duplication of data entry, facilities will be available for selecting
-  an existing Role associated with a particular User to be duplicated for
-  participation in a new Program.
-
-  A User has to have at least one Role in order to be able to create
-  any Work (such as a Document) on the site.  The easiest-to-obtain Role is
-  probably Club Member (though Clubs can set their own membership criteria).
-
-  A Role entity participates in the following relationships implemented
-  as a db.ReferenceProperty elsewhere in another db.Model:
-
-   documentation) a 1:many relationship of Documentation (tax forms,
-     letters from schools, etc.) associated with the Role by Hosts.  This
-     relation is implemented as the 'documentation' back-reference Query of
-     the Documentation model 'role' reference.
-
-   works) a many:many relationship with Works, stored in a separate
-     WorksRoles model, representing the Work authored by this Role.
-     See the WorksRoles model class for details.
+  Parent:
+    soc.models.user.User
   """
 
   #: A required many:1 relationship that ties (possibly multiple
@@ -485,6 +457,34 @@ class Role(soc.models.linkable.Linkable):
       'concerning which privileges may be used.')
 
   #====================================================================
+  #notification settings
+  #====================================================================
+
+  notify_new_requests = db.BooleanProperty(required=False, default=True,
+      verbose_name=ugettext('Notify of new requests'))
+  notify_new_requests.help_text = ugettext(
+      'Whether to send an email notification when new requests are submitted.')
+  notify_new_requests.group = ugettext("6. Notification settings")
+
+  notify_invite_handled = db.BooleanProperty(required=False, default=True,
+      verbose_name=ugettext('Notify of handled invitations'))
+  notify_invite_handled.help_text = ugettext(
+      'Whether to send an email notification when an invite is handled.')
+  notify_invite_handled.group = ugettext("6. Notification settings")
+
+  notify_request_handled = db.BooleanProperty(required=False, default=True,
+      verbose_name=ugettext('Notify of handled requests'))
+  notify_request_handled.help_text = ugettext(
+      'Whether to send an email notification when your request is handled.')
+  notify_request_handled.group = ugettext("6. Notification settings")
+
+  notify_new_invites = db.BooleanProperty(required=False, default=True,
+      verbose_name=ugettext('Notify of new invites'))
+  notify_new_invites.help_text = ugettext(
+      'Whether to send an email notification when you receive a new invite.')
+  notify_new_invites.group = ugettext("6. Notification settings")
+
+  #====================================================================
   #specific roles information
   #====================================================================
 
@@ -586,35 +586,3 @@ class Role(soc.models.linkable.Linkable):
     """Property as 'ccTld' for use in Maps.
     """
     return countries.COUNTRIES_TO_CCTLD[self.res_country]
-
-
-class Profile(Role):
-  """New name for Role.
-
-  Parent:
-    soc.models.user.User
-  """
-  notify_new_requests = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of new requests'))
-  notify_new_requests.help_text = ugettext(
-      'Whether to send an email notification when new requests are submitted.')
-  notify_new_requests.group = ugettext("6. Notification settings")
-
-  notify_invite_handled = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of handled invitations'))
-  notify_invite_handled.help_text = ugettext(
-      'Whether to send an email notification when an invite is handled.')
-  notify_invite_handled.group = ugettext("6. Notification settings")
-
-  notify_request_handled = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of handled requests'))
-  notify_request_handled.help_text = ugettext(
-      'Whether to send an email notification when your request is handled.')
-  notify_request_handled.group = ugettext("6. Notification settings")
-
-  notify_new_invites = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of new invites'))
-  notify_new_invites.help_text = ugettext(
-      'Whether to send an email notification when you receive a new invite.')
-  notify_new_invites.group = ugettext("6. Notification settings")
-

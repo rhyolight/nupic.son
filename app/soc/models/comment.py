@@ -21,7 +21,7 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.role
+import soc.models.profile
 import soc.models.user
 import soc.models.linkable
 
