@@ -486,7 +486,7 @@ class RedirectHelper(request_data.RedirectHelper):
 
     return self
 
-  def editProfile(self, profile):
+  def editProfile(self):
     """Returns the URL for the edit profile page for the given profile.
     """
     self.program()
