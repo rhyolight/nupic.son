@@ -118,6 +118,27 @@ def getSendMailFromTemplateNameTxn(template_name, context, parent=None,
                   parent=parent, run=False, transactional=transactional)
 
 
+def getSendMailFromTemplateStringTxn(template_string, context, parent=None,
+    transactional=True):
+  """Returns a method that is safe to be run in a transaction to sent out an
+     email using a Django template which is represented by the specified
+     string instance.
+
+  See sendMailFromTemplate() for more information.
+
+  Args:
+    parent: The parent entity to use for the transaction.
+    context: The context passed on to sendMail.
+    parent: An optional parent entity of the to be created mail entity.
+    transactional: Whether the task should be created transactionally.
+  """
+  # create Template instance based on the string representation
+  template = loader.get_template_from_string(template_string)
+
+  return getSendMailFromTemplateTxn(template, context, parent=parent,
+      transactional=transactional)
+
+
 def getSendMailFromTemplateTxn(template, context, parent=None,
     transactional=True):
   """Returns a method that is safe to be run in a transaction to sent out an
