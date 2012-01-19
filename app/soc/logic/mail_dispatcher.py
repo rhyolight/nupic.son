@@ -61,6 +61,7 @@ Usage:
 
 import logging
 
+from django.template import Context
 from django.template import loader
 
 from google.appengine.api import mail
@@ -111,6 +112,28 @@ def getSendMailFromTemplateNameTxn(template_name, context, parent=None,
   """
   # render the template and put in context with 'html' as key
   context['html'] = loader.render_to_string(template_name, dictionary=context)
+
+  # filter out the unneeded values in context to keep sendMail happy
+  return sendMail(dicts.filter(context, mail.EmailMessage.PROPERTIES),
+                  parent=parent, run=False, transactional=transactional)
+
+
+def getSendMailFromTemplateTxn(template, context, parent=None,
+    transactional=True):
+  """Returns a method that is safe to be run in a transaction to sent out an
+     email using a Django Template instance.
+
+  See sendMailFromTemplate() for more information.
+
+  Args:
+    parent: The parent entity to use for the transaction.
+    context: The context passed on to sendMail.
+    parent: An optional parent entity of the to be created mail entity.
+    transactional: Whether the task should be created transactionally.
+  """
+
+  context_instance = Context(context)
+  context['html'] = template.render(context_instance)
 
   # filter out the unneeded values in context to keep sendMail happy
   return sendMail(dicts.filter(context, mail.EmailMessage.PROPERTIES),
