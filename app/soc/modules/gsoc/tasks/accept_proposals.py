@@ -254,7 +254,10 @@ class ProposalAcceptanceTask(object):
       'org_entity': org_entity,
       }
 
-    template = 'v2/soc/notification/gsoc2011_rejected_student.html'
+    messages = program_logic.queryProgramMessagesForProgram(
+        program_entity).get()
+    template_string = messages.rejected_students_msg
+
     return mail_dispatcher.getSendMailFromTemplateNameTxn(template, context,
         parent=proposal.parent())
 
