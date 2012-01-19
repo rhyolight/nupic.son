@@ -34,7 +34,6 @@ from soc.logic import dicts
 from soc.logic import user
 from soc.models.document import Document
 from soc.models.host import Host
-from soc.models.notification import Notification
 
 from soc.models.site import Site
 from soc.models.sponsor import Sponsor
@@ -556,7 +555,6 @@ def clear(*args, **kwargs):
   # this method will not clear all instances.  Instead, it should continually
   # call .all(), delete all those, and loop until .all() is empty.
   entities = itertools.chain(*[
-      Notification.all(),
       GCIStudent.all(),
       Survey.all(),
       SurveyRecord.all(),
