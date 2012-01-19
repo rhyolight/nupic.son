@@ -210,6 +210,16 @@ class Program(soc.models.presence.Presence):
                            "the format irc://<channel>@server")
   irc.group = ugettext("1. Public Info")
 
+  def getProgramMessages(self):
+    def get_or_create_txn():
+      entity = type(self).all().ancestor(self).get()
+      if not entity:
+        entity = GSoCProgramMessages(parent=self)
+        entity.put()
+      return entity
+
+    return db.run_in_transaction(get_or_create_txn)
+
 
 class ProgramMessages(db.Model):
   """The ProgramMessages model.
