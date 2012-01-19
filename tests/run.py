@@ -42,6 +42,34 @@ log =  logging.getLogger('nose.plugins.cover')
 logging.disable(logging.INFO)
 
 
+def setup_gae_services():
+  """Setups all google app engine services required for testing.
+  """
+  from google.appengine.api import apiproxy_stub_map
+  from google.appengine.api import mail_stub
+  from google.appengine.api import user_service_stub
+  from google.appengine.api import urlfetch_stub
+  from google.appengine.api.capabilities import capability_stub
+  from google.appengine.api.memcache import memcache_stub
+  from google.appengine.api.taskqueue import taskqueue_stub
+  from google.appengine.api import datastore_file_stub
+  apiproxy_stub_map.apiproxy = apiproxy_stub_map.APIProxyStubMap()
+  apiproxy_stub_map.apiproxy.RegisterStub(
+      'urlfetch', urlfetch_stub.URLFetchServiceStub())
+  apiproxy_stub_map.apiproxy.RegisterStub(
+      'user', user_service_stub.UserServiceStub())
+  apiproxy_stub_map.apiproxy.RegisterStub(
+      'memcache', memcache_stub.MemcacheServiceStub())
+  apiproxy_stub_map.apiproxy.RegisterStub('datastore',
+      datastore_file_stub.DatastoreFileStub('test-app-run', None, None))
+  apiproxy_stub_map.apiproxy.RegisterStub('mail', mail_stub.MailServiceStub())
+  yaml_location = os.path.join(HERE, 'app')
+  apiproxy_stub_map.apiproxy.RegisterStub(
+      'taskqueue', taskqueue_stub.TaskQueueServiceStub(root_path=yaml_location))
+  apiproxy_stub_map.apiproxy.RegisterStub(
+      'capability_service', capability_stub.CapabilityServiceStub())
+
+
 def begin(self):
   """Used to stub out nose.plugins.cover.Coverage.begin.
 
@@ -161,29 +189,7 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
   def setup_process_env():
     """Runs just after the process starts to setup services.
     """
-    from google.appengine.api import apiproxy_stub_map
-    from google.appengine.api import mail_stub
-    from google.appengine.api import user_service_stub
-    from google.appengine.api import urlfetch_stub
-    from google.appengine.api.capabilities import capability_stub
-    from google.appengine.api.memcache import memcache_stub
-    from google.appengine.api.taskqueue import taskqueue_stub
-    from google.appengine.api import datastore_file_stub
-    apiproxy_stub_map.apiproxy = apiproxy_stub_map.APIProxyStubMap()
-    apiproxy_stub_map.apiproxy.RegisterStub(
-        'urlfetch', urlfetch_stub.URLFetchServiceStub())
-    apiproxy_stub_map.apiproxy.RegisterStub(
-        'user', user_service_stub.UserServiceStub())
-    apiproxy_stub_map.apiproxy.RegisterStub(
-        'memcache', memcache_stub.MemcacheServiceStub())
-    apiproxy_stub_map.apiproxy.RegisterStub('datastore',
-        datastore_file_stub.DatastoreFileStub('test-app-run', None, None))
-    apiproxy_stub_map.apiproxy.RegisterStub('mail', mail_stub.MailServiceStub())
-    yaml_location = os.path.join(HERE, 'app')
-    apiproxy_stub_map.apiproxy.RegisterStub(
-        'taskqueue', taskqueue_stub.TaskQueueServiceStub(root_path=yaml_location))
-    apiproxy_stub_map.apiproxy.RegisterStub(
-        'capability_service', capability_stub.CapabilityServiceStub())
+    setup_gae_services()
 
   def after_each_test():
     """Runs after each test to clean datastore.
@@ -250,31 +256,9 @@ def main():
   os.environ['USER_ID'] = '42'
   os.environ['CURRENT_VERSION_ID'] = 'testing-version'
   os.environ['HTTP_HOST'] = 'some.testing.host.tld'
-  import main as app_main
-  from google.appengine.api import apiproxy_stub_map
-  from google.appengine.api import datastore_file_stub
-  from google.appengine.api import mail_stub
-  from google.appengine.api import user_service_stub
-  from google.appengine.api import urlfetch_stub
-  from google.appengine.api.capabilities import capability_stub
-  from google.appengine.api.memcache import memcache_stub
-  from google.appengine.api.taskqueue import taskqueue_stub
-  apiproxy_stub_map.apiproxy = apiproxy_stub_map.APIProxyStubMap()
-  apiproxy_stub_map.apiproxy.RegisterStub(
-      'urlfetch', urlfetch_stub.URLFetchServiceStub())
-  apiproxy_stub_map.apiproxy.RegisterStub(
-      'user', user_service_stub.UserServiceStub())
-  apiproxy_stub_map.apiproxy.RegisterStub('datastore',
-    datastore_file_stub.DatastoreFileStub('test-app-run', None, None))
-  apiproxy_stub_map.apiproxy.RegisterStub(
-      'memcache', memcache_stub.MemcacheServiceStub())
-  apiproxy_stub_map.apiproxy.RegisterStub('mail', mail_stub.MailServiceStub())
-  yaml_location = os.path.join(HERE, 'app')
-  apiproxy_stub_map.apiproxy.RegisterStub(
-      'taskqueue', taskqueue_stub.TaskQueueServiceStub(root_path=yaml_location))
-  apiproxy_stub_map.apiproxy.RegisterStub(
-      'capability_service', capability_stub.CapabilityServiceStub())
+  setup_gae_services()
 
+  import main as app_main
   import django.test.utils
   django.test.utils.setup_test_environment()
 
