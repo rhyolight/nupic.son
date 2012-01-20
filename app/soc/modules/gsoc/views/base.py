@@ -68,6 +68,7 @@ class RequestHandler(RequestHandler):
     else:
       self.mutator = access_checker.Mutator(self.data)
       self.check = access_checker.AccessChecker(self.data)
+    super(RequestHandler, self).init(request, args, kwargs)
 
   def error(self, status, message=None):
     if not self.data.program:

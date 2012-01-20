@@ -56,6 +56,10 @@ class Site(soc.models.presence.Presence):
   maintenance_end = db.DateTimeProperty(
       verbose_name=ugettext('Maintenance end date'))
 
+  #: Whether the site is in the maintenance mode
+  maintenance_mode = db.BooleanProperty(verbose_name=ugettext(
+      'Maintenance mode'))
+
   #: Valid Google Custom Search Engine key. Used to load the appropriate
   #: search box in the search page.
   cse_key = db.StringProperty(verbose_name=ugettext('Custom Search Engine key'))

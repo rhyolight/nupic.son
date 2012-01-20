@@ -64,3 +64,9 @@ class BadRequest(Error):
   """Bad Request
   """
   status = 400
+
+
+class MaintainceMode(Error):
+  """Maintaince Mode
+  """
+  status = 503

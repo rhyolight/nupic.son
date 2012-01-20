@@ -30,6 +30,7 @@ from soc.logic.exceptions import LoginRequest
 from soc.logic.exceptions import RedirectRequest
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import GDocsLoginRequest
+from soc.logic.exceptions import MaintainceMode
 from soc.logic.exceptions import Error
 from soc.views.helper import access_checker
 from soc.views.helper.response import Response
@@ -212,8 +213,9 @@ class RequestHandler(object):
 
     Sets the data and check fields.
     """
-    self.data = None
-    self.check = None
+    if self.data.site.maintenance_mode and not self.data.is_developer:
+      raise MaintainceMode(
+          'The site is currently in maintenance mode. Please try again later.')
 
   def __call__(self, request, *args, **kwargs):
     """Returns the response object for the requested URL.
@@ -275,3 +277,4 @@ class SiteRequestHandler(RequestHandler):
     else:
       self.mutator = access_checker.Mutator(self.data)
       self.check = access_checker.AccessChecker(self.data)
+    super(SiteRequestHandler, self).init(request, args, kwargs)
