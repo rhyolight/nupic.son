@@ -19,9 +19,12 @@
 
 from google.appengine.api import users
 
-from soc.views.template import Template
+from django.core.urlresolvers import reverse
 
 from soc.views.base_templates import LoggedInMsg
+from soc.views.template import Template
+
+from soc.modules.gci.logic.program import getMostRecentProgram
 
 
 def siteMenuContext(data):
@@ -67,9 +70,24 @@ class Header(Template):
     return "v2/modules/gsoc/header.html"
 
   def context(self):
+    # Need this import to make sponsor visible for sponsor link_id
+    from soc.models.sponsor import Sponsor
+
+    program = getMostRecentProgram()
+    gci_kwargs = {
+        'sponsor': program.scope.link_id,
+        'program': program.link_id,
+        }
+
     return {
         'home_link': self.data.redirect.homepage().url(),
         'program_link_id': self.data.program.link_id,
+        # We have to use reverse method instead of the redirect helper
+        # because we have to get the URL for a program of the other module
+        # that is not part of the request data. So we cannot directly use
+        # the redirect helper, since a module's redirect helper doesn't
+        # resolve to the correct module URL prefix.
+        'gci_link': reverse('gci_homepage', kwargs=gci_kwargs),
     }
 
 

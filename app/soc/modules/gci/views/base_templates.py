@@ -21,9 +21,13 @@ import datetime
 
 from google.appengine.api import users
 
-from soc.views.template import Template
+from django.core.urlresolvers import reverse
 
 from soc.logic import accounts
+from soc.views.template import Template
+
+from soc.modules.gsoc.logic.program import getMostRecentProgram
+
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import GCITask
 
@@ -76,10 +80,23 @@ class Header(Template):
     return "v2/modules/gci/_header.html"
 
   def context(self):
+    # Need this import to make sponsor visible for sponsor link_id
+    from soc.models.sponsor import Sponsor
+
+    program = getMostRecentProgram()
+    gsoc_kwargs = {
+        'sponsor': program.scope.link_id,
+        'program': program.link_id,
+        }
+
     return {
         'home_link': self.data.redirect.homepage().url(),
-        # TODO(SRabbelier): make this dynamic somehow
-        'gsoc_link': '/gsoc/homepage/google/gsoc2011',
+        # We have to use reverse method instead of the redirect helper
+        # because we have to get the URL for a program of the other module
+        # that is not part of the request data. So we cannot directly use
+        # the redirect helper, since a module's redirect helper doesn't
+        # resolve to the correct module URL prefix.
+        'gsoc_link': reverse('gsoc_homepage', kwargs=gsoc_kwargs),
     }
 
 
