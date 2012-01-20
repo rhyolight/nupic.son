@@ -87,17 +87,17 @@ def addAddressColumns(list_config):
       (lambda e, sp, *args: sp[e.parent_key()].tshirt_style), hidden=True)
   list_config.addColumn('tshirt_size', 'T-Shirt Size',
       (lambda e, sp, *args: sp[e.parent_key()].tshirt_size), hidden=True)
- 
- 
+
+
 class StudentsList(Template):
   """Component for listing all the students in GCI.
   """
-  
+
   def __init__(self, request, data):
     self.data = data
     self.request = request
     self.idx = 1
-    
+
     list_config = lists.ListConfiguration()
     list_config.addColumn(
         'name', 'Name', lambda e, sp, *args: sp[e.parent_key()].name())
@@ -116,9 +116,9 @@ class StudentsList(Template):
         'birth_date', 'Birthdate',
         (lambda e, sp, *args: sp[e.parent_key()].birth_date.strftime(
         "%B %d, %Y")), hidden=True)
-   
+
     addAddressColumns(list_config)
-   
+
     list_config.addColumn('school_name', 'School name',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.school_name), 
         hidden=True)
@@ -140,15 +140,15 @@ class StudentsList(Template):
     list_config.addColumn('expected_graduation', 'Expected Graduation',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.expected_graduation), 
         hidden=True)
-   
+
     list_config.addSimpleColumn('points', 'Points')
     list_config.addColumn(
         'no_of_tasks_completed', 'No of completed tasks',
         (lambda e, *args: len(e.tasks)))
-   
+
     def formsSubmitted(e, sp, form):
       """Returns "Yes" if form has been submitted otherwise "No".
-     
+
       form takes either 'consent' or 'student_id' as values which stand
       for parental consent form and student id form respectively.
       """
@@ -162,7 +162,7 @@ class StudentsList(Template):
         if student_id:
           return 'Yes'
       return 'No'
-     
+
     list_config.addColumn(
         'consent_form', 'Consent Form Submitted',
         (lambda e, sp, *args: formsSubmitted(e, sp, 'consent')))
@@ -191,7 +191,7 @@ class StudentsList(Template):
         key = entity.parent_key()
         if key:
           keys.append(key)
-      
+
       entities = db.get(keys)
       sp = dict((i.key(), i) for i in entities if i)
 
@@ -204,7 +204,7 @@ class StudentsList(Template):
 
   def templatePath(self):
     return'v2/modules/gci/students_info/_students_list.html'
- 
+
   def context(self):
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.idx)
@@ -216,6 +216,7 @@ class StudentsList(Template):
         'description': ugettext(
             'List of participating students'),
     }
+
 
 class StudentsInfoPage(RequestHandler):
   """View for the students info page for the admin.
