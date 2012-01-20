@@ -47,6 +47,13 @@ class DashboardTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'v2/soc/list/lists.html')
     self.assertTemplateUsed(response, 'v2/soc/list/list.html')
 
+  def testDashboardAsHost(self):
+    self.data.createHost()
+    url = '/gci/dashboard/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)
+    self.assertDashboardComponentTemplatesUsed(response)
+
   def testDashboardAsMentorWithTask(self):
     self.data.createMentorWithTask('Open', self.org)
     url = '/gci/dashboard/' + self.gci.key().name()
