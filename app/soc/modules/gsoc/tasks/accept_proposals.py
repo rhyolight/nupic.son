@@ -34,7 +34,6 @@ from soc.tasks.helper import error_handler
 from soc.tasks import responses
 
 from soc.modules.gsoc.logic import accept_proposals as conversion_logic
-from soc.modules.gsoc.logic import program as program_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
