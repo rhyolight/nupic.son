@@ -493,10 +493,13 @@ class RedirectHelper(object):
     self.program()
     return self
 
-  def homepage(self):
+  def homepage(self, program=None):
     """Sets the _url_name for the homepage of the current program.
+
+    Args:
+      program: the link_id of the program for which we need to get the homepage
     """
-    self.program()
+    self.program(program)
     return self
 
   def searchpage(self):

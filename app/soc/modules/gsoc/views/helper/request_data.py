@@ -365,10 +365,13 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'gsoc_accepted_projects'
     return self
 
-  def homepage(self):
+  def homepage(self, program=None):
     """Sets the _url_name for the homepage of the current GSOC program.
+
+    Args:
+      program: the link_id of the program for which we need to get the homepage
     """
-    super(RedirectHelper, self).homepage()
+    super(RedirectHelper, self).homepage(program)
     self._url_name = 'gsoc_homepage'
     return self
 
