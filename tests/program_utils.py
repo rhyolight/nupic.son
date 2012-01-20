@@ -29,9 +29,11 @@ from soc.models.user import User
 
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.program import GCIProgram
+from soc.modules.gci.models.program import GCIProgramMessages
 from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
+from soc.modules.gsoc.models.program import GSoCProgramMessages
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
@@ -208,6 +210,16 @@ class GSoCProgramHelper(ProgramHelper):
     self.program.connect_with_us_page = document
     self.program.privacy_policy = document
     self.program.put()
+
+    properties = {
+        'parent': self.program,
+        'accepted_orgs_msg': 'Organization accepted',
+        'rejected_orgs_msg': 'Organization rejected',
+        }
+    self.program_messages = self.seed(GSoCProgramMessages,
+        properties=properties)
+    self.program_messages.put()
+
     return self.program
 
   def createNewOrg(self, override={}):
@@ -271,6 +283,16 @@ class GCIProgramHelper(ProgramHelper):
     self.program.connect_with_us_page = document
     self.program.privacy_policy = document
     self.program.put()
+
+    properties = {
+        'parent': self.program,
+        'accepted_orgs_msg': 'Organization accepted',
+        'rejected_orgs_msg': 'Organization rejected',
+        }
+    self.program_messages = self.seed(GCIProgramMessages,
+        properties=properties)
+    self.program_messages.put()
+
     return self.program
 
   def createNewOrg(self, override={}):
