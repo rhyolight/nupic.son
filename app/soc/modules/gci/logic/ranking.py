@@ -82,7 +82,8 @@ def updateScore(task):
 
     # check if the task has been included in the score
     if task_key not in score.tasks:
-      score.points += POINTS[task.difficulty_level]
+      if not task.points_invalidated:
+        score.points += POINTS[task.difficulty_level]
       score.tasks.append(task_key)
 
     score.put()
@@ -161,7 +162,8 @@ def calculateScore(student, tasks, program):
 
   points = 0
   for task in tasks:
-    points += POINTS[task.difficulty_level]
+    if not task.points_invalidated:
+      points += POINTS[task.difficulty_level]
 
   def calculate_score_txn():
     query = GCIScore.all().ancestor(student)
