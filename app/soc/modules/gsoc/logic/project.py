@@ -53,7 +53,7 @@ def getFeaturedProject(current_timeline, program):
 
   # the cache stores a 3-tuple in the order student_project entity,
   # cursor and the last time the cache was updated
-  fsp_cache = memcache.get('featured_gsoc_project')
+  fsp_cache = memcache.get('featured_gsoc_project' + program.key().name())
 
   if fsp_cache:
     cached_project, cached_cursor, cache_expiry_time = fsp_cache

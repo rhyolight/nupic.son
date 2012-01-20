@@ -589,7 +589,7 @@ def getFeaturedTask(program):
 
   # the cache stores a 3-tuple in the order gci task entity,
   # cursor and the last time the cache was updated
-  fgt_cache = memcache.get('featured_gci_task')
+  fgt_cache = memcache.get('featured_gci_task' + program.key().name())
 
   if fgt_cache:
     cached_task, cached_cursor, cache_expiry_time = fgt_cache
@@ -641,4 +641,3 @@ def queryAllTasksClosedByStudent(profile, keys_only=False):
 
   return GCITask.all(keys_only=keys_only).filter(
       'student', profile).filter('status', 'Closed')
-  
