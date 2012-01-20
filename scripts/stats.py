@@ -900,20 +900,16 @@ def main(args):
   from soc.models.user import User
   from soc.modules.gsoc.models.program import GSoCProgram
   from soc.modules.gsoc.models.organization import GSoCOrganization
-  from soc.modules.gsoc.models.student import GSoCStudent
   from soc.modules.gsoc.models.profile import GSoCProfile
   from soc.modules.gsoc.models.profile import GSoCStudentInfo
   from soc.modules.gsoc.models.proposal import GSoCProposal
   from soc.modules.gsoc.models.project import GSoCProject
-  from soc.modules.gsoc.models.mentor import GSoCMentor
-  from soc.modules.gsoc.models import org_admin
   from soc.modules.gsoc.models.student_proposal import StudentProposal
   from soc.modules.gsoc.models.student_project import StudentProject
   from soc.modules.gsoc.tasks.accept_proposals import ProposalAcceptanceTask
 
   from soc.modules.gci.models.task import GCITask
   from soc.modules.gci.models.comment import GCIComment
-  from soc.modules.gci.models.student import GCIStudent
   from soc.modules.gci.models.organization import GCIOrganization
   from soc.modules.gci.models.profile import GCIProfile
   from soc.modules.gci.models.program import GCIProgram
@@ -966,9 +962,6 @@ def main(args):
       'deleteEntities': deleteEntities,
       'getOrgs': getEntities(GSoCOrganization),
       'getUsers': getEntities(User),
-      'getStudents': getEntities(GSoCStudent),
-      'getMentors': getEntities(GSoCMentor),
-      'getOrgAdmins': getEntities(org_admin.GSoCOrgAdmin),
       'getStudentProjects': getEntities(StudentProject),
       'getStudentProjects': getEntities(StudentProposal),
       'getProps': getProps,
@@ -983,9 +976,6 @@ def main(args):
       'withdrawProject': withdrawProject,
       'GSoCOrganization': GSoCOrganization,
       'User': User,
-      'GSoCStudent': GSoCStudent,
-      'GSoCMentor': GSoCMentor,
-      'GSoCOrgAdmin': org_admin.GSoCOrgAdmin,
       'GSoCProgram': GSoCProgram,
       'GCIProgram': GCIProgram,
       'GSoCProfile': GSoCProfile,
@@ -993,7 +983,6 @@ def main(args):
       'GCITask': GCITask,
       'Request': Request,
       'SRequest': StudentKeyRequest,
-      'GCIStudent': GCIStudent,
       'GCIComment': GCIComment,
       'GCIOrganization': GCIOrganization,
       'GSoCStudentInfo': GSoCStudentInfo,
