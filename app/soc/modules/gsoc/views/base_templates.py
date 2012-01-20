@@ -73,10 +73,10 @@ class Header(Template):
     # Need this import to make sponsor visible for sponsor link_id
     from soc.models.sponsor import Sponsor
 
-    program = getMostRecentProgram()
+    sponsor, program = getMostRecentProgram(self.data).split('/')
     gci_kwargs = {
-        'sponsor': program.scope.link_id,
-        'program': program.link_id,
+        'sponsor': sponsor,
+        'program': program,
         }
 
     return {

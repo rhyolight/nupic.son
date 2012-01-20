@@ -159,8 +159,12 @@ class ProgramHelper(object):
     """
     if self.program is None:
       self.createProgram()
-    properties = {'key_name': 'site', 'link_id': 'site',
-                  'active_program': self.program}
+    properties = {
+        'key_name': 'site', 'link_id': 'site',
+        'active_program': self.program,
+        'latest_gsoc': 'google/gsoc',
+        'latest_gci': 'google/gci',
+    }
     properties.update(override)
     self.site = Site(**properties)
     self.site.put()

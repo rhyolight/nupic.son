@@ -18,21 +18,10 @@
 """
 
 
-from soc.logic import program as program_logic
-
-from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.timeline import GSoCTimeline
-
-
-def getMostRecentProgram():
+def getMostRecentProgram(data):
   """Returns the most recent program.
 
-  Args:
-    program_model: The model class that represents the program entity
-    timeline_model: The model class that represents the program timeline entity
-
   Returns:
-    The program entity for the most recent program
+    The program link_id for the most recent gci program.
   """
-
-  return program_logic.getMostRecentProgram(GSoCProgram, GSoCTimeline)
+  return data.site.latest_gsoc
