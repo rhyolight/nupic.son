@@ -256,8 +256,6 @@ class DashboardPage(RequestHandler):
     """
     components = []
 
-    components.append(AllStudentsList(self.request, self.data))
-
     return components
 
   def _getStudentComponents(self):
