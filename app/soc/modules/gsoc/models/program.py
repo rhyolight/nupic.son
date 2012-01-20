@@ -50,7 +50,7 @@ class GSoCProgram(soc.models.program.Program):
   #: Required field storing application limit of the program.
   apps_tasks_limit = db.IntegerProperty(required=True,
       verbose_name=ugettext('Application/Tasks Limit'))
-  apps_tasks_limit.example_text = ugettext(
+  apps_tasks_limit.help_text = ugettext(
       '<small><i>e.g.</i></small> '
       '<tt><b>20</b> is the student applications limit for <i>Google Summer '
       'of Code</i>.</tt>')
@@ -70,7 +70,7 @@ class GSoCProgram(soc.models.program.Program):
   #: Required field storing slots limit of the program.
   slots = db.IntegerProperty(required=True,
       verbose_name=ugettext('Slots'))
-  slots.example_text = ugettext(
+  slots.help_text = ugettext(
       '<small><i>e.g.</i></small> '
       '<tt><b>500</b> might be an amount of slots for <i>Google Summer '
       'of Code</i>, which indicates how many students can be accepted.</tt>')

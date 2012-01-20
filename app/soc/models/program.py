@@ -58,7 +58,7 @@ class Program(soc.models.presence.Presence):
   #: Required field storing description of the group.
   description = db.TextProperty(required=True,
       verbose_name=ugettext('Description'))
-  description.example_text = ugettext(
+  description.help_text = ugettext(
       '<small><i>for example:</i></small><br>'
       '<tt><b>GSoC 2009</b> is the <i>Google Summer of Code</i>,'
       ' but in <u>2009</u>!</tt><br><br>'
@@ -143,7 +143,7 @@ class Program(soc.models.presence.Presence):
   status = db.StringProperty(required=True, default='invisible',
       verbose_name=ugettext('Program Status'),
       choices=['invisible', 'visible', 'invalid'])
-  status.example_text = ugettext(
+  status.help_text = ugettext(
       '<tt>Invisible: Program Stealth-Mode Visible to Hosts and Devs only.<br/>'
       'Visible: Visible to everyone.<br/>'
       'Inactive: Not visible in sidebar, not editable.<br/>'
