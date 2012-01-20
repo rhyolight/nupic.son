@@ -78,7 +78,6 @@ def updateScore(task):
 
     # create a new GCIStore entity if one does not exist yet
     if not score:
-      logging.info("score entity is being created")
       score = GCIScore(parent=student, program=program)
 
     # check if the task has been included in the score
@@ -86,10 +85,7 @@ def updateScore(task):
       score.points += POINTS[task.difficulty_level]
       score.tasks.append(task_key)
 
-    # TODO(dhans): optimize it; sometimes, put may not be needed
-    logging.info("score put")
     score.put()
-    logging.info("score put returned")
 
     query = GCIStudentInfo.all().ancestor(student)
     student_info = query.get()
