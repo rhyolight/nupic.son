@@ -122,16 +122,16 @@ class StudentsList(Template):
     addAddressColumns(list_config)
 
     list_config.addColumn('school_name', 'School name',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_name), 
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_name),
         hidden=True)
     list_config.addColumn('school_country', 'School Country',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_country), 
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_country),
         hidden=True)
     list_config.addColumn('school_type', 'School Type',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_type), 
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_type),
         hidden=True)
     list_config.addColumn('major', 'Major',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.major), 
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.major),
         hidden=True)
     list_config.addColumn('degree', 'Degree',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.degree), 
@@ -140,7 +140,7 @@ class StudentsList(Template):
         (lambda e, sp, *args: sp[e.parent_key()].student_info.grade),
         hidden=True)
     list_config.addColumn('expected_graduation', 'Expected Graduation',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.expected_graduation), 
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.expected_graduation),
         hidden=True)
 
     list_config.addSimpleColumn('points', 'Points')
