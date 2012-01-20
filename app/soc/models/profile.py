@@ -514,6 +514,10 @@ class Profile(soc.models.linkable.Linkable):
   student_info = db.ReferenceProperty(required=False, default=None,
       reference_class=StudentInfo)
 
+  created_on = db.DateTimeProperty(auto_now_add=True)
+
+  modified_on = db.DateTimeProperty(auto_now=True)
+
   def _fix_name(self, commit=True):
     """Retrieves the name property from the parent user.
     """
