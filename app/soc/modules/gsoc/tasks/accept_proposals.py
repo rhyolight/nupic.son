@@ -225,8 +225,7 @@ class ProposalAcceptanceTask(object):
       'org_entity': org_entity,
       }
 
-    messages = program_logic.queryProgramMessagesForProgram(
-        program_entity).get()
+    messages = program_entity.getProgramMessages()
     template_string = messages.accepted_students_msg
 
     return mail_dispatcher.getSendMailFromTemplateStringTxn(
@@ -254,8 +253,7 @@ class ProposalAcceptanceTask(object):
       'org_entity': org_entity,
       }
 
-    messages = program_logic.queryProgramMessagesForProgram(
-        program_entity).get()
+    messages = program_entity.getProgramMessages()
     template_string = messages.rejected_students_msg
 
     return mail_dispatcher.getSendMailFromTemplateStringTxn(
