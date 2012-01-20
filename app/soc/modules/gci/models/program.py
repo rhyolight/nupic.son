@@ -25,9 +25,17 @@ from django.utils.translation import ugettext
 import soc.models.program
 
 
+
+class GCIProgramMessages(soc.models.program.ProgramMessages):
+  """The GCIProgramMessages model.
+  """
+
+
 class GCIProgram(soc.models.program.Program):
   """GCI Program model extends the basic Program model.
   """
+
+  _messages_model = GCIProgramMessages
 
   homepage_url_name = "gci_homepage"
 
@@ -47,8 +55,3 @@ class GCIProgram(soc.models.program.Program):
   task_types.group = ugettext('Task Types')
   task_types.help_text = ugettext(
       'List all the types a task can be in.')
-
-
-class GCIProgramMessages(soc.models.program.ProgramMessages):
-  """The GCIProgramMessages model.
-  """
