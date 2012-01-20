@@ -92,8 +92,8 @@ class Program(soc.models.presence.Presence):
   #: Required 1:1 relationship indicating the Program the Timeline
   #: belongs to.
   timeline = db.ReferenceProperty(reference_class=soc.models.timeline.Timeline,
-                                 required=True, collection_name="program",
-                                 verbose_name=ugettext('Timeline'))
+                                  required=True, collection_name="program",
+                                  verbose_name=ugettext('Timeline'))
 
   #: Document reference property used for the Org Admin Agreement
   org_admin_agreement = db.ReferenceProperty(
