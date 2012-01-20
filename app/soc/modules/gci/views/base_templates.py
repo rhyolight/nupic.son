@@ -83,20 +83,25 @@ class Header(Template):
     # Need this import to make sponsor visible for sponsor link_id
     from soc.models.sponsor import Sponsor
 
-    sponsor, program = getMostRecentProgram(self.data).split('/')
-    gsoc_kwargs = {
-        'sponsor': sponsor,
-        'program': program,
-        }
+    gsoc_link = ''
+    key_name = getMostRecentProgram(self.data)
+
+    if key_name:
+      sponsor, program = key_name.split('/')
+      gsoc_kwargs = {
+          'sponsor': sponsor,
+          'program': program,
+      }
+      # We have to use reverse method instead of the redirect helper
+      # because we have to get the URL for a program of the other module
+      # that is not part of the request data. So we cannot directly use
+      # the redirect helper, since a module's redirect helper doesn't
+      # resolve to the correct module URL prefix.
+      gsoc_link = reverse('gsoc_homepage', kwargs=gsoc_kwargs)
 
     return {
         'home_link': self.data.redirect.homepage().url(),
-        # We have to use reverse method instead of the redirect helper
-        # because we have to get the URL for a program of the other module
-        # that is not part of the request data. So we cannot directly use
-        # the redirect helper, since a module's redirect helper doesn't
-        # resolve to the correct module URL prefix.
-        'gsoc_link': reverse('gsoc_homepage', kwargs=gsoc_kwargs),
+        'gsoc_link': gsoc_link,
     }
 
 
