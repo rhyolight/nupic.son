@@ -116,6 +116,8 @@ class StudentsList(Template):
         'birth_date', 'Birthdate',
         (lambda e, sp, *args: sp[e.parent_key()].birth_date.strftime(
         "%B %d, %Y")), hidden=True)
+    list_config.addColumn('gender', 'Gender',
+        (lambda e, sp, *args: sp[e.parent_key()].gender))
 
     addAddressColumns(list_config)
 
@@ -169,7 +171,46 @@ class StudentsList(Template):
     list_config.addColumn(
         'student_id_form', 'Student ID Form Submitted',
         (lambda e, sp, *args: formsSubmitted(e, sp, 'student_id')))
-   
+
+    list_config.addColumn('im_network', 'IM Network',
+        (lambda e, sp, *args: sp[e.parent_key()].im_network),
+        hidden=True)
+    list_config.addColumn('im_handle', 'IM Handle',
+        (lambda e, sp, *args: sp[e.parent_key()].im_handle),
+        hidden=True)
+    list_config.addColumn('home_page', 'Home Page',
+        (lambda e, sp, *args: sp[e.parent_key()].home_page),
+        hidden=True)
+    list_config.addColumn('blog', 'Blog',
+        (lambda e, sp, *args: sp[e.parent_key()].blog),
+        hidden=True)
+    list_config.addColumn('photo_url', 'Photo URL',
+        (lambda e, sp, *args: '<a href="%s">%s</a>' % (
+            sp[e.parent_key()].photo_url)),
+        hidden=True)
+
+    list_config.addColumn('latitude', 'Latitude',
+        (lambda e, sp, *args: sp[e.parent_key()].latitude),
+        hidden=True)
+    list_config.addColumn('longitude', 'Longitude',
+        (lambda e, sp, *args: sp[e.parent_key()].longitude),
+        hidden=True)
+    list_config.addColumn('publish_location', 'Publish Location',
+        (lambda e, sp, *args: 'Yes' if sp[
+            e.parent_key()].publish_location else 'No'),
+        hidden=True)
+
+    list_config.addColumn('program_knowledge', 'Program Knowledge',
+        (lambda e, sp, *args: sp[e.parent_key()].program_knowledge),
+        hidden=True)
+
+    list_config.addColumn('created_on', 'Profile Created On',
+        (lambda e, sp, *args: sp[e.parent_key()].created_on),
+        hidden=True)
+    list_config.addColumn('modified_on', 'Last Modified On',
+        (lambda e, sp, *args: sp[e.parent_key()].modified_on),
+        hidden=True)
+
     self._list_config = list_config
 
   def getListData(self):
