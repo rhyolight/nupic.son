@@ -223,6 +223,31 @@ def orgAppContext(data, record, new_status, apply_url):
   return context
 
 
+def getDefaultContext(request_data, emails, subject, extra_context=None):    
+  """Returns a dictionary with the default context for the emails that    
+  are sent in this module.    
+  """    
+  default_context  = {}    
+  default_context['sender_name'] = 'The %s Team' % (    
+  request_data.site.site_name)    
+  default_context['program_name'] = request_data.program.name    
+  default_context['subject'] = subject    
+
+  sender_name, sender = mail_dispatcher.getDefaultMailSender()    
+  default_context['sender_name'] = sender_name    
+  default_context['sender'] = sender    
+      
+  if len(emails) == 1:    
+    default_context['to'] = emails[0]    
+  else:    
+    default_context['bcc'] = emails    
+
+  if extra_context:    
+    default_context.update(extra_context)    
+
+  return default_context  
+
+
 def getContext(data, receivers, message_properties, subject, template):
   """Sends out a notification to the specified user.
 
