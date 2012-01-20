@@ -96,8 +96,6 @@ class GSoCOrganization(soc.models.organization.Organization):
   phone.help_text = ugettext(
       'include complete international calling number with country code, '
       'use numbers only.')
-  phone.example_text = ugettext(
-      "e.g. 1650253000 for Google's Corp HQ number in the United States")
   phone.group = ugettext("2. Contact Info (Private)")
 
   #====================================================================

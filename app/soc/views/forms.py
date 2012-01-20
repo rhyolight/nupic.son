@@ -362,7 +362,6 @@ class ModelForm(djangoforms.ModelForm):
     renames = {
         'verbose_name': 'label',
         'help_text': 'help_text',
-        'example_text': 'example_text',
         'group': 'group',
         }
 

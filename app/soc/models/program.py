@@ -35,16 +35,12 @@ class Program(soc.models.presence.Presence):
   name = db.StringProperty(required=True,
       verbose_name=ugettext('Name'))
   name.help_text = ugettext('Complete, formal name of the program.')
-  name.example_text = ugettext(
-      '<small><i>e.g.</i></small> <tt>Google Summer of Code 2009</tt>')
 
   #: Required field storing short name of the group.
   #: It can be used for displaying group as sidebar menu item.
   short_name = db.StringProperty(required=True,
       verbose_name=ugettext('Short name'))
   short_name.help_text = ugettext('Short name used for sidebar menu')
-  short_name.example_text = ugettext(
-      '<small><i>e.g.</i></small> <tt>GSoC 2009</tt>')
 
   #: Optional field used to relate it to other programs
   #: For example, GSoC would be a group label for GSoC2008/GSoC2009
@@ -52,8 +48,6 @@ class Program(soc.models.presence.Presence):
       verbose_name=ugettext('Group label'))
   group_label.help_text = ugettext(
       'Optional name used to relate this program to others.')
-  group_label.example_text = ugettext(
-      '<small><i>e.g.</i></small> <tt>GSoC</tt>')
 
   #: Required field storing description of the group.
   description = db.TextProperty(required=True,

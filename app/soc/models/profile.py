@@ -218,7 +218,6 @@ class Profile(soc.models.linkable.Linkable):
       ' displayed, as given by the Marker below, on any map.'
       ' For instance on the map linking Students to Mentors or'
       ' by showing your location on your public profile page in the system.')
-  publish_location.example_text = ugettext('You can set your location below')
   publish_location.group = ugettext("2. Location Info")
 
   #: Required field used as the contact mechanism for the program
@@ -293,16 +292,12 @@ class Profile(soc.models.linkable.Linkable):
   phone.help_text = ugettext(
       'include complete international calling number with country code, '
       'use numbers only')
-  phone.example_text = ugettext(
-      "e.g. 1650253000 for Google's Corp HQ number in the United States")
   phone.group = ugettext("2. Contact Info (Private)")
 
   #: Optional field containing a separate recipient name; kept
   #: private. Recipient name can only be ASCII, not UTF-8 text
   ship_name = db.StringProperty(
       verbose_name=ugettext('Full Recipient Name'))
-  ship_name.example_text = ugettext(
-      'Make sure to complete all fields if differs from contact address')
   ship_name.help_text = ugettext(
       'Fill in the name of the person who should be receiving your packages. '
       'Fill in only if you want your shipping address to differ from your '
@@ -393,8 +388,6 @@ class Profile(soc.models.linkable.Linkable):
   birth_date.help_text = ugettext(
       'format YYYY-MM-DD, required for determining program eligibility')
   birth_date.group = ugettext("4. Private Info")
-  birth_date.example_text = ugettext(
-      'e.g. 1999-12-31 or 12/31/1999')
 
   #: Optional field indicating choice of t-shirt fit; kept private.
   tshirt_style = db.StringProperty(

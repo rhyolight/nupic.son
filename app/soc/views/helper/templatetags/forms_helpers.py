@@ -280,19 +280,14 @@ def as_table_helper(context, form):
       if bf.errors:
         errors = True
 
-      example_text = ''
       group = '0. '
 
       if hasattr(field, 'group'):
         group = field.group
 
-      if hasattr(field, 'example_text'):
-        example_text = force_unicode(field.example_text)
-
       item = {
           'field': bf,
           'required': field.required,
-          'example_text': example_text,
           'group': group,
           }
 
@@ -349,7 +344,6 @@ def as_table_row_helper(context, item):
 
   field = item['field']
   required = item['required']
-  example_text = item['example_text']
 
   form = context['form']
   entity = context.get('entity', None)
@@ -420,7 +414,6 @@ def as_table_row_helper(context, item):
       'field': field,
       'field_id': field.auto_id,
       'required': required,
-      'example_text': example_text,
       'select_url': select_url if reference else None,
       'errors': errors,
       })

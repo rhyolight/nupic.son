@@ -35,9 +35,8 @@ class ProjectSurvey(Survey):
   #: the LINK_ID_REGEX.
   link_id = db.StringProperty(required=True,
       verbose_name=ugettext('Link ID'))
-  link_id.example_text = ugettext('Unique Name, see tooltip.')
   link_id.help_text = ugettext(
       'Link ID is used as part of various URL links throughout the site.'
       ' <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
-      ' alphanumeric characters, digits, and underscores only.'
+      ' Unique Name, alphanumeric characters, digits, and underscores only.'
       ' The regexp used to validate is "%s".') % LINK_ID_PATTERN_CORE
