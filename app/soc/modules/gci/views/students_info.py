@@ -18,18 +18,23 @@
 
 from google.appengine.ext import db
 
+from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import lists
 from soc.views.template import Template
 from soc.views.helper import url_patterns
+from soc.views.helper.url import urlize
 
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
+
+
+DATE_FORMAT = 'd-m-Y'
 
 
 def addAddressColumns(list_config):
@@ -114,8 +119,9 @@ class StudentsList(Template):
         hidden=True)
     list_config.addColumn(
         'birth_date', 'Birthdate',
-        (lambda e, sp, *args: sp[e.parent_key()].birth_date.strftime(
-        "%B %d, %Y")), hidden=True)
+        (lambda e, sp, *args: format(
+            sp[e.parent_key()].birth_date, DATE_FORMAT)),
+        hidden=True)
     list_config.addColumn('gender', 'Gender',
         (lambda e, sp, *args: sp[e.parent_key()].gender))
 
@@ -185,8 +191,7 @@ class StudentsList(Template):
         (lambda e, sp, *args: sp[e.parent_key()].blog),
         hidden=True)
     list_config.addColumn('photo_url', 'Photo URL',
-        (lambda e, sp, *args: '<a href="%s">%s</a>' % (
-            sp[e.parent_key()].photo_url)),
+        (lambda e, sp, *args: urlize(sp[e.parent_key()].photo_url)),
         hidden=True)
 
     list_config.addColumn('latitude', 'Latitude',
@@ -205,10 +210,12 @@ class StudentsList(Template):
         hidden=True)
 
     list_config.addColumn('created_on', 'Profile Created On',
-        (lambda e, sp, *args: sp[e.parent_key()].created_on),
+        (lambda e, sp, *args: format(
+            sp[e.parent_key()].created_on, DATE_FORMAT)),
         hidden=True)
     list_config.addColumn('modified_on', 'Last Modified On',
-        (lambda e, sp, *args: sp[e.parent_key()].modified_on),
+        (lambda e, sp, *args: format(
+            sp[e.parent_key()].modified_on, DATE_FORMAT)),
         hidden=True)
 
     self._list_config = list_config
