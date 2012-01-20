@@ -22,6 +22,7 @@ from django.template import loader
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
 
+from soc.logic import mail_dispatcher
 from soc.logic.accounts import denormalizeAccount
 from soc.tasks import mailer
 from soc.views.helper.access_checker import isSet
@@ -198,27 +199,153 @@ def orgAppContext(data, record, new_status, apply_url):
   Args:
     data: a RequestData object
   """
-  message_properties = {
+
+  context = {
       'url': apply_url + '?org_id=' + record.org_id,
-      'program_name': data.program.name,
       'org': record.name,
-  }
+      }
+
+  messages = data.program.getProgramMessages()
 
   if new_status == 'accepted':
-    subject = DEF_ACCEPTED_ORG % message_properties
-    template = DEF_ACCEPTED_ORG_TEMPLATE
+    subject = DEF_ACCEPTED_ORG % context
+    template_string = messages.accepted_orgs_msg
   else:
-    subject = DEF_REJECTED_ORG % message_properties
-    template = DEF_REJECTED_ORG_TEMPLATE
+    subject = DEF_REJECTED_ORG % context
+    template_string = messages.rejected_orgs_msg
+  context['template_string'] = template_string
 
   roles = [record.main_admin, record.backup_admin]
-
   emails = [denormalizeAccount(i.account).email() for i in roles if i]
 
-  return getContext(data, emails, message_properties, subject, template)
+  context = getDefaultContext(data, emails, subject, context)
+
+  return context
 
 
 # TODO(ljv): This method should be used by all notification senders(?)
+def newProposalContext(data, proposal, to_emails):
+  """Sends out a notification to alert the user of a new comment.
+
+  Args:
+    data: a RequestData object
+  """
+  data.redirect.review(proposal.key().id(), data.user.link_id)
+  proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+
+  proposal_name = proposal.title
+
+  message_properties = {
+      'proposal_notification_url': proposal_notification_url,
+      'proposer_name': data.profile.name(),
+      'proposal_name': proposal.title,
+      'proposal_content': proposal.content,
+      'org': proposal.org.name,
+      'profile_edit_link': edit_link,
+  }
+
+  # determine the subject
+  subject = DEF_NEW_PROPOSAL_SUBJECT % message_properties
+
+  template = DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE
+
+  return getContext(data, to_emails, message_properties, subject, template)
+
+
+def updatedProposalContext(data, proposal, to_emails):
+  """Sends out a notification to alert the user of an updated proposal.
+
+  Args:
+    data: a RequestData object
+  """
+  assert isSet(data.organization)
+
+  data.redirect.review(proposal.key().id(), data.user.link_id)
+  proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+
+  proposal_name = proposal.title
+
+  message_properties = {
+      'proposal_notification_url': proposal_notification_url,
+      'proposer_name': data.profile.name(),
+      'proposal_name': proposal.title,
+      'proposal_content': proposal.content,
+      'org': data.organization.name,
+      'profile_edit_link': edit_link,
+  }
+
+  # determine the subject
+  subject = DEF_UPDATED_PROPOSAL_SUBJECT % message_properties
+
+  template = DEF_UPDATED_PROPOSAL_NOTIFICATION_TEMPLATE
+
+  return getContext(data, to_emails, message_properties, subject, template)
+
+
+def newCommentContext(data, comment, to_emails):
+  """Sends out a notification to alert the user of a new comment.
+
+  Args:
+    data: a RequestData object
+  """
+  assert isSet(data.proposal)
+  assert isSet(data.proposer)
+
+  review_notification_url = data.redirect.comment(comment, full=True)
+  edit_link = data.redirect.program().urlOf('edit_gsoc_profile', full=True)
+
+  review_type = 'private' if comment.is_private else 'public'
+  reviewed_name = data.proposal.title
+
+  message_properties = {
+      'review_notification_url': review_notification_url,
+      'reviewer_name': comment.author.name(),
+      'reviewed_name': reviewed_name,
+      'review_content': comment.content,
+      'review_visibility': review_type,
+      'proposer_name': data.proposer.name(),
+      'org': data.proposal.org.name,
+      'profile_edit_link': edit_link,
+      }
+
+  # determine the subject
+  subject = DEF_NEW_REVIEW_SUBJECT % message_properties
+
+  template = DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE
+
+  if data.proposer.notify_public_comments and not comment.is_private:
+    to_emails.append(data.proposer.email)
+
+  return getContext(data, to_emails, message_properties, subject, template)
+
+
+def getDefaultContext(request_data, emails, subject, extra_context=None):
+  """Returns a dictionary with the default context for the emails that
+  are sent in this module.
+  """
+  default_context  = {}
+  default_context['sender_name'] = 'The %s Team' % (
+      request_data.site.site_name)
+  default_context['program_name'] = request_data.program.name
+  default_context['subject'] = subject
+
+  sender_name, sender = mail_dispatcher.getDefaultMailSender()
+  default_context['sender_name'] = sender_name
+  default_context['sender'] = sender
+
+  if len(emails) == 1:
+    default_context['to'] = emails[0]
+  else:
+    default_context['bcc'] = emails
+
+  if extra_context:
+    default_context.update(extra_context)
+
+  return default_context
+
+
 def getContext(data, receivers, message_properties, subject, template):
   """Sends out a notification to the specified user.
 

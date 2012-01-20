@@ -20,6 +20,7 @@
 
 from google.appengine.ext import db
 
+from soc.logic import mail_dispatcher
 from soc.logic.helper import notifications
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.models.org_app_record import OrgAppRecord
@@ -67,7 +68,9 @@ def setStatus(data, record, new_status, accept_url):
     record.put()
 
     if context:
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=record)
+      template_string = context['template_string']
+      sub_txn = mail_dispatcher.getSendMailFromTemplateStringTxn(
+          template_string, context, parent=record, transactional=True)
       sub_txn()
 
   db.run_in_transaction(txn)

@@ -285,11 +285,12 @@ class GCIOrgAppRecordsPageTest(MailTestCase, GCIDjangoTestCase):
     self.dataPostSingle(self.url, record, 'accepted')
     record = db.get(record.key())
     self.assertEqual('accepted', record.status)
-    url = 'gci/profile/organization/%s?org_id=org1' % self.gci.key().name()
-    self.assertEmailSent(n=1, html=url)
+    html = 'Organization accepted'
+    self.assertEmailSent(n=1, html=html)
 
     self.dataPostSingle(self.url, record, 'rejected')
     record = db.get(record.key())
     self.assertEqual('rejected', record.status)
-    self.assertEmailSent(n=1, html="unable")
+    html = 'Organization rejected'
+    self.assertEmailSent(n=1, html=html)
     self.assertEmailSent(n=2)
