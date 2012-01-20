@@ -31,6 +31,7 @@ from soc.models.document import Document
 from soc.logic import cleaning
 from soc.logic import site
 from soc.logic.exceptions import AccessViolation
+from soc.logic.exceptions import Error
 from soc.models.site import Site
 from soc.views.base import Response
 from soc.views.base import SiteRequestHandler
@@ -148,20 +149,23 @@ class SiteHomepage(SiteRequestHandler):
     """
     self.response = Response()
 
-    self.init(request, args, kwargs)
-
-    action = args[0] if args else ''
-
-    if action == 'login':
-      self.redirect.toUrl(users.create_login_url('/'))
-    elif action == 'logout':
-      self.redirect.toUrl(users.create_logout_url('/'))
-    else:
-      settings = site.singleton()
-      program = settings.active_program
-      if program:
-        self.redirect.program(program).to(program.homepage_url_name)
+    try:
+      self.init(request, args, kwargs)
+  
+      action = args[0] if args else ''
+  
+      if action == 'login':
+        self.redirect.toUrl(users.create_login_url('/'))
+      elif action == 'logout':
+        self.redirect.toUrl(users.create_logout_url('/'))
       else:
-        self.redirect.to('edit_site_settings')
+        settings = site.singleton()
+        program = settings.active_program
+        if program:
+          self.redirect.program(program).to(program.homepage_url_name)
+        else:
+          self.redirect.to('edit_site_settings')
+    except Error, e:
+      self.error(e.status, message=e.args[0])
 
     return self.response
