@@ -50,15 +50,31 @@ limitations under the License.
       .wait(
         // Post jQuery loading activities.
         function () {
-          /* If there are forms, make all the submit buttons in the page
-             disabled if the form is going to be submitted to avoid accidental
+          /* If there are forms, make all the submit buttons in the page appear
+             disabled and prevent them to be submitted again to avoid accidental
              double clicking. See Issue 980. */
           jQuery(function() {
-            jQuery("form").submit(function () {
-              jQuery(this)
-                .find(":submit")
-                .attr("disabled", "disabled")
-                .css("color", "grey");
+            /* Delegate the function to document so it's likely to be the last event
+               in the queue because of event bubbling. */
+            jQuery(document).delegate("form", "submit", function (e) {
+              var form = jQuery(this);
+              if (form.hasClass("form_disabled")) {
+                e.preventDefault();
+                return false;
+              }
+              else {
+                form
+                  .addClass("form_disabled")
+                  .find(":submit")
+                    .addClass("disabled");
+              }
+              // Reactivate the forms and their buttons after 3 secs as a fallback.
+              setTimeout(function () {
+                form
+                  .removeClass("form_disabled")
+                  .find(":submit")
+                    .removeClass("disabled");
+              }, 3000);
             });
           });
         }
