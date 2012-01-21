@@ -24,3 +24,6 @@ img.alignleft {
   background: #efac4c;
   color: #fff;
 }
+.disabled {
+  color: grey !important;
+}
