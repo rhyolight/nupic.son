@@ -18,7 +18,7 @@
         {% endif %}
       {% endif %}
     {% endif %}
-    <form action="?button" method="post">
+   <form action="?button" id="task_form" method="post">
       {% if button_unpublish %}<input type="submit" class="task-btn task-btn-publish" name="button_unpublish" value="Unpublish">
       {% else %}{% if button_delete %}<div class="task-btn task-tbn-publish"></div>{% endif %}
       {% endif %}

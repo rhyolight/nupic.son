@@ -25,6 +25,10 @@ limitations under the License.
     {% endif %}
   </div>
 
+<div id="dialog-confirm" title="Unpublish Confirmation?">
+  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>This task will be unpublished and you cannot publish them back manually. Are you sure you want to unpublish?</p>
+</div>
+
 {% endblock page_content %}
 
 {% block synchronous_scripts %}
@@ -38,6 +42,7 @@ limitations under the License.
   [
     dep.melange.clock,
     dep.melange.uploadform,
+    dep.jqueryui.dialog,
     null,
     function () {
       {% if comments %}
@@ -59,23 +64,55 @@ limitations under the License.
         });
 
         jQuery(".task-btn-extended-deadline").click(function() {
-            var test = $(this).val();
             jQuery("#deadline-extend").toggle();
         });
 
         jQuery("#deadline-extend-close").click(function() {
-            var test = $(this).val();
             jQuery("#deadline-extend").toggle();
         });
 
         /* Fancy dynamic remaining time displaying clock */
-        melange.clock.loadClock({{ complete_percentage }});
+        //melange.clock.loadClock({{ complete_percentage }});
 
         var form_name = "#file-form";
         jQuery(form_name).submit(function() {
           var url = melange.getUploadUrl();
           jQuery(form_name).get(0).setAttribute('action', url);
           return true;
+        });
+
+        jQuery('input[name="button_unpublish"]').click(function(event) {
+          jQuery('#task_form').data('unpublish_button', true);
+        });
+
+        jQuery('#task_form').submit(function(event) {
+          var unpublish_clicked = !!jQuery('#task_form').data('unpublish_button');
+          var unpublish_allowed = !!jQuery('#task_form').data('unpublish_allow');
+          if (unpublish_clicked && unpublish_allowed) {
+            jQuery('#task_form').data('unpublish_allow', false);
+            jQuery('#task_form').data('unpublish_button', false);
+            return true;
+          }
+          if (unpublish_clicked) {
+            jQuery('#task_form').data('unpublish_button', false);
+            event.preventDefault();
+            event.stopPropagation();
+            $("#dialog-confirm").dialog({
+              resizable: false,
+              height:140,
+              modal: true,
+              buttons: {
+                "Unpublish": function() {
+                  $(this).dialog("close");
+                  jQuery('#task_form').data('unpublish_allow', true);
+                  jQuery('input[name="button_unpublish"]').click();
+                },
+                Cancel: function() {
+                  $(this).dialog("close");
+                }
+              }
+            });
+          }
         });
       });
     }
