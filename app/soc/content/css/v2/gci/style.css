@@ -2563,4 +2563,7 @@ span.current-avatar-text {
 .altrow .task-single {
   background-color: #EBEBEB;
 }
+.disabled {
+  color: grey !important;
+}
 /* @end */
