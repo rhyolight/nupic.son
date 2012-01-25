@@ -1083,6 +1083,8 @@ class AccessChecker(BaseAccessChecker):
     if not self.data.document:
       raise NotFound(DEF_NO_DOCUMENT)
 
+    self.isProgramVisible()
+
     if self.data.document.read_access == 'public':
       return
 
