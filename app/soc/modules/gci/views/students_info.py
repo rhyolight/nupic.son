@@ -104,6 +104,11 @@ class StudentsList(Template):
     self.idx = 1
 
     list_config = lists.ListConfiguration()
+
+    list_config.setRowAction(
+        lambda e, sp, *args: data.redirect.profile(
+            sp[e.parent_key()].link_id).urlOf(url_names.GCI_STUDENT_TASKS))
+
     list_config.addColumn(
         'name', 'Name', lambda e, sp, *args: sp[e.parent_key()].name())
     list_config.addColumn(
