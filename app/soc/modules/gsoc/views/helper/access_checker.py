@@ -61,6 +61,12 @@ DEF_NO_PROJECT = ugettext('Requested project does not exist.')
 DEF_NO_RECORD_FOUND = ugettext(
     'The Record with the specified key was not found.')
 
+DEF_NO_ORG_ADMIN_PROFILE = ugettext(
+    'You must have an organization administrator profile to apply to be an '
+    'an organization. If you want to register as an organization '
+    'administrator for %s please <a href="%s">click here</a>, register and '
+    'then come back to this page.')
+
 DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU = ugettext(
     'This evaluation does not correspond to the project you are mentor for, '
     'and hence you cannot access it.')
@@ -365,6 +371,30 @@ class AccessChecker(access_checker.AccessChecker):
       if si.number_of_projects > 0:
         return
     raise AccessViolation(DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM)
-  
+
+  def canTakeOrgApp(self):
+    """A user can take the GSoC org app if he has org admin profile in the
+    program.
+    """
+    self.isLoggedIn()
+
+    program = self.data.program
+    r = self.data.redirect.createProfile('org_admin')
+    msg = DEF_NO_ORG_ADMIN_PROFILE % (
+          program.short_name, r.urlOf('create_gsoc_profile'))
+
+    if not self.data.user:
+      raise AccessViolation(msg)
+
+    q = GSoCProfile.all()
+    q.ancestor(self.data.user)
+    q.filter('scope', self.data.program)
+    q.filter('is_student', False)
+    q.filter('status', 'active')
+    gsoc_profile = q.get()
+    if not gsoc_profile:
+      raise AccessViolation(msg)
+
+
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass
