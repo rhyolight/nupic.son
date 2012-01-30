@@ -379,7 +379,30 @@ class ManageOrganizationsDashboard(Dashboard):
                 'Projects by students'),
             'title': 'Projects',
             'link': r.urlOf('gsoc_projects_orgs')
-        }
+        },
+        {
+            'name': 'edit_org_app',
+            'description': ugettext(
+                'Create or edit organization application'),
+            'title': 'Edit organization application',
+            'link': r.urlOf('gsoc_edit_org_app')
+        },
+        {
+            'name': 'org_app_records',
+            'description': ugettext(
+                'List of submitted organization application'),
+            'title': 'Organization application records',
+            'link': r.urlOf('gsoc_list_org_app_records')
+        },
+        {
+            'name': 'accepted_orgs',
+            'description': ugettext(
+                'List of accepted organizations'),
+            'title': 'Accepted Organizations',
+            # TODO: Enable after implemented
+            # 'link': r.urlOf('gsoc_admin_accepted_orgs')
+            'link': '',
+        },
     ]
 
     super(ManageOrganizationsDashboard, self).__init__(request, data, subpages)
