@@ -282,6 +282,10 @@ class DashboardPage(RequestHandler):
     """
     components = []
 
+    component = self._getMyOrgApplicationsComponent()
+    if component:
+      components.append(component)
+
     evals = dictForSurveyModel(GradingProjectSurvey, self.data.program,
                                ['midterm', 'final'])
 
@@ -322,19 +326,34 @@ class DashboardPage(RequestHandler):
     """
     components = []
 
-    #TODO(Madhu): Use the right query to fetch the required org app survey.
-    #org_app_survey = org_app_logic.getForProgram(self.data.program)
-
-    #fields = {'survey': org_app_survey}
-    #org_app_record = org_app_logic.getRecordLogic().getForFields(fields,
-    #                                                             unique=True)
-
-    #if org_app_record:
-      # add a component showing the organization application of the user
-    #  components.append(MyOrgApplicationsComponent(self.request, self.data,
-    #                                               org_app_survey))
+    component = self._getMyOrgApplicationsComponent()
+    if component:
+      components.append(component)
 
     return components
+
+  def _getMyOrgApplicationsComponent(self):
+    """Returns MyOrgApplicationsComponent iff this user is main_admin or
+    backup_admin in an application.
+    """
+    survey = org_app_logic.getForProgram(self.data.program)
+
+    # Test if this user is main admin or backup admin
+    q = OrgAppRecord.all()
+    q.filter('survey', survey)
+    q.filter('main_admin', self.data.user)
+
+    record = q.get()
+
+    q = OrgAppRecord.all()
+    q.filter('survey', survey)
+    q.filter('backup_admin', self.data.user)
+
+    if record or q.get():
+      # add a component showing the organization application of the user
+      return MyOrgApplicationsComponent(self.request, self.data, survey)
+
+    return None
 
 
 class MyOrgApplicationsComponent(Component):
