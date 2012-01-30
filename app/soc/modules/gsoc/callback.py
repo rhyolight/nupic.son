@@ -43,6 +43,7 @@ class Callback(object):
     from soc.modules.gsoc.views import invite
     #from soc.modules.gsoc.views import org_app
     from soc.modules.gsoc.views import mentor_evaluation
+    from soc.modules.gsoc.views import org_app
     from soc.modules.gsoc.views import org_admin_dashboard
     from soc.modules.gsoc.views import org_home
     from soc.modules.gsoc.views import org_profile
@@ -89,7 +90,11 @@ class Callback(object):
     self.views.append(mentor_evaluation.GSoCMentorEvaluationRecordsList())
     self.views.append(mentor_evaluation.GSoCMentorEvaluationShowPage())
     self.views.append(mentor_evaluation.GSoCMentorEvaluationTakePage())
-    #self.views.append(org_app.OrgApp())
+    self.views.append(org_app.GSoCOrgAppEditPage())
+    self.views.append(org_app.GSoCOrgAppPreviewPage())
+    self.views.append(org_app.GSoCOrgAppRecordsList())
+    self.views.append(org_app.GSoCOrgAppShowPage())
+    self.views.append(org_app.GSoCOrgAppTakePage())
     self.views.append(org_admin_dashboard.Dashboard())
     self.views.append(org_home.OrgHome())
     self.views.append(org_profile.OrgProfilePage())
