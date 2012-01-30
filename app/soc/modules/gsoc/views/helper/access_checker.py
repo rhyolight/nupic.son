@@ -361,7 +361,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     raise AccessViolation(
         DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT % self.data.program.name)
-    
+
   def canStudentDownloadForms(self):
     """Checks if the user can download the forms.
     """
