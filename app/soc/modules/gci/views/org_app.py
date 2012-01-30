@@ -29,7 +29,7 @@ from soc.views import org_app
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
-from soc.modules.gci.logic import org_app as org_app_logic
+from soc.logic import org_app as org_app_logic
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url

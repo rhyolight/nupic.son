@@ -27,7 +27,7 @@ from google.appengine.ext.mapreduce import operation
 from soc.models.site import Site
 from soc.models.org_app_record import OrgAppRecord
 
-from soc.modules.gci.logic import org_app as org_app_logic
+from soc.logic import org_app as org_app_logic
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.views.helper.request_data import RequestData
 from soc.modules.gci.views.helper.request_data import RedirectHelper

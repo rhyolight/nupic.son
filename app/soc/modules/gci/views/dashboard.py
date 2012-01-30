@@ -31,7 +31,7 @@ from soc.views.dashboard import Dashboard
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
-from soc.modules.gci.logic import org_app as org_app_logic
+from soc.logic import org_app as org_app_logic
 from soc.modules.gci.logic import ranking as scores_logic
 from soc.modules.gci.logic.task import queryAllTasksClosedByStudent
 from soc.modules.gci.models.request import GCIRequest
