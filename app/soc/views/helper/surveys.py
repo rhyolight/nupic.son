@@ -97,7 +97,7 @@ class SurveyField(object):
     for choice in self.getValues():
       value = urllib.unquote(choice.get('value'))
       self.choices.append((value, value))
-      if choice['checked']:
+      if choice.get('checked', False):
         self.checked.append(value)
 
     return self.choices
