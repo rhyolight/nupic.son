@@ -27,6 +27,7 @@ from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
+from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.models.org_app_record import OrgAppRecord
@@ -340,20 +341,41 @@ class MyOrgApplicationsComponent(Component):
   """Component for listing the Organization Applications of the current user.
   """
 
-  def __init__(self, request, data, org_app_survey):
+  IDX = 0
+
+  def __init__(self, request, data, survey):
     """Initializes the component.
 
     Args:
       request: The HTTPRequest object
       data: The RequestData object
-      org_app_survey: the OrgApplicationSurvey entity
+      survey: the OrgApplicationSurvey entity
     """
+    self.request = request
+    self.data = data
     # passed in so we don't have to do double queries
-    self.org_app_survey = org_app_survey
+    self.survey = survey
 
     list_config = lists.ListConfiguration()
-    list_config.addSimpleColumn('name', 'Organization Name')
-    list_config.setDefaultSort('name')
+
+    list_config.addSimpleColumn('name', 'Name')
+    list_config.addSimpleColumn('org_id', 'Organization ID')
+    list_config.addColumn(
+        'created', 'Created On',
+        lambda ent, *args: format(ent.created, DATETIME_FORMAT))
+    list_config.addColumn(
+        'modified', 'Last Modified On',
+        lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
+
+    if self.data.timeline.surveyPeriod(survey):
+      url_name = 'gsoc_retake_org_app'
+    else:
+      url_name = 'gsoc_show_org_app'
+
+    list_config.setRowAction(
+        lambda e, *args: data.redirect.id(e.key().id()).
+            urlOf(url_name))
+
     self._list_config = list_config
 
     super(MyOrgApplicationsComponent, self).__init__(request, data)
@@ -361,16 +383,16 @@ class MyOrgApplicationsComponent(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return 'v2/modules/gsoc/dashboard/list_component.html'
 
   def context(self):
     """Returns the context of this component.
     """
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=0, preload_list=False)
+        self.data, self._list_config, idx=self.IDX, preload_list=False)
 
     return {
-        'name': 'org_applications',
+        'name': 'org_app',
         'title': 'My organization applications',
         'lists': [list],
         'description': ugettext('My organization applications'),
@@ -382,18 +404,28 @@ class MyOrgApplicationsComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 0:
+    if lists.getListIndex(self.request) != self.IDX:
       return None
 
     q = OrgAppRecord.all()
-    q.filter('survey', self.org_app_survey)
+    q.filter('survey', self.survey)
     q.filter('main_admin', self.data.user)
 
-    starter = lists.keyStarter
+    records = q.fetch(1000)
 
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter)
-    return response_builder.build()
+    q = OrgAppRecord.all()
+    q.filter('survey', self.survey)
+    q.filter('backup_admin', self.data.user)
+
+    records.extend(q.fetch(1000))
+
+    response = lists.ListContentResponse(self.request, self._list_config)
+
+    for record in records:
+      response.addRow(record)
+    response.next = 'done'
+
+    return response
 
 
 class MyProposalsComponent(Component):
