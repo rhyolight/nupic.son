@@ -388,6 +388,13 @@ class ManageOrganizationsDashboard(Dashboard):
             'link': r.urlOf('gsoc_edit_org_app')
         },
         {
+            'name': 'preview_org_app',
+            'description': ugettext(
+                'Preview of the organization application.'),
+            'title': 'Preview of the organization application',
+            'link': r.urlOf('gsoc_preview_org_app')
+        },
+        {
             'name': 'org_app_records',
             'description': ugettext(
                 'List of submitted organization application'),
