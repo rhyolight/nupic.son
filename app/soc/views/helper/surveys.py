@@ -69,7 +69,7 @@ class SurveyField(object):
   def isRequired(self):
     """Returns True if the field is a mandatory field on the form else False
     """
-    return self.meta_dict.get('required', True)
+    return self.meta_dict.get('required', False)
 
   def requireOtherField(self):
     """Returns True if field needs "Other" option to be rendered automatically.
