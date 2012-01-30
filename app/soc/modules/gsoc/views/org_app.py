@@ -192,7 +192,6 @@ class GSoCOrgAppTakePage(RequestHandler):
     self.mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(self.data.org_app)
 
-    # FIXME: There will never be organization in kwargs
     show_url = None
     if 'id' in self.kwargs:
       show_url = self.data.redirect.id().urlOf('gsoc_show_org_app')
