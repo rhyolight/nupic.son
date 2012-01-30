@@ -15,30 +15,30 @@ limitations under the License.
 
 {% block stylesheets %}
   {{ block.super }}
-  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gci/readonly.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/readonly.css" />
 {% endblock stylesheets %}
 
 {% block page_content %}
-<!-- begin top message block -->
-{{ top_msg.render }}
-<!-- end top message block -->
 
 {% if not record %}
   <div id="user-message" class="error">
     <strong>ALERT: </strong>No such organization application record exists.
-    {% if update_link %}
-      <a href="{{ update_link }}">To submit a new organization application click here.</a>
+    {% if create_link %}
+      <a href="{{ create_link }}">To submit a new organization application click here.</a>
     {% else %}
       {{ submission_msg }}
     {% endif %}
   </div>
 {% else %}
+  <div id="organization-name" class="block full home-block-1">
+    <h2 id="title-profile-show">ORGANIZATION APPLICATION RESPONSE.</h2>
+
     {% if update_link %}
       <div id="edit-page" class="org-page-link">
         <a href="{{ update_link }}">Update</a>
       </div>
     {% endif %}
-
+  </div>
     <!-- begin profile block -->
     {{ record.render }}
   <!-- end profile block -->

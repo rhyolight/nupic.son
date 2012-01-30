@@ -348,6 +348,11 @@ class GSoCOrgAppShowPage(RequestHandler):
         }
 
     if record:
+      context['update_link'] = self.data.redirect.id().urlOf(
+          'gsoc_retake_org_app')
       context['record'] = OrgAppReadOnlyTemplate(record)
+    else:
+      context['create_link'] = self.data.redirect.program().urlOf(
+          'gsoc_take_org_app')
 
     return context
