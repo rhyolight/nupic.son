@@ -510,68 +510,68 @@
       $(this).children().each(function(){
         for(att in opts.attributes){
           var fieldDict = {};
-          fieldDict[opts.serialization_attributes[att]] = escape($(this).attr(opts.attributes[att]));
+          fieldDict[opts.serialization_attributes[att]] = escape($(this).prop(opts.attributes[att]));
 
           // append the form field values
           if(opts.attributes[att] == 'class'){
-            fieldDict.required = $('#'+$(this).attr('id')+' input.required').attr('checked');
+            fieldDict.required = $('#'+$(this).prop('id')+' input.required').prop('checked');
 
-            switch($(this).attr(opts.attributes[att])){
+            switch($(this).prop(opts.attributes[att])){
               case 'input_text':
-                fieldDict.label = escape($('#'+$(this).attr('id')+' input[type=text]').val());
+                fieldDict.label = escape($('#'+$(this).prop('id')+' input[type=text]').val());
                 break;
               case 'textarea':
-                fieldDict.label = escape($('#'+$(this).attr('id')+' input[type=text]').val());
+                fieldDict.label = escape($('#'+$(this).prop('id')+' input[type=text]').val());
                 break;
               case 'checkbox':
-                fieldDict.other = $('#'+$(this).attr('id')+' input.other').attr('checked');
+                fieldDict.other = $('#'+$(this).prop('id')+' input.other').prop('checked');
                 fieldDict.values = [];
-                $('#'+$(this).attr('id')+' input[type=text]').each(function(){
-                  
-                  if($(this).attr('name') == 'label'){
+                $('#'+$(this).prop('id')+' input[type=text]').each(function(){
+
+                  if($(this).prop('name') == 'label'){
                     fieldDict.label = escape($(this).val());
                   } else {
                     var valueDict = {};
                     valueDict.value = escape($(this).val());
-                    valueDict.checked = $(this).prev().attr('checked');
+                    valueDict.checked = $(this).prev().prop('checked');
                     fieldDict.values.push(valueDict);
                   }
                 });
                 break;
               case 'radio':
-                fieldDict.other = $('#'+$(this).attr('id')+' input.other').attr('checked');
+                fieldDict.other = $('#'+$(this).prop('id')+' input.other').prop('checked');
                 fieldDict.values = [];
-                $('#'+$(this).attr('id')+' input[type=text]').each(function(){
-                  if($(this).attr('name') == 'label'){
+                $('#'+$(this).prop('id')+' input[type=text]').each(function(){
+                  if($(this).prop('name') == 'label'){
                     fieldDict.label = escape($(this).val());
                   } else {
                     var valueDict = {};
                     valueDict.value = escape($(this).val());
-                    valueDict.checked = $(this).prev().attr('checked');
+                    valueDict.checked = $(this).prev().prop('checked');
                     fieldDict.values.push(valueDict);
                   }
                 });
                 break;
               case 'select':
-                fieldDict.other = $('#'+$(this).attr('id')+' input.other').attr('checked');
-                fieldDict.multiple = $('#'+$(this).attr('id')+' input[name=multiple]').attr('checked');
-                
-                $('#'+$(this).attr('id')+' input[type=text]').each(function(){
+                fieldDict.other = $('#'+$(this).prop('id')+' input.other').prop('checked');
+                fieldDict.multiple = $('#'+$(this).prop('id')+' input[name=multiple]').prop('checked');
+
+                $('#'+$(this).prop('id')+' input[type=text]').each(function(){
                   
-                  if($(this).attr('name') == 'label'){
+                  if($(this).prop('name') == 'label'){
                     fieldDict.label = escape($(this).val());
                   } else {
                     var valueDict = {};
                     valueDict.value = escape($(this).val());
-                    valueDict.checked = $(this).prev().attr('checked');
+                    valueDict.checked = $(this).prev().prop('checked');
                     fieldDict.values.push(valueDict);
                   }
                 });
               break;
             }
           }
-          fieldsDict[$(this).attr('id')] = fieldDict;
-          fieldsOrder.push($(this).attr('id'));
+          fieldsDict[$(this).prop('id')] = fieldDict;
+          fieldsOrder.push($(this).prop('id'));
         }
       });
     });
