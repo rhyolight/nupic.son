@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from django.forms.widgets import CheckboxSelectMultiple, RadioFieldRenderer
 
 """Module containing the boiler plate required to construct templates
 """
@@ -33,10 +34,12 @@ TEMPLATE_PATH = 'v2/modules/gsoc/_form.html'
 # The standard input fields should be available to all importing modules
 CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
+CheckboxSelectMultiple = forms.CheckboxSelectMultiple
 DateInput = forms.DateInput
 DateTimeInput = forms.DateTimeInput
 FileInput = forms.FileInput
 HiddenInput = forms.HiddenInput
+RadioFieldRenderer = forms.RadioFieldRenderer
 RadioSelect = forms.RadioSelect
 Select = forms.Select
 TextInput = forms.TextInput
