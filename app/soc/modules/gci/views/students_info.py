@@ -103,7 +103,9 @@ class StudentsList(Template):
     self.request = request
     self.idx = 1
 
-    list_config = lists.ListConfiguration()
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s" % (
+        ent.parent().key().id_or_name())), hidden=True)
 
     list_config.setRowAction(
         lambda e, sp, *args: data.redirect.profile(
