@@ -155,7 +155,7 @@ class GSoCOrgAppPreviewPage(RequestHandler):
 
   def checkAccess(self):
     self.check.isHost()
-    self.mutator.orgAppFromKwargs(raise_not_found=False)
+    self.mutator.orgAppFromKwargs(raise_not_found=True)
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/take.html'
