@@ -63,6 +63,16 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gsoc.models.grading_project_survey.GradingProjectSurvey
 
+- name: ConvertOrgAppSurveySchema
+  mapper:
+    input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_survey_schema.process
+    params:
+    - name: entity_kind
+      value: soc.models.org_app_survey.OrgAppSurvey
+    - name: program_model
+    - name: program_key
+
 - name: ConvertOrgAppSurvey
   mapper:
     input_reader: google.appengine.ext.mapreduce.input_readers.DatastoreInputReader

@@ -19,12 +19,36 @@ propery in Survey models.
 """
 
 
+from google.appengine.ext import db
+from google.appengine.ext.mapreduce import context
 from google.appengine.ext.mapreduce import operation
 
 from django.utils import simplejson as json
 
+# Following two imports for visibility of models
+from soc.modules.gsoc.models.program import GSoCProgram
+
+from soc.modules.gci.models.program import GCIProgram
+
 
 def process(survey):
+  ctx = context.get()
+  params = ctx.mapreduce_spec.mapper.params
+  program_model_str = params['program_model']
+  program_key_str = params['program_key']
+
+  program_key = db.Key.from_path(program_model_str, program_key_str)
+
+  # If there is no scope, then it is of new org app type, so no conversion
+  # is needed.
+  if not survey.scope:
+    return
+
+  # We will not convert the surveys for which the program (i.e. scope keys)
+  # don't match
+  if survey.scope.key() != program_key:
+    return
+
   survey_content = survey.survey_content
   schema = survey.schema
 
