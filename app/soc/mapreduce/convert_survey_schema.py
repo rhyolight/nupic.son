@@ -81,9 +81,11 @@ def process(survey):
         f_type = f.get('type')
         if f_type == 'pick_quant':
           new_f['field_type'] = 'radio'
+          new_f['other'] = False
           new_f['values'] = build_options(fk)
         elif f_type == 'pick_multi':
           new_f['field_type'] = 'checkbox'
+          new_f['other'] = False
           new_f['values'] = build_options(fk)
         elif f_type == 'long_answer':
           new_f['field_type'] = 'textarea'
@@ -106,6 +108,8 @@ def process(survey):
             new_f['tip'] = tip
 
       survey.schema = json.dumps([order, fields_dict])
+      survey.program = survey.scope
+      survey.created_by = survey.author
 
       yield operation.db.Put(survey)
       yield operation.counters.Increment("survey_updated")
