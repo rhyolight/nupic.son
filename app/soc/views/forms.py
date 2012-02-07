@@ -205,6 +205,26 @@ class TOSWidget(forms.CheckboxInput):
     return mark_safe(u'%s%s' % (text, checkbox))
 
 
+class ReadonlyWidget(object):
+  """Widget that renders text in read-only mode inside a form.
+  """
+
+  def __init__(self, text=None, attrs=None):
+    self.text = text
+    #super(ReadonlyWidget, self).__init__(attrs)
+
+  def render(self, name, value, attrs=None):
+    readonly_attrs = {
+        'class': 'tos'
+        }
+    text = mark_safe(
+        u'<div id="readonly-%s"><div %s>%s</div></div>' % (
+        name, forms.util.flatatt(readonly_attrs),
+        conditional_escape(mark_safe(force_unicode(self.text)))))
+
+    return text
+
+
 class ReferenceProperty(djangoforms.ReferenceProperty):
   # ReferenceProperty field allows setting to None.
 
