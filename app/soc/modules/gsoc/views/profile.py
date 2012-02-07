@@ -134,7 +134,12 @@ class CreateGSoCProfileForm(GSoCProfileForm):
   def __init__(self, tos_content, request_data=None, *args, **kwargs):
     super(CreateGSoCProfileForm, self).__init__(request_data, *args, **kwargs)
     self.tos_content = tos_content
-    self.fields['agreed_to_tos'].widget = forms.TOSWidget(tos_content)
+
+    # do not display the field with ToS, if there is nothing to show
+    if not tos_content:
+      self.fields.pop('agreed_to_tos')
+    else:
+      self.fields['agreed_to_tos'].widget = forms.TOSWidget(tos_content)
 
   def clean_agreed_to_tos(self):
     value = self.cleaned_data['agreed_to_tos']
