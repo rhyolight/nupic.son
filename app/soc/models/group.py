@@ -89,3 +89,9 @@ class Group(soc.models.presence.Presence):
   #: invalid: the group has been marked as removed
   status = db.StringProperty(required=True, default='active',
       choices=['new', 'active', 'invalid'])
+
+  #: Custom message from the organization which will be displayed to
+  #: the users, when they choose to apply to become org admin or mentor
+  role_request_message = db.TextProperty(required=False,
+      verbose_name=ugettext('Message for role requests.'))
+  role_request_message.group = ugettext('4. Organization Preferences')
