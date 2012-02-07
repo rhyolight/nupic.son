@@ -213,6 +213,7 @@ class GCIShowCreateStudentProfileForm(GCICreateProfileForm):
     exclude = SHOW_STUDENT_EXCLUDE
     widgets = GCICreateProfileForm.Meta.widgets
 
+
 class NotificationForm(gci_forms.GCIModelForm):
   """Django form for the notifications.
   """
