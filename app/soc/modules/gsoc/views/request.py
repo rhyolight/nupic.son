@@ -20,11 +20,14 @@
 
 from google.appengine.ext import db
 
+from django.utils.translation import ugettext
+
 from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import notifications
 from soc.logic import accounts
 from soc.models.user import User
 from soc.tasks import mailer
+from soc.views import forms
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import url_patterns
 
@@ -39,6 +42,19 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 class RequestForm(GSoCModelForm):
   """Django form for the request page.
   """
+
+  def __init__(self, custom_message, *args, **kwargs):
+    super(RequestForm, self).__init__(*args, **kwargs)
+
+    if custom_message:
+      self.fields['custom_message'] = forms.CharField()
+      self.fields['custom_message'].widget = forms.ReadonlyWidget(
+          custom_message)
+      self.fields['custom_message'].group = ugettext(
+          '1. Information from the organization')
+      self.fields['message'].group = ugettext(
+          '2. Your message to the organization')
+
   class Meta:
     model = GSoCRequest
     css_prefix = 'gsoc_request'
@@ -83,13 +99,15 @@ class RequestPage(RequestHandler):
   def context(self):
     """Handler for GSoC Request Page HTTP get request.
     """
-    request_form = RequestForm(self.data.POST or None)
+    request_form = RequestForm(
+        self.data.organization.role_request_message,
+        self.data.POST or None)
 
     return {
         'logged_in_msg': LoggedInMsg(self.data, apply_link=False),
         'page_name': 'Request to become a mentor',
         'program': self.data.program,
-        'invite_form': request_form
+        'invite_form': request_form,
     }
 
   def post(self):
