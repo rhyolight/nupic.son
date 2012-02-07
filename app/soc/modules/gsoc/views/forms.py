@@ -121,6 +121,8 @@ class GSoCBoundField(forms.BoundField):
       return self.renderHiddenInput()
     elif isinstance(widget, forms.FileInput):
       return self.renderFileInput()
+    elif isinstance(widget, forms.ReadonlyWidget):
+      return self.renderReadonlyWidget()
 
     return self.NOT_SUPPORTED_MSG_FMT % (
         widget.__class__.__name__)
@@ -243,6 +245,17 @@ class GSoCBoundField(forms.BoundField):
         self._render_is_required(),
         self._render_error(),
         self._render_note(),
+        ))
+
+  def renderReadonlyWidget(self):
+    attrs = {
+        'id': self.name + self.idSuffix(self),
+        'style': 'opacity: 100;',
+        }
+
+    return mark_safe(
+        '<label>%s</label>' % (
+        self.as_widget(attrs=attrs),
         ))
 
   def renderHiddenInput(self):
