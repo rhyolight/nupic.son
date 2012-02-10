@@ -42,7 +42,8 @@ class OrgAppRecord(SurveyRecord):
       verbose_name=ugettext('Organization ID'))
   org_id.help_text = ugettext(
       'Organization ID is used as part of various URL links throughout '
-      'the site.<a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
+      'the site. You may reuse the same id for different years of the '
+      'program. <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
       'alphanumeric characters, digits, and underscores only. '
       'The regexp used to validate is "%s".') % LINK_ID_PATTERN_CORE
 
