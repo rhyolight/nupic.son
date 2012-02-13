@@ -125,6 +125,10 @@ class Apply(Template):
 
       context['profile_link'] = r.urlOf('create_gsoc_profile')
 
+    if self.data.timeline.orgSignup():
+      context['org_apply_link'] = r.orgAppTake().urlOf('gsoc_take_org_app')
+      context['dashboard_link'] = r.dashboard().url()
+
     if ((self.data.timeline.studentSignup() or
         self.data.timeline.mentorSignup()) and self.data.profile):
       context['apply_link'] = accepted_orgs
