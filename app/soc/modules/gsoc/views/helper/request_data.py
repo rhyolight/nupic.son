@@ -335,14 +335,19 @@ class RedirectHelper(request_data.RedirectHelper):
     self.kwargs['role'] = role
     return self
 
-  def orgApp(self, survey=None):
+  def orgAppTake(self):
+    """Sets kwargs for an url_patterns.SURVEY redirect for org application.
+    """
+    self.program()
+    return self
+
+  def orgAppReTake(self, survey=None):
     """Sets kwargs for an url_patterns.SURVEY redirect for org application.
     """
     if not survey:
-      assert 'survey' in self._data.kwargs
-      survey = self._data.kwargs['survey']
-    self.organization()
-    self.kwargs['survey'] = survey
+      assert 'id' in self._data.kwargs
+      survey = self._data.kwargs['id']
+    return self.id(survey)
 
   def document(self, document):
     """Override this method to set GSoC specific _url_name.
