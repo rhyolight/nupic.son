@@ -2171,6 +2171,11 @@ body {
 		height: 39px;
 		width: 39px;
 	}
+	  .block-leaderboard-top-scores .leaderboard-top-color-block img {
+      background: #3366cc;
+      height: 39px;
+      width: 39px;
+    }
 		.block-leaderboard-top-scores .leaderboard-top-color-block.blue {
 			background: #3366cc;
 		}
@@ -2279,6 +2284,27 @@ body {
   padding: 10px;
 }
 /* @end */
+
+/* @group Winners block (only those classes that cannot be re-used */
+.block-leaderboard-top .block-leaderboard-top-title h1 .winners-title-left {
+      float: left;
+      position: absolute;
+      left: 80px;
+    }
+    .block-leaderboard-top .block-leaderboard-top-title h1 .winners-title-right {
+      float: right;
+      position: absolute;
+      left: 430px;
+    }
+    .block-leaderboard-top .block-leaderboard-top-title .winners-trophy {
+      background:url(../../../images/v2/gci/block-leaderboard-top-trophy.png) 0 0 no-repeat;
+      height: 160px;
+      width: 500px;
+      position: absolute;
+      left: 118px;
+      top: -57px;
+    }
+/* @end Winners block*/
 
 /* @group Forms */
 .block-form {
