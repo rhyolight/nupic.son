@@ -18,12 +18,10 @@
 
 from soc.logic.exceptions import AccessViolation
 
-from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
-from soc.modules.gci.logic import ranking as ranking_logic
 from soc.modules.gci.logic import task as task_logic
 
 from soc.modules.gci.models.score import GCIScore
@@ -33,14 +31,6 @@ from soc.modules.gci.views import common_templates
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
-
-
-class ProgramSelect(ProgramSelect):
-  """Program select template.
-  """
-
-  def templatePath(self):
-    return "v2/modules/gci/leaderboard/_program_select.html"
 
 
 class LeaderboardList(Template):
@@ -127,39 +117,6 @@ class AllStudentTasksList(TaskList):
     return task_logic.queryAllTasksClosedByStudent(self.data.url_profile)
 
 
-class YourScore(Template):
-  """Template that is used to show score of the current user, provided
-  he or she is a student.
-  """
-
-  def __init__(self, data):
-    self.data = data
-    self.score = None
-
-    if self.data.profile and self.data.profile.student_info:
-      self.score = ranking_logic.get(self.data.profile)
-
-  def context(self):
-    return {} if not self.score else {
-        'points': self.score.points,
-        'tasks': len(self.score.tasks),
-        'my_tasks_link': self.data.redirect.profile(
-            self.data.profile.link_id).urlOf(url_names.GCI_STUDENT_TASKS)
-        }
-
-  def render(self):
-    """This template should only render to a non-empty string, if the
-    current user is a student.
-    """
-    if not self.score:
-      return ''
-
-    return super(YourScore, self).render()
-
-  def templatePath(self):
-    return "v2/modules/gci/leaderboard/_your_score.html"
-
-
 class LeaderboardPage(RequestHandler):
   """View for the leaderboard page.
   """
@@ -190,8 +147,9 @@ class LeaderboardPage(RequestHandler):
         'leaderboard_list': LeaderboardList(self.request, self.data),
         'timeline': common_templates.Timeline(self.data),
         'complete_percentage': self.data.timeline.completePercentage(),
-        'your_score': YourScore(self.data),
-        'program_select': ProgramSelect(self.data, url_names.GCI_LEADERBOARD),
+        'your_score': common_templates.YourScore(self.data),
+        'program_select': common_templates.ProgramSelect(
+            self.data, url_names.GCI_LEADERBOARD),
     }
 
 

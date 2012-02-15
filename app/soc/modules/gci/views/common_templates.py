@@ -17,7 +17,12 @@
 """This module contains the templates which are used across the views."""
 
 
+
+from soc.views.base_templates import ProgramSelect
 from soc.views.template import Template
+
+from soc.modules.gci.logic import ranking as ranking_logic
+from soc.modules.gci.views.helper import url_names
 
 
 class Timeline(Template):
@@ -38,3 +43,44 @@ class Timeline(Template):
 
   def templatePath(self):
     return "v2/modules/gci/common_templates/_timeline.html"
+
+
+class YourScore(Template):
+  """Template that is used to show score of the current user, provided
+  he or she is a student.
+  """
+
+  def __init__(self, data):
+    self.data = data
+    self.score = None
+
+    if self.data.profile and self.data.profile.student_info:
+      self.score = ranking_logic.get(self.data.profile)
+
+  def context(self):
+    return {} if not self.score else {
+        'points': self.score.points,
+        'tasks': len(self.score.tasks),
+        'my_tasks_link': self.data.redirect.profile(
+            self.data.profile.link_id).urlOf(url_names.GCI_STUDENT_TASKS)
+        }
+
+  def render(self):
+    """This template should only render to a non-empty string, if the
+    current user is a student.
+    """
+    if not self.score:
+      return ''
+
+    return super(YourScore, self).render()
+
+  def templatePath(self):
+    return 'v2/modules/gci/common_templates/_your_score.html'
+
+
+class ProgramSelect(ProgramSelect):
+  """Program select template.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/common_templates/_program_select.html'
