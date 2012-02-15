@@ -50,3 +50,5 @@ CONSENT_FORM_GET_PARAM = 'consent_form'
 STUDENT_ID_FORM_GET_PARAM = 'student_id_form'
 
 GCI_STUDENTS_INFO = 'gci_students_info'
+
+GCI_WINNERS = 'gci_winners'
