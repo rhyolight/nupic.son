@@ -48,6 +48,15 @@ class GCIProgram(soc.models.program.Program):
   nr_simultaneous_tasks.help_text = ugettext(
       'Number of tasks students can work on simultaneously in the program.')
 
+  #: Required property containing the number of winners to be selected in
+  #: the program. Defaults to 10
+  nr_winners = db.IntegerProperty(
+      required=True, default=10,
+      verbose_name=ugettext('Number of winners'))
+  nr_simultaneous_tasks.group = ugettext('Contest Rules')
+  nr_simultaneous_tasks.help_text = ugettext(
+      'Number of winners to be selected at the end of the program.')
+
   #: A list of task types that a Task can belong to
   task_types = db.StringListProperty(
       required=True, default=['Any'],
