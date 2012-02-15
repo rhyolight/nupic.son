@@ -29,6 +29,9 @@ class GCIScore(db.Model):
   It is applicable to students in order to keep track on the points
   they earn by completing on the tasks. The corresponding GCIProfile
   model is a parent of an entity belonging to this model.
+
+  Parent:
+    soc.modules.gci.models.profile.GCIProfile (specifically student profiles).
   """
 
   #: Required reference to the program so we can query for all rankings
