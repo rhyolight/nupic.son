@@ -65,7 +65,7 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
     return GSoCProfileReadOnlyTemplate(profile)
 
 
-class ProfileAdminPage(RequestHandler):
+class GSoCProfileAdminPage(RequestHandler):
   """View to display the readonly profile page.
   """
 
