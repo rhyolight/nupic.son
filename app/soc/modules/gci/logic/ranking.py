@@ -19,13 +19,18 @@
 
 
 import logging
+import re
 
 from google.appengine.ext import db
+
+from django.utils.datastructures import SortedDict
 
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.student_ranking import GCIStudentRanking
 from soc.modules.gci.models.task import POINTS
+from soc.modules.gci.views import forms
+from soc.modules.gci.views.helper import url_names
 
 
 def getOrCreateForStudent(student):
@@ -193,3 +198,49 @@ def allScoresForProgramQuery(program):
     program: GCIProgram entity for which the query should filter the program 
   """
   return GCIScore.all().filter('program =', program)
+
+def winnersForProgram(data):
+  """Returns the winners for the program.
+
+  The number of winners chosen is configurable from the program edit page. The
+  return datastructure is a dictionary with profile keys of winners as keys
+  with values as dictionaries containing the name, number of task and the
+  points scored.
+
+  Args:
+    data: The RequestData object.
+  """
+  r = data.redirect
+  program = data.program
+
+  q = GCIScore.all()
+  q.filter('program', program)
+  q.filter('points >', 0)
+  q.order('-points')
+  scores = q.fetch(program.nr_winners)
+
+  profile_keys = [s.parent_key() for s in scores]
+  profiles = db.get(profile_keys)
+
+  winners = SortedDict()
+  for score in scores:
+    winners[score.parent_key()] = {
+        'score': score,
+        }
+
+  for profile in profiles:
+    winner = winners[profile.key()]
+    winner['profile'] = profile
+    winner['completed_tasks_link'] = r.profile(profile.link_id).urlOf(
+            url_names.GCI_STUDENT_TASKS)
+
+    if profile.avatar:
+      avatar_groups = re.findall(forms.RE_AVATAR_COLOR, profile.avatar)
+      # Being a bit pessimistic
+      if avatar_groups:
+        # We only want the first match, so pick group[0]
+        name, prefix = avatar_groups[0]
+        winner['avatar_name'] = '%s-%s.jpg' % (name, prefix)
+        winner['avatar_prefix'] = prefix
+
+  return winners
