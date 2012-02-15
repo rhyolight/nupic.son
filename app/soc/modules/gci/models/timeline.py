@@ -51,3 +51,8 @@ class GCITimeline(soc.models.timeline.Timeline):
       verbose_name=ugettext('Work Review Deadline date'))
   work_review_deadline.help_text = ugettext(
       'No more work can be reviewed by mentors after this date.')
+
+  winners_announced_deadline = db.DateTimeProperty(
+      verbose_name=ugettext('Winners Announcement date'))
+  winners_announced_deadline.help_text = ugettext(
+      'The date on which the list of winners become visible to public.')
