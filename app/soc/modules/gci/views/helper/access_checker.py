@@ -20,6 +20,7 @@ for checking access.
 
 
 from django.core.urlresolvers import reverse
+from django.utils import dateformat
 from django.utils.translation import ugettext
 
 from soc.logic import dicts
@@ -67,6 +68,12 @@ DEF_TASK_MAY_NOT_BE_IN_STATES = ugettext(
 
 DEF_ORG_APP_REJECTED = ugettext(
     'This org application has been rejected')
+
+DEF_WINNERS_NOT_VISIBLE = ugettext(
+    'The winners list for %s is not available until %s')
+
+
+DATE_FORMAT = 'D, j M Y H:i T'
 
 
 class Mutator(access_checker.Mutator):
@@ -364,6 +371,15 @@ class AccessChecker(access_checker.AccessChecker):
     """
     if not self.timelineAllowsTaskEditing():
       raise AccessViolation(access_checker.DEF_PAGE_INACTIVE)
+
+  def areWinnersVisible(self):
+    """Checks if the datetime now is past the program winners announcement.
+    """
+    if not self.data.timeline.winnersAnnounced():
+      raise AccessViolation(DEF_WINNERS_NOT_VISIBLE % (
+          self.data.program.name,
+          dateformat.format(self.data.timeline.winnersAnnouncedOn(),
+                            DATE_FORMAT)))
 
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
