@@ -36,6 +36,7 @@ from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import UNPUBLISHED
 
+
 DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
     'You cannot register as a student since you are already a '
     'mentor or organization administrator in %s.')
