@@ -56,7 +56,6 @@ class Callback(object):
     from soc.modules.gci.views import task
     from soc.modules.gci.views import task_list
     from soc.modules.gci.views import task_create
-    from soc.modules.gci.views import winners
 
     self.views.append(accepted_orgs.AcceptedOrgsPage())
     self.views.append(accepted_orgs.AcceptedOrgsAdminPage())
@@ -100,7 +99,6 @@ class Callback(object):
     self.views.append(task.WorkSubmissionDownload())
     self.views.append(task_list.TaskListPage())
     self.views.append(task_create.TaskCreatePage())
-    self.views.append(winners.WinnersPage())
 
     # Google Appengine Tasks
     from soc.modules.gci.tasks.bulk_create import BulkCreateTask
