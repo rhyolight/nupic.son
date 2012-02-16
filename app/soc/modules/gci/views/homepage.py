@@ -188,4 +188,7 @@ class Homepage(RequestHandler):
       if featured_task:
         context['featured_task'] = FeaturedTask(self.data, featured_task)
 
+    if self.data.is_host or self.data.timeline.winnersAnnounced():
+      context['winners'] = common_templates.Winners(self.data)
+
     return context

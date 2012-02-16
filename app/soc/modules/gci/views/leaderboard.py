@@ -142,7 +142,7 @@ class LeaderboardPage(RequestHandler):
     return list_content.content()
 
   def context(self):
-    return {
+    context = {
         'page_name': "Leaderboard for %s" % self.data.program.name,
         'leaderboard_list': LeaderboardList(self.request, self.data),
         'timeline': common_templates.Timeline(self.data),
@@ -150,7 +150,11 @@ class LeaderboardPage(RequestHandler):
         'your_score': common_templates.YourScore(self.data),
         'program_select': common_templates.ProgramSelect(
             self.data, url_names.GCI_LEADERBOARD),
-    }
+        }
+    if self.data.is_host or self.data.timeline.winnersAnnounced():
+      context['winners'] = common_templates.Winners(self.data)
+
+    return context
 
 
 class StudentTasksPage(RequestHandler):
