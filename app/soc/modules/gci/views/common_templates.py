@@ -17,11 +17,11 @@
 """This module contains the templates which are used across the views."""
 
 
-
 from soc.views.base_templates import ProgramSelect
 from soc.views.template import Template
 
 from soc.modules.gci.logic import ranking as ranking_logic
+from soc.modules.gci.logic.ranking import winnersForProgram
 from soc.modules.gci.views.helper import url_names
 
 
@@ -84,3 +84,18 @@ class ProgramSelect(ProgramSelect):
 
   def templatePath(self):
     return 'v2/modules/gci/common_templates/_program_select.html'
+
+
+class Winners(Template):
+  """Templates to display winners of the program.
+  """
+
+  def context(self):
+    winners = winnersForProgram(self.data)
+
+    return {
+        'winners': winners,
+        }
+
+  def templatePath(self):
+    return 'v2/modules/gci/common_templates/_winners.html'
