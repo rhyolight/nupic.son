@@ -15,16 +15,17 @@
 """
 
 
+import logging
+
+from google.appengine.ext import db
+
+from mapreduce import operation as op
+
 from django.utils import simplejson
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.seeder.models.configuration_sheet import DataSeederConfigurationSheet
 
-from google.appengine.ext.mapreduce import operation as op
-
-from google.appengine.ext import db
-
-import logging
 
 def seed_model(configuration_sheet_key):
   """Seed a model using data sent by the input reader from a configuration

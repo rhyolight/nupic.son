@@ -19,7 +19,7 @@
 """
 
 
-from google.appengine.ext.mapreduce import operation
+from mapreduce import operation
 
 
 def process(entity):

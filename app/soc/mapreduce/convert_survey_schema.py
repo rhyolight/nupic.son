@@ -20,8 +20,9 @@ propery in Survey models.
 
 
 from google.appengine.ext import db
-from google.appengine.ext.mapreduce import context
-from google.appengine.ext.mapreduce import operation
+
+from mapreduce import context
+from mapreduce import operation
 
 from django.utils import simplejson as json
 

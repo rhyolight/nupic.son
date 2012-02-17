@@ -20,8 +20,9 @@
 
 
 from google.appengine.ext import db
-from google.appengine.ext.mapreduce import context
-from google.appengine.ext.mapreduce import operation
+
+from mapreduce import context
+from mapreduce import operation
 
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.task import GCITask

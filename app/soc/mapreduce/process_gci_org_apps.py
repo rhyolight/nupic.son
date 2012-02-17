@@ -21,8 +21,9 @@
 import logging
 
 from google.appengine.ext import db
-from google.appengine.ext.mapreduce import context
-from google.appengine.ext.mapreduce import operation
+
+from mapreduce import context
+from mapreduce import operation
 
 from soc.models.site import Site
 from soc.models.org_app_record import OrgAppRecord

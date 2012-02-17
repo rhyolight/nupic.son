@@ -22,7 +22,8 @@ import logging
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
-from google.appengine.ext.mapreduce import operation
+
+from mapreduce import operation
 
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 

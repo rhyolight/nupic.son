@@ -22,7 +22,8 @@ import random
 from google.appengine.ext import db
 from google.appengine.ext.db import _ReverseReferenceProperty
 from google.appengine.ext.db import ReferenceProperty
-from google.appengine.ext.mapreduce.control import start_map
+
+from mapreduce.control import start_map
 
 from django.utils import simplejson
 

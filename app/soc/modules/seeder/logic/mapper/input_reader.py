@@ -15,13 +15,13 @@
 """
 
 
+from google.appengine.ext.db import Key
+
+from mapreduce.input_readers import InputReader, BadReaderParamsError
+
 from django.utils import simplejson
 
-from google.appengine.ext.mapreduce.input_readers import InputReader, BadReaderParamsError
-
 from soc.modules.seeder.models.configuration_sheet import DataSeederConfigurationSheet
-
-from google.appengine.ext.db import Key
 
 
 class JSONInputReader(InputReader):

@@ -19,7 +19,8 @@
 
 
 from google.appengine.ext import db
-from google.appengine.ext.mapreduce import operation
+
+from mapreduce import operation
 
 from soc.models.host import Host
 from soc.models.profile import Role

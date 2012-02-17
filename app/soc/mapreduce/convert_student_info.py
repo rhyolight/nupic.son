@@ -21,7 +21,8 @@
 import logging
 
 from google.appengine.ext import db
-from google.appengine.ext.mapreduce import operation
+
+from mapreduce import operation
 
 from soc.models.user import User
 from soc.modules.gsoc.models.profile import GSoCStudentInfo

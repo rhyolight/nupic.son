@@ -19,7 +19,7 @@
 """
 
 
-from google.appengine.ext.mapreduce import operation
+from mapreduce import operation
 
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gci.models.program import GCIProgram

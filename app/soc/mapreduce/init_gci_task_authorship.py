@@ -21,7 +21,7 @@ handled in the code before.
 """
 
 
-from google.appengine.ext.mapreduce import operation
+from mapreduce import operation
 
 from soc.modules.gci.models.profile import GCIProfile
 

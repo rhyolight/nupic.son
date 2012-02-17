@@ -41,8 +41,8 @@ unsetting the changes property.
 """
 
 
-from google.appengine.ext.mapreduce import context
-from google.appengine.ext.mapreduce import operation
+from mapreduce import context
+from mapreduce import operation
 
 from django.utils.translation import ugettext
 
