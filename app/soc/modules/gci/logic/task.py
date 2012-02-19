@@ -425,15 +425,15 @@ def updateTaskStatus(task):
     # do nothing if there is no deadline or it hasn't passed yet
     return False
 
+  if task.program.timeline.stop_all_work_deadline < datetime.datetime.now():
+    # do not change the status of the task after the work deadline ends
+    return False
+
   # the transition depends on the current state of the task
-  transit_func = STATE_TRANSITIONS[task.status]
+  transit_func = STATE_TRANSITIONS.get(task.status, None)
 
   if not transit_func:
     logging.warning('Invalid state to transfer from %s' %task.status)
-    return False
-
-  if task.program.timeline.stop_all_work_deadline < datetime.datetime.now():
-    # do not change the status of the task after the work deadline ends
     return False
 
   # update the task and create a comment
