@@ -673,6 +673,10 @@
   line-height: 0;
   text-indent: -9999em;
 }
+#footer .footer-menu .social .gp {
+  background-position: -100px -34px;
+  width: 22px;
+}
 #footer .footer-menu .social .fb {
   width: 16px;
 }
@@ -690,11 +694,6 @@
 }
 #footer .footer-menu .social .irc {
   background-position: -80px -34px;
-  margin-right: 20px;
-  width: 22px;
-}
-#footer .footer-menu .social .gp {
-  background-position: -100px -34px;
   margin-right: 20px;
   width: 22px;
 }
