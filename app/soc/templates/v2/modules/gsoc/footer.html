@@ -18,17 +18,20 @@
             {% if google_plus_link %}
               <li id="footer-menu-googlePlus" class="social"><a href="{{ google_plus_link }}" class="gp">Google+</a></li>
             {% endif %}
-            {% if blogger_url %}
-              <li id="footer-menu-blogger" class="social"><a href="{{ blogger_url }}" class="bl">Blogger</a></li>
+            {% if twitter_link %}
+              <li id="footer-menu-twitter" class="social"><a href="{{ twitter_link }}" class="tw">Twitter</a></li>
+            {% endif %}
+            {% if blogger_link %}
+              <li id="footer-menu-blogger" class="social"><a href="{{ blogger_link }}" class="bl">Blogger</a></li>
             {% endif %}
             {% if email_id %}
               <li id="footer-menu-email" class="social"><a href="mailto:{{ email_id }}" class="em">Email</a></li>
             {% endif %}
-            {% if irc_url %}
-              <li id="footer-menu-irc" class="social"><a href="{{ irc_url }}" class="irc">IRC</a></li>
+            {% if irc_link %}
+              <li id="footer-menu-irc" class="social"><a href="{{ irc_link }}" class="irc">IRC</a></li>
             {% endif %}
-            {% if privacy_policy_url %}
-              <li id="footer-menu-privacy" class="last"><a href="{{ privacy_policy_url }}">Privacy Policy</a></li>
+            {% if privacy_policy_link %}
+              <li id="footer-menu-privacy" class="last"><a href="{{ privacy_policy_link }}">Privacy Policy</a></li>
             {% endif %}
           </ul>
         </div>

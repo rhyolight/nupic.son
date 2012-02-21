@@ -149,10 +149,10 @@ class Footer(Template):
     program = self.data.program
 
     context.update({
-        'privacy_policy_url': program.privacy_policy_url,
-        'blogger_url': program.blogger,
+        'privacy_policy_link': program.privacy_policy_url,
+        'blogger_link': program.blogger,
         'email_id': program.email,
-        'irc_url': program.irc,
+        'irc_link': program.irc,
         'google_plus_link': program.gplus,
         })
 
