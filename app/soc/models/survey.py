@@ -29,56 +29,6 @@ from soc.models.program import Program
 from soc.models.user import User
 
 
-class SurveyContent(db.Expando):
-  """Fields (questions) and schema representation of a Survey.
-
-  Each survey content entity consists of properties where names and default
-  values are set by the survey creator as survey fields.
-
-    schema: A dictionary (as text) storing, for each field:
-      - type
-      - index
-      - order (for choice questions)
-      - render (for choice questions)
-      - question (free form text question, used as label)
-  """
-
-  #:Field storing the content of the survey in the form of a dictionary.
-  schema = db.TextProperty()
-
-  #: Property containing the order of the questions in which the survey
-  #: questions must be rendered.
-  survey_order = db.StringListProperty(default=[])
-
-  #: Fields storing the created on and last modified on dates.
-  created = db.DateTimeProperty(auto_now_add=True)
-  modified = db.DateTimeProperty(auto_now=True)
-
-  def getSurveyOrder(self):
-    """Make survey questions always appear in the same (creation) order.
-    """
-    survey_order = {}
-    schema = eval(self.schema)
-    for property in self.dynamic_properties():
-      # map out the order of the survey fields
-      index = schema[property]["index"]
-      if index not in survey_order:
-        survey_order[index] = property
-      else:
-        # Handle duplicated indexes
-        survey_order[max(survey_order) + 1] = property
-    return survey_order
-
-  def orderedProperties(self):
-    """Helper for View.get_fields(), keep field order.
-    """
-    properties = []
-    survey_order = self.getSurveyOrder().items()
-    for position, key in survey_order:
-      properties.insert(position, key)
-    return properties
-
-
 class Survey(db.Model):
   """Model of a Survey.
 
@@ -162,8 +112,3 @@ class Survey(db.Model):
 
   #: Stores the schema for the survey form
   schema = db.TextProperty(required=False)
-
-  #: TODO(Madhu): Remove this after org app conversion.
-  #: Referenceproperty that specifies the content of this survey.
-  survey_content = db.ReferenceProperty(reference_class=SurveyContent,
-                                        collection_name="survey_parent")
