@@ -153,6 +153,7 @@ class Footer(Template):
         'blogger_url': program.blogger,
         'email_id': program.email,
         'irc_url': program.irc,
+        'google_plus_link': program.gplus,
         })
 
     return context

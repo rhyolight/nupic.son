@@ -186,6 +186,7 @@ class ConnectWithUs(Template):
         'blogger_link': self.data.program.blogger,
         'email': self.data.program.email,
         'irc_channel_link': self.data.program.irc,
+        'google_plus_link': self.data.program.gplus,
     }
 
   def templatePath(self):

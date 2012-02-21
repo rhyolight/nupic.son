@@ -193,6 +193,11 @@ class Program(soc.models.presence.Presence):
   blogger.help_text = ugettext("URL of the Blogger home page for the program")
   blogger.group = ugettext("1. Public Info")
 
+  gplus = db.LinkProperty(
+      required=False, verbose_name=ugettext("Google+ URL"))
+  gplus.help_text = ugettext("URL of the Google+ home page for GSoc")
+  gplus.group = ugettext("1. Public Info")
+
   email = db.EmailProperty(
       required=False, verbose_name=ugettext("Program email"))
   email.help_text = ugettext("Contact email address for the program")
