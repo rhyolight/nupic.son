@@ -36,7 +36,7 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class GSoCOrgAppEditForm(org_app.OrgAppEditForm):
-  """Form to create/edit GCI organization application survey.
+  """Form to create/edit GSoC organization application survey.
   """
 
   class Meta(org_app.OrgAppEditForm.Meta):
@@ -51,7 +51,7 @@ class GSoCOrgAppEditForm(org_app.OrgAppEditForm):
 
 
 class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
-  """Form for would-be organization admins to apply for a GCI program.
+  """Form for would-be organization admins to apply for a GSoC program.
   """
 
   CHECKBOX_SELECT_MULTIPLE = gsoc_forms.CheckboxSelectMultiple
