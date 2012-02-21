@@ -386,7 +386,7 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.user:
       raise AccessViolation(msg)
 
-    q = GSoCProfile.all()
+    q = GSoCProfile.all(keys_only=True)
     q.ancestor(self.data.user)
     q.filter('scope', self.data.program)
     q.filter('is_student', False)
