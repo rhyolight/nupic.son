@@ -92,3 +92,10 @@ class OrgAppRecord(SurveyRecord):
                'pre-accepted', 'pre-rejected'],
       default='needs review',
       verbose_name=ugettext('Application Status'))
+
+  #: TODO(Madhu): Set required=True once the mapreduce conversion is done.
+  #: field storing the reference to the program that this org app record
+  #: belongs to
+  program = db.Reference(
+      reference_class=soc.models.program.Program, required=False,
+      verbose_name='Program', collection_name='org_app_records')
