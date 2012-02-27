@@ -21,10 +21,12 @@
 
 from mapreduce import operation
 
-# Following two imports required for the model visibility for
+# Following three imports required for the model visibility for
 # runnning mapreduce.
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
+
+from soc.modules.gsoc.models.program import GSoCProgram
 
 
 def process(org_app_record):
