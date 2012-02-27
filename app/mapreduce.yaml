@@ -5,6 +5,14 @@
 # will have that module name as the prefix.
 
 mapreduce:
+- name: AddProgramToOrgAppRecord
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.add_program_to_org_app_record.process
+    params:
+    - name: entity_kind
+      value: soc.models.org_app_record.OrgAppRecord
+
 - name: ConvertOrgAppSurvey
   mapper:
     input_reader: mapreduce.input_readers.DatastoreInputReader
