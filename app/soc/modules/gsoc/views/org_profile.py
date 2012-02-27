@@ -219,6 +219,7 @@ class OrgProfilePage(RequestHandler):
       form.cleaned_data['founder'] = self.data.user
       form.cleaned_data['scope'] = self.data.program
       form.cleaned_data['scope_path'] = self.data.program.key().name() 
+      form.cleaned_data['link_id'] = self.data.org_id
       key_name = '%s/%s' % (
           self.data.program.key().name(),
           form.cleaned_data['link_id']
