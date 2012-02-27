@@ -183,11 +183,12 @@ class OrgProfilePage(RequestHandler):
         'error': bool(form.errors),
         }
 
-    r = self.data.redirect.organization()
-    context['org_home_page_link'] = r.urlOf('gsoc_org_home')
-    if (self.data.program.allocations_visible and
-          self.data.timeline.beforeStudentsAnnounced()):
-      context['slot_transfer_page_link'] = r.urlOf('gsoc_slot_transfer')
+    if self.data.organization:
+      r = self.data.redirect.organization()
+      context['org_home_page_link'] = r.urlOf('gsoc_org_home')
+      if (self.data.program.allocations_visible and
+            self.data.timeline.beforeStudentsAnnounced()):
+        context['slot_transfer_page_link'] = r.urlOf('gsoc_slot_transfer')
 
     return context
 
