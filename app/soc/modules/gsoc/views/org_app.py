@@ -24,6 +24,7 @@ from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import BadRequest
+from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
 from soc.views.helper import access_checker
@@ -282,15 +283,26 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     """
     post_data = self.request.POST
 
+    self.data.redirect.program()
+
+    if (post_data.get('process', '') ==
+        'Finalize decisions and send acceptance/rejection emails'):
+      mapreduce_control.start_map('ProcessOrgApp', {
+          'program_type': 'gsoc',
+          'program_key': self.data.program.key().name()
+          })
+      self.redirect.to('gsoc_list_org_app_records', validated=True)
+      return
+
     if not post_data.get('button_id', None) == 'save':
       raise BadRequest('No valid POST data found')
 
     data = self.data.POST.get('data')
+
     if not data:
       raise BadRequest('Missing data')
 
     parsed = simplejson.loads(data)
-    self.data.redirect.program()
     url = self.data.redirect.urlOf('create_gsoc_org_profile', full=True)
 
     for id, properties in parsed.iteritems():
