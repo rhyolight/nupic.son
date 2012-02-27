@@ -60,6 +60,7 @@ class OrgProfileForm(org_profile.OrgProfileForm):
     self.fields['tags'] = django_forms.CharField(
         required=False,
         label=ugettext('Tags'))
+    self.fields['tags'].group = ugettext("1. Public Info")
 
     if self.instance:
       self.fields['tags'].initial = ', '.join(self.instance.tags)
