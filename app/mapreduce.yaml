@@ -124,7 +124,7 @@ mapreduce:
 - name: ProcessOrgApp
   mapper:
     input_reader: mapreduce.input_readers.DatastoreInputReader
-    handler: soc.mapreduce.process_gci_org_apps.process
+    handler: soc.mapreduce.process_org_apps.process
     params:
     - name: entity_kind
       value: soc.models.org_app_record.OrgAppRecord
