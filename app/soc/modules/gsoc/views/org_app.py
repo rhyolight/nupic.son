@@ -248,6 +248,7 @@ class GSoCOrgAppTakePage(RequestHandler):
       form.cleaned_data['user'] = self.data.user
       form.cleaned_data['main_admin'] = self.data.user
       form.cleaned_data['survey'] = self.data.org_app
+      form.cleaned_data['program'] = self.data.program
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)

@@ -67,7 +67,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     model = OrgAppRecord
     css_prefix = 'org-app-record'
     exclude = ['main_admin', 'backup_admin', 'status', 'user', 'survey',
-               'created', 'modified']
+               'created', 'modified', 'program']
     widgets = forms.choiceWidgets(model,
         ['license'])
 
