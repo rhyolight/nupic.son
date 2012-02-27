@@ -212,7 +212,7 @@ class Program(soc.models.presence.Presence):
   def getProgramMessages(self):
     def get_or_create_txn():
       entity = type(self)._messages_model.all().ancestor(self).get()
-      print entity
+
       if not entity:
         entity = self._messages_model(parent=self)
         entity.put()
