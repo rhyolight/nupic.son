@@ -13,7 +13,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/forms.css" />
+{% endblock stylesheets %}
+
 {% block page_content %}
+
+<form method="post" id="form" >
+  {% if posted %}
+    <div id="flash-message" class="flash-success">
+      <p>Data saved successfully.</p>
+    </div>
+  {% endif %}
+  <div id="form-register-fieldset-button-row" class="row button-row">
+    <input id="form-register-submit" type="submit" name="process" value="Finalize decisions and send acceptance/rejection emails" class="submit" />
+  </div>
+</form>
 
 {{ record_list.render }}
 
