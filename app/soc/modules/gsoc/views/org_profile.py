@@ -34,6 +34,11 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+
+DEF_NO_ORG_ID_FOR_CREATE = ugettext(
+    'There is no organization id specified to create a new organization.')
+
+
 PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
     'proposal_extra', 'tags',
 ]
@@ -150,8 +155,15 @@ class OrgProfilePage(RequestHandler):
       self.check.isOrgAdminForOrganization(self.data.organization)
       #probably check if the org is active
     else:
-      self.data.organization = None
-      self.check.fail("Org creation is not supported at this time")
+      self.data.org_id = self.request.GET.get('org_id')
+      if not self.data.org_id:
+        self.check.fail(DEF_NO_ORG_ID_FOR_CREATE)
+        return
+
+      # For the creation of a new organization profile the org should not
+      # exist yet.
+      self.check.orgDoesnotExist(self.data.org_id)
+      self.check.canCreateOrgProfile(self.data.org_id)
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_profile/base.html'

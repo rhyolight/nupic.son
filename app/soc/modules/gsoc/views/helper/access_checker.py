@@ -26,6 +26,7 @@ from django.utils.translation import ugettext
 from soc.logic.exceptions import AccessViolation, BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import RedirectRequest
+from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
@@ -40,6 +41,7 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models.organization import GSoCOrganization
 
 
 DEF_FAILED_PREVIOUS_EVAL = ugettext(
@@ -67,9 +69,24 @@ DEF_NO_ORG_ADMIN_PROFILE = ugettext(
     'administrator for %s please <a href="%s">click here</a>, register and '
     'then come back to this page.')
 
+DEF_NOT_ADMIN_FOR_ORG_APP = ugettext(
+    'You should be listed as the main/backup organization administrator for '
+    'the organization in the organization application to create a new '
+    'organization profile for this organization.')
+
 DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU = ugettext(
     'This evaluation does not correspond to the project you are mentor for, '
     'and hence you cannot access it.')
+
+DEF_ORG_APP_NOT_ACCEPTED = ugettext(
+    'You cannot create the organization profile for %s because the '
+    'organization application for it has not been accepted.')
+
+DEF_ORG_EXISTS = ugettext(
+    'The organization with the ID %s already exists and hence you cannot '
+    'create a new organization profile for the same ID. If you are actually '
+    'looking for editing this organization profile please click <a href="%s">'
+    'here</a>.')
 
 DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU = ugettext(
     'This evaluation does not correspond to your project, and hence you '
@@ -394,6 +411,44 @@ class AccessChecker(access_checker.AccessChecker):
     gsoc_profile = q.get()
     if not gsoc_profile:
       raise AccessViolation(msg)
+
+  def orgDoesnotExist(self, org_id):
+    """Checks if the organization with the given ID doesn't exist.
+
+    We cannot create organizations which are already created.
+
+    Args:
+      org_id: The link_id of the organization.
+    """
+    q = GSoCOrganization.all()
+    q.filter('link_id', org_id)
+    q.filter('scope', self.data.program)
+    gsoc_org = q.get()
+
+    if gsoc_org:
+      edit_url = self.data.redirect.organization(gsoc_org).urlOf(
+          'edit_gsoc_org_profile')
+
+      raise AccessViolation(DEF_ORG_EXISTS % (org_id, edit_url))
+
+  def canCreateOrgProfile(self, org_id):
+    """Checks if the current user is an admin or a backup admin for the org app
+    and also check whether the organization application is accepted.
+
+    Args:
+      org_id: The link_id of the organization.
+    """
+    q = OrgAppRecord.all()
+    q.filter('org_id', org_id)
+    q.filter('program', self.data.program)
+    app_record = q.get()
+
+    if self.data.user.key() not in [
+        app_record.main_admin.key(), app_record.backup_admin.key()]:
+      raise AccessViolation(DEF_NOT_ADMIN_FOR_ORG_APP)
+
+    if app_record.status != 'accepted':
+      raise AccessViolation(DEF_ORG_APP_NOT_ACCEPTED % (org_id))
 
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
