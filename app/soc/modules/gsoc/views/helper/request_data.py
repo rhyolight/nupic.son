@@ -84,13 +84,16 @@ class TimelineHelper(request_data.TimelineHelper):
     if self.studentSignup():
       return ("Student Application Deadline", self.studentSignupEnd())
 
-    if request_data.isBetween(self.studentSignupEnd(), self.applicationMatchedOn()):
+    if request_data.isBetween(self.studentSignupEnd(),
+                              self.applicationMatchedOn()):
       return ("Proposal Matched Deadline", self.applicationMatchedOn())
 
-    if request_data.isBetween(self.applicationMatchedOn(), self.applicationReviewEndOn()):
+    if request_data.isBetween(self.applicationMatchedOn(),
+                              self.applicationReviewEndOn()):
       return ("Proposal Scoring Deadline", self.applicationReviewEndOn())
 
-    if request_data.isBetween(self.applicationReviewEndOn(), self.studentsAnnouncedOn()):
+    if request_data.isBetween(self.applicationReviewEndOn(),
+                              self.studentsAnnouncedOn()):
       return ("Accepted Students Announced", self.studentsAnnouncedOn())
 
     return ('', None)

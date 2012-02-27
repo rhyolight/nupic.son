@@ -85,7 +85,8 @@ class TimelineHelper(request_data.TimelineHelper):
     if self.studentSignup():
       return ("Student Application Deadline", self.studentSignupEnd())
 
-    if request_data.isBetween(self.tasksPubliclyVisible(), self.tasksClaimEndOn()):
+    if request_data.isBetween(self.tasksPubliclyVisible(),
+                              self.tasksClaimEndOn()):
       return ("Tasks Claim Deadline", self.tasksClaimEndOn())
 
     if request_data.isBetween(self.tasksClaimEndOn(), self.stopAllWorkOn()):
