@@ -23,11 +23,9 @@ from soc.views import forms
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
-from soc.logic import cleaning
 from soc.views.helper import url_patterns
 from soc.views import org_profile
 
-from soc.modules.gsoc.logic import cleaning as gsoc_cleaning
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -42,6 +40,7 @@ DEF_NO_ORG_ID_FOR_CREATE = ugettext(
 PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
     'proposal_extra', 'tags',
 ]
+
 
 class OrgProfileForm(org_profile.OrgProfileForm):
   """Django form for the organization profile.
@@ -78,7 +77,7 @@ class OrgProfileForm(org_profile.OrgProfileForm):
   nonreq_proposal_extra = django_forms.CharField(
       label='Extra columns', required=False)
   nonreq_proposal_extra.help_text = ugettext('Comma separated list of values.')
-  
+
   def clean_tags(self):
     tags = []
     for tag in self.data.get('tags').split(','):
@@ -218,7 +217,7 @@ class OrgProfilePage(RequestHandler):
     if not self.data.organization:
       form.cleaned_data['founder'] = self.data.user
       form.cleaned_data['scope'] = self.data.program
-      form.cleaned_data['scope_path'] = self.data.program.key().name() 
+      form.cleaned_data['scope_path'] = self.data.program.key().name()
       form.cleaned_data['link_id'] = self.data.org_id
       key_name = '%s/%s' % (
           self.data.program.key().name(),
