@@ -18,17 +18,16 @@
 """
 
 
-import logging
-
-from google.appengine.ext import db
-
 from mapreduce import context
 from mapreduce import operation
 
+from soc.logic import org_app as org_app_logic
 from soc.models.site import Site
 from soc.models.org_app_record import OrgAppRecord
+from soc.models.org_app_survey import OrgAppSurvey
 
-from soc.logic import org_app as org_app_logic
+from soc.modules.gsoc.models.program import GSoCProgram
+
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.views.helper.request_data import RequestData
 from soc.modules.gci.views.helper.request_data import RedirectHelper
@@ -37,20 +36,39 @@ from soc.modules.gci.views.helper.request_data import RedirectHelper
 def process(org_app):
   ctx = context.get()
   params = ctx.mapreduce_spec.mapper.params
-  program_key = params['program_key']
-  # TODO(SRabbelier): should have been a full url
-  url = 'gci/profile/organization/%s' % program_key
+
+  program_type = params['program_type']
+  program_key_str = params['program_key']
+
+  if program_type == 'gci':
+    program_model = GCIProgram
+  elif program_type == 'gsoc':
+    program_model = GSoCProgram
+
+  program = program_model.get_by_key_name(program_key_str)
+
+  survey_query = OrgAppSurvey.all(keys_only=True).filter('program', program)
+  survey_key = survey_query.get()
+
+  # We can skip the survey records not belonging to the given program.
+  if org_app.survey.key() != survey_key:
+    return
 
   # TODO(SRabbelier): create a MapReduce/Task RequestData
   data = RequestData()
-  data.program = GCIProgram.get_by_key_name(program_key)
+  data.program = program
   data.site = Site.get_by_key_name('site')
+  redirect = RedirectHelper(data, None)
+
+  url = '/%s/profile/organization/%s' % (program_type, program_key_str)
+
+  full_url = redirect._fullUrl(url, full=True, secure=False)
 
   if org_app.status == 'pre-accepted':
-    org_app_logic.setStatus(data, org_app, 'accepted', url)
+    org_app_logic.setStatus(data, org_app, 'accepted', full_url)
     yield operation.counters.Increment("proposals_accepted")
   elif org_app.status == 'pre-rejected':
-    org_app_logic.setStatus(data, org_app, 'rejected', url)
+    org_app_logic.setStatus(data, org_app, 'rejected', full_url)
     yield operation.counters.Increment("proposals_rejected")
   else:
     yield operation.counters.Increment("proposals_ignored")
