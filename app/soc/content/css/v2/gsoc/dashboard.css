@@ -134,6 +134,7 @@
   background-image: url(../../../images/v2/soc/dashboard/report.png);
 }
 .column-entry.todo,
+.column-entry.org_app,
 .column-entry.documents,
 .column-entry.evaluations,
 .column-entry.mentor_evaluations,
