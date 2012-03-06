@@ -55,6 +55,7 @@ LICENSES = (
   'MIT license',
   'Motosoto License',
   'Mozilla Public License 1.1 (MPL)',
+  'Mozilla Public License 2.0 (MPL-2.0)',
   'Multics License',
   'NASA Open Source Agreement 1.3',
   'NTP License',
