@@ -54,7 +54,7 @@ class ProgramForm(GSoCModelForm):
     css_prefix = 'program_form'
     model = GSoCProgram
     exclude = ['link_id', 'scope', 'scope_path', 'timeline',
-               'home', 'slots_allocation']
+               'home', 'slots_allocation', 'student_max_age']
 
 
 class GSoCProgramMessagesForm(GSoCModelForm):
