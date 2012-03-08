@@ -64,3 +64,11 @@ class GCIProgram(soc.models.program.Program):
   task_types.group = ugettext('Task Types')
   task_types.help_text = ugettext(
       'List all the types a task can be in.')
+
+  #: Document reference property used for the Student Agreement
+  terms_and_conditions = db.ReferenceProperty(
+    reference_class=soc.models.document.Document,
+    verbose_name=ugettext('Terms and Conditions'),
+    collection_name='terms_and_conditions')
+  terms_and_conditions.help_text = ugettext(
+      'Document containing Terms and Conditions for participants.')
