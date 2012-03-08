@@ -200,24 +200,25 @@ class ProfilePage(object):
 
   def validateUser(self, dirty):
     if self.data.user:
-      return EmptyForm()
+      return EmptyForm(), self.data.user
     else:
       user_form = self._getCreateUserForm()
 
     if not user_form.is_valid():
-      return user_form
+      return user_form, None
 
     key_name = user_form.cleaned_data['link_id']
     account = self.data.gae_user
     norm_account = accounts.normalizeAccount(account)
     user_form.cleaned_data['account'] = norm_account
     user_form.cleaned_data['user_id'] = account.user_id()
-    # set the new user entity in self.data.user
-    self.data.user = user_form.create(commit=False, key_name=key_name)
-    dirty.append(self.data.user)
-    return user_form
 
-  def validateProfile(self, dirty):
+    user = user_form.create(commit=False, key_name=key_name)
+    dirty.append(user)
+
+    return user_form, user
+
+  def validateProfile(self, dirty, user):
     if self.data.student_info or self.data.kwargs.get('role') == 'student':
       # student's age should be checked
       check_age = True
@@ -229,13 +230,11 @@ class ProfilePage(object):
     else:
       profile_form = self._getCreateProfileForm(check_age, save=True)
 
-    if not profile_form.is_valid():
+    if not profile_form.is_valid() or not user:
       return profile_form, None
 
-    key_name = '%s/%s' % (self.data.program.key().name(),
-                          self.data.user.link_id)
+    key_name = '%s/%s' % (self.data.program.key().name(), user.link_id)
 
-    user = self.data.user
     profile_form.cleaned_data['user'] = user
     profile_form.cleaned_data['link_id'] = user.link_id
     profile_form.cleaned_data['scope'] = self.data.program
@@ -244,7 +243,7 @@ class ProfilePage(object):
       profile = profile_form.save(commit=False)
     else:
       profile = profile_form.create(commit=False, key_name=key_name,
-                                    parent=self.data.user)
+          parent=user)
 
     dirty.append(profile)
 
@@ -298,10 +297,12 @@ class ProfilePage(object):
 
   def validate(self):
     dirty = []
-    user_form = self.validateUser(dirty)
+    user_form, user = self.validateUser(dirty)
+    
     if not user_form.is_valid():
       return False
-    profile_form, profile = self.validateProfile(dirty)
+
+    profile_form, profile = self.validateProfile(dirty, user)
 
     notification_form = self.validateNotifications(dirty, profile)
 
