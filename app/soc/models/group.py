@@ -73,14 +73,14 @@ class Group(soc.models.presence.Presence):
 
   #: Optional public mailing list.     
   pub_mailing_list = db.StringProperty(required=False,
-    verbose_name=ugettext('Public Mailing List'))
+      verbose_name=ugettext('Public Mailing List'))
   pub_mailing_list.help_text = ugettext(
-    'Mailing list email address, URL to sign-up page, etc.')
+      'Mailing list email address, URL to sign-up page, etc.')
   pub_mailing_list.group = ugettext("1. Public Info")
 
   #: Optional public IRC channel.
   irc_channel = db.StringProperty(required=False,
-    verbose_name=ugettext('Public IRC Channel (and Network)'))
+      verbose_name=ugettext('Public IRC Channel (and Network)'))
   irc_channel.group = ugettext("1. Public Info")
 
   #: Required property showing the current status of the group
