@@ -94,4 +94,8 @@ class Group(soc.models.presence.Presence):
   #: the users, when they choose to apply to become org admin or mentor
   role_request_message = db.TextProperty(required=False,
       verbose_name=ugettext('Message for role requests.'))
+  role_request_message.help_text = ugettext(
+      'Here you can set a custom message that will be displayed to '
+      'all users who apply to become either a mentor or an org admin for '
+      'this organization.')
   role_request_message.group = ugettext('4. Organization Preferences')
