@@ -140,7 +140,8 @@ class ManageRequestPage(RequestHandler):
     self.check.isProfileActive()
 
     request_id = int(self.data.kwargs['id'])
-    self.data.request_entity = GCIRequest.get_by_id(request_id)
+    self.data.request_entity = GCIRequest.get_by_id(
+        request_id, parent=self.data.user)
     self.check.isRequestPresent(request_id)
 
     self.check.canManageRequest()
