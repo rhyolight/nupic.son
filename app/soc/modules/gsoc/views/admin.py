@@ -258,13 +258,6 @@ class MainDashboard(Dashboard):
             'title': 'Participant Locations',
             'link': '#'
         },
-        {
-            'name': 'report_statistic',
-            'description': ugettext(
-                'Reports and statistics of program'),
-            'title': 'Report/statistic',
-            'link': '#'
-        },
     ]
 
     return {
