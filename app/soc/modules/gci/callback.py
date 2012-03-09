@@ -89,6 +89,7 @@ class Callback(object):
     self.views.append(profile_show.GCIProfileShowPage())
     self.views.append(program.ProgramPage())
     self.views.append(program.TimelinePage())
+    self.views.append(request.ListUserRequestsPage())
     self.views.append(request.SendRequestPage())
     self.views.append(request.ManageRequestPage())
     self.views.append(request.RespondRequestPage())
