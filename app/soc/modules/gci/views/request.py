@@ -23,8 +23,10 @@ from google.appengine.ext import db
 from soc.logic.exceptions import BadRequest
 from soc.logic.helper import notifications
 
+from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
+from soc.views.template import Template
 
 from soc.tasks import mailer
 
@@ -286,3 +288,76 @@ class RespondRequestPage(RequestHandler):
       db.run_in_transaction(reject_request_txn)
 
     self.redirect.id().to(url_names.GCI_RESPOND_REQUEST)
+
+
+class UserRequestsList(Template):
+  """Template for list of requests that have been sent by the current user.
+  """
+
+  def __init__(self, request, data):
+    self.request = request
+    self.data = data
+    r = data.redirect
+
+    list_config = lists.ListConfiguration()
+    list_config.addColumn('org', 'To',
+        lambda entity, *args: entity.org.name)
+    list_config.addSimpleColumn('status', 'Status')
+    list_config.setRowAction(
+        lambda e, *args: r.id(e.key().id())
+            .urlOf(url_names.GCI_MANAGE_REQUEST))
+
+    self._list_config = list_config
+
+  def getListData(self):
+    q = GCIRequest.all()
+    q.filter('type', 'Request')
+    q.filter('user', self.data.user)
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, lists.keyStarter)
+
+    return response_builder.build()
+
+  def context(self):
+    request_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0)
+
+    return {
+        'lists': [request_list],
+    }
+
+  def templatePath(self):
+    return 'v2/modules/gci/request/_request_list.html'
+
+
+class ListUserRequestsPage(RequestHandler):
+  """View for the page that lists all the requests which have been sent by
+  the current user.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/request/request_list.html'
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'request/list_user/%s$' % url_patterns.PROGRAM, self,
+            name=url_names.GCI_LIST_REQUESTS),
+    ]
+
+  def checkAccess(self):
+    self.check.isProfileActive()
+
+  def jsonContext(self):
+    list_content = UserRequestsList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation('You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    return {
+        'page_name': 'Your requests',
+        'request_list': UserRequestsList(self.request, self.data),
+    }
