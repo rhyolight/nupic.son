@@ -43,7 +43,7 @@ class RequestForm(GSoCModelForm):
   """Django form for the request page.
   """
 
-  def __init__(self, custom_message, *args, **kwargs):
+  def __init__(self, custom_message=None, *args, **kwargs):
     super(RequestForm, self).__init__(*args, **kwargs)
 
     if custom_message:
@@ -59,6 +59,9 @@ class RequestForm(GSoCModelForm):
     model = GSoCRequest
     css_prefix = 'gsoc_request'
     fields = ['message']
+
+  def clean_custom_message(self):
+    dsads
 
 
 class RequestPage(RequestHandler):
@@ -101,7 +104,7 @@ class RequestPage(RequestHandler):
     """
     request_form = RequestForm(
         self.data.organization.role_request_message,
-        self.data.POST or None)
+        data=self.data.POST or None)
 
     return {
         'logged_in_msg': LoggedInMsg(self.data, apply_link=False),
@@ -128,7 +131,8 @@ class RequestPage(RequestHandler):
     """
     assert isSet(self.data.organization)
 
-    request_form = RequestForm(self.data.POST)
+    request_form = RequestForm(
+        data=self.data.POST)
 
     if not request_form.is_valid():
       return None
