@@ -27,6 +27,7 @@ from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -72,7 +73,7 @@ class GSoCProfileAdminPage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'profile/admin/%s$' % url_patterns.PROFILE,
-         self, name='gsoc_profile_admin'),
+         self, name=url_names.GSOC_PROFILE_SHOW),
     ]
 
   def checkAccess(self):

@@ -752,7 +752,7 @@ class LookupLinkIdPage(RequestHandler):
         cbox = True
 
       self.redirect.profile(profile.link_id)
-      self.redirect.to('gsoc_profile_admin', cbox=cbox)
+      self.redirect.to(url_names.GSOC_PROFILE_SHOW, cbox=cbox)
 
     return {
       'forms': forms,

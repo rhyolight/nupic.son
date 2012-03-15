@@ -59,6 +59,7 @@ from soc.modules.gsoc.models.project_survey_record import \
 from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -762,6 +763,7 @@ class SubmittedProposalsComponent(Component):
         (lambda ent, *args: ent.parent().email), hidden=True)
     list_config.addSimpleColumn('score', 'Score')
     list_config.addSimpleColumn('nr_scores', '#scores', hidden=True)
+
     def getAverage(ent):
       if not ent.nr_scores:
         return float(0)
@@ -1401,7 +1403,7 @@ class StudentsComponent(Component):
         (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
         hidden=True)
     list_config.setRowAction(lambda e, *args:
-        r.profile(e.link_id).urlOf('gsoc_profile_admin'))
+        r.profile(e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW))
 
     def formsSubmitted(ent, si):
       info = si[ent.key()]
