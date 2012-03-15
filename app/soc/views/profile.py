@@ -203,7 +203,8 @@ class ProfilePage(object):
       self.data.profile._fix_name()
       profile_form = self._getEditProfileForm(is_student)
     else:
-      profile_form = self._getCreateProfileForm(is_student, prefill_data=False)
+      profile_form = self._getCreateProfileForm(is_student, prefill_data=True)
+
     error = user_form.errors or profile_form.errors or student_info_form.errors
 
     form = self._getNotificationForm()
