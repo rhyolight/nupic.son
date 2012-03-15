@@ -18,6 +18,8 @@
 """
 
 
+from soc.logic.exceptions import NotFound
+
 from soc.views import readonly_template
 from soc.views import profile_show
 from soc.views.helper import url_patterns
@@ -78,37 +80,51 @@ class GSoCProfileAdminPage(RequestHandler):
 
   def checkAccess(self):
     self.check.isHost()
-    self.mutator.profileFromKwargs()
+    self.mutator.userFromKwargs()
+    try:
+      self.mutator.profileFromKwargs()
+    except NotFound:
+      # it is not a terminal error, when Profile does not exist
+      pass
 
   def templatePath(self):
     return 'v2/modules/gsoc/profile_show/base.html'
 
   def context(self):
     assert isSet(self.data.program)
-    assert isSet(self.data.url_profile)
     assert isSet(self.data.url_user)
 
     user = self.data.url_user
     profile = self.data.url_profile
     program = self.data.program
-    r = self.redirect.profile()
+    
 
-    links = []
 
-    for project in GSoCProject.all().ancestor(profile):
-      r.project(project.key().id())
-      links.append(r.urlOf('gsoc_project_details', full=True))
-
-    r = self.redirect.profile()
-
-    return {
-        'page_name': '%s Profile - %s' % (program.short_name, profile.name()),
+    context = {
         'program_name': program.name,
         'form_top_msg': LoggedInMsg(self.data, apply_link=False),
         'user': profile_show.UserReadOnlyTemplate(user),
-        'profile': GSoCProfileReadOnlyTemplate(profile),
-        'links': links,
         'css_prefix': GSoCProfileReadOnlyTemplate.Meta.css_prefix,
-        'submit_tax_link': r.urlOf('gsoc_tax_form_admin'),
-        'submit_enrollment_link': r.urlOf('gsoc_enrollment_form_admin'),
         }
+
+    if profile:
+      links = []
+      r = self.redirect.profile()
+      for project in GSoCProject.all().ancestor(profile):
+        r.project(project.key().id())
+        links.append(r.urlOf('gsoc_project_details', full=True))
+      r = self.redirect.profile()
+      context.update({
+          'profile': GSoCProfileReadOnlyTemplate(profile),
+          'links': links,
+          'submit_tax_link': r.urlOf('gsoc_tax_form_admin'),
+          'submit_enrollment_link': r.urlOf('gsoc_enrollment_form_admin'),
+          'page_name': '%s Profile - %s' % (
+              program.short_name, profile.name()),
+          })
+    else:
+      context.update({
+          'page_name': '%s Profile - %s' % (program.short_name, user.account),
+          })
+
+    return context
