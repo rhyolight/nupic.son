@@ -97,8 +97,6 @@ class GSoCProfileAdminPage(RequestHandler):
     user = self.data.url_user
     profile = self.data.url_profile
     program = self.data.program
-    
-
 
     context = {
         'program_name': program.name,
