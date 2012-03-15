@@ -30,6 +30,7 @@ from soc.views.helper import url_patterns
 
 from soc.models.universities import UNIVERSITIES
 
+from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
@@ -261,9 +262,16 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     return GSoCProfileForm(data=self.data.POST or None,
         instance=self.data.profile)
 
-  def _getCreateProfileForm(self, check_age, save=False):
+  def _getCreateProfileForm(self, check_age, save=False, prefill_data=False):
     tos_content = self._getTOSContent()
-    return CreateGSoCProfileForm(tos_content, data=self.data.POST or None)
+
+    if prefill_data:
+      prefilled_data = self.prefilledProfileData()
+    else:
+      prefilled_data = None
+
+    return CreateGSoCProfileForm(tos_content,
+        data=self.data.POST or prefilled_data)
 
   def _getNotificationForm(self):
     if self.data.student_info or self.data.kwargs.get('role') == 'student':
@@ -277,3 +285,9 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
   def _getStudentInfoForm(self):
     return GSoCStudentInfoForm(self.data.POST or None, 
         instance=self.data.student_info)
+
+  def _getProfileForCurrentUser(self):
+    query = profile_logic.queryProfilesForUser(self.data.user)
+    profiles = query.fetch(1000)
+
+    return profiles[-1] if profiles else None
