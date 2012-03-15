@@ -55,6 +55,11 @@ PROFILE_EXCLUDE = [
     'is_student', 'is_mentor', 'is_org_admin',
 ]
 
+PREFILL_PROFILE_EXCLUDE = PROFILE_EXCLUDE + [
+    'publish_location', 'agreed_to_tos',
+]
+
+
 class ProfileForm(forms.ModelForm):
   """Django form for profile page.
   """
@@ -163,7 +168,7 @@ class ProfilePage(object):
 
     properties = {}
     for property_name in profile.properties():
-      if property_name in PROFILE_EXCLUDE:
+      if property_name in self._getFieldsToExcludeInPrefill():
         continue
 
       properties[property_name] = getattr(profile, property_name)
@@ -360,4 +365,7 @@ class ProfilePage(object):
     raise NotImplementedError
 
   def _getProfileForCurrentUser(self):
+    raise NotImplementedError
+
+  def _getFieldsToExcludeInPrefill(self):
     raise NotImplementedError

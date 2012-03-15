@@ -88,11 +88,16 @@ class GSoCUserForm(gsoc_forms.GSoCModelForm):
   clean_link_id = cleaning.clean_user_not_exist('link_id')
 
 
-PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
+TO_EXCLUDE = [
     # notifications
     'notify_new_proposals', 'notify_proposal_updates',
     'notify_public_comments', 'notify_private_comments',
 ]
+
+PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + TO_EXCLUDE
+
+PREFILL_PROFILE_EXCLUDE = profile.PREFILL_PROFILE_EXCLUDE + TO_EXCLUDE
+
 
 class GSoCProfileForm(profile.ProfileForm):
   """Django form for profile page.
@@ -291,3 +296,6 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     profiles = query.fetch(1000)
 
     return profiles[-1] if profiles else None
+
+  def _getFieldsToExcludeInPrefill(self):
+    return PREFILL_PROFILE_EXCLUDE
