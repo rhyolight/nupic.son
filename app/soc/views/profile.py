@@ -153,6 +153,23 @@ class ProfilePage(object):
     role = self.data.kwargs.get('role')
     return self.data.student_info or role == 'student'
 
+  def prefilledProfileData(self):
+    if not self.data.user:
+      return {}
+
+    profile = self._getProfileForCurrentUser()
+    if not profile:
+      return {}
+
+    properties = {}
+    for property_name in profile.properties():
+      if property_name in PROFILE_EXCLUDE:
+        continue
+
+      properties[property_name] = getattr(profile, property_name)
+
+    return properties
+
   def context(self):
     role = self.data.kwargs.get('role')
     if self.data.student_info or role == 'student':
@@ -181,7 +198,7 @@ class ProfilePage(object):
       self.data.profile._fix_name()
       profile_form = self._getEditProfileForm(is_student)
     else:
-      profile_form = self._getCreateProfileForm(is_student)
+      profile_form = self._getCreateProfileForm(is_student, prefill_data=False)
     error = user_form.errors or profile_form.errors or student_info_form.errors
 
     form = self._getNotificationForm()
@@ -340,4 +357,7 @@ class ProfilePage(object):
     raise NotImplementedError
 
   def _getStudentInfoForm(self):
+    raise NotImplementedError
+
+  def _getProfileForCurrentUser(self):
     raise NotImplementedError
