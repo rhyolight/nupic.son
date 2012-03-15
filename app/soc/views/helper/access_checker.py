@@ -316,17 +316,22 @@ class Mutator(object):
     self.data.key_name = '/'.join(fields)
     self.data.document = Document.get_by_key_name(self.data.key_name)
 
-  def profileFromKwargs(self, profile_model):
-    """Retrieves a profile from kwargs.
-
-    Args:
-      profile_model: The datastore model class
+  def userFromKwargs(self):
+    """Retrieves a User from kwargs.
     """
     key_name = self.data.kwargs['user']
     self.data.url_user = User.get_by_key_name(key_name)
 
     if not self.data.url_user:
       raise NotFound('Requested user does not exist')
+
+  def profileFromKwargs(self, profile_model):
+    """Retrieves a profile from kwargs.
+
+    Args:
+      profile_model: The datastore model class
+    """
+    self.userFromKwargs()
 
     fields = ['sponsor', 'program', 'user']
     key_name = '/'.join(self.data.kwargs[i] for i in fields)
