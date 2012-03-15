@@ -350,7 +350,7 @@ class ProfilePage(object):
   def _getEditProfileForm(self, check_age):
     raise NotImplementedError
 
-  def _getCreateProfileForm(self, check_age):
+  def _getCreateProfileForm(self, check_age, save=False):
     raise NotImplementedError
 
   def _getNotificationForm(self):
