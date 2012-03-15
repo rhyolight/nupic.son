@@ -147,11 +147,10 @@ class OrgProfilePage(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.check.isLoggedIn()
+    self.check.isProfileActive()
     self.check.isProgramVisible()
 
     if 'organization' in self.data.kwargs:
-      self.check.isProfileActive()
       self.check.isOrgAdminForOrganization(self.data.organization)
       #probably check if the org is active
     else:
@@ -223,6 +222,7 @@ class OrgProfilePage(RequestHandler):
           self.data.program.key().name(),
           form.cleaned_data['link_id']
           )
+      # TODO(ljv): The backup admin is not assigned a role?
       entity = form.create(commit=True, key_name=key_name)
       self.data.profile.org_admin_for.append(entity.key())
       self.data.profile.is_org_admin = True
