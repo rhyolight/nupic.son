@@ -32,11 +32,12 @@ class UserReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
   class Meta:
     model = User
     css_prefix = 'gsoc_profile_show'
-    fields = ['link_id']
+    fields = ['link_id', 'account']
 
   def __init__(self, *args, **kwargs):
     super(UserReadOnlyTemplate, self).__init__(*args, **kwargs)
     self.fields['link_id'].group = "1. User info"
+    self.fields['account'].group = "1. User info"
 
 
 class ProfileShowPage(object):
