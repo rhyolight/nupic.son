@@ -43,3 +43,17 @@ def queryAllMentorsKeysForOrg(org, limit=1000):
   oa_keys = query.fetch(limit=limit)
 
   return set(mentors_keys + oa_keys)
+
+
+def queryProfilesForUser(user):
+  """Returns a query that fetches all GSoC profiles created for the specified
+  User
+  
+  Args:
+    user: User entity for which the profiles are created
+  """
+
+  if not user:
+    raise ValueError('User cannot be set to None')
+
+  return GSoCProfile.all().ancestor(user)
