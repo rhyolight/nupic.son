@@ -20,6 +20,8 @@
 
 import logging
 
+from google.appengine.ext import db 
+
 from django.utils import simplejson
 from django.utils.translation import ugettext
 
@@ -27,12 +29,14 @@ from soc.logic.exceptions import BadRequest
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
+from soc.views import profile_show
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
 from soc.logic import org_app as org_app_logic
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -361,6 +365,13 @@ class GSoCOrgAppShowPage(RequestHandler):
 
     if record:
       context['record'] = OrgAppReadOnlyTemplate(record)
+      
+      # admin info should be available only to the hosts
+      if self.data.is_host: 
+        context['main_admin_url'] = self.data.redirect.profile(
+            record.main_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW)
+        context['backup_admin_url'] = self.data.redirect.profile(
+            record.backup_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW)
 
     if self.data.timeline.surveyPeriod(self.data.org_app):
       if record:
