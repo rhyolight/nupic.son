@@ -332,7 +332,7 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
     return form(data=self.data.POST or None,
         request_data=self.data, instance=self.data.profile)
 
-  def _getCreateProfileForm(self, is_student, save=False):
+  def _getCreateProfileForm(self, is_student, save=False, prefill_data=False):
     if is_student:
       if save:
         form = GCICreateStudentProfileForm
