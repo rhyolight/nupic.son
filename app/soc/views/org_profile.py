@@ -46,7 +46,7 @@ class OrgProfileForm(forms.ModelForm):
     homepage_fields = [
         'tags', 'name', 'feed_url', 'home_page', 'pub_mailing_list',
         'description', 'ideas', 'contrib_template',
-        'facebook', 'twitter', 'blog'
+        'facebook', 'twitter', 'blog', 'google_plus',
     ]
 
     for field in homepage_fields:
