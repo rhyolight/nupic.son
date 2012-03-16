@@ -78,6 +78,10 @@ DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU = ugettext(
     'This evaluation does not correspond to the project you are mentor for, '
     'and hence you cannot access it.')
 
+DEF_ORG_APP_NOT_FOUND = ugettext(
+    'You cannot create the organization profile for %s because there '
+    'is no organization application for that id.')
+
 DEF_ORG_APP_NOT_ACCEPTED = ugettext(
     'You cannot create the organization profile for %s because the '
     'organization application for it has not been accepted.')
@@ -442,6 +446,9 @@ class AccessChecker(access_checker.AccessChecker):
     q.filter('org_id', org_id)
     q.filter('program', self.data.program)
     app_record = q.get()
+
+    if not app_record:
+      raise NotFound(DEF_ORG_APP_NOT_FOUND % org_id)
 
     if self.data.user.key() not in [
         app_record.main_admin.key(), app_record.backup_admin.key()]:
