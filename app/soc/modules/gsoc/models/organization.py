@@ -257,6 +257,12 @@ class GSoCOrganization(soc.models.organization.Organization):
   blog.help_text = ugettext("URL of the Blog of your Organization")
   blog.group = ugettext("1. Public Info")
 
+  google_plus = db.LinkProperty(
+      required=False, verbose_name=ugettext('Google+ URL'))
+  google_plus.help_text = ugettext(
+      'URL to the Google+ page of your organization')
+  google_plus.group = ugettext("1. Public Info")
+
   tags = db.StringListProperty(verbose_name=ugettext('Tags'))
 
   proposal_extra = db.StringListProperty(
