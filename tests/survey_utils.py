@@ -106,6 +106,7 @@ class SurveyHelper(object):
       'user': user,
       'main_admin': user,
       'status': 'accepted',
+      'program': self.program,
     }
     properties.update(override)
     entity = self.seed(OrgAppRecord, properties)
