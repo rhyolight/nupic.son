@@ -160,11 +160,11 @@ class ProfilePage(object):
 
   def prefilledProfileData(self):
     if not self.data.user:
-      return {}
+      return None
 
     profile = self._getProfileForCurrentUser()
     if not profile:
-      return {}
+      return None
 
     properties = {}
     for property_name in profile.properties():
