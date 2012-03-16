@@ -24,32 +24,30 @@ melange.templates.inherit(
     var marker;
     var geocoder;
 
-    // The following strings can be customized to reflect ids in the page.
-    // You can also add or remove fields used for GMap Geocoding in 
-    // the JSON address object
-
     var current_lat = 0;
     var current_lng = 0;
 
-    // Two different levels for zoom: Starting one and an inner that 
-    // is used when showing the map if lat and lon page fields are set
+    // Different levels of zoom dependent on which fields are filled
     var world_zoom = 1;
     var country_zoom = 4;
     var state_zoom = 6;
     var city_zoom = 10;
-    var address_zoom = 13;
+    var address_zoom = 14;
 
-    // Do not add a starting # as this JQuery selector seems 
-    // incompatible with GMap API
-    var map_div = "profile_map";
+    // The following strings can be customized to reflect ids in the page.
+    // You can also add or remove fields used for GMap Geocoding in
+    // the JSON address object
+
+    var map_div = "#profile_map";
 
     // Id of the element which the map will be appended after.
     var append_to = "#form_row_publish_location";
 
     var field_lat = "#latitude";
     var field_lng = "#longitude";
+
     // Need to save old values to avoid unwanted updating 
-    // of lat and lot if marker dragged and blur another time an address field
+    // of lat and lon if marker dragged and blur another time an address field
     var address = {
       street: {
         id: "#res_street",
@@ -107,8 +105,6 @@ melange.templates.inherit(
     // This function reads address fields, merge them and uses
     // GMap API geocoding to find the first hit
     // Using geocoding
-    // http://code.google.com/intl/it-IT/apis/maps/documentation/
-    // services.html#Geocoding
     function calculateAddress() {
       // If the user has really edited address fields...
       if (isNewAddress()) {
@@ -119,11 +115,14 @@ melange.templates.inherit(
         });
   
         // Ask GMap API for geocoding
-        geocoder.getLatLng(
-          address_string,
-          function (point) {
-            // If a point is found
-            if (point) {
+        geocoder.geocode(
+          {
+            address: address_string
+          },
+          function (geocoder_result, geocoder_status) {
+            // If the geocoding has been successful
+            if (geocoder_status === google.maps.GeocoderStatus.OK) {
+              var point = geocoder_result[0].geometry.location;
               // Save the current address in the JSON object
               saveOldAddress();
               // Set the new zoom, map center and marker coords
@@ -140,10 +139,9 @@ melange.templates.inherit(
               else if (jQuery(address.country.id).val() !== "") {
                 zoom_set = country_zoom;
               }
-              map.setCenter(point, zoom_set);
-              marker.setPoint(point);
-              map.clearOverlays();
-              map.addOverlay(marker);
+              map.setZoom(zoom_set);
+              map.setCenter(point);
+              marker.setPosition(point);
               // Save point coords in local variables and then update 
               // the page lat/lng fields
               current_lat = point.lat();
@@ -157,63 +155,66 @@ melange.templates.inherit(
   
     // Public function to load the map
     function map_load() {
-      // All can happen only if there is gmap compatible browser.
-      // TODO: Fallback in case the browser is not compatible
-      if (google.maps.BrowserIsCompatible()) {
-        // Save the address fields. This is useful if the page is being edited
-        // to not update blindly the lat/lng fields with GMap geocoding if
-        // blurring an address field
-        saveOldAddress();
-        var starting_point;
-        var zoom_selected = world_zoom;
-        var show_marker = true;
+      // Save the address fields. This is useful if the page is being edited
+      // to not update blindly the lat/lng fields with GMap geocoding if
+      // blurring an address field
+      saveOldAddress();
+      var starting_point;
+      var zoom_selected = world_zoom;
+      var show_marker = true;
+
+      var init_map_options = {
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControl: true,
+        panControl: true,
+        zoomControl: true
+      };
   
-        // Create the map and add small controls
-        map = new google.maps.Map2(document.getElementById(map_div));
-        map.addControl(new google.maps.SmallMapControl());
-        map.addControl(new google.maps.MapTypeControl());
+      // Create the map
+      map = new google.maps.Map(jQuery(map_div)[0], init_map_options);
   
-        // Instantiate a global geocoder for future use
-        geocoder = new google.maps.ClientGeocoder();
+      // Instantiate a global geocoder for future use
+      geocoder = new google.maps.Geocoder();
   
-        // If lat and lng fields are not void (the page is being edited) then
-        // update the starting coords, modify the zoom level and tells following
-        // code to show the marker
-        if (jQuery(field_lat).val() !== "" && jQuery(field_lng).val() !== "") {
-          readLatLngFields();
-          zoom_selected = address_zoom;
-          show_marker = true;
-        }
-  
-        // Set map center, marker coords and show it if this is an editing
-        starting_point = new google.maps.LatLng(current_lat, current_lng);
-        map.setCenter(starting_point, zoom_selected);
-        marker = new google.maps.Marker(starting_point, {draggable: true});
-        if (show_marker) {
-          map.addOverlay(marker);
-        }
-  
-        // Adds a new event listener to geocode the address when an address 
-        // field is blurred
-        jQuery.each(address, function (level, level_details) {
-          jQuery(level_details.id).blur(calculateAddress);
-        });
-  
-        // Adds a new event listener: if the marker has been dragged around...
-        google.maps.Event.addListener(marker, "dragend", function () {
-          // Update internal variables with current marker coords...
-          current_lat = marker.getPoint().lat();
-          current_lng = marker.getPoint().lng();
-          // ...and set page fields accordingly
-          setLatLngFields();
-        });
+      // If lat and lng fields are not empty (the page is being edited) then
+      // update the starting coords, modify the zoom level and tells following
+      // code to show the marker
+      if (jQuery(field_lat).val() !== "" && jQuery(field_lng).val() !== "") {
+        readLatLngFields();
+        zoom_selected = address_zoom;
+        show_marker = true;
       }
+  
+      // Set map center, marker coords and show it if this is an editing
+      starting_point = new google.maps.LatLng(current_lat, current_lng);
+      map.setZoom(zoom_selected);
+      map.setCenter(starting_point);
+
+      marker = new google.maps.Marker({position: starting_point, draggable: true});
+      if (show_marker) {
+        marker.setMap(map);
+      }
+  
+      // Adds a new event listener to geocode the address when an address
+      // field is blurred
+      jQuery.each(address, function (level, level_details) {
+        jQuery(level_details.id).blur(calculateAddress);
+      });
+  
+      // Adds a new event listener: if the marker has been dragged around...
+      google.maps.event.addListener(marker, "dragend", function () {
+        // Update internal variables with current marker coords...
+        current_lat = marker.getPosition().lat();
+        current_lng = marker.getPosition().lng();
+        // ...and set page fields accordingly
+        setLatLngFields();
+      });
     }
   
     jQuery(
       function () {
         jQuery(append_to).append("<div id='" + map_div + "'></div>");
-        melange.loadGoogleApi("maps", "2", {}, map_load);
+        melange.loadGoogleApi("maps", "3", {other_params: "sensor=false"}, map_load);
       }
     );
   }
