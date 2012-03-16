@@ -1237,7 +1237,10 @@ class RequestComponent(Component):
     self.for_admin = for_admin
     self.idx = 7 if for_admin else 8
     r = data.redirect
-    list_config = lists.ListConfiguration()
+
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s" % (
+        ent.parent_key().id_or_name())), hidden=True)
     list_config.addSimpleColumn('type', 'Request/Invite')
     if self.for_admin:
       list_config.addColumn(
