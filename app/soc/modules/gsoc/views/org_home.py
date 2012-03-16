@@ -124,6 +124,7 @@ class Contact(Template):
         'blogger_link': self.data.organization.blog,
         'pub_mailing_list_link': self.data.organization.pub_mailing_list,
         'irc_channel_link': self.data.organization.irc_channel,
+        'google_plus_link': self.data.organization.google_plus
     }
 
   def templatePath(self):
