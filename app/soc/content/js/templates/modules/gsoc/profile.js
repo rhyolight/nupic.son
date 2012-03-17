@@ -38,7 +38,7 @@ melange.templates.inherit(
     // You can also add or remove fields used for GMap Geocoding in
     // the JSON address object
 
-    var map_div = "#profile_map";
+    var map_div = "profile_map";
 
     // Id of the element which the map will be appended after.
     var append_to = "#form_row_publish_location";
@@ -171,7 +171,7 @@ melange.templates.inherit(
       };
   
       // Create the map
-      map = new google.maps.Map(jQuery(map_div)[0], init_map_options);
+      map = new google.maps.Map(jQuery("#" + map_div)[0], init_map_options);
   
       // Instantiate a global geocoder for future use
       geocoder = new google.maps.Geocoder();
