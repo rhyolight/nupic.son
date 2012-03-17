@@ -1294,15 +1294,16 @@ class RequestComponent(Component):
 
     if self.for_admin:
       title = 'Requests for my organizations'
+      description = ugettext('List of requests for my organizations.')
     else:
       title = 'My requests'
+      description = ugettext('List of my requests.')
 
     return {
         'name': 'requests',
         'title': title,
         'lists': [list],
-        'description': ugettext(
-            'List of requests for my organizations.'),
+        'description': description
     }
 
 
