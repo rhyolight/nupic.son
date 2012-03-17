@@ -1240,7 +1240,7 @@ class RequestComponent(Component):
 
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn('key', 'Key', (lambda ent, *args: "%s" % (
-        ent.parent_key().id_or_name())), hidden=True)
+        ent.keyName())), hidden=True)
     list_config.addSimpleColumn('type', 'Request/Invite')
     if self.for_admin:
       list_config.addColumn(
