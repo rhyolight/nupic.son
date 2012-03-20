@@ -291,7 +291,7 @@ class RequestData(request_data.RequestData):
 
       from soc.modules.gsoc.models.program import GSoCProgram
       host_key = GSoCProgram.scope.get_value_for_datastore(self.program)
-      self.is_host = self.is_developer or host_key in self.user.host_for
+      self.is_host = host_key in self.user.host_for
 
     if self.profile:
       org_keys = set(self.profile.mentor_for + self.profile.org_admin_for)
