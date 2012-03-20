@@ -226,6 +226,8 @@ class OrgProfilePage(RequestHandler):
       entity = form.create(commit=True, key_name=key_name)
       self.data.profile.org_admin_for.append(entity.key())
       self.data.profile.is_org_admin = True
+      self.data.profile.mentor_for.append(entity.key())
+      self.data.profile.is_mentor = True
       self.data.profile.put()
     else:
       entity = form.save(commit=True)
