@@ -1230,8 +1230,11 @@ class SlotsList(AcceptedOrgsList):
     list_config.addColumn('name', 'Name',
         (lambda e, *args: e.short_name.strip()), width=75)
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+
     options = [('', 'All'), ('true', 'New'), ('false', 'Veteran')]
     list_config.addSimpleColumn('new_org', 'New', width=25, options=options)
+    list_config.setColumnEditable('new_org', True, 'select')
+
     list_config.addSimpleColumn('slots_desired', 'min', width=25)
     list_config.addSimpleColumn('max_slots_desired', 'max', width=25)
     list_config.addSimpleColumn('slots', 'Slots', width=50)
@@ -1260,8 +1263,10 @@ class SlotsList(AcceptedOrgsList):
     for key_name, properties in parsed.iteritems():
       note = properties.get('note')
       slots = properties.get('slots')
+      new_org = properties.get('new_org')
 
-      if 'note' not in properties and 'slots' not in properties:
+      if ('note' not in properties and 'slots' not in properties and
+          'new_org' not in properties):
         logging.warning("Neither note or slots present in '%s'" % properties)
         continue
 
@@ -1272,6 +1277,13 @@ class SlotsList(AcceptedOrgsList):
         else:
           slots = int(slots)
 
+      if new_org:
+        if not new_org in ['New', 'Veteran']:
+          logging.warning("Invalid value for new_org: '%s'" % new_org)
+          properties.pop('new_org')
+        else:
+          new_org = True if new_org == 'New' else False
+
       def update_org_txn():
         org = GSoCOrganization.get_by_key_name(key_name)
         if not org:
@@ -1281,6 +1293,9 @@ class SlotsList(AcceptedOrgsList):
           org.note = note
         if 'slots' in properties:
           org.slots = slots
+        if 'new_org' in properties:
+          org.new_org = new_org
+
         org.put()
 
       db.run_in_transaction(update_org_txn)
