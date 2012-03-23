@@ -104,6 +104,7 @@ class GSoCProfileForm(profile.ProfileForm):
   """
 
   def __init__(self, request_data=None, *args, **kwargs):
+    self.program = request_data.program
     super(GSoCProfileForm, self).__init__(
         gsoc_forms.GSoCBoundField, request_data, *args, **kwargs)
 
@@ -120,11 +121,18 @@ class GSoCProfileForm(profile.ProfileForm):
 
     widgets = forms.mergeWidgets(_choiceWidgets, _hiddenWidgets)
 
-  # TODO
-  # clean_birth_date = cleaning.clean_birth_date('birth_date')
-
   def templatePath(self):
     return gsoc_forms.TEMPLATE_PATH
+
+
+class GSoCStudentProfileForm(GSoCProfileForm):
+  """Django form for GSoC Student profile page.
+  """
+
+  class Meta(GSoCProfileForm.Meta):
+    pass
+
+  clean_birth_date = cleaning.clean_birth_date('birth_date')
 
 
 class CreateGSoCProfileForm(GSoCProfileForm):
@@ -158,6 +166,16 @@ class CreateGSoCProfileForm(GSoCProfileForm):
           "You cannot register without agreeing to the Terms of Service"]
 
     return value
+
+
+class CreateGSoCStudentProfileForm(CreateGSoCProfileForm):
+  """Django edit form for Create Student profiles.
+  """
+
+  class Meta(CreateGSoCProfileForm.Meta):
+    pass
+
+  clean_birth_date = cleaning.clean_birth_date('birth_date')
 
 
 class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
@@ -264,8 +282,12 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     return GSoCUserForm(self.data.POST or None)
 
   def _getEditProfileForm(self, check_age):
-    return GSoCProfileForm(data=self.data.POST or None,
-        instance=self.data.profile)
+    if check_age:
+      return GSoCStudentProfileForm(data=self.data.POST or None,
+        instance=self.data.profile, request_data=self.data)
+    else:
+      return GSoCProfileForm(data=self.data.POST or None,
+        instance=self.data.profile, request_data=self.data)
 
   def _getCreateProfileForm(self, check_age, save=False, prefill_data=False):
     tos_content = self._getTOSContent()
@@ -275,8 +297,14 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     else:
       prefilled_data = None
 
-    return CreateGSoCProfileForm(tos_content,
+    if check_age:
+      form = CreateGSoCStudentProfileForm(tos_content, request_data=self.data,
         data=self.data.POST or prefilled_data)
+    else:
+      form = CreateGSoCProfileForm(tos_content, request_data=self.data,
+        data=self.data.POST or prefilled_data)
+
+    return form
 
   def _getNotificationForm(self):
     if self.data.student_info or self.data.kwargs.get('role') == 'student':
