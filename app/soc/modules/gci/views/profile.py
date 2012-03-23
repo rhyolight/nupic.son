@@ -93,6 +93,7 @@ class GCIProfileForm(profile.ProfileForm):
         gci_forms.GCIBoundField, request_data, *args, **kwargs)
     self.fields['avatar'].widget = gci_forms.AvatarWidget(
         avatars=AVATARS_BY_COLOR, colors=COLORS)
+    self.program = request_data.program
 
   class Meta:
     model = GCIProfile
@@ -191,6 +192,8 @@ class GCIStudentProfileForm(GCIProfileForm):
     exclude = STUDENT_EXCLUDE
     widgets = GCIProfileForm.Meta.widgets
 
+  clean_birth_date = cleaning.clean_birth_date('birth_date')
+
 
 class GCICreateStudentProfileForm(GCICreateProfileForm):
   """Django edit form to edit GCI student profile page.
@@ -201,6 +204,8 @@ class GCICreateStudentProfileForm(GCICreateProfileForm):
     css_prefix = GCICreateProfileForm.Meta.css_prefix
     exclude = STUDENT_EXCLUDE
     widgets = GCICreateProfileForm.Meta.widgets
+
+  clean_birth_date = cleaning.clean_birth_date('birth_date')
 
 
 class GCIShowCreateStudentProfileForm(GCICreateProfileForm):
