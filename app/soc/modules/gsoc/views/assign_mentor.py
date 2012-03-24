@@ -55,7 +55,7 @@ class AssignMentorFields(Template):
 
   def __init__(self, data, current_mentors, action,
                all_mentors=None, possible_mentors=None,
-               mentor_required=False):
+               mentor_required=False, add_new_link=False):
     """Instantiates the template for Assign mentor buttons for org admin.
 
     data: The request data object
@@ -64,7 +64,9 @@ class AssignMentorFields(Template):
     all_mentors: Set of all the mentors that can be assigned to this entity
     possible_mentors: List of possible mentors that can be assigned to
         this entity.
-    mentor_required: True if org admin is not allowed to unassign a mentor
+    mentor_required: True if org admin is not allowed to unassign a mentor.
+    add_new_link: True if "Add new" link for assigning multiple mentors should
+        be rendered.
     """
     super(AssignMentorFields, self).__init__(data)
     self.current_mentors = current_mentors
@@ -115,6 +117,7 @@ class AssignMentorFields(Template):
         'action': self.action,
         'mentor_required': self.mentor_required,
         'mentors': mentors,
+        'add_new_link': self.add_new_link,
         }
 
   def templatePath(self):

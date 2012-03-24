@@ -44,9 +44,11 @@
           </select>
         {% endfor %}
       </div>
+      {% if add_new_link %}
       <div id="user-menu-add-another-link">
         <a href="javascript:new_link()">Add New</a>
       </div>
+      {% endif %}
     </div>
     <input id="form-user-proposal-assign-mentor-submit" type="submit" value="Assign" class="submit" />
   </form>

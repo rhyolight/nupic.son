@@ -146,7 +146,8 @@ class UserActions(Template):
     context['assign_mentor'] = assign_mentor.AssignMentorFields(
         self.data, self.data.project.mentors,
         r.project().urlOf('gsoc_project_assign_mentors'),
-        all_mentors=all_mentors_keys, mentor_required=True)
+        all_mentors=all_mentors_keys, mentor_required=True,
+        add_new_link=True)
 
     return context
 
