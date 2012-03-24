@@ -74,6 +74,7 @@ class AssignMentorFields(Template):
     self.all_mentors = all_mentors
     self.possible_mentors = possible_mentors
     self.mentor_required = mentor_required
+    self.add_new_link = add_new_link
 
   def _getMentorContext(self, current_mentor=None):
     """Returns the context for assigning mentors along with the current state.
