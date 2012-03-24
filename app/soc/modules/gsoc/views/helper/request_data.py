@@ -19,6 +19,8 @@ request in the GSoC module.
 """
 
 
+import logging
+
 from google.appengine.ext import db
 
 from soc.logic.exceptions import NotFound
@@ -27,7 +29,6 @@ from soc.views.helper import request_data
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.models.timeline import GSoCTimeline
 
 
 class TimelineHelper(request_data.TimelineHelper):
@@ -260,7 +261,6 @@ class RequestData(request_data.RequestData):
       from soc.models.site import Site
       program_key = Site.active_program.get_value_for_datastore(self.site)
       program_key_name = program_key.name()
-      import logging
       logging.error("No program specified")
 
     timeline_key = db.Key.from_path('GSoCTimeline', program_key_name)
