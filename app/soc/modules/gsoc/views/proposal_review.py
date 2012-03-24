@@ -225,7 +225,8 @@ class UserActions(Template):
       r = self.data.redirect
       possible_mentors_keys = self.data.proposal.possible_mentors
       all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
-          self.data.proposal_org)
+          self.data.proposal_org) if self.data.proposal_org.list_all_mentors \
+          else []
 
       current_mentors = []
       if self.data.proposal.mentor:
