@@ -226,10 +226,15 @@ class UserActions(Template):
       possible_mentors_keys = self.data.proposal.possible_mentors
       all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
           self.data.proposal_org)
+
+      current_mentors = []
+      if self.data.proposal.mentor:
+        current_mentors.append(self.data.proposal.mentor.key())
+
       context['assign_mentor'] = assign_mentor.AssignMentorFields(
-          self.data, self.data.proposal.mentor,
+          self.data, current_mentors,
           r.review().urlOf('gsoc_proposal_assign_mentor'),
-          possible_mentors_keys, all_mentors_keys)
+          all_mentors_keys, possible_mentors_keys)
 
     return context
 
