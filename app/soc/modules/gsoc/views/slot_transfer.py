@@ -167,6 +167,7 @@ class UpdateSlotTransferPage(RequestHandler):
         'page_name': 'Transfer slots to pool',
         'form_header_msg': 'Transfer the slots to the pool',
         'forms': [slot_transfer_form],
+        'error': slot_transfer_form.errors
         }
 
     r = self.data.redirect.organization()
