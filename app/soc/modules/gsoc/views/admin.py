@@ -1232,7 +1232,9 @@ class SlotsList(AcceptedOrgsList):
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
 
     options = [('', 'All'), ('true', 'New'), ('false', 'Veteran')]
-    list_config.addSimpleColumn('new_org', 'New', width=25, options=options)
+    list_config.addColumn('new_org', 'New/Veteran',
+        lambda e, *args:'Veteran' if e.new_org else 'New', width=60,
+        options=options)
     list_config.setColumnEditable('new_org', True, 'select')
 
     list_config.addSimpleColumn('slots_desired', 'min', width=25)
