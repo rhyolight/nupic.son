@@ -1237,8 +1237,8 @@ class SlotsList(AcceptedOrgsList):
         options=options)
     list_config.setColumnEditable('new_org', True, 'select')
 
-    list_config.addSimpleColumn('slots_desired', 'min', width=25)
-    list_config.addSimpleColumn('max_slots_desired', 'max', width=25)
+    list_config.addSimpleColumn('slots_desired', 'Min', width=25)
+    list_config.addSimpleColumn('max_slots_desired', 'Max', width=25)
     list_config.addSimpleColumn('slots', 'Slots', width=50)
     list_config.setColumnEditable('slots', True)
     list_config.setColumnSummary('slots', 'sum', "<b>Total: {0}</b>")
