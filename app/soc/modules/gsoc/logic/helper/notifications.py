@@ -139,7 +139,8 @@ def newReviewContext(data, comment, to_emails):
 
   template = DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE
 
-  if data.proposer.notify_public_comments and not comment.is_private:
+  if (data.proposer.key() != data.profile.key() and
+      data.proposer.notify_public_comments and not comment.is_private):
     to_emails.append(data.proposer.email)
 
   return getContext(data, to_emails, message_properties, subject, template)
