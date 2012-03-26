@@ -797,7 +797,8 @@ class SubmittedProposalsComponent(Component):
         ('', 'All'),
         ('(invalid|withdrawn|ignored)', 'Invalid'),
     ]
-    list_config.addColumn('status', 'Status', getStatusOnDashboard, options=options)
+    list_config.addColumn('status', 'Status', getStatusOnDashboard,
+                          options=options)
 
     list_config.addColumn(
         'last_modified_on', 'Last modified',
@@ -873,6 +874,7 @@ class SubmittedProposalsComponent(Component):
       for column in org.proposal_extra:
         extra_columns.append(column)
         col_name = "%s" % (column)
+
         list_config.addColumn(
             column, col_name, get_col_prop(column))
         list_config.setColumnEditable(column, True, 'text', {})
