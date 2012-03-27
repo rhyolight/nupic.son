@@ -42,7 +42,7 @@ class StudentInfo(db.Model):
   school_name.help_text = ugettext(
       'Please enter the full name of your school, college or university in'
       ' this field. Please use the complete formal name of your school, e.g.'
-      ' University of California at Berkley, instead of Cal or UCB. It would'
+      ' University of California at Berkeley, instead of Cal or UCB. It would'
       ' be most wonderful if you could provide your school\'s name in English,'
       ' as all the program administrators speak English as their first'
       ' language and it will make it much easier for us to assemble program'
