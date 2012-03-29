@@ -119,7 +119,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
       invited_user = existing_user_cleaner(self)
 
     self.request_data.invited_user.append(invited_user)
-    
+
     # check if the organization has already sent an invitation to the user
     query = db.Query(GSoCRequest)
     query.filter('type', 'Invitation')
@@ -154,7 +154,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
     if self.request_data.organization.key() in role_for:
       raise djangoforms.ValidationError('That user already has this role.')
 
-    
+
 class InvitePage(RequestHandler):
   """Encapsulate all the methods required to generate Invite page.
   """
@@ -213,12 +213,8 @@ class InvitePage(RequestHandler):
     invite_form.cleaned_data['role'] = self.data.kwargs['role']
     invite_form.cleaned_data['type'] = 'Invitation'
 
-    import logging
-    logging.warning('hi')
-
     def create_invite_txn(user):
       invite = invite_form.create(commit=True, parent=user)
-      logging.warning("%r" % user.key())
       context = notifications.inviteContext(self.data, invite)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()

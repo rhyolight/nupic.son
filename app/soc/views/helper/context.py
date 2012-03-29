@@ -18,10 +18,6 @@
 """
 
 
-import os
-
-from google.appengine.ext import db
-
 from soc.logic import system
 from soc.logic.helper import xsrfutil
 from soc.logic import site
