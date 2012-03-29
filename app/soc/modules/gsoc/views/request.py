@@ -60,9 +60,6 @@ class RequestForm(GSoCModelForm):
     css_prefix = 'gsoc_request'
     fields = ['message']
 
-  def clean_custom_message(self):
-    dsads
-
 
 class RequestPage(RequestHandler):
   """Encapsulate all the methods required to generate Request page.
