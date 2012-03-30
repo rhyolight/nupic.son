@@ -187,7 +187,8 @@ class InvitePage(RequestHandler):
         'logout_link': self.data.redirect.logout(),
         'page_name': 'Invite a new %s' % role,
         'program': self.data.program,
-        'invite_form': invite_form
+        'invite_form': invite_form,
+        'error': bool(invite_form.errors)
     }
 
   def _createFromForm(self):
@@ -233,7 +234,7 @@ class InvitePage(RequestHandler):
 
     if self._createFromForm():
       self.redirect.invite()
-      self.redirect.to('gsoc_invite')
+      self.redirect.to('gsoc_invite', validated=True)
     else:
       self.get()
 
