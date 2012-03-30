@@ -37,6 +37,11 @@ DEF_NO_ORG_ID_FOR_CREATE = ugettext(
     'There is no organization id specified to create a new organization.')
 
 
+DEF_TAG_TOO_LONG = ugettext(
+    'Each tag should be less than 450 characters, but tag "%s" has %d '
+    'characters.')
+
+
 PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
     'proposal_extra', 'tags',
 ]
@@ -65,7 +70,8 @@ class OrgProfileForm(org_profile.OrgProfileForm):
       self.fields['tags'].initial = ', '.join(self.instance.tags)
       self.fields['tags'].group = org_profile.HOMEPAGE_INFO_GROUP
       self.fields['tags'].help_text = ugettext(
-          'Comma separated list of organization tags')
+          'Comma separated list of organization tags. Each tag must be less '
+          'than 450 characters.')
 
   class Meta:
     model = GSoCOrganization
@@ -82,6 +88,9 @@ class OrgProfileForm(org_profile.OrgProfileForm):
     tags = []
     for tag in self.data.get('tags').split(','):
       if tag:
+        if len(tag) > 450:
+          raise django_forms.ValidationError(
+              DEF_TAG_TOO_LONG % (tag, len(tag)))
         tags.append(tag.strip())
     return tags
 
