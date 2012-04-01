@@ -27,9 +27,9 @@ builtins:
 - deferred: on
 
 handlers:
-- url: /(robots.txt|favicon.ico)
+- url: /(robots\.txt|favicon\.ico)
   static_files: soc/content/\1
-  upload: soc/content/(robots.txt|favicon.ico)  
+  upload: soc/content/(robots\.txt|favicon\.ico)  
   expiration: 30d
 
 - url: /tiny_mce/.*
@@ -57,22 +57,22 @@ handlers:
 
 - url: /js/(.*?)/jquery/(.*)
   static_files: jquery.min/\2
-  upload: jquery.min/(.*)
+  upload: jquery\.min/(.*)
   expiration: 1d
 
 - url: /js/(.*?)/json/(.*)
   static_files: json.min/\2
-  upload: json.min/(.*)
+  upload: json\.min/(.*)
   expiration: 30d
 
 - url: /js/(.*?)/modernizr/(.*)
   static_files: modernizr.min/\2
-  upload: modernizr.min/(.*)
+  upload: modernizr\.min/(.*)
   expiration: 30d
 
 - url: /js/(.*?)/LABjs/(.*)
   static_files: LABjs.min/\2
-  upload: LABjs.min/(.*)
+  upload: LABjs\.min/(.*)
   expiration: 30d
 
 - url: /admin/shell.*
@@ -91,9 +91,9 @@ handlers:
   script: mapreduce/main.py
   login: admin
 
-- url: /google(.*).html
+- url: /google(.*)\.html
   static_files: webmaster/google\1.html
-  upload: webmaster/google(.*).html
+  upload: webmaster/google(.*)\.html
 
 - url: /.*
   script: main.py
