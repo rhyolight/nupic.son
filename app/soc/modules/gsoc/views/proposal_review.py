@@ -567,7 +567,7 @@ class PostComment(RequestHandler):
     comment = self.createCommentFromForm()
     if comment:
       self.redirect.program()
-      self.redirect.to('gsoc_dashboard')
+      self.redirect.to('gsoc_dashboard', anchor='proposals_submitted')
     else:
       # This is an insanely and absolutely hacky solution. We definitely
       # do not want any one to use this a model for writing code elsewhere
