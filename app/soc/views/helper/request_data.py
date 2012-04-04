@@ -416,6 +416,14 @@ class RedirectHelper(object):
 
     return '%s://%s%s' % (protocol, hostname, url)
 
+  def _appendAnchor(self, url, anchor=None):
+    """Appends the anchor to the URL.
+    """
+    if anchor:
+      url = '%s#%s' % (url, anchor)
+
+    return url
+
   def _appendGetArgs(self, url, cbox=False, validated=False,
       extra_get_args=[]):
     """Appends GET arguments to the specified URL.
@@ -441,7 +449,7 @@ class RedirectHelper(object):
     return url
 
   def to(self, name=None, validated=False, full=False, secure=False,
-         cbox=False, extra=[]):
+         cbox=False, extra=[], anchor=None):
     """Redirects to the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -459,6 +467,8 @@ class RedirectHelper(object):
     else:
       assert name or self._url_name
       url = self.urlOf(name or self._url_name)
+
+    url = self._appendAnchor(url, anchor)
 
     url = self._appendGetArgs(url, cbox=cbox, validated=validated,
         extra_get_args=extra)
