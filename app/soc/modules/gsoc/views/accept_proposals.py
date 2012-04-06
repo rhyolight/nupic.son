@@ -53,7 +53,7 @@ class AcceptProposalsPage(RequestHandler):
     conversion_status = conversion_logic.getOrCreateStatusForProgram(program)
 
     context = {
-      'page_name': 'Accept proposals for %s' %program.name,
+      'page_name': 'Accept proposals for %s' % program.name,
       'conversion_status': conversion_status,
     }
 
