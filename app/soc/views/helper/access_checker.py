@@ -494,6 +494,17 @@ class BaseAccessChecker(object):
       return
 
     raise AccessViolation(DEF_NO_USER_LOGIN)
+  
+  def isUserValid(self):
+    """Checks if the user entity is valid.
+    """
+    self.isLoggedIn()
+    
+    if self.data.user and self.data.user.status == 'valid':
+      return
+    
+    raise AccessViolation(DEF_KEYNAME_BASED_ENTITY_INVALID % (
+        'User', self.data.user.key())
 
   def isNotUser(self):
     """Checks if the current user does not have an User entity.
@@ -525,6 +536,7 @@ class BaseAccessChecker(object):
     """Checks if the user has a profile for the current program.
     """
     self.isLoggedIn()
+    self.isUserValid()
 
     if self.data.profile:
       return
@@ -535,6 +547,7 @@ class BaseAccessChecker(object):
     """Checks if the profile of the current user is active.
     """
     self.hasProfile()
+    self.isUserValid()
 
     if self.data.profile.status == 'active':
       return
