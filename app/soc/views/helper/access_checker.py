@@ -499,8 +499,9 @@ class BaseAccessChecker(object):
     """Checks if the user entity is valid.
     """
     self.isLoggedIn()
+    self.isUser()
     
-    if self.data.user and self.data.user.status == 'valid':
+    if self.data.user.status == 'valid':
       return
     
     raise AccessViolation(DEF_KEYNAME_BASED_ENTITY_INVALID % (
