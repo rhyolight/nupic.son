@@ -274,13 +274,18 @@
           colModel[col_index].hidedlg = true;
           // This is needed otherwise hidedlg won't be added to the actual grid
           thegrid.jqGrid("getColProp", col_object.name).hidedlg = true;
+          var original_width = thegrid.jqGrid("getGridParam","width");
           thegrid.jqGrid("hideCol", col_object.name);
+          thegrid.jqGrid("setGridWidth", original_width);
+
         } else {
           colModel[col_index].hidden = false;
           colModel[col_index].hidedlg = false;
           // This is needed otherwise hidedlg won't be added to the actual grid
           thegrid.jqGrid("getColProp", col_object.name).hidedlg = false;
+          var original_width = thegrid.jqGrid("getGridParam","width");
           thegrid.jqGrid("showCol", col_object.name);
+          thegrid.jqGrid("setGridWidth", original_width);
         }
       }
     });
