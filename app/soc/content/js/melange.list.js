@@ -719,8 +719,8 @@
               jQuery("#load_" + _self.jqgrid.id).hide();
 
               //Trigger toolbar set default filters if a default one is requested (searchoptions)
-              if (_self.jqgrid.object.triggerToolbar !== undefined) {
-                _self.jqgrid.object.triggerToolbar();
+              if (_self.jqgrid.object[0].triggerToolbar !== undefined) {
+                _self.jqgrid.object[0].triggerToolbar();
               }
 
               //check if there are editable columns
