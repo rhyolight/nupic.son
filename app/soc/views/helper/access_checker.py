@@ -504,7 +504,7 @@ class BaseAccessChecker(object):
       return
     
     raise AccessViolation(DEF_KEYNAME_BASED_ENTITY_INVALID % (
-        'User', self.data.user.key()))
+        'User', self.data.user.key())
 
   def isNotUser(self):
     """Checks if the current user does not have an User entity.
