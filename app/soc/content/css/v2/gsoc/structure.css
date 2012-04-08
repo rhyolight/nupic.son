@@ -75,18 +75,6 @@
   padding: 0 0 0 7px;
   text-transform: uppercase;
 }
-#main .block div.block-title {
-  /*block title*/
-
-  font-weight: bold;
-  background: #6eb5e5;
-  color: #fff;
-  font-size: 15px;
-  line-height: 30px;
-  margin: 0;
-  padding: 0 0 0 7px;
-  text-transform: uppercase;
-}
 #main .block .block-content {
   /*block content*/
 
@@ -133,6 +121,18 @@
 #main .block .org-home-readmore a {
   color: #d5620e;
   text-decoration: none;
+}
+#main .block div.block-title {
+  /*block title*/
+
+  font-weight: bold;
+  background: #6eb5e5;
+  color: #fff;
+  font-size: 15px;
+  line-height: 30px;
+  margin: 0;
+  padding: 0 0 0 7px;
+  text-transform: uppercase;
 }
 #main .home-block-1 {
   /*how summer of code works*/
@@ -485,7 +485,7 @@
 }
 #main .action-button .button {
   background: url("../../../images/v2/gsoc/form-submit-bg.png") repeat scroll 0 0 transparent;
-  color: white;
+  color: #ffffff;
   width: 90px;
   padding: 3px;
   text-decoration: none;
