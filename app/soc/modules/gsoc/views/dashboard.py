@@ -484,7 +484,7 @@ class MyProposalsComponent(Component):
         description=MyProposalsComponent.DESCRIPTION, preload_list=False)
     return {
         'name': 'proposals',
-        'title': 'PROPOSALS',
+        'title': 'Proposals',
         'lists': [list],
         'description': ugettext('List of my submitted proposals'),
         }

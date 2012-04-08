@@ -96,7 +96,8 @@
   background-image: url(../../../images/v2/soc/dashboard/duplicates.png);
 }
 .column-entry.proposals_submitted,
-.column-entry.manage_proposals {
+.column-entry.manage_proposals,
+.column-entry.proposals {
   background-image: url(../../../images/v2/soc/dashboard/proposals.png);
 }
 .column-entry.accept_proposals,
