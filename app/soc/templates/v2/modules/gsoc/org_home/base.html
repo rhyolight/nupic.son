@@ -22,10 +22,10 @@ limitations under the License.
 
 {% block page_content %}
 <div id="organization-name" class="block full home-block-1">
+  {% if organization.logo_url %}
+    <img src="{{ organization.logo_url }}" class="alignleft" alt="{{ organization.short_name }}" title ="{{ organization.short_name }}" />
+  {% endif %}
   <h2 id="title-section-organization-name">
-    {% if organization.logo_url %}
-      <img src="{{ organization.logo_url }}" class="alignleft" alt="{{ organization.short_name }}" title ="{{ organization.short_name }}" />
-    {% endif %}
     {{ organization.name }}
   </h2>
   <div id="edit-page" class="org-page-link">
