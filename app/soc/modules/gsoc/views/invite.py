@@ -390,7 +390,7 @@ class ShowInvite(RequestHandler):
 
     if not self.data.profile:
       self.redirect.program()
-      self.redirect.to('edit_gsoc_profile')
+      self.redirect.to('edit_gsoc_profile', secure=True)
 
     invite_key = self.data.invite.key()
     profile_key = self.data.profile.key()

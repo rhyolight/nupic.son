@@ -251,7 +251,7 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
 
     if not organization:
       self.redirect.program()
-      self.redirect.to('edit_gsoc_profile', validated=True)
+      self.redirect.to('edit_gsoc_profile', validated=True, secure=True)
       return
 
     self.redirect.organization(organization)

@@ -402,7 +402,7 @@ class AccessChecker(access_checker.AccessChecker):
     program = self.data.program
     r = self.data.redirect.createProfile('org_admin')
     msg = DEF_NO_ORG_ADMIN_PROFILE % (
-          program.short_name, r.urlOf('create_gsoc_profile'))
+          program.short_name, r.urlOf('create_gsoc_profile', secure=True))
 
     if not self.data.user:
       raise AccessViolation(msg)

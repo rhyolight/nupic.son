@@ -64,7 +64,7 @@ def siteMenuContext(data):
     context['tasks_link'] = redirect.program().urlOf('gci_list_tasks')
     if not data.user:
       context['register_as_student_link'] = redirect.createProfile(
-          'student').urlOf('create_gci_profile')
+          'student').urlOf('create_gci_profile', secure=True)
 
   return context
 
@@ -123,10 +123,10 @@ class MainMenu(Template):
       if self.data.profile.status == 'active':
         if self.data.timeline.programActive():
           context['profile_link'] = self.data.redirect.urlOf(
-              'edit_gci_profile')
+              'edit_gci_profile', secure=True)
         else:
           context['profile_link'] = self.data.redirect.urlOf(
-              'show_gci_profile')
+              'show_gci_profile', secure=True)
 
         if self.data.is_org_admin:
           # Add org admin dashboard link if the user has active

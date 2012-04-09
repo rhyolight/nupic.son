@@ -61,12 +61,14 @@ class Apply(Template):
 
       if self.data.timeline.studentSignup():
         context['student_apply_block'] = True
-        profile_link = r.createProfile('student').urlOf('create_gsoc_profile')
+        profile_link = r.createProfile('student').urlOf('create_gsoc_profile',
+                                                        secure=True)
         context['student_profile_link'] = profile_link + suffix
       else:
         context['mentor_apply_block'] = True
 
-      profile_link = r.createProfile('mentor').urlOf('create_gsoc_profile')
+      profile_link = r.createProfile('mentor').urlOf('create_gsoc_profile',
+                                                     secure=True)
       context['mentor_profile_link'] = profile_link + suffix
       return context
 

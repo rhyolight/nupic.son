@@ -755,7 +755,7 @@ class LookupLinkIdPage(RequestHandler):
         cbox = True
 
       self.redirect.profile(profile.link_id)
-      self.redirect.to(url_names.GSOC_PROFILE_SHOW, cbox=cbox)
+      self.redirect.to(url_names.GSOC_PROFILE_SHOW, cbox=cbox, secure=True)
 
     return {
       'forms': forms,
@@ -1421,7 +1421,7 @@ class StudentsList(AcceptedOrgsList):
         (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
         hidden=True)
     list_config.setRowAction(lambda e, *args:
-        r.profile(e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW))
+        r.profile(e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW), secure=True)
 
     def formsSubmitted(ent, si):
       info = si[ent.key()]

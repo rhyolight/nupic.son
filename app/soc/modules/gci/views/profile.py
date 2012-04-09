@@ -293,7 +293,7 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
     """Handler for Delete Account POST action.
     """
     self.redirect.program()
-    self.redirect.to('gci_delete_account')
+    self.redirect.to('gci_delete_account', secure=True)
 
   def editProfilePostAction(self):
     """Handler for regular (edit/create profile) POST action.
@@ -309,7 +309,7 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
       raise RedirectRequest(create_url + '?org_id=' + org_id)
 
     self.redirect.program()
-    self.redirect.to(self._getEditProfileURLName(), validated=True)
+    self.redirect.to(self._getEditProfileURLName(), validated=True, secure=True)
 
   def _getModulePrefix(self):
     return 'gci'

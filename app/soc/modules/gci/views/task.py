@@ -670,7 +670,7 @@ class CommentsTemplate(Template):
         'comments': comments,
         'login': self.data.redirect.login().url(),
         'student_reg_link': self.data.redirect.createProfile('student')
-            .urlOf('create_gci_profile'),
+            .urlOf('create_gci_profile', secure=True),
     }
 
     if self._commentingAllowed():

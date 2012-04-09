@@ -118,12 +118,13 @@ class Apply(Template):
         r.createProfile('org_admin')
       elif self.data.timeline.studentSignup():
         r.createProfile('mentor')
-        context['mentor_profile_link'] = r.urlOf('create_gsoc_profile')
+        context['mentor_profile_link'] = r.urlOf('create_gsoc_profile',
+                                                 secure=True)
         r.createProfile('student')
       elif self.data.timeline.mentorSignup():
         r.createProfile('mentor')
 
-      context['profile_link'] = r.urlOf('create_gsoc_profile')
+      context['profile_link'] = r.urlOf('create_gsoc_profile', secure=True)
 
     if self.data.timeline.orgSignup() and self.data.profile:
       context['org_apply_link'] = r.orgAppTake().urlOf('gsoc_take_org_app')

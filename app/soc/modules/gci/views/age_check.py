@@ -80,7 +80,8 @@ class AgeCheck(RequestHandler):
       context['failed_check'] = True
     elif age_check_result:
       # age check passed, redirect to create profile page
-      self.redirect.createProfile('student').to('create_gci_profile')
+      self.redirect.createProfile('student').to('create_gci_profile',
+                                                secure=True)
       return {}
 
     if self.data.POST:

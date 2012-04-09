@@ -269,7 +269,7 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.profile:
       org_id = self.data.GET['org_id']
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
-          'create_gci_profile')
+          'create_gci_profile', secure=True)
       raise RedirectRequest(profile_url + '?new_org=' + org_id)
 
   def isBeforeAllWorkStopped(self):
