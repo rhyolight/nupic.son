@@ -18,7 +18,6 @@
 """
 
 
-from google.appengine.api import users
 from google.appengine.ext import db
 
 from django.forms import fields

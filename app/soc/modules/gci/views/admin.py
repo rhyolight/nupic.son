@@ -18,8 +18,6 @@
 """
 
 
-import logging
-
 from google.appengine.api import users
 
 from django import forms as djangoforms

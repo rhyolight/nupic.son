@@ -262,7 +262,7 @@ class ShowInvite(RequestHandler):
 
   def checkAccess(self):
     self.check.isProfileActive()
-    
+
     invite_id = int(self.data.kwargs['id'])
     invited_user_link_id = self.data.kwargs['user']
     if invited_user_link_id == self.data.user.link_id:

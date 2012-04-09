@@ -20,7 +20,6 @@
 
 from django import forms as django_forms
 from django.core.urlresolvers import reverse
-from django.forms import fields
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
