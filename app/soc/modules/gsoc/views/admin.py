@@ -38,6 +38,7 @@ from soc.logic.exceptions import BadRequest
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
 from soc.views.dashboard import DashboardUserActions
+from soc.views.helper import addresses
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -47,12 +48,14 @@ from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.dashboard import BIRTHDATE_FORMAT
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -763,7 +766,7 @@ class LookupLinkIdPage(RequestHandler):
 
 
 class AcceptedOrgsList(Template):
-  """Template for list of accepted organizations
+  """Template for list of accepted organizations.
   """
 
   def __init__(self, request, data):
@@ -1340,7 +1343,7 @@ class SlotsPage(RequestHandler):
   def context(self):
     return {
       'page_name': 'Slots page',
-      'slots_list': SlotsList(self.request, self.data),
+      'list': SlotsList(self.request, self.data),
     }
 
 
@@ -1391,4 +1394,167 @@ class SurveyReminderPage(RequestHandler):
       'mentor_surveys': mentor_surveys,
       'student_surveys': student_surveys,
       'msg': self.request.GET.get('msg', '')
+    }
+
+
+class StudentsList(AcceptedOrgsList):
+  """List configuration for listing all the students involved with the program.
+  """
+
+  def __init__(self, request, data):
+    """Initializes this component.
+    """
+    self.request = request
+    self.data = data
+
+    r = self.data.redirect
+    list_config = lists.ListConfiguration()
+    list_config.addColumn(
+        'name', 'Name', lambda ent, *args: ent.name())
+    list_config.addSimpleColumn('link_id', "Link ID")
+    list_config.addSimpleColumn('email', "Email")
+    list_config.addSimpleColumn('given_name', "Given name", hidden=True)
+    list_config.addSimpleColumn('surname', "Surname", hidden=True)
+    list_config.addSimpleColumn('name_on_documents', "Legal name", hidden=True)
+    list_config.addColumn(
+        'birth_date', "Birthdate",
+        (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
+        hidden=True)
+    list_config.setRowAction(lambda e, *args:
+        r.profile(e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW))
+
+    def formsSubmitted(ent, si):
+      info = si[ent.key()]
+      tax = GSoCStudentInfo.tax_form.get_value_for_datastore(info)
+      enroll = GSoCStudentInfo.enrollment_form.get_value_for_datastore(info)
+      return [tax, enroll]
+
+    list_config.addColumn(
+        'tax_submitted', "Tax form submitted",
+        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[0])),
+        hidden=True)
+
+    list_config.addColumn(
+        'enroll_submitted', "Enrollment form submitted",
+        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[1])),
+        hidden=True)
+
+    list_config.addColumn(
+        'forms_submitted', "Forms submitted",
+        lambda ent, si, *args: all(formsSubmitted(ent, si)))
+
+    addresses.addAddressColumns(list_config)
+
+    list_config.addColumn('school_name', "school_name",
+        (lambda ent, si, *args: si[ent.key()].school_name), hidden=True)
+    list_config.addColumn('school_country', "school_country",
+        (lambda ent, si, *args: si[ent.key()].school_country), hidden=True)
+    list_config.addColumn('school_home_page', "school_home_page",
+        (lambda ent, si, *args: si[ent.key()].school_home_page), hidden=True)
+    list_config.addColumn('school_type', "school_type",
+        (lambda ent, si, *args: si[ent.key()].school_type), hidden=True)
+    list_config.addColumn('major', "major",
+        (lambda ent, si, *args: si[ent.key()].major), hidden=True)
+    list_config.addColumn('degree', "degree",
+        (lambda ent, si, *args: si[ent.key()].degree), hidden=True)
+    list_config.addColumn('expected_graduation', "expected_graduation",
+        (lambda ent, si, *args: si[ent.key()].expected_graduation), hidden=True)
+
+    list_config.addColumn(
+        'number_of_proposals', "#proposals",
+        lambda ent, si, *args: si[ent.key()].number_of_proposals)
+    list_config.addColumn(
+        'number_of_projects', "#projects",
+        lambda ent, si, *args: si[ent.key()].number_of_projects)
+    list_config.addColumn(
+        'passed_evaluations', "#passed",
+        lambda ent, si, *args: si[ent.key()].passed_evaluations)
+    list_config.addColumn(
+        'failed_evaluations', "#failed",
+        lambda ent, si, *args: si[ent.key()].failed_evaluations)
+    list_config.addColumn(
+        'project_for_orgs', "Organizations",
+        lambda ent, si, o, *args: ', '.join(
+            [o[i].name for i in si[ent.key()].project_for_orgs]))
+
+    self._list_config = list_config
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/dashboard/list_component.html'
+
+  def getListData(self):
+    idx = lists.getListIndex(self.request)
+
+    if idx != 0:
+      return None
+
+    q = GSoCProfile.all()
+
+    q.filter('scope', self.data.program)
+    q.filter('is_student', True)
+
+    starter = lists.keyStarter
+
+    def prefetcher(profiles):
+      keys = []
+
+      for profile in profiles:
+        key = GSoCProfile.student_info.get_value_for_datastore(profile)
+        if key:
+          keys.append(key)
+
+      entities = db.get(keys)
+      si = dict((i.parent_key(), i) for i in entities if i)
+
+      entities = db.get(set(sum((i.project_for_orgs for i in entities), [])))
+      o = dict((i.key(), i) for i in entities if i)
+
+      return ([si, o], {})
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+
+    return response_builder.build()
+
+  def context(self):
+    description = ugettext('List of participating students')
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=0, description=description)
+
+    return {
+        'name': 'students',
+        'title': 'Participating students',
+        'lists': [list],
+    }
+
+
+class StudentsListPage(RequestHandler):
+  """View that lists all the students associated with the program.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/students/%s$' % url_patterns.PROGRAM,
+            self, name='gsoc_students_list_admin'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/admin/list.html'
+
+  def jsonContext(self):
+    list_content = StudentsList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    return {
+      'page_name': 'Students list page',
+      'list': StudentsList(self.request, self.data),
     }

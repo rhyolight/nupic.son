@@ -52,14 +52,12 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
-from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -240,18 +238,6 @@ class DashboardPage(RequestHandler):
     else:
       components += self._getLoneUserComponents()
       components.append(RequestComponent(self.request, self.data, False))
-
-    if self.data.is_host:
-      components += self._getHostComponents()
-
-    return components
-
-  def _getHostComponents(self):
-    """Get the dashboard components for a host.
-    """
-    components = []
-
-    components.append(StudentsComponent(self.request, self.data))
 
     return components
 
@@ -1384,138 +1370,6 @@ class ParticipantsComponent(Component):
         'lists': [list],
         'description': ugettext(
             'List of your organizations members'),
-    }
-
-
-class StudentsComponent(Component):
-  """Component for listing all the students.
-  """
-
-  def __init__(self, request, data):
-    """Initializes this component.
-    """
-    r = data.redirect
-    self.data = data
-    list_config = lists.ListConfiguration()
-    list_config.addColumn(
-        'name', 'Name', lambda ent, *args: ent.name())
-    list_config.addSimpleColumn('link_id', "Link ID")
-    list_config.addSimpleColumn('email', "Email")
-    list_config.addSimpleColumn('given_name', "Given name", hidden=True)
-    list_config.addSimpleColumn('surname', "Surname", hidden=True)
-    list_config.addSimpleColumn('name_on_documents', "Legal name", hidden=True)
-    list_config.addColumn(
-        'birth_date', "Birthdate",
-        (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
-        hidden=True)
-    list_config.setRowAction(lambda e, *args:
-        r.profile(e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW))
-
-    def formsSubmitted(ent, si):
-      info = si[ent.key()]
-      tax = GSoCStudentInfo.tax_form.get_value_for_datastore(info)
-      enroll = GSoCStudentInfo.enrollment_form.get_value_for_datastore(info)
-      return [tax, enroll]
-
-    list_config.addColumn(
-        'tax_submitted', "Tax form submitted",
-        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[0])),
-        hidden=True)
-
-    list_config.addColumn(
-        'enroll_submitted', "Enrollment form submitted",
-        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[1])),
-        hidden=True)
-
-    list_config.addColumn(
-        'forms_submitted', "Forms submitted",
-        lambda ent, si, *args: all(formsSubmitted(ent, si)))
-
-    addresses.addAddressColumns(list_config)
-
-    list_config.addColumn('school_name', "school_name",
-        (lambda ent, si, *args: si[ent.key()].school_name), hidden=True)
-    list_config.addColumn('school_country', "school_country",
-        (lambda ent, si, *args: si[ent.key()].school_country), hidden=True)
-    list_config.addColumn('school_home_page', "school_home_page",
-        (lambda ent, si, *args: si[ent.key()].school_home_page), hidden=True)
-    list_config.addColumn('school_type', "school_type",
-        (lambda ent, si, *args: si[ent.key()].school_type), hidden=True)
-    list_config.addColumn('major', "major",
-        (lambda ent, si, *args: si[ent.key()].major), hidden=True)
-    list_config.addColumn('degree', "degree",
-        (lambda ent, si, *args: si[ent.key()].degree), hidden=True)
-    list_config.addColumn('expected_graduation', "expected_graduation",
-        (lambda ent, si, *args: si[ent.key()].expected_graduation), hidden=True)
-
-    list_config.addColumn(
-        'number_of_proposals', "#proposals",
-        lambda ent, si, *args: si[ent.key()].number_of_proposals)
-    list_config.addColumn(
-        'number_of_projects', "#projects",
-        lambda ent, si, *args: si[ent.key()].number_of_projects)
-    list_config.addColumn(
-        'passed_evaluations', "#passed",
-        lambda ent, si, *args: si[ent.key()].passed_evaluations)
-    list_config.addColumn(
-        'failed_evaluations', "#failed",
-        lambda ent, si, *args: si[ent.key()].failed_evaluations)
-    list_config.addColumn(
-        'project_for_orgs', "Organizations",
-        lambda ent, si, o, *args: ', '.join(
-            [o[i].name for i in si[ent.key()].project_for_orgs]))
-
-    self._list_config = list_config
-
-    super(StudentsComponent, self).__init__(request, data)
-
-  def templatePath(self):
-    return'v2/modules/gsoc/dashboard/list_component.html'
-
-  def getListData(self):
-    idx = lists.getListIndex(self.request)
-
-    if idx != 10:
-      return None
-
-    q = GSoCProfile.all()
-
-    q.filter('scope', self.data.program)
-    q.filter('is_student', True)
-
-    starter = lists.keyStarter
-
-    def prefetcher(profiles):
-      keys = []
-
-      for profile in profiles:
-        key = GSoCProfile.student_info.get_value_for_datastore(profile)
-        if key:
-          keys.append(key)
-
-      entities = db.get(keys)
-      si = dict((i.parent_key(), i) for i in entities if i)
-
-      entities = db.get(set(sum((i.project_for_orgs for i in entities), [])))
-      o = dict((i.key(), i) for i in entities if i)
-
-      return ([si, o], {})
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
-
-    return response_builder.build()
-
-  def context(self):
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=10, preload_list=False)
-
-    return {
-        'name': 'students',
-        'title': 'Participating students',
-        'lists': [list],
-        'description': ugettext(
-            'List of participating students'),
     }
 
 
