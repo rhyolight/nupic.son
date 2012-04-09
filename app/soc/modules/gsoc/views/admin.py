@@ -856,7 +856,7 @@ class ProposalsAcceptedOrgsPage(RequestHandler):
     self.check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/proposals.html'
+    return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
     list_content = ProposalsAcceptedOrgsList(self.request, self.data).getListData()
@@ -933,7 +933,7 @@ class ProjectsAcceptedOrgsPage(RequestHandler):
     self.check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/projects.html'
+    return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
     list_content = ProjectsAcceptedOrgsList(self.request, self.data).getListData()
@@ -1093,7 +1093,7 @@ class ProposalsPage(RequestHandler):
     self.check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/proposals.html'
+    return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
     list_content = ProposalsList(self.request, self.data).getListData()
@@ -1195,7 +1195,7 @@ class ProjectsPage(RequestHandler):
     self.check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/projects.html'
+    return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
     list_content = ProjectsList(self.request, self.data).getListData()
@@ -1319,7 +1319,7 @@ class SlotsPage(RequestHandler):
     self.check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/slots.html'
+    return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
     list_content = SlotsList(self.request, self.data).getListData()
