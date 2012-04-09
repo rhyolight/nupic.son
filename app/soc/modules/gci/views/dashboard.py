@@ -246,16 +246,6 @@ class DashboardPage(RequestHandler):
     else:
       components += self._getLoneUserComponents()
 
-    if self.data.is_host or user_logic.isDeveloper():
-      components += self._getHostComponents()
-
-    return components
-
-  def _getHostComponents(self):
-    """Get the dashboard components for a host.
-    """
-    components = []
-
     return components
 
   def _getStudentComponents(self):
