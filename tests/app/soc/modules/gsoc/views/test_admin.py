@@ -165,7 +165,7 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
   def setUp(self):
     self.init()
 
-  def assertAcceptedOrgs(self, response, base):
+  def assertAcceptedOrgs(self, response):
     """Asserts that all the templates from the accepted orgs list were used
     and all contexts were passed.
     """
@@ -180,8 +180,7 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
       self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
 
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/%s.html' % (
-        base))
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
     self.assertTemplateUsed(response,
         'v2/modules/gsoc/admin/_accepted_orgs_list.html')
 
@@ -193,14 +192,14 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
       # rendered with default base layout
       url = ('/gsoc/admin/%s/' % base) + self.gsoc.key().name()
       response = self.get(url)
-      self.assertAcceptedOrgs(response, base)
+      self.assertAcceptedOrgs(response)
       response = self.getListResponse(url, 0)
       self.assertIsJsonResponse(response)
 
       # rendered inside cbox iframe
       url += '?cbox=true'
       response = self.get(url)
-      self.assertAcceptedOrgs(response, base)
+      self.assertAcceptedOrgs(response)
 
 
 class ProposalsPageTest(GSoCDjangoTestCase):
@@ -225,7 +224,7 @@ class ProposalsPageTest(GSoCDjangoTestCase):
       self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
 
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/proposals.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
     self.assertTemplateUsed(response,
         'v2/modules/gsoc/admin/_proposals_list.html')
 
@@ -279,7 +278,7 @@ class ProjectsPageTest(GSoCDjangoTestCase):
       self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
 
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/projects.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
     self.assertTemplateUsed(response,
         'v2/modules/gsoc/admin/_projects_list.html')
 

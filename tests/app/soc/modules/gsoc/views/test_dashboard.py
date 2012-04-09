@@ -123,8 +123,6 @@ class DashboardTest(GSoCDjangoTestCase):
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertDashboardTemplatesUsed(response)
-    response = self.getListResponse(url, 10)
-    self.assertIsJsonResponse(response)
 
   def testDashboardAsOrgAdmin(self):
     self.data.createOrgAdmin(self.org)

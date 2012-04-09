@@ -36,7 +36,7 @@ class SlotsTest(GSoCDjangoTestCase):
     """Asserts that all the templates from the dashboard were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/slots.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
     self.assertTemplateUsed(response,
         'v2/modules/gsoc/admin/_accepted_orgs_list.html')
 
