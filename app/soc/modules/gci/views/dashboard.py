@@ -920,7 +920,7 @@ class MyOrgsListBeforeOrgProfile(MyOrgsList):
   def _setRowAction(self, request, data):
     self._list_config.setRowAction(
         lambda e, *args: data.redirect.organization(e).
-            urlOf(url_names.EDIT_GCI_ORG_PROFILE), secure=True)
+            urlOf(url_names.EDIT_GCI_ORG_PROFILE, secure=True))
 
 
 class AllOrgsListBeforeRequestRole(MyOrgsList):
