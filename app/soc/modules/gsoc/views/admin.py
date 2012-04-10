@@ -1230,13 +1230,11 @@ class SlotsList(AcceptedOrgsList):
   """
 
   def extraColumn(self, list_config):
-    list_config.addColumn('name', 'Name',
-        (lambda e, *args: e.short_name.strip()), width=75)
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
 
     options = [('', 'All'), ('true', 'New'), ('false', 'Veteran')]
     list_config.addColumn('new_org', 'New/Veteran',
-        lambda e, *args:'Veteran' if e.new_org else 'New', width=60,
+        lambda e, *args:'New' if e.new_org else 'Veteran', width=60,
         options=options)
     list_config.setColumnEditable('new_org', True, 'select')
 
