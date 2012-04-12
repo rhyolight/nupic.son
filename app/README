@@ -31,7 +31,7 @@ removes files, such as license text files, that were added later to the
 and add the package name as a suffix (LICENSE.django is an example of this
 case).
 
-= CREATING AN OFFICIAL RELEASE =
+= CREATING AN OFFICIAL RELEASE (OUTDATED)=
 
 == TAGGING A RELEASE ==
 
