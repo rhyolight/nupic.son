@@ -47,15 +47,16 @@ from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
+from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
-from soc.modules.gsoc.models.proposal import GSoCProposal
-from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
-from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
+from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.request import GSoCRequest
+from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -759,6 +760,15 @@ class SubmittedProposalsComponent(Component):
 
     list_config.addColumn(
         'average', 'Average', lambda ent, *a: getAverage(ent))
+
+    query = db.Query(GSoCScore)
+    query.filter('author', data.profile.key())
+    myScores = dict((q.parent_key(), q.value) for q in query.fetch(1000))
+    def getMyScore(ent, *args):
+      return myScores.get(ent.key(), 'N/A')
+
+    list_config.addColumn(
+        'my_score', 'My score', getMyScore)
 
     def getStatusOnDashboard(proposal, accepted, duplicates):
       """Method for determining which status to show on the dashboard.
