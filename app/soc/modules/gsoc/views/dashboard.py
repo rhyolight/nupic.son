@@ -752,7 +752,7 @@ class SubmittedProposalsComponent(Component):
 
     def getAverage(ent):
       if not ent.nr_scores:
-        return float(0)
+        return "N/A"
 
       average = float(ent.score)/float(ent.nr_scores)
       return float("%.2f" % average)
