@@ -105,6 +105,7 @@ class RequestPage(RequestHandler):
 
     return {
         'logged_in_msg': LoggedInMsg(self.data, apply_link=False),
+        'profile_created': self.data.GET.get('profile') == 'created',
         'page_name': 'Request to become a mentor',
         'program': self.data.program,
         'invite_form': request_form,

@@ -256,12 +256,14 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
 
     self.redirect.organization(organization)
 
+    extra_get_args = []
     if self.data.student_info:
       link = 'submit_gsoc_proposal'
     else:
-      link = 'gsoc_org_home'
+      link = 'gsoc_request'
+      extra_get_args.append('profile=created')
 
-    self.redirect.to(link)
+    self.redirect.to(link, extra=extra_get_args)
 
   def _getModulePrefix(self):
     return 'gsoc'
