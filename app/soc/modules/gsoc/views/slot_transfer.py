@@ -197,9 +197,14 @@ class UpdateSlotTransferPage(RequestHandler):
         slot_transfer_entity = ent
         break
 
-    host_entities = host_logic.getHostsForProgram(self.data.program)
-    to_emails = [i.parent().account.email() for i in host_entities
-                 if i.notify_slot_transfer]
+    # TODO(Madhu): This should return the host entities and not the user
+    # entities and we should check for host.notify_slot_transfer before
+    # sending the email. But at the moment we haved saved all our hosts
+    # without reference to their user entities as parents, so we don't
+    # have a way to get the relationship between the user entities and
+    # the host entities. So use the user entities for now.
+    host_users = host_logic.getHostsForProgram(self.data.program)
+    to_emails = [u.account.email() for u in host_users]
 
     def create_or_update_slot_transfer_trx():
       update = False

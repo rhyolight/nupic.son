@@ -50,14 +50,6 @@ def getHostsForProgram(program_entity, limit=1000):
       program_entity)
   q = User.all()
   q.filter('host_for', sponsor_key)
-  host_users = q.fetch(1000)
-
-  # TODO(Madhu): to be simplified after host_for is moved from user entity
-  # to host entity
-  hosts = []
-  for user in host_users:
-    q = Host.all()
-    q.ancestor(user)
-    hosts.append(q.get())
-
-  return hosts
+  # TODO(Madhu): Return the host entities once we run the Mapreduce to convert
+  # host entities to refer to their corresponding user entities.
+  return q.fetch(1000)
