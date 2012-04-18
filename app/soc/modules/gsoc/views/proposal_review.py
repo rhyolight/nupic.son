@@ -26,6 +26,7 @@ from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
+from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
@@ -199,7 +200,7 @@ class UserActions(Template):
     ignore_button_checked = False
     if self.data.proposal.status == 'ignored':
       ignore_button_checked = True
-    if self.data.proposal.status in ['pending', 'withdrawn', 'ignored']:
+    if self.data.proposal.status in ['pending', 'ignored']:
       ignore_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Ignore Proposal', 'proposal-ignore',
           r.urlOf('gsoc_proposal_ignore'),
@@ -842,6 +843,8 @@ class IgnoreProposal(RequestHandler):
     self.mutator.proposalFromKwargs()
     assert isSet(self.data.proposal_org)
     self.check.isOrgAdminForOrganization(self.data.proposal_org)
+    if self.data.proposal.status == 'withdrawn':
+      raise AccessViolation("You cannot ignore a withdrawn proposal")
 
   def toggleIgnoreProposal(self, value):
     """Toggles the ignore status of the proposal.
