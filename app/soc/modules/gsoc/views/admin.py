@@ -1235,6 +1235,9 @@ class SlotsList(AcceptedOrgsList):
     list_config.addSimpleColumn('slots', 'Slots', width=50)
     list_config.setColumnEditable('slots', True)
     list_config.setColumnSummary('slots', 'sum', "<b>Total: {0}</b>")
+    list_config.addColumn(
+          'slots_unused', 'Unused slots',
+          lambda ent, s, *args: '<strong><font color="red">%s</font></strong>' % s[ent.key()])
     list_config.addSimpleColumn('note', 'Note')
     list_config.setColumnEditable('note', True) #, edittype='textarea')
     list_config.setDefaultPagination(False)
@@ -1296,6 +1299,32 @@ class SlotsList(AcceptedOrgsList):
       db.run_in_transaction(update_org_txn)
 
     return True
+
+  def getListData(self):
+    idx = lists.getListIndex(self.request)
+    if idx != 0:
+      return None
+
+    q = GSoCOrganization.all().filter('scope', self.data.program)
+
+    starter = lists.keyStarter
+
+    def prefetcher(orgs):
+      org_slots_unused = {}
+
+      for org in orgs:
+        prop_q = db.Query(GSoCProposal, keys_only=False).filter('org', org)
+        prop_q.filter('has_mentor', True).filter('accept_as_project', True)
+        slots_used = q.count()
+
+        org_slots_unused[org.key()] = abs(org.slots - slots_used)
+
+      return ([org_slots_unused], {})
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+
+    return response_builder.build()
 
 
 class SlotsPage(RequestHandler):
