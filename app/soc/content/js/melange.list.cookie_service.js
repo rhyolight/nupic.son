@@ -85,9 +85,31 @@
     return filters_configuration;
   };
 
-  $m.saveCurrentTableConfiguration = function (idx, jqgrid_object) {
+  var setTableColumnWidths = function (colModel) {
+    var column_widths_configuration = {
+      column_widths: {}
+    };
+    jQuery.each(colModel, function(index, column) {
+      if (column.width !== undefined) {
+        column_widths_configuration.column_widths[column.name] = column.width;
+      }
+    });
+    return column_widths_configuration;
+  };
+
+  $m.saveCurrentTableConfiguration = function (idx, jqgrid_object, save_width) {
+    /* save_width is optional since it triggers shrinkToFit = false, which can
+       lead to unwanted results if applied to a table in which the user has not
+       changed any column width. */
+    save_width = typeof save_width !== 'undefined' ? save_width : false;
     //TODO(Mario): insulate all the functions better.
     var previous_configuration = melange.cookie.getCookie(melange.cookie.MELANGE_USER_PREFERENCES);
+    if (previous_configuration["lists_configuration"][idx] !== undefined &&
+        previous_configuration["lists_configuration"][idx].column_widths !== undefined) {
+      /* Save the width anyway if nothing has changed in this session but still
+         the columns have been resized at least once by the user.*/
+      save_width = true;
+    }
     var colModel = jqgrid_object.jqGrid('getGridParam', 'colModel');
 
     // Retrieve sort options
@@ -100,6 +122,9 @@
     var configuration_to_save = setTableColumns(colModel);
     configuration_to_save = jQuery.extend(setTableOrder(sortCol, sortOrder), configuration_to_save);
     configuration_to_save = jQuery.extend(setTableFilters(colModel, postData), configuration_to_save);
+    if (save_width === true) {
+      configuration_to_save = jQuery.extend(setTableColumnWidths(colModel), configuration_to_save);
+    }
     var new_configuration = {
       lists_configuration: {}
     };
@@ -136,6 +161,16 @@
             column.searchoptions = {
               defaultValue: column_filter
             }
+          }
+        });
+      }
+      if (previous_configuration["lists_configuration"][idx].column_widths !== undefined) {
+        var previous_widths = previous_configuration["lists_configuration"][idx].column_widths;
+        jQuery.each(previous_widths, function (column_name, column_width) {
+          var column = jLinq.from(colModel).equals("name",column_name).select()[0];
+          if (column !== undefined) {
+            configuration.shrinkToFit = false;
+            column.width = column_width;
           }
         });
       }

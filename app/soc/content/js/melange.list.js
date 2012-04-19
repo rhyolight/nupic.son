@@ -1012,7 +1012,11 @@
           gridComplete: gridCompletionTasks,
           // Zebra striping
           altRows: true,
-          altclass: 'alternate_row'
+          altclass: 'alternate_row',
+          // Save the new columns width everytime one column is resized
+          resizeStop: function() {
+                        melange.list.cookie_service.saveCurrentTableConfiguration(idx, _self.jqgrid.object, true)
+                      }
         }
       );
 
