@@ -1235,7 +1235,8 @@ class SlotsList(AcceptedOrgsList):
     list_config.setColumnSummary('slots', 'sum', "<b>Total: {0}</b>")
     list_config.addColumn(
           'slots_unused', 'Unused slots',
-          lambda ent, s, *args: '<strong><font color="red">%s</font></strong>' % s[ent.key()])
+          lambda ent, s, *args: ('<strong><font color="red">%s</font></strong>'
+                                 % (s[ent.key()])))
     list_config.addSimpleColumn('note', 'Note')
     list_config.setColumnEditable('note', True) #, edittype='textarea')
     list_config.setDefaultPagination(False)
