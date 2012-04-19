@@ -355,14 +355,6 @@ class ManageOrganizationsDashboard(Dashboard):
 
     subpages = [
         {
-            'name': 'slots_allocation',
-            'description': ugettext(
-                'Allocate slots (number of acceptable projects) for '
-                'organizations'),
-            'title': 'Slots allocation',
-            'link': r.urlOf('gsoc_slots')
-        },
-        {
             'name': 'manage_proposals',
             'description': ugettext(
                 'Proposals submitted by student to organizations'),
