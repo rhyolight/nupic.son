@@ -1314,9 +1314,10 @@ class SlotsList(AcceptedOrgsList):
       for org in orgs:
         prop_q = db.Query(GSoCProposal, keys_only=False).filter('org', org)
         prop_q.filter('has_mentor', True).filter('accept_as_project', True)
-        slots_used = q.count()
+        slots_used = prop_q.count()
 
-        org_slots_unused[org.key()] = abs(org.slots - slots_used)
+        org_slots_unused[org.key()] = org.slots - slots_used if \
+            org.slots > slots_used else 0
 
       return ([org_slots_unused], {})
 
