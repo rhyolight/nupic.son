@@ -97,6 +97,24 @@
     return column_widths_configuration;
   };
 
+  var setTableColumnsOrder = function (colModel) {
+    var columns_order_configuration = {
+      columns_order: {}
+    };
+    var cb = 0;
+    /* Do not save column "cb" position, which is a reserved name
+       for multiselect column */
+    if (colModel[0].name === "cb") {
+      cb = 1;
+    }
+    jQuery.each(colModel, function(index, column) {
+      if (column.name !== "cb") {
+        columns_order_configuration.columns_order[column.name] = index-cb;
+      }
+    });
+    return columns_order_configuration;
+  };
+
   $m.saveCurrentTableConfiguration = function (idx, jqgrid_object, save_width) {
     /* save_width is optional since it triggers shrinkToFit = false, which can
        lead to unwanted results if applied to a table in which the user has not
@@ -125,6 +143,7 @@
     if (save_width === true) {
       configuration_to_save = jQuery.extend(setTableColumnWidths(colModel), configuration_to_save);
     }
+    configuration_to_save = jQuery.extend(setTableColumnsOrder(colModel), configuration_to_save);
     var new_configuration = {
       lists_configuration: {}
     };
@@ -136,6 +155,7 @@
   $m.getPreviousTableConfiguration = function (idx, configuration) {
     var previous_configuration = melange.cookie.getCookie(melange.cookie.MELANGE_USER_PREFERENCES);
     var colModel = configuration.colModel;
+    var colNames = configuration.colNames;
     if (previous_configuration["lists_configuration"][idx] !== undefined) {
       var this_list_preferences = previous_configuration["lists_configuration"][idx];
       jQuery.each(this_list_preferences.hidden_columns, function (column_name, is_hidden) {
@@ -173,6 +193,26 @@
             column.width = column_width;
           }
         });
+      }
+      if (previous_configuration["lists_configuration"][idx].columns_order !== undefined) {
+        var previous_order = previous_configuration["lists_configuration"][idx].columns_order;
+        var new_colModel = [];
+        var new_colNames =[];
+        var new_columns = [];
+        var new_columns_colNames = [];
+        jQuery.each(colModel, function (column_index, column_content) {
+          var column_name = column_content.name;
+          if (previous_order[column_name] !== undefined) {
+            new_colModel[previous_order[column_name]] = column_content;
+            new_colNames[previous_order[column_name]] = colNames[column_index];
+          } else {
+            // new columns detected
+            new_columns.push(column_content);
+            new_columns_colNames.push(colNames[column_index]);
+          }
+        });
+        configuration.colModel = jQuery.merge(new_colModel, new_columns);
+        configuration.colNames = jQuery.merge(new_colNames, new_columns_colNames);
       }
     }
     return configuration;
