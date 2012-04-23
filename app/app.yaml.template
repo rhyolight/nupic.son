@@ -97,3 +97,6 @@ handlers:
 
 - url: /.*
   script: main.py
+
+inbound_services:
+- warmup
