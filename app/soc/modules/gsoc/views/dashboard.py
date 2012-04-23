@@ -1298,7 +1298,7 @@ class RequestComponent(Component):
       description = ugettext('List of my requests.')
 
     return {
-        'name': 'requests',
+        'name': 'org_admin_requests' if self.for_admin else 'requests',
         'title': title,
         'lists': [list],
         'description': description

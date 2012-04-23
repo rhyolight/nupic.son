@@ -165,7 +165,8 @@
 {
   background-image: url(../../../images/v2/soc/dashboard/view.png);
 }
-.column-entry.requests
+.column-entry.requests,
+.column-entry.org_admin_requests
 {
   background-image: url(../../../images/v2/soc/dashboard/requests.png);
 }
