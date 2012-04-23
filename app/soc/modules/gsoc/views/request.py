@@ -39,6 +39,19 @@ from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
+DEF_YOU_ARE_ORG_ADMIN = ugettext(
+    'You are now an organization administrator for this organization.')
+
+DEF_YOU_ARE_MENTOR = ugettext(
+    'You are now a mentor for this organization.')
+
+DEF_USER_ORG_ADMIN = ugettext(
+    'This user is now an organization administrator with your organization.')
+
+DEF_USER_MENTOR = ugettext(
+    'This user is now a mentor with your organization.')
+
+
 class RequestForm(GSoCModelForm):
   """Django form for the request page.
   """
@@ -253,14 +266,14 @@ class ShowRequest(RequestHandler):
 
     if self.data.requester_profile.key() == self.data.profile.key():
       if org_key in self.data.requester_profile.org_admin_for:
-        status_msg = "You are now an organization administrator for this organization."
+        status_msg = DEF_YOU_ARE_ORG_ADMIN
       elif org_key in self.data.requester_profile.mentor_for:
-        status_msg = "You are now a mentor for this organization."
+        status_msg = DEF_YOU_ARE_MENTOR
     else:
       if org_key in self.data.requester_profile.org_admin_for:
-        status_msg = "This user is now an organization administrator with your organization."
+        status_msg = DEF_USER_ORG_ADMIN
       elif org_key in self.data.requester_profile.mentor_for:
-        status_msg = "This user is now a mentor with your organization."
+        status_msg = DEF_USER_MENTOR
 
     return {
         'page_name': "Request to become a mentor",

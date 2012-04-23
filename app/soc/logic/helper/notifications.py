@@ -131,7 +131,6 @@ def handledRequestContext(data, status):
   Args:
     data: a RequestData object
   """
-
   assert isSet(data.request_entity)
   assert isSet(data.requester_profile)
 
