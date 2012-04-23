@@ -20,8 +20,11 @@
 
 import re
 
-from htmlsanitizer import HtmlSanitizer
-from htmlsanitizer import safe_html
+from HTMLParser import HTMLParseError
+
+from html5lib import HTMLParser
+from html5lib import sanitizer
+from html5lib.html5parser import ParseError
 
 from google.appengine.api import users
 
@@ -414,22 +417,15 @@ def sanitize_html_string(content):
   Raises:
     forms.ValidationError in case of an error.
   """
-  from HTMLParser import HTMLParseError
-
   try:
-    cleaner = HtmlSanitizer.Cleaner()
-    try:
-      cleaner.string = content.encode("utf-8")
-    except Exception, e:
-      raise forms.ValidationError(str(e))
-    cleaner.clean()
-  except (HTMLParseError, safe_html.IllegalHTML), msg:
+    parser = HTMLParser(tokenizer=sanitizer.HTMLSanitizer)
+    parsed = parser.parseFragment(content, encoding='utf-8')
+    cleaned_content = ''.join([tag.toxml() for tag in parsed.childNodes])
+  except (HTMLParseError, ParseError), msg:
     raise forms.ValidationError(msg)
 
-  content = cleaner.string
-
   try:
-    content = content.decode("utf-8")
+    content = cleaned_content.decode("utf-8")
   except Exception, e:
     raise forms.ValidationError(str(e))
 
