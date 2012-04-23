@@ -272,8 +272,8 @@ class DownloadForm(RequestHandler):
 
   def get(self):
     if self._tax():
-      blob_info = str(self._studentInfo().tax_form)
+      blob_info = self._studentInfo().tax_form
     else:
-      blob_info = str(self._studentInfo().enrollment_form)
+      blob_info = self._studentInfo().enrollment_form
 
     self.response = bs_helper.sendBlob(blob_info)
