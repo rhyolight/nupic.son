@@ -165,6 +165,7 @@ class ShowRequest(RequestHandler):
       'reject': 'Reject',
       'resubmit': 'Resubmit',
       'withdraw': 'Withdraw',
+      'revoke': 'Revoke',
       }
 
   def templatePath(self):
@@ -226,7 +227,7 @@ class ShowRequest(RequestHandler):
     # This code is dupcliated between request and invite
     status = self.data.request_entity.status
 
-    can_accept = can_reject = can_withdraw = can_resubmit = False
+    can_accept = can_reject = can_withdraw = can_resubmit = can_revoke = False
 
     if self.data.can_respond:
       # admin speaking
@@ -235,6 +236,8 @@ class ShowRequest(RequestHandler):
         can_reject = True
       if status == 'rejected':
         can_accept = True
+      if status == 'accepted':
+        can_revoke = True
     else:
       # requester speaking
       if status == 'withdrawn':
@@ -242,7 +245,8 @@ class ShowRequest(RequestHandler):
       if status == 'pending':
         can_withdraw = True
 
-    show_actions = can_accept or can_reject or can_withdraw or can_resubmit
+    show_actions = (can_accept or can_reject or can_withdraw or
+                    can_resubmit or can_revoke)
 
     org_key = self.data.organization.key()
     status_msg = None
@@ -273,6 +277,7 @@ class ShowRequest(RequestHandler):
         'can_reject': can_reject,
         'can_withdraw': can_withdraw,
         'can_resubmit': can_resubmit,
+        'can_revoke': can_revoke,
         }
 
   def post(self):

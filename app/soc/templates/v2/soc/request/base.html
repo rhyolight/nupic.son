@@ -50,6 +50,9 @@ limitations under the License.
         {% if can_resubmit %}
           <input id="request-respond-resubmit-submit" name="action" type="submit" value="{{ actions.resubmit }}" class="submit"/>
         {% endif %}
+        {% if can_revoke %}
+          <input id="request-respond-revoke-submit" name="action" type="submit" value="{{ actions.revoke }}" class="submit"/>
+        {% endif %}
       </div>
     </form>
   </div>
