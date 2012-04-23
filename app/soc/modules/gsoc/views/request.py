@@ -294,6 +294,8 @@ class ShowRequest(RequestHandler):
       self._resubmitRequest()
     elif self.data.action == self.ACTIONS['withdraw']:
       self._withdrawRequest()
+    elif self.data.action == self.ACTIONS['revoke']:
+      self._revokeRequest()
 
     self.redirect.program()
     self.redirect.to('gsoc_dashboard')
@@ -368,3 +370,32 @@ class ShowRequest(RequestHandler):
       request.put()
 
     db.run_in_transaction(withdraw_request_txn)
+
+  def _revokeRequest(self):
+    """Withdraws an invitation.
+    """
+    assert isSet(self.data.request_entity)
+    assert isSet(self.data.organization)
+    assert isSet(self.data.requester_profile)
+
+    request_key = self.data.request_entity.key()
+    profile_key = self.data.requester_profile.key()
+    organization_key = self.data.organization.key()
+
+    def revoke_request_txn():
+      request = db.get(request_key)
+      profile = db.get(profile_key)
+
+      request.status = 'rejected'
+      profile.mentor_for.remove(organization_key)
+      if not profile.mentor_for:
+        profile.is_mentor = False
+
+      profile.put()
+      request.put()
+
+      context = notifications.handledRequestContext(self.data, 'revoked')
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
+      sub_txn()
+
+    db.run_in_transaction(revoke_request_txn)
