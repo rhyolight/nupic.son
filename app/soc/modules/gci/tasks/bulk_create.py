@@ -23,9 +23,6 @@ import logging
 import StringIO
 import time
 
-from django import http
-from django.conf.urls.defaults import url
-from django.utils import simplejson
 from HTMLParser import HTMLParseError
 
 from html5lib import HTMLParser
@@ -36,6 +33,9 @@ from google.appengine.ext import db
 from google.appengine.api import taskqueue
 from google.appengine.runtime import DeadlineExceededError
 
+from django import http
+from django.conf.urls.defaults import url
+from django.utils import simplejson
 
 from soc.tasks.helper import error_handler
 from soc.tasks.helper.timekeeper import Timekeeper
