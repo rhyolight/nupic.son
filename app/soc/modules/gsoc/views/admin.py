@@ -1440,7 +1440,7 @@ class StudentsList(AcceptedOrgsList):
         (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
         hidden=True)
     list_config.setRowAction(lambda e, *args:
-        r.profile(e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW), secure=True)
+        r.profile(e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW, secure=True))
 
     def formsSubmitted(ent, si):
       info = si[ent.key()]
