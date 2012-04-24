@@ -1435,6 +1435,7 @@ class StudentsList(AcceptedOrgsList):
     list_config.addSimpleColumn('given_name', "Given name", hidden=True)
     list_config.addSimpleColumn('surname', "Surname", hidden=True)
     list_config.addSimpleColumn('name_on_documents', "Legal name", hidden=True)
+    list_config.addSimpleColumn('gender', 'Gender', hidden=True)
     list_config.addColumn(
         'birth_date', "Birthdate",
         (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
