@@ -118,7 +118,7 @@ class AssignMentorFields(Template):
         'action': self.action,
         'mentor_required': self.mentor_required,
         'mentors': mentors,
-        'allow_mutliple': self.allow_multiple,
+        'allow_multiple': self.allow_multiple,
         }
 
   def templatePath(self):
