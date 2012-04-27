@@ -845,7 +845,7 @@ class HardenedModulesHook(object):
   __PY27_OPTIONAL_ALLOWED_MODULES = {
 
     'django': [],
-    'jinja2': ['_speedups'],
+    'jinja2': ['_debugsupport', '_speedups'],
     'lxml': ['etree', 'objectify'],
     'markupsafe': ['_speedups'],
     'numpy': [
@@ -1234,6 +1234,11 @@ class HardenedModulesHook(object):
       self._white_list_partial_modules['socket'] = (
         list(self._white_list_partial_modules['socket']) +
         ['getdefaulttimeout', 'setdefaulttimeout'])
+
+
+      webob_path = os.path.join(SDK_ROOT, 'lib', 'webob_1_1_1')
+      if webob_path not in sys.path:
+        sys.path.insert(1, webob_path)
 
       for libentry in self._config.GetAllLibraries():
         self._enabled_modules.append(libentry.name)
@@ -1735,10 +1740,18 @@ class HardenedModulesHook(object):
 
 
 
+
     module.__loader__ = self
     self.FixModule(module)
     if submodule_fullname not in self._module_dict:
       self._module_dict[submodule_fullname] = module
+    if submodule_fullname != submodule:
+      parent_module = self._module_dict.get(
+          submodule_fullname[:-len(submodule) - 1])
+
+
+      if parent_module and not hasattr(parent_module, submodule):
+        setattr(parent_module, submodule, module)
 
     if submodule_fullname == 'os':
 

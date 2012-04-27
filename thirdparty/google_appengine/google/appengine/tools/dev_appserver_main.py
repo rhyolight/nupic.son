@@ -162,7 +162,6 @@ from google.appengine.tools import dev_appserver_multiprocess as multiprocess
 
 
 
-
 DEFAULT_ADMIN_CONSOLE_SERVER = 'appengine.google.com'
 
 
@@ -575,7 +574,7 @@ def main(argv):
   default_partition = option_dict[ARG_DEFAULT_PARTITION]
   appinfo = None
   try:
-    appinfo, matcher, _ = dev_appserver.LoadAppConfig(
+    appinfo, _, _ = dev_appserver.LoadAppConfig(
         root_path, {}, default_partition=default_partition)
   except yaml_errors.EventListenerError, e:
     logging.error('Fatal error when loading application configuration:\n%s', e)
@@ -613,7 +612,6 @@ def main(argv):
   port = option_dict[ARG_PORT]
   login_url = option_dict[ARG_LOGIN_URL]
   address = option_dict[ARG_ADDRESS]
-  require_indexes = option_dict[ARG_REQUIRE_INDEXES]
   allow_skipped_files = option_dict[ARG_ALLOW_SKIPPED_FILES]
   static_caching = option_dict[ARG_STATIC_CACHING]
   persist_logs = option_dict[ARG_PERSIST_LOGS]
@@ -649,7 +647,6 @@ def main(argv):
       port,
       sdk_dir=SDK_PATH,
       serve_address=address,
-      require_indexes=require_indexes,
       allow_skipped_files=allow_skipped_files,
       static_caching=static_caching,
       default_partition=default_partition,
@@ -683,6 +680,7 @@ def main(argv):
         done = True
       except KeyboardInterrupt:
         pass
+    dev_appserver.TearDownStubs()
 
   return 0
 

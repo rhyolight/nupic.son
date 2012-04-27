@@ -25,12 +25,15 @@ from __future__ import with_statement
 
 __all__ = [
            'ApiTemporaryUnavailableError',
+           'BLOBSTORE_FILESYSTEM',
            'Error',
            'ExclusiveLockFailedError',
            'ExistenceError',
            'FileNotOpenedError',
            'FileTemporaryUnavailableError',
+           'FILESYSTEMS',
            'FinalizationError',
+           'GS_FILESYSTEM',
            'InvalidArgumentError',
            'InvalidFileNameError',
            'InvalidParameterError',
@@ -53,13 +56,17 @@ __all__ = [
            'BufferedFile',
            ]
 
-import logging
 import gc
 import os
 
 from google.appengine.api import apiproxy_stub_map
 from google.appengine.api.files import file_service_pb
 from google.appengine.runtime import apiproxy_errors
+
+
+BLOBSTORE_FILESYSTEM = 'blobstore'
+GS_FILESYSTEM = 'gs'
+FILESYSTEMS = (BLOBSTORE_FILESYSTEM, GS_FILESYSTEM)
 
 
 class Error(Exception):
@@ -157,6 +164,8 @@ def _raise_app_error(e):
        file_service_pb.FileServiceErrors.EXISTENCE_ERROR_METADATA_NOT_FOUND,
        file_service_pb.FileServiceErrors.EXISTENCE_ERROR_METADATA_FOUND,
        file_service_pb.FileServiceErrors.EXISTENCE_ERROR_SHARDING_MISMATCH,
+       file_service_pb.FileServiceErrors.EXISTENCE_ERROR_OBJECT_NOT_FOUND,
+       file_service_pb.FileServiceErrors.EXISTENCE_ERROR_BUCKET_NOT_FOUND,
        ]):
     raise ExistenceError()
   elif (e.application_error ==
@@ -374,9 +383,9 @@ class _File(object):
     request.set_exclusive_lock(self._exclusive_lock)
     request.set_content_type(self._content_type)
 
-    if self._mode == 'a':
+    if self._mode == 'a' or self._mode == 'ab':
       request.set_open_mode(file_service_pb.OpenRequest.APPEND)
-    elif self._mode == 'r':
+    elif self._mode == 'r' or self._mode == 'rb':
       request.set_open_mode(file_service_pb.OpenRequest.READ)
     else:
       raise UnsupportedOpenModeError('Unsupported open mode: %s', self._mode)
@@ -595,3 +604,17 @@ class BufferedFile(object):
       self._buffer_pos = 0
     else:
       raise InvalidArgumentError('Whence mode %d is not supported', whence)
+
+
+def _default_gs_bucket_name():
+  """Return the default Google Storage bucket name for the application.
+
+  Returns:
+    A string that is the default bucket name for the application.
+  """
+  request = file_service_pb.GetDefaultGsBucketNameRequest()
+  response = file_service_pb.GetDefaultGsBucketNameResponse()
+
+  _make_call('GetDefaultGsBucketName', request, response)
+
+  return response.default_gs_bucket_name()

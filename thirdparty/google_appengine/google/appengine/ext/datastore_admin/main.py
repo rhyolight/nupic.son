@@ -29,8 +29,10 @@ To use, add this to app.yaml:
 import operator
 import os
 
+from google.appengine.api import app_identity
 from google.appengine.api import datastore_errors
 from google.appengine.api import users
+from google.appengine.ext import deferred
 from google.appengine.ext import webapp
 from google.appengine.ext.datastore_admin import backup_handler
 from google.appengine.ext.datastore_admin import copy_handler
@@ -53,10 +55,17 @@ ENTITY_ACTIONS = {
 BACKUP_ACTIONS = {
     'Delete': backup_handler.ConfirmDeleteBackupHandler.Render,
     'Restore': backup_handler.ConfirmRestoreFromBackupHandler.Render,
+    'Info': backup_handler.BackupInformationHandler.Render,
+}
+
+PENDING_BACKUP_ACTIONS = {
+    'Abort': backup_handler.ConfirmAbortBackupHandler.Render,
+    'Info': backup_handler.BackupInformationHandler.Render,
 }
 
 GET_ACTIONS = ENTITY_ACTIONS.copy()
 GET_ACTIONS.update(BACKUP_ACTIONS)
+GET_ACTIONS.update(PENDING_BACKUP_ACTIONS)
 
 
 def _GetDatastoreStats(kinds_list, use_stats_kinds=False):
@@ -147,13 +156,16 @@ class RouteByActionHandler(webapp.RequestHandler):
         'cancel_url': self.request.path + '?' + self.request.query_string,
         'last_stats_update': last_stats_update,
         'app_id': self.request.get('app_id'),
+        'hosting_app_id': app_identity.get_application_id(),
         'has_namespace': self.request.get('namespace', None) is not None,
         'namespace': self.request.get('namespace'),
         'action_list': sorted(ENTITY_ACTIONS.keys()),
         'backup_action_list': sorted(BACKUP_ACTIONS.keys()),
+        'pending_backup_action_list': sorted(PENDING_BACKUP_ACTIONS.keys()),
         'error': error,
         'completed_operations': self.GetOperations(active=False),
         'active_operations': self.GetOperations(active=True),
+        'pending_backups': self.GetPendingBackups(),
         'backups': self.GetBackups(),
         'map_reduce_path': utils.config.MAPREDUCE_PATH + '/detail'
     }
@@ -175,26 +187,65 @@ class RouteByActionHandler(webapp.RequestHandler):
   def post(self):
     self.RouteAction(GET_ACTIONS)
 
-  def GetKinds(self):
-    """Obtain list of all entity kinds from the datastore."""
-    kinds = metadata.Kind.all().fetch(99999999)
+  def GetKinds(self, all_ns=True):
+    """Obtain a list of all kind names from the datastore.
+
+    Args:
+      all_ns: If true, list kind names for all namespaces.
+              If false, list kind names only for the current namespace.
+
+    Returns:
+      An alphabetized list of kinds for the specified namespace(s).
+    """
+    if all_ns:
+      result = self.GetKindsForAllNamespaces()
+    else:
+      result = self.GetKindsForCurrentNamespace()
+    return result
+
+  def GetKindsForAllNamespaces(self):
+    """Obtain a list of all kind names from the datastore, *regardless*
+    of namespace.  The result is alphabetized and deduped."""
+
+
+    namespace_list = [ns.namespace_name
+                      for ns in metadata.Namespace.all().run(limit=99999999)]
+    kind_itr_list = [metadata.Kind.all(namespace=ns).run(limit=99999999,
+                                                         batch_size=99999999)
+                     for ns in namespace_list]
+
+
+    kind_name_set = set()
+    for kind_itr in kind_itr_list:
+      for kind in kind_itr:
+        kind_name = kind.kind_name
+        if utils.IsKindNameVisible(kind_name):
+          kind_name_set.add(kind.kind_name)
+
+    kind_name_list = sorted(kind_name_set)
+    return kind_name_list
+
+  def GetKindsForCurrentNamespace(self):
+    """Obtain a list of all kind names from the datastore for the
+    current namespace.  The result is alphabetized."""
+    kinds = metadata.Kind.all().order('__key__').fetch(99999999)
     kind_names = []
     for kind in kinds:
       kind_name = kind.kind_name
-      if (kind_name.startswith('__') or
-          kind_name == utils.DatastoreAdminOperation.kind() or
-          kind_name == backup_handler.BackupInformation.kind()):
-        continue
-      kind_names.append(kind_name)
+      if utils.IsKindNameVisible(kind_name):
+        kind_names.append(kind_name)
     return kind_names
 
   def GetOperations(self, active=False, limit=100):
     """Obtain a list of operation, ordered by last_updated."""
     query = utils.DatastoreAdminOperation.all()
     if active:
-      query.filter('active_jobs > ', 0)
+      query.filter('status = ', utils.DatastoreAdminOperation.STATUS_ACTIVE)
     else:
-      query.filter('active_jobs = ', 0)
+      query.filter('status IN ', [
+          utils.DatastoreAdminOperation.STATUS_COMPLETED,
+          utils.DatastoreAdminOperation.STATUS_FAILED,
+          utils.DatastoreAdminOperation.STATUS_ABORTED])
     operations = query.fetch(max(10000, limit) if limit else 1000)
     operations = sorted(operations, key=operator.attrgetter('last_updated'),
                         reverse=True)
@@ -206,6 +257,15 @@ class RouteByActionHandler(webapp.RequestHandler):
     query.filter('complete_time > ', 0)
     backups = query.fetch(max(10000, limit) if limit else 1000)
     backups = sorted(backups, key=operator.attrgetter('complete_time'),
+                     reverse=True)
+    return backups[:limit]
+
+  def GetPendingBackups(self, limit=100):
+    """Obtain a list of pending backups."""
+    query = backup_handler.BackupInformation.all()
+    query.filter('complete_time = ', None)
+    backups = query.fetch(max(10000, limit) if limit else 1000)
+    backups = sorted(backups, key=operator.attrgetter('start_time'),
                      reverse=True)
     return backups[:limit]
 
@@ -277,7 +337,8 @@ def CreateApplication():
        delete_handler.DoDeleteHandler),
       (r'%s/%s' % (utils.config.BASE_PATH,
                    utils.MapreduceDoneHandler.SUFFIX),
-      utils.MapreduceDoneHandler)]
+       utils.MapreduceDoneHandler),
+      (utils.config.DEFERRED_PATH, deferred.TaskHandler)]
       + copy_handler.handlers_list(utils.config.BASE_PATH)
       + backup_handler.handlers_list(utils.config.BASE_PATH)
       + [(r'%s/static.*' % utils.config.BASE_PATH, StaticResourceHandler),

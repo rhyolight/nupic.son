@@ -3,14 +3,15 @@
 import logging
 import sys
 
-from google.appengine.api import datastore  # For taskqueue coordination
-from google.appengine.api import datastore_errors
-from google.appengine.api import memcache
-from google.appengine.api import namespace_manager
-from google.appengine.datastore import datastore_rpc
-from google.appengine.datastore import entity_pb
+from .google_imports import datastore  # For taskqueue coordination
+from .google_imports import datastore_errors
+from .google_imports import memcache
+from .google_imports import namespace_manager
+from .google_imports import urlfetch
+from .google_imports import datastore_rpc
+from .google_imports import entity_pb
 
-from google.net.proto import ProtocolBuffer
+from .google_imports import ProtocolBuffer
 
 from . import key as key_module
 from . import model
@@ -18,15 +19,19 @@ from . import tasklets
 from . import eventloop
 from . import utils
 
-__all__ = ['toplevel', 'Context', 'ContextOptions', 'AutoBatcher']
-
-logging_debug = utils.logging_debug
+__all__ = ['Context', 'ContextOptions', 'TransactionOptions', 'AutoBatcher',
+           'EVENTUAL_CONSISTENCY',
+           ]
 
 _LOCK_TIME = 32  # Time to lock out memcache.add() after datastore updates.
 _LOCKED = 0  # Special value to store in memcache indicating locked value.
 
 
-class ContextOptions(datastore_rpc.TransactionOptions):
+# Constant for read_policy.
+EVENTUAL_CONSISTENCY = datastore_rpc.Configuration.EVENTUAL_CONSISTENCY
+
+
+class ContextOptions(datastore_rpc.Configuration):
   """Configuration options that may be passed along with get/put/delete."""
 
   @datastore_rpc.ConfigOption
@@ -65,24 +70,30 @@ class ContextOptions(datastore_rpc.TransactionOptions):
     return value
 
 
+class TransactionOptions(ContextOptions, datastore_rpc.TransactionOptions):
+  """Support both context options and transaction options."""
+
+
+
 # options and config can be used interchangeably.
 _OPTION_TRANSLATIONS = {
   'options': 'config',
 }
 
 
-def _make_ctx_options(ctx_options):
+def _make_ctx_options(ctx_options, config_cls=ContextOptions):
   """Helper to construct a ContextOptions object from keyword arguments.
 
   Args:
-    ctx_options: a dict of keyword arguments.
+    ctx_options: A dict of keyword arguments.
+    config_cls: Optional Configuration class to use, default ContextOptions.
 
   Note that either 'options' or 'config' can be used to pass another
-  ContextOptions object, but not both.  If another ContextOptions
+  Configuration object, but not both.  If another Configuration
   object is given it provides default values.
 
   Returns:
-    A ContextOptions object, or None if ctx_options is empty.
+    A Configuration object, or None if ctx_options is empty.
   """
   if not ctx_options:
     return None
@@ -93,7 +104,7 @@ def _make_ctx_options(ctx_options):
         raise ValueError('Cannot specify %s and %s at the same time' %
                          (key, translation))
       ctx_options[translation] = ctx_options.pop(key)
-  return ContextOptions(**ctx_options)
+  return config_cls(**ctx_options)
 
 
 class AutoBatcher(object):
@@ -110,8 +121,8 @@ class AutoBatcher(object):
     return '%s(%s)' % (self.__class__.__name__, self._todo_tasklet.__name__)
 
   def run_queue(self, options, todo):
-    logging_debug('AutoBatcher(%s): %d items',
-                  self._todo_tasklet.__name__, len(todo))
+    utils.logging_debug('AutoBatcher(%s): %d items',
+                        self._todo_tasklet.__name__, len(todo))
     fut = self._todo_tasklet(todo, options)
     self._running.append(fut)
     # Add a callback when we're done.
@@ -126,8 +137,8 @@ class AutoBatcher(object):
     fut = tasklets.Future('%s.add(%s, %s)' % (self, arg, options))
     todo = self._queues.get(options)
     if todo is None:
-      logging_debug('AutoBatcher(%s): creating new queue for %r',
-                    self._todo_tasklet.__name__, options)
+      utils.logging_debug('AutoBatcher(%s): creating new queue for %r',
+                          self._todo_tasklet.__name__, options)
       if not self._queues:
         eventloop.add_idle(self._on_idle)
       todo = self._queues[options] = []
@@ -167,13 +178,15 @@ class AutoBatcher(object):
 
 class Context(object):
 
-  def __init__(self, conn=None, auto_batcher_class=AutoBatcher, config=None):
+  def __init__(self, conn=None, auto_batcher_class=AutoBatcher, config=None,
+               parent_context=None):
     # NOTE: If conn is not None, config is only used to get the
     # auto-batcher limits.
     if conn is None:
       conn = model.make_connection(config)
     self._conn = conn
     self._auto_batcher_class = auto_batcher_class
+    self._parent_context = parent_context  # For transaction nesting.
     # Get the get/put/delete limits (defaults 1000, 500, 500).
     # Note that the explicit config passed in overrides the config
     # attached to the connection, if it was passed in.
@@ -629,9 +642,11 @@ class Context(object):
         # Don't serialize the key since it's already the memcache key.
         pbs = entity._to_pb(set_key=False).SerializePartialToString()
         timeout = self._get_memcache_timeout(key, options)
-        # Don't yield -- this can run in the background.
-        # TODO: See issue 105 though.
-        self.memcache_cas(mkey, pbs, time=timeout, namespace=ns)
+        # Don't use fire-and-forget -- for users who forget
+        # @ndb.toplevel, it's too painful to diagnose why their simple
+        # code using a single synchronous call doesn't seem to use
+        # memcache.  See issue 105.  http://goo.gl/JQZxp
+        yield self.memcache_cas(mkey, pbs, time=timeout, namespace=ns)
 
     if use_cache:
       # Cache hit or miss.  NOTE: In this case it is okay to cache a
@@ -674,7 +689,7 @@ class Context(object):
         if use_memcache:
           mkey = self._memcache_prefix + key.urlsafe()
           ns = key.namespace()
-          # TODO: Maybe don't yield here, like it get()?
+          # Don't use fire-and-forget -- see memcache_cas() in get().
           yield self.memcache_delete(mkey, namespace=ns)
 
     if key is not None:
@@ -711,8 +726,15 @@ class Context(object):
     lo_hi = yield self._conn.async_allocate_ids(options, key, size, max)
     raise tasklets.Return(lo_hi)
 
+  @tasklets.tasklet
+  def get_indexes(self, **ctx_options):
+    options = _make_ctx_options(ctx_options)
+    index_list = yield self._conn.async_get_indexes(options)
+    raise tasklets.Return(index_list)
+
   @utils.positional(3)
-  def map_query(self, query, callback, options=None, merge_future=None):
+  def map_query(self, query, callback, pass_batch_into_callback=None,
+                options=None, merge_future=None):
     mfut = merge_future
     if mfut is None:
       mfut = tasklets.MultiFuture('map_query')
@@ -728,29 +750,14 @@ class Context(object):
             batch, i, ent = yield inq.getq()
           except EOFError:
             break
-          if isinstance(ent, model.Key):
-            pass  # It was a keys-only query and ent is really a Key.
-          else:
-            key = ent._key
-            if self._use_cache(key, options):
-              # Update the cache. If this key was already in the
-              # cache, update the cached entity in-place and return
-              # the cached entity, to maintain the invariant that
-              # there is only one copy of each cached entity.
-              cached_ent = self._cache.get(key)
-              if cached_ent is not None and cached_ent.key == key:
-                # TODO: Do the in-place update more subtly, so that
-                # mutable property values (e.g. repeated or structured
-                # properties) keep their identity.
-                cached_ent._values = ent._values
-                ent = cached_ent
-              else:
-                self._cache[key] = ent
+          ent = self._update_cache_from_query_result(ent, options)
+          if ent is None:
+            continue
           if callback is None:
             val = ent
           else:
             # TODO: If the callback raises, log and ignore.
-            if options is not None and options.produce_cursors:
+            if pass_batch_into_callback:
               val = callback(batch, i, ent)
             else:
               val = callback(ent)
@@ -767,9 +774,30 @@ class Context(object):
     helper()
     return mfut
 
+  def _update_cache_from_query_result(self, ent, options):
+    if isinstance(ent, model.Key):
+      return ent  # It was a keys-only query and ent is really a Key.
+    key = ent._key
+    if not self._use_cache(key, options):
+      return ent  # This key should not be cached.
+
+    # Check the cache.  If there is a valid cached entry, substitute
+    # that for the result, even if the cache has an explicit None.
+    if key in self._cache:
+      cached_ent = self._cache[key]
+      if (cached_ent is None or
+          cached_ent.key == key and cached_ent.__class__ is ent.__class__):
+        return cached_ent
+
+    # Update the cache.
+    self._cache[key] = ent
+    return ent
+
   @utils.positional(2)
-  def iter_query(self, query, callback=None, options=None):
+  def iter_query(self, query, callback=None, pass_batch_into_callback=None,
+                 options=None):
     return self.map_query(query, callback=callback, options=options,
+                          pass_batch_into_callback=pass_batch_into_callback,
                           merge_future=tasklets.SerialQueueFuture())
 
   @tasklets.tasklet
@@ -777,30 +805,58 @@ class Context(object):
     # Will invoke callback() one or more times with the default
     # context set to a new, transactional Context.  Returns a Future.
     # Callback may be a tasklet.
-    options = _make_ctx_options(ctx_options)
-    app = ContextOptions.app(options) or key_module._DefaultAppId()
+    options = _make_ctx_options(ctx_options, TransactionOptions)
+    propagation = TransactionOptions.propagation(options)
+    if propagation is None:
+      propagation = TransactionOptions.NESTED
+
+    parent = self
+    if propagation == TransactionOptions.NESTED:
+      if self.in_transaction():
+        raise datastore_errors.BadRequestError(
+          'Nested transactions are not supported.')
+    elif propagation == TransactionOptions.MANDATORY:
+      if not self.in_transaction():
+        raise datastore_errors.BadRequestError(
+          'Requires an existing transaction.')
+      raise tasklets.Return(callback())
+    elif propagation == TransactionOptions.ALLOWED:
+      if self.in_transaction():
+        raise tasklets.Return(callback())
+    elif propagation == TransactionOptions.INDEPENDENT:
+      while parent.in_transaction():
+        parent = parent._parent_context
+        if parent is None:
+          raise datastore_errors.BadRequestError(
+            'Context without non-transactional ancestor')
+    else:
+      raise datastore_errors.BadArgumentError(
+        'Invalid propagation value (%s).' % (propagation,))
+
+    app = TransactionOptions.app(options) or key_module._DefaultAppId()
     # Note: zero retries means try it once.
-    retries = ContextOptions.retries(options)
+    retries = TransactionOptions.retries(options)
     if retries is None:
       retries = 3
-    yield self.flush()
+    yield parent.flush()
     for _ in xrange(1 + max(0, retries)):
-      transaction = yield self._conn.async_begin_transaction(options, app)
+      transaction = yield parent._conn.async_begin_transaction(options, app)
       tconn = datastore_rpc.TransactionalConnection(
-        adapter=self._conn.adapter,
-        config=self._conn.config,
+        adapter=parent._conn.adapter,
+        config=parent._conn.config,
         transaction=transaction)
       old_ds_conn = datastore._GetConnection()
-      tctx = self.__class__(conn=tconn,
-                            auto_batcher_class=self._auto_batcher_class)
+      tctx = parent.__class__(conn=tconn,
+                              auto_batcher_class=parent._auto_batcher_class,
+                              parent_context=parent)
       try:
         # Copy memcache policies.  Note that get() will never use
         # memcache in a transaction, but put and delete should do their
         # memcache thing (which is to mark the key as deleted for
         # _LOCK_TIME seconds).  Also note that the in-process cache and
         # datastore policies keep their default (on) state.
-        tctx.set_memcache_policy(self.get_memcache_policy())
-        tctx.set_memcache_timeout_policy(self.get_memcache_timeout_policy())
+        tctx.set_memcache_policy(parent.get_memcache_policy())
+        tctx.set_memcache_timeout_policy(parent.get_memcache_timeout_policy())
         tasklets.set_context(tctx)
         datastore._SetConnection(tconn)  # For taskqueue coordination
         try:
@@ -816,15 +872,15 @@ class Context(object):
           t, e, tb = sys.exc_info()
           yield tconn.async_rollback(options)  # TODO: Don't block???
           if issubclass(t, datastore_errors.Rollback):
+            # TODO: Raise value using tasklets.get_return_value(t)?
             return
           else:
             raise t, e, tb
         else:
           ok = yield tconn.async_commit(options)
           if ok:
-            # TODO: This is questionable when self is transactional.
-            self._cache.update(tctx._cache)
-            yield self._clear_memcache(tctx._cache)
+            parent._cache.update(tctx._cache)
+            yield parent._clear_memcache(tctx._cache)
             raise tasklets.Return(result)
       finally:
         datastore._SetConnection(old_ds_conn)
@@ -1036,7 +1092,6 @@ class Context(object):
   def urlfetch(self, url, payload=None, method='GET', headers={},
                allow_truncated=False, follow_redirects=True,
                validate_certificate=None, deadline=None, callback=None):
-    from google.appengine.api import urlfetch
     rpc = urlfetch.create_rpc(deadline=deadline, callback=callback)
     urlfetch.make_fetch_call(rpc, url,
                              payload=payload,
@@ -1047,25 +1102,3 @@ class Context(object):
                              validate_certificate=validate_certificate)
     result = yield rpc
     raise tasklets.Return(result)
-
-
-def toplevel(func):
-  """A sync tasklet that sets a fresh default Context.
-
-  Use this for toplevel view functions such as
-  webapp.RequestHandler.get() or Django view functions.
-  """
-  @utils.wrapping(func)
-  def add_context_wrapper(*args, **kwds):
-    __ndb_debug__ = utils.func_info(func)
-    tasklets._state.clear_all_pending()
-    # Create and install a new context.
-    ctx = tasklets.make_default_context()
-    try:
-      tasklets.set_context(ctx)
-      return tasklets.synctasklet(func)(*args, **kwds)
-    finally:
-      tasklets.set_context(None)
-      ctx.flush().check_success()
-      eventloop.run()  # Ensure writes are flushed, etc.
-  return add_context_wrapper

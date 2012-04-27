@@ -179,6 +179,7 @@ BACKENDS = 'backends'
 THREADSAFE = 'threadsafe'
 API_CONFIG = 'api_config'
 CODE_LOCK = 'code_lock'
+ENV_VARIABLES = 'env_variables'
 
 
 PAGES = 'pages'
@@ -199,7 +200,7 @@ OFF_ALIASES = ['no', 'n', 'False', 'f', '0', 'false']
 
 
 SUPPORTED_LIBRARIES = {
-    'django': ['1.2'],
+    'django': ['1.2', '1.3'],
     'jinja2': ['2.6'],
     'lxml': ['2.3'],
     'markupsafe': ['0.15'],
@@ -207,7 +208,7 @@ SUPPORTED_LIBRARIES = {
     'PIL': ['1.1.7'],
     'pycrypto': ['2.3'],
     'setuptools': ['0.6c11'],
-    'webapp2': ['2.3'],
+    'webapp2': ['2.3', '2.5.1'],
     'webob': ['1.1.1'],
     'yaml': ['3.10'],
 }
@@ -719,6 +720,13 @@ class Library(validation.Validated):
                 '", "'.join(SUPPORTED_LIBRARIES[self.name])))
 
 
+class EnvironmentVariables(validation.ValidatedDict):
+  """Class representing a mapping of environment variable key value pairs."""
+
+  KEY_VALIDATOR = validation.Regex('[a-zA-Z_][a-zA-Z0-9_]*')
+  VALUE_VALIDATOR = str
+
+
 class AppInclude(validation.Validated):
   """Class representing the contents of an included app.yaml file.
 
@@ -730,6 +738,8 @@ class AppInclude(validation.Validated):
       INCLUDES: validation.Optional(validation.Type(list)),
       HANDLERS: validation.Optional(validation.Repeated(URLMap)),
       ADMIN_CONSOLE: validation.Optional(AdminConsole),
+
+
 
 
   }
@@ -857,6 +867,7 @@ class AppInfoExternal(validation.Validated):
       THREADSAFE: validation.Optional(bool),
       API_CONFIG: validation.Optional(ApiConfigHandler),
       CODE_LOCK: validation.Optional(bool),
+      ENV_VARIABLES: validation.Optional(EnvironmentVariables),
   }
 
   def CheckInitialized(self):

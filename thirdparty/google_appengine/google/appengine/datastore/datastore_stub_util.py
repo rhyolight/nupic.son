@@ -35,15 +35,21 @@ import collections
 import datetime
 import itertools
 import logging
+import os
 import random
 import struct
+import time
 import threading
+import weakref
+import atexit
 
 from google.appengine.api import api_base_pb
 from google.appengine.api import apiproxy_stub_map
+from google.appengine.api import datastore_admin
 from google.appengine.api import datastore_types
 from google.appengine.api.taskqueue import taskqueue_service_pb
 from google.appengine.datastore import datastore_index
+from google.appengine.datastore import datastore_stub_index
 from google.appengine.datastore import datastore_pb
 from google.appengine.datastore import datastore_query
 from google.appengine.runtime import apiproxy_errors
@@ -160,18 +166,44 @@ def PrepareSpecialPropertiesForStore(entity_proto):
   _PrepareSpecialProperties(entity_proto, False)
 
 
-def LoadEntity(entity):
+def LoadEntity(entity, keys_only=False, property_names=None):
   """Prepares an entity to be returned to the user.
 
   Args:
     entity: a entity_pb.EntityProto or None
+    keys_only: if a keys only result should be produced
+    property_names: if not None or empty, cause a projected entity
+  to be produced with the given properties.
 
   Returns:
     A user friendly copy of entity or None.
   """
   if entity:
     clone = entity_pb.EntityProto()
-    clone.CopyFrom(entity)
+    if property_names:
+
+      clone.mutable_key().CopyFrom(entity.key())
+      clone.mutable_entity_group()
+      seen = set()
+      for prop in entity.property_list():
+        if prop.name() in property_names:
+
+          Check(prop.name() not in seen,
+                "datastore dev stub produced bad result",
+                datastore_pb.Error.INTERNAL_ERROR)
+          seen.add(prop.name())
+          new_prop = clone.add_property()
+          new_prop.set_name(prop.name())
+          new_prop.set_meaning(entity_pb.Property.INDEX_VALUE)
+          new_prop.mutable_value().CopyFrom(prop.value())
+          new_prop.set_multiple(False)
+    elif keys_only:
+
+      clone.mutable_key().CopyFrom(entity.key())
+      clone.mutable_entity_group()
+    else:
+
+      clone.CopyFrom(entity)
     PrepareSpecialPropertiesForLoad(clone)
     return clone
 
@@ -248,9 +280,45 @@ def CheckReference(request_trusted, request_app_id, key):
 
   CheckAppId(request_trusted, request_app_id, key.app())
 
+  Check(key.path().element_size() > 0, 'key\'s path cannot be empty')
+
   for elem in key.path().element_list():
     Check(not elem.has_id() or not elem.has_name(),
           'each key path element should have id or name but not both: %r' % key)
+
+
+def CheckEntity(request_trusted, request_app_id, entity):
+  """Check this entity can be stored.
+
+  Args:
+    request_trusted: If the request is trusted.
+    request_app_id: The application ID of the app making the request.
+    entity: entity_pb.EntityProto
+
+  Raises:
+    apiproxy_errors.ApplicationError: if the entity is invalid
+  """
+  CheckReference(request_trusted, request_app_id, entity.key())
+  for prop in entity.property_list():
+    CheckProperty(request_trusted, request_app_id, prop)
+  for prop in entity.raw_property_list():
+    CheckProperty(request_trusted, request_app_id, prop)
+
+
+def CheckProperty(request_trusted, request_app_id, prop):
+  """Check this property can be stored.
+
+  Args:
+    request_trusted: If the request is trusted.
+    request_app_id: The application ID of the app making the request.
+    prop: entity_pb.Property
+
+  Raises:
+    apiproxy_errors.ApplicationError: if the property is invalid
+  """
+  Check(request_trusted or
+        not datastore_types.RESERVED_PROPERTY_NAME.match(prop.name()),
+        'cannot store entity with reserved property name \'%s\'' % prop.name())
 
 
 def CheckTransaction(request_trusted, request_app_id, transaction):
@@ -289,6 +357,15 @@ def CheckQuery(query, filters, orders, max_query_components):
     orders: normalized (by datastore_index.Normalize) orders from query
     max_query_components: limit on query complexity
   """
+  Check(query.property_name_size() == 0 or not query.keys_only(),
+        'projection and keys_only cannot both be set')
+
+  projected_properties = set(query.property_name_list())
+  for prop_name in query.property_name_list():
+    Check(not datastore_types.RESERVED_PROPERTY_NAME.match(prop_name),
+          'projections are not supported for the property: ' + prop_name)
+  Check(len(projected_properties) == len(query.property_name_list()),
+            "cannot project a property multiple times")
 
   key_prop_name = datastore_types.KEY_SPECIAL_PROPERTY
   unapplied_log_timestamp_us_name = (
@@ -341,6 +418,9 @@ def CheckQuery(query, filters, orders, max_query_components):
             '%s filter namespace is %s but query namespace is %s' %
                 (key_prop_name, ref_val.name_space(), query.name_space()))
 
+    if filter.op() in datastore_index.EQUALITY_OPERATORS:
+      Check(prop_name not in projected_properties,
+            'cannot use projection on a property with an equality filter')
     if (filter.op() in datastore_index.INEQUALITY_OPERATORS and
         prop_name != unapplied_log_timestamp_us_name):
       if ineq_prop_name is None:
@@ -700,16 +780,18 @@ class BaseCursor(object):
   _next_cursor = 1
   _next_cursor_lock = threading.Lock()
 
-  def __init__(self, query, dsquery, orders):
+  def __init__(self, query, dsquery, orders, index_list):
     """Constructor.
 
     Args:
       query: the query request proto.
       dsquery: a datastore_query.Query over query.
       orders: the orders of query as returned by _GuessOrders.
+      index_list: the list of indexes used by the query.
     """
 
     self.keys_only = query.keys_only()
+    self.property_names = set(query.property_name_list())
     self.app = query.app()
     self.cursor = self._AcquireCursorID()
 
@@ -717,8 +799,10 @@ class BaseCursor(object):
         dsquery._filter_predicate)
     self.__order_property_names = set(
         order.property() for order in orders if order.property() != '__key__')
+    self.__index_list = index_list
 
-  def _PopulateResultMetadata(self, query_result, compile, last_result):
+  def _PopulateResultMetadata(self, query_result, compile,
+                              first_result, last_result):
     query_result.set_keys_only(self.keys_only)
     if query_result.more_results():
       cursor = query_result.mutable_cursor()
@@ -727,6 +811,8 @@ class BaseCursor(object):
     if compile:
       self._EncodeCompiledCursor(last_result,
                                  query_result.mutable_compiled_cursor())
+    if first_result:
+      query_result.index_list().extend(self.__index_list)
 
   @classmethod
   def _AcquireCursorID(cls):
@@ -807,16 +893,17 @@ class BaseCursor(object):
 class IteratorCursor(BaseCursor):
   """A query cursor over an entity iterator."""
 
-  def __init__(self, query, dsquery, orders, results):
+  def __init__(self, query, dsquery, orders, index_list, results):
     """Constructor.
 
     Args:
       query: the query request proto
       dsquery: a datastore_query.Query over query.
       orders: the orders of query as returned by _GuessOrders.
+      index_list: A list of indexes used by the query.
       results: iterator over datastore_pb.EntityProto
     """
-    super(IteratorCursor, self).__init__(query, dsquery, orders)
+    super(IteratorCursor, self).__init__(query, dsquery, orders, index_list)
 
     self.__last_result = None
     self.__next_result = None
@@ -885,7 +972,8 @@ class IteratorCursor(BaseCursor):
     self.__offset += 1
     return self.__last_result
 
-  def PopulateQueryResult(self, result, count, offset, compile=False):
+  def PopulateQueryResult(self, result, count, offset,
+                          compile=False, first_result=False):
     """Populates a QueryResult with this cursor and the given number of results.
 
     Args:
@@ -893,7 +981,9 @@ class IteratorCursor(BaseCursor):
       count: integer of how many results to return
       offset: integer of how many results to skip
       compile: boolean, whether we are compiling this query
+      first_result: whether the query result is the first for this query
     """
+    Check(offset >= 0, 'Offset must be >= 0')
     skipped = 0
     try:
       limited_offset = min(offset, _MAX_QUERY_OFFSET)
@@ -911,7 +1001,8 @@ class IteratorCursor(BaseCursor):
         if count > _MAXIMUM_RESULTS:
           count = _MAXIMUM_RESULTS
         while count > 0:
-          result.result_list().append(LoadEntity(self._Next()))
+          result.result_list().append(LoadEntity(self._Next(), self.keys_only,
+                                                 self.property_names))
           count -= 1
 
       self._GetNext()
@@ -920,7 +1011,8 @@ class IteratorCursor(BaseCursor):
 
     result.set_more_results(not self.__done)
     result.set_skipped_results(skipped)
-    self._PopulateResultMetadata(result, compile, self.__last_result)
+    self._PopulateResultMetadata(result, compile,
+                                 first_result, self.__last_result)
 
 
 class ListCursor(BaseCursor):
@@ -930,16 +1022,17 @@ class ListCursor(BaseCursor):
     keys_only: whether the query is keys_only
   """
 
-  def __init__(self, query, dsquery, orders, results):
+  def __init__(self, query, dsquery, orders, index_list, results):
     """Constructor.
 
     Args:
       query: the query request proto
       dsquery: a datastore_query.Query over query.
       orders: the orders of query as returned by _GuessOrders.
+      index_list: the list of indexes used by the query.
       results: list of datastore_pb.EntityProto
     """
-    super(ListCursor, self).__init__(query, dsquery, orders)
+    super(ListCursor, self).__init__(query, dsquery, orders, index_list)
 
     if query.has_compiled_cursor() and query.compiled_cursor().position_list():
       start_cursor = self._DecodeCompiledCursor(query.compiled_cursor())
@@ -993,7 +1086,8 @@ class ListCursor(BaseCursor):
         hi = mid
     return lo
 
-  def PopulateQueryResult(self, result, count, offset, compile=False):
+  def PopulateQueryResult(self, result, count, offset,
+                          compile=False, first_result=False):
     """Populates a QueryResult with this cursor and the given number of results.
 
     Args:
@@ -1001,7 +1095,9 @@ class ListCursor(BaseCursor):
       count: integer of how many results to return
       offset: integer of how many results to skip
       compile: boolean, whether we are compiling this query
+      first_result: whether the query result is the first for this query
     """
+    Check(offset >= 0, 'Offset must be >= 0')
 
     offset = min(offset, self.__count - self.__offset)
     limited_offset = min(offset, _MAX_QUERY_OFFSET)
@@ -1021,14 +1117,17 @@ class ListCursor(BaseCursor):
 
 
 
-      result.result_list().extend(LoadEntity(entity) for entity in results)
+      result.result_list().extend(
+          LoadEntity(entity, self.keys_only, self.property_names)
+          for entity in results)
 
     if self.__offset:
 
       self.__last_result = self.__results[self.__offset - 1]
 
     result.set_more_results(self.__offset < self.__count)
-    self._PopulateResultMetadata(result, compile, self.__last_result)
+    self._PopulateResultMetadata(result, compile,
+                                 first_result, self.__last_result)
 
 
 def _SynchronizeTxn(function):
@@ -1114,7 +1213,8 @@ class LiveTxn(object):
     tracker = self._entity_groups.get(key, None)
     if tracker is None:
       Check(self._app == reference.app(),
-            'Transactions cannot span applications')
+            'Transactions cannot span applications (expected %s, got %s)' %
+            (self._app, reference.app()))
       if self._allow_multiple_eg:
         Check(len(self._entity_groups) < _MAX_EG_PER_TXN,
               'operating on too many entity groups in a single transaction.')
@@ -1195,7 +1295,7 @@ class LiveTxn(object):
     return LoadEntity(entity)
 
   @_SynchronizeTxn
-  def GetQueryCursor(self, query, filters, orders):
+  def GetQueryCursor(self, query, filters, orders, index_list):
     """Runs the given datastore_pb.Query and returns a QueryCursor for it.
 
     Does not see any modifications in the current txn.
@@ -1204,6 +1304,7 @@ class LiveTxn(object):
       query: The datastore_pb.Query to run.
       filters: A list of filters that override the ones found on query.
       orders: A list of orders that override the ones found on query.
+      index_list: A list of indexes used by the query.
 
     Returns:
       A BaseCursor that can be used to fetch query results.
@@ -1211,7 +1312,7 @@ class LiveTxn(object):
     Check(query.has_ancestor(),
           'Query must have an ancestor when performed in a transaction.')
     snapshot = self._GrabSnapshot(query.ancestor())
-    return _ExecuteQuery(snapshot.values(), query, filters, orders)
+    return _ExecuteQuery(snapshot.values(), query, filters, orders, index_list)
 
   @_SynchronizeTxn
   def Put(self, entity, insert):
@@ -1261,6 +1362,7 @@ class LiveTxn(object):
             'transaction closed')
       self._state = self.ROLLEDBACK
     finally:
+      self._txn_manager._RemoveTxn(self)
 
       self._lock.release()
 
@@ -1324,6 +1426,7 @@ class LiveTxn(object):
                           action, e)
       self._actions = []
     finally:
+      self._txn_manager._RemoveTxn(self)
 
       self._txn_manager._ReleaseWriteLocks(meta_data_list)
 
@@ -1774,8 +1877,8 @@ class BaseTransactionManager(object):
       meta_data._write_lock.release()
 
   def _RemoveTxn(self, txn):
-    """Removes a LiveTxn from the txn_map."""
-    del self._txn_map[id(txn)]
+    """Removes a LiveTxn from the txn_map (if present)."""
+    self._txn_map.pop(id(txn), None)
 
   def _Put(self, entity, insert):
     """Put the given entity.
@@ -1972,18 +2075,20 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
 
   _MAX_ACTIONS_PER_TXN = 5
 
-  def __init__(self, require_indexes=False, consistency_policy=None):
+  def __init__(self, require_indexes=False, consistency_policy=None,
+               use_atexit=True):
     BaseTransactionManager.__init__(self, consistency_policy=consistency_policy)
     BaseIndexManager.__init__(self)
 
     self._require_indexes = require_indexes
     self._pseudo_kinds = {}
 
-  def __del__(self):
+    if use_atexit:
 
 
-    self.Flush()
-    self.Write()
+
+
+      atexit.register(self.Write)
 
   def Clear(self):
     """Clears out all stored values."""
@@ -1994,6 +2099,7 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
   def _RegisterPseudoKind(self, kind):
     """Registers a pseudo kind to be used to satisfy a meta data query."""
     self._pseudo_kinds[kind.name] = kind
+    kind._stub = weakref.proxy(self)
 
 
 
@@ -2016,7 +2122,8 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
 
 
     filters, orders = datastore_index.Normalize(raw_query.filter_list(),
-                                                raw_query.order_list())
+                                                raw_query.order_list(),
+                                                raw_query.property_name_list())
 
 
     CheckQuery(raw_query, filters, orders, self._MAX_QUERY_COMPONENTS)
@@ -2026,21 +2133,52 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
     self._CheckHasIndex(raw_query, trusted, calling_app)
 
 
+    index_list = self.__IndexListForQuery(raw_query)
+
+
     if raw_query.has_transaction():
 
       Check(raw_query.kind() not in self._pseudo_kinds,
             'transactional queries on "%s" not allowed' % raw_query.kind())
       txn = self.GetTxn(raw_query.transaction(), trusted, calling_app)
-      return txn.GetQueryCursor(raw_query, filters, orders)
+      return txn.GetQueryCursor(raw_query, filters, orders, index_list)
 
     if raw_query.has_ancestor() and raw_query.kind() not in self._pseudo_kinds:
 
       txn = self._BeginTransaction(raw_query.app(), False)
-      return txn.GetQueryCursor(raw_query, filters, orders)
+      return txn.GetQueryCursor(raw_query, filters, orders, index_list)
 
 
     self.Groom()
-    return self._GetQueryCursor(raw_query, filters, orders)
+    return self._GetQueryCursor(raw_query, filters, orders, index_list)
+
+  def __IndexListForQuery(self, query):
+    """Get the single composite index pb used by the query, if any, as a list.
+
+    Args:
+      query: the datastore_pb.Query to compute the index list for
+
+    Returns:
+      A singleton list of the composite index pb used by the query,
+    """
+
+    required, kind, ancestor, props = (
+        datastore_index.CompositeIndexForQuery(query))
+    if not required:
+      return []
+    composite_index_pb = entity_pb.CompositeIndex()
+    composite_index_pb.set_app_id(query.app())
+    composite_index_pb.set_id(0)
+    composite_index_pb.set_state(entity_pb.CompositeIndex.READ_WRITE)
+    index_pb = composite_index_pb.mutable_definition()
+    index_pb.set_entity_type(kind)
+    index_pb.set_ancestor(bool(ancestor))
+    for name, direction in datastore_index.GetRecommendedIndexProperties(props):
+      prop_pb = entity_pb.Index_Property()
+      prop_pb.set_name(name)
+      prop_pb.set_direction(direction)
+      index_pb.property_list().append(prop_pb)
+    return [composite_index_pb]
 
   def Get(self, raw_keys, transaction=None, eventual_consistency=False,
           trusted=False, calling_app=None):
@@ -2068,7 +2206,7 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
       result = []
       for key in raw_keys:
         CheckReference(calling_app, trusted, key)
-        result.append(self._Get(key))
+        result.append(self._GetWithPseudoKinds(None, key))
       return result
 
 
@@ -2084,17 +2222,29 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
     if transaction:
 
       txn = self.GetTxn(transaction, trusted, calling_app)
-      return [txn.Get(key) for key in raw_keys]
+      return [self._GetWithPseudoKinds(txn, key) for key in raw_keys]
     else:
 
 
       result = [None] * len(raw_keys)
+
       def op(txn, v):
         key, i = v
-        result[i] = txn.Get(key)
+        result[i] = self._GetWithPseudoKinds(txn, key)
       for keys in grouped_keys.itervalues():
         self._RunInTxn(keys, keys[0][0].app(), op)
       return result
+
+  def _GetWithPseudoKinds(self, txn, key):
+    """Fetch entity key in txn, taking account of pseudo-kinds."""
+    kind = key.path().element_list()[-1].type()
+    pseudo_kind = self._pseudo_kinds.get(kind, None)
+    if pseudo_kind:
+      return pseudo_kind.Get(txn, key)
+    elif txn:
+      return txn.Get(key)
+    else:
+      return self._Get(key)
 
   def Put(self, raw_entities, transaction=None,
           trusted=False, calling_app=None):
@@ -2121,7 +2271,7 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
     result = [None] * len(raw_entities)
     grouped_entities = collections.defaultdict(list)
     for i, raw_entity in enumerate(raw_entities):
-      CheckReference(trusted, calling_app, raw_entity.key())
+      CheckEntity(trusted, calling_app, raw_entity)
 
 
 
@@ -2132,9 +2282,6 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
       for prop in itertools.chain(entity.property_list(),
                                   entity.raw_property_list()):
         FillUser(prop)
-
-      assert entity.has_key()
-      assert entity.key().path().element_size() > 0
 
       last_element = entity.key().path().element_list()[-1]
       if not (last_element.id() or last_element.has_name()):
@@ -2218,12 +2365,12 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
       self._RunInTxn(keys, keys[0].app(), lambda txn, key: None)
 
   def _RunInTxn(self, values, app, op):
-    """Runs the given values in separate Txns.
+    """Runs the given values in a separate Txn.
 
     Args:
       values: A list of arguments to op.
-      app: The app to create the Txns on.
-      op: A function to run in each Txn.
+      app: The app to create the Txn on.
+      op: A function to run on each value in the Txn.
     """
     txn = self._BeginTransaction(app, False)
     for value in values:
@@ -2243,14 +2390,16 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
 
     minimal_index = datastore_index.MinimalCompositeIndexForQuery(query,
         (datastore_index.ProtoToIndexDefinition(index)
-        for index in self.GetIndexes(query.app(), trusted, calling_app)
-        if index.state() == datastore_pb.CompositeIndex.READ_WRITE))
+         for index in self.GetIndexes(query.app(), trusted, calling_app)
+         if index.state() == datastore_pb.CompositeIndex.READ_WRITE))
     if minimal_index is not None:
       msg = ('This query requires a composite index that is not defined. '
           'You must update the index.yaml file in your application root.')
-      if not minimal_index[0]:
+      is_most_efficient, kind, ancestor, properties = minimal_index
+      if not is_most_efficient:
 
-        yaml = datastore_index.IndexYamlForQuery(*minimal_index[1:])
+        yaml = datastore_index.IndexYamlForQuery(kind, ancestor,
+            datastore_index.GetRecommendedIndexProperties(properties))
         msg += '\nThe following index is the minimum index required:\n' + yaml
       raise apiproxy_errors.ApplicationError(datastore_pb.Error.NEED_INDEX, msg)
 
@@ -2258,9 +2407,10 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
 
   def Write(self):
     """Writes the datastore to disk."""
-    raise NotImplementedError
+    logging.info('Applying all pending transactions and saving the datastore')
+    self.Flush()
 
-  def _GetQueryCursor(self, query, filters, orders):
+  def _GetQueryCursor(self, query, filters, orders, index_list):
     """Runs the given datastore_pb.Query and returns a QueryCursor for it.
 
     This must be implemented by a sub-class. The sub-class does not need to
@@ -2270,6 +2420,7 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
       query: The datastore_pb.Query to run.
       filters: A list of filters that override the ones found on query.
       orders: A list of orders that override the ones found on query.
+      index_list: A list of indexes used by the query.
 
     Returns:
       A BaseCursor that can be used to fetch query results.
@@ -2304,6 +2455,106 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
     raise NotImplementedError
 
 
+def _NeedsIndexes(func):
+  """A decorator for DatastoreStub methods that require or affect indexes.
+
+  Updates indexes to match index.yaml before the call and updates index.yaml
+  after the call if require_indexes is False. If root_path is not set, this is a
+  no op.
+  """
+
+  def UpdateIndexesWrapper(self, *args, **kwargs):
+    self._SetupIndexes()
+    try:
+      return func(self, *args, **kwargs)
+    finally:
+      self._UpdateIndexes()
+
+  return UpdateIndexesWrapper
+
+
+class EntityGroupPseudoKind(object):
+  """A common implementation of get() for the __entity_group__ pseudo-kind.
+
+  Public properties:
+    name: the pseudo-kind name
+  """
+  name = '__entity_group__'
+
+
+
+
+
+
+
+
+
+  base_version = int(time.time() * 1e6)
+
+  def Get(self, txn, key):
+    """Fetch key of this pseudo-kind within txn.
+
+    Args:
+      txn: transaction within which Get occurs, may be None if this is an
+           eventually consistent Get.
+      key: key of pseudo-entity to Get.
+
+    Returns:
+      An entity for key, or None if it doesn't exist.
+    """
+
+    if not txn:
+      txn = self._stub._BeginTransaction(key.app(), False)
+      try:
+        return self.Get(txn, key)
+      finally:
+        txn.Rollback()
+
+
+    if isinstance(txn._txn_manager._consistency_policy,
+                  MasterSlaveConsistencyPolicy):
+      return None
+
+
+
+
+
+
+    path = key.path()
+    if path.element_size() != 2 or path.element_list()[-1].id() != 1:
+      return None
+
+    tracker = txn._GetTracker(key)
+    tracker._GrabSnapshot(txn._txn_manager)
+
+    eg = entity_pb.EntityProto()
+    eg.mutable_key().CopyFrom(key)
+    eg.mutable_entity_group().CopyFrom(_GetEntityGroup(key).path())
+    version = entity_pb.Property()
+    version.set_name('__version__')
+    version.set_multiple(False)
+    version.mutable_value().set_int64value(
+        tracker._read_pos + self.base_version)
+    eg.property_list().append(version)
+    return eg
+
+  def Query(self, query, filters, orders):
+    """Perform a query on this pseudo-kind.
+
+    Args:
+      query: the original datastore_pb.Query.
+      filters: the filters from query.
+      orders: the orders from query.
+
+    Returns:
+      always raises an error
+    """
+
+
+    raise apiproxy_errors.ApplicationError(
+        datastore_pb.Error.BAD_REQUEST, 'queries not supported on ' + self.name)
+
+
 class DatastoreStub(object):
   """A stub that maps datastore service calls on to a BaseDatastore.
 
@@ -2313,16 +2564,49 @@ class DatastoreStub(object):
   def __init__(self,
                datastore,
                app_id=None,
-               trusted=None):
+               trusted=None,
+               root_path=None):
     super(DatastoreStub, self).__init__()
     self._datastore = datastore
     self._app_id = datastore_types.ResolveAppId(app_id)
     self._trusted = trusted
+    self._root_path = root_path
+
+
+    self.__query_history = {}
+
+
+    self.__query_ci_history = set()
+
+
+
+    self._cached_yaml = (None, None, None)
+
+    if self._require_indexes or root_path is None:
+
+      self._index_yaml_updater = None
+    else:
+
+      self._index_yaml_updater = datastore_stub_index.IndexYamlUpdater(
+          root_path)
+
     DatastoreStub.Clear(self)
 
   def Clear(self):
     """Clears out all stored values."""
     self._query_cursors = {}
+    self.__query_history = {}
+    self.__query_ci_history = set()
+
+  def QueryHistory(self):
+    """Returns a dict that maps Query PBs to times they've been run."""
+
+    return dict((pb, times) for pb, times in self.__query_history.items()
+                if pb.app() == self._app_id)
+
+  def _QueryCompositeIndexHistoryLength(self):
+    """Returns the length of the CompositeIndex set for query history."""
+    return len(self.__query_ci_history)
 
   def SetTrusted(self, trusted):
     """Set/clear the trusted bit in the stub.
@@ -2361,6 +2645,7 @@ class DatastoreStub(object):
   def _Dynamic_Touch(self, req, _):
     self._datastore.Touch(req.key_list(), self._trusted, self._app_id)
 
+  @_NeedsIndexes
   def _Dynamic_RunQuery(self, query, query_result):
     cursor = self._datastore.GetQueryCursor(query, self._trusted, self._app_id)
 
@@ -2372,7 +2657,7 @@ class DatastoreStub(object):
       count = self._BATCH_SIZE
 
     cursor.PopulateQueryResult(query_result, count, query.offset(),
-                               query.compile())
+                               query.compile(), first_result=True)
     if query_result.has_cursor():
       self._query_cursors[query_result.cursor().cursor()] = cursor
 
@@ -2383,6 +2668,23 @@ class DatastoreStub(object):
       compiled_query = query_result.mutable_compiled_query()
       compiled_query.set_keys_only(query.keys_only())
       compiled_query.mutable_primaryscan().set_index_name(query.Encode())
+    self.__UpdateQueryHistory(query)
+
+  def __UpdateQueryHistory(self, query):
+
+    clone = datastore_pb.Query()
+    clone.CopyFrom(query)
+    clone.clear_hint()
+    clone.clear_limit()
+    clone.clear_offset()
+    clone.clear_count()
+    if clone in self.__query_history:
+      self.__query_history[clone] += 1
+    else:
+      self.__query_history[clone] = 1
+      if clone.app() == self._app_id:
+        self.__query_ci_history.add(
+            datastore_index.CompositeIndexForQuery(clone))
 
 
   def _Dynamic_Next(self, next_request, query_result):
@@ -2398,7 +2700,7 @@ class DatastoreStub(object):
       count = next_request.count()
 
     cursor.PopulateQueryResult(query_result, count, next_request.offset(),
-                               next_request.compile())
+                               next_request.compile(), first_result=False)
 
     if not query_result.has_cursor():
       del self._query_cursors[next_request.cursor().cursor()]
@@ -2453,6 +2755,7 @@ class DatastoreStub(object):
                                                       self._trusted,
                                                       self._app_id))
 
+  @_NeedsIndexes
   def _Dynamic_GetIndices(self, app_str, composite_indices):
     composite_indices.index_list().extend(self._datastore.GetIndexes(
         app_str.value(), self._trusted, self._app_id))
@@ -2475,6 +2778,81 @@ class DatastoreStub(object):
 
     allocate_ids_response.set_start(start)
     allocate_ids_response.set_end(end)
+
+  def _SetupIndexes(self, _open=open):
+    """Ensure that the set of existing composite indexes matches index.yaml.
+
+    Note: this is similar to the algorithm used by the admin console for
+    the same purpose.
+    """
+
+
+
+    if not self._root_path:
+      return
+    index_yaml_file = os.path.join(self._root_path, 'index.yaml')
+    if (self._cached_yaml[0] == index_yaml_file and
+        os.path.exists(index_yaml_file) and
+        os.path.getmtime(index_yaml_file) == self._cached_yaml[1]):
+      requested_indexes = self._cached_yaml[2]
+    else:
+      try:
+        index_yaml_mtime = os.path.getmtime(index_yaml_file)
+        fh = _open(index_yaml_file, 'r')
+      except (OSError, IOError):
+        index_yaml_data = None
+      else:
+        try:
+          index_yaml_data = fh.read()
+        finally:
+          fh.close()
+
+      requested_indexes = []
+      if index_yaml_data is not None:
+
+        index_defs = datastore_index.ParseIndexDefinitions(index_yaml_data)
+        if index_defs is not None and index_defs.indexes is not None:
+
+          requested_indexes = datastore_index.IndexDefinitionsToProtos(
+              self._app_id,
+              index_defs.indexes)
+          self._cached_yaml = (index_yaml_file, index_yaml_mtime,
+                               requested_indexes)
+
+
+    existing_indexes = self._datastore.GetIndexes(
+        self._app_id, self._trusted, self._app_id)
+
+
+    requested = dict((x.definition().Encode(), x) for x in requested_indexes)
+    existing = dict((x.definition().Encode(), x) for x in existing_indexes)
+
+
+    created = 0
+    for key, index in requested.iteritems():
+      if key not in existing:
+        new_index = entity_pb.CompositeIndex()
+        new_index.CopyFrom(index)
+        new_index.set_id(datastore_admin.CreateIndex(new_index))
+        new_index.set_state(entity_pb.CompositeIndex.READ_WRITE)
+        datastore_admin.UpdateIndex(new_index)
+        created += 1
+
+
+    deleted = 0
+    for key, index in existing.iteritems():
+      if key not in requested:
+        datastore_admin.DeleteIndex(index)
+        deleted += 1
+
+
+    if created or deleted:
+      logging.info('Created %d and deleted %d index(es); total %d',
+                   created, deleted, len(requested))
+
+  def _UpdateIndexes(self):
+    if self._index_yaml_updater is not None:
+      self._index_yaml_updater.UpdateIndexYaml()
 
 
 def CompareEntityPbByKey(a, b):
@@ -2505,6 +2883,7 @@ def _GuessOrders(filters, orders):
   """
   orders = orders[:]
 
+
   if not orders:
     for filter_pb in filters:
       if filter_pb.op() != datastore_pb.Query_Filter.EQUAL:
@@ -2513,6 +2892,14 @@ def _GuessOrders(filters, orders):
         order.set_property(filter_pb.property(0).name())
         orders.append(order)
         break
+
+
+  exists_props = (filter_pb.property(0).name() for filter_pb in filters
+                  if filter_pb.op() == datastore_pb.Query_Filter.EXISTS)
+  for prop in sorted(exists_props):
+    order = datastore_pb.Query_Order()
+    order.set_property(prop)
+    orders.append(order)
 
 
   if not orders or orders[-1].property() != '__key__':
@@ -2534,8 +2921,85 @@ def _MakeQuery(query, filters, orders):
   clone.order_list().extend(orders)
   return datastore_query.Query._from_pb(clone)
 
+def _CreateIndexEntities(entity, postfix_props):
+  """Creates entities for index values that would appear in prodcution.
 
-def _ExecuteQuery(results, query, filters, orders):
+  This function finds all multi-valued properties listed in split_props, and
+  creates a new entity for each unique combination of values. The resulting
+  entities will only have a single value for each property listed in
+  split_props.
+
+  It reserves the right to include index data that would not be
+  seen in production, e.g. by returning the original entity when no splitting
+  is needed. LoadEntity will remove any excess fields.
+
+  This simulates the results seen by an index scan in the datastore.
+
+  Args:
+    entity: The entity_pb.EntityProto to split.
+    split_props: A set of property names to split on.
+
+  Returns:
+    A list of the split entity_pb.EntityProtos.
+  """
+  to_split = {}
+  split_required = False
+  for prop in entity.property_list():
+    if prop.name() in postfix_props:
+      values = to_split.get(prop.name())
+      if values is None:
+        values = []
+        to_split[prop.name()] = values
+      else:
+
+        split_required = True
+      if prop.value() not in values:
+        values.append(prop.value())
+
+  if not split_required:
+
+    return [entity]
+
+  clone = entity_pb.EntityProto()
+  clone.CopyFrom(entity)
+  clone.clear_property()
+  results = [clone]
+
+  for name, splits in to_split.iteritems():
+    if len(splits) == 1:
+
+      for result in results:
+        prop = result.add_property()
+        prop.set_name(name)
+        prop.set_multiple(False)
+        prop.set_meaning(entity_pb.Property.INDEX_VALUE)
+        prop.mutable_value().CopyFrom(splits[0])
+      continue
+
+    new_results = []
+    for result in results:
+      for split in splits:
+        clone = entity_pb.EntityProto()
+        clone.CopyFrom(result)
+        prop = clone.add_property()
+        prop.set_name(name)
+        prop.set_multiple(False)
+        prop.set_meaning(entity_pb.Property.INDEX_VALUE)
+        prop.mutable_value().CopyFrom(split)
+        new_results.append(clone)
+    results = new_results
+  return results
+
+
+def _CreateIndexOnlyQueryResults(results, postfix_props):
+  """Creates a result set similar to that returned by an index only query."""
+  new_results = []
+  for result in results:
+    new_results.extend(_CreateIndexEntities(result, postfix_props))
+  return new_results
+
+
+def _ExecuteQuery(results, query, filters, orders, index_list):
   """Executes the query on a superset of its results.
 
   Args:
@@ -2543,11 +3007,17 @@ def _ExecuteQuery(results, query, filters, orders):
     query: a datastore_pb.Query.
     filters: the filters from query.
     orders: the orders from query.
+    index_list: the list of indexes used by the query.
 
   Returns:
     A ListCursor over the results of applying query to results.
   """
   orders = _GuessOrders(filters, orders)
   dsquery = _MakeQuery(query, filters, orders)
-  return ListCursor(query, dsquery, orders,
+
+  if query.property_name_size():
+    results = _CreateIndexOnlyQueryResults(
+       results, set(order.property() for order in orders))
+
+  return ListCursor(query, dsquery, orders, index_list,
                     datastore_query.apply_query(dsquery, results))

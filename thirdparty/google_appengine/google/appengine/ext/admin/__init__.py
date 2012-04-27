@@ -84,6 +84,9 @@ from google.appengine.runtime import apiproxy_errors
 _DEBUG = True
 
 
+QUEUE_MODE = taskqueue_service_pb.TaskQueueMode
+
+
 _UsecToSec = taskqueue_stub._UsecToSec
 _FormatEta = taskqueue_stub._FormatEta
 _EtaDelta = taskqueue_stub._EtaDelta
@@ -137,6 +140,17 @@ def ustr(value):
     return str(value)
   except UnicodeError:
     return unicode(value).encode('UTF-8')
+
+
+def urepr(value):
+  """Like repr(), but UTF-8-encodes Unicode inside a list."""
+  if isinstance(value, list):
+    return '[' + ', '.join(map(urepr, value)) + ']'
+  if isinstance(value, unicode):
+    return ('u"' +
+            value.encode('utf-8').replace('\"', '\\"').replace('\\', '\\\\') +
+            '"')
+  return repr(value)
 
 
 def TruncateValue(value):
@@ -427,6 +441,7 @@ class TaskQueueHelper(object):
     queues = []
     for queue_proto in response.queue_list():
       queue = {'name': queue_proto.queue_name(),
+               'mode': queue_proto.mode(),
                'rate': queue_proto.user_specified_rate(),
                'bucket_size': queue_proto.bucket_capacity()}
       queues.append(queue)
@@ -520,6 +535,27 @@ class TaskQueueHelper(object):
     self._make_sync_call('PurgeQueue', request)
 
 
+class QueueBatch(object):
+  """Collection of push queues or pull queues."""
+
+  def __init__(self, title, run_manually, rate_limited, contents):
+    self.title = title
+    self.run_manually = run_manually
+    self.rate_limited = rate_limited
+    self.contents = contents
+
+  def __eq__(self, other):
+    if type(self) is not type(other):
+      return NotImplemented
+    return (self.title == other.title and
+            self.run_manually == other.run_manually and
+            self.rate_limited == other.rate_limited and
+            self.contents == other.contents)
+
+  def __iter__(self):
+    return self.contents.__iter__()
+
+
 class QueuesPageHandler(BaseRequestHandler):
   """Shows information about configured (and default) task queues."""
   PATH = '/queues'
@@ -530,10 +566,26 @@ class QueuesPageHandler(BaseRequestHandler):
 
   def get(self):
     """Shows template displaying the configured task queues."""
+
+    def is_push_queue(queue):
+      return queue['mode'] == QUEUE_MODE.PUSH
+
+    def is_pull_queue(queue):
+      return queue['mode'] == QUEUE_MODE.PULL
+
     now = datetime.datetime.utcnow()
     values = {}
     try:
-      values['queues'] = self.helper.get_queues(now)
+      queues = self.helper.get_queues(now)
+      push_queues = QueueBatch('Push Queues',
+                               True,
+                               True,
+                               filter(is_push_queue, queues))
+      pull_queues = QueueBatch('Pull Queues',
+                               False,
+                               False,
+                               filter(is_pull_queue, queues))
+      values['queueBatches'] = [push_queues, pull_queues]
     except apiproxy_errors.ApplicationError:
 
 
@@ -684,16 +736,24 @@ class TasksPageHandler(BaseRequestHandler):
       pages[-1]['has_gap'] = True
     tasks = tasks[:self.per_page]
 
+
+    def is_this_push_queue(queue):
+      return (queue['name'] == self.queue_name and
+              queue['mode'] == QUEUE_MODE.PUSH)
+
     values = {
-      'queue': self.queue_name,
-      'per_page': self.per_page,
-      'tasks': tasks,
-      'prev_page': self.prev_page,
-      'next_page': self.next_page,
-      'this_page': self.this_page,
-      'pages': pages,
-      'page_no': self.page_no,
+        'queue': self.queue_name,
+        'per_page': self.per_page,
+        'tasks': tasks,
+        'prev_page': self.prev_page,
+        'next_page': self.next_page,
+        'this_page': self.this_page,
+        'pages': pages,
+        'page_no': self.page_no,
     }
+    if any(filter(is_this_push_queue, self.helper.get_queues(now))):
+      values['is_push_queue'] = 'true'
+
     self.generate('tasks.html', values)
 
   @xsrf_required
@@ -1588,8 +1648,8 @@ class SearchIndexHandler(BaseRequestHandler):
 
 
     for result in response.results:
-      doc = Document(result.document.doc_id)
-      for field in result.document.fields:
+      doc = Document(result.doc_id)
+      for field in result.fields:
         field_names.add(field.name)
         doc.fields[field.name] = field
       documents.append(doc)
@@ -1624,8 +1684,10 @@ class SearchIndexHandler(BaseRequestHandler):
                                    default=10)
     index_name = self.request.get('index') or 'index'
     index = search.Index(name=index_name, namespace=namespace)
-    resp = index.search(query=query, offset=start, limit=limit)
-    has_more = resp.matched_count > start + limit
+    resp = index.search(query=search.Query(
+        query_string=query,
+        options=search.QueryOptions(offset=start, limit=limit)))
+    has_more = resp.number_found > start + limit
 
     current_page = start / limit + 1
     values = {
@@ -1836,14 +1898,29 @@ class TimeType(DataType):
 
 class ListType(DataType):
   def format(self, value):
-    return repr(value)
+    return urepr(value)
 
-  def short_format(self, value):
+  def short_format_orig(self, value):
     format = self.format(value)
     if len(format) > 20:
       return format[:20] + '...'
     else:
       return format
+
+  def utf8_short_format(self, value):
+    format = self.format(value).decode('utf-8')
+    if len(format) > 20:
+      return format[:20].encode('utf-8') + '...'
+    else:
+      return format.encode('utf-8')
+
+  def short_format(self, value):
+
+
+    try:
+      return self.utf8_short_format(value)
+    except Exception:
+      return self.short_format_orig(value)
 
   def name(self):
     return 'list'

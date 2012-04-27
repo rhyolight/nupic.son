@@ -46,6 +46,14 @@ XSRF_VALIDITY_TIME = 600
 KINDS_AND_SIZES_VAR = 'kinds_and_sizes'
 
 
+DATASTORE_ADMIN_OPERATION_KIND = '_AE_DatastoreAdmin_Operation'
+BACKUP_INFORMATION_KIND = '_AE_Backup_Information'
+BACKUP_INFORMATION_FILES_KIND = '_AE_Backup_Information_Kind_Files'
+DATASTORE_ADMIN_KINDS = (DATASTORE_ADMIN_OPERATION_KIND,
+                         BACKUP_INFORMATION_KIND,
+                         BACKUP_INFORMATION_FILES_KIND)
+
+
 class ConfigDefaults(object):
   """Configurable constants.
 
@@ -57,6 +65,7 @@ class ConfigDefaults(object):
 
   BASE_PATH = '/_ah/datastore_admin'
   MAPREDUCE_PATH = '/_ah/mapreduce'
+  DEFERRED_PATH = BASE_PATH + '/queue/deferred'
   CLEANUP_MAPREDUCE_STATE = True
 
 
@@ -69,6 +78,10 @@ config = lib_config.register('datastore_admin', ConfigDefaults.__dict__)
 config.BASE_PATH
 
 
+
+
+def IsKindNameVisible(kind_name):
+  return not (kind_name.startswith('__') or kind_name in DATASTORE_ADMIN_KINDS)
 
 
 def RenderToResponse(handler, template_file, template_params):
@@ -360,7 +373,8 @@ class MapreduceDoneHandler(webapp.RequestHandler):
               operation.completed_jobs += 1
               operation.active_job_ids.remove(mapreduce_id)
             if not operation.active_jobs:
-              operation.status = DatastoreAdminOperation.STATUS_COMPLETED
+              if operation.status == DatastoreAdminOperation.STATUS_ACTIVE:
+                operation.status = DatastoreAdminOperation.STATUS_COMPLETED
               db.delete(DatastoreAdminOperationJob.all().ancestor(operation),
                         config=db_config)
             operation.put(config=db_config)
@@ -369,6 +383,9 @@ class MapreduceDoneHandler(webapp.RequestHandler):
                   mapreduce_params['done_callback_handler'])
               if done_callback_handler:
                 done_callback_handler(operation, mapreduce_id, mapreduce_state)
+              else:
+                logging.error('done_callbackup_handler %s was not found',
+                              mapreduce_params['done_callback_handler'])
           db.run_in_transaction(tx)
         if config.CLEANUP_MAPREDUCE_STATE:
 
@@ -377,23 +394,26 @@ class MapreduceDoneHandler(webapp.RequestHandler):
           db.delete(keys, config=db_config)
           logging.info('State for successful job %s was deleted.', mapreduce_id)
       else:
-        logging.info('Job %s was not successful so no state was deleted.', (
-            mapreduce_id))
+        logging.info('Job %s was not successful so no state was deleted.',
+                     mapreduce_id)
     else:
       logging.error('Done callback called without Mapreduce Id.')
 
 
 class DatastoreAdminOperation(db.Model):
   """An entity to keep progress and status of datastore admin operation."""
-  STATUS_ACTIVE = "Active"
-  STATUS_COMPLETED = "Completed"
+  STATUS_CREATED = 'Created'
+  STATUS_ACTIVE = 'Active'
+  STATUS_COMPLETED = 'Completed'
+  STATUS_FAILED = 'Failed'
+  STATUS_ABORTED = 'Aborted'
 
 
   PARAM_DATASTORE_ADMIN_OPERATION = 'datastore_admin_operation'
   DEFAULT_LAST_UPDATED_VALUE = datetime.datetime(1970, 1, 1)
 
   description = db.TextProperty()
-  status = db.StringProperty()
+  status = db.StringProperty(default=STATUS_CREATED)
   active_jobs = db.IntegerProperty(default=0)
   active_job_ids = db.StringListProperty()
   completed_jobs = db.IntegerProperty(default=0)
@@ -402,7 +422,7 @@ class DatastoreAdminOperation(db.Model):
 
   @classmethod
   def kind(cls):
-    return "_AE_DatastoreAdmin_Operation"
+    return DATASTORE_ADMIN_OPERATION_KIND
 
 
 class DatastoreAdminOperationJob(db.Model):
@@ -429,7 +449,6 @@ def StartOperation(description):
 
   operation = DatastoreAdminOperation(
       description=description,
-      status=DatastoreAdminOperation.STATUS_ACTIVE,
       id=db.allocate_ids(
           db.Key.from_path(DatastoreAdminOperation.kind(), 1), 1)[0])
   operation.put(config=_CreateDatastoreConfig())
@@ -483,7 +502,9 @@ def StartMap(operation_key,
         base_path=config.MAPREDUCE_PATH,
         shard_count=32,
         transactional=True,
-        queue_name=queue_name)
+        queue_name=queue_name,
+        transactional_parent=operation)
+    operation.status = DatastoreAdminOperation.STATUS_ACTIVE
     operation.active_jobs += 1
     operation.active_job_ids = list(set(operation.active_job_ids + [job_id]))
     operation.put(config=_CreateDatastoreConfig())
@@ -521,11 +542,28 @@ def RunMapForKinds(operation_key,
     Ids of all started mapper jobs as list of strings.
   """
   jobs = []
-  for kind in kinds:
-    mapper_params['entity_kind'] = kind
-    job_name = job_name_template % {'kind': kind, 'namespace':
-                                    mapper_params.get('namespaces', '')}
-    jobs.append(StartMap(operation_key, job_name, handler_spec, reader_spec,
-                         writer_spec, mapper_params, mapreduce_params,
-                         queue_name=queue_name))
-  return jobs
+  try:
+    for kind in kinds:
+      mapper_params['entity_kind'] = kind
+      job_name = job_name_template % {'kind': kind, 'namespace':
+                                      mapper_params.get('namespaces', '')}
+      jobs.append(StartMap(operation_key, job_name, handler_spec, reader_spec,
+                           writer_spec, mapper_params, mapreduce_params,
+                           queue_name=queue_name))
+    return jobs
+
+  except BaseException:
+    AbortAdminOperation(operation_key,
+                        _status=DatastoreAdminOperation.STATUS_FAILED)
+    raise
+
+
+def AbortAdminOperation(operation_key,
+                        _status=DatastoreAdminOperation.STATUS_ABORTED):
+  """Aborts active jobs."""
+  operation = DatastoreAdminOperation.get(operation_key)
+  operation.status = _status
+  operation.put(config=_CreateDatastoreConfig())
+  for job in operation.active_job_ids:
+    logging.info('Aborting Job %s', job)
+    model.MapreduceControl.abort(job)

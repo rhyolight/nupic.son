@@ -40,7 +40,6 @@ from google.appengine.tools import os_compat
 
 import __builtin__
 import BaseHTTPServer
-import Cookie
 import base64
 import cStringIO
 import cgi
@@ -56,7 +55,6 @@ import logging
 import mimetools
 import mimetypes
 import os
-import pdb
 import select
 import shutil
 import simplejson
@@ -99,7 +97,6 @@ from google.appengine.api import appinfo_includes
 from google.appengine.api import app_logging
 from google.appengine.api import blobstore
 from google.appengine.api import croninfo
-from google.appengine.api import datastore_admin
 from google.appengine.api import datastore_file_stub
 from google.appengine.api import lib_config
 from google.appengine.api import mail
@@ -142,7 +139,6 @@ from google.appengine.tools import dev_appserver_blobstore
 from google.appengine.tools import dev_appserver_channel
 from google.appengine.tools import dev_appserver_blobimage
 from google.appengine.tools import dev_appserver_import_hook
-from google.appengine.tools import dev_appserver_index
 from google.appengine.tools import dev_appserver_login
 from google.appengine.tools import dev_appserver_oauth
 from google.appengine.tools import dev_appserver_multiprocess as multiprocess
@@ -614,6 +610,7 @@ class MatcherDispatcher(URLDispatcher):
   def __init__(self,
                config,
                login_url,
+               module_manager,
                url_matchers,
                get_user_info=dev_appserver_login.GetUserInfo,
                login_redirect=dev_appserver_login.LoginRedirect):
@@ -622,12 +619,15 @@ class MatcherDispatcher(URLDispatcher):
     Args:
       config: AppInfoExternal instance representing the parsed app.yaml file.
       login_url: Relative URL which should be used for handling user logins.
+      module_manager: ModuleManager instance that is used to detect and reload
+        modules if the matched Dispatcher is dynamic.
       url_matchers: Sequence of URLMatcher objects.
       get_user_info: Used for dependency injection.
       login_redirect: Used for dependency injection.
     """
     self._config = config
     self._login_url = login_url
+    self._module_manager = module_manager
     self._url_matchers = tuple(url_matchers)
     self._get_user_info = get_user_info
     self._login_redirect = login_redirect
@@ -678,6 +678,15 @@ class MatcherDispatcher(URLDispatcher):
                       % (httplib.FORBIDDEN, email_addr))
       else:
         request.path = matched_path
+
+
+
+
+
+        if (not isinstance(dispatcher, FileDispatcher) and
+            self._module_manager.AreModuleFilesModified()):
+          self._module_manager.ResetModules()
+
         forward_request = dispatcher.Dispatch(request,
                                               outfile,
                                               base_env_dict=base_env_dict)
@@ -1701,6 +1710,10 @@ class CGIDispatcher(URLDispatcher):
     before_level = logging.root.level
     try:
       env = {}
+
+
+      if self._config.env_variables:
+        env.update(self._config.env_variables)
       if base_env_dict:
         env.update(base_env_dict)
       cgi_path = self._path_adjuster.AdjustPath(request.path)
@@ -2134,6 +2147,9 @@ class AppServerResponse(object):
     for header in self.headers.headers:
       header = header.rstrip('\n\r')
       header_list.append(header)
+    if not self.headers.getheader('Content-Type'):
+
+      header_list.append('Content-Type: text/html')
 
     return '\r\n'.join(header_list) + '\r\n'
 
@@ -2333,6 +2349,9 @@ class ModuleManager(object):
 
     self._modification_times = {}
 
+
+    self._dirty = True
+
   @staticmethod
   def GetModuleFile(module, is_file=os.path.isfile):
     """Helper method to try to determine modules source file.
@@ -2363,6 +2382,7 @@ class ModuleManager(object):
     Returns:
       True if one or more files have been modified, False otherwise.
     """
+    self._dirty = True
     for name, (mtime, fname) in self._modification_times.iteritems():
 
       if name not in self._modules:
@@ -2382,6 +2402,9 @@ class ModuleManager(object):
 
   def UpdateModuleFileModificationTimes(self):
     """Records the current modification times of all monitored modules."""
+    if not self._dirty:
+      return
+
     self._modification_times.clear()
     for name, module in self._modules.items():
       if not isinstance(module, types.ModuleType):
@@ -2395,6 +2418,8 @@ class ModuleManager(object):
       except OSError, e:
         if e.errno not in FILE_MISSING_EXCEPTIONS:
           raise e
+
+    self._dirty = False
 
   def ResetModules(self):
     """Clear modules so that when request is run they are reloaded."""
@@ -2464,7 +2489,6 @@ def _ClearTemplateCache(module_dict=sys.modules):
 
 def CreateRequestHandler(root_path,
                          login_url,
-                         require_indexes=False,
                          static_caching=True,
                          default_partition=None,
                          persist_logs=False):
@@ -2480,7 +2504,6 @@ def CreateRequestHandler(root_path,
   Args:
     root_path: Path to the root of the application running on the server.
     login_url: Relative URL which should be used for handling user logins.
-    require_indexes: True if index.yaml is read-only gospel; default False.
     static_caching: True if browser caching of static files should be allowed.
     default_partition: Default partition to use in the application id.
 
@@ -2508,14 +2531,6 @@ def CreateRequestHandler(root_path,
 
 
   application_module_dict = SetupSharedModules(sys.modules)
-
-
-  if require_indexes:
-
-    index_yaml_updater = None
-  else:
-
-    index_yaml_updater = dev_appserver_index.IndexYamlUpdater(root_path)
 
 
   application_config_cache = AppConfigCache()
@@ -2693,7 +2708,7 @@ def CreateRequestHandler(root_path,
           static_caching=static_caching, default_partition=default_partition)
 
 
-        if not from_cache or self.module_manager.AreModuleFilesModified():
+        if not from_cache:
           self.module_manager.ResetModules()
 
 
@@ -2752,11 +2767,8 @@ def CreateRequestHandler(root_path,
             user_agent=self.headers.get('user-agent'),
             host=host_name)
 
-        dispatcher = MatcherDispatcher(config, login_url,
+        dispatcher = MatcherDispatcher(config, login_url, self.module_manager,
                                        [implicit_matcher, explicit_matcher])
-
-
-        dev_appserver_index.SetupIndexes(config.application, root_path)
 
 
 
@@ -2864,11 +2876,6 @@ def CreateRequestHandler(root_path,
         except socket.error, e:
           if len(e.args) >= 1 and e.args[0] != errno.EPIPE:
             raise e
-        else:
-          if index_yaml_updater is not None:
-
-
-            index_yaml_updater.UpdateIndexYaml()
 
     def log_error(self, format, *args):
       """Redirect error messages through the logging module."""
@@ -3282,17 +3289,17 @@ def SetupStubs(app_id, **config):
 
 
   if not multiprocess.GlobalProcess().MaybeConfigureRemoteDataApis():
-    """Configures local versions of datastore, memcache, and taskqueue."""
+
     apiproxy_stub_map.apiproxy = apiproxy_stub_map.APIProxyStubMap()
 
     if use_sqlite:
       datastore = datastore_sqlite_stub.DatastoreSqliteStub(
           app_id, datastore_path, require_indexes=require_indexes,
-          trusted=trusted)
+          trusted=trusted, root_path=root_path)
     else:
       datastore = datastore_file_stub.DatastoreFileStub(
           app_id, datastore_path, require_indexes=require_indexes,
-          trusted=trusted)
+          trusted=trusted, root_path=root_path)
 
     if high_replication:
       datastore.SetConsistencyPolicy(
@@ -3312,17 +3319,15 @@ def SetupStubs(app_id, **config):
             task_retry_seconds=task_retry_seconds,
             default_http_server='%s:%s' % (serve_address, serve_port)))
 
-    if mysql_user:
 
 
 
-      from google.appengine import api
-      sys.modules['google.appengine.api.rdbms'] = rdbms_mysqldb
-      api.rdbms = rdbms_mysqldb
-      rdbms_mysqldb.SetConnectKwargs(host=mysql_host, port=mysql_port,
-                                     user=mysql_user, passwd=mysql_password,
-                                     unix_socket=mysql_socket)
-      rdbms_mysqldb.connect(database='')
+  from google.appengine import api
+  sys.modules['google.appengine.api.rdbms'] = rdbms_mysqldb
+  api.rdbms = rdbms_mysqldb
+  rdbms_mysqldb.SetConnectKwargs(host=mysql_host, port=mysql_port,
+                                 user=mysql_user, passwd=mysql_password,
+                                 unix_socket=mysql_socket)
 
   fixed_login_url = '%s?%s=%%s' % (login_url,
                                    dev_appserver_login.CONTINUE_PARAM)
@@ -3418,6 +3423,16 @@ def SetupStubs(app_id, **config):
   apiproxy_stub_map.apiproxy.RegisterStub('system', system_service_stub)
 
 
+def TearDownStubs():
+  """Clean up any stubs that need cleanup."""
+
+  datastore_stub = apiproxy_stub_map.apiproxy.GetStub('datastore_v3')
+
+
+  if isinstance(datastore_stub, datastore_stub_util.BaseTransactionManager):
+    datastore_stub.Write()
+
+
 def CreateImplicitMatcher(
     config,
     module_dict,
@@ -3447,17 +3462,6 @@ def CreateImplicitMatcher(
   """
   url_matcher = URLMatcher()
   path_adjuster = create_path_adjuster(root_path)
-
-
-  if multiprocess.GlobalProcess().IsApiServer():
-    remote_api_dispatcher = create_cgi_dispatcher(
-        config, module_dict, root_path, path_adjuster)
-    url_matcher.AddURL(multiprocess.PATH_DEV_API_SERVER,
-                       remote_api_dispatcher,
-                       REMOTE_API_PATH,
-                       False,
-                       False,
-                       appinfo.AUTH_FAIL_ACTION_REDIRECT)
 
 
 
@@ -3534,7 +3538,6 @@ def CreateServer(root_path,
                  port,
                  template_dir=None,
                  serve_address='',
-                 require_indexes=False,
                  allow_skipped_files=False,
                  static_caching=True,
                  python_path_list=sys.path,
@@ -3555,7 +3558,6 @@ def CreateServer(root_path,
     port: Port to start the application server on.
     template_dir: Unused.
     serve_address: Address on which the server should serve.
-    require_indexes: True if index.yaml is read-only gospel; default False.
     allow_skipped_files: True if skipped files should be accessible.
     static_caching: True if browser caching of static files should be allowed.
     python_path_list: Used for dependency injection.
@@ -3577,7 +3579,6 @@ def CreateServer(root_path,
 
   handler_class = CreateRequestHandler(absolute_root_path,
                                        login_url,
-                                       require_indexes,
                                        static_caching,
                                        default_partition,
                                        persist_logs)

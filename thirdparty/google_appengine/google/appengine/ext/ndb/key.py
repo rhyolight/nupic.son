@@ -73,10 +73,10 @@ __author__ = 'guido@google.com (Guido van Rossum)'
 import base64
 import os
 
-from google.appengine.api import datastore_errors
-from google.appengine.api import datastore_types
-from google.appengine.api import namespace_manager
-from google.appengine.datastore import entity_pb
+from .google_imports import datastore_errors
+from .google_imports import datastore_types
+from .google_imports import namespace_manager
+from .google_imports import entity_pb
 
 from . import utils
 
@@ -201,7 +201,8 @@ class Key(object):
         kwargs = _args[0]
       else:
         if 'flat' in kwargs:
-          raise TypeError('Key() cannot accept flat as a keyword argument.')
+          raise TypeError('Key() with positional arguments '
+                          'cannot accept flat as a keyword argument.')
         kwargs['flat'] = _args
     self = super(Key, cls).__new__(cls)
     # Either __reference or (__pairs, __app, __namespace) must be set.
@@ -253,6 +254,8 @@ class Key(object):
       if not isinstance(kind, str):
           raise TypeError('Key kind must be a string or Model class; '
                           'received %r' % kind)
+      if not id:
+        id = None
       pairs[i] = (kind, id)
     if parent is not None:
       if not isinstance(parent, Key):
@@ -317,6 +320,8 @@ class Key(object):
 
   def __eq__(self, other):
     """Equality comparison operation."""
+    # This does not use __tuple() because it is usually enough to
+    # compare pairs(), and we're performance-conscious here.
     if not isinstance(other, Key):
       return NotImplemented
     return (tuple(self.pairs()) == tuple(other.pairs()) and
@@ -328,6 +333,34 @@ class Key(object):
     if not isinstance(other, Key):
       return NotImplemented
     return not self.__eq__(other)
+
+  def __tuple(self):
+    """Helper to return an orderable tuple."""
+    return (self.app(), self.namespace(), self.pairs())
+
+  def __lt__(self, other):
+    """Less than ordering."""
+    if not isinstance(other, Key):
+      return NotImplemented
+    return self.__tuple() < other.__tuple()
+
+  def __le__(self, other):
+    """Less than or equal ordering."""
+    if not isinstance(other, Key):
+      return NotImplemented
+    return self.__tuple() <= other.__tuple()
+
+  def __gt__(self, other):
+    """Greater than ordering."""
+    if not isinstance(other, Key):
+      return NotImplemented
+    return self.__tuple() > other.__tuple()
+
+  def __ge__(self, other):
+    """Greater than or equal ordering."""
+    if not isinstance(other, Key):
+      return NotImplemented
+    return self.__tuple() >= other.__tuple()
 
   def __getstate__(self):
     """Private API used for pickling."""
@@ -554,6 +587,7 @@ class Key(object):
 
 
 # The remaining functions in this module are private.
+# TODO: Conform to PEP 8 naming, e.g. _construct_reference() etc.
 
 @utils.positional(1)
 def _ConstructReference(cls, pairs=None, flat=None,

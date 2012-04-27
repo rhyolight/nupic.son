@@ -212,17 +212,6 @@ class KindPseudoKind(object):
   """
   name = '__kind__'
 
-  def __init__(self, sqlitestub):
-    """Constructor.
-
-    Initializes a __kind__ pseudo-kind definition.
-
-    Args:
-      sqlitestub: the DatastoreSqliteStub instance being served by this
-          pseudo-kind.
-    """
-    self.sqlitestub = sqlitestub
-
   def Query(self, query, filters, orders):
     """Perform a query on this pseudo-kind.
 
@@ -236,10 +225,10 @@ class KindPseudoKind(object):
       is invalid.
     """
     kind_range = datastore_stub_util.ParseKindQuery(query, filters, orders)
-    conn = self.sqlitestub._GetConnection()
+    conn = self._stub._GetConnection()
     cursor = None
     try:
-      prefix = self.sqlitestub._GetTablePrefix(query)
+      prefix = self._stub._GetTablePrefix(query)
       filters = []
 
       def AddExtremeFilter(extreme, inclusive, is_end):
@@ -258,7 +247,7 @@ class KindPseudoKind(object):
       kind_range.MapExtremes(AddExtremeFilter)
 
       params = []
-      sql_filters = self.sqlitestub._CreateFilterString(filters, params)
+      sql_filters = self._stub._CreateFilterString(filters, params)
 
       sql_stmt = ('SELECT kind FROM "%s!Entities" %s GROUP BY kind'
                   % (prefix, sql_filters))
@@ -268,9 +257,9 @@ class KindPseudoKind(object):
       for row in c.fetchall():
         kinds.append(MakeEntityForQuery(query, self.name, ToUtf8(row[0])))
 
-      cursor = datastore_stub_util._ExecuteQuery(kinds, query, [], [])
+      cursor = datastore_stub_util._ExecuteQuery(kinds, query, [], [], [])
     finally:
-      self.sqlitestub._ReleaseConnection(conn)
+      self._stub._ReleaseConnection(conn)
 
     return cursor
 
@@ -284,17 +273,6 @@ class PropertyPseudoKind(object):
     name: the pseudo-kind name
   """
   name = '__property__'
-
-  def __init__(self, sqlitestub):
-    """Constructor.
-
-    Initializes a __property__ pseudo-kind definition.
-
-    Args:
-      sqlitestub: the DatastoreSqliteStub instance being served by this
-          pseudo-kind.
-    """
-    self.sqlitestub = sqlitestub
 
   def Query(self, query, filters, orders):
     """Perform a query on this pseudo-kind.
@@ -311,10 +289,10 @@ class PropertyPseudoKind(object):
     property_range = datastore_stub_util.ParsePropertyQuery(query, filters,
                                                             orders)
     keys_only = query.keys_only()
-    conn = self.sqlitestub._GetConnection()
+    conn = self._stub._GetConnection()
     cursor = None
     try:
-      prefix = self.sqlitestub._GetTablePrefix(query)
+      prefix = self._stub._GetTablePrefix(query)
       filters = []
 
 
@@ -336,7 +314,7 @@ class PropertyPseudoKind(object):
         filters.append(('name', '!=', name))
 
       params = []
-      sql_filters = self.sqlitestub._CreateFilterString(filters, params)
+      sql_filters = self._stub._CreateFilterString(filters, params)
       if not keys_only:
 
 
@@ -389,9 +367,9 @@ class PropertyPseudoKind(object):
       if property_pb:
         properties.append(property_pb)
 
-      cursor = datastore_stub_util._ExecuteQuery(properties, query, [], [])
+      cursor = datastore_stub_util._ExecuteQuery(properties, query, [], [], [])
     finally:
-      self.sqlitestub._ReleaseConnection(conn)
+      self._stub._ReleaseConnection(conn)
 
     return cursor
 
@@ -405,17 +383,6 @@ class NamespacePseudoKind(object):
     name: the pseudo-kind name
   """
   name = '__namespace__'
-
-  def __init__(self, sqlitestub):
-    """Constructor.
-
-    Initializes a __namespace__ pseudo-kind definition.
-
-    Args:
-      sqlitestub: the DatastoreSqliteStub instance being served by this
-          pseudo-kind.
-    """
-    self.sqlitestub = sqlitestub
 
   def Query(self, query, filters, orders):
     """Perform a query on this pseudo-kind.
@@ -437,7 +404,7 @@ class NamespacePseudoKind(object):
 
 
 
-    namespaces = self.sqlitestub._DatastoreSqliteStub__namespaces
+    namespaces = self._stub._DatastoreSqliteStub__namespaces
     for app_id, namespace in sorted(namespaces):
       if app_id == app_str and namespace_range.Contains(namespace):
         if namespace:
@@ -446,8 +413,8 @@ class NamespacePseudoKind(object):
           ns_id = datastore_types._EMPTY_NAMESPACE_ID
         namespace_entities.append(MakeEntityForQuery(query, self.name, ns_id))
 
-    return datastore_stub_util._ExecuteQuery(namespace_entities, query, [], [])
-
+    return datastore_stub_util._ExecuteQuery(namespace_entities, query,
+                                             [], [], [])
 
 class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
                           apiproxy_stub.APIProxyStub,
@@ -474,7 +441,9 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
                verbose=False,
                service_name='datastore_v3',
                trusted=False,
-               consistency_policy=None):
+               consistency_policy=None,
+               root_path=None,
+               use_atexit=True):
     """Constructor.
 
     Initializes the SQLite database if necessary.
@@ -492,12 +461,15 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
       consistency_policy: The consistency policy to use or None to use the
         default. Consistency policies can be found in
         datastore_stub_util.*ConsistencyPolicy
+      root_path: string, the root path of the app.
+      use_atexit: bool, indicates if the stub should save itself atexit.
     """
     datastore_stub_util.BaseDatastore.__init__(self, require_indexes,
-                                               consistency_policy)
+                                               consistency_policy,
+                                               use_atexit and datastore_file)
     apiproxy_stub.APIProxyStub.__init__(self, service_name)
     datastore_stub_util.DatastoreStub.__init__(self, weakref.proxy(self),
-                                               app_id, trusted)
+                                               app_id, trusted, root_path)
 
     self.__datastore_file = datastore_file
 
@@ -521,9 +493,10 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
 
     self.__query_history = {}
 
-    self._RegisterPseudoKind(KindPseudoKind(weakref.proxy(self)))
-    self._RegisterPseudoKind(PropertyPseudoKind(weakref.proxy(self)))
-    self._RegisterPseudoKind(NamespacePseudoKind(weakref.proxy(self)))
+    self._RegisterPseudoKind(KindPseudoKind())
+    self._RegisterPseudoKind(PropertyPseudoKind())
+    self._RegisterPseudoKind(NamespacePseudoKind())
+    self._RegisterPseudoKind(datastore_stub_util.EntityGroupPseudoKind())
 
     try:
       self.__Init()
@@ -566,19 +539,11 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
       self._ReleaseConnection(conn)
 
     self.__namespaces = set()
-    self.__query_history = {}
     self.__id_map = {}
     self.__Init()
 
   def Read(self):
     """Reads the datastore from disk.
-
-    Noop for compatibility with file stub.
-    """
-    pass
-
-  def Write(self):
-    """Writes the datastore to disk.
 
     Noop for compatibility with file stub.
     """
@@ -633,6 +598,8 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
     """
     clauses = []
     for prop, operator, value in filter_list:
+      if operator == datastore_pb.Query_Filter.EXISTS:
+        continue
       sql_op = _OPERATOR_MAP[operator]
 
       value_index = DatastoreSqliteStub.__AddQueryParam(params, value)
@@ -823,11 +790,6 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
     assert pb.IsInitialized(explanation), explanation
 
     pb.Encode()
-
-  def QueryHistory(self):
-    """Returns a dict that maps Query PBs to times they've been run."""
-    return dict((pb, times) for pb, times in self.__query_history.items() if
-                pb.app() == self._app_id)
 
   def __GenerateFilterInfo(self, filters, query):
     """Transform a list of filters into a more usable form.
@@ -1162,7 +1124,7 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
 
       self._ReleaseConnection(conn)
 
-  def _GetQueryCursor(self, query, filters, orders):
+  def _GetQueryCursor(self, query, filters, orders, index_list):
     """Returns a query cursor for the provided query.
 
     Args:
@@ -1195,26 +1157,15 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
         logging.info("Executing statement '%s' with arguments %r",
                      sql_stmt, [str(x) for x in params])
       conn = self._GetConnection()
+
       try:
-        db_cursor = conn.execute(sql_stmt, params)
+        db_cursor = _DedupingEntityIterator(conn.execute(sql_stmt, params))
         dsquery = datastore_stub_util._MakeQuery(query, filters, orders)
         cursor = datastore_stub_util.IteratorCursor(
-            query, dsquery, orders, _DedupingEntityIterator(db_cursor))
+            query, dsquery, orders, index_list, db_cursor)
       finally:
         self._ReleaseConnection(conn)
     return cursor
-
-  def _Dynamic_RunQuery(self, query, query_result):
-    super(DatastoreSqliteStub, self)._Dynamic_RunQuery(query, query_result)
-
-
-    clone = datastore_pb.Query()
-    clone.CopyFrom(query)
-    clone.clear_hint()
-    clone.clear_limit()
-    clone.clear_count()
-    clone.clear_offset()
-    self.__query_history[clone] = self.__query_history.get(clone, 0) + 1
 
   def _AllocateIds(self, reference, size=1, max_id=None):
     conn = self._GetConnection()

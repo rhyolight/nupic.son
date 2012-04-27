@@ -3,6 +3,151 @@ All rights reserved.
 
 App Engine Python SDK - Release Notes
 
+Version 1.6.5
+===============================
+- You can now perform datastore queries that return a subset of your entity
+  properties with the same performance and cost of a keys-only query. This
+  feature is experimental.
+- In the High Replication Datastore, there is a new metadata kind,
+  __entity_group__, that has a numeric __version__ property. This property is
+  guaranteed to increase on every change to the entity group.
+- The Images API now supports manipulating objects hosted on Google Cloud
+  Storage.
+- In the Images API, the get_serving_url call now optionally allows you to
+  specify if the URL you are generating should be served over https.
+- In the Task Queue REST API, you can now specify a tag when you insert a task
+  on a Pull Queue.
+- In the Task Queue API, you can specify a deadline for the lease_tasks call.
+  The default deadline has been increased from 5 seconds to 10 seconds.
+- You can now use cron to schedule Datastore backups.
+- The Datastore Admin now has a page that displays information on the status of
+  your Datastore backups and restores.
+- You can now abort your Datastore backup or restore from the Datastore Admin.
+- You can now restore a single Datastore Kind from the Datastore Admin from a
+  Datastore backup.
+- In the Admin Console, you can report production issues with your application
+  directly to Google from the application's pages. Simply click the "Report
+  Production Issues" link, fill out the requested information, and submit.
+- All user requests have X-AppEngine-Region, X-AppEngine-City, and
+  X-AppEngine-CityLatLong headers which contain location information based on
+  the IP address of the client request. For a full description of these headers,
+  see:
+    https://developers.google.com/appengine/docs/python/runtime#Request_Headers
+- We have added support for concurrent transactions to @db.transactional and
+  db.run_in_transaction_options() along with other transaction propagation
+  options.
+- We've introduced an experimental new Mac Installer that only supports Python
+  2.7.
+- In your app.yaml file, you can include an env_variables stanza that will set
+  the given environment variables in your application's runtime.
+- Jinja2 now includes the _debugsupport module.
+- Fixed an issue with the dev_appserver where it defaulted the HTTP
+  Content-Type of a request to text/plain instead of text/html.
+- Fixed an issue where the SDK would include some indexes that were not needed
+  in production.
+- Fixed an issue in the SDK where the SDK admin console would not display utf-8
+  encoded list property values.
+  http://code.google.com/p/googleappengine/issues/detail?id=7079
+
+Version 1.6.4
+===============================
+- Billed applications that have specified additional logs retention over 1 GB
+  are now being charged for that storage at $0.24/GB/month (the first gigabyte
+  of logs storage is free). All logs beyond an application's specified storage
+  limit will be deleted. Please examine your Application Settings page to verify
+  you are retaining the desired amount of logs.
+- Datastore statistics now show the amount of storage used by application
+  indexes.
+- We have released an experimental utility for migrating your application's
+  blobs at the same time you migrate your datastore data. You can opt-in to
+  blob migration in the Admin Console when you start your migration.
+- We have updated the experimental Backup/Restore functionality to include
+  the option to backup and restore to Google Cloud Storage.
+- The NDB datastore API is now generally available. For full release notes
+  on the version 0.9.9 and 1.0.0 fixes that have been integrated into the
+  API see:
+    http://code.google.com/p/appengine-ndb-experiment/source/browse/RELEASE_NOTES?name=sandbox
+- In the Python 2.7 runtime, Background threads are available as an
+  experimental release when using App Engine backends.
+- Using the Blobstore API's serve_blob() method, your application can serve
+  objects hosted on Google Storage for Developers.
+- The Admin Console now provides a Memcache viewer that lists Memcache stats and
+  can display Memcache content based on key.
+- In the Capabilities API stub in the SDK, you can now enable or disable
+  a capability using SetPackagedEnabled.
+- The Windows installer now prompts to install Python 2.7 instead of
+  Python 2.5.
+- The Testbed API now supports the Capabilities API.
+- GQL queries in the Admin Console no longer throw an error when a trailing
+  semi-colon is included.
+- The Datastore API now includes a NonTransactional decorator to ensure that
+  a function is run outside of a transaction. Existing transactions are paused
+  while the function is executing.
+- The Datastore Admin tab in the Admin Console now shows entities from every
+  namespace.
+    http://code.google.com/p/googleappengine/issues/detail?id=3962
+- Fixed an issue with _strptime when threadsafe was specified.
+    http://code.google.com/p/googleappengine/issues/detail?id=6489
+- Fixed an issue where DatastoreFileStub.__del__ fails on tempfile.msktemp.
+    http://code.google.com/p/googleappengine/issues/detail?id=6749
+- WebOb 1.1.1 is now included in the SDK, and used by default there when
+  Python 2.7 is specified.
+    http://code.google.com/p/googleappengine/issues/detail?id=7014
+- Fixed an issue where the index.yaml file was cleared if your skip_files entry
+  differs from the default skip_files list.
+    http://code.google.com/p/googleappengine/issues/detail?id=7031
+
+Version 1.6.3
+===============================
+- In the Admin Console, you can use new the Traffic Splitting feature to send a
+  certain percentage of traffic to a non-default application version. The
+  traffic is split by either cookie or IP address.
+- Emails that are sent from Google Apps domains email addresses where the domain
+  has been set up to use DKIM will be signed: when an email was from a request
+  that originated on that app's domain or any time the email was sent from
+  an app adminstrator, including when that email is sent from a cron job or task
+  queue request.
+- In the Admin Console, you can now choose how much and how long you'd like to
+  store logs.  All apps get 1G for free and eventually will be able to pay for
+  more, while the amount can be increased this release we won't start charging
+  for the additional capacity until the next release at the earliest.
+- The instances screen in the Admin Console now has a button to shut down
+  a specific instance.
+- Each application log has a link to the instance that served the request. If
+  the instance is no longer serving requests, a message will be displayed.
+- The TaskQueue API now supports the ability to tag a Pull Queue task. You may
+  then lease tasks by tag. This feature is experimental.
+- Using Google Apps wildcard domain mappings, you can access alternate
+  versions of your app via a custom domain.
+- Push and Pull Queues are now listed separately in the SDK development console.
+- Developer documentation for the experimental NDB API, the replacement for
+  db.py, is now available.
+- Appcfg now supports OAuth2.
+- webapp 2.5.1 is now available in the Python 2.7 runtime.
+- Django 1.3 is now available in the Python 2.7 runtime.
+- GQL Query now supports custom type casting for list elements for "IN" filters.
+- Fixed an issue where StringProperty's validate() didn't check the 500 byte
+  limit.
+    http://code.google.com/p/googleappengine/issues/detail?id=4030
+- Fixed an issue where the datastore admin didn't work with Federated Login.
+    http://code.google.com/p/googleappengine/issues/detail?id=4111
+- Fixed an issue in the SDK where failing to call _RemoveTxn in the
+  datastore_stub_util caused a memory leak:
+    http://code.google.com/p/googleappengine/issues/detail?id=6157
+- Code that inherits from the deferred library's TaskHandler can now define
+  custom handling of exceptions.
+    http://code.google.com/p/googleappengine/issues/detail?id=6478
+- Fixed an issue where logging in the SDK was broken in Windows 7 using
+  Python 2.7.2.
+    http://code.google.com/p/googleappengine/issues/detail?id=6756
+- Fixed an issue in the SDK where the Conversion API call limited was limited
+  to 1 MB when the production limit is 2 MB.
+    http://code.google.com/p/googleappengine/issues/detail?id=6794
+- Fixed an issue so that a deferred task retries like a push queue task when
+  using the SingularTaskFailure exception:
+    http://code.google.com/p/googleappengine/issues/detail?id=6412
+
+
 Version 1.6.2
 ===============================
 - The Admin Console Datastore Admin has added experimental backup and restore

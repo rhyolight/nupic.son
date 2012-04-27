@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Confirm Backup of {{kind_str|escape}}{% endblock %}
 {% block body %}
-  <h2>Datastore Admin: Backup to Blobstore</h2>
+  <h2>Datastore Admin: Backup to Blobstore or Google Cloud Storage</h2>
   {% if kind_list %}
     {% comment %}
     size_total represents the total size of the figures for which we have
@@ -41,7 +41,7 @@
         during the backup process may not be captured.
         To place the application in read-only mode,
         please follow the instructions at
-        <a href="http://code.google.com/appengine/docs/adminconsole/applicationsettings.html#Disable_Datastore_Writes">
+        <a href="http://code.google.com/appengine/docs/adminconsole/applicationsettings.html#Disable_Datastore_Writes" target="_blank">
         Disable Datastore Writes</a>
         </p>
       </div>
@@ -64,6 +64,25 @@
         {% endif %}
       </p>
 
+      <table>
+        <tr>
+          <td>
+            Backup storage destination:
+            <select name="filesystem" id="ae-datastore-admin-filesystem">
+              <option value="blobstore" selected="selected">Blobstore</option>
+              <option value="gs">Google Cloud Storage</option>
+            </select>
+          </td>
+        </tr>
+        <tr style="display:none;" id="gs_bucket_tr">
+          <td>
+            Google Cloud Storage bucket name
+            (<a href="http://code.google.com/appengine/docs/adminconsole/datastoreadmin.html##Backing-up-Data">More info?</a>):
+            <input type="text" id="gs_bucket_name" name="gs_bucket_name" value="" />
+          </td>
+        </tr>
+      </table>
+
       <table style="margin-top: 1em;"><tr>
         <td style="padding-right: 0.5em;">
           <input class="goog-button" type="submit" name="backup"
@@ -76,4 +95,3 @@
     <div class="ae-errorbox">No entity kinds to backup.</div>
   {% endif %}
 {% endblock %}
-
