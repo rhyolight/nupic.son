@@ -234,6 +234,13 @@ class MainDashboard(Dashboard):
             'link': r.urlOf('gsoc_withdraw_projects')
         },
         {
+            'name': 'students',
+            'description': ugettext(
+                'List of all the students who have registered to the program.'),
+            'title': 'Students',
+            'link': r.urlOf('gsoc_students_list_admin')
+        },
+        {
             'name': 'manage_organizations',
             'description': ugettext(
                 'Manage organizations from active program. You can allocate '
