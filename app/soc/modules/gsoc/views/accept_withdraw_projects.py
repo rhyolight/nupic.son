@@ -33,12 +33,241 @@ from soc.views.helper import url_patterns
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
-from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
+
+
+class ProposalList(Template):
+  """Template for listing the student proposals submitted to the program.
+  """
+
+  def __init__(self, request, data):
+    self.request = request
+    self.data = data
+
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
+        ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addColumn('student', 'Student',
+                          lambda entity, *args: entity.parent().name())
+    list_config.addSimpleColumn('title', 'Title')
+    list_config.addColumn('org', 'Organization',
+                          lambda entity, *args: entity.org.name)
+
+    def status(proposal):
+      """Status to show on the list with color.
+      """
+      if proposal.status == 'accepted':
+        return """<strong><font color="green">Accepted</font><strong>"""
+      elif proposal.status == 'withdrawn':
+        return """<strong><font color="red">Withdrawn</font></strong>"""
+
+      return proposal.status.capitalize()
+
+    list_config.addColumn('status', 'Status',
+                          lambda entity, *args: status(entity))
+
+    list_config.setDefaultPagination(False)
+    list_config.setDefaultSort('student')
+
+    # hidden keys
+    list_config.addColumn(
+        'full_proposal_key', 'Full proposal key',
+        (lambda ent, *args: str(ent.key())), hidden=True)
+
+    # action button
+    bounds = [1,'all']
+    keys = ['full_proposal_key']
+    list_config.addPostButton('accept', "Accept", "", bounds, keys)
+
+    self._list_config = list_config
+
+  def context(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=0,
+        description='List of proposals submitted for %s' % (
+            self.data.program.name))
+
+    return {
+        'list_title': 'Submitted Proposals',
+        'lists': [list],
+        }
+
+  def post(self):
+    idx = lists.getListIndex(self.request)
+    if idx != 0:
+      return None
+
+    data = self.data.POST.get('data')
+
+    if not data:
+      raise BadRequest("Missing data")
+
+    parsed = simplejson.loads(data)
+
+    button_id = self.data.POST.get('button_id')
+
+    if not button_id:
+      raise BadRequest("Missing button_id")
+    elif button_id == 'accept':
+      return self.postHandler(parsed)
+
+    raise BadRequest("Unknown button_id")
+
+  def postHandler(self, data):
+    for properties in data:
+      if 'full_proposal_key' not in properties:
+        logging.warning("Missing key in '%s'" % properties)
+        continue
+
+      proposal_key = properties['full_proposal_key']
+      proposal = db.get(db.Key(proposal_key))
+
+      if not proposal:
+        logging.warning("Proposal '%s' doesn't exist" % proposal_key)
+        continue
+
+      if proposal.status == 'accepted':
+        logging.warning("Proposal '%s' already accepted" % proposal_key)
+        continue
+
+      # organization for the proposal 
+      org = proposal.org
+      # key of the student profile for the project
+      profile_key = proposal.parent_key()
+
+      if not proposal.mentor:
+        logging.warning(
+            'Proposal with key %s cannot be accepted because no mentor has '
+            'been assigned to it.' % (proposal_key))
+        continue
+
+      qp = GSoCProject.all()
+      qp.ancestor(profile_key)
+      qp.filter('org', org)
+      qp.filter('status', 'withdrawn')
+
+      if qp.count() > 0:
+        logging.warning('Student with key %s already has an accepted '
+                        'project' % profile_key)
+        continue
+
+      qorgp = GSoCProject.all()
+      qorgp.filter('org', org)
+      # TODO: The list save should actually fail, but no clue how to do this.
+      if qorgp.count() >= org.slots:
+        logging.warning('%d >= %d' % (qorgp.count(), org.slots))
+        logging.warning(
+            'Organization %s has all the slots used up. No more '
+            'projects can be accepted into the organization.' % (
+            org.name))
+        continue
+
+      fields = {
+          'org': proposal.org,
+          'program': proposal.program,
+          'title': proposal.title,
+          'abstract': proposal.abstract,
+          'mentors': [proposal.mentor.key()],
+          }
+      project = GSoCProject(parent=profile_key, **fields)
+
+      def accept_proposal_txn():
+        student_info = GSoCStudentInfo.all().ancestor(profile_key).get()
+        orgs = student_info.project_for_orgs
+
+        orgs = list(set(orgs + [org.key()]))
+
+        proposal.status = 'accepted'
+
+        student_info.project_for_orgs = orgs
+        student_info.number_of_projects = 1
+
+        db.put([proposal, project, student_info])
+
+      db.run_in_transaction(accept_proposal_txn)
+
+    return True
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    idx = lists.getListIndex(self.request)
+    if idx == 0:
+      list_query = proposal_logic.getProposalsQuery(program=self.data.program)
+
+      starter = lists.keyStarter
+      prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'],
+          parent=True)
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, list_query,
+          starter, prefetcher=prefetcher)
+      return response_builder.build()
+    else:
+      return None
+
+  def templatePath(self):
+    return "v2/modules/gsoc/accept_withdraw_projects/_project_list.html"
+
+
+class AcceptProposals(RequestHandler):
+  """View for accepting individual proposals.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/accept_withdraw_projects/base.html'
+
+  def djangoURLPatterns(self):
+    """Returns the list of tuples for containing URL to view method mapping.
+    """
+
+    return [
+        url(r'admin/proposals/accept/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_admin_accept_proposals')
+    ]
+
+  def checkAccess(self):
+    """Access checks for the view.
+    """
+    self.check.isHost()
+
+  def jsonContext(self):
+    """Handler for JSON requests.
+    """
+    list_content = ProposalList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+    return list_content.content()
+
+  def post(self):
+    list_content = ProposalList(self.request, self.data)
+
+    if not list_content.post():
+      raise AccessViolation(
+          'You cannot change this data')
+
+  def context(self):
+    """Builds the context for GSoC proposals List page HTTP get request.
+    """
+    program = self.data.program
+
+    return {
+        'page_name': '%s - Proposals' % program.short_name,
+        'program_name': program.name,
+        'list': ProposalList(self.request, self.data),
+        'program_select': ProgramSelect(self.data,
+                                        'gsoc_admin_accept_proposals'),
+    }
 
 
 class ProjectList(Template):
@@ -94,6 +323,7 @@ class ProjectList(Template):
             self.data.program.name))
 
     return {
+        'list_title': 'Accepted Projects',
         'lists': [list],
         }
 
@@ -162,19 +392,16 @@ class ProjectList(Template):
       proposal = qp.get()
 
       def withdraw_or_accept_project_txn():
-        org = GSoCOrganization.get(org_key)
         student_info = GSoCStudentInfo.all().ancestor(profile_key).get()
         orgs = student_info.project_for_orgs
 
         if withdraw:
           new_status = 'withdrawn'
           new_number = 0
-          org.slots -= 1
           orgs.remove(org_key)
         else:
           new_status = 'accepted'
           new_number = 1
-          org.slots += 1
           orgs = list(set(orgs + [org_key]))
 
         project.status = new_status
@@ -182,10 +409,9 @@ class ProjectList(Template):
         student_info.project_for_orgs = orgs
         student_info.number_of_projects = new_number
 
-        db.put([proposal, project, student_info, org])
+        db.put([proposal, project, student_info])
 
-      xg_on = db.create_transaction_options(xg=True)
-      db.run_in_transaction_options(xg_on, withdraw_or_accept_project_txn)
+      db.run_in_transaction(withdraw_or_accept_project_txn)
 
     return True
 
@@ -211,7 +437,7 @@ class ProjectList(Template):
       return None
 
   def templatePath(self):
-    return "v2/modules/gsoc/withdraw_projects/_project_list.html"
+    return "v2/modules/gsoc/accept_withdraw_projects/_project_list.html"
 
 
 class WithdrawProjects(RequestHandler):
@@ -219,7 +445,7 @@ class WithdrawProjects(RequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/withdraw_projects/base.html'
+    return 'v2/modules/gsoc/accept_withdraw_projects/base.html'
 
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping.
@@ -260,6 +486,6 @@ class WithdrawProjects(RequestHandler):
     return {
         'page_name': '%s - Projects' % program.short_name,
         'program_name': program.name,
-        'project_list': ProjectList(self.request, self.data),
+        'list': ProjectList(self.request, self.data),
         'program_select': ProgramSelect(self.data, 'gsoc_withdraw_projects'),
     }
