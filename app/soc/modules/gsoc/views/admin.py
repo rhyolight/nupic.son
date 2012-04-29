@@ -214,7 +214,8 @@ class MainDashboard(Dashboard):
             'name': 'accept_proposals',
             'description': ugettext(
                 'Start proposals into projects conversion'),
-            'title': 'Accept proposals',
+            'title': 'Bulk accept proposals and send acceptance/rejection '
+                     'emails',
             'link': r.urlOf('gsoc_accept_proposals')
         },
         {
