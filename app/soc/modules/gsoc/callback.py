@@ -33,6 +33,7 @@ class Callback(object):
     """Instantiates all view objects.
     """
     from soc.modules.gsoc.views import accept_proposals
+    from soc.modules.gsoc.views import accept_withdraw_projects
     from soc.modules.gsoc.views import accepted_orgs
     from soc.modules.gsoc.views import admin
     from soc.modules.gsoc.views import dashboard
@@ -62,9 +63,10 @@ class Callback(object):
     from soc.modules.gsoc.views import student_evaluation
     from soc.modules.gsoc.views import student_forms
     from soc.modules.gsoc.views import oauth
-    from soc.modules.gsoc.views import withdraw_projects
 
     self.views.append(accept_proposals.AcceptProposalsPage())
+    self.views.append(accept_withdraw_projects.AcceptProposals())
+    self.views.append(accept_withdraw_projects.WithdrawProjects())
     self.views.append(accepted_orgs.AcceptedOrgsPage())
     self.views.append(admin.DashboardPage())
     self.views.append(admin.LookupLinkIdPage())
@@ -139,7 +141,6 @@ class Callback(object):
     self.views.append(oauth.OAuthVerifyToken())
 #    self.views.append(statistic.StatisticDashboard())
 #    self.views.append(statistic.StatisticFetcher())
-    self.views.append(withdraw_projects.WithdrawProjects())
 
     # Appengine Task related views
     from soc.modules.gsoc.tasks.grading_survey_group import \
