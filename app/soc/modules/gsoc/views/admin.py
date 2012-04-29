@@ -218,6 +218,14 @@ class MainDashboard(Dashboard):
             'link': r.urlOf('gsoc_accept_proposals')
         },
         {
+            'name': 'manage_proposals',
+            'description': ugettext(
+                'Lists all the proposals submitted to the program and lets '
+                'accept individual proposals.'),
+            'title': 'Proposals submitted',
+            'link': r.urlOf('gsoc_admin_accept_proposals')
+        },
+        {
             'name': 'withdraw_projects',
             'description': ugettext(
                 'Withdraw accepted projects or accept withdrawn projects'),
