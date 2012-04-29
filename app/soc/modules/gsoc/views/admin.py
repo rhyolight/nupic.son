@@ -395,7 +395,7 @@ class ManageOrganizationsDashboard(Dashboard):
             'name': 'preview_org_app',
             'description': ugettext(
                 'Preview of the organization application.'),
-            'title': 'Preview of the organization application',
+            'title': 'Preview organization application',
             'link': r.urlOf('gsoc_preview_org_app')
         },
         {
