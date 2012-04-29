@@ -23,18 +23,19 @@ import logging
 import StringIO
 import time
 
-from django import http
-from django.conf.urls.defaults import url
-from django.utils import simplejson
+from HTMLParser import HTMLParseError
+
+from html5lib import HTMLParser
+from html5lib import sanitizer
+from html5lib.html5parser import ParseError
 
 from google.appengine.ext import db
 from google.appengine.api import taskqueue
 from google.appengine.runtime import DeadlineExceededError
 
-from HTMLParser import HTMLParseError
-
-from htmlsanitizer import HtmlSanitizer
-from htmlsanitizer import safe_html
+from django import http
+from django.conf.urls.defaults import url
+from django.utils import simplejson
 
 from soc.tasks.helper import error_handler
 from soc.tasks.helper.timekeeper import Timekeeper
@@ -192,11 +193,11 @@ class BulkCreateTask(object):
 
     # clean description
     try:
-      cleaner = HtmlSanitizer.Cleaner()
-      cleaner.string = task['description']
-      cleaner.clean()
-      task['description'] = cleaner.string.strip().replace('\r\n', '\n')
-    except (HTMLParseError, safe_html.IllegalHTML, TypeError), e:
+      parser = HTMLParser(tokenizer=sanitizer.HTMLSanitizer)
+      parsed = parser.parseFragment(task['description'], encoding='utf-8')
+      cleaned_string = ''.join([tag.toxml() for tag in parsed.childNodes])
+      task['description'] = cleaned_string.strip().replace('\r\n', '\n')
+    except (HTMLParseError, ParseError, TypeError), e:
       logging.warning('Cleaning of description failed with: %s' %e)
       errors.append(
           'Failed to clean the description, do not use naughty HTML such as '
