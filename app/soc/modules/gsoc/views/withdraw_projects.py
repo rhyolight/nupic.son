@@ -163,21 +163,24 @@ class ProjectList(Template):
 
       def withdraw_or_accept_project_txn():
         org = GSoCOrganization.get(org_key)
+        student_info = GSoCStudentInfo.all().ancestor(profile_key).get()
+        orgs = student_info.project_for_orgs
 
         if withdraw:
           new_status = 'withdrawn'
           new_number = 0
           org.slots -= 1
+          orgs.remove(org_key)
         else:
           new_status = 'accepted'
           new_number = 1
           org.slots += 1
+          orgs = list(set(orgs + [org_key]))
 
         project.status = new_status
         proposal.status = new_status
-        #profile.number_of_projects = new_number
-        student_info = GSoCStudentInfo.all().ancestor(profile_key).get()
-        student_info.number_of_project = new_number
+        student_info.project_for_orgs = orgs
+        student_info.number_of_projects = new_number
 
         db.put([proposal, project, student_info, org])
 
