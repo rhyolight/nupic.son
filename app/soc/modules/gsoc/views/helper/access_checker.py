@@ -296,7 +296,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check how many proposals the student has already submitted 
     query = GSoCProposal.all()
-    query.filter('scope = ', self.data.profile).ancestor(self.data.user)
+    query.ancestor(self.data.profile)
 
     if query.count() >= self.data.program.apps_tasks_limit:
       # too many proposals access denied
