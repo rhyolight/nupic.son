@@ -49,7 +49,7 @@ DEF_FAILED_PREVIOUS_EVAL = ugettext(
     'failed in the previous evaluation.')
 
 DEF_MAX_PROPOSALS_REACHED = ugettext(
-    'You have reached the maximum number of proposals allowed '
+    'You have reached the maximum number of proposals (%d) allowed '
     'for this program.')
 
 DEF_NO_STUDENT_EVALUATION = ugettext(
@@ -300,7 +300,8 @@ class AccessChecker(access_checker.AccessChecker):
 
     if query.count() >= self.data.program.apps_tasks_limit:
       # too many proposals access denied
-      raise AccessViolation(DEF_MAX_PROPOSALS_REACHED)
+      raise AccessViolation(DEF_MAX_PROPOSALS_REACHED % (
+          self.data.program.apps_tasks_limit))
 
   def isStudentForSurvey(self):
     """Checks if the student can take survey for the project.
