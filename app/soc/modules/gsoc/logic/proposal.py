@@ -18,6 +18,8 @@
 """
 
 
+from google.appengine.ext import db
+
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
 
@@ -70,3 +72,23 @@ def getProposalsToBeAcceptedForOrg(org_entity, step_size=25):
 
   # cut off any superfluous proposals
   return proposals[:slots_left_to_assign]
+
+
+def getProposalsQuery(keys_only=False, ancestor=None, **properties):
+  """Returns the Appengine GSoCProposal query object for the given set
+  of properties.
+
+  Args:
+    ancestor: The student for whom the proposals must be fetched.
+    properties: keyword arguments containing the properties for which the
+        query must be constructed.
+  """
+  q = db.Query(GSoCProposal, keys_only=keys_only)
+
+  if ancestor:
+    q.ancestor(ancestor)
+
+  for k, v in properties.items():
+    q.filter(k, v)
+
+  return q
