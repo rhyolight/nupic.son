@@ -74,6 +74,42 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     proposal = GSoCProposal.all().get()
     self.assertPropertiesEqual(properties, proposal)
 
+  def testProposalsSubmissionLimit(self):
+    self.gsoc.apps_tasks_limit = 5
+    self.gsoc.put()
+
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com')
+    mentor.createMentor(self.org)
+    mentor.notificationSettings(
+        new_proposals=True, public_comments=True, private_comments=True)
+
+    other_mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    other_mentor.createOtherUser('other_mentor@example.com')
+    other_mentor.createMentor(self.org)
+    other_mentor.notificationSettings()
+
+    self.data.createStudent()
+    self.data.notificationSettings()
+    self.timeline.studentSignup()
+
+    override = {
+        'program': self.gsoc, 'score': 0, 'nr_scores': 0, 'mentor': None,
+        'org': self.org, 'status': 'pending', 'accept_as_project': False,
+        'is_editable_post_deadline': False, 'extra': None, 'has_mentor': False,
+    }
+
+    url = '/gsoc/proposal/submit/' + self.org.key().name()
+
+    # Try to submit proposals four times.
+    for i in range(5):
+      response, properties = self.modelPost(url, GSoCProposal, override)
+      self.assertResponseRedirect(response)
+
+    response, properties = self.modelPost(url, GSoCProposal, override)
+    self.assertResponseForbidden(response)
+
+
   def testSubmitProposalWhenInactive(self):
     """Test the submission of student proposals during the student signup
     period is not active.
