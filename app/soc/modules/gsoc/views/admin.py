@@ -19,7 +19,6 @@
 
 
 import logging
-import math
 
 from google.appengine.api import taskqueue
 from google.appengine.api import users
