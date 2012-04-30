@@ -48,11 +48,11 @@ class TimelineHelper(request_data.TimelineHelper):
     if self.beforeOrgSignupStart():
       return 'kickoff_period'
 
-    if self.afterStudentSignupStart():
-      return 'student_signup_period'
-
-    if self.afterOrgSignupStart():
+    if self.orgSignup():
       return 'org_signup_period'
+
+    if self.studentSignup():
+      return 'student_signup_period'
 
     if self.studentsAnnounced():
       return 'coding_period'
