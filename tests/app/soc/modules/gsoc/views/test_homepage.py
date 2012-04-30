@@ -73,7 +73,40 @@ class HomepageViewTest(GSoCDjangoTestCase):
   def testHomepageDuringSignup(self):
     """Tests the student homepage during the signup period.
     """
-    self.timeline.studentSignup()
+    self.timeline.studentsAnnounced()
+    url = '/gsoc/homepage/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertHomepageTemplatesUsed(response)
+    timeline_tmpl = response.context['timeline']
+    apply_context = response.context['apply'].context()
+    self.assertEqual(timeline_tmpl.current_timeline, 'coding_period')
+    self.assertTrue('profile_link' in apply_context)
+
+    # Show featured_project
+    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student.createOtherUser('student@example.com')
+    student_entity = student.createMentor(self.org)
+
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com')
+    mentor_entity = mentor.createMentor(self.org)
+
+    project = self.createProject({'parent': student_entity,
+                                 'mentor': mentor_entity, 'featured': True })
+
+    response = self.get(url)
+    self.assertHomepageTemplatesUsed(response)
+    self.assertTemplateUsed(
+        response, 'v2/modules/gsoc/homepage/_featured_project.html')
+
+    featured_project_tmpl = response.context['featured_project']
+    self.assertEqual(featured_project_tmpl.featured_project.key().
+                     project.key())
+
+  def testHomepageAfterStudentsAnnounceed(self):
+    """Tests the student homepage after the student's have been announced.
+    """
+    self.timeline.student
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
