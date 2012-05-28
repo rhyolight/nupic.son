@@ -424,12 +424,7 @@ def sanitize_html_string(content):
   except (HTMLParseError, ParseError), msg:
     raise forms.ValidationError(msg)
 
-  try:
-    content = cleaned_content.decode("utf-8")
-  except Exception, e:
-    raise forms.ValidationError(str(e))
-
-  return content
+  return cleaned_content
 
 
 def clean_html_content(field_name):
