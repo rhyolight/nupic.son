@@ -48,7 +48,7 @@
 
     var center_latlng = new google.maps.LatLng(0, 0);
     var init_options = {
-      zoom: 2,
+      zoom: 1,
       center: center_latlng,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     };

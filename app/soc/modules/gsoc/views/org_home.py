@@ -353,7 +353,7 @@ class OrgHome(RequestHandler):
       context['project_list'] = ProjectList(self.request, self.data)
 
       # obtain a json object that contains the organization home page map data
-      #context['org_map_data'] = self._getJSONMapData()
+      context['org_map_data'] = self._getJSONMapData()
 
     return context
 
