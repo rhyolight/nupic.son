@@ -30,6 +30,7 @@ from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.logic import project as project_logic
+from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -257,8 +258,8 @@ class OrgHome(RequestHandler):
       student_key = str(student.key())
 
       # TODO(SRabbelier): also display secondary mentors
-      mentor = project.mentors[0]
-      mentor_key = str(mentor.key())
+      mentor_key = str(project.mentors[0])
+      mentor = GSoCProfile.get(mentor_key)
 
       project_key_object = project.key()
       project_key = str(project_key_object)
@@ -351,7 +352,6 @@ class OrgHome(RequestHandler):
 
       context['project_list'] = ProjectList(self.request, self.data)
 
-      # TODO: Map needs to be rewritten to work with new mentors property
       # obtain a json object that contains the organization home page map data
       #context['org_map_data'] = self._getJSONMapData()
 
