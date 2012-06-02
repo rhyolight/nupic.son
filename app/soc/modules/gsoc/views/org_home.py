@@ -22,9 +22,9 @@ from django.conf.urls.defaults import url as django_url
 from django.utils import simplejson
 
 from soc.logic.exceptions import AccessViolation
-from soc.views.helper import lists
 from soc.logic.helper import timeline as timeline_helper
 from soc.views.template import Template
+from soc.views.helper import lists
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
