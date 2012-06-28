@@ -212,7 +212,7 @@
             label = options[0];
           }
 					field += '<label>' + opts.messages.label + '</label>';
-					field += '<input class="fld-label" id="label-' + last_id + '" type="text" value="' + unescape(label) + '" />';
+					field += '<input class="fld-label" id="label-' + last_id + '" type="text" value="' + unescape(label).replace(/"/g, '&#34;') + '" />';
 					help = '';
 					appendFieldLi(field_id, opts.messages.text, field, required, other, help);
 				};
@@ -224,7 +224,7 @@
             label = options[0];
           }
 					field += '<label>' + opts.messages.label + '</label>';
-					field += '<input type="text" value="' + unescape(label) + '" />';
+					field += '<input type="text" value="' + unescape(label).replace(/"/g, '&#34;') + '" />';
 					help = '';
 					appendFieldLi(field_id, opts.messages.paragraph_field, field, required, other, help);
 				};
@@ -241,7 +241,7 @@
 					}
 					field += '<div class="chk_group">';
 					field += '<div class="frm-fld"><label>' + opts.messages.label + '</label>';
-					field += '<input type="text" name="label" value="' + unescape(label) + '" /></div>';
+					field += '<input type="text" name="label" value="' + unescape(label).replace(/"/g, '&#34;') + '" /></div>';
 					field += '<div class="false-label">' + opts.messages.select_options + '</div>';
 					field += '<div class="fields ' + opts.options_wrap_class + '">';
 					if (typeof (values) === 'object') {
@@ -269,7 +269,7 @@
 					field = '';
 					field += '<div>';
 					field += '<input type="checkbox"' + (checked ? ' checked="checked"' : '') + ' />';
-					field += '<input type="text" value="' + unescape(value) + '" />';
+					field += '<input type="text" value="' + unescape(value).replace(/"/g, '&#34;') + '" />';
 					field += '<a href="#" class="remove" title="' + opts.messages.remove_message + '">' + opts.messages.remove + '</a>';
 					field += '</div>';
 					return field;
@@ -287,7 +287,7 @@
 					}
 					field += '<div class="rd_group">';
 					field += '<div class="frm-fld"><label>' + opts.messages.label + '</label>';
-					field += '<input type="text" name="label" value="' + unescape(label) + '" /></div>';
+					field += '<input type="text" name="label" value="' + unescape(label).replace(/"/g, '&#34;') + '" /></div>';
 					field += '<div class="false-label">' + opts.messages.select_options + '</div>';
 					field += '<div class="fields ' + opts.options_wrap_class + '">';
 					if (typeof (values) === 'object') {
@@ -315,7 +315,7 @@
 					field = '';
 					field += '<div>';
 					field += '<input type="radio"' + (checked ? ' checked="checked"' : '') + ' name="radio_' + name + '" />';
-					field += '<input type="text" value="' + unescape(value) + '" />';
+					field += '<input type="text" value="' + unescape(value).replace(/"/g, '&#34;') + '" />';
 					field += '<a href="#" class="remove" title="' + opts.messages.remove_message + '">' + opts.messages.remove + '</a>';
 					field += '</div>';
 					return field;
@@ -335,7 +335,7 @@
 					}
 					field += '<div class="opt_group">';
 					field += '<div class="frm-fld"><label>' + opts.messages.label + '</label>';
-					field += '<input type="text" name="label" value="' + unescape(label) + '" /></div>';
+					field += '<input type="text" name="label" value="' + unescape(label).replace(/"/g, '&#34;') + '" /></div>';
 					field += '';
 					field += '<div class="false-label">' + opts.messages.select_options + '</div>';
 					field += '<div class="fields ' + opts.options_wrap_class + '">';
