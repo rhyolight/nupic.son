@@ -44,7 +44,7 @@ class Survey(db.Model):
   program = db.ReferenceProperty(reference_class=Program, required=False,
                                  collection_name="program_surveys")
 
-# TODO(Madhu): Get rid of this property once the conversion is done
+  # TODO(Madhu): Get rid of this property once the conversion is done
   scope = db.ReferenceProperty(required=False,
       collection_name='links', verbose_name=ugettext('Link Scope'))
   scope.help_text = ugettext(
