@@ -51,9 +51,9 @@ class GSoCStudentEvaluationEditForm(gsoc_forms.SurveyEditForm):
   class Meta:
     model = ProjectSurvey
     css_prefix = 'gsoc-student-eval-edit'
-    exclude = ['scope', 'author', 'modified_by', 'survey_content',
-               'scope_path', 'link_id', 'prefix', 'read_access',
-               'write_access', 'taking_access', 'is_featured']
+    exclude = ['program', 'scope', 'author', 'created_by', 'modified_by',
+               'survey_content', 'scope_path', 'link_id', 'prefix',
+               'read_access', 'write_access', 'taking_access', 'is_featured']
 
 
 class GSoCStudentEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
