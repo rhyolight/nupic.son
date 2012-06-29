@@ -112,6 +112,15 @@ class GSoCProfileAdminPage(RequestHandler):
         r.project(project.key().id())
         links.append(r.urlOf('gsoc_project_details', full=True))
       r = self.redirect.profile()
+      
+      user_role = None
+      if profile.is_student:
+          user_role = 'Student'
+      elif profile.is_mentor:
+          user_role = 'Mentor'
+      elif profile.is_org_admin:
+          user_role = 'Org Admin'
+      
       context.update({
           'profile': GSoCProfileReadOnlyTemplate(profile),
           'links': links,
@@ -119,6 +128,7 @@ class GSoCProfileAdminPage(RequestHandler):
           'submit_enrollment_link': r.urlOf('gsoc_enrollment_form_admin'),
           'page_name': '%s Profile - %s' % (
               program.short_name, profile.name()),
+          'user_role': user_role,
           })
     else:
       context.update({
