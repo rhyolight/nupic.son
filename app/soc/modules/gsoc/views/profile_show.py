@@ -116,10 +116,10 @@ class GSoCProfileAdminPage(RequestHandler):
       user_role = None
       if profile.is_student:
           user_role = 'Student'
-      elif profile.is_mentor:
-          user_role = 'Mentor'
       elif profile.is_org_admin:
           user_role = 'Org Admin'
+      elif profile.is_mentor:
+          user_role = 'Mentor'
       
       context.update({
           'profile': GSoCProfileReadOnlyTemplate(profile),
