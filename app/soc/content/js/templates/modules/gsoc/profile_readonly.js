@@ -23,7 +23,6 @@ melange.templates.inherit(
     // Create global variables
     var map;
     var marker;
-    var geocoder;
   
     // The following strings can be customized to reflect ids in the page.
     // You can also add or remove fields used for GMap Geocoding in 
@@ -35,17 +34,12 @@ melange.templates.inherit(
     // Two different levels for zoom: Starting one and an inner that 
     // is used when showing the map if lat and lon page fields are set
     var world_zoom = 1;
-    var country_zoom = 4;
-    var state_zoom = 6;
-    var city_zoom = 10;
     var address_zoom = 13;
   
-    // Do not add a starting # as this JQuery selector seems 
-    // incompatible with GMap API
     var map_div = "profile_map";
   
     // Id of the element which the map will be appended after.
-    var append_to = "#block-" + css_prefix + "-location-info-content";
+    var append_to = "#gsoc_" + css_prefix + "-contact-info-private";
   
     var field_lat = "#latitude";
     var field_lng = "#longitude";
@@ -58,43 +52,41 @@ melange.templates.inherit(
   
     // Public function to load the map
     function map_load() {
-      // All can happen only if there is gmap compatible browser.
-      // TODO: Fallback in case the browser is not compatible
-      if (google.maps.BrowserIsCompatible()) {
-        var starting_point;
-        var zoom_selected = world_zoom;
-        var show_marker = false;
+      var init_map_options = {
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControl: true,
+        panControl: true,
+        zoomControl: true
+      };
+      var starting_point;
+      var zoom_selected = world_zoom;
+      var show_marker = false;
   
-        // Create the map and add small controls
-        map = new google.maps.Map2(document.getElementById(map_div));
-        map.addControl(new google.maps.SmallMapControl());
-        map.addControl(new google.maps.MapTypeControl());
+      // Create the map and pass initialization
+      map = new google.maps.Map(jQuery("#" + map_div)[0], init_map_options);
   
-        // Instantiate a global geocoder for future use
-        geocoder = new google.maps.ClientGeocoder();
+      // If lat and lng fields are not empty then
+      // do not show the marker
+      if (jQuery(field_lat).text() !== "" && jQuery(field_lng).text() !== "") {
+        readLatLngFields();
+        zoom_selected = address_zoom;
+        show_marker = true;
+      }
   
-        // If lat and lng fields are not empty then
-        // do not show the marker
-        if (jQuery(field_lat).text() !== "" && jQuery(field_lng).text() !== "") {
-          readLatLngFields();
-          zoom_selected = address_zoom;
-          show_marker = true;
-        }
-  
-        // Set map center, marker coords and show it if this is an editing
-        starting_point = new google.maps.LatLng(current_lat, current_lng);
-        map.setCenter(starting_point, zoom_selected);
-        marker = new google.maps.Marker(starting_point, {draggable: false});
-        if (show_marker) {
-          map.addOverlay(marker);
-        }
+      // Set map center, marker coords if present
+      starting_point = new google.maps.LatLng(current_lat, current_lng);
+      map.setZoom(zoom_selected);
+      map.setCenter(starting_point);
+      marker = new google.maps.Marker({position: starting_point, draggable: false});
+      if (show_marker) {
+        marker.setMap(map);
       }
     }
   
     jQuery(
       function () {
         jQuery(append_to).append("<div id='" + map_div + "' style=\"width: 100%\"></div>");
-        melange.loadGoogleApi("maps", "2", {}, map_load);
+        melange.loadGoogleApi("maps", "3", {other_params: "sensor=false"}, map_load);
       }
     );
   }
