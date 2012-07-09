@@ -169,7 +169,7 @@ DEF_NOT_DEVELOPER = ugettext(
     'You need to be a site developer to access this page.')
 
 DEF_NOT_HOST = ugettext(
-    'You need to be a program adminstrator to access this page.')
+    'You need to be a program administrator to access this page.')
 
 DEF_NOT_MENTOR = ugettext(
     'You need to be a mentor for %s to access this page.')
