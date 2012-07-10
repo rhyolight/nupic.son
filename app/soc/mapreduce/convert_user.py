@@ -34,6 +34,7 @@ from soc.logic import accounts
 
 MISSING_USER = 'missing_user'
 MISSING_USER_SECOND = 'missing_user_second'
+MISSING_USER_ID = 'missing_user_id'
 IGNORED_USER = 'ignored_user'
 CONVERTED_USER = 'converted_user'
 
