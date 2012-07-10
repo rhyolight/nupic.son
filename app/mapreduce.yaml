@@ -239,3 +239,10 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.task.GCITask
 
+- name: ConvertUser
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.convert_user.process
+    params:
+    - name: entity_kind
+      value: soc.models.user.User
