@@ -40,13 +40,7 @@ def getCurrentUserId():
 def normalizeAccount(account):
   """Returns a normalized version of the specified account.
   """
-
-  normalized = str(account).lower()
-
-  if account.email() == normalized:
-    return account
-
-  return users.User(email=normalized)
+  return account
 
 
 def denormalizeAccount(account):
