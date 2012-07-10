@@ -921,17 +921,17 @@ def main(args):
     org.nr_applications = value
   def rawSaver(org, value):
     org.slots_calculated = value
-  def getGSoC2011Profile(link_id):
-    program = GSoCProgram.get_by_key_name('google/gsoc2011')
+  def getGSoC2012Profile(link_id):
+    program = GSoCProgram.get_by_key_name('google/gsoc2012')
     return GSoCProfile.all().filter('scope', program).filter('link_id', link_id).get()
-  def getGSoC2011Proposal(link_id, id):
-    profile = getGSoC2011Profile(link_id)
+  def getGSoC2012Proposal(link_id, id):
+    profile = getGSoC2012Profile(link_id)
     return GSoCProposal.get_by_id(id, profile)
-  def getGSoC2011Project(link_id, id):
-    profile = getGSoC2011Profile(link_id)
+  def getGSoC2012Project(link_id, id):
+    profile = getGSoC2012Profile(link_id)
     return GSoCProject.get_by_id(id, profile)
   def withdrawProject(link_id, id):
-    proposal = getGSoC2011Proposal(link_id, id)
+    proposal = getGSoC2012Proposal(link_id, id)
     proposal_key = proposal.key()
     profile = proposal.parent()
     profile_key = profile.key()
@@ -969,9 +969,9 @@ def main(args):
       'setOrganizationInSurveyRecords': setOrganizationInSurveyRecords,
       'convertProposals': convertProposals,
       'addFollower': addFollower,
-      'p': getGSoC2011Profile,
-      'o': getGSoC2011Proposal,
-      'r': getGSoC2011Project,
+      'p': getGSoC2012Profile,
+      'o': getGSoC2012Proposal,
+      'r': getGSoC2012Project,
       'accepter': ProposalAcceptanceTask(),
       'withdrawProject': withdrawProject,
       'GSoCOrganization': GSoCOrganization,
