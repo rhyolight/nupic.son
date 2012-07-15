@@ -18,7 +18,10 @@
 """
 
 
+import collections
+
 from google.appengine.api import taskqueue
+from google.appengine.ext import db
 
 from soc.views import forms
 from soc.views.helper import lists
@@ -120,17 +123,31 @@ class GradingRecordsList(Template):
     list_config.addColumn('student_id', 'Student Link Id', stud_id_func,
                            hidden=True)
 
-    stud_email_func = lambda rec, *args: rec.parent().parent().email
+    stud_email_func = lambda rec, *args: args[1][rec.key()].email
     list_config.addColumn('student_email', 'Student Email Id',
                           stud_email_func, hidden=True)
 
-    stud_fn_func = lambda rec, *args: rec.parent().parent().given_name
+    stud_fn_func = lambda rec, *args: args[1][rec.key()].given_name
     list_config.addColumn('student_fn', 'Student First Name',
                           stud_fn_func, hidden=True)
 
-    stud_ln_func = lambda rec, *args: rec.parent().parent().surname
+    stud_ln_func = lambda rec, *args: args[1][rec.key()].surname
     list_config.addColumn('student_ln', 'Student Last Name',
                           stud_ln_func, hidden=True)
+
+    mentor_email_func = lambda rec, *args: args[0][rec.key()].email
+
+    list_config.addColumn('mentor_email', 'Mentor Email Id',
+                          mentor_email_func, hidden=True)
+
+    mentor_fn_func = lambda rec, *args: args[0][rec.key()].given_name
+    list_config.addColumn('mentor_fn', 'Mentor First Name',
+                          mentor_fn_func, hidden=True)
+
+    mentor_ln_func = lambda rec, *args: args[0][rec.key()].surname
+    list_config.addColumn('mentor_ln', 'Mentor Last Name',
+                          mentor_ln_func, hidden=True)
+
 
     list_config.addPostButton('update_records', 'Update Records', '', [0,'all'], [])
     list_config.addPostButton('update_projects', 'Update Projects', '', [0,'all'], [])
@@ -168,8 +185,30 @@ class GradingRecordsList(Template):
     q.filter('grading_survey_group', self.data.survey_group)
 
     starter = lists.keyStarter
-    prefetcher = lists.modelPrefetcher(
-        GSoCGradingRecord, ['mentor_record', 'student_record'], parent=True)
+    def prefetcher(records):
+      prefetcher = lists.prefetchFields(
+          GSoCGradingRecord, ['mentor_record', 'student_record'], 
+          records, parent=True)
+
+      mentor_records_map = collections.defaultdict(list)
+      student_profiles = {}
+
+      for record in records:
+        project = record.parent()
+        mentor_key = project.mentors[0]
+        record_key = record.key()
+        if record_key:
+          mentor_records_map[mentor_key].append(record_key)
+          student_profiles[record_key] = project.parent()
+
+      entities = db.get(mentor_records_map.keys())
+      mentors = {}
+      for mentor in entities:
+        if mentor:
+          for record_key in mentor_records_map[mentor.key()]:
+            mentors[record_key] = mentor
+
+      return ([mentors, student_profiles], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q,
