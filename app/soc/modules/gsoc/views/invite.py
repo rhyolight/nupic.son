@@ -32,8 +32,8 @@ from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.tasks import mailer
 
+from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views import forms as gsoc_forms
@@ -46,19 +46,20 @@ DEF_STATUS_FOR_ADMIN_MSG = ugettext(
     'This user is now %s with your organization.')
 
 
-class InviteForm(gsoc_forms.GSoCModelForm):
-  """Django form for the invite page.
-  """
-
+class ConnectionForm(gsoc_forms.GSoCModelForm):
+  """ Django form for creating or editing a connection between a user
+   and an organization for mentor/org admin invitations/requests """
   link_id = gsoc_forms.CharField(label='Link ID/Email')
-
+  
   class Meta:
-    model = GSoCRequest
-    css_prefix = 'gsoc_intivation'
-    fields = ['message']
-
+  	model = GSoCConnection
+  	fields = ['message']
+  	widgets = {
+  	    'message':gsoc_forms.Textarea(attrs={'cols':80, 'rows':10})
+  	}  	
+  	
   def __init__(self, request_data, *args, **kwargs):
-    super(InviteForm, self).__init__(*args, **kwargs)
+    super(ConnectionForm, self).__init__(*args, **kwargs)
 
     # store request object to cache results of queries
     self.request_data = request_data
@@ -69,6 +70,10 @@ class InviteForm(gsoc_forms.GSoCModelForm):
     field.help_text = ugettext(
         'The link_id or email address of the invitee, '
         ' separate multiple values with a comma')
+        
+    field = self.fields['message']
+    field.help_text = ugettext('An optional message for the user')
+    field.label = ugettext('Message')
     
   def clean_link_id(self):
     """Accepts link_id of users which may be invited.
@@ -78,14 +83,14 @@ class InviteForm(gsoc_forms.GSoCModelForm):
 
     link_ids = self.cleaned_data.get('link_id', '').split(',')
 
-    self.request_data.invited_user = []
+    self.request_data.connected_user = []
 
     for link_id in link_ids:
       self.cleaned_data['link_id'] = link_id.strip()
       self._clean_one_link_id()
 
   def _clean_one_link_id(self):
-    invited_user = None
+    connected_user = None
 
     link_id_cleaner = cleaning.clean_link_id('link_id')
 
@@ -109,23 +114,21 @@ class InviteForm(gsoc_forms.GSoCModelForm):
       user_account = accounts.normalizeAccount(account)
       invited_user = User.all().filter('account', user_account).get()
 
-      if not invited_user:
+      if not connected_user:
         raise djangoforms.ValidationError(
             'There is no user with that email address')
 
     # get the user entity that the invitation is to
-    if not invited_user:
+    if not connected_user:
       existing_user_cleaner = cleaning.clean_existing_user('link_id')
-      invited_user = existing_user_cleaner(self)
+      connected_user = existing_user_cleaner(self)
 
-    self.request_data.invited_user.append(invited_user)
+    self.request_data.connected_user.append(connected_user)
 
     # check if the organization has already sent an invitation to the user
-    query = db.Query(GSoCRequest)
-    query.filter('type', 'Invitation')
-    query.filter('user', invited_user)
-    query.filter('role', self.request_data.kwargs['role'])
-    query.filter('org', self.request_data.organization)
+    query = db.Query(GSoCConnection)
+    query.filter('user', connected_user)
+    query.filter('organization', self.request_data.organization)
     if query.get():
       raise djangoforms.ValidationError(
           'An invitation to this user has already been sent.')
@@ -133,9 +136,9 @@ class InviteForm(gsoc_forms.GSoCModelForm):
     # check if the user that is invited does not have the role
     key_name = '/'.join([
         self.request_data.program.key().name(),
-        invited_user.link_id])
+        connected_user.link_id])
     profile = self.request_data.invite_profile = GSoCProfile.get_by_key_name(
-        key_name, parent=invited_user)
+        key_name, parent=connected_user)
 
     if not profile:
       msg = ('The specified user has a User account (the link_id is valid), '
@@ -178,52 +181,50 @@ class InvitePage(RequestHandler):
   def context(self):
     """Handler to for GSoC Invitation Page HTTP get request.
     """
-
     role = 'Org Admin' if self.data.kwargs['role'] == 'org_admin' else 'Mentor'
-
-    invite_form = InviteForm(self.data, self.data.POST or None)
-
+    
+    conn_form = ConnectionForm(self.data, self.data.POST or None)
     return {
         'logout_link': self.data.redirect.logout(),
         'page_name': 'Invite a new %s' % role,
         'program': self.data.program,
-        'invite_form': invite_form,
-        'error': bool(invite_form.errors)
+        'invite_form': conn_form,
+        'error': bool(conn_form.errors)
     }
 
   def _createFromForm(self):
-    """Creates a new invitation based on the data inserted in the form.
+    """Creates a new connection based on the data inserted in the form.
 
     Returns:
-      a newly created Request entity or None
+      a newly created Connection entity or None
     """
-
     assert isSet(self.data.organization)
-
-    invite_form = InviteForm(self.data, self.data.POST)
+	
+    connection_form = ConnectionForm(self.data, self.data.POST)
     
-    if not invite_form.is_valid():
+    if not connection_form.is_valid():
       return None
 
-    assert isSet(self.data.invited_user)
-    assert self.data.invited_user
+    assert isSet(self.data.connected_user)
+    assert self.data.connected_user
 
-    # create a new invitation entity
-
-    invite_form.cleaned_data['org'] = self.data.organization
-    invite_form.cleaned_data['role'] = self.data.kwargs['role']
-    invite_form.cleaned_data['type'] = 'Invitation'
+    # create a new connection entity
+    connection_form.cleaned_data['organization'] = self.data.organization
+    # temporary fix for a query in dashboard.py
+    connection_form.cleaned_data['org_name'] = self.data.organization.name
+    connection_form.cleaned_data['user_action'] = 'pending'
+    connection_form.cleaned_data['org_action'] = 'accepted'
 
     def create_invite_txn(user):
-      invite = invite_form.create(commit=True, parent=user)
-      context = notifications.inviteContext(self.data, invite)
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
-      sub_txn()
-      return invite
+      connection = connection_form.create(commit=True, parent=user)
+      # TODO(dcrodman): Make this work for connections
+      #context = notifications.inviteContext(self.data, connection)
+      #sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
+      #sub_txn()
 
-    for user in self.data.invited_user:
-      invite_form.instance = None
-      invite_form.cleaned_data['user'] = user
+    for user in self.data.user_connections:
+      connection_form.instance = None
+      connection_form.cleaned_data['user'] = user
       db.run_in_transaction(create_invite_txn, user)
 
     return True
@@ -263,53 +264,54 @@ class ShowInvite(RequestHandler):
   def checkAccess(self):
     self.check.isProfileActive()
 
-    invite_id = int(self.data.kwargs['id'])
-    invited_user_link_id = self.data.kwargs['user']
-    if invited_user_link_id == self.data.user.link_id:
-      invited_user = self.data.user
+    conn_id = int(self.data.kwargs['id'])
+    user_link_id = self.data.kwargs['user']
+    if user_link_id == self.data.user.link_id:
+      connected_user = self.data.user
     else:
-      invited_user = User.get_by_key_name(invited_user_link_id)
+      connected_user = User.get_by_key_name(user_link_id)
 
-    self.data.invite = GSoCRequest.get_by_id(invite_id, parent=invited_user)
-    self.check.isInvitePresent(invite_id)
+    self.data.connection = GSoCConnection.get_by_id(conn_id, 
+                                                       parent=connected_user)
+    self.check.isConnectionPresent(conn_id)
 
-    self.data.organization = self.data.invite.org
-    self.data.invited_user = invited_user
+    self.data.organization = self.data.connection.organization
+    self.data.connected_user = connected_user
 
     if self.data.POST:
       self.data.action = self.data.POST['action']
 
       if self.data.action == self.ACTIONS['accept']:
-        self.check.canRespondToInvite()
+        self.check.canRespondToConnection()
       elif self.data.action == self.ACTIONS['reject']:
-        self.check.canRespondToInvite()
+        self.check.canRespondToConnection()
       elif self.data.action == self.ACTIONS['resubmit']:
-        self.check.canResubmitInvite()
+        self.check.canResubmitConnection()
     else:
-      self.check.canViewInvite()
+      self.check.canViewConnection()
 
     self.mutator.canRespondForUser()
 
-    if self.data.user.key() == self.data.invited_user.key():
+    if self.data.user.key() == self.data.connected_user.key():
       self.data.invited_profile = self.data.profile
       return
 
     key_name = '/'.join([
         self.data.program.key().name(),
         self.data.invited_user.link_id])
-    self.data.invited_profile = GSoCProfile.get_by_key_name(
-        key_name, parent=self.data.invited_user)
+    self.data.connected_profile = GSoCProfile.get_by_key_name(
+        key_name, parent=self.data.connected_user)
 
   def context(self):
     """Handler to for GSoC Show Invitation Page HTTP get request.
     """
 
-    assert isSet(self.data.invite)
+    assert isSet(self.data.connection)
     assert isSet(self.data.can_respond)
     assert isSet(self.data.organization)
-    assert isSet(self.data.invited_user)
-    assert isSet(self.data.invited_profile)
-    assert self.data.invited_profile
+    assert isSet(self.data.connected_user)
+    assert isSet(self.data.connected_profile)
+    assert self.data.connected_profile
 
     # This code is dupcliated between request and invite
     status = self.data.invite.status
@@ -335,27 +337,27 @@ class ShowInvite(RequestHandler):
     org_key = self.data.organization.key()
     status_msg = None
 
-    if self.data.invited_profile.key() == self.data.profile.key():
-      if org_key in self.data.invited_profile.org_admin_for:
+    if self.data.connected_profile.key() == self.data.profile.key():
+      if org_key in self.data.connected_profile.org_admin_for:
         status_msg =  DEF_STATUS_FOR_USER_MSG % 'an organization administrator'
-      elif org_key in self.data.invited_profile.mentor_for:
+      elif org_key in self.data.connected_profile.mentor_for:
         status_msg =  DEF_STATUS_FOR_USER_MSG % 'a mentor'
     else:
-      if org_key in self.data.invited_profile.org_admin_for:
+      if org_key in self.data.connected_profile.org_admin_for:
         status_msg = DEF_STATUS_FOR_ADMIN_MSG % 'an organization administrator'
-      elif org_key in self.data.invited_profile.mentor_for:
+      elif org_key in self.data.connected_profile.mentor_for:
         status_msg = DEF_STATUS_FOR_ADMIN_MSG % 'a mentor'
 
     return {
-        'request': self.data.invite,
+        'request': self.data.connection,
         'page_name': 'Invite',
         'org': self.data.organization,
         'actions': self.ACTIONS,
         'status_msg': status_msg,
-        'user_name': self.data.invited_profile.name(),
-        'user_link_id': self.data.invited_user.link_id,
+        'user_name': self.data.connected_profile.name(),
+        'user_link_id': self.data.connected_user.link_id,
         'user_email': accounts.denormalizeAccount(
-            self.data.invited_user.account).email(),
+            self.data.connected_user.account).email(),
         'show_actions': show_actions,
         'can_accept': can_accept,
         'can_reject': can_reject,
@@ -371,18 +373,18 @@ class ShowInvite(RequestHandler):
     assert self.data.invite
 
     if self.data.action == self.ACTIONS['accept']:
-      self._acceptInvitation()
+      self._acceptConnection()
     elif self.data.action == self.ACTIONS['reject']:
-      self._rejectInvitation()
+      self._rejectConnection()
     elif self.data.action == self.ACTIONS['resubmit']:
-      self._resubmitInvitation()
+      self._resubmitConnection()
     elif self.data.action == self.ACTIONS['withdraw']:
-      self._withdrawInvitation()
+      self._withdrawConnection()
 
     self.redirect.dashboard()
     self.redirect.to()
 
-  def _acceptInvitation(self):
+  def _acceptConnection(self):
     """Accepts an invitation.
     """
 
@@ -392,17 +394,17 @@ class ShowInvite(RequestHandler):
       self.redirect.program()
       self.redirect.to('edit_gsoc_profile', secure=True)
 
-    invite_key = self.data.invite.key()
+    connection_key = self.data.connection.key()
     profile_key = self.data.profile.key()
     organization_key = self.data.organization.key()
 
-    def accept_invitation_txn():
-      invite = db.get(invite_key)
+    def accept_connection_txn():
+      connection = db.get(connection_key)
       profile = db.get(profile_key)
 
-      invite.status = 'accepted'
+      connection.status = 'accepted'
 
-      if invite.role != 'mentor':
+      if connection.role != 'mentor':
         profile.is_org_admin = True
         profile.org_admin_for.append(organization_key)
         profile.org_admin_for = list(set(profile.org_admin_for))
@@ -411,21 +413,21 @@ class ShowInvite(RequestHandler):
       profile.mentor_for.append(organization_key)
       profile.mentor_for = list(set(profile.mentor_for))
 
-      invite.put()
+      connection.put()
       profile.put()
 
-    db.run_in_transaction(accept_invitation_txn)
+    db.run_in_transaction(accept_connection_txn)
 
   def _rejectInvitation(self):
     """Rejects a invitation. 
     """
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
+    assert isSet(self.data.connection)
+    connection_key = self.data.connection.key()
 
     def reject_invite_txn():
-      invite = db.get(invite_key)
-      invite.status = 'rejected'
-      invite.put()
+      connection = db.get(invite_key)
+      connection.status = 'rejected'
+      connection.put()
 
     db.run_in_transaction(reject_invite_txn)
 

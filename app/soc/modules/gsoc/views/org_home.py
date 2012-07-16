@@ -33,6 +33,7 @@ from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -105,13 +106,13 @@ class Apply(Template):
       context['invited_role'] = 'an administrator'
       return context
 
-    request_mentor_link = r.organization().urlOf('gsoc_request')
-    context['mentor_request_link'] = request_mentor_link
+    mentor_connect_link = r.connect(self.data.user).urlOf(
+                                                 url_names.GSOC_USER_CONNECTION)
+    context['mentor_connect_link'] = mentor_connect_link
     return context
 
   def templatePath(self):
     return "v2/modules/gsoc/org_home/_apply.html"
-
 
 class Contact(Template):
   """Organization Contact template.
@@ -339,8 +340,8 @@ class OrgHome(RequestHandler):
       r = self.redirect
       r.organization(organization)
       context['edit_link'] =  r.urlOf('edit_gsoc_org_profile')
-      context['invite_admin_link'] = r.invite('org_admin').urlOf('gsoc_invite')
-      context['invite_mentor_link'] = r.invite('mentor').urlOf('gsoc_invite')
+      context['start_connection_link'] = r.organization().urlOf(
+                                                url_names.GSOC_ORG_CONNECTION)
 
       if (self.data.program.allocations_visible and
           self.data.timeline.beforeStudentsAnnounced()):

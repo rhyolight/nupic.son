@@ -34,6 +34,9 @@ DEF_INVITATION = ugettext(
 DEF_NEW_REQUEST = ugettext(
     '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
+DEF_NEW_CONNECTION = ugettext(
+    '[%(org)s]')
+
 DEF_ACCEPTED_ORG = ugettext(
     '[%(org)s] Your organization application has been accepted.')
 
@@ -51,6 +54,9 @@ DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
 
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/new_request.html'
+    
+DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/initiated_connection.html'
 
 DEF_ACCEPTED_ORG_TEMPLATE = \
     'v2/soc/notification/org_accepted.html'
@@ -97,6 +103,38 @@ def inviteContext(data, invite):
 
   return getContext(data, [to_email], message_properties, subject, template)
 
+def connectionContext(data, connection, is_user=False):
+  """ Sends out a notification email to all individuals involved in the newly 
+  created connection.
+  
+  Args: 
+    data: RequestData object with organization and user set
+    connection: an instance of GSoCConnection
+  """
+  
+  subject = DEF_NEW_CONNECTION
+  request_url = data.redirect.show_connection(connection.parent(), 
+                                    connection.organization).url(full=True)
+
+  receivers = []                  
+  requester = None
+  
+  if is_user:
+    requester = connection.organization.link_id
+    receivers = list(connection.profile.email)
+  else:
+    requester = connection.profile.link_id
+    q = GSoCProfile.all().filter('org_admin_for', self.data.organization)
+    q = q.filter('status', 'active').filter('notify_new_requests', True)
+    admins = q.fetch(1000)
+    receivers = [i.email for i in admins]
+    
+  message_properties = {'org' : connection.organization, 
+                        'requester' : requester,
+                        'request_url' : request_url,
+                        'is_user' : is_user }
+  template = DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE
+  return getContext(data, receivers, message_properties, subject, template)
 
 def requestContext(data, request, admin_emails):
   """Sends out a notification to the persons who can process this Request.

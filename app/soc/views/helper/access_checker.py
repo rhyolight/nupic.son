@@ -81,44 +81,11 @@ DEF_ID_BASED_ENTITY_INVALID = ugettext(
 DEF_ID_BASED_ENTITY_NOT_EXISTS = ugettext(
     '%(model)s entity, whose id is %(id)s, is does not exist.')
 
-DEF_INVITE_DOES_NOT_EXIST = ugettext(
-    'There is no invite with id %s.')
+DEF_CONNECTION_CANNOT_BE_RESUBMITTED = ugettext(
+    'Only withdrawn connections may be resubmitted.')
 
-DEF_INVITE_CANNOT_BE_RESUBMITTED = ugettext(
-    'Only withdrawn invitations may be resubmitted.')
-
-DEF_INVITE_CANNOT_BE_ACCESSED = ugettext(
-    'This invite cannot be accessed from this account.')
-
-DEF_INVITE_CANNOT_BE_WITHDRAWN = ugettext(
-    'Only pending invitations may be withdrawn.')
-
-DEF_INVITE_CANNOT_BE_RESPONDED = ugettext(
-    'This invite cannot be responded at this moment')
-
-DEF_INVITE_ACCEPTED = ugettext(
-    'This invite has been accepted.')
-
-DEF_INVITE_REJECTED = ugettext(
-    'This invite has been rejected.')
-
-DEF_INVITE_WITHDRAWN = ugettext(
-    'This invite has been withdrawn.')
-
-DEF_REQUEST_DOES_NOT_EXIST = ugettext(
-    'There is no request with id %s.')
-
-DEF_REQUEST_CANNOT_BE_ACCESSED = ugettext(
-    'This request cannot be accessed from this account.')
-
-DEF_ACCEPTED_REQUEST_CANNOT_BE_MANAGED = ugettext(
-    'This request cannot be managed because it is already been accepted.')
-
-DEF_REQUEST_CANNOT_BE_WITHDRAWN = ugettext(
-    'This %s request cannot be withdrawn.')
-
-DEF_REQUEST_CANNOT_BE_RESUBMITTED = ugettext(
-    'This %s request cannot be resubmitted.')
+DEF_CONNECTION_CANNOT_BE_ACCESSED = ugettext(
+    'This connection cannot be accessed from this profile.')
 
 DEF_IS_NOT_STUDENT = ugettext(
     'This page is inaccessible because you do not have a student role '
@@ -185,10 +152,10 @@ DEF_NOT_PUBLIC_DOCUMENT = ugettext(
     'This document is not publically readable.')
 
 DEF_NOT_VALID_INVITATION = ugettext(
-    'This is not a valid invitation.')
+    'This is not a valid connection.')
 
-DEF_NOT_VALID_REQUEST = ugettext(
-    'This is not a valid request.')
+DEF_NOT_VALID_CONNECTION = ugettext(
+    'This is not a valid connection.')
 
 DEF_ORG_DOES_NOT_EXISTS = ugettext(
     'Organization, whose link_id is %(link_id)s, does not exist in '
@@ -541,28 +508,6 @@ class BaseAccessChecker(object):
 
     raise AccessViolation(DEF_PROFILE_INACTIVE)
 
-  def isInvitePresent(self, invite_id):
-    """Checks if the invite entity is not None.
-    """
-    assert isSet(self.data.invite)
-
-    if self.data.invite is None:
-      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST % invite_id)
-
-    if self.data.invite.type != INVITATION_TYPE:
-      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST % invite_id)
-
-  def isRequestPresent(self, request_id):
-    """Checks if the invite entity is not None.
-    """
-    assert isSet(self.data.request_entity)
-
-    if self.data.request_entity is None:
-      raise AccessViolation(DEF_REQUEST_DOES_NOT_EXIST % request_id)
-
-    if self.data.request_entity.type != REQUEST_TYPE:
-      raise AccessViolation(DEF_REQUEST_DOES_NOT_EXIST % request_id)
-
   def canAccessGoogleDocs(self):
     """Checks if user has a valid access token to access Google Documents.
     """
@@ -852,81 +797,7 @@ class AccessChecker(BaseAccessChecker):
     elif status == 'withdrawn':
       self.data.is_pending = False
 
-  def canRespondToInvite(self):
-    """Checks if the current user can accept/reject the invitation.
-    """
-    assert isSet(self.data.invite)
-    assert isSet(self.data.invited_user)
-
-    # check if the entity represents an invitation
-    if self.data.invite.type != 'Invitation':
-      raise AccessViolation(DEF_NOT_VALID_INVITATION)
-
-    # check if the entity can be responded
-    if self.data.invite.status not in ['pending', 'rejected']:
-      raise AccessViolation(DEF_NOT_VALID_INVITATION)
-
-    # check if the entity is addressed to the current user
-    if self.data.invited_user.key() != self.data.user.key():
-      error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'model': 'Request'
-          }
-      raise AccessViolation(error_msg)
-
-    # check if the user does not have this role
-    if self.data.invite.role == 'org_admin':
-      self.notOrgAdmin()
-    else:
-      self.notMentor()
-
-  def canResubmitInvite(self):
-    """Checks if the current user can resubmit the invitation.
-    """
-
-    assert isSet(self.data.invite)
-
-    # check if the entity represents an invitation
-    if self.data.invite.type != INVITATION_TYPE:
-      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
-
-    # only withdrawn requests may be resubmitted
-    if self.data.invite.status != 'withdrawn':
-      raise AccessViolation(DEF_NOT_VALID_REQUEST)
-
-    # check if the user is an admin for the organization
-    self.isOrgAdmin()
-
-  def canInviteBeResubmitted(self):
-    """Checks if the invitation may be resubmitted.
-    """
-
-    assert isSet(self.data.invite)
-
-    # check if the entity represents an invitation
-    if self.data.invite.type != INVITATION_TYPE:
-      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
-
-    # only withdrawn requests may be resubmitted
-    if self.data.invite.status != 'withdrawn':
-      raise AccessViolation(DEF_INVITE_CANNOT_BE_RESUBMITTED)
-
-    #TODO(dhans): actually it needs to be checked if the user has not accepted
-    # a request in the meantime.
-
-  def canInviteBeWithdrawn(self):
-    """Checks if the invitation may be withdrawn.
-    """
-
-    assert isSet(self.data.invite)
-
-    # check if the entity represents an invitation
-    if self.data.invite.type != INVITATION_TYPE:
-      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
-
-    # only pending requests may be withdrawn
-    if self.data.invite.status != 'pending':
-      raise AccessViolation(DEF_INVITE_CANNOT_BE_WITHDRAWN)
-
+  # (dcrodman) This method will be obsolete with the connection module.
   def canRespondInvite(self):
     """Checks if the current user may respond to invite entity.
     """
@@ -940,6 +811,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.user.key() != self.data.invite.user.key():
       raise AccessViolation(DEF_INVITE_CANNOT_BE_ACCESSED)
 
+  # (dcrodman) This method will be obsolete with the connection module.
   def isInviteRespondable(self):
     """Checks if the invite may be responded at this moment.
     """
@@ -952,7 +824,8 @@ class AccessChecker(BaseAccessChecker):
       raise AccessViolation(DEF_INVITE_REJECTED)
     if self.data.invite.status == 'withdrawn':
       raise AccessViolation(DEF_INVITE_WITHDRAWN)
-
+  
+  # (dcrodman) This method will be obsolete with the connection module.
   def canManageRequest(self):
     """Checks if the current user may manage the specified request.
     """
@@ -966,6 +839,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.request_entity.status == 'accepted':
       raise AccessViolation(DEF_ACCEPTED_REQUEST_CANNOT_BE_MANAGED)
 
+  # (dcrodman) This method will be obsolete with the connection module.
   def isRequestManageable(self):
     """Checks if the request may be managed with the specified action.
     """
@@ -978,7 +852,8 @@ class AccessChecker(BaseAccessChecker):
     if 'resubmit' in self.data.POST and \
         current_status not in ['rejected', 'withdrawn']:
       raise AccessViolation(DEF_REQUEST_CANNOT_BE_RESUBMITTED % current_status)
-       
+
+  # (dcrodman) This method will be obsolete with the connection module.
   def canRespondToRequest(self):
     """Checks if the current user can accept/reject the request.
     """
@@ -987,15 +862,16 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the entity represents an invitation
     if self.data.request_entity.type != 'Request':
-      raise AccessViolation(DEF_NOT_VALID_REQUEST)
+      raise AccessViolation(DEF_NOT_VALID_CONNECTION)
 
     # check if the entity can be responded
     if self.data.request_entity.status not in ['pending', 'rejected']:
-      raise AccessViolation(DEF_NOT_VALID_REQUEST)
+      raise AccessViolation(DEF_NOT_VALID_CONNECTION)
 
     # check if the user is an admin for the organization
     self.isOrgAdmin()
-
+    
+  # (dcrodman) This method will be obsolete with the connection module.
   def canResubmitRequest(self):
     """Checks if the current user can resubmit the request.
     """
@@ -1003,13 +879,9 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.request_entity) 
     assert isSet(self.data.requester)
 
-    # check if the entity represents an invitation
-    if self.data.request_entity.type != 'Request':
-      raise AccessViolation(DEF_NOT_VALID_REQUEST)
-
     # only withdrawn requests may be resubmitted
     if self.data.request_entity.status != 'withdrawn':
-      raise AccessViolation(DEF_NOT_VALID_REQUEST)
+      raise AccessViolation(DEF_NOT_VALID_CONNECTION)
 
     # check if the request belongs to the current user
     if self.data.requester.key() != self.data.user.key():
@@ -1018,16 +890,7 @@ class AccessChecker(BaseAccessChecker):
           }
       raise AccessViolation(error_msg)
 
-  def canViewInvite(self):
-    """Checks if the current user can see the invitation.
-    """
-    assert isSet(self.data.organization)
-    assert isSet(self.data.invite)
-    assert isSet(self.data.invited_user)
-
-    self._canAccessRequestEntity(
-        self.data.invite, self.data.invited_user, self.data.organization)
-
+  # (dcrodman) This method will be obsolete with the connection module.
   def canViewRequest(self):
     """Checks if the current user can see the request.
     """
@@ -1038,6 +901,7 @@ class AccessChecker(BaseAccessChecker):
     self._canAccessRequestEntity(
         self.data.request_entity, self.data.requester, self.data.organization)
 
+  # (dcrodman) This method will be obsolete with the connection module.
   def _canAccessRequestEntity(self, entity, user, org):
     """Checks if the current user is allowed to access a Request entity.
     
@@ -1051,6 +915,38 @@ class AccessChecker(BaseAccessChecker):
       # check if the current user is an org admin for the organization
       self.isOrgAdmin()
 
+  def canViewConnection(self):
+    """Checks if the current user can view the connection.
+    """
+    assert isSet(self.data.user)
+    assert isSet(self.data.connected_profile)
+    assert isSet(self.data.organization)
+    assert isSet(self.data.connection)
+    
+    self._canAccessConnectionEntity(self.data.connection,
+        self.data.connected_profile.parent(),
+        self.data.organization)
+    
+  def _canAccessConnectionEntity(self, connection, user, org):
+    """ Checks if the current iser is allowed to access the Connection entity.
+    To do so, the current User must either be the one involved in the 
+    connection or an org admin for the Organization.
+    
+    Args:
+      connection: a Connection entity
+      user: the User entity to which the Connection refers
+      org: the Organization entity to which the Connection refers
+    """
+    
+    if self.data.user.key() != user.key():
+      self.isOrgAdmin()
+    elif user.key() != connection.parent().key():
+      raise AccessViolation(DEF_CONNECTION_CANNOT_BE_ACCESSED)
+    else:
+      # Prevent a User from viewing their own connection as an org admin.
+      if org.key() in self.data.connected_profile.org_admin_for:
+        raise AccessViolation(DEF_CONNECTION_CANNOT_BE_ACCESSED)
+        
   def canAccessProposalEntity(self):
     """Checks if the current user is allowed to access a Proposal entity.
     """

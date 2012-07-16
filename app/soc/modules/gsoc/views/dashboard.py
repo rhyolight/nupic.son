@@ -17,9 +17,6 @@
 """Module for the GSoC participant dashboard.
 """
 
-
-import logging
-
 from google.appengine.ext import db
 
 from django.utils import simplejson
@@ -44,6 +41,7 @@ from soc.modules.gsoc.logic.evaluations import evaluationRowAdder
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.logic.survey_record import getEvalRecord
+from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -55,7 +53,6 @@ from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
-from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -235,10 +232,10 @@ class DashboardPage(RequestHandler):
     elif self.data.is_mentor:
       components.append(TodoComponent(self.request, self.data))
       components += self._getOrgMemberComponents()
-      components.append(RequestComponent(self.request, self.data, False))
+      components.append(ConnectionComponent(self.request, self.data, False))
     else:
       components += self._getLoneUserComponents()
-      components.append(RequestComponent(self.request, self.data, False))
+      components.append(ConnectionComponent(self.request, self.data, False))
 
     return components
 
@@ -300,7 +297,7 @@ class DashboardPage(RequestHandler):
 
     if self.data.is_org_admin:
       # add a component for all organization that this user administers
-      components.append(RequestComponent(self.request, self.data, True))
+      components.append(ConnectionComponent(self.request, self.data, True))
       components.append(ParticipantsComponent(self.request, self.data))
 
     # move to the bottom after student signup
@@ -1224,8 +1221,8 @@ class OrganizationsIParticipateInComponent(Component):
     }
 
 
-class RequestComponent(Component):
-  """Component for listing all the requests for orgs of which the user is an
+class ConnectionComponent(Component):
+  """Component for listing all the connections for orgs of which the user is an
   admin.
   """
 
@@ -1237,30 +1234,24 @@ class RequestComponent(Component):
     r = data.redirect
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s" % (
+    list_config.addColumn('key', 'Key', (lambda ent, *args: '%s' % (
         ent.keyName())), hidden=True)
-    list_config.addSimpleColumn('type', 'Request/Invite')
-    if self.for_admin:
-      list_config.addColumn(
-          'user', 'User', lambda ent, *args: "%s (%s)" % (
-          ent.user.name, ent.user.link_id))
-    list_config.addColumn('role_name', 'Role',
-                          lambda ent, *args: ent.roleName())
+    list_config.addColumn('org', 'Organization', 
+                  (lambda ent, *args: ent.organization.name))
 
-    options = [
-        ('pending', 'Needs action'),
-        ('', 'All'),
-        ('(rejected|accepted)', 'Handled'),
-        ('(withdrawn|invalid)', 'Removed'),
-    ]
-    list_config.addSimpleColumn('status', 'Status', options=options)
-    list_config.addColumn('org_name', 'Organization',
-                          lambda ent, *args: ent.org.name)
+    if self.for_admin:
+      list_config.addColumn('profile', 'Link Id', 
+                    (lambda ent, *args: ent.profile.link_id))
+    
+    list_config.addColumn('role', 'Role', 
+            (lambda ent, *args: 'Org Admin' if ent.org_org_admin else 'Mentor'))
+    
     list_config.setRowAction(
-        lambda ent, *args: r.request(ent).url())
+        lambda ent, *args: r.show_connection(user=ent.parent(), 
+                                             org=ent.organization).url())
     self._list_config = list_config
 
-    super(RequestComponent, self).__init__(request, data)
+    super(ConnectionComponent, self).__init__(request, data)
 
   def templatePath(self):
     return'v2/modules/gsoc/dashboard/list_component.html'
@@ -1269,16 +1260,16 @@ class RequestComponent(Component):
     if lists.getListIndex(self.request) != self.idx:
       return None
 
-    q = GSoCRequest.all()
-
+    q = GSoCConnection.all()
     if self.for_admin:
-      q.filter('org IN', self.data.org_admin_for)
+      keys = [org.key() for org in self.data.org_admin_for]
+      q.filter('organization IN', keys)
     else:
-      q.filter('user', self.data.user)
-
+      q.ancestor(self.data.user)
+    
     starter = lists.keyStarter
 
-    prefetcher = lists.modelPrefetcher(GSoCRequest, ['user', 'org'])
+    prefetcher = lists.modelPrefetcher(GSoCConnection, ['user', 'organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self._list_config, q, starter, prefetcher=prefetcher)
@@ -1291,11 +1282,11 @@ class RequestComponent(Component):
         self.data, self._list_config, idx=self.idx, preload_list=False)
 
     if self.for_admin:
-      title = 'Requests for my organizations'
-      description = ugettext('List of requests for my organizations.')
+      title = 'Connections for my organizations'
+      description = ugettext('List of connections for my organizations.')
     else:
-      title = 'My requests'
-      description = ugettext('List of my requests.')
+      title = 'My connections'
+      description = ugettext('List of my connections.')
 
     return {
         'name': 'org_admin_requests' if self.for_admin else 'requests',

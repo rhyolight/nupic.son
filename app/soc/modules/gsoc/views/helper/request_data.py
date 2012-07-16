@@ -29,6 +29,7 @@ from soc.views.helper import request_data
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.views.helper import url_names
 
 
 class TimelineHelper(request_data.TimelineHelper):
@@ -328,6 +329,8 @@ class RedirectHelper(request_data.RedirectHelper):
     self.kwargs['user'] = student
     return self
 
+  # (dcrodman) This method will become obsolete when the connection module
+  # is commited to the main branch.
   def invite(self, role=None):
     """Sets args for an url_patterns.INVITE redirect.
     """
@@ -418,6 +421,8 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'gsoc_events'
     return self
 
+  # (dcrodman) This method will become obsolete when the connection module
+  # is commited to the main branch.
   def request(self, request):
     """Sets the _url_name for a request.
     """
@@ -428,6 +433,33 @@ class RedirectHelper(request_data.RedirectHelper):
       self._url_name = 'show_gsoc_request'
     else:
       self._url_name = 'gsoc_invitation'
+    self._url_name = 'show_gsoc_request'
+    return self
+  
+  def connect(self, user=None):
+    """ Sets the _url_name for a gsoc_user_connection redirect.
+     """  
+    if not user:
+      assert 'user' in self._data.kwargs
+      user = self._data.kwargs['user']
+    
+    self.organization(self._data.organization)
+    self.kwargs['link_id'] = user.link_id
+    # We need to reassign the kwarg to the org's link_id since it's 
+    # being set to the Organization object
+    self.kwargs['organization'] = self._data.organization.link_id
+    self._url_name = url_names.GSOC_USER_CONNECTION
+    return self
+  
+  def show_connection(self, user, org):
+    """ Sets up kwargs for a show_gsoc_connection redirect.
+    Args:
+      user: the user involved in the connection 
+      org: the org involved in the connection
+    """
+    self._data.organization = org
+    self.connect(user)
+    self._url_name = url_names.SHOW_GSOC_CONNECTION
     return self
 
   def comment(self, comment, full=False, secure=False):
