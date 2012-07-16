@@ -32,10 +32,9 @@ from soc.views.helper.access_checker import isSet
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.models.connection import GSoCConnection
+from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
-from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -53,12 +52,12 @@ DEF_USER_MENTOR = ugettext(
     'This user is now a mentor with your organization.')
 
 
-class ConnectionForm(GSoCModelForm):
+class RequestForm(GSoCModelForm):
   """Django form for the request page.
   """
 
   def __init__(self, custom_message=None, *args, **kwargs):
-    super(ConnectionForm, self).__init__(*args, **kwargs)
+    super(RequestForm, self).__init__(*args, **kwargs)
 
     if custom_message:
       self.fields['custom_message'] = forms.CharField()
@@ -70,16 +69,13 @@ class ConnectionForm(GSoCModelForm):
           '2. Your message to the organization')
 
   class Meta:
-    model = GSoCConnection
+    model = GSoCRequest
     css_prefix = 'gsoc_request'
     fields = ['message']
-    widgets = {
-      'message':gsoc_forms.Textarea(attrs={'cols':80, 'rows':10})
-    }
 
 
 class RequestPage(RequestHandler):
-  """Encapsulate all the methods required to generate Connection page.
+  """Encapsulate all the methods required to generate Request page.
   """
   def templatePath(self):
     return 'v2/modules/gsoc/invite/base.html'
@@ -105,18 +101,18 @@ class RequestPage(RequestHandler):
     self.check.notMentor()
 
     # check if there is already a request
-    query = db.Query(GSoCConnection)
+    query = db.Query(GSoCRequest)
+    query.filter('type = ', 'Request')
     query.filter('user = ', self.data.user)
-    query.filter('organization = ', self.data.organization)
+    query.filter('org = ', self.data.organization)
     if query.get():
       raise AccessViolation(
-          'You have already established a connection with this organization.')
+          'You have already sent a request to this organization.')
 
   def context(self):
     """Handler for GSoC Request Page HTTP get request.
     """
-    
-    conn_form = ConnectionForm(
+    request_form = RequestForm(
         self.data.organization.role_request_message,
         data=self.data.POST or None)
 
@@ -125,7 +121,7 @@ class RequestPage(RequestHandler):
         'profile_created': self.data.GET.get('profile') == 'created',
         'page_name': 'Request to become a mentor',
         'program': self.data.program,
-        'invite_form': conn_form,
+        'invite_form': request_form,
     }
 
   def post(self):
@@ -146,36 +142,31 @@ class RequestPage(RequestHandler):
     """
     assert isSet(self.data.organization)
 
-    connection_form = ConnectionForm(
+    request_form = RequestForm(
         data=self.data.POST)
 
-    if not connection_form.is_valid():
+    if not request_form.is_valid():
       return None
 
     # create a new invitation entity
-    connection_form.cleaned_data['user'] = self.data.user
-    connection_form.cleaned_data['organization'] = self.data.organization
-    # temporary fix for a query in dashboard.py
-    connection_form.cleaned_data['org_name'] = self.data.organization.name
-    connection_form.cleaned_data['role'] = 'mentor'
-    connection_form.cleaned_data['user_action'] = 'accepted'
-    connection_form.cleaned_data['org_action'] = 'pending'
+    request_form.cleaned_data['user'] = self.data.user
+    request_form.cleaned_data['org'] = self.data.organization
+    request_form.cleaned_data['role'] = 'mentor'
+    request_form.cleaned_data['type'] = 'Request'
 
-    # alert the org admins that a new request has been submitted
     q = GSoCProfile.all().filter('org_admin_for', self.data.organization)
     q = q.filter('status', 'active').filter('notify_new_requests', True)
     admins = q.fetch(1000)
     admin_emails = [i.email for i in admins]
 
-    def create_connection_txn():
-      conn = connection_form.create(commit=True, parent=self.data.user)
-      # TODO(dcrodman): Add inviteContext function & fix notifications for conns
-      # context = notifications.requestContext(self.data, request, admin_emails)
-      # sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
-      # sub_txn()
-      return conn
+    def create_request_txn():
+      request = request_form.create(commit=True, parent=self.data.user)
+      context = notifications.requestContext(self.data, request, admin_emails)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
+      sub_txn()
+      return request
 
-    return db.run_in_transaction(create_connection_txn)
+    return db.run_in_transaction(create_request_txn)
 
 
 class ShowRequest(RequestHandler):
@@ -202,36 +193,36 @@ class ShowRequest(RequestHandler):
 
   def checkAccess(self):
     self.check.isProfileActive()
-    
-    conn_id = int(self.data.kwargs['id'])
-    user_link_id = self.data.kwargs['user']
-    if user_link_id == self.data.user.link_id:
-      connected_user = self.data.user
+
+    request_id = int(self.data.kwargs['id'])
+    invited_user_link_id = self.data.kwargs['user']
+    if invited_user_link_id == self.data.user.link_id:
+      invited_user = self.data.user
     else:
-      connected_user = User.get_by_key_name(user_link_id)
+      invited_user = User.get_by_key_name(invited_user_link_id)
 
-    self.data.connection = self.data.connection_entity = GSoCConnection.get_by_id(
-        conn_id, parent=connected_user)
-    assert isSet(self.data.connection)
-    assert isSet(self.data.connection_entity)
+    self.data.invite = self.data.request_entity = GSoCRequest.get_by_id(
+        request_id, parent=invited_user)
+    self.check.isRequestPresent(request_id)
 
-    self.data.organization = self.data.connection_entity.organization
-    self.data.requester = self.data.connection_entity.user
-    self.data.connected_user = self.data.requester
+    self.data.organization = self.data.request_entity.org
+    self.data.invited_user = self.data.requester = self.data.request_entity.user
 
     if self.data.POST:
       self.data.action = self.data.POST['action']
 
       if self.data.action == self.ACTIONS['accept']:
-        self.check.canRespondToConnection()
+        self.check.canRespondToRequest()
       elif self.data.action == self.ACTIONS['reject']:
-        self.check.canRespondToConnection()
+        self.check.canRespondToRequest()
       elif self.data.action == self.ACTIONS['resubmit']:
-        self.check.canResubmitConnection()
+        self.check.canResubmitRequest()
       # withdraw action
     else:
-      self.check.canViewConnection()
-    
+      self.check.canViewRequest()
+
+    self.mutator.canRespondForUser()
+
     key_name = '/'.join([
         self.data.program.key().name(),
         self.data.requester.link_id])
@@ -241,11 +232,31 @@ class ShowRequest(RequestHandler):
   def context(self):
     """Handler to for GSoC Show Request Page HTTP get request.
     """
-    assert isSet(self.data.connection_entity)
+    assert isSet(self.data.request_entity)
+    assert isSet(self.data.can_respond)
     assert isSet(self.data.organization)
     assert isSet(self.data.requester)
-    
+
+    # This code is dupcliated between request and invite
+    status = self.data.request_entity.status
+
     can_accept = can_reject = can_withdraw = can_resubmit = can_revoke = False
+
+    if self.data.can_respond:
+      # admin speaking
+      if status == 'pending':
+        can_accept = True
+        can_reject = True
+      if status == 'rejected':
+        can_accept = True
+      if status == 'accepted':
+        can_revoke = True
+    else:
+      # requester speaking
+      if status == 'withdrawn':
+        can_resubmit = True
+      if status == 'pending':
+        can_withdraw = True
 
     show_actions = (can_accept or can_reject or can_withdraw or
                     can_resubmit or can_revoke)
