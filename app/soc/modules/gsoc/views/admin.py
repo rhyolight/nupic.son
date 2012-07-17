@@ -138,6 +138,7 @@ class DashboardPage(RequestHandler):
     dashboards.append(MentorEvaluationsDashboard(self.request, self.data))
     dashboards.append(StudentEvaluationsDashboard(self.request, self.data))
     dashboards.append(EvaluationGroupDashboard(self.request, self.data))
+    dashboards.append(StudentsDashboard(self.request, self.data))
 
     return {
         'colorbox': self.data.GET.get('colorbox'),
@@ -177,6 +178,7 @@ class MainDashboard(Dashboard):
     manage_orgs = ManageOrganizationsDashboard(self.request, self.data)
     program_settings = ProgramSettingsDashboard(self.request, self.data)
     evaluations = EvaluationsDashboard(self.request, self.data)
+    students = StudentsDashboard(self.request, self.data)
 
     subpages = [
         {
@@ -235,9 +237,10 @@ class MainDashboard(Dashboard):
         {
             'name': 'students',
             'description': ugettext(
-                'List of all the students who have registered to the program.'),
+                'See all the registered students and their projects.'),
             'title': 'Students',
-            'link': r.urlOf('gsoc_students_list_admin')
+            'link': '',
+            'subpage_links': students.getSubpagesLink(),
         },
         {
             'name': 'manage_organizations',
@@ -721,6 +724,51 @@ class EvaluationGroupDashboard(Dashboard):
             {
                 'to': 'evaluations',
                 'title': 'Evaluations'
+            },
+        ],
+        'subpages': subpages
+    }
+
+
+class StudentsDashboard(Dashboard):
+  """Dashboard for student related items.
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+
+    r = data.redirect
+    r.program()
+
+    subpages = [
+        {
+            'name': 'list_students',
+            'description': ugettext(
+                'List of all the students who have registered to the program.'),
+            'title': 'All Students',
+            'link': r.urlOf('gsoc_students_list_admin')
+        },
+    ]
+
+    super(StudentsDashboard, self).__init__(request, data, subpages)
+
+  def context(self):
+    """Returns the context of manage students dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Students',
+        'name': 'students',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
             },
         ],
         'subpages': subpages
