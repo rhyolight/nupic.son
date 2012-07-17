@@ -36,17 +36,19 @@ class ProjectList(Template):
   """Template for listing the student projects accepted in the program.
   """
 
-  def __init__(self, request, data, query):
+  def __init__(self, request, data, query, idx=0):
     """Initializes a new object.
     
     Args:
       request: request object
       data: RequestData object associated with the request
       query: query to be used to retrieve Project entities
+      idx: index of the list
     """
     self.request = request
     self.data = data
     self.query = query
+    self.idx = idx
 
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
@@ -66,7 +68,7 @@ class ProjectList(Template):
 
   def context(self):
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=0,
+        self.data, self._list_config, idx=self.idx,
         description='List of projects accepted into %s' % (
             self.data.program.name))
 
@@ -81,7 +83,7 @@ class ProjectList(Template):
     returned.
     """
     idx = lists.getListIndex(self.request)
-    if idx == 0:
+    if idx == self.idx:
       starter = lists.keyStarter
       prefetcher = lists.modelPrefetcher(GSoCProject, ['org'],
           parent=True)
