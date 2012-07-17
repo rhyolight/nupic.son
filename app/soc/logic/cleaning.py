@@ -98,7 +98,7 @@ def check_field_is_empty(field_name):
 
       if not field_content:
         # field has no content so bail out
-        return None
+        return u''
       else:
         # field has contents
         return fun(self)
