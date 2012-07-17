@@ -59,6 +59,7 @@ class ProjectList(Template):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
                           lambda entity, *args: entity.org.name)
+    list_config.addSimpleColumn('status', 'Status', hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
     list_config.setRowAction(lambda e, *args:
