@@ -98,7 +98,7 @@ def check_field_is_empty(field_name):
 
       if not field_content:
         # field has no content so bail out
-        return u''
+        return None
       else:
         # field has contents
         return fun(self)
@@ -135,7 +135,7 @@ def clean_email(field_name):
       validator(email)
     except forms.ValidationError, e:
       if e.code == 'invalid':
-        msg = ugettext(u'Enter a valid email address.')
+        msg = ugettext(u'The email address %s is not valid.' % email)
         raise forms.ValidationError(msg, code='invalid')
     return email
 
@@ -153,7 +153,8 @@ def clean_link_id(field_name):
     # convert to lowercase for user comfort
     link_id = self.cleaned_data.get(field_name).lower()
     if not validate.isLinkIdFormatValid(link_id):
-      raise forms.ValidationError("This link ID is in wrong format.",
+      raise forms.ValidationError(
+                                "The link ID %s is in wrong format." % link_id,
                                   code='invalid')
     return link_id
   return wrapper
