@@ -17,7 +17,14 @@ limitations under the License.
 {% block stylesheets %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/map.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/buttons.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/uniform.default.css" />
 {% endblock stylesheets %}
+
+
+{% block usermenu %}
+  {{ host_actions.render }}
+{% endblock usermenu %}
 
 
 {% block page_content %}
@@ -138,6 +145,24 @@ limitations under the License.
 {% block dependencies %}
   [
     dep.melange.list,
+    dep.uniform,
+    dep.melange.action,
+    function () {
+      /* Change all the tooltips to be displayed onhover over a
+      * question mark. Calling this function only once will take
+      * care of all such instances.
+      */
+      melange.action.createCluetip();
+
+      /* Create the project featured button and make it post using ajax. */
+      {% for button in host_actions.toggle_buttons %}
+        melange.action.toggleButton(
+            "{{ button.id }}", "{{ button.type }}", "{{ button.post_url }}",
+            "{{ button.state }}",
+            {checked: "{{ button.labels.checked }}",
+             unchecked: "{{ button.labels.unchecked }}"});
+      {% endfor %}
+    },
     css("/soc/content/{{ app_version }}/css/v2/gsoc/user-messages.css"),
     {% if org_map_data %}
       dep.melange.map,
