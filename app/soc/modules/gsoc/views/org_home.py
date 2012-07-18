@@ -107,7 +107,7 @@ class Apply(Template):
       return context
 
     mentor_connect_link = r.connect(self.data.user).urlOf(
-                                                 url_names.GSOC_USER_CONNECTION)
+        url_names.GSOC_USER_CONNECTION)
     context['mentor_connect_link'] = mentor_connect_link
     return context
 

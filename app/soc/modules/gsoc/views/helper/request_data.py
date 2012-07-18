@@ -452,14 +452,14 @@ class RedirectHelper(request_data.RedirectHelper):
     return self
   
   def show_connection(self, user, org):
-    """ Sets up kwargs for a show_gsoc_connection redirect.
+    """ Sets up kwargs for a gsoc_show_connection redirect.
     Args:
       user: the user involved in the connection 
       org: the org involved in the connection
     """
     self._data.organization = org
     self.connect(user)
-    self._url_name = url_names.SHOW_GSOC_CONNECTION
+    self._url_name = url_names.GSOC_SHOW_CONNECTION
     return self
 
   def comment(self, comment, full=False, secure=False):

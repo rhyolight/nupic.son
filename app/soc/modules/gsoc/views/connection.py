@@ -45,23 +45,37 @@ from soc.tasks import mailer
 
 DEF_CONNECTION_EXISTS = 'This connection already exists.'
 DEF_EXCEED_RATE_LIMIT = 'Exceeded rate limit, too many pending connections.'
+DEF_MAX_PENDING_CONNECTIONS = 3
+
+@db.transactional
+def check_existing_connection_txn(user, org):
+  """ Helper method to check for an existing GSoCConnection between a user
+  and an organization transactionally. 
+  """
+
+  q = GSoCConnection.all(keys_only=True).ancestor(user)
+  q.filter('organization =', org.key())
+  if q.count(limit=1) > 0:
+    return False
+  return True
 
 class ConnectionForm(GSoCModelForm):
   """ Django form for the ShowConnection page. """
-  
-  class Meta:
-  	model = GSoCConnection
-  	fields = ['message']
-  	# Override the default rendering of the message field.
-  	widgets = {
-  	    'message' : gsoc_forms.Textarea(attrs={'cols':80, 'rows':10}), 
-  	}  	
+
+  #TODO(dcrodman): Sticking with the dropdown for role selection at the 
+  # moment since I don't like how the Radio button ends up staggered,
+  # this will be something to work on later.
+  #role = ChoiceField(widget=RadioSelect(), 
+  #    choices=(('1', 'Org Admin'), ('2', 'Mentor')),
+  #    required=True,
+  #    initial='2')
+  role = ChoiceField(widget=djangoforms.Select(),
+      choices=(('1', 'Mentor'), ('2', 'Org Admin')))  
   
   def __init__(self, request_data=None, message=None, is_admin=False, 
       *args, **kwargs):
     super(ConnectionForm, self).__init__(*args, **kwargs) 
     
-    self.request_data = request_data
     self.is_admin = is_admin
     
     #TODO(dcrodman): Custom message.
@@ -75,19 +89,11 @@ class OrgConnectionForm(ConnectionForm):
   """ Django form to show specific fields for an organization. """
 
   users = gsoc_forms.CharField(label='Link_Id/Email')
-  #TODO(dcrodman): Sticking with the dropdown for role selection at the 
-  # moment since I don't like how the Radio button ends up staggered,
-  # this will be something to work on later.
-  #role = ChoiceField(widget=RadioSelect(), 
-  #    choices=(('1', 'Org Admin'), ('2', 'Mentor')),
-  #    required=True,
-  #    initial='2')
-  role = ChoiceField(widget=djangoforms.Select(),
-      choices=(('1', 'Mentor'), ('2', 'Org Admin')))
 
   def __init__(self, request_data=None, message=None, *args, **kwargs):
     super(OrgConnectionForm, self).__init__(*args, **kwargs)
 
+    self.request_data = request_data
     self.is_admin = True
 
     field = self.fields.pop('users')
@@ -101,45 +107,10 @@ class OrgConnectionForm(ConnectionForm):
     self.fields['message'].help_text = ugettext(
         'Your message to the user(s)') 
 
-class UserConnectionForm(ConnectionForm):
-  """ Django form to show specific fields for a user. """
-
-  def __init__(self, request_data=None, message=None, *args, **kwargs):
-    super(UserConnectionForm, self).__init__(*args, **kwargs)
-    
-    self.fields['message'].help_text = ugettext(
-        'Your message to the organization')
-
-    
-  def clean(self):
-    """ Overrides default cleaning to make sure that the org admin has 
-    selected one or both of the mentor/org admin options for the connection.
-    """
-    cleaned_data = super(ConnectionForm, self).clean()
-    
-    if not self.is_admin:
-      # Prevent the form from creating duplicate GSoCConnections if the 
-      # requester is the user and not the org admin. Otherwise this check
-      # is performed in clean_users
-      q = GSoCConnection.all().ancestor(self.request_data.user)
-      q.filter('organization =', self.request_data.organization.key())
-      if len(q.fetch(1)) > 0:
-        raise djangoforms.ValidationError(DEF_CONNECTION_EXISTS, code='invalid')
-      # Also prevent the user from creating excessive GSoCConnections to 
-      # organizations, which may be perceived as an attempt to spam. We will
-      # classify a pending connection as one with no org admin response.
-      q = GSoCConnection.all().ancestor(self.request_data.user)
-      q.filter('org_mentor =', None)
-      q.filter('org_org_admin =', None)
-      if len(q.fetch(4)) > 3:
-        raise djangoforms.ValidationError(DEF_EXCEED_RATE_LIMIT, code='invalid')
-    return cleaned_data
-  
   def clean_users(self):
     """ Overrides the default cleaning of the link_ids field to add custom
     validation to the users field. 
     """
-    
     id_list = self.cleaned_data['users'].split(',')
     self.request_data.user_connections = []
     
@@ -169,13 +140,35 @@ class UserConnectionForm(ConnectionForm):
       # Current id is a link_id.
       cleaner = cleaning.clean_existing_user(field)
       connected_user = cleaner(self)
-    
-    q = GSoCConnection.all().ancestor(connected_user)
-    q.filter('organization =', self.request_data.organization)
-    if len(q.fetch(1)) > 0:
-      raise djangoforms.ValidationError(DEF_CONNECTION_EXISTS, code='invalid')
       
     return connected_user
+
+  class Meta:
+    model = GSoCConnection
+    fields = ['message']
+    # Override the default rendering of the message field.
+    widgets = {
+      'message' : gsoc_forms.Textarea(attrs={'cols':80, 'rows':10}), 
+    }   
+
+
+class UserConnectionForm(ConnectionForm):
+  """ Django form to show specific fields for a user. """
+
+  def __init__(self, request_data=None, message=None, *args, **kwargs):
+    super(UserConnectionForm, self).__init__(*args, **kwargs)
+    
+    self.fields['message'].help_text = ugettext(
+        'Your message to the organization')
+
+  class Meta:
+    model = GSoCConnection
+    fields = ['message']
+    # Override the default rendering of the message field.
+    widgets = {
+      'message' : gsoc_forms.Textarea(attrs={'cols':80, 'rows':10}), 
+    }   
+
 
 class OrgConnectionPage(RequestHandler):
   """ Class to encapsulate the methods for an org admin to initiate a
@@ -225,8 +218,9 @@ class OrgConnectionPage(RequestHandler):
   def generate(self):
     """ Create a GSoCConnection instance and notify all parties involved """
     
-    connection_form = ConnectionForm(request_data=self.data, data=self.data.POST)
-    if not conn_form.is_valid():
+    connection_form = OrgConnectionForm(request_data=self.data, 
+        data=self.data.POST)
+    if not connection_form.is_valid():
       return None
       
     connection_form.cleaned_data['organization'] = self.data.organization
@@ -238,6 +232,8 @@ class OrgConnectionPage(RequestHandler):
       connection_form.cleaned_data['org_org_admin'] = True
 
     def create_connection(user):
+      if not check_existing_connection_txn(user, self.data.organization):
+        raise AccessViolation(DEF_CONNECTION_EXISTS)
       connection = connection_form.create(parent=user, commit=True)
       context = notifications.connectionContext(self.data, connection)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
@@ -308,11 +304,17 @@ class UserConnectionPage(RequestHandler):
     assert isSet(self.data.organization)
     assert isSet(self.data.user)
     
-    # TODO(dcrodman): 
-	# Check the User's rate limit to make sure that there aren't excessive 
-	# outstanding connections.
-    
-    connection_form = ConnectionForm(request_data=self.data, 
+	  # Check the User's rate limit to make sure that there aren't excessive 
+	  # outstanding connections.
+    def check_outstanding_txn():
+      q = GSoCConnection.all(keys_only=True).ancestor(self.data.user)
+      q.filter('org_mentor =', None)
+      q.filter('org_org_admin =', None)
+      if q.count(limit=5) >= DEF_MAX_PENDING_CONNECTIONS:
+        raise AccessViolation('Exceeded rate limit for pending connections.')
+    db.run_in_transaction(check_outstanding_txn)
+
+    connection_form = UserConnectionForm(request_data=self.data, 
         data=self.data.POST,
         is_admin=False)
     if not connection_form.is_valid():
@@ -326,6 +328,9 @@ class UserConnectionPage(RequestHandler):
     connection_form.cleaned_data['user_mentor'] = True
 	
     def create_connection(org):
+      if not check_existing_connection_txn(self.data.user, 
+          self.data.organization):
+        raise AccessViolation(DEF_CONNECTION_EXISTS)
       connection = ConnectionForm.create(connection_form, 
           parent=self.data.user, 
           commit=True)
@@ -357,7 +362,7 @@ class ShowConnection(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'connection/%s$' % url_patterns.CONNECT,
-            self, name=url_names.SHOW_GSOC_CONNECTION)
+            self, name=url_names.GSOC_SHOW_CONNECTION)
     ]
 
   def checkAccess(self):
@@ -370,7 +375,8 @@ class ShowConnection(RequestHandler):
       raise AccessViolation(
           'The user affiliated with this connection does not exist.')
         
-    q = GSoCConnection.all().ancestor(self.data.connected_profile.parent())
+    q = GSoCConnection.all(keys_only=True).ancestor(
+        self.data.connected_profile.parent())
     q.filter('organization =', self.data.organization.key())
     self.data.connection = q.get()
     if not self.data.connection:

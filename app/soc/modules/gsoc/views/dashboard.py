@@ -1283,7 +1283,8 @@ class ConnectionComponent(Component):
 
     if self.for_admin:
       title = 'Connections for my organizations'
-      description = ugettext('List of connections for my organizations.')
+      description = ugettext(
+          'List of connections with mentors and admins for my organizations.')
     else:
       title = 'My connections'
       description = ugettext('List of my connections.')

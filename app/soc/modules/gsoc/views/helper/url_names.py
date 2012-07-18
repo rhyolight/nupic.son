@@ -26,4 +26,4 @@ GSOC_ORG_CONNECTION = 'gsoc_org_connection'
 
 GSOC_USER_CONNECTION = 'gsoc_user_connection'
 
-SHOW_GSOC_CONNECTION = 'show_gsoc_connection'
+GSOC_SHOW_CONNECTION = 'show_gsoc_connection'

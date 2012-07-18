@@ -24,6 +24,7 @@ from django.utils.translation import ugettext
 
 from soc.logic import mail_dispatcher
 from soc.logic.accounts import denormalizeAccount
+from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.tasks import mailer
 from soc.views.helper.access_checker import isSet
 
@@ -110,11 +111,13 @@ def connectionContext(data, connection, is_user=False):
   Args: 
     data: RequestData object with organization and user set
     connection: an instance of GSoCConnection
+    is_user: True if the user from the user/org admin relationship
+        is the one who established the connection
   """
   
   subject = DEF_NEW_CONNECTION
   request_url = data.redirect.show_connection(connection.parent(), 
-                                    connection.organization).url(full=True)
+      connection.organization).url(full=True)
 
   receivers = []                  
   requester = None
@@ -124,15 +127,17 @@ def connectionContext(data, connection, is_user=False):
     receivers = list(connection.profile.email)
   else:
     requester = connection.profile.link_id
-    q = GSoCProfile.all().filter('org_admin_for', self.data.organization)
+    q = GSoCProfile.all().filter('org_admin_for', connection.organization)
     q = q.filter('status', 'active').filter('notify_new_requests', True)
     admins = q.fetch(1000)
     receivers = [i.email for i in admins]
     
-  message_properties = {'org' : connection.organization, 
-                        'requester' : requester,
-                        'request_url' : request_url,
-                        'is_user' : is_user }
+  message_properties = {
+      'org' : connection.organization, 
+      'requester' : requester,
+      'request_url' : request_url,
+      'is_user' : is_user 
+  }
   template = DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE
   return getContext(data, receivers, message_properties, subject, template)
 
