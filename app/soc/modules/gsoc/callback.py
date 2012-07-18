@@ -101,6 +101,7 @@ class Callback(object):
     self.views.append(org_app.GSoCOrgAppTakePage())
     self.views.append(org_admin_dashboard.Dashboard())
     self.views.append(org_home.OrgHome())
+    self.views.append(org_home.PostBan())
     self.views.append(org_profile.OrgProfilePage())
     self.views.append(profile.GSoCProfilePage())
     self.views.append(profile_show.GSoCProfileAdminPage())
