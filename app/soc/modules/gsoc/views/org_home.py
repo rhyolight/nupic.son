@@ -32,6 +32,7 @@ from soc.views.helper import lists
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
+from soc.views.org_home import BanOrgPost
 from soc.views.toggle_button import ToggleButtonTemplate
 
 from soc.modules.gsoc.logic import project as project_logic
@@ -216,7 +217,7 @@ class HostActions(Template):
     assert isSet(self.data.organization)
 
     r = self.data.redirect.organization()
-    is_banned = self.data.organization.status == 'inactive'
+    is_banned = self.data.organization.status == 'invalid'
 
     org_banned = ToggleButtonTemplate(
         self.data, 'on_off', 'Banned', 'organization-banned',
@@ -239,37 +240,23 @@ class HostActions(Template):
     return "v2/soc/_user_action.html"
 
 
-class PostBan(RequestHandler):
-  """Handles banning/unbanning Organization.
+class GSoCBanOrgPost(BanOrgPost, RequestHandler):
+  """Handles banning/unbanning of GSoC organizations.
   """
 
-  def djangoURLPatterns(self):
-    return [
-         url(r'organization/ban/%s$' % url_patterns.ORG,
-         self, name=url_names.GSOC_ORG_BAN),
-    ]
+  def _getModulePrefix(self):
+    return 'gsoc'
 
-  def checkAccess(self):
-    self.check.isHost();
+  def _getURLPattern(self):
+    return url_patterns.ORG
 
-  def post(self):
-    assert isSet(self.data.organization)
-    
-    value = not self.data.POST.get('value')
-    org_key = self.data.organization.key()
+  def _getURLName(self):
+    return url_names.GSOC_ORG_BAN
 
-    def banOrgTxn(value):
-      org = GSoCOrganization.get(org_key)
-      if value == 'checked' and org.status == 'active':
-        org.status = 'inactive'
-        org.put()
-      elif value == 'unchecked' and org.status == 'inactive':
-        org.status = 'active'
-        org.put()
+  def _getOrgModel(self):
+    return GSoCOrganization
 
-    db.run_in_transaction(banOrgTxn, value)
 
-    
 class OrgHome(RequestHandler):
   """View methods for Organization Home page.
   """
