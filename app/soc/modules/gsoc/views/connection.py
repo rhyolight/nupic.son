@@ -231,16 +231,21 @@ class OrgConnectionPage(RequestHandler):
     if connection_form.cleaned_data['role'] == '2':
       connection_form.cleaned_data['org_org_admin'] = True
 
+    # Get the user's email for the notification.
+    receiver = [GSoCProfile.all().ancestor(self.data.user).get().email,]
+
     def create_connection(user):
       if not check_existing_connection_txn(user, self.data.organization):
         raise AccessViolation(DEF_CONNECTION_EXISTS)
       connection = connection_form.create(parent=user, commit=True)
-      context = notifications.connectionContext(self.data, connection)
+      context = notifications.connectionContext(self.data, connection, 
+          receiver)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
       sub_txn()
       return connection
     
     self.data.connection = None
+
     # Traverse the list of cleaned user ids and generate connections to
     # each of them. The current user is the org admin, so we need to get
     # the user object and their profile to populate the Connection instance.
@@ -327,6 +332,12 @@ class UserConnectionPage(RequestHandler):
     connection_form.cleaned_data['organization'] = self.data.organization
     connection_form.cleaned_data['user_mentor'] = True
 	
+    # Get the sender and recipient for the notification email.
+    q = GSoCProfile.all().filter('org_admin_for', self.data.organization)
+    q = q.filter('status =', 'active').filter('notify_new_requests =', True)
+    admins = q.fetch(50)
+    receivers = [i.email for i in admins]
+
     def create_connection(org):
       if not check_existing_connection_txn(self.data.user, 
           self.data.organization):
@@ -335,7 +346,7 @@ class UserConnectionPage(RequestHandler):
           parent=self.data.user, 
           commit=True)
       context = notifications.connectionContext(self.data, connection, 
-          is_user=True)
+          receivers, True)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
       sub_txn()
     

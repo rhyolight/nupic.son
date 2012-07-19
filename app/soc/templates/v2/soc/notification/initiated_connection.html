@@ -14,9 +14,9 @@ limitations under the License.
 {% endcomment %}
 {% block content %}
 {% if is_user %}
-  {{ org }} has opened a connection with you ({{ requester }}). <br />
+	New connection with {{ org }}. <br />
 {% else %}
-  {{ requester }} has opened a connection with {{ org }}.<br />
+    New connection for {{ org }}. <br />
 {% endif %}
 Please visit <a href="{{ request_url }}">this URL</a> to respond to this connection.
 {% endblock %}
