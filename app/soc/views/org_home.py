@@ -22,6 +22,8 @@ from google.appengine.ext import db
 
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
+from soc.views.template import Template
+from soc.views.toggle_button import ToggleButtonTemplate
 
 
 class BanOrgPost(object):
@@ -67,4 +69,45 @@ class BanOrgPost(object):
     raise NotImplementedError
 
   def _getOrgModel(self):
+    raise NotImplementedError
+
+
+class HostActions(Template):
+  """Template to render the left side host actions.
+  """
+
+  def __init__(self, data):
+    super(HostActions, self).__init__(data)
+    self.toggle_buttons = []
+
+  def context(self):
+    assert isSet(self.data.organization)
+
+    r = self.data.redirect.organization()
+    is_banned = self.data.organization.status == 'invalid'
+
+    org_banned = ToggleButtonTemplate(
+        self.data, 'on_off', 'Banned', 'organization-banned',
+        r.urlOf(self._getActionURLName()),
+        checked=is_banned,
+        help_text=self._getHelpText(),
+        labels={
+            'checked': 'Yes',
+            'unchecked': 'No'})
+    self.toggle_buttons.append(org_banned)
+
+    context = {
+        'title': 'Host Actions',
+        'toggle_buttons': self.toggle_buttons,
+        }
+
+    return context
+
+  def templatePath(self):
+    return "v2/soc/_user_action.html"
+
+  def _getActionURLName(self):
+    raise NotImplementedError
+
+  def _getHelpText(self):
     raise NotImplementedError
