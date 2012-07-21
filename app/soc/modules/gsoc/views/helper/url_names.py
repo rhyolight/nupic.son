@@ -20,6 +20,7 @@
 
 GSOC_EDIT_PROGRAM_MESSAGES = 'gsoc_edit_program_messages'
 
+GSOC_PROFILE_BAN = 'gsoc_profile_ban'
 GSOC_PROFILE_SHOW = 'gsoc_profile_show'
 
 GSOC_ORG_BAN = 'gsoc_org_ban'
