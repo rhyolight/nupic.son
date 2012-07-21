@@ -42,7 +42,7 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
-from soc.modules.gsoc.logic.project import getAcceptedProjectsQuery
+from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.organization import GSoCOrganization
@@ -57,6 +57,7 @@ from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.dashboard import BIRTHDATE_FORMAT
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gsoc.views.projects_list import ProjectList
 
 
 class LookupForm(gsoc_forms.GSoCModelForm):
@@ -138,6 +139,7 @@ class DashboardPage(RequestHandler):
     dashboards.append(MentorEvaluationsDashboard(self.request, self.data))
     dashboards.append(StudentEvaluationsDashboard(self.request, self.data))
     dashboards.append(EvaluationGroupDashboard(self.request, self.data))
+    dashboards.append(StudentsDashboard(self.request, self.data))
 
     return {
         'colorbox': self.data.GET.get('colorbox'),
@@ -177,6 +179,7 @@ class MainDashboard(Dashboard):
     manage_orgs = ManageOrganizationsDashboard(self.request, self.data)
     program_settings = ProgramSettingsDashboard(self.request, self.data)
     evaluations = EvaluationsDashboard(self.request, self.data)
+    students = StudentsDashboard(self.request, self.data)
 
     subpages = [
         {
@@ -235,9 +238,10 @@ class MainDashboard(Dashboard):
         {
             'name': 'students',
             'description': ugettext(
-                'List of all the students who have registered to the program.'),
+                'See all the registered students and their projects.'),
             'title': 'Students',
-            'link': r.urlOf('gsoc_students_list_admin')
+            'link': '',
+            'subpage_links': students.getSubpagesLink(),
         },
         {
             'name': 'manage_organizations',
@@ -727,6 +731,58 @@ class EvaluationGroupDashboard(Dashboard):
     }
 
 
+class StudentsDashboard(Dashboard):
+  """Dashboard for student related items.
+  """
+
+  def __init__(self, request, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+
+    r = data.redirect
+    r.program()
+
+    subpages = [
+        {
+            'name': 'list_students',
+            'description': ugettext(
+                'List of all the students who have registered to the program.'),
+            'title': 'All Students',
+            'link': r.urlOf('gsoc_students_list_admin')
+        },
+        {
+            'name': 'list_projects',
+            'description': ugettext(
+                'List of all the projects who have accepted to the program.'),
+            'title': 'All Projects',
+            'link': r.urlOf('gsoc_projects_list_admin')
+        },
+    ]
+
+    super(StudentsDashboard, self).__init__(request, data, subpages)
+
+  def context(self):
+    """Returns the context of manage students dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Students',
+        'name': 'students',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+        ],
+        'subpages': subpages
+    }
+
+
 class LookupLinkIdPage(RequestHandler):
   """View for the participant profile.
   """
@@ -1173,7 +1229,7 @@ class ProjectsList(Template):
     """
     idx = lists.getListIndex(self.request)
     if idx == 0:
-      list_query = getAcceptedProjectsQuery(
+      list_query = project_logic.getAcceptedProjectsQuery(
           program=self.data.program, org=self.data.organization)
 
       starter = lists.keyStarter
@@ -1592,4 +1648,41 @@ class StudentsListPage(RequestHandler):
     return {
       'page_name': 'Students list page',
       'list': StudentsList(self.request, self.data),
+    }
+
+
+class ProjectsListPage(RequestHandler):
+  """View that lists all the projects associated with the program.
+  """
+
+  LIST_IDX = 1
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/all_projects/%s$' % url_patterns.PROGRAM,
+            self, name='gsoc_projects_list_admin'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/admin/list.html'
+
+  def jsonContext(self):
+    list_query = project_logic.getProjectsQuery(program=self.data.program)
+    list_content = ProjectList(
+        self.request, self.data, list_query, self.LIST_IDX).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    list_query = project_logic.getProjectsQuery(program=self.data.program)
+    return {
+      'page_name': 'Projects list page',
+      'list': ProjectList(self.request, self.data, list_query, self.LIST_IDX),
     }

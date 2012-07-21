@@ -89,7 +89,7 @@ class CleaningTest(GSoCDjangoTestCase):
     field_value = ''
     cleaned_data_before = {field_name: field_value}
     self.form.cleaned_data = cleaned_data_before.copy()
-    self.assertEqual(clean_field(self.form), None)
+    self.assertEqual(clean_field(self.form), u'')
     self.assertEqual(self.form.cleaned_data, cleaned_data_before)
     self.assertEqual(self.form._errors, {})
 
@@ -419,7 +419,7 @@ class CleaningTest(GSoCDjangoTestCase):
     # is an empty string
     field_value = ''
     self.form.cleaned_data = {field_name: field_value}
-    self.assertEqual(clean_field(self.form), None)
+    self.assertEqual(clean_field(self.form), u'')
     # Test that forms.ValidationError error will be raised 
     # if the value of the url field is not a valid url
     field_value = 'exampleabc'

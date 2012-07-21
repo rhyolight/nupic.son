@@ -15,7 +15,8 @@
 # limitations under the License.
 
 """Module containing the views for listing all the projects accepted
-into a GSoC program.
+into a GSoC program, excluding those which have been withdrawn 
+or failed one of the evaluations.
 """
 
 
@@ -35,9 +36,19 @@ class ProjectList(Template):
   """Template for listing the student projects accepted in the program.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, request, data, query, idx=0):
+    """Initializes a new object.
+    
+    Args:
+      request: request object
+      data: RequestData object associated with the request
+      query: query to be used to retrieve Project entities
+      idx: index of the list
+    """
     self.request = request
     self.data = data
+    self.query = query
+    self.idx = idx
 
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
@@ -48,6 +59,7 @@ class ProjectList(Template):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
                           lambda entity, *args: entity.org.name)
+    list_config.addSimpleColumn('status', 'Status', hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
     list_config.setRowAction(lambda e, *args:
@@ -57,7 +69,7 @@ class ProjectList(Template):
 
   def context(self):
     list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=0,
+        self.data, self._list_config, idx=self.idx,
         description='List of projects accepted into %s' % (
             self.data.program.name))
 
@@ -72,16 +84,13 @@ class ProjectList(Template):
     returned.
     """
     idx = lists.getListIndex(self.request)
-    if idx == 0:
-      list_query = project_logic.getAcceptedProjectsQuery(
-          program=self.data.program)
-
+    if idx == self.idx:
       starter = lists.keyStarter
       prefetcher = lists.modelPrefetcher(GSoCProject, ['org'],
-                                         parent=True)
+          parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
+          self.request, self._list_config, self.query,
           starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
@@ -115,7 +124,10 @@ class ListProjects(RequestHandler):
   def jsonContext(self):
     """Handler for JSON requests.
     """
-    list_content = ProjectList(self.request, self.data).getListData()
+    list_query = project_logic.getAcceptedProjectsQuery(
+        program=self.data.program)
+    list_content = ProjectList(
+        self.request, self.data, list_query).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -126,10 +138,12 @@ class ListProjects(RequestHandler):
     """Handler for GSoC Accepted Projects List page HTTP get request.
     """
     program = self.data.program
+    list_query = project_logic.getAcceptedProjectsQuery(
+        program=self.data.program)
 
     return {
         'page_name': '%s - Accepted Projects' % program.short_name,
         'program_name': program.name,
-        'project_list': ProjectList(self.request, self.data),
+        'project_list': ProjectList(self.request, self.data, list_query),
         'program_select': ProgramSelect(self.data, 'gsoc_accepted_projects'),
     }

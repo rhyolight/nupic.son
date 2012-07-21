@@ -15,6 +15,7 @@
 # limitations under the License.
 """ Module containing the view for the GSoCConnection page """
 
+import logging
 from google.appengine.ext import db
 from google.appengine.api import users
 
@@ -29,6 +30,7 @@ from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import notifications
 from soc.models.user import User
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
@@ -36,8 +38,7 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
-from soc.modules.gsoc.views.proposal_review import CommentForm
-from soc.modules.gsoc.views.proposal_review import PrivateCommentForm
+from soc.modules.gsoc.views.proposal_review import CommentForm, PrivateCommentForm
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.tasks import mailer
@@ -380,25 +381,43 @@ class ShowConnection(RequestHandler):
     self.check.isProgramVisible()
     self.check.isOrganizationInURLActive()
     self.check.hasProfile()
-    
-    q = GSoCProfile.get_by_key_name(self.kwargs['link_id'])
-    if not q:
-      raise AccessViolation(
-          'The user affiliated with this connection does not exist.')
-        
-    q = GSoCConnection.all(keys_only=True).ancestor(
-        self.data.connected_profile.parent())
+
+    self.kwargs['user'] = self.kwargs['link_id']
+    self.mutator.profileFromKwargs()
+
+    q = GSoCConnection.all().ancestor(self.data.url_profile.parent())
     q.filter('organization =', self.data.organization.key())
     self.data.connection = q.get()
     if not self.data.connection:
-      raise AccessViolation('This connection does not currently exist.')
+      raise AccessViolation('This connection does not exist.')
 
     self.check.canViewConnection()
+    self.data.is_org_admin = self.data.url_profile == self.data.profile
+
+  def getComments(self, limit=1000):
+    """Gets all the comments for the proposal visible by the current user.
+    """
+    assert isSet(self.data.connection)
+
+    public_comments = []
+    private_comments = []
+
+    query = db.Query(GSoCComment).ancestor(self.data.connection)
+    query.order('created')
+    all_comments = query.fetch(limit=limit)
+
+    for comment in all_comments:
+      if not comment.is_private:
+        public_comments.append(comment)
+      elif self.data.is_org_admin:
+        private_comments.append(comment)
+
+    return public_comments, private_comments
     
   def context(self):
     """ Handler for Show GSoCConnection get request. """
 
-    header_name = self.data.connected_profile.public_name \
+    header_name = self.data.url_profile.public_name \
         if self.data.is_org_admin else self.data.organization.name
 
     accept_mentor = reject_mentor = accept_org_admin = reject_org_admin = False
@@ -426,13 +445,29 @@ class ShowConnection(RequestHandler):
         # choose to accept only the mentoring role.
         accept_mentor = accept_org_admin = reject_org_admin = True
         
-    status = self._determineStatus(self.data.connection)
+    status = None
+    perspective = 'Organization' if self.data.is_org_admin else 'User'
+    
+      entity = {'entity' : 'Organization'}
+      status = self._determineStatus(
+          self.data.connection.org_org_admin,
+          self.data.connection.user_org_admin) % entity
+      if status is None:
+        status = self._determineStatus(
+          self.data.connection.org_mentor, 
+          self.data.connection.user_mentor) % entity
+
+    public_comments, private_comments = self.getComments()
+    comment_box = {
+      'form' : CommentForm(self.data.POST or None),
+      'action' : reverse('comment_gsoc_proposal', kwargs=self.data.kwargs)
+    }
     
     return {
       'page_name': 'Viewing Connection',
       'is_admin' : self.data.is_org_admin,
       'header_name': header_name,
-      'user_email' : self.data.connected_profile.email,
+      'user_email' : self.data.connection.profile.email,
       'org_name' : self.data.organization.name,
       'status_msg' : status,
       'connection' : self.data.connection,
@@ -441,31 +476,34 @@ class ShowConnection(RequestHandler):
       'reject_mentor' : reject_mentor,
       'accept_org_admin' : accept_org_admin,
       'reject_org_admin' : reject_org_admin,
-      'comment_form' : CommentForm(self.data.POST or None)
+      'comment_box' : comment_box,
+      'private_comments_visible' : self.data.is_org_admin,
+      'public_comments' : public_comments,
+      'private_comments' : private_comments
     }
 
-  def _determineStatus(self, conn):
+  def _determineStatus(self, state_a, state_b):
     """ Returns an apropriate status message for the viewer  depending on the 
-    state of the connection and who is viewing the page. """
+    state of the connection and who is viewing the page. 
     
-    status = None
+    Args:
+      state_a: Either the user or the org's state we want to check. For 
+          example, user_mentor.
+      state_b: The opposite state of state_a, so in the previous example
+          it would be org_mentor.
+    """
+    
     # Some states have to be compared to False since there is a distinction
-    # between a state marked as None and a state marked as False, as hideous
-    # as it may be.
-    if (conn.user_mentor == conn.org_mentor) or \
-        (conn.user_org_admin == conn.org_org_admin):
-      # The user and org have agreed on a role, so the user was promoted.
-      status = 'User Promoted'
-    elif conn.user_mentor is False or conn.user_org_admin is False:
-      status = 'User Rejected Connection'
-    elif conn.org_mentor is False:
-      status = 'Org Rejected Connection'
-    elif conn.user_mentor is None and conn.user_org_admin is None:
-      status = 'User Action Pending'
-    elif conn.org_mentor is None and conn.org_org_admin is None:
-      status = 'Org Action Pending'
-    
-    return status
+    # between a state marked as None and a state marked as False. Yeah, I'm
+    # not happy about it either.
+    if state_a:
+      if state_b is None:
+        return 'Pending %(entity)s action'
+      elif state_b is False:
+        return '%(entity)s rejected the connection'
+      else:
+        return '%(entity)s accepted the connection'
+    return None
     
   def post(self):
     """ Handler for Show GSoC Connection post request. """

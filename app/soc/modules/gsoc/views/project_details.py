@@ -307,7 +307,7 @@ class FeaturedProject(RequestHandler):
     project_key = self.data.project.key()
 
     def make_featured_txn():
-      # transactionally get latest version of the proposal
+      # transactionally get latest version of the project
       project = db.get(project_key)
       if value == 'unchecked':
         project.is_featured = True

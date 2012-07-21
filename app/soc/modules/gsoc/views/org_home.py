@@ -18,9 +18,13 @@
 """
 
 
+from google.appengine.ext import db
+
 from django.conf.urls.defaults import url as django_url
 from django.utils import simplejson
+from django.utils.translation import ugettext
 
+from soc.logic import accounts
 from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import timeline as timeline_helper
 from soc.views.template import Template
@@ -28,8 +32,10 @@ from soc.views.helper import lists
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
+from soc.views.toggle_button import ToggleButtonTemplate
 
 from soc.modules.gsoc.logic import project as project_logic
+from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views.base import RequestHandler
@@ -195,6 +201,75 @@ class ProjectList(Template):
     return "v2/modules/gsoc/org_home/_project_list.html"
 
 
+class HostActions(Template):
+  """Template to render the left side host actions.
+  """
+
+  DEF_BAN_ORGANIZATION_HELP = ugettext(
+      'When an organization is banned, it is not active in the program')
+
+  def __init__(self, data):
+    super(HostActions, self).__init__(data)
+    self.toggle_buttons = []
+
+  def context(self):
+    assert isSet(self.data.organization)
+
+    r = self.data.redirect.organization()
+    is_banned = self.data.organization.status == 'inactive'
+
+    org_banned = ToggleButtonTemplate(
+        self.data, 'on_off', 'Banned', 'organization-banned',
+        r.urlOf(url_names.GSOC_ORG_BAN),
+        checked=is_banned,
+        help_text=self.DEF_BAN_ORGANIZATION_HELP,
+        labels={
+            'checked': 'Yes',
+            'unchecked': 'No'})
+    self.toggle_buttons.append(org_banned)
+
+    context = {
+        'title': 'Host Actions',
+        'toggle_buttons': self.toggle_buttons,
+        }
+
+    return context
+
+  def templatePath(self):
+    return "v2/soc/_user_action.html"
+
+
+class PostBan(RequestHandler):
+  """Handles banning/unbanning Organization.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'organization/ban/%s$' % url_patterns.ORG,
+         self, name=url_names.GSOC_ORG_BAN),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost();
+
+  def post(self):
+    assert isSet(self.data.organization)
+    
+    value = not self.data.POST.get('value')
+    org_key = self.data.organization.key()
+
+    def banOrgTxn(value):
+      org = GSoCOrganization.get(org_key)
+      if value == 'checked' and org.status == 'active':
+        org.status = 'inactive'
+        org.put()
+      elif value == 'unchecked' and org.status == 'inactive':
+        org.status = 'active'
+        org.put()
+
+    db.run_in_transaction(banOrgTxn, value)
+
+    
 class OrgHome(RequestHandler):
   """View methods for Organization Home page.
   """
@@ -355,6 +430,9 @@ class OrgHome(RequestHandler):
 
       # obtain a json object that contains the organization home page map data
       context['org_map_data'] = self._getJSONMapData()
+
+    if self.data.is_host or accounts.isDeveloper():
+      context['host_actions'] = HostActions(self.data)
 
     return context
 

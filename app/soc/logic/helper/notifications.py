@@ -49,11 +49,16 @@ DEF_HANDLED_REQUEST_SUBJECT = ugettext(
 DEF_HANDLED_INVITE_SUBJECT = ugettext(
     '[%(org)s] Invitation to become a %(role_verbose)s has been %(action)s')
 
+#(dcrodman): This needs to be removed once connection is stable.
 DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/invitation.html'
 
+#(dcrodman): This needs to be removed once connection is stable.
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/new_request.html'
+
+DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/initiated_connection.html'
 
 DEF_ACCEPTED_ORG_TEMPLATE = \
     'v2/soc/notification/org_accepted.html'
@@ -92,6 +97,8 @@ def connectionContext(data, connection, receivers, is_user=False):
   template = DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE
   return getContext(data, receivers, message_properties, subject, template)
 
+
+#(dcrodman): This needs to be removed once connection is stable.
 def inviteContext(data, invite):
   """Sends out an invite notification to the user the request is for.
 
@@ -125,6 +132,7 @@ def inviteContext(data, invite):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
+#(dcrodman): This needs to be removed once connection is stable.
 def requestContext(data, request, admin_emails):
   """Sends out a notification to the persons who can process this Request.
 

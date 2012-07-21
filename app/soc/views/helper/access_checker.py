@@ -919,32 +919,27 @@ class AccessChecker(BaseAccessChecker):
     """Checks if the current user can view the connection.
     """
     assert isSet(self.data.user)
-    assert isSet(self.data.connected_profile)
     assert isSet(self.data.organization)
     assert isSet(self.data.connection)
     
-    self._canAccessConnectionEntity(self.data.connection,
-        self.data.connected_profile.parent(),
+    self._canAccessConnectionEntity(self.data.connection, 
         self.data.organization)
     
-  def _canAccessConnectionEntity(self, connection, user, org):
+  def _canAccessConnectionEntity(self, connection, org):
     """ Checks if the current iser is allowed to access the Connection entity.
     To do so, the current User must either be the one involved in the 
     connection or an org admin for the Organization.
     
     Args:
       connection: a Connection entity
-      user: the User entity to which the Connection refers
       org: the Organization entity to which the Connection refers
     """
     
-    if self.data.user.key() != user.key():
+    if self.data.user.key() != connection.parent().key():
       self.isOrgAdmin()
-    elif user.key() != connection.parent().key():
-      raise AccessViolation(DEF_CONNECTION_CANNOT_BE_ACCESSED)
     else:
       # Prevent a User from viewing their own connection as an org admin.
-      if org.key() in self.data.connected_profile.org_admin_for:
+      if org.key() in self.data.url_profile.org_admin_for:
         raise AccessViolation(DEF_CONNECTION_CANNOT_BE_ACCESSED)
         
   def canAccessProposalEntity(self):
