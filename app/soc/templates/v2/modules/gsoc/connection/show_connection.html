@@ -26,7 +26,8 @@ limitations under the License.
 <div class="request-summary">
   <p class="request-organization"><strong>Organization:</strong> {{ org_name }}</p>
   <p class="request-contact-info"><strong>User:</strong> {{ user_email }}</p>
-  <p class="request-status"><strong>Status:</strong> {{ status_msg }}</p>
+  <p class="request-status"><strong>User Status:</strong> {{ user_status }}</p>
+  <p class="request-status"><strong>Org Status:</strong> {{ org_status }}</p>
   <p class="request-sent-on"><strong>Created on:</strong> {{ connection.created_on }}</p>
   <br>
   {% if connection.message %}
@@ -44,7 +45,7 @@ limitations under the License.
           <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.reject_mentor }}" class="submit"/>
         {% endif %}
         {% if accept_org_admin %}
-          <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.accept_org_admin }}" class="submit"/>
+          <input id="request-respond-accept-submit" name="action" type="submit" value="{{ actions.accept_org_admin }}" class="submit"/>
         {% endif %}
         {% if reject_org_admin %}
           <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.reject_org_admin }}" class="submit"/>

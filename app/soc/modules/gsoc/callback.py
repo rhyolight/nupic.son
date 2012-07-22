@@ -82,6 +82,7 @@ class Callback(object):
     self.views.append(connection.OrgConnectionPage())
     self.views.append(connection.UserConnectionPage())
     self.views.append(connection.ShowConnection())
+    self.views.append(connection.PostComment())
     self.views.append(dashboard.DashboardPage())
     self.views.append(document.DocumentPage())
     self.views.append(document.DocumentListPage())

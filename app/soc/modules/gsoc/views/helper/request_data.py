@@ -470,6 +470,13 @@ class RedirectHelper(request_data.RedirectHelper):
     url = self.urlOf('review_gsoc_proposal', full=full, secure=secure)
     return "%s#c%s" % (url, comment.key().id())
 
+  def connection_comment(self, comment, full=False, secure=False):
+    """Creates a direct link to a comment.
+    """
+    self.show_connection(self._data.user, self._data.organization)
+    url = self.urlOf(url_names.GSOC_SHOW_CONNECTION, full=full, secure=secure)
+    return "%s" % url
+    
   def project(self, id=None, student=None):
     """Returns the URL to the Student Project.
 

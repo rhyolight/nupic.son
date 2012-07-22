@@ -20,6 +20,7 @@ from google.appengine.ext import db
 from google.appengine.api import users
 
 from django import forms as djangoforms
+from django.core.urlresolvers import reverse
 from django.forms.fields import ChoiceField
 from django.forms.widgets import RadioSelect
 from django.utils.translation import ugettext
@@ -29,6 +30,7 @@ from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import notifications
 from soc.models.user import User
+from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.connection import GSoCConnection
@@ -37,7 +39,7 @@ from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
-from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gsoc.views.helper.url_patterns import url, COMMENT
 from soc.modules.gsoc.views.proposal_review import CommentForm, PrivateCommentForm
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
@@ -383,13 +385,7 @@ class ShowConnection(RequestHandler):
     self.check.hasProfile()
 
     self.kwargs['user'] = self.kwargs['link_id']
-    self.mutator.profileFromKwargs()
-
-    q = GSoCConnection.all().ancestor(self.data.url_profile.parent())
-    q.filter('organization =', self.data.organization.key())
-    self.data.connection = q.get()
-    if not self.data.connection:
-      raise AccessViolation('This connection does not exist.')
+    self.mutator.connectionFromKwargs()
 
     self.check.canViewConnection()
     self.data.is_org_admin = self.data.url_profile == self.data.profile
@@ -420,47 +416,34 @@ class ShowConnection(RequestHandler):
     header_name = self.data.url_profile.public_name \
         if self.data.is_org_admin else self.data.organization.name
 
-    accept_mentor = reject_mentor = accept_org_admin = reject_org_admin = False
-    
-    # Determine which buttons to show the user.
-    if self.data.connection.user_mentor:
-      if self.data.is_org_admin:
-        # Org can accept or reject promoting the user to mentor.
-        accept_mentor = reject_mentor = True
-      else:
-        # Allow a user to in essence 'withdraw' their request.
-        reject_mentor = True
-    if self.data.connection.org_mentor:
-      if self.data.is_org_admin:
-        # Org has the option to extend the mentor role to an org admin offer.
-        accept_org_admin = True
-      else:
-        # User can reject/accept the promotion offer.
-        accept_mentor = reject_mentor = True
-    if self.data.connection.org_org_admin:
-      if self.data.is_org_admin:
-        reject_org_admin = True
-      else:
-        # User can choose to accept/reject the org admin role, but can also
-        # choose to accept only the mentoring role.
-        accept_mentor = accept_org_admin = reject_org_admin = True
+    # Determine which buttons will be shown to the user.
+    mentor = admin = None
+    if self.data.is_org_admin:
+      mentor = self.data.connection.org_mentor
+      admin = self.data.connection.org_org_admin
+    else:
+      mentor = self.data.connection.user_mentor
+      admin = self.data.connection.user_org_admin
+
+    # Basically button visibility is the opposite of the state they represent.
+    accept_mentor = True if not mentor else False
+    reject_mentor = True if mentor is True or None else False
+    accept_org_admin = True if not admin else False
+    reject_org_admin = True if admin is True or None else False
         
-    status = None
-    perspective = 'Organization' if self.data.is_org_admin else 'User'
-    
-      entity = {'entity' : 'Organization'}
-      status = self._determineStatus(
-          self.data.connection.org_org_admin,
-          self.data.connection.user_org_admin) % entity
-      if status is None:
-        status = self._determineStatus(
-          self.data.connection.org_mentor, 
-          self.data.connection.user_mentor) % entity
+    # Fetch the two statuses from the perspective of both parties.
+    user_status = self._determineStatus(self.data.connection.user_mentor,
+        self.data.connection.user_org_admin)
+    org_status = self._determineStatus(self.data.connection.org_mentor,
+        self.data.connection.org_org_admin)
 
     public_comments, private_comments = self.getComments()
+    comment_kwargs = self.kwargs.copy()
+    del comment_kwargs['link_id']
     comment_box = {
       'form' : CommentForm(self.data.POST or None),
-      'action' : reverse('comment_gsoc_proposal', kwargs=self.data.kwargs)
+      'action' : reverse(url_names.GSOC_COMMENT_CONNECTION,
+           kwargs=comment_kwargs)
     }
     
     return {
@@ -469,7 +452,8 @@ class ShowConnection(RequestHandler):
       'header_name': header_name,
       'user_email' : self.data.connection.profile.email,
       'org_name' : self.data.organization.name,
-      'status_msg' : status,
+      'user_status' : user_status,
+      'org_status' : org_status,
       'connection' : self.data.connection,
       'actions' : self.ACTIONS,
       'accept_mentor' : accept_mentor,
@@ -482,33 +466,26 @@ class ShowConnection(RequestHandler):
       'private_comments' : private_comments
     }
 
-  def _determineStatus(self, state_a, state_b):
-    """ Returns an apropriate status message for the viewer  depending on the 
+  def _determineStatus(self, mentor, admin):
+    """ Returns an apropriate status message for the viewer depending on the 
     state of the connection and who is viewing the page. 
-    
-    Args:
-      state_a: Either the user or the org's state we want to check. For 
-          example, user_mentor.
-      state_b: The opposite state of state_a, so in the previous example
-          it would be org_mentor.
     """
-    
-    # Some states have to be compared to False since there is a distinction
-    # between a state marked as None and a state marked as False. Yeah, I'm
-    # not happy about it either.
-    if state_a:
-      if state_b is None:
-        return 'Pending %(entity)s action'
-      elif state_b is False:
-        return '%(entity)s rejected the connection'
+    status = None
+
+    if mentor:
+      if admin:
+        status = 'Accepted Org Admin Connection'
       else:
-        return '%(entity)s accepted the connection'
-    return None
+        status = 'Accepted Mentor Connection'
+    elif mentor is None:
+      status = 'Pending Connection'
+    elif not mentor:
+      status = 'Rejected Connection'
+    return status
     
   def post(self):
     """ Handler for Show GSoC Connection post request. """
-    assert isSet(self.data.action)
-    
+
     action = self.data.POST['action']
     
     if action == self.ACTIONS['accept_mentor']:
@@ -527,7 +504,7 @@ class ShowConnection(RequestHandler):
     """ The User has accepted the Mentoring role, so we need to add the user
     to the organization's list of mentors. """
     
-    profile_key = self.data.connected_profile.key()
+    profile_key = self.data.url_profile.key()
     connection_key = self.data.connection.key()
     org_key = self.data.organization.key()
     
@@ -566,7 +543,7 @@ class ShowConnection(RequestHandler):
     db.run_in_transaction(decline_mentor_txn)
     
   def _acceptOrgAdmin(self):
-    profile_key = self.data.connected_profile.key()
+    profile_key = self.data.url_profile.key()
     connection_key = self.data.connection.key()
     org_key = self.data.organization.key()
     
@@ -592,6 +569,7 @@ class ShowConnection(RequestHandler):
         profile.org_admin_for = list(set(profile.org_admin_for))
         
         profile.put()
+      connection.put()
       
     db.run_in_transaction(accept_org_admin_txn)
     
@@ -610,3 +588,87 @@ class ShowConnection(RequestHandler):
       connection.put()
       
     db.run_in_transaction(decline_org_admin_txn)
+
+
+class PostComment(RequestHandler):
+  """View which handles publishing comments about a connection
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url(r'connection/comment/%s$' % COMMENT, self, 
+             name=url_names.GSOC_COMMENT_CONNECTION),
+    ]
+
+  def checkAccess(self):
+    self.check.isProgramVisible()
+    self.check.isProfileActive()
+    self.mutator.userFromKwargs()
+    self.mutator.connectionFromKwargs()
+    self.mutator.commentVisible(self.data.connection)
+
+    # check if the comment is given by the author of the proposal
+    if self.data.connection.profile.key() == self.data.profile.key():
+      self.data.public_only = True
+      return
+
+    self.data.public_only = False
+    self.check.isMentorForOrganization(self.data.connection.organization)
+
+  def createCommentFromForm(self):
+    """Creates a new comment based on the data inserted in the form.
+
+    Returns:
+      a newly created comment entity or None
+    """
+
+    assert isSet(self.data.public_only)
+    assert isSet(self.data.connection)
+
+    if self.data.public_only:
+      comment_form = CommentForm(self.data.request.POST)
+    else:
+      # this form contains checkbox for indicating private/public comments
+      comment_form = PrivateCommentForm(self.data.request.POST)
+
+    if not comment_form.is_valid():
+      return None
+
+    if self.data.public_only:
+      comment_form.cleaned_data['is_private'] = False
+    comment_form.cleaned_data['author'] = self.data.profile
+
+    q = GSoCProfile.all().filter('mentor_for', 
+        self.data.connection.organization)
+    q = q.filter('status', 'active')
+    if comment_form.cleaned_data.get('is_private'):
+      q.filter('notify_private_comments', True)
+    else:
+      q.filter('notify_public_comments', True)
+    mentors = q.fetch(1000)
+
+    to_emails = [i.email for i in mentors \
+                 if i.key() != self.data.profile.key()]
+
+    def create_comment_txn():
+      comment = comment_form.create(commit=True, parent=self.data.connection)
+      context = gsoc_notifications.newCommentContext(self.data, comment, to_emails)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=comment)
+      sub_txn()
+      return comment
+
+    return db.run_in_transaction(create_comment_txn)
+
+  def post(self):
+
+    connection = self.createCommentFromForm()
+    if connection:
+      # TODO(dcrodman): Change the org_admin_requests page to org_connections
+      self.redirect.program()
+      self.redirect.to('gsoc_dashboard', anchor='org_admin_requests')
+    else:
+      self.redirect.show_connection(self.data.user, self.data.organization)
+      self.redirect.to(url_names.GSOC_SHOW_CONNECTION, validated=True)
+
+  def get(self):
+    self.error(405)

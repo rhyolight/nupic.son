@@ -327,7 +327,13 @@ class Mutator(object):
       # user that the entity refers to may only respond if it is a Request
       self.data.can_respond = self.data.invite.type == 'Invitation'
 
-  def commentVisible(self):
+  def commentVisible(self, connection=None):
+    """ Determines whether or not a comment is visible to a user.
+
+    Args:
+      connection: a connection entity; optional argument to be used if the user
+          is attempting to view a comment on a connection instead of a proposal 
+    """
     assert isSet(self.data.url_user)
 
     self.data.public_comments_visible = False
@@ -344,10 +350,12 @@ class Mutator(object):
 
     # All the mentors and org admins from the organization may access public
     # and private comments.
-    if self.data.mentorFor(self.data.proposal_org):
+    organization = self.data.proposal_org if connection is None else \
+        self.data.connection.organization
+    if self.data.mentorFor(organization):
       self.data.public_comments_visible = True
       self.data.private_comments_visible = True
-      return
+    return
 
   def host(self):
     assert isSet(self.data.user)
