@@ -104,6 +104,7 @@ class Callback(object):
     self.views.append(org_home.GSoCBanOrgPost())
     self.views.append(org_profile.OrgProfilePage())
     self.views.append(profile.GSoCProfilePage())
+    self.views.append(profile_show.GSoCBanProfilePost())
     self.views.append(profile_show.GSoCProfileAdminPage())
     self.views.append(profile_show.GSoCProfileShowPage())
     self.views.append(program.ProgramPage())
