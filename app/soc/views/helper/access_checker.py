@@ -327,7 +327,7 @@ class Mutator(object):
       # user that the entity refers to may only respond if it is a Request
       self.data.can_respond = self.data.invite.type == 'Invitation'
 
-  def commentVisible(self, connection=None):
+  def commentVisible(self, organization):
     """ Determines whether or not a comment is visible to a user.
 
     Args:
@@ -350,8 +350,6 @@ class Mutator(object):
 
     # All the mentors and org admins from the organization may access public
     # and private comments.
-    organization = self.data.proposal_org if connection is None else \
-        self.data.connection.organization
     if self.data.mentorFor(organization):
       self.data.public_comments_visible = True
       self.data.private_comments_visible = True

@@ -87,7 +87,7 @@ def connectionContext(data, connection, receivers, is_user=False):
 
   subject = DEF_NEW_CONNECTION % {'org' : connection.organization.name}
   request_url = data.redirect.show_connection(connection.parent(), 
-      connection.organization).url(full=True)
+      connection).url(full=True)
 
   message_properties = {
       'org' : connection.organization.name, 

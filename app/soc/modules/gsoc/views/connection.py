@@ -15,7 +15,6 @@
 # limitations under the License.
 """ Module containing the view for the GSoCConnection page """
 
-import logging
 from google.appengine.ext import db
 from google.appengine.api import users
 
@@ -375,7 +374,7 @@ class ShowConnection(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'connection/%s$' % url_patterns.CONNECT,
+        url(r'connection/%s$' % url_patterns.SHOW_CONNECTION,
             self, name=url_names.GSOC_SHOW_CONNECTION)
     ]
 
@@ -384,11 +383,10 @@ class ShowConnection(RequestHandler):
     self.check.isOrganizationInURLActive()
     self.check.hasProfile()
 
-    self.kwargs['user'] = self.kwargs['link_id']
     self.mutator.connectionFromKwargs()
 
     self.check.canViewConnection()
-    self.data.is_org_admin = self.data.url_profile == self.data.profile
+    self.data.is_org_admin = not (self.data.url_profile == self.data.profile)
 
   def getComments(self, limit=1000):
     """Gets all the comments for the proposal visible by the current user.
@@ -440,8 +438,10 @@ class ShowConnection(RequestHandler):
     public_comments, private_comments = self.getComments()
     comment_kwargs = self.kwargs.copy()
     del comment_kwargs['link_id']
+    form = CommentForm(self.data.POST or None) if not self.data.is_org_admin \
+        else PrivateCommentForm(self.data.POST or None)
     comment_box = {
-      'form' : CommentForm(self.data.POST or None),
+      'form' : form,
       'action' : reverse(url_names.GSOC_COMMENT_CONNECTION,
            kwargs=comment_kwargs)
     }
@@ -605,7 +605,7 @@ class PostComment(RequestHandler):
     self.check.isProfileActive()
     self.mutator.userFromKwargs()
     self.mutator.connectionFromKwargs()
-    self.mutator.commentVisible(self.data.connection)
+    self.mutator.commentVisible(self.data.organization)
 
     # check if the comment is given by the author of the proposal
     if self.data.connection.profile.key() == self.data.profile.key():
@@ -628,7 +628,7 @@ class PostComment(RequestHandler):
     if self.data.public_only:
       comment_form = CommentForm(self.data.request.POST)
     else:
-      # this form contains checkbox for indicating private/public comments
+      # This form contains checkbox for indicating private/public comments.
       comment_form = PrivateCommentForm(self.data.request.POST)
 
     if not comment_form.is_valid():

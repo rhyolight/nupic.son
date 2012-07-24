@@ -1247,8 +1247,8 @@ class ConnectionComponent(Component):
             (lambda ent, *args: 'Org Admin' if ent.org_org_admin else 'Mentor'))
     
     list_config.setRowAction(
-        lambda ent, *args: r.show_connection(user=ent.parent(), 
-                                             org=ent.organization).url())
+        lambda ent, *args: r.show_connection(user=ent.parent(),
+            connection=ent).url())
     self._list_config = list_config
 
     super(ConnectionComponent, self).__init__(request, data)
