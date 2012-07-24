@@ -205,6 +205,9 @@ class TaskViewPage(RequestHandler):
       # are no elif clauses because one could add multiple GET params :).
       self.check.isProfileActive()
 
+      # Tasks for non-active organizations cannot be touched
+      self.check.isOrganizationActive(self.data.task.org)
+
       if 'reply' in self.data.GET:
         # checks for posting comments
         # valid tasks and profile are already checked.
