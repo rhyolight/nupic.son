@@ -458,7 +458,7 @@ class RedirectHelper(request_data.RedirectHelper):
     self.program()
 
     self.kwargs['user'] = user.link_id
-    self.kwargs['connection_id'] = int(connection.key().id())
+    self.kwargs['id'] = connection.key().id()
     self._url_name = url_names.GSOC_SHOW_CONNECTION
     return self
 

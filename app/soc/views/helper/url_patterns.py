@@ -97,4 +97,4 @@ REQUEST   = _mentor_role + ORG
 USER = namedLinkIdPattern(['link_id'])
 USER_ID	  = namedIdBasedPattern(['sponsor', 'program', 'user'])
 CONNECT = namedLinkIdPattern(['sponsor', 'program', 'organization', 'link_id'])
-SHOW_CONNECTION = namedIdBasedPattern(['sponsor', 'program', 'user', 'connection_id'])
+SHOW_CONNECTION = namedIdBasedPattern(['sponsor', 'program', 'user'])

@@ -380,7 +380,6 @@ class ShowConnection(RequestHandler):
 
   def checkAccess(self):
     self.check.isProgramVisible()
-    self.check.isOrganizationInURLActive()
     self.check.hasProfile()
 
     self.mutator.connectionFromKwargs()
@@ -437,7 +436,6 @@ class ShowConnection(RequestHandler):
 
     public_comments, private_comments = self.getComments()
     comment_kwargs = self.kwargs.copy()
-    del comment_kwargs['link_id']
     form = CommentForm(self.data.POST or None) if not self.data.is_org_admin \
         else PrivateCommentForm(self.data.POST or None)
     comment_box = {
@@ -451,7 +449,7 @@ class ShowConnection(RequestHandler):
       'is_admin' : self.data.is_org_admin,
       'header_name': header_name,
       'user_email' : self.data.connection.profile.email,
-      'org_name' : self.data.organization.name,
+      'org_name' : self.data.connection.organization.name,
       'user_status' : user_status,
       'org_status' : org_status,
       'connection' : self.data.connection,
@@ -605,7 +603,7 @@ class PostComment(RequestHandler):
     self.check.isProfileActive()
     self.mutator.userFromKwargs()
     self.mutator.connectionFromKwargs()
-    self.mutator.commentVisible(self.data.organization)
+    self.mutator.commentVisible(self.data.connection.organization)
 
     # check if the comment is given by the author of the proposal
     if self.data.connection.profile.key() == self.data.profile.key():

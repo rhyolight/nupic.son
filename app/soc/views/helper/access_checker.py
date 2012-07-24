@@ -331,8 +331,8 @@ class Mutator(object):
     """ Determines whether or not a comment is visible to a user.
 
     Args:
-      connection: a connection entity; optional argument to be used if the user
-          is attempting to view a comment on a connection instead of a proposal 
+      organization: the organization for which a mentor or org admin may be
+          attemtping to view a connection
     """
     assert isSet(self.data.url_user)
 
@@ -928,10 +928,9 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.organization)
     assert isSet(self.data.connection)
     
-    self._canAccessConnectionEntity(self.data.connection, 
-        self.data.organization)
+    self._canAccessConnectionEntity(self.data.connection)
     
-  def _canAccessConnectionEntity(self, connection, org):
+  def _canAccessConnectionEntity(self, connection):
     """ Checks if the current iser is allowed to access the Connection entity.
     To do so, the current User must either be the one involved in the 
     connection or an org admin for the Organization.
@@ -945,7 +944,7 @@ class AccessChecker(BaseAccessChecker):
       self.isOrgAdmin()
     else:
       # Prevent a User from viewing their own connection as an org admin.
-      if org.key() in self.data.url_profile.org_admin_for:
+      if connection.organization.key() in self.data.url_profile.org_admin_for:
         raise AccessViolation(DEF_CONNECTION_CANNOT_BE_ACCESSED)
         
   def canAccessProposalEntity(self):

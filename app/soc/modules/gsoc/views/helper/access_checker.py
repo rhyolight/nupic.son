@@ -185,7 +185,7 @@ class Mutator(access_checker.Mutator):
     self.profileFromKwargs()
 
     self.data.connection = GSoCConnection.get_by_id(
-        self.kwargs['connection_id'], self.data.url_profile.parent_key())
+        long(self.data.kwargs['id']), self.data.url_profile.parent_key())
     if not self.data.connection:
       raise AccessViolation('This connection does not exist.')
 
