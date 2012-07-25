@@ -14,24 +14,24 @@
     Forms
 
 ////////////////*/
-#form.form-register {
+.form-register {
   /*register form*/
 
   background: #e1edf5;
   margin: 0 auto 39px auto;
   width: 570px;
 }
-#form.form-register .loggedin {
+.form-register .loggedin {
   /*logged in message*/
 
   background: #cee5f5;
   padding: 11px 0;
   text-align: center;
 }
-#form.form-register .loggedin p {
+.form-register .loggedin p {
   margin: 0;
 }
-#form.form-register h2 {
+.form-register h2 {
   /*heading*/
 
   float: left;
@@ -39,7 +39,7 @@
   line-height: 1.8em;
   margin: 10px 0 0 23px;
 }
-#form.form-register h3 {
+.form-register h3 {
   /*heading*/
 
   clear: left;
@@ -48,10 +48,10 @@
   margin: 10px 0 0 23px;
   padding: 0 0 10px 5px;
 }
-#form.form-register h3.rejected {
+.form-register h3.rejected {
   color: red;
 }
-#form.form-register .req {
+.form-register .req {
   /*required text*/
 
   color: #d5620e;
@@ -62,137 +62,137 @@
   font-weight: bold;
   margin: 25px 0 0 10px;
 }
-#form.form-register fieldset {
+.form-register fieldset {
   background: #cde5f5;
   margin: 0 23px 16px 23px;
   padding: 30px 0 11px 0;
   clear: left;
 }
-#form.form-register fieldset .row {
+.form-register fieldset .row {
   /*every row*/
 
   margin: 0 0 6px 11px;
   width: 497px;
 }
-#form.form-register fieldset .row.given_name {
+.form-register fieldset .row.given_name {
   float: left;
   width: 215px;
 }
-#form.form-register fieldset .row.given_name .text {
+.form-register fieldset .row.given_name .text {
   width: 215px;
 }
-#form.form-register fieldset .row.surname {
+.form-register fieldset .row.surname {
   float: left;
   width: 276px;
 }
-#form.form-register fieldset .row.surname .text {
+.form-register fieldset .row.surname .text {
   width: 276px;
 }
-#form.form-register fieldset .row.email {
+.form-register fieldset .row.email {
   clear: both;
   float: left;
   width: 310px;
 }
-#form.form-register fieldset .row.email .text {
+.form-register fieldset .row.email .text {
   width: 310px;
 }
-#form.form-register fieldset .row.phone {
+.form-register fieldset .row.phone {
   float: left;
   width: 180px;
 }
-#form.form-register fieldset .row.phone .text {
+.form-register fieldset .row.phone .text {
   width: 180px;
 }
-#form.form-register fieldset .row.bday {
+.form-register fieldset .row.bday {
   clear: both;
   float: left;
   width: 121px;
 }
-#form.form-register fieldset .row.bday .text {
+.form-register fieldset .row.bday .text {
   width: 121px;
 }
-#form.form-register fieldset .row.address2 {
+.form-register fieldset .row.address2 {
   float: left;
   width: 313px;
 }
-#form.form-register fieldset .row.address2 .text {
+.form-register fieldset .row.address2 .text {
   width: 313px;
 }
-#form.form-register fieldset .row.city {
+.form-register fieldset .row.city {
   float: left;
   width: 175px;
 }
-#form.form-register fieldset .row.city .text {
+.form-register fieldset .row.city .text {
   width: 175px;
 }
-#form.form-register fieldset .row.stateprovince {
+.form-register fieldset .row.stateprovince {
   clear: both;
   float: left;
   width: 175px;
 }
-#form.form-register fieldset .row.stateprovince .text {
+.form-register fieldset .row.stateprovince .text {
   width: 175px;
 }
-#form.form-register fieldset .row.zip {
+.form-register fieldset .row.zip {
   float: left;
   width: 138px;
 }
-#form.form-register fieldset .row.zip label {
+.form-register fieldset .row.zip label {
   padding: 0;
 }
-#form.form-register fieldset .row.zip .text {
+.form-register fieldset .row.zip .text {
   width: 138px;
 }
-#form.form-register fieldset .row.country {
+.form-register fieldset .row.country {
   clear: both;
   padding-top: 5px;
   width: 100%;
 }
-#form.form-register fieldset .row.country .selector select {
+.form-register fieldset .row.country .selector select {
   width: 100%;
 }
-#form.form-register fieldset .row.country .selector span {
+.form-register fieldset .row.country .selector span {
   padding-right: 40px;
   width: auto;
   /* desired width (w/ borders) - 33px = value */
 
 }
-#form.form-register fieldset .row.schoolname {
+.form-register fieldset .row.schoolname {
   float: left;
   width: 100%;
 }
-#form.form-register fieldset .row.schoolname .selector select {
+.form-register fieldset .row.schoolname .selector select {
   width: 100%;
 }
-#form.form-register fieldset .row.schoolname .selector span {
+.form-register fieldset .row.schoolname .selector span {
   padding-right: 40px;
   width: auto;
   /* desired width (w/ borders) - 33px = value */
 
 }
-#form.form-register fieldset .row.gradyear {
+.form-register fieldset .row.gradyear {
   clear: left;
   float: left;
   width: 175px;
 }
-#form.form-register fieldset .row.gradyear .selector span {
+.form-register fieldset .row.gradyear .selector span {
   width: 127px;
 }
-#form.form-register fieldset .row.schoollocation {
+.form-register fieldset .row.schoollocation {
   float: left;
   width: 175px;
 }
-#form.form-register fieldset .row.schoollocation .selector span {
+.form-register fieldset .row.schoollocation .selector span {
   width: 127px;
 }
-#form.form-register fieldset .row.schoolurl {
+.form-register fieldset .row.schoolurl {
   clear: both;
   width: 254px;
 }
-#form.form-register fieldset .row.schoolurl .text {
+.form-register fieldset .row.schoolurl .text {
   width: 254px;
 }
-#form.form-register fieldset #abstract_counter {
+.form-register fieldset #abstract_counter {
   color: #d5620e;
   display: block;
   font-size: 10px;
@@ -200,62 +200,62 @@
   font-weight: bold;
   margin: 0 0 0 4px;
 }
-#form.form-register fieldset.nolegend {
+.form-register fieldset.nolegend {
   padding: 11px 0;
 }
-#form.form-register .fieldset-basicinfo {
+.form-register .fieldset-basicinfo {
   /*first fieldset on the registration page*/
 
   clear: both;
 }
-#form.form-register .fieldset-referral {
+.form-register .fieldset-referral {
   /*referral fieldset*/
 
   background: none;
   padding: 0;
 }
-#form.form-register .fieldset-referral .row.radio {
+.form-register .fieldset-referral .row.radio {
   margin: 0 0 6px 35px;
 }
-#form.form-register .fieldset-referral .row.radio label {
+.form-register .fieldset-referral .row.radio label {
   color: #666;
   font-size: 15px;
 }
-#form.form-register .row.button-row {
+.form-register .row.button-row {
   padding: 0 0 28px 28px;
 }
-#form.form-register div.back-links {
+.form-register div.back-links {
   clear: left;
   font-size: 12px;
   font-weight: bold;
   margin: 0 0 0 23px;
   padding: 0 0 10px 5px;
 }
-#form.form-register .row.radio {
+.form-register .row.radio {
   margin: 0 0 6px 15px;
 }
-#form.form-register .row.radio label {
+.form-register .row.radio label {
   color: #666;
   font-size: 15px;
 }
-#form.form-register .row.radio label div.radio-content {
+.form-register .row.radio label div.radio-content {
   display: table-cell;
 }
-#form.form-register .row.checkbox {
+.form-register .row.checkbox {
   margin: 0 0 6px 15px;
 }
-#form.form-register .row.checkbox label {
+.form-register .row.checkbox label {
   color: #666;
   font-size: 15px;
 }
-#form.form-register .row.checkbox label div.checkbox-content {
+.form-register .row.checkbox label div.checkbox-content {
   display: table-cell;
 }
-#form.form-register .row.other {
+.form-register .row.other {
   margin: 0 0 6px 51px;
   width: 400px;
 }
-#form.form-register .row.other input {
+.form-register .row.other input {
   width: 400px;
 }
 #form.form-search {
