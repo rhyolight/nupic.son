@@ -26,6 +26,7 @@ from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
 import soc.models.profile
+import soc.modules.gci.models.organization
 import soc.modules.gci.models.program
 
 
