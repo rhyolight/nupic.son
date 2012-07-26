@@ -629,11 +629,11 @@
   -moz-box-shadow: inset 2px 2px 10px #fccaca;
   -webkit-box-shadow: inset 2px 2px 10px #fccaca;
 }
-#form .row.button-row {
+.row.button-row {
   /*submit btn row*/
 
 }
-#form .row.button-row input {
+.row.button-row input {
   background: url(../../../images/v2/gsoc/form-submit-bg.png) 0 0 repeat;
   border: 0;
   color: #fff;
