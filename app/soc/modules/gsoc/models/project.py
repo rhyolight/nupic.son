@@ -115,3 +115,6 @@ class GSoCProject(db.Model):
   program = db.ReferenceProperty(reference_class=soc.models.program.Program,
                                  required=True,
                                  collection_name='projects')
+
+  #: Whether the student has submitted their code samples or not
+  code_samples_submitted = db.BooleanProperty(default=False)
