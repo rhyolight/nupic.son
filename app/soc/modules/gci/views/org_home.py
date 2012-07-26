@@ -85,6 +85,8 @@ class OpenTasksList(Template):
     #                      *args: entity.taskArbitTag())
     list_config.addColumn('time_to_complete', 'Time to complete',
                           lambda entity, *args: entity.taskTimeToComplete())
+    list_config.addColumn('types', 'Type',
+                          lambda entity, *args: ", ".join(entity.types))
     
     list_config.setRowAction(
         lambda e, *args: data.redirect.id(e.key().id()).urlOf(url_names.GCI_VIEW_TASK))
@@ -126,6 +128,8 @@ class CompletedTasksList(Template):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('student', 'Student',
                           lambda entity, *args: entity.student.name())
+    list_config.addColumn('types', 'Type',
+                          lambda entity, *args: ", ".join(entity.types))
     
     list_config.setRowAction(
         lambda e, *args: data.redirect.id(e.key().id()).urlOf(url_names.GCI_VIEW_TASK))
