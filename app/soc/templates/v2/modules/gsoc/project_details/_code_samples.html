@@ -1,0 +1,53 @@
+<div class="block-task-uploaded-code">
+  <span class="block-task-uploaded-code-title">Uploaded Work</span>
+  <div class="block-task-uploaded-code-content">
+    {% if not submissions %}
+      <span class="block-task-uploaded-code-status">No work has been uploaded yet.</span>
+    {% else %}
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" class="block-task-uploaded-code-listing">
+        <tr>
+          <th>File name/URL</th>
+          <th>File size</th>
+          <th>Date submitted</th>
+          <th></th>
+        </tr>
+        {% for submission in submissions %}
+          <tr>
+            {% if submission.upload_of_work %}
+              {% if submission.is_blob_valid %}
+              <td><a href="{{ download_url }}?id={{ submission.entity.key.id }}">{{ submission.upload_of_work.filename }}</a></td>
+              <td>{{ submission.upload_of_work.size|filesizeformat }}</td>
+              {% else %}
+                <td> Download Broken </td>
+                <td></td>
+              {% endif %}
+            {% else %}
+              <td>{{ submission.entity.url_to_work|urlizetrunc:45 }}</td>
+              <td>n/a</td>
+            {% endif %}
+            <td>{{ submission.entity.submitted_on|date:"F d Y H:i" }} UTC</td>
+            {% if submission in deleteable %}
+              <td>
+                <form action="?delete_submission" method="post">
+                  <input value="Delete" name="{{submission.entity.key.id}}" class="task-btn task-btn-delete" type="submit">
+                </form>
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </table>
+
+    {% endif %}
+
+    {% if code_sample_upload_file_form %}
+      <span class="block-task-uploaded-code-note">Upload your final code samples, then click Submit.</span>
+      <form action="{{ code_sample_upload_file_action }}" method="post" enctype="multipart/form-data" id="file-form" class="form-register">
+        {{ code_sample_upload_file_form.render }}
+        <div class="row button-row">
+          <input value="Submit File" class="submit" type="submit">
+        </div>
+      </form>
+    {% endif %}
+  </div>
+</div>
+<!-- end .block-task-uploaded-code -->

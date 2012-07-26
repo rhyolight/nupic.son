@@ -18,6 +18,15 @@ limitations under the License.
   {{ block.super }}
 {% endblock synchronous_scripts %}
 
+
+{% block page_content %}
+  {{ block.super }}
+  {% if code_samples %}
+    {{ code_samples.render }}
+  {% endif %}
+{% endblock page_content %}
+
+
 {% block dependencies %}
   [
     dep.uniform,
