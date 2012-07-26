@@ -26,6 +26,7 @@ from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import BadRequest
+from soc.views.helper import blobstore as bs_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
@@ -101,8 +102,9 @@ class CodeSamples(Template):
   def _buildContextForExistingCodeSamples(self):
     """Builds a list containing the info related to each code sample.
     """
+    assert isSet(self.data.project)
     code_samples = []
-    sources = self.data.code_samples = []
+    sources = self.data.project.codeSamples()
     for source in sorted(sources, key=lambda e: e.submitted_on):
       code_sample = {
           'entity': source
@@ -122,7 +124,9 @@ class CodeSamples(Template):
     """Returns the context for the current template.
     """
     context = {
-        'submissions': self._buildContextForExistingCodeSamples(),
+        'code_samples': self._buildContextForExistingCodeSamples(),
+        'code_sample_download_url': self.data.redirect.project().urlOf(
+              url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
         }
 
     # TODO(daniel): decide when students can delete their code samples
@@ -134,8 +138,9 @@ class CodeSamples(Template):
     context['code_sample_upload_file_form'] = CodeSampleUploadFileForm()
 
     self.data.redirect.project()
-    context['code_sample_upload_file_action'] = self.data.redirect.urlOf(
-        url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD)
+    context['code_sample_upload_file_action'] = blobstore.create_upload_url(
+        self.data.redirect.urlOf(url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD))
+    
     if self.data.GET.get('file', None) == '0':
       context['code_sample_upload_file_form'].addFileRequiredError()
 
@@ -265,6 +270,41 @@ class CodeSampleUploadFilePost(RequestHandler):
 
     self.redirect.project()
     self.redirect.to('gsoc_project_details')
+
+
+class CodeSampleDownloadFileGet(RequestHandler):
+  """Handler for POST requests to download files with code samples.
+  """
+
+  def djangoURLPatterns(self):
+    """Returns the list of tuples for containing URL to view method mapping.
+    """
+
+    return [
+        url(r'project/code_sample/download/%s$' % url_patterns.PROJECT, self,
+            name=url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
+    ]
+
+  def checkAccess(self):
+    self.mutator.projectFromKwargs()
+    #self.check.isProjectCompleted
+
+  def get(self):
+    """Get handler for the code sample download file.
+    """
+    assert isSet(self.data.project)
+
+    try:
+      id_value = int(self.request.GET['id'])
+      code_sample = GSoCCodeSample.get_by_id(id_value, self.data.project)
+      if not code_sample or not code_sample.upload_of_work:
+        raise BadRequest('Requested project or code sample not found')
+      self.response = bs_helper.sendBlob(code_sample.upload_of_work)
+    except KeyError:
+      raise BadRequest('id argument missing in GET data')
+    except ValueError:
+      raise BadRequest('id argument in GET data is not a number')
+
 
 class UserActions(Template):
   """Template to render the left side user actions.
