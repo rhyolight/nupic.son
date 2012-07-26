@@ -22,6 +22,7 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from soc.modules.gsoc.models.code_sample import GSoCCodeSample
 from soc.modules.gsoc.models.profile import GSoCProfile
 
 import soc.models.program
@@ -118,3 +119,10 @@ class GSoCProject(db.Model):
 
   #: Whether the student has submitted their code samples or not
   code_samples_submitted = db.BooleanProperty(default=False)
+
+  def codeSamples(self):
+    """Returns GSoCCodeSample entities uploaded for this project.
+    """
+    query = GSoCCodeSample.all()
+    query.ancestor(self)
+    return query.fetch(1000)
