@@ -234,8 +234,35 @@ class CodeSampleUploadFilePost(RequestHandler):
   def post(self):
     """Post handler for the code sample upload file.
     """
+    assert isSet(self.data.project)
 
-    # TODO(daniel): add actual implementation
+    form = CodeSampleUploadFileForm(
+        data=self.data.POST, files=self.data.request.file_uploads)
+
+    if not form.is_valid():
+      # we are not storing this form, remove the uploaded blob from the cloud
+      for blob_info in self.data.request.file_uploads.itervalues():
+        blob_info.delete()
+      return self.redirect.project().to(
+          url_names.GSOC_PROJECT_UPDATE, extra=['file=0'])
+
+    form.cleaned_data['user'] = self.data.user
+    form.cleaned_data['org'] = self.data.project.org
+    form.cleaned_data['program'] = self.data.project.program
+
+    project_key = self.data.project.key()
+    code_sample = form.create(commit=False, parent=project_key)
+
+    def txn():
+      code_sample.put()
+
+      project = GSoCProject.get(project_key)
+      if not project.code_samples_submitted:
+        project.code_samples_submitted = True
+        project.put()
+
+    db.run_in_transaction(txn)
+
     self.redirect.project()
     self.redirect.to('gsoc_project_details')
 
