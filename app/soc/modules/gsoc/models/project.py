@@ -22,6 +22,8 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from soc.modules.gsoc.models.profile import GSoCProfile
+
 import soc.models.program
 import soc.models.organization
 
@@ -73,6 +75,12 @@ class GSoCProject(db.Model):
 
   #: A property containing a list of Mentors assigned for this project
   mentors = db.ListProperty(item_type=db.Key, default=[], required=True)
+
+  def getMentors(self):
+    """Returns a list of GSoCProfile entities which 
+    are mentors for this project.
+    """
+    return [m for m in GSoCProfile.get(self.mentors) if m]
 
   #: The status of this project
   #: accepted: This project has been accepted into the program
