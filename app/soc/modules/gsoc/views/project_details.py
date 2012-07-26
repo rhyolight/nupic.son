@@ -160,7 +160,7 @@ class ProjectDetailsUpdate(RequestHandler):
 
     return [
         url(r'project/update/%s$' % url_patterns.PROJECT, self,
-            name='gsoc_update_project')
+            name=url_names.GSOC_PROJECT_UPDATE)
     ]
 
   def checkAccess(self):
@@ -327,7 +327,7 @@ class ProjectDetails(RequestHandler):
     user_is_owner = self.data.user and \
         (self.data.user.key() == self.data.project_owner.parent_key())
     if user_is_owner:
-      context['update_link'] = r.project().urlOf('gsoc_update_project')
+      context['update_link'] = r.project().urlOf(url_names.GSOC_PROJECT_UPDATE)
 
     return context
 
