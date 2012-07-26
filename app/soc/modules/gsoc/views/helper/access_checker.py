@@ -107,6 +107,9 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
 DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM = ugettext(
     'You are not allowed to download the form.')
 
+DEF_PROJECT_NOT_COMPLETED = ugettext(
+    'The specified project has not been completed')
+
 
 class Mutator(access_checker.Mutator):
   """Mutator for the GSoC module.
@@ -458,6 +461,11 @@ class AccessChecker(access_checker.AccessChecker):
     if app_record.status != 'accepted':
       raise AccessViolation(DEF_ORG_APP_NOT_ACCEPTED % (org_id))
 
+  def isProjectCompleted(self):
+    """Checks whether the project specified in the request is completed.
+    """
+    if self.data.project.status != 'completed':
+      raise AccessViolation(DEF_PROJECT_NOT_COMPLETED)
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass
