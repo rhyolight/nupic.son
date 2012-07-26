@@ -133,16 +133,15 @@ class CodeSamples(Template):
     deleteable = []
     context['deleteable'] = deleteable
 
-    # TODO(daniel): check if the upload form should be visible
+    if self.data.project.status == 'completed':
+      context['code_sample_upload_file_form'] = CodeSampleUploadFileForm()
 
-    context['code_sample_upload_file_form'] = CodeSampleUploadFileForm()
-
-    self.data.redirect.project()
-    context['code_sample_upload_file_action'] = blobstore.create_upload_url(
-        self.data.redirect.urlOf(url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD))
+      self.data.redirect.project()
+      context['code_sample_upload_file_action'] = blobstore.create_upload_url(
+          self.data.redirect.urlOf(url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD))
     
-    if self.data.GET.get('file', None) == '0':
-      context['code_sample_upload_file_form'].addFileRequiredError()
+      if self.data.GET.get('file', None) == '0':
+        context['code_sample_upload_file_form'].addFileRequiredError()
 
     return context
 
