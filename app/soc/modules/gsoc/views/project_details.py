@@ -188,8 +188,8 @@ class ProjectDetailsUpdate(RequestHandler):
         'error': project_details_form.errors,
     }
 
-    # if project.status == 'Completed':
-    context['code_samples'] = CodeSamples(self.data)
+    if self.data.project.status == 'completed':
+      context['code_samples'] = CodeSamples(self.data)
 
     return context
 
