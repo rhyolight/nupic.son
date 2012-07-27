@@ -406,6 +406,9 @@ class ProjectDetails(RequestHandler):
     if user_is_owner:
       context['update_link'] = r.project().urlOf(url_names.GSOC_PROJECT_UPDATE)
 
+    if self.data.project.status == 'completed':
+      context['list_code_samples'] = ListCodeSamples(self.data)
+
     return context
 
 
