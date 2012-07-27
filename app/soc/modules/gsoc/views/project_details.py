@@ -198,9 +198,9 @@ class ProjectDetailsUpdate(RequestHandler):
         'error': project_details_form.errors,
     }
 
-    #if self.data.project.status == 'completed':
-    context['upload_code_samples'] = UploadCodeSamples(self.data)
-    context['list_code_samples'] = ListCodeSamples(self.data)
+    if self.data.project.status == 'completed':
+      context['upload_code_samples'] = UploadCodeSamples(self.data)
+      context['list_code_samples'] = ListCodeSamples(self.data)
 
     return context
 
