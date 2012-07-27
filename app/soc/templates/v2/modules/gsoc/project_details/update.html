@@ -28,8 +28,11 @@ limitations under the License.
 
 {% block page_content %}
   {{ block.super }}
-  {% if code_samples %}
-    {{ code_samples.render }}
+  {% if upload_code_samples %}
+    {{ upload_code_samples.render }}
+  {% endif %}
+  {% if list_code_samples %}
+    {{ list_code_samples.render }}
   {% endif %}
 {% endblock page_content %}
 

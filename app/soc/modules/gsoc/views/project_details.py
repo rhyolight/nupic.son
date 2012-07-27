@@ -93,10 +93,8 @@ class CodeSampleUploadFileForm(gsoc_forms.GSoCModelForm):
     return upload
 
 
-class CodeSamples(Template):
-  """Template to render all the GSoCCodeSample entities.
-
-  Also, it contains the form to upload code samples.
+class ListCodeSamples(Template):
+  """Template to render all the GSoCCodeSample entities for the project.
   """
 
   def _buildContextForExistingCodeSamples(self):
@@ -123,32 +121,44 @@ class CodeSamples(Template):
   def context(self):
     """Returns the context for the current template.
     """
-    context = {
+    return {
         'code_samples': self._buildContextForExistingCodeSamples(),
         'code_sample_download_url': self.data.redirect.project().urlOf(
               url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
         }
 
-    # TODO(daniel): decide when students can delete their code samples
-    deleteable = []
-    context['deleteable'] = deleteable
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return 'v2/modules/gsoc/project_details/_list_code_samples.html'
 
-    if self.data.project.status == 'completed':
-      context['code_sample_upload_file_form'] = CodeSampleUploadFileForm()
 
-      self.data.redirect.project()
-      context['code_sample_upload_file_action'] = blobstore.create_upload_url(
-          self.data.redirect.urlOf(url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD))
+class UploadCodeSamples(Template):
+  """Template that contains a form to upload code samples.
+  """
+
+  def context(self):
+    """Returns the context for the current template.
+    """
+
+    self.data.redirect.project()
+
+    context = {
+        'code_sample_upload_file_form': CodeSampleUploadFileForm(),
+        'code_sample_upload_file_action': blobstore.create_upload_url(
+            self.data.redirect.urlOf(
+                url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD))
+        }
     
-      if self.data.GET.get('file', None) == '0':
-        context['code_sample_upload_file_form'].addFileRequiredError()
+    if self.data.GET.get('file', None) == '0':
+      context['code_sample_upload_file_form'].addFileRequiredError()
 
     return context
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return 'v2/modules/gsoc/project_details/_code_samples.html'
+    return 'v2/modules/gsoc/project_details/_upload_code_samples.html'
 
 
 class ProjectDetailsUpdate(RequestHandler):
@@ -188,8 +198,9 @@ class ProjectDetailsUpdate(RequestHandler):
         'error': project_details_form.errors,
     }
 
-    if self.data.project.status == 'completed':
-      context['code_samples'] = CodeSamples(self.data)
+    #if self.data.project.status == 'completed':
+    context['upload_code_samples'] = UploadCodeSamples(self.data)
+    context['list_code_samples'] = ListCodeSamples(self.data)
 
     return context
 

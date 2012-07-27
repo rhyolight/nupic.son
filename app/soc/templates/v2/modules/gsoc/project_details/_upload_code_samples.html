@@ -1,0 +1,10 @@
+<div id="block-project-upload-code-sample">
+  <form action="{{ code_sample_upload_file_action }}" method="post" enctype="multipart/form-data" id="file-form" class="form-register">
+    <h2 id="form-upload-title">Upload code samples</h2>
+    <h3 id="form-upload-help">Upload your final code samples, then click Submit.</h3>
+    {{ code_sample_upload_file_form.render }}
+    <div id="form-upload-button-row" class="row button-row">
+      <input id="form-upload-submit" type="submit" value="Submit File" class="submit" />
+    </div>
+  </form>
+</div>

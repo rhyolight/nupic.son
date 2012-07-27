@@ -1,0 +1,34 @@
+<div id="code-samples" class="block">
+  <h4 id="title-section-code-samples">Code samples</h4>
+  <div class="block-content">
+    <!-- begin table -->
+    <table id="table-code-samples" class="tablesorter table-submitted table-submitted-google">
+      <thead>
+        <tr>
+          <th><span>File name</span></th>
+          <th><span>Size</span></th>
+          <th><span>Date submitted</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for code_sample in code_samples %}
+	    <tr>
+	      <td><a href="{{ code_sample_download_url }}?id={{ code_sample.entity.key.id }}">{{ code_sample.uploaded_blob.filename }}</a></td>
+	      <td>{{ code_sample.uploaded_blob.size|filesizeformat }}</td>
+          <td>{{ code_sample.entity.submitted_on|date:"F d Y H:i" }} UTC</td>
+          <td>
+          {% if code_sample in deleteable %}
+            <form action="{{ code_sample_delete_file_action }}" method="post">
+              <input type="hidden" value="{{ code_sample.entity.key.id }}"/>
+              <input value="Delete" name="{{submission.entity.key.id}}" class="task-btn task-btn-delete" type="submit">
+            </form>
+          {% endif %}
+          </td>
+        </tr>
+	    {% endfor %}
+      </tbody>
+    </table>
+    <!-- end table -->
+  </div>
+</div>
+<!-- end block -->
