@@ -571,22 +571,22 @@
 #form fieldset .row .checker span {
   background-position: -62px -41px;
 }
-#form fieldset .row .checker span.checked {
+fieldset .row .checker span.checked {
   background-position: -86px -41px;
 }
-#form fieldset .row div.uploader {
+fieldset .row div.uploader {
   /*file upload field*/
 
   height: 30px;
   width: 440px;
 }
-#form fieldset .row div.uploader input {
+fieldset .row div.uploader input {
   height: 30px;
   top: 0;
   left: 0;
   width: 100%;
 }
-#form fieldset .row div.uploader span.action {
+fieldset .row div.uploader span.action {
   background: url(../../../images/v2/gsoc/form-submit-bg.png) 0 0 repeat;
   color: #fff;
   font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
@@ -596,7 +596,7 @@
   padding: 2px 7px;
   text-transform: none;
 }
-#form fieldset .row div.uploader span.filename {
+fieldset .row div.uploader span.filename {
   background: #fff;
   border: 1px solid #d2d2d2;
   border-right: 0px;
@@ -610,11 +610,11 @@
   text-indent: 5px;
   width: auto;
 }
-#form fieldset .row.error {
+fieldset .row.error {
   /*error on submission*/
 
 }
-#form fieldset .row.error .error-message {
+fieldset .row.error .error-message {
   color: #ff0000;
   display: block;
   clear: both;
@@ -622,7 +622,7 @@
   font-weight: bold;
   margin: 2px 0 0 7px;
 }
-#form fieldset .row.error .text, #form fieldset .row.error .textarea {
+fieldset .row.error .text, fieldset .row.error .textarea {
   background: #fce6e6;
   border: 1px solid #ff0000;
   box-shadow: inset 2px 2px 10px #fccaca;
