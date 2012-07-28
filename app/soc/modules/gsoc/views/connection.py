@@ -15,6 +15,8 @@
 # limitations under the License.
 """ Module containing the view for the GSoCConnection page """
 
+import hashlib
+
 from google.appengine.ext import db
 from google.appengine.api import users
 
@@ -32,7 +34,7 @@ from soc.models.user import User
 from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.comment import GSoCComment
-from soc.modules.gsoc.models.connection import GSoCConnection
+from soc.modules.gsoc.models.connection import GSoCConnection, GSoCAnonymousConnection
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -45,6 +47,7 @@ from soc.views.helper.access_checker import isSet
 from soc.tasks import mailer
 
 
+DEF_NONEXISTANT_USER = 'The user with the email %s does not exist.'
 DEF_CONNECTION_EXISTS = 'This connection already exists.'
 DEF_EXCEED_RATE_LIMIT = 'Exceeded rate limit, too many pending connections.'
 DEF_MAX_PENDING_CONNECTIONS = 3
@@ -115,11 +118,16 @@ class OrgConnectionForm(ConnectionForm):
     """
     id_list = self.cleaned_data['users'].split(',')
     self.request_data.user_connections = []
+    self.request_data.anonymous_users = []
     
     field = 'current_user'
     for id in id_list:
       self.cleaned_data[field] = id.strip(' ')
-      self.request_data.user_connections.append(self._clean_one_id(field))
+      user, anon_user = self._clean_one_id(field)
+      if user is not None:
+        self.request_data.user_connections.append(user)
+      else:
+        self.request_data.anonymous_users.append(anon_user)
     del self.cleaned_data[field]
     
   def _clean_one_id(self, field):
@@ -130,6 +138,8 @@ class OrgConnectionForm(ConnectionForm):
 
     id = None
     connected_user = None
+    anonymous_user = None
+
     if '@' in self.cleaned_data[field]:
       # Current id is an email address.
       cleaner = cleaning.clean_email(field)
@@ -138,12 +148,14 @@ class OrgConnectionForm(ConnectionForm):
       account = users.User(email)
       user_account = accounts.normalizeAccount(account)
       connected_user = User.all().filter('account', user_account).get()
+      anonymous_user = self.cleaned_data[field] if connected_user is None \
+          else None
     else:
       # Current id is a link_id.
       cleaner = cleaning.clean_existing_user(field)
       connected_user = cleaner(self)
       
-    return connected_user
+    return connected_user, anonymous_user
 
   class Meta:
     model = GSoCConnection
@@ -248,6 +260,7 @@ class OrgConnectionPage(RequestHandler):
     
     self.data.connection = None
 
+    import logging
     # Traverse the list of cleaned user ids and generate connections to
     # each of them. The current user is the org admin, so we need to get
     # the user object and their profile to populate the Connection instance.
@@ -257,6 +270,30 @@ class OrgConnectionPage(RequestHandler):
       profile = GSoCProfile.all().ancestor(user).get()
       connection_form.cleaned_data['profile'] = profile
       db.run_in_transaction(create_connection, user)
+
+    def create_anonymous_connection(email):
+      # Create the anonymous connection - a placeholder until the user 
+      # registers and activates the real connection.
+      connection = GSoCAnonymousConnection(parent=self.data.organization)
+      if connection_form.cleaned_data['role'] == '2':
+        connection.role = 'org_admin'
+      else:
+        connection.role = 'mentor' 
+      # Generate a hash of the object's key for later validation.
+      m = hashlib.md5()
+      m.update(str(connection.key()))
+      connection.hash_id = m.hexdigest()
+      connection.put()
+
+      # Notify the user that they have a pending connection and can register
+      # to accept the elevated role.
+      context = notifications.anonymousConnectionContext(self.data, email, 
+          connection.role, hash_id)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
+      sub_txn()
+
+    for email in self.data.anonymous_users:
+      db.run_in_transaction(create_anonymous_connection, email)
         
     return True
 

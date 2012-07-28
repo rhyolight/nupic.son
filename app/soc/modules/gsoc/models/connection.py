@@ -18,9 +18,15 @@
 requests between a user and an organization.
 '''
 
-from soc.models.connection import Connection
+from soc.models.connection import Connection, AnonymousConnection
 
 class GSoCConnection(Connection):
   """ GSoCConnection Model. See Connection model for details.
+  """
+  pass
+
+
+class GSoCAnonymousConnection(AnonymousConnection):
+  """ GSoCAnonymouSConnection Model. See AnonymousConnection model for details.
   """
   pass

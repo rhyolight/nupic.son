@@ -462,6 +462,16 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = url_names.GSOC_SHOW_CONNECTION
     return self
 
+  def profile_anonymous_connection(self, role, hash):
+    """ Sets up kwargs for the gsoc_profile_anonymous_connection reirect.
+    Args:
+
+    """
+    self.createProfile(role)
+    # hash id
+    #self._url_name = url_names.
+
+
   def comment(self, comment, full=False, secure=False):
     """Creates a direct link to a comment.
     """

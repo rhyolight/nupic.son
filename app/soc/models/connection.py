@@ -23,13 +23,14 @@ from soc.models.profile import Profile
 
 
 class Connection(db.Model):
-  """ GSoCConnection model.
+  """ Connection model.
   This model is intended to be used to represent either an invitation or 
   request between a User and an Organization. The type of role to be granted
   to the user is determined by the four states: user_mentor, user_org_admin,
   org_mentor, and org_org_admin, which correspond to the respective party's
-  acceptance of a given role. The parent of this entity is the user object
-  and the profile is that which corresponds to the parent.
+  acceptance of a given role. 
+
+  Parent: soc.models.user.User (also parent of self.profile here)
   """
   
   # For each of the next four properties, None represents Pending, True
@@ -70,3 +71,21 @@ class Connection(db.Model):
     """Returns a string which uniquely represents the entity.
     """
     return '/'.join([self.parent_key().name(), str(self.key().id())])
+
+class AnonymousConnection(db.Model):
+  """ This model is intended for use as a placeholder Connection for the
+  scenario in which an org admin attempts to send an email invitation to
+  a person who does not have both a User entity and GSoCProfile. This 
+  model is deleted and 'replaced' by an actual Connection object should
+  the user decide to register.
+
+  Parent: soc.models.org.Organization
+  """
+
+  # A string to designate the role that will be recreated for the actual
+  # connection object.
+  role = db.StringProperty(choices=['mentor', 'org_admin'])
+
+  # Hash hexdigest() of this object's key objct to save time when validating 
+  # when the user registers.
+  hash_id = db.StringProperty(required=True)
