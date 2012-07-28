@@ -90,7 +90,7 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'profile/show/%s$' % url_patterns.PROFILE,
+        url(r'profile/show/%s$' % url_patterns.PROGRAM,
             self, name='show_gsoc_profile'),
     ]
 
