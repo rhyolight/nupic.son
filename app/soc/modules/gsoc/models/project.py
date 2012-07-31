@@ -25,6 +25,7 @@ from django.utils.translation import ugettext
 from soc.modules.gsoc.models.code_sample import GSoCCodeSample
 from soc.modules.gsoc.models.profile import GSoCProfile
 
+import soc.modules.gsoc.models.proposal
 import soc.models.program
 import soc.models.organization
 
@@ -116,6 +117,12 @@ class GSoCProject(db.Model):
   program = db.ReferenceProperty(reference_class=soc.models.program.Program,
                                  required=True,
                                  collection_name='projects')
+
+  #: Proposal to which this project corresponds to
+  proposal = db.ReferenceProperty(
+      reference_class=soc.modules.gsoc.models.proposal.GSoCProposal,
+      required=False,
+      collection_name='projects')
 
   #: Whether the student has submitted their code samples or not
   code_samples_submitted = db.BooleanProperty(default=False)
