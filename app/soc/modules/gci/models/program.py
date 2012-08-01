@@ -29,6 +29,7 @@ import soc.models.program
 class GCIProgramMessages(soc.models.program.ProgramMessages):
   """The GCIProgramMessages model.
   """
+  pass
 
 
 class GCIProgram(soc.models.program.Program):
