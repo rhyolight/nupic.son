@@ -515,6 +515,7 @@ class ListFeatures(object):
     features.setCsvExport(True)
     features.setGlobalSearch(False, '')
     features.setGlobalSort(False, '')
+    features.setHideHeaders(False)
     return features
 
   def __init__(self):
@@ -550,6 +551,10 @@ class ListFeatures(object):
     self._global_sort = {
         'enabled': False,
         'element_paths': ''
+        }
+
+    self._hide_headers = {
+        'enabled': False
         }
 
   def setCookieService(self, enabled):
@@ -590,6 +595,9 @@ class ListFeatures(object):
     self._global_sort['enabled'] = enabled
     self._global_sort['element_paths'] = element_paths
 
+  def setHideHeaders(self, enabled):
+    self._hide_headers['enabled'] = enabled
+
   def get(self):
     """Returns a dictionary which contains all the features.
     """
@@ -602,6 +610,7 @@ class ListFeatures(object):
         'csv_export': self._csv_export,
         'global_search': self._global_search,
         'global_sort': self._global_sort,
+        'hide_headers': self._hide_headers,
         }
 
 class ListConfigurationResponse(Template):
