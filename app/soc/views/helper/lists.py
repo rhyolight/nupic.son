@@ -514,7 +514,7 @@ class ListFeatures(object):
     features.setSearchDialog(True)
     features.setCsvExport(True)
     features.setGlobalSearch(False, '')
-    features.setGloablSort(False, '')
+    features.setGlobalSort(False, '')
     return features
 
   def __init__(self):
