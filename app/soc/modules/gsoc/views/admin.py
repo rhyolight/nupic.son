@@ -845,6 +845,13 @@ class AcceptedOrgsList(Template):
     self._list_config = list_config
 
   def extraColumn(self, list_config):
+    list_config.addColumn('org_admin', 'Org Admins',
+        (lambda e, *args: args[0][e.key()]))
+
+    r = self.data.redirect
+    list_config.setRowAction(
+        lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
+
     return list_config
 
   def context(self):
@@ -867,8 +874,18 @@ class AcceptedOrgsList(Template):
 
     starter = lists.keyStarter
 
+    def prefetcher(orgs):
+      org_admins = {}
+      for org in orgs:
+        oas = GSoCProfile.all().filter(
+            'org_admin_for', org).fetch(limit=1000)
+        org_admins[org.key()] = ', '.join(
+            ['"%s" &lt;%s&gt;' % (oa.name(), oa.email) for oa in oas])
+
+      return ([org_admins], {})
+
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter)
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
 
     return response_builder.build()
 
