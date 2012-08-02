@@ -109,6 +109,7 @@ class ListConfiguration(object):
     If row_num is False then pagination is disabled, and the row_list
     argument is ignored.
 
+
     Args:
         row_num: The number of rows that should be shown on a page on default.
         row_list: List of integers which is the allowed pagination size a user
@@ -579,7 +580,7 @@ class ListFeatures(object):
     self._global_search['enabled'] = enabled
     self._global_search['element_path'] = element_path
 
-  def setGloablSort(self, enabled, element_paths):
+  def setGlobalSort(self, enabled, element_paths):
     if enabled:
       if not element_paths:
         logging.warning('Trying to enable global sort with no element_paths')
