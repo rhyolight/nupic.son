@@ -108,6 +108,9 @@
       },
       global_sort: {
         enabled: false
+      },
+      hide_headers: {
+        enabled: false
       }
     };
 
@@ -1150,7 +1153,13 @@
             _self.jqgrid.object.trigger("reloadGrid");
           });
         }
+      }
 
+      // Hide headers (column header and toolbar) if requested.
+      var hh = _self.features.hide_headers;
+      if (hh.enabled) {
+        jQuery('#gbox_' + _self.jqgrid.id).find('.ui-jqgrid-hdiv').hide();
+        jQuery('#t_' + _self.jqgrid.id).hide();
       }
     };
 
