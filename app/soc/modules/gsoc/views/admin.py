@@ -1686,3 +1686,37 @@ class ProjectsListPage(RequestHandler):
       'page_name': 'Projects list page',
       'list': ProjectList(self.request, self.data, list_query, self.LIST_IDX),
     }
+
+
+class OrgsListPage(RequestHandler):
+  """View that lists all the projects associated with the program.
+  """
+
+  LIST_IDX = 0
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/accepted_orgs/%s$' % url_patterns.PROGRAM,
+            self, name='gsoc_orgs_list_admin'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/admin/list.html'
+
+  def jsonContext(self):
+    list_content = AcceptedOrgsList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    return {
+      'page_name': 'Organizations list page',
+      'list': AcceptedOrgsList(self.request, self.data)
+    }
