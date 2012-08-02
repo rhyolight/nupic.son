@@ -912,7 +912,7 @@ class ProposalsAcceptedOrgsList(AcceptedOrgsList):
 
   def context(self):
     description = 'List of organizations accepted into %s. Click on '\
-                  'a organization to see the submitted proposals.' % (
+                  'an organization to see the submitted proposals.' % (
                       self.data.program.name)
 
     list = lists.ListConfigurationResponse(
@@ -940,7 +940,8 @@ class ProposalsAcceptedOrgsPage(RequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = ProposalsAcceptedOrgsList(self.request, self.data).getListData()
+    list_content = ProposalsAcceptedOrgsList(
+        self.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -1017,7 +1018,8 @@ class ProjectsAcceptedOrgsPage(RequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = ProjectsAcceptedOrgsList(self.request, self.data).getListData()
+    list_content = ProjectsAcceptedOrgsList(
+        self.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
