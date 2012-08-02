@@ -413,9 +413,7 @@ class ManageOrganizationsDashboard(Dashboard):
             'description': ugettext(
                 'List of accepted organizations'),
             'title': 'Accepted Organizations',
-            # TODO: Enable after implemented
-            # 'link': r.urlOf('gsoc_admin_accepted_orgs')
-            'link': '',
+            'link': r.urlOf('gsoc_orgs_list_admin'),
         },
     ]
 
