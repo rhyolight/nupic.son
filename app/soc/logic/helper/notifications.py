@@ -46,6 +46,9 @@ DEF_HANDLED_REQUEST_SUBJECT = ugettext(
 DEF_HANDLED_INVITE_SUBJECT = ugettext(
     '[%(org)s] Invitation to become a %(role_verbose)s has been %(action)s')
 
+DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext(
+    'Welcome to %(program_name)s')
+
 DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/invitation.html'
 
@@ -63,6 +66,9 @@ DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
 
 DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/handled_invite.html'
+
+DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
+    'v2/soc/notification/mentor_welcome_mail.html'
 
 
 def inviteContext(data, invite):
@@ -192,6 +198,33 @@ def handledInviteContext(data):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
+def getMentorWelcomeMailContext(profile, data):
+  """Sends a welcome email to mentors/org admins.
+
+  Args:
+    profile: Profile of the user to who will receive the welcome email.
+    data: RequestData object
+
+  Returns:
+    Context that can be given to the mailer. If the context is empty no message
+    was defined.
+  """
+  to = profile.email
+  subject = DEF_MENTOR_WELCOME_MAIL_SUBJECT % (data.program.name)
+  message = data.program.getProgramMessages().mentor_welcome_message
+
+  if not message:
+    return {}
+
+  context = {
+    'msg_content': message
+  }
+
+  template = DEF_MENTOR_WELCOME_MAIL_TEMPLATE
+
+  return getContext(data, [to], context, subject, template)
+
+
 def orgAppContext(data, record, new_status, apply_url):
   """Sends out an invite notification to the applicant of the Organization.
 
@@ -222,27 +255,27 @@ def orgAppContext(data, record, new_status, apply_url):
   return context
 
 
-def getDefaultContext(request_data, emails, subject, extra_context=None):    
-  """Returns a dictionary with the default context for the emails that    
-  are sent in this module.    
-  """    
-  default_context  = {}    
-  default_context['sender_name'] = 'The %s Team' % (    
-  request_data.site.site_name)    
-  default_context['program_name'] = request_data.program.name    
-  default_context['subject'] = subject    
+def getDefaultContext(request_data, emails, subject, extra_context=None):
+  """Returns a dictionary with the default context for the emails that
+  are sent in this module.
+  """
+  default_context  = {}
+  default_context['sender_name'] = 'The %s Team' % (
+      request_data.site.site_name)
+  default_context['program_name'] = request_data.program.name
+  default_context['subject'] = subject
 
-  sender_name, sender = mail_dispatcher.getDefaultMailSender()    
-  default_context['sender_name'] = sender_name    
-  default_context['sender'] = sender    
-      
-  if len(emails) == 1:    
-    default_context['to'] = emails[0]    
-  else:    
-    default_context['bcc'] = emails    
+  sender_name, sender = mail_dispatcher.getDefaultMailSender()
+  default_context['sender_name'] = sender_name
+  default_context['sender'] = sender
 
-  if extra_context:    
-    default_context.update(extra_context)    
+  if len(emails) == 1:
+    default_context['to'] = emails[0]
+  else:
+    default_context['bcc'] = emails
+
+  if extra_context:
+    default_context.update(extra_context)
 
   return default_context  
 
