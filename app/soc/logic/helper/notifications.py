@@ -46,8 +46,7 @@ DEF_HANDLED_REQUEST_SUBJECT = ugettext(
 DEF_HANDLED_INVITE_SUBJECT = ugettext(
     '[%(org)s] Invitation to become a %(role_verbose)s has been %(action)s')
 
-DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext(
-    'Welcome to %(program_name)s')
+DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
 
 DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/invitation.html'
@@ -198,12 +197,13 @@ def handledInviteContext(data):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
-def getMentorWelcomeMailContext(profile, data):
+def getMentorWelcomeMailContext(profile, data, messages):
   """Sends a welcome email to mentors/org admins.
 
   Args:
     profile: Profile of the user to who will receive the welcome email.
     data: RequestData object
+    messages: ProgramMessages instance containing the message to be sent.
 
   Returns:
     Context that can be given to the mailer. If the context is empty no message
@@ -211,7 +211,7 @@ def getMentorWelcomeMailContext(profile, data):
   """
   to = profile.email
   subject = DEF_MENTOR_WELCOME_MAIL_SUBJECT % (data.program.name)
-  message = data.program.getProgramMessages().mentor_welcome_message
+  message = messages.mentor_welcome_msg
 
   if not message:
     return {}
