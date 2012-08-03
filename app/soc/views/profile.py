@@ -24,6 +24,7 @@ from django.forms import fields
 
 from soc.logic import accounts
 from soc.logic import cleaning
+
 from soc.views import forms
 from soc.views.helper import url_patterns
 
@@ -320,7 +321,7 @@ class ProfilePage(object):
   def validate(self):
     dirty = []
     user_form, user = self.validateUser(dirty)
-    
+
     if not user_form.is_valid():
       return False
 
