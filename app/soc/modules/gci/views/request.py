@@ -249,6 +249,7 @@ class RespondRequestPage(RequestHandler):
 
       request_key = self.data.request_entity.key()
       organization_key = self.data.organization.key()
+      messages = self.data.program.getProgramMessages()
 
       user_key = GCIRequest.user.get_value_for_datastore(
           self.data.request_entity)
@@ -262,9 +263,22 @@ class RespondRequestPage(RequestHandler):
         self.data.requester_profile = profile = db.get(profile_key)
 
         request.status = 'accepted'
+
         profile.is_mentor = True
         profile.mentor_for.append(organization_key)
         profile.mentor_for = list(set(profile.mentor_for))
+
+        new_mentor = not profile.is_mentor
+        profile.is_mentor = True
+        profile.mentor_for.append(organization_key)
+        profile.mentor_for = list(set(profile.mentor_for))
+
+        # Send out a welcome email to new mentors.
+        if new_mentor:
+          mentor_mail = notifications.getMentorWelcomeMailContext(
+              profile, self.data, messages)
+          if mentor_mail:
+            mailer.getSpawnMailTaskTxn(mentor_mail, parent=request)()
 
         profile.put()
         request.put()
