@@ -88,4 +88,4 @@ class AnonymousConnection(db.Model):
 
   # Hash hexdigest() of this object's key objct to save time when validating 
   # when the user registers.
-  hash_id = db.StringProperty(required=True)
+  hash_id = db.StringProperty()

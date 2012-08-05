@@ -17,6 +17,7 @@
 """Module for the GSoC profile page.
 """
 
+from google.appengine.ext import db
 
 from django.forms import fields
 from django.core.urlresolvers import reverse
@@ -31,12 +32,14 @@ from soc.views.helper import url_patterns
 from soc.models.universities import UNIVERSITIES
 
 from soc.modules.gsoc.logic import profile as profile_logic
+from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
+from soc.modules.gsoc.views.helper import url_names
 
 
 class StudentNotificationForm(gsoc_forms.GSoCModelForm):
@@ -201,10 +204,22 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
   """View for the GSoC participant profile.
   """
 
+  def djangoURLPatterns(self):
+    return profile.ProfilePage.djangoURLPatterns(self) + [
+        url_patterns.url(self._getModulePrefix(),
+            r'profile/%s$' % self._getCreateConnectedProfileURLPattern(),
+            self, name=self._getCreateConnectedProfileURLName())
+    ]
+
   def checkAccess(self):
     self.check.isLoggedIn()
     self.check.isProgramVisible()
     self.check.isProgramRunning()
+
+    if 'key' in self.data.kwargs:
+      self.mutator.anonymousConnectionFromKwargs()
+    else:
+      self.data.anonymous_connection = None
 
     if 'role' in self.data.kwargs:
       role = self.data.kwargs['role']
@@ -236,9 +251,13 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
   def post(self):
     """Handler for HTTP POST request.
     """
+
     if not self.validate():
       self.get()
       return
+
+    if self.data.anonymous_connection:
+      self._handleAnonymousConnection()
 
     link_id = self.data.GET.get('org')
     if link_id:
@@ -260,10 +279,27 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     if self.data.student_info:
       link = 'submit_gsoc_proposal'
     else:
-      link = 'gsoc_request'
+      link = url_names.GSOC_USER_CONNECTION
       extra_get_args.append('profile=created')
 
     self.redirect.to(link, extra=extra_get_args)
+
+  def _handleAnonymousConnection(self):
+
+    @db.transactional(xg=True)
+    def activate_new_connection_txn():
+      # Create the new connection based on the values of the placeholder.
+      connection = GSoCConnection(parent=self.data.user, 
+          organization=self.data.anonymous_connection.parent(),
+          profile=GSoCProfile.all().ancestor(self.data.user).get())
+      connection.org_mentor = True
+      connection.org_org_admin = True if \
+          self.data.anonymous_connection.role == 'org_admin' else False
+      connection.put()
+      # We no longer need the placeholder.
+      self.data.anonymous_connection.delete()
+
+    activate_new_connection_txn()
 
   def _getModulePrefix(self):
     return 'gsoc'
@@ -274,11 +310,17 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
   def _getCreateProfileURLName(self):
     return 'create_gsoc_profile'
 
+  def _getCreateConnectedProfileURLName(self):
+    return url_names.GSOC_ANONYMOUS_CONNECTION
+
   def _getEditProfileURLPattern(self):
     return url_patterns.PROGRAM
 
   def _getCreateProfileURLPattern(self):
     return url_patterns.CREATE_PROFILE
+
+  def _getCreateConnectedProfileURLPattern(self):
+    return url_patterns.ANONYMOUS_CONNECTION
 
   def _getCreateUserForm(self):
     return GSoCUserForm(self.data.POST or None)

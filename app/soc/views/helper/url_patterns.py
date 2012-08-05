@@ -98,4 +98,4 @@ USER = namedLinkIdPattern(['link_id'])
 USER_ID	  = namedIdBasedPattern(['sponsor', 'program', 'user'])
 CONNECT = namedLinkIdPattern(['sponsor', 'program', 'organization', 'link_id'])
 SHOW_CONNECTION = namedIdBasedPattern(['sponsor', 'program', 'user'])
-#ANONYMOUS_CONNECTION = 
+ANONYMOUS_CONNECTION = _role + namedKeyBasedPattern(['sponsor', 'program'])

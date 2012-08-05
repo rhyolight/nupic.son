@@ -211,13 +211,18 @@ class OrgConnectionPage(RequestHandler):
         request_data=self.data,
         message=self.data.organization.role_request_message, 
         data=self.data.POST or None)
+
+    emailed = None
+    if 'emailed' in self.data.request.GET:
+      emailed = self.data.request.GET['emailed'].split(';')
         
     return {
       'logged_in_msg': LoggedInMsg(self.data, apply_link=False),
       'page_name': 'Open a connection',
       'program': self.data.program,
       'connection_form': connection_form,
-      'error': bool(connection_form.errors)
+      'error': bool(connection_form.errors),
+      'sent_email_to' : emailed
     }
   
   def post(self):
@@ -225,7 +230,12 @@ class OrgConnectionPage(RequestHandler):
     
     if self.generate():
       self.redirect.organization()
-      self.redirect.to(url_names.GSOC_ORG_CONNECTION, validated=True)
+      extra = []
+      if len(self.data.sent_email_to) > 0:
+        emailed = ';'.join(self.data.sent_email_to)
+        extra = ['emailed=%s' % emailed, ]
+      self.redirect.to(url_names.GSOC_ORG_CONNECTION, validated=True, 
+          extra=extra)
     else:
       self.get()
 
@@ -260,7 +270,6 @@ class OrgConnectionPage(RequestHandler):
     
     self.data.connection = None
 
-    import logging
     # Traverse the list of cleaned user ids and generate connections to
     # each of them. The current user is the org admin, so we need to get
     # the user object and their profile to populate the Connection instance.
@@ -275,6 +284,7 @@ class OrgConnectionPage(RequestHandler):
       # Create the anonymous connection - a placeholder until the user 
       # registers and activates the real connection.
       connection = GSoCAnonymousConnection(parent=self.data.organization)
+      connection.put()
       if connection_form.cleaned_data['role'] == '2':
         connection.role = 'org_admin'
       else:
@@ -282,17 +292,19 @@ class OrgConnectionPage(RequestHandler):
       # Generate a hash of the object's key for later validation.
       m = hashlib.md5()
       m.update(str(connection.key()))
-      connection.hash_id = m.hexdigest()
+      connection.hash_id = unicode(m.hexdigest())
       connection.put()
 
       # Notify the user that they have a pending connection and can register
       # to accept the elevated role.
       context = notifications.anonymousConnectionContext(self.data, email, 
-          connection.role, hash_id)
+          connection.role, connection.hash_id)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
       sub_txn()
 
+    self.data.sent_email_to = []
     for email in self.data.anonymous_users:
+      self.data.sent_email_to.append(email)
       db.run_in_transaction(create_anonymous_connection, email)
         
     return True

@@ -468,9 +468,9 @@ class RedirectHelper(request_data.RedirectHelper):
 
     """
     self.createProfile(role)
-    # hash id
-    #self._url_name = url_names.
-
+    self.kwargs['key'] = hash
+    self._url_name = url_names.GSOC_ANONYMOUS_CONNECTION
+    return self
 
   def comment(self, comment, full=False, secure=False):
     """Creates a direct link to a comment.
