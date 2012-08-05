@@ -413,9 +413,7 @@ class ManageOrganizationsDashboard(Dashboard):
             'description': ugettext(
                 'List of accepted organizations'),
             'title': 'Accepted Organizations',
-            # TODO: Enable after implemented
-            # 'link': r.urlOf('gsoc_admin_accepted_orgs')
-            'link': '',
+            'link': r.urlOf('gsoc_orgs_list_admin'),
         },
     ]
 
@@ -845,6 +843,13 @@ class AcceptedOrgsList(Template):
     self._list_config = list_config
 
   def extraColumn(self, list_config):
+    list_config.addColumn('org_admin', 'Org Admins',
+        (lambda e, *args: args[0][e.key()]))
+
+    r = self.data.redirect
+    list_config.setRowAction(
+        lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
+
     return list_config
 
   def context(self):
@@ -867,8 +872,18 @@ class AcceptedOrgsList(Template):
 
     starter = lists.keyStarter
 
+    def prefetcher(orgs):
+      org_admins = {}
+      for org in orgs:
+        oas = GSoCProfile.all().filter(
+            'org_admin_for', org).fetch(limit=1000)
+        org_admins[org.key()] = ', '.join(
+            ['"%s" &lt;%s&gt;' % (oa.name(), oa.email) for oa in oas])
+
+      return ([org_admins], {})
+
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter)
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -897,7 +912,7 @@ class ProposalsAcceptedOrgsList(AcceptedOrgsList):
 
   def context(self):
     description = 'List of organizations accepted into %s. Click on '\
-                  'a organization to see the submitted proposals.' % (
+                  'an organization to see the submitted proposals.' % (
                       self.data.program.name)
 
     list = lists.ListConfigurationResponse(
@@ -925,7 +940,8 @@ class ProposalsAcceptedOrgsPage(RequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = ProposalsAcceptedOrgsList(self.request, self.data).getListData()
+    list_content = ProposalsAcceptedOrgsList(
+        self.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -945,10 +961,6 @@ class ProjectsAcceptedOrgsList(AcceptedOrgsList):
   """
 
   def extraColumn(self, list_config):
-    list_config.addColumn('name', 'Name',
-        (lambda e, *args: e.short_name.strip()), width=75)
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-
     use_cbox = False
     if self.request.GET.get('cbox'):
       use_cbox = True
@@ -1002,7 +1014,8 @@ class ProjectsAcceptedOrgsPage(RequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = ProjectsAcceptedOrgsList(self.request, self.data).getListData()
+    list_content = ProjectsAcceptedOrgsList(
+        self.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -1685,4 +1698,38 @@ class ProjectsListPage(RequestHandler):
     return {
       'page_name': 'Projects list page',
       'list': ProjectList(self.request, self.data, list_query, self.LIST_IDX),
+    }
+
+
+class OrgsListPage(RequestHandler):
+  """View that lists all the projects associated with the program.
+  """
+
+  LIST_IDX = 0
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/accepted_orgs/%s$' % url_patterns.PROGRAM,
+            self, name='gsoc_orgs_list_admin'),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/admin/list.html'
+
+  def jsonContext(self):
+    list_content = AcceptedOrgsList(self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    return {
+      'page_name': 'Organizations list page',
+      'list': AcceptedOrgsList(self.request, self.data)
     }

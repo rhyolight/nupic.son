@@ -23,14 +23,13 @@ limitations under the License.
     dep.uniform,
     null,
     function () {
-      tinyMCE.init(melange.tinyMceConfig(["melange-description-textarea",
-                                         "accepted_orgs_msg"]));
-      tinyMCE.init(melange.tinyMceConfig(["melange-description-textarea",
-                                         "rejected_orgs_msg"]));
-      tinyMCE.init(melange.tinyMceConfig(["melange-description-textarea",
-                                         "accepted_students_msg"]));
-      tinyMCE.init(melange.tinyMceConfig(["melange-description-textarea",
-                                         "rejected_students_msg"]));
+      tinyMCE.init(melange.tinyMceConfig(
+      ["melange-description-textarea", "accepted_orgs_msg",
+       "melange-description-textarea", "rejected_orgs_msg",
+       "melange-description-textarea", "mentor_welcome_msg",
+       "melange-description-textarea", "accepted_students_msg",
+       "melange-description-textarea", "rejected_students_msg"
+      ]));
     }
   ]
 {% endblock dependencies %}

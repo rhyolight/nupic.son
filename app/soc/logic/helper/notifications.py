@@ -52,7 +52,8 @@ DEF_HANDLED_REQUEST_SUBJECT = ugettext(
 DEF_HANDLED_INVITE_SUBJECT = ugettext(
     '[%(org)s] Invitation to become a %(role_verbose)s has been %(action)s')
 
-#(dcrodman): This needs to be removed once connection is stable.
+DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
+
 DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/invitation.html'
 
@@ -78,61 +79,10 @@ DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
 DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/handled_invite.html'
 
+DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
+    'v2/soc/notification/mentor_welcome_mail.html'
 
-def connectionContext(data, connection, receivers, is_user=False):
-  """ Sends out a notification email to all individuals involved in the newly 
-  created connection.
 
-  Args: 
-    data: RequestData object with organization and user set
-    connection: an instance of GSoCConnection
-    receivers: the email(s) of the org or user who is will be "receiving"
-        the connection. should be the opposite of sender
-    is_user: True if a user is the one who initiated the connection
-  """
-
-  subject = DEF_NEW_CONNECTION % {'org' : connection.organization.name}
-  request_url = data.redirect.show_connection(connection.parent(), 
-      connection).url(full=True)
-
-  message_properties = {
-      'org' : connection.organization.name, 
-      'request_url' : request_url,
-      'is_user' : is_user
-  }
-  template = DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE
-  return getContext(data, receivers, message_properties, subject, template)
-
-def anonymousConnectionContext(data, email, role, hash):
-  """ Sends out a notification email to users who have neither user nor 
-  profile entities alerting them that an org admin has attempted to 
-  initiate a connection with them. 
-
-  Args:
-    data: a RequestData object for the connection views
-    email: email address of the user meeting the above criteria
-    role: a string role ('mentor' or 'org_admin') to grant the
-        user when they register
-  """
-
-  assert isSet(data.profile)
-  assert isSet(data.organization)
-
-  url = data.redirect.profile_anonymous_connection(role, hash).url(full=True)
-
-  message_properties = {
-      'requester' : data.profile.link_id,
-      'org' : data.organization.name,
-      'role' : role,
-      'url' : url
-  }
-
-  subject = DEF_NEW_ANONYMOUS_CONNECTION
-  template = DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE
-
-  return getContext(data, email, message_properties, subject, template)
-
-#(dcrodman): This needs to be removed once connection is stable.
 def inviteContext(data, invite):
   """Sends out an invite notification to the user the request is for.
 
@@ -261,6 +211,34 @@ def handledInviteContext(data):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
+def getMentorWelcomeMailContext(profile, data, messages):
+  """Sends a welcome email to mentors/org admins.
+
+  Args:
+    profile: Profile of the user to who will receive the welcome email.
+    data: RequestData object
+    messages: ProgramMessages instance containing the message to be sent.
+
+  Returns:
+    Context that can be given to the mailer. If the context is empty no message
+    was defined.
+  """
+  to = profile.email
+  subject = DEF_MENTOR_WELCOME_MAIL_SUBJECT % (data.program.name)
+  message = messages.mentor_welcome_msg
+
+  if not message:
+    return {}
+
+  context = {
+    'msg_content': message
+  }
+
+  template = DEF_MENTOR_WELCOME_MAIL_TEMPLATE
+
+  return getContext(data, [to], context, subject, template)
+
+
 def orgAppContext(data, record, new_status, apply_url):
   """Sends out an invite notification to the applicant of the Organization.
 
@@ -291,27 +269,27 @@ def orgAppContext(data, record, new_status, apply_url):
   return context
 
 
-def getDefaultContext(request_data, emails, subject, extra_context=None):    
-  """Returns a dictionary with the default context for the emails that    
-  are sent in this module.    
-  """    
-  default_context  = {}    
-  default_context['sender_name'] = 'The %s Team' % (    
-  request_data.site.site_name)    
-  default_context['program_name'] = request_data.program.name    
-  default_context['subject'] = subject    
+def getDefaultContext(request_data, emails, subject, extra_context=None):
+  """Returns a dictionary with the default context for the emails that
+  are sent in this module.
+  """
+  default_context  = {}
+  default_context['sender_name'] = 'The %s Team' % (
+      request_data.site.site_name)
+  default_context['program_name'] = request_data.program.name
+  default_context['subject'] = subject
 
-  sender_name, sender = mail_dispatcher.getDefaultMailSender()    
-  default_context['sender_name'] = sender_name    
-  default_context['sender'] = sender    
-      
-  if len(emails) == 1:    
-    default_context['to'] = emails[0]    
-  else:    
-    default_context['bcc'] = emails    
+  sender_name, sender = mail_dispatcher.getDefaultMailSender()
+  default_context['sender_name'] = sender_name
+  default_context['sender'] = sender
 
-  if extra_context:    
-    default_context.update(extra_context)    
+  if len(emails) == 1:
+    default_context['to'] = emails[0]
+  else:
+    default_context['bcc'] = emails
+
+  if extra_context:
+    default_context.update(extra_context)
 
   return default_context  
 

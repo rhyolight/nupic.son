@@ -56,6 +56,7 @@ from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -1399,7 +1400,7 @@ class TodoComponent(Component):
       if key.isdigit():
         project_id = int(key)
         r.project(id=project_id, student=data.profile.link_id)
-        return data.redirect.urlOf('gsoc_update_project')
+        return data.redirect.urlOf(url_names.GSOC_PROJECT_UPDATE)
       return None
 
     list_config.setRowAction(rowAction)

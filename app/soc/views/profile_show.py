@@ -18,9 +18,14 @@
 """
 
 
+from google.appengine.ext import db
+
 from soc.models.user import User
 from soc.views import readonly_template
+from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
+from soc.views.template import Template
+from soc.views.toggle_button import ToggleButtonTemplate
 
 from soc.modules.gsoc.views.base import RequestHandler
 
@@ -38,6 +43,95 @@ class UserReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
     super(UserReadOnlyTemplate, self).__init__(*args, **kwargs)
     self.fields['link_id'].group = "1. User info"
     self.fields['account'].group = "1. User info"
+
+
+class HostActions(Template):
+  """Template to render the left side host actions.
+  """
+
+  def __init__(self, data):
+    super(HostActions, self).__init__(data)
+    self.toggle_buttons = []
+
+  def context(self):
+    assert isSet(self.data.url_user)
+    assert isSet(self.data.url_profile)
+
+    r = self.data.redirect.profile()
+    is_banned = self.data.url_profile.status == 'invalid'
+
+    profile_banned = ToggleButtonTemplate(
+        self.data, 'on_off', 'Banned', 'user-banned',
+        r.urlOf(self._getActionURLName()),
+        checked=is_banned,
+        help_text=self._getHelpText(),
+        labels={
+            'checked': 'Yes',
+            'unchecked': 'No'})
+    self.toggle_buttons.append(profile_banned)
+
+    context = {
+        'title': 'Host Actions',
+        'toggle_buttons': self.toggle_buttons,
+        }
+
+    return context
+
+  def templatePath(self):
+    return "v2/soc/_user_action.html"
+
+  def _getActionURLName(self):
+    raise NotImplementedError
+
+  def _getHelpText(self):
+    raise NotImplementedError
+
+
+class BanProfilePost(object):
+  """Handles banning/unbanning of profiles.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+         url_patterns.url(
+             self._getModulePrefix(),
+             r'profile/ban/%s$' % self._getURLPattern(),
+             self, name=self._getURLName()),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+    self.mutator.profileFromKwargs()
+
+  def post(self):
+    assert isSet(self.data.url_profile)
+    
+    value = self.data.POST.get('value')
+    profile_key = self.data.url_profile.key()
+
+    def banProfileTxn(value):
+      profile_model = self._getProfileModel()
+      profile = profile_model.get(profile_key)
+      if value == 'unchecked' and profile.status == 'active':
+        profile.status = 'invalid'
+        profile.put()
+      elif value == 'checked' and profile.status == 'invalid':
+        profile.status = 'active'
+        profile.put()
+
+    db.run_in_transaction(banProfileTxn, value)
+
+  def _getModulePrefix(self):
+    raise NotImplementedError
+
+  def _getURLPattern(self):
+    raise NotImplementedError
+
+  def _getURLName(self):
+    raise NotImplementedError
+
+  def _getProfileModel(self):
+    raise NotImplementedError
 
 
 class ProfileShowPage(object):

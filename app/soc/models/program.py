@@ -228,3 +228,7 @@ class ProgramMessages(db.Model):
   #: Message sent to the organizations that are rejected for the program.
   rejected_orgs_msg = db.TextProperty(required=False,
       verbose_name=ugettext('Rejected Organizations Message'))
+
+  #: Message sent to a mentor/org admin the first time they join the program.
+  mentor_welcome_msg = db.TextProperty(required=False,
+      verbose_name=ugettext('Mentor Welcome Message'))

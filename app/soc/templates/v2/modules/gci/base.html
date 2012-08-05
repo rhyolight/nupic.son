@@ -42,6 +42,12 @@ limitations under the License.
       </div>
       <!-- end .block.block-main-nav -->
 
+      {% block usermenu %}
+        {% comment %}
+          Empty here. Can be utilized in derived templates
+        {% endcomment %}
+      {% endblock usermenu %}
+
       {% if status %}
         {{ status.render }}
       {% endif %}

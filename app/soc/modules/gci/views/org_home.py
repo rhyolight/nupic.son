@@ -14,11 +14,19 @@
 
 """Module containing the Org Homepage view.
 """
+
+
+from django.utils.translation import ugettext
+
+from soc.logic import accounts
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
+from soc.views.org_home import BanOrgPost
+from soc.views.org_home import HostActions
 from soc.views.template import Template
 
+from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.views.base import RequestHandler
@@ -77,6 +85,8 @@ class OpenTasksList(Template):
     #                      *args: entity.taskArbitTag())
     list_config.addColumn('time_to_complete', 'Time to complete',
                           lambda entity, *args: entity.taskTimeToComplete())
+    list_config.addColumn('types', 'Type',
+                          lambda entity, *args: ", ".join(entity.types))
     
     list_config.setRowAction(
         lambda e, *args: data.redirect.id(e.key().id()).urlOf(url_names.GCI_VIEW_TASK))
@@ -118,6 +128,8 @@ class CompletedTasksList(Template):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('student', 'Student',
                           lambda entity, *args: entity.student.name())
+    list_config.addColumn('types', 'Type',
+                          lambda entity, *args: ", ".join(entity.types))
     
     list_config.setRowAction(
         lambda e, *args: data.redirect.id(e.key().id()).urlOf(url_names.GCI_VIEW_TASK))
@@ -146,6 +158,37 @@ class CompletedTasksList(Template):
   
   def templatePath(self):
     return 'v2/modules/gci/org_home/_closed_tasks.html'
+
+
+class GCIBanOrgPost(BanOrgPost, RequestHandler):
+  """Handles banning/unbanning of GCI organizations.
+  """
+
+  def _getModulePrefix(self):
+    return 'gci'
+
+  def _getURLPattern(self):
+    return url_patterns.ORG
+
+  def _getURLName(self):
+    return url_names.GCI_ORG_BAN
+
+  def _getOrgModel(self):
+    return GCIOrganization
+
+
+class GCIHostActions(HostActions):
+  """Template to render the left side host actions.
+  """
+  
+  DEF_BAN_ORGANIZATION_HELP = ugettext(
+      'When an organization is banned, students cannot work on their tasks')
+
+  def _getActionURLName(self):
+    return url_names.GCI_ORG_BAN
+
+  def _getHelpText(self):
+    return self.DEF_BAN_ORGANIZATION_HELP
 
 
 class OrgHomepage(RequestHandler):
@@ -186,5 +229,8 @@ class OrgHomepage(RequestHandler):
         'completed_tasks_list': CompletedTasksList(self.request, self.data),
         'feed_url': self.data.organization.feed_url,
     }
-    
+
+    if self.data.is_host or accounts.isDeveloper():
+      context['host_actions'] = GCIHostActions(self.data)
+
     return context

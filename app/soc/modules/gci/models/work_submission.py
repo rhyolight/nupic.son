@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python
 #
 # Copyright 2009 the Melange authors.
 #
@@ -18,57 +18,22 @@
 """
 
 
-from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.user
-
-from soc.modules.gci.models import organization as gci_org_model
-from soc.modules.gci.models import program as gci_program_model
+import soc.models.user_submission
 
 
-class GCIWorkSubmission(db.Model):
+class GCIWorkSubmission(soc.models.user_submission.UserSubmission):
   """Model for work submissions for a task by students.
 
   Parent:
     soc.modules.gci.models.task.GCITask
   """
 
-  #: User who submitted this work
-  user = db.ReferenceProperty(reference_class=soc.models.user.User,
-                              required=True,
-                              collection_name='work_submissions')
-
-  #: Organization to which this work belongs to
-  org = db.ReferenceProperty(
-      reference_class=gci_org_model.GCIOrganization,
-      required=True, collection_name='work_submissions')
-
-  #: Program to which this work belongs to
-  program = db.ReferenceProperty(
-      reference_class=gci_program_model.GCIProgram,
-      required=True, collection_name='work_submissions')
-
-  #: Property allowing you to store information about your work
-  information = db.TextProperty(
-      required=False, verbose_name=ugettext('Info'))
-  information.help_text = ugettext(
-      'Information about the work you submit for this task')
-
   #: Property containing an URL to this work or more information about it
   url_to_work = db.LinkProperty(
       required=False, verbose_name=ugettext('URL to your Work'))
   url_to_work.help_text = ugettext(
       'URL to a resource containing your work or more information about it')
-
-  #: Property pointing to the work uploaded as a file or archive
-  upload_of_work = blobstore.BlobReferenceProperty(
-      required=False, verbose_name=ugettext('Upload of Work'))
-  upload_of_work.help_text = ugettext(
-      'Your work uploaded as a single file or as archive')
-
-  #: Property containing the date when the work was submitted
-  submitted_on = db.DateTimeProperty(required=True, auto_now_add=True,
-                                     verbose_name=ugettext('Submitted on'))

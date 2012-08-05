@@ -18,6 +18,8 @@
 """
 
 
+from django.utils.translation import ugettext
+
 from soc.logic.exceptions import NotFound
 
 from soc.views import readonly_template
@@ -51,6 +53,37 @@ class GSoCProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
     hidden_fields = ['latitude', 'longitude']
 
 
+class GSoCHostActions(profile_show.HostActions):
+  """Template to render the left side host actions.
+  """
+  
+  DEF_BAN_PROFILE_HELP = ugettext(
+      'When a profile is banned, the user cannot participate in the program')
+
+  def _getActionURLName(self):
+    return url_names.GSOC_PROFILE_BAN
+
+  def _getHelpText(self):
+    return self.DEF_BAN_PROFILE_HELP
+
+
+class GSoCBanProfilePost(profile_show.BanProfilePost, RequestHandler):
+  """Handles banning/unbanning of GSoC profiles.
+  """
+
+  def _getModulePrefix(self):
+    return 'gsoc'
+
+  def _getURLPattern(self):
+    return url_patterns.PROFILE
+
+  def _getURLName(self):
+    return url_names.GSOC_PROFILE_BAN
+
+  def _getProfileModel(self):
+    return GSoCProfile
+
+
 class GSoCProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
   """View to display the read-only profile page.
   """
@@ -58,7 +91,7 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'profile/show/%s$' % url_patterns.PROGRAM,
-         self, name='show_gsoc_profile'),
+            self, name='show_gsoc_profile'),
     ]
 
   def templatePath(self):
@@ -119,6 +152,8 @@ class GSoCProfileAdminPage(RequestHandler):
           'submit_enrollment_link': r.urlOf('gsoc_enrollment_form_admin'),
           'page_name': '%s Profile - %s' % (
               program.short_name, profile.name()),
+          'user_role': user_role,
+          'host_actions': GSoCHostActions(self.data)
           })
     else:
       context.update({

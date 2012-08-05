@@ -378,18 +378,7 @@ class ProjectList(Template):
       # key of the student profile for the project
       profile_key = project.parent_key()
 
-      qp = GSoCProposal.all()
-      qp.ancestor(profile_key)
-      qp.filter('org', org_key)
-      # FIXME: ??? Mentors can change overtime so how does this work???
-      qp.filter('mentor IN', project.mentors)
-
-      if withdraw:
-        qp.filter('status', 'accepted')
-      else:
-        qp.filter('status', 'withdrawn')
-
-      proposal = qp.get()
+      proposal = project.proposal
 
       def withdraw_or_accept_project_txn():
         student_info = GSoCStudentInfo.all().ancestor(profile_key).get()

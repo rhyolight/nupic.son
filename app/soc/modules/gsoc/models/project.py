@@ -22,6 +22,10 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from soc.modules.gsoc.models.code_sample import GSoCCodeSample
+from soc.modules.gsoc.models.profile import GSoCProfile
+
+import soc.modules.gsoc.models.proposal
 import soc.models.program
 import soc.models.organization
 
@@ -74,6 +78,12 @@ class GSoCProject(db.Model):
   #: A property containing a list of Mentors assigned for this project
   mentors = db.ListProperty(item_type=db.Key, default=[], required=True)
 
+  def getMentors(self):
+    """Returns a list of GSoCProfile entities which 
+    are mentors for this project.
+    """
+    return [m for m in GSoCProfile.get(self.mentors) if m]
+
   #: The status of this project
   #: accepted: This project has been accepted into the program
   #: failed: This project has failed an evaluation.
@@ -107,3 +117,19 @@ class GSoCProject(db.Model):
   program = db.ReferenceProperty(reference_class=soc.models.program.Program,
                                  required=True,
                                  collection_name='projects')
+
+  #: Proposal to which this project corresponds to
+  proposal = db.ReferenceProperty(
+      reference_class=soc.modules.gsoc.models.proposal.GSoCProposal,
+      required=False,
+      collection_name='projects')
+
+  #: Whether the student has submitted their code samples or not
+  code_samples_submitted = db.BooleanProperty(default=False)
+
+  def codeSamples(self):
+    """Returns GSoCCodeSample entities uploaded for this project.
+    """
+    query = GSoCCodeSample.all()
+    query.ancestor(self)
+    return query.fetch(1000)

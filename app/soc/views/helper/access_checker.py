@@ -715,9 +715,14 @@ class AccessChecker(BaseAccessChecker):
           }
       raise AccessViolation(error_msg)
 
-    if self.data.organization.status != 'active':
+    self.isOrganizationActive(self.data.organization)
+
+  def isOrganizationActive(self, organization):
+    """Checks if the specified organization is active.
+    """
+    if organization.status != 'active':
       error_msg = DEF_ORG_NOT_ACTIVE % {
-          'name': self.data.organization.name,
+          'name': organization.name,
           'program': self.data.program.name
           }
       raise AccessViolation(error_msg)

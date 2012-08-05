@@ -213,6 +213,17 @@
         });
         configuration.colModel = jQuery.merge(new_colModel, new_columns);
         configuration.colNames = jQuery.merge(new_colNames, new_columns_colNames);
+        /* Reprocess the whole temporary array to remove any gaps.
+         * This could happen if a column is removed from the backend.
+         */
+        configuration.colModel = jQuery.grep(
+          configuration.colModel, function(a) {
+             return typeof(a) !== 'undefined';
+          });
+        configuration.colNames = jQuery.grep(
+          configuration.colNames, function(a) {
+             return typeof(a) !== 'undefined';
+          });
       }
     }
     return configuration;

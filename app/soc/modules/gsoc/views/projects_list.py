@@ -55,11 +55,15 @@ class ProjectList(Template):
     list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
         ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addColumn('student', 'Student',
-                          lambda entity, *args: entity.parent().name())
+        lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('org', 'Organization',
-                          lambda entity, *args: entity.org.name)
+        lambda entity, *args: entity.org.name)
     list_config.addSimpleColumn('status', 'Status', hidden=True)
+    list_config.addColumn('mentors', 'Mentors',
+        lambda entity, *args: 
+            ", ".join([m.name() for m in entity.getMentors()]),
+        hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
     list_config.setRowAction(lambda e, *args:

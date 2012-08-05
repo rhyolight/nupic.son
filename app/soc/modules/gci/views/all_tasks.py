@@ -63,8 +63,7 @@ class TaskList(Template):
         lambda e, *args: r.id(e.key().id()).urlOf('gci_view_task'))
 
   def context(self):
-    description = 'List of tasks for %s' % (
-            self.data.program.name)
+    description = 'List of tasks for %s' % (self.data.program.name)
 
     task_list = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, description)

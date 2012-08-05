@@ -266,6 +266,7 @@ class ProposalAcceptanceTask(object):
       transactional: Whether the mail task should run transactionally.
     """
     fields = {
+      'proposal': proposal,
       'org': proposal.org,
       'program': proposal.program,
       'title': proposal.title,

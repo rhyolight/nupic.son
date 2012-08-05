@@ -18,25 +18,31 @@
 """
 
 
+from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
+from django import forms as django_forms
+from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import BadRequest
+from soc.views.helper import blobstore as bs_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
 
 from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models.code_sample import GSoCCodeSample
 from soc.modules.gsoc.views import assign_mentor
+from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.forms import GSoCModelForm
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class ProjectDetailsForm(GSoCModelForm):
+class ProjectDetailsForm(gsoc_forms.GSoCModelForm):
   """Constructs the form to edit the project details
   """
 
@@ -45,6 +51,114 @@ class ProjectDetailsForm(GSoCModelForm):
     css_prefix = 'gsoc_project'
     fields = ['title', 'abstract', 'public_info',
               'additional_info', 'feed_url']
+
+
+class CodeSampleUploadFileForm(gsoc_forms.GSoCModelForm):
+  """Django form for submitting code samples for a project.
+  """
+
+  DEF_NO_UPLOAD = ugettext(
+      'An error occurred, please upload a file.')
+
+  class Meta:
+    model = GSoCCodeSample
+    css_prefix = 'gsoc_code_sample'
+    fields = ['upload_of_work']
+
+  upload_of_work = django_forms.FileField(
+      label='Upload code sample', required=False)
+
+  def addFileRequiredError(self):
+    """Appends a form error message indicating that this field is required.
+    """
+    if not self._errors:
+      self._errors = ErrorDict()
+
+    self._errors["upload_of_work"] = self.error_class([self.DEF_NO_UPLOAD])
+
+  def clean_upload_of_work(self):
+    """Ensure that file field has data.
+    """
+    cleaned_data = self.cleaned_data
+
+    upload = cleaned_data.get('upload_of_work')
+
+    # Although we need the ValidationError exception the message there
+    # is dummy because it won't pass through the Appengine's Blobstore
+    # API. We use the same error message when adding the form error.
+    # See self.addFileRequiredError method.
+    if not upload:
+      raise gsoc_forms.ValidationError(self.DEF_NO_UPLOAD)
+
+    return upload
+
+
+class ListCodeSamples(Template):
+  """Template to render all the GSoCCodeSample entities for the project.
+  """
+
+  def _buildContextForExistingCodeSamples(self):
+    """Builds a list containing the info related to each code sample.
+    """
+    assert isSet(self.data.project)
+    code_samples = []
+    sources = self.data.project.codeSamples()
+    for source in sorted(sources, key=lambda e: e.submitted_on):
+      code_sample = {
+          'entity': source
+          }
+      uploaded_blob = source.upload_of_work
+      code_sample['uploaded_blob'] = uploaded_blob
+      if uploaded_blob and blobstore.BlobInfo.get(uploaded_blob.key()):
+        code_sample['is_blob_valid'] = True
+      else:
+        code_sample['is_blob_valid'] = False
+        
+      code_samples.append(code_sample)
+
+    return code_samples
+
+  def context(self):
+    """Returns the context for the current template.
+    """
+    return {
+        'code_samples': self._buildContextForExistingCodeSamples(),
+        'code_sample_download_url': self.data.redirect.project().urlOf(
+              url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
+        }
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return 'v2/modules/gsoc/project_details/_list_code_samples.html'
+
+
+class UploadCodeSamples(Template):
+  """Template that contains a form to upload code samples.
+  """
+
+  def context(self):
+    """Returns the context for the current template.
+    """
+
+    self.data.redirect.project()
+
+    context = {
+        'code_sample_upload_file_form': CodeSampleUploadFileForm(),
+        'code_sample_upload_file_action': blobstore.create_upload_url(
+            self.data.redirect.urlOf(
+                url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD))
+        }
+    
+    if self.data.GET.get('file', None) == '0':
+      context['code_sample_upload_file_form'].addFileRequiredError()
+
+    return context
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return 'v2/modules/gsoc/project_details/_upload_code_samples.html'
 
 
 class ProjectDetailsUpdate(RequestHandler):
@@ -60,7 +174,7 @@ class ProjectDetailsUpdate(RequestHandler):
 
     return [
         url(r'project/update/%s$' % url_patterns.PROJECT, self,
-            name='gsoc_update_project')
+            name=url_names.GSOC_PROJECT_UPDATE)
     ]
 
   def checkAccess(self):
@@ -84,6 +198,10 @@ class ProjectDetailsUpdate(RequestHandler):
         'error': project_details_form.errors,
     }
 
+    if self.data.project.status == 'completed':
+      context['upload_code_samples'] = UploadCodeSamples(self.data)
+      context['list_code_samples'] = ListCodeSamples(self.data)
+
     return context
 
   def validate(self):
@@ -106,6 +224,96 @@ class ProjectDetailsUpdate(RequestHandler):
       self.redirect.to('gsoc_project_details')
     else:
       self.get()
+
+
+class CodeSampleUploadFilePost(RequestHandler):
+  """Handler for POST requests to upload files with code samples.
+  """
+
+  def djangoURLPatterns(self):
+    """Returns the list of tuples for containing URL to view method mapping.
+    """
+
+    return [
+        url(r'project/code_sample/upload/%s$' % url_patterns.PROJECT, self,
+            name=url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD)
+    ]
+
+  def checkAccess(self):
+    self.check.isLoggedIn()
+    self.check.isActiveStudent()
+    self.mutator.projectFromKwargs()
+    self.check.canStudentUpdateProject()
+    #self.check.isProjectCompleted
+
+  def post(self):
+    """Post handler for the code sample upload file.
+    """
+    assert isSet(self.data.project)
+
+    form = CodeSampleUploadFileForm(
+        data=self.data.POST, files=self.data.request.file_uploads)
+
+    if not form.is_valid():
+      # we are not storing this form, remove the uploaded blob from the cloud
+      for blob_info in self.data.request.file_uploads.itervalues():
+        blob_info.delete()
+      return self.redirect.project().to(
+          url_names.GSOC_PROJECT_UPDATE, extra=['file=0'])
+
+    form.cleaned_data['user'] = self.data.user
+    form.cleaned_data['org'] = self.data.project.org
+    form.cleaned_data['program'] = self.data.project.program
+
+    project_key = self.data.project.key()
+    code_sample = form.create(commit=False, parent=project_key)
+
+    def txn():
+      code_sample.put()
+
+      project = GSoCProject.get(project_key)
+      if not project.code_samples_submitted:
+        project.code_samples_submitted = True
+        project.put()
+
+    db.run_in_transaction(txn)
+
+    self.redirect.project()
+    self.redirect.to('gsoc_project_details')
+
+
+class CodeSampleDownloadFileGet(RequestHandler):
+  """Handler for POST requests to download files with code samples.
+  """
+
+  def djangoURLPatterns(self):
+    """Returns the list of tuples for containing URL to view method mapping.
+    """
+
+    return [
+        url(r'project/code_sample/download/%s$' % url_patterns.PROJECT, self,
+            name=url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
+    ]
+
+  def checkAccess(self):
+    self.mutator.projectFromKwargs()
+    #self.check.isProjectCompleted
+
+  def get(self):
+    """Get handler for the code sample download file.
+    """
+    assert isSet(self.data.project)
+
+    try:
+      id_value = int(self.request.GET['id'])
+      code_sample = GSoCCodeSample.get_by_id(id_value, self.data.project)
+      if not code_sample or not code_sample.upload_of_work:
+        raise BadRequest('Requested project or code sample not found')
+      self.response = bs_helper.sendBlob(code_sample.upload_of_work)
+    except KeyError:
+      raise BadRequest('id argument missing in GET data')
+    except ValueError:
+      raise BadRequest('id argument in GET data is not a number')
 
 
 class UserActions(Template):
@@ -196,7 +404,10 @@ class ProjectDetails(RequestHandler):
     user_is_owner = self.data.user and \
         (self.data.user.key() == self.data.project_owner.parent_key())
     if user_is_owner:
-      context['update_link'] = r.project().urlOf('gsoc_update_project')
+      context['update_link'] = r.project().urlOf(url_names.GSOC_PROJECT_UPDATE)
+
+    if self.data.project.status == 'completed':
+      context['list_code_samples'] = ListCodeSamples(self.data)
 
     return context
 

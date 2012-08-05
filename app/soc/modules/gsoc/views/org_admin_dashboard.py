@@ -126,7 +126,7 @@ class StudentEvaluationComponent(dashboard.Component):
         'name': 'student_evaluations',
         'lists': [list],
         'title': 'Student Evaluations',
-        'description': ugettext('Student evaluations'),
+        'description': ugettext('List of student evaluations'),
         'idx': self.idx,
         }
 
@@ -201,7 +201,7 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
   def context(self):
     context = super(MentorEvaluationComponent, self).context()
     context['title'] = 'Mentor Evaluations'
-    context['description'] = ugettext('Student evaluations')
+    context['description'] = ugettext('List of mentor evaluations')
     context['name'] = 'mentor_evaluations'
     return context
 

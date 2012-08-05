@@ -18,6 +18,7 @@ limitations under the License.
   {{ block.super }}
   <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/buttons.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/forms.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/tables.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/uniform.default.css" />
 {% endblock stylesheets %}
 
@@ -71,9 +72,15 @@ limitations under the License.
       </div>
     </div>
   {% endif %}
+
+  {% if list_code_samples %}
+    {{ list_code_samples.render }}
+  {% endif %}
+
   <!-- end block -->
 {% if project.feed_url %}
 </div>
+
 <div class="content_column_2">
   <!-- begin block -->
   <div id="blog-feed" class="block block-blog-feed"></div>

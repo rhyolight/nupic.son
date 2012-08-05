@@ -322,15 +322,25 @@ class ShowRequest(RequestHandler):
     request_key = self.data.request_entity.key()
     profile_key = self.data.requester_profile.key()
     organization_key = self.data.organization.key()
+    messages = self.data.program.getProgramMessages()
 
     def accept_request_txn():
       request = db.get(request_key)
       profile = db.get(profile_key)
 
       request.status = 'accepted'
+
+      new_mentor = not profile.is_mentor
       profile.is_mentor = True
       profile.mentor_for.append(organization_key)
       profile.mentor_for = list(set(profile.mentor_for))
+
+      # Send out a welcome email to new mentors.
+      if new_mentor:
+        mentor_mail = notifications.getMentorWelcomeMailContext(
+            profile, self.data, messages)
+        if mentor_mail:
+          mailer.getSpawnMailTaskTxn(mentor_mail, parent=request)()
 
       profile.put()
       request.put()
