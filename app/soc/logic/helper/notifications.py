@@ -82,6 +82,34 @@ DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'v2/soc/notification/mentor_welcome_mail.html'
 
+def anonymousConnectionContext(data, email, role, hash):
+  """ Sends out a notification email to users who have neither user nor 
+  profile entities alerting them that an org admin has attempted to 
+  initiate a connection with them. 
+
+  Args:
+    data: a RequestData object for the connection views
+    email: email address of the user meeting the above criteria
+    role: a string role ('mentor' or 'org_admin') to grant the
+        user when they register
+  """
+
+  assert isSet(data.profile)
+  assert isSet(data.organization)
+
+  url = data.redirect.profile_anonymous_connection(role, hash).url(full=True)
+
+  message_properties = {
+      'requester' : data.profile.link_id,
+      'org' : data.organization.name,
+      'role' : role,
+      'url' : url
+  }
+
+  subject = DEF_NEW_ANONYMOUS_CONNECTION
+  template = DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE
+
+  return getContext(data, email, message_properties, subject, template)
 
 def inviteContext(data, invite):
   """Sends out an invite notification to the user the request is for.
