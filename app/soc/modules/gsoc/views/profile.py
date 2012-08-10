@@ -289,9 +289,9 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     @db.transactional(xg=True)
     def activate_new_connection_txn():
       # Create the new connection based on the values of the placeholder.
-      connection = GSoCConnection(parent=self.data.user, 
+      connection = GSoCConnection(parent=self.data.user.key(), 
           organization=self.data.anonymous_connection.parent(),
-          profile=GSoCProfile.all().ancestor(self.data.user).get())
+          profile=GSoCProfile.all().ancestor(self.data.user.key()).get())
       connection.org_mentor = True
       connection.org_org_admin = True if \
           self.data.anonymous_connection.role == 'org_admin' else False

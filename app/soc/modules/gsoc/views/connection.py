@@ -215,6 +215,8 @@ class OrgConnectionPage(RequestHandler):
     emailed = None
     if 'emailed' in self.data.request.GET:
       emailed = self.data.request.GET['emailed'].split(';')
+    if 'dupes' in self.data.request.GET:
+      dupes = self.data.request.GET['dupes'].split(';')
         
     return {
       'logged_in_msg': LoggedInMsg(self.data, apply_link=False),
@@ -222,7 +224,8 @@ class OrgConnectionPage(RequestHandler):
       'program': self.data.program,
       'connection_form': connection_form,
       'error': bool(connection_form.errors),
-      'sent_email_to' : emailed
+      'sent_email_to' : emailed,
+      'dupes' : dupes
     }
   
   def post(self):
@@ -234,6 +237,9 @@ class OrgConnectionPage(RequestHandler):
       if len(self.data.sent_email_to) > 0:
         emailed = ';'.join(self.data.sent_email_to)
         extra = ['emailed=%s' % emailed, ]
+      if len(self.data.duplicate_email) > 0:
+        dupes = ';'.join(self.data.duplicate_email)
+        extra.append('dupes=%s' % dupes)
       self.redirect.to(url_names.GSOC_ORG_CONNECTION, validated=True, 
           extra=extra)
     else:
@@ -263,7 +269,7 @@ class OrgConnectionPage(RequestHandler):
         raise AccessViolation(DEF_CONNECTION_EXISTS)
       connection = connection_form.create(parent=user, commit=True)
       context = notifications.connectionContext(self.data, connection, 
-          receiver)
+          receiver, connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
       sub_txn()
       return connection
@@ -293,19 +299,27 @@ class OrgConnectionPage(RequestHandler):
       m = hashlib.md5()
       m.update(str(connection.key()))
       connection.hash_id = unicode(m.hexdigest())
+      connection.email = email
       connection.put()
 
       # Notify the user that they have a pending connection and can register
       # to accept the elevated role.
       context = notifications.anonymousConnectionContext(self.data, email, 
-          connection.role, connection.hash_id)
+          connection.role, connection.hash_id, 
+          connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
       sub_txn()
 
+    q = GSoCAnonymousConnection.all()
     self.data.sent_email_to = []
+    self.data.duplicate_email = []
     for email in self.data.anonymous_users:
-      self.data.sent_email_to.append(email)
-      db.run_in_transaction(create_anonymous_connection, email)
+      new_q = q.filter('email', email).get()
+      if not new_q:
+        self.data.sent_email_to.append(email)
+        db.run_in_transaction(create_anonymous_connection, email)
+      else:
+        self.data.duplicate_email.append(email)
         
     return True
 
@@ -397,7 +411,7 @@ class UserConnectionPage(RequestHandler):
           parent=self.data.user, 
           commit=True)
       context = notifications.connectionContext(self.data, connection, 
-          receivers, True)
+          receivers, connection_form.cleaned_data['message'], True)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
       sub_txn()
     
@@ -472,10 +486,12 @@ class ShowConnection(RequestHandler):
       admin = self.data.connection.user_org_admin
 
     # Basically button visibility is the opposite of the state they represent.
-    accept_mentor = True if not mentor else False
-    reject_mentor = True if mentor is True or None else False
     accept_org_admin = True if not admin else False
     reject_org_admin = True if admin is True or None else False
+    accept_mentor = True if not mentor else False
+    reject_mentor = True if mentor is True or None else False
+    if accept_org_admin:
+      accept_mentor = True  
         
     # Fetch the two statuses from the perspective of both parties.
     user_status = self._determineStatus(self.data.connection.user_mentor,

@@ -14,5 +14,11 @@ limitations under the License.
 {% endcomment %}
 {% block content %}
 {{ requester }} has tried to establish a connection with you for {{ org }} to grant you the role
-of {{ role }}. To accept, click <a href="{{ url }}">this link to create a Profile</a> for Google Summer of Code.
+of {{ role }}. 
+{% if message %}
+They added the following message:
+	{{ message }}
+{% endif %}
+
+To accept, click <a href="{{ url }}">this link to create a Profile</a> for Google Summer of Code.
 {% endblock %}

@@ -89,3 +89,7 @@ class AnonymousConnection(db.Model):
   # Hash hexdigest() of this object's key objct to save time when validating 
   # when the user registers.
   hash_id = db.StringProperty()
+
+  # The email to which the anonymous connection was sent; this should be 
+  # queried against to prevent duplicate anonymous connections.
+  email = db.StringProperty()

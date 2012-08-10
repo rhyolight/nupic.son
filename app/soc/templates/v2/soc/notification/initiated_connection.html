@@ -18,5 +18,9 @@ limitations under the License.
 {% else %}
     New connection for {{ org }}. <br />
 {% endif %}
+{% if message %}
+{{ message }}
+{% endif %}
+
 Please visit <a href="{{ request_url }}">this URL</a> to respond to this connection.
 {% endblock %}

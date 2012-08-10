@@ -82,7 +82,33 @@ DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'v2/soc/notification/mentor_welcome_mail.html'
 
-def anonymousConnectionContext(data, email, role, hash):
+def connectionContext(data, connection, receivers, message, is_user=False):
+  """ Sends out a notification email to all individuals involved in the newly 
+  created connection.
+
+  Args: 
+    data: RequestData object with organization and user set
+    connection: an instance of GSoCConnection
+    receivers: the email(s) of the org or user who is will be "receiving"
+        the connection. should be the opposite of sender
+    message: the contents of the message field from the connection form
+    is_user: True if a user is the one who initiated the connection
+  """
+
+  subject = DEF_NEW_CONNECTION % {'org' : connection.organization.name}
+  request_url = data.redirect.show_connection(connection.parent(), 
+      connection).url(full=True)
+ 
+  message_properties = {
+      'org' : connection.organization.name, 
+      'request_url' : request_url,
+      'is_user' : is_user,
+      'message' : message
+  }
+  template = DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE
+  return getContext(data, receivers, message_properties, subject, template)
+
+def anonymousConnectionContext(data, email, role, hash, message):
   """ Sends out a notification email to users who have neither user nor 
   profile entities alerting them that an org admin has attempted to 
   initiate a connection with them. 
@@ -92,6 +118,7 @@ def anonymousConnectionContext(data, email, role, hash):
     email: email address of the user meeting the above criteria
     role: a string role ('mentor' or 'org_admin') to grant the
         user when they register
+    message: the contents of the message field from the connection form
   """
 
   assert isSet(data.profile)
@@ -103,7 +130,8 @@ def anonymousConnectionContext(data, email, role, hash):
       'requester' : data.profile.link_id,
       'org' : data.organization.name,
       'role' : role,
-      'url' : url
+      'url' : url,
+      'message' : message
   }
 
   subject = DEF_NEW_ANONYMOUS_CONNECTION

@@ -45,6 +45,14 @@ limitations under the License.
       {% endif %}
     {% endif %}
   </div>
+     {% if dupes %}
+        <div id="flash-message" class="flash-error">
+        <p>Duplicate email invitations not sent.</p>
+        {% for email in dupes %}
+          <p>Invitation already exists for: {{ email }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
   {% endif %}
 
   {% if profile_created %}
