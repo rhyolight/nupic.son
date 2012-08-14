@@ -273,7 +273,10 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
       self.redirect.to('edit_gsoc_profile', validated=True, secure=True)
       return
 
-    self.redirect.organization(organization)
+    if self.data.anonymous_connection:
+      self.redirect.dashboard()
+    else:
+      self.redirect.organization(organization)
 
     extra_get_args = []
     if self.data.student_info:
@@ -285,17 +288,32 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     self.redirect.to(link, extra=extra_get_args)
 
   def _handleAnonymousConnection(self):
-
+    """ Handler for automatically created and accepting a new connection.
+    """
+    
     @db.transactional(xg=True)
     def activate_new_connection_txn():
+      # This should be the profile that was just created.
+      profile = GSoCProfile.all().ancestor(self.data.user.key()).get()
       # Create the new connection based on the values of the placeholder.
       connection = GSoCConnection(parent=self.data.user.key(), 
           organization=self.data.anonymous_connection.parent(),
-          profile=GSoCProfile.all().ancestor(self.data.user.key()).get())
-      connection.org_mentor = True
+          profile=profile)
+      # Set the apropriate fields to automatically accept the connection.
+      connection.org_mentor = connection.user_mentor = True
       connection.org_org_admin = True if \
           self.data.anonymous_connection.role == 'org_admin' else False
+      connection.user_org_admin = connection.org_org_admin
       connection.put()
+      # The user and org should "agree" on a role; promote the user.
+      profile.is_mentor = True
+      profile.mentor_for.append(connection.organization.key())
+      profile.mentor_for = list(set(profile.mentor_for))
+      if connection.user_org_admin:  
+        profile.is_org_admin = True
+        profile.org_admin_for.append(connection.organization.key())
+        profile.org_admin_for = list(set(profile.org_admin_for))
+      profile.put()
       # We no longer need the placeholder.
       self.data.anonymous_connection.delete()
 

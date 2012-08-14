@@ -83,8 +83,6 @@ class ConnectionForm(GSoCModelForm):
     
     self.is_admin = is_admin
     
-    #TODO(dcrodman): Custom message.
-    
     # Set up the user-provided message to the other party (org admin or user).
     self.fields['message'].label = ugettext('Message')
     # Place the message field at the bottom
@@ -111,6 +109,9 @@ class OrgConnectionForm(ConnectionForm):
     self.fields['role'].group = ugettext('0. Role to offer the user')
     self.fields['message'].help_text = ugettext(
         'Your message to the user(s)') 
+    # 77 is really an arbitrary width, it just makes the link id/email form
+    # line up with the message box more easily.
+    self.fields['message'].widget.attrs['cols'] = 77
 
   def clean_users(self):
     """ Overrides the default cleaning of the link_ids field to add custom
@@ -124,7 +125,7 @@ class OrgConnectionForm(ConnectionForm):
     for id in id_list:
       self.cleaned_data[field] = id.strip(' ')
       user, anon_user = self._clean_one_id(field)
-      if user is not None:
+      if anon_user is None:
         self.request_data.user_connections.append(user)
       else:
         self.request_data.anonymous_users.append(anon_user)
@@ -148,8 +149,9 @@ class OrgConnectionForm(ConnectionForm):
       account = users.User(email)
       user_account = accounts.normalizeAccount(account)
       connected_user = User.all().filter('account', user_account).get()
-      anonymous_user = self.cleaned_data[field] if connected_user is None \
-          else None
+      if not connected_user or \
+          GSoCProfile.all().ancestor(connected_user).count(limit=1) < 1:
+        anonymous_user = self.cleaned_data[field]
     else:
       # Current id is a link_id.
       cleaner = cleaning.clean_existing_user(field)
@@ -160,10 +162,6 @@ class OrgConnectionForm(ConnectionForm):
   class Meta:
     model = GSoCConnection
     fields = ['message']
-    # Override the default rendering of the message field.
-    widgets = {
-      'message' : gsoc_forms.Textarea(attrs={'cols':80, 'rows':10}), 
-    }   
 
 
 class UserConnectionForm(ConnectionForm):
@@ -178,10 +176,6 @@ class UserConnectionForm(ConnectionForm):
   class Meta:
     model = GSoCConnection
     fields = ['message']
-    # Override the default rendering of the message field.
-    widgets = {
-      'message' : gsoc_forms.Textarea(attrs={'cols':80, 'rows':10}), 
-    }   
 
 
 class OrgConnectionPage(RequestHandler):
@@ -212,12 +206,12 @@ class OrgConnectionPage(RequestHandler):
         message=self.data.organization.role_request_message, 
         data=self.data.POST or None)
 
-    emailed = None
+    emailed = dupes = None
     if 'emailed' in self.data.request.GET:
-      emailed = self.data.request.GET['emailed'].split(';')
+      emailed = self.data.request.GET['emailed'].split(',')
     if 'dupes' in self.data.request.GET:
-      dupes = self.data.request.GET['dupes'].split(';')
-        
+      dupes = self.data.request.GET['dupes'].split(',')
+    
     return {
       'logged_in_msg': LoggedInMsg(self.data, apply_link=False),
       'page_name': 'Open a connection',
@@ -235,10 +229,10 @@ class OrgConnectionPage(RequestHandler):
       self.redirect.organization()
       extra = []
       if len(self.data.sent_email_to) > 0:
-        emailed = ';'.join(self.data.sent_email_to)
+        emailed = ','.join(self.data.sent_email_to)
         extra = ['emailed=%s' % emailed, ]
       if len(self.data.duplicate_email) > 0:
-        dupes = ';'.join(self.data.duplicate_email)
+        dupes = ','.join(self.data.duplicate_email)
         extra.append('dupes=%s' % dupes)
       self.redirect.to(url_names.GSOC_ORG_CONNECTION, validated=True, 
           extra=extra)
@@ -281,7 +275,6 @@ class OrgConnectionPage(RequestHandler):
     # the user object and their profile to populate the Connection instance.
     for user in self.data.user_connections:
       connection_form.instance = None
-      connection_form.cleaned_data['user'] = user
       profile = GSoCProfile.all().ancestor(user).get()
       connection_form.cleaned_data['profile'] = profile
       db.run_in_transaction(create_connection, user)
@@ -494,10 +487,7 @@ class ShowConnection(RequestHandler):
       accept_mentor = True  
         
     # Fetch the two statuses from the perspective of both parties.
-    user_status = self._determineStatus(self.data.connection.user_mentor,
-        self.data.connection.user_org_admin)
-    org_status = self._determineStatus(self.data.connection.org_mentor,
-        self.data.connection.org_org_admin)
+    status = self.data.connection.status()
 
     public_comments, private_comments = self.getComments()
     comment_kwargs = self.kwargs.copy()
@@ -515,8 +505,7 @@ class ShowConnection(RequestHandler):
       'header_name': header_name,
       'user_email' : self.data.connection.profile.email,
       'org_name' : self.data.connection.organization.name,
-      'user_status' : user_status,
-      'org_status' : org_status,
+      'status' : status,
       'connection' : self.data.connection,
       'actions' : self.ACTIONS,
       'accept_mentor' : accept_mentor,
@@ -528,23 +517,6 @@ class ShowConnection(RequestHandler):
       'public_comments' : public_comments,
       'private_comments' : private_comments
     }
-
-  def _determineStatus(self, mentor, admin):
-    """ Returns an apropriate status message for the viewer depending on the 
-    state of the connection and who is viewing the page. 
-    """
-    status = None
-
-    if mentor:
-      if admin:
-        status = 'Accepted Org Admin Connection'
-      else:
-        status = 'Accepted Mentor Connection'
-    elif mentor is None:
-      status = 'Pending Connection'
-    elif not mentor:
-      status = 'Rejected Connection'
-    return status
     
   def post(self):
     """ Handler for Show GSoC Connection post request. """
@@ -570,6 +542,7 @@ class ShowConnection(RequestHandler):
     profile_key = self.data.url_profile.key()
     connection_key = self.data.connection.key()
     org_key = self.data.organization.key()
+    messages = self.data.program.getProgramMessages()
     
     def accept_mentor_txn():
       connection = db.get(connection_key)
@@ -587,6 +560,13 @@ class ShowConnection(RequestHandler):
         profile.mentor_for.append(org_key)
         profile.mentor_for = list(set(profile.mentor_for))
         profile.put()
+
+        # Send out a welcome email to new mentors.
+        if not profile.is_mentor:
+          mentor_mail = notifications.getMentorWelcomeMailContext(
+              profile, self.data, messages)
+          if mentor_mail:
+            mailer.getSpawnMailTaskTxn(mentor_mail, parent=request)()
       
       connection.put()
       
@@ -609,6 +589,7 @@ class ShowConnection(RequestHandler):
     profile_key = self.data.url_profile.key()
     connection_key = self.data.connection.key()
     org_key = self.data.organization.key()
+    messages = self.data.program.getProgramMessages()
     
     def accept_org_admin_txn():
       connection = db.get(connection_key)
@@ -626,6 +607,13 @@ class ShowConnection(RequestHandler):
         profile.is_mentor = True
         profile.mentor_for.append(org_key)
         profile.mentor_for = list(set(profile.mentor_for))
+
+        # Send out a welcome email to new mentors.
+        if not profile.is_mentor:
+          mentor_mail = notifications.getMentorWelcomeMailContext(
+              profile, self.data, messages)
+          if mentor_mail:
+            mailer.getSpawnMailTaskTxn(mentor_mail, parent=request)()
         
         profile.is_org_admin = True
         profile.org_admin_for.append(org_key)

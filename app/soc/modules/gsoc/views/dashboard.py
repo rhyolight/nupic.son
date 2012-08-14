@@ -1238,15 +1238,18 @@ class ConnectionComponent(Component):
     list_config.addColumn('key', 'Key', (lambda ent, *args: '%s' % (
         ent.keyName())), hidden=True)
     list_config.addColumn('org', 'Organization', 
-                  (lambda ent, *args: ent.organization.name))
+        (lambda ent, *args: ent.organization.name))
 
     if self.for_admin:
       list_config.addColumn('profile', 'Link Id', 
-                    (lambda ent, *args: ent.profile.link_id))
+          (lambda ent, *args: ent.profile.link_id))
     
     list_config.addColumn('role', 'Role', 
-            (lambda ent, *args: 'Org Admin' if ent.org_org_admin else 'Mentor'))
+        (lambda ent, *args: 'Org Admin' if ent.org_org_admin else 'Mentor'))
     
+    list_config.addColumn('status', 'Status', 
+        (lambda ent, *args: ent.status()))
+
     list_config.setRowAction(
         lambda ent, *args: r.show_connection(user=ent.parent(),
             connection=ent).url())

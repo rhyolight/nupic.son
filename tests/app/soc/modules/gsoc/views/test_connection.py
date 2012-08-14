@@ -17,6 +17,8 @@
 
 from google.appengine.ext import db
 
+from soc.modules.gsoc.models.connection import GSoCConnection
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
@@ -36,14 +38,33 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/connection/base.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
 
-  def testOrgAdminConnection(self):
-    pass
+  def testConnectionCreate(self):
+    # Test GET call.
+    self.data.createOrgAdmin(self.org)
+    url = '/gsoc/connect/' + self.org.key().name()
+    response = self.get(url)
+    self.assertConnectionTemplatesUsed(response)
 
-  def testUserAcceptRoles(self):
-    pass
+    # Create the user that will receive the connection.
+    other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
+    other_data.createOtherUser('to_be_admin@example.com')
+    other_data.createProfile()
+    other_data.notificationSettings(new_invites=True)
 
-  def testUserConnection(self):
-    pass
+    # test POST
+    override = {
+        'profile': other_data.profile,
+        'organization': self.org,
+        'org_org_admin': True,
+        'org_mentor' : True,
+        'user_org_admin' : True,
+        'user_mentor' : True,
+        'parent': other_data.user,
+    }
+    response, properties = self.modelPost(url, GSoCConnection, override)
+    self.assertEmailSent(to=other_data.profile.email, n=1)
 
-  def testViewConnection(self):
-    pass
+    connection = GSoCConnection.all().get()
+    self.assertPropertiesEqual(properties, connection)
+
+    

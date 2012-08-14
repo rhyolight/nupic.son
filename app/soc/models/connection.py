@@ -17,6 +17,7 @@
 """ This module contains the object used to represent invitations and
 requests between a user and an organization
 """
+from django.utils.translation import ugettext
 from google.appengine.ext import db
 from soc.models.organization import Organization
 from soc.models.profile import Profile
@@ -61,7 +62,10 @@ class Connection(db.Model):
       collection_name='connections')
                             
   # A message from the initiating party (user or org admin) to the other.
-  message = db.StringProperty()
+  message = db.TextProperty(required=False, default='',
+                            verbose_name=ugettext('Message'))
+  message.help_text = ugettext(
+      'This is an optional message shown to the receiver of this request.')
   
   # Property for the ShowConnection page to keep track of the time that the
   # connection was initiated.
@@ -71,6 +75,21 @@ class Connection(db.Model):
     """Returns a string which uniquely represents the entity.
     """
     return '/'.join([self.parent_key().name(), str(self.key().id())])
+
+  def status(self):
+    """ Returns a simple status string based on which of the user/org
+    properties has been set. 
+    """
+    # No matter what the user will always be at least a mentor if accepted.
+    if self.user_mentor and self.org_mentor:
+      return 'Accepted'
+    elif self.user_mentor and not self.org_mentor:
+      return 'Org Action Needed'
+    elif not self.user_mentor and self.org_mentor:
+      return 'User Action Needed'
+    elif not self.user_mentor and not self.org_mentor:
+      return 'Rejected'
+    return ''
 
 class AnonymousConnection(db.Model):
   """ This model is intended for use as a placeholder Connection for the
