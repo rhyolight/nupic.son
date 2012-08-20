@@ -32,10 +32,14 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     self.init()
 
   def assertConnectionTemplatesUsed(self, response):
-    """Asserts that all the templates from the dashboard were used.
-    """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/connection/base.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+
+  def assertConnectionShowTemplatesUsed(self, response):
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response, 
+        'v2/modules/gsoc/connection/show_connection.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
 
   def testConnectionCreate(self):
@@ -48,23 +52,62 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     # Create the user that will receive the connection.
     other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
     other_data.createOtherUser('to_be_admin@example.com')
-    other_data.createProfile()
+    other_data.createOrgAdmin(self.org)
     other_data.notificationSettings(new_invites=True)
-
-    # test POST
-    override = {
-        'profile': other_data.profile,
-        'organization': self.org,
-        'org_org_admin': True,
+    
+    # Test POST to OrgConnectionPage.
+    expected = {
+        'parent' : other_data.user,
+        'profile' : other_data.profile,
+        'organization' : self.org,
         'org_mentor' : True,
-        'user_org_admin' : True,
-        'user_mentor' : True,
-        'parent': other_data.user,
+        'org_org_admin' : True
     }
-    response, properties = self.modelPost(url, GSoCConnection, override)
-    self.assertEmailSent(to=other_data.profile.email, n=1)
+    data = {
+        'users' : other_data.profile.email,
+        'role' : '2',
+        'message' : 'Test message',
+        'organization' : self.org
+    }
+    response = self.post(url, data)
+    self.assertEmailSent(bcc=other_data.profile.email, n=1)
+    connection = GSoCConnection.all().ancestor(other_data.user).get()
+    self.assertPropertiesEqual(expected, connection)
 
-    connection = GSoCConnection.all().get()
-    self.assertPropertiesEqual(properties, connection)
+    # Test POST to UserConnectionPage.
+    del expected['org_mentor']
+    del expected['org_org_admin']
+    expected['user_mentor'] = True
+    expected['org_org_admin'] = True
 
+    data = {
+        'user' : other_data.user,
+        'profile' : other_data.profile,
+        'organization' : self.org
+    }
+    response = self.post(url, data)
+    self.assertEmailSent(bcc=other_data.profile.email, n=1)
+    connection = GSoCConnection.all().ancestor(other_data.user).get()
+    self.assertIsNotNone(connection)
+    
+  def testConnectionRespond(self):
+    # Create the users needed for viewing a connection.
+    other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
+    other_data.createOtherUser('other_user@example.com')
+    other_data.createOrgAdmin(self.org)
+
+    # Create the connection to be viewed.
+    properties = {
+        'parent' : other_data.user,
+        'profile' : other_data.profile,
+        'organization' : self.org,
+        'org_mentor' : True,
+    }
+    connection = seeder_logic.seed(GSoCConnection, properties)
+
+    # Test GET. 
+    url = 'gsoc/connection/%s/%s' % (
+        other_data.profile.key().name(), unicode(connection.key().id()))
+    response = self.get(url)
+    self.assertConnectionShowTemplatesUsed(response)
     

@@ -244,6 +244,8 @@ class OrgConnectionPage(RequestHandler):
     
     connection_form = OrgConnectionForm(request_data=self.data, 
         data=self.data.POST)
+    #for k, v in vars(self.data).iteritems():
+    #    print '%s : %s' % (k, v)
     if not connection_form.is_valid():
       return None
       
@@ -255,15 +257,13 @@ class OrgConnectionPage(RequestHandler):
     if connection_form.cleaned_data['role'] == '2':
       connection_form.cleaned_data['org_org_admin'] = True
 
-    # Get the user's email for the notification.
-    receiver = [GSoCProfile.all().ancestor(self.data.user).get().email,]
-
-    def create_connection(user):
+    def create_connection_txn(user, email):
       if not check_existing_connection_txn(user, self.data.organization):
         raise AccessViolation(DEF_CONNECTION_EXISTS)
+
       connection = connection_form.create(parent=user, commit=True)
       context = notifications.connectionContext(self.data, connection, 
-          receiver, connection_form.cleaned_data['message'])
+          email, connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
       sub_txn()
       return connection
@@ -277,9 +277,9 @@ class OrgConnectionPage(RequestHandler):
       connection_form.instance = None
       profile = GSoCProfile.all().ancestor(user).get()
       connection_form.cleaned_data['profile'] = profile
-      db.run_in_transaction(create_connection, user)
+      db.run_in_transaction(create_connection_txn, user, profile.email)
 
-    def create_anonymous_connection(email):
+    def create_anonymous_connection_txn(email):
       # Create the anonymous connection - a placeholder until the user 
       # registers and activates the real connection.
       connection = GSoCAnonymousConnection(parent=self.data.organization)
@@ -310,7 +310,7 @@ class OrgConnectionPage(RequestHandler):
       new_q = q.filter('email', email).get()
       if not new_q:
         self.data.sent_email_to.append(email)
-        db.run_in_transaction(create_anonymous_connection, email)
+        db.run_in_transaction(create_anonymous_connection_txn, email)
       else:
         self.data.duplicate_email.append(email)
         

@@ -294,9 +294,10 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     @db.transactional(xg=True)
     def activate_new_connection_txn():
       # This should be the profile that was just created.
-      profile = GSoCProfile.all().ancestor(self.data.user.key()).get()
+      user = User.get_by_key_name(self.data.request.POST['public_name'])
+      profile = GSoCProfile.all().ancestor(user.key()).get()
       # Create the new connection based on the values of the placeholder.
-      connection = GSoCConnection(parent=self.data.user.key(), 
+      connection = GSoCConnection(parent=user.key(), 
           organization=self.data.anonymous_connection.parent(),
           profile=profile)
       # Set the apropriate fields to automatically accept the connection.
