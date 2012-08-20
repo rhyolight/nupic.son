@@ -96,6 +96,10 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     other_data.createOtherUser('other_user@example.com')
     other_data.createOrgAdmin(self.org)
 
+    # TODO(dcrodman): Currently trying to make this work; url is in the proper
+    # format with the correct args but keeps returning 404s.
+    pass
+
     # Create the connection to be viewed.
     properties = {
         'parent' : other_data.user,
