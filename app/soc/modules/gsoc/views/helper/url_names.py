@@ -26,6 +26,7 @@ GSOC_PROFILE_SHOW = 'gsoc_profile_show'
 GSOC_PROJECT_UPDATE = 'gsoc_project_update'
 GSOC_PROJECT_CODE_SAMPLE_UPLOAD = 'gsoc_project_code_sample_upload'
 GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD = 'gsoc_project_code_sample_download'
+GSOC_PROJECT_CODE_SAMPLE_DELETE = 'gsoc_project_code_sample_delete'
 
 GSOC_ORG_BAN = 'gsoc_org_ban'
 
