@@ -112,6 +112,7 @@ class Callback(object):
     self.views.append(program.GSoCProgramMessagesPage())
     self.views.append(program.TimelinePage())
     self.views.append(project_details.AssignMentors())
+    self.views.append(project_details.CodeSampleDeleteFilePost())
     self.views.append(project_details.CodeSampleDownloadFileGet())
     self.views.append(project_details.CodeSampleUploadFilePost())
     self.views.append(project_details.FeaturedProject())
