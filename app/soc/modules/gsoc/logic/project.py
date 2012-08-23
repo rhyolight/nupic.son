@@ -26,6 +26,9 @@ from google.appengine.ext import db
 from soc.modules.gsoc.models.project import GSoCProject
 
 
+NUMBER_OF_EVALUATIONS = 2
+
+
 def getFeaturedProject(current_timeline, program):
   """Return a featured project for a given program.
 
