@@ -32,6 +32,7 @@ from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
 
 from soc.modules.gsoc.logic import profile as profile_logic
+from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.code_sample import GSoCCodeSample
 from soc.modules.gsoc.views import assign_mentor
@@ -198,7 +199,8 @@ class ProjectDetailsUpdate(RequestHandler):
         'error': project_details_form.errors,
     }
 
-    if self.data.project.status == 'completed':
+    if len(self.data.project.passed_evaluations) >= \
+        project_logic.NUMBER_OF_EVALUATIONS:
       context['upload_code_samples'] = UploadCodeSamples(self.data)
       context['list_code_samples'] = ListCodeSamples(self.data)
 
@@ -244,7 +246,7 @@ class CodeSampleUploadFilePost(RequestHandler):
     self.check.isActiveStudent()
     self.mutator.projectFromKwargs()
     self.check.canStudentUpdateProject()
-    #self.check.isProjectCompleted
+    self.check.isProjectCompleted()
 
   def post(self):
     """Post handler for the code sample upload file.
@@ -297,7 +299,7 @@ class CodeSampleDownloadFileGet(RequestHandler):
 
   def checkAccess(self):
     self.mutator.projectFromKwargs()
-    #self.check.isProjectCompleted
+    self.check.isProjectCompleted()
 
   def get(self):
     """Get handler for the code sample download file.
@@ -406,7 +408,8 @@ class ProjectDetails(RequestHandler):
     if user_is_owner:
       context['update_link'] = r.project().urlOf(url_names.GSOC_PROJECT_UPDATE)
 
-    if self.data.project.status == 'completed':
+    if len(self.data.project.passed_evaluations) >= \
+        project_logic.NUMBER_OF_EVALUATIONS:
       context['list_code_samples'] = ListCodeSamples(self.data)
 
     return context
