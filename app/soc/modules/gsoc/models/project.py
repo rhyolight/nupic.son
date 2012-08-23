@@ -133,3 +133,10 @@ class GSoCProject(db.Model):
     query = GSoCCodeSample.all()
     query.ancestor(self)
     return query.fetch(1000)
+
+  def countCodeSamples(self):
+    """Returns number of GSoCCodeSample entities uploaded for this project.
+    """
+    query = GSoCCodeSample.all(keys_only=True)
+    query.ancestor(self)
+    return query.count()
