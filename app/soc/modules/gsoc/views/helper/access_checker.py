@@ -29,6 +29,7 @@ from soc.logic.exceptions import RedirectRequest
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
+from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
@@ -464,7 +465,8 @@ class AccessChecker(access_checker.AccessChecker):
   def isProjectCompleted(self):
     """Checks whether the project specified in the request is completed.
     """
-    if self.data.project.status != 'completed':
+    if len(self.data.project.passed_evaluations) >= \
+        project_logic.NUMBER_OF_EVALUATIONS:
       raise AccessViolation(DEF_PROJECT_NOT_COMPLETED)
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
