@@ -98,6 +98,10 @@ class ListCodeSamples(Template):
   """Template to render all the GSoCCodeSample entities for the project.
   """
 
+  def __init__(self, data, deleteable):
+    super(ListCodeSamples, self).__init__(data)
+    self.deleteable = deleteable
+
   def _buildContextForExistingCodeSamples(self):
     """Builds a list containing the info related to each code sample.
     """
@@ -125,7 +129,10 @@ class ListCodeSamples(Template):
     return {
         'code_samples': self._buildContextForExistingCodeSamples(),
         'code_sample_download_url': self.data.redirect.project().urlOf(
-              url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
+              url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD),
+        'code_sample_delete_file_action': self.data.redirect.project().urlOf(
+              url_names.GSOC_PROJECT_CODE_SAMPLE_DELETE),
+        'deleteable': self.deleteable
         }
 
   def templatePath(self):
@@ -202,7 +209,7 @@ class ProjectDetailsUpdate(RequestHandler):
     if len(self.data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
       context['upload_code_samples'] = UploadCodeSamples(self.data)
-      context['list_code_samples'] = ListCodeSamples(self.data)
+      context['list_code_samples'] = ListCodeSamples(self.data, True)
 
     return context
 
@@ -318,6 +325,57 @@ class CodeSampleDownloadFileGet(RequestHandler):
       raise BadRequest('id argument in GET data is not a number')
 
 
+class CodeSampleDeleteFilePost(RequestHandler):
+  """Handler for POST requests to delete code sample files.
+  """
+
+  def djangoURLPatterns(self):
+    """Returns the list of tuples for containing URL to view method mapping.
+    """
+    return [
+        url(r'project/code_sample/delete/%s$' % url_patterns.PROJECT, self,
+            name=url_names.GSOC_PROJECT_CODE_SAMPLE_DELETE)
+    ]
+
+  def checkAccess(self):
+    self.mutator.projectFromKwargs()
+    self.check.canStudentUpdateProject()
+    self.check.isProjectCompleted()
+
+  def post(self):
+    """Get handler for the code sample delete file.
+    """
+    assert isSet(self.data.project)
+
+    try:
+      id_value = int(self.request.POST['id'])
+      code_sample = GSoCCodeSample.get_by_id(id_value, self.data.project)
+
+      if not code_sample:
+        raise BadRequest('Requested code sample not found')
+
+      upload_of_work = code_sample.upload_of_work
+
+      def txn():
+        code_sample.delete()
+        if upload_of_work:
+          # this is executed outside of transaction
+          upload_of_work.delete()
+
+        if self.data.project.countCodeSamples() <= 1:
+          project = GSoCProject.get(self.data.project.key())
+          project.code_samples_submitted = False
+          project.put()
+
+      db.run_in_transaction(txn)
+
+      self.redirect.project()
+      self.redirect.to(url_names.GSOC_PROJECT_UPDATE)
+    except KeyError:
+      raise BadRequest('id argument missing in POST data')
+    except ValueError:
+      raise BadRequest('id argument in POST data is not a number')
+
 class UserActions(Template):
   """Template to render the left side user actions.
   """
@@ -410,7 +468,7 @@ class ProjectDetails(RequestHandler):
 
     if len(self.data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
-      context['list_code_samples'] = ListCodeSamples(self.data)
+      context['list_code_samples'] = ListCodeSamples(self.data, False)
 
     return context
 

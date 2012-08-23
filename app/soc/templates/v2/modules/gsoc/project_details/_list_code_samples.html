@@ -8,6 +8,9 @@
           <th><span>File name</span></th>
           <th><span>Size</span></th>
           <th><span>Date submitted</span></th>
+          {% if deleteable %}
+          <th>Delete</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -16,14 +19,14 @@
 	      <td><a href="{{ code_sample_download_url }}?id={{ code_sample.entity.key.id }}">{{ code_sample.uploaded_blob.filename }}</a></td>
 	      <td>{{ code_sample.uploaded_blob.size|filesizeformat }}</td>
           <td>{{ code_sample.entity.submitted_on|date:"F d Y H:i" }} UTC</td>
+          {% if deleteable %}
           <td>
-          {% if code_sample in deleteable %}
             <form action="{{ code_sample_delete_file_action }}" method="post">
-              <input type="hidden" value="{{ code_sample.entity.key.id }}"/>
-              <input value="Delete" name="{{submission.entity.key.id}}" class="task-btn task-btn-delete" type="submit">
+              <input type="hidden" name="id" value="{{ code_sample.entity.key.id }}"/>
+              <input value="Delete" name="{{ code_sample.entity.key.id }}" class="task-btn task-btn-delete" type="submit">
             </form>
-          {% endif %}
           </td>
+          {% endif %}
         </tr>
 	    {% endfor %}
       </tbody>
