@@ -820,43 +820,6 @@ class AccessChecker(BaseAccessChecker):
         DEF_PROPOSAL_MODIFICATION_REQUEST)
     raise AccessViolation(violation_message)
 
-  def canStudentUpdateProposal(self):
-    """Checks if the student is eligible to submit a proposal.
-    """
-    assert isSet(self.data.proposal)
-
-    self.isActiveStudent()
-    self.isProposalInURLValid()
-
-    # check if the timeline allows updating proposals
-    try:
-      self.studentSignupActive()
-    except AccessViolation:
-      self.canStudentUpdateProposalPostSignup()
-
-    # check if the proposal belongs to the current user
-    expected_profile = self.data.proposal.parent()
-    if expected_profile.key().name() != self.data.profile.key().name():
-      error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'model': 'GSoCProposal'
-          }
-      raise AccessViolation(error_msg)
-
-    # check if the status allows the proposal to be updated
-    status = self.data.proposal.status
-    if status == 'ignored':
-      raise AccessViolation(DEF_PROPOSAL_IGNORED_MESSAGE)
-    elif status in ['invalid', 'accepted', 'rejected']:
-      raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
-          'model': 'GSoCProposal'
-          })
-
-    # determine what can be done with the proposal
-    if status == 'new' or status == 'pending':
-      self.data.is_pending = True
-    elif status == 'withdrawn':
-      self.data.is_pending = False
-
   def canRespondToInvite(self):
     """Checks if the current user can accept/reject the invitation.
     """
