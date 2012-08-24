@@ -1065,6 +1065,7 @@ class WithdrawProposal(RequestHandler):
   def checkAccess(self):
     self.mutator.proposalFromKwargs()
     self.check.isProposer()
+    self.check.canStudentUpdateProposal()
 
   def toggleWithdrawProposal(self, value):
     """Toggles the the application state between withdraw and pending.
