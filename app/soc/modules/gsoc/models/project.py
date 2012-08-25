@@ -87,9 +87,10 @@ class GSoCProject(db.Model):
   #: The status of this project
   #: accepted: This project has been accepted into the program
   #: failed: This project has failed an evaluation.
-  #: completed: This project has completed the program successfully. This
-  #:            should be set automatically when a program has been deemed
-  #:            finished.
+  #: completed: (DEPRECATED) This project has completed the program
+  #:            successfully. This should be set automatically when a program
+  #:            has been deemed finished. This status is the same as accepted
+  #:            when len(passed_evaluations) == 2.
   #: withdrawn: This project has been withdrawn from the program by a Program
   #:            Administrator or higher.
   #: invalid: This project has been marked as invalid because it was deleted
