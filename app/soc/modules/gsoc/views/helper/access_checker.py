@@ -472,7 +472,7 @@ class AccessChecker(access_checker.AccessChecker):
   def canStudentUpdateProposal(self):
     """Checks if the student is eligible to submit a proposal.
     """
-    assert isSet(self.data.proposal)
+    assert access_checker.isSet(self.data.proposal)
 
     self.isActiveStudent()
     self.isProposalInURLValid()
