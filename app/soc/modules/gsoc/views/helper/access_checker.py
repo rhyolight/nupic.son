@@ -465,7 +465,7 @@ class AccessChecker(access_checker.AccessChecker):
   def isProjectCompleted(self):
     """Checks whether the project specified in the request is completed.
     """
-    if len(self.data.project.passed_evaluations) >= \
+    if len(self.data.project.passed_evaluations) < \
         project_logic.NUMBER_OF_EVALUATIONS:
       raise AccessViolation(DEF_PROJECT_NOT_COMPLETED)
 
