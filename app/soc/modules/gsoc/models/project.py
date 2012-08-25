@@ -87,16 +87,12 @@ class GSoCProject(db.Model):
   #: The status of this project
   #: accepted: This project has been accepted into the program
   #: failed: This project has failed an evaluation.
-  #: completed: (DEPRECATED) This project has completed the program
-  #:            successfully. This should be set automatically when a program
-  #:            has been deemed finished. This status is the same as accepted
-  #:            when len(passed_evaluations) == 2.
   #: withdrawn: This project has been withdrawn from the program by a Program
   #:            Administrator or higher.
   #: invalid: This project has been marked as invalid because it was deleted
   status = db.StringProperty(
       required=True, default='accepted',
-      choices=['accepted', 'failed', 'completed', 'withdrawn', 'invalid'])
+      choices=['accepted', 'failed', 'withdrawn', 'invalid'])
 
   #: List of all processed GradingRecords which state a pass for this project.
   #: This property can be used to determine how many evaluations someone has
