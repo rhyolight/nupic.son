@@ -297,6 +297,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
   def testWithdrawProposalButton(self):
     self.data.createStudent()
+    self.timeline.studentSignup()
 
     proposal = self.createProposal({'scope': self.data.profile,
                                     'parent': self.data.profile})
