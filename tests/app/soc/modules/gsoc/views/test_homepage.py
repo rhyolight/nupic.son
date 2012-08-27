@@ -19,6 +19,8 @@
 """
 
 
+from nose.plugins import skip
+
 from tests.test_utils import GSoCDjangoTestCase
 
 # TODO: perhaps we should move this out?
@@ -83,7 +85,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.assertTrue('profile_link' in apply_context)
 
     # TODO(nathaniel): Fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
 
     # Show featured_project
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
@@ -110,7 +112,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     """Tests the student homepage after the student's have been announced.
     """
     # TODO(nathaniel): Fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.timeline.student
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)

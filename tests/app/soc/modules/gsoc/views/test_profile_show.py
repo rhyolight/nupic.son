@@ -19,6 +19,8 @@
 """
 
 
+from nose.plugins import skip
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -154,7 +156,7 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
     # TODO(nathaniel): Fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     student.createStudentWithProject(self.org, mentor.profile)
 
     url = '/gsoc/profile/admin/' + student.profile.key().name()

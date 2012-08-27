@@ -18,6 +18,8 @@
 """
 
 
+from nose.plugins import skip
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -53,7 +55,7 @@ class ProjectListTest(GSoCDjangoTestCase):
     self.mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     self.mentor.createMentor(self.org)
     # TODO(nathaniel): Fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.data.createStudentWithProject(self.org, self.mentor.profile)
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)

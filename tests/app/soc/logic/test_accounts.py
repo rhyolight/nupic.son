@@ -22,6 +22,8 @@
 import os
 import unittest
 
+from nose.plugins import skip
+
 from google.appengine.api import users
 
 from soc.logic import accounts
@@ -95,7 +97,7 @@ class TestAccounts(unittest.TestCase):
     normalized_acc = accounts.normalizeAccount(account)
     expected_email = self.non_normal_email.lower()
     # TODO(nathaniel): Fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.assertEqual(normalized_acc.email(), expected_email)
 
     #when account is None, e.g. if no user is logged in

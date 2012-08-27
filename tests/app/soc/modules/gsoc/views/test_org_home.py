@@ -19,6 +19,8 @@
 """
 
 
+from nose.plugins import skip
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -76,7 +78,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     """
     self.timeline.studentsAnnounced()
     # TODO(nathaniel): Fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.createStudentProjects()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.get(url)
@@ -89,7 +91,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     """
     self.timeline.offSeason()
     # TODO(nathaniel): Fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.createStudentProjects()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.get(url)

@@ -21,6 +21,8 @@
 import httplib
 import urllib
 
+from nose.plugins import skip
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
@@ -30,9 +32,7 @@ from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
-# TODO(nathaniel): Fix this test bankruptcy.
-# class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
-class SurveyRemindersTest(object):
+class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
   """Tests for accept_proposals task.
   """
 
@@ -40,6 +40,7 @@ class SurveyRemindersTest(object):
   SEND_URL = '/tasks/gsoc/surveys/send_reminder/send'
 
   def setUp(self):
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     super(SurveyRemindersTest, self).setUp()
     self.init()
     self.createMentor()

@@ -19,6 +19,8 @@
 """
 
 
+from nose.plugins import skip
+
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests.test_utils import GSoCDjangoTestCase
@@ -125,7 +127,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
     response = self.post(role_url, postdata)
 
     # TODO(nathaniel): Fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
 
     self.assertResponseRedirect(response, url + '?validated')
 

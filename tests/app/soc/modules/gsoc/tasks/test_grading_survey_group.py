@@ -21,6 +21,8 @@
 import httplib
 import urllib
 
+from nose.plugins import skip
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
@@ -36,9 +38,7 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import GSoCProjectSurveyRecord
 
 
-# TODO(nathaniel): Fix this test bankruptcy.
-# class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
-class GradingSurveyGroupTest(object):
+class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
   """Tests for accept_proposals task.
   """
 
@@ -48,6 +48,7 @@ class GradingSurveyGroupTest(object):
 
   def setUp(self):
     super(GradingSurveyGroupTest, self).setUp()
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.init()
     self.createMentor()
     self.createStudent()

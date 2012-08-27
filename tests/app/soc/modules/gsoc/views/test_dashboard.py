@@ -20,17 +20,18 @@
 
 from django.utils import simplejson as json
 
+from nose.plugins import skip
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.survey_utils import SurveyHelper
 from tests.test_utils import GSoCDjangoTestCase
 
-# TODO(nathaniel): Fix this test bankruptcy.
-# class DashboardTest(GSoCDjangoTestCase):
-class DashboardTest(object):
+class DashboardTest(GSoCDjangoTestCase):
   """Tests dashboard page.
   """
 
   def setUp(self):
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.init()
 
   def assertDashboardTemplatesUsed(self, response):

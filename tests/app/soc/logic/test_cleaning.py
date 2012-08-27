@@ -17,6 +17,7 @@
 
 
 from django import forms
+from nose.plugins import skip
 
 from google.appengine.ext import db
 from google.appengine.api import users
@@ -389,7 +390,7 @@ class CleaningTest(GSoCDjangoTestCase):
     self.form.cleaned_data = {field_name: html}
     expected = html[6:-7]
     # TODO(nathaniel): fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.assertEqual(clean_field(self.form), expected)
     # Test that unicode is also supported
     expected = html = u'\ua000'
@@ -411,7 +412,7 @@ class CleaningTest(GSoCDjangoTestCase):
     """
     field_name = 'url'
     clean_field = cleaning.clean_url(field_name)
-    # Test that the value of the url field will be returned 
+    # Test that the value of the url field will be returned
     # if it is a valid url
     field_value = 'http://exampleabc.com/'
     self.form.cleaned_data = {field_name: field_value}

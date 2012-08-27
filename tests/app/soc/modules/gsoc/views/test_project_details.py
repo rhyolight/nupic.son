@@ -18,18 +18,19 @@
 """
 
 
+from nose.plugins import skip
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
 from soc.modules.gsoc.models.project import GSoCProject
 
-# TODO(nathaniel): Fix this test bankruptcy.
-# class ProjectDetailsTest(GSoCDjangoTestCase):
-class ProjectDetailsTest(object):
+class ProjectDetailsTest(GSoCDjangoTestCase):
   """Tests project details page.
   """
 
   def setUp(self):
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     super(ProjectDetailsTest, self).setUp()
     self.init()
 

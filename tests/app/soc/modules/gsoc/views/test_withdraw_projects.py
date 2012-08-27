@@ -21,6 +21,8 @@
 import httplib
 import urllib
 
+from nose.plugins import skip
+
 from django.utils import simplejson
 
 from tests.profile_utils import GSoCProfileHelper
@@ -63,7 +65,7 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     response = self.get(url)
 
     # TODO(nathaniel): Fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy!")
 
     self.assertWithdrawProjects(response)
 

@@ -21,6 +21,8 @@
 
 import unittest
 
+from nose.plugins import skip
+
 from google.appengine.api import users
 
 from soc.logic import host as host_logic
@@ -98,7 +100,7 @@ class HostTest(unittest.TestCase):
     actual = [host.key() for host in hosts_list]
 
     # TODO(nathaniel): Fix this test bankruptcy.
-    return
+    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
 
     self.assertEqual(actual, expected)
 
