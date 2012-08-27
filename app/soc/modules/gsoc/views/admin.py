@@ -271,15 +271,6 @@ class MainDashboard(Dashboard):
             'link': '',
             'subpage_links': program_settings.getSubpagesLink(),
         },
-        {
-            'name': 'participant_locations',
-            'description': ugettext(
-                'Show all participants (students and mentors) in a '
-                'clusterer map. You can also view a single profile map '
-                'after clicking the marker.'),
-            'title': 'Participant Locations',
-            'link': '#'
-        },
     ]
 
     return {
