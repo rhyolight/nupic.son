@@ -57,7 +57,8 @@ class UserSubmission(db.Model):
   upload_of_work = blobstore.BlobReferenceProperty(
       required=False, verbose_name=ugettext('Upload of Work'))
   upload_of_work.help_text = ugettext(
-      'Your work uploaded as a single file or as archive')
+      'Your work uploaded as a single file or as archive '
+      '(max file size: 32 MB)')
 
   #: Property containing the date when the work was submitted
   submitted_on = db.DateTimeProperty(
