@@ -142,6 +142,10 @@ class TimelineHelper(request_data.TimelineHelper):
     """
     start = self.tasksPubliclyVisibleOn()
     end = self.tasksClaimEndOn()
+
+    if not start or not end:
+      return 0.0
+
     return timeline_helper.completePercentage(start, end)
 
   def stopwatchPercentage(self):
