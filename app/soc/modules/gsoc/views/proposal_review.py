@@ -506,7 +506,7 @@ class PostComment(RequestHandler):
     self.check.isProgramVisible()
     self.check.isProfileActive()
     self.mutator.proposalFromKwargs()
-    self.mutator.commentVisible()
+    self.mutator.commentVisible(self.data.proposal_org)
     assert isSet(self.data.proposer)
     assert isSet(self.data.proposal_org)
 
