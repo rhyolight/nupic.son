@@ -405,9 +405,12 @@ class UserConnectionPage(RequestHandler):
       if not check_existing_connection_txn(self.data.user, 
           self.data.organization):
         raise AccessViolation(DEF_CONNECTION_EXISTS)
-      connection = ConnectionForm.create(connection_form, 
-          parent=self.data.user, 
-          commit=True)
+
+      connection = ConnectionForm.create(
+          connection_form, parent=self.data.user, commit=False)
+      connection.acceptMentorRoleByUser()
+      connection.put()
+
       context = notifications.connectionContext(self.data, connection, 
           receivers, connection_form.cleaned_data['message'], True)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
