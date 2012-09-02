@@ -37,38 +37,38 @@ class Connection(db.Model):
   # For each of the next four properties, None represents Pending, True
   # is an acceptance and False is a rejection of a role.
   
-  # The User's state in respect to a mentoring role.
+  #: The User's state in respect to a mentoring role.
   user_mentor = db.BooleanProperty(default=None)
   
-  # The User's state in respect to an org admin role.
+  #: The User's state in respect to an org admin role.
   user_org_admin = db.BooleanProperty(default=None)
   
-  # An org's state in respect to a mentoring role for the user.
+  #: An org's state in respect to a mentoring role for the user.
   org_mentor = db.BooleanProperty(default=None)
   
-  # An org's state in respect to an org admin role for the user.
+  #: An org's state in respect to an org admin role for the user.
   org_org_admin = db.BooleanProperty(default=None)
   
-  # The organization entity involved in the connection for which a user
-  # may gain heightened privileges.
+  #: The organization entity involved in the connection for which a user
+  #: may gain heightened privileges.
   organization = db.ReferenceProperty(Organization, 
       required=True,
       collection_name='connections')
                                      
-  # The profile of the User who has either requested or been invited to either
-  # a mentor or org admin role.
+  #: The profile of the User who has either requested or been invited to either
+  #: a mentor or org admin role.
   profile = db.ReferenceProperty(Profile,
       required=True,
       collection_name='connections')
                             
-  # A message from the initiating party (user or org admin) to the other.
+  #: A message from the initiating party (user or org admin) to the other.
   message = db.TextProperty(required=False, default='',
                             verbose_name=ugettext('Message'))
   message.help_text = ugettext(
       'This is an optional message shown to the receiver of this request.')
   
-  # Property for the ShowConnection page to keep track of the time that the
-  # connection was initiated.
+  #: Property for the ShowConnection page to keep track of the time that the
+  #: connection was initiated.
   created_on = db.DateTimeProperty(auto_now_add=True)
   
   def keyName(self):
@@ -101,14 +101,14 @@ class AnonymousConnection(db.Model):
   Parent: soc.models.org.Organization
   """
 
-  # A string to designate the role that will be recreated for the actual
-  # connection object.
+  #: A string to designate the role that will be recreated for the actual
+  #: connection object.
   role = db.StringProperty(choices=['mentor', 'org_admin'])
 
-  # Hash hexdigest() of this object's key to save time when validating
-  # when the user registers.
+  #: Hash hexdigest() of this object's key to save time when validating
+  #: when the user registers.
   hash_id = db.StringProperty()
 
-  # The email to which the anonymous connection was sent; this should be 
-  # queried against to prevent duplicate anonymous connections.
+  #: The email to which the anonymous connection was sent; this should be 
+  #: queried against to prevent duplicate anonymous connections.
   email = db.StringProperty()
