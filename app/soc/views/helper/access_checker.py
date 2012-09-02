@@ -81,6 +81,15 @@ DEF_ID_BASED_ENTITY_INVALID = ugettext(
 DEF_ID_BASED_ENTITY_NOT_EXISTS = ugettext(
     '%(model)s entity, whose id is %(id)s, is does not exist.')
 
+DEF_INVITE_DOES_NOT_EXIST = ugettext(
+    'There is no invite with id %s.')
+
+DEF_INVITE_CANNOT_BE_RESUBMITTED = ugettext(
+    'Only withdrawn invitations may be resubmitted.')
+
+DEF_INVITE_CANNOT_BE_WITHDRAWN = ugettext(
+    'Only pending invitations may be withdrawn.')
+
 DEF_CONNECTION_CANNOT_BE_RESUBMITTED = ugettext(
     'Only withdrawn connections may be resubmitted.')
 
@@ -513,6 +522,17 @@ class BaseAccessChecker(object):
       return
 
     raise AccessViolation(DEF_PROFILE_INACTIVE)
+
+  def isRequestPresent(self, request_id):
+    """Checks if the invite entity is not None.
+    """
+    assert isSet(self.data.request_entity)
+
+    if self.data.request_entity is None:
+      raise AccessViolation(DEF_REQUEST_DOES_NOT_EXIST % request_id)
+
+    if self.data.request_entity.type != REQUEST_TYPE:
+      raise AccessViolation(DEF_REQUEST_DOES_NOT_EXIST % request_id)
 
   def canAccessGoogleDocs(self):
     """Checks if user has a valid access token to access Google Documents.
@@ -998,6 +1018,21 @@ class AccessChecker(BaseAccessChecker):
 
     self._canAccessRequestEntity(
         self.data.request_entity, self.data.requester, self.data.organization)
+
+  # TODO(dhans) This method will be obsolete with the connection module.
+  def canInviteBeWithdrawn(self):
+    """Checks if the invitation may be withdrawn.
+    """
+
+    assert isSet(self.data.invite)
+
+    # check if the entity represents an invitation
+    if self.data.invite.type != INVITATION_TYPE:
+      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
+
+    # only pending requests may be withdrawn
+    if self.data.invite.status != 'pending':
+      raise AccessViolation(DEF_INVITE_CANNOT_BE_WITHDRAWN)
 
   # (dcrodman) This method will be obsolete with the connection module.
   def _canAccessRequestEntity(self, entity, user, org):
