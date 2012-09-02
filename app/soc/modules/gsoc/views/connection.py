@@ -255,17 +255,18 @@ class OrgConnectionPage(RequestHandler):
       
     connection_form.cleaned_data['organization'] = self.data.organization
 
-    # An organization admin is always a mentor, so regardless of the admin's
-    # choice the user will be offered a mentoring position.
-    connection_form.cleaned_data['org_mentor'] = RESPONSE_STATE_ACCEPTED
-    if connection_form.cleaned_data['role'] == '2':
-      connection_form.cleaned_data['org_org_admin'] = RESPONSE_STATE_ACCEPTED
-
     def create_connection_txn(user, email):
       if not check_existing_connection_txn(user, self.data.organization):
         raise AccessViolation(DEF_CONNECTION_EXISTS)
 
-      connection = connection_form.create(parent=user, commit=True)
+      connection = connection_form.create(parent=user, commit=False)
+      # An organization admin is always a mentor, so regardless of the admin's
+      # choice the user will be offered a mentoring position.
+      connection.acceptMentorRoleByOrg()
+      if connection_form.cleaned_data['role'] == '2':
+        connection.acceptOrgAdminRoleByOrg()
+      connection.put()
+
       context = notifications.connectionContext(self.data, connection, 
           email, connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
