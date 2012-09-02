@@ -34,7 +34,8 @@ from soc.models.user import User
 from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.comment import GSoCComment
-from soc.modules.gsoc.models.connection import GSoCConnection, GSoCAnonymousConnection
+from soc.modules.gsoc.models.connection import GSoCAnonymousConnection
+from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
