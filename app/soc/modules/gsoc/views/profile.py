@@ -24,6 +24,9 @@ from django.core.urlresolvers import reverse
 
 from soc.logic import cleaning
 from soc.logic import dicts
+from soc.models.connection import RESPONSE_STATE_ACCEPTED
+from soc.models.connection import RESPONSE_STATE_REJECTED
+from soc.models.connection import RESPONSE_STATE_UNREPLIED
 from soc.models.user import User
 from soc.views import forms
 from soc.views import profile
@@ -301,7 +304,7 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
           organization=self.data.anonymous_connection.parent(),
           profile=profile)
       # Set the apropriate fields to automatically accept the connection.
-      connection.org_mentor = connection.user_mentor = True
+      connection.org_mentor = connection.user_mentor = RESPONSE_STATE_ACCEPTED
       connection.org_org_admin = True if \
           self.data.anonymous_connection.role == 'org_admin' else False
       connection.user_org_admin = connection.org_org_admin

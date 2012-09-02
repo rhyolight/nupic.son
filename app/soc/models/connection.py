@@ -23,6 +23,14 @@ from soc.models.organization import Organization
 from soc.models.profile import Profile
 
 
+RESPONSE_STATE_ACCEPTED = 'Accepted'
+RESPONSE_STATE_REJECTED = 'Rejected'
+RESPONSE_STATE_UNREPLIED = 'Unreplied'
+
+RESPONSE_STATES = [
+    RESPONSE_STATE_UNREPLIED, RESPONSE_STATE_ACCEPTED, RESPONSE_STATE_REJECTED]
+
+
 class Connection(db.Model):
   """ Connection model.
   This model is intended to be used to represent either an invitation or 
@@ -33,22 +41,23 @@ class Connection(db.Model):
 
   Parent: soc.models.user.User (also parent of self.profile here)
   """
-  
-  # For each of the next four properties, None represents Pending, True
-  # is an acceptance and False is a rejection of a role.
-  
+
   #: The User's state in respect to a mentoring role.
-  user_mentor = db.BooleanProperty(default=None)
-  
+  user_mentor = db.StringProperty(
+      default=RESPONSE_STATE_UNREPLIED, choices=RESPONSE_STATES)
+
   #: The User's state in respect to an org admin role.
-  user_org_admin = db.BooleanProperty(default=None)
-  
+  user_org_admin = db.StringProperty(
+      default=RESPONSE_STATE_UNREPLIED, choices=RESPONSE_STATES)
+
   #: An org's state in respect to a mentoring role for the user.
-  org_mentor = db.BooleanProperty(default=None)
-  
+  org_mentor = db.StringProperty(
+      default=RESPONSE_STATE_UNREPLIED, choices=RESPONSE_STATES)
+
   #: An org's state in respect to an org admin role for the user.
-  org_org_admin = db.BooleanProperty(default=None)
-  
+  org_org_admin = db.StringProperty(
+      default=RESPONSE_STATE_UNREPLIED, choices=RESPONSE_STATES)
+
   #: The organization entity involved in the connection for which a user
   #: may gain heightened privileges.
   organization = db.ReferenceProperty(Organization, 

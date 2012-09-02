@@ -60,8 +60,8 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
         'parent' : other_data.user,
         'profile' : other_data.profile,
         'organization' : self.org,
-        'org_mentor' : True,
-        'org_org_admin' : True
+        'org_mentor' : 'Accepted',
+        'org_org_admin' : 'Accepted'
     }
     data = {
         'users' : other_data.profile.email,

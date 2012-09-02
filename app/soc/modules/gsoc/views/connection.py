@@ -30,6 +30,9 @@ from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic.exceptions import AccessViolation
 from soc.logic.helper import notifications
+from soc.models.connection import RESPONSE_STATE_ACCEPTED
+from soc.models.connection import RESPONSE_STATE_REJECTED
+from soc.models.connection import RESPONSE_STATE_UNREPLIED
 from soc.models.user import User
 from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -254,9 +257,9 @@ class OrgConnectionPage(RequestHandler):
 
     # An organization admin is always a mentor, so regardless of the admin's
     # choice the user will be offered a mentoring position.
-    connection_form.cleaned_data['org_mentor'] = True
+    connection_form.cleaned_data['org_mentor'] = RESPONSE_STATE_ACCEPTED
     if connection_form.cleaned_data['role'] == '2':
-      connection_form.cleaned_data['org_org_admin'] = True
+      connection_form.cleaned_data['org_org_admin'] = RESPONSE_STATE_ACCEPTED
 
     def create_connection_txn(user, email):
       if not check_existing_connection_txn(user, self.data.organization):
@@ -372,8 +375,8 @@ class UserConnectionPage(RequestHandler):
 	  # outstanding connections.
     def check_outstanding_txn():
       q = GSoCConnection.all(keys_only=True).ancestor(self.data.user)
-      q.filter('org_mentor =', None)
-      q.filter('org_org_admin =', None)
+      q.filter('org_mentor =', RESPONSE_STATE_UNREPLIED)
+      q.filter('org_org_admin =', RESPONSE_STATE_UNREPLIED)
       if q.count(limit=5) >= DEF_MAX_PENDING_CONNECTIONS:
         raise AccessViolation('Exceeded rate limit for pending connections.')
     db.run_in_transaction(check_outstanding_txn)
@@ -386,10 +389,10 @@ class UserConnectionPage(RequestHandler):
     
     # When initiating a connection, the User only has the option of requesting
     # a mentoring position, so we don't need to display any selections or set
-    # anything other than the user_mentor boolean for now.
+    # anything other than the user_mentor property for now.
     connection_form.cleaned_data['profile'] = self.data.profile
     connection_form.cleaned_data['organization'] = self.data.organization
-    connection_form.cleaned_data['user_mentor'] = True
+    connection_form.cleaned_data['user_mentor'] = RESPONSE_STATE_ACCEPTED
 	
     # Get the sender and recipient for the notification email.
     q = GSoCProfile.all().filter('org_admin_for', self.data.organization)
@@ -549,13 +552,14 @@ class ShowConnection(RequestHandler):
       connection = db.get(connection_key)
       
       if self.data.is_org_admin:
-        connection.org_mentor = True
+        connection.org_mentor = RESPONSE_STATE_ACCEPTED
       else:
-        connection.user_mentor = True
+        connection.user_mentor = RESPONSE_STATE_ACCEPTED
       
       # If both the org admin and user agree to a mentoring role, promote
       # the user to a mentor.
-      if connection.user_mentor and connection.org_mentor:
+      if connection.user_mentor == RESPONSE_STATE_ACCEPTED and \
+          connection.org_mentor == RESPONSE_STATE_ACCEPTED:
         profile = db.get(profile_key)
         profile.is_mentor = True
         profile.mentor_for.append(org_key)
@@ -579,9 +583,9 @@ class ShowConnection(RequestHandler):
     def decline_mentor_txn():
       connection = db.get(connection_key)
       if self.data.is_org_admin:
-        connection.org_mentor = False
+        connection.org_mentor = RESPONSE_STATE_REJECTED
       else:
-        connection.user_mentor = False
+        connection.user_mentor = RESPONSE_STATE_REJECTED
       connection.put()
       
     db.run_in_transaction(decline_mentor_txn)
@@ -595,13 +599,14 @@ class ShowConnection(RequestHandler):
     def accept_org_admin_txn():
       connection = db.get(connection_key)
       if self.data.is_org_admin:
-        connection.org_org_admin = True
-        connection.org_mentor = True
+        connection.org_org_admin = RESPONSE_STATE_ACCEPTED
+        connection.org_mentor = RESPONSE_STATE_ACCEPTED
       else:
-        connection.user_org_admin = True
-        connection.user_mentor = True
+        connection.user_org_admin = RESPONSE_STATE_ACCEPTED
+        connection.user_mentor = RESPONSE_STATE_ACCEPTED
     
-      if connection.org_org_admin and connection.user_org_admin:
+      if connection.org_org_admin == RESPONSE_STATE_ACCEPTED and \
+          connection.user_org_admin == RESPONSE_STATE_ACCEPTED:
         profile = db.get(profile_key)
         # Org Admins are mentors by default, so we have to promote the 
         # user twice - one to mentor, one to org admin.
@@ -636,7 +641,7 @@ class ShowConnection(RequestHandler):
       else:
         # User rejecting an org admin offer rejects both.
         connection.user_org_admin = False
-        connection.user_mentor = False
+        connection.user_mentor = RESPONSE_STATE_REJECTED
       connection.put()
       
     db.run_in_transaction(decline_org_admin_txn)
