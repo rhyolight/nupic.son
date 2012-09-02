@@ -105,7 +105,7 @@ class AnonymousConnection(db.Model):
   # connection object.
   role = db.StringProperty(choices=['mentor', 'org_admin'])
 
-  # Hash hexdigest() of this object's key objct to save time when validating 
+  # Hash hexdigest() of this object's key to save time when validating
   # when the user registers.
   hash_id = db.StringProperty()
 
