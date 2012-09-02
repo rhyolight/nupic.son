@@ -79,7 +79,51 @@ class Connection(db.Model):
   #: Property for the ShowConnection page to keep track of the time that the
   #: connection was initiated.
   created_on = db.DateTimeProperty(auto_now_add=True)
-  
+
+  def acceptMentorRoleByUser(self):
+    self.user_mentor = RESPONSE_STATE_ACCEPTED
+
+  def rejectMentorRoleByUser(self):
+    self.user_mentor = RESPONSE_STATE_REJECTED
+
+  def isMentorRoleAcceptedByUser(self):
+    return self.user_mentor == RESPONSE_STATE_ACCEPTED
+
+  def acceptMentorRoleByOrg(self):
+    self.org_mentor = RESPONSE_STATE_ACCEPTED
+
+  def rejectMentorRoleByOrg(self):
+    self.org_mentor = RESPONSE_STATE_REJECTED
+
+  def isMentorRoleAcceptedByOrg(self):
+    return self.org_mentor == RESPONSE_STATE_ACCEPTED
+
+  def acceptOrgAdminRoleByUser(self):
+    self.user_org_admin = RESPONSE_STATE_ACCEPTED
+
+  def rejectOrgAdminRoleByUser(self):
+    self.user_org_admin = RESPONSE_STATE_REJECTED
+
+  def isOrgAdminRoleAcceptedByUser(self):
+    return self.user_org_admin == RESPONSE_STATE_ACCEPTED
+
+  def acceptOrgAdminRoleByOrg(self):
+    self.org_org_admin = RESPONSE_STATE_ACCEPTED
+
+  def rejectOrgAdminRoleByOrg(self):
+    self.org_org_admin = RESPONSE_STATE_REJECTED
+
+  def isOrgAdminRoleAcceptedByOrg(self):
+    return self.org_org_admin == RESPONSE_STATE_ACCEPTED
+
+  def isMentorRoleAccepted(self):
+    return self.isMentorRoleAcceptedByUser() and \
+        self.isMentorRoleAcceptedByOrg()
+
+  def isOrgAdminRoleAccepted(self):
+    return self.isOrgAdminRoleAcceptedByUser() and \
+        self.isOrgAdminRoleAcceptedByOrg()
+
   def keyName(self):
     """Returns a string which uniquely represents the entity.
     """
