@@ -145,6 +145,44 @@ def newReviewContext(data, comment, to_emails):
 
   return getContext(data, to_emails, message_properties, subject, template)
 
+def newCommentContext(data, comment, to_emails):
+  """Sends out a notification to alert the user of a new comment on a 
+  connection.
+
+  Args:
+    data: a RequestData object
+  """
+  assert isSet(data.connection)
+
+  review_notification_url = data.redirect.connection_comment(
+      comment, full=True)
+  edit_link = data.redirect.editProfile().url(full=True)
+
+  review_type = 'private' if comment.is_private else 'public'
+  reviewed_name = 'connection with %s' % data.connection.organization.name
+
+  message_properties = {
+      'review_notification_url': review_notification_url,
+      'reviewer_name': comment.author.name(),
+      'reviewed_name': reviewed_name,
+      'review_content': comment.content,
+      'review_visibility': review_type,
+      'proposer_name': data.connection.profile.name(),
+      'org': data.connection.organization.name,
+      'profile_edit_link': edit_link,
+      }
+
+  # determine the subject
+  subject = DEF_NEW_REVIEW_SUBJECT % message_properties
+
+  template = DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE
+
+  connected_profile = data.connection.profile
+  if (connected_profile.key() != data.profile.key() and
+      connected_profile.notify_public_comments and not comment.is_private):
+    to_emails.append(connected_profile.email)
+
+  return getContext(data, to_emails, message_properties, subject, template)
 
 def createOrUpdateSlotTransferContext(data, slot_transfer,
                                       to_emails, update=False):

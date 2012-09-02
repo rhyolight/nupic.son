@@ -34,6 +34,12 @@ DEF_INVITATION = ugettext(
 DEF_NEW_REQUEST = ugettext(
     '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
+DEF_NEW_CONNECTION = ugettext(
+  'New connection to [%(org)s]' )
+
+DEF_NEW_ANONYMOUS_CONNECTION = ugettext(
+  'New Google Summer of Code Connection')
+
 DEF_ACCEPTED_ORG = ugettext(
     '[%(org)s] Your organization application has been accepted.')
 
@@ -51,8 +57,15 @@ DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
 DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/invitation.html'
 
+#(dcrodman): This needs to be removed once connection is stable.
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/new_request.html'
+
+DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/initiated_connection.html'
+
+DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/anonymous_connection.html'
 
 DEF_ACCEPTED_ORG_TEMPLATE = \
     'v2/soc/notification/org_accepted.html'
@@ -69,6 +82,62 @@ DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'v2/soc/notification/mentor_welcome_mail.html'
 
+def connectionContext(data, connection, receivers, message, is_user=False):
+  """ Sends out a notification email to all individuals involved in the newly 
+  created connection.
+
+  Args: 
+    data: RequestData object with organization and user set
+    connection: an instance of GSoCConnection
+    receivers: the email(s) of the org or user who is will be "receiving"
+        the connection. should be the opposite of sender
+    message: the contents of the message field from the connection form
+    is_user: True if a user is the one who initiated the connection
+  """
+
+  subject = DEF_NEW_CONNECTION % {'org' : connection.organization.name}
+  request_url = data.redirect.show_connection(connection.parent(), 
+      connection).url(full=True)
+ 
+  message_properties = {
+      'org' : connection.organization.name, 
+      'request_url' : request_url,
+      'is_user' : is_user,
+      'message' : message
+  }
+  template = DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE
+  return getContext(data, receivers, message_properties, subject, template)
+
+def anonymousConnectionContext(data, email, role, hash, message):
+  """ Sends out a notification email to users who have neither user nor 
+  profile entities alerting them that an org admin has attempted to 
+  initiate a connection with them. 
+
+  Args:
+    data: a RequestData object for the connection views
+    email: email address of the user meeting the above criteria
+    role: a string role ('mentor' or 'org_admin') to grant the
+        user when they register
+    message: the contents of the message field from the connection form
+  """
+
+  assert isSet(data.profile)
+  assert isSet(data.organization)
+
+  url = data.redirect.profile_anonymous_connection(role, hash).url(full=True)
+
+  message_properties = {
+      'requester' : data.profile.link_id,
+      'org' : data.organization.name,
+      'role' : role,
+      'url' : url,
+      'message' : message
+  }
+
+  subject = DEF_NEW_ANONYMOUS_CONNECTION
+  template = DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE
+
+  return getContext(data, email, message_properties, subject, template)
 
 def inviteContext(data, invite):
   """Sends out an invite notification to the user the request is for.
@@ -103,6 +172,7 @@ def inviteContext(data, invite):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
+#(dcrodman): This needs to be removed once connection is stable.
 def requestContext(data, request, admin_emails):
   """Sends out a notification to the persons who can process this Request.
 

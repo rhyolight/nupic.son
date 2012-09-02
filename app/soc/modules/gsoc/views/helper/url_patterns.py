@@ -37,6 +37,7 @@ SURVEY    = namedLinkIdPattern(['sponsor', 'program', 'survey'])
 PROPOSAL  = namedIdBasedPattern(['sponsor', 'program'])
 REVIEW    = namedIdBasedPattern(['sponsor', 'program', 'user'])
 PROJECT   = namedIdBasedPattern(['sponsor', 'program', 'user'])
+COMMENT   = namedIdBasedPattern(['sponsor', 'program', 'user'])
 SURVEY_RECORD = namedIdBasedPattern(['sponsor', 'program', 'survey', 'user'])
 GRADING_RECORD = '/'.join([PROJECT, r'(?P<group>(\d+))', r'(?P<record>(\d+))'])
 PREFIXES = "(gsoc_program|gsoc_org)"

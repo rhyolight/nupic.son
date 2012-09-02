@@ -28,7 +28,6 @@ from django.utils.safestring import mark_safe
 
 from soc.views import forms
 
-
 TEMPLATE_PATH = 'v2/modules/gsoc/_form.html'
 
 # The standard input fields should be available to all importing modules
@@ -59,7 +58,6 @@ class GSoCModelForm(forms.ModelForm):
 
   def templatePath(self):
     return TEMPLATE_PATH
-
 
 class SurveyEditForm(forms.SurveyEditForm):
   """Django form for creating and/or editing survey.

@@ -443,23 +443,33 @@ class RedirectHelper(request_data.RedirectHelper):
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
     
-    self.organization(self._data.organization)
+    self.organization()
     self.kwargs['link_id'] = user.link_id
-    # We need to reassign the kwarg to the org's link_id since it's 
-    # being set to the Organization object
-    self.kwargs['organization'] = self._data.organization.link_id
     self._url_name = url_names.GSOC_USER_CONNECTION
     return self
   
-  def show_connection(self, user, org):
+  def show_connection(self, user, connection):
     """ Sets up kwargs for a gsoc_show_connection redirect.
     Args:
       user: the user involved in the connection 
-      org: the org involved in the connection
+      connection: the connection entity to be viewed
     """
-    self._data.organization = org
-    self.connect(user)
+    self.sponsor()
+    self.program()
+
+    self.kwargs['user'] = user.link_id
+    self.kwargs['id'] = connection.key().id()
     self._url_name = url_names.GSOC_SHOW_CONNECTION
+    return self
+
+  def profile_anonymous_connection(self, role, hash):
+    """ Sets up kwargs for the gsoc_profile_anonymous_connection reirect.
+    Args:
+
+    """
+    self.createProfile(role)
+    self.kwargs['key'] = hash
+    self._url_name = url_names.GSOC_ANONYMOUS_CONNECTION
     return self
 
   def comment(self, comment, full=False, secure=False):
@@ -470,6 +480,13 @@ class RedirectHelper(request_data.RedirectHelper):
     url = self.urlOf('review_gsoc_proposal', full=full, secure=secure)
     return "%s#c%s" % (url, comment.key().id())
 
+  def connection_comment(self, comment, full=False, secure=False):
+    """Creates a direct link to a comment.
+    """
+    self.show_connection(self._data.user, self._data.connection)
+    url = self.urlOf(url_names.GSOC_SHOW_CONNECTION, full=full, secure=secure)
+    return "%s" % url
+    
   def project(self, id=None, student=None):
     """Returns the URL to the Student Project.
 

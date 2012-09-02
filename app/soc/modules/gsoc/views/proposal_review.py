@@ -314,7 +314,7 @@ class ReviewProposal(RequestHandler):
   def checkAccess(self):
     self.mutator.proposalFromKwargs()
     self.check.canAccessProposalEntity()
-    self.mutator.commentVisible()
+    self.mutator.commentVisible(self.data.proposal_org)
 
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/review.html'

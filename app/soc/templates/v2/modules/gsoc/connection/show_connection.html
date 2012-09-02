@@ -26,7 +26,7 @@ limitations under the License.
 <div class="request-summary">
   <p class="request-organization"><strong>Organization:</strong> {{ org_name }}</p>
   <p class="request-contact-info"><strong>User:</strong> {{ user_email }}</p>
-  <p class="request-status"><strong>Status:</strong> {{ status_msg }}</p>
+  <p class="request-status"><strong>Status:</strong> {{ status }}</p>
   <p class="request-sent-on"><strong>Created on:</strong> {{ connection.created_on }}</p>
   <br>
   {% if connection.message %}
@@ -44,7 +44,7 @@ limitations under the License.
           <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.reject_mentor }}" class="submit"/>
         {% endif %}
         {% if accept_org_admin %}
-          <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.accept_org_admin }}" class="submit"/>
+          <input id="request-respond-accept-submit" name="action" type="submit" value="{{ actions.accept_org_admin }}" class="submit"/>
         {% endif %}
         {% if reject_org_admin %}
           <input id="request-respond-reject-submit" name="action" type="submit" value="{{ actions.reject_org_admin }}" class="submit"/>
@@ -52,6 +52,35 @@ limitations under the License.
       </div>
     </form>
   </div>
+</div>
+
+<div class="project-comment-container">
+  {% if private_comments_visible %}
+  <div class="project-comment-box project-comment-private-container">
+    <a name="private-comments"></a><h3>{{ private_comments|length }} private comments</h3>
+    {% for comment in private_comments %}
+      <div class="project-comment-single" id="c{{ comment.key.id_or_name }}">
+        <p class="project-comment-meta"><strong>{{ comment.author.name }}</strong> <a href="#c{{ comment.key.id_or_name }}">{{ comment.created }}</a></p>
+        {{ comment.content|safe }}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="project-comment-box project-comment-public-container">
+    <a name="comments"></a><h3>{{ public_comments|length }} comments</h3>
+    {% for comment in public_comments %}
+      <div class="project-comment-single" id="c{{ comment.key.id_or_name }}">
+        <p class="project-comment-meta"><strong>{{ comment.author.name }}</strong> <a href="#c{{ comment.key.id_or_name }}">{{ comment.created }}</a></p>
+        {{ comment.content|safe }}
+      </div>
+    {% endfor %}
+  </div>
+  <!-- begin comment form -->
+  <a name="comment"></a>
+  <form action="{{ comment_box.action }}" method="post" id="form" class="form-project-comment">
+  {{ comment_box.form.render }}
+  </form>
+  <!-- end comment form -->
 </div>
 
 {% endblock page_content %}

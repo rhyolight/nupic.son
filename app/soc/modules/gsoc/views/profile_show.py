@@ -145,15 +145,6 @@ class GSoCProfileAdminPage(RequestHandler):
         r.project(project.key().id())
         links.append(r.urlOf('gsoc_project_details', full=True))
       r = self.redirect.profile()
-      
-      user_role = None
-      if profile.is_student:
-          user_role = 'Student'
-      elif profile.is_org_admin:
-          user_role = 'Org Admin'
-      elif profile.is_mentor:
-          user_role = 'Mentor'
-      
       context.update({
           'profile': GSoCProfileReadOnlyTemplate(profile),
           'links': links,
