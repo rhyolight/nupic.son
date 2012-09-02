@@ -438,7 +438,7 @@ class ShowConnection(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'connection/%s$' % url_patterns.SHOW_CONNECTION,
+        url(r'connection/%s$' % url_patterns.CONNECTION,
             self, name=url_names.GSOC_SHOW_CONNECTION)
     ]
 
