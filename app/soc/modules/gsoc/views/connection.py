@@ -34,6 +34,7 @@ from soc.models.connection import RESPONSE_STATE_ACCEPTED
 from soc.models.connection import RESPONSE_STATE_REJECTED
 from soc.models.connection import RESPONSE_STATE_UNREPLIED
 from soc.models.user import User
+from soc.modules.gsoc.logic import connection as connection_logic
 from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.comment import GSoCComment
@@ -61,10 +62,8 @@ def check_existing_connection_txn(user, org):
   """ Helper method to check for an existing GSoCConnection between a user
   and an organization transactionally. 
   """
-
-  q = GSoCConnection.all(keys_only=True).ancestor(user)
-  q.filter('organization =', org.key())
-  if q.count(limit=1) > 0:
+  query = connection_logic.queryForAncestorAndOrganization(user, org, True)
+  if query.count(limit=1) > 0:
     return False
   return True
 
