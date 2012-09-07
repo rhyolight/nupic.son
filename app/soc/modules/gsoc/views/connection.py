@@ -78,7 +78,7 @@ class ConnectionForm(GSoCModelForm):
   #    required=True,
   #    initial='2')
   role = ChoiceField(widget=djangoforms.Select(),
-      choices=(('1', 'Mentor'), ('2', 'Org Admin')))  
+      choices=(('1', 'Mentor'), ('2', 'Org Admin')))
   
   def __init__(self, request_data=None, message=None, is_admin=False, 
       *args, **kwargs):
@@ -90,6 +90,7 @@ class ConnectionForm(GSoCModelForm):
     self.fields['message'].label = ugettext('Message')
     # Place the message field at the bottom
     self.fields['message'].group = ugettext('1. ')
+
 
 class OrgConnectionForm(ConnectionForm):
   """ Django form to show specific fields for an organization. """
@@ -108,8 +109,12 @@ class OrgConnectionForm(ConnectionForm):
         ' separate multiple values with a comma')
     # Place the users field at the top of the form.
     self.fields.insert(0, 'users', field)  
-      
-    self.fields['role'].group = ugettext('0. Role to offer the user')
+
+    self.fields['role'].label = ugettext('Role to offer the user(s)')
+    self.fields['role'].help_text = ugettext(
+        'Role that you want to offer to '
+        'the specified users in this organization')
+
     self.fields['message'].help_text = ugettext(
         'Your message to the user(s)') 
     # 77 is really an arbitrary width, it just makes the link id/email form
