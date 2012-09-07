@@ -117,9 +117,6 @@ class OrgConnectionForm(ConnectionForm):
 
     self.fields['message'].help_text = ugettext(
         'Your message to the user(s)') 
-    # 77 is really an arbitrary width, it just makes the link id/email form
-    # line up with the message box more easily.
-    self.fields['message'].widget.attrs['cols'] = 77
 
   def clean_users(self):
     """ Overrides the default cleaning of the link_ids field to add custom
