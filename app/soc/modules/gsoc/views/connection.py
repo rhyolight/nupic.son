@@ -421,8 +421,8 @@ class UserConnectionPage(RequestHandler):
     return True
 
 class ShowConnection(RequestHandler):
-  """ Class to encapsulate the methods required to display information
-  about a GSoCConnection for both Users and Org Admins. """
+  """Class to encapsulate the methods required to display information
+  about a GSoCConnection for both Users and Org Admins."""
   
   # Each of the below actions corresponds to one two booleans for each side
   # of the Connection object to determine its state.
