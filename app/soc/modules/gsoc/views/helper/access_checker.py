@@ -502,7 +502,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise AccessViolation(DEF_PROPOSAL_IGNORED_MESSAGE)
     elif status in ['invalid', 'accepted', 'rejected']:
       raise AccessViolation(access_checker.DEF_CANNOT_UPDATE_ENTITY % {
-          'model': 'GSoCProposal'
+          'name': 'proposal'
           })
 
     # determine what can be done with the proposal

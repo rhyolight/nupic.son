@@ -62,7 +62,7 @@ DEF_CANNOT_ACCESS_ORG_APP = ugettext(
     'You do not have access to this organization application.')
 
 DEF_CANNOT_UPDATE_ENTITY = ugettext(
-    'This %(model)s cannot be updated.')
+    'This %(name)s cannot be updated.')
 
 DEF_DEV_LOGOUT_LOGIN = ugettext(
     'Please <a href="%%(sign_out)s">sign out</a>'
@@ -1128,7 +1128,7 @@ class AccessChecker(BaseAccessChecker):
     # check if the status allows the project to be updated
     if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
       raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
-          'model': 'GSoCProject'
+          'name': 'project'
           })
 
   def isSurveyActive(self, survey, show_url=None):
