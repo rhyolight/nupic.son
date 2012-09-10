@@ -111,6 +111,11 @@ DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM = ugettext(
 DEF_PROJECT_NOT_COMPLETED = ugettext(
     'The specified project has not been completed')
 
+DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
+    'An organization administrator has flagged this proposal to be '
+    'ignored. If you think this is incorrect, contact an organization '
+    'administrator to resolve the situation.')
+
 
 class Mutator(access_checker.Mutator):
   """Mutator for the GSoC module.
@@ -486,7 +491,7 @@ class AccessChecker(access_checker.AccessChecker):
     # check if the proposal belongs to the current user
     expected_profile = self.data.proposal.parent()
     if expected_profile.key().name() != self.data.profile.key().name():
-      error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
+      error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'model': 'GSoCProposal'
           }
       raise AccessViolation(error_msg)
@@ -496,7 +501,7 @@ class AccessChecker(access_checker.AccessChecker):
     if status == 'ignored':
       raise AccessViolation(DEF_PROPOSAL_IGNORED_MESSAGE)
     elif status in ['invalid', 'accepted', 'rejected']:
-      raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
+      raise AccessViolation(access_checker.DEF_CANNOT_UPDATE_ENTITY % {
           'model': 'GSoCProposal'
           })
 

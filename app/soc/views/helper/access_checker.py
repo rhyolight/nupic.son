@@ -212,11 +212,6 @@ DEF_PROGRAM_NOT_VISIBLE = ugettext(
 DEF_PROGRAM_NOT_RUNNING = ugettext(
     'This page is inaccessible because %s is not running at this time.')
 
-DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
-    'An organization administrator has flagged this proposal to be '
-    'ignored. If you think this is incorrect, contact an organization '
-    'administrator to resolve the situation.')
-
 DEF_PROPOSAL_MODIFICATION_REQUEST = ugettext(
     'If you would like to update this proposal, request your organization '
     'to which this proposal belongs, to grant permission to modify the '
