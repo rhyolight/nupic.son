@@ -70,7 +70,7 @@ DEF_DEV_LOGOUT_LOGIN = ugettext(
     ' again as %(role)s to view this page.')
 
 DEF_ENTITY_DOES_NOT_BELONG_TO_YOU = ugettext(
-    'This %(model)s entity does not belong to you.')
+    'This %(name)s does not belong to you.')
 
 DEF_HAS_ALREADY_ROLE_FOR_ORG = ugettext(
     'You already have %(role)s role for %(org)s.')
@@ -832,7 +832,7 @@ class AccessChecker(BaseAccessChecker):
     # check if the entity is addressed to the current user
     if self.data.invited_user.key() != self.data.user.key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'model': 'Request'
+          'name': 'request'
           }
       raise AccessViolation(error_msg)
 
@@ -977,7 +977,7 @@ class AccessChecker(BaseAccessChecker):
     # check if the request belongs to the current user
     if self.data.requester.key() != self.data.user.key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'model': 'Request'
+          'name': 'request'
           }
       raise AccessViolation(error_msg)
 
@@ -1121,7 +1121,7 @@ class AccessChecker(BaseAccessChecker):
     expected_profile_key = self.data.project.parent_key()
     if expected_profile_key != self.data.profile.key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'model': 'GSoCProject'
+          'name': 'project'
           }
       raise AccessViolation(error_msg)
 
