@@ -769,7 +769,7 @@ body {
 
 /* BEGIN accepted organizations block */
 .block-accepted-organizations {
-  background: #E0E0E0 url(../images/block-form-bg.png) 0 0 repeat-x;
+  background: #E0E0E0 url(../../../images/v2/gci/block-form-bg.png) 0 0 repeat-x;
   border: 1px solid #B4B4B4;
   padding: 13px 20px;
 }
