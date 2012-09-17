@@ -1279,9 +1279,14 @@ class OrgConnectionComponent(Component):
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=7, preload_list=False)
 
-    title = 'Connections for my organizations'
-    description = ugettext(
+    if len(self.data.org_admin_for) > 1:
+      title = 'Connections for my organizations'
+      description = ugettext(
         'List of connections with mentors and admins for my organizations.')
+    else:
+      title = 'Connections for my organization'
+      description = ugettext(
+        'List of connections with mentors and admins for my organization.')
 
     return {
         'name': 'org_connections',
