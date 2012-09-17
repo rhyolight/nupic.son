@@ -1235,14 +1235,16 @@ class OrgConnectionComponent(Component):
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn('key', 'Key',
         lambda e, *args: '%s' % e.keyName(), hidden=True)
-    list_config.addColumn('org', 'Organization',
-        lambda e, *args: e.organization.name)
+    
     list_config.addColumn('username', 'Username',
         lambda e, *args: e.profile.link_id)
     list_config.addColumn('role', 'Role',
         lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor')
     list_config.addColumn('status', 'Status',
         lambda e, *args: e.status())
+    if len(data.org_admin_for) > 1:
+      list_config.addColumn('org', 'Organization',
+          lambda e, *args: e.organization.name)
 
     list_config.setRowAction(
         lambda e, *args: data.redirect.show_connection(
