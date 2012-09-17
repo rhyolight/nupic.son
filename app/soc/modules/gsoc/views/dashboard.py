@@ -233,10 +233,8 @@ class DashboardPage(RequestHandler):
     elif self.data.is_mentor:
       components.append(TodoComponent(self.request, self.data))
       components += self._getOrgMemberComponents()
-      components.append(ConnectionComponent(self.request, self.data, False))
     else:
       components += self._getLoneUserComponents()
-      components.append(ConnectionComponent(self.request, self.data, False))
 
     return components
 
@@ -271,6 +269,8 @@ class DashboardPage(RequestHandler):
     component = self._getMyOrgApplicationsComponent()
     if component:
       components.append(component)
+
+    components.append(UserConnectionComponent(self.request, self.data))
 
     evals = dictForSurveyModel(GradingProjectSurvey, self.data.program,
                                ['midterm', 'final'])
@@ -315,6 +315,8 @@ class DashboardPage(RequestHandler):
     component = self._getMyOrgApplicationsComponent()
     if component:
       components.append(component)
+
+    components.append(UserConnectionComponent(self.request, self.data))
 
     return components
 
@@ -1281,6 +1283,68 @@ class OrgConnectionComponent(Component):
 
     return {
         'name': 'org_connections',
+        'title': title,
+        'lists': [list],
+        'description': description
+    }
+
+
+class UserConnectionComponent(Component):
+  """Component for listing all the connections for the current user.
+  """
+
+  IDX = 8
+
+  def __init__(self, request, data):
+    """Initializes this component.
+    """
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key',
+        lambda e, *args: '%s' % e.keyName(), hidden=True)
+    list_config.addColumn('org', 'Organization',
+        lambda e, *args: e.organization.name)
+    list_config.addColumn('role', 'Role',
+        lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor')
+    list_config.addColumn('status', 'Status',
+        lambda e, *args: e.status())
+
+    list_config.setRowAction(
+        lambda e, *args: data.redirect.show_connection(
+            user=e.parent(), connection=e).url())
+    self._list_config = list_config
+
+    super(UserConnectionComponent, self).__init__(request, data)
+
+  def templatePath(self):
+    return'v2/modules/gsoc/dashboard/list_component.html'
+
+  def getListData(self):
+    if lists.getListIndex(self.request) != self.IDX:
+      return None
+
+    q = GSoCConnection.all().ancestor(self.data.user)
+
+    starter = lists.keyStarter
+
+    prefetcher = lists.modelPrefetcher(
+        GSoCConnection, ['user', 'organization'])
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+
+    return response_builder.build()
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.IDX, preload_list=False)
+
+    title = 'My connections'
+    description = ugettext('List of my connections with organizations.')
+
+    return {
+        'name': 'connections',
         'title': title,
         'lists': [list],
         'description': description
