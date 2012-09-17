@@ -298,7 +298,7 @@ class DashboardPage(RequestHandler):
 
     if self.data.is_org_admin:
       # add a component for all organization that this user administers
-      components.append(ConnectionComponent(self.request, self.data, True))
+      components.append(OrgConnectionComponent(self.request, self.data))
       components.append(ParticipantsComponent(self.request, self.data))
 
     # move to the bottom after student signup
@@ -1219,6 +1219,71 @@ class OrganizationsIParticipateInComponent(Component):
         'lists': [list],
         'description': ugettext(
             'List of organizations which I participate in'),
+    }
+
+
+class OrgConnectionComponent(Component):
+  """Component for listing all the connections for orgs of which the user is an
+  admin.
+  """
+
+  def __init__(self, request, data):
+    """Initializes this component.
+    """
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key',
+        lambda e, *args: '%s' % e.keyName(), hidden=True)
+    list_config.addColumn('org', 'Organization',
+        lambda e, *args: e.organization.name)
+    list_config.addColumn('username', 'Username',
+        lambda e, *args: e.profile.link_id)
+    list_config.addColumn('role', 'Role',
+        lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor')
+    list_config.addColumn('status', 'Status',
+        lambda e, *args: e.status())
+
+    list_config.setRowAction(
+        lambda e, *args: data.redirect.show_connection(
+            user=e.parent(), connection=e).url())
+    self._list_config = list_config
+
+    super(OrgConnectionComponent, self).__init__(request, data)
+
+  def templatePath(self):
+    return'v2/modules/gsoc/dashboard/list_component.html'
+
+  def getListData(self):
+    if lists.getListIndex(self.request) != 7:
+      return None
+
+    q = GSoCConnection.all()
+    q.filter('organization IN', [org.key() for org in self.data.org_admin_for])
+
+    starter = lists.keyStarter
+
+    prefetcher = lists.modelPrefetcher(
+        GSoCConnection, ['user', 'organization'])
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+
+    return response_builder.build()
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=7, preload_list=False)
+
+    title = 'Connections for my organizations'
+    description = ugettext(
+        'List of connections with mentors and admins for my organizations.')
+
+    return {
+        'name': 'org_connections',
+        'title': title,
+        'lists': [list],
+        'description': description
     }
 
 
