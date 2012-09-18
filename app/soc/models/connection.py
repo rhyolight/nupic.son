@@ -67,7 +67,7 @@ class Connection(db.Model):
   #: The profile of the User who has either requested or been invited to either
   #: a mentor or org admin role.
   profile = db.ReferenceProperty(Profile,
-      required=True,
+      required=False,
       collection_name='connections')
   
   #: Property for the ShowConnection page to keep track of the time that the
