@@ -74,6 +74,13 @@ class Connection(db.Model):
   #: connection was initiated.
   created_on = db.DateTimeProperty(auto_now_add=True)
 
+  @staticmethod
+  def allFields():
+    """Returns a list of all names of fields in this model.
+    """
+    return ['user_mentor', 'user_org_admin', 'org_mentor', 'org_org_admin',
+        'organization', 'profile', 'created_on']
+
   def acceptMentorRoleByUser(self):
     self.user_mentor = RESPONSE_STATE_ACCEPTED
 

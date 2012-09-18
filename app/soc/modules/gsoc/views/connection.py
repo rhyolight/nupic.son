@@ -79,7 +79,9 @@ class ConnectionForm(GSoCModelForm):
   #    initial='2')
   role = ChoiceField(widget=djangoforms.Select(),
       choices=(('1', 'Mentor'), ('2', 'Org Admin')))
-  
+
+  message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
+
   def __init__(self, request_data=None, message=None, is_admin=False, 
       *args, **kwargs):
     super(ConnectionForm, self).__init__(*args, **kwargs) 
@@ -166,7 +168,7 @@ class OrgConnectionForm(ConnectionForm):
 
   class Meta:
     model = GSoCConnection
-    fields = ['message']
+    exclude = GSoCConnection.allFields()
 
 
 class UserConnectionForm(ConnectionForm):
@@ -180,7 +182,7 @@ class UserConnectionForm(ConnectionForm):
 
   class Meta:
     model = GSoCConnection
-    fields = ['message']
+    exclude = GSoCConnection.allFields()
 
 
 class OrgConnectionPage(RequestHandler):
@@ -321,6 +323,7 @@ class OrgConnectionPage(RequestHandler):
         self.data.duplicate_email.append(email)
         
     return True
+
 
 class UserConnectionPage(RequestHandler):
   """ Class to encapsulate the methods for a user to initiate a connection
