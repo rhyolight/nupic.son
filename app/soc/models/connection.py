@@ -69,12 +69,6 @@ class Connection(db.Model):
   profile = db.ReferenceProperty(Profile,
       required=True,
       collection_name='connections')
-                            
-  #: A message from the initiating party (user or org admin) to the other.
-  message = db.TextProperty(required=False, default='',
-                            verbose_name=ugettext('Message'))
-  message.help_text = ugettext(
-      'This is an optional message shown to the receiver of this request.')
   
   #: Property for the ShowConnection page to keep track of the time that the
   #: connection was initiated.
