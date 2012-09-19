@@ -174,6 +174,10 @@ class MessageForm(GSoCModelForm):
   """Django form for the message.
   """
 
+  def __init__(self, *args, **kwargs):
+    super(MessageForm, self).__init__(*args, **kwargs)
+    self.fields['content'].label = ugettext(' ')
+
   class Meta:
     model = GSoCConnectionMessage
     fields = ['content']
