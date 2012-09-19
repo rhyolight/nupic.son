@@ -487,13 +487,14 @@ class ShowConnection(RequestHandler):
     self.check.canViewConnection()
     self.data.is_org_admin = not (self.data.url_user == self.data.user)
 
-  def getComments(self, limit=1000):
+  def getMessages(self, limit=1000):
     """Gets all the comments for the proposal visible by the current user.
     """
     assert isSet(self.data.connection)
 
     query = db.Query(GSoCConnectionMessage).ancestor(self.data.connection)
     query.order('created')
+
     return query.fetch(limit=limit)
     
   def context(self):
@@ -522,13 +523,11 @@ class ShowConnection(RequestHandler):
     # Fetch the two statuses from the perspective of both parties.
     status = self.data.connection.status()
 
-    messages = self.getComments()
-    comment_kwargs = self.kwargs.copy()
     form = MessageForm(self.data.POST or None)
-    comment_box = {
+    message_box = {
       'form' : form,
       'action' : reverse(url_names.GSOC_COMMENT_CONNECTION,
-           kwargs=comment_kwargs)
+           kwargs=self.kwargs.copy())
     }
 
     return {
@@ -544,10 +543,9 @@ class ShowConnection(RequestHandler):
       'reject_mentor' : reject_mentor,
       'accept_org_admin' : accept_org_admin,
       'reject_org_admin' : reject_org_admin,
-      'comment_box' : comment_box,
+      'message_box' : message_box,
       'private_comments_visible' : self.data.is_org_admin,
-      'public_comments' : messages,
-      'private_comments' : [],
+      'messages' : self.getMessages(),
     }
     
   def post(self):
