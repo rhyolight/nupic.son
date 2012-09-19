@@ -45,7 +45,7 @@ from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
-from soc.modules.gsoc.views.helper.url_patterns import url, COMMENT
+from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.tasks import mailer
@@ -679,7 +679,7 @@ class PostComment(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'connection/comment/%s$' % COMMENT, self, 
+         url(r'connection/message/%s$' % url_patterns.MESSAGE, self, 
              name=url_names.GSOC_COMMENT_CONNECTION),
     ]
 
