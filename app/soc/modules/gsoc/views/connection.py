@@ -526,7 +526,7 @@ class ShowConnection(RequestHandler):
     form = MessageForm(self.data.POST or None)
     message_box = {
       'form' : form,
-      'action' : reverse(url_names.GSOC_COMMENT_CONNECTION,
+      'action' : reverse(url_names.GSOC_CONNECTION_MESSAGE,
            kwargs=self.kwargs.copy())
     }
 
@@ -680,7 +680,7 @@ class PostComment(RequestHandler):
   def djangoURLPatterns(self):
     return [
          url(r'connection/message/%s$' % url_patterns.MESSAGE, self, 
-             name=url_names.GSOC_COMMENT_CONNECTION),
+             name=url_names.GSOC_CONNECTION_MESSAGE),
     ]
 
   def checkAccess(self):
