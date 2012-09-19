@@ -488,7 +488,7 @@ class ShowConnection(RequestHandler):
     self.data.is_org_admin = not (self.data.url_user == self.data.user)
 
   def getMessages(self, limit=1000):
-    """Gets all the comments for the proposal visible by the current user.
+    """Gets all the messages for the connection.
     """
     assert isSet(self.data.connection)
 
