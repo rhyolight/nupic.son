@@ -37,9 +37,9 @@ from soc.models.user import User
 from soc.modules.gsoc.logic import connection as connection_logic
 from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.connection import GSoCAnonymousConnection
 from soc.modules.gsoc.models.connection import GSoCConnection
+from soc.modules.gsoc.models.connection_message import GSoCConnectionMessage
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -270,6 +270,13 @@ class OrgConnectionPage(RequestHandler):
         connection.acceptOrgAdminRoleByOrg()
       connection.put()
 
+      properties = {
+          'author': self.data.profile,
+          'content': connection_form.cleaned_data['message']
+          }
+      message = GSoCConnectionMessage(parent=connection, **properties)
+      message.put()
+
       context = notifications.connectionContext(self.data, connection, 
           email, connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
@@ -283,9 +290,7 @@ class OrgConnectionPage(RequestHandler):
     # the user object and their profile to populate the Connection instance.
     for user in self.data.user_connections:
       connection_form.instance = None
-      profile = GSoCProfile.all().ancestor(user).get()
-      connection_form.cleaned_data['profile'] = profile
-      db.run_in_transaction(create_connection_txn, user, profile.email)
+      db.run_in_transaction(create_connection_txn, user, 'test@example.com')
 
     def create_anonymous_connection_txn(email):
       # Create the anonymous connection - a placeholder until the user 
@@ -360,7 +365,7 @@ class UserConnectionPage(RequestHandler):
       'program': self.data.program,
       'connection_form': connection_form,
     }
-    
+
   def post(self):
     """ Handler for a GSoC Connection post request for a user. """
     
@@ -415,6 +420,8 @@ class UserConnectionPage(RequestHandler):
       connection.acceptMentorRoleByUser()
       connection.put()
 
+      message = connection_form.cleaned_data['message']
+
       context = notifications.connectionContext(self.data, connection, 
           receivers, connection_form.cleaned_data['message'], True)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
@@ -453,32 +460,21 @@ class ShowConnection(RequestHandler):
     self.mutator.connectionFromKwargs()
 
     self.check.canViewConnection()
-    self.data.is_org_admin = not (self.data.url_profile == self.data.profile)
+    self.data.is_org_admin = not (self.data.url_user == self.data.user)
 
   def getComments(self, limit=1000):
     """Gets all the comments for the proposal visible by the current user.
     """
     assert isSet(self.data.connection)
 
-    public_comments = []
-    private_comments = []
-
-    query = db.Query(GSoCComment).ancestor(self.data.connection)
+    query = db.Query(GSoCConnectionMessage).ancestor(self.data.connection)
     query.order('created')
-    all_comments = query.fetch(limit=limit)
-
-    for comment in all_comments:
-      if not comment.is_private:
-        public_comments.append(comment)
-      elif self.data.is_org_admin:
-        private_comments.append(comment)
-
-    return public_comments, private_comments
+    return query.fetch(limit=limit)
     
   def context(self):
     """ Handler for Show GSoCConnection get request. """
 
-    header_name = self.data.url_profile.public_name \
+    header_name = self.data.url_user.link_id \
         if self.data.is_org_admin else self.data.organization.name
 
     # Determine which buttons will be shown to the user.
@@ -501,7 +497,7 @@ class ShowConnection(RequestHandler):
     # Fetch the two statuses from the perspective of both parties.
     status = self.data.connection.status()
 
-    public_comments, private_comments = self.getComments()
+    messages = self.getComments()
     comment_kwargs = self.kwargs.copy()
     form = CommentForm(self.data.POST or None) if not self.data.is_org_admin \
         else PrivateCommentForm(self.data.POST or None)
@@ -510,12 +506,12 @@ class ShowConnection(RequestHandler):
       'action' : reverse(url_names.GSOC_COMMENT_CONNECTION,
            kwargs=comment_kwargs)
     }
-    
+
     return {
       'page_name': 'Viewing Connection',
       'is_admin' : self.data.is_org_admin,
       'header_name': header_name,
-      'user_email' : self.data.connection.profile.email,
+      #'user_email' : self.data.connection.profile.email,
       'org_name' : self.data.connection.organization.name,
       'status' : status,
       'connection' : self.data.connection,
@@ -526,8 +522,8 @@ class ShowConnection(RequestHandler):
       'reject_org_admin' : reject_org_admin,
       'comment_box' : comment_box,
       'private_comments_visible' : self.data.is_org_admin,
-      'public_comments' : public_comments,
-      'private_comments' : private_comments
+      'public_comments' : messages,
+      'private_comments' : [],
     }
     
   def post(self):
