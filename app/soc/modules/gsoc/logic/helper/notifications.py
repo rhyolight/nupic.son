@@ -39,6 +39,9 @@ DEF_NEW_REVIEW_SUBJECT = ugettext(
     '[%(org)s] New %(review_visibility)s review on %(reviewed_name)s '
     '(%(proposer_name)s)')
 
+DEF_NEW_CONNECTION_MESSAGE_SUBJECT = ugettext(
+    '[%(org)s] New message on connection.')
+
 DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/new_proposal.html'
 
@@ -50,6 +53,9 @@ DEF_SLOT_TRANSFER_NOTIFICATION_TEMPLATE = \
 
 DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE = \
     'v2/soc/notification/new_review.html'
+
+DEF_NEW_CONNECTION_MESSAGE_NOTIFICATION_TEMPLATE = \
+    'v2/soc/notification/new_connection_message.html'
 
 
 def newProposalContext(data, proposal, to_emails):
@@ -183,6 +189,38 @@ def newCommentContext(data, comment, to_emails):
     to_emails.append(connected_profile.email)
 
   return getContext(data, to_emails, message_properties, subject, template)
+
+
+def newConnectionMessageContext(data, message, to_emails):
+  """Returns a context for a notification email that should be sent out,
+  when new message is submitted for a connection.
+
+  Args:
+    data: a RequestData object
+    message: GSoCConnectionMessage object that represent the new message
+    to_emails: list of e-mails to which a notification should be sent
+  """
+  assert isSet(data.connection)
+
+  view_connection_url = data.redirect.connection_comment(
+      message, full=True)
+
+  profile_edit_link = data.redirect.editProfile().url(full=True)
+
+  message_properties = {
+      'view_connection_url': view_connection_url,
+      'message_sender': message.author.name(),
+      'message_content': message.content,
+      'org': data.connection.organization.name,
+      'profile_edit_link': profile_edit_link,
+      }
+
+  subject = DEF_NEW_CONNECTION_MESSAGE_SUBJECT % message_properties
+
+  template = DEF_NEW_CONNECTION_MESSAGE_NOTIFICATION_TEMPLATE
+
+  return getContext(data, to_emails, message_properties, subject, template)
+
 
 def createOrUpdateSlotTransferContext(data, slot_transfer,
                                       to_emails, update=False):
