@@ -46,7 +46,6 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url, COMMENT
-from soc.modules.gsoc.views.proposal_review import CommentForm, PrivateCommentForm
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.tasks import mailer
@@ -169,6 +168,28 @@ class OrgConnectionForm(ConnectionForm):
   class Meta:
     model = GSoCConnection
     exclude = GSoCConnection.allFields()
+
+
+class MessageForm(GSoCModelForm):
+  """Django form for the message.
+  """
+
+  class Meta:
+    model = GSoCConnectionMessage
+    fields = ['content']
+
+  def clean_content(self):
+    field_name = 'content'
+    wrapped_clean_html_content = cleaning.clean_html_content(field_name)
+    content = wrapped_clean_html_content(self)
+    if content:
+      return content
+    else:
+      raise django_forms.ValidationError(
+          ugettext('Message content cannot be empty.'), code='invalid')
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/connection/_message_form.html'
 
 
 class UserConnectionForm(ConnectionForm):
@@ -499,8 +520,7 @@ class ShowConnection(RequestHandler):
 
     messages = self.getComments()
     comment_kwargs = self.kwargs.copy()
-    form = CommentForm(self.data.POST or None) if not self.data.is_org_admin \
-        else PrivateCommentForm(self.data.POST or None)
+    form = MessageForm(self.data.POST or None)
     comment_box = {
       'form' : form,
       'action' : reverse(url_names.GSOC_COMMENT_CONNECTION,
@@ -687,10 +707,10 @@ class PostComment(RequestHandler):
     assert isSet(self.data.connection)
 
     if self.data.public_only:
-      comment_form = CommentForm(self.data.request.POST)
+      comment_form = MessageForm(self.data.request.POST)
     else:
       # This form contains checkbox for indicating private/public comments.
-      comment_form = PrivateCommentForm(self.data.request.POST)
+      comment_form = MessageForm(self.data.request.POST)
 
     if not comment_form.is_valid():
       return None
