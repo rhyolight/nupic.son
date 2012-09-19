@@ -28,12 +28,6 @@ limitations under the License.
   <p class="request-contact-info"><strong>User:</strong> {{ user_email }}</p>
   <p class="request-status"><strong>Status:</strong> {{ status }}</p>
   <p class="request-sent-on"><strong>Created on:</strong> {{ connection.created_on }}</p>
-  <br>
-  {% if connection.message %}
-    <p class="request-message"><strong>Message:</strong> {{ connection.message|default:"" }}</p>
-  {% else %}
-    <p class="request-message"><strong>Message:</strong> No Message Specified </p>
-  {% endif %}
   <div class="request-response">
     <form action="{{ response_action }}" method="post" id="form" class="form-project-comment">
       <div id="request-respond-button-row" class="row button-row">
