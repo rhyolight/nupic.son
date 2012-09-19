@@ -544,7 +544,6 @@ class ShowConnection(RequestHandler):
       'accept_org_admin' : accept_org_admin,
       'reject_org_admin' : reject_org_admin,
       'message_box' : message_box,
-      'private_comments_visible' : self.data.is_org_admin,
       'messages' : self.getMessages(),
     }
     
@@ -673,8 +672,8 @@ class ShowConnection(RequestHandler):
     db.run_in_transaction(decline_org_admin_txn)
 
 
-class PostComment(RequestHandler):
-  """View which handles publishing comments about a connection
+class SubmitConnectionMessagePost(RequestHandler):
+  """POST request handler for submission of connection messages.
   """
 
   def djangoURLPatterns(self):
@@ -690,61 +689,45 @@ class PostComment(RequestHandler):
     self.mutator.connectionFromKwargs()
     self.mutator.commentVisible(self.data.connection.organization)
 
-    # check if the comment is given by the author of the proposal
-    if self.data.connection.profile.key() == self.data.profile.key():
-      self.data.public_only = True
-      return
-
-    self.data.public_only = False
     self.check.isMentorForOrganization(self.data.connection.organization)
 
-  def createCommentFromForm(self):
-    """Creates a new comment based on the data inserted in the form.
+  def createMessageFromForm(self):
+    """Creates a new message based on the data inserted in the form.
 
     Returns:
-      a newly created comment entity or None
+      a newly created message entity or None
     """
 
-    assert isSet(self.data.public_only)
     assert isSet(self.data.connection)
 
-    if self.data.public_only:
-      comment_form = MessageForm(self.data.request.POST)
-    else:
-      # This form contains checkbox for indicating private/public comments.
-      comment_form = MessageForm(self.data.request.POST)
+    message_form = MessageForm(self.data.request.POST)
 
-    if not comment_form.is_valid():
+    if not message_form.is_valid():
       return None
 
-    if self.data.public_only:
-      comment_form.cleaned_data['is_private'] = False
-    comment_form.cleaned_data['author'] = self.data.profile
+    message_form.cleaned_data['author'] = self.data.profile
 
     q = GSoCProfile.all().filter('mentor_for', 
         self.data.connection.organization)
-    q = q.filter('status', 'active')
-    if comment_form.cleaned_data.get('is_private'):
-      q.filter('notify_private_comments', True)
-    else:
-      q.filter('notify_public_comments', True)
-    mentors = q.fetch(1000)
+    q.filter('status', 'active')
+    q.filter('notify_public_comments', True)
+    to_emails = [i.email for i in q if i.key() != self.data.profile.key()]
 
-    to_emails = [i.email for i in mentors \
-                 if i.key() != self.data.profile.key()]
+    def create_message_txn():
+      message = message_form.create(commit=True, parent=self.data.connection)
 
-    def create_comment_txn():
-      comment = comment_form.create(commit=True, parent=self.data.connection)
-      context = gsoc_notifications.newCommentContext(self.data, comment, to_emails)
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=comment)
+      context = gsoc_notifications.newConnectionMessageContext(
+          self.data, message, to_emails)
+      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=message)
       sub_txn()
-      return comment
 
-    return db.run_in_transaction(create_comment_txn)
+      return message
+
+    return db.run_in_transaction(create_message_txn)
 
   def post(self):
 
-    connection = self.createCommentFromForm()
+    connection = self.createMessageFromForm()
     if connection:
       # TODO(dcrodman): Change the org_admin_requests page to org_connections
       self.redirect.program()
