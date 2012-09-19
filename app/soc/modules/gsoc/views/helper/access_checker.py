@@ -186,10 +186,10 @@ class Mutator(access_checker.Mutator):
     """ Set the connection entity in the RequestData object.
     """
 
-    self.profileFromKwargs()
+    self.userFromKwargs()
 
     self.data.connection = GSoCConnection.get_by_id(
-        long(self.data.kwargs['id']), self.data.url_profile.parent_key())
+        long(self.data.kwargs['id']), self.data.url_user)
     if not self.data.connection:
       raise AccessViolation('This connection does not exist.')
 
