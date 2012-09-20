@@ -20,7 +20,7 @@ import hashlib
 from google.appengine.ext import db
 from google.appengine.api import users
 
-from django import forms as djangoforms
+from django import forms as django_forms
 from django.core.urlresolvers import reverse
 from django.forms.fields import ChoiceField
 from django.forms.widgets import RadioSelect
@@ -76,7 +76,7 @@ class ConnectionForm(GSoCModelForm):
   #    choices=(('1', 'Org Admin'), ('2', 'Mentor')),
   #    required=True,
   #    initial='2')
-  role = ChoiceField(widget=djangoforms.Select(),
+  role = ChoiceField(widget=django_forms.Select(),
       choices=(('1', 'Mentor'), ('2', 'Org Admin')))
 
   message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
@@ -726,15 +726,14 @@ class SubmitConnectionMessagePost(RequestHandler):
     return db.run_in_transaction(create_message_txn)
 
   def post(self):
-
-    connection = self.createMessageFromForm()
-    if connection:
+    message = self.createMessageFromForm()
+    if message:
       # TODO(dcrodman): Change the org_admin_requests page to org_connections
-      self.redirect.program()
-      self.redirect.to('gsoc_dashboard', anchor='org_admin_requests')
+      self.redirect.show_connection(self.data.url_user, self.data.connection)
+      self.redirect.to(validated=True)
     else:
-      self.redirect.show_connection(self.data.user, self.data.organization)
-      self.redirect.to(url_names.GSOC_SHOW_CONNECTION, validated=True)
+      self.redirect.show_connection(self.data.url_user, self.data.connection)
+      self.redirect.to()
 
   def get(self):
     self.error(405)
