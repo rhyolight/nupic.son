@@ -733,7 +733,11 @@ class SubmitConnectionMessagePost(RequestHandler):
       self.redirect.to(validated=True)
     else:
       self.redirect.show_connection(self.data.url_user, self.data.connection)
-      self.redirect.to()
+
+      # a bit hacky :-( may be changed when possible
+      self.request.method = 'GET'
+      request_handler = ShowConnection()
+      self.response = request_handler(self.request, *self.args, **self.kwargs)
 
   def get(self):
     self.error(405)
