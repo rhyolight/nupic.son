@@ -183,7 +183,6 @@ class Homepage(RequestHandler):
 
     if current_timeline in ['student_signup_period',
         'working_period', 'offseason']:
-      context['leaderboard'] = Leaderboard(self.data)
       featured_task = task_logic.getFeaturedTask(self.data.program)
 
       if featured_task:
