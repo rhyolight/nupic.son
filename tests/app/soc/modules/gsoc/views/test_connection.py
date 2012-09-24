@@ -17,8 +17,13 @@
 
 from google.appengine.ext import db
 
+from soc.models.connection import RESPONSE_STATE_ACCEPTED
+from soc.models.connection import RESPONSE_STATE_REJECTED
+
 from soc.modules.gsoc.models.connection import GSoCConnection
+from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
@@ -40,7 +45,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 
         'v2/modules/gsoc/connection/show_connection.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/base.html')
 
   def testConnectionCreate(self):
     # Test GET call.
@@ -58,17 +63,16 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     # Test POST to OrgConnectionPage.
     expected = {
         'parent' : other_data.user,
-        'profile' : other_data.profile,
         'organization' : self.org,
         'org_mentor' : 'Accepted',
         'org_org_admin' : 'Accepted'
-    }
+        }
     data = {
         'users' : other_data.profile.email,
         'role' : '2',
         'message' : 'Test message',
         'organization' : self.org
-    }
+        }
     response = self.post(url, data)
     self.assertEmailSent(bcc=other_data.profile.email, n=1)
     connection = GSoCConnection.all().ancestor(other_data.user).get()
@@ -77,42 +81,97 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     # Test POST to UserConnectionPage.
     del expected['org_mentor']
     del expected['org_org_admin']
-    expected['user_mentor'] = True
-    expected['org_org_admin'] = True
+    expected['user_mentor'] = 'Accepted'
+    expected['org_org_admin'] = 'Accepted'
 
     data = {
         'user' : other_data.user,
         'profile' : other_data.profile,
         'organization' : self.org
-    }
+        }
     response = self.post(url, data)
     self.assertEmailSent(bcc=other_data.profile.email, n=1)
     connection = GSoCConnection.all().ancestor(other_data.user).get()
     self.assertIsNotNone(connection)
     
-  def testConnectionRespond(self):
-    # Create the users needed for viewing a connection.
-    other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
-    other_data.createOtherUser('other_user@example.com')
-    other_data.createOrgAdmin(self.org)
-
-    # TODO(dcrodman): Currently trying to make this work; url is in the proper
-    # format with the correct args but keeps returning 404s.
-    from unittest import SkipTest
-    raise SkipTest
+  def testConnectionUserAction(self):
+    self.data.createProfile()
 
     # Create the connection to be viewed.
+    properties = {
+        'parent' : self.data.user,
+        'profile' : self.data.profile,
+        'organization' : self.org,
+        'org_mentor' : RESPONSE_STATE_ACCEPTED,
+        'org_org_admin' : RESPONSE_STATE_ACCEPTED
+        }
+    connection = seeder_logic.seed(GSoCConnection, properties)
+
+    # Test GET.
+    url = '/gsoc/connection/%s/%s' % (
+        self.data.profile.key().name(), 
+        long(connection.key().id()))
+    response = self.get(url)
+    self.assertConnectionShowTemplatesUsed(response)
+
+    # Test the various User responses to an org admin invite.
+    data = {'action' : 'Reject Org Admin'}
+    response = self.post(url, data)
+    self.assertResponseRedirect(response)
+    connection = GSoCConnection.all().get()
+    self.assertEqual(connection.user_mentor, RESPONSE_STATE_REJECTED)
+    profile = GSoCProfile.all().get()
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+
+    data['action'] = 'Accept Org Admin'
+    response = self.post(url, data)
+    self.assertResponseRedirect(response)
+    connection = GSoCConnection.all().get()
+    self.assertEqual(connection.user_mentor, RESPONSE_STATE_ACCEPTED)
+    profile = GSoCProfile.all().get()
+    self.assertIn(self.org.key(), profile.mentor_for)
+    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertEmailSent(to=profile.email)
+
+  def testConnectionOrgAction(self):
+    self.data.createOrgAdmin(self.org)
+
+    other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
+    other_data.createProfile()
+
+    # Create the connection. 
     properties = {
         'parent' : other_data.user,
         'profile' : other_data.profile,
         'organization' : self.org,
-        'org_mentor' : True,
-    }
+        'user_mentor' : RESPONSE_STATE_ACCEPTED
+        }
     connection = seeder_logic.seed(GSoCConnection, properties)
 
-    # Test GET. 
-    url = 'gsoc/connection/%s/%s' % (
-        other_data.profile.key().name(), unicode(connection.key().id()))
+    # Test GET.
+    url = '/gsoc/connection/%s/%s' % (
+        other_data.profile.key().name(), 
+        long(connection.key().id()))
     response = self.get(url)
     self.assertConnectionShowTemplatesUsed(response)
-    
+
+    # Test the various Org responses.
+    data = {'action' : 'Reject Mentor'}
+    response = self.post(url, data)
+    self.assertResponseRedirect(response)
+    connection = GSoCConnection.all().get()
+    self.assertEqual(connection.org_mentor, RESPONSE_STATE_REJECTED)
+    profile = GSoCProfile.all().filter(
+        'link_id =', other_data.profile.link_id).get()
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    data['action'] = 'Accept Mentor'
+    response = self.post(url, data)
+    self.assertResponseRedirect(response)
+    connection = GSoCConnection.all().get()
+    self.assertEqual(connection.org_mentor, RESPONSE_STATE_ACCEPTED)
+    profile = GSoCProfile.all().filter(
+        'link_id =', other_data.profile.link_id).get()
+    self.assertIn(self.org.key(), profile.mentor_for)
+    self.assertEmailSent(to=profile.email)
