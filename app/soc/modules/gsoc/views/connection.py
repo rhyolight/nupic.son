@@ -276,8 +276,6 @@ class OrgConnectionPage(RequestHandler):
     
     connection_form = OrgConnectionForm(request_data=self.data, 
         data=self.data.POST)
-    #for k, v in vars(self.data).iteritems():
-    #    print '%s : %s' % (k, v)
     if not connection_form.is_valid():
       return None
       
@@ -315,7 +313,8 @@ class OrgConnectionPage(RequestHandler):
     # the user object and their profile to populate the Connection instance.
     for user in self.data.user_connections:
       connection_form.instance = None
-      db.run_in_transaction(create_connection_txn, user, 'test@example.com')
+      profile = GSoCProfile.all().ancestor(user).get()
+      db.run_in_transaction(create_connection_txn, user, profile.email)
 
     def create_anonymous_connection_txn(email):
       # Create the anonymous connection - a placeholder until the user 
@@ -390,7 +389,7 @@ class UserConnectionPage(RequestHandler):
       'program': self.data.program,
       'connection_form': connection_form,
     }
-
+    
   def post(self):
     """ Handler for a GSoC Connection post request for a user. """
     
@@ -483,9 +482,13 @@ class ShowConnection(RequestHandler):
     self.check.hasProfile()
 
     self.mutator.connectionFromKwargs()
-
+    self.mutator.profileFromKwargs()
+    # Add org to request data for access checking methods.
+    self.data.organization = self.data.connection.organization
     self.check.canViewConnection()
-    self.data.is_org_admin = not (self.data.url_user == self.data.user)
+
+    self.data.is_org_admin = self.data.connection.organization.key() in \
+        self.data.profile.org_admin_for 
 
   def getMessages(self, limit=1000):
     """Gets all the messages for the connection.
@@ -500,25 +503,21 @@ class ShowConnection(RequestHandler):
   def context(self):
     """ Handler for Show GSoCConnection get request. """
 
-    header_name = self.data.url_user.link_id \
+    header_name = self.data.url_profile.public_name \
         if self.data.is_org_admin else self.data.organization.name
 
     # Determine which buttons will be shown to the user.
-    mentor = admin = None
+    accept_mentor = reject_mentor = accept_org_admin = reject_org_admin = False
     if self.data.is_org_admin:
-      mentor = self.data.connection.org_mentor
-      admin = self.data.connection.org_org_admin
+      # Org can only receive mentor requests, so allow the admin to respond or
+      # to offer the user an org admin role.
+      if self.data.connection.org_mentor == RESPONSE_STATE_UNREPLIED:
+        accept_mentor = reject_mentor = accept_org_admin = True
     else:
-      mentor = self.data.connection.user_mentor
-      admin = self.data.connection.user_org_admin
-
-    # Basically button visibility is the opposite of the state they represent.
-    accept_org_admin = True if not admin else False
-    reject_org_admin = True if admin is True or None else False
-    accept_mentor = True if not mentor else False
-    reject_mentor = True if mentor is True or None else False
-    if accept_org_admin:
-      accept_mentor = True  
+      if self.data.connection.user_mentor == RESPONSE_STATE_UNREPLIED:
+        accept_mentor = reject_mentor = True
+        if self.data.connection.org_org_admin:
+          accept_org_admin = reject_org_admin = True
         
     # Fetch the two statuses from the perspective of both parties.
     status = self.data.connection.status()
@@ -586,17 +585,18 @@ class ShowConnection(RequestHandler):
       if connection.user_mentor == RESPONSE_STATE_ACCEPTED and \
           connection.org_mentor == RESPONSE_STATE_ACCEPTED:
         profile = db.get(profile_key)
-        profile.is_mentor = True
-        profile.mentor_for.append(org_key)
-        profile.mentor_for = list(set(profile.mentor_for))
-        profile.put()
 
         # Send out a welcome email to new mentors.
         if not profile.is_mentor:
           mentor_mail = notifications.getMentorWelcomeMailContext(
               profile, self.data, messages)
           if mentor_mail:
-            mailer.getSpawnMailTaskTxn(mentor_mail, parent=request)()
+            mailer.getSpawnMailTaskTxn(mentor_mail, parent=connection)()
+
+        profile.is_mentor = True
+        profile.mentor_for.append(org_key)
+        profile.mentor_for = list(set(profile.mentor_for))
+        profile.put()
       
       connection.put()
       
@@ -604,7 +604,7 @@ class ShowConnection(RequestHandler):
   
   def _rejectMentor(self):
     connection_key = self.data.connection.key()
-    
+
     def decline_mentor_txn():
       connection = db.get(connection_key)
       if self.data.is_org_admin:
@@ -623,6 +623,7 @@ class ShowConnection(RequestHandler):
     
     def accept_org_admin_txn():
       connection = db.get(connection_key)
+
       if self.data.is_org_admin:
         connection.org_org_admin = RESPONSE_STATE_ACCEPTED
         connection.org_mentor = RESPONSE_STATE_ACCEPTED
@@ -633,18 +634,19 @@ class ShowConnection(RequestHandler):
       if connection.org_org_admin == RESPONSE_STATE_ACCEPTED and \
           connection.user_org_admin == RESPONSE_STATE_ACCEPTED:
         profile = db.get(profile_key)
-        # Org Admins are mentors by default, so we have to promote the 
-        # user twice - one to mentor, one to org admin.
-        profile.is_mentor = True
-        profile.mentor_for.append(org_key)
-        profile.mentor_for = list(set(profile.mentor_for))
 
         # Send out a welcome email to new mentors.
         if not profile.is_mentor:
           mentor_mail = notifications.getMentorWelcomeMailContext(
               profile, self.data, messages)
           if mentor_mail:
-            mailer.getSpawnMailTaskTxn(mentor_mail, parent=request)()
+            mailer.getSpawnMailTaskTxn(mentor_mail, parent=connection)()
+        
+        # Org Admins are mentors by default, so we have to promote the 
+        # user twice - one to mentor, one to org admin.
+        profile.is_mentor = True
+        profile.mentor_for.append(org_key)
+        profile.mentor_for = list(set(profile.mentor_for))
         
         profile.is_org_admin = True
         profile.org_admin_for.append(org_key)
@@ -662,10 +664,10 @@ class ShowConnection(RequestHandler):
       connection = db.get(connection_key)
       if self.data.is_org_admin:
         # Org can just 'withdraw' the org admin offer.
-        connection.org_org_admin = False
+        connection.org_org_admin = RESPONSE_STATE_REJECTED
       else:
         # User rejecting an org admin offer rejects both.
-        connection.user_org_admin = False
+        connection.user_org_admin = RESPONSE_STATE_REJECTED
         connection.user_mentor = RESPONSE_STATE_REJECTED
       connection.put()
       
