@@ -68,9 +68,9 @@ class GCIProgram(soc.models.program.Program):
 
   #: Document reference property used for the Student Agreement
   terms_and_conditions = db.ReferenceProperty(
-    reference_class=soc.models.document.Document,
-    verbose_name=ugettext('Terms and Conditions'),
-    collection_name='terms_and_conditions')
+      reference_class=soc.models.document.Document,
+      verbose_name=ugettext('Terms and Conditions'),
+      collection_name='terms_and_conditions')
   terms_and_conditions.help_text = ugettext(
       'Document containing Terms and Conditions for participants.')
 
