@@ -60,7 +60,7 @@ class HowItWorks(Template):
       start_text = 'Search for tasks'
       start_link = self.data.redirect.program().urlOf('gci_list_tasks')
     elif self.data.program.example_tasks:
-      start_link = 'See example tasks'
+      start_text = 'See example tasks'
       start_link = self.data.program.example_tasks
     else:
       start_text = start_link = ''
