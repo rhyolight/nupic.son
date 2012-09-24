@@ -73,3 +73,10 @@ class GCIProgram(soc.models.program.Program):
     collection_name='terms_and_conditions')
   terms_and_conditions.help_text = ugettext(
       'Document containing Terms and Conditions for participants.')
+
+  #: An URL to a page with example tasks so that students can get
+  #: some intuition about the types of tasks in the program
+  example_tasks = db.LinkProperty(
+      required=False, verbose_name=ugettext('Example tasks'))
+  example_tasks.help_text = ugettext(
+      'URL to a page with example tasks.')
