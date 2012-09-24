@@ -11,6 +11,7 @@
             </div>
 
             <div class="stopwatch-remaining clearfix">
+                <span class="remain">{{ remaining_time_message }}</span>
                 <div class="stopwatch-time">
                     <div class="stopwatch-time-c">
                         {% if remaining_days == 0 %}
@@ -30,7 +31,6 @@
                         {% endif %}
                     </div>
                 </div>
-                <span class="remain">Remaining</span>
             </div>
         </div>
         <!-- end .stockwatch -->

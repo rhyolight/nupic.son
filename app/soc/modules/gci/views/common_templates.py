@@ -30,7 +30,14 @@ class Timeline(Template):
   """
 
   def context(self):
-    rem_days, rem_hours, rem_mins = self.data.timeline.remainingTime()
+
+    if self.data.timeline.tasksPubliclyVisible():
+      rem_days, rem_hours, rem_mins = self.data.timeline.remainingTime()
+      remaining_time_message = 'Remaining'
+    else:
+      rem_days, rem_hours, rem_mins = self.data.timeline.tasksVisibleInTime()
+      remaining_time_message = 'Starts in'
+
     complete_percentage = self.data.timeline.completePercentage()
     stopwatch_percentage = self.data.timeline.stopwatchPercentage()
     return {
@@ -38,7 +45,8 @@ class Timeline(Template):
         'remaining_hours': rem_hours,
         'remaining_minutes': rem_mins,
         'complete_percentage': complete_percentage,
-        'stopwatch_percentage': stopwatch_percentage
+        'stopwatch_percentage': stopwatch_percentage,
+        'remaining_time_message': remaining_time_message
     }
 
   def templatePath(self):

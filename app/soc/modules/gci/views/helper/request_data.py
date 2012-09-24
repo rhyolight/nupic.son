@@ -130,6 +130,13 @@ class TimelineHelper(request_data.TimelineHelper):
     end = self.stopAllWorkOn()
     return timeline_helper.remainingTimeSplit(end)
 
+  def tasksVisibleInTime(self):
+    """Returns the remaining time till the tasks are publicly visible to
+    the students.
+    """
+    end = self.tasksPubliclyVisibleOn()
+    return timeline_helper.remainingTimeSplit(end)
+
   def completePercentage(self):
     """Computes the remaining time percentage
 
