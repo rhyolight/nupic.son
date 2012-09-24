@@ -189,7 +189,7 @@ form input[type="submit"].task-btn:hover,
 .block-user-message a:hover {/*Underlined text*/
     text-decoration: underline;
 }
-.block-how-it-works .block-how-it-works-start a:hover, 
+.block-how-it-works .block-how-it-works-start a.start-link:hover, 
 a.btn:hover, 
 input.button:hover,
 input.btn:hover {/*Dark blue background*/
@@ -1379,10 +1379,10 @@ body {
             display: block;
             font-family: 'Oswald', sans-serif;
             font-size: 34px;
-            margin: 25px 0 5px 15px;
+            margin: 20px 0 5px 15px;
             text-transform: uppercase;
         }
-        .block-how-it-works .block-how-it-works-start a {
+        .block-how-it-works .block-how-it-works-start a.start-link {
             background: #c53926 url(../../../images/v2/gci/arrow-white-lg.png) 95% 50% no-repeat;
                 border-radius: 3px;
                 -moz-border-radius: 3px;
@@ -1398,6 +1398,17 @@ body {
             font-weight: bold;
             line-height: 18px;
             margin-left: 70px;
+            padding: 4px 25px 5px 10px;
+        }
+        .block-how-it-works .block-how-it-works-start a.example-tasks {
+            color: #c53926;
+            display: block;
+            float: left;
+            font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+            font-size: 9px;
+            font-weight: bold;
+            line-height: 18px;
+            margin-left: 100px;
             padding: 4px 25px 5px 10px;
         }
 .block-featured-task {/*Featured Task*/
