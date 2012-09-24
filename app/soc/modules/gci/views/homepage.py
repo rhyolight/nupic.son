@@ -43,16 +43,25 @@ class HowItWorks(Template):
     from soc.modules.gci.models.program import GCIProgram
     about_page = GCIProgram.about_page.get_value_for_datastore(program)
 
+    example_tasks_link = ''
+
     if self.data.timeline.orgSignup():
       start_text = 'Sign up as organization'
       start_link = r.program().urlOf('gci_take_org_app')
+      if self.data.program.example_tasks:
+        example_tasks_link = self.data.program.example_tasks
     elif self.data.timeline.studentSignup() and not self.data.profile:
       start_text = 'Register As Student'
       start_link = r.createProfile('student').urlOf('create_gci_profile',
-                                                    secure=True)
+          secure=True)
+      if self.data.program.example_tasks:
+        example_tasks_link = self.data.program.example_tasks
     elif self.data.timeline.tasksPubliclyVisible():
       start_text = 'Search for tasks'
       start_link = self.data.redirect.program().urlOf('gci_list_tasks')
+    elif self.data.program.example_tasks:
+      start_link = 'See example tasks'
+      start_link = self.data.program.example_tasks
     else:
       start_text = start_link = ''
 
@@ -60,6 +69,7 @@ class HowItWorks(Template):
         'about_link': r.document(about_page).url(),
         'start_text': start_text,
         'start_link': start_link,
+        'example_tasks_link': example_tasks_link
     }
 
   def templatePath(self):
