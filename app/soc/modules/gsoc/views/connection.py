@@ -503,7 +503,7 @@ class ShowConnection(RequestHandler):
   def context(self):
     """ Handler for Show GSoCConnection get request. """
 
-    header_name = self.data.url_profile.public_name \
+    header_name = self.data.url_user.link_id \
         if self.data.is_org_admin else self.data.organization.name
 
     # Determine which buttons will be shown to the user.
