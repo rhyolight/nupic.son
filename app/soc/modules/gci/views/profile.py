@@ -326,7 +326,7 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
     return url_patterns.CREATE_PROFILE
 
   def _getCreateUserForm(self):
-    return GCIUserForm(self.data.POST)
+    return GCIUserForm(self.data.POST or None)
 
   def _getEditProfileForm(self, is_student):
     if is_student:
