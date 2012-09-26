@@ -63,12 +63,6 @@ class Connection(db.Model):
   organization = db.ReferenceProperty(Organization, 
       required=True,
       collection_name='connections')
-                                     
-  #: The profile of the User who has either requested or been invited to either
-  #: a mentor or org admin role.
-  profile = db.ReferenceProperty(Profile,
-      required=False,
-      collection_name='connections')
   
   #: Property for the ShowConnection page to keep track of the time that the
   #: connection was initiated.
@@ -134,16 +128,18 @@ class Connection(db.Model):
     """ Returns a simple status string based on which of the user/org
     properties has been set. 
     """
-    # No matter what the user will always be at least a mentor if accepted.
-    if self.user_mentor and self.org_mentor:
+    if self.user_mentor == RESPONSE_STATE_ACCEPTED and \
+        self.org_mentor == RESPONSE_STATE_ACCEPTED:
       return 'Accepted'
-    elif self.user_mentor and not self.org_mentor:
-      return 'Org Action Needed'
-    elif not self.user_mentor and self.org_mentor:
-      return 'User Action Needed'
-    elif not self.user_mentor and not self.org_mentor:
+    elif self.user_mentor == RESPONSE_STATE_REJECTED or \
+        self.org_mentor == RESPONSE_STATE_REJECTED:
       return 'Rejected'
-    return ''
+    elif self.user_mentor == RESPONSE_STATE_UNREPLIED:
+      return 'User Action Required'
+    elif self.org_mentor == RESPONSE_STATE_UNREPLIED:
+      return 'Org Action Required'
+    else:
+      return ''
 
 class AnonymousConnection(db.Model):
   """ This model is intended for use as a placeholder Connection for the
