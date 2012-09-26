@@ -116,10 +116,8 @@ class GSoCProfileForm(profile.ProfileForm):
     _choiceWidgets = forms.choiceWidgets(GSoCProfile,
         ['res_country', 'ship_country',
          'tshirt_style', 'tshirt_size', 'gender'])
-    _hiddenWidgets = forms.hiddenWidgets(GSoCProfile,
-        ['longitude', 'latitude'])
 
-    widgets = forms.mergeWidgets(_choiceWidgets, _hiddenWidgets)
+    widgets = forms.mergeWidgets(_choiceWidgets)
 
   def templatePath(self):
     return gsoc_forms.TEMPLATE_PATH

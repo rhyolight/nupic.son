@@ -194,22 +194,6 @@ class Profile(soc.models.linkable.Linkable):
   # (private) contact information
   #====================================================================
 
-  #: Optional field storing the latitude provided by the Role; displayed
-  #: publicly.
-  latitude = db.FloatProperty(
-      verbose_name=ugettext('Latitude'))
-  latitude.help_text = ugettext(
-      'decimal degrees northerly (N), use minus sign (-) for southerly (S)')
-  latitude.group = ugettext("2. Location Info")
-
-  #: Optional field storing the longitude provided by the Role; displayed
-  #: publicly.
-  longitude = db.FloatProperty(
-      verbose_name=ugettext('Longitude'))
-  longitude.help_text = ugettext(
-      'decimal degrees easterly (E), use minus sign (-) for westerly (W)')
-  longitude.group = ugettext("2. Location Info")
-
   #: field storing whether the User has agreed to publish his location
   publish_location = db.BooleanProperty(required=False, default=False,
       verbose_name=ugettext('Publish my location'))

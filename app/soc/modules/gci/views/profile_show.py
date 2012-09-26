@@ -44,7 +44,6 @@ class GCIProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
               'ship_street_extra', 'ship_city', 'ship_state',
               'ship_country', 'ship_postalcode', 'birth_date',
               'tshirt_style', 'tshirt_size', 'gender', 'program_knowledge']
-    hidden_fields = ['latitude', 'longitude']
 
 
 class GCIProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
