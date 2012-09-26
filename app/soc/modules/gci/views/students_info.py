@@ -201,11 +201,6 @@ class StudentsList(Template):
         (lambda e, sp, *args: urlize(sp[e.parent_key()].photo_url)),
         hidden=True)
 
-    list_config.addColumn('publish_location', 'Publish Location',
-        (lambda e, sp, *args: 'Yes' if sp[
-            e.parent_key()].publish_location else 'No'),
-        hidden=True)
-
     list_config.addColumn('program_knowledge', 'Program Knowledge',
         (lambda e, sp, *args: sp[e.parent_key()].program_knowledge),
         hidden=True)

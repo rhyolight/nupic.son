@@ -365,7 +365,6 @@ def seed(request, *args, **kwargs):
       'res_city': 'city',
       'res_street': 'test street',
       'res_postalcode': '12345',
-      'publish_location': True,
       'blog': 'http://www.blog.com/',
       'home_page': 'http://www.homepage.com/',
       'photo_url': 'http://www.photosite.com/thumbnail.png',

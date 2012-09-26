@@ -37,11 +37,10 @@ class GCIProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
     model = GCIProfile
     css_prefix = 'gci_profile_show'
     fields = ['public_name', 'given_name', 'surname', 'im_network',
-              'im_handle', 'home_page', 'blog', 'photo_url',
-              'publish_location', 'email', 'res_street',
-              'res_street_extra', 'res_city', 'res_state', 'res_country',
-              'res_postalcode', 'phone', 'ship_name', 'ship_street',
-              'ship_street_extra', 'ship_city', 'ship_state',
+              'im_handle', 'home_page', 'blog', 'photo_url', 'email',
+              'res_street', 'res_street_extra', 'res_city', 'res_state',
+              'res_country', 'res_postalcode', 'phone', 'ship_name',
+              'ship_street', 'ship_street_extra', 'ship_city', 'ship_state',
               'ship_country', 'ship_postalcode', 'birth_date',
               'tshirt_style', 'tshirt_size', 'gender', 'program_knowledge']
 

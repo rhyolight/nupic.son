@@ -55,9 +55,7 @@ PROFILE_EXCLUDE = [
     'is_student', 'is_mentor', 'is_org_admin',
 ]
 
-PREFILL_PROFILE_EXCLUDE = PROFILE_EXCLUDE + [
-    'publish_location', 'agreed_to_tos',
-]
+PREFILL_PROFILE_EXCLUDE = PROFILE_EXCLUDE + ['agreed_to_tos']
 
 
 class ProfileForm(forms.ModelForm):

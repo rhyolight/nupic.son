@@ -194,16 +194,6 @@ class Profile(soc.models.linkable.Linkable):
   # (private) contact information
   #====================================================================
 
-  #: field storing whether the User has agreed to publish his location
-  publish_location = db.BooleanProperty(required=False, default=False,
-      verbose_name=ugettext('Publish my location'))
-  publish_location.help_text = ugettext(
-      'By checking this box, you are agreeing to allow your location to be'
-      ' displayed, as given by the Marker below, on any map.'
-      ' For instance on the map linking Students to Mentors or'
-      ' by showing your location on your public profile page in the system.')
-  publish_location.group = ugettext("2. Location Info")
-
   #: Required field used as the contact mechanism for the program
   #: Role (for example the address the system sends emails to).
   email = db.EmailProperty(

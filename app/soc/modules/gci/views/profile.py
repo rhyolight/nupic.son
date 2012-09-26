@@ -61,7 +61,7 @@ PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
     'photo_url',
 ]
 
-STUDENT_EXCLUDE = PROFILE_EXCLUDE + ['publish_location']
+STUDENT_EXCLUDE = PROFILE_EXCLUDE
 
 SHOW_STUDENT_EXCLUDE = STUDENT_EXCLUDE + [
     'birth_date',
