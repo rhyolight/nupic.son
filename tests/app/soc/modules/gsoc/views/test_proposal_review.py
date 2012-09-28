@@ -230,7 +230,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseOK(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertTrue(proposal.is_editable_post_deadline)
 
   def testWishToMentorButton(self):
