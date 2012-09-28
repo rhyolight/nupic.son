@@ -313,7 +313,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseOK(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(proposal.status, 'withdrawn')
 
     url = '/gsoc/proposal/withdraw/' + suffix
@@ -322,7 +322,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseBadRequest(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(proposal.status, 'withdrawn')
 
     url = '/gsoc/proposal/withdraw/' + suffix
@@ -331,7 +331,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseOK(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(proposal.status, 'pending')
 
   def testAssignMentor(self):
