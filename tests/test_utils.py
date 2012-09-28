@@ -28,7 +28,9 @@ import unittest
 import gaetestbed
 from mox import stubout
 
+from google.appengine.datastore import datastore_stub_util
 from google.appengine.ext import db
+from google.appengine.ext import testbed
 
 from django.test import client
 from django.test import TestCase
@@ -171,6 +173,12 @@ class SoCTestCase(unittest.TestCase):
       dev_test: True iff DEV_TEST is in environment (in parent)
     """
     self.dev_test = 'DEV_TEST' in os.environ
+
+    self.testbed = testbed.Testbed()
+    self.testbed.activate()
+    self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(
+        probability=0)
+    self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
 
   def assertItemsEqual(self, expected_seq, actual_seq, msg=''):
     """An unordered sequence / set specific comparison.
