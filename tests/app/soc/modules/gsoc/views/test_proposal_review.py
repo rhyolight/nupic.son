@@ -254,13 +254,13 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     postdata = {'value': 'unchecked'}
     response = self.post(url, postdata)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertTrue(self.data.profile.key() in proposal.possible_mentors)
 
     postdata = {'value': 'checked'}
     response = self.post(url, postdata)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertFalse(self.data.profile.key() in proposal.possible_mentors)
 
     other_mentor.profile.mentor_for = []
@@ -272,7 +272,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     url = '/gsoc/proposal/review/' + suffix
     response = self.get(url)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertFalse(other_mentor.profile.key() in proposal.possible_mentors)
 
   def testPubliclyVisibleButton(self):
