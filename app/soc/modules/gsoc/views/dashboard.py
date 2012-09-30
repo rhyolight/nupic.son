@@ -1237,7 +1237,7 @@ class OrgConnectionComponent(Component):
         lambda e, *args: '%s' % e.keyName(), hidden=True)
     
     list_config.addColumn('username', 'Username',
-        lambda e, *args: e.profile.link_id)
+        lambda e, *args: e.parent().link_id)
     list_config.addColumn('role', 'Role',
         lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor')
     list_config.addColumn('status', 'Status',
