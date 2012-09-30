@@ -69,16 +69,8 @@ def check_existing_connection_txn(user, org):
 class ConnectionForm(GSoCModelForm):
   """ Django form for the ShowConnection page. """
 
-  #TODO(dcrodman): Sticking with the dropdown for role selection at the 
-  # moment since I don't like how the Radio button ends up staggered,
-  # this will be something to work on later.
-  #role = ChoiceField(widget=RadioSelect(), 
-  #    choices=(('1', 'Org Admin'), ('2', 'Mentor')),
-  #    required=True,
-  #    initial='2')
   role = ChoiceField(widget=django_forms.Select(),
       choices=(('1', 'Mentor'), ('2', 'Org Admin')))
-
   message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
 
   def __init__(self, request_data=None, message=None, is_admin=False, 
@@ -519,7 +511,6 @@ class ShowConnection(RequestHandler):
         if self.data.connection.org_org_admin:
           accept_org_admin = reject_org_admin = True
         
-    # Fetch the two statuses from the perspective of both parties.
     status = self.data.connection.status()
 
     form = MessageForm(self.data.POST or None)
@@ -533,7 +524,6 @@ class ShowConnection(RequestHandler):
       'page_name': 'Viewing Connection',
       'is_admin' : self.data.is_org_admin,
       'header_name': header_name,
-      #'user_email' : self.data.connection.profile.email,
       'org_name' : self.data.connection.organization.name,
       'status' : status,
       'connection' : self.data.connection,
@@ -597,6 +587,14 @@ class ShowConnection(RequestHandler):
         profile.mentor_for.append(org_key)
         profile.mentor_for = list(set(profile.mentor_for))
         profile.put()
+
+        # Generate a message to mark that the user was promoted.
+        properties = {
+          'author' : self.data.profile,
+          'content': '(AUTO) %s Promoted to Mentor.' % profile.link_id
+          }
+        message = GSoCConnectionMessage(parent=connection, **properties)
+        message.put()
       
       connection.put()
       
@@ -612,6 +610,13 @@ class ShowConnection(RequestHandler):
       else:
         connection.user_mentor = RESPONSE_STATE_REJECTED
       connection.put()
+
+      properties = {
+          'author' : self.data.profile,
+          'content': '(AUTO) Mentor Connection Rejected.'
+          }
+      message = GSoCConnectionMessage(parent=connection, **properties)
+      message.put()
       
     db.run_in_transaction(decline_mentor_txn)
     
@@ -651,6 +656,14 @@ class ShowConnection(RequestHandler):
         profile.is_org_admin = True
         profile.org_admin_for.append(org_key)
         profile.org_admin_for = list(set(profile.org_admin_for))
+
+        # Generate a message to mark that the user was promoted.
+        properties = {
+          'author' : self.data.profile,
+          'content': '(AUTO) %s Promoted to Org Admin.' % profile.link_id
+          }
+        message = GSoCConnectionMessage(parent=connection, **properties)
+        message.put()
         
         profile.put()
       connection.put()
@@ -670,9 +683,15 @@ class ShowConnection(RequestHandler):
         connection.user_org_admin = RESPONSE_STATE_REJECTED
         connection.user_mentor = RESPONSE_STATE_REJECTED
       connection.put()
+
+      properties = {
+          'author' : self.data.profile,
+          'content': '(AUTO) Org Admin Connection Rejected.'
+          }
+      message = GSoCConnectionMessage(parent=connection, **properties)
+      message.put()
       
     db.run_in_transaction(decline_org_admin_txn)
-
 
 class SubmitConnectionMessagePost(RequestHandler):
   """POST request handler for submission of connection messages.
