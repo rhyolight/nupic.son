@@ -27,6 +27,7 @@ from django.utils.translation import ugettext
 
 from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import profile as profile_logic
+from soc.modules.gci.logic import org_score as org_score_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import CLAIMABLE
@@ -249,14 +250,18 @@ def closeTask(task, profile):
     confirmation = profile_logic.sendFirstTaskConfirmationTxn(student, task)
   else:
     confirmation = lambda: None
-  
+
+  org_score_txn = org_score_logic.updateOrgScoreTxn(task)
+
+  @db.transactional(xg=True)
   def closeTaskTxn():
     task.put()
     comment_txn()
     startUpdatingTask(task, transactional=True)
     confirmation()
+    org_score_txn()
 
-  return db.run_in_transaction(closeTaskTxn)
+  return closeTaskTxn()
 
 
 def needsWorkTask(task, user):
