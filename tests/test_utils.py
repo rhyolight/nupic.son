@@ -176,8 +176,9 @@ class SoCTestCase(unittest.TestCase):
 
     self.testbed = testbed.Testbed()
     self.testbed.activate()
+
     self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(
-        probability=0)
+        probability=1)
     self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
 
   def assertItemsEqual(self, expected_seq, actual_seq, msg=''):
