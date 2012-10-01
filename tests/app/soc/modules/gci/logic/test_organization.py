@@ -28,12 +28,14 @@ from soc.modules.gci.models.task import GCITask
 from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
 from tests.program_utils import GCIProgramHelper
+from tests.test_utils import SoCTestCase
 
-class OrganizationTest(unittest.TestCase):
+class OrganizationTest(SoCTestCase):
   """Tests the logic for GCIOrganization.
   """
   
   def setUp(self):
+    self.init()
     self.gci_program_helper = GCIProgramHelper()
     self.program = self.gci_program_helper.createProgram()
     self.task_helper = GCITaskHelper(self.program)
