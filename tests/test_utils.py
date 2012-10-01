@@ -630,6 +630,7 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
     """
     # Initialize instances in the parent first
     super(GCIDjangoTestCase, self).init()
+    super(GCIDjangoTestCase, self).init()
 
   def assertGCITemplatesUsed(self, response):
     """Asserts that all the templates from the base view were used.
