@@ -21,6 +21,7 @@ from soc.models.connection import RESPONSE_STATE_ACCEPTED
 from soc.models.connection import RESPONSE_STATE_REJECTED
 
 from soc.modules.gsoc.models.connection import GSoCConnection
+from soc.modules.gsoc.models.connection_message import GSoCConnectionMessage
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -123,6 +124,9 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     profile = GSoCProfile.all().get()
     self.assertNotIn(self.org.key(), profile.mentor_for)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
+    msg = GSoCConnectionMessage.all().ancestor(connection).get()
+    self.assertNotEqual(None, msg)
+    msg.delete()
 
     data['action'] = 'Accept Org Admin'
     response = self.post(url, data)
@@ -133,6 +137,8 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     self.assertIn(self.org.key(), profile.mentor_for)
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertEmailSent(to=profile.email)
+    msg = GSoCConnectionMessage.all().ancestor(connection).get()
+    self.assertNotEqual(None, msg)
 
   def testConnectionOrgAction(self):
     self.data.createOrgAdmin(self.org)
@@ -165,6 +171,9 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     profile = GSoCProfile.all().filter(
         'link_id =', other_data.profile.link_id).get()
     self.assertNotIn(self.org.key(), profile.mentor_for)
+    msg = GSoCConnectionMessage.all().ancestor(connection).get()
+    self.assertNotEqual(None, msg)
+    msg.delete()
 
     data['action'] = 'Accept Mentor'
     response = self.post(url, data)
@@ -175,3 +184,5 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
         'link_id =', other_data.profile.link_id).get()
     self.assertIn(self.org.key(), profile.mentor_for)
     self.assertEmailSent(to=profile.email)
+    msg = GSoCConnectionMessage.all().ancestor(connection).get()
+    self.assertNotEqual(None, msg)
