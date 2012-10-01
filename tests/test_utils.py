@@ -181,6 +181,29 @@ class SoCTestCase(unittest.TestCase):
         probability=1)
     self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
 
+  @staticmethod
+  def use_hr_schema(func):
+    """Wrapper that makes the specified function to be called in HR datastore
+    schema environment.
+
+    It is important to mention that only the tested function is executed in
+    this environment. In particular, setUp() and tearDown() function are
+    run in the regular schema that is similar to Master/Slave.
+    """
+
+    def wrapper(self):
+      """Wrapper that sets the probability to zero and calls the wrapped
+      function.
+
+      Args:
+        self: an instance of SoCTestCase that invoked the wrapped function
+      """
+      self.policy.SetProbability(0)
+      func(self)
+      self.policy.SetProbability(1)
+
+    return wrapper
+
   def assertItemsEqual(self, expected_seq, actual_seq, msg=''):
     """An unordered sequence / set specific comparison.
 
