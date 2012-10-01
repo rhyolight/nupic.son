@@ -67,4 +67,4 @@ class GCIOrgScore(db.Model):
     """Returns the number of tasks that the student completed for
     the organization.
     """
-    return len(tasks)
+    return len(self.tasks)
