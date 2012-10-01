@@ -35,10 +35,17 @@ def storeAndNotify(comment):
   db.run_in_transaction(storeAndNotifyTxn(comment))
 
 
-def storeAndNotifyTxn(comment):
+def storeAndNotifyTxn(comment, task=None):
   """Returns a method to be run in a transaction to notify subscribers.
+
+  Args:
+    comment: A GCIComment instance
+    task: optional GCITask instance that is the parent of the specified comment
   """
-  task = comment.parent()
+  if not task:
+    task = comment.parent()
+  elif task.key() != comment.parent_key():
+    raise ValueError("The specified task must be the parent of the comment")
 
   to_emails = []
   profiles = GCIProfile.get(task.subscribers)
