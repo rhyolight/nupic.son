@@ -42,6 +42,13 @@ def updateOrgScoreTxn(task):
   return txn
 
 
+def queryForOrg(org, keys_only=False):
+  """Return the query to fetch OrgScore entities for the specified
+  organization.
+  """
+  return GCIOrgScore.all().filter('org', org)
+
+
 def queryForAncestorAndOrg(ancestor, org, keys_only=False):
   """Returns the query to fetch OrgScore entities for the specified
   ancestor and organization.
