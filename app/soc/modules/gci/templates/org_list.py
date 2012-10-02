@@ -48,9 +48,10 @@ class OrgList(Template):
       query = self._getQuery()
 
       starter = lists.keyStarter
+      prefetcher = self._getPrefetcher()
 
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, query, starter)
+      response_builder = lists.RawQueryContentResponseBuilder(self.request,
+          self._list_config, query, starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
       return None
@@ -63,6 +64,9 @@ class OrgList(Template):
 
   def _getListConfig(self):
     raise NotImplementedError
+
+  def _getPrefetcher(self):
+    return None
 
   def _getQuery(self):
     raise NotImplementedError
