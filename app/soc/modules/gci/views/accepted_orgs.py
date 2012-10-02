@@ -34,14 +34,62 @@ from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
 
-class AcceptedOrgsList(Template):
-  """Template for list of accepted organizations.
+class OrgList(Template):
+  """Template for list of organizations.
   """
 
   def __init__(self, request, data):
     self.request = request
     self.data = data
-    r = data.redirect
+
+    self._list_config = self._getListConfig()
+
+  def context(self):
+    description = self._getDescription()
+
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, description)
+
+    return {
+        'lists': [list],
+    }
+
+  def getListData(self):
+    idx = lists.getListIndex(self.request)
+    if idx == 0:
+      query = self._getQuery()
+
+      starter = lists.keyStarter
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, query, starter)
+      return response_builder.build()
+    else:
+      return None
+
+  def templatePath(self):
+    return "v2/modules/gci/accepted_orgs/_project_list.html"
+
+  def _getDescription(self):
+    raise NotImplementedError
+
+  def _getListConfig(self):
+    raise NotImplementedError
+
+  def _getQuery(self):
+    raise NotImplementedError
+
+
+class AcceptedOrgsList(OrgList):
+  """Template for list of accepted organizations.
+  """
+
+  def _getDescription(self):
+    return 'List of organizations accepted into %s' % (
+        self.data.program.name)
+
+  def _getListConfig(self):
+    r = self.data.redirect
 
     list_config = lists.ListConfiguration()
     list_config.addColumn('name', 'Name',
@@ -55,37 +103,13 @@ class AcceptedOrgsList(Template):
         hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
+    return list_config
 
-    self._list_config = list_config
-
-  def context(self):
-    description = 'List of organizations accepted into %s' % (
-            self.data.program.name)
-
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
-    return {
-        'lists': [list],
-    }
-
-  def getListData(self):
-    idx = lists.getListIndex(self.request)
-    if idx == 0:
-      q = GCIOrganization.all()
-      q.filter('scope', self.data.program)
-      q.filter('status IN', ['new', 'active'])
-
-      starter = lists.keyStarter
-
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, starter)
-      return response_builder.build()
-    else:
-      return None
-
-  def templatePath(self):
-    return "v2/modules/gci/accepted_orgs/_project_list.html"
+  def _getQuery(self):
+    query = GCIOrganization.all()
+    query.filter('scope', self.data.program)
+    query.filter('status IN', ['new', 'active'])
+    return query
 
 
 class AcceptedOrgsPage(RequestHandler):
