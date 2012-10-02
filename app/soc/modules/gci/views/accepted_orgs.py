@@ -99,14 +99,19 @@ class AcceptedOrgsPage(RequestHandler):
     }
 
 
-class AcceptedOrgsAdminList(Template):
+class AcceptedOrgsAdminList(OrgList):
   """Template for list of accepted organizations for admins.
   """
 
-  def __init__(self, request, data):
-    self.request = request
-    self.data = data
-    r = data.redirect
+  def templatePath(self):
+    return "v2/modules/gci/accepted_orgs/_project_list.html"
+
+  def _getDescription(self):
+    return 'List of organizations accepted into %s' % (
+        self.data.program.name)
+
+  def _getListConfig(self):
+    r = self.data.redirect
 
     list_config = lists.ListConfiguration()
     list_config.addColumn('name', 'Name',
@@ -121,44 +126,22 @@ class AcceptedOrgsAdminList(Template):
       lambda e, org_admins, *args: ", ".join(
           ["%s <%s>" % (o.name(), o.email) for o in org_admins[e.key()]]),
       hidden=True)
+    return list_config
 
-    self._list_config = list_config
+  def _getPrefetcher(self):
+    def prefetcher(entities):
+      prefetched_dict = {}
+      for ent in entities:
+        prefetched_dict[ent.key()] = profile_logic.orgAdminsForOrg(ent)
 
-  def context(self):
-    description = 'List of organizations accepted into %s' % (
-            self.data.program.name)
+      return [prefetched_dict], {}
+    return prefetcher
 
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
-    return {
-        'lists': [list],
-    }
-
-  def getListData(self):
-    idx = lists.getListIndex(self.request)
-    if idx == 0:
-      q = GCIOrganization.all()
-      q.filter('scope', self.data.program)
-      q.filter('status IN', ['new', 'active'])
-
-      starter = lists.keyStarter
-
-      def prefetcher(entities):
-        prefetched_dict = {}
-        for ent in entities:
-          prefetched_dict[ent.key()] = profile_logic.orgAdminsForOrg(ent)
-
-        return [prefetched_dict], {}
-
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, starter, prefetcher=prefetcher)
-      return response_builder.build()
-    else:
-      return None
-
-  def templatePath(self):
-    return "v2/modules/gci/accepted_orgs/_project_list.html"
+  def _getQuery(self):
+    query = GCIOrganization.all()
+    query.filter('scope', self.data.program)
+    query.filter('status IN', ['new', 'active'])
+    return query
 
 
 class AcceptedOrgsAdminPage(RequestHandler):
