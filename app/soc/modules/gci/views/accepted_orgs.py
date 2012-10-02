@@ -28,56 +28,11 @@ from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.organization import GCIOrganization
+from soc.modules.gci.templates.org_list import OrgList
 from soc.modules.gci.views.base import RequestHandler
 #from soc.modules.gci.views.base_templates import ProgramSelect
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
-
-
-class OrgList(Template):
-  """Template for list of organizations.
-  """
-
-  def __init__(self, request, data):
-    self.request = request
-    self.data = data
-
-    self._list_config = self._getListConfig()
-
-  def context(self):
-    description = self._getDescription()
-
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
-    return {
-        'lists': [list],
-    }
-
-  def getListData(self):
-    idx = lists.getListIndex(self.request)
-    if idx == 0:
-      query = self._getQuery()
-
-      starter = lists.keyStarter
-
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, query, starter)
-      return response_builder.build()
-    else:
-      return None
-
-  def templatePath(self):
-    return "v2/modules/gci/accepted_orgs/_project_list.html"
-
-  def _getDescription(self):
-    raise NotImplementedError
-
-  def _getListConfig(self):
-    raise NotImplementedError
-
-  def _getQuery(self):
-    raise NotImplementedError
 
 
 class AcceptedOrgsList(OrgList):
