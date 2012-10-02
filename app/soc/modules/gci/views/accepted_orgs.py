@@ -22,7 +22,6 @@ from django.conf.urls.defaults import url as django_url
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import lists
-from soc.views.template import Template
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 
