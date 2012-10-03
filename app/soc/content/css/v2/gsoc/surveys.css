@@ -192,7 +192,7 @@ input::-moz-focus-inner {/*Remove FF button padding*/
     margin-top: 10px;
 }
 .frm-elements .fields div {
-    background:url(../../../images/v2/gsoc/grippie.png) 0 0 repeat-y;
+    background:url(../../../images/gsoc/grippie.png) 0 0 repeat-y;
     clear: both;
     float: left;
     width: 350px;

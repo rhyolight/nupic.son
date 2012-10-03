@@ -42,19 +42,19 @@ class Timeline(Template):
 
   def context(self):
     if self.current_timeline == 'kickoff_period':
-      img_url = ("/soc/content/%s/images/v2/gsoc/image-map-kickoff.png"
+      img_url = ("/soc/content/%s/images/gsoc/image-map-kickoff.png"
                  % system.getMelangeVersion())
     elif self.current_timeline in ['org_signup_period', 'orgs_announced_period']:
-      img_url = ("/soc/content/%s/images/v2/gsoc/image-map-org-apps.png"
+      img_url = ("/soc/content/%s/images/gsoc/image-map-org-apps.png"
                  % system.getMelangeVersion())
     elif self.current_timeline == 'student_signup_period':
-      img_url = ("/soc/content/%s/images/v2/gsoc/image-map-student-apps.png"
+      img_url = ("/soc/content/%s/images/gsoc/image-map-student-apps.png"
                  % system.getMelangeVersion())
     elif self.current_timeline == 'coding_period':
-      img_url = ("/soc/content/%s/images/v2/gsoc/image-map-on-season.png"
+      img_url = ("/soc/content/%s/images/gsoc/image-map-on-season.png"
                  % system.getMelangeVersion())
     else:
-      img_url = ("/soc/content/%s/images/v2/gsoc/image-map-off-season.png"
+      img_url = ("/soc/content/%s/images/gsoc/image-map-off-season.png"
                  % system.getMelangeVersion())
 
     context = {
