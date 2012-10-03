@@ -30,6 +30,7 @@ GCI_RESPOND_REQUEST = 'gci_respond_request'
 GCI_SEND_REQUEST = 'gci_send_request'
 
 GCI_ORG_BAN = 'gci_org_ban'
+GCI_ORG_SCORES = 'gci_org_scores'
 
 GCI_LEADERBOARD = 'gci_leaderboard'
 GCI_STUDENT_TASKS = 'gci_student_tasks'
