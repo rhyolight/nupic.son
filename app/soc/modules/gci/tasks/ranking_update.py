@@ -29,6 +29,7 @@ from soc.tasks import responses
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import ranking as score_logic
+from soc.modules.gci.logic import org_score as org_score_logic
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.score import GCIScore
@@ -111,6 +112,9 @@ class RankingUpdater(object):
 
       # calculate score with all the tasks
       score_logic.calculateScore(student, tasks, program)
+
+      # calculate org score with all the tasks
+      db.run_in_transaction(org_score_logic.updateOrgScoresTxn(tasks))
 
     if students:
       # schedule task to do the rest of the students
