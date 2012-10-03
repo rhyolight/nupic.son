@@ -71,7 +71,7 @@ a:hover {  }
 /* @group error */
 
 body.error {
-	background:url(../../images/v2/melange-404.png) top center no-repeat;
+	background:url(../../images/melange-404.png) top center no-repeat;
 }
 
 #error-not-found {
