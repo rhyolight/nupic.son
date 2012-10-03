@@ -108,7 +108,6 @@ class ProgramHelper(object):
     # TODO (Madhu): Remove scope and author fields once the data
     # conversion is done.
     properties = {
-        'key_name': 'gci_program/%s/orgapp' % self.program.key().name(),
         'scope': self.program, 'program': self.program,
         'modified_by': self.founder,
         'created_by': self.founder,
@@ -238,6 +237,15 @@ class GSoCProgramHelper(ProgramHelper):
     properties.update(override)
     return self.seed(GSoCOrganization, properties)
 
+  def createOrgApp(self, override={}):
+    """Creates an organization application for the defined properties.
+    """
+    override.update({
+        'key_name': 'gsoc_program/%s/orgapp' % self.program.key().name(),
+        })
+    return super(GSoCProgramHelper, self).createOrgApp(override)
+
+
 class GCIProgramHelper(ProgramHelper):
   """Helper class to aid in manipulating GCI program data.
   """
@@ -311,3 +319,11 @@ class GCIProgramHelper(ProgramHelper):
                   'task_quota_limit': 100}
     properties.update(override)
     return self.seed(GCIOrganization, properties)
+
+  def createOrgApp(self, override={}):
+    """Creates an organization application for the defined properties.
+    """
+    override.update({
+        'key_name': 'gci_program/%s/orgapp' % self.program.key().name(),
+        })
+    return super(GCIProgramHelper, self).createOrgApp(override)

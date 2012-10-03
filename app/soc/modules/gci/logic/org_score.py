@@ -18,6 +18,8 @@
 """
 
 
+from google.appengine.ext import db
+
 from soc.modules.gci.models.score import GCIOrgScore
 from soc.modules.gci.models.task import GCITask
 
@@ -38,6 +40,48 @@ def updateOrgScoreTxn(task):
   
     org_score.tasks.append(task.key())
     org_score.put()
+
+  return txn
+
+
+def updateOrgScoresTxn(tasks):
+  """Returns a transaction function that updates GCIOrgScore for the
+  specified list of tasks that belong to the same student.
+  """
+  if not tasks:
+    return lambda: None
+
+  student_key = GCITask.student.get_value_for_datastore(tasks[0])
+
+  tasks_by_org = {}
+  for task in tasks:
+    # check if all the tasks belong to the same student
+    if GCITask.student.get_value_for_datastore(task) != student_key:
+      raise ValueError("Specified tasks belong to more than one student")
+
+    org_key = GCITask.org.get_value_for_datastore(task)
+
+    if org_key not in tasks_by_org:
+      tasks_by_org[org_key] = [task]
+    else:
+      tasks_by_org[org_key].append(task)
+
+  def txn():
+    to_put = []
+
+    for org_key, tasks in tasks_by_org.iteritems():
+      query = queryForAncestorAndOrg(student_key, org_key)
+
+      org_score = query.get()
+      if not org_score:
+        org_score = GCIOrgScore(parent=student_key, org=org_key)
+
+      for task in tasks:
+        org_score.tasks.append(task.key())
+
+      to_put.append(org_score)
+
+    db.put(to_put)
 
   return txn
 

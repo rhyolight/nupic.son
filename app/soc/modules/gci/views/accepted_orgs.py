@@ -102,9 +102,6 @@ class AcceptedOrgsAdminList(OrgList):
   """Template for list of accepted organizations for admins.
   """
 
-  def templatePath(self):
-    return "v2/modules/gci/accepted_orgs/_project_list.html"
-
   def _getDescription(self):
     return 'List of organizations accepted into %s' % (
         self.data.program.name)

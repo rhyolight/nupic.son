@@ -81,6 +81,53 @@ class ProfileViewTest(GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseOK(response)
 
+  def testRegistrationTimeline(self):
+    # no registration should be available just after the program is started
+    self.timeline.kickoff()
+
+    url = '/gsoc/profile/student/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+    url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)    
+
+    url = '/gsoc/profile/org_admin/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+    # only org admins should be able to register in org sign up period
+    self.timeline.orgSignup()
+
+    url = '/gsoc/profile/student/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+    url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)  
+
+    url = '/gsoc/profile/org_admin/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+    # only org admins and mentors should be able to register after the orgs
+    # are announced
+    self.timeline.orgsAnnounced()
+
+    url = '/gsoc/profile/student/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)    
+
+    url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+    url = '/gsoc/profile/org_admin/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)
+
   def testCreateProfile(self):
     from soc.modules.gsoc.models.profile import GSoCProfile
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
