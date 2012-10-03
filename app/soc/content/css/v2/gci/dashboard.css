@@ -36,7 +36,7 @@
 .block-dashboard {
   width: 100%;
   display: inline-block;
-  background: #e0e0e0 url(../../../images/v2/gci/block-form-bg.png) 0 0 repeat-x;
+  background: #e0e0e0 url(../../../images/gci/block-form-bg.png) 0 0 repeat-x;
   border: 1px solid #b4b4b4;
   box-shadow: 0 4px 18px #C8C8C8;
 }

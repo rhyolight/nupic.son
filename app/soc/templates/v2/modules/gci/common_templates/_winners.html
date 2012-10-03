@@ -5,7 +5,7 @@
       {% for winner in winners.values %}
       <tr>
         <td class="leaderboard-top-ranking-number">{{ forloop.counter }}</td>
-        <td class="leaderboard-top-color-block blue"><img src="/soc/content/{{ app_version }}/images/v2/gci/avatars/{{ winner.avatar_prefix }}/{{ winner.avatar_name }}"></img></td>
+        <td class="leaderboard-top-color-block blue"><img src="/soc/content/{{ app_version }}/images/gci/avatars/{{ winner.avatar_prefix }}/{{ winner.avatar_name }}"></img></td>
         <td class="leaderboard-top-name"><a href="{{ winner.completed_tasks_link }}">{{ winner.profile.name }}</a></td>
         <td class="leaderboard-top-points">{{ winner.score.points }} points</td>
         <td class="leaderboard-top-tasks">{{ winner.score.tasks|length }} tasks</td>
