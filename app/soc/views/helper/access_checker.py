@@ -659,6 +659,14 @@ class AccessChecker(BaseAccessChecker):
     if self.data.profile and not self.data.profile.student_info:
       raise RedirectRequest(edit_url)
 
+    if role == 'org_admin' and self.data.timeline.beforeOrgSignupStart():
+      period = self.data.timeline.orgSignupStart()
+      raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE % period)
+
+    if role == 'mentor' and not self.data.timeline.orgsAnnounced():
+      period = self.data.timeline.orgsAnnouncedOn()
+      raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE % period)
+
     if not self.data.profile:
       return
 
