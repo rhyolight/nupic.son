@@ -324,6 +324,6 @@ class GCIProgramHelper(ProgramHelper):
     """Creates an organization application for the defined properties.
     """
     override.update({
-        'key_name': 'gsoc_program/%s/orgapp' % self.program.key().name(),
+        'key_name': 'gci_program/%s/orgapp' % self.program.key().name(),
         })
-    return super(GSoCProgramHelper, self).createOrgApp(override)
+    return super(GCIProgramHelper, self).createOrgApp(override)
