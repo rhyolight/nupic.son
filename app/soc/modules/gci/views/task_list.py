@@ -31,7 +31,7 @@ from soc.modules.gci.views.forms import GCIModelForm
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-class TaskList(Template):
+class TaskList2(Template):
   """Template for list of tasks.
   """
 
@@ -93,7 +93,7 @@ class TaskListPage(RequestHandler):
     pass
 
   def jsonContext(self):
-    list_content = TaskList(self.request, self.data).getListData()
+    list_content = TaskList2(self.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -103,6 +103,6 @@ class TaskListPage(RequestHandler):
   def context(self):
     return {
         'page_name': "Tasks for %s" % self.data.program.name,
-        'task_list': TaskList(self.request, self.data),
+        'task_list': TaskList2(self.request, self.data),
 #        'program_select': ProgramSelect(self.data, 'list_gci_finished_tasks'),
     }
