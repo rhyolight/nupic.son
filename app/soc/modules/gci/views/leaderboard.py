@@ -26,7 +26,7 @@ from soc.modules.gci.logic import task as task_logic
 
 from soc.modules.gci.models.score import GCIScore
 
-from soc.modules.gci.views.all_tasks import TaskList
+from soc.modules.gci.templates.task_list import TaskList
 from soc.modules.gci.views import common_templates
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
@@ -99,21 +99,16 @@ class AllStudentTasksList(TaskList):
   _LIST_COLUMNS = ['title', 'organization']
 
   def __init__(self, request, data):
-    super(AllStudentTasksList, self).__init__(
-        request, data, self._LIST_COLUMNS)
+    super(AllStudentTasksList, self).__init__(request, data)
 
-  def context(self):
-    description = 'List of tasks closed by %s' % (
-            self.data.url_profile.name())
+  def _getColumns(self):
+    return self._LIST_COLUMNS
 
-    task_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
+  def _getDescription(self):
+    return 'List of tasks closed by %s' % (
+        self.data.url_profile.name())
 
-    return {
-        'lists': [task_list],
-    }
-
-  def _getQueryForTasks(self):
+  def _getQuery(self):
     return task_logic.queryAllTasksClosedByStudent(self.data.url_profile)
 
 
