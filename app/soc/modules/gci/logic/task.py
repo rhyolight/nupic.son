@@ -646,3 +646,17 @@ def queryAllTasksClosedByStudent(profile, keys_only=False):
 
   return GCITask.all(keys_only=keys_only).filter(
       'student', profile).filter('status', 'Closed')
+
+
+def queryForStudentAndOrganizationAndStatus(student, org, status,
+    keys_only=False):
+  query = GCITask.all()
+  query.filter('student', student)
+  query.filter('org', org)
+
+  if isinstance(status, list):
+    query.filter('status IN', status)
+  else:
+    query.filter('status', status)
+
+  return query
