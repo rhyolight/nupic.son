@@ -101,6 +101,7 @@ class Callback(object):
     self.views.append(students_info.StudentsInfoPage())
     self.views.append(task.TaskViewPage())
     self.views.append(task.WorkSubmissionDownload())
+    self.views.append(task_list.StudentTasksForOrganizationPage())
     self.views.append(task_list.TaskListPage())
     self.views.append(task_create.TaskCreatePage())
 
