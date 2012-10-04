@@ -24,10 +24,13 @@ from soc.views.helper import lists
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 
+from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.templates.task_list import TaskList
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.forms import GCIModelForm
 #from soc.modules.gci.views.base_templates import ProgramSelect
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -105,4 +108,57 @@ class TaskListPage(RequestHandler):
         'page_name': "Tasks for %s" % self.data.program.name,
         'task_list': TaskList2(self.request, self.data),
 #        'program_select': ProgramSelect(self.data, 'list_gci_finished_tasks'),
+    }
+
+
+class StudentTasksForOrganizationList(TaskList):
+  """List of tasks that the specified student closed for the given
+  organization.
+  """
+
+  _COLUMNS = ['title', 'mentors']
+
+  def _getColumns(self):
+    return self._COLUMNS
+
+  def _getDescription(self):
+    return "List of tasks closed by %s for %s." % (
+        self.data.url_profile.name(), self.data.organization.name)
+
+  def _getQuery(self):
+    return task_logic.queryForStudentAndOrganizationAndStatus(
+        self.data.url_profile, self.data.organization, 'Closed')
+
+
+class StudentTasksForOrganizationPage(RequestHandler):
+  """View for the list of student tasks for organization.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/task/task_list.html'
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'student_tasks_for_org/%s$' % url_patterns.USER_ORG, self,
+            name=url_names.GCI_STUDENT_TASKS_FOR_ORG),
+    ]
+
+  def checkAccess(self):
+    # TODO(daniel): who should be able to access it?
+    self.mutator.profileFromKwargs()
+
+  def jsonContext(self):
+    list_content = StudentTasksForOrganizationList(
+        self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation('You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    return {
+        'page_name': "Tasks closed by %s for %s" % (
+            self.data.url_profile.name(), self.data.organization.name),
+        'task_list': StudentTasksForOrganizationList(self.request, self.data),
     }
