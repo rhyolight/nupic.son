@@ -95,6 +95,7 @@ ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
 INVITE    = _mentor_role + ORG
 REQUEST   = _mentor_role + ORG
 USER_ID	  = namedIdBasedPattern(['sponsor', 'program', 'user'])
+USER_ORG  = namedLinkIdPattern(['sponsor', 'program', 'user', 'organization'])
 
 
 USER = namedLinkIdPattern(['link_id'])
