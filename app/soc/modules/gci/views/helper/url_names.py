@@ -34,6 +34,7 @@ GCI_ORG_SCORES = 'gci_org_scores'
 
 GCI_LEADERBOARD = 'gci_leaderboard'
 GCI_STUDENT_TASKS = 'gci_student_tasks'
+GCI_STUDENT_TASKS_FOR_ORG = 'gci_student_tasks_for_org'
 GCI_STUDENT_FORM_DOWNLOAD = 'gci_student_form_download'
 
 CREATE_GCI_ORG_PROFILE = 'create_gci_org_profile'
