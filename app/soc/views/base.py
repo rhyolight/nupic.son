@@ -127,7 +127,7 @@ class RequestHandler(object):
       message: the message to set, uses default if None
     """
     self.response.set_status(status, message=message)
-    template_path = "v2/error.html"
+    template_path = "error.html"
     context = {
         'page_name': self.response.content,
         'message': self.response.content,
