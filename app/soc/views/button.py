@@ -107,4 +107,4 @@ class ButtonTemplate(Template):
     return msg if msg else self.DEF_DISABLE_BTN_DISABLED
 
   def templatePath(self):
-    return 'v2/soc/_button.html'
+    return 'soc/_button.html'

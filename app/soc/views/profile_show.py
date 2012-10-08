@@ -78,7 +78,7 @@ class HostActions(Template):
     return context
 
   def templatePath(self):
-    return "v2/soc/_user_action.html"
+    return "soc/_user_action.html"
 
   def _getActionURLName(self):
     raise NotImplementedError

@@ -38,7 +38,7 @@ class Document(Template):
     }
 
   def templatePath(self):
-    return "v2/soc/_document.html"
+    return "soc/_document.html"
 
 
 def validateForm(data, document_form):

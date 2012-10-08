@@ -91,4 +91,4 @@ class ProgramSelect(Template):
     }
 
   def templatePath(self):
-    return "v2/soc/_program_select.html"
+    return "soc/_program_select.html"
