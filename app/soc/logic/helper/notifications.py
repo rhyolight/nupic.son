@@ -49,25 +49,25 @@ DEF_HANDLED_INVITE_SUBJECT = ugettext(
 DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
 
 DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/invitation.html'
+    'soc/notification/invitation.html'
 
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/new_request.html'
+    'soc/notification/new_request.html'
 
 DEF_ACCEPTED_ORG_TEMPLATE = \
-    'v2/soc/notification/org_accepted.html'
+    'soc/notification/org_accepted.html'
 
 DEF_REJECTED_ORG_TEMPLATE = \
-    'v2/soc/notification/org_rejected.html'
+    'soc/notification/org_rejected.html'
 
 DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/handled_request.html'
+    'soc/notification/handled_request.html'
 
 DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/handled_invite.html'
+    'soc/notification/handled_invite.html'
 
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
-    'v2/soc/notification/mentor_welcome_mail.html'
+    'soc/notification/mentor_welcome_mail.html'
 
 
 def inviteContext(data, invite):

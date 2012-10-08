@@ -1,4 +1,4 @@
-{% extends "v2/soc/notification/base.html" %}
+{% extends "soc/notification/base.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,13 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 {% block content %}
-<p>
-{{ reviewer_name }} has left the following {{ review_visibility }} review at
-<a href={{ review_notification_url }}>{{ review_notification_url }}</a>:
-</p>
-<div id="review">
-<p>
-{{ review_content|safe }}
-</p>
-</div>
+{{ requester }} has requested to become a {{ role_verbose }} for {{ org }}.<br />
+Please click <a href="{{ request_url }}">here</a> to accept or reject this request.
 {% endblock %}

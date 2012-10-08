@@ -1,4 +1,4 @@
-{% extends "v2/soc/notification/base.html" %}
+{% extends "soc/notification/base.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,9 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
+
 {% block content %}
-Your invite to become a {{ role_verbose }} for {{ group }} has been {{ action }}.<br />
-{% if action == 'rejected' %}
-If you feel this is in error please contact the organization directly.<br />
-{% endif %}
+{{ msg_content|safe }}
 {% endblock %}
+
+{% block unsubscribe %}
+{% endblock unsubscribe %}

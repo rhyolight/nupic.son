@@ -1,4 +1,4 @@
-{% extends "v2/soc/notification/base.html" %}
+{% extends "soc/notification/base.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,11 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
-
 {% block content %}
-Your Organization Application for "{{ org }}" in {{ program_name }} has been accepted.<br />
-Please click <a href="{{ url }}">here</a> to fill in the necessary information and create your Organization.
+<p>
+{{ reviewer_name }} has left the following {{ review_visibility }} review at
+<a href={{ review_notification_url }}>{{ review_notification_url }}</a>:
+</p>
+<div id="review">
+<p>
+{{ review_content|safe }}
+</p>
+</div>
 {% endblock %}
-
-{% block unsubscribe %}
-{% endblock unsubscribe %}

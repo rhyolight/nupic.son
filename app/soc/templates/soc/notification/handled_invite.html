@@ -1,4 +1,4 @@
-{% extends "v2/soc/notification/base.html" %}
+{% extends "soc/notification/base.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,13 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 {% block content %}
-<p>
-{{ proposer_name }} has updated the proposal to {{ group }} named {{ proposal_name }} at
-<a href={{ proposal_notification_url }}>{{ proposal_notification_url }}</a>:
-</p>
-<div id="proposal">
-<p>
-{{ proposal_content|safe }}
-</p>
-</div>
+Your invite to become a {{ role_verbose }} for {{ group }} has been {{ action }}.<br />
+{% if action == 'rejected' %}
+If you feel this is in error please contact the organization directly.<br />
+{% endif %}
 {% endblock %}

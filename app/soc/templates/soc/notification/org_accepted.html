@@ -1,4 +1,4 @@
-{% extends "v2/soc/notification/base.html" %}
+{% extends "soc/notification/base.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,8 @@ limitations under the License.
 {% endcomment %}
 
 {% block content %}
-{{ msg_content|safe }}
+Your Organization Application for "{{ org }}" in {{ program_name }} has been accepted.<br />
+Please click <a href="{{ url }}">here</a> to fill in the necessary information and create your Organization.
 {% endblock %}
 
 {% block unsubscribe %}

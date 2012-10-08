@@ -1,4 +1,4 @@
-{% extends "v2/soc/notification/base.html" %}
+{% extends "soc/notification/base.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,6 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 {% block content %}
-{{ requester }} has requested to become a {{ role_verbose }} for {{ org }}.<br />
-Please click <a href="{{ request_url }}">here</a> to accept or reject this request.
+You have been invited by {{ sender_name }} to become a {{ role_verbose }} for {{ org }}.<br />
+Please click <a href="{{ invitation_url }}">here</a> to fill in the necessary information and accept the invitation.
 {% endblock %}

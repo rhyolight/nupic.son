@@ -40,16 +40,16 @@ DEF_NEW_REVIEW_SUBJECT = ugettext(
     '(%(proposer_name)s)')
 
 DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/new_proposal.html'
+    'soc/notification/new_proposal.html'
 
 DEF_UPDATED_PROPOSAL_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/updated_proposal.html'
+    'soc/notification/updated_proposal.html'
 
 DEF_SLOT_TRANSFER_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/slot_transfer.html'
+    'soc/notification/slot_transfer.html'
 
 DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/new_review.html'
+    'soc/notification/new_review.html'
 
 
 def newProposalContext(data, proposal, to_emails):
