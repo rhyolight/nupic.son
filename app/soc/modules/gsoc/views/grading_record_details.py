@@ -218,7 +218,7 @@ class GradingRecordsList(Template):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return 'v2/soc/list/lists.html'
+    return 'soc/list/lists.html'
 
 
 class GradingRecordForm(gsoc_forms.GSoCModelForm):

@@ -46,8 +46,8 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertDashboardTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/dashboard/list_component.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/dashboard/component.html')
-    self.assertTemplateUsed(response, 'v2/soc/list/lists.html')
-    self.assertTemplateUsed(response, 'v2/soc/list/list.html')
+    self.assertTemplateUsed(response, 'soc/list/lists.html')
+    self.assertTemplateUsed(response, 'soc/list/list.html')
 
   def testDasbhoardNoRole(self):
     url = '/gsoc/dashboard/' + self.gsoc.key().name()

@@ -108,4 +108,4 @@ class SurveyRecordList(Template):
   def templatePath(self):
     """Returns the path to the template.
     """
-    return 'v2/soc/list/lists.html'
+    return 'soc/list/lists.html'

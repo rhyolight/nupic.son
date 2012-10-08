@@ -697,7 +697,7 @@ class ListConfigurationResponse(Template):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return 'v2/soc/list/list.html'
+    return 'soc/list/list.html'
 
 
 class ListContentResponse(object):

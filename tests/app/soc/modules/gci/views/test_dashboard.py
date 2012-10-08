@@ -44,8 +44,8 @@ class DashboardTest(GCIDjangoTestCase):
     self.assertDashboardTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gci/dashboard/list_component.html')
     self.assertTemplateUsed(response, 'v2/modules/gci/dashboard/component.html')
-    self.assertTemplateUsed(response, 'v2/soc/list/lists.html')
-    self.assertTemplateUsed(response, 'v2/soc/list/list.html')
+    self.assertTemplateUsed(response, 'soc/list/lists.html')
+    self.assertTemplateUsed(response, 'soc/list/list.html')
 
   def testDashboardAsHost(self):
     self.data.createHost()
