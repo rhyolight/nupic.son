@@ -146,6 +146,4 @@ class DashboardUserActions(Template):
     }
 
   def templatePath(self):
-    # TODO(nathaniel): This template doesn't seem to be any different from
-    # the template it extends?
-    return 'v2/soc/dashboard/_user_action.html'
+    return 'soc/_user_action.html'
