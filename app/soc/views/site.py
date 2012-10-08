@@ -99,7 +99,7 @@ class EditSitePage(SiteRequestHandler):
 
   def templatePath(self):
     # TODO: make this specific to the current active program
-    return 'v2/soc/site/base.html'
+    return 'soc/site/base.html'
 
   def context(self):
     # TODO: suboptimal

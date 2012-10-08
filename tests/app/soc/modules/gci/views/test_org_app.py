@@ -230,7 +230,7 @@ class GCIOrgAppRecordsPageTest(MailTestCase, GCIDjangoTestCase):
     """Asserts all the templates for edit page were used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/soc/org_app/records.html')
+    self.assertTemplateUsed(response, 'soc/org_app/records.html')
 
   def dataPostSingle(self, url, record, status):
     return self.dataPost(url, {record: status})

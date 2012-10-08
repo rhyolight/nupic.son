@@ -74,7 +74,7 @@ class CreateUserPage(SiteRequestHandler):
 
   def templatePath(self):
     # TODO: make this specific to the current active program
-    return 'v2/soc/user/base.html'
+    return 'soc/user/base.html'
 
   def context(self):
     # TODO: program specific in core module, needs to be avoided
@@ -121,7 +121,7 @@ class EditUserPage(SiteRequestHandler):
 
   def templatePath(self):
     # TODO: make this specific to the current active program
-    return 'v2/soc/user/base.html'
+    return 'soc/user/base.html'
 
   def context(self):
     # TODO: program specific in core module

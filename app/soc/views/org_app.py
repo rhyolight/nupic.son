@@ -186,7 +186,7 @@ class OrgAppRecordsList(object):
     return record_list
 
   def templatePath(self):
-    return 'v2/soc/org_app/records.html'
+    return 'soc/org_app/records.html'
 
 
 class OrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):

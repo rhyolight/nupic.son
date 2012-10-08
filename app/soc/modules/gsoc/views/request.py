@@ -182,7 +182,7 @@ class ShowRequest(RequestHandler):
       }
 
   def templatePath(self):
-    return 'v2/soc/request/base.html'
+    return 'soc/request/base.html'
 
 
   def djangoURLPatterns(self):

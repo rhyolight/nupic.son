@@ -95,7 +95,7 @@ class Dashboard(Template):
   def templatePath(self):
     """Returns the path to the template that should be used in render()
     """
-    return 'v2/soc/dashboard/base.html'
+    return 'soc/dashboard/base.html'
 
   def _divideSubPages(self, subpages):
     """Returns the subpages divided into two columns.

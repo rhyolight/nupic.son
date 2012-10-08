@@ -52,7 +52,7 @@ class AdminDashboardTest(GSoCDjangoTestCase):
     """Asserts that all the templates to render a dashboard were used.
     """
     self.assertAdminBaseTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/soc/dashboard/base.html')
+    self.assertTemplateUsed(response, 'soc/dashboard/base.html')
 
   def assertUserActionsTemplatesUsed(self, response):
     """Asserts that all the templates to render user actions were used.

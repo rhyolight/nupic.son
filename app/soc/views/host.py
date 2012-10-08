@@ -75,7 +75,7 @@ class HostProfilePage(SiteRequestHandler):
     raise AccessViolation(DEF_NO_HOST)
 
   def templatePath(self):
-    return 'v2/soc/host/base.html'
+    return 'soc/host/base.html'
 
   def context(self):
     host_profile_form = HostProfileForm(self.data.POST or None,

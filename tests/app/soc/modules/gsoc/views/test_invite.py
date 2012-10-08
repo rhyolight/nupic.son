@@ -141,7 +141,7 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
 	invitation.key().id())
     response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/soc/request/base.html')
+    self.assertTemplateUsed(response, 'soc/request/base.html')
 
     postdata = {'action': 'Reject'}
     response = self.post(url, postdata)
