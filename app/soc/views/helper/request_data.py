@@ -373,6 +373,22 @@ class RedirectHelper(object):
 
     return self
 
+  def userOrg(self, user=None, organization=None):
+    """Sets args for an url_patterns.USER_ORG redirect.
+    """
+    if not user:
+      assert 'user' in self._data.kwargs
+      user = self._data.kwargs['user']
+
+    if not organization:
+      assert isSet(self._data.organization)
+      organization = self._data.organization
+
+    self.program()
+    self.kwargs['user'] = user
+    self.kwargs['organization'] = organization.link_id
+    return self
+
   def urlOf(self, name, full=False, secure=False, cbox=False, extra=[]):
     """Returns the resolved url for name.
 
