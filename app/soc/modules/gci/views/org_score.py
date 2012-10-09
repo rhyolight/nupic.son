@@ -50,8 +50,8 @@ class OrgScoresList(Template):
     list_config.setDefaultSort('tasks', 'desc')
 
     list_config.setRowAction(
-        lambda e, *args: r.profile(e.parent().link_id).urlOf(
-            url_names.GCI_STUDENT_TASKS))
+        lambda e, *args: r.userOrg(user=e.parent().link_id).urlOf(
+            url_names.GCI_STUDENT_TASKS_FOR_ORG))
 
     self._list_config = list_config
 
