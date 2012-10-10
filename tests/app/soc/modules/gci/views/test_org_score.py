@@ -17,6 +17,8 @@
 """
 
 
+from soc.modules.gci.models.organization import GCIOrganization
+
 from tests.test_utils import GCIDjangoTestCase
 
 
@@ -62,3 +64,37 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     self.data.createHost()
     response = self.get(self.url)
     self.assertPageTemplatesUsed(response)
+
+  def testActiveOrgsAreDisplayed(self):
+    self.data.createHost()
+
+    org_properties = {
+        'scope': self.gci, 'status': 'active', 'founder': self.data.user,
+        'home': None,
+    }
+    self.seed(GCIOrganization, org_properties)
+    self.seed(GCIOrganization, org_properties)
+
+    response = self.get(self.url)
+    self.assertPageTemplatesUsed(response)
+    list_data = self.getListData(self.url, 0)
+
+    #Third organization is self.gci
+    self.assertEqual(3, len(list_data))
+
+  def testNonActiveOrgsAreNotDisplayed(self):
+    self.data.createHost()
+
+    org_properties = {
+        'scope': self.gci, 'status': 'invalid', 'founder': self.data.user,
+        'home': None,
+    }
+    self.seed(GCIOrganization, org_properties)
+    self.seed(GCIOrganization, org_properties)
+
+    response = self.get(self.url)
+    self.assertPageTemplatesUsed(response)
+    list_data = self.getListData(self.url, 0)
+
+    #The only organization is self.gci
+    self.assertEqual(1, len(list_data))
