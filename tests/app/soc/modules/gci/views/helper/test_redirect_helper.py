@@ -15,6 +15,7 @@
 """This module unit tests for RedirectHelper class."""
 
 
+from soc.views.helper.access_checker import unset
 from soc.views.helper.response import Response
 
 from soc.modules.gci.views.base import RequestHandler
@@ -37,6 +38,23 @@ class RedirectHelperTest(GCITestCase):
     self.handler.init(request, (), {})
 
     self.redirect = self.handler.redirect
+
+  def testProgram(self):
+    expected = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.gci.link_id,
+        }
+
+    self.handler.kwargs = {}
+    self.redirect.program(program=self.gci)
+    self.assertEqual(self.redirect.kwargs, expected)
+
+    self.handler.kwargs = {}
+    self.redirect.program()
+    self.assertEqual(self.redirect.kwargs, expected)
+
+    self.redirect._data.program = unset
+    self._assertAssertionError(self.redirect.program)
 
   def testUserOrg(self):
     expected = {
