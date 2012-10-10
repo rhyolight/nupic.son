@@ -288,6 +288,13 @@ class OrgDashboard(Dashboard):
             'title': 'Accepted Organizations',
             'link': r.urlOf('gci_admin_accepted_orgs')
         },
+        {
+            'name': 'org_scores',
+            'description': ugettext(
+                'List of student scores for the chosen organization'),
+            'title': 'Organization Scores',
+            'link': r.urlOf(url_names.GCI_ORG_CHHOSE_FOR_SCORE)
+        },
     ]
 
     super(OrgDashboard, self).__init__(request, data, subpages)
