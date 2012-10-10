@@ -301,6 +301,9 @@ class DashboardPage(RequestHandler):
     # add edit org profile component
     components.append(MyOrgsListBeforeOrgProfile(self.request, self.data))
 
+    # add org scores component
+    components.append(MyOrgsScoresList(self.request, self.data))
+
     return components
 
   def _getLoneUserComponents(self):
@@ -826,6 +829,44 @@ class MyOrgsListBeforeInviteOrgAdmin(MyOrgsList):
     self._list_config.setRowAction(
         lambda e, *args: r.invite('org_admin', e)
             .urlOf(url_names.GCI_SEND_INVITE))
+
+
+class MyOrgsScoresList(MyOrgsList):
+  """Component for listing all organizations for which the current user may
+  see scores of the students.
+  """
+
+  def _setIdx(self):
+    self.idx = 12
+
+  def _setRowAction(self, request, data):
+    self._list_config.setRowAction(
+        lambda e, *args: data.redirect.organization(e)
+            .urlOf(url_names.GCI_ORG_SCORES))
+
+  def getListData(self):
+    if lists.getListIndex(self.request) != self.idx:
+      return None
+
+    q = GCIOrganization.all()
+    q.filter('__key__ IN', self.data.profile.org_admin_for)
+    q.filter('status IN', ['new', 'active'])
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.request, self._list_config, q, lists.keyStarter)
+
+    return response_builder.build()
+
+  def _getContext(self):
+    org_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.idx, preload_list=False)
+
+    return {
+        'name': 'orgs_scores',
+        'title': 'Student scores for my organizations',
+        'lists': [org_list],
+        'description': ugettext('See the students who have completed'
+            'at least one task for your organizations.')}
 
 
 class MyOrgsMentorsList(Component):
