@@ -86,6 +86,7 @@ class Callback(object):
     self.views.append(org_app.GCIOrgAppTakePage())
     self.views.append(org_home.GCIBanOrgPost())
     self.views.append(org_home.OrgHomepage())
+    self.views.append(org_score.ChooseOrganizationForOrgScorePage())
     self.views.append(org_score.OrgScoresForOrgzanizationPage())
     self.views.append(participants.MentorsListAdminPage())
     self.views.append(profile.GCIProfilePage())
