@@ -56,7 +56,7 @@ class OrgScoresList(Template):
     self._list_config = list_config
 
   def context(self):
-    description = 'Organization score for for %s' % (
+    description = 'Organization scores for for %s' % (
             self.data.organization.name)
 
     org_scores_list = lists.ListConfigurationResponse(
