@@ -60,3 +60,15 @@ def participating(program):
     program: GCIProgram entity for which the orgs need to be fetched.
   """
   return org_logic.participating(GCIOrganization, program)
+
+
+def queryForProgramAndStatus(program, status, keys_only=False):
+  query = GCIOrganization.all()
+  query.filter('scope', program)
+
+  if isinstance(status, list):
+    query.filter('status IN', status)
+  else:
+    query.filter('status', status)
+
+  return query
