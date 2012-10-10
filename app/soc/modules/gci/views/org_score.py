@@ -160,7 +160,7 @@ class ChooseOrganizationForOrgScorePage(RequestHandler):
 
   def checkAccess(self):
     # TODO(daniel): check if the program has started
-    # check is org admin
+    self.check.isHost()
     pass
 
   def jsonContext(self):
