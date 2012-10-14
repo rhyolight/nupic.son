@@ -839,7 +839,7 @@ def distributeParentKeys(data, prefetched_dict):
       logging.exception(e)
 
 
-def prefetchFieldsAsync(model, fields, data, parent):
+def _prefetchFieldsAsync(model, fields, data, parent):
   """Prefetches the specified fields in data asynchronously.
 
   NOTE: The key difference here is that, we don't redistribute the keys! The
@@ -871,7 +871,7 @@ def prefetchFieldsAsync(model, fields, data, parent):
   return db.get_async(keys)
 
 
-def processPrefetchedFields(prefetched_entities, model, fields, data, parent):
+def _processPrefetchedFields(prefetched_entities, model, fields, data, parent):
   """After prefetching the entities for fields distribute the keys.
   """
   prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
@@ -887,10 +887,10 @@ def processPrefetchedFields(prefetched_entities, model, fields, data, parent):
 def prefetchFields(model, fields, data, parent):
   """Prefetches the specified fields in data.
   """
-  entities_future = prefetchFieldsAsync(model, fields, data, parent)
+  entities_future = _prefetchFieldsAsync(model, fields, data, parent)
   prefetched_entities = entities_future.get_result()
 
-  processPrefetchedFields(prefetched_entities, model, fields, data, parent)
+  _processPrefetchedFields(prefetched_entities, model, fields, data, parent)
 
 
 def modelPrefetcher(model, fields, parent=False):
@@ -902,7 +902,7 @@ def modelPrefetcher(model, fields, parent=False):
   return prefetcher
 
 
-def prefetchListFieldsAsync(model, fields, data):
+def _prefetchListFieldsAsync(model, fields, data):
   """Prefetches the specified list fields in data asynchronously.
 
   NOTE: The key difference here is that, we don't distribute the keys! The
@@ -934,7 +934,7 @@ def prefetchListFieldsAsync(model, fields, data):
 def prefetchListFields(model, fields, data):
   """Prefetches the specified list fields in data.
   """
-  entities_future = prefetchListFieldsAsync(model, fields, data)
+  entities_future = _prefetchListFieldsAsync(model, fields, data)
   prefetched_entities = entities_future.get_result()
 
   prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
@@ -959,13 +959,13 @@ def listModelPrefetcher(model, fields, list_fields, parent=False):
     """
     # Get the future objects for model fields and list fields by using
     # the async versions of the corresponding prefetch methods.
-    mf_future = prefetchFieldsAsync(model, fields, entities, parent)
-    lf_future = prefetchListFieldsAsync(model, list_fields, entities)
+    mf_future = _prefetchFieldsAsync(model, fields, entities, parent)
+    lf_future = _prefetchListFieldsAsync(model, list_fields, entities)
 
     # now block until model prefetching completes and distribute the keys
     # once the processing is finished
     prefetched_mf = mf_future.get_result()
-    processPrefetchedFields(prefetched_mf, model, fields, entities, parent)
+    _processPrefetchedFields(prefetched_mf, model, fields, entities, parent)
 
     # block on list prefetching to complete
     prefetched_lf = lf_future.get_result()
