@@ -61,9 +61,7 @@ class ProjectList(Template):
         lambda entity, *args: entity.org.name)
     list_config.addSimpleColumn('status', 'Status', hidden=True)
     list_config.addColumn('mentors', 'Mentors',
-        lambda entity, *args: 
-            ", ".join([m.name() for m in entity.getMentors()]),
-        hidden=True)
+        lambda entity, *args: args[0][entity.key()], hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
     list_config.setRowAction(lambda e, *args:
@@ -90,8 +88,32 @@ class ProjectList(Template):
     idx = lists.getListIndex(self.request)
     if idx == self.idx:
       starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProject, ['org'],
-          parent=True)
+
+      def prefetcher(entities):
+        """Prefetches the specified fields.
+
+        For motivation of the code flow and more comments, please see the
+        comments in lists.listModelPrefetcher method.
+        """
+        mf_future = lists.prefetchFieldsAsync(
+            GSoCProject, ['org'], entities, parent=True)
+        lf_future = lists.prefetchListFieldsAsync(
+            GSoCProject, ['mentors'], entities)
+
+        prefetched_mf = mf_future.get_result()
+        lists.processPrefetchedFields(prefetched_mf, GSoCProject, ['org'],
+                                      entities, parent=True)
+
+        # Block and get mentor name strings
+        prefetched_lf = lf_future.get_result()
+        prefetched_lf = dict((i.key(), i) for i in prefetched_lf if i)
+
+        mentor_names = {}
+        for e in entities:
+          mentor_names[e.key()] = ', '.join(
+              [prefetched_lf[m_key].name() for m_key in e.mentors])
+
+        return [mentor_names], {}
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.request, self._list_config, self.query,
