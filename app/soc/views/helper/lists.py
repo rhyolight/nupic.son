@@ -839,8 +839,11 @@ def distributeParentKeys(data, prefetched_dict):
       logging.exception(e)
 
 
-def prefetchFields(model, fields, data, parent):
-  """Prefetches the specified fields in data.
+def prefetchFieldsAsync(model, fields, data, parent):
+  """Prefetches the specified fields in data asynchronously.
+
+  NOTE: The key difference here is that, we don't redistribute the keys! The
+  caller is expected to do it.
   """
   keys = []
 
@@ -848,13 +851,14 @@ def prefetchFields(model, fields, data, parent):
     prop = getattr(model, field, None)
 
     if not prop:
-      logging.exception("Model %s does not have attribute %s" %
+      logging.exception('Model %s does not have attribute %s' %
                         (model.kind(), field))
       return
 
     if not isinstance(prop, db.ReferenceProperty):
-      logging.exception("Property %s of %s is not a ReferenceProperty but a %s" %
-                        (field, model.kind(), prop.__class__.__name__))
+      logging.exception(
+          'Property %s of %s is not a ReferenceProperty but a %s' %
+          (field, model.kind(), prop.__class__.__name__))
       return
 
   for field in fields:
@@ -864,7 +868,12 @@ def prefetchFields(model, fields, data, parent):
   if parent:
     keys += collectParentKeys(data)
 
-  prefetched_entities = db.get(keys)
+  return db.get_async(keys)
+
+
+def processPrefetchedFields(prefetched_entities, model, fields, data, parent):
+  """After prefetching the entities for fields distribute the keys.
+  """
   prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
 
   for field in fields:
@@ -873,6 +882,15 @@ def prefetchFields(model, fields, data, parent):
 
   if parent:
     distributeParentKeys(data, prefetched_dict)
+
+
+def prefetchFields(model, fields, data, parent):
+  """Prefetches the specified fields in data.
+  """
+  entities_future = prefetchFieldsAsync(model, fields, data, parent)
+  prefetched_entities = entities_future.get_result()
+
+  processPrefetchedFields(prefetched_entities, model, fields, data, parent)
 
 
 def modelPrefetcher(model, fields, parent=False):
@@ -884,20 +902,24 @@ def modelPrefetcher(model, fields, parent=False):
   return prefetcher
 
 
-def prefetchListFields(model, fields, data):
-  """Prefetches the specified list fields in data.
+def prefetchListFieldsAsync(model, fields, data):
+  """Prefetches the specified list fields in data asynchronously.
+
+  NOTE: The key difference here is that, we don't distribute the keys! The
+  caller is expected to do it.
   """
   for field in fields:
     prop = getattr(model, field, None)
 
     if not prop:
-      logging.exception("Model %s does not have attribute %s" %
+      logging.exception('Model %s does not have attribute %s' %
                         (model.kind(), field))
       return
 
     if not isinstance(prop, db.ListProperty):
-      logging.exception("Property %s of %s is not a ReferenceProperty but a %s" %
-                        (field, model.kind(), prop.__class__.__name__))
+      logging.exception(
+          'Property %s of %s is not a ReferenceProperty but a %s' %
+          (field, model.kind(), prop.__class__.__name__))
       return
 
   keys = []
@@ -906,7 +928,15 @@ def prefetchListFields(model, fields, data):
     for i in data:
       keys += getattr(i, field)
 
-  prefetched_entities = db.get(keys)
+  return db.get_async(keys)
+
+
+def prefetchListFields(model, fields, data):
+  """Prefetches the specified list fields in data.
+  """
+  entities_future = prefetchListFieldsAsync(model, fields, data)
+  prefetched_entities = entities_future.get_result()
+
   prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
 
   return prefetched_dict
@@ -925,9 +955,26 @@ def listModelPrefetcher(model, fields, list_fields, parent=False):
   """Returns a prefetcher for the specified model and (list) fields.
   """
   def prefetcher(entities):
-    prefetchFields(model, fields, entities, parent)
-    prefetched_entities = prefetchListFields(model, list_fields, entities)
-    return [prefetched_entities], {}
+    """Uses async versions of prefetchers and distribute the keys manually.
+    """
+    # Get the future objects for model fields and list fields by using
+    # the async versions of the corresponding prefetch methods.
+    mf_future = prefetchFieldsAsync(model, fields, entities, parent)
+    lf_future = prefetchListFieldsAsync(model, list_fields, entities)
+
+    # now block until model prefetching completes and distribute the keys
+    # once the processing is finished
+    prefetched_mf = mf_future.get_result()
+    processPrefetchedFields(prefetched_mf, model, fields, entities, parent)
+
+    # block on list prefetching to complete
+    prefetched_lf = lf_future.get_result()
+    prefetched_lf = dict((i.key(), i) for i in prefetched_lf if i)
+
+    # Return the prefetched list fields dict as part of the
+    # prefetching protocol
+    return [prefetched_lf], {}
+
   return prefetcher
 
 
