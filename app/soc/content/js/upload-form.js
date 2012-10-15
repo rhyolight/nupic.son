@@ -46,4 +46,33 @@
     });
     return upload_link;
   }
+
+  melange.asyncUpload = function(input_ids) {
+    // Following two methods upload files asynchronously.
+    var id_selector = input_ids.join(", ");
+    jQuery(id_selector)
+        .bind('fileuploadsubmit', function (e, data) {
+      data.url = melange.getUploadUrl();
+      var button = $(this).parent().parent();
+      button.hide();
+      button.parent().children('.progress').show();
+    });
+
+    jQuery(id_selector).fileupload({
+      progressall: function (e, data) {
+        var progress = parseInt(data.loaded / data.total * 100, 10);
+        $('.progress .bar').css(
+          'width',
+          progress + '%'
+        );
+      },
+      done: function (e, data) {
+        var formrow = $(this).parent().parent().parent();
+        formrow.children('.progress').hide();
+        var filedownload = formrow.children('.filedownload')
+        filedownload.children('.filename').html(data.files[0].name);
+        filedownload.show();
+      }
+    });
+  }
 }(jQuery));
