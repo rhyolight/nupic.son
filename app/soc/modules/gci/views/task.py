@@ -533,6 +533,8 @@ class TaskInformation(Template):
 
     if is_student:
       if not self.data.timeline.tasksClaimEnded():
+        context['student_forms_link'] = self.data.redirect.program().urlOf(
+            url_names.GCI_STUDENT_FORM_UPLOAD)
         context['button_claim'] = task_logic.canClaimRequestTask(
             task, profile)
 
