@@ -132,7 +132,10 @@ def canClaimRequestTask(task, profile):
   max_tasks = task.program.nr_simultaneous_tasks
   count = q.count(max_tasks)
 
-  return count < max_tasks
+  has_forms = (profile.student_info.consent_form and
+      profile.student_info.student_id_form)
+
+  return count < max_tasks and has_forms
 
 
 def canSubmitWork(task, profile):
