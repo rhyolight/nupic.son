@@ -44,11 +44,13 @@ RE_AVATAR_COLOR = re.compile(r'(\d\d?)-(\w+)\.jpg$')
 TEMPLATE_PATH = 'v2/modules/gci/_form.html'
 
 # The standard input fields should be available to all importing modules
+AsyncFileInput = forms.AsyncFileInput
 CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
 CheckboxSelectMultiple = forms.CheckboxSelectMultiple
 DateInput = forms.DateInput
 DateTimeInput = forms.DateTimeInput
+FileField = forms.FileField
 FileInput = forms.FileInput
 HiddenInput = forms.HiddenInput
 RadioSelect = forms.RadioSelect
