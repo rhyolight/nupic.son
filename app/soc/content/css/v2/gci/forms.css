@@ -1276,10 +1276,23 @@ input[type="submit"].btn.btn-mini {
   background-position: -456px -144px;
 }
 
+/* Following CSS is taken from jQuery-File-Upload plugin */
+.fileinput-upload {
+  position: relative;
+  overflow: hidden;
+  margin-right: 4px;
+}
 
-.block-flash.error {/*Form successfully saved message*/
-    background: #ffeb8e;
-    border: 1px solid #ff9c00;
-    padding: 10px 15px;
-    text-align: center;
+.fileinput-upload input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  border: solid transparent;
+  border-width: 0 0 100px 200px;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  -moz-transform: translate(-300px, 0) scale(4);
+  direction: ltr;
+  cursor: pointer;
 }
