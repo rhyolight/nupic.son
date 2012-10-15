@@ -234,7 +234,7 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
     model = GCIStudentInfo
     css_prefix = 'student_info'
     exclude = [
-        'number_of_tasks_completed', 'task_closed', 'parental_form_mail',
+        'number_of_completed_tasks', 'task_closed', 'parental_form_mail',
         'consent_form', 'consent_form_two', 'student_id_form', 'major',
         'degree', 'school', 'school_type', 'program',
     ]

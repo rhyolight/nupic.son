@@ -393,7 +393,7 @@ class GCIProfileHelper(ProfileHelper):
     self.createProfile()
     from soc.modules.gci.models.profile import GCIStudentInfo
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
-                  'school': None, 'number_of_tasks_completed': 0,
+                  'school': None, 'number_of_completed_tasks': 0,
                   'program': self.program}
     self.profile.student_info = self.seed(GCIStudentInfo, properties)
     self.profile.is_student = True

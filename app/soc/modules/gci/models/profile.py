@@ -51,7 +51,7 @@ class GCIStudentInfo(soc.models.profile.StudentInfo):
     soc.modules.gci.models.profile.GCIProfile
   """
   #: number of tasks completed
-  number_of_tasks_completed = db.IntegerProperty(default=0)
+  number_of_completed_tasks = db.IntegerProperty(default=0)
 
   #: Property determining whether the student has closed at least one task
   task_closed = db.BooleanProperty(default=False)
