@@ -174,17 +174,7 @@ class DashboardPage(RequestHandler):
     consent_form = False
 
     if not self.data.student_info:
-      return False, False, False
-
-    query = queryAllTasksClosedByStudent(self.data.profile, keys_only=True)
-
-    # If the current user is not a student or if he is a student and has
-    # not completed even a single task successfully he/she need not submit
-    # any forms.
-    if query.count() < 1:
-      return False, False, False
-
-    has_completed_task = True
+      return False, False
 
     if not self.data.student_info.student_id_form:
       student_id_form = True
@@ -192,7 +182,7 @@ class DashboardPage(RequestHandler):
     if not self.data.student_info.consent_form:
       consent_form = True
 
-    return has_completed_task, student_id_form, consent_form
+    return student_id_form, consent_form
 
   def context(self):
     """Handler for default HTTP GET request.
@@ -203,13 +193,9 @@ class DashboardPage(RequestHandler):
         }
 
     # Check if the student should submit either of the forms
-    has_completed_task, student_id_form, consent_form = self.shouldSubmitForms()
+    student_id_form, consent_form = self.shouldSubmitForms()
     context['student_id_form'] = student_id_form
     context['consent_form'] = consent_form
-
-    if has_completed_task:
-      context['student_forms_link'] = self.redirect.program().urlOf(
-          'gci_student_form_upload')
 
     context['dashboards'] = self.populateDashboards()
 
@@ -350,18 +336,20 @@ class DashboardPage(RequestHandler):
 
     if self.data.student_info:
       links += self._getStudentLinks()
-    if self.data.is_org_admin:
-      links += self._getOrgAdminLinks()
-    if self.data.is_mentor:
-      links += self._getMentorLinks()
-    links += self._getLoneUserLinks()
+    elif self.data.is_org_admin or self.data.is_mentor:
+      if self.data.is_org_admin:
+        links += self._getOrgAdminLinks()
+      if self.data.is_mentor:
+        links += self._getMentorLinks()
+    else:
+      links += self._getLoneUserLinks()
 
     return links
 
   def _getStudentLinks(self):
     """Get the main dashboard links for student.
     """
-    links = []
+    links = [self._getStudentFormsLink()]
 
     return links
 
@@ -454,6 +442,19 @@ class DashboardPage(RequestHandler):
         'link': r.urlOf(url_names.GCI_LIST_ORG_INVITES)
         }
 
+  def _getStudentFormsLink(self):
+    """Get the link for uploading student forms.
+    """
+    r = self.data.redirect
+    r.program()
+
+    return {
+        'name': 'form_uploads',
+        'description': ugettext(
+            'Upload student id and parental consent forms.'),
+        'title': 'Form uploads',
+        'link': r.urlOf(url_names.GCI_STUDENT_FORM_UPLOAD)
+        }
 
 class MyOrgApplicationsComponent(Component):
   """Component for listing the Organization Applications of the current user.
