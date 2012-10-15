@@ -62,22 +62,16 @@ class StudentsInfoTest(GCIDjangoTestCase):
   def testStudentsInfoList(self):
     """Tests the studentsInfoList component of the dashboard.
     """
-    student = GCIProfileHelper(self.gci, self.dev_test).createOtherUser(
-        'pr@gmail.com').createStudent()
-    info = student.student_info
-    #We do this because currently the seeder can not seed the
-    #BlobReference properties. What we do below is not correct in practice, but
-    #is ok for testing purpose. 
-    consent_form = blobstore.BlobKey('I cant allow u to participate in GCI :P')
-    info.consent_form = consent_form
-    info.put() 
-    
+    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
+    profile_helper.createOtherUser('pr@gmail.com')
+
+    idx = 1
+
+    student = profile_helper.createStudentWithConsentForms(consent_form=True)
     score_properties = {'points': 5, 'program': self.gci, 'parent': student}
     score = GCIScore(**score_properties)
     score.put()
 
-    
-    idx = 1
     #Set the current user to be the host.
     self.data.createHost()
     response = self.get(self.url)
@@ -94,18 +88,21 @@ class StudentsInfoTest(GCIDjangoTestCase):
     self.assertEqual(data[0]['columns']['student_id_form'], 'No')
     
     #Case when both the forms have been submitted.
-    student_id_form = blobstore.BlobKey('student_id')
-    info.student_id_form = student_id_form
-    info.put()
+    student = profile_helper.createStudentWithConsentForms(
+        consent_form=True, student_id_form=True)
+    score_properties = {'points': 5, 'program': self.gci, 'parent': student}
+    score = GCIScore(**score_properties)
+
     data = self.getListData(self.url, idx)
     self.assertEqual(len(data), 1)
     self.assertEqual(data[0]['columns']['consent_form'], 'Yes')
     self.assertEqual(data[0]['columns']['student_id_form'], 'Yes')
     
     #Case when none of the two forms have been submitted.
-    info.consent_form = None
-    info.student_id_form = None
-    info.put()
+    student = profile_helper.createStudentWithConsentForms()
+    score_properties = {'points': 5, 'program': self.gci, 'parent': student}
+    score = GCIScore(**score_properties)
+
     data = self.getListData(self.url, idx)
     self.assertEqual(len(data), 1)
     list_fields = data[0]['columns']
