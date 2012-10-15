@@ -303,7 +303,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonClaim(self):
     """Tests the claim task button.
     """
-    self.data.createStudent()
+    self.data.createStudentWithConsentForms(
+        consent_form=True, student_id_form=True)
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_claim')
