@@ -32,6 +32,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -47,24 +48,20 @@ class UploadForm(gci_forms.GCIModelForm):
     css_prefix = 'gci_student_forms'
     fields = ['consent_form', 'student_id_form']
 
-  consent_form = forms.FileField(required=False)
-  student_id_form = forms.FileField(required=False)
+  consent_form = gci_forms.FileField(required=False)
+  student_id_form = gci_forms.FileField(required=False)
 
   def __init__(self, r, *args, **kwargs):
     """Initializes the FileFields.
     """
     super(UploadForm, self).__init__(*args, **kwargs)
 
-    if self.instance:
-      self.fields['consent_form']._file = self.instance.consent_form
-      download_url = '%s?consent_form' % r.program().urlOf(
-          'gci_student_form_upload')
-      self.fields['consent_form']._link = download_url
+    base_url = r.program().urlOf(url_names.GCI_STUDENT_FORM_UPLOAD)
 
-      self.fields['student_id_form']._file = self.instance.student_id_form
-      download_url = '%s?student_id_form' % r.program().urlOf(
-          'gci_student_form_upload')
-      self.fields['student_id_form']._link = download_url
+    self['consent_form'].field.widget = gci_forms.AsyncFileInput(
+        download_url='%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM))
+    self['student_id_form'].field.widget = gci_forms.AsyncFileInput(
+        download_url='%s?%s' % (base_url, url_names.STUDENT_ID_FORM_GET_PARAM))
 
   def clean(self):
     """Ensure that at least one of the fields has data.
@@ -89,7 +86,7 @@ class StudentFormUpload(RequestHandler):
     """
     return [
         url(r'student/forms/%s$' % url_patterns.PROGRAM, self,
-            name='gci_student_form_upload')]
+            name=url_names.GCI_STUDENT_FORM_UPLOAD)]
 
   def checkAccess(self):
     """Denies access if you are not a student or the program is not running.
