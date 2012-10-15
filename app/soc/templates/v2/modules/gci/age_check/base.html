@@ -29,8 +29,8 @@ limitations under the License.
 {% else %}
   <form action="" method="post" id="form" class="form-age_check">
     {{ form.render }}
-    <div id="form-age-check-fieldset-button-row" class="row button-row">
-      <input id="form-bulk-submit" type="submit" value="Submit" class="submit" />
+    <div id="form-age-check-fieldset-button-row" class="form-row button-row">
+      <input id="form-bulk-submit" type="submit" value="Submit" class="button" />
     </div>
   </form>
 {% endif %}
@@ -39,9 +39,12 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.uniform,
     dep.jqueryui.datepicker,
     null,
     function () {
+      jQuery("select, input:radio, input:checkbox").uniform();
+
       jQuery("#birthdate").datepicker({
         changeMonth: true,
         changeYear: true,
