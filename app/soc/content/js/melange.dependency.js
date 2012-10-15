@@ -298,6 +298,10 @@
     tpjs + "jlinq/jLinq-2.2.1.js"
   ];
 
+  s.fileupload = [
+    s.jqueryui.widget,
+    tpjs + "jquery/jquery.fileupload.js"
+  ];
   /** Melange packages **/
 
   s.melange = {};
@@ -371,6 +375,8 @@
   ];
 
   s.melange.uploadform = [
+    s.fileupload,
+    null,
     mpjs + "upload-form.js"
   ];
 
