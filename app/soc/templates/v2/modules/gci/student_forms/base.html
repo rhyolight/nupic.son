@@ -45,9 +45,6 @@ limitations under the License.
   </div>
   <form method="post" enctype="multipart/form-data" id="form" class="form-submit-forms clearfix">
     {{ form.render }}
-    <div class="form-row form-row-buttons">
-      <input value="Submit" class="button" type="submit">
-    </div>
   </form>
 </div>
 {% endblock page_content %}
@@ -57,11 +54,30 @@ limitations under the License.
     dep.melange.uploadform,
     null,
     function() {
-      var form_name = '#form';
-      jQuery(form_name).submit(function() {
-        var url = melange.getUploadUrl();
-        jQuery(form_name).get(0).setAttribute('action', url);
-        return true;
+      // Following two methods upload files asynchronously.
+      jQuery('#consent_form, #student_id_form')
+          .bind('fileuploadsubmit', function (e, data) {
+        data.url = melange.getUploadUrl();
+        var button = $(this).parent().parent();
+        button.hide();
+        button.parent().children('.progress').show();
+      });
+
+      jQuery('#consent_form, #student_id_form').fileupload({
+        progressall: function (e, data) {
+          var progress = parseInt(data.loaded / data.total * 100, 10);
+          $('.progress .bar').css(
+            'width',
+            progress + '%'
+          );
+        },
+        done: function (e, data) {
+          var formrow = $(this).parent().parent().parent();
+          formrow.children('.progress').hide();
+          var filedownload = formrow.children('.filedownload')
+          filedownload.children('.filename').html(data.files[0].name);
+          filedownload.show();
+        }
       });
     }
   ]
