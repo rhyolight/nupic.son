@@ -13,17 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from soc.modules.gci.views.helper import url_names
 
 """Module for students in GCI to upload their forms.
 """
 
 
-from django import forms
-from django.utils.translation import ugettext
-
-from google.appengine.dist import httplib
 from google.appengine.ext import blobstore
+from google.appengine.dist import httplib
+
+from django.utils.translation import ugettext
 
 from soc.logic.exceptions import BadRequest
 from soc.views.helper import blobstore as bs_helper
@@ -153,8 +151,8 @@ class StudentFormUpload(RequestHandler):
 
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blobs from the cloud
-      for file in self.data.request.file_uploads.itervalues():
-        file.delete()
+      for f in self.data.request.file_uploads.itervalues():
+        f.delete()
 
       # since this is a file upload we must return a 300 response
       extra_args = []

@@ -401,14 +401,14 @@ class TaskViewPage(RequestHandler):
       form = WorkSubmissionURLForm(data=self.data.POST)
       if not form.is_valid():
         return self.get()
-    elif 'work_file_submit' in self.data.POST:
+    elif self.data.request.file_uploads:
       form = WorkSubmissionFileForm(
           data=self.data.POST,
           files=self.data.request.file_uploads)
       if not form.is_valid():
         # we are not storing this form, remove the uploaded blob from the cloud
-        for file in self.data.request.file_uploads.itervalues():
-          file.delete()
+        for f in self.data.request.file_uploads.itervalues():
+          f.delete()
         return self.redirect.id().to('gci_view_task', extra=['file=0'])
 
 

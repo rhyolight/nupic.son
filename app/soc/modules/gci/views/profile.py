@@ -238,8 +238,8 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
         'consent_form', 'consent_form_two', 'student_id_form', 'major',
         'degree', 'school', 'school_type', 'program',
     ]
-    widgets = forms.choiceWidgets(model,
-        ['school_country', 'school_type', 'degree'])
+    widgets = forms.choiceWidgets(
+        model, ['school_country', 'school_type', 'degree'])
 
 
 class GCIProfilePage(profile.ProfilePage, RequestHandler):
@@ -355,6 +355,6 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
     return NotificationForm
 
   def _getStudentInfoForm(self):
-    return GCIStudentInfoForm(self.data.POST or None, 
-        instance=self.data.student_info)
+    return GCIStudentInfoForm(self.data.POST or None,
+                              instance=self.data.student_info)
 
