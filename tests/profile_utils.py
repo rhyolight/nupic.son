@@ -387,14 +387,18 @@ class GCIProfileHelper(ProfileHelper):
     self.profile.notify_comments = comments
     self.profile.put()
 
-  def createStudent(self):
+  def createStudent(self, **kwargs):
     """Sets the current user to be a student for the current program.
     """
-    self.createProfile()
     from soc.modules.gci.models.profile import GCIStudentInfo
+
+    self.createProfile()
+
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
                   'school': None, 'number_of_completed_tasks': 0,
                   'program': self.program}
+    properties.update(kwargs)
+
     self.profile.student_info = self.seed(GCIStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()
@@ -419,6 +423,22 @@ class GCIProfileHelper(ProfileHelper):
         task = gci_task_helper.createTask(status, org, mentor, student)
         tasks.append(task)
     return tasks
+
+  def createStudentWithConsentForms(self, status='active', consent_form=False,
+      student_id_form=False):
+    """Creates a student who might have submitted consent forms required
+    by the program Terms of Service.
+    """
+    from tests.forms_to_submit_utils import FormsToSubmitHelper
+    forms_helper = FormsToSubmitHelper()
+
+    properties = {}
+    if consent_form:
+      properties['consent_form'] = forms_helper.createBlobStoreForm()
+    if student_id_form:
+      properties['student_id_form'] = forms_helper.createBlobStoreForm()
+
+    return self.createStudent(**properties)
 
   def createMentorWithTask(self, status, org):
     """Creates an mentor profile with a task for the current user.
