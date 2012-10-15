@@ -91,6 +91,7 @@ CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
 DateInput = forms.DateInput
 DateTimeInput = forms.DateTimeInput
+FileField = forms.FileField
 FileInput = forms.FileInput
 HiddenInput = forms.HiddenInput
 RadioSelect = forms.RadioSelect
@@ -101,6 +102,47 @@ Textarea = forms.Textarea
 
 # The standard error classes should be available to all importing modules
 ValidationError = forms.ValidationError
+
+
+class AsyncFileInput(FileInput):
+  """HTML field to be rendered for asynchronous file uploads.
+  """
+
+  def __init__(self, *args, **kwargs):
+    self.download_url = kwargs.pop('download_url', None)
+    super(AsyncFileInput, self).__init__(*args, **kwargs)
+
+  def render(self, name, value, attrs=None):
+    download_hide = 'button-hide'
+    upload_hide = ''
+
+    if value is None:
+        value = ''
+    final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+    if value != '':
+        # Only add the 'value' attribute if a value is non-empty.
+        final_attrs['value'] = force_unicode(self._format_value(value.filename))
+        download_hide = ''
+        upload_hide = 'button-hide'
+
+    # markup for buttons taken from bootstrap
+    return mark_safe(
+        u'<div class="progress"><div class="bar""></div></div>'
+        '<div class="filedownload %(dhide)s">'
+        '<a href="%(durl)s" class="filename">%(fname)s</a>'
+        '<span class="btn btn-primary fileinput-upload">'
+        '<i class="icon-repeat icon-white"></i>'
+        '<span>Re-upload</span><input %(iparams)s /></span></div>'
+        '<div class="fileupload %(uhide)s">'
+        '<span class="btn btn-success fileinput-upload">'
+        '<i class="icon-plus icon-white"></i>'
+        '<span>Attach a file</span><input %(iparams)s /></span></div>' % {
+            'dhide': download_hide,
+            'uhide': upload_hide,
+            'durl': self.download_url,
+            'fname': final_attrs.get('value', ''),
+            'iparams': forms.util.flatatt(final_attrs),
+            })
 
 
 class RadioInput(forms.widgets.RadioInput):
