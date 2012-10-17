@@ -19,8 +19,6 @@
 
 
 import itertools
-import logging
-import random
 import datetime
 
 from google.appengine.api import users
@@ -30,8 +28,6 @@ from google.appengine.ext import db
 from django import http
 
 from soc.logic import accounts
-from soc.logic import dicts
-from soc.logic import user
 from soc.models.document import Document
 from soc.models.host import Host
 
@@ -140,12 +136,9 @@ def seed(request, *args, **kwargs):
   google_host = Host(**role_properties)
   google_host.put()
 
-  from datetime import datetime
-  from datetime import timedelta
-
-  now = datetime.now()
-  before = now - timedelta(365)
-  after = now + timedelta(365)
+  now = datetime.datetime.now()
+  before = now - datetime.timedelta(365)
+  after = now + datetime.timedelta(365)
 
   timeline_properties = {
       'key_name': 'google/gsoc2009',
