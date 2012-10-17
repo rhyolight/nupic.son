@@ -546,7 +546,6 @@ def clear(*args, **kwargs):
   # this method will not clear all instances.  Instead, it should continually
   # call .all(), delete all those, and loop until .all() is empty.
   entities = itertools.chain(*[
-      GCIStudent.all(),
       Survey.all(),
       SurveyRecord.all(),
       StudentProposal.all(),
