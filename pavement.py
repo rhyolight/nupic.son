@@ -53,7 +53,7 @@ options(
     app_files = ['app.yaml', 'index.yaml', 'queue.yaml', 'cron.yaml',
                  'mapreduce.yaml', 'main.py', 'settings.py', 'urls.py',
                  'gae_django.py', 'profiler.py', 'appengine_config.py'],
-    app_dirs =  ["soc", "feedparser", "python25src",
+    app_dirs =  ["soc", "feedparser",
                  "jquery.min", "ranklist", "shell", "json.min", "jlinq",
                  "modernizr.min", "html5lib", "LABjs.min", "gviz","webmaster",
                  "gdata", "atom", "mapreduce"],
