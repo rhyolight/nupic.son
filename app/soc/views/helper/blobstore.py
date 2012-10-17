@@ -26,7 +26,6 @@ Credits and big thanks to to: sebastian.serrano and emi420
 
 import cgi
 import logging
-import urllib
 
 from google.appengine.ext import blobstore
 
