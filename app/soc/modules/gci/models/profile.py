@@ -22,8 +22,6 @@ from google.appengine.ext import blobstore
 
 from django.utils.translation import ugettext
 
-from soc.modules.gci.models import avatars
-
 import soc.models.profile
 
 
