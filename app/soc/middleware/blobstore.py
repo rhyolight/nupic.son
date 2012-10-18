@@ -1,4 +1,3 @@
-#
 # Copyright 2010 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,33 +23,32 @@ TODO: Remove this middleware as soon as the above mentioned issue in Appengine
 is fixed.
 """
 
-
-import re
-
 from soc.views.helper import blobstore as bs_helper
 
 
-_HTML_TYPES = ('multipart/form-data',)
-_POST_FORM_RE = \
-  re.compile(r'(<form\W[^>]*\bmethod\s*=\s*(\'|"|)POST(\'|"|)\b[^>]*>)',
-    re.IGNORECASE)
-
 class BlobStoreMiddleware(object):
-  """Middleware for building request POST data for blobstore."""
+  """Middleware for building request POST data for blobstore.
+
+  This class implements the specification defined at
+  https://docs.djangoproject.com/en/dev/topics/http/middleware/.
+  """
 
   def process_request(self, request):
     """Process wsgi.input on POST requests.
-    """
 
+    Args:
+      request: A django.http.HttpRequest.
+
+    Returns:
+      None.
+    """
     request.file_uploads = {}
 
     # we only care about POST and which has form data with file.
-    if request.method != 'POST' or (
-        'multipart/form-data' not in request.META.get('CONTENT_TYPE', '')):
-      return None
-
-    # rewrite request.POST with the form data with file_uploads
-    # blob info as a dictionary in request.file_uploads
-    bs_helper.cacheUploads(request)
+    if request.method == 'POST' and (
+        'multipart/form-data' in request.META.get('CONTENT_TYPE', '')):
+      # rewrite request.POST with the form data with file_uploads
+      # blob info as a dictionary in request.file_uploads
+      bs_helper.cacheUploads(request)
 
     return None
