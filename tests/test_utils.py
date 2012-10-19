@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2008 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Common testing utilities.
-"""
+"""Common testing utilities."""
 
 
 import collections
@@ -36,7 +33,7 @@ from django.test import client
 from django.test import TestCase
 
 from soc.logic.helper import xsrfutil
-from soc.middleware.xsrf import XsrfMiddleware
+from soc.middleware import xsrf as xsrf_middleware
 from soc.modules import callback
 
 
@@ -432,8 +429,8 @@ class DjangoTestCase(TestCase):
         if site:
           self.site = site
     request = SiteContainingRequest(site)
-    xsrf = XsrfMiddleware()
-    key = xsrf._getSecretKey(request)
+    # TODO(nathaniel): module API violation.
+    key = xsrf_middleware._GetSecretKey(request)
     user_id = xsrfutil._getCurrentUserId()
     xsrf_token = xsrfutil._generateToken(key, user_id)
     return xsrf_token
