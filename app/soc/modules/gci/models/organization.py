@@ -20,6 +20,8 @@
 
 from google.appengine.ext import db
 
+from django.utils.translation import ugettext
+
 import soc.models.organization
 
 
@@ -29,3 +31,12 @@ class GCIOrganization(soc.models.organization.Organization):
 
   #: Property that stores the amount of tasks the organization can publish.
   task_quota_limit = db.IntegerProperty(required=True, default=0)
+
+  #: Optional notification mailing list
+  notification_mailing_list = db.EmailProperty(required=False,
+    verbose_name=ugettext('Notification mailing list'))
+  notification_mailing_list.help_text = ugettext(
+    'If entered all GCI Task notifications for this organization will be sent '
+    'to this address, in addition to those users who subscribed to the '
+    'individual task.')
+  notification_mailing_list.group = ugettext('4. Organization Preferences')

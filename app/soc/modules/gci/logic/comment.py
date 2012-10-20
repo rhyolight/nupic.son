@@ -54,6 +54,11 @@ def storeAndNotifyTxn(comment, task=None):
         profile.user.key() != comment.created_by.key()):
       to_emails.append(profile.email)
 
+  # Send out an email to an entire organization when set.
+  org = task.org
+  if org.notification_mailing_list:
+    to_emails.append(org.notification_mailing_list)
+
   context = notifications.getTaskCommentContext(task, comment, to_emails)
   sub_txn = mailer.getSpawnMailTaskTxn(context, parent=task)
   def txn():
