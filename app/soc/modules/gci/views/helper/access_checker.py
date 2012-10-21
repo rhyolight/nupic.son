@@ -280,15 +280,15 @@ class AccessChecker(access_checker.AccessChecker):
     program = self.data.program
     r = self.data.redirect.createProfile('org_admin')
     msg = DEF_NO_ORG_ADMIN_PROFILE % (
-        program.short_name, r.urlOf('create_gsoc_profile', secure=True))
+        program.short_name, r.urlOf('create_gci_profile', secure=True))
 
-    q = GSoCProfile.all(keys_only=True)
+    q = GCIProfile.all(keys_only=True)
     q.ancestor(self.data.user)
     q.filter('scope', self.data.program)
     q.filter('is_student', False)
     q.filter('status', 'active')
-    gsoc_profile = q.get()
-    if not gsoc_profile:
+    gci_org_admin_profile = q.get()
+    if not gci_org_admin_profile:
       raise AccessViolation(msg)
 
   def canCreateNewOrg(self):
