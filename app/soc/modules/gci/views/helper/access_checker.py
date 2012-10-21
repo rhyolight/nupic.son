@@ -244,21 +244,23 @@ class AccessChecker(access_checker.AccessChecker):
     else:
       self.isLoggedIn()
 
-  def canTakeOrgApp(self):
-    """A user can take the GCI org app if he/she participated in GSoC or GCI
-    as a non-student.
+  def hasNonStudentProfileInAProgram(self):
+    """Check if the user has a participated in the previous programs.
+
+    This checks if the user has at least one non-student profile in previous
+    programs.
     """
     from soc.modules.gsoc.models.profile import GSoCProfile
 
     self.isUser()
 
-    q = GSoCProfile.all()
+    q = GSoCProfile.all(keys_only=True)
     q.filter('is_student', False)
     q.filter('status', 'active')
     q.filter('user', self.data.user)
     gsoc_profile = q.get()
 
-    q = GCIProfile.all()
+    q = GCIProfile.all(keys_only=True)
     q.filter('is_student', False)
     q.filter('status', 'active')
     q.filter('user', self.data.user)
@@ -266,6 +268,14 @@ class AccessChecker(access_checker.AccessChecker):
 
     if not (gsoc_profile or gci_profile):
       raise AccessViolation(DEF_NO_PREV_ORG_MEMBER)
+
+  def canTakeOrgApp(self):
+    """Check if the user can take the org app.
+
+    A user can take the GCI org app if he/she participated in GSoC or GCI as
+    a non-student and has a non-student profile for the current program.
+    """
+    self.hasNonStudentProfileInAProgram()
 
     program = self.data.program
     r = self.data.redirect.createProfile('org_admin')
