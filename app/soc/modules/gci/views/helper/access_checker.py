@@ -47,6 +47,12 @@ DEF_ALL_WORK_STOPPED = ugettext(
 DEF_COMMENTING_NOT_ALLOWED = ugettext(
     "No more comments can be placed at this time.")
 
+DEF_NO_ORG_ADMIN_PROFILE = ugettext(
+    'You must have an organization administrator profile to apply to be an '
+    'an organization. If you want to register as an organization '
+    'administrator for %s please <a href="%s">click here</a>, register and '
+    'then come back to this page.')
+
 DEF_NO_TASK_CREATE_PRIV = ugettext(
     'You do not have sufficient privileges to create a new task for %s.' )
 
@@ -260,6 +266,20 @@ class AccessChecker(access_checker.AccessChecker):
 
     if not (gsoc_profile or gci_profile):
       raise AccessViolation(DEF_NO_PREV_ORG_MEMBER)
+
+    program = self.data.program
+    r = self.data.redirect.createProfile('org_admin')
+    msg = DEF_NO_ORG_ADMIN_PROFILE % (
+        program.short_name, r.urlOf('create_gsoc_profile', secure=True))
+
+    q = GSoCProfile.all(keys_only=True)
+    q.ancestor(self.data.user)
+    q.filter('scope', self.data.program)
+    q.filter('is_student', False)
+    q.filter('status', 'active')
+    gsoc_profile = q.get()
+    if not gsoc_profile:
+      raise AccessViolation(msg)
 
   def canCreateNewOrg(self):
     """A user can create a new org if they have an accepted org app.
