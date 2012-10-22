@@ -70,7 +70,7 @@ class ConnectionForm(GSoCModelForm):
   """ Django form for the ShowConnection page. """
 
   role = ChoiceField(widget=django_forms.Select(),
-      choices=(('1', 'Mentor'), ('2', 'Org Admin')))
+      choices=(('1', 'Mentor'),))
   message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
 
   def __init__(self, request_data=None, message=None, is_admin=False, 
@@ -95,6 +95,8 @@ class OrgConnectionForm(ConnectionForm):
 
     self.request_data = request_data
     self.is_admin = True
+
+    self.fields['role'].choices = (('1', 'Mentor'), ('2', 'Org Admin'))
 
     field = self.fields.pop('users')
     field.help_text = ugettext(
@@ -397,14 +399,6 @@ class UserConnectionPage(RequestHandler):
     assert isSet(self.data.organization)
     assert isSet(self.data.user)
     
-	  # Check the User's rate limit to make sure that there aren't excessive 
-	  # outstanding connections.
-    def check_outstanding_txn():
-      q = GSoCConnection.all(keys_only=True).ancestor(self.data.user)
-      q.filter('org_mentor =', RESPONSE_STATE_UNREPLIED)
-      q.filter('org_org_admin =', RESPONSE_STATE_UNREPLIED)
-      if q.count(limit=5) >= DEF_MAX_PENDING_CONNECTIONS:
-        raise AccessViolation('Exceeded rate limit for pending connections.')
     db.run_in_transaction(check_outstanding_txn)
 
     connection_form = UserConnectionForm(request_data=self.data, 
