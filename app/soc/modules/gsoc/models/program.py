@@ -22,7 +22,6 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.document
 import soc.models.program
 
 
@@ -56,7 +55,7 @@ class GSoCProgram(soc.models.program.Program):
       'of Code</i>.</tt>')
 
   #: Optional field storing minimum slots per organization
-  min_slots = db.IntegerProperty(required=False, default=2,
+  min_slots = db.IntegerProperty(required=False, default=1,
       verbose_name=ugettext('Min slots per org'))
   min_slots.help_text = ugettext(
       'The amount of slots each org should get at the very least.')
