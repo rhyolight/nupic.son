@@ -45,7 +45,7 @@ class GCIProgram(soc.models.program.Program):
   nr_simultaneous_tasks = db.IntegerProperty(
       required=True, default=1,
       verbose_name=ugettext('Simultaneous tasks'))
-  nr_simultaneous_tasks.group = ugettext('Contest Rules')
+  nr_simultaneous_tasks.group = ugettext('Age Requirements')
   nr_simultaneous_tasks.help_text = ugettext(
       'Number of tasks students can work on simultaneously in the program.')
 
@@ -54,7 +54,7 @@ class GCIProgram(soc.models.program.Program):
   nr_winners = db.IntegerProperty(
       required=True, default=10,
       verbose_name=ugettext('Number of winners'))
-  nr_winners.group = ugettext('Contest Rules')
+  nr_winners.group = ugettext('Age Requirements')
   nr_winners.help_text = ugettext(
       'Number of winners to be selected at the end of the program.')
 
