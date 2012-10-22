@@ -22,8 +22,6 @@
 import os
 import unittest
 
-from nose.plugins import skip
-
 from google.appengine.api import users
 
 from soc.logic import accounts
