@@ -92,32 +92,10 @@ class TestAccounts(unittest.TestCase):
     expected_email = self.regular_email
     self.assertEqual(normalized_acc.email(), expected_email)
 
-    #normalize a non normal account
+    #a non normal account won't be normalized any more
     account = users.User(email=self.non_normal_email)
     normalized_acc = accounts.normalizeAccount(account)
-    expected_email = self.non_normal_email.lower()
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
-    self.assertEqual(normalized_acc.email(), expected_email)
-
-    #when account is None, e.g. if no user is logged in
-    account = None
-    self.assertRaises(AttributeError, accounts.normalizeAccount, account)
-
-    #test invalid emails
-    account = users.User(email=self.invalid_emails[0])
-    normalized_acc = accounts.normalizeAccount(account)
-    expected_email = self.invalid_emails[0]
-    self.assertEqual(normalized_acc.email(), expected_email)
-
-    account = users.User(email=self.invalid_emails[1])
-    normalized_acc = accounts.normalizeAccount(account)
-    expected_email = self.invalid_emails[1]
-    self.assertEqual(normalized_acc.email(), expected_email)
-
-    account = users.User(email=self.invalid_emails[2])
-    normalized_acc = accounts.normalizeAccount(account)
-    expected_email = self.invalid_emails[2]
+    expected_email = self.non_normal_email
     self.assertEqual(normalized_acc.email(), expected_email)
 
 
