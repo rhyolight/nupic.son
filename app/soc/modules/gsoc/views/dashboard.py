@@ -27,6 +27,7 @@ from soc.logic import cleaning
 from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
+from soc.models.connection import STATUS_STATES
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
@@ -1238,10 +1239,24 @@ class OrgConnectionComponent(Component):
     
     list_config.addColumn('username', 'Username',
         lambda e, *args: e.parent().link_id)
-    list_config.addColumn('role', 'Role',
-        lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor')
+
+    options = [('True', 'Org Admin'), ('False', 'Mentor')]
+    list_config.addColumn('user_org_admin', 'Role',
+        lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor',
+        options=options)
+    
+    messy_tuple = '%s|%s|%s|%s' % (STATUS_STATES['accepted'],
+        STATUS_STATES['rejected'], 
+        STATUS_STATES['user_action_req'],
+        STATUS_STATES['org_action_req'])
+    options = [(messy_tuple, 'All'),
+        (STATUS_STATES['accepted'], 'Accepted'),
+        (STATUS_STATES['rejected'], 'Rejected'),
+        (STATUS_STATES['user_action_req'], 'User Action Required'),
+        (STATUS_STATES['org_action_req'], 'Org Action Required')]
     list_config.addColumn('status', 'Status',
-        lambda e, *args: e.status())
+        lambda e, *args: e.status(), options=options)
+    
     if len(data.org_admin_for) > 1:
       list_config.addColumn('org', 'Organization',
           lambda e, *args: e.organization.name)

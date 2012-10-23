@@ -30,6 +30,9 @@ RESPONSE_STATE_UNREPLIED = 'Unreplied'
 RESPONSE_STATES = [
     RESPONSE_STATE_UNREPLIED, RESPONSE_STATE_ACCEPTED, RESPONSE_STATE_REJECTED]
 
+STATUS_STATES = {'accepted':'Accepted', 'rejected':'Rejected',
+    'user_action_req':'User Action Required', 
+    'org_action_req' : 'Org Action Required'}
 
 class Connection(db.Model):
   """ Connection model.
@@ -130,14 +133,14 @@ class Connection(db.Model):
     """
     if self.user_mentor == RESPONSE_STATE_ACCEPTED and \
         self.org_mentor == RESPONSE_STATE_ACCEPTED:
-      return 'Accepted'
+      return STATUS_STATES['accepted']
     elif self.user_mentor == RESPONSE_STATE_REJECTED or \
         self.org_mentor == RESPONSE_STATE_REJECTED:
-      return 'Rejected'
+      return STATUS_STATES['rejected']
     elif self.user_mentor == RESPONSE_STATE_UNREPLIED:
-      return 'User Action Required'
+      return STATUS_STATES['user_action_req']
     elif self.org_mentor == RESPONSE_STATE_UNREPLIED:
-      return 'Org Action Required'
+      return STATUS_STATES['org_action_req']
     else:
       return ''
 
