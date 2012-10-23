@@ -67,6 +67,10 @@ def updateOrgScoresTxn(tasks):
     if GCITask.student.get_value_for_datastore(task) != student_key:
       raise ValueError("Specified tasks belong to more than one student")
 
+    # check if the task is actually closed
+    if task.status != 'Closed':
+      raise ValueError("The task %d is not closed" % task.key().id())
+
     org_key = GCITask.org.get_value_for_datastore(task)
 
     if org_key not in tasks_by_org:
@@ -88,6 +92,10 @@ def updateOrgScoresTxn(tasks):
         org_score.tasks.append(task.key())
 
       to_put.append(org_score)
+
+    student_info = profile_logic.queryStudentInfoForParent(student_key).get()
+    student_info.number_of_completed_tasks += len(tasks)
+    to_put.append(student_info)
 
     db.put(to_put)
 
