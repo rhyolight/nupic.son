@@ -46,7 +46,10 @@
 </div>
 
 <div class="block-task-difficulty">
-  <span class="difficulty">Difficulty: <span class="emph">{{ task.difficulty_level }}</span></span>
+  {% comment %}
+    No longer show difficulty in the info block for GCI2012.
+    <span class="difficulty">Difficulty: <span class="emph">{{ task.difficulty_level }}</span></span>
+  {% endcomment %}
   <span class="status">Status: <span class="emph">{{ task.status }}</span></span>
   {% if task.deadline %}
     <span class="remaining">Time left: <span class="emph">{% if remaining_days %}{{ remaining_days }} days {% endif %}{{ remaining_hours }} hrs {{ remaining_minutes }} min</span></span>
