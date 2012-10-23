@@ -2481,6 +2481,7 @@ div.tos {
   height: 250px;
   margin-bottom: 10px;
   overflow: auto;
+  float: left;
   padding: 10px;
   width: 640px;
 }
