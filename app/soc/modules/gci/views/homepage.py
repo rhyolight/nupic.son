@@ -33,6 +33,10 @@ class HowItWorks(Template):
   """How it works template.
   """
 
+  CONTEST_BEGINS_ON_MSG = "Context begins on %s/%s"
+
+  GET_STARTED_NOW_MSG = "Get Started Now!"
+
   def __init__(self, data):
     self.data = data
 
@@ -44,6 +48,8 @@ class HowItWorks(Template):
     about_page = GCIProgram.about_page.get_value_for_datastore(program)
 
     example_tasks_link = ''
+
+    main_text = self._getMainText()
 
     if self.data.timeline.orgSignup():
       start_text = 'Sign up as organization'
@@ -69,11 +75,21 @@ class HowItWorks(Template):
         'about_link': r.document(about_page).url(),
         'start_text': start_text,
         'start_link': start_link,
-        'example_tasks_link': example_tasks_link
+        'example_tasks_link': example_tasks_link,
+        'main_text': main_text,
     }
 
   def templatePath(self):
     return "v2/modules/gci/homepage/_how_it_works.html"
+
+  def _getMainText(self):
+    if not self.data.timeline.studentSignup():
+      sign_up_start = self.data.timeline.studentSignupStart()
+      month = sign_up_start.strftime("%b")
+      day = sign_up_start.strftime("%d")
+      return self.CONTEST_BEGINS_ON_MSG % (month, day)
+    else:
+      return self.GET_STARTED_NOW_MSG
 
 
 class FeaturedTask(Template):
