@@ -1388,6 +1388,12 @@ body {
             margin: 20px auto 5px;
             text-transform: uppercase;
         }
+        .block-how-it-works .block-how-it-works-start-inner span.short-text {
+            font-size: 34px;
+        }
+        .block-how-it-works .block-how-it-works-start-inner span.long-text {
+            font-size: 22px;
+        }
         .block-how-it-works-start-inner div.block-start-link {
             width: 78%;
             text-align: center;
