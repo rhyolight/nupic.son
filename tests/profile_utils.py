@@ -304,12 +304,15 @@ class GSoCProfileHelper(ProfileHelper):
     """Sets the current user to be a student with specified number of 
     projects for the current program.
     """
-    student = self.createStudent()
+    student = self.createStudentWithProposal(org, mentor)
+    from soc.modules.gsoc.models.proposal import GSoCProposal
+    proposal = GSoCProposal.all().ancestor(student).get()
+
     student.student_info.number_of_projects = n
     student.student_info.put()
     from soc.modules.gsoc.models.project import GSoCProject
     properties = {'program': self.program, 'org': org, 'status': 'accepted',
-                  'parent': self.profile, 'mentors': [mentor.key()]}
+        'parent': self.profile, 'mentors': [mentor.key()], 'proposal': proposal}
     self.seedn(GSoCProject, properties, n)
     return self.profile
 
