@@ -93,9 +93,8 @@ class StudentList(Template):
         (lambda e, sp, *args: sp[e.parent_key()].student_info.expected_graduation),
         hidden=True)
 
-    # TODO(daniel): this will be optimized
     list_config.addColumn('completed_tasks', 'Completed tasks',
-        lambda e, *args: GCIOrgScore.all().ancestor(e).count())
+        lambda e, *args: sp[e.parent_key()].number_of_completed_tasks)
 
     def formsSubmitted(e, sp, form):
       """Returns "Yes" if form has been submitted otherwise "No".
