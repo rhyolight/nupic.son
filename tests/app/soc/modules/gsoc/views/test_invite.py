@@ -136,9 +136,9 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     self.data.createProfile()
     invitation = self.createInvitation()
     url = '/gsoc/invitation/%s/%s/%s' % (
-	self.gsoc.key().name(),
-	invitation.parent_key().name(),
-	invitation.key().id())
+    self.gsoc.key().name(),
+    invitation.parent_key().name(),
+    invitation.key().id())
     response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'soc/request/base.html')
