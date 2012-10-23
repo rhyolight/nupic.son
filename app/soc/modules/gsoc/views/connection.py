@@ -600,13 +600,15 @@ class ShowConnection(RequestHandler):
           if mentor_mail:
             mailer.getSpawnMailTaskTxn(mentor_mail, parent=connection)()
 
-        profile.is_mentor = True
-        profile.mentor_for.append(org_key)
-        profile.mentor_for = list(set(profile.mentor_for))
-        profile.put()
+        # This should theoretically never happen, but it improves stability.
+        if org_key not in profile.mentor_for:
+          profile.is_mentor = True
+          profile.mentor_for.append(org_key)
+          profile.mentor_for = list(set(profile.mentor_for))
+          profile.put()
 
-        generate_message_txn(connection, 
-            '%s promoted to Mentor.' % profile.link_id)
+          generate_message_txn(connection, 
+              '%s promoted to Mentor.' % profile.link_id)
 
     db.run_in_transaction(accept_mentor_txn)
   
@@ -654,18 +656,20 @@ class ShowConnection(RequestHandler):
         
         # Org Admins are mentors by default, so we have to promote the 
         # user twice - one to mentor, one to org admin.
-        profile.is_mentor = True
-        profile.mentor_for.append(org_key)
-        profile.mentor_for = list(set(profile.mentor_for))
+        if org_key not in profile.mentor_for:
+          profile.is_mentor = True
+          profile.mentor_for.append(org_key)
+          profile.mentor_for = list(set(profile.mentor_for))
         
-        profile.is_org_admin = True
-        profile.org_admin_for.append(org_key)
-        profile.org_admin_for = list(set(profile.org_admin_for))
+        if org_key not in profile.org_admin_for:
+          profile.is_org_admin = True
+          profile.org_admin_for.append(org_key)
+          profile.org_admin_for = list(set(profile.org_admin_for))
+          profile.put()
 
-        generate_message_txn(connection, 
-            '%s promoted to Org Admin.' % profile.link_id)
+          generate_message_txn(connection, 
+              '%s promoted to Org Admin.' % profile.link_id)
 
-        profile.put()
       connection.put()
       
     db.run_in_transaction(accept_org_admin_txn)

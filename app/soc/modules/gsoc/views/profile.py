@@ -288,6 +288,9 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
       link = url_names.GSOC_USER_CONNECTION
       extra_get_args.append('profile=created')
 
+    user = User.get_by_key_name(self.data.request.POST['public_name'])
+    
+    self.redirect.connect(user, organization)
     self.redirect.to(link, extra=extra_get_args)
 
   def _handleAnonymousConnection(self):

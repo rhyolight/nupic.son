@@ -436,14 +436,14 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'show_gsoc_request'
     return self
   
-  def connect(self, user=None):
+  def connect(self, user=None, organization=None):
     """ Sets the _url_name for a gsoc_user_connection redirect.
      """  
     if not user:
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
     
-    self.organization()
+    self.organization(organization)
     self.kwargs['link_id'] = user.link_id
     self._url_name = url_names.GSOC_USER_CONNECTION
     return self
