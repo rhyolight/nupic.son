@@ -34,9 +34,7 @@ from soc.views.template import Template
 
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models import task
-from soc.modules.gci.models.task import DIFFICULTIES
-from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
@@ -113,7 +111,7 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
     for tag in self.data.get('tags').split(','):
       tags.append(tag.strip())
     return tags
-    
+
   def clean_mentors(self):
     mentor_key_strs = self.data.getlist('mentors')
 
@@ -160,10 +158,6 @@ class TaskCreateForm(TaskEditPostClaimForm):
   def __init__(self, data, *args, **kwargs):
     super(TaskCreateForm, self).__init__(data, *args, **kwargs)
 
-    difficulties = [(d, d) for d in DIFFICULTIES[:-1]]
-    self.fields['difficulty_level'] = django_forms.ChoiceField(
-        label=ugettext('Difficulty'), choices=difficulties)
-
     types = []
     for t in data.program.task_types:
       types.append((t, t))
@@ -178,8 +172,6 @@ class TaskCreateForm(TaskEditPostClaimForm):
       ttc = datetime.timedelta(hours=self.instance.time_to_complete)
       self.fields['time_to_complete_days'].initial = ttc.days
       self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
-
-      self.fields['difficulty_level'].initial = self.instance.difficulty_level
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
@@ -196,6 +188,9 @@ class TaskCreateForm(TaskEditPostClaimForm):
     profile = self.request_data.profile
     self.cleaned_data['created_by'] = profile
     self.cleaned_data['modified_by'] = profile
+
+    # Difficulty is hardcoded to easy for GCI2012.
+    self.cleaned_data['difficulty_level'] = DifficultyLevel.EASY
 
     entity = super(TaskCreateForm, self).create(
         commit=False, key_name=key_name, parent=parent)
@@ -234,11 +229,6 @@ class TaskCreateForm(TaskEditPostClaimForm):
     else:
       errors = self._errors.setdefault('time_to_complete_days', ErrorList())
       errors.append(ugettext('Time to complete must be specified.'))
-
-    # Disallow "Unknown" difficulty
-    if 'difficulty' in cleaned_data and \
-        cleaned_data['difficulty'] not in DIFFICULTIES[:-1]:
-      raise django_forms.ValidationError('Unknown difficulty is not supported')
 
     return cleaned_data
 
