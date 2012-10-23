@@ -59,7 +59,7 @@ DEF_MAX_PENDING_CONNECTIONS = 3
 @db.transactional
 def check_existing_connection_txn(user, org):
   """ Helper method to check for an existing GSoCConnection between a user
-  and an organization transactionally. 
+    and an organization transactionally. 
   """
   query = connection_logic.queryForAncestorAndOrganization(user, org, True)
   if query.count(limit=1) > 0:
@@ -67,13 +67,25 @@ def check_existing_connection_txn(user, org):
   return True
 
 @db.transactional
-def generate_message_txn(form, profile, connection):
-  """ Helper method to generate a GSoCConnectionMessage.
+def send_message_txn(form, profile, connection):
+  """ Helper method to generate a GSoCConnectionMessage sent from a user.
   """
   properties = {
     'author': profile,
     'content': form.cleaned_data['message']
     }
+  message = GSoCConnectionMessage(parent=connection, **properties)
+  message.put()
+
+@db.transactional
+def generate_message_txn(connection, content):
+  """ Helper method to generate a GSoCConnectionMessage with programatically
+      generated content.
+  """
+  properties = {
+      'is_auto_generated' : True,
+      'content': content
+      }
   message = GSoCConnectionMessage(parent=connection, **properties)
   message.put()
 
@@ -300,7 +312,7 @@ class OrgConnectionPage(RequestHandler):
       connection.put()
 
       if message_provided:
-        generate_message_txn(connection_form, profile, connection)
+        send_message_txn(connection_form, profile, connection)
 
       context = notifications.connectionContext(self.data, connection, 
           email, connection_form.cleaned_data['message'])
@@ -441,7 +453,7 @@ class UserConnectionPage(RequestHandler):
       connection.put()
 
       if message_provided:
-        generate_message_txn(connection_form, self.data.profile, connection)
+        send_message_txn(connection_form, self.data.profile, connection)
 
       context = notifications.connectionContext(self.data, connection, 
           receivers, connection_form.cleaned_data['message'], True)
@@ -593,16 +605,9 @@ class ShowConnection(RequestHandler):
         profile.mentor_for = list(set(profile.mentor_for))
         profile.put()
 
-        # Generate a message to mark that the user was promoted.
-        properties = {
-          'is_auto_generated' : True,
-          'content': '%s promoted to Mentor.' % profile.link_id
-          }
-        message = GSoCConnectionMessage(parent=connection, **properties)
-        message.put()
-      
-      connection.put()
-      
+        generate_message_txn(connection, 
+            '%s promoted to Mentor.' % profile.link_id)
+
     db.run_in_transaction(accept_mentor_txn)
   
   def _rejectMentor(self):
@@ -616,12 +621,7 @@ class ShowConnection(RequestHandler):
         connection.user_mentor = RESPONSE_STATE_REJECTED
       connection.put()
 
-      properties = {
-          'is_auto_generated' : True,
-          'content': 'Mentor Connection Rejected.'
-          }
-      message = GSoCConnectionMessage(parent=connection, **properties)
-      message.put()
+      generate_message_txn(connection, 'Mentor Connection Rejected.')
       
     db.run_in_transaction(decline_mentor_txn)
     
@@ -662,14 +662,9 @@ class ShowConnection(RequestHandler):
         profile.org_admin_for.append(org_key)
         profile.org_admin_for = list(set(profile.org_admin_for))
 
-        # Generate a message to mark that the user was promoted.
-        properties = {
-          'is_auto_generated' : True,
-          'content': '%s promoted to Org Admin.' % profile.link_id
-          }
-        message = GSoCConnectionMessage(parent=connection, **properties)
-        message.put()
-        
+        generate_message_txn(connection, 
+            '%s promoted to Org Admin.' % profile.link_id)
+
         profile.put()
       connection.put()
       
@@ -689,12 +684,8 @@ class ShowConnection(RequestHandler):
         connection.user_mentor = RESPONSE_STATE_REJECTED
       connection.put()
 
-      properties = {
-          'is_auto_generated' : True,
-          'content': 'Org Admin Connection Rejected.'
-          }
-      message = GSoCConnectionMessage(parent=connection, **properties)
-      message.put()
+      generate_message_txn(connection, 
+          '%s promoted to Org Admin.' % profile.link_id)
       
     db.run_in_transaction(decline_org_admin_txn)
 
