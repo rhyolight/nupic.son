@@ -117,13 +117,13 @@ class AsyncFileInput(FileInput):
     upload_hide = ''
 
     if value is None:
-        value = ''
+      value = ''
     final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
     if value != '':
-        # Only add the 'value' attribute if a value is non-empty.
-        final_attrs['value'] = force_unicode(self._format_value(value.filename))
-        download_hide = ''
-        upload_hide = 'button-hide'
+      # Only add the 'value' attribute if a value is non-empty.
+      final_attrs['value'] = force_unicode(self._format_value(value.filename))
+      download_hide = ''
+      upload_hide = 'button-hide'
 
     # markup for buttons taken from bootstrap
     return mark_safe(
