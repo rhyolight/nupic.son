@@ -30,6 +30,7 @@ from tests.profile_utils import GCIProfileHelper
 from tests.program_utils import GCIProgramHelper
 from tests.test_utils import SoCTestCase
 
+
 class OrganizationTest(SoCTestCase):
   """Tests the logic for GCIOrganization.
   """
