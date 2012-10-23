@@ -320,9 +320,13 @@ class GSoCProfileHelper(ProfileHelper):
     """Creates an mentor profile with a project for the current user.
     """
     self.createMentor(org)
+    from soc.modules.gsoc.models.proposal import GSoCProposal
+    proposal = GSoCProposal.all().ancestor(student).get()
+
     from soc.modules.gsoc.models.project import GSoCProject
     properties = {'mentors': [self.profile.key()], 'program': self.program,
-                  'parent': student, 'org': org, 'status': 'accepted'}
+                  'parent': student, 'org': org, 'status': 'accepted',
+                  'proposal': proposal}
     self.seed(GSoCProject, properties)
     return self.profile
 

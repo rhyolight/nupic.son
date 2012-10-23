@@ -19,12 +19,8 @@
 """
 
 
-from nose.plugins import skip
-
+from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
-
-# TODO: perhaps we should move this out?
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 class HomepageViewTest(GSoCDjangoTestCase):
@@ -84,42 +80,38 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.assertEqual(timeline_tmpl.current_timeline, 'coding_period')
     self.assertTrue('profile_link' in apply_context)
 
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
-
     # Show featured_project
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
-    student_entity = student.createMentor(self.org)
+    student_entity = student.createStudent()
 
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor.createOtherUser('mentor@example.com')
-    mentor_entity = mentor.createMentor(self.org)
+    mentor.createMentorWithProject(self.org, student_entity)
 
-    project = self.createProject({'parent': student_entity,
-                                 'mentor': mentor_entity, 'featured': True })
-
+    from soc.modules.gsoc.models.project import GSoCProject
+    project = GSoCProject.all().ancestor(student_entity).get()
+    project.is_featured = True
+    project.put()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
     self.assertTemplateUsed(
         response, 'v2/modules/gsoc/homepage/_featured_project.html')
 
     featured_project_tmpl = response.context['featured_project']
-    self.assertEqual(featured_project_tmpl.featured_project.key().
+    self.assertEqual(featured_project_tmpl.featured_project.key(),
                      project.key())
 
-  def testHomepageAfterStudentsAnnounceed(self):
+  def testHomepageAfterStudentsAnnounced(self):
     """Tests the student homepage after the student's have been announced.
     """
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
-    self.timeline.student
+    self.timeline.studentsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
     timeline_tmpl = response.context['timeline']
     apply_context = response.context['apply'].context()
-    self.assertEqual(timeline_tmpl.current_timeline, 'student_signup_period')
+    self.assertEqual(timeline_tmpl.current_timeline, 'coding_period')
     self.assertTrue('profile_link' in apply_context)
 
   def testHomepageDuringSignupExistingUser(self):
