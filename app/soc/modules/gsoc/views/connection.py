@@ -684,8 +684,7 @@ class ShowConnection(RequestHandler):
         connection.user_mentor = RESPONSE_STATE_REJECTED
       connection.put()
 
-      generate_message_txn(connection, 
-          '%s promoted to Org Admin.' % profile.link_id)
+      generate_message_txn(connection, 'Org Admin Connection Rejected.')
       
     db.run_in_transaction(decline_org_admin_txn)
 
