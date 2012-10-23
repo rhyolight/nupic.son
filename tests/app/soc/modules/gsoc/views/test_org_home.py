@@ -19,8 +19,6 @@
 """
 
 
-from nose.plugins import skip
-
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -35,7 +33,6 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
   def createStudentProjects(self):
     """Creates two student projects.
     """
-    from soc.modules.gsoc.models.student_project import StudentProject
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor.createOtherUser('mentor@example.com').createMentor(self.org)
 
@@ -77,8 +74,6 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     """Tests the the org home page after announcing accepted student projects.
     """
     self.timeline.studentsAnnounced()
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.createStudentProjects()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.get(url)
@@ -90,8 +85,6 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     """Tests the the org home page after GSoC is over.
     """
     self.timeline.offSeason()
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.createStudentProjects()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.get(url)
