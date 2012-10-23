@@ -42,6 +42,23 @@ PARENTAL_CONSENT_ADVICE = ugettext(
     'Please make sure that you have your parent or guardian\'s permission '
     'to participate in Google Code-in before filling out your profile!')
 
+GCI_PROFILE_EXCLUDE = ['automatic_task_subscription', 'notify_comments',
+                       'photo_url']
+
+PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + GCI_PROFILE_EXCLUDE
+
+PREFILL_PROFILE_EXCLUDE = profile.PREFILL_PROFILE_EXCLUDE + GCI_PROFILE_EXCLUDE
+
+STUDENT_EXCLUDE = PROFILE_EXCLUDE
+
+PREFILL_STUDENT_EXCLUDE = PREFILL_PROFILE_EXCLUDE
+
+PREFILL_PROFILE_EXCLUDE = profile.PREFILL_PROFILE_EXCLUDE
+
+SHOW_STUDENT_EXCLUDE = STUDENT_EXCLUDE + [
+    'birth_date',
+]
+
 
 class GCIUserForm(gci_forms.GCIModelForm):
   """Django form for User model in GCI program.
@@ -54,18 +71,6 @@ class GCIUserForm(gci_forms.GCIModelForm):
 
   link_id = gci_forms.CharField(label='Username')
   clean_link_id = cleaning.clean_user_not_exist('link_id')
-
-
-PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + [
-    'automatic_task_subscription', 'notify_comments',
-    'photo_url',
-]
-
-STUDENT_EXCLUDE = PROFILE_EXCLUDE
-
-SHOW_STUDENT_EXCLUDE = STUDENT_EXCLUDE + [
-    'birth_date',
-]
 
 
 class GCIProfileForm(profile.ProfileForm):
@@ -95,7 +100,7 @@ class GCIProfileForm(profile.ProfileForm):
   class Meta:
     model = GCIProfile
     css_prefix = 'gci_profile'
-    exclude = PROFILE_EXCLUDE + ['agreed_to_tos']
+    exclude = PREFILL_PROFILE_EXCLUDE
     widgets = forms.choiceWidgets(model,
         ['res_country', 'ship_country',
          'tshirt_style', 'tshirt_size', 'gender'])
@@ -186,7 +191,7 @@ class GCIStudentProfileForm(GCIProfileForm):
   class Meta:
     model = GCIProfileForm.Meta.model
     css_prefix = GCIProfileForm.Meta.css_prefix
-    exclude = STUDENT_EXCLUDE
+    exclude = PREFILL_STUDENT_EXCLUDE
     widgets = GCIProfileForm.Meta.widgets
 
   clean_birth_date = cleaning.clean_birth_date('birth_date')
