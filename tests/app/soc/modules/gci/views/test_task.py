@@ -22,6 +22,7 @@
 import datetime
 
 from soc.modules.gci.logic import org_score as org_score_logic
+from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.logic.helper.notifications import (
     DEF_NEW_TASK_COMMENT_SUBJECT)
 from soc.modules.gci.models.task import GCITask
@@ -237,6 +238,10 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertIsNotNone(org_score)
     self.assertEqual(org_score.numberOfTasks(), 1)
     self.assertEqual(org_score.tasks[0], task.key())
+
+    # check if number_of_completed_tasks has been updated
+    student_info = profile_logic.queryStudentInfoForParent(task.student).get()
+    self.assertEqual(student_info.number_of_completed_tasks, 1)
 
     self.assertTasksInQueue(n=1, url='/tasks/gci/ranking/update')
 
