@@ -2983,6 +2983,8 @@ class LogReadRequest(ProtocolBuffer.ProtocolMessage):
 class LogReadResponse(ProtocolBuffer.ProtocolMessage):
   has_offset_ = 0
   offset_ = None
+  has_last_end_time_ = 0
+  last_end_time_ = 0
 
   def __init__(self, contents=None):
     self.log_ = []
@@ -3024,11 +3026,25 @@ class LogReadResponse(ProtocolBuffer.ProtocolMessage):
 
   def has_offset(self): return self.has_offset_
 
+  def last_end_time(self): return self.last_end_time_
+
+  def set_last_end_time(self, x):
+    self.has_last_end_time_ = 1
+    self.last_end_time_ = x
+
+  def clear_last_end_time(self):
+    if self.has_last_end_time_:
+      self.has_last_end_time_ = 0
+      self.last_end_time_ = 0
+
+  def has_last_end_time(self): return self.has_last_end_time_
+
 
   def MergeFrom(self, x):
     assert x is not self
     for i in xrange(x.log_size()): self.add_log().CopyFrom(x.log(i))
     if (x.has_offset()): self.mutable_offset().MergeFrom(x.offset())
+    if (x.has_last_end_time()): self.set_last_end_time(x.last_end_time())
 
   def Equals(self, x):
     if x is self: return 1
@@ -3037,6 +3053,8 @@ class LogReadResponse(ProtocolBuffer.ProtocolMessage):
       if e1 != e2: return 0
     if self.has_offset_ != x.has_offset_: return 0
     if self.has_offset_ and self.offset_ != x.offset_: return 0
+    if self.has_last_end_time_ != x.has_last_end_time_: return 0
+    if self.has_last_end_time_ and self.last_end_time_ != x.last_end_time_: return 0
     return 1
 
   def IsInitialized(self, debug_strs=None):
@@ -3051,6 +3069,7 @@ class LogReadResponse(ProtocolBuffer.ProtocolMessage):
     n += 1 * len(self.log_)
     for i in xrange(len(self.log_)): n += self.lengthString(self.log_[i].ByteSize())
     if (self.has_offset_): n += 1 + self.lengthString(self.offset_.ByteSize())
+    if (self.has_last_end_time_): n += 1 + self.lengthVarInt64(self.last_end_time_)
     return n
 
   def ByteSizePartial(self):
@@ -3058,11 +3077,13 @@ class LogReadResponse(ProtocolBuffer.ProtocolMessage):
     n += 1 * len(self.log_)
     for i in xrange(len(self.log_)): n += self.lengthString(self.log_[i].ByteSizePartial())
     if (self.has_offset_): n += 1 + self.lengthString(self.offset_.ByteSizePartial())
+    if (self.has_last_end_time_): n += 1 + self.lengthVarInt64(self.last_end_time_)
     return n
 
   def Clear(self):
     self.clear_log()
     self.clear_offset()
+    self.clear_last_end_time()
 
   def OutputUnchecked(self, out):
     for i in xrange(len(self.log_)):
@@ -3073,6 +3094,9 @@ class LogReadResponse(ProtocolBuffer.ProtocolMessage):
       out.putVarInt32(18)
       out.putVarInt32(self.offset_.ByteSize())
       self.offset_.OutputUnchecked(out)
+    if (self.has_last_end_time_):
+      out.putVarInt32(24)
+      out.putVarInt64(self.last_end_time_)
 
   def OutputPartial(self, out):
     for i in xrange(len(self.log_)):
@@ -3083,6 +3107,9 @@ class LogReadResponse(ProtocolBuffer.ProtocolMessage):
       out.putVarInt32(18)
       out.putVarInt32(self.offset_.ByteSizePartial())
       self.offset_.OutputPartial(out)
+    if (self.has_last_end_time_):
+      out.putVarInt32(24)
+      out.putVarInt64(self.last_end_time_)
 
   def TryMerge(self, d):
     while d.avail() > 0:
@@ -3098,6 +3125,9 @@ class LogReadResponse(ProtocolBuffer.ProtocolMessage):
         tmp = ProtocolBuffer.Decoder(d.buffer(), d.pos(), d.pos() + length)
         d.skip(length)
         self.mutable_offset().TryMerge(tmp)
+        continue
+      if tt == 24:
+        self.set_last_end_time(d.getVarInt64())
         continue
 
 
@@ -3119,6 +3149,7 @@ class LogReadResponse(ProtocolBuffer.ProtocolMessage):
       res+=prefix+"offset <\n"
       res+=self.offset_.__str__(prefix + "  ", printElemNumber)
       res+=prefix+">\n"
+    if self.has_last_end_time_: res+=prefix+("last_end_time: %s\n" % self.DebugFormatInt64(self.last_end_time_))
     return res
 
 
@@ -3127,18 +3158,21 @@ class LogReadResponse(ProtocolBuffer.ProtocolMessage):
 
   klog = 1
   koffset = 2
+  klast_end_time = 3
 
   _TEXT = _BuildTagLookupTable({
     0: "ErrorCode",
     1: "log",
     2: "offset",
-  }, 2)
+    3: "last_end_time",
+  }, 3)
 
   _TYPES = _BuildTagLookupTable({
     0: ProtocolBuffer.Encoder.NUMERIC,
     1: ProtocolBuffer.Encoder.STRING,
     2: ProtocolBuffer.Encoder.STRING,
-  }, 2, ProtocolBuffer.Encoder.MAX_TYPE)
+    3: ProtocolBuffer.Encoder.NUMERIC,
+  }, 3, ProtocolBuffer.Encoder.MAX_TYPE)
 
 
   _STYLE = """"""
@@ -3155,6 +3189,8 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
   count_ = 0
   has_total_size_ = 0
   total_size_ = 0
+  has_records_ = 0
+  records_ = 0
 
   def __init__(self, contents=None):
     if contents is not None: self.MergeFromString(contents)
@@ -3224,6 +3260,19 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
 
   def has_total_size(self): return self.has_total_size_
 
+  def records(self): return self.records_
+
+  def set_records(self, x):
+    self.has_records_ = 1
+    self.records_ = x
+
+  def clear_records(self):
+    if self.has_records_:
+      self.has_records_ = 0
+      self.records_ = 0
+
+  def has_records(self): return self.has_records_
+
 
   def MergeFrom(self, x):
     assert x is not self
@@ -3232,6 +3281,7 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
     if (x.has_end_time()): self.set_end_time(x.end_time())
     if (x.has_count()): self.set_count(x.count())
     if (x.has_total_size()): self.set_total_size(x.total_size())
+    if (x.has_records()): self.set_records(x.records())
 
   def Equals(self, x):
     if x is self: return 1
@@ -3245,6 +3295,8 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
     if self.has_count_ and self.count_ != x.count_: return 0
     if self.has_total_size_ != x.has_total_size_: return 0
     if self.has_total_size_ and self.total_size_ != x.total_size_: return 0
+    if self.has_records_ != x.has_records_: return 0
+    if self.has_records_ and self.records_ != x.records_: return 0
     return 1
 
   def IsInitialized(self, debug_strs=None):
@@ -3258,6 +3310,7 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
     if (self.has_end_time_): n += 1 + self.lengthVarInt64(self.end_time_)
     if (self.has_count_): n += 1 + self.lengthVarInt64(self.count_)
     if (self.has_total_size_): n += 1 + self.lengthVarInt64(self.total_size_)
+    if (self.has_records_): n += 1 + self.lengthVarInt64(self.records_)
     return n
 
   def ByteSizePartial(self):
@@ -3267,6 +3320,7 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
     if (self.has_end_time_): n += 1 + self.lengthVarInt64(self.end_time_)
     if (self.has_count_): n += 1 + self.lengthVarInt64(self.count_)
     if (self.has_total_size_): n += 1 + self.lengthVarInt64(self.total_size_)
+    if (self.has_records_): n += 1 + self.lengthVarInt64(self.records_)
     return n
 
   def Clear(self):
@@ -3275,6 +3329,7 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
     self.clear_end_time()
     self.clear_count()
     self.clear_total_size()
+    self.clear_records()
 
   def OutputUnchecked(self, out):
     if (self.has_version_id_):
@@ -3292,6 +3347,9 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
     if (self.has_total_size_):
       out.putVarInt32(40)
       out.putVarInt64(self.total_size_)
+    if (self.has_records_):
+      out.putVarInt32(48)
+      out.putVarInt32(self.records_)
 
   def OutputPartial(self, out):
     if (self.has_version_id_):
@@ -3309,6 +3367,9 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
     if (self.has_total_size_):
       out.putVarInt32(40)
       out.putVarInt64(self.total_size_)
+    if (self.has_records_):
+      out.putVarInt32(48)
+      out.putVarInt32(self.records_)
 
   def TryMerge(self, d):
     while d.avail() > 0:
@@ -3328,6 +3389,9 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
       if tt == 40:
         self.set_total_size(d.getVarInt64())
         continue
+      if tt == 48:
+        self.set_records(d.getVarInt32())
+        continue
 
 
       if (tt == 0): raise ProtocolBuffer.ProtocolBufferDecodeError
@@ -3341,6 +3405,7 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
     if self.has_end_time_: res+=prefix+("end_time: %s\n" % self.DebugFormatInt32(self.end_time_))
     if self.has_count_: res+=prefix+("count: %s\n" % self.DebugFormatInt64(self.count_))
     if self.has_total_size_: res+=prefix+("total_size: %s\n" % self.DebugFormatInt64(self.total_size_))
+    if self.has_records_: res+=prefix+("records: %s\n" % self.DebugFormatInt32(self.records_))
     return res
 
 
@@ -3352,6 +3417,7 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
   kend_time = 3
   kcount = 4
   ktotal_size = 5
+  krecords = 6
 
   _TEXT = _BuildTagLookupTable({
     0: "ErrorCode",
@@ -3360,7 +3426,8 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
     3: "end_time",
     4: "count",
     5: "total_size",
-  }, 5)
+    6: "records",
+  }, 6)
 
   _TYPES = _BuildTagLookupTable({
     0: ProtocolBuffer.Encoder.NUMERIC,
@@ -3369,7 +3436,8 @@ class LogUsageRecord(ProtocolBuffer.ProtocolMessage):
     3: ProtocolBuffer.Encoder.NUMERIC,
     4: ProtocolBuffer.Encoder.NUMERIC,
     5: ProtocolBuffer.Encoder.NUMERIC,
-  }, 5, ProtocolBuffer.Encoder.MAX_TYPE)
+    6: ProtocolBuffer.Encoder.NUMERIC,
+  }, 6, ProtocolBuffer.Encoder.MAX_TYPE)
 
 
   _STYLE = """"""
@@ -3725,12 +3793,9 @@ class LogUsageRequest(ProtocolBuffer.ProtocolMessage):
 class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
   has_summary_ = 0
   summary_ = None
-  has_limited_summary_ = 0
-  limited_summary_ = None
 
   def __init__(self, contents=None):
     self.usage_ = []
-    self.limited_usage_ = []
     self.lazy_init_lock_ = thread.allocate_lock()
     if contents is not None: self.MergeFromString(contents)
 
@@ -3769,48 +3834,11 @@ class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
 
   def has_summary(self): return self.has_summary_
 
-  def limited_usage_size(self): return len(self.limited_usage_)
-  def limited_usage_list(self): return self.limited_usage_
-
-  def limited_usage(self, i):
-    return self.limited_usage_[i]
-
-  def mutable_limited_usage(self, i):
-    return self.limited_usage_[i]
-
-  def add_limited_usage(self):
-    x = LogUsageRecord()
-    self.limited_usage_.append(x)
-    return x
-
-  def clear_limited_usage(self):
-    self.limited_usage_ = []
-  def limited_summary(self):
-    if self.limited_summary_ is None:
-      self.lazy_init_lock_.acquire()
-      try:
-        if self.limited_summary_ is None: self.limited_summary_ = LogUsageRecord()
-      finally:
-        self.lazy_init_lock_.release()
-    return self.limited_summary_
-
-  def mutable_limited_summary(self): self.has_limited_summary_ = 1; return self.limited_summary()
-
-  def clear_limited_summary(self):
-
-    if self.has_limited_summary_:
-      self.has_limited_summary_ = 0;
-      if self.limited_summary_ is not None: self.limited_summary_.Clear()
-
-  def has_limited_summary(self): return self.has_limited_summary_
-
 
   def MergeFrom(self, x):
     assert x is not self
     for i in xrange(x.usage_size()): self.add_usage().CopyFrom(x.usage(i))
     if (x.has_summary()): self.mutable_summary().MergeFrom(x.summary())
-    for i in xrange(x.limited_usage_size()): self.add_limited_usage().CopyFrom(x.limited_usage(i))
-    if (x.has_limited_summary()): self.mutable_limited_summary().MergeFrom(x.limited_summary())
 
   def Equals(self, x):
     if x is self: return 1
@@ -3819,11 +3847,6 @@ class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
       if e1 != e2: return 0
     if self.has_summary_ != x.has_summary_: return 0
     if self.has_summary_ and self.summary_ != x.summary_: return 0
-    if len(self.limited_usage_) != len(x.limited_usage_): return 0
-    for e1, e2 in zip(self.limited_usage_, x.limited_usage_):
-      if e1 != e2: return 0
-    if self.has_limited_summary_ != x.has_limited_summary_: return 0
-    if self.has_limited_summary_ and self.limited_summary_ != x.limited_summary_: return 0
     return 1
 
   def IsInitialized(self, debug_strs=None):
@@ -3831,9 +3854,6 @@ class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
     for p in self.usage_:
       if not p.IsInitialized(debug_strs): initialized=0
     if (self.has_summary_ and not self.summary_.IsInitialized(debug_strs)): initialized = 0
-    for p in self.limited_usage_:
-      if not p.IsInitialized(debug_strs): initialized=0
-    if (self.has_limited_summary_ and not self.limited_summary_.IsInitialized(debug_strs)): initialized = 0
     return initialized
 
   def ByteSize(self):
@@ -3841,9 +3861,6 @@ class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
     n += 1 * len(self.usage_)
     for i in xrange(len(self.usage_)): n += self.lengthString(self.usage_[i].ByteSize())
     if (self.has_summary_): n += 1 + self.lengthString(self.summary_.ByteSize())
-    n += 1 * len(self.limited_usage_)
-    for i in xrange(len(self.limited_usage_)): n += self.lengthString(self.limited_usage_[i].ByteSize())
-    if (self.has_limited_summary_): n += 1 + self.lengthString(self.limited_summary_.ByteSize())
     return n
 
   def ByteSizePartial(self):
@@ -3851,16 +3868,11 @@ class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
     n += 1 * len(self.usage_)
     for i in xrange(len(self.usage_)): n += self.lengthString(self.usage_[i].ByteSizePartial())
     if (self.has_summary_): n += 1 + self.lengthString(self.summary_.ByteSizePartial())
-    n += 1 * len(self.limited_usage_)
-    for i in xrange(len(self.limited_usage_)): n += self.lengthString(self.limited_usage_[i].ByteSizePartial())
-    if (self.has_limited_summary_): n += 1 + self.lengthString(self.limited_summary_.ByteSizePartial())
     return n
 
   def Clear(self):
     self.clear_usage()
     self.clear_summary()
-    self.clear_limited_usage()
-    self.clear_limited_summary()
 
   def OutputUnchecked(self, out):
     for i in xrange(len(self.usage_)):
@@ -3871,14 +3883,6 @@ class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
       out.putVarInt32(18)
       out.putVarInt32(self.summary_.ByteSize())
       self.summary_.OutputUnchecked(out)
-    for i in xrange(len(self.limited_usage_)):
-      out.putVarInt32(34)
-      out.putVarInt32(self.limited_usage_[i].ByteSize())
-      self.limited_usage_[i].OutputUnchecked(out)
-    if (self.has_limited_summary_):
-      out.putVarInt32(42)
-      out.putVarInt32(self.limited_summary_.ByteSize())
-      self.limited_summary_.OutputUnchecked(out)
 
   def OutputPartial(self, out):
     for i in xrange(len(self.usage_)):
@@ -3889,14 +3893,6 @@ class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
       out.putVarInt32(18)
       out.putVarInt32(self.summary_.ByteSizePartial())
       self.summary_.OutputPartial(out)
-    for i in xrange(len(self.limited_usage_)):
-      out.putVarInt32(34)
-      out.putVarInt32(self.limited_usage_[i].ByteSizePartial())
-      self.limited_usage_[i].OutputPartial(out)
-    if (self.has_limited_summary_):
-      out.putVarInt32(42)
-      out.putVarInt32(self.limited_summary_.ByteSizePartial())
-      self.limited_summary_.OutputPartial(out)
 
   def TryMerge(self, d):
     while d.avail() > 0:
@@ -3912,18 +3908,6 @@ class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
         tmp = ProtocolBuffer.Decoder(d.buffer(), d.pos(), d.pos() + length)
         d.skip(length)
         self.mutable_summary().TryMerge(tmp)
-        continue
-      if tt == 34:
-        length = d.getVarInt32()
-        tmp = ProtocolBuffer.Decoder(d.buffer(), d.pos(), d.pos() + length)
-        d.skip(length)
-        self.add_limited_usage().TryMerge(tmp)
-        continue
-      if tt == 42:
-        length = d.getVarInt32()
-        tmp = ProtocolBuffer.Decoder(d.buffer(), d.pos(), d.pos() + length)
-        d.skip(length)
-        self.mutable_limited_summary().TryMerge(tmp)
         continue
 
 
@@ -3945,18 +3929,6 @@ class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
       res+=prefix+"summary <\n"
       res+=self.summary_.__str__(prefix + "  ", printElemNumber)
       res+=prefix+">\n"
-    cnt=0
-    for e in self.limited_usage_:
-      elm=""
-      if printElemNumber: elm="(%d)" % cnt
-      res+=prefix+("limited_usage%s <\n" % elm)
-      res+=e.__str__(prefix + "  ", printElemNumber)
-      res+=prefix+">\n"
-      cnt+=1
-    if self.has_limited_summary_:
-      res+=prefix+"limited_summary <\n"
-      res+=self.limited_summary_.__str__(prefix + "  ", printElemNumber)
-      res+=prefix+">\n"
     return res
 
 
@@ -3965,24 +3937,18 @@ class LogUsageResponse(ProtocolBuffer.ProtocolMessage):
 
   kusage = 1
   ksummary = 2
-  klimited_usage = 4
-  klimited_summary = 5
 
   _TEXT = _BuildTagLookupTable({
     0: "ErrorCode",
     1: "usage",
     2: "summary",
-    4: "limited_usage",
-    5: "limited_summary",
-  }, 5)
+  }, 2)
 
   _TYPES = _BuildTagLookupTable({
     0: ProtocolBuffer.Encoder.NUMERIC,
     1: ProtocolBuffer.Encoder.STRING,
     2: ProtocolBuffer.Encoder.STRING,
-    4: ProtocolBuffer.Encoder.STRING,
-    5: ProtocolBuffer.Encoder.STRING,
-  }, 5, ProtocolBuffer.Encoder.MAX_TYPE)
+  }, 2, ProtocolBuffer.Encoder.MAX_TYPE)
 
 
   _STYLE = """"""

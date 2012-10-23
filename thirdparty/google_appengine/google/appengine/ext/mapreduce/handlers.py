@@ -56,6 +56,11 @@ from google.appengine.ext.mapreduce import operation
 from google.appengine.ext.mapreduce import quota
 from google.appengine.ext.mapreduce import util
 
+try:
+  from google.appengine.ext import ndb
+except ImportError:
+  ndb = None
+
 
 
 _QUOTA_BATCH_SIZE = 20
@@ -68,19 +73,11 @@ _SLICE_DURATION_SEC = 15
 _CONTROLLER_PERIOD_SEC = 2
 
 
+
+_RETRY_SLICE_ERROR_MAX_RETRIES = 10
+
+
 _TEST_INJECTED_FAULTS = set()
-
-
-class Error(Exception):
-  """Base class for exceptions in this module."""
-
-
-class NotEnoughArgumentsError(Error):
-  """Required argument is missing."""
-
-
-class NoDataError(Error):
-  """There is no data present for a desired input."""
 
 
 def _run_task_hook(hooks, method, task, queue_name):
@@ -149,8 +146,6 @@ class MapperWorkerCallbackHandler(util.HugeTaskHandler):
     if control and control.command == model.MapreduceControl.ABORT:
       logging.info("Abort command received by shard %d of job '%s'",
                    shard_state.shard_number, shard_state.mapreduce_id)
-      if tstate.output_writer:
-        tstate.output_writer.finalize(ctx, shard_state.shard_number)
 
 
       shard_state.active = False
@@ -169,6 +164,16 @@ class MapperWorkerCallbackHandler(util.HugeTaskHandler):
     else:
       quota_consumer = None
 
+
+
+
+
+
+    if ndb is not None:
+      ndb_ctx = ndb.get_context()
+      ndb_ctx.set_cache_policy(lambda key: False)
+      ndb_ctx.set_memcache_policy(lambda key: False)
+
     context.Context._set(ctx)
     try:
 
@@ -177,49 +182,67 @@ class MapperWorkerCallbackHandler(util.HugeTaskHandler):
         scan_aborted = False
         entity = None
 
+        try:
 
 
-        if not quota_consumer or quota_consumer.consume():
-          for entity in input_reader:
-            if isinstance(entity, db.Model):
-              shard_state.last_work_item = repr(entity.key())
-            else:
-              shard_state.last_work_item = repr(entity)[:100]
+          if not quota_consumer or quota_consumer.consume():
+            for entity in input_reader:
+              if isinstance(entity, db.Model):
+                shard_state.last_work_item = repr(entity.key())
+              else:
+                shard_state.last_work_item = repr(entity)[:100]
 
-            scan_aborted = not self.process_data(
-                entity, input_reader, ctx, tstate)
+              scan_aborted = not self.process_data(
+                  entity, input_reader, ctx, tstate)
 
 
-            if (quota_consumer and not scan_aborted and
-                not quota_consumer.consume()):
-              scan_aborted = True
-            if scan_aborted:
-              break
-        else:
+              if (quota_consumer and not scan_aborted and
+                  not quota_consumer.consume()):
+                scan_aborted = True
+              if scan_aborted:
+                break
+          else:
+            scan_aborted = True
+
+          if not scan_aborted:
+            logging.info("Processing done for shard %d of job '%s'",
+                         shard_state.shard_number, shard_state.mapreduce_id)
+
+
+            if quota_consumer:
+              quota_consumer.put(1)
+            shard_state.active = False
+            shard_state.result_status = model.ShardState.RESULT_SUCCESS
+
+          operation.counters.Increment(
+              context.COUNTER_MAPPER_WALLTIME_MS,
+              int((time.time() - self._start_time)*1000))(ctx)
+
+
+
+          ctx.flush()
+        except errors.RetrySliceError, e:
+          logging.error("Slice error: %s", e)
+          retry_count = int(
+              os.environ.get("HTTP_X_APPENGINE_TASKRETRYCOUNT") or 0)
+          if retry_count <= _RETRY_SLICE_ERROR_MAX_RETRIES:
+            raise
+          logging.error("Too many retries: %d, failing the job", retry_count)
           scan_aborted = True
-
-
-        if not scan_aborted:
-          logging.info("Processing done for shard %d of job '%s'",
-                       shard_state.shard_number, shard_state.mapreduce_id)
-
-
-          if quota_consumer:
-            quota_consumer.put(1)
           shard_state.active = False
-          shard_state.result_status = model.ShardState.RESULT_SUCCESS
-
-      operation.counters.Increment(
-          context.COUNTER_MAPPER_WALLTIME_MS,
-          int((time.time() - self._start_time)*1000))(ctx)
-
-
-
-      ctx.flush()
+          shard_state.result_status = model.ShardState.RESULT_FAILED
+        except errors.FailJobError, e:
+          logging.error("Job failed: %s", e)
+          scan_aborted = True
+          shard_state.active = False
+          shard_state.result_status = model.ShardState.RESULT_FAILED
 
       if not shard_state.active:
 
-        if tstate.output_writer:
+
+
+        if (shard_state.result_status == model.ShardState.RESULT_SUCCESS and
+            tstate.output_writer):
           tstate.output_writer.finalize(ctx, shard_state.shard_number)
 
       config = util.create_datastore_write_config(spec)
@@ -234,6 +257,8 @@ class MapperWorkerCallbackHandler(util.HugeTaskHandler):
       def tx():
         fresh_shard_state = db.get(
             model.ShardState.get_key_by_shard_id(shard_id))
+        if not fresh_shard_state:
+          raise db.Rollback()
         if (not fresh_shard_state.active or
             "worker_active_state_collision" in _TEST_INJECTED_FAULTS):
           shard_state.active = False
@@ -288,8 +313,6 @@ class MapperWorkerCallbackHandler(util.HugeTaskHandler):
               output_writer.write(output, ctx)
 
     if self._time() - self._start_time > _SLICE_DURATION_SEC:
-      logging.debug("Spent %s seconds. Rescheduling",
-                    self._time() - self._start_time)
       return False
     return True
 
@@ -387,11 +410,6 @@ class ControllerCallbackHandler(util.HugeTaskHandler):
     spec = model.MapreduceSpec.from_json_str(
         self.request.get("mapreduce_spec"))
 
-
-    logging.debug("post: id=%s headers=%s spec=%s",
-                  spec.mapreduce_id, self.request.headers,
-                  self.request.get("mapreduce_spec"))
-
     state, control = db.get([
         model.MapreduceState.get_key_by_job_id(spec.mapreduce_id),
         model.MapreduceControl.get_key_by_job_id(spec.mapreduce_id),
@@ -422,6 +440,8 @@ class ControllerCallbackHandler(util.HugeTaskHandler):
       state.active_shards = len(active_shards)
       state.failed_shards = len(failed_shards)
       state.aborted_shards = len(aborted_shards)
+      if not control and failed_shards:
+        model.MapreduceControl.abort(spec.mapreduce_id)
 
     if (not state.active and control and
         control.command == model.MapreduceControl.ABORT):
@@ -528,8 +548,12 @@ class ControllerCallbackHandler(util.HugeTaskHandler):
     """
     config = util.create_datastore_write_config(mapreduce_spec)
 
-    if mapreduce_spec.mapper.output_writer_class():
+
+    if (mapreduce_spec.mapper.output_writer_class() and
+        mapreduce_state.result_status == model.MapreduceState.RESULT_SUCCESS):
       mapreduce_spec.mapper.output_writer_class().finalize_job(mapreduce_state)
+
+
     def put_state(state):
       state.put(config=config)
       done_callback = mapreduce_spec.params.get(
@@ -695,11 +719,11 @@ class KickOffJobHandler(util.HugeTaskHandler):
       parameter value
 
     Raises:
-      NotEnoughArgumentsError: if parameter is not specified.
+      errors.NotEnoughArgumentsError: if parameter is not specified.
     """
     value = self.request.get(param_name)
     if not value:
-      raise NotEnoughArgumentsError(param_name + " not specified")
+      raise errors.NotEnoughArgumentsError(param_name + " not specified")
     return value
 
   @classmethod
@@ -836,11 +860,11 @@ class StartJobHandler(base_handler.PostJsonHandler):
       parameter value
 
     Raises:
-      NotEnoughArgumentsError: if parameter is not specified.
+      errors.NotEnoughArgumentsError: if parameter is not specified.
     """
     value = self.request.get(param_name)
     if not value:
-      raise NotEnoughArgumentsError(param_name + " not specified")
+      raise errors.NotEnoughArgumentsError(param_name + " not specified")
     return value
 
   @classmethod
@@ -867,9 +891,6 @@ class StartJobHandler(base_handler.PostJsonHandler):
                       "for non-transactional starts.")
 
 
-    mapper_spec.get_handler()
-
-
     mapper_input_reader_class = mapper_spec.input_reader_class()
     mapper_input_reader_class.validate(mapper_spec)
 
@@ -884,6 +905,14 @@ class StartJobHandler(base_handler.PostJsonHandler):
         mapper_spec.to_json(),
         mapreduce_params,
         hooks_class_name)
+
+
+    ctx = context.Context(mapreduce_spec, None)
+    context.Context._set(ctx)
+    try:
+      mapper_spec.get_handler()
+    finally:
+      context.Context._set(None)
 
     kickoff_params = {"mapreduce_spec": mapreduce_spec.to_json_str()}
     if _app:

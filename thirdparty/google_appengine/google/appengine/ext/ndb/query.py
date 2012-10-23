@@ -133,6 +133,7 @@ import itertools
 import sys
 
 from .google_imports import datastore_errors
+from .google_imports import datastore_rpc
 from .google_imports import datastore_types
 from .google_imports import datastore_query
 from .google_imports import namespace_manager
@@ -802,6 +803,10 @@ class Query(object):
       if not isinstance(orders, datastore_query.Order):
         raise TypeError('orders must be an Order instance or None; received %r'
                         % orders)
+    if default_options is not None:
+      if not isinstance(default_options, datastore_rpc.BaseConfiguration):
+        raise TypeError('default_options must be a Configuration or None; '
+                        'received %r' % default_options)
     self.__kind = kind  # String
     self.__ancestor = ancestor  # Key
     self.__filters = filters  # None or Node subclass
@@ -809,6 +814,13 @@ class Query(object):
     self.__app = app
     self.__namespace = namespace
     self.__default_options = default_options
+    # Check the projection in the default options.  (This is done as a
+    # side effect of calling _fix_projection(); it's done late because
+    # that function expects self to be completely initialized.)
+    if kind is not None and default_options is not None:
+      default_projection = QueryOptions.projection(default_options)
+      if default_projection is not None:
+        self._fix_projection(default_projection)
 
   def __repr__(self):
     args = []
@@ -1293,10 +1305,29 @@ class Query(object):
       if 'config' in q_options:
         raise TypeError('You cannot use config= and options= at the same time')
       q_options['config'] = q_options.pop('options')
+    if q_options.get('projection'):
+      q_options['projection'] = self._fix_projection(q_options['projection'])
     options = QueryOptions(**q_options)
     if self.default_options is not None:
       options = self.default_options.merge(options)
     return options
+
+  def _fix_projection(self, projections):
+    if not isinstance(projections, (list, tuple)):
+      projections = [projections]  # It will be type-checked below.
+    fixed = []
+    for proj in projections:
+      if isinstance(proj, basestring):
+        fixed.append(proj)
+      elif isinstance(proj, model.Property):
+        fixed.append(proj._name)
+      else:
+        raise datastore_errors.BadArgumentError(
+          'Unexpected projection (%r); should be string or Property')
+    modelclass = model.Model._kind_map.get(self.__kind)
+    if modelclass is not None:
+      modelclass._check_projections(fixed)
+    return fixed
 
   def analyze(self):
     """Return a list giving the parameters required by a query."""
@@ -1375,18 +1406,26 @@ def _gql(query_string, query_class=Query):
   gql_qry = gql.GQL(query_string)
   kind = gql_qry.kind()
   if kind is None:
+    # The query must be lacking a "FROM <kind>" class.  Let Expando
+    # stand in for the model class (it won't actually be used to
+    # construct the results).
     modelclass = model.Expando
   else:
-    ctx = tasklets.get_context()
-    default_model = ctx._conn.adapter.default_model
-    modelclass = model.Model._kind_map.get(kind, default_model)
+    modelclass = model.Model._kind_map.get(kind)
     if modelclass is None:
-      raise datastore_errors.BadQueryError(
-        "No model class found for kind %r. Did you forget to import it?" %
-        (kind,))
+      # If the Adapter has a default model, use it; raise KindError otherwise.
+      ctx = tasklets.get_context()
+      modelclass = ctx._conn.adapter.default_model
+      if modelclass is None:
+        raise model.KindError(
+          "No model class found for kind %r. Did you forget to import it?" %
+          (kind,))
+    else:
+      # Adjust kind to the model class's kind (for PolyModel).
+      kind = modelclass._get_kind()
   ancestor = None
   flt = gql_qry.filters()
-  filters = []
+  filters = list(modelclass._default_filters())
   for name_op in sorted(flt):
     name, op = name_op
     values = flt[name_op]
@@ -1425,7 +1464,9 @@ def _gql(query_string, query_class=Query):
   keys_only = gql_qry._keys_only
   if not keys_only:
     keys_only = None
-  options = QueryOptions(offset=offset, limit=limit, keys_only=keys_only)
+  projection = gql_qry.projection()
+  options = QueryOptions(offset=offset, limit=limit, keys_only=keys_only,
+                         projection=projection)
   qry = query_class(kind=kind,
                     ancestor=ancestor,
                     filters=filters,
