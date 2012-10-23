@@ -66,6 +66,17 @@ def check_existing_connection_txn(user, org):
     return False
   return True
 
+@db.transactional
+def generate_message_txn(form, profile, connection):
+  """ Helper method to generate a GSoCConnectionMessage.
+  """
+  properties = {
+    'author': profile,
+    'content': form.cleaned_data['message']
+    }
+  message = GSoCConnectionMessage(parent=connection, **properties)
+  message.put()
+
 class ConnectionForm(GSoCModelForm):
   """ Django form for the ShowConnection page. """
 
@@ -83,6 +94,8 @@ class ConnectionForm(GSoCModelForm):
     self.fields['message'].label = ugettext('Message')
     # Place the message field at the bottom
     self.fields['message'].group = ugettext('1. ')
+    # Do not require users/org admins to include a message.
+    self.fields['message'].required = False
 
 
 class OrgConnectionForm(ConnectionForm):
@@ -182,9 +195,6 @@ class MessageForm(GSoCModelForm):
     content = wrapped_clean_html_content(self)
     if content:
       return content
-    #else:
-    #  raise django_forms.ValidationError(
-    #      ugettext('Message content cannot be empty.'), code='invalid')
 
   def templatePath(self):
     return 'v2/modules/gsoc/connection/_message_form.html'
@@ -275,6 +285,8 @@ class OrgConnectionPage(RequestHandler):
       
     connection_form.cleaned_data['organization'] = self.data.organization
 
+    message_provided = (connection_form.cleaned_data['message'] != '')
+
     def create_connection_txn(user, email):
       if not check_existing_connection_txn(user, self.data.organization):
         raise AccessViolation(DEF_CONNECTION_EXISTS)
@@ -287,12 +299,8 @@ class OrgConnectionPage(RequestHandler):
         connection.acceptOrgAdminRoleByOrg()
       connection.put()
 
-      properties = {
-          'author': self.data.profile,
-          'content': connection_form.cleaned_data['message']
-          }
-      message = GSoCConnectionMessage(parent=connection, **properties)
-      message.put()
+      if message_provided:
+        generate_message_txn(connection_form, profile, connection)
 
       context = notifications.connectionContext(self.data, connection, 
           email, connection_form.cleaned_data['message'])
@@ -418,6 +426,10 @@ class UserConnectionPage(RequestHandler):
     admins = q.fetch(50)
     receivers = [i.email for i in admins]
 
+    # We don't want to generate a message with empty content in the event that
+    # a user does not provide any.
+    message_provided = (connection_form.cleaned_data['message'] != '')
+
     def create_connection(org):
       if not check_existing_connection_txn(self.data.user, 
           self.data.organization):
@@ -428,12 +440,8 @@ class UserConnectionPage(RequestHandler):
       connection.acceptMentorRoleByUser()
       connection.put()
 
-      properties = {
-          'author': self.data.profile,
-          'content': connection_form.cleaned_data['message']
-          }
-      message = GSoCConnectionMessage(parent=connection, **properties)
-      message.put()
+      if message_provided:
+        generate_message_txn(connection_form, self.data.profile, connection)
 
       context = notifications.connectionContext(self.data, connection, 
           receivers, connection_form.cleaned_data['message'], True)

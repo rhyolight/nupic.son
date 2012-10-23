@@ -74,9 +74,9 @@ CONN_STATUS_OPTS = [(STATUS_TUPLE, 'All'),
     (STATUS_STATES['rejected'], 'Rejected'),
     (STATUS_STATES['user_action_req'], 'User Action Required'),
     (STATUS_STATES['org_action_req'], 'Org Action Required')]
-CONN_ROLE_OPTS = [('True|False', 'All'),
-    ('True', 'Org Admin'), 
-    ('False', 'Mentor'),]
+CONN_ROLE_OPTS = [('Org Admin|Mentor', 'All'),
+    ('Org Admin', 'Org Admin'), 
+    ('Mentor', 'Mentor'),]
 
 def colorize(choice, yes, no):
   """Differentiate between yes and no status with green and red colors.
@@ -1251,11 +1251,12 @@ class OrgConnectionComponent(Component):
     
     list_config.addColumn('username', 'Username',
         lambda e, *args: e.parent().link_id)
-    list_config.addColumn('user_org_admin', 'Role',
+    list_config.addColumn('role', 'Role',
         lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor',
         options=CONN_ROLE_OPTS)
     list_config.addColumn('status', 'Status',
-        lambda e, *args: e.status(), options=CONN_STATUS_OPTS)
+        lambda e, *args: e.status(), 
+        options=CONN_STATUS_OPTS)
     
     if len(data.org_admin_for) > 1:
       list_config.addColumn('org', 'Organization',
