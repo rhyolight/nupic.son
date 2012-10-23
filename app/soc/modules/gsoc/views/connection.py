@@ -398,8 +398,6 @@ class UserConnectionPage(RequestHandler):
     
     assert isSet(self.data.organization)
     assert isSet(self.data.user)
-    
-    db.run_in_transaction(check_outstanding_txn)
 
     connection_form = UserConnectionForm(request_data=self.data, 
         data=self.data.POST,
@@ -430,7 +428,12 @@ class UserConnectionPage(RequestHandler):
       connection.acceptMentorRoleByUser()
       connection.put()
 
-      message = connection_form.cleaned_data['message']
+      properties = {
+          'author': self.data.profile,
+          'content': connection_form.cleaned_data['message']
+          }
+      message = GSoCConnectionMessage(parent=connection, **properties)
+      message.put()
 
       context = notifications.connectionContext(self.data, connection, 
           receivers, connection_form.cleaned_data['message'], True)
@@ -584,8 +587,8 @@ class ShowConnection(RequestHandler):
 
         # Generate a message to mark that the user was promoted.
         properties = {
-          'author' : self.data.profile,
-          'content': '(AUTO) %s Promoted to Mentor.' % profile.link_id
+          'is_auto_generated' : True,
+          'content': '%s promoted to Mentor.' % profile.link_id
           }
         message = GSoCConnectionMessage(parent=connection, **properties)
         message.put()
@@ -606,8 +609,8 @@ class ShowConnection(RequestHandler):
       connection.put()
 
       properties = {
-          'author' : self.data.profile,
-          'content': '(AUTO) Mentor Connection Rejected.'
+          'is_auto_generated' : True,
+          'content': 'Mentor Connection Rejected.'
           }
       message = GSoCConnectionMessage(parent=connection, **properties)
       message.put()
@@ -653,8 +656,8 @@ class ShowConnection(RequestHandler):
 
         # Generate a message to mark that the user was promoted.
         properties = {
-          'author' : self.data.profile,
-          'content': '(AUTO) %s Promoted to Org Admin.' % profile.link_id
+          'is_auto_generated' : True,
+          'content': '%s promoted to Org Admin.' % profile.link_id
           }
         message = GSoCConnectionMessage(parent=connection, **properties)
         message.put()
@@ -679,8 +682,8 @@ class ShowConnection(RequestHandler):
       connection.put()
 
       properties = {
-          'author' : self.data.profile,
-          'content': '(AUTO) Org Admin Connection Rejected.'
+          'is_auto_generated' : True,
+          'content': 'Org Admin Connection Rejected.'
           }
       message = GSoCConnectionMessage(parent=connection, **properties)
       message.put()
@@ -743,7 +746,6 @@ class SubmitConnectionMessagePost(RequestHandler):
   def post(self):
     message = self.createMessageFromForm()
     if message:
-      # TODO(dcrodman): Change the org_admin_requests page to org_connections
       self.redirect.show_connection(self.data.url_user, self.data.connection)
       self.redirect.to(validated=True)
     else:

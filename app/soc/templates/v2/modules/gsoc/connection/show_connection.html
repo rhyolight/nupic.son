@@ -52,7 +52,7 @@ limitations under the License.
     <a name="comments"></a><h3>{{ messages|length }} message{{ messages|length|pluralize:',s' }}</h3>
     {% for message in messages %}
       <div class="project-comment-single" id="c{{ message.key.id_or_name }}">
-        <p class="project-comment-meta"><strong>{{ message.author.name }}</strong> <a href="#c{{ message.key.id_or_name }}">{{ message.created }}</a></p>
+        <p class="project-comment-meta"><strong>{{ message.getAuthor }}</strong> <a href="#c{{ message.key.id_or_name }}">{{ message.created }}</a></p>
         {{ message.content|safe }}
       </div>
     {% endfor %}

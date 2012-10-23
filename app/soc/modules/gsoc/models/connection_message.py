@@ -36,10 +36,18 @@ class GSoCConnectionMessage(db.Model):
   #: the user who provided that comment.
   author = db.ReferenceProperty(
       reference_class=soc.models.profile.Profile,
-      required=True, collection_name="connection_commented")
+      required=False, collection_name="connection_commented")
 
   #: The rich textual content of this comment
   content = db.TextProperty(verbose_name=ugettext('Content'))
 
   #: Date when the comment was added
   created = db.DateTimeProperty(auto_now_add=True)
+
+  #: Whether or not the message was generated programatically
+  is_auto_generated = db.BooleanProperty(default=False)
+
+  def getAuthor(self):
+    if self.is_auto_generated:
+      return "Automatically Generated"
+    return self.author.name()
