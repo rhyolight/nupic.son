@@ -44,14 +44,14 @@ from soc.modules.gci.logic.organization import getRemainingTaskQuota
 from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models.bulk_create_data import GCIBulkCreateData
 from soc.modules.gci.models.profile import GCIProfile
-from soc.modules.gci.models.task import DIFFICULTIES
+from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.models.task import GCITask
 
 
 BULK_CREATE_URL = '/tasks/gci/task/bulk_create'
 
 DATA_HEADERS = ['title', 'description', 'time_to_complete', 'mentors',
-                'difficulty', 'task_type', 'arbit_tag']
+                'task_type', 'arbit_tag']
 
 
 class BulkCreateTask(object):
@@ -143,6 +143,9 @@ class BulkCreateTask(object):
         task['status'] = 'Unpublished'
         task['created_by'] = org_admin
         task['modified_by'] = org_admin
+        # TODO(ljv): Remove difficulty level complete if needed.
+        # Difficulty is hardcoded to easy since GCI2012 has no difficulty.
+        task['difficulty_level'] = DifficultyLevel.EASY
 
         subscribers_entities = task['mentor_entities'] + [org_admin]
         task['subscribers'] = list(set([ent.key() for ent in
@@ -231,14 +234,6 @@ class BulkCreateTask(object):
     task['mentor_entities'] = mentor_entities
 
     program_entity = org.scope
-
-    # clean task difficulty
-    difficulty = task['difficulty'].strip()
-    if not difficulty or difficulty not in DIFFICULTIES:
-      # no valid difficulty found
-      errors.append('No valid task difficulty found, given %s.' % difficulty)
-    else:
-      task['difficulty_level'] = difficulty
 
     # clean task types
     types = []
