@@ -36,6 +36,10 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 DEF_NO_UPLOAD = ugettext('Please choose at least one file to upload.')
 
+DEF_CONSENT_FORM_HELP_TEXT = ugettext(
+    '%s.<br />To download the sample form or one of its translations '
+    '<a href="%s">click here.</a>')
+
 
 class UploadForm(gci_forms.GCIModelForm):
   """Django form to upload student forms
@@ -57,6 +61,10 @@ class UploadForm(gci_forms.GCIModelForm):
     base_url = request_data.redirect.program().urlOf(
         url_names.GCI_STUDENT_FORM_UPLOAD)
 
+    self['consent_form'].field.help_text = (
+        DEF_CONSENT_FORM_HELP_TEXT % (
+            self['consent_form'].field.help_text,
+            request_data.program.form_translations_url))
 
     self['consent_form'].field.widget = gci_forms.AsyncFileInput(
         download_url='%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM))
