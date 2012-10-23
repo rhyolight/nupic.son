@@ -197,6 +197,10 @@ class ProfileViewTest(GCIDjangoTestCase):
     response = self.get(url)
     self.assertResponseOK(response)
 
+    self.assertNotContains(
+        response,
+        '<input id="agreed_to_tos" type="checkbox" name="agreed_to_tos">')
+
   #TODO(daniel): this test should work, when we disable edition of profiles
   # after the project is over
   #def testEditProfilePageInactive(self):
