@@ -143,7 +143,7 @@ class BulkCreateTask(object):
         task['status'] = 'Unpublished'
         task['created_by'] = org_admin
         task['modified_by'] = org_admin
-        # TODO(ljv): Remove difficulty level complete if needed.
+        # TODO(ljv): Remove difficulty level completely if needed.
         # Difficulty is hardcoded to easy since GCI2012 has no difficulty.
         task['difficulty_level'] = DifficultyLevel.EASY
 
