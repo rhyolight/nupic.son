@@ -1374,15 +1374,21 @@ body {
         height: 133px;
         width: 320px;
     }
-        .block-how-it-works .block-how-it-works-start span {
+        .block-how-it-works-start .block-how-it-works-start-inner {
+            float: left;
+            height: 133px;
+            width: 295px;
+        }
+        .block-how-it-works .block-how-it-works-start-inner span {
             color: #c53926;
             display: block;
             font-family: 'Oswald', sans-serif;
             font-size: 34px;
-            margin: 20px 0 5px 15px;
+            text-align: center;
+            margin: 20px auto 5px;
             text-transform: uppercase;
         }
-        .block-how-it-works .block-how-it-works-start a.start-link {
+        .block-how-it-works .block-how-it-works-start-inner a.start-link {
             background: #c53926 url(../../../images/gci/arrow-white-lg.png) 95% 50% no-repeat;
                 border-radius: 3px;
                 -moz-border-radius: 3px;
