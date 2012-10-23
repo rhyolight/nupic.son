@@ -182,9 +182,9 @@ class MessageForm(GSoCModelForm):
     content = wrapped_clean_html_content(self)
     if content:
       return content
-    else:
-      raise django_forms.ValidationError(
-          ugettext('Message content cannot be empty.'), code='invalid')
+    #else:
+    #  raise django_forms.ValidationError(
+    #      ugettext('Message content cannot be empty.'), code='invalid')
 
   def templatePath(self):
     return 'v2/modules/gsoc/connection/_message_form.html'

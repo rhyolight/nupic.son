@@ -65,6 +65,18 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 BIRTHDATE_FORMAT = 'd-m-Y'
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
+STATUS_TUPLE = '%s|%s|%s|%s' % (STATUS_STATES['accepted'],
+    STATUS_STATES['rejected'], 
+    STATUS_STATES['user_action_req'],
+    STATUS_STATES['org_action_req'])
+CONN_STATUS_OPTS = [(STATUS_TUPLE, 'All'),
+    (STATUS_STATES['accepted'], 'Accepted'),
+    (STATUS_STATES['rejected'], 'Rejected'),
+    (STATUS_STATES['user_action_req'], 'User Action Required'),
+    (STATUS_STATES['org_action_req'], 'Org Action Required')]
+CONN_ROLE_OPTS = [('True|False', 'All'),
+    ('True', 'Org Admin'), 
+    ('False', 'Mentor'),]
 
 def colorize(choice, yes, no):
   """Differentiate between yes and no status with green and red colors.
@@ -1239,23 +1251,11 @@ class OrgConnectionComponent(Component):
     
     list_config.addColumn('username', 'Username',
         lambda e, *args: e.parent().link_id)
-
-    options = [('True', 'Org Admin'), ('False', 'Mentor')]
     list_config.addColumn('user_org_admin', 'Role',
         lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor',
-        options=options)
-    
-    messy_tuple = '%s|%s|%s|%s' % (STATUS_STATES['accepted'],
-        STATUS_STATES['rejected'], 
-        STATUS_STATES['user_action_req'],
-        STATUS_STATES['org_action_req'])
-    options = [(messy_tuple, 'All'),
-        (STATUS_STATES['accepted'], 'Accepted'),
-        (STATUS_STATES['rejected'], 'Rejected'),
-        (STATUS_STATES['user_action_req'], 'User Action Required'),
-        (STATUS_STATES['org_action_req'], 'Org Action Required')]
+        options=CONN_ROLE_OPTS)
     list_config.addColumn('status', 'Status',
-        lambda e, *args: e.status(), options=options)
+        lambda e, *args: e.status(), options=CONN_STATUS_OPTS)
     
     if len(data.org_admin_for) > 1:
       list_config.addColumn('org', 'Organization',
@@ -1326,9 +1326,10 @@ class UserConnectionComponent(Component):
     list_config.addColumn('org', 'Organization',
         lambda e, *args: e.organization.name)
     list_config.addColumn('role', 'Role',
-        lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor')
+        lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor',
+        options=CONN_ROLE_OPTS)
     list_config.addColumn('status', 'Status',
-        lambda e, *args: e.status())
+        lambda e, *args: e.status(), options=CONN_STATUS_OPTS)
 
     list_config.setRowAction(
         lambda e, *args: data.redirect.show_connection(
