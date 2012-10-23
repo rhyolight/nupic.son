@@ -22,6 +22,7 @@ from soc.tasks import mailer
 
 from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.task import GCITask
 
 
@@ -92,3 +93,13 @@ def queryProfileForUserAndProgram(user, program):
     program: GCIProgram entity for which the profile should be found
   """
   return GCIProfile.all().ancestor(user).filter('scope = ', program)
+
+
+def queryStudentInfoForParent(parent):
+  """Returns the query to fetch GCIStudentInfo entity for the specified
+  parent.
+
+  Args:
+    parent: GCIProfile entity which is the parent of the entity to retrieve
+  """
+  return GCIStudentInfo.all().ancestor(parent)
