@@ -102,15 +102,36 @@ def updateOrgScoresTxn(tasks):
   return txn
 
 
+def clearOrgScoresTxn(student_key):
+  """Clears all OrgScore entities for the student with the specified key.
+  """
+  def txn():
+    org_scores = queryForAncestor(student_key)
+    db.delete(org_scores)
+
+    student_info = profile_logic.queryStudentInfoForParent(student_key).get()
+    student_info.number_of_completed_tasks = 0
+    student_info.put()
+
+  return txn
+
+
 def queryForOrg(org, keys_only=False):
   """Return the query to fetch OrgScore entities for the specified
   organization.
   """
-  return GCIOrgScore.all().filter('org', org)
+  return GCIOrgScore.all(keys_only=keys_only).filter('org', org)
 
 
 def queryForAncestorAndOrg(ancestor, org, keys_only=False):
   """Returns the query to fetch OrgScore entities for the specified
   ancestor and organization.
   """
-  return GCIOrgScore.all().ancestor(ancestor).filter('org', org)
+  return GCIOrgScore.all(keys_only=keys_only).ancestor(
+      ancestor).filter('org', org)
+
+def queryForAncestor(ancestor, keys_only=False):
+  """Returns the query to fetch OrgScore entities for the specified
+  ancestor.
+  """
+  return GCIOrgScore.all(keys_only=keys_only).ancestor(ancestor)
