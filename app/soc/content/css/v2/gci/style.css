@@ -1388,7 +1388,12 @@ body {
             margin: 20px auto 5px;
             text-transform: uppercase;
         }
-        .block-how-it-works .block-how-it-works-start-inner a.start-link {
+        .block-how-it-works-start-inner div.block-start-link {
+            width: 78%;
+            text-align: center;
+            margin: 0px auto;
+        }
+        .block-start-link a.start-link {
             background: #c53926 url(../../../images/gci/arrow-white-lg.png) 95% 50% no-repeat;
                 border-radius: 3px;
                 -moz-border-radius: 3px;
@@ -1398,12 +1403,10 @@ body {
                 -webkit-box-shadow: 1px 1px 5px #999;
             color: #fff;
             display: block;
-            float: left;
             font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
             font-size: 17px;
             font-weight: bold;
             line-height: 18px;
-            margin-left: 70px;
             padding: 4px 25px 5px 10px;
         }
         .block-how-it-works .block-how-it-works-start a.example-tasks {
