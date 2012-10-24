@@ -23,16 +23,14 @@ import unittest
 
 from nose.plugins import skip
 
-from google.appengine.api import users
-
 from soc.logic import host as host_logic
 from soc.models.host import Host
 from soc.models.program import Program
 from soc.models.sponsor import Sponsor
-from soc.models.timeline import Timeline
 from soc.models.user import User
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
 
 class HostTest(unittest.TestCase):
   """Tests for logic of Host Model.
@@ -99,8 +97,8 @@ class HostTest(unittest.TestCase):
     hosts_list = host_logic.getHostsForProgram(program)
     actual = [host.key() for host in hosts_list]
 
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
+    # TODO(Leo): enable it after code fix
+    raise skip.SkipTest("TODO(Leo): enable it after code fix.")
 
     self.assertEqual(actual, expected)
 
