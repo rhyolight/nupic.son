@@ -259,12 +259,15 @@ class GSoCProfileHelper(ProfileHelper):
     """Sets the current user to be a student for the current program.
     """
     self.createProfile()
+    from datetime import datetime
+    from datetime import timedelta
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
                   'school': None, 'tax_form': None, 'enrollment_form': None,
                   'number_of_projects': 0, 'number_of_proposals': 0,
                   'passed_evaluations': 0, 'failed_evaluations': 0,
-                  'program': self.program}
+                  'program': self.program,
+                  'birth_date':  datetime.date(datetime.today()) - timedelta(days=(self.program.student_min_age+self.program.student_max_age)*365//2)}
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()

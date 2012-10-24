@@ -195,7 +195,8 @@ class GSoCProgramHelper(ProgramHelper):
                   'help_page': None, 'connect_with_us_page': None,
                   'mentor_agreement': None, 'org_admin_agreement': None,
                   'terms_and_conditions': None,
-                  'home': None, 'about_page': None}
+                  'home': None, 'about_page': None,
+                  'student_min_age': 18, 'student_max_age': 999}
     properties.update(override)
     self.program = self.seed(GSoCProgram, properties)
 

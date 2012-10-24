@@ -19,14 +19,9 @@
 """
 
 
-from nose.plugins import skip
-
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests.test_utils import GSoCDjangoTestCase
-
-# TODO: perhaps we should move this out?
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 class ProfileViewTest(GSoCDjangoTestCase):
@@ -161,20 +156,19 @@ class ProfileViewTest(GSoCDjangoTestCase):
     props.pop('tax_form')
     props.pop('enrollment_form')
     postdata.update(props)
+    from datetime import datetime
+    from datetime import timedelta
     postdata.update({
         'link_id': self.data.user.link_id,
-        'student_info': None,
         'user': self.data.user, 'parent': self.data.user,
         'scope': self.gsoc, 'status': 'active',
         'email': self.data.user.account.email(),
         'mentor_for': [], 'org_admin_for': [],
         'is_org_admin': False, 'is_mentor': False,
+        'birth_date': datetime.date(datetime.today()) - timedelta(days=(self.gsoc.student_min_age+self.gsoc.student_max_age)*365//2)
     })
 
     response = self.post(role_url, postdata)
-
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
 
     self.assertResponseRedirect(response, url + '?validated')
 
