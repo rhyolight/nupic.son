@@ -83,13 +83,13 @@ class HowItWorks(Template):
     return "v2/modules/gci/homepage/_how_it_works.html"
 
   def _getMainText(self):
-    if not self.data.timeline.studentSignup():
+    if self.data.timeline.studentSignup():
+      return self.GET_STARTED_NOW_MSG
+    else:
       sign_up_start = self.data.timeline.studentSignupStart()
       month = sign_up_start.strftime("%b")
       day = sign_up_start.strftime("%d")
       return self.CONTEST_BEGINS_ON_MSG % (month, day)
-    else:
-      return self.GET_STARTED_NOW_MSG
 
 
 class FeaturedTask(Template):
