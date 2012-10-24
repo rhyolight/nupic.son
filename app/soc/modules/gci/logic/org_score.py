@@ -101,7 +101,7 @@ def updateOrgScoresTxn(tasks):
 
   return txn
 
-
+# TODO(daniel): add unit tests
 def clearOrgScoresTxn(student_key):
   """Clears all OrgScore entities for the student with the specified key.
   """
