@@ -102,11 +102,12 @@ def updateOrgScoresTxn(tasks):
   return txn
 
 # TODO(daniel): add unit tests
-def clearOrgScoresTxn(student_key):
-  """Clears all OrgScore entities for the student with the specified key.
+def clearOrgScoresTxn(profile_key):
+  """Clears all OrgScore entities for the student with the specified
+  profile key.
   """
   def txn():
-    org_scores = queryForAncestor(student_key)
+    org_scores = queryForAncestor(student_key).fetch(1000)
     db.delete(org_scores)
 
     student_info = profile_logic.queryStudentInfoForParent(student_key).get()
