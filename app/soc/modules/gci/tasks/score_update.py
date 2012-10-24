@@ -1,6 +1,4 @@
-#!/usr/bin/env python2.5
-#
-# Copyright 2010 the Melange authors.
+# Copyright 2012 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,10 +35,10 @@ from soc.modules.gci.models.task import GCITask
 
 def studentIterator(func):
   """Wrapper that iterates through all the students participating in the
-  GCIProgram which is specified in the task's POST parameters.
+  GCIProgram which is specified in the AppEngine task's POST parameters.
 
-  Args in POST dict:
-    cursor: Query cursor to figure out where we need to start processing
+  Args:
+    func: a function to process each of the students 
   """
 
   def wrapper(self, request, *args, **kwargs):
