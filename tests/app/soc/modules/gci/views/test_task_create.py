@@ -162,7 +162,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
 
-    # Task creation has not started yet
+    # Task creation is not open
     self.assertResponseForbidden(response)
 
   def testCreateTaskAfterClaimEndForMentor(self):
@@ -176,7 +176,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
 
-    # Task creation has not started yet
+    # Task creation is not open
     self.assertResponseForbidden(response)
 
   def testCreateTaskAfterClaimEndForStudent(self):
@@ -190,7 +190,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
 
-    # Task creation has not started yet
+    # Task creation is not open
     self.assertResponseForbidden(response)
 
   def testFullEditTaskBeforeOrgsAnnouncedForNoRole(self):
