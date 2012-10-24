@@ -19,9 +19,6 @@
 
 
 import httplib
-import urllib
-
-from nose.plugins import skip
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
@@ -40,7 +37,6 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
   SEND_URL = '/tasks/gsoc/surveys/send_reminder/send'
 
   def setUp(self):
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     super(SurveyRemindersTest, self).setUp()
     self.init()
     self.createMentor()
