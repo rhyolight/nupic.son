@@ -54,9 +54,11 @@ class BulkCreate(RequestHandler):
             name='gci_bulk_create')]
 
   def checkAccess(self):
-    """Denies access if you are not the org admin.
+    """Denies access if the currently logged user is not allowed to
+    bulk create tasks.
     """
-    self.check.isOrgAdmin()
+    self.check.isLoggedIn()
+    self.check.canBulkCreateTask()
 
   def templatePath(self):
     """Returns the path to the template.

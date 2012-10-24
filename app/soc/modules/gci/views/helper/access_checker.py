@@ -323,10 +323,28 @@ class AccessChecker(access_checker.AccessChecker):
   def canCreateTask(self):
     """Checks whether the currently logged in user can edit the task.
     """
+    return self.canCreateTaskWithRequiredRole('mentor')
+
+  def canBulkCreateTask(self):
+    """Checks whether the currently logged in user can bulk create tasks.
+    """
+    return self.canCreateTaskWithRequiredRole('org_admin')
+
+  def canCreateTaskWithRequiredRole(self, required_role):
+    """Checks whether the currently logged in user can create or edit
+    a task, when the specified role is required.
+    """
     assert access_checker.isSet(self.data.organization)
+    assert access_checker.isSet(self.data.org_admin_for)
     assert access_checker.isSet(self.data.mentor_for)
 
-    valid_org_keys = [o.key() for o in self.data.mentor_for]
+    if required_role == 'mentor':
+      valid_org_keys = [o.key() for o in self.data.mentor_for]
+    elif required_role == 'org_admin':
+      valid_org_keys = [o.key() for o in self.data.org_admin_for]
+    else:
+      raise ValueError('Invalid required_role argument ' + str(required_role))
+
     if self.data.organization.key() not in valid_org_keys:
       raise AccessViolation(DEF_NO_TASK_CREATE_PRIV % (
           self.data.organization.name))
