@@ -96,11 +96,10 @@ class ScoreUpdate(object):
     """Clears all GCIOrgScore entities associated with 
     the specified GCIProfile.
     """
-    if not self.profile.is_student:
+    if not profile.is_student:
       raise ValueError("The specified GCIProfile does not belong to a student")
 
-    student_info = profile_logic.queryStudentInfoForParent(profile).get()
-    db.run_in_transaction(profile_logic.clearOrgScoresTxn(student_info))
+    db.run_in_transaction(org_score_logic.clearOrgScoresTxn(profile.key()))
 
   @studentIterator
   def calculateScore(self, request, profile, *args, **kwargs):
