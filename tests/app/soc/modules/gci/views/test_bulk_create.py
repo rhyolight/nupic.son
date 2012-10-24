@@ -202,6 +202,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
 
     # Mentors can't bulk create tasks
     self.assertResponseForbidden(response)
+
   def testBulkTaskCreateDuringProgramForStudent(self):
     """Tests the bulk task create view during the program
     for students.
