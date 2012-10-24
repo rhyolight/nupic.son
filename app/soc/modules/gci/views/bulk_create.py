@@ -26,6 +26,7 @@ from soc.modules.gci.models.bulk_create_data import GCIBulkCreateData
 from soc.modules.gci.tasks import bulk_create
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -51,7 +52,7 @@ class BulkCreate(RequestHandler):
     """
     return [
         url(r'bulk/%s$' % url_patterns.ORG, self,
-            name='gci_bulk_create')]
+            name=url_names.GCI_TASK_BULK_CREATE)]
 
   def checkAccess(self):
     """Denies access if the currently logged user is not allowed to
@@ -69,7 +70,7 @@ class BulkCreate(RequestHandler):
     """Handler for default HTTP GET request.
     """
     context = {
-        'page_name': 'Bulk upload tasks for %s' %self.data.organization.name,
+        'page_name': 'Bulk upload tasks for %s' % self.data.organization.name,
         }
 
     # get a list of task type tags stored for the program entity
@@ -97,4 +98,4 @@ class BulkCreate(RequestHandler):
         self.data.profile)
 
     self.redirect.organization(self.data.organization)
-    self.redirect.to('gci_bulk_create', validated=True)
+    self.redirect.to(url_names.GCI_TASK_BULK_CREATE, validated=True)

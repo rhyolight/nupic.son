@@ -44,6 +44,7 @@ EDIT_GCI_ORG_PROFILE = 'edit_gci_org_profile'
 GCI_ORG_HOME = 'gci_org_home'
 
 GCI_VIEW_TASK = 'gci_view_task'
+GCI_TASK_BULK_CREATE = 'gci_task_bulk_create'
 
 
 # GET PARAMETERS WHICH ARE USED THROUGHOUT THE MODULE

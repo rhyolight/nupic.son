@@ -774,7 +774,7 @@ class MyOrgsListBeforeBulkCreateTask(MyOrgsList):
   def _setRowAction(self, request, data):
     self._list_config.setRowAction(
         lambda e, *args: data.redirect.organization(e).
-            urlOf('gci_bulk_create'))
+            urlOf(url_names.GCI_TASK_BULK_CREATE))
 
 
 class MyOrgsListBeforeInviteMentor(MyOrgsList):
