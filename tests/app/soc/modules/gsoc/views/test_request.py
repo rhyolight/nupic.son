@@ -18,8 +18,6 @@
 """
 
 
-from nose.plugins import skip
-
 from google.appengine.ext import db
 
 from soc.modules.gsoc.models.request import GSoCRequest
@@ -140,10 +138,7 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
 
     checkPostAccept()
 
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
-
-    self.assertEmailSent(to=other_data.profile.email, n=2)
+    self.assertEmailSent(to=other_data.profile.email, n=1+2)
 
     request.status = 'pending'
     request.put()
@@ -152,4 +147,4 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     response = self.post(url, postdata)
 
     checkPostAccept()
-    self.assertEmailSent(to=other_data.profile.email, n=2)
+    self.assertEmailSent(to=other_data.profile.email, n=1+2+1)
