@@ -18,6 +18,8 @@
 
 from google.appengine.ext import db
 
+from django.utils.dateformat import format
+
 from soc.views.helper import addresses
 from soc.views.helper import lists
 from soc.views.helper.url import urlize
