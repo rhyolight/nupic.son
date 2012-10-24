@@ -73,7 +73,7 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
       response = self.get(url)
       self.assertResponseRedirect(response)
       expected_redirect_address = 'https://www.google.com/accounts/Login?'\
-          +'continue=http%3A//Foo%3A8080' + url
+          +'continue=http%3A//some.testing.host.tld' + url
       actual_redirect_address = response.get('location', None)
       self.assertEqual(expected_redirect_address, actual_redirect_address)
     finally:
