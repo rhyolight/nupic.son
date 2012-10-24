@@ -18,8 +18,6 @@
 """
 
 
-from nose.plugins import skip
-
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -30,7 +28,6 @@ class ProjectDetailsTest(GSoCDjangoTestCase):
   """
 
   def setUp(self):
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     super(ProjectDetailsTest, self).setUp()
     self.init()
 
@@ -41,29 +38,29 @@ class ProjectDetailsTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(
         response, 'v2/modules/gsoc/project_details/base.html')
 
-  def createProject(self, override_properties={}):
-    properties = {
-        'is_featured': False, 'mentors': [],
-        'status': 'accepted', 'program': self.gsoc, 'org': self.org,
-
-    }
-    properties.update(override_properties)
-    return self.seed(GSoCProject, properties)
+  def createProject(self):
+    mentor_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor_helper.createOtherUser('mentor@example.com')
+    mentor = mentor_helper.createMentor(self.org)
+    student_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student_helper.createOtherUser('student@example.com')
+    student_helper.createStudentWithProject(self.org, mentor)
+    print GSoCProject.all().fetch(100)
+    project = GSoCProject.all().get()
+    project.is_featured = False
+    project.status = 'accepted'
+    project.put()
+    return project
 
   def testProjectDetails(self):
     self.data.createStudent()
     self.timeline.studentsAnnounced()
 
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com')
-    mentor_entity = mentor.createMentor(self.org)
-
-    project = self.createProject({'parent': self.data.profile,
-                                 'mentor': mentor_entity})
+    project = self.createProject()
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.data.user.key().name(),
+        project.parent().user.key().name(),
         project.key().id())
 
     # test project details GET
@@ -80,16 +77,11 @@ class ProjectDetailsTest(GSoCDjangoTestCase):
 
     self.data.createOrgAdmin(self.org)
 
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com')
-    mentor_entity = mentor.createMentor(self.org)
-
-    project = self.createProject({'parent': self.data.profile,
-                                 'mentor': mentor_entity})
+    project = self.createProject()
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.data.user.key().name(),
+        project.parent().user.key().name(),
         project.key().id())
 
     url = '/gsoc/project/featured/' + suffix
