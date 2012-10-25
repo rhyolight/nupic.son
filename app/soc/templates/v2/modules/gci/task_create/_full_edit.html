@@ -56,29 +56,6 @@ limitations under the License.
     <span class="note">Total time required to complete the task. Please take days/nights and timezones into consideration. It cannot be longer than 30 days.</span>
   </div>
 
-  <div class="form-row form-row-task-difficulty {{ form.bound_fields.difficulty_level.div_class }}">
-    <label for="long-description" class="form-label">Difficulty<em>*</em>
-      {% if form.bound_fields.difficulty_level.errors %}
-        <span class="form-row-error-msg">
-          <br />{{ form.bound_fields.difficulty_level.errors.0 }}
-        </span>
-      {% endif %}
-    </label>
-    <div class="form-row-task-difficulty-inner">
-      <select name="{{ form.bound_fields.difficulty_level.name }}">
-      <option value="" selected="selected" disabled="disabled">Difficulty</option>
-      {% for value, label in form.bound_fields.difficulty_level.field.choices %}
-        <option value="{{ value }}"
-            {% if form.bound_fields.difficulty_level.field.initial == value %}
-              selected="selected"
-            {% endif %}
-        >{{ label }}</option>
-      {% endfor %}
-      </select>
-    </div>
-    <span class="note">The overall difficulty of the task</span>
-  </div>
-
   <div class="form-row form-row-task-assigned-mentor
       {% if form.bound_fields.mentors.errors %}
         error
