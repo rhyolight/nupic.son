@@ -29,7 +29,9 @@
     {% endif %}
    <form action="?button" id="task_form" method="post">
       {% if button_unpublish %}<input type="submit" class="task-btn task-btn-publish" name="button_unpublish" value="Unpublish">
-      {% else %}{% if button_delete %}<div class="task-btn task-tbn-publish"></div>{% endif %}
+      {% else %}
+        {% if button_publish %}<input type="submit" class="task-btn task-btn-publish" name="button_publish" value="Publish Task">{% endif %}
+        {% if button_delete %}<div class="task-btn task-tbn-publish"></div>{% endif %}
       {% endif %}
       {% if button_edit %}<input type="submit" class="task-btn task-btn-edit" name="button_edit" value="Edit Task">{% endif %}
       {% if button_delete %}<input type="submit" class="task-btn task-btn-delete" name="button_delete" value="Delete">{% endif %}

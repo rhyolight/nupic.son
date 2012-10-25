@@ -340,6 +340,8 @@ class TaskViewPage(RequestHandler):
         task.status = 'Unpublished'
         task.put()
       db.run_in_transaction(txn)
+    elif button_name == 'button_publish':
+      task_logic.setTaskStatus(task.key(), 'Open')
     elif button_name == 'button_edit':
       r = self.redirect.id(id=task.key().id_or_name())
       r.to('gci_edit_task')
@@ -520,6 +522,10 @@ class TaskInformation(Template):
     if is_org_admin:
       can_unpublish = (task.status in CLAIMABLE) and not task.student
       context['button_unpublish'] = can_unpublish
+
+      can_publish = task.status in UNPUBLISHED
+      context['button_publish'] = can_publish
+
       context['button_delete'] = not task.student
 
     if is_mentor:
