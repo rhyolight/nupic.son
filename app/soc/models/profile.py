@@ -273,9 +273,7 @@ class Profile(soc.models.linkable.Linkable):
   ship_name = db.StringProperty(
       verbose_name=ugettext('Full Recipient Name'))
   ship_name.help_text = ugettext(
-      'Fill in the name of the person who should be receiving your packages. '
-      'Fill in only if you want your shipping address to differ from your '
-      'contact address.')
+      'Fill in the name of the person who should be receiving your packages.')
   ship_name.group = ugettext("3. Shipping Info (Private and Optional)")
 
   #: Optional field containing a separate shipping street address; kept
@@ -286,10 +284,7 @@ class Profile(soc.models.linkable.Linkable):
   ship_street = db.StringProperty(
       verbose_name=ugettext('Shipping Street Address 1'))
   ship_street.help_text = ugettext(
-      'street number and name, '
-      'only A-z, 0-9 and whitespace characters. '
-      'Fill in only if you want your shipping address to differ from your '
-      'contact address.')
+      'Street number and name, only A-z, 0-9 and whitespace characters.')
   ship_street.group = ugettext("3. Shipping Info (Private and Optional)")
 
   #: Optional field containing a 2nd line for the shipping street address; kept
@@ -301,9 +296,7 @@ class Profile(soc.models.linkable.Linkable):
       verbose_name=ugettext('Shipping Street Address 2'))
   ship_street_extra.help_text = ugettext(
       '2nd address line usually used for apartment numbers, '
-      'only A-z, 0-9 and whitespace characters. '
-      'Fill in only if you want your shipping address to differ from your '
-      'contact address.')
+      'only A-z, 0-9 and whitespace characters.')
   ship_street_extra.group = ugettext("3. Shipping Info (Private and Optional)")
 
   #: Optional field containing shipping address city; kept private.
@@ -312,9 +305,7 @@ class Profile(soc.models.linkable.Linkable):
   ship_city = db.StringProperty(
       verbose_name=ugettext('Shipping City'))
   ship_city.help_text = ugettext(
-      'Only A-z, 0-9 and whitespace characters. '
-      'Fill in only if you want your shipping address to differ from your '
-      'contact address.')
+      'Only A-z, 0-9 and whitespace characters.')
   ship_city.group = ugettext("3. Shipping Info (Private and Optional)")
 
   #: Optional field containing shipping address state or province; kept
@@ -323,10 +314,8 @@ class Profile(soc.models.linkable.Linkable):
   ship_state = db.StringProperty(
       verbose_name=ugettext('Shipping State/Province'))
   ship_state.help_text = ugettext(
-      'optional if country/territory does not have states or provinces, '
-      'only A-z, 0-9 and whitespace characters. '
-      'fill in only if you want your shipping address to differ from your '
-      'contact address.')
+      'Optional if country/territory does not have states or provinces, '
+      'Only A-z, 0-9 and whitespace characters.')
   ship_state.group = ugettext("3. Shipping Info (Private and Optional)")
 
   #: Optional field containing shipping address country or territory; kept
@@ -335,8 +324,7 @@ class Profile(soc.models.linkable.Linkable):
       verbose_name=ugettext('Shipping Country/Territory'),
       choices=countries.COUNTRIES_AND_TERRITORIES)
   ship_country.help_text = ugettext(
-      'Fill in only if you want your shipping address to differ from your '
-      'contact address.')
+      'Only A-z, 0-9 and whitespace characters.')
   ship_country.group = ugettext("3. Shipping Info (Private and Optional)")
 
   #: Optional field containing shipping address postal code (ZIP code in
@@ -346,8 +334,7 @@ class Profile(soc.models.linkable.Linkable):
   ship_postalcode = db.StringProperty(
       verbose_name=ugettext('Shipping ZIP/Postal Code'))
   ship_postalcode.help_text = ugettext(
-      'only A-z, 0-9 and whitespace characters,'
-      'fill in only if not same as above')
+      'Only A-z, 0-9 and whitespace characters')
   ship_postalcode.group = ugettext("3. Shipping Info (Private and Optional)")
 
   #====================================================================
