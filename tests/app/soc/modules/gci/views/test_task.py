@@ -131,6 +131,76 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Unpublished')
 
+  def testPostButtonPublishUnpublishedTask(self):
+    """Tests the publish button.
+    """
+    self.data.createOrgAdmin(self.org)
+
+    self.task.status = 'Unpublished'
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_publish')
+
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'Open')
+
+  def testPostButtonPublishUnapprovedTask(self):
+    """Tests the publish button.
+    """
+    self.data.createOrgAdmin(self.org)
+
+    self.task.status = 'Unapproved'
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_publish')
+
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'Open')
+
+  def testPostButtonPublishByUserWithNoRole(self):
+    """Tests the publish button pressed by a user with no role.
+    """
+    self.task.status = 'Unpublished'
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_publish')
+
+    # Task creation has not started yet
+    self.assertResponseForbidden(response)
+
+  def testPostButtonPublishByMentor(self):
+    """Tests the publish button pressed by a mentor.
+    """
+    self.data.createMentor(self.org)
+
+    self.task.status = 'Unpublished'
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_publish')
+
+    # Task creation has not started yet
+    self.assertResponseForbidden(response)
+
+  def testPostButtonPublishByStudent(self):
+    """Tests the publish button pressed by a student.
+    """
+    self.data.createStudent()
+
+    self.task.status = 'Unpublished'
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_publish')
+
+    # Task creation has not started yet
+    self.assertResponseForbidden(response)
+
   def testPostButtonDelete(self):
     """Tests the delete button.
     """
