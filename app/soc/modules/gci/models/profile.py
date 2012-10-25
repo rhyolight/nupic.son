@@ -22,10 +22,10 @@ from google.appengine.ext import blobstore
 
 from django.utils.translation import ugettext
 
-import soc.models.profile
+from soc.models import profile
 
 
-class GCIProfile(soc.models.profile.Profile):
+class GCIProfile(profile.Profile):
   """GCIProfile Model.
   """
   automatic_task_subscription = db.BooleanProperty(
@@ -34,15 +34,15 @@ class GCIProfile(soc.models.profile.Profile):
   automatic_task_subscription.help_text = ugettext(
       'Whether to subscribe to tasks of interest automatically. These are '
       'tasks which you have claimed or are mentoring.')
-  automatic_task_subscription.group = ugettext("6. Notification settings")
+  automatic_task_subscription.group = profile.NOTIFICATION_SETTINGS_GROUP
 
   # Avatar figure chosen by student and mentor
   avatar = db.StringProperty(
       required=False, verbose_name=ugettext('Avatar'))
-  avatar.group = ugettext("1. Public Info")
+  avatar.group = profile.PUBLIC_INFO_GROUP
 
 
-class GCIStudentInfo(soc.models.profile.StudentInfo):
+class GCIStudentInfo(profile.StudentInfo):
   """GCIStudentInfo Model.
 
   Parent:
