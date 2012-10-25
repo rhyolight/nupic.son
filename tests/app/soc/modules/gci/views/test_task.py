@@ -131,6 +131,34 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Unpublished')
 
+  def testPostButtonUnpublishByUserWithNoRole(self):
+    """Tests the unpublish button by a user with no role.
+    """
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_unpublish')
+
+    self.assertResponseForbidden(response)
+
+  def testPostButtonUnpublishByMentor(self):
+    """Tests the unpublish button by a mentor.
+    """
+    self.data.createMentor(self.org)
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_unpublish')
+
+    self.assertResponseForbidden(response)
+
+  def testPostButtonUnpublishByStudent(self):
+    """Tests the unpublish button by a mentor.
+    """
+    self.data.createStudent()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_unpublish')
+
+    self.assertResponseForbidden(response)
+
   def testPostButtonPublishUnpublishedTask(self):
     """Tests the publish button.
     """
@@ -170,7 +198,6 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_publish')
 
-    # Task creation has not started yet
     self.assertResponseForbidden(response)
 
   def testPostButtonPublishByMentor(self):
@@ -184,7 +211,6 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_publish')
 
-    # Task creation has not started yet
     self.assertResponseForbidden(response)
 
   def testPostButtonPublishByStudent(self):
@@ -198,7 +224,6 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_publish')
 
-    # Task creation has not started yet
     self.assertResponseForbidden(response)
 
   def testPostButtonDelete(self):
