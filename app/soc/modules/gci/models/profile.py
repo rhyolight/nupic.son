@@ -73,6 +73,6 @@ class GCIStudentInfo(profile.StudentInfo):
 
   #: Property pointing to the student id form
   student_id_form = blobstore.BlobReferenceProperty(
-      required=False, verbose_name=ugettext('Student ID form'))
+      required=False, verbose_name=ugettext('Enrollment Form'))
   student_id_form.help_text = ugettext(
       'A scan of your student ID to verify your student status and birthday.')
