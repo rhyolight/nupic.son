@@ -187,7 +187,7 @@ class Program(soc.models.presence.Presence):
 
   gplus = db.LinkProperty(
       required=False, verbose_name=ugettext("Google+ URL"))
-  gplus.help_text = ugettext("URL of the Google+ home page for GSoc")
+  gplus.help_text = ugettext("URL of the Google+ home page for the program")
   gplus.group = ugettext("1. Public Info")
 
   email = db.EmailProperty(
