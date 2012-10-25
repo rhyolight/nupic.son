@@ -19,7 +19,15 @@
 """
 
 
+from datetime import datetime
+from datetime import timedelta
+
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+
+def generate_eligible_student_birth_date(program):
+  eligible_age = program.student_min_age+program.student_max_age//2
+  return datetime.date(datetime.today()-timedelta(days=eligible_age*365))
 
 
 class ProfileHelper(object):
@@ -255,12 +263,6 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile.notify_private_comments = private_comments
     self.profile.put()
 
-  def generate_eligible_student_birth_date(self):
-    from datetime import datetime
-    from datetime import timedelta
-    eligible_age = self.program.student_min_age+self.program.student_max_age//2
-    return datetime.date(datetime.today()-timedelta(days=eligible_age*365))
-
   def createStudent(self):
     """Sets the current user to be a student for the current program.
     """
@@ -271,7 +273,7 @@ class GSoCProfileHelper(ProfileHelper):
         'number_of_projects': 0, 'number_of_proposals': 0,
         'passed_evaluations': 0, 'failed_evaluations': 0,
         'program': self.program,
-        'birth_date': self.generate_eligible_student_birth_date()}
+        'birth_date': generate_eligible_student_birth_date(self.program)}
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()
