@@ -255,21 +255,23 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile.notify_private_comments = private_comments
     self.profile.put()
 
+  def generate_eligible_student_birth_date(self):
+    from datetime import datetime
+    from datetime import timedelta
+    eligible_age = self.program.student_min_age+self.program.student_max_age//2
+    return datetime.date(datetime.today()-timedelta(days=eligible_age*365))
+
   def createStudent(self):
     """Sets the current user to be a student for the current program.
     """
     self.createProfile()
-    from datetime import datetime
-    from datetime import timedelta
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
         'school': None, 'tax_form': None, 'enrollment_form': None,
         'number_of_projects': 0, 'number_of_proposals': 0,
         'passed_evaluations': 0, 'failed_evaluations': 0,
         'program': self.program,
-        'birth_date': datetime.date(datetime.today())
-            - timedelta(days=(self.program.student_min_age
-            +self.program.student_max_age)*365//2)}
+        'birth_date': self.generate_eligible_student_birth_date()}
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()
