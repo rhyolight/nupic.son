@@ -335,11 +335,7 @@ class TaskViewPage(RequestHandler):
     task_key = task.key()
 
     if button_name == 'button_unpublish':
-      def txn():
-        task = db.get(task_key)
-        task.status = 'Unpublished'
-        task.put()
-      db.run_in_transaction(txn)
+      task_logic.setTaskStatus(task.key(), 'Unpublished')
     elif button_name == 'button_publish':
       task_logic.setTaskStatus(task.key(), 'Open')
     elif button_name == 'button_edit':
