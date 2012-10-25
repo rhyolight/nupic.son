@@ -26,8 +26,8 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 def generate_eligible_student_birth_date(program):
-  eligible_age = program.student_min_age+program.student_max_age//2
-  return datetime.date(datetime.today()-timedelta(days=eligible_age*365))
+  eligible_age = program.student_min_age + program.student_max_age // 2
+  return datetime.date(datetime.today() - timedelta(days=eligible_age * 365))
 
 
 class ProfileHelper(object):
