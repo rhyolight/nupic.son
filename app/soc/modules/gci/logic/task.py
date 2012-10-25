@@ -624,6 +624,18 @@ def getFeaturedTask(program):
   return new_task
 
 
+def setTaskStatus(task_key, status):
+  """Set the status of the specified task in a transaction.
+  """
+
+  def setTaskStatusTxn():
+    task = GCITask.get(task_key)
+    task.status = status
+    task.put()
+
+  db.run_in_transaction(setTaskStatusTxn)
+
+
 # define the state transition functions
 STATE_TRANSITIONS = {
     'Claimed': transitFromClaimed,
