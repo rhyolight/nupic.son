@@ -27,7 +27,6 @@ from django.forms.util import ErrorList
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
-from soc.views import forms
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -113,7 +112,7 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
     return tags
 
   def clean_mentors(self):
-    mentor_key_strs = self.data.getlist('mentors')
+    mentor_key_strs = set(self.data.getlist('mentors'))
 
     if not mentor_key_strs:
       raise django_forms.ValidationError(
