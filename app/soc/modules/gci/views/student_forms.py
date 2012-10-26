@@ -43,7 +43,9 @@ CLAIM_TASKS_NOW = ugettext('You can now claim tasks <a href="%s">here</a>')
 DEF_CONSENT_FORM_HELP_TEXT = ugettext(
     '%s.<br />To download the sample form or one of its translations '
     '<a href="%s">click here.</a>')
-
+DEF_STUDENT_ID_FORM_TEXT_HELP = ugettext(
+    'A scan of your Student ID, School transcript or letter from school. '
+    'For examples <a href="%s">click here</a>.')
 
 class UploadForm(gci_forms.GCIModelForm):
   """Django form to upload student forms
@@ -65,15 +67,18 @@ class UploadForm(gci_forms.GCIModelForm):
     base_url = request_data.redirect.program().urlOf(
         url_names.GCI_STUDENT_FORM_UPLOAD)
 
-    self['consent_form'].field.help_text = (
-        DEF_CONSENT_FORM_HELP_TEXT % (
-            self['consent_form'].field.help_text,
-            request_data.program.form_translations_url))
-
     self['consent_form'].field.widget = gci_forms.AsyncFileInput(
         download_url='%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM))
     self['student_id_form'].field.widget = gci_forms.AsyncFileInput(
         download_url='%s?%s' % (base_url, url_names.STUDENT_ID_FORM_GET_PARAM))
+
+    self['consent_form'].field.help_text = (
+        DEF_CONSENT_FORM_HELP_TEXT % (
+            self['consent_form'].field.help_text,
+            request_data.program.form_translations_url))
+    self['student_id_form'].field.help_text = (
+        DEF_STUDENT_ID_FORM_TEXT_HELP % 
+            request_data.program.form_translations_url)
 
   def clean(self):
     """Ensure that at least one of the fields has data.
