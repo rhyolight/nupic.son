@@ -90,10 +90,10 @@ def generate_message_txn(connection, content):
   message.put()
 
 class ConnectionForm(GSoCModelForm):
-  """ Django form for the ShowConnection page. """
+  """ Django form for the Connection page. """
 
-  role = ChoiceField(widget=django_forms.Select(),
-      choices=(('1', 'Mentor'),))
+  role_choice = ChoiceField(widget=django_forms.Select(),
+      choices=(('Mentor', 'Mentor'),))
   message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
 
   def __init__(self, request_data=None, message=None, is_admin=False, 
@@ -109,6 +109,8 @@ class ConnectionForm(GSoCModelForm):
     # Do not require users/org admins to include a message.
     self.fields['message'].required = False
 
+  class Meta:
+    model = GSoCConnection
 
 class OrgConnectionForm(ConnectionForm):
   """ Django form to show specific fields for an organization. """
@@ -121,8 +123,6 @@ class OrgConnectionForm(ConnectionForm):
     self.request_data = request_data
     self.is_admin = True
 
-    self.fields['role'].choices = (('1', 'Mentor'), ('2', 'Org Admin'))
-
     field = self.fields.pop('users')
     field.help_text = ugettext(
         'The link_id or email address of the invitee, '
@@ -130,8 +130,10 @@ class OrgConnectionForm(ConnectionForm):
     # Place the users field at the top of the form.
     self.fields.insert(0, 'users', field)  
 
-    self.fields['role'].label = ugettext('Role to offer the user(s)')
-    self.fields['role'].help_text = ugettext(
+    self.fields['role_choice'].choices = (('Mentor', 'Mentor'), 
+        ('Org Admin', 'Org Admin'))
+    self.fields['role_choice'].label = ugettext('Role to offer the user(s)')
+    self.fields['role_choice'].help_text = ugettext(
         'Role that you want to offer to '
         'the specified users in this organization')
 
@@ -211,6 +213,24 @@ class MessageForm(GSoCModelForm):
   def templatePath(self):
     return 'v2/modules/gsoc/connection/_message_form.html'
 
+class ConnectionResponseForm(GSoCModelForm):
+  """ Django form to provide Connection responses in ShowConnection.
+  """
+  responses = ChoiceField(widget=django_forms.Select())
+
+  def __init__(self, request_data=None, choices=None, *args, **kwargs):
+    super(ConnectionResponseForm, self).__init__(*args, **kwargs)
+
+    self.request_data = request_data
+
+    self.fields['responses'].group = ugettext('1. ')
+    self.fields['responses'].help_text = ugettext(
+        'Select an action to take.')
+    self.fields['responses'].choices = choices
+    self.fields['responses'].required = False
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/connection/_response_form.html'
 
 class UserConnectionForm(ConnectionForm):
   """ Django form to show specific fields for a user. """
@@ -306,9 +326,8 @@ class OrgConnectionPage(RequestHandler):
       connection = connection_form.create(parent=user, commit=False)
       # An organization admin is always a mentor, so regardless of the admin's
       # choice the user will be offered a mentoring position.
-      connection.acceptMentorRoleByOrg()
-      if connection_form.cleaned_data['role'] == '2':
-        connection.acceptOrgAdminRoleByOrg()
+      connection.org_state = 'Accepted'
+      connection.role =  connection_form.cleaned_data['role_choice']
       connection.put()
 
       if message_provided:
@@ -336,9 +355,9 @@ class OrgConnectionPage(RequestHandler):
       connection = GSoCAnonymousConnection(parent=self.data.organization)
       connection.put()
       if connection_form.cleaned_data['role'] == '2':
-        connection.role = 'org_admin'
+        connection.role = 'Org Admin'
       else:
-        connection.role = 'mentor' 
+        connection.role = 'Mentor' 
       # Generate a hash of the object's key for later validation.
       m = hashlib.md5()
       m.update(str(connection.key()))
@@ -430,8 +449,7 @@ class UserConnectionPage(RequestHandler):
     # anything other than the user_mentor property for now.
     connection_form.cleaned_data['profile'] = self.data.profile
     connection_form.cleaned_data['organization'] = self.data.organization
-    connection_form.cleaned_data['user_mentor'] = RESPONSE_STATE_ACCEPTED
-	
+
     # Get the sender and recipient for the notification email.
     q = GSoCProfile.all().filter('org_admin_for', self.data.organization)
     q = q.filter('status =', 'active').filter('notify_new_requests =', True)
@@ -449,7 +467,7 @@ class UserConnectionPage(RequestHandler):
 
       connection = ConnectionForm.create(
           connection_form, parent=self.data.user, commit=False)
-      connection.acceptMentorRoleByUser()
+      connection.user_state = 'Accepted'
       connection.put()
 
       if message_provided:
@@ -468,13 +486,15 @@ class ShowConnection(RequestHandler):
   """Class to encapsulate the methods required to display information
   about a GSoCConnection for both Users and Org Admins."""
   
-  # Each of the below actions corresponds to one two booleans for each side
-  # of the Connection object to determine its state.
-  ACTIONS = {
-    'accept_mentor' : 'Accept Mentor',
-    'reject_mentor' : 'Reject Mentor',
-    'accept_org_admin' : 'Accept Org Admin',
-    'reject_org_admin' : 'Reject Org Admin',
+  # The actions that will be made available to the user in the dropdown.
+  RESPONSES = {
+    'none' : ('none', 'None Available'),
+    'accept_mentor' : ('accept_mentor', 'Accept Mentor'),
+    'reject_mentor' : ('reject_mentor', 'Reject Mentor'),
+    'accept_org_admin' : ('accept_org_admin', 'Accept Org Admin'),
+    'reject_org_admin' : ('reject_org_admin', 'Reject Org Admin'),
+    'withdraw' : ('withdraw', 'Withdraw'),
+    'delete' : ('delete', 'Delete')
   }
   
   def templatePath(self):
@@ -508,6 +528,23 @@ class ShowConnection(RequestHandler):
     query.order('created')
 
     return query.fetch(limit=limit)
+
+  def getMentorChoices(self, choices, unreplied, accepted, 
+      rejected, withdrawn=True):
+    """ Helper method to clean up the logic for determining what options a
+      user or org admin has for responding to a connection.
+    """
+    responses = []
+    if unreplied:
+      responses.append(choices['accept'])
+      responses.append(choices['reject'])
+    elif rejected:
+      responses.append(choices['accept'])
+    elif accepted:
+      responses.append(choices['reject'])
+      if not withdrawn:
+        responses.append(choices['withdraw'])
+    return responses
     
   def context(self):
     """ Handler for Show GSoCConnection get request. """
@@ -515,59 +552,109 @@ class ShowConnection(RequestHandler):
     header_name = self.data.url_user.link_id \
         if self.data.is_org_admin else self.data.organization.name
 
-    # Determine which buttons will be shown to the user.
-    accept_mentor = reject_mentor = accept_org_admin = reject_org_admin = False
-    if self.data.is_org_admin:
-      # Org can only receive mentor requests, so allow the admin to respond or
-      # to offer the user an org admin role.
-      if self.data.connection.org_mentor == RESPONSE_STATE_UNREPLIED:
-        accept_mentor = reject_mentor = accept_org_admin = True
+    # Shortcut for clarity/laziness.
+    c = self.data.connection 
+    # This isn't pretty by any stretch of the imagination, but it's going
+    # to stay like this for now in the interest of my time and sanity. The 
+    # basic rules for displaying options are in the getMentorChoices() method
+    # and the code following includes some tweaks for user/org admin.
+    choices = []
+    if c.isWithdrawn():
+      # Allow an org to delete or re-open the connection.
+      if self.data.is_org_admin:
+        if c.isOrgWithdrawn():
+          choices.append(self.RESPONSES['accept_mentor'])
+          choices.append(self.RESPONSES['accept_org_admin'])
+        choices.append(self.RESPONSES['delete'])
+      # Allow the user to re-open the connection.
+      else:
+        if c.isUserWithdrawn():
+          choices.append(self.RESPONSES['accept_mentor'])
+    elif c.isStalemate() or c.isAccepted():
+      # There's nothing else that can be done to the connection in either 
+      # case, so the org admin has the option to delete it.
+      if self.data.is_org_admin:
+        choices.append(self.RESPONSES['delete'])
     else:
-      if self.data.connection.user_mentor == RESPONSE_STATE_UNREPLIED:
-        accept_mentor = reject_mentor = True
-        if self.data.connection.org_org_admin:
-          accept_org_admin = reject_org_admin = True
-        
-    status = self.data.connection.status()
+      mentor_options = { 'accept' : self.RESPONSES['accept_mentor'],
+          'reject' : self.RESPONSES['reject_mentor'],
+          'withdraw' : self.RESPONSES['withdraw']
+          }
+      org_admin_options = { 'accept' : self.RESPONSES['accept_org_admin'],
+          'reject' : self.RESPONSES['reject_org_admin'],
+          'withdraw' : self.RESPONSES['withdraw']
+      }      
+      if self.data.is_org_admin:
+        choices = self.getMentorChoices(mentor_options, c.isOrgUnreplied(), 
+            c.isOrgAccepted(), c.isOrgRejected(), c.isOrgWithdrawn())
+        if c.isOrgUnreplied():
+          choices.append(self.RESPONSES['accept_org_admin'])
+        if c.role == 'Org Admin':
+          choices = choices + self.getMentorChoices(org_admin_options, 
+            c.isOrgUnreplied(), c.isOrgAccepted(), c.isOrgRejected(),
+            c.isOrgWithdrawn()
+            )
+          if c.isOrgAccepted():
+            if self.RESPONSES['reject_mentor'] in choices:
+              choices.remove(self.RESPONSES['reject_mentor'])
+      else:
+        choices = self.getMentorChoices(mentor_options, c.isUserUnreplied(),
+            c.isUserAccepted(), c.isUserRejected(), c.isUserWithdrawn())
+        if c.role == 'Org Admin':
+          choices = choices + self.getMentorChoices(org_admin_options, 
+            c.isUserUnreplied(), c.isUserAccepted(), c.isUserRejected(),
+            c.isUserWithdrawn())
 
-    form = MessageForm(self.data.POST or None)
+    if choices.count(self.RESPONSES['withdraw']) > 1:
+      choices.remove(self.RESPONSES['withdraw'])
+
+    if len(choices) < 1:
+      choices.append(self.RESPONSES['none'])
+
+    response_form = ConnectionResponseForm(
+        request_data=self.data.POST or None,
+        choices=choices)
+
+    message_form = MessageForm(self.data.POST or None)
     message_box = {
-      'form' : form,
-      'action' : reverse(url_names.GSOC_CONNECTION_MESSAGE,
-           kwargs=self.kwargs.copy())
-    }
+        'form' : message_form,
+        'action' : reverse(url_names.GSOC_CONNECTION_MESSAGE,
+             kwargs=self.kwargs.copy())
+        }
 
     return {
-      'page_name': 'Viewing Connection',
-      'is_admin' : self.data.is_org_admin,
-      'header_name': header_name,
-      'org_name' : self.data.connection.organization.name,
-      'status' : status,
-      'connection' : self.data.connection,
-      'actions' : self.ACTIONS,
-      'accept_mentor' : accept_mentor,
-      'reject_mentor' : reject_mentor,
-      'accept_org_admin' : accept_org_admin,
-      'reject_org_admin' : reject_org_admin,
-      'message_box' : message_box,
-      'messages' : self.getMessages(),
-    }
+        'page_name': 'Viewing Connection',
+        'is_admin' : self.data.is_org_admin,
+        'header_name': header_name,
+        'connection' : self.data.connection,
+        'message_box' : message_box,
+        'messages' : self.getMessages(),
+        'response_form' : response_form
+        }
     
   def post(self):
     """ Handler for Show GSoC Connection post request. """
 
-    action = self.data.POST['action']
+    action = self.data.POST['responses']
     
-    if action == self.ACTIONS['accept_mentor']:
+    if action == 'accept_mentor':
       self._acceptMentor()
-    elif action == self.ACTIONS['reject_mentor']:
+    elif action == 'reject_mentor':
       self._rejectMentor()
-    elif action == self.ACTIONS['accept_org_admin']:
+    elif action == 'accept_org_admin':
       self._acceptOrgAdmin()
-    elif action == self.ACTIONS['reject_org_admin']:
+    elif action == 'reject_org_admin':
       self._rejectOrgAdmin()
-      
-    self.redirect.dashboard()
+    elif action == 'delete':
+      self._deleteConnection()
+    elif action == 'withdraw':
+      self._withdrawConnection()
+    
+    if action != 'none':
+      self.redirect.dashboard()
+    else:
+      self.redirect.show_connection(user=self.data.connection.parent(),
+          connection=self.data.connection)
     self.redirect.to()
 
   def _acceptMentor(self):
@@ -582,15 +669,23 @@ class ShowConnection(RequestHandler):
     def accept_mentor_txn():
       connection = db.get(connection_key)
       
+      # Reset both parties' states after a connection becomes active again.
+      # The user or org admin re-activating the connection will be marked
+      # as accepted anyway in the next lines.
+      if connection.isWithdrawn():
+        connection.org_state = connection.user_state = RESPONSE_STATE_UNREPLIED
+
       if self.data.is_org_admin:
-        connection.org_mentor = RESPONSE_STATE_ACCEPTED
+        connection.org_state = RESPONSE_STATE_ACCEPTED
       else:
-        connection.user_mentor = RESPONSE_STATE_ACCEPTED
+        connection.user_state = RESPONSE_STATE_ACCEPTED
+      connection.put()
       
       # If both the org admin and user agree to a mentoring role, promote
-      # the user to a mentor.
-      if connection.user_mentor == RESPONSE_STATE_ACCEPTED and \
-          connection.org_mentor == RESPONSE_STATE_ACCEPTED:
+      # the user to a mentor. It is possible for a user to accept only a
+      # mentoring role from an org admin connection, so there need not be
+      # any role check.
+      if connection.isUserAccepted() and connection.isOrgAccepted():
         profile = db.get(profile_key)
 
         # Send out a welcome email to new mentors.
@@ -618,9 +713,9 @@ class ShowConnection(RequestHandler):
     def decline_mentor_txn():
       connection = db.get(connection_key)
       if self.data.is_org_admin:
-        connection.org_mentor = RESPONSE_STATE_REJECTED
+        connection.org_state = RESPONSE_STATE_REJECTED
       else:
-        connection.user_mentor = RESPONSE_STATE_REJECTED
+        connection.user_state = RESPONSE_STATE_REJECTED
       connection.put()
 
       generate_message_txn(connection, 'Mentor Connection Rejected.')
@@ -634,17 +729,23 @@ class ShowConnection(RequestHandler):
     messages = self.data.program.getProgramMessages()
     
     def accept_org_admin_txn():
-      connection = db.get(connection_key)
+      connection = db.get(connection_key) 
+
+      # The org accepted a new role for the user, so reset the user's response
+      # to give him or her time to review the change.
+      if connection.role == 'Mentor':
+        connection.user_state = connection.org_state = RESPONSE_STATE_UNREPLIED
+
+      connection.role = 'Org Admin'
 
       if self.data.is_org_admin:
-        connection.org_org_admin = RESPONSE_STATE_ACCEPTED
-        connection.org_mentor = RESPONSE_STATE_ACCEPTED
+        connection.org_state = RESPONSE_STATE_ACCEPTED
       else:
-        connection.user_org_admin = RESPONSE_STATE_ACCEPTED
-        connection.user_mentor = RESPONSE_STATE_ACCEPTED
-    
-      if connection.org_org_admin == RESPONSE_STATE_ACCEPTED and \
-          connection.user_org_admin == RESPONSE_STATE_ACCEPTED:
+        connection.user_state = RESPONSE_STATE_ACCEPTED
+
+      connection.put()
+
+      if connection.isOrgAccepted() and connection.isUserAccepted():
         profile = db.get(profile_key)
 
         # Send out a welcome email to new mentors.
@@ -669,28 +770,52 @@ class ShowConnection(RequestHandler):
 
           generate_message_txn(connection, 
               '%s promoted to Org Admin.' % profile.link_id)
-
-      connection.put()
       
     db.run_in_transaction(accept_org_admin_txn)
     
   def _rejectOrgAdmin(self):
     connection_key = self.data.connection.key()
-    
+
     def decline_org_admin_txn():
       connection = db.get(connection_key)
       if self.data.is_org_admin:
         # Org can just 'withdraw' the org admin offer.
-        connection.org_org_admin = RESPONSE_STATE_REJECTED
+        connection.org_state = RESPONSE_STATE_REJECTED
       else:
         # User rejecting an org admin offer rejects both.
-        connection.user_org_admin = RESPONSE_STATE_REJECTED
-        connection.user_mentor = RESPONSE_STATE_REJECTED
+        connection.user = RESPONSE_STATE_REJECTED
       connection.put()
 
       generate_message_txn(connection, 'Org Admin Connection Rejected.')
       
     db.run_in_transaction(decline_org_admin_txn)
+
+
+  def _withdrawConnection(self):
+    connection_key = self.data.connection_key()
+
+    def withdraw_connection_txn():
+      # Mark the connection on the user or org side as 'Rejected' and add an auto-comment
+      connection = db.get(connection_key)
+      if self.data.is_org_admin:
+        connection.org_state = RESPONSE_STATE_WITHDRAWN
+      else:
+        connection.user_state = RESPONSE_STATE_WITHDRAWN
+      connection.put()
+
+      generate_message_txn(connection, 'Connection withdrawn.')
+
+    db.run_in_transaction(withdraw_connection_txn)
+
+  def _deleteConnection(self):
+    connection_key = self.data.connection.key()
+
+    def delete_connection_txn():
+      connection = db.get(connection_key)
+      db.delete(GSoCConnectionMessage.all().ancestor(connection))
+      connection.delete()
+
+    db.run_in_transaction(delete_connection_txn)
 
 class SubmitConnectionMessagePost(RequestHandler):
   """POST request handler for submission of connection messages.
@@ -707,9 +832,10 @@ class SubmitConnectionMessagePost(RequestHandler):
     self.check.isProfileActive()
     self.mutator.userFromKwargs()
     self.mutator.connectionFromKwargs()
-    self.mutator.commentVisible(self.data.connection.organization)
+    self.data.organization = self.data.connection.organization
+    self.mutator.commentVisible(self.data.organization)
 
-    self.check.isMentorForOrganization(self.data.connection.organization)
+    self.check.isOrgAdmin()
 
   def createMessageFromForm(self):
     """Creates a new message based on the data inserted in the form.

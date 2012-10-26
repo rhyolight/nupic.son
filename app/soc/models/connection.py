@@ -26,40 +26,43 @@ from soc.models.profile import Profile
 RESPONSE_STATE_ACCEPTED = 'Accepted'
 RESPONSE_STATE_REJECTED = 'Rejected'
 RESPONSE_STATE_UNREPLIED = 'Unreplied'
+RESPONSE_STATE_WITHDRAWN = 'Withdrawn'
 
 RESPONSE_STATES = [
-    RESPONSE_STATE_UNREPLIED, RESPONSE_STATE_ACCEPTED, RESPONSE_STATE_REJECTED]
+    RESPONSE_STATE_UNREPLIED, RESPONSE_STATE_ACCEPTED, 
+    RESPONSE_STATE_REJECTED,RESPONSE_STATE_WITHDRAWN
+    ]
 
-STATUS_STATES = {'accepted':'Accepted', 'rejected':'Rejected',
+STATUS_STATES = {'withdrawn':'Withdrawn',
+    'accepted':'Accepted',
+    'rejected':'Rejected',
     'user_action_req':'User Action Required', 
-    'org_action_req' : 'Org Action Required'}
+    'org_action_req' : 'Org Action Required',
+    'withdrawn' : 'Withdrawn'
+    }
 
 class Connection(db.Model):
   """ Connection model.
   This model is intended to be used to represent either an invitation or 
   request between a User and an Organization. The type of role to be granted
-  to the user is determined by the four states: user_mentor, user_org_admin,
-  org_mentor, and org_org_admin, which correspond to the respective party's
-  acceptance of a given role. 
+  to the user is determined by the role field and promotion is handled
+  depending on the states of user and org acceptance. The methods below
+  are simply convenience to clean up a lot of the logic in the connection
+  module for determining valid actions.
 
   Parent: soc.models.user.User (also parent of self.profile here)
   """
 
-  #: The User's state in respect to a mentoring role.
-  user_mentor = db.StringProperty(
-      default=RESPONSE_STATE_UNREPLIED, choices=RESPONSE_STATES)
+  #: The User's state with respect to a given role.
+  user_state = db.StringProperty(default='Unreplied', 
+      choices=RESPONSE_STATES)
 
-  #: The User's state in respect to an org admin role.
-  user_org_admin = db.StringProperty(
-      default=RESPONSE_STATE_UNREPLIED, choices=RESPONSE_STATES)
+  #: The Org's state with respect to a given role.
+  org_state = db.StringProperty(default='Unreplied',
+      choices=RESPONSE_STATES)
 
-  #: An org's state in respect to a mentoring role for the user.
-  org_mentor = db.StringProperty(
-      default=RESPONSE_STATE_UNREPLIED, choices=RESPONSE_STATES)
-
-  #: An org's state in respect to an org admin role for the user.
-  org_org_admin = db.StringProperty(
-      default=RESPONSE_STATE_UNREPLIED, choices=RESPONSE_STATES)
+  role = db.StringProperty(default='Mentor', 
+      choices=['Mentor', 'Org Admin'])
 
   #: The organization entity involved in the connection for which a user
   #: may gain heightened privileges.
@@ -75,52 +78,46 @@ class Connection(db.Model):
   def allFields():
     """Returns a list of all names of fields in this model.
     """
-    return ['user_mentor', 'user_org_admin', 'org_mentor', 'org_org_admin',
-        'organization', 'profile', 'created_on']
+    return ['user_state', 'org_state', 'role','organization', 
+        'profile', 'created_on']
 
-  def acceptMentorRoleByUser(self):
-    self.user_mentor = RESPONSE_STATE_ACCEPTED
+  def isUserUnreplied(self):
+    return self.user_state == RESPONSE_STATE_UNREPLIED
 
-  def rejectMentorRoleByUser(self):
-    self.user_mentor = RESPONSE_STATE_REJECTED
+  def isOrgUnreplied(self):
+    return self.org_state == RESPONSE_STATE_UNREPLIED
 
-  def isMentorRoleAcceptedByUser(self):
-    return self.user_mentor == RESPONSE_STATE_ACCEPTED
+  def isUserAccepted(self):
+    return self.user_state == RESPONSE_STATE_ACCEPTED
 
-  def acceptMentorRoleByOrg(self):
-    self.org_mentor = RESPONSE_STATE_ACCEPTED
+  def isOrgAccepted(self):
+    return self.org_state == RESPONSE_STATE_ACCEPTED
 
-  def rejectMentorRoleByOrg(self):
-    self.org_mentor = RESPONSE_STATE_REJECTED
+  def isUserRejected(self):
+    return self.user_state == RESPONSE_STATE_REJECTED
 
-  def isMentorRoleAcceptedByOrg(self):
-    return self.org_mentor == RESPONSE_STATE_ACCEPTED
+  def isOrgRejected(self):
+    return self.org_state == RESPONSE_STATE_REJECTED
 
-  def acceptOrgAdminRoleByUser(self):
-    self.user_org_admin = RESPONSE_STATE_ACCEPTED
+  def isUserWithdrawn(self):
+    return self.user_state == RESPONSE_STATE_WITHDRAWN
 
-  def rejectOrgAdminRoleByUser(self):
-    self.user_org_admin = RESPONSE_STATE_REJECTED
+  def isOrgWithdrawn(self):
+    return self.org_state == RESPONSE_STATE_WITHDRAWN
 
-  def isOrgAdminRoleAcceptedByUser(self):
-    return self.user_org_admin == RESPONSE_STATE_ACCEPTED
+  def isWithdrawn(self):
+    return self.user_state == RESPONSE_STATE_WITHDRAWN \
+        or self.org_state == RESPONSE_STATE_WITHDRAWN
 
-  def acceptOrgAdminRoleByOrg(self):
-    self.org_org_admin = RESPONSE_STATE_ACCEPTED
+  def isStalemate(self):
+    return (self.user_state == RESPONSE_STATE_ACCEPTED \
+        and self.org_state == RESPONSE_STATE_REJECTED) \
+        or (self.user_state == RESPONSE_STATE_REJECTED \
+        and self.org_state == RESPONSE_STATE_ACCEPTED)
 
-  def rejectOrgAdminRoleByOrg(self):
-    self.org_org_admin = RESPONSE_STATE_REJECTED
-
-  def isOrgAdminRoleAcceptedByOrg(self):
-    return self.org_org_admin == RESPONSE_STATE_ACCEPTED
-
-  def isMentorRoleAccepted(self):
-    return self.isMentorRoleAcceptedByUser() and \
-        self.isMentorRoleAcceptedByOrg()
-
-  def isOrgAdminRoleAccepted(self):
-    return self.isOrgAdminRoleAcceptedByUser() and \
-        self.isOrgAdminRoleAcceptedByOrg()
+  def isAccepted(self):
+    return self.user_state == RESPONSE_STATE_ACCEPTED and \
+        self.org_state == RESPONSE_STATE_ACCEPTED
 
   def keyName(self):
     """Returns a string which uniquely represents the entity.
@@ -131,16 +128,16 @@ class Connection(db.Model):
     """ Returns a simple status string based on which of the user/org
     properties has been set. 
     """
-    if self.user_mentor == RESPONSE_STATE_ACCEPTED and \
-        self.org_mentor == RESPONSE_STATE_ACCEPTED:
+    if self.user_state == 'Accepted' and self.org_state == 'Accepted':
       return STATUS_STATES['accepted']
-    elif self.user_mentor == RESPONSE_STATE_REJECTED or \
-        self.org_mentor == RESPONSE_STATE_REJECTED:
+    elif self.user_state == 'Withdrawn' or self.org_state == 'Withdrawn':
+      return STATUS_STATES['withdrawn']
+    elif self.user_state == 'Rejected' or self.org_state == 'Rejected':
       return STATUS_STATES['rejected']
-    elif self.user_mentor == RESPONSE_STATE_UNREPLIED:
-      return STATUS_STATES['user_action_req']
-    elif self.org_mentor == RESPONSE_STATE_UNREPLIED:
+    elif self.user_state == 'Accepted':
       return STATUS_STATES['org_action_req']
+    elif self.org_state == 'Accepted':
+      return STATUS_STATES['user_action_req']
     else:
       return ''
 
@@ -156,7 +153,7 @@ class AnonymousConnection(db.Model):
 
   #: A string to designate the role that will be recreated for the actual
   #: connection object.
-  role = db.StringProperty(choices=['mentor', 'org_admin'])
+  role = db.StringProperty(choices=['Mentor', 'Org Admin'])
 
   #: Hash hexdigest() of this object's key to save time when validating
   #: when the user registers.

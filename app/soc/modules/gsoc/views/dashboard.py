@@ -65,15 +65,18 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 BIRTHDATE_FORMAT = 'd-m-Y'
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
-STATUS_TUPLE = '%s|%s|%s|%s' % (STATUS_STATES['accepted'],
+# Just a messy tuple to include all states
+STATUS_TUPLE = '%s|%s|%s|%s|%s' % (STATUS_STATES['accepted'],
     STATUS_STATES['rejected'], 
     STATUS_STATES['user_action_req'],
-    STATUS_STATES['org_action_req'])
+    STATUS_STATES['org_action_req'],
+    STATUS_STATES['withdrawn'])
 CONN_STATUS_OPTS = [(STATUS_TUPLE, 'All'),
     (STATUS_STATES['accepted'], 'Accepted'),
     (STATUS_STATES['rejected'], 'Rejected'),
     (STATUS_STATES['user_action_req'], 'User Action Required'),
-    (STATUS_STATES['org_action_req'], 'Org Action Required')]
+    (STATUS_STATES['org_action_req'], 'Org Action Required'),
+    (STATUS_STATES['withdrawn'], 'Withdrawn')]
 CONN_ROLE_OPTS = [('Org Admin|Mentor', 'All'),
     ('Org Admin', 'Org Admin'), 
     ('Mentor', 'Mentor'),]
@@ -1252,7 +1255,7 @@ class OrgConnectionComponent(Component):
     list_config.addColumn('username', 'Username',
         lambda e, *args: e.parent().link_id)
     list_config.addColumn('role', 'Role',
-        lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor',
+        lambda e, *args: e.role,
         options=CONN_ROLE_OPTS)
     list_config.addColumn('status', 'Status',
         lambda e, *args: e.status(), 
@@ -1327,8 +1330,7 @@ class UserConnectionComponent(Component):
     list_config.addColumn('org', 'Organization',
         lambda e, *args: e.organization.name)
     list_config.addColumn('role', 'Role',
-        lambda e, *args: 'Org Admin' if e.org_org_admin else 'Mentor',
-        options=CONN_ROLE_OPTS)
+       lambda e, *args: e.role, options=CONN_ROLE_OPTS)
     list_config.addColumn('status', 'Status',
         lambda e, *args: e.status(), options=CONN_STATUS_OPTS)
 

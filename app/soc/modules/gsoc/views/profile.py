@@ -307,10 +307,8 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
           organization=self.data.anonymous_connection.parent(),
           profile=profile)
       # Set the apropriate fields to automatically accept the connection.
-      connection.org_mentor = connection.user_mentor = RESPONSE_STATE_ACCEPTED
-      connection.org_org_admin = True if \
-          self.data.anonymous_connection.role == 'org_admin' else False
-      connection.user_org_admin = connection.org_org_admin
+      connection.role = self.data.anonymous_connection.role
+      connection.org_state = connection.user_state = RESPONSE_STATE_ACCEPTED
       connection.put()
       # The user and org should "agree" on a role; promote the user.
       profile.is_mentor = True
