@@ -36,6 +36,10 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 DEF_NO_UPLOAD = ugettext('Please choose at least one file to upload.')
 
+DEF_CONSENT_FORM_HELP_TEXT = ugettext(
+    '%s.<br />To download the sample form or one of its translations '
+    '<a href="%s">click here.</a>')
+
 
 class UploadForm(gci_forms.GCIModelForm):
   """Django form to upload student forms
@@ -49,12 +53,18 @@ class UploadForm(gci_forms.GCIModelForm):
   consent_form = gci_forms.FileField(required=False)
   student_id_form = gci_forms.FileField(required=False)
 
-  def __init__(self, r, *args, **kwargs):
+  def __init__(self, request_data, *args, **kwargs):
     """Initializes the FileFields.
     """
     super(UploadForm, self).__init__(*args, **kwargs)
 
-    base_url = r.program().urlOf(url_names.GCI_STUDENT_FORM_UPLOAD)
+    base_url = request_data.redirect.program().urlOf(
+        url_names.GCI_STUDENT_FORM_UPLOAD)
+
+    self['consent_form'].field.help_text = (
+        DEF_CONSENT_FORM_HELP_TEXT % (
+            self['consent_form'].field.help_text,
+            request_data.program.form_translations_url))
 
     self['consent_form'].field.widget = gci_forms.AsyncFileInput(
         download_url='%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM))
@@ -127,7 +137,7 @@ class StudentFormUpload(RequestHandler):
         'page_name': 'Student form upload'
         }
 
-    upload_form = UploadForm(self.redirect, instance=self.data.student_info)
+    upload_form = UploadForm(self.data, instance=self.data.student_info)
 
     # TODO(ljvderijk): This can be removed when AppEngine supports 200 response
     # in the BlobStore API.
@@ -146,7 +156,7 @@ class StudentFormUpload(RequestHandler):
     """Handles POST requests for the bulk create page.
     """
     form = UploadForm(
-        self.redirect, data=self.data.POST, instance=self.data.student_info,
+        self.data, data=self.data.POST, instance=self.data.student_info,
         files=self.data.request.file_uploads)
 
     if not form.is_valid():

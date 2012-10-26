@@ -80,3 +80,10 @@ class GCIProgram(soc.models.program.Program):
       required=False, verbose_name=ugettext('Example tasks'))
   example_tasks.help_text = ugettext(
       'URL to a page with example tasks.')
+
+  #: URL to a page that contains the form translations.
+  form_translations_url = db.LinkProperty(
+      required=False, verbose_name=ugettext('Form translation URL'))
+  form_translations_url.help_text = ugettext(
+      'URL to the page containing translations of the forms students '
+      'should upload.')
