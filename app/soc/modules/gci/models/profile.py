@@ -75,4 +75,5 @@ class GCIStudentInfo(profile.StudentInfo):
   student_id_form = blobstore.BlobReferenceProperty(
       required=False, verbose_name=ugettext('Enrollment Form'))
   student_id_form.help_text = ugettext(
-      'A scan of your student ID to verify your student status and birthday.')
+      'A scan of your Student ID, School transcript or letter from school. '
+      'For examples click here (at the bottom of the page)')
