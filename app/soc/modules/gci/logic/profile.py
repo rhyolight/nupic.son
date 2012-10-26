@@ -26,6 +26,12 @@ from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.task import GCITask
 
 
+def hasStudentFormsUploaded(student):
+  """Whether the specified student has uploaded their forms.
+  """
+  return student.consent_form and student.student_id_form
+
+
 def queryAllMentorsForOrg(org, keys_only=False, limit=1000):
   """Returns a list of keys of all the mentors for the organization
 
