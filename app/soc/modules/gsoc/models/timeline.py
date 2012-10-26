@@ -30,10 +30,10 @@ class GSoCTimeline(soc.models.timeline.Timeline):
   """
 
   application_review_deadline = db.DateTimeProperty(
-      verbose_name=ugettext('Application Review Deadline'))
+      verbose_name=ugettext('Organizations Review Student Applications Deadline'))
 
   student_application_matched_deadline = db.DateTimeProperty(
-      verbose_name=ugettext('Student Application Matched Deadline'))
+      verbose_name=ugettext('Students Matched to Mentors Deadline'))
 
   accepted_students_announced_deadline = db.DateTimeProperty(
       verbose_name=ugettext('Accepted Students Announced Deadline'))
