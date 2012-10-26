@@ -28,7 +28,7 @@ limitations under the License.
 {% block form_instruction %}
   {% if form_instructions %}
   <div>
-    <p><strong>{{ form_instructions }}</strong></p>
+    <p><strong>{{ form_instructions|safe }}</strong></p>
   </div>
   {% endif %}
 {% endblock form_instruction %}

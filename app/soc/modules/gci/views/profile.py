@@ -25,22 +25,29 @@ from django.utils.translation import ugettext
 from soc.logic import cleaning
 from soc.logic import dicts
 from soc.logic.exceptions import RedirectRequest
+from soc.models.sponsor import Sponsor
 from soc.models.user import User
 from soc.views import forms
 from soc.views import profile
 from soc.views.helper import url_patterns
 
+from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.avatars import AVATARS_BY_COLOR
 from soc.modules.gci.models.avatars import COLORS
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.helper import url_names
 
 
 PARENTAL_CONSENT_ADVICE = ugettext(
     'Please make sure that you have your parent or guardian\'s permission '
     'to participate in Google Code-in before filling out your profile!')
+
+UPLOAD_FORMS_REMINDER = ugettext(
+    'You need to upload your forms <a href="%s">here</a> before '
+    'you can claim tasks in the program.')
 
 GCI_PROFILE_EXCLUDE = ['automatic_task_subscription', 'notify_comments',
                        'photo_url']
@@ -277,6 +284,13 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
       if self.isStudentRequest():
         context['form_instructions'] = PARENTAL_CONSENT_ADVICE
     else:
+      if self.data.is_student and \
+          not profile_logic.hasStudentFormsUploaded(self.data.student_info):
+        kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+        upload_forms_url = reverse(
+            url_names.GCI_STUDENT_FORM_UPLOAD, kwargs=kwargs)
+
+        context['form_instructions'] = UPLOAD_FORMS_REMINDER % upload_forms_url
       context['edit_profile'] = True
 
     return context
