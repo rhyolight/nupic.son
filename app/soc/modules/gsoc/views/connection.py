@@ -217,7 +217,7 @@ class MessageForm(GSoCModelForm):
     return 'v2/modules/gsoc/connection/_message_form.html'
 
 class ConnectionResponseForm(GSoCModelForm):
-  """ Django form to provide Connection responses in ShowConnection.
+  """Django form to provide Connection responses in ShowConnection.
   """
   responses = ChoiceField(widget=django_forms.Select())
 
@@ -532,7 +532,7 @@ class ShowConnection(RequestHandler):
 
   def getMentorChoices(self, choices, unreplied, accepted, 
       rejected, withdrawn=True):
-    """ Helper method to clean up the logic for determining what options a
+    """Helper method to clean up the logic for determining what options a
       user or org admin has for responding to a connection.
     """
     responses = []
@@ -577,14 +577,16 @@ class ShowConnection(RequestHandler):
       if self.data.is_org_admin:
         choices.append(self.RESPONSES['delete'])
     else:
-      mentor_options = { 'accept' : self.RESPONSES['accept_mentor'],
+      mentor_options = {
+          'accept' : self.RESPONSES['accept_mentor'],
           'reject' : self.RESPONSES['reject_mentor'],
           'withdraw' : self.RESPONSES['withdraw']
           }
-      org_admin_options = { 'accept' : self.RESPONSES['accept_org_admin'],
+      org_admin_options = {
+          'accept' : self.RESPONSES['accept_org_admin'],
           'reject' : self.RESPONSES['reject_org_admin'],
           'withdraw' : self.RESPONSES['withdraw']
-      }      
+          }    
       if self.data.is_org_admin:
         choices = self.getMentorChoices(mentor_options, c.isOrgUnreplied(), 
             c.isOrgAccepted(), c.isOrgRejected(), c.isOrgWithdrawn())
@@ -636,22 +638,22 @@ class ShowConnection(RequestHandler):
   def post(self):
     """ Handler for Show GSoC Connection post request. """
 
-    action = self.data.POST['responses']
+    response = self.data.POST['responses']
     
-    if action == 'accept_mentor':
+    if response == 'accept_mentor':
       self._acceptMentor()
-    elif action == 'reject_mentor':
+    elif response == 'reject_mentor':
       self._rejectMentor()
-    elif action == 'accept_org_admin':
+    elif response == 'accept_org_admin':
       self._acceptOrgAdmin()
-    elif action == 'reject_org_admin':
+    elif response == 'reject_org_admin':
       self._rejectOrgAdmin()
-    elif action == 'delete':
+    elif response == 'delete':
       self._deleteConnection()
-    elif action == 'withdraw':
+    elif response == 'withdraw':
       self._withdrawConnection()
     
-    if action != 'none':
+    if response != 'none':
       self.redirect.dashboard()
     else:
       self.redirect.show_connection(user=self.data.connection.parent(),

@@ -66,7 +66,8 @@ BIRTHDATE_FORMAT = 'd-m-Y'
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
 # Just a messy tuple to include all states
-STATUS_TUPLE = '%s|%s|%s|%s|%s' % (STATUS_STATES['accepted'],
+STATUS_TUPLE = '%s|%s|%s|%s|%s' % (
+    STATUS_STATES['accepted'],
     STATUS_STATES['rejected'], 
     STATUS_STATES['user_action_req'],
     STATUS_STATES['org_action_req'],

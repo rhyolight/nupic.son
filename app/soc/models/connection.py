@@ -29,11 +29,12 @@ RESPONSE_STATE_UNREPLIED = 'Unreplied'
 RESPONSE_STATE_WITHDRAWN = 'Withdrawn'
 
 RESPONSE_STATES = [
-    RESPONSE_STATE_UNREPLIED, RESPONSE_STATE_ACCEPTED, 
+    RESPONSE_STATE_UNREPLIED, RESPONSE_STATE_ACCEPTED,
     RESPONSE_STATE_REJECTED,RESPONSE_STATE_WITHDRAWN
     ]
 
-STATUS_STATES = {'withdrawn':'Withdrawn',
+STATUS_STATES = {
+    'withdrawn':'Withdrawn',
     'accepted':'Accepted',
     'rejected':'Rejected',
     'user_action_req':'User Action Required', 
