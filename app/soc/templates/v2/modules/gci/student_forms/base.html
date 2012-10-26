@@ -43,6 +43,11 @@ limitations under the License.
     <span class="title">{{ page_name }}</span>
     <span class="req">* fields required</span>
   </div>
+  {% if form_instructions %}
+  <div>
+    <p><strong>{{ form_instructions|safe }}</strong></p>
+  </div>
+  {% endif %}
   <form method="post" enctype="multipart/form-data" id="form" class="form-submit-forms clearfix">
     {{ form.render }}
   </form>

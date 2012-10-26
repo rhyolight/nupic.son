@@ -21,12 +21,15 @@
 from google.appengine.ext import blobstore
 from google.appengine.dist import httplib
 
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
+from soc.logic import dicts
 from soc.logic.exceptions import BadRequest
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
+from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
@@ -35,6 +38,7 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 DEF_NO_UPLOAD = ugettext('Please choose at least one file to upload.')
+CLAIM_TASKS_NOW = ugettext('You can now claim tasks <a href="%s">here</a>')
 
 DEF_CONSENT_FORM_HELP_TEXT = ugettext(
     '%s.<br />To download the sample form or one of its translations '
@@ -139,6 +143,10 @@ class StudentFormUpload(RequestHandler):
 
     upload_form = UploadForm(self.data, instance=self.data.student_info)
 
+    if profile_logic.hasStudentFormsUploaded(self.data.student_info):
+      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+      claim_tasks_url = reverse('gci_list_tasks', kwargs=kwargs)
+      context['form_instructions'] = CLAIM_TASKS_NOW % claim_tasks_url
     # TODO(ljvderijk): This can be removed when AppEngine supports 200 response
     # in the BlobStore API.
     if self.data.GET:
