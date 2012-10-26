@@ -356,11 +356,9 @@ class OrgConnectionPage(RequestHandler):
       # Create the anonymous connection - a placeholder until the user 
       # registers and activates the real connection.
       connection = GSoCAnonymousConnection(parent=self.data.organization)
+      connection.role = connection_form.cleaned_data['role']
       connection.put()
-      if connection_form.cleaned_data['role'] == '2':
-        connection.role = 'Org Admin'
-      else:
-        connection.role = 'Mentor' 
+      
       # Generate a hash of the object's key for later validation.
       m = hashlib.md5()
       m.update(str(connection.key()))
