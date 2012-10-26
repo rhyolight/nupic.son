@@ -33,7 +33,7 @@ class HowItWorks(Template):
   """How it works template.
   """
 
-  CONTEST_BEGINS_ON_MSG = "Context begins on %s/%s"
+  CONTEST_BEGINS_ON_MSG = "Contest begins on %s %s"
 
   GET_STARTED_NOW_MSG = "Get Started Now!"
 
