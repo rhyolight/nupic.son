@@ -200,7 +200,7 @@ class Profile(soc.models.linkable.Linkable):
       required=True,
       verbose_name=ugettext('Email Address'))
   email.group = ugettext("2. Contact Info (Private)")
-  email.help_text = ugettext("This is the address we send all notifications to.")
+  email.help_text = ugettext("This is the address to which we send all notifications.")
 
   #: Required field containing residence street address; kept private.
   #: Residence street address can only be ASCII, not UTF-8 text, because
