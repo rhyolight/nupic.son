@@ -348,6 +348,10 @@ class DashboardPage(RequestHandler):
         self._getStudentFormsLink(), self._getMyTasksLink()
         ]
 
+    current_task = task_logic.queryCurrentTaskForStudent(self.data.profile)
+    if current_task:
+      links.append(self._getCurrentTaskLink(current_task))
+
     return links
 
   def _getOrgAdminLinks(self):
@@ -464,9 +468,24 @@ class DashboardPage(RequestHandler):
         'name': 'student_tasks',
         'description': ugettext(
             'List of the tasks that you have completed so far in the program'),
-        'title': 'My tasks',
+        'title': 'My completed tasks',
         'link': r.urlOf(url_names.GCI_STUDENT_TASKS)
         }
+
+  def _getCurrentTaskLink(self, current_task):
+    """Get the link to the task that the student is currently working on.
+    """
+    r = self.data.redirect
+    r.id(current_task.key().id())
+
+    return {
+        'name': 'current_task',
+        'description': ugettext(
+            'The task you are currently working on'),
+        'title': 'My current task',
+        'link': r.urlOf('gci_view_task')
+        }
+
 
 class MyOrgApplicationsComponent(Component):
   """Component for listing the Organization Applications of the current user.
