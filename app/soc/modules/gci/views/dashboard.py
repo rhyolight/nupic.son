@@ -344,7 +344,9 @@ class DashboardPage(RequestHandler):
   def _getStudentLinks(self):
     """Get the main dashboard links for student.
     """
-    links = [self._getStudentFormsLink()]
+    links = [
+        self._getStudentFormsLink(), self._getMyTasksLink()
+        ]
 
     return links
 
@@ -449,6 +451,21 @@ class DashboardPage(RequestHandler):
             'Upload student id and parental consent forms.'),
         'title': 'Form uploads',
         'link': r.urlOf(url_names.GCI_STUDENT_FORM_UPLOAD)
+        }
+
+  def _getMyTasksLink(self):
+    """Get the link to the list of all the tasks for the student
+    who is currently logged in.
+    """
+    r = self.data.redirect
+    r.profile(self.data.user.link_id)
+
+    return {
+        'name': 'student_tasks',
+        'description': ugettext(
+            'List of the tasks that you have completed so far in the program'),
+        'title': 'My tasks',
+        'link': r.urlOf(url_names.GCI_STUDENT_TASKS)
         }
 
 class MyOrgApplicationsComponent(Component):
