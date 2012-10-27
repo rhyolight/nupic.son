@@ -662,6 +662,17 @@ def queryAllTasksClosedByStudent(profile, keys_only=False):
       'student', profile).filter('status', 'Closed')
 
 
+def queryCurrentTaskForStudent(profile, keys_only=False):
+  """Returns a query for the task that the specified student
+  is currently working on.
+  """
+  if not profile.student_info:
+    raise ValueError('Only students can be queried for their current task.')
+
+  return GCITask.all(keys_only=keys_only).filter(
+      'student', profile).filter('status != ', 'Closed')
+
+
 def queryForStudentAndOrganizationAndStatus(student, org, status,
     keys_only=False):
   query = GCITask.all()
