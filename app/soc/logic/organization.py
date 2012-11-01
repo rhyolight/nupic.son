@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Organization (Model) query functions.
-"""
+"""Organization (Model) query functions."""
 
 
 import datetime
 
 from google.appengine.api import memcache
 
+# TODO(nathaniel): eliminate or better describe this.
+_BATCH_SIZE = 5
 
-def _orgsWithLogoForQuery(query, batch_size=5):
+
+def _orgsWithLogoForQuery(query, batch_size):
   """Return the org entities for the given query and batch size which have
   Logo URL set.
 
@@ -35,7 +35,7 @@ def _orgsWithLogoForQuery(query, batch_size=5):
   for org in query:
     if org.logo_url:
       orgs.append(org)
-      if len(orgs) == batch_size:
+      if batch_size <= len(orgs):
         break
 
   return orgs
@@ -62,8 +62,6 @@ def participating(model, program):
   # the current expiry time is 30 minutes.
   expiry_time = datetime.timedelta(seconds=1800)
 
-  batch_size = 5
-
   q = _orgWithLogoQuery(model, program)
 
   # the cache stores a 3-tuple in the order list of org entities,
@@ -79,11 +77,11 @@ def participating(model, program):
     else:
       q.with_cursor(cached_cursor)
 
-  orgs = _orgsWithLogoForQuery(q, batch_size)
+  orgs = _orgsWithLogoForQuery(q, _BATCH_SIZE)
 
-  if len(orgs) < batch_size:
+  if len(orgs) < _BATCH_SIZE:
     q = _orgWithLogoQuery(model, program)
-    extra_orgs = _orgsWithLogoForQuery(q, batch_size - len(orgs))
+    extra_orgs = _orgsWithLogoForQuery(q, _BATCH_SIZE - len(orgs))
 
     # add only those orgs which are not already in the list
     orgs_keys = [o.key() for o in orgs]
