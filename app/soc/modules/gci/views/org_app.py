@@ -24,6 +24,7 @@ from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import BadRequest
+from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
 from soc.views.helper import access_checker
@@ -246,6 +247,17 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     """Edits records from commands received by the list code.
     """
     post_data = self.request.POST
+
+    self.data.redirect.program()
+
+    if (post_data.get('process', '') ==
+        org_app.PROCESS_ORG_APPS_FORM_BUTTON_VALUE):
+      mapreduce_control.start_map('ProcessOrgApp', {
+          'program_type': 'gci',
+          'program_key': self.data.program.key().name()
+          })
+      self.redirect.to('gci_list_org_app_records', validated=True)
+      return
 
     if not post_data.get('button_id', None) == 'save':
       raise BadRequest('No valid POST data found')
