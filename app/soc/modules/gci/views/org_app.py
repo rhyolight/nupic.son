@@ -270,15 +270,16 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     self.data.redirect.program()
     url = self.data.redirect.urlOf('create_gci_org_profile', full=True)
 
-    for id, properties in parsed.iteritems():
-      record = OrgAppRecord.get_by_id(long(id))
+    for oaid, properties in parsed.iteritems():
+      record = OrgAppRecord.get_by_id(long(oaid))
 
       if not record:
-        logging.warning('%s is an invalid OrgAppRecord ID' %id)
+        logging.warning('%s is an invalid OrgAppRecord ID' % oaid)
         continue
 
       if record.survey.key() != self.data.org_app.key():
-        logging.warning('%s is not a record for the Org App in the URL' %record.key())
+        logging.warning(
+            '%s is not a record for the Org App in the URL' % record.key())
         continue
 
       new_status = properties['status']
