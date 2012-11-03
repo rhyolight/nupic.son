@@ -291,7 +291,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     self.data.redirect.program()
 
     if (post_data.get('process', '') ==
-        'Finalize decisions and send acceptance/rejection emails'):
+        org_app.PROCESS_ORG_APPS_FORM_BUTTON_VALUE):
       mapreduce_control.start_map('ProcessOrgApp', {
           'program_type': 'gsoc',
           'program_key': self.data.program.key().name()
