@@ -95,6 +95,21 @@ class UploadForm(gci_forms.GCIModelForm):
 
     return cleaned_data
 
+  def save(self, commit=True):
+    student_info = super(UploadForm, self).save(commit=False)
+    cleaned_data = self._cleaned_data()
+
+    if cleaned_data.get('consent_form'):
+      student_info.consent_form_verified = False
+
+    if cleaned_data.get('student_id_form'):
+      student_info.student_id_form_verified = False
+
+    if commit:
+      student_info.put()
+
+    return student_info
+
 
 class StudentFormUpload(RequestHandler):
   """View for uploading your student forms.
