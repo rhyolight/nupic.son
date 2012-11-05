@@ -125,24 +125,25 @@ class AsyncFileInput(FileInput):
       download_hide = ''
       upload_hide = 'button-hide'
 
+    iparams = u''.join([u' %s=%s' % (
+        k, conditional_escape(v)) for k, v in final_attrs.items()])
+
+    context = {
+        'dhide': download_hide,
+        'uhide': upload_hide,
+        'durl': self.download_url,
+        'fname': final_attrs.get('value', ''),
+        'iparams': iparams,
+        }
+
+    rendered = loader.render_to_string(
+        self.templatePath(), dictionary=context)
+
     # markup for buttons taken from bootstrap
-    return mark_safe(
-        u'<div class="progress"><div class="bar""></div></div>'
-        '<div class="filedownload %(dhide)s">'
-        '<a href="%(durl)s" class="filename">%(fname)s</a>'
-        '<span class="btn btn-primary fileinput-upload">'
-        '<i class="icon-repeat icon-white"></i>'
-        '<span>Re-upload</span><input %(iparams)s /></span></div>'
-        '<div class="fileupload %(uhide)s">'
-        '<span class="btn btn-success fileinput-upload">'
-        '<i class="icon-plus icon-white"></i>'
-        '<span>Attach a file</span><input %(iparams)s /></span></div>' % {
-            'dhide': download_hide,
-            'uhide': upload_hide,
-            'durl': self.download_url,
-            'fname': final_attrs.get('value', ''),
-            'iparams': forms.util.flatatt(final_attrs),
-            })
+    return mark_safe(rendered)
+
+  def templatePath(self):
+    return 'soc/_async_file_input_field.html'
 
 
 class RadioInput(forms.widgets.RadioInput):
