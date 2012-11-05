@@ -144,10 +144,9 @@ class ProfileShowPage(object):
 
   def context(self):
     assert isSet(self.data.program)
-    assert isSet(self.data.profile)
     assert isSet(self.data.user)
 
-    profile = self.data.profile
+    profile = self._getProfile()
     program = self.data.program
 
     user_template = self._getUserReadOnlyTemplate(self.data.user)
@@ -167,3 +166,7 @@ class ProfileShowPage(object):
 
   def _getProfileReadOnlyTemplate(self, profile):
     raise NotImplementedError
+
+  def _getProfile(self):
+    assert isSet(self.data.profile)
+    return self.data.profile
