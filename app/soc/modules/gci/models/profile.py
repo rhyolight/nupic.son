@@ -64,6 +64,9 @@ class GCIStudentInfo(profile.StudentInfo):
   consent_form.help_text = ugettext(
       'A signed Parental Consent Form from your legal parent or guardian')
 
+  #: Stores whether the consent form is verified by the program host.
+  consent_form_verified = db.BooleanProperty(default=False)
+
   #: Property pointing to the second page of the consent form
   #: (Deprecated since GCI2011)
   consent_form_two = blobstore.BlobReferenceProperty(
@@ -74,3 +77,6 @@ class GCIStudentInfo(profile.StudentInfo):
   #: Property pointing to the student id form
   student_id_form = blobstore.BlobReferenceProperty(
       required=False, verbose_name=ugettext('Enrollment Form'))
+
+  #: Stores whether the student id form is verified by the program host.
+  student_id_form_verified = db.BooleanProperty(default=False)
