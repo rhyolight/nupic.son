@@ -16,7 +16,7 @@ GCI forms specific CSS.
     text-align: center;
 }
 .button-hide {
-    display: none;
+    display: none !important;
 }
 .progress {
     width: 200px;
