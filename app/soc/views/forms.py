@@ -110,11 +110,21 @@ class AsyncFileInput(FileInput):
 
   def __init__(self, *args, **kwargs):
     self.download_url = kwargs.pop('download_url', None)
+    self.verified = kwargs.pop('verified', None)
     super(AsyncFileInput, self).__init__(*args, **kwargs)
 
   def render(self, name, value, attrs=None):
     download_hide = 'button-hide'
     upload_hide = ''
+
+    to_be_verified_hide = 'button-hide'
+    verified_hide = 'button-hide'
+    # We explicitly check against False to identify that tthis widget
+    # needs a verification label (that is verified not None) but not verified.
+    if self.verified == True:
+      verified_hide = ''
+    elif self.verified == False:
+      to_be_verified_hide = ''
 
     if value is None:
       value = ''
@@ -131,6 +141,8 @@ class AsyncFileInput(FileInput):
     context = {
         'dhide': download_hide,
         'uhide': upload_hide,
+        'verified_hide': verified_hide,
+        'to_be_verified_hide': to_be_verified_hide,
         'durl': self.download_url,
         'fname': final_attrs.get('value', ''),
         'iparams': iparams,

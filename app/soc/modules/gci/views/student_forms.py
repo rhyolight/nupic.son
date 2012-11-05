@@ -68,9 +68,11 @@ class UploadForm(gci_forms.GCIModelForm):
         url_names.GCI_STUDENT_FORM_UPLOAD)
 
     self['consent_form'].field.widget = gci_forms.AsyncFileInput(
-        download_url='%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM))
+        download_url='%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM),
+        verified=self.instance.consent_form_verified)
     self['student_id_form'].field.widget = gci_forms.AsyncFileInput(
-        download_url='%s?%s' % (base_url, url_names.STUDENT_ID_FORM_GET_PARAM))
+        download_url='%s?%s' % (base_url, url_names.STUDENT_ID_FORM_GET_PARAM),
+        verified=self.instance.student_id_form_verified)
 
     self['consent_form'].field.help_text = (
         DEF_CONSENT_FORM_HELP_TEXT % (
