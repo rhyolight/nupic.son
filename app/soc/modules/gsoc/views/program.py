@@ -18,11 +18,11 @@
 """
 
 
-from google.appengine.ext import db
+from soc.models.document import Document
 
+from soc.views import program as program_view
 from soc.views.helper import url_patterns
 
-from soc.models.document import Document
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.program import GSoCProgramMessages
 from soc.modules.gsoc.models.timeline import GSoCTimeline
@@ -187,67 +187,26 @@ class TimelinePage(RequestHandler):
       self.get()
 
 
-class GSoCProgramMessagesPage(RequestHandler):
-  """View for the content of program specific messages to be sent.
+class GSoCProgramMessagesPage(
+    program_view.ProgramMessagesPage, RequestHandler):
+  """View for the content of GSoC program specific messages to be sent.
   """
-
-  def checkAccess(self):
-    self.check.isHost()
 
   def djangoURLPatterns(self):
     return [
         url(r'program/messages/edit/%s$' % url_patterns.PROGRAM, self,
-            name=url_names.GSOC_EDIT_PROGRAM_MESSAGES),
+            name=self._getUrlName()),
     ]
 
   def templatePath(self):
     return 'v2/modules/gsoc/program/messages.html'
 
-  def context(self):    
-    entity = self._getSingletonEntity(self.data.program)
-    form = self._getForm(entity)
-    
-    return {
-        'page_name': 'Edit program messages',
-        'forms': [form],
-        'error': form.errors,
-        }
-
-  def post(self):
-    """Handler for HTTP POST request.
-    """
-    if self.data.GET.get('cbox'):
-      cbox = True
-    else:
-      cbox = False
-
-    if self.validate():
-      self.redirect.program()
-      self.redirect.to(url_names.GSOC_EDIT_PROGRAM_MESSAGES,
-          validated=True, cbox=cbox)
-    else:
-      self.get()
-
-  def validate(self):
-    entity = self._getSingletonEntity(self.data.program)
-    form = self._getForm(entity)
-
-    if not form.is_valid():
-      return False
-
-    form.save()
-    return True
-
   def _getForm(self, entity):
     return GSoCProgramMessagesForm(self.data, self.data.POST or None,
         instance=entity)
 
-  def _getSingletonEntity(self, program):
-    def get_or_create_txn():
-      entity = GSoCProgramMessages.all().ancestor(program).get()
-      if not entity:
-        entity = GSoCProgramMessages(parent=program)
-        entity.put()
-      return entity
+  def _getModel(self):
+    return GSoCProgramMessages
 
-    return db.run_in_transaction(get_or_create_txn)
+  def _getUrlName(self):
+    return url_names.GSOC_EDIT_PROGRAM_MESSAGES
