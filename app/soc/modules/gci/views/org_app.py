@@ -33,6 +33,7 @@ from soc.views.helper import url_patterns
 from soc.logic import org_app as org_app_logic
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -240,7 +241,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     return [
          url(
              r'org/application/records/%s$' % url_patterns.PROGRAM,
-             self, name='gci_list_org_app_records')
+             self, name=url_names.GCI_LIST_ORG_APP_RECORDS)
          ]
 
   def post(self):
@@ -256,7 +257,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
           'program_type': 'gci',
           'program_key': self.data.program.key().name()
           })
-      self.redirect.to('gci_list_org_app_records', validated=True)
+      self.redirect.to(url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
       return
 
     if not post_data.get('button_id', None) == 'save':
