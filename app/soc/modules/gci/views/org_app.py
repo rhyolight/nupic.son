@@ -24,6 +24,7 @@ from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import BadRequest
+from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
 from soc.views.helper import access_checker
@@ -32,6 +33,7 @@ from soc.views.helper import url_patterns
 from soc.logic import org_app as org_app_logic
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -239,13 +241,24 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     return [
          url(
              r'org/application/records/%s$' % url_patterns.PROGRAM,
-             self, name='gci_list_org_app_records')
+             self, name=url_names.GCI_LIST_ORG_APP_RECORDS)
          ]
 
   def post(self):
     """Edits records from commands received by the list code.
     """
     post_data = self.request.POST
+
+    self.data.redirect.program()
+
+    if (post_data.get('process', '') ==
+        org_app.PROCESS_ORG_APPS_FORM_BUTTON_VALUE):
+      mapreduce_control.start_map('ProcessOrgApp', {
+          'program_type': 'gci',
+          'program_key': self.data.program.key().name()
+          })
+      self.redirect.to(url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
+      return
 
     if not post_data.get('button_id', None) == 'save':
       raise BadRequest('No valid POST data found')
@@ -258,15 +271,16 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     self.data.redirect.program()
     url = self.data.redirect.urlOf('create_gci_org_profile', full=True)
 
-    for id, properties in parsed.iteritems():
-      record = OrgAppRecord.get_by_id(long(id))
+    for oaid, properties in parsed.iteritems():
+      record = OrgAppRecord.get_by_id(long(oaid))
 
       if not record:
-        logging.warning('%s is an invalid OrgAppRecord ID' %id)
+        logging.warning('%s is an invalid OrgAppRecord ID' % oaid)
         continue
 
       if record.survey.key() != self.data.org_app.key():
-        logging.warning('%s is not a record for the Org App in the URL' %record.key())
+        logging.warning(
+            '%s is not a record for the Org App in the URL' % record.key())
         continue
 
       new_status = properties['status']

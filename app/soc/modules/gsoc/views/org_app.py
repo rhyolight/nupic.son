@@ -20,8 +20,6 @@
 
 import logging
 
-from google.appengine.ext import db 
-
 from django.utils import simplejson
 from django.utils.translation import ugettext
 
@@ -29,7 +27,6 @@ from soc.logic.exceptions import BadRequest
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
-from soc.views import profile_show
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
@@ -291,7 +288,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     self.data.redirect.program()
 
     if (post_data.get('process', '') ==
-        'Finalize decisions and send acceptance/rejection emails'):
+        org_app.PROCESS_ORG_APPS_FORM_BUTTON_VALUE):
       mapreduce_control.start_map('ProcessOrgApp', {
           'program_type': 'gsoc',
           'program_key': self.data.program.key().name()
@@ -310,15 +307,16 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     parsed = simplejson.loads(data)
     url = self.data.redirect.urlOf('create_gsoc_org_profile', full=True)
 
-    for id, properties in parsed.iteritems():
-      record = OrgAppRecord.get_by_id(long(id))
+    for oaid, properties in parsed.iteritems():
+      record = OrgAppRecord.get_by_id(long(oaid))
 
       if not record:
-        logging.warning('%s is an invalid OrgAppRecord ID' %id)
+        logging.warning('%s is an invalid OrgAppRecord ID' % oaid)
         continue
 
       if record.survey.key() != self.data.org_app.key():
-        logging.warning('%s is not a record for the Org App in the URL' %record.key())
+        logging.warning(
+            '%s is not a record for the Org App in the URL' % record.key())
         continue
 
       new_status = properties['status']

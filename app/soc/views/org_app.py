@@ -31,6 +31,10 @@ from soc.models.org_app_survey import OrgAppSurvey
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
 
+PROCESS_ORG_APPS_FORM_BUTTON_VALUE = \
+    'Finalize decisions and send acceptance/rejection emails'
+
+
 class OrgAppEditForm(forms.SurveyEditForm):
   """Form to create/edit organization application survey.
   """
