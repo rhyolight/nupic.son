@@ -46,6 +46,7 @@ GCI_ORG_HOME = 'gci_org_home'
 GCI_VIEW_TASK = 'gci_view_task'
 GCI_TASK_BULK_CREATE = 'gci_task_bulk_create'
 
+GCI_EDIT_PROGRAM_MESSAGES = 'gci_edit_program_messages'
 
 # GET PARAMETERS WHICH ARE USED THROUGHOUT THE MODULE
 #TODO(dhans): consider creation of a separate module for that
