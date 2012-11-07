@@ -215,6 +215,14 @@ class ProgramSettingsDashboard(Dashboard):
             'link': r.urlOf('edit_gci_timeline')
         },
         {
+            'name': 'edit_program_messages',
+            'description': ugettext(
+                'Edit program messages which will be sent in emails '
+                'to the specified participants.'),
+            'title': 'Edit messages',
+            'link': r.urlOf(url_names.GCI_EDIT_PROGRAM_MESSAGES)
+        },
+        {
             'name': 'documents',
             'description': ugettext(
                 'List of documents from various program.'),
