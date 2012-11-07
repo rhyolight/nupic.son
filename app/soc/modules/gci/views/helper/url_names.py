@@ -48,6 +48,7 @@ GCI_TASK_BULK_CREATE = 'gci_task_bulk_create'
 
 GCI_LIST_ORG_APP_RECORDS = 'gci_list_org_app_records'
 
+GCI_EDIT_PROGRAM_MESSAGES = 'gci_edit_program_messages'
 
 # GET PARAMETERS WHICH ARE USED THROUGHOUT THE MODULE
 #TODO(dhans): consider creation of a separate module for that

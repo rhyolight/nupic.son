@@ -27,12 +27,15 @@ from django.utils.translation import ugettext
 from soc.logic import tags as tags_logic
 from soc.models.document import Document
 from soc.views import forms
+from soc.views import program as program_view
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.models.program import GCIProgram
+from soc.modules.gci.models.program import GCIProgramMessages
 from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.forms import GCIModelForm
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -74,6 +77,19 @@ class ProgramForm(GCIModelForm):
         'task_type_name')
 
     return self.cleaned_data
+
+
+class GCIProgramMessagesForm(GCIModelForm):
+  """Django form for the program messages settings.
+  """
+
+  def __init__(self, request_data, *args, **kwargs):
+    self.request_data = request_data
+    super(GCIProgramMessagesForm, self).__init__(*args, **kwargs)
+
+  class Meta:
+    css_prefix = 'program_messages_form'
+    model = GCIProgramMessages
 
 
 class ProgramPage(RequestHandler):
@@ -189,3 +205,28 @@ class TimelinePage(RequestHandler):
       self.redirect.to('edit_gci_timeline', validated=True, cbox=cbox)
     else:
       self.get()
+
+
+class GCIProgramMessagesPage(
+    program_view.ProgramMessagesPage, RequestHandler):
+  """View for the content of GCI program specific messages to be sent.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'program/messages/edit/%s$' % url_patterns.PROGRAM, self,
+            name=self._getUrlName()),
+    ]
+
+  def templatePath(self):
+    return 'v2/modules/gci/program/messages.html'
+
+  def _getForm(self, entity):
+    return GCIProgramMessagesForm(self.data, self.data.POST or None,
+        instance=entity)
+
+  def _getModel(self):
+    return GCIProgramMessages
+
+  def _getUrlName(self):
+    return url_names.GCI_EDIT_PROGRAM_MESSAGES
