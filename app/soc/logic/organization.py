@@ -52,12 +52,15 @@ def _orgWithLogoQuery(model, program):
   return q
 
 
-def participating(model, program):
+def participating(model, program, org_count=None):
   """Return a list of organizations to display on program homepage.
 
   Args:
     program: program entity for which the orgs need to be fetched.
+    org_count: The number of organizations to return (if possible).
   """
+  org_count = org_count or _BATCH_SIZE
+
   # expiry time to fetch the new organization entities
   # the current expiry time is 30 minutes.
   expiry_time = datetime.timedelta(seconds=1800)
@@ -67,7 +70,7 @@ def participating(model, program):
   # the cache stores a 3-tuple in the order list of org entities,
   # cursor and the last time the cache was updated
 
-  key = 'participating_orgs_for' + program.key().name()
+  key = '%s_participating_orgs_for_%s' % (org_count, program.key().name())
   po_cache = memcache.get(key)
 
   if po_cache:
@@ -77,11 +80,11 @@ def participating(model, program):
     else:
       q.with_cursor(cached_cursor)
 
-  orgs = _orgsWithLogoForQuery(q, _BATCH_SIZE)
+  orgs = _orgsWithLogoForQuery(q, org_count)
 
-  if len(orgs) < _BATCH_SIZE:
+  if len(orgs) < org_count:
     q = _orgWithLogoQuery(model, program)
-    extra_orgs = _orgsWithLogoForQuery(q, _BATCH_SIZE - len(orgs))
+    extra_orgs = _orgsWithLogoForQuery(q, org_count - len(orgs))
 
     # add only those orgs which are not already in the list
     orgs_keys = [o.key() for o in orgs]

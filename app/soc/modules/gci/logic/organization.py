@@ -50,7 +50,7 @@ def getRemainingTaskQuota(org):
   return org.task_quota_limit - q.count()
 
 
-def participating(program):
+def participating(program, org_count=None):
   """Return a list of GCI organizations to display on GCI program homepage.
 
   Function that acts as a GCI module wrapper for fetching participating
@@ -58,8 +58,9 @@ def participating(program):
 
   Args:
     program: GCIProgram entity for which the orgs need to be fetched.
+    org_count: The number of organizations to return (if possible).
   """
-  return org_logic.participating(GCIOrganization, program)
+  return org_logic.participating(GCIOrganization, program, org_count=org_count)
 
 
 def queryForProgramAndStatus(program, status, keys_only=False):
