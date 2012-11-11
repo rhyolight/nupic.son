@@ -114,8 +114,10 @@ class FeaturedTask(Template):
 
 
 class ParticipatingOrgs(Template):
-  """Participating orgs template.
-  """
+  """Participating orgs template."""
+
+  _TABLE_WIDTH = 5
+  _ORG_COUNT = 10
 
   def __init__(self, data):
     self.data = data
@@ -124,7 +126,8 @@ class ParticipatingOrgs(Template):
     r = self.data.redirect
 
     participating_orgs = []
-    current_orgs = org_logic.participating(self.data.program)
+    current_orgs = org_logic.participating(
+        self.data.program, org_count=self._ORG_COUNT)
     for org in current_orgs:
       participating_orgs.append({
           'link': r.orgHomepage(org.link_id).url(),
@@ -132,10 +135,21 @@ class ParticipatingOrgs(Template):
           'name': org.short_name,
           })
 
+    participating_orgs_table_rows = []
+    orgs = list(participating_orgs)
+    while True:
+      if len(orgs) <= self._TABLE_WIDTH:
+        participating_orgs_table_rows.append(orgs)
+        break
+      else:
+        row, orgs = orgs[:self._TABLE_WIDTH], orgs[self._TABLE_WIDTH:]
+        participating_orgs_table_rows.append(row)
+
     accepted_orgs_url = r.program().urlOf('gci_accepted_orgs')
 
     return {
         'participating_orgs': participating_orgs,
+        'participating_orgs_table_rows': participating_orgs_table_rows,
         'org_list_url': accepted_orgs_url,
     }
 
