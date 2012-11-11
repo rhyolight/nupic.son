@@ -1459,8 +1459,8 @@ body {
 .block-participating-orgs {/*Participating Orgs*/
 }
     .block-participating-orgs .block-content {
-        padding-left: 0;
-        padding-right: 0;
+        padding-left: 30px;
+        padding-right: 30px;
         text-align: center;
     }
     .block-participating-orgs .participating-orgs-table {
