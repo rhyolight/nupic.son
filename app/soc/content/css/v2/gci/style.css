@@ -1459,12 +1459,12 @@ body {
 .block-participating-orgs {/*Participating Orgs*/
 }
     .block-participating-orgs .block-content {
-        padding-left: 0;
-        padding-right: 0;
+        padding-left: 30px;
+        padding-right: 30px;
         text-align: center;
     }
     .block-participating-orgs img {
-        margin: 0 5px;
+        margin: 0 5px 10px 5px;
         vertical-align: middle;
         max-height: 65px;
         max-width: 65px;
