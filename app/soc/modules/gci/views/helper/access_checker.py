@@ -63,6 +63,11 @@ DEF_NO_PREV_ORG_MEMBER = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
     'organization in Google Summer of Code or Google Code In.')
 
+DEF_NOT_ORG_ADMIN_FOR_ORG_APP = ugettext(
+    "You should be listed as one of the administrators on %(org_name)s's "
+    "organization application to create a new organization profile for "
+    "%(org_name)s.")
+
 DEF_TASK_UNEDITABLE_STATUS = ugettext(
     'This task is already published and published tasks cannot be edited.')
 
@@ -295,6 +300,13 @@ class AccessChecker(access_checker.AccessChecker):
     """A user can create a new org if they have an accepted org app.
     """
     assert self.data.org_app
+    assert self.data.org_app_record
+
+    if not self.data.user or self.data.user.key() not in [
+        self.data.org_app_record.main_admin.key(),
+        self.data.org_app_record.backup_admin.key()]:
+      raise AccessViolation(DEF_NOT_ORG_ADMIN_FOR_ORG_APP % {
+          'org_name': self.data.org_app_record.name})
 
     if not self.data.profile:
       org_id = self.data.GET['org_id']
