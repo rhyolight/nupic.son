@@ -18,13 +18,6 @@
 """
 
 
-from soc.views import forms
-
-from django import forms as django_forms
-from django.utils.translation import ugettext
-
-from soc.logic import cleaning
-from soc.logic.exceptions import RedirectRequest
 from soc.views.helper import url_patterns
 from soc.views import org_profile
 
