@@ -154,9 +154,6 @@ class Mutator(access_checker.Mutator):
     if not self.data.org_app_record:
       raise NotFound("There is no org_app for the org_id %s" % org_id)
 
-    if self.data.org_app_record.status != 'accepted':
-      raise AccessViolation(DEF_ORG_APP_REJECTED)
-
   def fullEdit(self, full_edit=False):
     """Sets full_edit to True/False depending on the status of the task.
     """
@@ -295,6 +292,14 @@ class AccessChecker(access_checker.AccessChecker):
     gci_org_admin_profile = q.get()
     if not gci_org_admin_profile:
       raise AccessViolation(msg)
+
+  def isOrgAppAccepted(self):
+    """Checks if the org app stored in request data is accepted.
+    """
+    assert self.data.org_app_record
+
+    if self.data.org_app_record.status != 'accepted':
+      raise AccessViolation(DEF_ORG_APP_REJECTED)
 
   def canCreateNewOrg(self):
     """A user can create a new org if they have an accepted org app.
