@@ -81,7 +81,9 @@ class OrgProfilePage(RequestHandler):
     else:
       self.data.organization = None
       self.mutator.orgAppFromOrgId()
-      self.check.canCreateNewOrg()
+      self.check.isOrgAppAccepted()
+      self.check.isUserAdminForOrgApp()
+      self.check.hasProfileOrRedirectToCreate()
 
   def templatePath(self):
     return 'v2/modules/gci/org_profile/base.html'

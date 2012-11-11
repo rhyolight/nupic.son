@@ -301,8 +301,8 @@ class AccessChecker(access_checker.AccessChecker):
     if self.data.org_app_record.status != 'accepted':
       raise AccessViolation(DEF_ORG_APP_REJECTED)
 
-  def canCreateNewOrg(self):
-    """A user can create a new org if they have an accepted org app.
+  def isUserAdminForOrgApp(self):
+    """Checks if the user is listed as an admin for the org app in RequestData.
     """
     assert self.data.org_app
     assert self.data.org_app_record
@@ -313,6 +313,9 @@ class AccessChecker(access_checker.AccessChecker):
       raise AccessViolation(DEF_NOT_ORG_ADMIN_FOR_ORG_APP % {
           'org_name': self.data.org_app_record.name})
 
+  def hasProfileOrRedirectToCreate(self):
+    """Checks if user has a profile and redirects to create if there isn't one.
+    """
     if not self.data.profile:
       org_id = self.data.GET['org_id']
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
