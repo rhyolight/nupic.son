@@ -389,6 +389,23 @@ class RedirectHelper(object):
     self.kwargs['organization'] = organization.link_id
     return self
 
+
+  def userId(self, user=None, id=None):
+    """Sets args for url_patterns.USER_ID redirect.
+    """
+    if not user:
+      assert 'user' in self._data.kwargs
+      user = self._data.kwargs['user']
+
+    if not id:
+      assert 'id' in self._data.kwargs
+      id = self._data.kwargs['id']
+
+    self.program()
+    self.kwargs['user'] = user
+    self.kwargs['id'] = id
+    return self
+
   def urlOf(self, name, full=False, secure=False, cbox=False, extra=[]):
     """Returns the resolved url for name.
 
