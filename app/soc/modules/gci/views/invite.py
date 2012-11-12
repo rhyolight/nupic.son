@@ -273,15 +273,18 @@ class ManageInvite(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'invite/manage/%s$' % url_patterns.ID, self,
+        url(r'invite/manage/%s$' % url_patterns.USER_ID, self,
             name=url_names.GCI_MANAGE_INVITE)
     ]
 
   def checkAccess(self):
     self.check.isProfileActive()
-    
+
+    key_name = self.data.kwargs['user']
+    user_key = db.Key.from_path('User', key_name)
+
     invite_id = int(self.data.kwargs['id'])
-    self.data.invite = GCIRequest.get_by_id(invite_id)
+    self.data.invite = GCIRequest.get_by_id(invite_id, parent=user_key)
     self.check.isInvitePresent(invite_id)
 
     # get invited user and check if it is not deleted
@@ -328,7 +331,7 @@ class ManageInvite(RequestHandler):
     elif 'resubmit' in self.data.POST:
       invite_logic.resubmitInvite(self.data)
 
-    self.redirect.id().to(url_names.GCI_MANAGE_INVITE)
+    self.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite
@@ -372,7 +375,7 @@ class RespondInvite(RequestHandler):
     self.check.isUser()
 
     invite_id = int(self.data.kwargs['id'])
-    self.data.invite = GCIRequest.get_by_id(invite_id)
+    self.data.invite = GCIRequest.get_by_id(invite_id, parent=self.data.user)
     self.check.isInvitePresent(invite_id)
 
     self.check.canRespondInvite()
