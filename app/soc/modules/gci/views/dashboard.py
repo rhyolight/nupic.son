@@ -1046,7 +1046,7 @@ class OrgAdminInvitesList(Component):
         lambda entity, *args: entity.org.name)
 
     list_config.setRowAction(
-        lambda e, *args: r.id(e.key().id())
+        lambda e, *args: r.userId(e.parent_key().name(), e.key().id())
             .urlOf(url_names.GCI_MANAGE_INVITE))
 
     self.idx = 9
@@ -1104,7 +1104,7 @@ class OrgAdminRequestsList(Component):
         lambda entity, *args: entity.org.name)
 
     list_config.setRowAction(
-        lambda e, *args: r.id(e.key().id())
+        lambda e, *args: r.userId(e.parent_key().name(), e.key().id())
             .urlOf(url_names.GCI_RESPOND_REQUEST))
 
     self.idx = 10
