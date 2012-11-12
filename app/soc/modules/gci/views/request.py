@@ -214,16 +214,20 @@ class RespondRequestPage(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'request/respond/%s$' % url_patterns.ID, self,
+        url(r'request/respond/%s$' % url_patterns.USER_ID, self,
             name=url_names.GCI_RESPOND_REQUEST)
     ]
 
   def checkAccess(self):
     self.check.isProfileActive()
 
-    # fetch the request entity based on the id
+    key_name = self.data.kwargs['user']
+    user_key = db.Key.from_path('User', key_name)
+    
+    # fetch the request entity based on the id and parent key
     request_id = int(self.data.kwargs['id'])
-    self.data.request_entity = GCIRequest.get_by_id(request_id)
+    self.data.request_entity = GCIRequest.get_by_id(
+        request_id, parent=user_key)
     self.check.isRequestPresent(request_id)
 
     # get the organization and check if the current user can manage the request
@@ -244,6 +248,9 @@ class RespondRequestPage(RequestHandler):
   def post(self):
     """Handler to for GCI Respond Request Page HTTP post request.
     """
+    user_key = GCIRequest.user.get_value_for_datastore(
+        self.data.request_entity)
+
     if 'accept' in self.data.POST:
       options = db.create_transaction_options(xg=True)
 
@@ -251,8 +258,6 @@ class RespondRequestPage(RequestHandler):
       organization_key = self.data.organization.key()
       messages = self.data.program.getProgramMessages()
 
-      user_key = GCIRequest.user.get_value_for_datastore(
-          self.data.request_entity)
       link_id = user_key.name()
       profile_key_name = '/'.join([self.data.program.key().name(), link_id])
       profile_key = db.Key.from_path(
@@ -301,7 +306,7 @@ class RespondRequestPage(RequestHandler):
 
       db.run_in_transaction(reject_request_txn)
 
-    self.redirect.id().to(url_names.GCI_RESPOND_REQUEST)
+    self.redirect.userId(user_key.name()).to(url_names.GCI_RESPOND_REQUEST)
 
 
 class UserRequestsList(Template):
