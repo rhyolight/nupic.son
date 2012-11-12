@@ -138,7 +138,9 @@ class ParticipatingOrgs(Template):
     participating_orgs_table_rows = []
     orgs = list(participating_orgs)
     while True:
-      if len(orgs) <= self._TABLE_WIDTH:
+      if not orgs:
+        break
+      elif len(orgs) <= self._TABLE_WIDTH:
         participating_orgs_table_rows.append(orgs)
         break
       else:
