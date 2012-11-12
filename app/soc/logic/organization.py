@@ -92,7 +92,8 @@ def participating(model, program, org_count=None):
       if org.key() not in orgs_keys:
         orgs.append(org)
 
-  new_cursor = q.cursor()
-  memcache.set(key, value=(orgs, new_cursor, datetime.datetime.now()))
+  # Only cache "good" results (those that found at least org_count orgs).
+  if org_count <= len(orgs):
+    memcache.set(key, value=(orgs, q.cursor(), datetime.datetime.now()))
 
   return orgs
