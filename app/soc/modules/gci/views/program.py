@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the program settings pages.
-"""
-
+"""Module for the program settings pages."""
 
 from google.appengine.ext import db
 
@@ -40,8 +36,7 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 class TimelineForm(GCIModelForm):
-  """Django form to edit timeline settings.
-  """
+  """Django form to edit timeline settings."""
 
   class Meta:
     css_prefix = 'timeline_form'
@@ -50,8 +45,7 @@ class TimelineForm(GCIModelForm):
 
 
 class ProgramForm(GCIModelForm):
-  """Django form for the program settings.
-  """
+  """Django form for the program settings."""
 
   def __init__(self, data, *args, **kwargs):
     self.request_data = data
@@ -131,23 +125,18 @@ class ProgramPage(RequestHandler):
     }
 
   def validate(self):
-    program_form = ProgramForm(self.data, self.data.POST,
-                               instance=self.data.program)
+    program_form = ProgramForm(
+        self.data, self.data.POST, instance=self.data.program)
 
-    if not program_form.is_valid():
+    if program_form.is_valid():
+      program_form.save()
+      return True
+    else:
       return False
 
-    program_form.save()
-
-    return True
-
   def post(self):
-    """Handler for HTTP POST request.
-    """
-    if self.data.GET.get('cbox'):
-      cbox = True
-    else:
-      cbox = False
+    """Handler for HTTP POST request."""
+    cbox = bool(self.data.GET.get('cbox'))
 
     if self.validate():
       self.redirect.program()
@@ -157,8 +146,7 @@ class ProgramPage(RequestHandler):
 
 
 class TimelinePage(RequestHandler):
-  """View for the participant profile.
-  """
+  """View for the participant profile."""
 
   def djangoURLPatterns(self):
     return [
@@ -186,19 +174,15 @@ class TimelinePage(RequestHandler):
     timeline_form = TimelineForm(self.data.POST,
                                 instance=self.data.program_timeline)
 
-    if not timeline_form.is_valid():
+    if timeline_form.is_valid():
+      timeline_form.save()
+      return True
+    else:
       return False
 
-    timeline_form.save()
-    return True
-
   def post(self):
-    """Handler for HTTP POST request.
-    """
-    if self.data.GET.get('cbox'):
-      cbox = True
-    else:
-      cbox = False
+    """Handler for HTTP POST request."""
+    cbox = bool(self.data.GET.get('cbox'))
 
     if self.validate():
       self.redirect.program()
@@ -209,8 +193,7 @@ class TimelinePage(RequestHandler):
 
 class GCIProgramMessagesPage(
     program_view.ProgramMessagesPage, RequestHandler):
-  """View for the content of GCI program specific messages to be sent.
-  """
+  """View for the content of GCI program specific messages to be sent."""
 
   def djangoURLPatterns(self):
     return [
@@ -222,8 +205,8 @@ class GCIProgramMessagesPage(
     return 'v2/modules/gci/program/messages.html'
 
   def _getForm(self, entity):
-    return GCIProgramMessagesForm(self.data, self.data.POST or None,
-        instance=entity)
+    return GCIProgramMessagesForm(
+        self.data, self.data.POST or None, instance=entity)
 
   def _getModel(self):
     return GCIProgramMessages

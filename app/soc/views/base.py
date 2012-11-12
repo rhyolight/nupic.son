@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,8 +38,7 @@ from soc.views.helper.request_data import RedirectHelper
 
 
 class RequestHandler(object):
-  """Base class managing HTTP Requests.
-  """
+  """Base class managing HTTP Requests."""
 
   def context(self):
     return {}
@@ -56,14 +53,15 @@ class RequestHandler(object):
     self.render(self.templatePath(), context)
 
   def json(self):
-    """Handler for HTTP GET request with a 'fmt=json' parameter.
-    """
+    """Handler for HTTP GET request with a 'fmt=json' parameter."""
 
     if not self.request.GET.get('plain'):
       self.response['Content-Type'] = 'application/json'
 
     # if the browser supports HTTP/1.1
     # post-check and pre-check and no-store for IE7
+    # TODO(nathaniel): We need no longer support IE7. Can this be simplified
+    # or eliminated?
     self.response['Cache-Control'] = 'no-store, no-cache, must-revalidate, ' \
                                      'post-check=0, pre-check=0' # HTTP/1.1, IE7
     self.response['Pragma'] = 'no-cache'
@@ -137,10 +135,8 @@ class RequestHandler(object):
     self.render(template_path, context)
 
   def djangoURLPatterns(self):
-    """Returns a list of Django URL pattern tuples.
-    """
-    patterns = []
-    return patterns
+    """Returns a list of Django URL pattern tuples."""
+    return []
 
   def checkAccess(self):
     """Raise an exception if the user doesn't have access to the
@@ -161,7 +157,6 @@ class RequestHandler(object):
       template_path: the path of the template that should be used
       render_context: the context that should be used
     """
-
     context = context_helper.default(self.data)
     context.update(render_context)
     rendered = loader.render_to_string(template_path, dictionary=context)
@@ -175,13 +170,11 @@ class RequestHandler(object):
     raise NotImplementedError()
 
   def accessViolation(self, status, message):
-    """Default access violation handler.
-    """
+    """Default access violation handler."""
     self.error(status, message)
 
   def _dispatch(self):
-    """Dispatches the HTTP request to its respective handler method.
-    """
+    """Dispatches the HTTP request to its respective handler method."""
     if self.request.method == 'GET':
       if self.request.GET.get('fmt') == 'json':
         self.json()

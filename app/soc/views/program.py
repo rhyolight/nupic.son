@@ -12,24 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the program settings pages.
-"""
-
+"""Module for the program settings pages."""
 
 from google.appengine.ext import db
 
 
 class ProgramMessagesPage(object):
-  """View for the content of program specific messages to be sent.
-  """
-  
+  """View for the content of program specific messages to be sent."""
+
   def checkAccess(self):
     self.check.isHost()
 
-  def context(self):    
+  def context(self):
     entity = self._getSingletonEntity(self.data.program)
     form = self._getForm(entity)
-    
+
     return {
         'page_name': 'Edit program messages',
         'forms': [form],
@@ -37,12 +34,8 @@ class ProgramMessagesPage(object):
         }
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
-    if self.data.GET.get('cbox'):
-      cbox = True
-    else:
-      cbox = False
+    """Handler for HTTP POST request."""
+    cbox = bool(self.data.GET.get('cbox'))
 
     if self.validate():
       self.redirect.program()
@@ -54,11 +47,11 @@ class ProgramMessagesPage(object):
     entity = self._getSingletonEntity(self.data.program)
     form = self._getForm(entity)
 
-    if not form.is_valid():
+    if form.is_valid():
+      form.save()
+      return True
+    else:
       return False
-
-    form.save()
-    return True
 
   def _getSingletonEntity(self, program):
     model = self._getModel()
