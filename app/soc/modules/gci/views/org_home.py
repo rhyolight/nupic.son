@@ -225,10 +225,13 @@ class OrgHomepage(RequestHandler):
         'page_name': '%s - Home page' % (self.data.organization.name),
         'about_us': AboutUs(self.data),
         'contact_us': ContactUs(self.data),
-        'open_tasks_list': OpenTasksList(self.request, self.data),
-        'completed_tasks_list': CompletedTasksList(self.request, self.data),
         'feed_url': self.data.organization.feed_url,
     }
+
+    if self.data.timeline.tasksPubliclyVisible():
+      context['open_tasks_list'] = OpenTasksList(self.request, self.data)
+      context['completed_tasks_list'] = CompletedTasksList(
+          self.request, self.data)
 
     if self.data.is_host or accounts.isDeveloper():
       context['host_actions'] = GCIHostActions(self.data)
