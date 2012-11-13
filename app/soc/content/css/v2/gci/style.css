@@ -931,9 +931,9 @@ body {
         line-height: 15px;
     }
 .block-page {/*General page*/
-	background: #e0e0e0 url(../../../images/gci/block-form-bg.png) 0 0 repeat-x;
-	border: 1px solid #b4b4b4;
-	padding: 13px 20px;
+  background: #e0e0e0 url(../../../images/gci/block-form-bg.png) 0 0 repeat-x;
+  border: 1px solid #b4b4b4;
+  padding: 13px 20px;
 }
     .block-form-title {
         margin-bottom: 15px;

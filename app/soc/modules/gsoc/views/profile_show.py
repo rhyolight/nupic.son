@@ -22,20 +22,20 @@ from django.utils.translation import ugettext
 
 from soc.logic.exceptions import NotFound
 
-from soc.views import readonly_template
 from soc.views import profile_show
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.views import readonly_template
 from soc.modules.gsoc.views.base import RequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class GSoCProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
+class GSoCProfileReadOnlyTemplate(readonly_template.GSoCModelReadOnlyTemplate):
   """Template to construct read-only GSoCProfile data.
   """
 
@@ -143,7 +143,7 @@ class GSoCProfileAdminPage(RequestHandler):
         r.project(project.key().id())
         links.append(r.urlOf('gsoc_project_details', full=True))
       r = self.redirect.profile()
-      
+
       user_role = None
       if profile.is_student:
           user_role = 'Student'
@@ -151,7 +151,7 @@ class GSoCProfileAdminPage(RequestHandler):
           user_role = 'Org Admin'
       elif profile.is_mentor:
           user_role = 'Mentor'
-      
+
       context.update({
           'profile': GSoCProfileReadOnlyTemplate(profile),
           'links': links,

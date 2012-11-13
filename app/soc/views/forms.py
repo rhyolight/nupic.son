@@ -86,6 +86,48 @@ def mergeWidgets(*args):
   return widgets
 
 
+class LabelVerificationNotRequiredState(object):
+  """Represents the state where the AsyncFileField does not require
+  verification label.
+  """
+
+  def toBeVerifiedHide(self):
+    """ "To be verified" label should be hidden."""
+    return 'button-hide'
+
+  def verifiedHide(self):
+    """ "Verified" label should be hidden."""
+    return 'button-hide'
+
+
+class LabelToBeVerifiedState(object):
+  """Represents the state where the AsyncFileField should display the to be
+  verified label.
+  """
+
+  def toBeVerifiedHide(self):
+    """ "To be verified" label should be displayed (not hidden)."""
+    return ''
+
+  def verifiedHide(self):
+    """ "Verified" label should be hidden."""
+    return 'button-hide'
+
+
+class LabelVerifiedState(object):
+  """Represents the state where the AsyncFileField should display the verified
+  label.
+  """
+
+  def toBeVerifiedHide(self):
+    """ "To be verified" label should be hidden."""
+    return 'button-hide'
+
+  def verifiedHide(self):
+    """ "Verified" label should be displayed (not hidden)."""
+    return ''
+
+
 # The standard input fields should be available to all importing modules
 CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
@@ -110,11 +152,28 @@ class AsyncFileInput(FileInput):
 
   def __init__(self, *args, **kwargs):
     self.download_url = kwargs.pop('download_url', None)
+
+    if 'verified' not in kwargs:
+      self.verification = LabelVerificationNotRequiredState()
+    else:
+      verified = kwargs.get('verified')
+      if verified:
+        self.verification = LabelVerifiedState()
+      else:
+        self.verification = LabelToBeVerifiedState()
+
+    # This mutation to kwargs is *required* because Django will complain
+    # if you pass the kwargs that its widgets don't understand.
+    kwargs.pop('verified', None)
+
     super(AsyncFileInput, self).__init__(*args, **kwargs)
 
   def render(self, name, value, attrs=None):
     download_hide = 'button-hide'
     upload_hide = ''
+
+    to_be_verified_hide = self.verification.toBeVerifiedHide()
+    verified_hide = self.verification.verifiedHide()
 
     if value is None:
       value = ''
@@ -125,24 +184,27 @@ class AsyncFileInput(FileInput):
       download_hide = ''
       upload_hide = 'button-hide'
 
+    iparams = u''.join([u' %s=%s' % (
+        k, conditional_escape(v)) for k, v in final_attrs.items()])
+
+    context = {
+        'dhide': download_hide,
+        'uhide': upload_hide,
+        'verified_hide': verified_hide,
+        'to_be_verified_hide': to_be_verified_hide,
+        'durl': self.download_url,
+        'fname': final_attrs.get('value', ''),
+        'iparams': iparams,
+        }
+
+    rendered = loader.render_to_string(
+        self.templatePath(), dictionary=context)
+
     # markup for buttons taken from bootstrap
-    return mark_safe(
-        u'<div class="progress"><div class="bar""></div></div>'
-        '<div class="filedownload %(dhide)s">'
-        '<a href="%(durl)s" class="filename">%(fname)s</a>'
-        '<span class="btn btn-primary fileinput-upload">'
-        '<i class="icon-repeat icon-white"></i>'
-        '<span>Re-upload</span><input %(iparams)s /></span></div>'
-        '<div class="fileupload %(uhide)s">'
-        '<span class="btn btn-success fileinput-upload">'
-        '<i class="icon-plus icon-white"></i>'
-        '<span>Attach a file</span><input %(iparams)s /></span></div>' % {
-            'dhide': download_hide,
-            'uhide': upload_hide,
-            'durl': self.download_url,
-            'fname': final_attrs.get('value', ''),
-            'iparams': forms.util.flatatt(final_attrs),
-            })
+    return mark_safe(rendered)
+
+  def templatePath(self):
+    return 'soc/_async_file_input_field.html'
 
 
 class RadioInput(forms.widgets.RadioInput):

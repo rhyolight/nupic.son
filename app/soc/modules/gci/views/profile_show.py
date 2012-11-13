@@ -18,18 +18,59 @@
 """
 
 
-from soc.models.user import User
-from soc.views import readonly_template
+import logging
+
+from django.utils import translation
+
+from soc.logic.exceptions import NotFound
 from soc.views import profile_show
+from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
-from soc.views.helper.access_checker import isSet
+from soc.views.template import Template
 
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.views import readonly_template
 from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-class GCIProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
+NON_STUDENT_ERR_MSG = translation.ugettext(
+    'There cannot be a post request for student form verification on '
+    'non-student profiles.')
+
+
+class StudentFormsTemplate(Template):
+  """Template to provide links to student forms.
+  """
+
+  def __init__(self, profile, data):
+    super(StudentFormsTemplate, self).__init__(data)
+    self.profile = profile
+
+  def context(self):
+    r = self.data.redirect
+    base_url = r.profile(self.profile.link_id).urlOf(
+        url_names.GCI_STUDENT_FORM_DOWNLOAD)
+    consent_form_url= '%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM)
+    student_id_form_url = '%s?%s' % (
+        base_url, url_names.STUDENT_ID_FORM_GET_PARAM)
+
+    student_info = self.profile.student_info
+    return {
+        'consent_form': student_info.consent_form,
+        'consent_form_verified': student_info.consent_form_verified,
+        'consent_form_url': consent_form_url,
+        'student_id_form': student_info.student_id_form,
+        'student_id_form_verified': student_info.student_id_form_verified,
+        'student_id_form_url': student_id_form_url,
+        }
+
+  def templatePath(self):
+    return 'v2/modules/gci/profile_show/_student_forms.html'
+
+
+class GCIProfileReadOnlyTemplate(readonly_template.GCIModelReadOnlyTemplate):
   """Template to construct read-only GSoCProfile data.
   """
 
@@ -52,11 +93,110 @@ class GCIProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'profile/show/%s$' % url_patterns.PROGRAM,
-         self, name='show_gci_profile'),
+         self, name=url_names.GCI_PROFILE_SHOW),
     ]
+
+  def context(self):
+    context = super(GCIProfileShowPage, self).context()
+
+    profile = self._getProfile()
+    if profile.student_info:
+      context['student_forms_template'] = StudentFormsTemplate(
+          profile, self.data)
+
+    return context
 
   def templatePath(self):
     return 'v2/modules/gci/profile_show/base.html'
 
   def _getProfileReadOnlyTemplate(self, profile):
     return GCIProfileReadOnlyTemplate(profile)
+
+
+class GCIProfileShowAdminPage(GCIProfileShowPage):
+  """View to display the read-only profile page for admin.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'profile/show/%s$' % url_patterns.PROFILE,
+         self, name=url_names.GCI_PROFILE_SHOW_ADMIN),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+    self.mutator.userFromKwargs()
+    try:
+      self.mutator.profileFromKwargs()
+    except NotFound:
+      # it is not a terminal error, when Profile does not exist
+      pass
+
+  def context(self):
+    context = super(GCIProfileShowAdminPage, self).context()
+    assert access_checker.isSet(self.data.url_profile.student_info)
+
+    student_info = self.data.url_profile.student_info
+    if student_info.consent_form_verified:
+      context['verify_consent_form_init'] = 'unchecked'
+    else:
+      context['verify_consent_form_init'] = 'checked'
+
+    if student_info.student_id_form_verified:
+      context['verify_student_id_form_init'] = 'unchecked'
+    else:
+      context['verify_student_id_form_init'] = 'checked'
+
+    return context
+
+  def post(self):
+    """Handles student form verification by host.
+    """
+    if not self.data.url_profile.student_info:
+      logging.warn(NON_STUDENT_ERR_MSG)
+      self.error(405)
+      return
+
+    post_data = self.data.POST
+    button_id = post_data.get('id')
+    value = post_data.get('value')
+
+    if button_id == 'verify-consent-form':
+      self._verifyConsentForm(value)
+    elif button_id == 'verify-student-id-form':
+      self._verifyStudentIDForm(value)
+
+    return
+
+  def _verifyConsentForm(self, value):
+    """Mark the parental consent form as verified or not verified.
+
+    Args:
+      value: The value of the checkbox field - checked or unchecked
+    """
+    student_info = self.data.url_profile.student_info
+    if value == 'checked':
+      student_info.consent_form_verified = True
+    else:
+      student_info.consent_form_verified = False
+
+    student_info.put()
+
+  def _verifyStudentIDForm(self, value):
+    """Mark the student id form as verified or not verified.
+
+    Args:
+      value: The value of the checkbox field - checked or unchecked
+    """
+    student_info = self.data.url_profile.student_info
+    if value == 'checked':
+      student_info.student_id_form_verified = True
+    else:
+      student_info.student_id_form_verified = False
+
+    student_info.put()
+
+  def _getProfile(self):
+    """See soc.views.profile_show.ProfileShowPage for the documentation."""
+    assert access_checker.isSet(self.data.url_profile)
+    return self.data.url_profile

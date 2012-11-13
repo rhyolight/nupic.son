@@ -30,6 +30,7 @@ from soc.modules.gsoc.logic.program import getMostRecentProgram
 
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.views.helper import url_names
 
 
 def siteMenuContext(data):
@@ -126,7 +127,7 @@ class MainMenu(Template):
               'edit_gci_profile', secure=True)
         else:
           context['profile_link'] = self.data.redirect.urlOf(
-              'show_gci_profile', secure=True)
+              url_names.GCI_PROFILE_SHOW, secure=True)
 
         if self.data.is_org_admin:
           # Add org admin dashboard link if the user has active

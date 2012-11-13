@@ -38,14 +38,17 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 DEF_NO_UPLOAD = ugettext('Please choose at least one file to upload.')
+
 CLAIM_TASKS_NOW = ugettext('You can now claim tasks <a href="%s">here</a>')
 
 DEF_CONSENT_FORM_HELP_TEXT = ugettext(
     '%s.<br />To download the sample form or one of its translations '
     '<a href="%s">click here.</a>')
+
 DEF_STUDENT_ID_FORM_TEXT_HELP = ugettext(
     'A scan of your Student ID, School transcript or letter from school. '
     'For examples <a href="%s">click here</a>.')
+
 
 class UploadForm(gci_forms.GCIModelForm):
   """Django form to upload student forms
@@ -68,9 +71,11 @@ class UploadForm(gci_forms.GCIModelForm):
         url_names.GCI_STUDENT_FORM_UPLOAD)
 
     self['consent_form'].field.widget = gci_forms.AsyncFileInput(
-        download_url='%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM))
+        download_url='%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM),
+        verified=self.instance.consent_form_verified)
     self['student_id_form'].field.widget = gci_forms.AsyncFileInput(
-        download_url='%s?%s' % (base_url, url_names.STUDENT_ID_FORM_GET_PARAM))
+        download_url='%s?%s' % (base_url, url_names.STUDENT_ID_FORM_GET_PARAM),
+        verified=self.instance.student_id_form_verified)
 
     self['consent_form'].field.help_text = (
         DEF_CONSENT_FORM_HELP_TEXT % (
@@ -92,6 +97,21 @@ class UploadForm(gci_forms.GCIModelForm):
       raise gci_forms.ValidationError(DEF_NO_UPLOAD)
 
     return cleaned_data
+
+  def save(self, commit=True):
+    student_info = super(UploadForm, self).save(commit=False)
+    cleaned_data = self._cleaned_data()
+
+    if cleaned_data.get('consent_form'):
+      student_info.consent_form_verified = False
+
+    if cleaned_data.get('student_id_form'):
+      student_info.student_id_form_verified = False
+
+    if commit:
+      student_info.put()
+
+    return student_info
 
 
 class StudentFormUpload(RequestHandler):

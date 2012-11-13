@@ -91,6 +91,7 @@ class Callback(object):
     self.views.append(participants.MentorsListAdminPage())
     self.views.append(profile.GCIProfilePage())
     self.views.append(profile_show.GCIProfileShowPage())
+    self.views.append(profile_show.GCIProfileShowAdminPage())
     self.views.append(program.ProgramPage())
     self.views.append(program.GCIProgramMessagesPage())
     self.views.append(program.TimelinePage())

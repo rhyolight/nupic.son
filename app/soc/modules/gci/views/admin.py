@@ -411,7 +411,8 @@ class LookupLinkIdPage(RequestHandler):
         cbox = True
 
       self.redirect.profile(profile.link_id)
-      self.redirect.to('gci_profile_admin', cbox=cbox, secure=True)
+      self.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN,
+                       cbox=cbox, secure=True)
 
     return {
       'forms': forms,
