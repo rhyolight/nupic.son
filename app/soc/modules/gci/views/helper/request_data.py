@@ -381,7 +381,7 @@ class RedirectHelper(request_data.RedirectHelper):
     """Sets the _url_name for a request.
     """
     assert request
-    self.id(request.key().id())
+    self.userId(request.parent_key().name(), request.key().id())
     if request.type == 'Request':
       self._url_name = url_names.GCI_RESPOND_REQUEST
     else:
