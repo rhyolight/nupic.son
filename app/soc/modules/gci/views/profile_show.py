@@ -197,5 +197,6 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
     student_info.put()
 
   def _getProfile(self):
+    """See soc.views.profile_show.ProfileShowPage for the documentation."""
     assert access_checker.isSet(self.data.url_profile)
     return self.data.url_profile
