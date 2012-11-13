@@ -93,7 +93,7 @@ class GCIProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'profile/show/%s$' % url_patterns.PROGRAM,
-         self, name='show_gci_profile'),
+         self, name=url_names.GCI_PROFILE_SHOW),
     ]
 
   def context(self):
@@ -120,7 +120,7 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
   def djangoURLPatterns(self):
     return [
         url(r'profile/show/%s$' % url_patterns.PROFILE,
-         self, name='show_gci_profile_admin'),
+         self, name=url_names.GCI_PROFILE_SHOW_ADMIN),
     ]
 
   def checkAccess(self):
