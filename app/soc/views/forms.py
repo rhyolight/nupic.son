@@ -86,6 +86,48 @@ def mergeWidgets(*args):
   return widgets
 
 
+class LabelVerificationNotRequiredState(object):
+  """Represents the state where the AsyncFileField does not require
+  verification label.
+  """
+
+  def toBeVerifiedHide(self):
+    """ "To be verified" label should be hidden."""
+    return 'button-hide'
+
+  def verifiedHide(self):
+    """ "Verified" label should be hidden."""
+    return 'button-hide'
+
+
+class LabelToBeVerifiedState(object):
+  """Represents the state where the AsyncFileField should display the to be
+  verified label.
+  """
+
+  def toBeVerifiedHide(self):
+    """ "To be verified" label should be displayed (not hidden)."""
+    return ''
+
+  def verifiedHide(self):
+    """ "Verified" label should be hidden."""
+    return 'button-hide'
+
+
+class LabelVerifiedState(object):
+  """Represents the state where the AsyncFileField should display the verified
+  label.
+  """
+
+  def toBeVerifiedHide(self):
+    """ "To be verified" label should be hidden."""
+    return 'button-hide'
+
+  def verifiedHide(self):
+    """ "Verified" label should be displayed (not hidden)."""
+    return ''
+
+
 # The standard input fields should be available to all importing modules
 CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
@@ -110,21 +152,28 @@ class AsyncFileInput(FileInput):
 
   def __init__(self, *args, **kwargs):
     self.download_url = kwargs.pop('download_url', None)
-    self.verified = kwargs.pop('verified', None)
+
+    if 'verified' not in kwargs:
+      self.verification = LabelVerificationNotRequiredState()
+    else:
+      verified = kwargs.get('verified')
+      if verified:
+        self.verification = LabelVerifiedState()
+      else:
+        self.verification = LabelToBeVerifiedState()
+
+    # This mutation to kwargs is *required* because Django will complain
+    # if you pass the kwargs that its widgets don't understand.
+    kwargs.pop('verified', None)
+
     super(AsyncFileInput, self).__init__(*args, **kwargs)
 
   def render(self, name, value, attrs=None):
     download_hide = 'button-hide'
     upload_hide = ''
 
-    to_be_verified_hide = 'button-hide'
-    verified_hide = 'button-hide'
-    # We explicitly check against False to identify that tthis widget
-    # needs a verification label (that is verified not None) but not verified.
-    if self.verified == True:
-      verified_hide = ''
-    elif self.verified == False:
-      to_be_verified_hide = ''
+    to_be_verified_hide = self.verification.toBeVerifiedHide()
+    verified_hide = self.verification.verifiedHide()
 
     if value is None:
       value = ''
