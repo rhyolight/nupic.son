@@ -153,18 +153,15 @@ class AsyncFileInput(FileInput):
   def __init__(self, *args, **kwargs):
     self.download_url = kwargs.pop('download_url', None)
 
-    if 'verified' not in kwargs:
-      self.verification = LabelVerificationNotRequiredState()
-    else:
-      verified = kwargs.get('verified')
-      if verified:
-        self.verification = LabelVerifiedState()
-      else:
-        self.verification = LabelToBeVerifiedState()
-
     # This mutation to kwargs is *required* because Django will complain
     # if you pass the kwargs that its widgets don't understand.
-    kwargs.pop('verified', None)
+    verified = kwargs.pop('verified', None)
+    if verified is None:
+      self.verification = LabelVerificationNotRequiredState()
+    elif not verified:
+      self.verification = LabelToBeVerifiedState()
+    else:
+      self.verification = LabelVerifiedState()
 
     super(AsyncFileInput, self).__init__(*args, **kwargs)
 
