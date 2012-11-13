@@ -38,14 +38,17 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 DEF_NO_UPLOAD = ugettext('Please choose at least one file to upload.')
+
 CLAIM_TASKS_NOW = ugettext('You can now claim tasks <a href="%s">here</a>')
 
 DEF_CONSENT_FORM_HELP_TEXT = ugettext(
     '%s.<br />To download the sample form or one of its translations '
     '<a href="%s">click here.</a>')
+
 DEF_STUDENT_ID_FORM_TEXT_HELP = ugettext(
     'A scan of your Student ID, School transcript or letter from school. '
     'For examples <a href="%s">click here</a>.')
+
 
 class UploadForm(gci_forms.GCIModelForm):
   """Django form to upload student forms
