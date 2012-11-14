@@ -355,6 +355,7 @@ class ManageInviteTest(BaseInviteTest):
         'resubmit': ''
         }
     response = self.post(self._manageInviteUrl(self.invite), post_data)
+    print response
     self.assertResponseRedirect(response, self._manageInviteUrl(self.invite))
 
     new_invite = GCIRequest.all().get()
@@ -379,5 +380,6 @@ class ManageInviteTest(BaseInviteTest):
     self.assertResponseForbidden(response)    
 
   def _manageInviteUrl(self, invite):
-    return '/gci/invite/manage/%s/%s' % (
-        self.invite.org.scope.key().name(), self.invite.key().id())
+    return '/gci/invite/manage/%s/%s/%s/%s' % (
+        self.sponsor.link_id, self.gci.link_id,
+        self.invite.parent_key().name(), self.invite.key().id())
