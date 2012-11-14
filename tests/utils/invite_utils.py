@@ -39,7 +39,8 @@ class GCIInviteHelper(object):
         'type': INVITATION_TYPE,
         'role': 'mentor',
         'org': org,
-        'user': user
+        'user': user,
+        'parent': user,
         }
     return self.seed(GCIRequest, properties)
 
@@ -49,6 +50,7 @@ class GCIInviteHelper(object):
         'type': INVITATION_TYPE,
         'role': 'org_admin',
         'org': org,
-        'user': user
+        'user': user,
+        'parent': user,
         }
     return self.seed(GCIRequest, properties)
