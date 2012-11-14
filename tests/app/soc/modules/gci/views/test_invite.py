@@ -355,7 +355,6 @@ class ManageInviteTest(BaseInviteTest):
         'resubmit': ''
         }
     response = self.post(self._manageInviteUrl(self.invite), post_data)
-    print response
     self.assertResponseRedirect(response, self._manageInviteUrl(self.invite))
 
     new_invite = GCIRequest.all().get()
