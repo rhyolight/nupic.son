@@ -156,6 +156,20 @@ class AsyncFileInput(FileInput):
     # This mutation to kwargs is *required* because Django will complain
     # if you pass the kwargs that its widgets don't understand.
     verified = kwargs.pop('verified', None)
+
+    # When there is no need for the files uploaded to be verified or when
+    # such a feature is not required on the UI, this widget should neither
+    # display the "verified" nor "to-be-verfied" label. So there is no need
+    # for the underlying data model to also store the state. Which effectively
+    # means that when this form field widget is constructed and the labels
+    # are not required, the model does not know anything about the verfied
+    # state and does not tell us anything. Thich is represented by "verified"
+    # argument not being present in the keyword arguments to the constructor.
+    # However, when there is a need for such a label, the underlying data
+    # stores whether the file corresponding to this widget is verified or
+    # not and that is represented by "True" and "False" values to the
+    # "verified" keyword argument. And these states are translated into
+    # classes here.
     if verified is None:
       self.verification = LabelVerificationNotRequiredState()
     elif not verified:
