@@ -19,6 +19,7 @@
 from google.appengine.ext import db
 
 from django.utils.dateformat import format
+from django.utils.translation import ugettext
 
 from soc.views.helper import addresses
 from soc.views.helper import lists
