@@ -136,16 +136,21 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
     context = super(GCIProfileShowAdminPage, self).context()
     assert access_checker.isSet(self.data.url_profile.student_info)
 
-    student_info = self.data.url_profile.student_info
-    if student_info.consent_form_verified:
-      context['verify_consent_form_init'] = 'unchecked'
-    else:
-      context['verify_consent_form_init'] = 'checked'
+    profile = self.data.url_profile
+    student_info = profile.student_info
+    if student_info:
+      if student_info.consent_form_verified:
+        context['verify_consent_form_init'] = 'unchecked'
+      else:
+        context['verify_consent_form_init'] = 'checked'
 
-    if student_info.student_id_form_verified:
-      context['verify_student_id_form_init'] = 'unchecked'
-    else:
-      context['verify_student_id_form_init'] = 'checked'
+      if student_info.student_id_form_verified:
+        context['verify_student_id_form_init'] = 'unchecked'
+      else:
+        context['verify_student_id_form_init'] = 'checked'
+
+      r = self.data.redirect.profile(profile.link_id)
+      context['student_task_link'] = r.urlOf(url_names.GCI_STUDENT_TASKS)
 
     return context
 
