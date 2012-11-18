@@ -37,6 +37,12 @@ class AllParticipatingStudentList(StudentList):
   """Component for listing all the students participating in GCI.
   """
 
+  def __init__(self, request, data):
+    super(AllParticipatingStudentList, self).__init__(request, data)
+    self._list_config.setRowAction(
+        lambda e, sp, *args: data.redirect.profile(
+            sp[e.parent_key()].link_id).urlOf(url_names.GCI_PROFILE_SHOW_ADMIN))
+
   def context(self):
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.idx)
