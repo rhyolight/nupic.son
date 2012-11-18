@@ -314,7 +314,9 @@ class AccessChecker(access_checker.AccessChecker):
           'org_name': self.data.org_app_record.name})
 
   def hasProfileOrRedirectToCreate(self):
-    """Checks if user has a profile and redirects to create if there isn't one.
+    """Checks if user has a profile and redirect to create an org admin
+    profile for the organization listed in the GET data if the user does
+    not have a profile.
     """
     if not self.data.profile:
       org_id = self.data.GET['org_id']
