@@ -63,6 +63,11 @@ DEF_NO_PREV_ORG_MEMBER = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
     'organization in Google Summer of Code or Google Code In.')
 
+DEF_NOT_ORG_ADMIN_FOR_ORG_APP = ugettext(
+    "You should be listed as one of the administrators on %(org_name)s's "
+    "organization application to create a new organization profile for "
+    "%(org_name)s.")
+
 DEF_TASK_UNEDITABLE_STATUS = ugettext(
     'This task is already published and published tasks cannot be edited.')
 
@@ -148,9 +153,6 @@ class Mutator(access_checker.Mutator):
 
     if not self.data.org_app_record:
       raise NotFound("There is no org_app for the org_id %s" % org_id)
-
-    if self.data.org_app_record.status != 'accepted':
-      raise AccessViolation(DEF_ORG_APP_REJECTED)
 
   def fullEdit(self, full_edit=False):
     """Sets full_edit to True/False depending on the status of the task.
@@ -291,11 +293,31 @@ class AccessChecker(access_checker.AccessChecker):
     if not gci_org_admin_profile:
       raise AccessViolation(msg)
 
-  def canCreateNewOrg(self):
-    """A user can create a new org if they have an accepted org app.
+  def isOrgAppAccepted(self):
+    """Checks if the org app stored in request data is accepted.
+    """
+    assert self.data.org_app_record
+
+    if self.data.org_app_record.status != 'accepted':
+      raise AccessViolation(DEF_ORG_APP_REJECTED)
+
+  def isUserAdminForOrgApp(self):
+    """Checks if the user is listed as an admin for the org app in RequestData.
     """
     assert self.data.org_app
+    assert self.data.org_app_record
 
+    if not self.data.user or self.data.user.key() not in [
+        self.data.org_app_record.main_admin.key(),
+        self.data.org_app_record.backup_admin.key()]:
+      raise AccessViolation(DEF_NOT_ORG_ADMIN_FOR_ORG_APP % {
+          'org_name': self.data.org_app_record.name})
+
+  def hasProfileOrRedirectToCreate(self):
+    """Checks if user has a profile and redirect to create an org admin
+    profile for the organization listed in the GET data if the user does
+    not have a profile.
+    """
     if not self.data.profile:
       org_id = self.data.GET['org_id']
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
