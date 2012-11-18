@@ -82,6 +82,11 @@ def participating(model, program, org_count=None):
 
   orgs = _orgsWithLogoForQuery(q, org_count)
 
+  # The previous query returns the organizations starting from the point
+  # of the cursor upto org_count organizations. But if there are fewer
+  # orgs the query returns just those. So in that case we restart the query
+  # here from the beginning without the cursor to fill up the remaining slots
+  # until we have org_count organizations.
   if len(orgs) < org_count:
     q = _orgWithLogoQuery(model, program)
     extra_orgs = _orgsWithLogoForQuery(q, org_count - len(orgs))
