@@ -20,7 +20,7 @@
 
 from google.appengine.ext import db
 
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
 from soc.logic.helper import notifications
 
 from soc.views.helper import lists
@@ -151,7 +151,8 @@ class ManageRequestPage(RequestHandler):
     # check if the submitted action is legal
     if self.data.POST:
       if 'withdraw' not in self.data.POST and 'resubmit' not in self.data.POST:
-        raise BadRequest('Valid action is not specified in the request.')
+        raise exceptions.BadRequest(
+            'Valid action is not specified in the request.')
       self.check.isRequestManageable()
 
   def context(self):
@@ -371,7 +372,7 @@ class ListUserRequestsPage(RequestHandler):
     list_content = UserRequestsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation('You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
