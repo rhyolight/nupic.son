@@ -255,8 +255,9 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
     css_prefix = 'student_info'
     exclude = [
         'number_of_completed_tasks', 'task_closed', 'parental_form_mail',
-        'consent_form', 'consent_form_two', 'student_id_form', 'major',
-        'degree', 'school', 'school_type', 'program',
+        'consent_form', 'consent_form_verified', 'consent_form_two',
+        'student_id_form', 'major', 'student_id_form_verified', 'degree',
+        'school', 'school_type', 'program',
     ]
     widgets = forms.choiceWidgets(
         model, ['school_country', 'school_type', 'degree'])
