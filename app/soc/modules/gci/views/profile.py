@@ -49,6 +49,13 @@ UPLOAD_FORMS_REMINDER = ugettext(
     'You need to upload your forms <a href="%s">here</a> before '
     'you can claim tasks in the program.')
 
+SCHOOL_NAME_HELP_TEXT = ugettext(
+    'Please enter the full name of your school in this field. Please use the '
+    'formal name of your school, e.g. Smith Collins High School, instead of '
+    'SCHS. Please provide your school name in English so that it will be '
+    'easier for the program administrators to match up schools and students '
+    'for statistical purposes.')
+
 GCI_PROFILE_EXCLUDE = ['automatic_task_subscription', 'notify_comments',
                        'photo_url']
 
@@ -239,6 +246,9 @@ class NotificationForm(gci_forms.GCIModelForm):
 class GCIStudentInfoForm(gci_forms.GCIModelForm):
   """Django form for the student profile page.
   """
+
+  school_name = forms.CharField(
+      max_length=1024, help_text=SCHOOL_NAME_HELP_TEXT)
 
   class Meta:
     model = GCIStudentInfo
