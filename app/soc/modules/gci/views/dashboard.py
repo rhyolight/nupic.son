@@ -31,6 +31,7 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
 from soc.logic import org_app as org_app_logic
+from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
