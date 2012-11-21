@@ -22,6 +22,7 @@ from google.appengine.ext import db
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import AccessViolation
 
 from soc.models.org_app_record import OrgAppRecord
@@ -30,7 +31,6 @@ from soc.views.dashboard import Dashboard
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
-from soc.logic import org_app as org_app_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
