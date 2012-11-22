@@ -356,7 +356,7 @@ class OrgConnectionPage(RequestHandler):
       # Create the anonymous connection - a placeholder until the user 
       # registers and activates the real connection.
       connection = GSoCAnonymousConnection(parent=self.data.organization)
-      connection.role = connection_form.cleaned_data['role']
+      connection.role = connection_form.cleaned_data['role_choice']
       connection.put()
       
       # Generate a hash of the object's key for later validation.
@@ -368,8 +368,9 @@ class OrgConnectionPage(RequestHandler):
 
       # Notify the user that they have a pending connection and can register
       # to accept the elevated role.
+      role = 'org_admin' if connection.role == 'Org Admin' else 'mentor'
       context = notifications.anonymousConnectionContext(self.data, email, 
-          connection.role, connection.hash_id, 
+          role, connection.hash_id, 
           connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
       sub_txn()

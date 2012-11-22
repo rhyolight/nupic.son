@@ -305,9 +305,9 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
       # Create the new connection based on the values of the placeholder.
       connection = GSoCConnection(parent=user.key(), 
           organization=self.data.anonymous_connection.parent(),
-          profile=profile)
+          profile=profile,
+          role=self.data.anonymous_connection.role)
       # Set the apropriate fields to automatically accept the connection.
-      connection.role = self.data.anonymous_connection.role
       connection.org_state = connection.user_state = RESPONSE_STATE_ACCEPTED
       connection.put()
       # The user and org should "agree" on a role; promote the user.
