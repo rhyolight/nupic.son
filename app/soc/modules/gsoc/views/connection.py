@@ -329,7 +329,7 @@ class OrgConnectionPage(RequestHandler):
       connection = connection_form.create(parent=user, commit=False)
       # An organization admin is always a mentor, so regardless of the admin's
       # choice the user will be offered a mentoring position.
-      connection.org_state = 'Accepted'
+      connection.org_state = RESPONSE_STATE_ACCEPTED
       connection.role =  connection_form.cleaned_data['role_choice']
       connection.put()
 
