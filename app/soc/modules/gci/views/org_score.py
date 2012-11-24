@@ -150,7 +150,7 @@ class ChooseOrganizationForOrgScorePage(RequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/org_score/choose_org.html'
+    return 'v2/modules/gci/org_list/base.html'
 
   def djangoURLPatterns(self):
     return [
