@@ -370,7 +370,7 @@ class OrgConnectionPage(RequestHandler):
       # to accept the elevated role.
       role = 'org_admin' if connection.role == 'Org Admin' else 'mentor'
       context = notifications.anonymousConnectionContext(self.data, email, 
-          role, connection.hash_id, 
+          connection.role, connection.hash_id, 
           connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=connection)
       sub_txn()

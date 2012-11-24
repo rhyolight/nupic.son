@@ -124,7 +124,9 @@ def anonymousConnectionContext(data, email, role, hash, message):
   assert isSet(data.profile)
   assert isSet(data.organization)
 
-  url = data.redirect.profile_anonymous_connection(role, hash).url(full=True)
+  url_role = 'org_admin' if role == 'Org Admin' else 'mentor'
+  url = data.redirect.profile_anonymous_connection(url_role, 
+      hash).url(full=True)
 
   message_properties = {
       'requester' : data.profile.link_id,
