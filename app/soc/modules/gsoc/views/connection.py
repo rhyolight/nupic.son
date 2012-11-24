@@ -787,7 +787,7 @@ class ShowConnection(RequestHandler):
         connection.org_state = RESPONSE_STATE_REJECTED
       else:
         # User rejecting an org admin offer rejects both.
-        connection.user = RESPONSE_STATE_REJECTED
+        connection.user_state = RESPONSE_STATE_REJECTED
       connection.put()
 
       generate_message_txn(connection, 'Org Admin Connection Rejected.')
