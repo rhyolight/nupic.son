@@ -303,6 +303,14 @@ class OrgDashboard(Dashboard):
             'title': 'Organization Scores',
             'link': r.urlOf(url_names.GCI_ORG_CHHOSE_FOR_SCORE)
         },
+        {
+            'name': 'org_tasks',
+            'description': ugettext(
+                'List of tasks that have been created by '
+                'the chosen organization'),
+            'title': 'Organization Tasks',
+            'link': r.urlOf(url_names.GCI_ORG_CHOOSE_FOR_ALL_TASKS)
+        },
     ]
 
     super(OrgDashboard, self).__init__(request, data, subpages)
