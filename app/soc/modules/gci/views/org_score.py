@@ -155,7 +155,7 @@ class ChooseOrganizationForOrgScorePage(RequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'org_choose_for_score/%s$' % url_patterns.PROGRAM, self,
-            name=url_names.GCI_ORG_CHHOSE_FOR_SCORE),
+            name=url_names.GCI_ORG_CHOOSE_FOR_SCORE),
     ]
 
   def checkAccess(self):
