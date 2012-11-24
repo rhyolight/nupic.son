@@ -21,6 +21,8 @@
 from soc.views.helper import lists
 from soc.views.template import Template
 
+from soc.modules.gci.logic import organization as org_logic
+
 
 class OrgList(Template):
   """Template for list of organizations.
@@ -69,4 +71,27 @@ class OrgList(Template):
     return None
 
   def _getQuery(self):
+    raise NotImplementedError
+
+
+class BasicOrgList(OrgList):
+  """Basic list of all organizations that displays in each row
+  link_id and name with a custom redirect.
+  """
+
+  def _getListConfig(self):
+    r = self.data.redirect
+
+    list_config = lists.ListConfiguration()
+    list_config.addColumn('name', 'Name',
+        lambda e, *args: e.name.strip())
+    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.setRowAction(self._getRedirect())
+    return list_config
+
+  def _getQuery(self):
+    return org_logic.queryForProgramAndStatus(
+        self.data.program, ['new', 'active'])
+
+  def _getRedirect(self):
     raise NotImplementedError
