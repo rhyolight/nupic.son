@@ -26,6 +26,7 @@ from soc.views.template import Template
 
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.templates.org_list import BasicOrgList
 from soc.modules.gci.templates.task_list import TaskList
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.forms import GCIModelForm
@@ -161,4 +162,101 @@ class StudentTasksForOrganizationPage(RequestHandler):
         'page_name': "Tasks closed by %s for %s" % (
             self.data.url_profile.name(), self.data.organization.name),
         'task_list': StudentTasksForOrganizationList(self.request, self.data),
+    }
+
+
+class ChooseOrganizationList(BasicOrgList):
+  """List of all organizations whose row action redirects to a list of all
+  tasks created by the specified organization.
+  """
+
+  def _getRedirect(self):
+    def redirect(e, *args):
+      r = self.data.redirect
+      return r.organization(e).urlOf(url_names.GCI_ORG_TASKS_ALL)
+    return redirect
+
+  def _getDescription(self):
+    return 'Choose an organization for which to display tasks.'
+
+
+class ChooseOrganizationPage(RequestHandler):
+  """View with a list of organizations. When a user clicks on one of them,
+  he or she is moved to the organization tasks for this organization.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/org_list/base.html'
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'org_choose_for_all_tasks/%s$' % url_patterns.PROGRAM, self,
+            name=url_names.GCI_ORG_CHOOSE_FOR_ALL_TASKS),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def jsonContext(self):
+    list_content = ChooseOrganizationList(
+        self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation(
+          'You do not have access to this data')
+    return list_content.content()
+
+  def context(self):
+    return {
+        'page_name': "Choose an organization for which to display tasks.",
+        'org_list': ChooseOrganizationList(self.request, self.data),
+    }
+
+
+class AllOrganizationTasksList(TaskList):
+  """List of all tasks that have been created by the specified organization.
+  """
+
+  _COLUMNS = ['title', 'mentors', 'status']
+
+  def _getColumns(self):
+    return self._COLUMNS
+
+  def _getDescription(self):
+    return "List of tasks created by %s." % self.data.organization.name
+
+  def _getQuery(self):
+    return task_logic.queryForOrganization(self.data.organization)
+
+
+class AllOrganizationTasksPage(RequestHandler):
+  """View for program admins to see all tasks created by an organization
+  which is specified in the URL.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/task/task_list.html'
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'org/tasks/all/%s$' % url_patterns.ORG, self,
+            name=url_names.GCI_ORG_TASKS_ALL),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def jsonContext(self):
+    list_content = AllOrganizationTasksList(
+        self.request, self.data).getListData()
+
+    if not list_content:
+      raise AccessViolation('You do not have access to this data')
+
+    return list_content.content()
+
+  def context(self):
+    return {
+        'page_name': 'Tasks created by %s' % self.data.organization.name,
+        'task_list': AllOrganizationTasksList(self.request, self.data),
     }
