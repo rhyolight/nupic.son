@@ -685,3 +685,7 @@ def queryForStudentAndOrganizationAndStatus(student, org, status,
     query.filter('status', status)
 
   return query
+
+
+def queryForOrganization(org, keys_only=False):
+  return GCITask.all().filter('org', org)
