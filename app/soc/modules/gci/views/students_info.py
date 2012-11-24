@@ -39,6 +39,11 @@ class AllParticipatingStudentList(StudentList):
 
   def __init__(self, request, data):
     super(AllParticipatingStudentList, self).__init__(request, data)
+    # Each individual item in the list of students for the host now redirect
+    # to the profile show page for that student that which is available only
+    # to hosts. The super class redirected the list items to the list of
+    # tasks completed by the student and that link is now moved to the profile
+    # show page.
     self._list_config.setRowAction(
         lambda e, sp, *args: data.redirect.profile(
             sp[e.parent_key()].link_id).urlOf(url_names.GCI_PROFILE_SHOW_ADMIN))
