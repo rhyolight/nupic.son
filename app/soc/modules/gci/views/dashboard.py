@@ -17,13 +17,16 @@
 """Module for the GCI participant dashboard.
 """
 
+import logging
+
 from google.appengine.ext import db
 
+from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from soc.logic import exceptions
 from soc.logic import org_app as org_app_logic
-from soc.logic.exceptions import AccessViolation
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
@@ -208,9 +211,20 @@ class DashboardPage(RequestHandler):
         break
 
     if not list_content:
-      raise AccessViolation(
+      raise exceptions.AccessViolation(
           'You do not have access to this data')
     return list_content.content()
+
+  def post(self):
+    """Handler for POST requests for each component.
+    """
+    components = self.components()
+
+    for component in components:
+      if component.post():
+        break
+    else:
+      raise exceptions.AccessViolation('You cannot change this data')
 
   def components(self):
     """Returns the list components that are active on the page.
@@ -579,6 +593,8 @@ class MyOrgsTaskList(Component):
   """Component for listing the tasks of the orgs of the current user.
   """
 
+  IDX = 1
+
   def __init__(self, request, data):
     """Initializes the component.
 
@@ -648,6 +664,24 @@ class MyOrgsTaskList(Component):
         lambda e, *args: data.redirect.id(e.key().id()).
             urlOf('gci_view_task'))
 
+    # Add publish/unpublish buttons to the list and enable per-row checkboxes.
+    #
+    # It is very important to note that the setRowAction should go before
+    # addPostButton call for the checkbox to be present on the list.
+    # setRowAction sets multiselect attribute to False which is set to True
+    # by addPostButton method and should be True for the checkbox to be
+    # present on the list.
+    if data.is_org_admin:
+      # publish/unpublish tasks
+      bounds = [1,'all']
+      # GCITask is keyed based solely on the entity ID, because it is very
+      # difficult to group it with either organizations or profiles, so to
+      # make the querying easier across entity groups we only use entity ids
+      # as keys.
+      keys = ['key']
+      list_config.addPostButton('publish', 'Publish', '', bounds, keys)
+      list_config.addPostButton('unpublish', 'Unpublish', '', bounds, keys)
+
     self._list_config = list_config
 
   def templatePath(self):
@@ -655,16 +689,78 @@ class MyOrgsTaskList(Component):
     """
     return'v2/modules/gci/dashboard/list_component.html'
 
+  def post(self):
+    """Processes the form post data by checking what buttons were pressed.
+    """
+    idx = lists.getListIndex(self.request)
+    if idx != self.IDX:
+      return None
+
+    data = self.data.POST.get('data')
+
+    if not data:
+      raise exceptions.BadRequest('Missing data')
+
+    parsed = simplejson.loads(data)
+
+    button_id = self.data.POST.get('button_id')
+
+    if not button_id:
+      raise exceptions.BadRequest('Missing button_id')
+
+    if button_id == 'publish':
+      return self.postPublish(parsed, True)
+
+    if button_id == 'unpublish':
+      return self.postPublish(parsed, False)
+
+    raise exceptions.BadRequest("Unknown button_id")
+
+  def postPublish(self, data, publish):
+    """Publish or unpublish tasks based on the value in the publish parameter.
+
+    Args:
+      data: Parsed post data containing the list of of task keys
+      publish: True if the task is to be published, False to unpublish
+    """
+    for properties in data:
+      task_key = properties.get('key')
+      if not task_key:
+        logging.warning("Missing key in '%s'" % properties)
+        continue
+      if not task_key.isdigit():
+        logging.warning("Invalid task id in '%s'" % properties)
+        continue
+
+      def publish_task_txn():
+        task = GCITask.get_by_id(int(task_key))
+
+        if not task:
+          logging.warning("Task with task_id '%s' does not exist" % (
+              task_key,))
+          return
+
+        org_key = GCITask.org.get_value_for_datastore(task)
+        if not self.data.orgAdminFor(org_key):
+          logging.warning('Not an org admin')
+          return
+
+        task.status = 'Open' if publish else 'Unpublished'
+        task.put()
+
+      db.run_in_transaction(publish_task_txn)
+    return True
+
   def context(self):
     """Returns the context of this component.
     """
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=1, preload_list=False)
+    task_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.IDX, preload_list=False)
 
     return {
         'name': 'all_org_tasks',
         'title': 'All tasks for my organizations',
-        'lists': [list],
+        'lists': [task_list],
         'description': ugettext('List of all tasks for my organization'),
         }
 
