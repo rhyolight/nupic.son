@@ -18,20 +18,24 @@ limitations under the License.
   <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/dd.css" />
 {% endblock stylesheets %}
 
+{% block formsave_msg %}
+{% if posted %}
+  <div class="block block-user-message">
+  {% if error %}
+      <p>Sorry, we could not save your profile. Please fix the errors mentioned below.</p>
+  {% else %}
+      <p>Profile saved successfully. {{ form_instructions|safe }}</p>
+  {% endif %}
+  </div>
+{% endif %}
+{% endblock formsave_msg %}
+
 {% block form_button %}
   {{ block.super }}
   {% if edit_profile %}
   <input value="Delete Account" class="delete-btn" type="submit" name="delete_account">
   {% endif %}
 {% endblock form_button %}
-
-{% block form_instruction %}
-  {% if form_instructions %}
-  <div>
-    <p><strong>{{ form_instructions|safe }}</strong></p>
-  </div>
-  {% endif %}
-{% endblock form_instruction %}
 
 {% block dependencies %}
   [

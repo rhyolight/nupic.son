@@ -19,6 +19,8 @@ limitations under the License.
 {% endblock stylesheets %}
 
 {% block page_content %}
+
+{% block formsave_msg %}
 {% if posted %}
   <div class="block block-user-message">
   {% if error %}
@@ -28,6 +30,7 @@ limitations under the License.
   {% endif %}
   </div>
 {% endif %}
+{% endblock formsave_msg %}
 
 <div class="block block-form">
   <div class="block-form-title">

@@ -71,9 +71,10 @@
         formrow.children('.progress').hide();
         var filedownload = formrow.children('.filedownload');
         filedownload.children('.filename').html(data.files[0].name);
-        filedownload.show();
         filedownload.children('.verified').addClass('button-hide');
         filedownload.children('.to_be_verified').removeClass('button-hide');
+        filedownload.removeClass('button-hide');
+        filedownload.show();
       }
     });
   }
