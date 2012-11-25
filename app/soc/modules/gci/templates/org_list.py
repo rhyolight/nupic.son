@@ -80,6 +80,8 @@ class BasicOrgList(OrgList):
   """
 
   def _getListConfig(self):
+    """Returns ListConfiguration object for the list.
+    """
     r = self.data.redirect
 
     list_config = lists.ListConfiguration()
@@ -90,8 +92,12 @@ class BasicOrgList(OrgList):
     return list_config
 
   def _getQuery(self):
+    """Returns Query object to fetch entities for the list.
+    """
     return org_logic.queryForProgramAndStatus(
         self.data.program, ['new', 'active'])
 
   def _getRedirect(self):
+    """Returns redirect function for each row of the list.
+    """
     raise NotImplementedError
