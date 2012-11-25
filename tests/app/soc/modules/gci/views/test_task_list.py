@@ -40,23 +40,28 @@ class AllOrganizationTasksPageTest(GCIDjangoTestCase):
   def testNonLoggedInCannotAccess(self):
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
 
   def testMentorCannotAccess(self):
     self.data.createMentor(self.org)
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
 
   def testOrgAdminCannotAccess(self):
     self.data.createOrgAdmin(self.org)
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
 
   def testStudentCannotAccess(self):
     self.data.createStudent()
     response = self.get(self.url)
-    self.assertErrorTemplatesUsed(response)    
+    self.assertErrorTemplatesUsed(response) 
+    self.assertResponseForbidden(response)   
 
   def testHostCanAccess(self):
     self.data.createHost()
     response = self.get(self.url)
     self.assertPageTemplatesUsed(response)
+    self.assertResponseOK(response);
