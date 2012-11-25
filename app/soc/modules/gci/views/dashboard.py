@@ -590,6 +590,8 @@ class MyOrgsTaskList(Component):
   """Component for listing the tasks of the orgs of the current user.
   """
 
+  IDX = 1
+
   def __init__(self, request, data):
     """Initializes the component.
 
@@ -669,13 +671,13 @@ class MyOrgsTaskList(Component):
   def context(self):
     """Returns the context of this component.
     """
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=1, preload_list=False)
+    task_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.IDX, preload_list=False)
 
     return {
         'name': 'all_org_tasks',
         'title': 'All tasks for my organizations',
-        'lists': [list],
+        'lists': [task_list],
         'description': ugettext('List of all tasks for my organization'),
         }
 
