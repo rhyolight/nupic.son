@@ -212,6 +212,17 @@ class DashboardPage(RequestHandler):
           'You do not have access to this data')
     return list_content.content()
 
+  def post(self):
+    """Handler for POST requests for each component.
+    """
+    components = self.components()
+
+    for component in components:
+      if component.post():
+        break
+    else:
+      raise exceptions.AccessViolation('You cannot change this data')
+
   def components(self):
     """Returns the list components that are active on the page.
     """
