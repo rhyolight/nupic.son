@@ -1034,7 +1034,11 @@ class OrgAdminInvitesList(Component):
     self.data = data
     r = data.redirect
 
-    list_config = lists.ListConfiguration()
+    # GCIRequest entities have user entities as parents, so the keys
+    # for the list items should be parent scoped.
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
+        ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addColumn('to', 'To',
         lambda entity, *args: entity.user.name)
     list_config.addSimpleColumn('status', 'Status')
@@ -1092,7 +1096,12 @@ class OrgAdminRequestsList(Component):
     self.data = data
     r = data.redirect
 
-    list_config = lists.ListConfiguration()
+    # GCIRequest entities have user entities as parents, so the keys
+    # for the list items should be parent scoped.
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
+        ent.parent().key().name(), ent.key().id())), hidden=True)
+
     list_config.addColumn('from', 'From',
         lambda entity, *args: entity.user.name)
     list_config.addSimpleColumn('status', 'Status')
