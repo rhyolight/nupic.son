@@ -22,8 +22,8 @@ from google.appengine.ext import db
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from soc.logic import exceptions
 from soc.logic import org_app as org_app_logic
-from soc.logic.exceptions import AccessViolation
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
@@ -208,7 +208,7 @@ class DashboardPage(RequestHandler):
         break
 
     if not list_content:
-      raise AccessViolation(
+      raise exceptions.AccessViolation(
           'You do not have access to this data')
     return list_content.content()
 
