@@ -535,8 +535,9 @@ class TaskInformation(Template):
 
     if is_student:
       if not self.data.timeline.tasksClaimEnded():
-        context['student_forms_link'] = self.data.redirect.program().urlOf(
-            url_names.GCI_STUDENT_FORM_UPLOAD)
+        if not profile_logic.hasStudentFormsUploaded(profile.student_info):
+          context['student_forms_link'] = self.data.redirect.program().urlOf(
+              url_names.GCI_STUDENT_FORM_UPLOAD)
         # TODO(lennie): Separate the access check out in to different
         # methods and add a context variable to show separate messages.
         context['button_claim'] = task_logic.canClaimRequestTask(
