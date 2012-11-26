@@ -34,7 +34,7 @@ def updateOrgScoreTxn(task):
   student_key = GCITask.student.get_value_for_datastore(task)
 
   def txn():
-    org_score_query = queryForAncestorAndOrg(student_key, org_key, True)
+    org_score_query = queryForAncestorAndOrg(student_key, org_key)
   
     org_score = org_score_query.get()
     if not org_score:
