@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common validation helper functions.
-"""
-
+"""Common validation helper functions."""
 
 import feedparser
 
@@ -50,10 +48,7 @@ def isFeedURLValid(feed_url=None):
     return False
 
   # version is always present if the feed is valid
-  if not parsed_feed.version:
-    return False
-
-  return True
+  return bool(parsed_feed.version)
 
 
 def isLinkIdFormatValid(link_id):
@@ -62,23 +57,17 @@ def isLinkIdFormatValid(link_id):
   Args:
     link_id: link ID used in URLs for identification
   """
-  if linkable.LINK_ID_REGEX.match(link_id):
-    return True
-  return False
+  return bool(linkable.LINK_ID_REGEX.match(link_id))
 
 
 def isScopePathFormatValid(scope_path):
   """Returns True if scope_path is in a valid format.
-  
+
   Args:
     scope_path: scope path prepended to link ID
       used for identification.
   """
-   
-  if linkable.SCOPE_PATH_REGEX.match(scope_path):
-    return True
-  
-  return False
+  return bool(linkable.SCOPE_PATH_REGEX.match(scope_path))
 
 
 # TODO(nathaniel): In the offseason, change this so that the program host-
