@@ -63,3 +63,9 @@ class DashboardTest(GCIDjangoTestCase):
     self.assertIsJsonResponse(response)
     data = json.loads(response.content)
     self.assertEqual(1, len(data['data']['']))
+
+  def testDashboardAsStudent(self):
+    self.data.createStudent()
+    url = '/gci/dashboard/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)

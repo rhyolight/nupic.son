@@ -362,7 +362,8 @@ class DashboardPage(RequestHandler):
         self._getStudentFormsLink(), self._getMyTasksLink()
         ]
 
-    current_task = task_logic.queryCurrentTaskForStudent(self.data.profile)
+    current_task = task_logic.queryCurrentTaskForStudent(
+        self.data.profile).get()
     if current_task:
       links.append(self._getCurrentTaskLink(current_task))
 
