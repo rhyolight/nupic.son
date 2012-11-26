@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2008 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,22 +81,41 @@ def isScopePathFormatValid(scope_path):
   return False
 
 
+# TODO(nathaniel): In the offseason, change this so that the program host-
+# supplied age values both represent allowed ages, rather than student_max_age
+# representing "youngest disallowed age".
 def isAgeSufficientForProgram(birth_date, program):
-  """Returns True if the specified birth_date is between student_min_age
-  and student_max_age for the specified program. 
+  """Returns True if a student with birth_date can participate in program.
+
+  Args:
+    birth_date: A datetime.date representing a student birth date.
+    program: The program.
+
+  Returns:
+    True if the student meets all age requirements for the program, False
+      if the student is either too old or too young. If the program does not
+      set age requirements, the student is allowed to participate.
   """
-  
   # do not check if the data is not present
-  validation_result = True
-  if program.student_min_age_as_of: 
-    if program.student_min_age:
-      min_year = program.student_min_age_as_of.year - program.student_min_age
-      min_date = program.student_min_age_as_of.replace(year=min_year)
-      validation_result = birth_date <= min_date
+  if not program.student_min_age_as_of:
+    return True
 
-    if validation_result and program.student_max_age:
-      max_year = program.student_min_age_as_of.year - program.student_max_age
-      max_date = program.student_min_age_as_of.replace(year=max_year)
-      validation_result = birth_date > max_date
+  if program.student_min_age:
+    latest_allowed_birth_year = (
+        program.student_min_age_as_of.year - program.student_min_age)
+    latest_allowed_birth_date = program.student_min_age_as_of.replace(
+        year=latest_allowed_birth_year)
+    if latest_allowed_birth_date < birth_date:
+      return False
 
-  return validation_result
+  if program.student_max_age:
+    earliest_allowed_birth_year = (
+        program.student_min_age_as_of.year - program.student_max_age)
+    earliest_allowed_birth_date = program.student_min_age_as_of.replace(
+        year=earliest_allowed_birth_year)
+    # Yes - if it's your birthday on the program student-welcome date,
+    # you're out of luck.
+    if birth_date <= earliest_allowed_birth_date:
+      return False
+
+  return True
