@@ -12,89 +12,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests for organization score related views.
+"""Unit tests for lists of GCITask entities.
 """
 
-
-from soc.modules.gci.models.organization import GCIOrganization
 
 from tests.test_utils import GCIDjangoTestCase
 
 
-class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
-  """Unit tests for ChooseOrganizationForOrgScorePage.
+class AllOrganizationTasksPageTest(GCIDjangoTestCase):
+  """Unit tests for AllOrganizationTasksPage.
   """
 
   def setUp(self):
     self.init()
-    self.url = '/gci/org_choose_for_score/' + self.gci.key().name()
+    self.url = '/gci/org/tasks/all/' + self.org.key().name()
 
   def assertPageTemplatesUsed(self, response):
     """Asserts that all the required templates to render the page were used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/org_list/base.html')
+    self.assertTemplateUsed(response, 'v2/modules/gci/task/task_list.html')
     self.assertTemplateUsed(
-        response, 'v2/modules/gci/accepted_orgs/_project_list.html')
+        response, 'v2/modules/gci/task/_task_list.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 
-
-  def testAccessAsNonHostFails(self):
+  def testNonLoggedInCannotAccess(self):
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
 
   def testMentorCannotAccess(self):
     self.data.createMentor(self.org)
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
 
   def testOrgAdminCannotAccess(self):
     self.data.createOrgAdmin(self.org)
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
 
   def testStudentCannotAccess(self):
     self.data.createStudent()
     response = self.get(self.url)
-    self.assertErrorTemplatesUsed(response)    
+    self.assertErrorTemplatesUsed(response) 
+    self.assertResponseForbidden(response)   
 
   def testHostCanAccess(self):
     self.data.createHost()
     response = self.get(self.url)
     self.assertPageTemplatesUsed(response)
-
-  def testActiveOrgsAreDisplayed(self):
-    self.data.createHost()
-
-    org_properties = {
-        'scope': self.gci, 'status': 'active', 'founder': self.data.user,
-        'home': None,
-    }
-    self.seed(GCIOrganization, org_properties)
-    self.seed(GCIOrganization, org_properties)
-
-    response = self.get(self.url)
-    self.assertPageTemplatesUsed(response)
-    list_data = self.getListData(self.url, 0)
-
-    #Third organization is self.gci
-    self.assertEqual(3, len(list_data))
-
-  def testNonActiveOrgsAreNotDisplayed(self):
-    self.data.createHost()
-
-    org_properties = {
-        'scope': self.gci, 'status': 'invalid', 'founder': self.data.user,
-        'home': None,
-    }
-    self.seed(GCIOrganization, org_properties)
-    self.seed(GCIOrganization, org_properties)
-
-    response = self.get(self.url)
-    self.assertPageTemplatesUsed(response)
-    list_data = self.getListData(self.url, 0)
-
-    #The only organization is self.gci
-    self.assertEqual(1, len(list_data))
+    self.assertResponseOK(response);

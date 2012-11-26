@@ -24,7 +24,7 @@ from soc.views.template import Template
 
 from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.models.score import GCIOrgScore
-from soc.modules.gci.templates.org_list import OrgList
+from soc.modules.gci.templates.org_list import BasicOrgList
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
@@ -120,7 +120,7 @@ class OrgScoresForOrgzanizationPage(RequestHandler):
     return list_content.content()
 
 
-class OrganizationsForOrgScoreList(OrgList):
+class OrganizationsForOrgScoreList(BasicOrgList):
   """Lists all organizations that have been accepted for the specified
   program and the row action is to show a list of scores for this organization.
   """
@@ -128,20 +128,11 @@ class OrganizationsForOrgScoreList(OrgList):
   def _getDescription(self):
     return "Choose an organization for which to display scores."
 
-  def _getListConfig(self):
-    r = self.data.redirect
-
-    list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
-        lambda e, *args: e.name.strip())
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf(url_names.GCI_ORG_SCORES))
-    return list_config
-
-  def _getQuery(self):
-    return org_logic.queryForProgramAndStatus(
-        self.data.program, ['new', 'active'])
+  def _getRedirect(self):
+    def redirect(e, *args):
+      r = self.data.redirect
+      return r.organization(e).urlOf(url_names.GCI_ORG_SCORES)
+    return redirect
 
 
 class ChooseOrganizationForOrgScorePage(RequestHandler):
@@ -150,12 +141,12 @@ class ChooseOrganizationForOrgScorePage(RequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/org_score/choose_org.html'
+    return 'v2/modules/gci/org_list/base.html'
 
   def djangoURLPatterns(self):
     return [
         url(r'org_choose_for_score/%s$' % url_patterns.PROGRAM, self,
-            name=url_names.GCI_ORG_CHHOSE_FOR_SCORE),
+            name=url_names.GCI_ORG_CHOOSE_FOR_SCORE),
     ]
 
   def checkAccess(self):

@@ -675,6 +675,9 @@ def queryCurrentTaskForStudent(profile, keys_only=False):
 
 def queryForStudentAndOrganizationAndStatus(student, org, status,
     keys_only=False):
+  """Returns a query for all tasks for the specified student,
+  organization and status.
+  """
   query = GCITask.all()
   query.filter('student', student)
   query.filter('org', org)
@@ -685,3 +688,9 @@ def queryForStudentAndOrganizationAndStatus(student, org, status,
     query.filter('status', status)
 
   return query
+
+
+def queryForOrganization(org, keys_only=False):
+  """Returns a query for all tasks for the specified organization.
+  """
+  return GCITask.all().filter('org', org)
