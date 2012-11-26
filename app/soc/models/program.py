@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2008 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,13 +70,16 @@ class Program(soc.models.presence.Presence):
   student_min_age.help_text = ugettext(
       'Minimum age (in years) of the student participate.')
 
+  # TODO(nathaniel): In the offseason, fix this to be the maximum
+  # allowed age (rounded down to year) rather than user-unfriendly
+  # "youngest disallowed age".
   #: Property that contains the maximum age of a student allowed to
   #: participate
   student_max_age = db.IntegerProperty(default=100,
-      required=False, verbose_name=ugettext('Student maximum age'))
+      required=False, verbose_name=ugettext('Student age ceiling'))
   student_max_age.group = ugettext('Age Requirements')
   student_max_age.help_text = ugettext(
-      'Maximum age (in years) of the student to participate.')
+      'Youngest disallowed age (in years).')
 
   #: Property that contains the date as of which above student
   #: minimum/maximum age requirement holds.
