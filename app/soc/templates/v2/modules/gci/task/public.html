@@ -58,6 +58,16 @@ limitations under the License.
           jQuery(this).toggleClass("active").next().slideToggle("slow");
         });
 
+		/* If there is an error in the comment form, it should be expanded */
+		jQuery(".form-comment-post-new").each(function() {
+
+		  var errors = jQuery(this).find(".error");
+		  if (errors.length > 0) {
+			jQuery("div.block-comments-post-new").slideToggle("slow");
+		  }
+
+		});
+
         jQuery(".task-btn-extended-deadline").click(function() {
             jQuery("#deadline-extend").toggle();
         });
