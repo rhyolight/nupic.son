@@ -322,8 +322,7 @@ body {
 .header {
     height: 143px;
 }
-    .header .logo {
-        background-image:url(../../../images/gci/google_code-in.png);
+    .header .logo img {
         float: left;
         height: 127px;
         margin: 10px 0 0 58px;
