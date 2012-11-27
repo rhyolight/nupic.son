@@ -103,6 +103,7 @@ class Header(Template):
     return {
         'home_link': self.data.redirect.homepage().url(),
         'gsoc_link': gsoc_link,
+        'program_id': self.data.program.link_id,
     }
 
 
