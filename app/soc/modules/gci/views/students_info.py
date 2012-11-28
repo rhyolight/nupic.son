@@ -39,6 +39,20 @@ class AllParticipatingStudentList(StudentList):
 
   def __init__(self, request, data):
     super(AllParticipatingStudentList, self).__init__(request, data)
+
+
+    def formVerified(verified_prop):
+      """Returns Yes/No based on whether the form verified property's value."""
+      return "Yes" if verified_prop else "No"
+
+    # Columns that display whether the student forms are already verified.
+    self._list_config.addColumn(
+        'consent_form_verified', 'Consent Form Verified',
+        (lambda e, sp, *args: formVerified(e.consent_form_verified)))
+    self._list_config.addColumn(
+        'student_id_form_verified', 'Student ID Form Verified',
+        (lambda e, sp, *args: formVerified(e.student_id_form_verified)))
+
     # Each individual item in the list of students for the host now redirect
     # to the profile show page for that student that which is available only
     # to hosts. The super class redirected the list items to the list of
