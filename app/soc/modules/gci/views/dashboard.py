@@ -37,7 +37,9 @@ from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
@@ -750,8 +752,20 @@ class MyOrgsTaskList(Component):
           logging.warning('Not an org admin')
           return
 
-        task.status = 'Open' if publish else 'Unpublished'
-        task.put()
+        if publish:
+          if task.status in UNPUBLISHED:
+            task.status = 'Open'
+            task.put()
+          else:
+            logging.warning('Trying to publish task with %s status.' %
+                task.status)
+        else:
+          if task.status in CLAIMABLE:
+            task.status = 'Unpublished'
+            task.put()
+          else:
+            logging.warning('Trying to unpublish task with %s status.' %
+                task.status)
 
       db.run_in_transaction(publish_task_txn)
     return True
