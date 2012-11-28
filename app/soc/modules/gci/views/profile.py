@@ -41,6 +41,11 @@ from soc.modules.gci.views.base import RequestHandler
 from soc.modules.gci.views.helper import url_names
 
 
+LINK_ID_HELP_TEXT = ugettext(
+    'This is a username that will be displayed on your dashboard URL, but '
+    'it is not the public name that will be displayed in correspondence '
+    'with mentors, on the tasks pages, etc. [a-z, 0-9 and underscores only]')
+
 PARENTAL_CONSENT_ADVICE = ugettext(
     'Please make sure that you have your parent or guardian\'s permission '
     'to participate in Google Code-in before filling out your profile!')
@@ -81,7 +86,7 @@ class GCIUserForm(gci_forms.GCIModelForm):
     css_prefix = 'user'
     fields = ['link_id']
 
-  link_id = gci_forms.CharField(label='URL ID')
+  link_id = gci_forms.CharField(label='URL ID', help_text=LINK_ID_HELP_TEXT)
   clean_link_id = cleaning.clean_user_not_exist('link_id')
 
 
