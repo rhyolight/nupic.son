@@ -516,7 +516,7 @@ class TaskInformation(Template):
     is_owner = task_logic.isOwnerOfTask(task, profile)
 
     if is_org_admin:
-      can_unpublish = (task.status in CLAIMABLE) and not task.student
+      can_unpublish = task.status == 'Open' and not task.student
       context['button_unpublish'] = can_unpublish
 
       can_publish = task.status in UNPUBLISHED
