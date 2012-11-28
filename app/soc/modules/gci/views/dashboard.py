@@ -595,6 +595,8 @@ class MyOrgsTaskList(Component):
   """
 
   IDX = 1
+  PUBLISH_BUTTON_ID = 'publish'
+  UNPUBLISH_BUTTON_ID = 'unpublish'
 
   def __init__(self, request, data):
     """Initializes the component.
@@ -680,8 +682,10 @@ class MyOrgsTaskList(Component):
       # make the querying easier across entity groups we only use entity ids
       # as keys.
       keys = ['key']
-      list_config.addPostButton('publish', 'Publish', '', bounds, keys)
-      list_config.addPostButton('unpublish', 'Unpublish', '', bounds, keys)
+      list_config.addPostButton(
+          self.PUBLISH_BUTTON_ID, 'Publish', '', bounds, keys)
+      list_config.addPostButton(
+          self.UNPUBLISH_BUTTON_ID, 'Unpublish', '', bounds, keys)
 
     self._list_config = list_config
 
@@ -709,10 +713,10 @@ class MyOrgsTaskList(Component):
     if not button_id:
       raise exceptions.BadRequest('Missing button_id')
 
-    if button_id == 'publish':
+    if button_id == self.PUBLISH_BUTTON_ID:
       return self.postPublish(parsed, True)
 
-    if button_id == 'unpublish':
+    if button_id == self.UNPUBLISH_BUTTON_ID:
       return self.postPublish(parsed, False)
 
     raise exceptions.BadRequest("Unknown button_id")
