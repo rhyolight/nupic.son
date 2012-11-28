@@ -136,6 +136,12 @@ def sendBlob(blob_info):
     filename = filename.encode('utf-8')
 
   response = Response()
+  # We set the cache control to disable all kinds of caching hoping
+  # that Appengine does not cache the blob keys in the header if we
+  # set this.
+  response['Cache-Control'] = (
+      'no-store, no-cache, must-revalidate, post-check=0, pre-check=0')
+
   response['Content-Type'] = content_type
   response['Content-Disposition'] = (CONTENT_DISPOSITION % filename)
   response[blobstore.BLOB_KEY_HEADER] = str(blob_info.key())
