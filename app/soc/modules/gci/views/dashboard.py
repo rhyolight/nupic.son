@@ -760,7 +760,7 @@ class MyOrgsTaskList(Component):
             logging.warning('Trying to publish task with %s status.' %
                 task.status)
         else:
-          if task.status in CLAIMABLE:
+          if task.status == 'Open':
             task.status = 'Unpublished'
             task.put()
           else:

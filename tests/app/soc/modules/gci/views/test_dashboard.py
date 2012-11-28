@@ -83,8 +83,9 @@ class DashboardTest(GCIDjangoTestCase):
     # check if Open task may be unpublished
     self._testPostPublish('Open', 'Unpublished', 'unpublish')
 
-    # check if Reopened task may be unpublished
-    self._testPostPublish('Reopened', 'Unpublished', 'unpublish')
+    # check if Reopened task may not be changed
+    self._testPostPublish('Reopened', 'Reopened', 'publish')
+    self._testPostPublish('Reopened', 'Reopened', 'unpublish')
 
     # check if Claimed task may not be changed
     self._testPostPublish('Claimed', 'Claimed', 'publish')
