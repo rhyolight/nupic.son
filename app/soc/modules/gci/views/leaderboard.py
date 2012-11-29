@@ -124,7 +124,7 @@ class LeaderboardPage(GCIRequestHandler):
     ]
 
   def checkAccess(self):
-    pass
+    self.check.isHost()
 
   def jsonContext(self):
     list_content = LeaderboardList(self.request, self.data).getListData()
@@ -164,7 +164,7 @@ class StudentTasksPage(GCIRequestHandler):
     ]
 
   def checkAccess(self):
-    pass
+    self.check.isHost()
 
   def jsonContext(self):
     self.mutator.studentFromKwargs()
