@@ -47,10 +47,10 @@ class AllParticipatingStudentList(StudentList):
 
     # Columns that display whether the student forms are already verified.
     self._list_config.addColumn(
-        'consent_form_verified', 'Consent Form Verified',
+        'consent_form_verified', 'Parental Verified',
         (lambda e, sp, *args: formVerified(e.consent_form_verified)))
     self._list_config.addColumn(
-        'student_id_form_verified', 'Student ID Form Verified',
+        'student_id_form_verified', 'Student Verified',
         (lambda e, sp, *args: formVerified(e.student_id_form_verified)))
 
     # Each individual item in the list of students for the host now redirect
