@@ -18,11 +18,11 @@
 """
 
 
+from soc.logic import exceptions
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
-from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.models.score import GCIOrgScore
 from soc.modules.gci.templates.org_list import BasicOrgList
 from soc.modules.gci.views.base import RequestHandler
@@ -115,7 +115,7 @@ class OrgScoresForOrgzanizationPage(RequestHandler):
     list_content = OrgScoresList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
+      raise exceptions.AccessViolation(
           'You do not have access to this data')
     return list_content.content()
 
@@ -159,7 +159,7 @@ class ChooseOrganizationForOrgScorePage(RequestHandler):
         self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
+      raise exceptions.AccessViolation(
           'You do not have access to this data')
     return list_content.content()
 
