@@ -362,6 +362,13 @@ class ParticipantsDashboard(Dashboard):
             'title': 'List students',
             'link': r.urlOf(url_names.GCI_STUDENTS_INFO)
         },
+        {
+            'name': 'leaderboard',
+            'description': ugettext(
+                'Leaderboard for the program'),
+            'title': 'Leaderboard',
+            'link': r.urlOf(url_names.GCI_LEADERBOARD)
+        },
     ]
 
     super(ParticipantsDashboard, self).__init__(request, data, subpages)
