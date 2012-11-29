@@ -229,13 +229,6 @@ class ProgramSettingsDashboard(Dashboard):
             'title': 'List of documents',
             'link': r.urlOf('list_gci_documents')
         },
-        {
-            'name': 'students_info',
-            'description': ugettext(
-                'Details of students participating in the current program.'),
-            'title': 'Details of students',
-            'link': r.urlOf(url_names.GCI_STUDENTS_INFO) 
-        },
     ]
 
     super(ProgramSettingsDashboard, self).__init__(request, data, subpages)
