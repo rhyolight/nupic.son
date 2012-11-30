@@ -68,8 +68,8 @@ DEF_NOT_ALLOWED_TO_DELETE = ugettext(
     'You are not allowed to delete this submission')
 
 DEF_CANT_SEND_FOR_REVIEW = ugettext(
-    'Only a task that you own and that has submitted work can be send in '
-    'for review.')
+    'Only a task that you own and that has submitted work and that has '
+    'not been closed can be send in for review.')
 
 
 class CommentForm(gci_forms.GCIModelForm):
@@ -231,7 +231,8 @@ class TaskViewPage(RequestHandler):
       if 'send_for_review' in self.data.GET:
         self.check.isBeforeAllWorkStopped()
         if not task_logic.isOwnerOfTask(self.data.task, self.data.profile) or \
-            not self.data.work_submissions:
+            not self.data.work_submissions or \
+            self.data.task.status not in TASK_IN_PROGRESS:
           self.check.fail(DEF_CANT_SEND_FOR_REVIEW)
 
       if 'delete_submission' in self.data.GET:
