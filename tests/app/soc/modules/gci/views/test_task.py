@@ -533,13 +533,14 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.status = 'Claimed'
     self.task.student = self.data.profile
     # set deadline to far future
-    self.task.deadline = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+    self.task.deadline = datetime.datetime.utcnow() + \
+        datetime.timedelta(days=1)
     self.task.put()
 
     GCITaskHelper(self.program).createWorkSubmission(
         self.task, self.data.profile)
 
-    url = '%s?send_for_review' %self._taskPageUrl(self.task)
+    url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
 
     task = GCITask.get(self.task.key())
