@@ -131,6 +131,25 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Unpublished')
 
+  def testPostButtonUnpublishReopenedTaskForbidden(self):
+    """Tests the unpublish button on.
+    """
+    self.data.createOrgAdmin(self.org)
+
+    url = self._taskPageUrl(self.task)
+
+    # try to unpublish a reopened task
+    task = GCITask.get(self.task.key())
+    task.status = 'Reopened'
+    task.put()
+
+    response = self.buttonPost(url, 'button_unpublish')
+
+    task = GCITask.get(self.task.key())
+
+    self.assertResponseForbidden(response)
+    self.assertEqual(task.status, 'Reopened')
+
   def testPostButtonUnpublishByUserWithNoRole(self):
     """Tests the unpublish button by a user with no role.
     """
