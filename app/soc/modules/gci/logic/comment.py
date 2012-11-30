@@ -50,7 +50,7 @@ def storeAndNotifyTxn(comment, task=None):
   to_emails = []
   profiles = GCIProfile.get(task.subscribers)
   for profile in profiles:
-    if ((not comment.created_by) or
+    if profile and ((not comment.created_by) or
         profile.user.key() != comment.created_by.key()):
       to_emails.append(profile.email)
 
