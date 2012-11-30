@@ -16,7 +16,7 @@
 module is largely based on appengine's webapp framework's code.
 """
 
-
+import httplib
 import urllib
 
 from google.appengine.ext import db
@@ -24,17 +24,15 @@ from google.appengine.ext import db
 from django.utils import simplejson
 from django.template import loader
 
-from soc.logic.exceptions import LoginRequest
-from soc.logic.exceptions import RedirectRequest
-from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import GDocsLoginRequest
-from soc.logic.exceptions import MaintainceMode
-from soc.logic.exceptions import Error
+from soc.logic import exceptions
 from soc.views.helper import access_checker
-from soc.views.helper.response import Response
 from soc.views.helper import context as context_helper
-from soc.views.helper.request_data import RequestData
-from soc.views.helper.request_data import RedirectHelper
+from soc.views.helper import request_data
+from soc.views.helper import response as response_helper
+
+# TODO(nathaniel): Clean up this legacy API re-export by redirecting
+# clients using this module attribute to its actual definition.
+Response = response_helper.Response
 
 
 class RequestHandler(object):
@@ -88,34 +86,28 @@ class RequestHandler(object):
     }
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
-    self.error(405)
+    """Handler for HTTP POST request."""
+    self.error(httplib.METHOD_NOT_ALLOWED)
 
   def head(self):
-    """Handler for HTTP HEAD request.
-    """
-    self.error(405)
+    """Handler for HTTP HEAD request."""
+    self.error(httplib.METHOD_NOT_ALLOWED)
 
   def options(self):
-    """Handler for HTTP OPTIONS request.
-    """
-    self.error(405)
+    """Handler for HTTP OPTIONS request."""
+    self.error(httplib.METHOD_NOT_ALLOWED)
 
   def put(self):
-    """Handler for HTTP PUT request.
-    """
-    self.error(405)
+    """Handler for HTTP PUT request."""
+    self.error(httplib.METHOD_NOT_ALLOWED)
 
   def delete(self):
-    """Handler for HTTP DELETE request.
-    """
-    self.error(405)
+    """Handler for HTTP DELETE request."""
+    self.error(httplib.METHOD_NOT_ALLOWED)
 
   def trace(self):
-    """Handler for HTTP TRACE request.
-    """
-    self.error(405)
+    """Handler for HTTP TRACE request."""
+    self.error(httplib.METHOD_NOT_ALLOWED)
 
   def error(self, status, message=None):
     """Sets the error response code and message when an error is encountered.
@@ -125,7 +117,7 @@ class RequestHandler(object):
       message: the message to set, uses default if None
     """
     self.response.set_status(status, message=message)
-    template_path = "error.html"
+    template_path = 'error.html'
     context = {
         'page_name': self.response.content,
         'message': self.response.content,
@@ -139,11 +131,13 @@ class RequestHandler(object):
     return []
 
   def checkAccess(self):
-    """Raise an exception if the user doesn't have access to the
-    requested URL.
+    # TODO(nathaniel): this doesn't actually raise an exception as it says.
+    # TODO(nathaniel): what exception should it raise if it did?
+    """Raise an exception if the user doesn't have access to the requested URL.
     """
-    self.error(401, "checkAccess in base RequestHandler has not been changed "
-               "to grant access")
+    self.error(
+        httplib.UNAUTHORIZED,
+        'RequestHandler.checkAccess has not been overridden to allow access')
 
   def render(self, template_path, render_context):
     """Renders the page using the specified context.
@@ -165,7 +159,7 @@ class RequestHandler(object):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
 
-    Subclasses should override this method.
+    Implementing subclasses must override this method.
     """
     raise NotImplementedError()
 
@@ -199,7 +193,7 @@ class RequestHandler(object):
     elif self.request.method == 'TRACE':
       self.trace()
     else:
-      self.error(501)
+      self.error(httplib.NOT_IMPLEMENTED)
 
   def init(self, request, args, kwargs):
     """Initializes the RequestHandler.
@@ -207,7 +201,7 @@ class RequestHandler(object):
     Sets the data and check fields.
     """
     if self.data.site.maintenance_mode and not self.data.is_developer:
-      raise MaintainceMode(
+      raise exceptions.MaintainceMode(
           'The site is currently in maintenance mode. Please try again later.')
 
   def __call__(self, request, *args, **kwargs):
@@ -224,23 +218,23 @@ class RequestHandler(object):
     self.args = args
     self.kwargs = kwargs
 
-    self.response = Response()
+    self.response = response_helper.Response()
 
     try:
       self.init(request, args, kwargs)
       self.checkAccess()
       self._dispatch()
-    except LoginRequest, e:
+    except exceptions.LoginRequest, e:
       request.get_full_path().encode('utf-8')
       self.redirect.login().to()
-    except RedirectRequest, e:
+    except exceptions.RedirectRequest, e:
       self.redirect.toUrl(e.url)
-    except AccessViolation, e:
+    except exceptions.AccessViolation, e:
       self.accessViolation(e.status, e.args[0])
-    except GDocsLoginRequest, e:
+    except exceptions.GDocsLoginRequest, e:
       self.redirect.toUrl('%s?%s' % (self.redirect.urlOf(e.url_name),
                                      urllib.urlencode({'next':e.next})))
-    except Error, e:
+    except exceptions.Error, e:
       self.error(e.status, message=e.args[0])
     finally:
       response = self.response
@@ -257,12 +251,11 @@ class RequestHandler(object):
 
 
 class SiteRequestHandler(RequestHandler):
-  """Customization required by global site pages to handle HTTP requests.
-  """
+  """Customization required by global site pages to handle HTTP requests."""
 
   def init(self, request, args, kwargs):
-    self.data = RequestData()
-    self.redirect = RedirectHelper(self.data, self.response)
+    self.data = request_data.RequestData()
+    self.redirect = request_data.RedirectHelper(self.data, self.response)
     self.data.populate(None, request, args, kwargs)
     if self.data.is_developer:
       self.mutator = access_checker.DeveloperMutator(self.data)
