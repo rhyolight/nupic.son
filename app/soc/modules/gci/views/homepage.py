@@ -153,6 +153,8 @@ class ParticipatingOrgs(Template):
         'participating_orgs': participating_orgs,
         'participating_orgs_table_rows': participating_orgs_table_rows,
         'org_list_url': accepted_orgs_url,
+        'all_participating_orgs': (
+            self.data.program.nr_accepted_orgs <= len(participating_orgs)),
     }
 
   def templatePath(self):
