@@ -322,8 +322,10 @@ body {
 .header {
     height: 143px;
 }
-    .header .logo img {
+    .header .logo {
         float: left;
+    }
+    .header .logo img {
         height: 127px;
         margin: 10px 0 0 58px;
         width: 252px;
