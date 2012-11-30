@@ -546,6 +546,29 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'NeedsReview')
 
+  def testPostSendForReviewClosedTaskForbidden(self):
+    """Tests for submitting work for a task whose status is Closed.
+    """
+    self.data.createStudent()
+
+    self.task.status = 'Closed'
+    self.task.student = self.data.profile
+    # set deadline to far future
+    self.task.deadline = datetime.datetime.utcnow() + \
+        datetime.timedelta(days=1)
+    self.task.put()
+
+    GCITaskHelper(self.program).createWorkSubmission(
+        self.task, self.data.profile)
+
+    url = '%s?send_for_review' % self._taskPageUrl(self.task)
+    response = self.post(url)
+
+    self.assertResponseForbidden(response)
+
+    task = GCITask.get(self.task.key())
+    self.assertEqual(task.status, 'Closed')
+
   def testPostDeleteSubmission(self):
     """Tests for deleting work.
     """
