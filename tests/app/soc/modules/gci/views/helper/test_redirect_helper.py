@@ -3,9 +3,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,11 +14,10 @@
 
 """This module unit tests for RedirectHelper class."""
 
-
 from soc.views.helper.access_checker import unset
 from soc.views.helper.response import Response
 
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 
 from tests.test_utils import GCITestCase
@@ -33,7 +32,7 @@ class RedirectHelperTest(GCITestCase):
     self.init()
     request = MockRequest(path="/")
 
-    self.handler = RequestHandler()
+    self.handler = GCIRequestHandler()
     self.handler.response = Response()
     self.handler.init(request, (), {})
 

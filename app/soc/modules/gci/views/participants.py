@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GCI tasks list page.
-"""
-
+"""Module containing the view for GCI tasks list page."""
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import addresses
@@ -25,7 +21,7 @@ from soc.views.helper import lists
 from soc.views.template import Template
 
 from soc.modules.gci.models.profile import GCIProfile
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -95,9 +91,8 @@ class MentorsList(Template):
     return "v2/modules/gci/participants/_mentors_list.html"
 
 
-class MentorsListAdminPage(RequestHandler):
-  """View for the organization admin and mentors page for admin.
-  """
+class MentorsListAdminPage(GCIRequestHandler):
+  """View for the organization admin and mentors page for admin."""
 
   def templatePath(self):
     return 'v2/modules/gci/participants/base.html'

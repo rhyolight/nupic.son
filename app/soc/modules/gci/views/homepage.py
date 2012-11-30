@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GCI home page.
-"""
-
+"""Module containing the views for GCI home page."""
 
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -24,7 +20,7 @@ from soc.views.template import Template
 from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.views import common_templates
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
@@ -194,7 +190,7 @@ class ConnectWithUs(Template):
     return "v2/modules/gci/homepage/_connect_with_us.html"
 
 
-class Homepage(RequestHandler):
+class Homepage(GCIRequestHandler):
   """Encapsulate all the methods required to generate GCI Home page.
   """
 

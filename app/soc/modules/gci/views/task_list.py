@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GCI historic task page.
-"""
-
+"""Module containing the views for GCI historic task page."""
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import url_patterns
@@ -28,7 +24,7 @@ from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.templates.org_list import BasicOrgList
 from soc.modules.gci.templates.task_list import TaskList
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.forms import GCIModelForm
 #from soc.modules.gci.views.base_templates import ProgramSelect
 from soc.modules.gci.views.helper import url_names
@@ -80,7 +76,7 @@ class TaskList2(Template):
     return 'v2/modules/gci/task/_task_list.html'
 
 
-class TaskListPage(RequestHandler):
+class TaskListPage(GCIRequestHandler):
   """View for the list task page.
   """
 
@@ -131,7 +127,7 @@ class StudentTasksForOrganizationList(TaskList):
         self.data.url_profile, self.data.organization, 'Closed')
 
 
-class StudentTasksForOrganizationPage(RequestHandler):
+class StudentTasksForOrganizationPage(GCIRequestHandler):
   """View for the list of student tasks for organization.
   """
 
@@ -180,7 +176,7 @@ class ChooseOrganizationList(BasicOrgList):
     return 'Choose an organization for which to display tasks.'
 
 
-class ChooseOrganizationPage(RequestHandler):
+class ChooseOrganizationPage(GCIRequestHandler):
   """View with a list of organizations. When a user clicks on one of them,
   he or she is moved to the organization tasks for this organization.
   """
@@ -229,7 +225,7 @@ class AllOrganizationTasksList(TaskList):
     return task_logic.queryForOrganization(self.data.organization)
 
 
-class AllOrganizationTasksPage(RequestHandler):
+class AllOrganizationTasksPage(GCIRequestHandler):
   """View for program admins to see all tasks created by an organization
   which is specified in the URL.
   """

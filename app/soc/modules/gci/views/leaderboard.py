@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing the view for GCI leaderboard page.
-"""
+
+"""Module containing the view for GCI leaderboard page."""
 
 from soc.logic.exceptions import AccessViolation
 
@@ -28,7 +26,7 @@ from soc.modules.gci.models.score import GCIScore
 
 from soc.modules.gci.templates.task_list import TaskList
 from soc.modules.gci.views import common_templates
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -112,7 +110,7 @@ class AllStudentTasksList(TaskList):
     return task_logic.queryAllTasksClosedByStudent(self.data.url_profile)
 
 
-class LeaderboardPage(RequestHandler):
+class LeaderboardPage(GCIRequestHandler):
   """View for the leaderboard page.
   """
 
@@ -152,7 +150,7 @@ class LeaderboardPage(RequestHandler):
     return context
 
 
-class StudentTasksPage(RequestHandler):
+class StudentTasksPage(GCIRequestHandler):
   """View for the list of all the tasks closed by the specified student.
   """
 

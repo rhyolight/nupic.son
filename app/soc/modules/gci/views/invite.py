@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GCI invitation page.
-"""
-
+"""Module containing the view for GCI invitation page."""
 
 import logging
 
@@ -46,7 +42,7 @@ from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.request import GCIRequest
 
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -82,7 +78,7 @@ class InviteForm(gci_forms.GCIModelForm):
     self.fields.insert(0, 'identifiers', field)
     field.help_text = ugettext(
         "Comma separated usernames or emails of the people to invite.")
-    
+
   def clean_identifiers(self):
     """Accepts link_ids or email addresses of users which may be invited.
     """
@@ -165,7 +161,7 @@ class InviteForm(gci_forms.GCIModelForm):
     query.filter('role', self.request_data.kwargs['role'])
     query.filter('org', self.request_data.organization)
     return query
-  
+
   def _getProfile(self, user_to_invite):
     key_name = '/'.join([
         self.request_data.program.key().name(), user_to_invite.link_id])
@@ -182,7 +178,7 @@ class ManageInviteForm(gci_forms.GCIModelForm):
     fields = ['message']
 
 
-class InvitePage(RequestHandler):
+class InvitePage(GCIRequestHandler):
   """Encapsulate all the methods required to generate Invite page.
   """
 
@@ -227,7 +223,7 @@ class InvitePage(RequestHandler):
     assert isSet(self.data.organization)
 
     invite_form = InviteForm(self.data, self.data.POST)
-    
+
     if not invite_form.is_valid():
       return False
 
@@ -264,7 +260,7 @@ class InvitePage(RequestHandler):
     self.redirect.dashboard().to()
 
 
-class ManageInvite(RequestHandler):
+class ManageInvite(GCIRequestHandler):
   """View to manage the invitation by organization admins.
   """
 
@@ -358,7 +354,7 @@ class ManageInvite(RequestHandler):
     return GCIProfile.get_by_key_name(key_name, parent=self.data.invited_user)
 
 
-class RespondInvite(RequestHandler):
+class RespondInvite(GCIRequestHandler):
   """View to respond to the invitation by the user.
   """
 
@@ -453,7 +449,7 @@ class UserInvitesList(Template):
     return 'v2/modules/gci/invite/_invite_list.html'
 
 
-class ListUserInvitesPage(RequestHandler):
+class ListUserInvitesPage(GCIRequestHandler):
   """View for the page that lists all the invites which have been sent to
   the current user.
   """

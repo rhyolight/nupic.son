@@ -28,8 +28,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.templates.org_list import OrgList
-from soc.modules.gci.views.base import RequestHandler
-#from soc.modules.gci.views.base_templates import ProgramSelect
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
@@ -66,7 +65,7 @@ class AcceptedOrgsList(OrgList):
     return query
 
 
-class AcceptedOrgsPage(RequestHandler):
+class AcceptedOrgsPage(GCIRequestHandler):
   """View for the accepted organizations page.
   """
 
@@ -140,7 +139,7 @@ class AcceptedOrgsAdminList(OrgList):
     return query
 
 
-class AcceptedOrgsAdminPage(RequestHandler):
+class AcceptedOrgsAdminPage(GCIRequestHandler):
   """View for the accepted organizations page for admin with additional info.
   """
 

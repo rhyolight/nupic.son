@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI profile page.
-"""
-
+"""Module for the GCI profile page."""
 
 from django import forms as django_forms
 from django.core.urlresolvers import reverse
@@ -37,7 +33,7 @@ from soc.modules.gci.models.avatars import COLORS
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 
 
@@ -268,9 +264,8 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
         model, ['school_country', 'school_type', 'degree'])
 
 
-class GCIProfilePage(profile.ProfilePage, RequestHandler):
-  """View for the GCI participant profile.
-  """
+class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
+  """View for the GCI participant profile."""
 
   def checkAccess(self):
     self.check.isProgramVisible()
@@ -390,4 +385,3 @@ class GCIProfilePage(profile.ProfilePage, RequestHandler):
   def _getStudentInfoForm(self):
     return GCIStudentInfoForm(self.data.POST or None,
                               instance=self.data.student_info)
-

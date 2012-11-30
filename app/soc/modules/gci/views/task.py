@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Views for the GCI Task view page.
-"""
-
+"""Views for the GCI Task view page."""
 
 import datetime
 
@@ -44,7 +40,7 @@ from soc.modules.gci.models.task import TASK_IN_PROGRESS
 from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_patterns
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
@@ -176,9 +172,8 @@ class WorkSubmissionURLForm(gci_forms.GCIModelForm):
     return url
 
 
-class TaskViewPage(RequestHandler):
-  """View for the GCI Task view page where all the actions happen.
-  """
+class TaskViewPage(GCIRequestHandler):
+  """View for the GCI Task view page where all the actions happen."""
 
   def djangoURLPatterns(self):
     """URL pattern for this view.
@@ -692,33 +687,28 @@ class CommentsTemplate(Template):
     return context
 
   def _commentingAllowed(self):
-    """Returns true iff the comments are allowed to be posted at this time.
-    """
+    """Returns true iff the comments are allowed to be posted at this time."""
     return not self.data.timeline.allWorkStopped() or (
         not self.data.timeline.allReviewsStopped() and
         self.data.mentorFor(self.data.task.org))
 
   def templatePath(self):
-    """Returns the path to the template that should be used in render().
-    """
+    """Returns the path to the template that should be used in render()."""
     return 'v2/modules/gci/task/_comments.html'
 
 
-class WorkSubmissionDownload(RequestHandler):
-  """Request handler for downloading blobs from a GCIWorkSubmission.
-  """
+class WorkSubmissionDownload(GCIRequestHandler):
+  """Request handler for downloading blobs from a GCIWorkSubmission."""
 
   def djangoURLPatterns(self):
-    """URL pattern for this view.
-    """
+    """URL pattern for this view."""
     return [
         url(r'work/download/%s$' % url_patterns.TASK, self,
             name='gci_download_work'),
     ]
 
   def checkAccess(self):
-    """Checks whether this task is visible to the public.
-    """
+    """Checks whether this task is visible to the public."""
     self.mutator.taskFromKwargs()
     self.check.isTaskVisible()
 

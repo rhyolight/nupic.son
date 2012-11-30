@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the Students Info view for the admin.
-"""
-
+"""Module containing the Students Info view for the admin."""
 
 from google.appengine.ext import db
 
@@ -28,7 +26,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.templates.student_list import StudentList
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
@@ -75,9 +73,8 @@ class AllParticipatingStudentList(StudentList):
     }
 
 
-class StudentsInfoPage(RequestHandler):
-  """View for the students info page for the admin.
-  """
+class StudentsInfoPage(GCIRequestHandler):
+  """View for the students info page for the admin."""
 
   def templatePath(self):
     return 'v2/modules/gci/students_info/base.html'

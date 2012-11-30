@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI Organization application.
-"""
-
+"""Module for the GCI Organization application."""
 
 import logging
 
@@ -32,12 +28,12 @@ from soc.views.helper import url_patterns
 
 from soc.logic import org_app as org_app_logic
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-class GCIOrgAppEditPage(RequestHandler):
+class GCIOrgAppEditPage(GCIRequestHandler):
   """View for creating/editing organization application.
   """
 
@@ -111,7 +107,7 @@ class GCIOrgAppEditPage(RequestHandler):
       self.get()
 
 
-class GCIOrgAppPreviewPage(RequestHandler):
+class GCIOrgAppPreviewPage(GCIRequestHandler):
   """View for organizations to submit their application.
   """
 
@@ -141,7 +137,7 @@ class GCIOrgAppPreviewPage(RequestHandler):
     return context
 
 
-class GCIOrgAppTakePage(RequestHandler):
+class GCIOrgAppTakePage(GCIRequestHandler):
   """View for organizations to submit their application.
   """
 
@@ -229,12 +225,12 @@ class GCIOrgAppTakePage(RequestHandler):
       self.get()
 
 
-class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
+class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
   """View for listing all records of a GCI Organization application.
   """
 
   def __init__(self, *args, **kwargs):
-    RequestHandler.__init__(self, *args, **kwargs)
+    GCIRequestHandler.__init__(self, *args, **kwargs)
     org_app.OrgAppRecordsList.__init__(self, 'gci_show_org_app')
 
   def djangoURLPatterns(self):
@@ -290,15 +286,13 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
 
 
 class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):
-  """Template to construct readonly organization application record.
-  """
+  """Template to construct readonly organization application record."""
 
   template_path = 'v2/modules/gci/org_app/readonly_template.html'
 
 
-class GCIOrgAppShowPage(RequestHandler):
-  """View to display the readonly page for organization application.
-  """
+class GCIOrgAppShowPage(GCIRequestHandler):
+  """View to display the readonly page for organization application."""
 
   def djangoURLPatterns(self):
     return [

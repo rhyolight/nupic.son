@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI organization profile page.
-"""
-
+"""Module for the GCI organization profile page."""
 
 from soc.views.helper import url_patterns
 from soc.views import org_profile
 
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
@@ -31,9 +27,9 @@ PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
     'task_quota_limit',
 ]
 
+
 class OrgProfileForm(org_profile.OrgProfileForm):
-  """Django form for the organization profile.
-  """
+  """Django form for the organization profile."""
 
   def __init__(self, *args, **kwargs):
     super(OrgProfileForm, self).__init__(
@@ -49,8 +45,7 @@ class OrgProfileForm(org_profile.OrgProfileForm):
 
 
 class OrgCreateProfileForm(OrgProfileForm):
-  """Django form to create the organization profile.
-  """
+  """Django form to create the organization profile."""
 
   class Meta:
     model = GCIOrganization
@@ -58,9 +53,8 @@ class OrgCreateProfileForm(OrgProfileForm):
     exclude = PROFILE_EXCLUDE
 
 
-class OrgProfilePage(RequestHandler):
-  """View for the Organization Profile page.
-  """
+class OrgProfilePage(GCIRequestHandler):
+  """View for the Organization Profile page."""
 
   def djangoURLPatterns(self):
     return [

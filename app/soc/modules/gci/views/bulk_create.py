@@ -25,7 +25,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.models.bulk_create_data import GCIBulkCreateData
 from soc.modules.gci.tasks import bulk_create
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -43,7 +43,7 @@ class BulkCreateForm(gci_forms.GCIModelForm):
                               widget=forms.Textarea)
 
 
-class BulkCreate(RequestHandler):
+class BulkCreate(GCIRequestHandler):
   """View for bulk creation of GCITasks.
   """
 

@@ -29,7 +29,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.program import GCIProgramMessages
 from soc.modules.gci.models.timeline import GCITimeline
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.forms import GCIModelForm
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
@@ -86,9 +86,8 @@ class GCIProgramMessagesForm(GCIModelForm):
     model = GCIProgramMessages
 
 
-class ProgramPage(RequestHandler):
-  """View for the program profile.
-  """
+class ProgramPage(GCIRequestHandler):
+  """View for the program profile."""
 
   def djangoURLPatterns(self):
     return [
@@ -145,7 +144,7 @@ class ProgramPage(RequestHandler):
       self.get()
 
 
-class TimelinePage(RequestHandler):
+class TimelinePage(GCIRequestHandler):
   """View for the participant profile."""
 
   def djangoURLPatterns(self):
@@ -192,7 +191,7 @@ class TimelinePage(RequestHandler):
 
 
 class GCIProgramMessagesPage(
-    program_view.ProgramMessagesPage, RequestHandler):
+    program_view.ProgramMessagesPage, GCIRequestHandler):
   """View for the content of GCI program specific messages to be sent."""
 
   def djangoURLPatterns(self):

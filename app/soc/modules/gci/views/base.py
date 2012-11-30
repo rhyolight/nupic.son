@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the boiler plate required to construct GCI views.
-"""
+"""Module containing the boiler plate required to construct GCI views."""
 
-
-from soc.views.base import RequestHandler
+from soc.views import base
 
 from soc.modules.gci.views import base_templates
 from soc.modules.gci.views.helper import access_checker
-from soc.modules.gci.views.helper.request_data import RequestData
-from soc.modules.gci.views.helper.request_data import RedirectHelper
+from soc.modules.gci.views.helper import request_data
 
 
-class RequestHandler(RequestHandler):
+class GCIRequestHandler(base.RequestHandler):
   """Customization required by GCI to handle HTTP requests.
   """
 
@@ -47,11 +42,11 @@ class RequestHandler(RequestHandler):
     context['header'] = base_templates.Header(self.data)
     context['mainmenu'] = base_templates.MainMenu(self.data)
     context['footer'] = base_templates.Footer(self.data)
-    super(RequestHandler, self).render(template_path, context)
+    super(GCIRequestHandler, self).render(template_path, context)
 
   def init(self, request, args, kwargs):
-    self.data = RequestData()
-    self.redirect = RedirectHelper(self.data, self.response)
+    self.data = request_data.RequestData()
+    self.redirect = request_data.RedirectHelper(self.data, self.response)
     self.data.populate(self.redirect, request, args, kwargs)
     if self.data.is_developer:
       self.mutator = access_checker.DeveloperMutator(self.data)
@@ -59,11 +54,11 @@ class RequestHandler(RequestHandler):
     else:
       self.mutator = access_checker.Mutator(self.data)
       self.check = access_checker.AccessChecker(self.data)
-    super(RequestHandler, self).init(request, args, kwargs)
+    super(GCIRequestHandler, self).init(request, args, kwargs)
 
   def error(self, status, message=None):
     if not self.data.program:
-      return super(RequestHandler, self).error(status, message)
+      return super(GCIRequestHandler, self).error(status, message)
 
     self.response.set_status(status, message=message)
 
