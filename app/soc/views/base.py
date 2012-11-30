@@ -82,7 +82,7 @@ class RequestHandler(object):
     with 'fmt=json' parameter.
     """
     return {
-        'error': "json() method not implemented",
+        'error': 'json() method not implemented',
     }
 
   def post(self):
@@ -127,8 +127,11 @@ class RequestHandler(object):
     self.render(template_path, context)
 
   def djangoURLPatterns(self):
-    """Returns a list of Django URL pattern tuples."""
-    return []
+    """Returns a list of Django URL pattern tuples.
+
+    Implementing subclasses must override this method.
+    """
+    raise NotImplementedError()
 
   def checkAccess(self):
     # TODO(nathaniel): this doesn't actually raise an exception as it says.
