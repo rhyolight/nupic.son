@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the boiler plate required to construct GSoC views.
-"""
+"""Module containing the boiler plate required to construct GSoC views."""
 
+import httplib
 
 from soc.views.base import RequestHandler
 
@@ -27,8 +25,7 @@ from soc.modules.gsoc.views.helper.request_data import RedirectHelper
 
 
 class RequestHandler(RequestHandler):
-  """Customization required by GSoC to handle HTTP requests.
-  """
+  """Customization required by GSoC to handle HTTP requests."""
 
   def render(self, template_path, context):
     """Renders the page using the specified context.
@@ -74,14 +71,16 @@ class RequestHandler(RequestHandler):
     if not self.data.program:
       return super(RequestHandler, self).error(status, message)
 
-    self.response.set_status(status, message=message)
+    # If message is not set, set it to the default associated with the
+    # given status (such as "Method Not Allowed" or "Service Unavailable").
+    message = message or httplib.responses.get(status, '')
 
-    template_path = "v2/modules/gsoc/error.html"
+    template_path = 'v2/modules/gsoc/error.html'
     context = {
-        'page_name': self.response.content,
-        'message': self.response.content,
+        'page_name': message,
+        'message': message,
         'logged_in_msg': base_templates.LoggedInMsg(self.data, apply_link=False),
     }
 
-    self.response.content = ''
+    self.response.status_code = status
     self.render(template_path, context)

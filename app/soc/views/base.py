@@ -116,14 +116,17 @@ class RequestHandler(object):
       status: the HTTP status error code
       message: the message to set, uses default if None
     """
-    self.response.set_status(status, message=message)
+    # If message is not set, set it to the default associated with the
+    # given status (such as "Method Not Allowed" or "Service Unavailable").
+    message = message or httplib.responses.get(status, '')
+
     template_path = 'error.html'
     context = {
-        'page_name': self.response.content,
-        'message': self.response.content,
+        'page_name': message,
+        'message': message,
     }
 
-    self.response.content = ''
+    self.response.status_code = status
     self.render(template_path, context)
 
   def djangoURLPatterns(self):

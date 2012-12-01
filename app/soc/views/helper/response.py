@@ -25,18 +25,14 @@ class Response(http.HttpResponse):
   with message for every possible HTTP response code.
   """
 
-  def set_status(self, status, message=None):
-    """Sets the HTTP status and message for this response.
+  def set_status(self, status):
+    """Sets the HTTP status and content for this response.
+
+    The content of this Response will be set to the standard response for
+    the given status as found in httplib.responses.
 
     Args:
-      status: HTTP status code
-      message: the HTTP status string to use
-
-    If no status string is given, we use the default from the HTTP/1.1
-    specification defined httplib.responses.
+      status: HTTP status code.
     """
-    if not message:
-      message = httplib.responses.get(status, '')
-
     self.status_code = status
-    self.content = message
+    self.content = httplib.responses.get(status, '')

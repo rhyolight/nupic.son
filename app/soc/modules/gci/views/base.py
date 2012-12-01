@@ -14,6 +14,8 @@
 
 """Module containing the boiler plate required to construct GCI views."""
 
+import httplib
+
 from soc.views import base
 
 from soc.modules.gci.views import base_templates
@@ -60,13 +62,15 @@ class GCIRequestHandler(base.RequestHandler):
     if not self.data.program:
       return super(GCIRequestHandler, self).error(status, message)
 
-    self.response.set_status(status, message=message)
+    # If message is not set, set it to the default associated with the
+    # given status (such as "Method Not Allowed" or "Service Unavailable").
+    message = message or httplib.responses.get(status, '')
 
-    template_path = "v2/modules/gci/error.html"
+    template_path = 'v2/modules/gci/error.html'
     context = {
-        'page_name': self.response.content,
-        'message': self.response.content,
+        'page_name': message,
+        'message': message,
     }
 
-    self.response.content = ''
+    self.response.status_code = status
     self.render(template_path, context)
