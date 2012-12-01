@@ -24,13 +24,12 @@ from soc.modules.gci.views.helper import request_data
 
 
 class GCIRequestHandler(base.RequestHandler):
-  """Customization required by GCI to handle HTTP requests.
-  """
+  """Customization required by GCI to handle HTTP requests."""
 
   def render(self, template_path, context):
     """Renders the page using the specified context.
 
-    See soc.views.base.RequestHandler.
+    See soc.views.base.RequestHandler for specification.
 
     The context object is extended with the following values:
       base_layout: path to the base template.
@@ -44,7 +43,7 @@ class GCIRequestHandler(base.RequestHandler):
     context['header'] = base_templates.Header(self.data)
     context['mainmenu'] = base_templates.MainMenu(self.data)
     context['footer'] = base_templates.Footer(self.data)
-    super(GCIRequestHandler, self).render(template_path, context)
+    return super(GCIRequestHandler, self).render(template_path, context)
 
   def init(self, request, args, kwargs):
     self.data = request_data.RequestData()
@@ -73,4 +72,4 @@ class GCIRequestHandler(base.RequestHandler):
     }
 
     self.response.status_code = status
-    self.render(template_path, context)
+    self.response.write(self.render(template_path, context))
