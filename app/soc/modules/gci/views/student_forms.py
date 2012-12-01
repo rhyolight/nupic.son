@@ -139,8 +139,7 @@ class StudentFormUpload(GCIRequestHandler):
         }
 
   def get(self):
-    """Handles download of the forms otherwise resumes normal rendering.
-    """
+    """Handles download of the forms otherwise resumes normal rendering."""
     if 'consent_form' in self.data.GET:
       download = self.data.student_info.consent_form
     elif 'student_id_form' in self.data.GET:
@@ -149,15 +148,13 @@ class StudentFormUpload(GCIRequestHandler):
       return super(StudentFormUpload, self).get()
 
     # download has been requested
-    if not download:
+    if download:
+      self.response = bs_helper.sendBlob(download)
+    else:
       self.response = self.error(httplib.NOT_FOUND, message='File not found')
-      return
-
-    self.response = bs_helper.sendBlob(download)
 
   def context(self):
-    """Handler for default HTTP GET request.
-    """
+    """Handler for default HTTP GET request."""
     context = {
         'page_name': 'Student form upload'
         }
@@ -230,7 +227,6 @@ class StudentFormDownload(GCIRequestHandler):
 
   def get(self):
     """Allows hosts to download the student forms."""
-    download = None
     if url_names.CONSENT_FORM_GET_PARAM in self.data.GET:
       download = self.data.url_student_info.consent_form
     elif url_names.STUDENT_ID_FORM_GET_PARAM in self.data.GET:
@@ -239,8 +235,7 @@ class StudentFormDownload(GCIRequestHandler):
       raise BadRequest('No file requested')
 
     # download has been requested
-    if not download:
+    if download:
+      self.response = bs_helper.sendBlob(download)
+    else:
       self.response = self.error(httplib.NOT_FOUND, 'File not found')
-      return
-
-    self.response = bs_helper.sendBlob(download)
