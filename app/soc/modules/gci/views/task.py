@@ -719,15 +719,13 @@ class WorkSubmissionDownload(GCIRequestHandler):
     """Attempts to download the blob in the worksubmission that is specified
     in the GET argument.
     """
-    id_s = self.request.GET.get('id', '')
-    id = int(id_s) if id_s.isdigit() else -1
+    id_string = self.request.GET.get('id', '')
+    submission_id = int(id_string) if id_string.isdigit() else -1
 
-    work = GCIWorkSubmission.get_by_id(id, self.data.task)
+    work = GCIWorkSubmission.get_by_id(submission_id, self.data.task)
 
-    if not work or not work.upload_of_work:
+    if work and work.upload_of_work:
+      self.response = bs_helper.sendBlob(work.upload_of_work)
+    else:
       self.response = self.error(
-          httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % id)
-      return
-
-    upload = work.upload_of_work
-    self.response = bs_helper.sendBlob(upload)
+          httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % id_string)
