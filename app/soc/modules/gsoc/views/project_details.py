@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GSoC project details page.
-"""
+"""Module containing the view for GSoC project details page."""
 
+import httplib
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
@@ -542,7 +540,7 @@ class AssignMentors(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class FeaturedProject(RequestHandler):
@@ -597,4 +595,4 @@ class FeaturedProject(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)

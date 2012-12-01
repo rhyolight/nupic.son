@@ -16,6 +16,8 @@
 
 import httplib
 
+from django import http
+
 from soc.views.base import RequestHandler
 
 from soc.modules.gsoc.views import base_templates
@@ -68,6 +70,7 @@ class RequestHandler(RequestHandler):
     super(RequestHandler, self).init(request, args, kwargs)
 
   def error(self, status, message=None):
+    """See base.RequestHandler.error for specification."""
     if not self.data.program:
       return super(RequestHandler, self).error(status, message)
 
@@ -82,5 +85,5 @@ class RequestHandler(RequestHandler):
         'logged_in_msg': base_templates.LoggedInMsg(self.data, apply_link=False),
     }
 
-    self.response.status_code = status
-    self.response.write(self.render(template_path, context))
+    return http.HttpResponse(
+        content=self.render(template_path, context), status=status)

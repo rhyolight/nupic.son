@@ -14,6 +14,7 @@
 
 """Module for displaying the GCI profile read-only page."""
 
+import httplib
 import logging
 
 from django.utils import translation
@@ -150,11 +151,10 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
     return context
 
   def post(self):
-    """Handles student form verification by host.
-    """
+    """Handles student form verification by host."""
     if not self.data.url_profile.student_info:
       logging.warn(NON_STUDENT_ERR_MSG)
-      self.error(405)
+      self.response = self.error(httplib.METHOD_NOT_ALLOWED)
       return
 
     post_data = self.data.POST

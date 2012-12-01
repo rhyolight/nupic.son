@@ -21,6 +21,7 @@ import urllib
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils import simplejson
 from django.template import loader
 
@@ -89,37 +90,40 @@ class RequestHandler(object):
 
   def post(self):
     """Handler for HTTP POST request."""
-    self.error(httplib.METHOD_NOT_ALLOWED)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
   def head(self):
     """Handler for HTTP HEAD request."""
-    self.error(httplib.METHOD_NOT_ALLOWED)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
   def options(self):
     """Handler for HTTP OPTIONS request."""
-    self.error(httplib.METHOD_NOT_ALLOWED)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
   def put(self):
     """Handler for HTTP PUT request."""
-    self.error(httplib.METHOD_NOT_ALLOWED)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
   def delete(self):
     """Handler for HTTP DELETE request."""
-    self.error(httplib.METHOD_NOT_ALLOWED)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
   def trace(self):
     """Handler for HTTP TRACE request."""
-    self.error(httplib.METHOD_NOT_ALLOWED)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
   def error(self, status, message=None):
-    """Sets the error response code and message when an error is encountered.
+    """Constructs an HttpResponse indicating an error.
 
     Args:
-      status: the HTTP status error code
-      message: the message to set, uses default if None
+      status: The HTTP status code for the error.
+      message: A message to display to the user. If not supplied, a default
+        appropriate for the given status code (such as "Bad Gateway" or
+        "Payment Required") will be used.
+
+    Returns:
+      An http.HttpResponse indicating an error.
     """
-    # If message is not set, set it to the default associated with the
-    # given status (such as "Method Not Allowed" or "Service Unavailable").
     message = message or httplib.responses.get(status, '')
 
     template_path = 'error.html'
@@ -128,8 +132,8 @@ class RequestHandler(object):
         'message': message,
     }
 
-    self.response.status_code = status
-    self.response.write(self.render(template_path, context))
+    return http.HttpResponse(
+        content=self.render(template_path, context), status=status)
 
   def djangoURLPatterns(self):
     """Returns a list of Django URL pattern tuples.
@@ -143,7 +147,7 @@ class RequestHandler(object):
     # TODO(nathaniel): what exception should it raise if it did?
     """Raise an exception if the user doesn't have access to the requested URL.
     """
-    self.error(
+    self.response = self.error(
         httplib.UNAUTHORIZED,
         'RequestHandler.checkAccess has not been overridden to allow access')
 
@@ -174,7 +178,7 @@ class RequestHandler(object):
 
   def accessViolation(self, status, message):
     """Default access violation handler."""
-    self.error(status, message)
+    self.response = self.error(status, message)
 
   def _dispatch(self):
     """Dispatches the HTTP request to its respective handler method."""
@@ -202,7 +206,7 @@ class RequestHandler(object):
     elif self.request.method == 'TRACE':
       self.trace()
     else:
-      self.error(httplib.NOT_IMPLEMENTED)
+      self.response = self.error(httplib.NOT_IMPLEMENTED)
 
   def init(self, request, args, kwargs):
     """Initializes the RequestHandler.
@@ -244,7 +248,7 @@ class RequestHandler(object):
       self.redirect.toUrl('%s?%s' % (self.redirect.urlOf(e.url_name),
                                      urllib.urlencode({'next':e.next})))
     except exceptions.Error, e:
-      self.error(e.status, message=e.args[0])
+      self.response = self.error(e.status, message=e.args[0])
     finally:
       response = self.response
       self.response = None

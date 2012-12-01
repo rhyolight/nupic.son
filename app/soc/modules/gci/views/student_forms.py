@@ -150,7 +150,8 @@ class StudentFormUpload(GCIRequestHandler):
 
     # download has been requested
     if not download:
-      self.error(httplib.NOT_FOUND, 'File not found')
+      self.response = self.error(httplib.NOT_FOUND, message='File not found')
+      return
 
     self.response = bs_helper.sendBlob(download)
 
@@ -239,6 +240,7 @@ class StudentFormDownload(GCIRequestHandler):
 
     # download has been requested
     if not download:
-      self.error(httplib.NOT_FOUND, 'File not found')
+      self.response = self.error(httplib.NOT_FOUND, 'File not found')
+      return
 
     self.response = bs_helper.sendBlob(download)

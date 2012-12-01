@@ -16,6 +16,8 @@
 
 import httplib
 
+from django import http
+
 from soc.views import base
 
 from soc.modules.gci.views import base_templates
@@ -58,6 +60,7 @@ class GCIRequestHandler(base.RequestHandler):
     super(GCIRequestHandler, self).init(request, args, kwargs)
 
   def error(self, status, message=None):
+    """See base.RequestHandler.error for specification."""
     if not self.data.program:
       return super(GCIRequestHandler, self).error(status, message)
 
@@ -71,5 +74,5 @@ class GCIRequestHandler(base.RequestHandler):
         'message': message,
     }
 
-    self.response.status_code = status
-    self.response.write(self.render(template_path, context))
+    return http.HttpResponse(
+        content=self.render(template_path, context), status=status)
