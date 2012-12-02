@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC participant dashboard.
-"""
-
+"""Module for the GSoC participant dashboard."""
 
 import logging
 
@@ -57,7 +53,7 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.models.score import GSoCScore
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -134,7 +130,7 @@ class ComponentsDashboard(Dashboard):
     }
 
 
-class DashboardPage(RequestHandler):
+class DashboardPage(GSoCRequestHandler):
   """View for the participant dashboard.
   """
 

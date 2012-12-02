@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for displaying the GSoC profile read only page.
-"""
-
+"""Module for displaying the GSoC profile read only page."""
 
 from django.utils.translation import ugettext
 
@@ -29,7 +25,7 @@ from soc.views.helper.access_checker import isSet
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views import readonly_template
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -54,7 +50,7 @@ class GSoCProfileReadOnlyTemplate(readonly_template.GSoCModelReadOnlyTemplate):
 class GSoCHostActions(profile_show.HostActions):
   """Template to render the left side host actions.
   """
-  
+
   DEF_BAN_PROFILE_HELP = ugettext(
       'When a profile is banned, the user cannot participate in the program')
 
@@ -65,7 +61,7 @@ class GSoCHostActions(profile_show.HostActions):
     return self.DEF_BAN_PROFILE_HELP
 
 
-class GSoCBanProfilePost(profile_show.BanProfilePost, RequestHandler):
+class GSoCBanProfilePost(profile_show.BanProfilePost, GSoCRequestHandler):
   """Handles banning/unbanning of GSoC profiles.
   """
 
@@ -82,7 +78,7 @@ class GSoCBanProfilePost(profile_show.BanProfilePost, RequestHandler):
     return GSoCProfile
 
 
-class GSoCProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
+class GSoCProfileShowPage(profile_show.ProfileShowPage, GSoCRequestHandler):
   """View to display the read-only profile page.
   """
 
@@ -99,7 +95,7 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
     return GSoCProfileReadOnlyTemplate(profile)
 
 
-class GSoCProfileAdminPage(RequestHandler):
+class GSoCProfileAdminPage(GSoCRequestHandler):
   """View to display the readonly profile page.
   """
 

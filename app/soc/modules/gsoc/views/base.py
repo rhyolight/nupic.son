@@ -18,15 +18,14 @@ import httplib
 
 from django import http
 
-from soc.views.base import RequestHandler
+from soc.views import base
 
 from soc.modules.gsoc.views import base_templates
 from soc.modules.gsoc.views.helper import access_checker
-from soc.modules.gsoc.views.helper.request_data import RequestData
-from soc.modules.gsoc.views.helper.request_data import RedirectHelper
+from soc.modules.gsoc.views.helper import request_data
 
 
-class RequestHandler(RequestHandler):
+class GSoCRequestHandler(base.RequestHandler):
   """Customization required by GSoC to handle HTTP requests."""
 
   def render(self, template_path, context):
@@ -55,11 +54,11 @@ class RequestHandler(RequestHandler):
     context['header'] = base_templates.Header(self.data)
     context['mainmenu'] = base_templates.MainMenu(self.data)
     context['footer'] = base_templates.Footer(self.data)
-    return super(RequestHandler, self).render(template_path, context)
+    return super(GSoCRequestHandler, self).render(template_path, context)
 
   def init(self, request, args, kwargs):
-    self.data = RequestData()
-    self.redirect = RedirectHelper(self.data, self.response)
+    self.data = request_data.RequestData()
+    self.redirect = request_data.RedirectHelper(self.data, self.response)
     self.data.populate(self.redirect, request, args, kwargs)
     if self.data.is_developer:
       self.mutator = access_checker.DeveloperMutator(self.data)
@@ -67,12 +66,12 @@ class RequestHandler(RequestHandler):
     else:
       self.mutator = access_checker.Mutator(self.data)
       self.check = access_checker.AccessChecker(self.data)
-    super(RequestHandler, self).init(request, args, kwargs)
+    super(GSoCRequestHandler, self).init(request, args, kwargs)
 
   def error(self, status, message=None):
     """See base.RequestHandler.error for specification."""
     if not self.data.program:
-      return super(RequestHandler, self).error(status, message)
+      return super(GSoCRequestHandler, self).error(status, message)
 
     # If message is not set, set it to the default associated with the
     # given status (such as "Method Not Allowed" or "Service Unavailable").

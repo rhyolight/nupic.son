@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for displaying GradingSurveyGroups and records.
-"""
-
+"""Module for displaying GradingSurveyGroups and records."""
 
 import collections
 
@@ -32,12 +28,12 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import grading_record
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class GradingRecordsOverview(RequestHandler):
+class GradingRecordsOverview(GSoCRequestHandler):
   """View to display all GradingRecords for a single group.
   """
 
@@ -232,7 +228,7 @@ class GradingRecordForm(gsoc_forms.GSoCModelForm):
     widgets = forms.choiceWidgets(GSoCGradingRecord, ['grade_decision'])
 
 
-class GradingRecordDetails(RequestHandler):
+class GradingRecordDetails(GSoCRequestHandler):
   """View to display GradingRecord details.
   """
 

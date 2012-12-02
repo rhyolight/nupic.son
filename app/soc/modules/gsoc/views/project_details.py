@@ -35,7 +35,7 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.code_sample import GSoCCodeSample
 from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -167,7 +167,7 @@ class UploadCodeSamples(Template):
     return 'v2/modules/gsoc/project_details/_upload_code_samples.html'
 
 
-class ProjectDetailsUpdate(RequestHandler):
+class ProjectDetailsUpdate(GSoCRequestHandler):
   """Encapsulate the methods required to generate Project Details update form.
   """
 
@@ -233,7 +233,7 @@ class ProjectDetailsUpdate(RequestHandler):
       self.get()
 
 
-class CodeSampleUploadFilePost(RequestHandler):
+class CodeSampleUploadFilePost(GSoCRequestHandler):
   """Handler for POST requests to upload files with code samples.
   """
 
@@ -289,7 +289,7 @@ class CodeSampleUploadFilePost(RequestHandler):
     self.redirect.to('gsoc_project_details')
 
 
-class CodeSampleDownloadFileGet(RequestHandler):
+class CodeSampleDownloadFileGet(GSoCRequestHandler):
   """Handler for POST requests to download files with code samples.
   """
 
@@ -323,7 +323,7 @@ class CodeSampleDownloadFileGet(RequestHandler):
       raise BadRequest('id argument in GET data is not a number')
 
 
-class CodeSampleDeleteFilePost(RequestHandler):
+class CodeSampleDeleteFilePost(GSoCRequestHandler):
   """Handler for POST requests to delete code sample files.
   """
 
@@ -421,7 +421,7 @@ class UserActions(Template):
     return "v2/modules/gsoc/project_details/_user_action.html"
 
 
-class ProjectDetails(RequestHandler):
+class ProjectDetails(GSoCRequestHandler):
   """Encapsulate all the methods required to generate GSoC project
   details page.
   """
@@ -471,7 +471,7 @@ class ProjectDetails(RequestHandler):
     return context
 
 
-class AssignMentors(RequestHandler):
+class AssignMentors(GSoCRequestHandler):
   """View which handles assigning mentor to a project.
   """
 
@@ -543,7 +543,7 @@ class AssignMentors(RequestHandler):
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class FeaturedProject(RequestHandler):
+class FeaturedProject(GSoCRequestHandler):
   """View which handles making the project featured by toggle button.
   """
 

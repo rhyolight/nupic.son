@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC accepted orgs.
-"""
-
+"""Module containing the views for GSoC accepted orgs."""
 
 from django.conf.urls.defaults import url as django_url
 
@@ -28,7 +24,7 @@ from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -88,7 +84,7 @@ class AcceptedOrgsList(Template):
     return "v2/modules/gsoc/accepted_orgs/_project_list.html"
 
 
-class AcceptedOrgsPage(RequestHandler):
+class AcceptedOrgsPage(GSoCRequestHandler):
   """View for the accepted organizations page.
   """
 

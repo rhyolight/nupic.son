@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC student forms.
-"""
-
+"""Module for the GSoC student forms."""
 
 from google.appengine.ext import blobstore
 
@@ -26,7 +22,7 @@ from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -119,7 +115,7 @@ class EnrollmentForm(GSoCModelForm):
       field._link = self._r().urlOf(self._urlName())
 
 
-class FormPage(RequestHandler):
+class FormPage(GSoCRequestHandler):
   """View to upload student forms.
   """
 
@@ -230,7 +226,7 @@ class FormPage(RequestHandler):
     self._r().to(self._urlName(), validated=True)
 
 
-class DownloadForm(RequestHandler):
+class DownloadForm(GSoCRequestHandler):
   """View for downloading a student form.
   """
 

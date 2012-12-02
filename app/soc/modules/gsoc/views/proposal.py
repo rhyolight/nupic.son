@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC proposal page.
-"""
-
+"""Module for the GSoC proposal page."""
 
 from google.appengine.ext import db
 
@@ -30,7 +26,7 @@ from soc.tasks import mailer
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -49,7 +45,7 @@ class ProposalForm(GSoCModelForm):
 
   clean_content = cleaning.clean_html_content('content')
 
-class ProposalPage(RequestHandler):
+class ProposalPage(GSoCRequestHandler):
   """View for the submit proposal.
   """
 
@@ -139,7 +135,7 @@ class ProposalPage(RequestHandler):
       self.get()
 
 
-class UpdateProposal(RequestHandler):
+class UpdateProposal(GSoCRequestHandler):
   """View for the update proposal page.
   """
 

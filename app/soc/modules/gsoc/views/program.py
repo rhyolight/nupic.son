@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the program settings pages.
-"""
-
+"""Module for the program settings pages."""
 
 from soc.models.document import Document
 
@@ -26,7 +22,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.program import GSoCProgramMessages
 from soc.modules.gsoc.models.timeline import GSoCTimeline
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -71,7 +67,7 @@ class GSoCProgramMessagesForm(GSoCModelForm):
     model = GSoCProgramMessages
 
 
-class ProgramPage(RequestHandler):
+class ProgramPage(GSoCRequestHandler):
   """View for the program profile.
   """
 
@@ -136,7 +132,7 @@ class ProgramPage(RequestHandler):
       self.get()
 
 
-class TimelinePage(RequestHandler):
+class TimelinePage(GSoCRequestHandler):
   """View for the participant profile.
   """
 
@@ -188,7 +184,7 @@ class TimelinePage(RequestHandler):
 
 
 class GSoCProgramMessagesPage(
-    program_view.ProgramMessagesPage, RequestHandler):
+    program_view.ProgramMessagesPage, GSoCRequestHandler):
   """View for the content of GSoC program specific messages to be sent.
   """
 

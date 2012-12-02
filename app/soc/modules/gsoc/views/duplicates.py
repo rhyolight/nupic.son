@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC proposal duplicates.
-"""
-
+"""Module containing the views for GSoC proposal duplicates."""
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
@@ -29,13 +25,12 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class DuplicatesPage(RequestHandler):
-  """View for the host to see duplicates.
-  """
+class DuplicatesPage(GSoCRequestHandler):
+  """View for the host to see duplicates."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/duplicates/base.html'

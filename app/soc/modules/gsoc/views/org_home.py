@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC Homepage.
-"""
-
+"""Module containing the views for GSoC Homepage."""
 
 from django.conf.urls.defaults import url as django_url
 from django.utils.translation import ugettext
@@ -36,7 +32,7 @@ from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -199,7 +195,7 @@ class ProjectList(Template):
     return "v2/modules/gsoc/org_home/_project_list.html"
 
 
-class GSoCBanOrgPost(BanOrgPost, RequestHandler):
+class GSoCBanOrgPost(BanOrgPost, GSoCRequestHandler):
   """Handles banning/unbanning of GSoC organizations.
   """
 
@@ -219,7 +215,7 @@ class GSoCBanOrgPost(BanOrgPost, RequestHandler):
 class GSoCHostActions(HostActions):
   """Template to render the left side host actions.
   """
-  
+
   DEF_BAN_ORGANIZATION_HELP = ugettext(
       'When an organization is banned, it is not active in the program')
 
@@ -230,7 +226,7 @@ class GSoCHostActions(HostActions):
     return self.DEF_BAN_ORGANIZATION_HELP
 
 
-class OrgHome(RequestHandler):
+class OrgHome(GSoCRequestHandler):
   """View methods for Organization Home page.
   """
 

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +35,7 @@ from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -218,7 +216,7 @@ class ProposalList(Template):
     return "v2/modules/gsoc/accept_withdraw_projects/_project_list.html"
 
 
-class AcceptProposals(RequestHandler):
+class AcceptProposals(GSoCRequestHandler):
   """View for accepting individual proposals.
   """
 
@@ -429,7 +427,7 @@ class ProjectList(Template):
     return "v2/modules/gsoc/accept_withdraw_projects/_project_list.html"
 
 
-class WithdrawProjects(RequestHandler):
+class WithdrawProjects(GSoCRequestHandler):
   """View methods for withdraw projects
   """
 

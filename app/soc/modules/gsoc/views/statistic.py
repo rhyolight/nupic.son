@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +14,8 @@
 
 """Module for the GSoC statistics page."""
 
+# TODO(nathaniel): as of 1 December 2012 this module is unused
+# (see soc.modules.gsoc.callback:62). Should it be removed?
 
 from django.utils import simplejson
 from django.core.urlresolvers import reverse
@@ -27,7 +27,7 @@ from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
 
 from soc.modules.gsoc.models.statistic_info import GSoCStatisticInfo
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 from soc.modules.gsoc.statistics import mapping
@@ -36,8 +36,7 @@ from soc.modules.gsoc.statistics.presentation import JsonPresenter
 
 
 class ManageActions(Template):
-  """Template to render the left side admin actions.
-  """
+  """Template to render the left side admin actions."""
 
   IS_VISIBLE_HELP_MSG = ugettext(
       'Whether this statistic is publicly visible to all users or not.')
@@ -52,7 +51,7 @@ class ManageActions(Template):
             labels = {
                 'checked': 'Yes',
                 'unchecked': 'No'})]
-    
+
     return {
         'toggle_buttons': self.toggle_buttons
     }
@@ -64,7 +63,7 @@ class UnsupportedFormatException(Exception):
   pass
 
 
-class StatisticDashboard(RequestHandler):
+class StatisticDashboard(GSoCRequestHandler):
   """View for the statistic page.
   """
 
@@ -121,7 +120,7 @@ class StatisticDashboard(RequestHandler):
       manage_urls[name] = reverse(
           'gsoc_statistic_manage', kwargs={'key_name': name})
     return manage_urls
-  
+
   def _constructVisibilities(self, infos):
     visibilities = {}
     if self.isHost:
@@ -129,7 +128,7 @@ class StatisticDashboard(RequestHandler):
         visibilities[str(info.name)] = True if info.is_visible else False
     return simplejson.dumps(visibilities)
 
-class StatisticFetcher(RequestHandler):
+class StatisticFetcher(GSoCRequestHandler):
   """Loads data for a particular statistic.
   """
 
@@ -138,7 +137,7 @@ class StatisticFetcher(RequestHandler):
 
   def checkAccess(self):
     key_name = self.data.kwargs['key_name']
-    
+
     # TODO(dhans): check if the statistic is visible
     pass
 
@@ -161,14 +160,14 @@ class StatisticFetcher(RequestHandler):
       raise UnsupportedFormatException('Requested format is not supported.')
 
     return self._presenter.get(key_name)
-    
+
   def jsonContext(self):
     key_name = self.data.kwargs['key_name']
     presentation = self._getPresentation(key_name)
     return presentation
 
 
-class StatisticManager(RequestHandler):
+class StatisticManager(GSoCRequestHandler):
   """Manages the statistic entities.
   """
 
@@ -192,4 +191,3 @@ class StatisticManager(RequestHandler):
     if statistic.getVisible() != value:
       statistic.setVisible(value)
       GSoCStatisticInfo.getInstance().updateStatistic(statistic)
-      

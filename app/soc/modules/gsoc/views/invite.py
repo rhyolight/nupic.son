@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GSoC invitation page.
-"""
-
+"""Module containing the view for GSoC invitation page."""
 
 from google.appengine.ext import db
 from google.appengine.api import users
@@ -34,7 +30,7 @@ from soc.tasks import mailer
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.request import GSoCRequest
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views import forms as gsoc_forms
 
@@ -69,7 +65,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
     field.help_text = ugettext(
         'The link_id or email address of the invitee, '
         ' separate multiple values with a comma')
-    
+
   def clean_link_id(self):
     """Accepts link_id of users which may be invited.
     """
@@ -155,7 +151,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
       raise djangoforms.ValidationError('That user already has this role.')
 
 
-class InvitePage(RequestHandler):
+class InvitePage(GSoCRequestHandler):
   """Encapsulate all the methods required to generate Invite page.
   """
 
@@ -201,7 +197,7 @@ class InvitePage(RequestHandler):
     assert isSet(self.data.organization)
 
     invite_form = InviteForm(self.data, self.data.POST)
-    
+
     if not invite_form.is_valid():
       return None
 
@@ -239,7 +235,7 @@ class InvitePage(RequestHandler):
       self.get()
 
 
-class ShowInvite(RequestHandler):
+class ShowInvite(GSoCRequestHandler):
   """Encapsulate all the methods required to generate Show Invite page.
   """
 

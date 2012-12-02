@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC documents page.
-"""
-
+"""Module containing the views for GSoC documents page."""
 
 from django.conf.urls.defaults import url as django_url
 
@@ -28,7 +24,7 @@ from soc.views.base_templates import ProgramSelect
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
@@ -46,7 +42,7 @@ class GSoCDocumentForm(GSoCModelForm):
     ]
 
 
-class EditDocumentPage(RequestHandler):
+class EditDocumentPage(GSoCRequestHandler):
   """Encapsulate all the methods required to edit documents.
   """
 
@@ -93,7 +89,7 @@ class EditDocumentPage(RequestHandler):
       self.get()
 
 
-class DocumentPage(RequestHandler):
+class DocumentPage(GSoCRequestHandler):
   """Encapsulate all the methods required to show documents.
   """
 
@@ -127,7 +123,7 @@ class DocumentPage(RequestHandler):
     }
 
 
-class EventsPage(RequestHandler):
+class EventsPage(GSoCRequestHandler):
   """Encapsulates all the methods required to show the events page.
   """
 
@@ -163,7 +159,7 @@ class DocumentList(document.DocumentList):
     return 'v2/modules/gsoc/document/_document_list.html'
 
 
-class DocumentListPage(RequestHandler):
+class DocumentListPage(GSoCRequestHandler):
   """View for the list documents page.
   """
 

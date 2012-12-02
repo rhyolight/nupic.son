@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC accept proposals.
-"""
-
+"""Module containing the views for GSoC accept proposals."""
 
 from google.appengine.api import taskqueue
 
@@ -25,13 +21,12 @@ from django import http
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.logic import accept_proposals as conversion_logic
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class AcceptProposalsPage(RequestHandler):
-  """View for the host to trigger proposals to projets conversion.
-  """
+class AcceptProposalsPage(GSoCRequestHandler):
+  """View for the host to trigger proposals to projets conversion."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/accept_proposals/base.html'

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC slot transfer admin page.
-"""
-
+"""Module for the GSoC slot transfer admin page."""
 
 import logging
 
@@ -31,7 +27,7 @@ from soc.views.helper import url_patterns
 from soc.views.template import Template
 
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -60,7 +56,7 @@ class SlotsTransferAdminList(Template):
     list_config.addSimpleColumn('admin_remarks', 'Admin remarks')
     list_config.setColumnEditable('admin_remarks', True) #, edittype='textarea')
     list_config.addColumn(
-        'slots_desired', 'Min desired', 
+        'slots_desired', 'Min desired',
         (lambda e, *args: e.parent().slots_desired), width=25, hidden=True)
     list_config.addColumn(
         'max_slots_desired', 'Max desired',
@@ -110,7 +106,7 @@ class SlotsTransferAdminList(Template):
 
     if button_id == 'reject':
       return self.postAccept(parsed, False)
-  
+
     if button_id == 'save':
       return self.postSave(parsed)
 
@@ -125,7 +121,7 @@ class SlotsTransferAdminList(Template):
         slot_transfer = db.get(slot_transfer_key)
 
         if not slot_transfer:
-          logging.warning("Invalid slot_transfer_key '%s'" % 
+          logging.warning("Invalid slot_transfer_key '%s'" %
                           slot_transfer_key)
           return
 
@@ -222,7 +218,7 @@ class SlotsTransferAdminList(Template):
     return "v2/modules/gsoc/slot_transfer_admin/_list.html"
 
 
-class SlotsTransferAdminPage(RequestHandler):
+class SlotsTransferAdminPage(GSoCRequestHandler):
   """View for the the list of slot transfer requests.
   """
 

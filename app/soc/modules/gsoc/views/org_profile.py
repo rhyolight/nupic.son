@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC organization profile page.
-"""
-
+"""Module for the GSoC organization profile page."""
 
 from soc.views import forms
 
@@ -27,7 +23,7 @@ from soc.views.helper import url_patterns
 from soc.views import org_profile
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -143,7 +139,7 @@ class OrgCreateProfileForm(OrgProfileForm):
         ['contact_country', 'shipping_country'])
 
 
-class OrgProfilePage(RequestHandler):
+class OrgProfilePage(GSoCRequestHandler):
   """View for the Organization Profile page.
   """
 

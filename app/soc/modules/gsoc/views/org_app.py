@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC Organization Application.
-"""
-
+"""Module containing the views for GSoC Organization Application."""
 
 import logging
 
@@ -32,7 +28,7 @@ from soc.views.helper import url_patterns
 
 from soc.logic import org_app as org_app_logic
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -71,7 +67,7 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
     return 'v2/modules/gsoc/_form.html'
 
 
-class GSoCOrgAppEditPage(RequestHandler):
+class GSoCOrgAppEditPage(GSoCRequestHandler):
   """View for creating/editing organization application.
   """
 
@@ -145,7 +141,7 @@ class GSoCOrgAppEditPage(RequestHandler):
       self.get()
 
 
-class GSoCOrgAppPreviewPage(RequestHandler):
+class GSoCOrgAppPreviewPage(GSoCRequestHandler):
   """View for organizations to submit their application.
   """
 
@@ -177,7 +173,7 @@ class GSoCOrgAppPreviewPage(RequestHandler):
     return context
 
 
-class GSoCOrgAppTakePage(RequestHandler):
+class GSoCOrgAppTakePage(GSoCRequestHandler):
   """View for organizations to submit their application.
   """
 
@@ -265,12 +261,12 @@ class GSoCOrgAppTakePage(RequestHandler):
       self.get()
 
 
-class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
+class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
   """View for listing all records of a GSoC Organization application.
   """
 
   def __init__(self, *args, **kwargs):
-    RequestHandler.__init__(self, *args, **kwargs)
+    GSoCRequestHandler.__init__(self, *args, **kwargs)
     org_app.OrgAppRecordsList.__init__(self, 'gsoc_show_org_app')
 
   def djangoURLPatterns(self):
@@ -332,7 +328,7 @@ class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):
   template_path = 'v2/modules/gsoc/org_app/readonly_template.html'
 
 
-class GSoCOrgAppShowPage(RequestHandler):
+class GSoCOrgAppShowPage(GSoCRequestHandler):
   """View to display the readonly page for organization application.
   """
 
@@ -363,9 +359,9 @@ class GSoCOrgAppShowPage(RequestHandler):
 
     if record:
       context['record'] = OrgAppReadOnlyTemplate(record)
-      
+
       # admin info should be available only to the hosts
-      if self.data.is_host: 
+      if self.data.is_host:
         context['main_admin_url'] = self.data.redirect.profile(
             record.main_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW)
         context['backup_admin_url'] = self.data.redirect.profile(

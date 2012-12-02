@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC search page.
-"""
-
+"""Module for the GSoC search page."""
 
 import os
 
 from soc.views.helper import url_patterns
 
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class SearchGsocPage(RequestHandler):
-  """View for the search gsoc page.
-  """
+class SearchGsocPage(base.GSoCRequestHandler):
+  """View for the search gsoc page."""
 
   def djangoURLPatterns(self):
     return [

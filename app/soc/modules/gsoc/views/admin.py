@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the admin pages.
-"""
-
+"""Module for the admin pages."""
 
 import logging
 
@@ -53,7 +49,7 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.dashboard import BIRTHDATE_FORMAT
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -111,7 +107,7 @@ class UserActions(DashboardUserActions):
     return r.urlOf('gsoc_admin_dashboard')
 
 
-class DashboardPage(RequestHandler):
+class DashboardPage(GSoCRequestHandler):
   """Dashboard for admins.
   """
 
@@ -772,7 +768,7 @@ class StudentsDashboard(Dashboard):
     }
 
 
-class LookupLinkIdPage(RequestHandler):
+class LookupLinkIdPage(GSoCRequestHandler):
   """View for the participant profile.
   """
 
@@ -914,7 +910,7 @@ class ProposalsAcceptedOrgsList(AcceptedOrgsList):
     }
 
 
-class ProposalsAcceptedOrgsPage(RequestHandler):
+class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
   """View for accepted orgs.
   """
 
@@ -988,7 +984,7 @@ class ProjectsAcceptedOrgsList(AcceptedOrgsList):
     }
 
 
-class ProjectsAcceptedOrgsPage(RequestHandler):
+class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
   """View for accepted orgs.
   """
 
@@ -1149,7 +1145,7 @@ class ProposalsList(Template):
     return response_builder.build(accepted, duplicates)
 
 
-class ProposalsPage(RequestHandler):
+class ProposalsPage(GSoCRequestHandler):
   """View for proposals for particular org.
   """
 
@@ -1251,7 +1247,7 @@ class ProjectsList(Template):
     return "v2/modules/gsoc/admin/_projects_list.html"
 
 
-class ProjectsPage(RequestHandler):
+class ProjectsPage(GSoCRequestHandler):
   """View for projects of particular org.
   """
 
@@ -1402,7 +1398,7 @@ class SlotsList(AcceptedOrgsList):
     return response_builder.build()
 
 
-class SlotsPage(RequestHandler):
+class SlotsPage(GSoCRequestHandler):
   """View for the participant profile.
   """
 
@@ -1441,7 +1437,7 @@ class SlotsPage(RequestHandler):
     }
 
 
-class SurveyReminderPage(RequestHandler):
+class SurveyReminderPage(GSoCRequestHandler):
   """Page to send out reminder emails to fill out a Survey.
   """
 
@@ -1623,7 +1619,7 @@ class StudentsList(AcceptedOrgsList):
     }
 
 
-class StudentsListPage(RequestHandler):
+class StudentsListPage(GSoCRequestHandler):
   """View that lists all the students associated with the program.
   """
 
@@ -1655,7 +1651,7 @@ class StudentsListPage(RequestHandler):
     }
 
 
-class ProjectsListPage(RequestHandler):
+class ProjectsListPage(GSoCRequestHandler):
   """View that lists all the projects associated with the program.
   """
 
@@ -1692,7 +1688,7 @@ class ProjectsListPage(RequestHandler):
     }
 
 
-class OrgsListPage(RequestHandler):
+class OrgsListPage(GSoCRequestHandler):
   """View that lists all the projects associated with the program.
   """
 

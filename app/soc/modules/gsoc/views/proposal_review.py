@@ -39,7 +39,7 @@ from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views import assign_mentor
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -299,7 +299,7 @@ class UserActions(Template):
     return "v2/modules/gsoc/proposal/_user_action.html"
 
 
-class ReviewProposal(RequestHandler):
+class ReviewProposal(GSoCRequestHandler):
   """View for the Propsal Review page.
   """
 
@@ -490,7 +490,7 @@ class ReviewProposal(RequestHandler):
     return context
 
 
-class PostComment(RequestHandler):
+class PostComment(GSoCRequestHandler):
   """View which handles publishing comments.
   """
 
@@ -586,7 +586,7 @@ class PostComment(RequestHandler):
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class PostScore(RequestHandler):
+class PostScore(GSoCRequestHandler):
   """View which handles posting scores.
   """
 
@@ -675,7 +675,7 @@ class PostScore(RequestHandler):
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class WishToMentor(RequestHandler):
+class WishToMentor(GSoCRequestHandler):
   """View handling wishing to mentor requests.
   """
 
@@ -739,7 +739,7 @@ class WishToMentor(RequestHandler):
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class AssignMentor(RequestHandler):
+class AssignMentor(GSoCRequestHandler):
   """View which handles assigning mentor to a proposal.
   """
 
@@ -827,7 +827,7 @@ class AssignMentor(RequestHandler):
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class IgnoreProposal(RequestHandler):
+class IgnoreProposal(GSoCRequestHandler):
   """View which allows org admins to ignore a proposal.
   """
 
@@ -885,7 +885,7 @@ class IgnoreProposal(RequestHandler):
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class ProposalModificationPostDeadline(RequestHandler):
+class ProposalModificationPostDeadline(GSoCRequestHandler):
   """View allowing mentors to allow students to modify the proposal.
   """
 
@@ -941,7 +941,7 @@ class ProposalModificationPostDeadline(RequestHandler):
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class AcceptProposal(RequestHandler):
+class AcceptProposal(GSoCRequestHandler):
   """View allowing org admins to directly accept the proposal.
   """
 
@@ -996,7 +996,7 @@ class AcceptProposal(RequestHandler):
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class ProposalPubliclyVisible(RequestHandler):
+class ProposalPubliclyVisible(GSoCRequestHandler):
   """View allowing the proposer to make the proposal publicly visible.
   """
 
@@ -1050,7 +1050,7 @@ class ProposalPubliclyVisible(RequestHandler):
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class WithdrawProposal(RequestHandler):
+class WithdrawProposal(GSoCRequestHandler):
   """View allowing the proposer to withdraw the proposal.
   """
 

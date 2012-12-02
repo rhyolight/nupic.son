@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC profile page.
-"""
-
+"""Module for the GSoC profile page."""
 
 from django.forms import fields
 from django.core.urlresolvers import reverse
@@ -35,7 +31,7 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 
 
@@ -195,9 +191,8 @@ class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
   clean_school_home_page =  cleaning.clean_url('school_home_page')
 
 
-class GSoCProfilePage(profile.ProfilePage, RequestHandler):
-  """View for the GSoC participant profile.
-  """
+class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
+  """View for the GSoC participant profile."""
 
   def checkAccess(self):
     self.check.isLoggedIn()

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC project evaluations.
-"""
-
+"""Module for the GSoC project evaluations."""
 
 from django.utils.translation import ugettext
 
@@ -32,7 +28,7 @@ from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
 
@@ -89,7 +85,7 @@ class GSoCMentorEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
     return True if grade == 'True' else False
 
 
-class GSoCMentorEvaluationEditPage(RequestHandler):
+class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
   """View for creating/editing organization evaluation form.
   """
 
@@ -168,7 +164,7 @@ class GSoCMentorEvaluationEditPage(RequestHandler):
       self.get()
 
 
-class GSoCMentorEvaluationTakePage(RequestHandler):
+class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
   """View for the organization to submit student evaluation.
   """
 
@@ -255,7 +251,7 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
       self.get()
 
 
-class GSoCMentorEvaluationPreviewPage(RequestHandler):
+class GSoCMentorEvaluationPreviewPage(GSoCRequestHandler):
   """View for the host preview mentor evaluation.
   """
 
@@ -289,7 +285,7 @@ class GSoCMentorEvaluationPreviewPage(RequestHandler):
     return context
 
 
-class GSoCMentorEvaluationRecordsList(RequestHandler):
+class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
   """View for listing all records of a GSoCGradingProjectSurveyRecord.
   """
 
@@ -358,7 +354,7 @@ class GSoCMentorEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
     survey_name = 'Mentor Evaluation'
 
 
-class GSoCMentorEvaluationShowPage(RequestHandler):
+class GSoCMentorEvaluationShowPage(GSoCRequestHandler):
   """View to display the readonly page for mentor evaluation.
   """
 

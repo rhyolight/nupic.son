@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +13,7 @@
 # limitations under the License.
 
 """Module containing the views for listing all the projects accepted
-into a GSoC program, excluding those which have been withdrawn 
+into a GSoC program, excluding those which have been withdrawn
 or failed one of the evaluations.
 """
 
@@ -28,7 +26,7 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -38,7 +36,7 @@ class ProjectList(Template):
 
   def __init__(self, request, data, query, idx=0):
     """Initializes a new object.
-    
+
     Args:
       request: request object
       data: RequestData object associated with the request
@@ -117,7 +115,7 @@ class ProjectList(Template):
     return "v2/modules/gsoc/projects_list/_project_list.html"
 
 
-class ListProjects(RequestHandler):
+class ListProjects(GSoCRequestHandler):
   """View methods for listing all the projects accepted into a program.
   """
 

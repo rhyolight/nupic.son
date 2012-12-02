@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC slot transfer page.
-"""
-
+"""Module for the GSoC slot transfer page."""
 
 from google.appengine.ext import db
 
@@ -31,7 +27,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 from soc.modules.gsoc.views import readonly_template
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -72,7 +68,7 @@ class SlotTransferReadOnlyTemplate(readonly_template.GSoCModelReadOnlyTemplate):
     exclude = ['program']
 
 
-class SlotTransferPage(RequestHandler):
+class SlotTransferPage(GSoCRequestHandler):
   """View for transferring the slots.
   """
 
@@ -124,7 +120,7 @@ class SlotTransferPage(RequestHandler):
     return context
 
 
-class UpdateSlotTransferPage(RequestHandler):
+class UpdateSlotTransferPage(GSoCRequestHandler):
   """View for transferring the slots.
   """
 

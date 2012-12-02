@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC home page.
-"""
-
+"""Module containing the views for GSoC home page."""
 
 from django.conf.urls.defaults import url as django_url
 
@@ -26,7 +22,7 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import organization as org_logic
 from soc.modules.gsoc.logic import project as project_logic
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -194,7 +190,7 @@ class ConnectWithUs(Template):
     return "v2/modules/gsoc/_connect_with_us.html"
 
 
-class Homepage(RequestHandler):
+class Homepage(GSoCRequestHandler):
   """Encapsulate all the methods required to generate GSoC Home page.
   """
 

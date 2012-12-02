@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2012 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for displaying the Profile read-only page.
-"""
-
+"""Module for displaying the Profile read-only page."""
 
 from google.appengine.ext import db
 
@@ -26,8 +22,6 @@ from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
-
-from soc.modules.gsoc.views.base import RequestHandler
 
 
 class UserReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
@@ -105,7 +99,7 @@ class BanProfilePost(object):
 
   def post(self):
     assert isSet(self.data.url_profile)
-    
+
     value = self.data.POST.get('value')
     profile_key = self.data.url_profile.key()
 

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GSoC request page.
-"""
-
+"""Module containing the view for GSoC request page."""
 
 from google.appengine.ext import db
 
@@ -33,7 +29,7 @@ from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.request import GSoCRequest
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -74,7 +70,7 @@ class RequestForm(GSoCModelForm):
     fields = ['message']
 
 
-class RequestPage(RequestHandler):
+class RequestPage(GSoCRequestHandler):
   """Encapsulate all the methods required to generate Request page.
   """
   def templatePath(self):
@@ -169,7 +165,7 @@ class RequestPage(RequestHandler):
     return db.run_in_transaction(create_request_txn)
 
 
-class ShowRequest(RequestHandler):
+class ShowRequest(GSoCRequestHandler):
   """Encapsulate all the methods required to generate Show Request page.
   """
   # maps actions with button names
