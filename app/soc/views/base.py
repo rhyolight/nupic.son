@@ -201,12 +201,18 @@ class RequestHandler(object):
     self.response = self.error(status, message)
 
   def _dispatch(self):
-    """Dispatches the HTTP request to its respective handler method."""
+    """Dispatches the HTTP request to its respective handler method.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
+    """
     if self.request.method == 'GET':
       if self.request.GET.get('fmt') == 'json':
         self.json()
       else:
         self.get()
+      return self.response
     elif self.request.method == 'POST':
       if db.WRITE_CAPABILITY.is_enabled():
         self.post()
@@ -215,18 +221,20 @@ class RequestHandler(object):
         params = urllib.urlencode({'dsw_disabled': 1})
         url_with_params = '%s?%s' % (referrer, params)
         self.redirect.toUrl(url_with_params)
+      return self.response
     elif self.request.method == 'HEAD':
-      self.response = self.head()
+      return self.head()
     elif self.request.method == 'OPTIONS':
-      self.response = self.options()
+      return self.options()
     elif self.request.method == 'PUT':
       self.put()
+      return self.response
     elif self.request.method == 'DELETE':
-      self.response = self.delete()
+      return self.delete()
     elif self.request.method == 'TRACE':
-      self.response = self.trace()
+      return self.trace()
     else:
-      self.response = self.error(httplib.NOT_IMPLEMENTED)
+      return self.error(httplib.NOT_IMPLEMENTED)
 
   def init(self, request, args, kwargs):
     """Initializes the RequestHandler.
@@ -256,7 +264,7 @@ class RequestHandler(object):
     try:
       self.init(request, args, kwargs)
       self.checkAccess()
-      self._dispatch()
+      self.response = self._dispatch()
     except exceptions.LoginRequest, e:
       request.get_full_path().encode('utf-8')
       self.redirect.login().to()
