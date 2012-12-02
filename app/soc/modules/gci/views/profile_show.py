@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for displaying the GCI profile read-only page.
-"""
+"""Module for displaying the GCI profile read-only page."""
 
-
+import httplib
 import logging
 
 from django.utils import translation
@@ -30,7 +27,7 @@ from soc.views.template import Template
 
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.views import readonly_template
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -86,9 +83,8 @@ class GCIProfileReadOnlyTemplate(readonly_template.GCIModelReadOnlyTemplate):
               'tshirt_style', 'tshirt_size', 'gender', 'program_knowledge']
 
 
-class GCIProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
-  """View to display the read-only profile page.
-  """
+class GCIProfileShowPage(profile_show.ProfileShowPage, GCIRequestHandler):
+  """View to display the read-only profile page."""
 
   def djangoURLPatterns(self):
     return [
@@ -155,11 +151,10 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
     return context
 
   def post(self):
-    """Handles student form verification by host.
-    """
+    """Handles student form verification by host."""
     if not self.data.url_profile.student_info:
       logging.warn(NON_STUDENT_ERR_MSG)
-      self.error(405)
+      self.response = self.error(httplib.METHOD_NOT_ALLOWED)
       return
 
     post_data = self.data.POST

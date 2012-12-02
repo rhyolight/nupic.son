@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Views for creating/editing GCI Tasks.
-"""
-
+"""Views for creating/editing GCI Tasks."""
 
 import datetime
 
@@ -35,7 +31,7 @@ from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models import task
 from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -289,9 +285,8 @@ class TaskEditFormTemplate(Template):
       return "v2/modules/gci/task_create/_full_edit.html"
 
 
-class TaskCreatePage(RequestHandler):
-  """View to create a new task.
-  """
+class TaskCreatePage(GCIRequestHandler):
+  """View to create a new task."""
 
   def djangoURLPatterns(self):
     return [

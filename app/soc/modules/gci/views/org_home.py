@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the Org Homepage view.
-"""
-
+"""Module containing the Org Homepage view."""
 
 from django.utils.translation import ugettext
 
@@ -29,17 +27,17 @@ from soc.views.template import Template
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
 
 class AboutUs(Template):
-  """About us template.
-  """
+  """About us template."""
+
   def __init__(self, data):
     self.data = data
-    
+
   def context(self):
     org = self.data.organization
     return {
@@ -48,14 +46,13 @@ class AboutUs(Template):
         'homepage': org.home_page,
         'short_name': org.short_name,
     }
-  
+
   def templatePath(self):
     return 'v2/modules/gci/org_home/_about_us.html'
 
 
 class ContactUs(Template):
-  """Organization Contact template.
-  """
+  """Organization Contact template."""
 
   def __init__(self, data):
     self.data = data
@@ -70,13 +67,13 @@ class ContactUs(Template):
 
 
 class OpenTasksList(Template):
-  """List to display all the open tasks for the current organization.
-  """
+  """List to display all the open tasks for the current organization."""
+
   def __init__(self, request, data):
     self.request = request
     self.data = data
     list_config = lists.ListConfiguration()
-    
+
     list_config.addSimpleColumn('title', 'Title')
     #list_config.addColumn(
     #    'task_type', 'Type',
@@ -87,12 +84,12 @@ class OpenTasksList(Template):
                           lambda entity, *args: entity.taskTimeToComplete())
     list_config.addColumn('types', 'Type',
                           lambda entity, *args: ", ".join(entity.types))
-    
+
     list_config.setRowAction(
         lambda e, *args: data.redirect.id(e.key().id()).urlOf(url_names.GCI_VIEW_TASK))
 
     self.list_config = list_config
-  
+
   def context(self):
     description = 'List of all Open tasks.'
     list = lists.ListConfigurationResponse(
@@ -100,7 +97,7 @@ class OpenTasksList(Template):
     return {
         'lists': [list],
     }
-  
+
   def getListData(self):
     if lists.getListIndex(self.request) != 0:
       return None
@@ -112,30 +109,30 @@ class OpenTasksList(Template):
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self.list_config, q, starter)
     return response_builder.build()
-  
+
   def templatePath(self):
     return 'v2/modules/gci/org_home/_open_tasks.html'
 
 class CompletedTasksList(Template):
-  """List to display all the closed/completed tasks for the current organization.
-  """
+  """List to display all the closed/completed tasks for the current organization."""
+
   def __init__(self, request, data):
     self.request = request
     self.data = data
-    
+
     list_config = lists.ListConfiguration()
-    
+
     list_config.addSimpleColumn('title', 'Title')
     list_config.addColumn('student', 'Student',
                           lambda entity, *args: entity.student.name())
     list_config.addColumn('types', 'Type',
                           lambda entity, *args: ", ".join(entity.types))
-    
+
     list_config.setRowAction(
         lambda e, *args: data.redirect.id(e.key().id()).urlOf(url_names.GCI_VIEW_TASK))
 
     self.list_config = list_config
-  
+
   def context(self):
     description = 'List of all Completed tasks.'
     list = lists.ListConfigurationResponse(
@@ -143,7 +140,7 @@ class CompletedTasksList(Template):
     return {
         'lists': [list],
     }
-  
+
   def getListData(self):
     if lists.getListIndex(self.request) != 1:
       return None
@@ -155,14 +152,13 @@ class CompletedTasksList(Template):
     response_builder = lists.RawQueryContentResponseBuilder(
         self.request, self.list_config, q, starter)
     return response_builder.build()
-  
+
   def templatePath(self):
     return 'v2/modules/gci/org_home/_closed_tasks.html'
 
 
-class GCIBanOrgPost(BanOrgPost, RequestHandler):
-  """Handles banning/unbanning of GCI organizations.
-  """
+class GCIBanOrgPost(BanOrgPost, GCIRequestHandler):
+  """Handles banning/unbanning of GCI organizations."""
 
   def _getModulePrefix(self):
     return 'gci'
@@ -178,9 +174,8 @@ class GCIBanOrgPost(BanOrgPost, RequestHandler):
 
 
 class GCIHostActions(HostActions):
-  """Template to render the left side host actions.
-  """
-  
+  """Template to render the left side host actions."""
+
   DEF_BAN_ORGANIZATION_HELP = ugettext(
       'When an organization is banned, students cannot work on their tasks')
 
@@ -191,9 +186,9 @@ class GCIHostActions(HostActions):
     return self.DEF_BAN_ORGANIZATION_HELP
 
 
-class OrgHomepage(RequestHandler):
-  """Encapsulates all the methods required to render the org homepage.
-  """
+class OrgHomepage(GCIRequestHandler):
+  """Encapsulates all the methods required to render the org homepage."""
+
   def templatePath(self):
     return 'v2/modules/gci/org_home/base.html'
 

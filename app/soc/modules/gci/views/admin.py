@@ -32,7 +32,7 @@ from soc.views.helper import url_patterns
 
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -77,7 +77,7 @@ class LookupForm(gci_forms.GCIModelForm):
     self.cleaned_data['profile'] = q.get()
 
 
-class DashboardPage(RequestHandler):
+class DashboardPage(GCIRequestHandler):
   """Dashboard for admins.
   """
 
@@ -384,7 +384,7 @@ class ParticipantsDashboard(Dashboard):
     }
 
 
-class LookupLinkIdPage(RequestHandler):
+class LookupLinkIdPage(GCIRequestHandler):
   """View for the participant profile.
   """
 
@@ -428,4 +428,3 @@ class LookupLinkIdPage(RequestHandler):
       'posted': error,
       'page_name': 'Lookup profile',
     }
-

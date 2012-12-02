@@ -25,7 +25,7 @@ from soc.logic import validate
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -42,7 +42,7 @@ class AgeCheckForm(gci_forms.GCIModelForm):
       required=True)
 
 
-class AgeCheck(RequestHandler):
+class AgeCheck(GCIRequestHandler):
   """View for the GCI age check.
   """
 

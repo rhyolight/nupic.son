@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for students in GCI to upload their forms.
-"""
-
+"""Module for students in GCI to upload their forms."""
 
 from google.appengine.ext import blobstore
 from google.appengine.dist import httplib
@@ -32,7 +28,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -114,9 +110,8 @@ class UploadForm(gci_forms.GCIModelForm):
     return student_info
 
 
-class StudentFormUpload(RequestHandler):
-  """View for uploading your student forms.
-  """
+class StudentFormUpload(GCIRequestHandler):
+  """View for uploading your student forms."""
 
   def djangoURLPatterns(self):
     """The URL pattern for the view.
@@ -144,8 +139,7 @@ class StudentFormUpload(RequestHandler):
         }
 
   def get(self):
-    """Handles download of the forms otherwise resumes normal rendering.
-    """
+    """Handles download of the forms otherwise resumes normal rendering."""
     if 'consent_form' in self.data.GET:
       download = self.data.student_info.consent_form
     elif 'student_id_form' in self.data.GET:
@@ -154,14 +148,13 @@ class StudentFormUpload(RequestHandler):
       return super(StudentFormUpload, self).get()
 
     # download has been requested
-    if not download:
-      self.error(httplib.NOT_FOUND, 'File not found')
-
-    self.response = bs_helper.sendBlob(download)
+    if download:
+      self.response = bs_helper.sendBlob(download)
+    else:
+      self.response = self.error(httplib.NOT_FOUND, message='File not found')
 
   def context(self):
-    """Handler for default HTTP GET request.
-    """
+    """Handler for default HTTP GET request."""
     context = {
         'page_name': 'Student form upload'
         }
@@ -218,27 +211,22 @@ class StudentFormUpload(RequestHandler):
     self.redirect.program().to('gci_student_form_upload')
 
 
-class StudentFormDownload(RequestHandler):
-  """View for uploading your student forms.
-  """
+class StudentFormDownload(GCIRequestHandler):
+  """View for uploading your student forms."""
 
   def djangoURLPatterns(self):
-    """The URL pattern for the view.
-    """
+    """The URL pattern for the view."""
     return [
         url(r'student/forms/%s$' % url_patterns.PROFILE, self,
             name=url_names.GCI_STUDENT_FORM_DOWNLOAD)]
 
   def checkAccess(self):
-    """Denies access if you are not a host.
-    """
+    """Denies access if you are not a host."""
     self.check.isHost()
     self.mutator.studentFromKwargs()
 
   def get(self):
-    """Allows hosts to download the student forms.
-    """
-    download = None
+    """Allows hosts to download the student forms."""
     if url_names.CONSENT_FORM_GET_PARAM in self.data.GET:
       download = self.data.url_student_info.consent_form
     elif url_names.STUDENT_ID_FORM_GET_PARAM in self.data.GET:
@@ -247,7 +235,7 @@ class StudentFormDownload(RequestHandler):
       raise BadRequest('No file requested')
 
     # download has been requested
-    if not download:
-      self.error(httplib.NOT_FOUND, 'File not found')
-
-    self.response = bs_helper.sendBlob(download)
+    if download:
+      self.response = bs_helper.sendBlob(download)
+    else:
+      self.response = self.error(httplib.NOT_FOUND, 'File not found')

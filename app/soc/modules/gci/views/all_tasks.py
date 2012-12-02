@@ -24,7 +24,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.templates.task_list import TaskList
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -47,7 +47,7 @@ class AllTasksList(TaskList):
     return task_logic.queryClaimableTasksForProgram(self.data.program)
 
 
-class TaskListPage(RequestHandler):
+class TaskListPage(GCIRequestHandler):
   """View for the list task page.
   """
 

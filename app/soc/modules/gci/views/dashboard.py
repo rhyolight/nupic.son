@@ -40,7 +40,7 @@ from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import UNPUBLISHED
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -107,7 +107,7 @@ class ComponentsDashboard(Dashboard):
     }
 
 
-class DashboardPage(RequestHandler):
+class DashboardPage(GCIRequestHandler):
   """View for the participant dashboard.
   """
 

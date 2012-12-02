@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2012 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI organization score page.
-"""
-
+"""Module for the GCI organization score page."""
 
 from soc.logic import exceptions
 from soc.views.helper import lists
@@ -25,7 +21,7 @@ from soc.views.template import Template
 
 from soc.modules.gci.models.score import GCIOrgScore
 from soc.modules.gci.templates.org_list import BasicOrgList
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -88,7 +84,7 @@ class OrgScoresList(Template):
     return 'v2/modules/gci/leaderboard/_leaderboard_list.html'
 
 
-class OrgScoresForOrgzanizationPage(RequestHandler):
+class OrgScoresForOrgzanizationPage(GCIRequestHandler):
   """View for the organizations scores page.
   """
 
@@ -106,7 +102,7 @@ class OrgScoresForOrgzanizationPage(RequestHandler):
 
   def context(self):
     return {
-        'page_name': "Organization scores for %s" % 
+        'page_name': "Organization scores for %s" %
             self.data.organization.name,
         'org_scores_list': OrgScoresList(self.request, self.data),
     }
@@ -135,7 +131,7 @@ class OrganizationsForOrgScoreList(BasicOrgList):
     return redirect
 
 
-class ChooseOrganizationForOrgScorePage(RequestHandler):
+class ChooseOrganizationForOrgScorePage(GCIRequestHandler):
   """View with a list of organizations. When a user clicks on one of them,
   he or she is moved to the organization scores for this organization.
   """

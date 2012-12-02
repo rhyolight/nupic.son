@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GCI request page.
-"""
-
+"""Module containing the view for GCI request page."""
 
 from google.appengine.ext import db
 
@@ -33,23 +29,21 @@ from soc.tasks import mailer
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
 class RequestForm(gci_forms.GCIModelForm):
-  """Django form for the invite page.
-  """
+  """Django form for the invite page."""
 
   class Meta:
     model = GCIRequest
     css_prefix = 'gci_intivation'
     fields = ['message']
 
-class SendRequestPage(RequestHandler):
-  """Encapsulate all the methods required to generate Send Request page.
-  """
+class SendRequestPage(GCIRequestHandler):
+  """Encapsulate all the methods required to generate Send Request page."""
 
   def templatePath(self):
     return 'v2/modules/gci/request/base.html'
@@ -125,9 +119,8 @@ class SendRequestPage(RequestHandler):
     self.redirect.id(request.key().id()).to(url_names.GCI_MANAGE_REQUEST)
 
 
-class ManageRequestPage(RequestHandler):
-  """View to manage the invitation by the sender.
-  """
+class ManageRequestPage(GCIRequestHandler):
+  """View to manage the invitation by the sender."""
 
   def templatePath(self):
     return 'v2/modules/gci/request/base.html'
@@ -206,9 +199,8 @@ class ManageRequestPage(RequestHandler):
       return 'Resubmit'
 
 
-class RespondRequestPage(RequestHandler):
-  """View to accept or reject requests by organization admins. 
-  """
+class RespondRequestPage(GCIRequestHandler):
+  """View to accept or reject requests by organization admins."""
 
   def templatePath(self):
     return 'v2/modules/gci/request/show.html'
@@ -224,7 +216,7 @@ class RespondRequestPage(RequestHandler):
 
     key_name = self.data.kwargs['user']
     user_key = db.Key.from_path('User', key_name)
-    
+
     # fetch the request entity based on the id and parent key
     request_id = int(self.data.kwargs['id'])
     self.data.request_entity = GCIRequest.get_by_id(
@@ -351,7 +343,7 @@ class UserRequestsList(Template):
     return 'v2/modules/gci/request/_request_list.html'
 
 
-class ListUserRequestsPage(RequestHandler):
+class ListUserRequestsPage(GCIRequestHandler):
   """View for the page that lists all the requests which have been sent by
   the current user.
   """

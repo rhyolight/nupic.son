@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC proposal page.
-"""
+"""Module for the GSoC proposal page."""
 
+import httplib
 
 from google.appengine.ext import db
 
@@ -585,7 +583,7 @@ class PostComment(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class PostScore(RequestHandler):
@@ -674,7 +672,7 @@ class PostScore(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class WishToMentor(RequestHandler):
@@ -738,7 +736,7 @@ class WishToMentor(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class AssignMentor(RequestHandler):
@@ -826,7 +824,7 @@ class AssignMentor(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class IgnoreProposal(RequestHandler):
@@ -884,7 +882,7 @@ class IgnoreProposal(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class ProposalModificationPostDeadline(RequestHandler):
@@ -940,7 +938,7 @@ class ProposalModificationPostDeadline(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class AcceptProposal(RequestHandler):
@@ -995,7 +993,7 @@ class AcceptProposal(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class ProposalPubliclyVisible(RequestHandler):
@@ -1049,7 +1047,7 @@ class ProposalPubliclyVisible(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class WithdrawProposal(RequestHandler):
@@ -1104,4 +1102,4 @@ class WithdrawProposal(RequestHandler):
   def get(self):
     """Special Handler for HTTP GET request since this view only handles POST.
     """
-    self.error(405)
+    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
