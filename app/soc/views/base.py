@@ -52,7 +52,7 @@ class RequestHandler(object):
   def json(self):
     """Handler for HTTP GET request with a 'fmt=json' parameter."""
 
-    if not self.request.GET.get('plain'):
+    if not self.data.request.GET.get('plain'):
       self.response['Content-Type'] = 'application/json'
 
     # if the browser supports HTTP/1.1
@@ -65,7 +65,7 @@ class RequestHandler(object):
 
     context = self.jsonContext()
 
-    if self.request.GET.get('marker'):
+    if self.data.request.GET.get('marker'):
       # allow the django test framework to capture the context dictionary
       loader.render_to_string('json_marker.html', dictionary=context)
 
@@ -199,31 +199,31 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for this RequestHandler's request
         object.
     """
-    if self.request.method == 'GET':
-      if self.request.GET.get('fmt') == 'json':
+    if self.data.request.method == 'GET':
+      if self.data.request.GET.get('fmt') == 'json':
         self.json()
       else:
         self.get()
       return self.response
-    elif self.request.method == 'POST':
+    elif self.data.request.method == 'POST':
       if db.WRITE_CAPABILITY.is_enabled():
         self.post()
       else:
-        referrer = self.request.META.get('HTTP_REFERER', '')
+        referrer = self.data.request.META.get('HTTP_REFERER', '')
         params = urllib.urlencode({'dsw_disabled': 1})
         url_with_params = '%s?%s' % (referrer, params)
         self.redirect.toUrl(url_with_params)
       return self.response
-    elif self.request.method == 'HEAD':
+    elif self.data.request.method == 'HEAD':
       return self.head()
-    elif self.request.method == 'OPTIONS':
+    elif self.data.request.method == 'OPTIONS':
       return self.options()
-    elif self.request.method == 'PUT':
+    elif self.data.request.method == 'PUT':
       self.put()
       return self.response
-    elif self.request.method == 'DELETE':
+    elif self.data.request.method == 'DELETE':
       return self.delete()
-    elif self.request.method == 'TRACE':
+    elif self.data.request.method == 'TRACE':
       return self.trace()
     else:
       return self.error(httplib.NOT_IMPLEMENTED)
