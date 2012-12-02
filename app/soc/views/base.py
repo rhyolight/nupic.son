@@ -159,13 +159,22 @@ class RequestHandler(object):
     raise NotImplementedError()
 
   def checkAccess(self):
-    # TODO(nathaniel): this doesn't actually raise an exception as it says.
-    # TODO(nathaniel): what exception should it raise if it did?
-    """Raise an exception if the user doesn't have access to the requested URL.
+    # TODO(nathaniel): eliminate this - it doesn't actually simplify
+    # the HTTP method implementations all that much to have it
+    # separated out.
+    """Ensure that the user's request should be satisfied.
+
+    Implementing subclasses must override this method.
+
+    Implementations must not mutate any of this RequestHandler's state and
+    should merely raise an exception if the user's request should not be
+    satisfied or return normally if the user's request should be satisfied.
+
+    Raises:
+      exceptions.Error: If the user's request should not be satisfied for
+        any reason.
     """
-    self.response = self.error(
-        httplib.UNAUTHORIZED,
-        'RequestHandler.checkAccess has not been overridden to allow access')
+    raise NotImplementedError()
 
   def render(self, template_path, render_context):
     """Renders the page content from the specified template and context.
