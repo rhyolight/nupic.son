@@ -192,10 +192,6 @@ class RequestHandler(object):
     """
     raise NotImplementedError()
 
-  def accessViolation(self, status, message):
-    """Default access violation handler."""
-    self.response = self.error(status, message)
-
   def _dispatch(self):
     """Dispatches the HTTP request to its respective handler method.
 
@@ -232,6 +228,12 @@ class RequestHandler(object):
     else:
       return self.error(httplib.NOT_IMPLEMENTED)
 
+  # TODO(nathaniel): Note that while this says that it sets the "data" and
+  # "check" attributes, this implementation makes use of the "data" attribute
+  # without having set it. Therefore extending classes must set at least the
+  # "data" attribute before calling this superclass implementation if they
+  # choose to do so (they do). This is an obstacle just waiting to cause
+  # bigger problems.
   def init(self, request, args, kwargs):
     """Initializes the RequestHandler.
 
@@ -266,8 +268,6 @@ class RequestHandler(object):
       self.redirect.login().to()
     except exceptions.RedirectRequest, e:
       self.redirect.toUrl(e.url)
-    except exceptions.AccessViolation, e:
-      self.accessViolation(e.status, e.args[0])
     except exceptions.GDocsLoginRequest, e:
       self.redirect.toUrl('%s?%s' % (self.redirect.urlOf(e.url_name),
                                      urllib.urlencode({'next':e.next})))
