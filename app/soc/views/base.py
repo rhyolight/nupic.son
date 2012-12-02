@@ -93,24 +93,44 @@ class RequestHandler(object):
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
   def head(self):
-    """Handler for HTTP HEAD request."""
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Handler for HTTP HEAD request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
+    """
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def options(self):
-    """Handler for HTTP OPTIONS request."""
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Handler for HTTP OPTIONS request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
+    """
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def put(self):
     """Handler for HTTP PUT request."""
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
   def delete(self):
-    """Handler for HTTP DELETE request."""
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Handler for HTTP DELETE request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
+    """
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def trace(self):
-    """Handler for HTTP TRACE request."""
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Handler for HTTP TRACE request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
+    """
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def error(self, status, message=None):
     """Constructs an HttpResponse indicating an error.
@@ -196,15 +216,15 @@ class RequestHandler(object):
         url_with_params = '%s?%s' % (referrer, params)
         self.redirect.toUrl(url_with_params)
     elif self.request.method == 'HEAD':
-      self.head()
+      self.response = self.head()
     elif self.request.method == 'OPTIONS':
-      self.options()
+      self.response = self.options()
     elif self.request.method == 'PUT':
       self.put()
     elif self.request.method == 'DELETE':
-      self.delete()
+      self.response = self.delete()
     elif self.request.method == 'TRACE':
-      self.trace()
+      self.response = self.trace()
     else:
       self.response = self.error(httplib.NOT_IMPLEMENTED)
 
