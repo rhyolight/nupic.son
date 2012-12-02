@@ -18,6 +18,7 @@ import os
 
 from google.appengine.api import users
 
+from django import http
 from django.conf.urls.defaults import url as django_url
 from django.forms import widgets as django_widgets
 from django.utils.functional import lazy
@@ -131,12 +132,11 @@ class SiteHomepage(base.SiteRequestHandler):
     ]
 
   def __call__(self, request, *args, **kwargs):
-    """Custom call implementation.
-
-    This avoids looking up unneeded data.
-    """
-    self.response = base.Response()
-
+    """Custom call implementation that avoids looking up unneeded data."""
+    # TODO(nathaniel): eliminate this - the RedirectHelper (self.redirect)
+    # should simply return a newly-crafted HttpResponse.
+    # TODO(nathaniel): this blocks (and is part of) issue 1665.
+    self.response = http.HttpResponse()
     try:
       self.init(request, args, kwargs)
 
@@ -153,7 +153,7 @@ class SiteHomepage(base.SiteRequestHandler):
           self.redirect.program(program).to(program.homepage_url_name)
         else:
           self.redirect.to('edit_site_settings')
-    except exceptions.Error, e:
-      self.response = self.error(e.status, message=e.args[0])
 
-    return self.response
+      return self.response
+    except exceptions.Error, e:
+      return self.error(e.status, message=e.args[0])

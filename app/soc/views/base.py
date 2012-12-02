@@ -31,10 +31,6 @@ from soc.views.helper import context as context_helper
 from soc.views.helper import request_data
 from soc.views.helper import response as response_helper
 
-# TODO(nathaniel): Clean up this legacy API re-export by redirecting
-# clients using this module attribute to its actual definition.
-Response = response_helper.Response
-
 
 class RequestHandler(object):
   """Base class managing HTTP Requests."""
