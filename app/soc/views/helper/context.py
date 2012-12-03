@@ -60,5 +60,5 @@ def default(data):
       'ga_tracking_num': data.site.ga_tracking_num,
       'ds_write_disabled': data.ds_write_disabled,
       'css_path': css_path,
-      'gdata_is_logged_in': str(gdata_is_logged_in).lower(),
+      'gdata_is_logged_in': str(bool(gdata_is_logged_in)).lower(),
   }
