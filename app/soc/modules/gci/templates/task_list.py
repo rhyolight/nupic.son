@@ -97,7 +97,7 @@ class TaskList(Template):
     if 'mentors' in self._columns:
       list_config.addColumn('mentors', 'Mentors',
           lambda entity, mentors, *args: ', '.join(
-              mentors[i].name() for i in entity.mentors))
+              mentors[i].name() for i in entity.mentors), hidden=True)
 
     if 'status' in self._columns:
       list_config.addSimpleColumn('status', 'Status')
