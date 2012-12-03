@@ -35,6 +35,8 @@ GCI_ORG_CHOOSE_FOR_ALL_TASKS = 'gci_org_choose_for_all_tasks'
 GCI_ORG_CHOOSE_FOR_SCORE = 'gci_org_choose_for_score'
 GCI_ORG_TASKS_ALL = 'gci_org_tasks_all'
 
+GCI_ALL_TASKS_LIST = 'gci_list_tasks'
+
 GCI_LEADERBOARD = 'gci_leaderboard'
 GCI_STUDENT_TASKS = 'gci_student_tasks'
 GCI_STUDENT_TASKS_FOR_ORG = 'gci_student_tasks_for_org'
