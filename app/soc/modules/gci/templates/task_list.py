@@ -99,6 +99,14 @@ class TaskList(Template):
           lambda entity, mentors, *args: ', '.join(
               mentors[i].name() for i in entity.mentors), hidden=True)
 
+    if 'types' in self._columns:
+      list_config.addColumn('types', 'Category',
+          lambda entity, *args: ', '.join(entity.types))
+
+    if 'tags' in self._columns:
+      list_config.addColumn('tags', 'Tags',
+          lambda entity, *args: ', '.join(entity.tags))
+
     if 'status' in self._columns:
       list_config.addSimpleColumn('status', 'Status')
 
