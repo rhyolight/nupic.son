@@ -22,7 +22,6 @@ from soc.logic.exceptions import AccessViolation
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import task as task_logic
-from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.templates.task_list import TaskList
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
