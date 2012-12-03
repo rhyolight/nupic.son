@@ -1416,7 +1416,7 @@ body {
             line-height: 18px;
             padding: 4px 25px 5px 10px;
         }
-        .block-how-it-works .block-how-it-works-start a.example-tasks {
+        .block-how-it-works .block-how-it-works-start a.example-tasks, a.all-tasks-tasks {
             color: #c53926;
             display: block;
             float: left;
@@ -1426,6 +1426,10 @@ body {
             line-height: 18px;
             margin-left: 100px;
             padding: 4px 25px 5px 10px;
+        }
+        a.all-tasks-tasks {
+            font-size: 14px;
+            margin-left: 75px;
         }
 .block-featured-task {/*Featured Task*/
 }
