@@ -21,7 +21,6 @@
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import url_patterns
 from soc.views.helper import lists
-from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 
 from soc.modules.gci.logic import task as task_logic
@@ -29,7 +28,6 @@ from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.templates.org_list import BasicOrgList
 from soc.modules.gci.templates.task_list import TaskList
 from soc.modules.gci.views.base import RequestHandler
-from soc.modules.gci.views.forms import GCIModelForm
 #from soc.modules.gci.views.base_templates import ProgramSelect
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
