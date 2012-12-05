@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2012 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Notifications for the GSoC module.
-"""
+"""Notifications for the GSoC module."""
 
 from django.utils.translation import ugettext
 
 from soc.logic.helper.notifications import getContext
 from soc.views.helper.access_checker import isSet
-
 
 DEF_NEW_PROPOSAL_SUBJECT = ugettext(
     '[%(org)s] New proposal by %(proposer_name)s: %(proposal_name)s')
@@ -155,8 +151,10 @@ def createOrUpdateSlotTransferContext(data, slot_transfer,
     slot_transfer: entity that holds the slot transfer request information
     update: True if the request was updated, False if the new one was created
   """
+  # TODO(nathaniel): make unnecessary this .program() call.
+  data.redirect.program()
 
-  slot_transfer_admin_url = data.redirect.program().urlOf(
+  slot_transfer_admin_url = data.redirect.urlOf(
       'gsoc_admin_slots_transfer', full=True)
 
   message_properties = {

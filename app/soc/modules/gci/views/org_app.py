@@ -104,8 +104,10 @@ class GCIOrgAppEditPage(GCIRequestHandler):
   def post(self):
     org_app = self.orgAppFromForm()
     if org_app:
-      r = self.redirect.program()
-      r.to('gci_edit_org_app', validated=True)
+      # TODO(nathaniel): make unnecessary this .program() call.
+      self.redirect.program()
+
+      self.redirect.to('gci_edit_org_app', validated=True)
     else:
       self.get()
 

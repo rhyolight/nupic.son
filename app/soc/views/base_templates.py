@@ -1,13 +1,11 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +13,6 @@
 # limitations under the License.
 
 """This module contains the view for the site menus."""
-
 
 from soc.models.site import Site
 
@@ -66,12 +63,16 @@ class ProgramSelect(Template):
 
   def context(self):
     def url(program):
-      r = self.data.redirect.program(program)
-      return r.urlOf(self.url_name)
+      # TODO(nathaniel): make this .program call unnecessary.
+      self.data.redirect.program(program=program)
+
+      return self.data.redirect.urlOf(self.url_name)
+
     def attr(program):
       if program.key() == self.data.program.key():
         return "selected=selected"
-      return ""
+      else:
+        return ""
 
     program_key = Site.active_program.get_value_for_datastore(self.data.site)
 

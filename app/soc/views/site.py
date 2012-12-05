@@ -150,7 +150,10 @@ class SiteHomepage(base.SiteRequestHandler):
         settings = site_logic.singleton()
         program = settings.active_program
         if program:
-          self.redirect.program(program).to(program.homepage_url_name)
+          # TODO(nathaniel): make this .program call unnecessary.
+          self.redirect.program(program=program)
+
+          self.redirect.to(program.homepage_url_name)
         else:
           self.redirect.to('edit_site_settings')
 
