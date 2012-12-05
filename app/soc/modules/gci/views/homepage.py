@@ -26,8 +26,7 @@ from soc.modules.gci.views.helper import url_names
 
 
 class HowItWorks(Template):
-  """How it works template.
-  """
+  """How it works template."""
 
   CONTEST_BEGINS_ON_MSG = "Contest begins on %s %s"
 
@@ -37,7 +36,6 @@ class HowItWorks(Template):
     self.data = data
 
   def context(self):
-    r = self.data.redirect
     program = self.data.program
 
     from soc.modules.gci.models.program import GCIProgram
@@ -48,19 +46,25 @@ class HowItWorks(Template):
     main_text = self._getMainText()
 
     if self.data.timeline.orgSignup():
+      # TODO(nathaniel): make this .program() call unnecessary.
+      self.data.redirect.program()
+
       start_text = 'Sign up as organization'
-      start_link = r.program().urlOf('gci_take_org_app')
+      start_link = self.data.redirect.urlOf('gci_take_org_app')
       if self.data.program.example_tasks:
         example_tasks_link = self.data.program.example_tasks
     elif self.data.timeline.studentSignup() and not self.data.profile:
       start_text = 'Register As Student'
-      start_link = r.createProfile('student').urlOf('create_gci_profile',
-          secure=True)
+      start_link = self.data.redirect.createProfile('student').urlOf(
+          'create_gci_profile', secure=True)
       if self.data.program.example_tasks:
         example_tasks_link = self.data.program.example_tasks
     elif self.data.timeline.tasksPubliclyVisible():
+      # TODO(nathaniel): make this .program() call unnecessary.
+      self.data.redirect.program()
+
       start_text = 'Search for tasks'
-      start_link = self.data.redirect.program().urlOf('gci_list_tasks')
+      start_link = self.data.redirect.urlOf('gci_list_tasks')
     elif self.data.program.example_tasks:
       start_text = 'See example tasks'
       start_link = self.data.program.example_tasks
@@ -68,7 +72,7 @@ class HowItWorks(Template):
       start_text = start_link = ''
 
     return {
-        'about_link': r.document(about_page).url(),
+        'about_link': self.data.redirect.document(about_page).url(),
         'start_text': start_text,
         'start_link': start_link,
         'example_tasks_link': example_tasks_link,
@@ -119,14 +123,12 @@ class ParticipatingOrgs(Template):
     self.data = data
 
   def context(self):
-    r = self.data.redirect
-
     participating_orgs = []
     current_orgs = org_logic.participating(
         self.data.program, org_count=self._ORG_COUNT)
     for org in current_orgs:
       participating_orgs.append({
-          'link': r.orgHomepage(org.link_id).url(),
+          'link': self.data.redirect.orgHomepage(org.link_id).url(),
           'logo': org.logo_url,
           'name': org.short_name,
           })
@@ -143,7 +145,10 @@ class ParticipatingOrgs(Template):
         row, orgs = orgs[:self._TABLE_WIDTH], orgs[self._TABLE_WIDTH:]
         participating_orgs_table_rows.append(row)
 
-    accepted_orgs_url = r.program().urlOf('gci_accepted_orgs')
+    # TODO(nathaniel): make this .program() call unnecessary.
+    self.data.redirect.program()
+
+    accepted_orgs_url = self.data.redirect.urlOf('gci_accepted_orgs')
 
     return {
         'participating_orgs': participating_orgs,
@@ -158,16 +163,17 @@ class ParticipatingOrgs(Template):
 
 
 class Leaderboard(Template):
-  """Leaderboard template.
-  """
+  """Leaderboard template."""
 
   def __init__(self, data):
     self.data = data
 
   def context(self):
-    r = self.data.redirect
+    # TODO(nathaniel): make this .program() call unnecessary.
+    self.data.redirect.program()
+
     return {
-        'leaderboard_url': r.program().urlOf(url_names.GCI_LEADERBOARD),
+        'leaderboard_url': self.data.redirect.urlOf(url_names.GCI_LEADERBOARD),
     }
 
   def templatePath(self):
