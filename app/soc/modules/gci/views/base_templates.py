@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +13,6 @@
 # limitations under the License.
 
 """This module contains the view for the site menus."""
-
 
 import datetime
 
@@ -62,7 +59,9 @@ def siteMenuContext(data):
     context['dashboard_link'] = redirect.dashboard().url()
 
   if data.timeline.tasksPubliclyVisible():
-    context['tasks_link'] = redirect.program().urlOf('gci_list_tasks')
+    # TODO(nathaniel): make this .program() call unnecessary.
+    redirect.program()
+    context['tasks_link'] = redirect.urlOf('gci_list_tasks')
     if not data.user:
       context['register_as_student_link'] = redirect.createProfile(
           'student').urlOf('create_gci_profile', secure=True)

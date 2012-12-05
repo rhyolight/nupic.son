@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI age check.
-"""
-
+"""Module for the GCI age check."""
 
 from django import forms
 
@@ -109,4 +105,7 @@ class AgeCheck(GCIRequestHandler):
       self.response.set_cookie('age_check', '0')
 
     # redirect to the same page and have the cookies sent across
-    self.redirect.program().to('gci_age_check')
+    # TODO(nathaniel): make this .program() call unnecessary.
+    self.redirect.program()
+
+    self.redirect.to('gci_age_check')

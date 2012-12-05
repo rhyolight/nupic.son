@@ -1394,12 +1394,14 @@ class TodoComponent(Component):
     def rowAction(d, *args):
       key = d['key']
       if key == 'tax_form':
-        return data.redirect.program().urlOf('gsoc_tax_form', secure=True)
+        data.redirect.program()
+        return data.redirect.urlOf('gsoc_tax_form', secure=True)
       if key == 'enrollment_form':
-        return data.redirect.program().urlOf('gsoc_enrollment_form',
-                                             secure=True)
+        data.redirect.program()
+        return data.redirect.urlOf('gsoc_enrollment_form', secure=True)
       if key == 'school_name':
-        url = data.redirect.program().urlOf('edit_gsoc_profile', secure=True)
+        data.redirect.program()
+        url = data.redirect.urlOf('edit_gsoc_profile', secure=True)
         return url + '#form_row_school_name'
       if key.isdigit():
         project_id = int(key)

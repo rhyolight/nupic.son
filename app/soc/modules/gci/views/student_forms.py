@@ -63,8 +63,10 @@ class UploadForm(gci_forms.GCIModelForm):
     """
     super(UploadForm, self).__init__(*args, **kwargs)
 
-    base_url = request_data.redirect.program().urlOf(
-        url_names.GCI_STUDENT_FORM_UPLOAD)
+    # TODO(nathaniel): make this .program() call unnecessary.
+    request_data.redirect.program()
+
+    base_url = request_data.redirect.urlOf(url_names.GCI_STUDENT_FORM_UPLOAD)
 
     self['consent_form'].field.widget = gci_forms.AsyncFileInput(
         download_url='%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM),
@@ -78,7 +80,7 @@ class UploadForm(gci_forms.GCIModelForm):
             self['consent_form'].field.help_text,
             request_data.program.form_translations_url))
     self['student_id_form'].field.help_text = (
-        DEF_STUDENT_ID_FORM_TEXT_HELP % 
+        DEF_STUDENT_ID_FORM_TEXT_HELP %
             request_data.program.form_translations_url)
 
   def clean(self):
@@ -133,7 +135,10 @@ class StudentFormUpload(GCIRequestHandler):
     return 'v2/modules/gci/student_forms/base.html'
 
   def jsonContext(self):
-    url = self.redirect.program().urlOf('gci_student_form_upload', secure=True)
+    # TODO(nathaniel): make this .program() call unnecessary.
+    self.redirect.program()
+
+    url = self.redirect.urlOf('gci_student_form_upload', secure=True)
     return {
         'upload_link': blobstore.create_upload_url(url),
         }
@@ -208,7 +213,10 @@ class StudentFormUpload(GCIRequestHandler):
 
     form.save()
 
-    self.redirect.program().to('gci_student_form_upload')
+    # TODO(nathaniel): make this .program() call unnecessary.
+    self.redirect.program()
+
+    self.redirect.to('gci_student_form_upload')
 
 
 class StudentFormDownload(GCIRequestHandler):

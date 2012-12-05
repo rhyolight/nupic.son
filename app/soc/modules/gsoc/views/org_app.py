@@ -96,9 +96,12 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
     else:
       page_name = 'Create new organization application'
 
+    # TODO(nathaniel): is this really necessary?
+    self.redirect.program()
+
     context = {
         'page_name': page_name,
-        'post_url': self.redirect.program().urlOf('gsoc_edit_org_app'),
+        'post_url': self.redirect.urlOf('gsoc_edit_org_app'),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -135,8 +138,9 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
   def post(self):
     org_app = self.orgAppFromForm()
     if org_app:
-      r = self.redirect.program()
-      r.to('gsoc_edit_org_app', validated=True)
+      # TODO(nathaniel): is this necessary?
+      self.redirect.program()
+      self.redirect.to('gsoc_edit_org_app', validated=True)
     else:
       self.get()
 
@@ -372,7 +376,8 @@ class GSoCOrgAppShowPage(GSoCRequestHandler):
         context['update_link'] = self.data.redirect.id().urlOf(
             'gsoc_retake_org_app')
       else:
-        context['create_link'] = self.data.redirect.program().urlOf(
-            'gsoc_take_org_app')
+        # TODO(nathaniel): is this program() necessary?
+        self.data.redirect.program()
+        context['create_link'] = self.data.redirect.urlOf('gsoc_take_org_app')
 
     return context
