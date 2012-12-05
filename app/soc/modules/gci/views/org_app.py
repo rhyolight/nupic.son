@@ -160,7 +160,11 @@ class GCIOrgAppTakePage(GCIRequestHandler):
     # FIXME: There will never be organization in kwargs
     show_url = None
     if 'organization' in self.kwargs:
-      show_url = self.data.redirect.organization().urlOf('gci_show_org_app')
+      # TODO(nathaniel): make this .organization() call unnecessary. Like,
+      # more than it already is (see the note above).
+      self.data.redirect.organization()
+
+      show_url = self.data.redirect.urlOf('gci_show_org_app')
 
     self.check.isSurveyActive(self.data.org_app, show_url)
 

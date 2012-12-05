@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GCI accepted orgs.
-"""
-
+"""Module containing the views for GCI accepted orgs."""
 
 from django.conf.urls.defaults import url as django_url
 
@@ -42,14 +38,19 @@ class AcceptedOrgsList(OrgList):
         self.data.program.name)
 
   def _getListConfig(self):
-    r = self.data.redirect
+    # TODO(nathaniel): squeeze this back into a lambda expression in
+    # the call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf(url_names.GCI_ORG_HOME)
 
     list_config = lists.ListConfiguration()
     list_config.addColumn('name', 'Name',
         lambda e, *args: e.name.strip())
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf(url_names.GCI_ORG_HOME))
+    list_config.setRowAction(RowAction)
     list_config.addColumn(
         'ideas', 'Ideas',
         (lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]")),
@@ -106,14 +107,19 @@ class AcceptedOrgsAdminList(OrgList):
         self.data.program.name)
 
   def _getListConfig(self):
-    r = self.data.redirect
+    # TODO(nathaniel): squeeze this back into a lambda expression in the
+    # call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf(url_names.GCI_ORG_HOME)
 
     list_config = lists.ListConfiguration()
     list_config.addColumn('name', 'Name',
         lambda e, *args: e.name.strip())
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf(url_names.GCI_ORG_HOME))
+    list_config.setRowAction(RowAction)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
     list_config.addColumn(

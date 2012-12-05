@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI participant dashboard.
-"""
+"""Module for the GCI participant dashboard."""
 
 import logging
 
@@ -892,9 +889,15 @@ class MyOrgsListBeforeCreateTask(MyOrgsList):
             'organization you will create the task for.')}
 
   def _setRowAction(self, request, data):
-    self._list_config.setRowAction(
-        lambda e, *args: data.redirect.organization(e).
-            urlOf('gci_create_task'))
+    # TODO(nathaniel): squeeze this back into a lambda expression in the
+    # setRowAction call below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      data.redirect.organization(organization=e)
+
+      return data.redirect.urlOf('gci_create_task')
+
+    self._list_config.setRowAction(RowAction)
 
 
 class MyOrgsListBeforeBulkCreateTask(MyOrgsList):
@@ -918,9 +921,15 @@ class MyOrgsListBeforeBulkCreateTask(MyOrgsList):
             'organization you will upload the tasks for.')}
 
   def _setRowAction(self, request, data):
-    self._list_config.setRowAction(
-        lambda e, *args: data.redirect.organization(e).
-            urlOf(url_names.GCI_TASK_BULK_CREATE))
+    # TODO(nathaniel): squeeze this back into a lambda expression in the
+    # setRowAction call below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      data.redirect.organization(organization=e)
+
+      return data.redirect.urlOf(url_names.GCI_TASK_BULK_CREATE)
+
+    self._list_config.setRowAction(RowAction)
 
 
 class MyOrgsListBeforeInviteMentor(MyOrgsList):
@@ -987,9 +996,15 @@ class MyOrgsScoresList(MyOrgsList):
     self.idx = 12
 
   def _setRowAction(self, request, data):
-    self._list_config.setRowAction(
-        lambda e, *args: data.redirect.organization(e)
-            .urlOf(url_names.GCI_ORG_SCORES))
+    # TODO(nathaniel): squeeze this back into a lambda expression in the
+    # call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      data.redirect.organization(organization=e)
+
+      return data.redirect.urlOf(url_names.GCI_ORG_SCORES)
+
+    self._list_config.setRowAction(RowAction)
 
   def getListData(self):
     if lists.getListIndex(self.request) != self.idx:
@@ -1096,9 +1111,15 @@ class MyOrgsListBeforeOrgProfile(MyOrgsList):
             'organization you will edit the profile for.')}
 
   def _setRowAction(self, request, data):
-    self._list_config.setRowAction(
-        lambda e, *args: data.redirect.organization(e).
-            urlOf(url_names.EDIT_GCI_ORG_PROFILE, secure=True))
+    # TODO(nathaniel): squeeze this back into a lambda expression in the
+    # call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      data.redirect.organization(organization=e)
+
+      return data.redirect.urlOf(url_names.EDIT_GCI_ORG_PROFILE, secure=True)
+
+    self._list_config.setRowAction(RowAction)
 
 
 class AllOrgsListBeforeRequestRole(MyOrgsList):

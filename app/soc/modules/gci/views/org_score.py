@@ -126,8 +126,10 @@ class OrganizationsForOrgScoreList(BasicOrgList):
 
   def _getRedirect(self):
     def redirect(e, *args):
-      r = self.data.redirect
-      return r.organization(e).urlOf(url_names.GCI_ORG_SCORES)
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf(url_names.GCI_ORG_SCORES)
     return redirect
 
 

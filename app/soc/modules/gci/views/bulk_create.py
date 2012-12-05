@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI view to bulk create GCITasks.
-"""
-
+"""Module for the GCI view to bulk create GCITasks."""
 
 from django import forms
 
@@ -97,5 +93,7 @@ class BulkCreate(GCIRequestHandler):
         form.cleaned_data['task_data'], self.data.organization,
         self.data.profile)
 
-    self.redirect.organization(self.data.organization)
+    # TODO(nathaniel): make this .organization call unnecessary.
+    self.redirect.organization(organization=self.data.organization)
+
     self.redirect.to(url_names.GCI_TASK_BULK_CREATE, validated=True)

@@ -96,15 +96,18 @@ class OrgProfilePage(GCIRequestHandler):
         }
 
     if self.data.organization:
-      r = self.data.redirect.organization()
-      context['org_home_page_link'] = r.urlOf('gci_org_home')
+      # TODO(nathaniel): make this .organization() call unnecessary.
+      self.data.redirect.organization()
+      context['org_home_page_link'] = self.data.redirect.urlOf('gci_org_home')
 
     return context
 
   def post(self):
     org_profile = self.createOrgProfileFromForm()
     if org_profile:
-      self.redirect.organization(org_profile)
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.redirect.organization(organization=org_profile)
+
       self.redirect.to('edit_gci_org_profile', validated=True)
     else:
       self.get()
@@ -115,7 +118,6 @@ class OrgProfilePage(GCIRequestHandler):
     Returns:
       a newly created organization entity or None
     """
-
     if self.data.organization:
       form = OrgProfileForm(self.data.POST, instance=self.data.organization)
     else:
@@ -128,7 +130,7 @@ class OrgProfilePage(GCIRequestHandler):
       org_id = self.data.GET['org_id']
       form.cleaned_data['founder'] = self.data.user
       form.cleaned_data['scope'] = self.data.program
-      form.cleaned_data['scope_path'] = self.data.program.key().name() 
+      form.cleaned_data['scope_path'] = self.data.program.key().name()
       form.cleaned_data['link_id'] = org_id
       key_name = '%s/%s' % (self.data.program.key().name(), org_id)
       entity = form.create(key_name=key_name)
