@@ -69,8 +69,7 @@ class Timeline(Template):
 
 
 class Apply(Template):
-  """Apply template.
-  """
+  """Apply template."""
 
   def __init__(self, data):
     self.data = data
@@ -78,11 +77,12 @@ class Apply(Template):
   def context(self):
     context = {}
     accepted_orgs = None
-    r = self.data.redirect.program()
+    redirector = self.data.redirect
+    redirector.program()
 
     if self.data.timeline.orgsAnnounced():
       # accepted orgs block
-      accepted_orgs = r.urlOf('gsoc_accepted_orgs')
+      accepted_orgs = redirector.urlOf('gsoc_accepted_orgs')
       nr_orgs = self.data.program.nr_accepted_orgs
       context['nr_accepted_orgs'] = nr_orgs if nr_orgs else ""
       context['accepted_orgs_link'] = accepted_orgs
@@ -90,13 +90,13 @@ class Apply(Template):
       current_orgs = org_logic.participating(self.data.program)
       for org in current_orgs:
         participating_orgs.append({
-            'link': r.orgHomepage(org.link_id).url(),
+            'link': redirector.orgHomepage(org.link_id).url(),
             'logo': org.logo_url,
             'name': org.short_name,
             })
       context['participating_orgs'] = participating_orgs
 
-    context['org_signup'] = self.data.timeline.orgSignup()  
+    context['org_signup'] = self.data.timeline.orgSignup()
     context['student_signup'] = self.data.timeline.studentSignup()
     context['mentor_signup'] = self.data.timeline.mentorSignup()
 
@@ -108,23 +108,25 @@ class Apply(Template):
 
     # signup block
     if signup and not self.data.gae_user:
-      context['login_link'] = r.login().url()
+      context['login_link'] = redirector.login().url()
     if signup and not self.data.profile:
       if self.data.timeline.orgSignup():
-        r.createProfile('org_admin')
+        redirector.createProfile('org_admin')
       elif self.data.timeline.studentSignup():
-        r.createProfile('mentor')
-        context['mentor_profile_link'] = r.urlOf('create_gsoc_profile',
-                                                 secure=True)
-        r.createProfile('student')
+        redirector.createProfile('mentor')
+        context['mentor_profile_link'] = redirector.urlOf(
+            'create_gsoc_profile', secure=True)
+        redirector.createProfile('student')
       elif self.data.timeline.mentorSignup():
-        r.createProfile('mentor')
+        redirector.createProfile('mentor')
 
-      context['profile_link'] = r.urlOf('create_gsoc_profile', secure=True)
+      context['profile_link'] = redirector.urlOf(
+          'create_gsoc_profile', secure=True)
 
     if self.data.timeline.orgSignup() and self.data.profile:
-      context['org_apply_link'] = r.orgAppTake().urlOf('gsoc_take_org_app')
-      context['dashboard_link'] = r.dashboard().url()
+      context['org_apply_link'] = redirector.orgAppTake().urlOf(
+          'gsoc_take_org_app')
+      context['dashboard_link'] = redirector.dashboard().url()
 
     if ((self.data.timeline.studentSignup() or
         self.data.timeline.mentorSignup()) and self.data.profile):
