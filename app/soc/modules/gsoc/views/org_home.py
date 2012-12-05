@@ -47,7 +47,6 @@ class Apply(Template):
 
   def context(self):
     organization = self.data.organization
-    r = self.data.redirect
 
     context = {
         'request_data': self.data,
@@ -63,21 +62,24 @@ class Apply(Template):
 
       if self.data.timeline.studentSignup():
         context['student_apply_block'] = True
-        profile_link = r.createProfile('student').urlOf('create_gsoc_profile',
-                                                        secure=True)
+        profile_link = self.data.redirect.createProfile('student').urlOf(
+            'create_gsoc_profile', secure=True)
         context['student_profile_link'] = profile_link + suffix
       else:
         context['mentor_apply_block'] = True
 
-      profile_link = r.createProfile('mentor').urlOf('create_gsoc_profile',
-                                                     secure=True)
+      profile_link = self.data.redirect.createProfile('mentor').urlOf(
+          'create_gsoc_profile', secure=True)
       context['mentor_profile_link'] = profile_link + suffix
       return context
 
     if self.data.student_info:
       if self.data.timeline.studentSignup():
         context['student_apply_block'] = True
-        submit_proposal_link = r.organization().urlOf('submit_gsoc_proposal')
+        # TODO(nathaniel): make this .organization() call unnecessary.
+        self.data.redirect.organization()
+
+        submit_proposal_link = self.data.redirect.urlOf('submit_gsoc_proposal')
         context['submit_proposal_link'] = submit_proposal_link
 
       return context
@@ -106,7 +108,10 @@ class Apply(Template):
       context['invited_role'] = 'an administrator'
       return context
 
-    request_mentor_link = r.organization().urlOf('gsoc_request')
+    # TODO(nathaniel): make this .organization() call unnecessary.
+    self.data.redirect.organization()
+
+    request_mentor_link = self.data.redirect.urlOf('gsoc_request')
     context['mentor_request_link'] = request_mentor_link
     return context
 
@@ -286,15 +291,21 @@ class OrgHome(GSoCRequestHandler):
       context['ideas_link_trimmed'] = url_helper.trim_url_to(ideas, 50)
 
     if self.data.orgAdminFor(organization):
-      r = self.redirect
-      r.organization(organization)
-      context['edit_link'] =  r.urlOf('edit_gsoc_org_profile')
-      context['invite_admin_link'] = r.invite('org_admin').urlOf('gsoc_invite')
-      context['invite_mentor_link'] = r.invite('mentor').urlOf('gsoc_invite')
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.redirect.organization(organization=organization)
+
+      context['edit_link'] =  self.redirect.urlOf('edit_gsoc_org_profile')
+      context['invite_admin_link'] = self.redirect.invite('org_admin').urlOf(
+          'gsoc_invite')
+      context['invite_mentor_link'] = self.redirect.invite('mentor').urlOf(
+          'gsoc_invite')
 
       if (self.data.program.allocations_visible and
           self.data.timeline.beforeStudentsAnnounced()):
-        context['slot_transfer_link'] = r.organization(organization).urlOf(
+        # TODO(nathaniel): make this .organization call unnecessary.
+        self.redirect.organization(organization=organization)
+
+        context['slot_transfer_link'] = self.redirect.urlOf(
             'gsoc_slot_transfer')
 
     if self.data.timeline.studentsAnnounced():
@@ -308,13 +319,12 @@ class OrgHome(GSoCRequestHandler):
     return context
 
   def getCurrentTimeline(self, timeline, org_app):
-    """Return where we are currently on the timeline.
-    """
+    """Return where we are currently on the timeline."""
     if timeline_helper.isActivePeriod(org_app, 'survey'):
       return 'org_signup_period'
     elif timeline_helper.isActivePeriod(timeline, 'student_signup'):
       return 'student_signup_period'
     elif timeline_helper.isActivePeriod(timeline, 'program'):
       return 'program_period'
-
-    return 'offseason'
+    else:
+      return 'offseason'

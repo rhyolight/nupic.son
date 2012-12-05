@@ -439,21 +439,18 @@ class ProjectDetails(GSoCRequestHandler):
     ]
 
   def checkAccess(self):
-    """Access checks for GSoC project details page.
-    """
+    """Access checks for GSoC project details page."""
     self.mutator.projectFromKwargs()
 
   def context(self):
-    """Handler to for GSoC project details page HTTP get request.
-    """
-    project = self.data.project
-
-    r = self.redirect
+    """Handler to for GSoC project details page HTTP get request."""
+    # TODO(nathaniel): make this .organization call unnecessary?
+    self.redirect.organization(organization=self.data.project.org)
 
     context = {
         'page_name': 'Project details',
-        'project': project,
-        'org_home_link': r.organization(project.org).urlOf('gsoc_org_home'),
+        'project': self.data.project,
+        'org_home_link': self.redirect.urlOf('gsoc_org_home'),
     }
 
     if self.data.orgAdminFor(self.data.project.org):
@@ -462,7 +459,8 @@ class ProjectDetails(GSoCRequestHandler):
     user_is_owner = self.data.user and \
         (self.data.user.key() == self.data.project_owner.parent_key())
     if user_is_owner:
-      context['update_link'] = r.project().urlOf(url_names.GSOC_PROJECT_UPDATE)
+      context['update_link'] = self.redirect.project().urlOf(
+          url_names.GSOC_PROJECT_UPDATE)
 
     if len(self.data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:

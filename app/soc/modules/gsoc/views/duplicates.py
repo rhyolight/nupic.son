@@ -105,19 +105,19 @@ class Duplicate(Template):
     super(Duplicate, self).__init__(data)
 
   def context(self):
-    """Returns the context for the current template.
-    """
-    r = self.data.redirect
-
+    """Returns the context for the current template."""
     context = {'duplicate': self.duplicate}
     orgs = db.get(self.duplicate.orgs)
     proposals = db.get(self.duplicate.duplicates)
 
     orgs_details = {}
     for org in orgs:
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=org)
+
       orgs_details[org.key().id_or_name()] = {
           'name': org.name,
-          'link': r.organization(org).urlOf('gsoc_org_home')
+          'link': self.data.redirect.urlOf('gsoc_org_home')
           }
       q = GSoCProfile.all()
       q.filter('org_admin_for', org)
@@ -137,9 +137,9 @@ class Duplicate(Template):
           orgs_details[org.key().id_or_name()]['proposals'].append({
               'key': proposal.key().id_or_name(),
               'title': proposal.title,
-              'link': r.review(proposal.key().id_or_name(),
-                               proposal.parent().link_id).urlOf(
-                                   'review_gsoc_proposal')
+              'link': self.data.redirect.review(
+                  proposal.key().id_or_name(),
+                  proposal.parent().link_id).urlOf('review_gsoc_proposal'),
               })
 
     context['orgs'] = orgs_details
@@ -147,6 +147,5 @@ class Duplicate(Template):
     return context
 
   def templatePath(self):
-    """Returns the path to the template that should be used in render().
-    """
+    """Returns the path to the template that should be used in render()."""
     return 'v2/modules/gsoc/duplicates/proposal_duplicate.html'

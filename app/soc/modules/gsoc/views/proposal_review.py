@@ -93,10 +93,7 @@ class Duplicate(Template):
     super(Duplicate, self).__init__(data)
 
   def context(self):
-    """The context for this template used in render().
-    """
-    r = self.data.redirect
-
+    """The context for this template used in render()."""
     orgs = []
     for org in db.get(self.duplicate.orgs):
       q = GSoCProfile.all()
@@ -104,8 +101,11 @@ class Duplicate(Template):
       q.filter('status', 'active')
       admins = q.fetch(1000)
 
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=org)
+
       data = {'name': org.name,
-              'link': r.organization(org).urlOf('gsoc_org_home'),
+              'link': self.data.redirect.urlOf('gsoc_org_home'),
               'admins': admins}
 
       orgs.append(data)

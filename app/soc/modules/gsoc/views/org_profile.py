@@ -187,18 +187,21 @@ class OrgProfilePage(GSoCRequestHandler):
         }
 
     if self.data.organization:
-      r = self.data.redirect.organization()
-      context['org_home_page_link'] = r.urlOf('gsoc_org_home')
+      # TODO(nathaniel): make this .organization() unnecessary.
+      self.data.redirect.organization()
+
+      context['org_home_page_link'] = self.data.redirect.urlOf('gsoc_org_home')
       if (self.data.program.allocations_visible and
             self.data.timeline.beforeStudentsAnnounced()):
-        context['slot_transfer_page_link'] = r.urlOf('gsoc_slot_transfer')
+        context['slot_transfer_page_link'] = self.data.redirect.urlOf(
+            'gsoc_slot_transfer')
 
     return context
 
   def post(self):
     org_profile = self.createOrgProfileFromForm()
     if org_profile:
-      self.redirect.organization(org_profile)
+      self.redirect.organization(organization=org_profile)
       self.redirect.to('edit_gsoc_org_profile', validated=True)
     else:
       self.get()

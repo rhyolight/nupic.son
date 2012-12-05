@@ -833,15 +833,21 @@ class AcceptedOrgsList(Template):
     list_config.addColumn('org_admin', 'Org Admins',
         (lambda e, *args: args[0][e.key()]))
 
-    r = self.data.redirect
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
+    # TODO(nathaniel): squeeze this back into a lambda expression
+    # in the call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf('gsoc_org_home')
+
+    list_config.setRowAction(RowAction)
 
     return list_config
 
   def context(self):
     description = 'List of organizations accepted into %s' % (
-            self.data.program.name)
+        self.data.program.name)
 
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, description)
@@ -883,14 +889,18 @@ class ProposalsAcceptedOrgsList(AcceptedOrgsList):
   """
 
   def extraColumn(self, list_config):
-    use_cbox = False
-    if self.request.GET.get('cbox'):
-      use_cbox = True
+    use_cbox = bool(self.request.GET.get('cbox'))
+
+    # TODO(nathaniel): squeeze this back into a lambda expression in the
+    # call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf('gsoc_proposals_org', cbox=use_cbox)
 
     r = self.data.redirect
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf('gsoc_proposals_org',
-            cbox=use_cbox))
+    list_config.setRowAction(RowAction)
     list_config.addSimpleColumn('slots_desired', 'min', width=20)
     list_config.addSimpleColumn('max_slots_desired', 'max', width=20)
     list_config.addSimpleColumn('slots', 'Slots', width=20)
@@ -948,14 +958,18 @@ class ProjectsAcceptedOrgsList(AcceptedOrgsList):
   """
 
   def extraColumn(self, list_config):
-    use_cbox = False
-    if self.request.GET.get('cbox'):
-      use_cbox = True
+    use_cbox = bool(self.request.GET.get('cbox'))
+
+    # TODO(nathaniel): squeeze this back into a lambda expression in
+    # the call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf('gsoc_projects_org', cbox=use_cbox)
 
     r = self.data.redirect
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf('gsoc_projects_org',
-            cbox=use_cbox))
+    list_config.setRowAction(RowAction)
     list_config.addSimpleColumn('slots_desired', 'min', width=20)
     list_config.addSimpleColumn('max_slots_desired', 'max', width=20)
     list_config.addSimpleColumn('slots', 'Slots', width=20)
@@ -1027,7 +1041,6 @@ class ProposalsList(Template):
     self.request = request
     self.data = data
 
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
         ent.parent().key().name(), ent.key().id())), hidden=True)

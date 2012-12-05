@@ -1132,12 +1132,17 @@ class OrganizationsIParticipateInComponent(Component):
   """
 
   def __init__(self, request, data):
-    """Initializes this component.
-    """
-    r = data.redirect
+    """Initializes this component."""
+    # TODO(nathaniel): put this back into a lambda expression in the
+    # setRowAction call below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      data.redirect.organization(organization=e)
+
+      return data.redirect.urlOf('gsoc_org_home')
+
     list_config = lists.ListConfiguration()
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
+    list_config.setRowAction(RowAction)
 
     if not data.program.allocations_visible:
       list_config.addSimpleColumn('name', 'name')

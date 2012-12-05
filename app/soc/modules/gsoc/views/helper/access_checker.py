@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +15,6 @@
 """Module containing the AccessChecker class that contains helper functions
 for checking access.
 """
-
 
 from google.appengine.ext import db
 
@@ -440,8 +437,10 @@ class AccessChecker(access_checker.AccessChecker):
     gsoc_org = q.get()
 
     if gsoc_org:
-      edit_url = self.data.redirect.organization(gsoc_org).urlOf(
-          'edit_gsoc_org_profile')
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=gsoc_org)
+
+      edit_url = self.data.redirect.urlOf('edit_gsoc_org_profile')
 
       raise AccessViolation(DEF_ORG_EXISTS % (org_id, edit_url))
 

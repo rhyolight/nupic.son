@@ -29,20 +29,25 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class AcceptedOrgsList(Template):
-  """Template for list of accepted organizations.
-  """
+  """Template for list of accepted organizations."""
 
   def __init__(self, request, data):
     self.request = request
     self.data = data
-    r = data.redirect
+
+    # TODO(nathaniel): reduce this back to a lambda expression
+    # inside the setRowAction call below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(e)
+
+      return self.data.redirect.urlOf('gsoc_org_home')
 
     list_config = lists.ListConfiguration()
     list_config.addColumn('name', 'Name',
         lambda e, *args: e.name.strip())
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
+    list_config.setRowAction(RowAction)
     list_config.addColumn('tags', 'Tags',
                           lambda e, *args: ", ".join(e.tags))
     list_config.addColumn(
