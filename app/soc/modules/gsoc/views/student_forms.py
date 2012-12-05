@@ -49,8 +49,11 @@ class TaxForm(GSoCModelForm):
     return self.request_data.kwargs['admin']
 
   def _r(self):
-    r = self.request_data.redirect
-    return r.profile() if self._admin() else r.program()
+    if self._admin:
+      self.request_data.redirect.profile()
+    else:
+      self.request_data.redirect.program()
+    return self.request_data.redirect
 
   def _urlName(self):
     if self._admin():
@@ -93,8 +96,11 @@ class EnrollmentForm(GSoCModelForm):
     return self.request_data.kwargs['admin']
 
   def _r(self):
-    r = self.request_data.redirect
-    return r.profile() if self._admin() else r.program()
+    if self._admin():
+      self.request_data.redirect.profile()
+    else:
+      self.request_data.redirect.program()
+    return self.request_data.redirect
 
   def _urlName(self):
     if self._admin():
@@ -191,7 +197,11 @@ class FormPage(GSoCRequestHandler):
     return 'gsoc_enrollment_form'
 
   def _r(self):
-    return self.redirect.profile() if self._admin() else self.redirect.program()
+    if self._admin():
+      self.redirect.profile()
+    else:
+      self.redirect.program()
+    return self.redirect
 
   def jsonContext(self):
     url = self._r().urlOf(self._urlName(), secure=True)
