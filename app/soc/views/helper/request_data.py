@@ -283,7 +283,6 @@ class RedirectHelper(object):
       program = self._data.program
     self._clear()
     self.kwargs['sponsor'] = program.scope_path
-    return self
 
   def program(self, program=None):
     """Sets kwargs for an url_patterns.PROGRAM redirect."""
@@ -292,7 +291,6 @@ class RedirectHelper(object):
       program = self._data.program
     self.sponsor(program)
     self.kwargs['program'] = program.link_id
-    return self
 
   def organization(self, organization=None):
     """Sets the kwargs for an url_patterns.ORG redirect."""
@@ -301,7 +299,6 @@ class RedirectHelper(object):
       organization = self._data.organization
     self.program()
     self.kwargs['organization'] = organization.link_id
-    return self
 
   def id(self, id=None):
     """Sets the kwargs for an url_patterns.ID redirect."""
@@ -424,6 +421,7 @@ class RedirectHelper(object):
     if (not full) and (system.isLocal() or not secure):
       return url
 
+    # TODO(nathaniel): consider using scheme-relative urls here?
     if secure:
       protocol = 'https'
       hostname = system.getSecureHostname()
