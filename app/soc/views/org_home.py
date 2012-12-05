@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2012 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for Organization Homepage.
-"""
-
+"""Module containing the views for Organization Homepage."""
 
 from google.appengine.ext import db
 
@@ -27,8 +23,7 @@ from soc.views.toggle_button import ToggleButtonTemplate
 
 
 class BanOrgPost(object):
-  """Handles banning/unbanning of organizations.
-  """
+  """Handles banning/unbanning of organizations."""
 
   def djangoURLPatterns(self):
     return [
@@ -43,7 +38,7 @@ class BanOrgPost(object):
 
   def post(self):
     assert isSet(self.data.organization)
-    
+
     value = self.data.POST.get('value')
     org_key = self.data.organization.key()
 
@@ -83,12 +78,14 @@ class HostActions(Template):
   def context(self):
     assert isSet(self.data.organization)
 
-    r = self.data.redirect.organization()
+    # TODO(nathaniel): make this .organization() call unnecessary.
+    self.data.redirect.organization()
+
     is_banned = self.data.organization.status == 'invalid'
 
     org_banned = ToggleButtonTemplate(
         self.data, 'on_off', 'Banned', 'organization-banned',
-        r.urlOf(self._getActionURLName()),
+        self.data.redirect.urlOf(self._getActionURLName()),
         checked=is_banned,
         help_text=self._getHelpText(),
         labels={
