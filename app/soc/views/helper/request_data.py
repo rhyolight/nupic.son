@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,18 +16,18 @@
 request in the GSoC module.
 """
 
-
 import datetime
 
 from google.appengine.api import users
 from google.appengine.ext import db
 
-from django.core.urlresolvers import reverse
+from django.core import urlresolvers
+from django.utils import encoding
 
 from soc.logic import system
 from soc.logic import site
 from soc.logic import user
-from soc.views.helper.access_checker import isSet
+from soc.views.helper import access_checker
 
 
 def isBefore(date):
@@ -49,8 +47,7 @@ def isAfter(date):
 
 
 def isBetween(start, end):
-  """Returns True iff utcnow() is between start and end.
-  """
+  """Returns True iff utcnow() is between start and end."""
   return isAfter(start) and isBefore(end)
 
 
@@ -67,13 +64,11 @@ class TimelineHelper(object):
     self.org_app = org_app
 
   def currentPeriod(self):
-    """Return where we are currently on the timeline.
-    """
+    """Return where we are currently on the timeline."""
     pass
 
   def nextDeadline(self):
-    """Determines the next deadline on the timeline.
-    """
+    """Determines the next deadline on the timeline."""
     pass
 
   def orgsAnnouncedOn(self):
@@ -169,8 +164,7 @@ class RequestData(object):
   """
 
   def __init__(self):
-    """Constructs an empty RequestData object.
-    """
+    """Constructs an empty RequestData object."""
     self.site = None
     self.user = None
     self.request = None
@@ -189,24 +183,21 @@ class RequestData(object):
 
   @property
   def login_url(self):
-    """Memoizes and returns the login_url for the current path.
-    """
+    """Memoizes and returns the login_url for the current path."""
     if not self._login_url:
       self._login_url = users.create_login_url(self.full_path)
     return self._login_url
 
   @property
   def logout_url(self):
-    """Memoizes and returns the logout_url for the current path.
-    """
+    """Memoizes and returns the logout_url for the current path."""
     if not self._logout_url:
       self._logout_url = users.create_logout_url(self.full_path)
     return self._logout_url
 
   @property
   def ds_write_disabled(self):
-    """Memoizes and returns whether datastore writes are disabled.
-    """
+    """Memoizes and returns whether datastore writes are disabled."""
     if self._ds_write_disabled is not None:
       return self._ds_write_disabled
 
@@ -267,20 +258,18 @@ class RequestData(object):
     return invite.role if invite else None
 
 
+# TODO(nathaniel): This should be immutable.
 class RedirectHelper(object):
-  """Helper for constructing redirects.
-  """
+  """Helper for constructing redirects."""
 
   def __init__(self, data, response):
-    """Initializes the redirect helper.
-    """
+    """Initializes the redirect helper."""
     self._data = data
     self._response = response
     self._clear()
 
   def _clear(self):
-    """Clears the internal state.
-    """
+    """Clears the internal state."""
     self._no_url = False
     self._url_name = None
     self._url = None
@@ -288,38 +277,34 @@ class RedirectHelper(object):
     self.kwargs = {}
 
   def sponsor(self, program=None):
-    """Sets kwargs for an url_patterns.SPONSOR redirect.
-    """
+    """Sets kwargs for an url_patterns.SPONSOR redirect."""
     if not program:
-      assert isSet(self._data.program)
+      assert access_checker.isSet(self._data.program)
       program = self._data.program
     self._clear()
     self.kwargs['sponsor'] = program.scope_path
     return self
 
   def program(self, program=None):
-    """Sets kwargs for an url_patterns.PROGRAM redirect.
-    """
+    """Sets kwargs for an url_patterns.PROGRAM redirect."""
     if not program:
-      assert isSet(self._data.program)
+      assert access_checker.isSet(self._data.program)
       program = self._data.program
     self.sponsor(program)
     self.kwargs['program'] = program.link_id
     return self
 
   def organization(self, organization=None):
-    """Sets the kwargs for an url_patterns.ORG redirect.
-    """
+    """Sets the kwargs for an url_patterns.ORG redirect."""
     if not organization:
-      assert isSet(self._data.organization)
+      assert access_checker.isSet(self._data.organization)
       organization = self._data.organization
     self.program()
     self.kwargs['organization'] = organization.link_id
     return self
 
   def id(self, id=None):
-    """Sets the kwargs for an url_patterns.ID redirect.
-    """
+    """Sets the kwargs for an url_patterns.ID redirect."""
     if not id:
       assert 'id' in self._data.kwargs
       id = self._data.kwargs['id']
@@ -328,8 +313,7 @@ class RedirectHelper(object):
     return self
 
   def key(self, key=None):
-    """Sets the kwargs for an url_patterns.KEY redirect.
-    """
+    """Sets the kwargs for an url_patterns.KEY redirect."""
     if not key:
       assert 'key' in self._data.kwargs
       key = self._data.kwargs['key']
@@ -338,15 +322,13 @@ class RedirectHelper(object):
     return self
 
   def createProfile(self, role):
-    """Sets args for an url_patterns.CREATE_PROFILE redirect.
-    """
+    """Sets args for an url_patterns.CREATE_PROFILE redirect."""
     self.program()
     self.kwargs['role'] = role
     return self
 
   def profile(self, user=None):
-    """Sets args for an url_patterns.PROFILE redirect.
-    """
+    """Sets args for an url_patterns.PROFILE redirect."""
     if not user:
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
@@ -374,14 +356,13 @@ class RedirectHelper(object):
     return self
 
   def userOrg(self, user=None, organization=None):
-    """Sets args for an url_patterns.USER_ORG redirect.
-    """
+    """Sets args for an url_patterns.USER_ORG redirect."""
     if not user:
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
 
     if not organization:
-      assert isSet(self._data.organization)
+      assert access_checker.isSet(self._data.organization)
       organization = self._data.organization
 
     self.program()
@@ -391,8 +372,7 @@ class RedirectHelper(object):
 
 
   def userId(self, user=None, id=None):
-    """Sets args for url_patterns.USER_ID redirect.
-    """
+    """Sets args for url_patterns.USER_ID redirect."""
     if not user:
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
@@ -411,20 +391,24 @@ class RedirectHelper(object):
 
     Uses internal state for args and kwargs.
     """
+    # TODO(nathaniel): Why isn't this just "url = reverse(name, args=self.args,
+    # kwargs=self.kwargs)"? Current suspicion: it's because there's a
+    # there's a difference in behavior between passing None and passing empty
+    # dicts. It's also curious that there isn't an "if self.args and
+    # self.kwargs" case at the top.
     if self.args:
-      url = reverse(name, args=self.args)
+      url = urlresolvers.reverse(name, args=self.args)
     elif self.kwargs:
-      url = reverse(name, kwargs=self.kwargs)
+      url = urlresolvers.reverse(name, kwargs=self.kwargs)
     else:
-      url = reverse(name)
+      url = urlresolvers.reverse(name)
 
     url = self._appendGetArgs(url, cbox=cbox, extra_get_args=extra)
 
     return self._fullUrl(url, full, secure)
 
   def url(self, full=False, secure=False):
-    """Returns the url of the current state.
-    """
+    """Returns the url of the current state."""
     if self._no_url:
       return None
     assert self._url or self._url_name
@@ -450,18 +434,17 @@ class RedirectHelper(object):
     return '%s://%s%s' % (protocol, hostname, url)
 
   def _appendAnchor(self, url, anchor=None):
-    """Appends the anchor to the URL.
-    """
+    """Appends the anchor to the URL."""
     if anchor:
       url = '%s#%s' % (url, anchor)
 
     return url
 
-  def _appendGetArgs(self, url, cbox=False, validated=False,
-      extra_get_args=[]):
-    """Appends GET arguments to the specified URL.
-    """
-    get_args = extra_get_args[:]
+  # TODO(nathaniel): Django's got to have a utility function for most of this.
+  def _appendGetArgs(
+      self, url, cbox=False, validated=False, extra_get_args=None):
+    """Appends GET arguments to the specified URL."""
+    get_args = extra_get_args or []
     if cbox:
       get_args.append('cbox=true')
 
@@ -509,30 +492,25 @@ class RedirectHelper(object):
     self.toUrl(url, full=full, secure=secure)
 
   def toUrl(self, url, full=False, secure=False):
-    """Redirects to the specified url.
-    """
-    from django.utils.encoding import iri_to_uri
+    """Redirects to the specified url."""
     url = self._fullUrl(url, full, secure)
     self._response.status_code = 302
-    self._response["Location"] = iri_to_uri(url)
+    self._response["Location"] = encoding.iri_to_uri(url)
 
   def login(self):
-    """Sets the _url to the login url.
-    """
+    """Sets the _url to the login url."""
     self._clear()
     self._url = self._data.login_url
     return self
 
   def logout(self):
-    """Sets the _url to the logout url.
-    """
+    """Sets the _url to the logout url."""
     self._clear()
     self._url = self._data.logout_url
     return self
 
   def acceptedOrgs(self):
-    """Sets the _url_name to the list of all accepted orgs.
-    """
+    """Sets the _url_name to the list of all accepted orgs."""
     self.program()
     return self
 
@@ -546,26 +524,22 @@ class RedirectHelper(object):
     return self
 
   def searchpage(self):
-    """Sets the _url_name for the searchpage of the current program.
-    """
+    """Sets the _url_name for the searchpage of the current program."""
     self.program()
     return self
 
   def orgHomepage(self, link_id):
-    """Sets the _url_name for the specified org homepage
-    """
+    """Sets the _url_name for the specified org homepage."""
     self.program()
     self.kwargs['organization'] = link_id
     return self
 
   def dashboard(self):
-    """Sets the _url_name for dashboard page of the current program.
-    """
+    """Sets the _url_name for dashboard page of the current program."""
     self.program()
     return self
 
   def events(self):
-    """Sets the _url_name for the events page, if it is set.
-    """
+    """Sets the _url_name for the events page, if it is set."""
     self.program()
     return self
