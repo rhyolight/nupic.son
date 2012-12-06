@@ -124,7 +124,7 @@ class LeaderboardPage(GCIRequestHandler):
     ]
 
   def checkAccess(self):
-    pass
+    self.check.isHost()
 
   def jsonContext(self):
     list_content = LeaderboardList(self.request, self.data).getListData()
@@ -164,10 +164,16 @@ class StudentTasksPage(GCIRequestHandler):
     ]
 
   def checkAccess(self):
-    pass
+    self.mutator.studentFromKwargs()
+    try:
+      self.check.isHost()
+    except AccessViolation:
+      self.check.hasProfile()
+      # check if the profile in URL kwargs is the current profile
+      if self.data.profile.key() != self.data.url_profile.key():
+        raise AccessViolation('You do not have access to this data')
 
   def jsonContext(self):
-    self.mutator.studentFromKwargs()
     list_content = AllStudentTasksList(self.request, self.data).getListData()
 
     if not list_content:
@@ -176,7 +182,6 @@ class StudentTasksPage(GCIRequestHandler):
     return list_content.content()
 
   def context(self):
-    self.mutator.studentFromKwargs()
     return {
         'page_name': "Tasks closed by %s" % self.data.url_profile.name(),
         'tasks_list': AllStudentTasksList(self.request, self.data),

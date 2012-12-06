@@ -42,6 +42,7 @@ class HowItWorks(Template):
     about_page = GCIProgram.about_page.get_value_for_datastore(program)
 
     example_tasks_link = ''
+    all_tasks_link = ''
 
     main_text = self._getMainText()
 
@@ -55,10 +56,14 @@ class HowItWorks(Template):
         example_tasks_link = self.data.program.example_tasks
     elif self.data.timeline.studentSignup() and not self.data.profile:
       start_text = 'Register As Student'
+
       start_link = self.data.redirect.createProfile('student').urlOf(
           'create_gci_profile', secure=True)
-      if self.data.program.example_tasks:
-        example_tasks_link = self.data.program.example_tasks
+
+      # TODO(nathaniel): make this .program() call unnecessary.
+      self.data.redirect.program()
+
+      all_tasks_link = self.data.redirect.urlOf(url_names.GCI_ALL_TASKS_LIST)
     elif self.data.timeline.tasksPubliclyVisible():
       # TODO(nathaniel): make this .program() call unnecessary.
       self.data.redirect.program()
@@ -76,6 +81,7 @@ class HowItWorks(Template):
         'start_text': start_text,
         'start_link': start_link,
         'example_tasks_link': example_tasks_link,
+        'all_tasks_link': all_tasks_link,
         'main_text': main_text,
     }
 

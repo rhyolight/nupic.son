@@ -22,9 +22,9 @@ from soc.logic.exceptions import AccessViolation
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import task as task_logic
-from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.templates.task_list import TaskList
 from soc.modules.gci.views.base import GCIRequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -32,7 +32,8 @@ class AllTasksList(TaskList):
   """Template for list of all tasks which are claimable for the program.
   """
 
-  _LIST_COLUMNS = ['title', 'organization', 'mentors', 'status']
+  _LIST_COLUMNS = ['title', 'organization', 'tags', 'types',
+                   'mentors', 'status']
 
   def __init__(self, request, data):
     super(AllTasksList, self).__init__(request, data)
@@ -59,7 +60,7 @@ class TaskListPage(GCIRequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'tasks/%s$' % url_patterns.PROGRAM, self,
-            name='gci_list_tasks'),
+            name=url_names.GCI_ALL_TASKS_LIST),
     ]
 
   def checkAccess(self):
