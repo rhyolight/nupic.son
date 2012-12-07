@@ -59,7 +59,7 @@ DEF_NO_UPLOAD = ugettext(
 DEF_NO_URL = ugettext(
     'An error occurred, please submit a valid URL.')
 
-DEF_NO_WORK_FOUND = ugettext('No submission found with id %i')
+DEF_NO_WORK_FOUND = ugettext('No submission found with id %s')
 
 DEF_NOT_ALLOWED_TO_DELETE = ugettext(
     'You are not allowed to delete this submission')
