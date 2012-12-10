@@ -107,8 +107,13 @@ class RequestHandler(object):
     return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def put(self):
-    """Handler for HTTP PUT request."""
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Handler for HTTP PUT request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
+    """
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def delete(self):
     """Handler for HTTP DELETE request.
@@ -228,8 +233,7 @@ class RequestHandler(object):
     elif self.data.request.method == 'OPTIONS':
       return self.options()
     elif self.data.request.method == 'PUT':
-      self.put()
-      return self.response
+      return self.put()
     elif self.data.request.method == 'DELETE':
       return self.delete()
     elif self.data.request.method == 'TRACE':
