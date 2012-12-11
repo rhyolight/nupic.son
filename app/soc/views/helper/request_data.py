@@ -22,6 +22,7 @@ import httplib
 from google.appengine.api import users
 from google.appengine.ext import db
 
+from django import http
 from django.core import urlresolvers
 from django.utils import encoding
 
@@ -482,13 +483,27 @@ class RedirectHelper(object):
     url = self._appendGetArgs(url, cbox=cbox, validated=validated,
         extra_get_args=extra)
 
-    self.toUrl(url, full=full, secure=secure)
+    response = self.toUrl(url, full=full, secure=secure)
+
+    # TODO(nathaniel): eliminate this by having callers of this method
+    # accept and use the return value of toUrl.
+    self._response.status_code = response.status_code
+    self._response["Location"] = response["Location"]
 
   def toUrl(self, url, full=False, secure=False):
-    """Redirects to the specified url."""
+    """Redirects to the specified url.
+
+    Args:
+      url: A URL.
+      full: Whether or not to prefer use of a full URL including
+        protocol. This parameter is not necessarily binding.
+      secure: Whether or not to prefer use of a secure URL.
+
+    Returns:
+      An http.HttpResponse object redirecting to the given url.
+    """
     url = self._fullUrl(url, full, secure)
-    self._response.status_code = httplib.FOUND
-    self._response["Location"] = encoding.iri_to_uri(url)
+    return http.HttpResponseRedirect(url)
 
   def login(self):
     """Sets the _url to the login url."""

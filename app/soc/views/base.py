@@ -226,7 +226,7 @@ class RequestHandler(object):
         referrer = self.data.request.META.get('HTTP_REFERER', '')
         params = urllib.urlencode({'dsw_disabled': 1})
         url_with_params = '%s?%s' % (referrer, params)
-        self.redirect.toUrl(url_with_params)
+        self.response = self.redirect.toUrl(url_with_params)
       return self.response
     elif self.data.request.method == 'HEAD':
       return self.head()
@@ -280,10 +280,11 @@ class RequestHandler(object):
       request.get_full_path().encode('utf-8')
       self.redirect.login().to()
     except exceptions.RedirectRequest, e:
-      self.redirect.toUrl(e.url)
+      self.response = self.redirect.toUrl(e.url)
     except exceptions.GDocsLoginRequest, e:
-      self.redirect.toUrl('%s?%s' % (self.redirect.urlOf(e.url_name),
-                                     urllib.urlencode({'next':e.next_param})))
+      self.response = self.redirect.toUrl(
+          '%s?%s' % (self.redirect.urlOf(e.url_name),
+                     urllib.urlencode({'next':e.next_param})))
     except exceptions.Error, e:
       self.response = self.error(e.status, message=e.args[0])
     finally:

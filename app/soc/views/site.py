@@ -143,9 +143,9 @@ class SiteHomepage(base.SiteRequestHandler):
       action = args[0] if args else ''
 
       if action == 'login':
-        self.redirect.toUrl(users.create_login_url('/'))
+        return self.redirect.toUrl(users.create_login_url('/'))
       elif action == 'logout':
-        self.redirect.toUrl(users.create_logout_url('/'))
+        return self.redirect.toUrl(users.create_logout_url('/'))
       else:
         settings = site_logic.singleton()
         program = settings.active_program
