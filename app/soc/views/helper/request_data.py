@@ -17,6 +17,7 @@ request in the GSoC module.
 """
 
 import datetime
+import httplib
 
 from google.appengine.api import users
 from google.appengine.ext import db
@@ -431,13 +432,6 @@ class RedirectHelper(object):
 
     return '%s://%s%s' % (protocol, hostname, url)
 
-  def _appendAnchor(self, url, anchor=None):
-    """Appends the anchor to the URL."""
-    if anchor:
-      url = '%s#%s' % (url, anchor)
-
-    return url
-
   # TODO(nathaniel): Django's got to have a utility function for most of this.
   def _appendGetArgs(
       self, url, cbox=False, validated=False, extra_get_args=None):
@@ -482,7 +476,8 @@ class RedirectHelper(object):
       assert name or self._url_name
       url = self.urlOf(name or self._url_name)
 
-    url = self._appendAnchor(url, anchor)
+    if anchor:
+      url = '%s#%s' % (url, anchor)
 
     url = self._appendGetArgs(url, cbox=cbox, validated=validated,
         extra_get_args=extra)
@@ -492,7 +487,7 @@ class RedirectHelper(object):
   def toUrl(self, url, full=False, secure=False):
     """Redirects to the specified url."""
     url = self._fullUrl(url, full, secure)
-    self._response.status_code = 302
+    self._response.status_code = httplib.FOUND
     self._response["Location"] = encoding.iri_to_uri(url)
 
   def login(self):
