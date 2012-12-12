@@ -26,6 +26,7 @@ from django.utils import simplejson
 from django.template import loader
 
 from soc.logic import exceptions
+from soc.logic import links
 from soc.views.helper import access_checker
 from soc.views.helper import context as context_helper
 from soc.views.helper import request_data
@@ -34,6 +35,10 @@ from soc.views.helper import response as response_helper
 
 class RequestHandler(object):
   """Base class managing HTTP Requests."""
+
+  # TODO(nathaniel): Pass this as a construction parameter like
+  # a real injected dependency.
+  linker = links.Linker()
 
   def context(self):
     return {}
