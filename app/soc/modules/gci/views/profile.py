@@ -326,16 +326,18 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
       self.get()
       return
 
-    # TODO(nathaniel): make this .program() call unnecessary.
-    self.redirect.program()
-
     org_id = self.data.GET.get('new_org')
 
     if org_id:
-      create_url = self.redirect.urlOf('create_gci_org_profile')
+      create_url = self.linker.program(
+          self.data.program, 'create_gci_org_profile')
       raise RedirectRequest(create_url + '?org_id=' + org_id)
+    else:
+      # TODO(nathaniel): make this .program() call unnecessary.
+      self.redirect.program()
 
-    self.redirect.to(self._getEditProfileURLName(), validated=True, secure=True)
+      self.redirect.to(
+          self._getEditProfileURLName(), validated=True, secure=True)
 
   def _getModulePrefix(self):
     return 'gci'

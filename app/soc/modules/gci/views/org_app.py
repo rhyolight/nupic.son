@@ -62,12 +62,10 @@ class GCIOrgAppEditPage(GCIRequestHandler):
     else:
       page_name = 'Create new organization application'
 
-    # TODO(nathaniel): make this .program() call unnecessary.
-    self.redirect.program()
-
     context = {
         'page_name': page_name,
-        'post_url': self.redirect.urlOf('gci_edit_org_app'),
+        'post_url': self.linker.program(
+            self.data.program, 'gci_edit_org_app'),
         'forms': [form],
         'error': bool(form.errors),
         }
