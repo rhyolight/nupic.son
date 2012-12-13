@@ -235,12 +235,12 @@ class RequestHandler(object):
     elif self.data.request.method == 'POST':
       if db.WRITE_CAPABILITY.is_enabled():
         self.post()
+        return self.response
       else:
         referrer = self.data.request.META.get('HTTP_REFERER', '')
         params = urllib.urlencode({'dsw_disabled': 1})
         url_with_params = '%s?%s' % (referrer, params)
-        self.response = self.redirect.toUrl(url_with_params)
-      return self.response
+        return http.HttpResponseRedirect('%s?%s' % (referrer, params))
     elif self.data.request.method == 'HEAD':
       return self.head()
     elif self.data.request.method == 'OPTIONS':
