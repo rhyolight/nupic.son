@@ -581,9 +581,9 @@ class PostComment(GSoCRequestHandler):
       self.response = proposal_view(self.request, *self.args, **self.kwargs)
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    # TODO(nathaniel): Do this without a self-call.
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class PostScore(GSoCRequestHandler):
@@ -670,9 +670,8 @@ class PostScore(GSoCRequestHandler):
     self.createOrUpdateScore(value)
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class WishToMentor(GSoCRequestHandler):
@@ -734,9 +733,8 @@ class WishToMentor(GSoCRequestHandler):
 
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class AssignMentor(GSoCRequestHandler):
@@ -822,14 +820,12 @@ class AssignMentor(GSoCRequestHandler):
     self.redirect.to('review_gsoc_proposal')
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class IgnoreProposal(GSoCRequestHandler):
-  """View which allows org admins to ignore a proposal.
-  """
+  """View which allows org admins to ignore a proposal."""
 
   def djangoURLPatterns(self):
     return [
@@ -880,9 +876,8 @@ class IgnoreProposal(GSoCRequestHandler):
     self.toggleIgnoreProposal(value)
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class ProposalModificationPostDeadline(GSoCRequestHandler):
@@ -936,9 +931,8 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
     self.toggleModificationPermission(value)
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class AcceptProposal(GSoCRequestHandler):
@@ -991,9 +985,8 @@ class AcceptProposal(GSoCRequestHandler):
     self.toggleStatus(value)
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class ProposalPubliclyVisible(GSoCRequestHandler):
@@ -1045,9 +1038,8 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
     self.togglePublicVisibilty(value)
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class WithdrawProposal(GSoCRequestHandler):
@@ -1100,6 +1092,5 @@ class WithdrawProposal(GSoCRequestHandler):
     self.toggleWithdrawProposal(value)
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)

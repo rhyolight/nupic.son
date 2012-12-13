@@ -116,7 +116,7 @@ class ListCodeSamples(Template):
         code_sample['is_blob_valid'] = True
       else:
         code_sample['is_blob_valid'] = False
-        
+
       code_samples.append(code_sample)
 
     return code_samples
@@ -307,8 +307,7 @@ class CodeSampleDownloadFileGet(GSoCRequestHandler):
     self.check.isProjectCompleted()
 
   def get(self):
-    """Get handler for the code sample download file.
-    """
+    """Get handler for the code sample download file."""
     assert isSet(self.data.project)
 
     try:
@@ -316,7 +315,7 @@ class CodeSampleDownloadFileGet(GSoCRequestHandler):
       code_sample = GSoCCodeSample.get_by_id(id_value, self.data.project)
       if not code_sample or not code_sample.upload_of_work:
         raise BadRequest('Requested project or code sample not found')
-      self.response = bs_helper.sendBlob(code_sample.upload_of_work)
+      return bs_helper.sendBlob(code_sample.upload_of_work)
     except KeyError:
       raise BadRequest('id argument missing in GET data')
     except ValueError:
@@ -536,9 +535,11 @@ class AssignMentors(GSoCRequestHandler):
     self.redirect.to('gsoc_project_details')
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    # TODO(nathaniel): This should probably be the raising of some sort
+    # of exception (or in the distant future, not even registered as a
+    # handler) rather than this self-call.
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
 class FeaturedProject(GSoCRequestHandler):
@@ -591,6 +592,6 @@ class FeaturedProject(GSoCRequestHandler):
     self.toggleFeatured(value)
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    # TODO(nathaniel): Achieve this same behavior without this self-call.
+    return self.error(httplib.METHOD_NOT_ALLOWED)

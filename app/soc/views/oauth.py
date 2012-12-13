@@ -67,9 +67,6 @@ class OAuthVerifyToken(GSoCRequestHandler):
     oauth_helper.checkOAuthVerifier(service, self.data)
     next = self.request.GET.get('next','/')
     self.response = self.redirect.toUrl(next)
-
-    # TODO(nathaniel): This return value is currently ignored and not
-    # actually part of the RequestHandler.get semantics.
     return self.response
 
 
@@ -98,9 +95,6 @@ class PopupOAuthRedirectPage(GSoCRequestHandler):
           service, self.data.user,
           next)
     self.response = self.redirect.toUrl(url)
-
-    # TODO(nathaniel): This return value is currently ignored and not
-    # actually part of the RequestHandler.get semantics.
     return self.response
 
 
@@ -125,3 +119,4 @@ class PopupOAuthVerified(GSoCRequestHandler):
         "</script></body></html>"
     )
     self.response.write(html)
+    return self.response

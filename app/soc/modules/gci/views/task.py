@@ -729,7 +729,9 @@ class WorkSubmissionDownload(GCIRequestHandler):
     work = GCIWorkSubmission.get_by_id(submission_id, self.data.task)
 
     if work and work.upload_of_work:
-      self.response = bs_helper.sendBlob(work.upload_of_work)
+      return bs_helper.sendBlob(work.upload_of_work)
     else:
-      self.response = self.error(
+      # TODO(nathaniel): This should probably be the raising of some sort
+      # of exception rather than a self-call.
+      return self.error(
           httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % id_string)

@@ -154,9 +154,11 @@ class StudentFormUpload(GCIRequestHandler):
 
     # download has been requested
     if download:
-      self.response = bs_helper.sendBlob(download)
+      return bs_helper.sendBlob(download)
     else:
-      self.response = self.error(httplib.NOT_FOUND, message='File not found')
+      # TODO(nathaniel): this should probably be some sort of exception
+      # rather than a self-call.
+      return self.error(httplib.NOT_FOUND, message='File not found')
 
   def context(self):
     """Handler for default HTTP GET request."""
@@ -244,6 +246,8 @@ class StudentFormDownload(GCIRequestHandler):
 
     # download has been requested
     if download:
-      self.response = bs_helper.sendBlob(download)
+      return bs_helper.sendBlob(download)
     else:
+      # TODO(nathaniel): This should probably be some sort of exception
+      # rather than a self-call.
       self.response = self.error(httplib.NOT_FOUND, 'File not found')

@@ -282,4 +282,4 @@ class DownloadForm(GSoCRequestHandler):
     else:
       blob_info = self._studentInfo().enrollment_form
 
-    self.response = bs_helper.sendBlob(blob_info)
+    return bs_helper.sendBlob(blob_info)
