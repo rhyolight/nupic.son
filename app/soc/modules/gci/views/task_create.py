@@ -370,5 +370,7 @@ class TaskCreatePage(GCIRequestHandler):
     if task:
       r = self.redirect.id(id=task.key().id_or_name())
       r.to('gci_edit_task', validated=True)
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()

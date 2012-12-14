@@ -117,8 +117,10 @@ class EditSitePage(base.SiteRequestHandler):
     """Handler for HTTP POST request."""
     if self.validate():
       self.redirect.to('edit_site_settings')
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
 
 class SiteHomepage(base.SiteRequestHandler):

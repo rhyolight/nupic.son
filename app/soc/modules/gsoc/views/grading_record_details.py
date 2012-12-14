@@ -84,6 +84,8 @@ class GradingRecordsOverview(GSoCRequestHandler):
       task = taskqueue.Task(params=task_params, url=task_url)
       task.add()
 
+    return self.response
+
 
 class GradingRecordsList(Template):
   """Lists all GradingRecords for a single GradingSurveyGroup.
@@ -288,6 +290,8 @@ class GradingRecordDetails(GSoCRequestHandler):
 
     self.redirect.id(record.grading_survey_group.key().id_or_name())
     self.redirect.to('gsoc_grading_record_overview')
+
+    return self.response
 
   def templatePath(self):
     return 'v2/modules/gsoc/grading_record/details.html'

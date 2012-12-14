@@ -40,8 +40,10 @@ class ProgramMessagesPage(object):
     if self.validate():
       self.redirect.program()
       self.redirect.to(self._getUrlName(), validated=True, cbox=cbox)
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
   def validate(self):
     entity = self._getSingletonEntity(self.data.program)

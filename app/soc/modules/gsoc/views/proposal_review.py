@@ -567,6 +567,7 @@ class PostComment(GSoCRequestHandler):
     if comment:
       self.redirect.program()
       self.redirect.to('gsoc_dashboard', anchor='proposals_submitted')
+      return self.response
     else:
       # This is an insanely and absolutely hacky solution. We definitely
       # do not want any one to use this a model for writing code elsewhere
@@ -579,6 +580,7 @@ class PostComment(GSoCRequestHandler):
       proposal_view = proposal_match[0]
       self.request.method = 'GET'
       self.response = proposal_view(self.request, *self.args, **self.kwargs)
+      return self.response
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""
@@ -668,6 +670,7 @@ class PostScore(GSoCRequestHandler):
     value_str = self.data.POST.get('value', '')
     value = int(value_str) if value_str.isdigit() else None
     self.createOrUpdateScore(value)
+    return self.response
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""
@@ -730,7 +733,7 @@ class WishToMentor(GSoCRequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.addToPotentialMentors(value)
-
+    return self.response
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""
@@ -819,6 +822,8 @@ class AssignMentor(GSoCRequestHandler):
                          self.data.proposer.link_id)
     self.redirect.to('review_gsoc_proposal')
 
+    return self.response
+
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""
     return self.error(httplib.METHOD_NOT_ALLOWED)
@@ -874,6 +879,7 @@ class IgnoreProposal(GSoCRequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleIgnoreProposal(value)
+    return self.response
 
   def get(self):
     """Special handler for HTTP GET since this view only handles POST."""
@@ -929,6 +935,7 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleModificationPermission(value)
+    return self.response
 
   def get(self):
     """Special handler for HTTP GET since this view only handles POST."""
@@ -983,6 +990,7 @@ class AcceptProposal(GSoCRequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleStatus(value)
+    return self.response
 
   def get(self):
     """Special handler for HTTP GET since this view only handles POST."""
@@ -1036,6 +1044,7 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.togglePublicVisibilty(value)
+    return self.response
 
   def get(self):
     """Special handler for HTTP GET since this view only handles POST."""
@@ -1090,6 +1099,7 @@ class WithdrawProposal(GSoCRequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleWithdrawProposal(value)
+    return self.response
 
   def get(self):
     """Special handler for HTTP GET since this view only handles POST."""

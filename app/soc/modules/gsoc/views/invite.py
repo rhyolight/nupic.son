@@ -225,14 +225,14 @@ class InvitePage(GSoCRequestHandler):
     return True
 
   def post(self):
-    """Handler to for GSoC Invitation Page HTTP post request.
-    """
-
+    """Handler to for GSoC Invitation Page HTTP post request."""
     if self._createFromForm():
       self.redirect.invite()
       self.redirect.to('gsoc_invite', validated=True)
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
 
 class ShowInvite(GSoCRequestHandler):
@@ -357,11 +357,10 @@ class ShowInvite(GSoCRequestHandler):
         'can_reject': can_reject,
         'can_withdraw': can_withdraw,
         'can_resubmit': can_resubmit,
-        } 
+        }
 
   def post(self):
-    """Handler to for GSoC Show Invitation Page HTTP post request.
-    """
+    """Handler to for GSoC Show Invitation Page HTTP post request."""
 
     assert self.data.action
     assert self.data.invite
@@ -377,6 +376,8 @@ class ShowInvite(GSoCRequestHandler):
 
     self.redirect.dashboard()
     self.redirect.to()
+
+    return self.response
 
   def _acceptInvitation(self):
     """Accepts an invitation.

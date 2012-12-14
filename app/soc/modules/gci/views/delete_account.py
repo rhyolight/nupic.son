@@ -23,8 +23,7 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 class DeleteAccountPage(base.GCIRequestHandler):
-  """View for the GCI delete account page.
-  """
+  """View for the GCI delete account page."""
 
   def templatePath(self):
     return 'v2/modules/gci/delete_account/base.html'
@@ -48,3 +47,4 @@ class DeleteAccountPage(base.GCIRequestHandler):
     # TODO(nathaniel): make this .program() call unnecessary.
     self.redirect.program()
     self.redirect.to('gci_delete_account', validated=True)
+    return self.response

@@ -139,8 +139,10 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
       # TODO(nathaniel): is this .program() necessary?
       self.redirect.program()
       self.redirect.to('gsoc_edit_org_app', validated=True)
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
 class GSoCOrgAppPreviewPage(GSoCRequestHandler):
@@ -259,8 +261,10 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
     if org_app_record:
       r = self.redirect.id(org_app_record.key().id())
       r.to('gsoc_retake_org_app', validated=True)
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
 class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
@@ -279,8 +283,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
          ]
 
   def post(self):
-    """Edits records from commands received by the list code.
-    """
+    """Edits records from commands received by the list code."""
     post_data = self.request.POST
 
     self.data.redirect.program()
@@ -292,7 +295,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
           'program_key': self.data.program.key().name()
           })
       self.redirect.to('gsoc_list_org_app_records', validated=True)
-      return
+      return self.response
 
     if not post_data.get('button_id', None) == 'save':
       raise BadRequest('No valid POST data found')
@@ -321,6 +324,8 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
       org_app_logic.setStatus(self.data, record, new_status, url)
 
     self.response.set_status(200)
+
+    return self.response
 
 
 class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):

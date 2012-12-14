@@ -121,14 +121,15 @@ class RequestPage(GSoCRequestHandler):
     }
 
   def post(self):
-    """Handler for GSoC Request Page HTTP post request.
-    """
+    """Handler for GSoC Request Page HTTP post request."""
     request = self._createFromForm()
     if request:
       self.redirect.request(request)
       self.redirect.to('show_gsoc_request')
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
   def _createFromForm(self):
     """Creates a new request based on the data inserted in the form.
@@ -290,8 +291,7 @@ class ShowRequest(GSoCRequestHandler):
         }
 
   def post(self):
-    """Handler to for GSoC Show Request Page HTTP post request.
-    """
+    """Handler to for GSoC Show Request Page HTTP post request."""
     assert isSet(self.data.action)
     assert isSet(self.data.request_entity)
 
@@ -308,6 +308,7 @@ class ShowRequest(GSoCRequestHandler):
 
     self.redirect.program()
     self.redirect.to('gsoc_dashboard')
+    return self.response
 
   def _acceptRequest(self):
     """Accepts a request.

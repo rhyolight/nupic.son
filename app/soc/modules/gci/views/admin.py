@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the admin pages.
-"""
-
+"""Module for the admin pages."""
 
 from google.appengine.api import users
 
@@ -115,7 +111,7 @@ class DashboardPage(GCIRequestHandler):
     Do nothing, since toggle button posting to this handler
     without expecting any response.
     """
-    return False
+    return self.response
 
 
 class MainDashboard(Dashboard):
@@ -401,7 +397,8 @@ class LookupLinkIdPage(GCIRequestHandler):
     return 'v2/modules/gci/admin/lookup.html'
 
   def post(self):
-    self.get()
+    # TODO(nathaniel): problematic self-call.
+    return self.get()
 
   def context(self):
     form = LookupForm(self.data, self.data.POST or None)

@@ -246,9 +246,10 @@ class SlotsTransferAdminPage(GSoCRequestHandler):
   def post(self):
     slots_list = SlotsTransferAdminList(self.request, self.data)
 
-    if not slots_list.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if slots_list.post():
+      return self.response
+    else:
+      raise AccessViolation('You cannot change this data')
 
   def context(self):
     return {

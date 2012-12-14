@@ -168,13 +168,10 @@ class DashboardPage(GSoCRequestHandler):
     return list_content.content()
 
   def post(self):
-    """Handler for POST requests.
-    """
-    components = self.components()
-
-    for component in components:
+    """Handler for POST requests."""
+    for component in self.components():
       if component.post():
-        break
+        return self.response
     else:
       raise AccessViolation(
           'You cannot change this data')

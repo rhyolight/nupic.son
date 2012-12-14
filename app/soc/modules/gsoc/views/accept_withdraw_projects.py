@@ -250,9 +250,10 @@ class AcceptProposals(GSoCRequestHandler):
   def post(self):
     list_content = ProposalList(self.request, self.data)
 
-    if not list_content.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if list_content.post():
+      return self.response
+    else:
+      raise AccessViolation('You cannot change this data')
 
   def context(self):
     """Builds the context for GSoC proposals List page HTTP get request.
@@ -461,9 +462,10 @@ class WithdrawProjects(GSoCRequestHandler):
   def post(self):
     list_content = ProjectList(self.request, self.data)
 
-    if not list_content.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if list_content.post():
+      return self.response
+    else:
+      raise AccessViolation('You cannot change this data')
 
   def context(self):
     """Handler for GSoC Accepted Projects List page HTTP get request.

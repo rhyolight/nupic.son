@@ -215,13 +215,10 @@ class DashboardPage(GCIRequestHandler):
     return list_content.content()
 
   def post(self):
-    """Handler for POST requests for each component.
-    """
-    components = self.components()
-
-    for component in components:
+    """Handler for POST requests for each component."""
+    for component in self.components():
       if component.post():
-        break
+        return self.response
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 

@@ -203,8 +203,10 @@ class OrgProfilePage(GSoCRequestHandler):
     if org_profile:
       self.redirect.organization(organization=org_profile)
       self.redirect.to('edit_gsoc_org_profile', validated=True)
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
   def createOrgProfileFromForm(self):
     """Creates a new organization based on the data inserted in the form.

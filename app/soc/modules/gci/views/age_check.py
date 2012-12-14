@@ -88,8 +88,7 @@ class AgeCheck(GCIRequestHandler):
     return context
 
   def post(self):
-    """Handles POST requests.
-    """
+    """Handles POST requests."""
     form = AgeCheckForm(self.data.POST)
 
     if not form.is_valid():
@@ -109,3 +108,5 @@ class AgeCheck(GCIRequestHandler):
     self.redirect.program()
 
     self.redirect.to('gci_age_check')
+
+    return self.response

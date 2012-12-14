@@ -103,7 +103,12 @@ class RequestHandler(object):
     }
 
   def post(self):
-    """Handler for HTTP POST request."""
+    """Handler for HTTP POST request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
+    """
     self.response = self.error(httplib.METHOD_NOT_ALLOWED)
 
   def head(self):
@@ -238,8 +243,7 @@ class RequestHandler(object):
         return self.get()
     elif self.data.request.method == 'POST':
       if db.WRITE_CAPABILITY.is_enabled():
-        self.post()
-        return self.response
+        return self.post()
       else:
         referrer = self.data.request.META.get('HTTP_REFERER', '')
         params = urllib.urlencode({'dsw_disabled': 1})

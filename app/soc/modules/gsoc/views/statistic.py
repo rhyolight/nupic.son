@@ -168,8 +168,7 @@ class StatisticFetcher(GSoCRequestHandler):
 
 
 class StatisticManager(GSoCRequestHandler):
-  """Manages the statistic entities.
-  """
+  """Manages the statistic entities."""
 
   def checkAccess(self):
     self.check.isHost()
@@ -191,3 +190,5 @@ class StatisticManager(GSoCRequestHandler):
     if statistic.getVisible() != value:
       statistic.setVisible(value)
       GSoCStatisticInfo.getInstance().updateStatistic(statistic)
+
+    return self.response

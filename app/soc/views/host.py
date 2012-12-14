@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -118,8 +116,7 @@ class HostProfilePage(SiteRequestHandler):
     return db.run_in_transaction(create_or_update_host_txn)
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
+    """Handler for HTTP POST request."""
     host = self.createOrUpdateHost()
     if host:
       link_id = self.data.kwargs.get('link_id')
@@ -128,5 +125,7 @@ class HostProfilePage(SiteRequestHandler):
         self.redirect.to('edit_host_profile_linkid', kwargs=kwargs)
       else:
         self.redirect.to('edit_host_profile')
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()

@@ -251,13 +251,13 @@ class InvitePage(GCIRequestHandler):
     return True
 
   def post(self):
-    """Handler to for GCI Invitation Page HTTP post request.
-    """
-    if not self.validate():
-      self.get()
-      return
-
-    self.redirect.dashboard().to()
+    """Handler to for GCI Invitation Page HTTP post request."""
+    if self.validate():
+      self.redirect.dashboard().to()
+      return self.response
+    else:
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
 
 class ManageInvite(GCIRequestHandler):
@@ -328,6 +328,8 @@ class ManageInvite(GCIRequestHandler):
       invite_logic.resubmitInvite(self.data)
 
     self.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
+
+    return self.response
 
   def _constructPageName(self):
     invite = self.data.invite
@@ -402,6 +404,8 @@ class RespondInvite(GCIRequestHandler):
       invite_logic.rejectInvite(self.data)
 
     self.redirect.id().to(url_names.GCI_RESPOND_INVITE)
+
+    return self.response
 
   def _constructPageName(self):
     invite = self.data.invite

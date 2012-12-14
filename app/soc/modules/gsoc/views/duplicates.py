@@ -66,8 +66,7 @@ class DuplicatesPage(GSoCRequestHandler):
     return context
 
   def post(self):
-    """Handles the POST request to (re)start calcuation.
-    """
+    """Handles the POST request to (re)start calcuation."""
     post_data = self.request.POST
 
     # pass along these params as POST to the new task
@@ -87,12 +86,11 @@ class DuplicatesPage(GSoCRequestHandler):
     new_task.add()
 
     # redirect to self
-    self.response = http.HttpResponseRedirect('')
+    return http.HttpResponseRedirect('')
 
 
 class Duplicate(Template):
-  """Template for showing a duplicate to the host.
-  """
+  """Template for showing a duplicate to the host."""
 
   def __init__(self, data, duplicate):
     """Constructs the template for showing a duplicate.

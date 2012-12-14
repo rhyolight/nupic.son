@@ -106,8 +106,11 @@ class GCIOrgAppEditPage(GCIRequestHandler):
       self.redirect.program()
 
       self.redirect.to('gci_edit_org_app', validated=True)
+
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
 
 class GCIOrgAppPreviewPage(GCIRequestHandler):
@@ -228,8 +231,11 @@ class GCIOrgAppTakePage(GCIRequestHandler):
     if org_app_record:
       r = self.redirect.id(org_app_record.key().id())
       r.to('gci_retake_org_app', validated=True)
+
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
 
 class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
@@ -248,8 +254,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
          ]
 
   def post(self):
-    """Edits records from commands received by the list code.
-    """
+    """Edits records from commands received by the list code."""
     post_data = self.request.POST
 
     self.data.redirect.program()
@@ -261,7 +266,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
           'program_key': self.data.program.key().name()
           })
       self.redirect.to(url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
-      return
+      return self.response
 
     if not post_data.get('button_id', None) == 'save':
       raise BadRequest('No valid POST data found')
@@ -290,6 +295,8 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
       org_app_logic.setStatus(self.data, record, new_status, url)
 
     self.response.set_status(200)
+
+    return self.response
 
 
 class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):

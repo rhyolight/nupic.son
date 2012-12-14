@@ -160,8 +160,10 @@ class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
     if evaluation:
       r = self.redirect.survey()
       r.to('gsoc_edit_mentor_evaluation', validated=True)
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
 class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
@@ -247,8 +249,10 @@ class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
       r = self.redirect.survey_record(
           self.data.mentor_evaluation.link_id)
       r.to('gsoc_take_mentor_evaluation', validated=True)
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
 class GSoCMentorEvaluationPreviewPage(GSoCRequestHandler):

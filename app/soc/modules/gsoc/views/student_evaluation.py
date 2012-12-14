@@ -135,10 +135,12 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
   def post(self):
     evaluation = self.evaluationFromForm()
     if evaluation:
-      r = self.redirect.survey()
-      r.to('gsoc_edit_student_evaluation', validated=True)
+      self.redirect.survey().to('gsoc_edit_student_evaluation', validated=True)
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
+
 
 class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
   """View for students to submit their evaluation.
@@ -227,11 +229,12 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
   def post(self):
     student_evaluation_record = self.recordEvaluationFromForm()
     if student_evaluation_record:
-      r = self.redirect.survey_record(
-          self.data.student_evaluation.link_id)
-      r.to('gsoc_take_student_evaluation', validated=True)
+      self.redirect.survey_record(self.data.student_evaluation.link_id)
+      self.redirect.to('gsoc_take_student_evaluation', validated=True)
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
 class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):

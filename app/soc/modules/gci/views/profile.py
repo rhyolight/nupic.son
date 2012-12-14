@@ -313,6 +313,7 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
       self.deleteAccountPostAction()
     else: # regular POST request
       self.editProfilePostAction()
+    return self.response
 
   def deleteAccountPostAction(self):
     """Handler for Delete Account POST action.

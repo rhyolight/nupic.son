@@ -223,7 +223,7 @@ class FormPage(GSoCRequestHandler):
       # since this is a file upload we must return a 300 response
       error = form.errors[form.fileFieldName()]
       self._r().to(self._urlName(), extra=['error=%s'%error.as_text()])
-      return
+      return self.response
 
     # delete the old blob, if it exists
     oldBlob = getattr(self.data.student_info, form.fileFieldName())
@@ -234,6 +234,8 @@ class FormPage(GSoCRequestHandler):
     form.save()
 
     self._r().to(self._urlName(), validated=True)
+
+    return self.response
 
 
 class DownloadForm(GSoCRequestHandler):

@@ -41,8 +41,7 @@ class AcceptProposalsPage(GSoCRequestHandler):
     self.check.isHost()
 
   def context(self):
-    """Returns the context for this page.
-    """
+    """Returns the context for this page."""
     program = self.data.program
 
     conversion_status = conversion_logic.getOrCreateStatusForProgram(program)
@@ -55,8 +54,7 @@ class AcceptProposalsPage(GSoCRequestHandler):
     return context
 
   def post(self):
-    """Handles the POST request to (re)start conversion.
-    """
+    """Handles the POST request to (re)start conversion."""
 
     # pass along these params as POST to the new task
     task_params = {'program_key': self.data.program.key().id_or_name()}
@@ -67,4 +65,4 @@ class AcceptProposalsPage(GSoCRequestHandler):
     new_task.add()
 
     # redirect to self
-    self.response = http.HttpResponseRedirect('')
+    return http.HttpResponseRedirect('')

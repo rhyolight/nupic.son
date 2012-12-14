@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the User related pages.
-"""
-
+"""Module for the User related pages."""
 
 import os
-
 
 from django.conf.urls.defaults import url as django_url
 
@@ -89,8 +84,7 @@ class CreateUserPage(SiteRequestHandler):
     }
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
+    """Handler for HTTP POST request."""
     from soc.modules.gsoc.views.forms import GSoCBoundField
     form = UserCreateForm(GSoCBoundField, self.data.POST)
 
@@ -105,11 +99,11 @@ class CreateUserPage(SiteRequestHandler):
     form.create(key_name=cleaned_data['link_id'])
 
     self.redirect.to('edit_user', validated=True)
+    return self.response
 
 
 class EditUserPage(SiteRequestHandler):
-  """View to edit the user profile.
-  """
+  """View to edit the user profile."""
 
   def djangoURLPatterns(self):
     return [
@@ -137,8 +131,7 @@ class EditUserPage(SiteRequestHandler):
     }
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
+    """Handler for HTTP POST request."""
     from soc.modules.gsoc.views.forms import GSoCBoundField
     form = UserEditForm(GSoCBoundField, self.data.POST,
                          instance=self.data.user)
@@ -149,3 +142,4 @@ class EditUserPage(SiteRequestHandler):
     form.save()
 
     self.redirect.to('edit_user', validated=True)
+    return self.response

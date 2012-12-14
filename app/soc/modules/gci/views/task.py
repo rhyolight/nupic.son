@@ -288,8 +288,7 @@ class TaskViewPage(GCIRequestHandler):
     return context
 
   def post(self):
-    """Handles all POST calls for the TaskViewPage.
-    """
+    """Handles all POST calls for the TaskViewPage."""
     if self.data.is_visible and 'reply' in self.data.GET:
       return self._postComment()
     elif 'button' in self.data.GET:
@@ -301,7 +300,7 @@ class TaskViewPage(GCIRequestHandler):
     elif 'work_file_submit' in self.data.POST or 'submit_work' in self.data.GET:
       return self._postSubmitWork()
     else:
-      self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+      return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def _postComment(self):
     """Handles the POST call for the form that creates comments.
@@ -324,6 +323,8 @@ class TaskViewPage(GCIRequestHandler):
     # user.
     self.redirect.id().to('gci_view_task')
 
+    return self.response
+
   def _postButton(self):
     """Handles the POST call for any of the control buttons on the task page.
     """
@@ -338,11 +339,11 @@ class TaskViewPage(GCIRequestHandler):
     elif button_name == 'button_edit':
       r = self.redirect.id(id=task.key().id_or_name())
       r.to('gci_edit_task')
-      return
+      return self.response
     elif button_name == 'button_delete':
       task_logic.delete(task)
       self.redirect.homepage().to()
-      return
+      return self.response
     elif button_name == 'button_assign':
       task_logic.assignTask(task, task.student, self.data.profile)
     elif button_name == 'button_unassign':
@@ -380,6 +381,8 @@ class TaskViewPage(GCIRequestHandler):
 
     self.redirect.id().to('gci_view_task')
 
+    return self.response
+
   def _buttonName(self):
     """Returns the name of the button specified in the POST dict.
     """
@@ -404,7 +407,8 @@ class TaskViewPage(GCIRequestHandler):
         # we are not storing this form, remove the uploaded blob from the cloud
         for f in self.data.request.file_uploads.itervalues():
           f.delete()
-        return self.redirect.id().to('gci_view_task', extra=['file=0'])
+        self.redirect.id().to('gci_view_task', extra=['file=0'])
+        return self.response
 
 
     task = self.data.task
@@ -416,14 +420,17 @@ class TaskViewPage(GCIRequestHandler):
     # store the submission, parented by the task
     form.create(parent=task)
 
-    return self.redirect.id().to('gci_view_task')
+    self.redirect.id().to('gci_view_task')
+
+    return self.response
 
   def _postSendForReview(self):
-    """POST handler for the mark as complete button.
-    """
+    """POST handler for the mark as complete button."""
     task_logic.sendForReview(self.data.task, self.data.profile)
 
     self.redirect.id().to('gci_view_task')
+
+    return self.response
 
   def _postDeleteSubmission(self):
     """POST handler to delete a GCIWorkSubmission.
@@ -432,9 +439,8 @@ class TaskViewPage(GCIRequestHandler):
     work = GCIWorkSubmission.get_by_id(submission_id, parent=self.data.task)
 
     if not work:
-      self.response = self.error(
+      return self.error(
           httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % submission_id)
-      return
 
     # Deletion of blobs always runs separately from transaction so it has no
     # added value to use it here.
@@ -444,6 +450,8 @@ class TaskViewPage(GCIRequestHandler):
       upload.delete()
 
     self.redirect.id().to('gci_view_task')
+
+    return self.response
 
   def _submissionId(self):
     """Retrieves the submission id from the POST data.

@@ -227,11 +227,10 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
     return UNIVERSITIES
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
+    """Handler for HTTP POST request."""
     if not self.validate():
-      self.get()
-      return
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
     link_id = self.data.GET.get('org')
     if link_id:
@@ -245,18 +244,19 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
     if not organization:
       self.redirect.program()
       self.redirect.to('edit_gsoc_profile', validated=True, secure=True)
-      return
+      return self.response
 
     self.redirect.organization(organization)
 
-    extra_get_args = []
     if self.data.student_info:
       link = 'submit_gsoc_proposal'
+      extra_get_args = []
     else:
       link = 'gsoc_request'
-      extra_get_args.append('profile=created')
+      extra_get_args = ['profile=created']
 
     self.redirect.to(link, extra=extra_get_args)
+    return self.response
 
   def _getModulePrefix(self):
     return 'gsoc'

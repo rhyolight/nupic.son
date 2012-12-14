@@ -224,13 +224,14 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
     return True
 
   def post(self):
-    """Post handler for the project details update form.
-    """
+    """Post handler for the project details update form."""
     if self.validate():
       self.redirect.project()
       self.redirect.to('gsoc_project_details')
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
 class CodeSampleUploadFilePost(GSoCRequestHandler):
@@ -254,8 +255,7 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
     self.check.isProjectCompleted()
 
   def post(self):
-    """Post handler for the code sample upload file.
-    """
+    """Post handler for the code sample upload file."""
     assert isSet(self.data.project)
 
     form = CodeSampleUploadFileForm(
@@ -265,8 +265,10 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
       # we are not storing this form, remove the uploaded blob from the cloud
       for blob_info in self.data.request.file_uploads.itervalues():
         blob_info.delete()
-      return self.redirect.project().to(
+      # TODO(nathaniel): make this .project() call unnecessary.
+      self.redirect.project().to(
           url_names.GSOC_PROJECT_UPDATE, extra=['file=0'])
+      return self.response
 
     form.cleaned_data['user'] = self.data.user
     form.cleaned_data['org'] = self.data.project.org
@@ -287,6 +289,7 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
 
     self.redirect.project()
     self.redirect.to('gsoc_project_details')
+    return self.response
 
 
 class CodeSampleDownloadFileGet(GSoCRequestHandler):
@@ -340,8 +343,7 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
     self.check.isProjectCompleted()
 
   def post(self):
-    """Get handler for the code sample delete file.
-    """
+    """Get handler for the code sample delete file."""
     assert isSet(self.data.project)
 
     try:
@@ -368,6 +370,7 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
 
       self.redirect.project()
       self.redirect.to(url_names.GSOC_PROJECT_UPDATE)
+      return self.response
     except KeyError:
       raise BadRequest('id argument missing in POST data')
     except ValueError:
@@ -534,6 +537,8 @@ class AssignMentors(GSoCRequestHandler):
                           project_owner.link_id)
     self.redirect.to('gsoc_project_details')
 
+    return self.response
+
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""
     # TODO(nathaniel): This should probably be the raising of some sort
@@ -590,6 +595,7 @@ class FeaturedProject(GSoCRequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleFeatured(value)
+    return self.response
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""

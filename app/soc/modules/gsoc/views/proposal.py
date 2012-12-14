@@ -123,16 +123,16 @@ class ProposalPage(GSoCRequestHandler):
     return db.run_in_transaction(create_proposal_trx)
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
-
+    """Handler for HTTP POST request."""
     proposal = self.createFromForm()
     if proposal:
       self.redirect.review(proposal.key().id(),
                            self.data.user.link_id)
       self.redirect.to('review_gsoc_proposal')
+      return self.response
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
 class UpdateProposal(GSoCRequestHandler):
@@ -254,13 +254,12 @@ class UpdateProposal(GSoCRequestHandler):
     db.run_in_transaction(resubmit_proposal_txn)
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
+    """Handler for HTTP POST request."""
     if self.data.action == self.ACTIONS['update']:
       proposal = self._updateFromForm()
       if not proposal:
-        self.get()
-        return
+        # TODO(nathaniel): problematic self-use.
+        return self.get()
     elif self.data.action == self.ACTIONS['withdraw']:
       self._withdraw()
     elif self.data.action == self.ACTIONS['resubmit']:
@@ -268,3 +267,4 @@ class UpdateProposal(GSoCRequestHandler):
 
     self.redirect.review(self.data.proposal.key().id(), self.data.user.link_id)
     self.redirect.to('review_gsoc_proposal')
+    return self.response

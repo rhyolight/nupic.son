@@ -79,7 +79,7 @@ class SendRequestPage(GCIRequestHandler):
 
   def validate(self):
     """Validates the form data.
-    
+
     Returns a newly created request entity or None if an error occurs.
     """
     assert isSet(self.data.organization)
@@ -109,14 +109,14 @@ class SendRequestPage(GCIRequestHandler):
     return db.run_in_transaction(create_request_txn)
 
   def post(self):
-    """Handler to for GCI Send Request Page HTTP post request.
-    """
+    """Handler to for GCI Send Request Page HTTP post request."""
     request = self.validate()
-    if not request:
-      self.get()
-      return
-
-    self.redirect.id(request.key().id()).to(url_names.GCI_MANAGE_REQUEST)
+    if request:
+      self.redirect.id(request.key().id()).to(url_names.GCI_MANAGE_REQUEST)
+      return self.response
+    else:
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
 
 class ManageRequestPage(GCIRequestHandler):
@@ -180,6 +180,8 @@ class ManageRequestPage(GCIRequestHandler):
 
     self.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
 
+    return self.response
+
   def _constructPageName(self):
     request = self.data.request_entity
     return "%s Request To %s" % (request.role, request.org.name)
@@ -239,8 +241,7 @@ class RespondRequestPage(GCIRequestHandler):
         }
 
   def post(self):
-    """Handler to for GCI Respond Request Page HTTP post request.
-    """
+    """Handler to for GCI Respond Request Page HTTP post request."""
     user_key = GCIRequest.user.get_value_for_datastore(
         self.data.request_entity)
 
@@ -300,6 +301,8 @@ class RespondRequestPage(GCIRequestHandler):
       db.run_in_transaction(reject_request_txn)
 
     self.redirect.userId(user_key.name()).to(url_names.GCI_RESPOND_REQUEST)
+
+    return self.response
 
 
 class UserRequestsList(Template):

@@ -150,7 +150,7 @@ class DashboardPage(GSoCRequestHandler):
     Do nothing, since toggle button posting to this handler
     without expecting any response.
     """
-    return False
+    return http.HttpResponse()
 
 
 class MainDashboard(Dashboard):
@@ -785,7 +785,8 @@ class LookupLinkIdPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/lookup.html'
 
   def post(self):
-    self.get()
+    # TODO(nathaniel): problematic self-call.
+    return self.get()
 
   def context(self):
     form = LookupForm(self.data, self.data.POST or None)
@@ -1184,13 +1185,13 @@ class ProposalsPage(GSoCRequestHandler):
     return list_content.content()
 
   def post(self):
-    """Handler for POST requests.
-    """
+    """Handler for POST requests."""
     proposals_list = ProposalsList(self.request, self.data)
 
-    if not proposals_list.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if proposals_list.post():
+      return self.response
+    else:
+      raise AccessViolation('You cannot change this data')
 
   def context(self):
     return {
@@ -1286,13 +1287,13 @@ class ProjectsPage(GSoCRequestHandler):
     return list_content.content()
 
   def post(self):
-    """Handler for POST requests.
-    """
+    """Handler for POST requests."""
     projects_list = ProjectsList(self.request, self.data)
 
-    if not projects_list.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if projects_list.post():
+      return self.response
+    else:
+      raise AccessViolation('You cannot change this data')
 
   def context(self):
     return {
@@ -1439,9 +1440,10 @@ class SlotsPage(GSoCRequestHandler):
   def post(self):
     slots_list = SlotsList(self.request, self.data)
 
-    if not slots_list.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if slots_list.post():
+      return self.response
+    else:
+      raise AccessViolation('You cannot change this data')
 
   def context(self):
     return {
@@ -1479,9 +1481,8 @@ class SurveyReminderPage(GSoCRequestHandler):
                           params=task_params)
     task.add()
 
-    self.response = http.HttpResponseRedirect(
-        self.request.path+'?msg=Reminders are being sent')
-    return
+    return http.HttpResponseRedirect(
+        self.request.path + '?msg=Reminders are being sent')
 
   def context(self):
     q = GradingProjectSurvey.all()

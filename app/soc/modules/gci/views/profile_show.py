@@ -154,8 +154,7 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
     """Handles student form verification by host."""
     if not self.data.url_profile.student_info:
       logging.warn(NON_STUDENT_ERR_MSG)
-      self.response = self.error(httplib.METHOD_NOT_ALLOWED)
-      return
+      return self.error(httplib.METHOD_NOT_ALLOWED)
 
     post_data = self.data.POST
     button_id = post_data.get('id')
@@ -166,7 +165,7 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
     elif button_id == 'verify-student-id-form':
       self._verifyStudentIDForm(value)
 
-    return
+    return self.response
 
   def _verifyConsentForm(self, value):
     """Mark the parental consent form as verified or not verified.

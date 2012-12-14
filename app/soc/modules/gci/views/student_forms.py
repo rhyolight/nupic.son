@@ -186,8 +186,7 @@ class StudentFormUpload(GCIRequestHandler):
     return context
 
   def post(self):
-    """Handles POST requests for the bulk create page.
-    """
+    """Handles POST requests for the bulk create page."""
     form = UploadForm(
         self.data, data=self.data.POST, instance=self.data.student_info,
         files=self.data.request.file_uploads)
@@ -203,7 +202,7 @@ class StudentFormUpload(GCIRequestHandler):
         extra_args.append('error_%s=%s' %(field, error.as_text()))
 
       self.data.redirect.to('gci_student_form_upload', extra=extra_args)
-      return
+      return self.response
 
     # delete existing data
     cleaned_data = form.cleaned_data
@@ -219,6 +218,8 @@ class StudentFormUpload(GCIRequestHandler):
     self.redirect.program()
 
     self.redirect.to('gci_student_form_upload')
+
+    return self.response
 
 
 class StudentFormDownload(GCIRequestHandler):
