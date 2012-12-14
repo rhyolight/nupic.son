@@ -134,10 +134,6 @@ class SiteHomepage(base.SiteRequestHandler):
 
   def __call__(self, request, *args, **kwargs):
     """Custom call implementation that avoids looking up unneeded data."""
-    # TODO(nathaniel): eliminate this - the RedirectHelper (self.redirect)
-    # should simply return a newly-crafted HttpResponse.
-    # TODO(nathaniel): this blocks (and is part of) issue 1665.
-    self.response = http.HttpResponse()
     try:
       self.init(request, args, kwargs)
 

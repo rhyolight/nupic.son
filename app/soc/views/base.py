@@ -286,8 +286,6 @@ class RequestHandler(object):
     self.args = args
     self.kwargs = kwargs
 
-    self.response = http.HttpResponse()
-
     try:
       self.init(request, args, kwargs)
       self.checkAccess()
@@ -304,7 +302,6 @@ class RequestHandler(object):
     except exceptions.Error, e:
       return self.error(e.status, message=e.args[0])
     finally:
-      self.response = None
       self.request = None
       self.args = None
       self.kwargs = None
@@ -319,7 +316,7 @@ class SiteRequestHandler(RequestHandler):
 
   def init(self, request, args, kwargs):
     self.data = request_data.RequestData()
-    self.redirect = request_data.RedirectHelper(self.data, self.response)
+    self.redirect = request_data.RedirectHelper(self.data)
     self.data.populate(None, request, args, kwargs)
     if self.data.is_developer:
       self.mutator = access_checker.DeveloperMutator(self.data)

@@ -49,7 +49,7 @@ class GCIRequestHandler(base.RequestHandler):
 
   def init(self, request, args, kwargs):
     self.data = request_data.RequestData()
-    self.redirect = request_data.RedirectHelper(self.data, self.response)
+    self.redirect = request_data.RedirectHelper(self.data)
     self.data.populate(self.redirect, request, args, kwargs)
     if self.data.is_developer:
       self.mutator = access_checker.DeveloperMutator(self.data)

@@ -264,10 +264,10 @@ class RequestData(object):
 class RedirectHelper(object):
   """Helper for constructing redirects."""
 
-  def __init__(self, data, response):
+  def __init__(self, data):
     """Initializes the redirect helper."""
     self._data = data
-    self._response = response
+    self._response = http.HttpResponse()
     self._clear()
 
   def _clear(self):
