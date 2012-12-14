@@ -64,30 +64,35 @@ class RequestHandler(object):
 
   def json(self):
     """Handler for HTTP GET request with a 'fmt=json' parameter."""
-
-    if not self.data.request.GET.get('plain'):
-      self.response['Content-Type'] = 'application/json'
-
-    # if the browser supports HTTP/1.1
-    # post-check and pre-check and no-store for IE7
-    # TODO(nathaniel): We need no longer support IE7. Can this be simplified
-    # or eliminated?
-    self.response['Cache-Control'] = 'no-store, no-cache, must-revalidate, ' \
-                                     'post-check=0, pre-check=0' # HTTP/1.1, IE7
-    self.response['Pragma'] = 'no-cache'
-
     context = self.jsonContext()
-
-    if self.data.request.GET.get('marker'):
-      # allow the django test framework to capture the context dictionary
-      loader.render_to_string('json_marker.html', dictionary=context)
 
     if isinstance(context, unicode) or isinstance(context, str):
       data = context
     else:
       data = simplejson.dumps(context)
 
-    self.response.write(data)
+    if self.data.request.GET.get('plain'):
+      content_type = http.DEFAULT_CONTENT_TYPE
+    else:
+      content_type = 'application/json'
+
+    response = http.HttpResponse(content=data, content_type=content_type)
+
+    # if the browser supports HTTP/1.1
+    # post-check and pre-check and no-store for IE7
+    # TODO(nathaniel): We need no longer support IE7. Can this be simplified
+    # or eliminated?
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, ' \
+                                'post-check=0, pre-check=0' # HTTP/1.1, IE7
+    response['Pragma'] = 'no-cache'
+
+    # TODO(nathaniel): find a better way to do this - I mean, the
+    # jsonContext method is already as exposed as this method.
+    if self.data.request.GET.get('marker'):
+      # allow the django test framework to capture the context dictionary
+      loader.render_to_string('json_marker.html', dictionary=context)
+
+    return response
 
   def jsonContext(self):
     """Defines the JSON object to be dumped and returned on a HTTP GET request
@@ -228,8 +233,7 @@ class RequestHandler(object):
     """
     if self.data.request.method == 'GET':
       if self.data.request.GET.get('fmt') == 'json':
-        self.json()
-        return self.response
+        return self.json()
       else:
         return self.get()
     elif self.data.request.method == 'POST':
