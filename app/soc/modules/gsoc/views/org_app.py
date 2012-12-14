@@ -16,6 +16,7 @@
 
 import logging
 
+from django import http
 from django.utils import simplejson
 from django.utils.translation import ugettext
 
@@ -321,9 +322,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
       new_status = properties['status']
       org_app_logic.setStatus(self.data, record, new_status, url)
 
-    self.response.set_status(200)
-
-    return self.response
+    return http.HttpResponse()
 
 
 class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):
