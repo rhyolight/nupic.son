@@ -22,14 +22,13 @@ from google.appengine.ext import db
 
 from django import forms as djangoforms
 from django import http
+from django.utils import dateformat
 from django.utils import simplejson
-from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic import accounts
 from soc.logic import cleaning
-from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
 from soc.views.dashboard import DashboardUserActions
@@ -57,8 +56,7 @@ from soc.modules.gsoc.views.projects_list import ProjectList
 
 
 class LookupForm(gsoc_forms.GSoCModelForm):
-  """Django form for the lookup profile page.
-  """
+  """Django form for the lookup profile page."""
 
   class Meta:
     model = None
@@ -801,17 +799,19 @@ class LookupLinkIdPage(GSoCRequestHandler):
     if profile:
       cbox = bool(self.data.GET.get('cbox'))
 
-      # TODO(nathaniel): What is this? Setting redirect fields inside a
-      # context() method?
+      # TODO(nathaniel): Find a cleaner way to do this rather than
+      # generating a response and then tossing it.
       self.redirect.profile(profile.link_id)
-      self.redirect.to(url_names.GSOC_PROFILE_SHOW, cbox=cbox, secure=True)
-
-    return {
-      'forms': forms,
-      'error': error,
-      'posted': error,
-      'page_name': 'Lookup profile',
-    }
+      response = self.redirect.to(
+          url_names.GSOC_PROFILE_SHOW, cbox=cbox, secure=True)
+      raise exceptions.RedirectRequest(response['Location'])
+    else:
+      return {
+        'forms': forms,
+        'error': error,
+        'posted': error,
+        'page_name': 'Lookup profile',
+      }
 
 
 class AcceptedOrgsList(Template):
@@ -942,8 +942,7 @@ class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
         self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -1020,8 +1019,7 @@ class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
         self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -1088,10 +1086,10 @@ class ProposalsList(Template):
 
     list_config.addColumn(
         'last_modified_on', 'Last modified',
-        lambda ent, *args: format(ent.last_modified_on, 'Y-m-d H:i:s'))
+        lambda ent, *args: dateformat.format(ent.last_modified_on, 'Y-m-d H:i:s'))
     list_config.addColumn(
         'created_on', 'Created on',
-        (lambda ent, *args: format(ent.created_on, 'Y-m-d H:i:s')),
+        (lambda ent, *args: dateformat.format(ent.created_on, 'Y-m-d H:i:s')),
         hidden=True)
     list_config.addColumn(
         'student', 'Student',
@@ -1179,8 +1177,7 @@ class ProposalsPage(GSoCRequestHandler):
     list_content = ProposalsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -1191,7 +1188,7 @@ class ProposalsPage(GSoCRequestHandler):
     if proposals_list.post():
       return self.response
     else:
-      raise AccessViolation('You cannot change this data')
+      raise exceptions.AccessViolation('You cannot change this data')
 
   def context(self):
     return {
@@ -1281,8 +1278,7 @@ class ProjectsPage(GSoCRequestHandler):
     list_content = ProjectsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -1293,7 +1289,7 @@ class ProjectsPage(GSoCRequestHandler):
     if projects_list.post():
       return self.response
     else:
-      raise AccessViolation('You cannot change this data')
+      raise exceptions.AccessViolation('You cannot change this data')
 
   def context(self):
     return {
@@ -1338,7 +1334,7 @@ class SlotsList(AcceptedOrgsList):
     data = self.data.POST.get('data')
 
     if not data:
-      raise BadRequest("Missing data")
+      raise exceptions.BadRequest("Missing data")
 
     parsed = simplejson.loads(data)
 
@@ -1432,8 +1428,7 @@ class SlotsPage(GSoCRequestHandler):
     list_content = SlotsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -1443,7 +1438,7 @@ class SlotsPage(GSoCRequestHandler):
     if slots_list.post():
       return self.response
     else:
-      raise AccessViolation('You cannot change this data')
+      raise exceptions.AccessViolation('You cannot change this data')
 
   def context(self):
     return {
@@ -1523,7 +1518,7 @@ class StudentsList(AcceptedOrgsList):
     list_config.addSimpleColumn('gender', 'Gender', hidden=True)
     list_config.addColumn(
         'birth_date', "Birthdate",
-        (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
+        (lambda ent, *args: dateformat.format(ent.birth_date, BIRTHDATE_FORMAT)),
         hidden=True)
     list_config.setRowAction(lambda e, *args:
         r.profile(e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW, secure=True))
@@ -1653,8 +1648,7 @@ class StudentsListPage(GSoCRequestHandler):
     list_content = StudentsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -1689,8 +1683,7 @@ class ProjectsListPage(GSoCRequestHandler):
         self.request, self.data, list_query, self.LIST_IDX).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -1724,8 +1717,7 @@ class OrgsListPage(GSoCRequestHandler):
     list_content = AcceptedOrgsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
