@@ -296,20 +296,20 @@ class RequestHandler(object):
     try:
       self.init(request, args, kwargs)
       self.checkAccess()
-      self.response = self._dispatch()
+      return self._dispatch()
     except exceptions.LoginRequest, e:
       request.get_full_path().encode('utf-8')
       self.redirect.login().to()
+      return self.response
     except exceptions.RedirectRequest, e:
-      self.response = self.redirect.toUrl(e.url)
+      return self.redirect.toUrl(e.url)
     except exceptions.GDocsLoginRequest, e:
-      self.response = self.redirect.toUrl(
-          '%s?%s' % (self.redirect.urlOf(e.url_name),
-                     urllib.urlencode({'next':e.next_param})))
+      return self.redirect.toUrl('%s?%s' % (
+          self.redirect.urlOf(e.url_name),
+          urllib.urlencode({'next':e.next_param})))
     except exceptions.Error, e:
-      self.response = self.error(e.status, message=e.args[0])
+      return self.error(e.status, message=e.args[0])
     finally:
-      response = self.response
       self.response = None
       self.request = None
       self.args = None
@@ -318,8 +318,6 @@ class RequestHandler(object):
       self.check = None
       self.mutator = None
       self.redirect = None
-
-    return response
 
 
 class SiteRequestHandler(RequestHandler):
