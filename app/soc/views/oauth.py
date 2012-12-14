@@ -14,6 +14,7 @@
 
 """Module containing views for Open Auth."""
 
+from django import http
 from django.conf.urls.defaults import url as django_url
 
 from soc.views.helper.gdata_apis import oauth as oauth_helper
@@ -66,8 +67,7 @@ class OAuthVerifyToken(GSoCRequestHandler):
     service = oauth_helper.createDocsService(self.data)
     oauth_helper.checkOAuthVerifier(service, self.data)
     next = self.request.GET.get('next','/')
-    self.response = self.redirect.toUrl(next)
-    return self.response
+    return self.redirect.toUrl(next)
 
 
 class PopupOAuthRedirectPage(GSoCRequestHandler):
@@ -94,8 +94,7 @@ class PopupOAuthRedirectPage(GSoCRequestHandler):
       url = oauth_helper.generateOAuthRedirectURL(
           service, self.data.user,
           next)
-    self.response = self.redirect.toUrl(url)
-    return self.response
+    return self.redirect.toUrl(url)
 
 
 class PopupOAuthVerified(GSoCRequestHandler):
@@ -118,5 +117,4 @@ class PopupOAuthVerified(GSoCRequestHandler):
         "    window.close();"
         "</script></body></html>"
     )
-    self.response.write(html)
-    return self.response
+    return http.HttpResponse(content=html)

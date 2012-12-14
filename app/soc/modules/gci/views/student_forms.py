@@ -247,4 +247,4 @@ class StudentFormDownload(GCIRequestHandler):
     else:
       # TODO(nathaniel): This should probably be some sort of exception
       # rather than a self-call.
-      self.response = self.error(httplib.NOT_FOUND, 'File not found')
+      return self.error(httplib.NOT_FOUND, 'File not found')

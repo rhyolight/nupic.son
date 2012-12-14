@@ -17,6 +17,7 @@
 from google.appengine.api import users
 
 from django import forms as djangoforms
+from django import http
 from django.utils.translation import ugettext
 
 from soc.logic import accounts
@@ -111,7 +112,7 @@ class DashboardPage(GCIRequestHandler):
     Do nothing, since toggle button posting to this handler
     without expecting any response.
     """
-    return self.response
+    return http.HttpResponse()
 
 
 class MainDashboard(Dashboard):
