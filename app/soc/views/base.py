@@ -30,7 +30,6 @@ from soc.logic import links
 from soc.views.helper import access_checker
 from soc.views.helper import context as context_helper
 from soc.views.helper import request_data
-from soc.views.helper import response as response_helper
 
 
 class RequestHandler(object):
@@ -293,7 +292,7 @@ class RequestHandler(object):
     self.args = args
     self.kwargs = kwargs
 
-    self.response = response_helper.Response()
+    self.response = http.HttpResponse()
 
     try:
       self.init(request, args, kwargs)
