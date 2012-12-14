@@ -12,26 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the GSoC Callback.
-"""
+"""Module containing the GSoC Callback."""
 
 
 class Callback(object):
-  """Callback object that handles interaction between the core.
-  """
+  """Callback object that handles interaction between the core."""
 
   API_VERSION = 1
 
   def __init__(self, core):
-    """Initializes a new Callback object for the specified core.
-    """
+    """Initializes a new Callback object for the specified core."""
 
     self.core = core
     self.views = []
 
   def registerViews(self):
-    """Instantiates all view objects.
-    """
+    """Instantiates all view objects."""
     from soc.modules.gsoc.views import accept_proposals
     from soc.modules.gsoc.views import accept_withdraw_projects
     from soc.modules.gsoc.views import accepted_orgs
@@ -42,7 +38,6 @@ class Callback(object):
     from soc.modules.gsoc.views import grading_record_details
     from soc.modules.gsoc.views import homepage
     from soc.modules.gsoc.views import invite
-    #from soc.modules.gsoc.views import org_app
     from soc.modules.gsoc.views import mentor_evaluation
     from soc.modules.gsoc.views import org_app
     from soc.modules.gsoc.views import org_admin_dashboard
@@ -59,7 +54,6 @@ class Callback(object):
     from soc.modules.gsoc.views import search
     from soc.modules.gsoc.views import slot_transfer
     from soc.modules.gsoc.views import slot_transfer_admin
-    #from soc.modules.gsoc.views import statistic
     from soc.modules.gsoc.views import student_evaluation
     from soc.modules.gsoc.views import student_forms
     from soc.modules.gsoc.views import oauth
@@ -146,8 +140,6 @@ class Callback(object):
     self.views.append(student_forms.FormPage())
     self.views.append(oauth.OAuthRedirectPage())
     self.views.append(oauth.OAuthVerifyToken())
-#    self.views.append(statistic.StatisticDashboard())
-#    self.views.append(statistic.StatisticFetcher())
 
     # Appengine Task related views
     from soc.modules.gsoc.tasks.grading_survey_group import \
@@ -158,23 +150,14 @@ class Callback(object):
         ProposalDuplicatesTask
     from soc.modules.gsoc.tasks.survey_reminders import \
         SurveyReminderTask
-    #from soc.modules.gsoc.tasks.statistic import CollectProfileSpecificStatistics
-    #from soc.modules.gsoc.tasks.statistic import CollectProposalSpecificStatistics
-    #from soc.modules.gsoc.tasks.statistic import CreateProfileSpecificStatisticService
-    #from soc.modules.gsoc.tasks.statistic import CreateProposalSpecificStatisticService
 
     self.views.append(GradingRecordTasks())
     self.views.append(ProposalAcceptanceTask())
     self.views.append(ProposalDuplicatesTask())
     self.views.append(SurveyReminderTask())
-#    self.views.append(CollectProfileSpecificStatistics())
-#    self.views.append(CollectProposalSpecificStatistics())
-#    self.views.append(CreateProfileSpecificStatisticService())
-#    self.views.append(CreateProposalSpecificStatisticService())
 
   def registerWithSitemap(self):
-    """Called by the server when sitemap entries should be registered.
-    """
+    """Called by the server when sitemap entries should be registered."""
 
     self.core.requireUniqueService('registerWithSitemap')
 
@@ -183,8 +166,7 @@ class Callback(object):
       self.core.registerSitemapEntry(view.djangoURLPatterns())
 
   def registerWithProgramMap(self):
-    """Called by the server when program_map entries should be registered.
-    """
+    """Called by the server when program_map entries should be registered."""
 
     self.core.requireUniqueService('registerWithProgramMap')
 
