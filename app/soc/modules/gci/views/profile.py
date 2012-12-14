@@ -310,22 +310,22 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
     Based on the action, the request is dispatched to a specific handler.
     """
     if 'delete_account' in self.data.POST:
-      self.deleteAccountPostAction()
+      return self.deleteAccountPostAction()
     else: # regular POST request
-      self.editProfilePostAction()
-    return self.response
+      return self.editProfilePostAction()
 
   def deleteAccountPostAction(self):
-    """Handler for Delete Account POST action.
-    """
+    """Handler for Delete Account POST action."""
     self.redirect.program()
     self.redirect.to('gci_delete_account', secure=True)
+
+    return self.response
 
   def editProfilePostAction(self):
     """Handler for regular (edit/create profile) POST action."""
     if not self.validate():
-      self.get()
-      return
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
     org_id = self.data.GET.get('new_org')
 
@@ -339,6 +339,8 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
 
       self.redirect.to(
           self._getEditProfileURLName(), validated=True, secure=True)
+
+      return self.response
 
   def _getModulePrefix(self):
     return 'gci'

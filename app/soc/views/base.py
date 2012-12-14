@@ -58,7 +58,9 @@ class RequestHandler(object):
     response_content = self.render(template_path, context)
 
     # TODO(nathaniel): return a new object here instead of this attribute
-    # of self.
+    # of self. At the moment, some code (in context()?) is setting the
+    # status code and headers of self.response and relying on them being
+    # preserved and returned here.
     self.response.write(response_content)
     return self.response
 
