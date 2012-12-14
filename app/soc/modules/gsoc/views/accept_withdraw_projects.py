@@ -21,6 +21,7 @@ import logging
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils import simplejson
 
 from soc.logic.exceptions import AccessViolation
@@ -251,7 +252,7 @@ class AcceptProposals(GSoCRequestHandler):
     list_content = ProposalList(self.request, self.data)
 
     if list_content.post():
-      return self.response
+      return http.HttpResponse()
     else:
       raise AccessViolation('You cannot change this data')
 
@@ -445,13 +446,11 @@ class WithdrawProjects(GSoCRequestHandler):
     ]
 
   def checkAccess(self):
-    """Access checks for the view.
-    """
+    """Access checks for the view."""
     self.check.isHost()
 
   def jsonContext(self):
-    """Handler for JSON requests.
-    """
+    """Handler for JSON requests."""
     list_content = ProjectList(self.request, self.data).getListData()
 
     if not list_content:
@@ -463,18 +462,15 @@ class WithdrawProjects(GSoCRequestHandler):
     list_content = ProjectList(self.request, self.data)
 
     if list_content.post():
-      return self.response
+      return http.HttpResponse()
     else:
       raise AccessViolation('You cannot change this data')
 
   def context(self):
-    """Handler for GSoC Accepted Projects List page HTTP get request.
-    """
-    program = self.data.program
-
+    """Handler for GSoC Accepted Projects List page HTTP get request."""
     return {
-        'page_name': '%s - Projects' % program.short_name,
-        'program_name': program.name,
+        'page_name': '%s - Projects' % self.data.program.short_name,
+        'program_name': self.data.program.name,
         'list': ProjectList(self.request, self.data),
         'program_select': ProgramSelect(self.data, 'gsoc_withdraw_projects'),
     }

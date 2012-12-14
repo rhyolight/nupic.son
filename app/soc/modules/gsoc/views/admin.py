@@ -1186,7 +1186,7 @@ class ProposalsPage(GSoCRequestHandler):
     proposals_list = ProposalsList(self.request, self.data)
 
     if proposals_list.post():
-      return self.response
+      return http.HttpResponse()
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 
@@ -1287,7 +1287,7 @@ class ProjectsPage(GSoCRequestHandler):
     projects_list = ProjectsList(self.request, self.data)
 
     if projects_list.post():
-      return self.response
+      return http.HttpResponse()
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 
@@ -1436,7 +1436,7 @@ class SlotsPage(GSoCRequestHandler):
     slots_list = SlotsList(self.request, self.data)
 
     if slots_list.post():
-      return self.response
+      return http.HttpResponse()
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 

@@ -17,6 +17,7 @@
 # TODO(nathaniel): as of 1 December 2012 this module is unused
 # (see soc.modules.gsoc.callback:62). Should it be removed?
 
+from django import http
 from django.utils import simplejson
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
@@ -147,6 +148,8 @@ class StatisticFetcher(GSoCRequestHandler):
              name='gsoc_statistic_fetch'),
     ]
 
+  # TODO(nathaniel): It looks like the right way to control response
+  # content-type is to override RequestHandler.json.
   def _getPresentation(self, key_name):
     type = self.data.GET.get('type', 'json')
 
@@ -191,4 +194,4 @@ class StatisticManager(GSoCRequestHandler):
       statistic.setVisible(value)
       GSoCStatisticInfo.getInstance().updateStatistic(statistic)
 
-    return self.response
+    return http.HttpResponse()

@@ -19,6 +19,8 @@ import collections
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
+from django import http
+
 from soc.views import forms
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -84,7 +86,7 @@ class GradingRecordsOverview(GSoCRequestHandler):
       task = taskqueue.Task(params=task_params, url=task_url)
       task.add()
 
-    return self.response
+    return http.HttpResponse()
 
 
 class GradingRecordsList(Template):

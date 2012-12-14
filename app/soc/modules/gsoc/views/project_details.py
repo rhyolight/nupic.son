@@ -20,6 +20,7 @@ from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 from django import forms as django_forms
+from django import http
 from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
@@ -591,7 +592,7 @@ class FeaturedProject(GSoCRequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleFeatured(value)
-    return self.response
+    return http.HttpResponse()
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""

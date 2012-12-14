@@ -17,6 +17,7 @@
 import httplib
 import logging
 
+from django import http
 from django.utils import translation
 
 from soc.logic.exceptions import NotFound
@@ -161,7 +162,7 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
     elif button_id == 'verify-student-id-form':
       self._verifyStudentIDForm(value)
 
-    return self.response
+    return http.HttpResponse()
 
   def _verifyConsentForm(self, value):
     """Mark the parental consent form as verified or not verified.

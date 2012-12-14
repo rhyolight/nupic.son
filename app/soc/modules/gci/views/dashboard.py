@@ -18,6 +18,7 @@ import logging
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
@@ -218,7 +219,7 @@ class DashboardPage(GCIRequestHandler):
     """Handler for POST requests for each component."""
     for component in self.components():
       if component.post():
-        return self.response
+        return http.HttpResponse()
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 
