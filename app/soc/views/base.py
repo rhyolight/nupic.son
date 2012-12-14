@@ -55,13 +55,7 @@ class RequestHandler(object):
     context = self.context()
     template_path = self.templatePath()
     response_content = self.render(template_path, context)
-
-    # TODO(nathaniel): return a new object here instead of this attribute
-    # of self. At the moment, some code (in context()?) is setting the
-    # status code and headers of self.response and relying on them being
-    # preserved and returned here.
-    self.response.write(response_content)
-    return self.response
+    return http.HttpResponse(content=response_content)
 
   def json(self):
     """Handler for HTTP GET request with a 'fmt=json' parameter."""
@@ -110,7 +104,7 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for this RequestHandler's request
         object.
     """
-    self.response = self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def head(self):
     """Handler for HTTP HEAD request.

@@ -486,17 +486,7 @@ class RedirectHelper(object):
     url = self._appendGetArgs(url, cbox=cbox, validated=validated,
         extra_get_args=extra)
 
-    response = self.toUrl(url, full=full, secure=secure)
-
-    # TODO(nathaniel): eliminate this by having callers of this method
-    # accept and use the return value of toUrl.
-    self._response.status_code = response.status_code
-    self._response["Location"] = response["Location"]
-
-    # TODO(nathaniel): return the response object rather than the
-    # self.response object.
-    return self._response
-    return response
+    return self.toUrl(url, full=full, secure=secure)
 
   def toUrl(self, url, full=False, secure=False):
     """Redirects to the specified url.
