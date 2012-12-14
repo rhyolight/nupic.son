@@ -18,22 +18,21 @@ import logging
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils import simplejson
 
-from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
+from soc.views import template
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
-from soc.views.template import Template
 
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
-from soc.modules.gsoc.views.base import GSoCRequestHandler
-from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gsoc.views import base
+from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
 
-class SlotsTransferAdminList(Template):
-  """Template for list of slot transfer requests.
-  """
+class SlotsTransferAdminList(template.Template):
+  """Template for list of slot transfer requests."""
 
   def __init__(self, request, data):
     self.request = request
@@ -78,13 +77,13 @@ class SlotsTransferAdminList(Template):
 
   def context(self):
     description = 'List of slot transfer requests for the program %s' % (
-            self.data.program.name)
+        self.data.program.name)
 
-    list = lists.ListConfigurationResponse(
+    slot_transfer_request_list = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, description)
 
     return {
-        'lists': [list],
+        'lists': [slot_transfer_request_list],
     }
 
   def post(self):
@@ -97,7 +96,7 @@ class SlotsTransferAdminList(Template):
     button_id = self.data.POST.get('button_id')
 
     if not data:
-      raise BadRequest("Missing data")
+      raise exceptions.BadRequest("Missing data")
 
     parsed = simplejson.loads(data)
 
@@ -218,14 +217,14 @@ class SlotsTransferAdminList(Template):
     return "v2/modules/gsoc/slot_transfer_admin/_list.html"
 
 
-class SlotsTransferAdminPage(GSoCRequestHandler):
-  """View for the the list of slot transfer requests.
-  """
+class SlotsTransferAdminPage(base.GSoCRequestHandler):
+  """View for the the list of slot transfer requests."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/slots/transfer/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_admin_slots_transfer'),
+        gsoc_url_patterns.url(
+            r'admin/slots/transfer/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_admin_slots_transfer'),
     ]
 
   def checkAccess(self):
@@ -237,19 +236,18 @@ class SlotsTransferAdminPage(GSoCRequestHandler):
   def jsonContext(self):
     list_content = SlotsTransferAdminList(self.request, self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exceptions.AccessViolation('You do not have access to this data')
 
   def post(self):
     slots_list = SlotsTransferAdminList(self.request, self.data)
 
     if slots_list.post():
-      return self.response
+      return http.HttpResponse()
     else:
-      raise AccessViolation('You cannot change this data')
+      raise exceptions.AccessViolation('You cannot change this data')
 
   def context(self):
     return {
