@@ -26,11 +26,10 @@ from soc.views.helper import url_patterns
 from soc.views.template import Template
 
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.views import base
 from soc.modules.gci.views import readonly_template
-from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
-
 
 NON_STUDENT_ERR_MSG = translation.ugettext(
     'There cannot be a post request for student form verification on '
@@ -38,8 +37,7 @@ NON_STUDENT_ERR_MSG = translation.ugettext(
 
 
 class StudentFormsTemplate(Template):
-  """Template to provide links to student forms.
-  """
+  """Template to provide links to student forms."""
 
   def __init__(self, profile, data):
     super(StudentFormsTemplate, self).__init__(data)
@@ -68,8 +66,7 @@ class StudentFormsTemplate(Template):
 
 
 class GCIProfileReadOnlyTemplate(readonly_template.GCIModelReadOnlyTemplate):
-  """Template to construct read-only GSoCProfile data.
-  """
+  """Template to construct read-only GSoCProfile data."""
 
   class Meta:
     model = GCIProfile
@@ -83,7 +80,7 @@ class GCIProfileReadOnlyTemplate(readonly_template.GCIModelReadOnlyTemplate):
               'tshirt_style', 'tshirt_size', 'gender', 'program_knowledge']
 
 
-class GCIProfileShowPage(profile_show.ProfileShowPage, GCIRequestHandler):
+class GCIProfileShowPage(profile_show.ProfileShowPage, base.GCIRequestHandler):
   """View to display the read-only profile page."""
 
   def djangoURLPatterns(self):
@@ -110,8 +107,7 @@ class GCIProfileShowPage(profile_show.ProfileShowPage, GCIRequestHandler):
 
 
 class GCIProfileShowAdminPage(GCIProfileShowPage):
-  """View to display the read-only profile page for admin.
-  """
+  """View to display the read-only profile page for admin."""
 
   def djangoURLPatterns(self):
     return [
@@ -174,11 +170,7 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
       value: The value of the checkbox field - checked or unchecked
     """
     student_info = self.data.url_profile.student_info
-    if value == 'checked':
-      student_info.consent_form_verified = True
-    else:
-      student_info.consent_form_verified = False
-
+    student_info.consent_form_verified = value == 'checked'
     student_info.put()
 
   def _verifyStudentIDForm(self, value):
@@ -188,11 +180,7 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
       value: The value of the checkbox field - checked or unchecked
     """
     student_info = self.data.url_profile.student_info
-    if value == 'checked':
-      student_info.student_id_form_verified = True
-    else:
-      student_info.student_id_form_verified = False
-
+    student_info.student_id_form_verified = value == 'checked'
     student_info.put()
 
   def _getProfile(self):
