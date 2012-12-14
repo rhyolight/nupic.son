@@ -34,7 +34,6 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
 
-
 DEF_YOU_ARE_ORG_ADMIN = ugettext(
     'You are now an organization administrator for this organization.')
 
@@ -125,8 +124,7 @@ class RequestPage(GSoCRequestHandler):
     request = self._createFromForm()
     if request:
       self.redirect.request(request)
-      self.redirect.to('show_gsoc_request')
-      return self.response
+      return self.redirect.to('show_gsoc_request')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -306,9 +304,10 @@ class ShowRequest(GSoCRequestHandler):
     elif self.data.action == self.ACTIONS['revoke']:
       self._revokeRequest()
 
+    # TODO(nathaniel): Make this .program() call unnecessary.
     self.redirect.program()
-    self.redirect.to('gsoc_dashboard')
-    return self.response
+
+    return self.redirect.to('gsoc_dashboard')
 
   def _acceptRequest(self):
     """Accepts a request.

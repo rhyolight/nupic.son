@@ -799,10 +799,10 @@ class LookupLinkIdPage(GSoCRequestHandler):
       profile = form.cleaned_data.get('profile')
 
     if profile:
-      cbox = False
-      if self.data.GET.get('cbox'):
-        cbox = True
+      cbox = bool(self.data.GET.get('cbox'))
 
+      # TODO(nathaniel): What is this? Setting redirect fields inside a
+      # context() method?
       self.redirect.profile(profile.link_id)
       self.redirect.to(url_names.GSOC_PROFILE_SHOW, cbox=cbox, secure=True)
 

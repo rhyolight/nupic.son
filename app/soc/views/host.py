@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the program host views.
-"""
-
+"""Module for the program host views."""
 
 from google.appengine.ext import db
 
@@ -28,7 +26,6 @@ from soc.models.host import Host
 from soc.views.base import SiteRequestHandler
 from soc.views.helper import url_patterns
 from soc.views.forms import ModelForm
-
 
 DEF_DEVELOPER_ONLY = ugettext(
     "You must be a developer to access other hosts' profile settings.")
@@ -122,10 +119,9 @@ class HostProfilePage(SiteRequestHandler):
       link_id = self.data.kwargs.get('link_id')
       if link_id:
         kwargs = {'link_id': link_id}
-        self.redirect.to('edit_host_profile_linkid', kwargs=kwargs)
+        return self.redirect.to('edit_host_profile_linkid', kwargs=kwargs)
       else:
-        self.redirect.to('edit_host_profile')
-      return self.response
+        return self.redirect.to('edit_host_profile')
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

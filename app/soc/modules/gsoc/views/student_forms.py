@@ -222,8 +222,7 @@ class FormPage(GSoCRequestHandler):
 
       # since this is a file upload we must return a 300 response
       error = form.errors[form.fileFieldName()]
-      self._r().to(self._urlName(), extra=['error=%s'%error.as_text()])
-      return self.response
+      return self._r().to(self._urlName(), extra=['error=%s'%error.as_text()])
 
     # delete the old blob, if it exists
     oldBlob = getattr(self.data.student_info, form.fileFieldName())
@@ -233,14 +232,11 @@ class FormPage(GSoCRequestHandler):
     # write information about the new blob to the datastore
     form.save()
 
-    self._r().to(self._urlName(), validated=True)
-
-    return self.response
+    return self._r().to(self._urlName(), validated=True)
 
 
 class DownloadForm(GSoCRequestHandler):
-  """View for downloading a student form.
-  """
+  """View for downloading a student form."""
 
   def djangoURLPatterns(self):
     return [

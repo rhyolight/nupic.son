@@ -32,7 +32,6 @@ from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
-
 DEF_NO_UPLOAD = ugettext('Please choose at least one file to upload.')
 
 CLAIM_TASKS_NOW = ugettext('You can now claim tasks <a href="%s">here</a>')
@@ -201,8 +200,7 @@ class StudentFormUpload(GCIRequestHandler):
       for field, error in form.errors.iteritems():
         extra_args.append('error_%s=%s' %(field, error.as_text()))
 
-      self.data.redirect.to('gci_student_form_upload', extra=extra_args)
-      return self.response
+      return self.data.redirect.to('gci_student_form_upload', extra=extra_args)
 
     # delete existing data
     cleaned_data = form.cleaned_data
@@ -217,9 +215,7 @@ class StudentFormUpload(GCIRequestHandler):
     # TODO(nathaniel): make this .program() call unnecessary.
     self.redirect.program()
 
-    self.redirect.to('gci_student_form_upload')
-
-    return self.response
+    return self.redirect.to('gci_student_form_upload')
 
 
 class StudentFormDownload(GCIRequestHandler):

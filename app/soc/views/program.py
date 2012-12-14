@@ -38,9 +38,10 @@ class ProgramMessagesPage(object):
     cbox = bool(self.data.GET.get('cbox'))
 
     if self.validate():
+      # TODO(nathaniel): Make this .program() call unnecessary.
       self.redirect.program()
-      self.redirect.to(self._getUrlName(), validated=True, cbox=cbox)
-      return self.response
+
+      return self.redirect.to(self._getUrlName(), validated=True, cbox=cbox)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

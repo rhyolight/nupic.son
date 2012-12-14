@@ -139,8 +139,7 @@ class ProgramPage(GCIRequestHandler):
 
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gci_program', validated=True, cbox=cbox)
-      return self.response
+      return self.redirect.to('edit_gci_program', validated=True, cbox=cbox)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -187,8 +186,7 @@ class TimelinePage(GCIRequestHandler):
 
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gci_timeline', validated=True, cbox=cbox)
-      return self.response
+      return self.redirect.to('edit_gci_timeline', validated=True, cbox=cbox)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

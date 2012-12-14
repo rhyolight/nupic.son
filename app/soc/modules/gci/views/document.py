@@ -81,8 +81,7 @@ class EditDocumentPage(GCIRequestHandler):
     entity = document.validateForm(self.data, form)
     if entity:
       self.redirect.document(entity)
-      self.redirect.to('edit_gci_document')
-      return self.response
+      return self.redirect.to('edit_gci_document')
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

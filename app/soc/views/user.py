@@ -98,8 +98,7 @@ class CreateUserPage(SiteRequestHandler):
 
     form.create(key_name=cleaned_data['link_id'])
 
-    self.redirect.to('edit_user', validated=True)
-    return self.response
+    return self.redirect.to('edit_user', validated=True)
 
 
 class EditUserPage(SiteRequestHandler):
@@ -141,5 +140,4 @@ class EditUserPage(SiteRequestHandler):
 
     form.save()
 
-    self.redirect.to('edit_user', validated=True)
-    return self.response
+    return self.redirect.to('edit_user', validated=True)

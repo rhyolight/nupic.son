@@ -116,8 +116,7 @@ class EditSitePage(base.SiteRequestHandler):
   def post(self):
     """Handler for HTTP POST request."""
     if self.validate():
-      self.redirect.to('edit_site_settings')
-      return self.response
+      return self.redirect.to('edit_site_settings')
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -155,8 +154,6 @@ class SiteHomepage(base.SiteRequestHandler):
           program_url = self.linker.program(program, program.homepage_url_name)
           return http.HttpResponseRedirect(program_url)
         else:
-          self.redirect.to('edit_site_settings')
-
-      return self.response
+          return self.redirect.to('edit_site_settings')
     except exceptions.Error, e:
       return self.error(e.status, message=e.args[0])

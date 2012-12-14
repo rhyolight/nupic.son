@@ -135,8 +135,8 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
   def post(self):
     evaluation = self.evaluationFromForm()
     if evaluation:
-      self.redirect.survey().to('gsoc_edit_student_evaluation', validated=True)
-      return self.response
+      return self.redirect.survey().to(
+          'gsoc_edit_student_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -230,8 +230,7 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
     student_evaluation_record = self.recordEvaluationFromForm()
     if student_evaluation_record:
       self.redirect.survey_record(self.data.student_evaluation.link_id)
-      self.redirect.to('gsoc_take_student_evaluation', validated=True)
-      return self.response
+      return self.redirect.to('gsoc_take_student_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

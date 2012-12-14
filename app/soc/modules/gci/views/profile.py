@@ -36,7 +36,6 @@ from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 
-
 LINK_ID_HELP_TEXT = ugettext(
     'This is a username that will be displayed on your dashboard URL, but '
     'it is not the public name that will be displayed in correspondence '
@@ -316,10 +315,10 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
 
   def deleteAccountPostAction(self):
     """Handler for Delete Account POST action."""
+    # TODO(nathaniel): make this .program() call unnecessary.
     self.redirect.program()
-    self.redirect.to('gci_delete_account', secure=True)
 
-    return self.response
+    return self.redirect.to('gci_delete_account', secure=True)
 
   def editProfilePostAction(self):
     """Handler for regular (edit/create profile) POST action."""
@@ -337,10 +336,8 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
       # TODO(nathaniel): make this .program() call unnecessary.
       self.redirect.program()
 
-      self.redirect.to(
+      return self.redirect.to(
           self._getEditProfileURLName(), validated=True, secure=True)
-
-      return self.response
 
   def _getModulePrefix(self):
     return 'gci'

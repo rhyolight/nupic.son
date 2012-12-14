@@ -46,7 +46,6 @@ from soc.modules.gci.views.helper import url_patterns
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
-
 DEF_NOT_ALLOWED_TO_OPERATE_BUTTON = ugettext(
     'You are not allowed to operate the button named %s')
 
@@ -70,8 +69,7 @@ DEF_CANT_SEND_FOR_REVIEW = ugettext(
 
 
 class CommentForm(gci_forms.GCIModelForm):
-  """Django form for the comment.
-  """
+  """Django form for the comment."""
 
   class Meta:
     model = GCIComment
@@ -321,9 +319,7 @@ class TaskViewPage(GCIRequestHandler):
 
     # TODO(ljvderijk): Indicate that a comment was successfully created to the
     # user.
-    self.redirect.id().to('gci_view_task')
-
-    return self.response
+    return self.redirect.id().to('gci_view_task')
 
   def _postButton(self):
     """Handles the POST call for any of the control buttons on the task page.
@@ -338,12 +334,10 @@ class TaskViewPage(GCIRequestHandler):
       task_logic.setTaskStatus(task.key(), 'Open')
     elif button_name == 'button_edit':
       r = self.redirect.id(id=task.key().id_or_name())
-      r.to('gci_edit_task')
-      return self.response
+      return r.to('gci_edit_task')
     elif button_name == 'button_delete':
       task_logic.delete(task)
-      self.redirect.homepage().to()
-      return self.response
+      return self.redirect.homepage().to()
     elif button_name == 'button_assign':
       task_logic.assignTask(task, task.student, self.data.profile)
     elif button_name == 'button_unassign':
@@ -379,9 +373,7 @@ class TaskViewPage(GCIRequestHandler):
           task.put()
       db.run_in_transaction(txn)
 
-    self.redirect.id().to('gci_view_task')
-
-    return self.response
+    return self.redirect.id().to('gci_view_task')
 
   def _buttonName(self):
     """Returns the name of the button specified in the POST dict.
@@ -407,9 +399,7 @@ class TaskViewPage(GCIRequestHandler):
         # we are not storing this form, remove the uploaded blob from the cloud
         for f in self.data.request.file_uploads.itervalues():
           f.delete()
-        self.redirect.id().to('gci_view_task', extra=['file=0'])
-        return self.response
-
+        return self.redirect.id().to('gci_view_task', extra=['file=0'])
 
     task = self.data.task
     # TODO(ljvderijk): Add a non-required profile property?
@@ -420,17 +410,13 @@ class TaskViewPage(GCIRequestHandler):
     # store the submission, parented by the task
     form.create(parent=task)
 
-    self.redirect.id().to('gci_view_task')
-
-    return self.response
+    return self.redirect.id().to('gci_view_task')
 
   def _postSendForReview(self):
     """POST handler for the mark as complete button."""
     task_logic.sendForReview(self.data.task, self.data.profile)
 
-    self.redirect.id().to('gci_view_task')
-
-    return self.response
+    return self.redirect.id().to('gci_view_task')
 
   def _postDeleteSubmission(self):
     """POST handler to delete a GCIWorkSubmission.
@@ -449,9 +435,7 @@ class TaskViewPage(GCIRequestHandler):
     if upload:
       upload.delete()
 
-    self.redirect.id().to('gci_view_task')
-
-    return self.response
+    return self.redirect.id().to('gci_view_task')
 
   def _submissionId(self):
     """Retrieves the submission id from the POST data.

@@ -227,8 +227,7 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
     """Post handler for the project details update form."""
     if self.validate():
       self.redirect.project()
-      self.redirect.to('gsoc_project_details')
-      return self.response
+      return self.redirect.to('gsoc_project_details')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -266,9 +265,8 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
       for blob_info in self.data.request.file_uploads.itervalues():
         blob_info.delete()
       # TODO(nathaniel): make this .project() call unnecessary.
-      self.redirect.project().to(
+      return self.redirect.project().to(
           url_names.GSOC_PROJECT_UPDATE, extra=['file=0'])
-      return self.response
 
     form.cleaned_data['user'] = self.data.user
     form.cleaned_data['org'] = self.data.project.org
@@ -287,9 +285,10 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
 
     db.run_in_transaction(txn)
 
+    # TODO(nathaniel): Make this .project() call unnecessary.
     self.redirect.project()
-    self.redirect.to('gsoc_project_details')
-    return self.response
+
+    return self.redirect.to('gsoc_project_details')
 
 
 class CodeSampleDownloadFileGet(GSoCRequestHandler):
@@ -369,8 +368,7 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
       db.run_in_transaction(txn)
 
       self.redirect.project()
-      self.redirect.to(url_names.GSOC_PROJECT_UPDATE)
-      return self.response
+      return self.redirect.to(url_names.GSOC_PROJECT_UPDATE)
     except KeyError:
       raise BadRequest('id argument missing in POST data')
     except ValueError:
@@ -535,9 +533,7 @@ class AssignMentors(GSoCRequestHandler):
 
     self.redirect.project(self.data.project.key().id(),
                           project_owner.link_id)
-    self.redirect.to('gsoc_project_details')
-
-    return self.response
+    return self.redirect.to('gsoc_project_details')
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""

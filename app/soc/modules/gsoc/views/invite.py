@@ -34,7 +34,6 @@ from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views import forms as gsoc_forms
 
-
 DEF_STATUS_FOR_USER_MSG = ugettext(
     'You are now %s for this organization.')
 
@@ -228,8 +227,7 @@ class InvitePage(GSoCRequestHandler):
     """Handler to for GSoC Invitation Page HTTP post request."""
     if self._createFromForm():
       self.redirect.invite()
-      self.redirect.to('gsoc_invite', validated=True)
-      return self.response
+      return self.redirect.to('gsoc_invite', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -375,17 +373,16 @@ class ShowInvite(GSoCRequestHandler):
       self._withdrawInvitation()
 
     self.redirect.dashboard()
-    self.redirect.to()
-
-    return self.response
+    return self.redirect.to()
 
   def _acceptInvitation(self):
-    """Accepts an invitation.
-    """
-
+    """Accepts an invitation."""
     assert isSet(self.data.organization)
 
     if not self.data.profile:
+      # TODO(nathaniel): is this dead code? Is what's done here not
+      # overwritten by the redirect.dashboard() call in the enclosing
+      # post() method call?
       self.redirect.program()
       self.redirect.to('edit_gsoc_profile', secure=True)
 
@@ -414,8 +411,7 @@ class ShowInvite(GSoCRequestHandler):
     db.run_in_transaction(accept_invitation_txn)
 
   def _rejectInvitation(self):
-    """Rejects a invitation. 
-    """
+    """Rejects a invitation."""
     assert isSet(self.data.invite)
     invite_key = self.data.invite.key()
 

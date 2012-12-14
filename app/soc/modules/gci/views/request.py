@@ -112,8 +112,8 @@ class SendRequestPage(GCIRequestHandler):
     """Handler to for GCI Send Request Page HTTP post request."""
     request = self.validate()
     if request:
-      self.redirect.id(request.key().id()).to(url_names.GCI_MANAGE_REQUEST)
-      return self.response
+      return self.redirect.id(request.key().id()).to(
+          url_names.GCI_MANAGE_REQUEST)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -178,9 +178,7 @@ class ManageRequestPage(GCIRequestHandler):
         request.put()
       db.run_in_transaction(resubmit_request_txn)
 
-    self.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
-
-    return self.response
+    return self.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
 
   def _constructPageName(self):
     request = self.data.request_entity
@@ -300,9 +298,8 @@ class RespondRequestPage(GCIRequestHandler):
 
       db.run_in_transaction(reject_request_txn)
 
-    self.redirect.userId(user_key.name()).to(url_names.GCI_RESPOND_REQUEST)
-
-    return self.response
+    return self.redirect.userId(user_key.name()).to(
+        url_names.GCI_RESPOND_REQUEST)
 
 
 class UserRequestsList(Template):

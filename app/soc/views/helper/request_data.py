@@ -470,6 +470,9 @@ class RedirectHelper(object):
       secure: Whether the protocol of the URL should be set to HTTPS
       cbox: If set to True will add &cbox=true to GET arguments
       extra: List of additional arguments that will be added as GET arguments
+
+    Returns:
+      An http.HttpResponse object redirecting to the appropriate url.
     """
     if self._url:
       url = self._url
@@ -489,6 +492,11 @@ class RedirectHelper(object):
     # accept and use the return value of toUrl.
     self._response.status_code = response.status_code
     self._response["Location"] = response["Location"]
+
+    # TODO(nathaniel): return the response object rather than the
+    # self.response object.
+    return self._response
+    return response
 
   def toUrl(self, url, full=False, secure=False):
     """Redirects to the specified url.

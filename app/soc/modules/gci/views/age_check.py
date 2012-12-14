@@ -76,6 +76,7 @@ class AgeCheck(GCIRequestHandler):
       context['failed_check'] = True
     elif age_check_result:
       # age check passed, redirect to create profile page
+      # TODO(nathaniel): Redirection in a context() method.
       self.redirect.createProfile('student').to('create_gci_profile',
                                                 secure=True)
       return {}
@@ -107,6 +108,4 @@ class AgeCheck(GCIRequestHandler):
     # TODO(nathaniel): make this .program() call unnecessary.
     self.redirect.program()
 
-    self.redirect.to('gci_age_check')
-
-    return self.response
+    return self.redirect.to('gci_age_check')

@@ -411,10 +411,9 @@ class LookupLinkIdPage(GCIRequestHandler):
       profile = form.cleaned_data.get('profile')
 
     if profile:
-      cbox = False
-      if self.data.GET.get('cbox'):
-        cbox = True
+      cbox = bool(self.data.GET.get('cbox'))
 
+      # TODO(nathaniel): setting redirection in a context() method?
       self.redirect.profile(profile.link_id)
       self.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN,
                        cbox=cbox, secure=True)

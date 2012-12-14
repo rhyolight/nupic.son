@@ -28,15 +28,12 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 
-
 DEF_NO_ORG_ID_FOR_CREATE = ugettext(
     'There is no organization id specified to create a new organization.')
-
 
 DEF_TAG_TOO_LONG = ugettext(
     'Each tag should be less than 450 characters, but tag "%s" has %d '
     'characters.')
-
 
 PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
     'proposal_extra', 'tags',
@@ -44,8 +41,7 @@ PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
 
 
 class OrgProfileForm(org_profile.OrgProfileForm):
-  """Django form for the organization profile.
-  """
+  """Django form for the organization profile."""
 
   def __init__(self, *args, **kwargs):
     super(OrgProfileForm, self).__init__(
@@ -202,8 +198,7 @@ class OrgProfilePage(GSoCRequestHandler):
     org_profile = self.createOrgProfileFromForm()
     if org_profile:
       self.redirect.organization(organization=org_profile)
-      self.redirect.to('edit_gsoc_org_profile', validated=True)
-      return self.response
+      return self.redirect.to('edit_gsoc_org_profile', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

@@ -83,8 +83,7 @@ class EditDocumentPage(GSoCRequestHandler):
     validated_document = document.validateForm(self.data, form)
     if validated_document:
       self.redirect.document(validated_document)
-      self.redirect.to('edit_gsoc_document')
-      return self.response
+      return self.redirect.to('edit_gsoc_document')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

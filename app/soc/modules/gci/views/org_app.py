@@ -105,9 +105,7 @@ class GCIOrgAppEditPage(GCIRequestHandler):
       # TODO(nathaniel): make unnecessary this .program() call.
       self.redirect.program()
 
-      self.redirect.to('gci_edit_org_app', validated=True)
-
-      return self.response
+      return self.redirect.to('gci_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -230,9 +228,7 @@ class GCIOrgAppTakePage(GCIRequestHandler):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
       r = self.redirect.id(org_app_record.key().id())
-      r.to('gci_retake_org_app', validated=True)
-
-      return self.response
+      return r.to('gci_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -265,8 +261,8 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
           'program_type': 'gci',
           'program_key': self.data.program.key().name()
           })
-      self.redirect.to(url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
-      return self.response
+      return self.redirect.to(
+          url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
 
     if not post_data.get('button_id', None) == 'save':
       raise BadRequest('No valid POST data found')

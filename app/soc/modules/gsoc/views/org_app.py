@@ -138,8 +138,8 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
     if org_app:
       # TODO(nathaniel): is this .program() necessary?
       self.redirect.program()
-      self.redirect.to('gsoc_edit_org_app', validated=True)
-      return self.response
+
+      return self.redirect.to('gsoc_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -260,8 +260,7 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
       r = self.redirect.id(org_app_record.key().id())
-      r.to('gsoc_retake_org_app', validated=True)
-      return self.response
+      return r.to('gsoc_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -294,8 +293,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
           'program_type': 'gsoc',
           'program_key': self.data.program.key().name()
           })
-      self.redirect.to('gsoc_list_org_app_records', validated=True)
-      return self.response
+      return self.redirect.to('gsoc_list_org_app_records', validated=True)
 
     if not post_data.get('button_id', None) == 'save':
       raise BadRequest('No valid POST data found')

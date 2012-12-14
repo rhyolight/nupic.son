@@ -253,8 +253,7 @@ class InvitePage(GCIRequestHandler):
   def post(self):
     """Handler to for GCI Invitation Page HTTP post request."""
     if self.validate():
-      self.redirect.dashboard().to()
-      return self.response
+      return self.redirect.dashboard().to()
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -327,9 +326,7 @@ class ManageInvite(GCIRequestHandler):
     elif 'resubmit' in self.data.POST:
       invite_logic.resubmitInvite(self.data)
 
-    self.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
-
-    return self.response
+    return self.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite
@@ -396,6 +393,9 @@ class RespondInvite(GCIRequestHandler):
   def post(self):
     if 'accept' in self.data.POST:
       if not self.data.profile:
+        # TODO(nathaniel): is this dead code? How is this not overwritten
+        # by the self.redirect.id().to(url_names.GCI_RESPOND_INVITE) at the
+        # bottom of this method?
         self.redirect.program()
         self.redirect.to('edit_gci_profile')
 
@@ -403,9 +403,7 @@ class RespondInvite(GCIRequestHandler):
     else: # reject
       invite_logic.rejectInvite(self.data)
 
-    self.redirect.id().to(url_names.GCI_RESPOND_INVITE)
-
-    return self.response
+    return self.redirect.id().to(url_names.GCI_RESPOND_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite

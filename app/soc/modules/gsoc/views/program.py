@@ -118,8 +118,7 @@ class ProgramPage(base.GSoCRequestHandler):
 
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gsoc_program', validated=True, cbox=cbox)
-      return self.response
+      return self.redirect.to('edit_gsoc_program', validated=True, cbox=cbox)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -166,8 +165,7 @@ class TimelinePage(base.GSoCRequestHandler):
 
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gsoc_timeline', validated=True, cbox=cbox)
-      return self.response
+      return self.redirect.to('edit_gsoc_timeline', validated=True, cbox=cbox)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

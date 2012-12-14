@@ -96,6 +96,4 @@ class BulkCreate(GCIRequestHandler):
     # TODO(nathaniel): make this .organization call unnecessary.
     self.redirect.organization(organization=self.data.organization)
 
-    self.redirect.to(url_names.GCI_TASK_BULK_CREATE, validated=True)
-
-    return self.response
+    return self.redirect.to(url_names.GCI_TASK_BULK_CREATE, validated=True)

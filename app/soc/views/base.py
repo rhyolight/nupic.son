@@ -301,8 +301,7 @@ class RequestHandler(object):
       return self._dispatch()
     except exceptions.LoginRequest, e:
       request.get_full_path().encode('utf-8')
-      self.redirect.login().to()
-      return self.response
+      return self.redirect.login().to()
     except exceptions.RedirectRequest, e:
       return self.redirect.toUrl(e.url)
     except exceptions.GDocsLoginRequest, e:

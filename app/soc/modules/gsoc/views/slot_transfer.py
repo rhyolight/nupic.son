@@ -239,9 +239,7 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
       # TODO(nathaniel): make this .organization call unnecessary.
       self.redirect.organization(organization=self.data.organization)
 
-      self.redirect.to('gsoc_update_slot_transfer', validated=True)
-
-      return self.response
+      return self.redirect.to('gsoc_update_slot_transfer', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

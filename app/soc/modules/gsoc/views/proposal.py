@@ -128,8 +128,7 @@ class ProposalPage(GSoCRequestHandler):
     if proposal:
       self.redirect.review(proposal.key().id(),
                            self.data.user.link_id)
-      self.redirect.to('review_gsoc_proposal')
-      return self.response
+      return self.redirect.to('review_gsoc_proposal')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -266,5 +265,4 @@ class UpdateProposal(GSoCRequestHandler):
       self._resubmit()
 
     self.redirect.review(self.data.proposal.key().id(), self.data.user.link_id)
-    self.redirect.to('review_gsoc_proposal')
-    return self.response
+    return self.redirect.to('review_gsoc_proposal')
