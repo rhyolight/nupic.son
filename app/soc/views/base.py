@@ -297,8 +297,7 @@ class RequestHandler(object):
       return self.redirect.toUrl(e.url)
     except exceptions.GDocsLoginRequest, e:
       return self.redirect.toUrl('%s?%s' % (
-          self.redirect.urlOf(e.url_name),
-          urllib.urlencode({'next':e.next_param})))
+          self.redirect.urlOf(e.url_name), urllib.urlencode({'next':e.path})))
     except exceptions.Error, e:
       return self.error(e.status, message=e.args[0])
     finally:

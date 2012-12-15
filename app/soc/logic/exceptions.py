@@ -19,11 +19,12 @@ import httplib
 
 class Error(Exception):
   """Error class for the access_exception module."""
+
   status = httplib.INTERNAL_SERVER_ERROR
 
 
 class LoginRequest(Error):
-  """Use needs to be logged in to view this page."""
+  """User needs to be logged in to view this page."""
 
   pass
 
@@ -48,8 +49,13 @@ class GDocsLoginRequest(Error):
 
   url_name = 'gdata_oauth_redirect'
 
-  def __init__(self, next_param):
-    self.next_param = next_param
+  def __init__(self, path):
+    """Instance constructor.
+
+    Args:
+      path: The path to which to direct the user after log-in.
+    """
+    self.path = path
 
 
 class NotFound(Error):
