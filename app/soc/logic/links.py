@@ -20,12 +20,12 @@ from django.core import urlresolvers
 class Linker(object):
   """URL creator for Melange."""
 
-  def program(self, program, name):
+  def program(self, program, url_name):
     """Returns the URL of a program's named page.
 
     Args:
       program: A program.
-      name: The name with which a url was registered with Django.
+      url_name: The name with which a url was registered with Django.
 
     Returns:
       The url of the page matching the given name for the given program.
@@ -34,4 +34,4 @@ class Linker(object):
         'program': program.link_id,
         'sponsor': program.scope_path,
     }
-    return urlresolvers.reverse(name, kwargs=kwargs)
+    return urlresolvers.reverse(url_name, kwargs=kwargs)
