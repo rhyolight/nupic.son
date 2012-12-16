@@ -21,9 +21,9 @@
 from soc.tasks import mailer
 
 from soc.modules.gci.logic.helper import notifications
-from soc.modules.gci.models.profile import GCIProfile
-from soc.modules.gci.models.profile import GCIStudentInfo
-from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models import comment as comment_model
+from soc.modules.gci.models import profile as profile_model
+from soc.modules.gci.models import task as task_model
 
 
 def hasStudentFormsUploaded(student):
@@ -46,7 +46,7 @@ def queryAllMentorsForOrg(org, keys_only=False, limit=1000):
   """
 
   # get all mentors keys first
-  query = GCIProfile.all(keys_only=keys_only)
+  query = profile_model.GCIProfile.all(keys_only=keys_only)
   query.filter('mentor_for', org)
   mentors = query.fetch(limit=limit)
 
@@ -84,7 +84,7 @@ def orgAdminsForOrg(org, limit=1000):
   Args:
     org: The GCIOrganization entity for which the admins should be found.
   """
-  query = GCIProfile.all()
+  query = profile_model.GCIProfile.all()
   query.filter('org_admin_for', org)
 
   return query.fetch(limit)
@@ -98,7 +98,7 @@ def queryProfileForUserAndProgram(user, program):
     user: User entity for which the profile should be found
     program: GCIProgram entity for which the profile should be found
   """
-  return GCIProfile.all().ancestor(user).filter('scope = ', program)
+  return profile_model.GCIProfile.all().ancestor(user).filter('scope = ', program)
 
 
 def queryStudentInfoForParent(parent):
@@ -108,4 +108,4 @@ def queryStudentInfoForParent(parent):
   Args:
     parent: GCIProfile entity which is the parent of the entity to retrieve
   """
-  return GCIStudentInfo.all().ancestor(parent)
+  return profile_model.GCIStudentInfo.all().ancestor(parent)
