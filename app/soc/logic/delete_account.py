@@ -46,7 +46,7 @@ requested their account to be deleted.
 def request_account_deletion(user):
   """Requests deletion of user's account from application administrators
   by sending them an email.
-  
+
   This is a temporary method, until we have an automated solution.
   """
   account = accounts.getCurrentAccount(normalize=False)
