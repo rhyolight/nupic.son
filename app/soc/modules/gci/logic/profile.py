@@ -18,12 +18,38 @@
 """
 
 
+import datetime
+
+from soc.logic import user as user_logic
 from soc.tasks import mailer
+
+from soc.modules.gsoc.models import profile as gsoc_profile_model
 
 from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models import comment as comment_model
 from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models import task as task_model
+
+
+MELANGE_DELETED_USER_PNAME = 'Melange Deleted User'
+
+MELANGE_DELETED_USER_GNAME = 'Melange Deleted User GName'
+
+MELANGE_DELETED_USER_SNAME = 'Melange Deleted User Surname'
+
+MELANGE_DELETED_USER_EMAIL = 'melange_deleted_user@gmail.com'
+
+MELANGE_DELETED_USER_RES_STREET = 'No address'
+
+MELANGE_DELETED_USER_RES_CITY = 'No city'
+
+MELANGE_DELETED_USER_RES_COUNTY = 'United States'
+
+MELANGE_DELETED_USER_RES_POSTAL_CODE = '00000'
+
+MELANGE_DELETED_USER_PHONE = '0000000000'
+
+MELANGE_DELETED_USER_BIRTH_DATE = datetime.datetime(1, 1, 1)
 
 
 def hasStudentFormsUploaded(student):
@@ -109,3 +135,40 @@ def queryStudentInfoForParent(parent):
     parent: GCIProfile entity which is the parent of the entity to retrieve
   """
   return profile_model.GCIStudentInfo.all().ancestor(parent)
+
+
+def getOrCreateDummyMelangeDeletedProfile(program):
+  """Fetches or creates the dummy melange deleted profile for the given program.
+
+  Args:
+    program: The program entity for which the dummy profile should be fetched
+        or created.
+  """
+  q = profile_model.GCIProfile.all()
+  q.filter('link_id', user_logic.MELANGE_DELETED_USER)
+  q.filter('scope', program)
+  profile_ent = q.get()
+
+  # If the requested user does not exist, create one.
+  if not profile_ent:
+    user_ent = user_logic.getOrCreateDummyMelangeDeletedUser()
+    key_name = '%s/%s' % (program.key(), user_logic.MELANGE_DELETED_USER)
+
+    profile_ent = profile_model.GCIProfile(
+        parent=user_ent, key_name=key_name,
+        link_id=user_logic.MELANGE_DELETED_USER, scope=program,
+        scope_path=program.key().id_or_name(), user=user_ent,
+        public_name=MELANGE_DELETED_USER_PNAME,
+        given_name=MELANGE_DELETED_USER_GNAME,
+        surname=MELANGE_DELETED_USER_SNAME,
+        email=MELANGE_DELETED_USER_EMAIL,
+        res_street=MELANGE_DELETED_USER_RES_STREET,
+        res_city=MELANGE_DELETED_USER_RES_CITY,
+        res_country=MELANGE_DELETED_USER_RES_COUNTY,
+        res_postalcode=MELANGE_DELETED_USER_RES_POSTAL_CODE,
+        phone=MELANGE_DELETED_USER_PHONE,
+        birth_date=MELANGE_DELETED_USER_BIRTH_DATE)
+
+    profile_ent.put()
+
+  return profile_ent
