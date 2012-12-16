@@ -137,6 +137,79 @@ def queryStudentInfoForParent(parent):
   return profile_model.GCIStudentInfo.all().ancestor(parent)
 
 
+def hasTasks(profile):
+  """Returns True if the given student profile has been assigned to a task.
+
+  Assign also means the tasks completed by the student.
+
+  Args:
+    profile: GCIProfile entity of the student.
+  """
+  q = task_model.GCITask.all()
+  q.filter('student', profile)
+  return q.count() > 0
+
+
+def hasCreatedOrModifiedTask(profile):
+  """Returns True if the given user has created or modified a task.
+
+  Args:
+    profile: GCIProfile entity of the user.
+  """
+  q = task_model.GCITask.all()
+  q.filter('created_by', profile)
+  if q.count() > 0:
+    return True
+
+  q = task_model.GCITask.all()
+  q.filter('modified_by', profile)
+  return q.count() > 0
+
+
+def hasTaskComments(profile):
+  """Returns True if the given profile has task comments associated with it.
+
+  Args:
+    profile: GCIProfile entity of the user.
+  """
+  user = profile.parent()
+
+  q = comment_model.GCIComment.all()
+  q.filter('created_by', user)
+
+  return q.count() > 0
+
+
+def hasOtherGCIProfiles(profile):
+  """Returns True if the given user had profiles in previous GCIs.
+
+  Args:
+    profile: GCIProfile entity of the user.
+  """
+  user = profile.parent()
+
+  q = profile_model.GCIProfile.all()
+  q.ancestor(user)
+
+  # We check for > 1 not > 0 because we already know that there is one profile
+  # for this program. So we need to check if there are others.
+  return q.count() > 1
+
+
+def hasOtherGSoCProfiles(profile):
+  """Returns True if the given user has profiles in previous GSoCs.
+
+  Args:
+    profile: GCIProfile entity of the user.
+  """
+  user = profile.parent()
+
+  q = gsoc_profile_model.GSoCProfile.all()
+  q.ancestor(user)
+
+  return q.count() > 0
+
+
 def getOrCreateDummyMelangeDeletedProfile(program):
   """Fetches or creates the dummy melange deleted profile for the given program.
 
