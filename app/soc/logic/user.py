@@ -25,6 +25,8 @@ from soc.logic import accounts
 
 from soc.models.user import User
 
+MELANGE_DELETED_USER = 'melange_deleted_user'
+
 
 def isFormerAccount(account):
   """Returns true if account is a former account of some User.
@@ -128,38 +130,52 @@ def forUserId(user_id):
   If there is no user logged in, or they have no valid associated User
   entity, None is returned.
   """
-
   if not user_id:
-    raise base.InvalidArgumentError("Missing argument 'user_id'")
+    raise exceptions.BadRequest("Missing argument 'user_id'")
 
-  q = User.all()
+  q = user.User.all()
   q.filter('user_id', user_id)
   q.filter('status', 'valid')
   return q.get()
 
 
-def isDeveloper(account=None, user=None):
+def isDeveloper(account=None, user_ent=None):
   """Returns true iff the specified user is a Developer.
 
   Args:
     account: if not supplied, defaults to the current account
-    user: if not specified, defaults to the current user
+    user_ent: if not specified, defaults to the current user
   """
-
   current = accounts.getCurrentAccount()
 
   if not account:
     # default account to the current logged in account
     account = current
 
-  if account and (not user):
+  if account and (not user_ent):
     # default user to the current logged in user
-    user = forAccount(account)
+    user_ent = forAccount(account)
 
   # pylint: disable=E1103
-  if user and user.is_developer:
+  if user_ent and user_ent.is_developer:
     return True
 
   if account and (account == current):
     return users.is_current_user_admin()
 
+
+def getOrCreateDummyMelangeDeletedUser():
+  """Fetches or creates the dummy melange deleted user entity.
+  """
+  q = user.User.all().filter('link_id', MELANGE_DELETED_USER)
+  user_ent = q.get()
+
+  # If the requested user does not exist, create one.
+  if not user_ent:
+    account = users.User(email=MELANGE_DELETED_USER)
+    user_ent = user.User(
+        key_name=MELANGE_DELETED_USER, account=account,
+        link_id=MELANGE_DELETED_USER)
+    user_ent.put()
+
+  return user_ent
