@@ -400,6 +400,10 @@ class TaskViewPage(GCIRequestHandler):
         for f in self.data.request.file_uploads.itervalues():
           f.delete()
         return self.redirect.id().to('gci_view_task', extra=['file=0'])
+    else:
+      logging.warning('Neither the URL nor the files were provided for work '
+                      'submission.')
+      return self.redirect.id().to('gci_view_task', extra=['ws_error=1'])
 
     task = self.data.task
     # TODO(ljvderijk): Add a non-required profile property?
@@ -617,6 +621,9 @@ class WorkSubmissions(Template):
       context['work_file_form'] = WorkSubmissionFileForm()
       if self.data.GET.get('file', None) == '0':
         context['work_file_form'].addFileRequiredError()
+
+      if self.data.GET.get('ws_error', None) == '1':
+        context['ws_error'] = True
 
       url = '%s?submit_work' %(
           self.data.redirect.id().urlOf('gci_view_task'))

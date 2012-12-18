@@ -243,6 +243,13 @@ class RespondRequestPage(GCIRequestHandler):
     user_key = GCIRequest.user.get_value_for_datastore(
         self.data.request_entity)
 
+    profile_key_name = '/'.join([
+        self.data.program.key().name(), user_key.name()])
+    profile_key = db.Key.from_path(
+        'GCIProfile', profile_key_name, parent=user_key)
+
+    self.data.requester_profile = profile = db.get(profile_key)
+
     if 'accept' in self.data.POST:
       options = db.create_transaction_options(xg=True)
 
@@ -250,14 +257,8 @@ class RespondRequestPage(GCIRequestHandler):
       organization_key = self.data.organization.key()
       messages = self.data.program.getProgramMessages()
 
-      link_id = user_key.name()
-      profile_key_name = '/'.join([self.data.program.key().name(), link_id])
-      profile_key = db.Key.from_path(
-          'GCIProfile', profile_key_name, parent=user_key)
-
       def accept_request_txn():
         request = db.get(request_key)
-        self.data.requester_profile = profile = db.get(profile_key)
 
         request.status = 'accepted'
 
