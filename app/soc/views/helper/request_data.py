@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Module containing the RequestData object that will be created for each
-request in the GSoC module.
+request.
 """
 
 import datetime
