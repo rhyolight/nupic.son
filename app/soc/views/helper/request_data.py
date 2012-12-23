@@ -150,7 +150,7 @@ class RequestData(object):
   """Object containing data we query for each request.
 
   Fields:
-    site: the Site entity
+    site: the singleton site.Site entity
     user: the user entity (if logged in)
     request: the request object (as provided by django)
     args: the request args (as provided by djang)
