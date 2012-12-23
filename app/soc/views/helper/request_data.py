@@ -165,6 +165,9 @@ class RequestData(object):
     gae_user: the Google Appengine user object
   """
 
+  # class attribute which is assigned to all fields which have not been set
+  _unset = object()
+
   def __init__(self):
     """Constructs an empty RequestData object."""
     self.site = None
