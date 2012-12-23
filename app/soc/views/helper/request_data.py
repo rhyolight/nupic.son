@@ -186,6 +186,17 @@ class RequestData(object):
     self._logout_url = None
     self._ds_write_disabled = None
 
+  def _isSet(self, value):
+    """Checks whether the specified field has been set or not.
+
+    Args:
+      value: the specified value of one of the fields supported by this class.
+
+    Returns:
+      True if the value is set or False otherwise.
+    """
+    return value is not self._unset
+
   @property
   def login_url(self):
     """Memoizes and returns the login_url for the current path."""
