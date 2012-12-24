@@ -175,7 +175,8 @@ class RequestData(object):
     self.kwargs = {}
     self._GET = self._unset
     self._POST = self._unset
-    self.path = None
+    # TODO(daniel): check if this field is really used
+    self._path = self._unset
     self.full_path = None
     self._is_developer = self._unset
     self.gae_user = None
@@ -206,6 +207,13 @@ class RequestData(object):
       else:
         self._is_developer = False
     return self._is_developer
+
+  @property
+  def path(self):
+    """Returns the path field."""
+    if not self._isSet(self._path):
+      self._path = request.path.encode('utf-8')
+    return self._path
 
   @property
   def site(self):
@@ -281,7 +289,6 @@ class RequestData(object):
     self.request = request
     self.args = args
     self.kwargs = kwargs
-    self.path = request.path.encode('utf-8')
     self.full_path = request.get_full_path().encode('utf-8')
 
     self.gae_user = users.get_current_user()
