@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +27,7 @@ from soc.views.helper import request_data
 
 from soc.modules.gci.logic.helper import timeline as timeline_helper
 from soc.modules.gci.models.program import GCIProgram
-from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models.organization import GCIOrganization
 
 from soc.modules.gci.views.helper import url_names
@@ -202,7 +200,7 @@ class RequestData(request_data.RequestData):
     self.org_app = None
 
     # user profile specific fields
-    self.profile = None
+    self._profile = self._unset
     self.is_host = False
     self.is_mentor = False
     self.is_student = False
@@ -213,12 +211,26 @@ class RequestData(request_data.RequestData):
     self.student_info = None
     self.organization = None
 
+
   @property
   def css_path(self):
     """Returns the css_path property."""
     if not self._isSet(self._css_path):
       self._css_path = 'gci'
     return self._css_path
+
+  @property
+  def profile(self):
+    """Returns the profile property."""
+    if not self._isSet(self._profile):
+      if not self.user or not self.program:
+        self._profile = None
+      else:
+        key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
+        self._profile = profile_model.GCIProfile.get_by_key_name(
+            key_name, parent=self.user)
+      pass
+    return self._profile
 
   @property
   def programs(self):
@@ -312,18 +324,14 @@ class RequestData(request_data.RequestData):
         raise NotFound("There is no organization for url '%s'" % org_key_name)
 
     if self.user:
-      key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
-      self.profile = GCIProfile.get_by_key_name(
-          key_name, parent=self.user)
-
       host_key = GCIProgram.scope.get_value_for_datastore(self.program)
       self.is_host = host_key in self.user.host_for
 
     if self.profile and self.profile.status != 'invalid':
       org_keys = set(self.profile.mentor_for + self.profile.org_admin_for)
 
-      prop = GCIProfile.student_info
-      student_info_key = prop.get_value_for_datastore(self.profile)
+      student_info_key = profile_model.GCIProfile.student_info \
+          .get_value_for_datastore(self.profile)
 
       if student_info_key:
         self.student_info = db.get(student_info_key)
