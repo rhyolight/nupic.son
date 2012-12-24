@@ -174,7 +174,7 @@ class RequestData(object):
     self.args = []
     self.kwargs = {}
     self._GET = self._unset
-    self.POST = None
+    self._POST = self._unset
     self.path = None
     self.full_path = None
     self.is_developer = False
@@ -222,6 +222,13 @@ class RequestData(object):
     return self._GET
 
   @property
+  def POST(self):
+    """Returns the POST dictionary associated with the processed request."""
+    if not self._isSet(self._POST):
+      self._POST = self.request.POST
+    return self._POST
+
+  @property
   def login_url(self):
     """Memoizes and returns the login_url for the current path."""
     if not self._login_url:
@@ -262,7 +269,6 @@ class RequestData(object):
     self.request = request
     self.args = args
     self.kwargs = kwargs
-    self.POST = request.POST
     self.path = request.path.encode('utf-8')
     self.full_path = request.get_full_path().encode('utf-8')
     if users.is_current_user_admin():
