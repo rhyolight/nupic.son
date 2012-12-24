@@ -203,9 +203,9 @@ class RequestData(request_data.RequestData):
     # user profile specific fields
     self._profile = self._unset
     self._is_host = self._unset
-    self.is_mentor = False
+    self._is_mentor = self._unset
     self._is_student = self._unset
-    self.is_org_admin = False
+    self._is_org_admin = self._unset
     self.org_map = {}
     self.mentor_for = []
     self.org_admin_for = []
@@ -230,6 +230,26 @@ class RequestData(request_data.RequestData):
             self.program)
         self._is_host = key in self.user.host_for
     return self._is_host
+
+  @property
+  def is_mentor(self):
+    """Returns the is_mentor field."""
+    if not self._isSet(self._is_mentor):
+      if not self.profile:
+        self._is_mentor = False
+      else:
+        self._is_mentor = bool(self.profile.mentor_for) or self.is_org_admin
+    return self._is_mentor
+
+  @property
+  def is_org_admin(self):
+    """Returns the is_org_admin field."""
+    if not self._isSet(self._is_org_admin):
+      if not self.profile:
+        self._is_org_admin = False
+      else:
+        self._is_org_admin = bool(self.profile.org_admin_for) or self.is_host
+    return self._is_org_admin
 
   @property
   def is_student(self):
@@ -373,9 +393,6 @@ class RequestData(request_data.RequestData):
 
         self.mentor_for = org_map.values()
         self.org_admin_for = [org_map[i] for i in self.profile.org_admin_for]
-
-    self.is_org_admin = self.is_host or bool(self.org_admin_for)
-    self.is_mentor = self.is_org_admin or bool(self.mentor_for)
 
 
 class RedirectHelper(request_data.RedirectHelper):
