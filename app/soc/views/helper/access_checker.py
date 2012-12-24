@@ -455,7 +455,9 @@ class BaseAccessChecker(object):
     """Initializes the access checker object.
     """
     self.data = data
-    self.gae_user = users.get_current_user()
+
+    # TODO(daniel): get rid of it and use request_data directly
+    self.gae_user = data.gae_user
 
   def fail(self, message):
     """Raises an AccessViolation with the specified message.

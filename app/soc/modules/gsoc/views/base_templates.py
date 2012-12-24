@@ -45,7 +45,7 @@ def siteMenuContext(data):
       'help_link': redirect.document(help_page).url(),
   }
 
-  if users.get_current_user():
+  if data.gae_user:
     context['logout_link'] = redirect.logout().url()
   else:
     context['login_link'] = redirect.login().url()
