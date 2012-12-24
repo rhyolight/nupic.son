@@ -168,6 +168,7 @@ class RequestData(object):
 
   def __init__(self):
     """Constructs an empty RequestData object."""
+    self.redirect = None
     self.request = None
     self.args = []
     self.kwargs = {}
@@ -181,9 +182,9 @@ class RequestData(object):
     self._is_developer = self._unset
     self._gae_user = self._unset
     self._css_path = self._unset
-    self._login_url = None
-    self._logout_url = None
-    self._ds_write_disabled = None
+    self._login_url = self._unset
+    self._logout_url = self._unset
+    self._ds_write_disabled = self._unset
 
   def _isSet(self, value):
     """Checks whether the specified field has been set or not.
@@ -198,6 +199,7 @@ class RequestData(object):
 
   @property
   def css_path(self):
+    """Returns the css_path property."""
     if not self._isSet(self._css_path):
       # TODO(daniel): this should not return gsoc in module
       # I believe css_path is needed in the main module because of a few sites
@@ -267,7 +269,7 @@ class RequestData(object):
   @property
   def login_url(self):
     """Memoizes and returns the login_url for the current path."""
-    if not self._login_url:
+    if not self._isSet(self._login_url):
       self._login_url = users.create_login_url(
           self.request.get_full_path().encode('utf-8'))
     return self._login_url
@@ -275,7 +277,7 @@ class RequestData(object):
   @property
   def logout_url(self):
     """Memoizes and returns the logout_url for the current path."""
-    if not self._logout_url:
+    if not self._isSet(self._logout_url):
       self._logout_url = users.create_logout_url(
           self.request.get_full_path().encode('utf-8'))
     return self._logout_url
@@ -283,17 +285,15 @@ class RequestData(object):
   @property
   def ds_write_disabled(self):
     """Memoizes and returns whether datastore writes are disabled."""
-    if self._ds_write_disabled is not None:
-      return self._ds_write_disabled
+    if not self._isSet(self._ds_write_disabled):
+      if self.request.method == 'GET':
+        value = self.request.GET.get('dsw_disabled', '')
 
-    if self.request.method == 'GET':
-      val= self.request.GET.get('dsw_disabled', '')
+        if value.isdigit() and int(value) == 1:
+          self._ds_write_disabled = True
 
-      if val.isdigit() and int(val) == 1:
-        self._ds_write_disabled = True
-        return True
-
-    self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
+      if not self._isSet(self._ds_write_disabled):
+        self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
     return self._ds_write_disabled
 
   def populate(self, redirect, request, args, kwargs):
