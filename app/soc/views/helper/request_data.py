@@ -168,17 +168,18 @@ class RequestData(object):
 
   def __init__(self):
     """Constructs an empty RequestData object."""
-    self._site = self._unset
-    self._user = self._unset
     self.request = None
     self.args = []
     self.kwargs = {}
+
+    self._site = self._unset
+    self._user = self._unset
     self._GET = self._unset
     self._POST = self._unset
     # TODO(daniel): check if this field is really used
     self._path = self._unset
     self._is_developer = self._unset
-    self.gae_user = None
+    self._gae_user = self._unset
     self.css_path = 'gsoc'
     self._login_url = None
     self._logout_url = None
@@ -195,6 +196,13 @@ class RequestData(object):
     """
     return value is not self._unset
 
+  @property
+  def gae_user(self):
+    """Returns the gae_user property."""
+    if not self._isSet(self._gae_user):
+      self._gae_user = users.get_current_user()
+    return self._gae_user
+    
   @property
   def is_developer(self):
     """Returns the is_developer field."""
@@ -252,7 +260,7 @@ class RequestData(object):
     """Memoizes and returns the login_url for the current path."""
     if not self._login_url:
       self._login_url = users.create_login_url(
-          request.get_full_path().encode('utf-8'))
+          self.request.get_full_path().encode('utf-8'))
     return self._login_url
 
   @property
@@ -260,7 +268,7 @@ class RequestData(object):
     """Memoizes and returns the logout_url for the current path."""
     if not self._logout_url:
       self._logout_url = users.create_logout_url(
-          request.get_full_path().encode('utf-8'))
+          self.request.get_full_path().encode('utf-8'))
     return self._logout_url
 
   @property
@@ -290,8 +298,6 @@ class RequestData(object):
     self.request = request
     self.args = args
     self.kwargs = kwargs
-
-    self.gae_user = users.get_current_user()
 
   def appliedTo(self, organization):
     """Returns true iff the user has applied for the specified organization.
