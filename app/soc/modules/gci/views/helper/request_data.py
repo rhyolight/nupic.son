@@ -204,12 +204,12 @@ class RequestData(request_data.RequestData):
     self._profile = self._unset
     self._is_host = self._unset
     self.is_mentor = False
-    self.is_student = False
+    self._is_student = self._unset
     self.is_org_admin = False
     self.org_map = {}
     self.mentor_for = []
     self.org_admin_for = []
-    self.student_info = None
+    self._student_info = self._unset
     self.organization = None
 
   @property
@@ -230,6 +230,29 @@ class RequestData(request_data.RequestData):
             self.program)
         self._is_host = key in self.user.host_for
     return self._is_host
+
+  @property
+  def is_student(self):
+    """Returns the is_student field."""
+    if not self._isSet(self._is_student):
+      if not self.profile:
+        self._is_student = False
+      else:
+        self._is_student = bool(profile_model.GCIProfile.student_info \
+            .get_value_for_datastore(self.profile))
+    return self._is_student
+
+  @property
+  def student_info(self):
+    """Returns the student_info field."""
+    if not self._isSet(self._student_info):
+      if not self.is_student:
+        self._student_info = None
+      else:
+        student_info_key = profile_model.GCIProfile.student_info \
+            .get_value_for_datastore(self.profile)
+        self._student_info = db.get(student_info_key)
+    return self._student_info
 
   @property
   def profile(self):
@@ -342,8 +365,7 @@ class RequestData(request_data.RequestData):
           .get_value_for_datastore(self.profile)
 
       if student_info_key:
-        self.student_info = db.get(student_info_key)
-        self.is_student = True
+        pass
       else:
         orgs = db.get(org_keys)
 
