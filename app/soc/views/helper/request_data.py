@@ -177,7 +177,7 @@ class RequestData(object):
     self._POST = self._unset
     self.path = None
     self.full_path = None
-    self.is_developer = False
+    self._is_developer = self._unset
     self.gae_user = None
     self.css_path = 'gsoc'
     self._login_url = None
@@ -194,6 +194,18 @@ class RequestData(object):
       True if the value is set or False otherwise.
     """
     return value is not self._unset
+
+  @property
+  def is_developer(self):
+    """Returns the is_developer field."""
+    if not self._isSet(self._is_developer):
+      if users.is_current_user_admin():
+        self._is_developer = True
+      elif self.user and self.user.is_developer:
+        self._is_developer = True
+      else:
+        self._is_developer = False
+    return self._is_developer
 
   @property
   def site(self):
@@ -271,10 +283,7 @@ class RequestData(object):
     self.kwargs = kwargs
     self.path = request.path.encode('utf-8')
     self.full_path = request.get_full_path().encode('utf-8')
-    if users.is_current_user_admin():
-      self.is_developer = True
-    if self.user and self.user.is_developer:
-      self.is_developer = True
+
     self.gae_user = users.get_current_user()
 
   def appliedTo(self, organization):
