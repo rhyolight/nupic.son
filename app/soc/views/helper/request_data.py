@@ -177,7 +177,6 @@ class RequestData(object):
     self._POST = self._unset
     # TODO(daniel): check if this field is really used
     self._path = self._unset
-    self.full_path = None
     self._is_developer = self._unset
     self.gae_user = None
     self.css_path = 'gsoc'
@@ -252,14 +251,16 @@ class RequestData(object):
   def login_url(self):
     """Memoizes and returns the login_url for the current path."""
     if not self._login_url:
-      self._login_url = users.create_login_url(self.full_path)
+      self._login_url = users.create_login_url(
+          request.get_full_path().encode('utf-8'))
     return self._login_url
 
   @property
   def logout_url(self):
     """Memoizes and returns the logout_url for the current path."""
     if not self._logout_url:
-      self._logout_url = users.create_logout_url(self.full_path)
+      self._logout_url = users.create_logout_url(
+          request.get_full_path().encode('utf-8'))
     return self._logout_url
 
   @property
@@ -289,7 +290,6 @@ class RequestData(object):
     self.request = request
     self.args = args
     self.kwargs = kwargs
-    self.full_path = request.get_full_path().encode('utf-8')
 
     self.gae_user = users.get_current_user()
 
