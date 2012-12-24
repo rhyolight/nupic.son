@@ -207,8 +207,9 @@ class RequestData(request_data.RequestData):
     self._is_student = self._unset
     self._is_org_admin = self._unset
     self.org_map = {}
-    self.mentor_for = []
-    self.org_admin_for = []
+    self._org_map = self._unset
+    self._mentor_for = self._unset
+    self._org_admin_for = self._unset
     self._student_info = self._unset
     self.organization = None
 
@@ -263,6 +264,29 @@ class RequestData(request_data.RequestData):
     return self._is_student
 
   @property
+  def mentor_for(self):
+    """Returns the mentor_for field."""
+    if not self._isSet(self._mentor_for):
+      if self.profile:
+        self._initOrgMap()
+        self._mentor_for = self._org_map.values()
+      else:
+        self._mentor_for = []
+    return self._mentor_for
+
+  @property
+  def org_admin_for(self):
+    """Returns the org_admin_for field."""
+    if not self._isSet(self._org_admin_for):
+      if self.profile:
+        self._initOrgMap()
+        self._org_admin_for = [
+            self._org_map[i] for i in self.profile.org_admin_for]
+      else:
+        self._org_admin_for = []
+    return self._org_admin_for
+
+  @property
   def student_info(self):
     """Returns the student_info field."""
     if not self._isSet(self._student_info):
@@ -295,6 +319,18 @@ class RequestData(request_data.RequestData):
       self._programs = list(GCIProgram.all())
 
     return self._programs
+
+  def _initOrgMap(self):
+    """Initializes _org_map by inserting there all organizations for which
+    the current user is either a mentor or org admin.
+    """
+    if not self._isSet(self._org_map):
+      if self.profile:
+        orgs = db.get(
+            set(self.profile.mentor_for + self.profile.org_admin_for))
+        self._org_map = dict((i.key(), i) for i in orgs)
+      else:
+        self._org_map = {}
 
   def getOrganization(self, org_key):
     """Retrieves the specified organization.
@@ -377,22 +413,6 @@ class RequestData(request_data.RequestData):
       self.organization = GCIOrganization.get_by_key_name(org_key_name)
       if not self.organization:
         raise NotFound("There is no organization for url '%s'" % org_key_name)
-
-    if self.profile and self.profile.status != 'invalid':
-      org_keys = set(self.profile.mentor_for + self.profile.org_admin_for)
-
-      student_info_key = profile_model.GCIProfile.student_info \
-          .get_value_for_datastore(self.profile)
-
-      if student_info_key:
-        pass
-      else:
-        orgs = db.get(org_keys)
-
-        org_map = self.org_map = dict((i.key(), i) for i in orgs)
-
-        self.mentor_for = org_map.values()
-        self.org_admin_for = [org_map[i] for i in self.profile.org_admin_for]
 
 
 class RedirectHelper(request_data.RedirectHelper):
