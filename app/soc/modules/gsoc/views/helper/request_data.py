@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -160,8 +158,6 @@ class RequestData(request_data.RequestData):
     """Constructs an empty RequestData object.
     """
     super(RequestData, self).__init__()
-    # module wide fields
-    self.css_path = 'gsoc'
 
     # program wide fields
     self._programs = None
@@ -180,6 +176,13 @@ class RequestData(request_data.RequestData):
     self.org_admin_for = []
     self.student_info = None
     self.organization = None
+
+  @property
+  def css_path(self):
+    """Returns the css_path property."""
+    if not self._isSet(self._css_path):
+      self._css_path = 'gci'
+    return self._css_path
 
   @property
   def programs(self):

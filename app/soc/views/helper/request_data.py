@@ -180,7 +180,7 @@ class RequestData(object):
     self._path = self._unset
     self._is_developer = self._unset
     self._gae_user = self._unset
-    self.css_path = 'gsoc'
+    self._css_path = self._unset
     self._login_url = None
     self._logout_url = None
     self._ds_write_disabled = None
@@ -195,6 +195,15 @@ class RequestData(object):
       True if the value is set or False otherwise.
     """
     return value is not self._unset
+
+  @property
+  def css_path(self):
+    if not self._isSet(self._css_path):
+      # TODO(daniel): this should not return gsoc in module
+      # I believe css_path is needed in the main module because of a few sites
+      # that are not specific to any module, like site or host
+      self._css_path = 'gsoc'
+    return self._css_path
 
   @property
   def gae_user(self):
