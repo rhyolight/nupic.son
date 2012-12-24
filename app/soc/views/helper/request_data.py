@@ -170,7 +170,7 @@ class RequestData(object):
 
   def __init__(self):
     """Constructs an empty RequestData object."""
-    self.site = None
+    self._site = self._unset
     self.user = None
     self.request = None
     self.args = []
@@ -196,6 +196,19 @@ class RequestData(object):
       True if the value is set or False otherwise.
     """
     return value is not self._unset
+
+  @property
+  def site(self):
+    """Returns the site field.
+    """
+    if not self._isSet(self._site):
+      # XSRF middleware might have already retrieved it for us
+      if not hasattr(self.request, 'site'):
+        # populate site.Site singleton to request field
+        self.request.site = site.singleton()
+
+      self._site = self.request.site
+    return self._site
 
   @property
   def login_url(self):
@@ -242,10 +255,6 @@ class RequestData(object):
     self.POST = request.POST
     self.path = request.path.encode('utf-8')
     self.full_path = request.get_full_path().encode('utf-8')
-    # XSRF middleware already retrieved it for us
-    if not hasattr(request, 'site'):
-      request.site = site.singleton()
-    self.site = request.site
     self.user = user.current()
     if users.is_current_user_admin():
       self.is_developer = True
