@@ -171,7 +171,7 @@ class RequestData(object):
   def __init__(self):
     """Constructs an empty RequestData object."""
     self._site = self._unset
-    self.user = None
+    self._user = self._unset
     self.request = None
     self.args = []
     self.kwargs = {}
@@ -209,6 +209,14 @@ class RequestData(object):
 
       self._site = self.request.site
     return self._site
+
+  @property
+  def user(self):
+    """Returns the user field.
+    """
+    if not self._isSet(self._user):
+      self._user = user.current()
+    return self._user
 
   @property
   def login_url(self):
@@ -255,7 +263,6 @@ class RequestData(object):
     self.POST = request.POST
     self.path = request.path.encode('utf-8')
     self.full_path = request.get_full_path().encode('utf-8')
-    self.user = user.current()
     if users.is_current_user_admin():
       self.is_developer = True
     if self.user and self.user.is_developer:
