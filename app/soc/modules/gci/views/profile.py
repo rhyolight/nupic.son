@@ -376,7 +376,6 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
         form = GCIShowCreateStudentProfileForm
       if self.data.POST:
         birth_date = self.data.request.COOKIES.get('age_check')
-        self.data.POST = self.data.POST.copy()
         self.data.POST['birth_date'] = birth_date
     else:
       form = GCICreateProfileForm
