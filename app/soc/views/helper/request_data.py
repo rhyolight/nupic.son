@@ -1,5 +1,3 @@
-# Copyright 2011 the Melange authors.
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -27,7 +25,7 @@ from django.core import urlresolvers
 from django.utils import encoding
 
 from soc.logic import system
-from soc.logic import site
+from soc.logic import site as site_logic
 from soc.logic import user
 from soc.views.helper import access_checker
 
@@ -205,7 +203,7 @@ class RequestData(object):
       # XSRF middleware might have already retrieved it for us
       if not hasattr(self.request, 'site'):
         # populate site.Site singleton to request field
-        self.request.site = site.singleton()
+        self.request.site = site_logic.singleton()
 
       self._site = self.request.site
     return self._site
