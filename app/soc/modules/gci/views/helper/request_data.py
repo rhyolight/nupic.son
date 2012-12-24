@@ -26,6 +26,7 @@ from soc.models.site import Site
 from soc.views.helper import request_data
 
 from soc.modules.gci.logic.helper import timeline as timeline_helper
+from soc.modules.gci.models import program as program_model
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models.organization import GCIOrganization
@@ -201,7 +202,7 @@ class RequestData(request_data.RequestData):
 
     # user profile specific fields
     self._profile = self._unset
-    self.is_host = False
+    self._is_host = self._unset
     self.is_mentor = False
     self.is_student = False
     self.is_org_admin = False
@@ -211,13 +212,24 @@ class RequestData(request_data.RequestData):
     self.student_info = None
     self.organization = None
 
-
   @property
   def css_path(self):
     """Returns the css_path property."""
     if not self._isSet(self._css_path):
       self._css_path = 'gci'
     return self._css_path
+
+  @property
+  def is_host(self):
+    """Returns the is_host field."""
+    if not self._isSet(self._is_host):
+      if not self.user:
+        self._is_host = False
+      else:
+        key = program_model.GCIProgram.scope.get_value_for_datastore(
+            self.program)
+        self._is_host = key in self.user.host_for
+    return self._is_host
 
   @property
   def profile(self):
@@ -322,10 +334,6 @@ class RequestData(request_data.RequestData):
       self.organization = GCIOrganization.get_by_key_name(org_key_name)
       if not self.organization:
         raise NotFound("There is no organization for url '%s'" % org_key_name)
-
-    if self.user:
-      host_key = GCIProgram.scope.get_value_for_datastore(self.program)
-      self.is_host = host_key in self.user.host_for
 
     if self.profile and self.profile.status != 'invalid':
       org_keys = set(self.profile.mentor_for + self.profile.org_admin_for)
