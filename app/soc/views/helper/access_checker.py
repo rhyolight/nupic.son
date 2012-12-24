@@ -504,14 +504,8 @@ class BaseAccessChecker(object):
 
 
   def isDeveloper(self):
-    """Checks if the current user is a Developer.
-    """
-    self.isUser()
-
-    if self.data.user.is_developer:
-      return
-
-    if users.is_current_user_admin():
+    """Checks if the current user is a Developer."""
+    if self.data.is_developer:
       return
 
     raise AccessViolation(DEF_NOT_DEVELOPER)
