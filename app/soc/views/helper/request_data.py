@@ -173,7 +173,7 @@ class RequestData(object):
     self.request = None
     self.args = []
     self.kwargs = {}
-    self.GET = None
+    self._GET = self._unset
     self.POST = None
     self.path = None
     self.full_path = None
@@ -197,8 +197,7 @@ class RequestData(object):
 
   @property
   def site(self):
-    """Returns the site field.
-    """
+    """Returns the site field."""
     if not self._isSet(self._site):
       # XSRF middleware might have already retrieved it for us
       if not hasattr(self.request, 'site'):
@@ -210,11 +209,17 @@ class RequestData(object):
 
   @property
   def user(self):
-    """Returns the user field.
-    """
+    """Returns the user field."""
     if not self._isSet(self._user):
       self._user = user.current()
     return self._user
+
+  @property
+  def GET(self):
+    """Returns the GET dictionary associated with the processed request."""
+    if not self._isSet(self._GET):
+      self._GET = self.request.GET
+    return self._GET
 
   @property
   def login_url(self):
@@ -257,7 +262,6 @@ class RequestData(object):
     self.request = request
     self.args = args
     self.kwargs = kwargs
-    self.GET = request.GET
     self.POST = request.POST
     self.path = request.path.encode('utf-8')
     self.full_path = request.get_full_path().encode('utf-8')
