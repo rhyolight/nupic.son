@@ -196,9 +196,9 @@ class RequestData(request_data.RequestData):
 
     # program wide fields
     self._programs = None
-    self.program = None
-    self.program_timeline = None
-    self.org_app = None
+    self._program = self._unset
+    self._program_timeline = self._unset
+    self._org_app = self._unset
 
     # user profile specific fields
     self._profile = self._unset
@@ -287,6 +287,27 @@ class RequestData(request_data.RequestData):
     return self._org_admin_for
 
   @property
+  def org_app(self):
+    """Returns the org_app field."""
+    if not self._isSet(self._org_app):
+      self._getProgramWideFields()
+    return self._org_app
+
+  @property
+  def program(self):
+    """Returns the program field."""
+    if not self._isSet(self._program):
+      self._getProgramWideFields()
+    return self._program
+
+  @property
+  def program_timeline(self):
+    """Returns the program_timeline field."""
+    if not self._isSet(self._program_timeline):
+      self._getProgramWideFields()
+    return self._program_timeline
+
+  @property
   def student_info(self):
     """Returns the student_info field."""
     if not self._isSet(self._student_info):
@@ -331,6 +352,33 @@ class RequestData(request_data.RequestData):
         self._org_map = dict((i.key(), i) for i in orgs)
       else:
         self._org_map = {}
+
+  def _getProgramWideFields(self):
+    """Fetches program wide fields in a single database round-trip."""
+    keys = []
+
+    # add program's key
+    if self.kwargs.get('sponsor') and self.kwargs.get('program'):
+      program_key_name = "%s/%s" % (
+          self.kwargs['sponsor'], self.kwargs['program'])
+      program_key = db.Key.from_path('GCIProgram', program_key_name)
+    else:
+      program_key = Site.active_program.get_value_for_datastore(self.site)
+      program_key_name = program_key.name()
+    keys.append(program_key)
+
+    # add timeline's key
+    keys.append(db.Key.from_path('GCITimeline', program_key_name))
+
+    # add org_app's key
+    org_app_key_name = 'gci_program/%s/orgapp' % program_key_name
+    keys.append(db.Key.from_path('OrgAppSurvey', org_app_key_name))
+
+    self._program, self._program_timeline, self._org_app = db.get(keys)
+
+    # raise an exception if no program is found
+    if not self._program:
+      raise NotFound("There is no program for url '%s'" % program_key_name)
 
   def getOrganization(self, org_key):
     """Retrieves the specified organization.
@@ -385,25 +433,6 @@ class RequestData(request_data.RequestData):
       args & kwargs: The args and kwargs django sends along.
     """
     super(RequestData, self).populate(redirect, request, args, kwargs)
-
-    if kwargs.get('sponsor') and kwargs.get('program'):
-      program_key_name = "%s/%s" % (kwargs['sponsor'], kwargs['program'])
-      program_key = db.Key.from_path('GCIProgram', program_key_name)
-    else:
-      program_key = Site.active_program.get_value_for_datastore(self.site)
-      program_key_name = program_key.name()
-
-    timeline_key = db.Key.from_path('GCITimeline', program_key_name)
-
-    org_app_key_name = 'gci_program/%s/orgapp' % program_key_name
-    org_app_key = db.Key.from_path('OrgAppSurvey', org_app_key_name)
-
-    keys = [program_key, timeline_key, org_app_key]
-
-    self.program, self.program_timeline, self.org_app = db.get(keys)
-
-    if not self.program:
-      raise NotFound("There is no program for url '%s'" % program_key_name)
 
     self.timeline = TimelineHelper(self.program_timeline, self.org_app)
 
