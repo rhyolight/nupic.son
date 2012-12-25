@@ -194,9 +194,9 @@ class RequestData(request_data.RequestData):
     super(RequestData, self).__init__()
 
     # program wide fields
-    self._programs = None
     self._program = self._unset
     self._program_timeline = self._unset
+    self._programs = self._unset
     self._org_app = self._unset
     self._timeline = self._unset
 
@@ -307,6 +307,13 @@ class RequestData(request_data.RequestData):
     return self._program_timeline
 
   @property
+  def programs(self):
+    """Memorizes and returns a list of all programs."""
+    if not self._isSet(self._programs):
+      self._programs = list(GCIProgram.all())
+    return self._programs
+
+  @property
   def student_info(self):
     """Returns the student_info field."""
     if not self._isSet(self._student_info):
@@ -330,15 +337,6 @@ class RequestData(request_data.RequestData):
             key_name, parent=self.user)
       pass
     return self._profile
-
-  @property
-  def programs(self):
-    """Memorizes and returns a list of all programs.
-    """
-    if not self._programs:
-      self._programs = list(GCIProgram.all())
-
-    return self._programs
 
   @property
   def timeline(self):
