@@ -52,7 +52,7 @@ class RedirectHelperTest(GCITestCase):
     self.redirect.program()
     self.assertEqual(self.redirect.kwargs, expected)
 
-    self.redirect._data.program = unset
+    self.redirect._data._program = unset
     self._assertAssertionError(self.redirect.program)
 
   def testUserOrg(self):
