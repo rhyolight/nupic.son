@@ -199,6 +199,7 @@ class RequestData(request_data.RequestData):
     self._program = self._unset
     self._program_timeline = self._unset
     self._org_app = self._unset
+    self._timeline = self._unset
 
     # user profile specific fields
     self._profile = self._unset
@@ -341,6 +342,13 @@ class RequestData(request_data.RequestData):
 
     return self._programs
 
+  @property
+  def timeline(self):
+    """Returns the timeline field."""
+    if not self._isSet(self._timeline):
+      self._timeline = TimelineHelper(self.program_timeline, self.org_app)
+    return self._timeline
+
   def _initOrgMap(self):
     """Initializes _org_map by inserting there all organizations for which
     the current user is either a mentor or org admin.
@@ -433,8 +441,6 @@ class RequestData(request_data.RequestData):
       args & kwargs: The args and kwargs django sends along.
     """
     super(RequestData, self).populate(redirect, request, args, kwargs)
-
-    self.timeline = TimelineHelper(self.program_timeline, self.org_app)
 
     if kwargs.get('organization'):
       fields = [self.program.key().id_or_name(), kwargs.get('organization')]
