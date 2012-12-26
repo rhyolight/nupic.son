@@ -304,9 +304,15 @@ class RequestData(object):
       args & kwargs: The args and kwargs django sends along.
     """
     self.redirect = redirect
-    self.request = request
     self.args = args
     self.kwargs = kwargs
+    self.request = request
+
+    # explicitly copy POST and GET dictionaries so they can be modified
+    # the default QueryDict objects used by Django are immutable, but their
+    # copies may be modified
+    self.request.POST = self.request.POST.copy()
+    self.request.GET = self.request.GET.copy()
 
   def appliedTo(self, organization):
     """Returns true iff the user has applied for the specified organization.
