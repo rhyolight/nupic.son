@@ -194,6 +194,15 @@ class RequestData(object):
     self._logout_url = self._unset
     self._ds_write_disabled = self._unset
 
+    # explicitly copy POST and GET dictionaries so they can be modified
+    # the default QueryDict objects used by Django are immutable, but their
+    # copies may be modified
+    # TODO(daniel): these dictionaries should not be modified in the first
+    # place, so these copying must be eventually eliminated
+    if self.request:
+      self.request.POST = self.request.POST.copy()
+      self.request.GET = self.request.GET.copy()
+
   def _isSet(self, value):
     """Checks whether the specified field has been set or not.
 
@@ -310,25 +319,6 @@ class RequestData(object):
       if not self._isSet(self._ds_write_disabled):
         self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
     return self._ds_write_disabled
-
-  def populate(self, request, args, kwargs):
-    """Populates the fields in the RequestData object.
-
-    Args:
-      request: Django HTTPRequest object.
-      args & kwargs: The args and kwargs django sends along.
-    """
-    self.args = args
-    self.kwargs = kwargs
-    self.request = request
-
-    # explicitly copy POST and GET dictionaries so they can be modified
-    # the default QueryDict objects used by Django are immutable, but their
-    # copies may be modified
-    # TODO(daniel): these dictionaries should not be modified in the first
-    # place, so these copying must be eventually eliminated
-    self.request.POST = self.request.POST.copy()
-    self.request.GET = self.request.GET.copy()
 
   def appliedTo(self, organization):
     """Returns true iff the user has applied for the specified organization.
