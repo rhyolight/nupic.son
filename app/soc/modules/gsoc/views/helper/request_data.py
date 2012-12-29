@@ -27,7 +27,7 @@ from soc.views.helper import request_data
 
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import program as program_model
-from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.views.helper import url_names
 
 
@@ -177,7 +177,7 @@ class RequestData(request_data.RequestData):
     self._mentor_for = self._unset
     self._org_admin_for = self._unset
     self._student_info = self._unset
-    self.organization = None
+    self._organization = self._unset
 
   @property
   def css_path(self):
@@ -239,6 +239,31 @@ class RequestData(request_data.RequestData):
       else:
         self._mentor_for = []
     return self._mentor_for
+
+  def _getOrganization(self):
+    """Returns the organization field."""
+    if not self._isSet(self._organization):
+      if self.kwargs.get('organization'):
+        fields = [
+            self.program.key().id_or_name(),
+            self.kwargs.get('organization')]
+        org_key_name = '/'.join(fields)
+        self._organization = org_model.GSoCOrganization.get_by_key_name(
+            org_key_name)
+        if not self._organization:
+          raise NotFound(
+              "There is no organization for url '%s'" % org_key_name)
+      else:
+        self._organization = None
+    return self._organization
+ 
+  def _setOrganization(self, organization):
+    """Sets the organization field to the specified value."""
+    self._organization = organization
+ 
+  # TODO(daniel): organization should be immutable. All the parts, which
+  # actually try to override this value, should be changed
+  organization = property(_getOrganization, _setOrganization)
 
   @property
   def org_admin_for(self):
@@ -415,13 +440,6 @@ class RequestData(request_data.RequestData):
       args & kwargs: The args and kwargs django sends along.
     """
     super(RequestData, self).populate(redirect, request, args, kwargs)
-
-    if kwargs.get('organization'):
-      fields = [self.program.key().id_or_name(), kwargs.get('organization')]
-      org_key_name = '/'.join(fields)
-      self.organization = GSoCOrganization.get_by_key_name(org_key_name)
-      if not self.organization:
-        raise NotFound("There is no organization for url '%s'" % org_key_name)
 
 
 class RedirectHelper(request_data.RedirectHelper):
