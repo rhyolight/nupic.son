@@ -432,15 +432,6 @@ class RequestData(request_data.RequestData):
 
     return profile.key() in self.proposal.possible_mentors
 
-  def populate(self, redirect, request, args, kwargs):
-    """Populates the fields in the RequestData object.
-
-    Args:
-      request: Django HTTPRequest object.
-      args & kwargs: The args and kwargs django sends along.
-    """
-    super(RequestData, self).populate(redirect, request, args, kwargs)
-
 
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects.
