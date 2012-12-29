@@ -168,11 +168,11 @@ class RequestData(object):
 
   def __init__(self):
     """Constructs an empty RequestData object."""
-    self.redirect = None
     self.request = None
     self.args = []
     self.kwargs = {}
 
+    self._redirect = self._unset
     self._site = self._unset
     self._user = self._unset
     self._GET = self._unset
@@ -232,6 +232,13 @@ class RequestData(object):
     if not self._isSet(self._path):
       self._path = request.path.encode('utf-8')
     return self._path
+
+  @property
+  def redirect(self):
+    """Returns the redirect helper."""
+    if not self._isSet(self._redirect):
+      self._redirect = RedirectHelper(self)
+    return self._redirect
 
   @property
   def site(self):
@@ -296,14 +303,13 @@ class RequestData(object):
         self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
     return self._ds_write_disabled
 
-  def populate(self, redirect, request, args, kwargs):
+  def populate(self, request, args, kwargs):
     """Populates the fields in the RequestData object.
 
     Args:
       request: Django HTTPRequest object.
       args & kwargs: The args and kwargs django sends along.
     """
-    self.redirect = redirect
     self.args = args
     self.kwargs = kwargs
     self.request = request

@@ -58,8 +58,8 @@ class GSoCRequestHandler(base.RequestHandler):
 
   def init(self, request, args, kwargs):
     self.data = request_data.RequestData()
-    self.redirect = request_data.RedirectHelper(self.data)
-    self.data.populate(self.redirect, request, args, kwargs)
+    self.data.populate(request, args, kwargs)
+    self.redirect = self.data.redirect
     if self.data.is_developer:
       self.mutator = access_checker.DeveloperMutator(self.data)
       self.check = access_checker.DeveloperAccessChecker(self.data)

@@ -339,6 +339,13 @@ class RequestData(request_data.RequestData):
     return self._programs
 
   @property
+  def redirect(self):
+    """Returns the redirect helper."""
+    if not self._isSet(self._redirect):
+      self._redirect = RedirectHelper(self)
+    return self._redirect
+
+  @property
   def student_info(self):
     """Returns the student_info field."""
     if not self._isSet(self._student_info):
