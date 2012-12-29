@@ -48,8 +48,7 @@ class GCIRequestHandler(base.RequestHandler):
     return super(GCIRequestHandler, self).render(template_path, context)
 
   def init(self, request, args, kwargs):
-    self.data = request_data.RequestData()
-    self.data.populate(request, args, kwargs)
+    self.data = request_data.RequestData(request, args, kwargs)
     self.redirect = self.data.redirect
     if self.data.is_developer:
       self.mutator = access_checker.DeveloperMutator(self.data)

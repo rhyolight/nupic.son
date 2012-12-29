@@ -155,10 +155,15 @@ class RequestData(request_data.RequestData):
     out_of_band: 404 when the program does not exist
   """
 
-  def __init__(self):
-    """Constructs an empty RequestData object.
+  def __init__(self, request, args, kwargs):
+    """Constructs a new RequestData object.
+
+    Args:
+      request: Django HTTPRequest object.
+      args: The args that Django sends along with the request.
+      kwargs: The kwargs that Django sends along with the request.
     """
-    super(RequestData, self).__init__()
+    super(RequestData, self).__init__(request, args, kwargs)
 
     # program wide fields
     self._program = self._unset

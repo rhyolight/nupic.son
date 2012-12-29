@@ -166,11 +166,19 @@ class RequestData(object):
   # class attribute which is assigned to all fields which have not been set
   _unset = object()
 
-  def __init__(self):
-    """Constructs an empty RequestData object."""
-    self.request = None
-    self.args = []
-    self.kwargs = {}
+
+  def __init__(self, request, args, kwargs):
+    """Constructs a new RequestData object.
+
+    Args:
+      request: Django HTTPRequest object.
+      args: The args that Django sends along with the request.
+      kwargs: The kwargs that Django sends along with the request.
+    """
+
+    self.request = request
+    self.args = args
+    self.kwargs = kwargs
 
     self._redirect = self._unset
     self._site = self._unset
