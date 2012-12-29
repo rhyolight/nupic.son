@@ -311,6 +311,8 @@ class RequestData(object):
     # explicitly copy POST and GET dictionaries so they can be modified
     # the default QueryDict objects used by Django are immutable, but their
     # copies may be modified
+    # TODO(daniel): these dictionaries should not be modified in the first
+    # place, so these copying must be eventually eliminated
     self.request.POST = self.request.POST.copy()
     self.request.GET = self.request.GET.copy()
 
