@@ -25,7 +25,8 @@ from soc.logic.exceptions import NotFound
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
-from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views.helper import url_names
 
@@ -160,48 +161,205 @@ class RequestData(request_data.RequestData):
     super(RequestData, self).__init__()
 
     # program wide fields
-    self._programs = None
-    self.program = None
-    self.program_timeline = None
-    self.org_app = None
+    self._program = self._unset
+    self._program_timeline = self._unset
+    self._programs = self._unset
+    self._org_app = self._unset
+    self._timeline = self._unset
 
     # user profile specific fields
-    self.profile = None
-    self.is_host = False
-    self.is_mentor = False
-    self.is_student = False
-    self.is_org_admin = False
-    self.org_map = {}
-    self.mentor_for = []
-    self.org_admin_for = []
-    self.student_info = None
+    self._profile = self._unset
+    self._is_host = self._unset
+    self._is_mentor = self._unset
+    self._is_student = self._unset
+    self._is_org_admin = self._unset
+    self._org_map = self._unset
+    self._mentor_for = self._unset
+    self._org_admin_for = self._unset
+    self._student_info = self._unset
     self.organization = None
 
   @property
   def css_path(self):
     """Returns the css_path property."""
     if not self._isSet(self._css_path):
-      self._css_path = 'gci'
+      self._css_path = 'gsoc'
     return self._css_path
 
   @property
-  def programs(self):
-    """Memoizes and returns a list of all programs.
-    """
-    from soc.modules.gsoc.models.program import GSoCProgram
-    if not self._programs:
-      self._programs = list(GSoCProgram.all())
+  def is_host(self):
+    """Returns the is_host field."""
+    if not self._isSet(self._is_host):
+      if not self.user:
+        self._is_host = False
+      else:
+        key = program_model.GSoCProgram.scope.get_value_for_datastore(
+            self.program)
+        self._is_host = key in self.user.host_for
+    return self._is_host
 
+  @property
+  def is_mentor(self):
+    """Returns the is_mentor field."""
+    if not self._isSet(self._is_mentor):
+      if not self.profile:
+        self._is_mentor = False
+      else:
+        self._is_mentor = bool(self.profile.mentor_for) or self.is_org_admin
+    return self._is_mentor
+
+  @property
+  def is_org_admin(self):
+    """Returns the is_org_admin field."""
+    if not self._isSet(self._is_org_admin):
+      if not self.profile:
+        self._is_org_admin = False
+      else:
+        self._is_org_admin = bool(self.profile.org_admin_for) or self.is_host
+    return self._is_org_admin
+
+  @property
+  def is_student(self):
+    """Returns the is_student field."""
+    if not self._isSet(self._is_student):
+      if not self.profile:
+        self._is_student = False
+      else:
+        self._is_student = bool(profile_model.GSoCProfile.student_info \
+            .get_value_for_datastore(self.profile))
+    return self._is_student
+
+  @property
+  def mentor_for(self):
+    """Returns the mentor_for field."""
+    if not self._isSet(self._mentor_for):
+      if self.profile:
+        self._initOrgMap()
+        self._mentor_for = self._org_map.values()
+      else:
+        self._mentor_for = []
+    return self._mentor_for
+
+  @property
+  def org_admin_for(self):
+    """Returns the org_admin_for field."""
+    if not self._isSet(self._org_admin_for):
+      if self.profile:
+        self._initOrgMap()
+        self._org_admin_for = [
+            self._org_map[i] for i in self.profile.org_admin_for]
+      else:
+        self._org_admin_for = []
+    return self._org_admin_for
+
+  @property
+  def org_app(self):
+    """Returns the org_app field."""
+    if not self._isSet(self._org_app):
+      self._getProgramWideFields()
+    return self._org_app
+
+  @property
+  def program(self):
+    """Returns the program field."""
+    if not self._isSet(self._program):
+      self._getProgramWideFields()
+    return self._program
+
+  @property
+  def program_timeline(self):
+    """Returns the program_timeline field."""
+    if not self._isSet(self._program_timeline):
+      self._getProgramWideFields()
+    return self._program_timeline
+
+  @property
+  def programs(self):
+    """Memorizes and returns a list of all programs."""
+    if not self._isSet(self._programs):
+      self._programs = list(program_model.GSoCProgram.all())
     return self._programs
+
+  @property
+  def student_info(self):
+    """Returns the student_info field."""
+    if not self._isSet(self._student_info):
+      if not self.is_student:
+        self._student_info = None
+      else:
+        student_info_key = profile_model.GSoCProfile.student_info \
+            .get_value_for_datastore(self.profile)
+        self._student_info = db.get(student_info_key)
+    return self._student_info
+
+  @property
+  def profile(self):
+    """Returns the profile property."""
+    if not self._isSet(self._profile):
+      if not self.user or not self.program:
+        self._profile = None
+      else:
+        key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
+        self._profile = profile_model.GSoCProfile.get_by_key_name(
+            key_name, parent=self.user)
+      pass
+    return self._profile
+
+  @property
+  def timeline(self):
+    """Returns the timeline field."""
+    if not self._isSet(self._timeline):
+      self._timeline = TimelineHelper(self.program_timeline, self.org_app)
+    return self._timeline
+
+  def _initOrgMap(self):
+    """Initializes _org_map by inserting there all organizations for which
+    the current user is either a mentor or org admin.
+    """
+    if not self._isSet(self._org_map):
+      if self.profile:
+        orgs = db.get(
+            set(self.profile.mentor_for + self.profile.org_admin_for))
+        self._org_map = dict((i.key(), i) for i in orgs)
+      else:
+        self._org_map = {}
+
+  def _getProgramWideFields(self):
+    """Fetches program wide fields in a single database round-trip."""
+    keys = []
+
+    # add program's key
+    if self.kwargs.get('sponsor') and self.kwargs.get('program'):
+      program_key_name = "%s/%s" % (
+          self.kwargs['sponsor'], self.kwargs['program'])
+      program_key = db.Key.from_path('GSoCProgram', program_key_name)
+    else:
+      program_key = Site.active_program.get_value_for_datastore(self.site)
+      program_key_name = program_key.name()
+    keys.append(program_key)
+
+    # add timeline's key
+    keys.append(db.Key.from_path('GSoCTimeline', program_key_name))
+
+    # add org_app's key
+    org_app_key_name = 'gsoc_program/%s/orgapp' % program_key_name
+    keys.append(db.Key.from_path('OrgAppSurvey', org_app_key_name))
+
+    self._program, self._program_timeline, self._org_app = db.get(keys)
+
+    # raise an exception if no program is found
+    if not self._program:
+      raise NotFound("There is no program for url '%s'" % program_key_name)
 
   def getOrganization(self, org_key):
     """Retrieves the specified organization.
     """
-    if org_key not in self.org_map:
+    self._initOrgMap()
+    if org_key not in self._org_map:
       org = db.get(org_key)
-      self.org_map[org_key] = org
+      self._org_map[org_key] = org
 
-    return self.org_map[org_key]
+    return self._org_map[org_key]
 
   def orgAdminFor(self, organization):
     """Returns true iff the user is admin for the specified organization.
@@ -258,64 +416,12 @@ class RequestData(request_data.RequestData):
     """
     super(RequestData, self).populate(redirect, request, args, kwargs)
 
-    if kwargs.get('sponsor') and kwargs.get('program'):
-      program_key_name = "%s/%s" % (kwargs['sponsor'], kwargs['program'])
-      program_key = db.Key.from_path('GSoCProgram', program_key_name)
-    else:
-      from soc.models.site import Site
-      program_key = Site.active_program.get_value_for_datastore(self.site)
-      program_key_name = program_key.name()
-      logging.error("No program specified")
-
-    timeline_key = db.Key.from_path('GSoCTimeline', program_key_name)
-
-    org_app_key_name = 'gsoc_program/%s/orgapp' % program_key_name
-    org_app_key = db.Key.from_path('OrgAppSurvey', org_app_key_name)
-
-    keys = [program_key, timeline_key, org_app_key]
-
-    self.program, self.program_timeline, self.org_app = db.get(keys)
-
-    if not self.program:
-      raise NotFound("There is no program for url '%s'" % program_key_name)
-
-    self.timeline = TimelineHelper(self.program_timeline, self.org_app)
-
     if kwargs.get('organization'):
       fields = [self.program.key().id_or_name(), kwargs.get('organization')]
       org_key_name = '/'.join(fields)
       self.organization = GSoCOrganization.get_by_key_name(org_key_name)
       if not self.organization:
         raise NotFound("There is no organization for url '%s'" % org_key_name)
-
-    if self.user:
-      key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
-      self.profile = GSoCProfile.get_by_key_name(
-          key_name, parent=self.user)
-
-      from soc.modules.gsoc.models.program import GSoCProgram
-      host_key = GSoCProgram.scope.get_value_for_datastore(self.program)
-      self.is_host = host_key in self.user.host_for
-
-    if self.profile:
-      org_keys = set(self.profile.mentor_for + self.profile.org_admin_for)
-
-      prop = GSoCProfile.student_info
-      student_info_key = prop.get_value_for_datastore(self.profile)
-
-      if student_info_key:
-        self.student_info = db.get(student_info_key)
-        self.is_student = True
-      else:
-        orgs = db.get(org_keys)
-
-        org_map = self.org_map = dict((i.key(), i) for i in orgs)
-
-        self.mentor_for = org_map.values()
-        self.org_admin_for = [org_map[i] for i in self.profile.org_admin_for]
-
-    self.is_org_admin = self.is_host or bool(self.org_admin_for)
-    self.is_mentor = self.is_org_admin or bool(self.mentor_for)
 
 
 class RedirectHelper(request_data.RedirectHelper):
