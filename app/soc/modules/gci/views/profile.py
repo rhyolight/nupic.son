@@ -262,6 +262,9 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
     widgets = forms.choiceWidgets(
         model, ['school_country', 'school_type', 'degree'])
 
+  clean_school_name = cleaning.clean_html_content('school_name')
+  clean_major = cleaning.clean_html_content('major')
+
 
 class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
   """View for the GCI participant profile."""

@@ -190,6 +190,9 @@ class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
   school_home_page = fields.URLField(required=True)
   clean_school_home_page =  cleaning.clean_url('school_home_page')
 
+  clean_school_name = cleaning.clean_html_content('school_name')
+  clean_major = cleaning.clean_html_content('major')
+
 
 class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
   """View for the GSoC participant profile."""
