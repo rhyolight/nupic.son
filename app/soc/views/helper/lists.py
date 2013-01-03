@@ -744,7 +744,8 @@ class ListContentResponse(object):
     """
     columns = {}
     for col_id, func in self._config._col_functions.iteritems():
-      escape = self._config._col_map.get(col_id, True)
+      col_model = self._config._col_map.get(col_id, {})
+      escape = col_model.get('escape', True)
       val = func(entity, *args, **kwargs)
       val_str = val if val != None else ''
       columns[col_id] = html.conditional_escape(val) if escape else val_str
