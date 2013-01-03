@@ -22,6 +22,7 @@ import logging
 
 from google.appengine.ext import db
 
+from django.utils import html
 from django.utils import simplejson
 
 from soc.views.template import Template
@@ -124,9 +125,8 @@ class ListConfiguration(object):
     if row_list:
       self.row_list = row_list
 
-  def addColumn(self, col_id, name, func,
-                width=None, resizable=True,
-                hidden=False, searchhidden=True, options=None):
+  def addColumn(self, col_id, name, func, width=None, resizable=True,
+                hidden=False, searchhidden=True, options=None, escape=True):
     """Adds a column to the end of the list.
 
     Args:
@@ -142,6 +142,7 @@ class ListConfiguration(object):
       hidden: Whether the column should be hidden by default.
       searchhidden: Whether this column should be searchable when hidden.
       options: An array of (regexp, display_value) tuples.
+      escape: Whether the value should be HTML escaped.
     """
     if self._col_functions.get(col_id):
       logging.warning('Column with id %s is already defined' % col_id)
@@ -154,6 +155,7 @@ class ListConfiguration(object):
         'index': col_id,
         'resizable': resizable,
         'hidden': hidden,
+        'escape': escape,
     }
 
     if width:
@@ -742,8 +744,10 @@ class ListContentResponse(object):
     """
     columns = {}
     for col_id, func in self._config._col_functions.iteritems():
+      escape = self._config._col_map.get(col_id, True)
       val = func(entity, *args, **kwargs)
-      columns[col_id] = val if val != None else ''
+      val_str = val if val != None else ''
+      columns[col_id] = html.conditional_escape(val) if escape else val_str
 
     row = {}
     buttons= {}
