@@ -97,7 +97,7 @@ class StudentList(Template):
         hidden=True)
 
     list_config.addColumn('completed_tasks', 'Completed tasks',
-        lambda e, *args: e.number_of_completed_tasks)
+        lambda e, *args: e.number_of_completed_tasks, escape=False)
 
     def formsSubmitted(e, sp, form):
       """Returns "Yes" if form has been submitted otherwise "No".
