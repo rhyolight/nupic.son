@@ -19,6 +19,7 @@
 
 
 import datetime
+import logging
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
