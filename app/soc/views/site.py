@@ -108,10 +108,11 @@ class EditSitePage(base.SiteRequestHandler):
     site_form = SiteForm(GSoCBoundField, self.data.POST,
                          instance=self.data.site)
 
-    if not site_form.is_valid():
+    if site_form.is_valid():
+      site_form.save()
+      return True
+    else:
       return False
-
-    site_form.save()
 
   def post(self):
     """Handler for HTTP POST request."""
