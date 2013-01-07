@@ -14,6 +14,7 @@
 
 """Module for the site global pages."""
 
+import httplib
 import os
 
 from google.appengine.api import users
@@ -119,8 +120,11 @@ class EditSitePage(base.SiteRequestHandler):
     if self.validate():
       return self.redirect.to('edit_site_settings')
     else:
-      # TODO(nathaniel): problematic self-call.
-      return self.get()
+      context = self.context()
+      template_path = self.templatePath()
+      response_content = self.render(template_path, context)
+      return http.HttpResponse(
+          status=httplib.BAD_REQUEST, content=response_content)
 
 
 class SiteHomepage(base.SiteRequestHandler):
