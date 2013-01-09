@@ -140,3 +140,23 @@ class PlainTextColumnTypeTest(unittest.TestCase):
 
     text = '<script>alert("hacked")</script>'
     self.assertEqual(self._escaped(text), self.column_type.safe(text))
+
+
+class HtmlColumnTypeTest(unittest.TestCase):
+  """Unit tests for HtmlTextColumnType class."""
+
+  def setUp(self):
+    self.column_type = lists.HtmlColumnType()
+
+  def testSafe(self):
+    text = ''
+    self.assertEqual(text, self.column_type.safe(text))
+
+    text = 'some example text'
+    self.assertEqual(text, self.column_type.safe(text))
+
+    text = '<a href="www.example.com">Example</a>'
+    self.assertEqual(text, self.column_type.safe(text))
+
+    text = '<script>alert("hacked")</script>'
+    self.assertEqual(text, self.column_type.safe(text))
