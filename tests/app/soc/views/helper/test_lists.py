@@ -15,14 +15,15 @@
 
 """Tests for lists helper functions."""
 
+import math
+import sys
 import unittest
 
 from soc.views.helper import lists
 
 
 class ColumnTypeFactoryTest(unittest.TestCase):
-  """Unit tests for ColumnTypeFactory class.
-  """
+  """Unit tests for ColumnTypeFactory class."""
 
   def testCreatePlainText(self):
     column_type = lists.ColumnTypeFactory.create(lists.ColumnType.PLAIN_TEXT)
@@ -42,3 +43,73 @@ class ColumnTypeFactoryTest(unittest.TestCase):
 
     with self.assertRaises(ValueError):
       column_type = lists.ColumnTypeFactory.create('invalid_column_type')
+
+
+class NumericalColumnTypeTest(unittest.TestCase):
+  """Unit tests for NumericalColumnType class."""
+
+  def setUp(self):
+    self.column_type = lists.NumericalColumnType()
+
+  def testSafeForInt(self):
+    self.assertEqual(0, self.column_type.safe(0))
+    self.assertEqual(1, self.column_type.safe(1))
+    self.assertEqual(-1, self.column_type.safe(-1))
+    self.assertEqual(42, self.column_type.safe(42))
+    self.assertEqual(-42, self.column_type.safe(-42))
+    self.assertEqual(sys.maxint, self.column_type.safe(sys.maxint))
+
+  def testSafeForLong(self):
+    self.assertEqual(0, self.column_type.safe(0L))
+    self.assertEqual(1, self.column_type.safe(1L))
+    self.assertEqual(-1, self.column_type.safe(-1L))
+    self.assertEqual(42, self.column_type.safe(42L))
+    self.assertEqual(-42, self.column_type.safe(-42L))
+    self.assertEqual(10**30, self.column_type.safe(10**30))
+    self.assertEqual(-10**30, self.column_type.safe(-10**30))
+
+  def testSafeForFloat(self):
+    self.assertEqual(0.0, self.column_type.safe(0.0))
+    self.assertEqual(1.0, self.column_type.safe(1.0))
+    self.assertEqual(-1.0, self.column_type.safe(-1.0))
+    self.assertEqual(math.pi, self.column_type.safe(math.pi))
+    self.assertEqual(-math.pi, self.column_type.safe(-math.pi))
+
+  def testSafeForValidString(self):
+    self.assertEqual('', self.column_type.safe(''))
+
+    self.assertEqual(0, self.column_type.safe('0'))
+    self.assertEqual(0, self.column_type.safe('0.0'))
+    self.assertEqual(0, self.column_type.safe('-0.0'))
+    self.assertEqual(0, self.column_type.safe('+0.0'))
+    self.assertEqual(0, self.column_type.safe('.0'))
+
+    self.assertEqual(1, self.column_type.safe('1'))
+    self.assertEqual(1, self.column_type.safe('1.0'))
+    self.assertEqual(1, self.column_type.safe('+1.0'))
+    self.assertEqual(1, self.column_type.safe('1.000000'))
+
+    self.assertEqual(1.1, self.column_type.safe('1.1'))
+    self.assertEqual(3.14159265359, self.column_type.safe('3.14159265359'))
+    self.assertEqual(-7.12345, self.column_type.safe('-00007.12345'))
+    self.assertEqual(0.002, self.column_type.safe('2e-3'))
+
+  def testSafeForInvalidString(self):
+    with self.assertRaises(ValueError):
+      self.column_type.safe('a')
+
+    with self.assertRaises(ValueError):
+      self.column_type.safe('1.0.0')
+
+    with self.assertRaises(ValueError):
+      self.column_type.safe('1L')
+
+    with self.assertRaises(ValueError):
+      self.column_type.safe('2e-3 a')
+
+  def testSafeForInvalidType(self):
+    with self.assertRaises(TypeError):
+      self.column_type.safe(object())
+
+    with self.assertRaises(TypeError):
+      self.column_type.safe([1])
