@@ -19,6 +19,8 @@ import math
 import sys
 import unittest
 
+from django.utils import html
+
 from soc.views.helper import lists
 
 
@@ -93,6 +95,8 @@ class NumericalColumnTypeTest(unittest.TestCase):
     self.assertEqual(3.14159265359, self.column_type.safe('3.14159265359'))
     self.assertEqual(-7.12345, self.column_type.safe('-00007.12345'))
     self.assertEqual(0.002, self.column_type.safe('2e-3'))
+    self.assertEqual(50, self.column_type.safe('  50  '))
+
 
   def testSafeForInvalidString(self):
     with self.assertRaises(ValueError):
@@ -113,3 +117,26 @@ class NumericalColumnTypeTest(unittest.TestCase):
 
     with self.assertRaises(TypeError):
       self.column_type.safe([1])
+
+
+class PlainTextColumnTypeTest(unittest.TestCase):
+  """Unit tests for PlainTextColumnType class."""
+
+  def setUp(self):
+    self.column_type = lists.PlainTextColumnType()
+
+  def _escaped(self, value):
+    return html.conditional_escape(value)
+
+  def testSafe(self):
+    text = ''
+    self.assertEqual(text, self.column_type.safe(text))
+
+    text = 'some example text'
+    self.assertEqual(text, self.column_type.safe(text))
+
+    text = '<a href="www.example.com">Example</a>'
+    self.assertEqual(self._escaped(text), self.column_type.safe(text))
+
+    text = '<script>alert("hacked")</script>'
+    self.assertEqual(self._escaped(text), self.column_type.safe(text))
