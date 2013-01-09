@@ -73,15 +73,29 @@ class NumericalColumnType(ColumnType):
     escaped.
 
     Args:
-      value: the specified value for which to return the safe representation
+      value: the specified string or a number for which 
+          to return the safe representation
+
+    Returns:
+      numerical representation of the specified value or the empty string for
+      None and the empty string.
 
     Raises:
       ValueError: if the specified value is invalid
+      TypeError: if the specified value is neither a number nor a string
     """
-    if value and not value.isdigit():
-      raise ValueError('Not valid numerical value %s' % value)
+    if value is None or value == '':
+      safe_value = ''
+    elif isinstance(value, int) or isinstance(value, long) or \
+        isinstance(value, float):
+      safe_value = value
+    else:
+      try:
+        safe_value = int(value)
+      except ValueError:
+        safe_value = float(value)
 
-    return value
+    return safe_value
 
 
 class HtmlColumnType(ColumnType):
