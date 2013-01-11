@@ -43,7 +43,7 @@ class OrgScoresList(Template):
         ent.parent().key().id_or_name())), hidden=True)
     list_config.addColumn('student', 'Student',
         lambda e, *args: e.parent().name())
-    list_config.addColumn('tasks', 'Tasks',
+    list_config.addNumericalColumn('tasks', 'Tasks',
         lambda e, *args: e.numberOfTasks())
     list_config.setDefaultSort('tasks', 'desc')
 
