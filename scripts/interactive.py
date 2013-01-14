@@ -155,7 +155,7 @@ def setup():
 
   extra_paths = [here,
                  os.path.join(appengine_location, 'lib', 'django'),
-                 os.path.join(appengine_location, 'lib', 'webob'),
+                 os.path.join(appengine_location, 'lib', 'webob_0_9'),
                  os.path.join(appengine_location, 'lib', 'yaml', 'lib'),
                  os.path.join(appengine_location, 'lib', 'fancy_urllib'),
                  os.path.join(appengine_location, 'lib', 'simplejson'),
