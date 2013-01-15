@@ -563,7 +563,6 @@ class RedirectHelper(request_data.RedirectHelper):
       self._url_name = 'show_gsoc_request'
     else:
       self._url_name = 'gsoc_invitation'
-    self._url_name = 'show_gsoc_request'
     return self
   
   def connect(self, user=None):
