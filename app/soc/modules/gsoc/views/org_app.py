@@ -21,6 +21,7 @@ from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import BadRequest
+from soc.logic.exceptions import NotFound
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
@@ -80,7 +81,6 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
 
   def checkAccess(self):
     self.check.isHost()
-    self.mutator.orgAppFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/edit.html'
@@ -158,7 +158,8 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
 
   def checkAccess(self):
     self.check.isHost()
-    self.mutator.orgAppFromKwargs(raise_not_found=True)
+    if not self.data.org_app:
+      raise NotFound(access_checker.DEF_NO_ORG_APP % self.data.program.name)
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/take.html'
@@ -191,7 +192,8 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
     ]
 
   def checkAccess(self):
-    self.mutator.orgAppFromKwargs()
+    if not self.data.org_app:
+      raise NotFound(access_checker.DEF_NO_ORG_APP % self.data.program.name)
     self.mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(self.data.org_app)
 
@@ -343,7 +345,8 @@ class GSoCOrgAppShowPage(GSoCRequestHandler):
     ]
 
   def checkAccess(self):
-    self.mutator.orgAppFromKwargs()
+    if not self.data.org_app:
+      raise NotFound(access_checker.DEF_NO_ORG_APP % self.data.program.name)
     self.mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(self.data.org_app_record)
 
