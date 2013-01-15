@@ -14,6 +14,9 @@
 
 """Module containing the views for GCI home page."""
 
+
+from django.utils import translation
+
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
@@ -29,6 +32,8 @@ class HowItWorks(Template):
   """How it works template."""
 
   CONTEST_BEGINS_ON_MSG = "Contest begins on %s %s"
+
+  CONTEST_CLOSED_ON_MSG = translation.ugettext('Contest closed on %s')
 
   GET_STARTED_NOW_MSG = "Get Started Now!"
 
@@ -89,13 +94,16 @@ class HowItWorks(Template):
     return "v2/modules/gci/homepage/_how_it_works.html"
 
   def _getMainText(self):
-    if self.data.timeline.studentSignup():
-      return self.GET_STARTED_NOW_MSG
-    else:
+    if self.data.timeline.beforeStudentSignupStart():
       sign_up_start = self.data.timeline.studentSignupStart()
       month = sign_up_start.strftime("%b")
       day = sign_up_start.strftime("%d")
       return self.CONTEST_BEGINS_ON_MSG % (month, day)
+    elif self.data.timeline.studentSignup():
+      return self.GET_STARTED_NOW_MSG
+    elif self.data.timeline.afterStopAllWorkDeadline():
+      contest_closed = self.data.timeline.stopAllWorkDeadline()
+      return self.CONTEST_CLOSED_ON_MSG % (contest_closed.strftime('%b %d'),)
 
 
 class FeaturedTask(Template):
