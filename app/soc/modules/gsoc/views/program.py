@@ -56,7 +56,7 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
 
   def __init__(self, request_data, *args, **kwargs):
     self.request_data = request_data
-    super(program.GSoCProgramMessagesForm, self).__init__(*args, **kwargs)
+    super(GSoCProgramMessagesForm, self).__init__(*args, **kwargs)
 
   class Meta:
     css_prefix = 'program_messages_form'
@@ -186,7 +186,7 @@ class GSoCProgramMessagesPage(
     return 'v2/modules/gsoc/program/messages.html'
 
   def _getForm(self, entity):
-    return program.GSoCProgramMessagesForm(self.data, self.data.POST or None,
+    return GSoCProgramMessagesForm(self.data, self.data.POST or None,
         instance=entity)
 
   def _getModel(self):
