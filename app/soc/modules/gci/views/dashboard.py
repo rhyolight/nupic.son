@@ -654,7 +654,7 @@ class MyOrgsTaskList(Component):
     list_config.addSimpleColumn('status', 'Status')
 
     # TODO (madhu): Super temporary solution until the pretty lists are up.
-    list_config.addColumn('edit', 'Edit',
+    list_config.addHtmlColumn('edit', 'Edit',
         lambda entity, *args: (
           '<a href="%s" style="color:#0000ff;text-decoration:underline;">'
           'Edit</a>' % (data.redirect.id(entity.key().id()).urlOf(
