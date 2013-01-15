@@ -31,11 +31,11 @@ from soc.modules.gci.views.helper import url_names
 class HowItWorks(Template):
   """How it works template."""
 
-  CONTEST_BEGINS_ON_MSG = "Contest begins on %s %s"
+  CONTEST_BEGINS_ON_MSG = translation.ugettext('Contest begins on %s')
 
   CONTEST_CLOSED_ON_MSG = translation.ugettext('Contest closed on %s')
 
-  GET_STARTED_NOW_MSG = "Get Started Now!"
+  GET_STARTED_NOW_MSG = translation.ugettext('Get Started Now!')
 
   def __init__(self, data):
     self.data = data
@@ -96,9 +96,7 @@ class HowItWorks(Template):
   def _getMainText(self):
     if self.data.timeline.beforeStudentSignupStart():
       sign_up_start = self.data.timeline.studentSignupStart()
-      month = sign_up_start.strftime("%b")
-      day = sign_up_start.strftime("%d")
-      return self.CONTEST_BEGINS_ON_MSG % (month, day)
+      return self.CONTEST_BEGINS_ON_MSG % (sign_up_start.strftime('%b %d'),)
     elif self.data.timeline.studentSignup():
       return self.GET_STARTED_NOW_MSG
     elif self.data.timeline.afterStopAllWorkDeadline():
