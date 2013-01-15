@@ -302,7 +302,6 @@ class ListConfiguration(object):
     self.addColumn(
         col_id, name, func, column_type=ColumnType.HTML, **kwargs)
 
-  #def addHtmlColumn(self):
   def __addRowButton(self, col_id, button_id, caption, type, classes,
                      parameters):
     """Internal method for adding row buttons so that the uniqueness of
