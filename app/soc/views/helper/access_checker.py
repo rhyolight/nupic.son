@@ -384,21 +384,6 @@ class Mutator(object):
     if self.data.host or self.data.user.host_for:
       self.data.is_host = True
 
-  def orgAppFromKwargs(self, raise_not_found=True):
-    """Sets the organization application in RequestData object.
-
-    Args:
-      raise_not_found: iff False do not send 404 response.
-    """
-    assert self.data.program
-
-    q = OrgAppSurvey.all()
-    q.filter('program', self.data.program)
-    self.data.org_app = q.get()
-
-    if raise_not_found and not self.data.org_app:
-      raise NotFound(DEF_NO_ORG_APP % self.data.program.name)
-
   def orgAppRecordIfIdInKwargs(self):
     """Sets the organization application in RequestData object.
     """
