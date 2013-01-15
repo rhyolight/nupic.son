@@ -96,6 +96,9 @@ class TimelineHelper(object):
   def studentSignupEnd(self):
     return self.timeline.student_signup_end
 
+  def stopAllWorkDeadline(self):
+    return self.timeline.stop_all_work_deadline
+
   def studentsSignupBetween(self):
     return (self.timeline.student_signup_start,
             self.timeline.student_signup_end)
@@ -131,6 +134,9 @@ class TimelineHelper(object):
 
   def afterStudentSignupEnd(self):
     return isAfter(self.studentSignupEnd())
+
+  def afterStopAllWorkDeadline(self):
+    return isAfter(self.stopAllWorkDeadline())
 
   def surveyPeriod(self, survey):
     start = survey.survey_start
