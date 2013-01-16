@@ -131,6 +131,7 @@ class LabelVerifiedState(object):
 # The standard input fields should be available to all importing modules
 CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
+ChoiceField = forms.ChoiceField
 DateInput = forms.DateInput
 DateTimeInput = forms.DateTimeInput
 FileField = forms.FileField
