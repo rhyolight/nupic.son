@@ -58,6 +58,7 @@ Select = forms.Select
 SelectMultiple = forms.SelectMultiple
 TextInput = forms.TextInput
 Textarea = forms.Textarea
+ChoiceField = forms.ChoiceField
 
 # The standard error classes should be available to all importing modules
 ValidationError = forms.ValidationError
@@ -410,11 +411,9 @@ class GCIBoundField(forms.BoundField):
         'style': 'opacity: 100;',
         }
 
-    return mark_safe('%s%s%s%s%s' % (
+    return mark_safe('%s%s%s' % (
         self._render_label(),
         self.as_widget(attrs=attrs),
-        self._render_is_required(),
-        self._render_error(),
         self._render_note(),
     ))
 
