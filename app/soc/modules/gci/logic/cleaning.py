@@ -97,14 +97,14 @@ def cleanMentorsList(field_name):
 
       if not validate.isLinkIdFormatValid(link_id):
         raise forms.ValidationError(
-            "%s is not a valid link ID." % link_id)
+            "'%s' is not a valid username." % link_id)
 
       fields['link_id'] = link_id
 
       mentor = gci_mentor_logic.getFromKeyFields(fields)
       if not mentor:
         raise forms.ValidationError(
-            'link_id "%s" is not a valid Mentor.' % link_id)
+            '"%s" is not a valid Mentor.' % link_id)
 
       mentors.append(mentor.key())
 

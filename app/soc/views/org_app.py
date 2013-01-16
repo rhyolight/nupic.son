@@ -54,7 +54,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
 
   backup_admin_id = django_forms.CharField(
       label=ugettext('Backup Admin'), required=True,
-      help_text=ugettext('The Link ID of the user who will serve as the '
+      help_text=ugettext('The username of the user who will serve as the '
                          'backup admin for this organization.'))
 
   def __init__(self, survey, tos_content, bound_class_field, *args, **kwargs):

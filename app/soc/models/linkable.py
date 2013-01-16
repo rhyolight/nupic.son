@@ -102,7 +102,7 @@ class Linkable(db.Model):
   #: digits and underscores only.  Valid link IDs successfully match
   #: the LINK_ID_REGEX.
   link_id = db.StringProperty(required=True,
-      verbose_name=ugettext('Link ID'))
+      verbose_name=ugettext('Username'))
   link_id.help_text = ugettext(
       'Used as part of various URL links throughout the site.'
       ' <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '

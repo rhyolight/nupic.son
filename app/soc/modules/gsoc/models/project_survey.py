@@ -33,8 +33,8 @@ class ProjectSurvey(Survey):
   #: digits and underscores only.  Valid link IDs successfully match
   #: the LINK_ID_REGEX.
   link_id = db.StringProperty(required=True,
-      verbose_name=ugettext('Link ID'))
+      verbose_name=ugettext('Organization ID'))
   link_id.help_text = ugettext(
-      'Link ID is used as part of various URL links throughout the site.'
+      'Organization ID is used as part of various URL links throughout the site.'
       ' <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
       ' Unique Name, alphanumeric characters, digits, and underscores only.')
