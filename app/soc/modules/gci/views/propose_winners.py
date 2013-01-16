@@ -103,10 +103,9 @@ class ProposeWinnersForm(gci_forms.GCIModelForm):
     elif len(key_names) == 2:
       # it is not OK, because at least one of the fields is duplicated
       self._errors['__all__'] = DEF_WINNER_MORE_THAN_ONCE_ERROR
-    else:
-      # it is OK, if all the elements are empty
-      if list(key_names)[0] != ProposeWinnersForm.EMPTY_CHOICE:
-        self._errors['__all__'] = DEF_WINNER_MORE_THAN_ONCE_ERROR
+    elif list(key_names)[0] != ProposeWinnersForm.EMPTY_CHOICE:
+      # it is not OK, when there is one choice which is not empty
+      self._errors['__all__'] = DEF_WINNER_MORE_THAN_ONCE_ERROR
 
   def _getChoiceOption(self, student):
     return (student.key().name(), self._formatPossibleWinner(student))
