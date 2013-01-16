@@ -73,3 +73,25 @@ def queryForProgramAndStatus(program, status, keys_only=False):
     query.filter('status', status)
 
   return query
+
+
+def queryForOrgAdminAndStatus(org_admin, status):
+  """Returns a query for GCIOrganization entities with the specified org admin
+  and status.
+
+  Args:
+    org_admin: GCIProfile entity
+    status: the specified status or a list of acceptable statuses
+
+  Returns:
+    a Query object which may be used to retrieved GCIOrganization entities
+  """
+  query = GCIOrganization.all()
+  query.filter('__key__ IN', org_admin.org_admin_for)
+
+  if isinstance(status, list):
+    query.filter('status IN', status)
+  else:
+    query.filter('status', status)
+
+  return query
