@@ -129,8 +129,10 @@ class ProposeWinnersPage(GCIRequestHandler):
     
   def checkAccess(self):
     self.check.isOrgAdmin()
-    self.data.timeline.allReviewsStopped()
-  
+    if not self.data.timeline.allReviewsStopped():
+      raise exceptions.AccessViolation(
+          'This page may be accessed when the review period is over')
+
   def context(self):
     form = ProposeWinnersForm(
         self.data, self.data.POST or None)
