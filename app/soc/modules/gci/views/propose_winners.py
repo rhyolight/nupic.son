@@ -67,18 +67,18 @@ class ProposeWinnersForm(gci_forms.GCIModelForm):
     # check if at least one grand prize winner is already set
     if len(self.request_data.organization.proposed_winners) > 0:
       self.fields.get('first_proposed_winner').initial = \
-          self.request_data.organization.proposed_winners[0].name()
+          str(self.request_data.organization.proposed_winners[0])
 
       # check if both grand prize winners are already set
       if len(self.request_data.organization.proposed_winners) > 1:
          self.fields.get('second_proposed_winner').initial = \
-             self.request_data.organization.proposed_winners[1].name()
+             str(self.request_data.organization.proposed_winners[1])
 
     # check if backup winner is already set
     if self.request_data.organization.backup_winner:
-      self.fields.get('backup_proposed_winner').initial = (
+      self.fields.get('backup_proposed_winner').initial = str(
           organization_model.GCIOrganization.backup_winner.
-              get_value_for_datastore(self.request_data.organization).name())
+              get_value_for_datastore(self.request_data.organization))
 
 
   first_proposed_winner = forms.ChoiceField(label='First Grand Prize Winner')
@@ -108,7 +108,7 @@ class ProposeWinnersForm(gci_forms.GCIModelForm):
       self._errors['__all__'] = DEF_WINNER_MORE_THAN_ONCE_ERROR
 
   def _getChoiceOption(self, student):
-    return (student.key().name(), self._formatPossibleWinner(student))
+    return (str(student.key()), self._formatPossibleWinner(student))
 
   def _formatPossibleWinner(self, student):
     return '%s' % student.name()
@@ -150,19 +150,19 @@ class ProposeWinnersPage(GCIRequestHandler):
       # TODO(nathaniel): problematic self-call.
       return self.get()
 
-    first_key_name = self.data.POST.get(
+    first_key_str = self.data.POST.get(
         'first_proposed_winner', ProposeWinnersForm.EMPTY_CHOICE)
 
-    second_key_name = self.data.POST.get(
+    second_key_str = self.data.POST.get(
         'second_proposed_winner', ProposeWinnersForm.EMPTY_CHOICE)
 
-    backup_key_name = self.data.POST.get(
+    backup_key_str = self.data.POST.get(
         'backup_proposed_winner', ProposeWinnersForm.EMPTY_CHOICE)
 
     proposed_winners = self._getProposedWinnersList(
-        first_key_name, second_key_name)
-
-    backup_winner = self._getBackupWinner(backup_key_name)
+        first_key_str, second_key_str)
+      
+    backup_winner = self._getBackupWinner(backup_key_str)
 
     def txn():
       organization = organization_model.GCIOrganization.get(
@@ -176,33 +176,40 @@ class ProposeWinnersPage(GCIRequestHandler):
     self.redirect.organization()
     return self.redirect.to(url_names.GCI_ORG_PROPOSE_WINNERS)
 
-  def _getBackupWinner(self, backup_key_name):
+  def _getProfileByKeyStr(self, key_str):
+    """Returns the GCIProfile entity based on the specified string
+    representation of db.Key.
+    """
+    try:
+      key = db.Key(key_str)
+    except db.BadKeyError:
+      return None
+
+    return profile_model.GCIProfile.get(key)
+
+  def _getBackupWinner(self, backup_key_str):
     """Returns the GCIProfile entity belonging to the backup winner chosen
     by the organization.
 
     Args:
-      backup_key_name: the key name proposed by the organization
+      backup_key_str: the string representation of the key associated with 
+          the profile proposed by the organization.
 
     Returns:
       the GCIProfile entity associated with the specified argument or None
       if it does not point to any existing profile
     """
-    parent_key = self._getUserKey(backup_key_name)
-    
-    profile = None
-    if parent_key:
-      profile = profile_model.GCIProfile.get_by_key_name(
-          backup_key_name, parent_key)
+    return self._getProfileByKeyStr(backup_key_str)
 
-    return profile
-
-  def _getProposedWinnersList(self, first_key_name, second_key_name):
+  def _getProposedWinnersList(self, first_key_str, second_key_str):
     """Returns the list which contains the keys of the GCIProfile entities
     belonging to students proposed by the organization.
     
     Args:
-      first_key_name: the first key name proposed by the organization.
-      second_key_name: the second key name proposed by the organization.
+      first_key_str: the string representation of the first key associated
+          with the profile proposed by the organization.
+      second_key_str: the string representation of the second key associated 
+          with the profile proposed by the organization.
 
     Returns:
       a list with the keys of GCIProfile entity that correspond to
@@ -210,39 +217,15 @@ class ProposeWinnersPage(GCIRequestHandler):
     """
     proposed_winners = []
 
-    parent_key = self._getUserKey(first_key_name)
-    if parent_key:
-      profile = profile_model.GCIProfile.get_by_key_name(
-          first_key_name, parent_key)
-      if profile:
-        proposed_winners.append(profile.key())
+    profile = self._getProfileByKeyStr(first_key_str)
+    if profile:
+      proposed_winners.append(profile.key())
 
-    parent_key = self._getUserKey(second_key_name)
-    if parent_key:
-      profile = profile_model.GCIProfile.get_by_key_name(
-          second_key_name, parent_key)
-      if profile:
-        proposed_winners.append(profile.key())
+    profile = self._getProfileByKeyStr(second_key_str)
+    if profile:
+      proposed_winners.append(profile.key())
 
     return proposed_winners
-    
-  # TODO(daniel): discuss if this should go to the logic?
-  def _getUserKey(self, key_name):
-    """Returns the db.Key instance of the User entity that belong to a parent 
-    of the specified profile's key name.
-    
-    Args:
-      key_name: the specified Profile's key name
-
-    Returns:
-      db.Key instance or None if the key_name is invalid
-    """
-    parts = key_name.split('/')
-    if len(parts) != 3:
-      return None
-
-    # TODO(daniel): check if the element has correct format to be a link_id
-    return db.Key.from_path('User', parts[2])
 
 
 class OrganizationsForProposeWinnersList(org_list.OrgList):
