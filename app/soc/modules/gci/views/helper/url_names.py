@@ -33,6 +33,7 @@ GCI_ORG_BAN = 'gci_org_ban'
 GCI_ORG_SCORES = 'gci_org_scores'
 GCI_ORG_CHOOSE_FOR_ALL_TASKS = 'gci_org_choose_for_all_tasks'
 GCI_ORG_CHOOSE_FOR_SCORE = 'gci_org_choose_for_score'
+GCI_ORG_PROPOSE_WINNERS = 'gci_org_propose_winners'
 GCI_ORG_TASKS_ALL = 'gci_org_tasks_all'
 
 GCI_ALL_TASKS_LIST = 'gci_list_tasks'
