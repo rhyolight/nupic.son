@@ -370,6 +370,10 @@ class DashboardPage(GCIRequestHandler):
     """Get the main dashboard links for org-admin.
     """
     links = []
+
+    # add propose winners component
+    if self.data.timeline.allReviewsStopped():
+      links.append(self._getProposeWinnersLink())
     return links
 
   def _getMentorLinks(self):
@@ -496,6 +500,19 @@ class DashboardPage(GCIRequestHandler):
             'The task you are currently working on'),
         'title': 'My current task',
         'link': r.urlOf('gci_view_task')
+        }
+
+  def _getProposeWinnersLink(self):
+    """Get the link to the list of organization to propose winners for."""
+    r = self.data.redirect
+    r.program()
+
+    return {
+        'name': 'propose_winners',
+        'description': ugettext(
+            'Propose the Grand Prize Winners'),
+        'title': 'Propose the Grand Prize Winners',
+        'link': r.urlOf(url_names.GCI_ORG_CHOOSE_FOR_PROPOSE_WINNNERS)
         }
 
 
