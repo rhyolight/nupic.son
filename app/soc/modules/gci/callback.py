@@ -99,6 +99,8 @@ class Callback(object):
     self.views.append(program.GCIProgramMessagesPage())
     self.views.append(program.TimelinePage())
     self.views.append(propose_winners.ProposeWinnersPage())
+    self.views.append(
+        propose_winners.ChooseOrganizationForProposeWinnersPage())
     self.views.append(request.ListUserRequestsPage())
     self.views.append(request.SendRequestPage())
     self.views.append(request.ManageRequestPage())
