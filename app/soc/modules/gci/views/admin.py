@@ -251,7 +251,7 @@ class ProgramSettingsDashboard(Dashboard):
 class OrgDashboard(Dashboard):
   """Dashboard for admin's Organization related information.
 
-  This page includes links for Org app surveys, participating org info, etc.
+  This page includes links for Org app surveys, mentoring org info, etc.
   """
 
   def __init__(self, request, data):

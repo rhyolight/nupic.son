@@ -1155,7 +1155,7 @@ class AllOrgsListBeforeRequestRole(MyOrgsList):
         'title': 'Request to become a mentor',
         'lists': [org_list],
         'description': ugettext('Request to become a mentor for one of '
-            'the participating organizations.')}
+            'the mentoring organizations.')}
 
 
 class OrgAdminInvitesList(Component):
