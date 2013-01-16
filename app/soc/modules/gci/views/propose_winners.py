@@ -19,14 +19,19 @@ from google.appengine.ext import db
 from django import forms
 from django.utils.translation import ugettext
 
+from soc.logic import exceptions
+
 from soc.modules.gci.views.base import GCIRequestHandler
 
+from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
+from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.logic import org_score as org_score_logic
 from soc.modules.gci.models import organization as organization_model
 from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models import profile
+from soc.modules.gci.templates import org_list
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_patterns as gci_url_patterns
 from soc.modules.gci.views.helper import url_names
@@ -108,6 +113,7 @@ class ProposeWinnersForm(gci_forms.GCIModelForm):
 
   def _formatPossibleWinner(self, student):
     return '%s' % student.name()
+
 
 class ProposeWinnersPage(GCIRequestHandler):
   """Page to propose winners by organization admins"""
@@ -236,3 +242,76 @@ class ProposeWinnersPage(GCIRequestHandler):
 
     # TODO(daniel): check if the element has correct format to be a link_id
     return db.Key.from_path('User', parts[2])
+
+
+class OrganizationsForProposeWinnersList(org_list.OrgList):
+  """Lists all organizations for which the current user may propose the Grand
+  Prize Winner and the row action takes their to ProposeWinnersPage for
+  the corresponding organization.
+  """
+
+  def _getDescription(self):
+    return ugettext('Choose an organization for which to propose the '
+        'Grand Prize Winners.')
+
+  def _getRedirect(self):
+    def redirect(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf(url_names.GCI_ORG_PROPOSE_WINNERS)
+    return redirect
+
+  def _getListConfig(self):
+    """Returns ListConfiguration object for the list.
+    """
+    r = self.data.redirect
+
+    list_config = lists.ListConfiguration()
+    list_config.addColumn('name', 'Name',
+        lambda e, *args: e.name.strip())
+    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.setRowAction(self._getRedirect())
+    return list_config
+
+  def _getQuery(self):
+    """Returns Query object to fetch entities for the list.
+    """
+    return org_logic.queryForOrgAdminAndStatus(
+        self.data.profile, ['new', 'active'])
+
+
+class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
+  """View with a list of organizations. When a user clicks on one of them,
+  he or she is moved to the propose winner page for this organization.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/org_list/base.html'
+
+  def djangoURLPatterns(self):
+    return [
+        gci_url_patterns.url(
+            r'org_choose_for_propose_winners/%s$' % url_patterns.PROGRAM, self,
+            name=url_names.GCI_ORG_CHOOSE_FOR_PROPOSE_WINNNERS),
+    ]
+
+  def checkAccess(self):
+    pass
+
+  def jsonContext(self):
+    list_content = OrganizationsForProposeWinnersList(
+        self.request, self.data).getListData()
+
+    if not list_content:
+      raise exceptions.AccessViolation(
+          'You do not have access to this data')
+    return list_content.content()
+
+  def context(self):
+    return {
+        'page_name': "Choose an organization for which to display scores.",
+        'org_list': OrganizationsForProposeWinnersList(
+            self.request, self.data),
+        #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
+    }
