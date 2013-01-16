@@ -301,6 +301,14 @@ class OrgDashboard(Dashboard):
             'title': 'Organization Tasks',
             'link': r.urlOf(url_names.GCI_ORG_CHOOSE_FOR_ALL_TASKS)
         },
+        {
+            'name': 'proposed_winners',
+            'description': ugettext(
+                'List of the Grand Prize Winners that have been proposed by '
+                'organizations'),
+            'title': 'Proposed Grand Prize Winners',
+            'link': r.urlOf(url_names.GCI_VIEW_PROPOSED_WINNERS)
+        },
     ]
 
     super(OrgDashboard, self).__init__(request, data, subpages)

@@ -299,3 +299,86 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
             self.request, self.data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }
+<<<<<<< HEAD
+=======
+
+
+class ProposedWinnersForOrgsList(org_list.OrgList):
+  """Lists all organizations for which the current user may propose the Grand
+  Prize Winner and the row action takes their to ProposeWinnersPage for
+  the corresponding organization.
+  """
+
+  def _getDescription(self):
+    return ugettext('Proposed Grand Prize Winners')
+
+  def _getRedirect(self):
+    def redirect(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf(url_names.GCI_ORG_PROPOSE_WINNERS)
+    return redirect
+
+  def _getListConfig(self):
+    """Returns ListConfiguration object for the list.
+    """
+    r = self.data.redirect
+
+    def proposedWinnersFunc(organization, *args):
+      profiles = profile_model.GCIProfile.get(organization.proposed_winners)
+      return ', '.join([p.name() for p in profiles if p])
+
+    list_config = lists.ListConfiguration()
+    list_config.addColumn('name', 'Name',
+        lambda e, *args: e.name.strip())
+    list_config.addColumn('proposed_winners', 'Proposed Winners',
+        proposedWinnersFunc)
+    list_config.addColumn('backup_winner', 'Backup Winner',
+        lambda e, *args: e.backup_winner.name() if e.backup_winner else '')
+    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.setRowAction(self._getRedirect())
+
+    return list_config
+
+  def _getQuery(self):
+    """Returns Query object to fetch entities for the list.
+    """
+    return org_logic.queryForProgramAndStatus(
+        self.data.program, ['new', 'active'])
+
+
+class ViewProposedWinnersPage(GCIRequestHandler):
+  """View with a list of organizations with the proposed Grand Prize Winners.
+  """
+
+  def templatePath(self):
+    return 'v2/modules/gci/org_list/base.html'
+
+  def djangoURLPatterns(self):
+    return [
+        gci_url_patterns.url(
+            r'view_proposed_winners/%s$' % url_patterns.PROGRAM, self,
+            name=url_names.GCI_VIEW_PROPOSED_WINNERS),
+    ]
+
+  def checkAccess(self):
+    self.check.isHost()
+
+  def jsonContext(self):
+    list_content = ProposedWinnersForOrgsList(
+        self.request, self.data).getListData()
+
+    if not list_content:
+      raise exceptions.AccessViolation(
+          'You do not have access to this data')
+    return list_content.content()
+
+  def context(self):
+    return {
+        'page_name': "Proposed Grand Prize Winners.",
+        'org_list': ProposedWinnersForOrgsList(
+            self.request, self.data),
+        #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
+    }
+>>>>>>> winners

@@ -101,6 +101,7 @@ class Callback(object):
     self.views.append(propose_winners.ProposeWinnersPage())
     self.views.append(
         propose_winners.ChooseOrganizationForProposeWinnersPage())
+    self.views.append(propose_winners.ViewProposedWinnersPage())
     self.views.append(request.ListUserRequestsPage())
     self.views.append(request.SendRequestPage())
     self.views.append(request.ManageRequestPage())
