@@ -49,6 +49,7 @@ CREATE_GCI_ORG_PROFILE = 'create_gci_org_profile'
 EDIT_GCI_ORG_PROFILE = 'edit_gci_org_profile'
 GCI_ORG_HOME = 'gci_org_home'
 
+GCI_VIEW_PROPOSED_WINNERS = 'gci_view_proposed_winners'
 GCI_VIEW_TASK = 'gci_view_task'
 GCI_TASK_BULK_CREATE = 'gci_task_bulk_create'
 
