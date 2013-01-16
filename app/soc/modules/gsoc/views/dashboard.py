@@ -302,6 +302,16 @@ class DashboardPage(GSoCRequestHandler):
     if not self.data.timeline.studentSignup():
       components.append(orgs)
 
+    if self.data.is_org_admin:
+      mentor_evals = dictForSurveyModel(
+          GradingProjectSurvey, self.data.program, ['midterm', 'final'])
+      student_evals = dictForSurveyModel(
+          ProjectSurvey, self.data.program, ['midterm', 'final'])
+      components.append(
+          MentorEvaluationComponent(self.request, self.data, mentor_evals))
+      components.append(
+          StudentEvaluationComponent(self.request, self.data, student_evals))
+
     return components
 
   def _getLoneUserComponents(self):
@@ -709,9 +719,9 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
 
     return {
         'name': 'evaluations',
-        'title': 'Evaluations',
+        'title': 'My Evaluations',
         'lists': [list],
-        'description': ugettext('Evaluations'),
+        'description': ugettext('Evaluations that I must complete'),
     }
 
 
@@ -1478,3 +1488,168 @@ class TodoComponent(Component):
         'lists': [list],
         'description': ugettext('List of my todos'),
     }
+
+
+class StudentEvaluationComponent(Component):
+  """Component for listing student evaluations for organizations.
+  """
+
+  IDX = 12
+
+  def __init__(self, request, data, evals):
+    """Initializes this component.
+
+    Args:
+      request: The Django HTTP Request object
+      data: The RequestData object containing the entities from the request
+      evals: Dictionary containing evaluations for which the list must be built
+      idx: The id for this list component
+    """
+    self.request = request
+    self.data = data
+    self.evals = evals
+
+    self.record = None
+
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addColumn(
+        'key', 'Key',
+        (lambda ent, eval, *args: "%s/%s/%s" % (
+            eval, ent.parent().key().name(),
+            ent.key().id())), hidden=True)
+    list_config.addColumn(
+        'evaluation', 'Evaluation',
+        lambda ent, eval, *args: eval.capitalize() if eval else '')
+    list_config.addColumn(
+        'student', 'Student',
+        lambda entity, eval, *args: entity.parent().name())
+    list_config.addSimpleColumn('title', 'Project Title')
+    list_config.addColumn('org', 'Organization',
+                          lambda entity, eval, *args: entity.org.name)
+    list_config.addColumn(
+        'mentors', 'Mentors',
+        lambda ent, eval, mentors, *args: ', '.join(
+            [mentors.get(m).name() for m in ent.mentors]))
+    list_config.addColumn(
+        'status', 'Status', self._getStatus)
+    list_config.addColumn(
+        'created', 'Submitted on',
+        lambda ent, eval, *args: format(
+            self.record.created, DATETIME_FORMAT) if \
+            self.record else 'N/A')
+    list_config.addColumn(
+        'modified', 'Last modified on',
+        lambda ent, eval, *args: format(
+            self.record.modified, DATETIME_FORMAT) if (
+            self.record and self.record.modified) else 'N/A')
+    list_config.setDefaultSort('student')
+
+    def getRowAction(entity, eval, *args):
+      eval_ent = self.evals.get(eval)
+
+      if not self.data.timeline.afterSurveyEnd(eval_ent):
+        return ''
+
+      url = self.data.redirect.survey_record(
+          eval, entity.key().id_or_name(),
+          entity.parent().link_id).urlOf('gsoc_show_student_evaluation')
+      return url
+    list_config.setRowAction(getRowAction)
+
+    self._list_config = list_config
+
+  def _getStatus(self, entity, eval, *args):
+    eval_ent = self.evals.get(eval)
+    self.record = getEvalRecord(GSoCProjectSurveyRecord, eval_ent, entity)
+    return colorize(bool(self.record), "Submitted", "Not submitted")
+
+  def context(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.IDX, preload_list=False)
+
+    return {
+        'name': 'student_evaluations',
+        'lists': [list],
+        'title': 'Student Evaluations',
+        'description': ugettext(
+          'List of student evaluations for my organizations'),
+        'idx': self.IDX,
+        }
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    idx = lists.getListIndex(self.request)
+    if idx == self.IDX:
+      list_query = project_logic.getProjectsQueryForEvalForOrgs(
+          orgs=self.data.org_admin_for)
+
+      starter = lists.keyStarter
+      prefetcher = lists.listModelPrefetcher(
+          GSoCProject, ['org'],
+          ['mentors', 'failed_evaluations'],
+          parent=True)
+      row_adder = evaluationRowAdder(self.evals)
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, list_query,
+          starter, prefetcher=prefetcher, row_adder=row_adder)
+      return response_builder.build()
+    else:
+      return None
+
+  def templatePath(self):
+    return'v2/modules/gsoc/dashboard/list_component.html'
+
+
+class MentorEvaluationComponent(StudentEvaluationComponent):
+  """Component for listing mentor evaluations for organizations.
+  """
+
+  IDX = 13
+
+  def __init__(self, request, data, evals):
+    """Initializes this component.
+
+    Args:
+      request: The Django HTTP Request object
+      data: The RequestData object containing the entities from the request
+      evals: Dictionary containing evaluations for which the list must be built
+      idx: The id for this list component
+    """
+    super(MentorEvaluationComponent, self).__init__(request, data, evals)
+
+    self.record = None
+
+    self._list_config.addColumn(
+        'grade', 'Grade', self._getGrade)
+    self._list_config.setRowAction(lambda entity, eval, *args:
+        data.redirect.survey_record(
+            eval, entity.key().id_or_name(),
+            entity.parent().link_id).urlOf(
+                'gsoc_take_mentor_evaluation'))
+
+  def _getStatus(self, entity, eval, *args):
+    eval_ent = self.evals.get(eval)
+    self.record = getEvalRecord(GSoCGradingProjectSurveyRecord,
+                                eval_ent, entity)
+    return colorize(
+        bool(self.record), "Submitted", "Not submitted")
+
+  def _getGrade(self, entity, eval, *args):
+    if self.record:
+      return colorize(
+        self.record.grade, "Pass", "Fail")
+    else:
+      return "N/A"
+
+  def context(self):
+    context = super(MentorEvaluationComponent, self).context()
+    context['title'] = 'Mentor Evaluations'
+    context['description'] = ugettext(
+        'List of mentor evaluations for my organizations')
+    context['name'] = 'mentor_evaluations'
+    return context
