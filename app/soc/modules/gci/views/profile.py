@@ -75,13 +75,12 @@ SHOW_STUDENT_EXCLUDE = STUDENT_EXCLUDE + [
 class GCIUserForm(gci_forms.GCIModelForm):
   """Django form for User model in GCI program.
   """
-  link_id = gci_forms.CharField(label='URL ID')
   class Meta:
     model = User
     css_prefix = 'user'
     fields = ['link_id']
 
-  link_id = gci_forms.CharField(label='URL ID', help_text=LINK_ID_HELP_TEXT)
+  link_id = gci_forms.CharField(label='Username', help_text=LINK_ID_HELP_TEXT)
   clean_link_id = cleaning.clean_user_not_exist('link_id')
 
 

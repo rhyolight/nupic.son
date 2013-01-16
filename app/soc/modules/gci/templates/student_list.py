@@ -54,7 +54,7 @@ class StudentList(Template):
     list_config.addColumn(
         'name', 'Name', lambda e, sp, *args: sp[e.parent_key()].name())
     list_config.addColumn(
-        'link_id', 'Link ID', lambda e, sp, *args: sp[e.parent_key()].link_id)
+        'link_id', 'Username', lambda e, sp, *args: sp[e.parent_key()].link_id)
     list_config.addColumn(
         'email', 'Email', lambda e, sp, *args: sp[e.parent_key()].email)
     list_config.addColumn('given_name', 'Given name', 

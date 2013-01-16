@@ -134,8 +134,8 @@ DEF_IS_STUDENT = ugettext(
 DEF_NO_DOCUMENT = ugettext(
     'The document was not found')
 
-DEF_NO_LINK_ID = ugettext(
-    'Link ID should not be empty')
+DEF_NO_USERNAME = ugettext(
+    'Username should not be empty')
 
 DEF_NO_ORG_APP = ugettext(
     'The organization application for the program %s does not exist.')
@@ -160,7 +160,7 @@ DEF_NO_USER_PROFILE = ugettext(
     'You must not have a User profile to visit this page.')
 
 DEF_NO_USER = ugettext(
-    'User with the Link ID %s does not exist.')
+    'User with username %s does not exist.')
 
 DEF_NOT_ADMIN = ugettext(
     'You need to be a organization administrator for %s to access this page.')
@@ -191,7 +191,7 @@ DEF_NOT_VALID_REQUEST = ugettext(
     'This is not a valid request.')
 
 DEF_ORG_DOES_NOT_EXISTS = ugettext(
-    'Organization, whose link_id is %(link_id)s, does not exist in '
+    'Organization, whose Organization ID %(link_id)s, does not exist in '
     '%(program)s.')
 
 DEF_ORG_NOT_ACTIVE = ugettext(
@@ -418,7 +418,7 @@ class DeveloperMutator(Mutator):
       if self.data.is_host:
         return
       else:
-        raise NotFound(DEF_NO_LINK_ID)
+        raise NotFound(DEF_NO_USERNAME)
 
     user_key = db.Key.from_path('User', key_name)
 

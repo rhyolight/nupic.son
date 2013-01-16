@@ -827,9 +827,9 @@ class SubmittedProposalsComponent(Component):
     def mentor_keys(ent, *args):
       return ', '.join(split_key(i) for i in ent.possible_mentors)
 
-    list_config.addColumn('mentor', 'Assigned mentor link_id',
+    list_config.addColumn('mentor', 'Assigned mentor usernames',
                           mentor_key, hidden=True)
-    list_config.addColumn('possible_mentors', 'Possible mentor link_ids',
+    list_config.addColumn('possible_mentors', 'Possible mentor usernames',
                           mentor_keys, hidden=True)
 
     # organization column
@@ -1160,7 +1160,7 @@ class OrganizationsIParticipateInComponent(Component):
           return text
         return """<strong><font color="red">%s</font></strong>""" % text
 
-      list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+      list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
       list_config.addColumn('name', 'name', lambda ent, s, *args: c(ent, s, ent.name))
       list_config.addSimpleColumn('slots', 'Slots allowed')
       list_config.addColumn(

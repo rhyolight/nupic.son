@@ -22,7 +22,6 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.models.linkable import LINK_ID_PATTERN_CORE
 from soc.models.survey import Survey
 
 
@@ -34,9 +33,8 @@ class ProjectSurvey(Survey):
   #: digits and underscores only.  Valid link IDs successfully match
   #: the LINK_ID_REGEX.
   link_id = db.StringProperty(required=True,
-      verbose_name=ugettext('Link ID'))
+      verbose_name=ugettext('Organization ID'))
   link_id.help_text = ugettext(
-      'Link ID is used as part of various URL links throughout the site.'
+      'Organization ID is used as part of various URL links throughout the site.'
       ' <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
-      ' Unique Name, alphanumeric characters, digits, and underscores only.'
-      ' The regexp used to validate is "%s".') % LINK_ID_PATTERN_CORE
+      ' Unique Name, alphanumeric characters, digits, and underscores only.')

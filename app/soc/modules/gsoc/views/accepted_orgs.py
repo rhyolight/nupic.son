@@ -46,7 +46,7 @@ class AcceptedOrgsList(Template):
     list_config = lists.ListConfiguration()
     list_config.addColumn('name', 'Name',
         lambda e, *args: e.name.strip())
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
     list_config.setRowAction(RowAction)
     list_config.addColumn('tags', 'Tags',
                           lambda e, *args: ", ".join(e.tags))

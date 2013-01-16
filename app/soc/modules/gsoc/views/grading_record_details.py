@@ -120,11 +120,11 @@ class GradingRecordsList(Template):
         'Present' if rec.student_record else 'Missing'
     list_config.addColumn('student_record', 'Survey by Student', stud_rec_func)
     stud_id_func = lambda rec, *args: rec.parent().parent().link_id
-    list_config.addColumn('student_id', 'Student Link Id', stud_id_func,
+    list_config.addColumn('student_id', 'Student username', stud_id_func,
                            hidden=True)
 
     stud_email_func = lambda rec, *args: args[1][rec.key()].email
-    list_config.addColumn('student_email', 'Student Email Id',
+    list_config.addColumn('student_email', 'Student Email Address',
                           stud_email_func, hidden=True)
 
     stud_fn_func = lambda rec, *args: args[1][rec.key()].given_name
@@ -137,7 +137,7 @@ class GradingRecordsList(Template):
 
     mentor_email_func = lambda rec, *args: args[0][rec.key()].email
 
-    list_config.addColumn('mentor_email', 'Mentor Email Id',
+    list_config.addColumn('mentor_email', 'Mentor Email Address',
                           mentor_email_func, hidden=True)
 
     mentor_fn_func = lambda rec, *args: args[0][rec.key()].given_name

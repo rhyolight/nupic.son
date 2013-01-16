@@ -825,7 +825,7 @@ class AcceptedOrgsList(Template):
     list_config = lists.ListConfiguration()
     list_config.addColumn('name', 'Name',
         (lambda e, *args: e.short_name.strip()), width=75)
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
 
     list_config = self.extraColumn(list_config)
     self._list_config = list_config
@@ -1510,7 +1510,7 @@ class StudentsList(AcceptedOrgsList):
     list_config = lists.ListConfiguration()
     list_config.addColumn(
         'name', 'Name', lambda ent, *args: ent.name())
-    list_config.addSimpleColumn('link_id', "Link ID")
+    list_config.addSimpleColumn('link_id', "Username")
     list_config.addSimpleColumn('email', "Email")
     list_config.addSimpleColumn('given_name', "Given name", hidden=True)
     list_config.addSimpleColumn('surname', "Surname", hidden=True)

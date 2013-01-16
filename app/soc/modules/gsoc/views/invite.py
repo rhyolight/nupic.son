@@ -45,7 +45,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
   """Django form for the invite page.
   """
 
-  link_id = gsoc_forms.CharField(label='Link ID/Email')
+  link_id = gsoc_forms.CharField(label='Username/Email')
 
   class Meta:
     model = GSoCRequest

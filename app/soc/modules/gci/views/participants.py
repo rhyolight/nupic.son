@@ -37,7 +37,7 @@ class MentorsList(Template):
 
     list_config.addColumn('name', 'Name',
                           lambda e, *args: e.name().strip())
-    list_config.addSimpleColumn('link_id', 'Link ID')
+    list_config.addSimpleColumn('link_id', 'Username')
     list_config.addColumn('is_org_admin', 'Org Admin',
         lambda e, *args: 'Yes' if e.is_org_admin else 'No', hidden=True)
     list_config.addSimpleColumn('email', 'Email')
