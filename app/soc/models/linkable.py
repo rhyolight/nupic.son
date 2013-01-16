@@ -106,8 +106,7 @@ class Linkable(db.Model):
   link_id.help_text = ugettext(
       'Used as part of various URL links throughout the site.'
       ' <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
-      ' alphanumeric characters, digits, and underscores only.'
-      ' The regexp used to validate is "%s".') % LINK_ID_PATTERN_CORE
+      ' alphanumeric characters, digits, and underscores only.')
 
   #: Optional Self Reference property to another Linkable entity which defines
   #: the "scope" of this Linkable entity. The back-reference in the Linkable 

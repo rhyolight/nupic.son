@@ -23,7 +23,6 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 from soc.models import licenses
-from soc.models.linkable import LINK_ID_PATTERN_CORE
 from soc.models.survey_record import SurveyRecord
 
 import soc.models.user
@@ -44,8 +43,7 @@ class OrgAppRecord(SurveyRecord):
       'Organization ID is used as part of various URL links throughout '
       'the site. You may reuse the same id for different years of the '
       'program. <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
-      'alphanumeric characters, digits, and underscores only. '
-      'The regexp used to validate is "%s".') % LINK_ID_PATTERN_CORE
+      'alphanumeric characters, digits, and underscores only. ')
 
   #: field storing the name of the organization.
   name = db.StringProperty(
