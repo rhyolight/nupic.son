@@ -35,13 +35,11 @@ class ProgramMessagesPage(object):
 
   def post(self):
     """Handler for HTTP POST request."""
-    cbox = bool(self.data.GET.get('cbox'))
-
     if self.validate():
       # TODO(nathaniel): Make this .program() call unnecessary.
       self.redirect.program()
 
-      return self.redirect.to(self._getUrlName(), validated=True, cbox=cbox)
+      return self.redirect.to(self._getUrlName(), validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

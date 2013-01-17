@@ -412,8 +412,8 @@ class DashboardPage(GCIRequestHandler):
     return {
         'name': 'take_org_app',
         'description': ugettext(
-            'Take organization application survey.'),
-        'title': 'Take organization application',
+            'Submit organization application.'),
+        'title': 'Submit organization application',
         'link': r.urlOf('gci_take_org_app')
         }
 

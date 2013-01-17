@@ -34,14 +34,8 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     and all contexts were passed
     """
     self.assertTrue('base_layout' in response.context)
-    self.assertTrue('cbox' in response.context)
-    if response.context['cbox']:
-      self.assertGSoCColorboxTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base_colorbox.html')
-    else:
-      self.assertGSoCTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
+    self.assertGSoCTemplatesUsed(response)
+    self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
 
     self.assertTemplateUsed(response,

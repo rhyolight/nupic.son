@@ -51,7 +51,7 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
     'for this program.')
 
 DEF_NO_STUDENT_EVALUATION = ugettext(
-    'The project survey with name %s parameters does not exist.')
+    'The project evaluation with name %s parameters does not exist.')
 
 DEF_NO_MENTOR_EVALUATION = ugettext(
     'The project evaluation with name %s does not exist.')

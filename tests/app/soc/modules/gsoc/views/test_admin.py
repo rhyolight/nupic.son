@@ -29,10 +29,8 @@ class AdminDashboardTest(GSoCDjangoTestCase):
   def setUp(self):
     self.init()
 
-  def adminDashboardContext(self, colorbox=False):
+  def adminDashboardContext(self):
     url = '/gsoc/admin/' + self.gsoc.key().name()
-    if colorbox:
-      url += '?colorbox=true'
     response = self.get(url)
     self.assertResponseOK(response)
     return response.context
@@ -53,7 +51,6 @@ class AdminDashboardTest(GSoCDjangoTestCase):
     """Asserts that all the templates to render user actions were used.
     """
     self.assertAdminBaseTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'soc/_user_action.html')
 
   def testAdminDashboard(self):
     self.data.createHost()
@@ -64,8 +61,6 @@ class AdminDashboardTest(GSoCDjangoTestCase):
     self.assertUserActionsTemplatesUsed(response)
 
     context = self.adminDashboardContext()
-    self.assertTrue('colorbox' in context)
-    self.assertFalse(context['colorbox'])
     self.assertTrue('dashboards' in context)
 
     # dashboards template context
@@ -78,12 +73,6 @@ class AdminDashboardTest(GSoCDjangoTestCase):
       self.assertTrue(2 == len(subpages))
 
     self.assertTrue('page_name' in context)
-    self.assertTrue('user_actions' in context)
-
-    # context with colorbox passed in query string
-    context = self.adminDashboardContext(colorbox=True)
-    self.assertTrue('colorbox' in context)
-    self.assertTrue(context['colorbox'])
 
 
 class LookupProfileTest(GSoCDjangoTestCase):
@@ -98,14 +87,8 @@ class LookupProfileTest(GSoCDjangoTestCase):
     and all contexts were passed
     """
     self.assertTrue('base_layout' in response.context)
-    self.assertTrue('cbox' in response.context)
-    if response.context['cbox']:
-      self.assertGSoCColorboxTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base_colorbox.html')
-    else:
-      self.assertGSoCTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
+    self.assertGSoCTemplatesUsed(response)
+    self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
 
     self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/lookup.html')
@@ -115,11 +98,6 @@ class LookupProfileTest(GSoCDjangoTestCase):
 
     # rendered with default base layout
     url = '/gsoc/admin/lookup/' + self.gsoc.key().name()
-    response = self.get(url)
-    self.assertLookupProfile(response)
-
-    # rendered inside cbox iframe
-    url = '/gsoc/admin/lookup/' + self.gsoc.key().name() + '?cbox=true'
     response = self.get(url)
     self.assertLookupProfile(response)
 
@@ -141,16 +119,14 @@ class LookupProfileTest(GSoCDjangoTestCase):
         self.gsoc.key().name(),self.data.profile.link_id)
     self.assertResponseRedirect(response, new_url)
 
-    # inside cbox iframe and submit invalid data to lookup form
-    post_url += '?cbox=true'
     response = self.post(post_url, {})
     self.assertResponseOK(response)
     self.assertTrue(response.context['error'])
     self.assertLookupProfile(response)
 
-    # inside cbox iframe and submit valid data to lookup form
+    # submit valid data to lookup form
     response = self.post(post_url, postdata)
-    new_url = '/gsoc/profile/admin/%s/%s?cbox=true' % (
+    new_url = '/gsoc/profile/admin/%s/%s' % (
         self.gsoc.key().name(),self.data.profile.link_id)
     self.assertResponseRedirect(response, new_url)
 
@@ -167,15 +143,9 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     and all contexts were passed.
     """
     self.assertTrue('base_layout' in response.context)
-    self.assertTrue('cbox' in response.context)
-    if response.context['cbox']:
-      self.assertGSoCColorboxTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base_colorbox.html')
-    else:
-      self.assertGSoCTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base.html')
+    self.assertGSoCTemplatesUsed(response)
+    self.assertEqual(response.context['base_layout'],
+      'v2/modules/gsoc/base.html')
 
     self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
     self.assertTemplateUsed(response,
@@ -193,11 +163,6 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
       response = self.getListResponse(url, 0)
       self.assertIsJsonResponse(response)
 
-      # rendered inside cbox iframe
-      url += '?cbox=true'
-      response = self.get(url)
-      self.assertAcceptedOrgs(response)
-
 
 class ProposalsPageTest(GSoCDjangoTestCase):
   """Test proposals list page for admin
@@ -211,14 +176,8 @@ class ProposalsPageTest(GSoCDjangoTestCase):
     were used and all contexts were passed.
     """
     self.assertTrue('base_layout' in response.context)
-    self.assertTrue('cbox' in response.context)
-    if response.context['cbox']:
-      self.assertGSoCColorboxTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base_colorbox.html')
-    else:
-      self.assertGSoCTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
+    self.assertGSoCTemplatesUsed(response)
+    self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
 
     self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
@@ -247,11 +206,6 @@ class ProposalsPageTest(GSoCDjangoTestCase):
     data = response.context['data']['']
     self.assertEqual(1, len(data))
 
-    # rendered inside cbox iframe
-    url += '?cbox=true'
-    response = self.get(url)
-    self.assertProposalsPage(response)
-
 
 class ProjectsPageTest(GSoCDjangoTestCase):
   """Test projects list for admin
@@ -265,14 +219,8 @@ class ProjectsPageTest(GSoCDjangoTestCase):
     and all contexts were passed.
     """
     self.assertTrue('base_layout' in response.context)
-    self.assertTrue('cbox' in response.context)
-    if response.context['cbox']:
-      self.assertGSoCColorboxTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base_colorbox.html')
-    else:
-      self.assertGSoCTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
+    self.assertGSoCTemplatesUsed(response)
+    self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
 
     self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
@@ -300,8 +248,3 @@ class ProjectsPageTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
     data = response.context['data']['']
     self.assertEqual(1, len(data))
-
-    # rendered inside cbox iframe
-    url += '?cbox=true'
-    response = self.get(url)
-    self.assertProjectsPage(response)

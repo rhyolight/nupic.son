@@ -34,23 +34,13 @@ class GSoCRequestHandler(base.RequestHandler):
     See soc.views.base.RequestHandler for specification.
 
     The context object is extended with the following values:
-      base_layout: path to the base template. cbox is for a page that need
-                   to be rendered inside colorbox iframe. See admin dahsboard.
-      cbox: flag to indicate wether the page requested should be rendered
-            inside colorbox iframe.
+      base_layout: path to the base template.
       header: a rendered header.Header template for the current self.data
       mainmenu: a rendered site_menu.MainMenu template for the current self.data
       footer: a rendered site_menu.Footer template for the current self.data
     """
-    if self.data.GET.get('cbox'):
-      base_layout = 'v2/modules/gsoc/base_colorbox.html'
-      cbox = True
-    else:
-      base_layout = 'v2/modules/gsoc/base.html'
-      cbox = False
 
-    context['base_layout'] = base_layout
-    context['cbox'] = cbox
+    context['base_layout'] = 'v2/modules/gsoc/base.html'
     context['header'] = base_templates.Header(self.data)
     context['mainmenu'] = base_templates.MainMenu(self.data)
     context['footer'] = base_templates.Footer(self.data)
