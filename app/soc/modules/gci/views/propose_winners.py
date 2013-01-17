@@ -299,8 +299,6 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
             self.request, self.data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }
-<<<<<<< HEAD
-=======
 
 
 class ProposedWinnersForOrgsList(org_list.OrgList):
@@ -381,4 +379,3 @@ class ViewProposedWinnersPage(GCIRequestHandler):
             self.request, self.data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }
->>>>>>> winners
