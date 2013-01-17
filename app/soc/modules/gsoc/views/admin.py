@@ -435,7 +435,6 @@ class EvaluationsDashboard(Dashboard):
     """
     mentor_evaluations = MentorEvaluationsDashboard(request, data)
     student_evaluations = StudentEvaluationsDashboard(request, data)
-    evaluation_group = EvaluationGroupDashboard(request, data)
 
     r = data.redirect
     r.program()
@@ -447,14 +446,6 @@ class EvaluationsDashboard(Dashboard):
                 'Send reminder emails for evaluations.'),
             'title': 'Send reminder',
             'link': r.urlOf('gsoc_survey_reminder_admin')
-        },
-        {
-            'name': 'evaluation_group',
-            'description': ugettext(
-                'Create and view evaluation group'),
-            'title': 'Evaluation group',
-            'link': '',
-            'subpage_links': evaluation_group.getSubpagesLink(),
         },
         {
             'name': 'mentor_evaluations',
