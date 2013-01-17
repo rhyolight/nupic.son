@@ -39,9 +39,9 @@ class OrgScoresList(Template):
     r = data.redirect
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s" % (
+    list_config.addPlainTextColumn('key', 'Key', (lambda ent, *args: "%s" % (
         ent.parent().key().id_or_name())), hidden=True)
-    list_config.addColumn('student', 'Student',
+    list_config.addPlainTextColumn('student', 'Student',
         lambda e, *args: e.parent().name())
     list_config.addNumericalColumn('tasks', 'Tasks',
         lambda e, *args: e.numberOfTasks())

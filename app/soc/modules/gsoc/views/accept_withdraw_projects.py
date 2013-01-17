@@ -49,12 +49,13 @@ class ProposalList(Template):
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
-    list_config.addColumn('student', 'Student',
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('student', 'Student',
                           lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org', 'Organization',
+    list_config.addPlainTextColumn('org', 'Organization',
                           lambda entity, *args: entity.org.name)
 
     def status(proposal):
@@ -67,14 +68,14 @@ class ProposalList(Template):
 
       return proposal.status.capitalize()
 
-    list_config.addColumn('status', 'Status',
-                          lambda entity, *args: status(entity))
+    list_config.addHtmlColumn('status', 'Status',
+        lambda entity, *args: status(entity))
 
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
 
     # hidden keys
-    list_config.addColumn(
+    list_config.addHtmlColumn(
         'full_proposal_key', 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
 
@@ -279,13 +280,14 @@ class ProjectList(Template):
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
-    list_config.addColumn('student', 'Student',
-                          lambda entity, *args: entity.parent().name())
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('student', 'Student',
+        lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org', 'Organization',
-                          lambda entity, *args: entity.org.name)
+    list_config.addPlainTextColumn('org', 'Organization',
+        lambda entity, *args: entity.org.name)
 
     def status(project):
       """Status to show on the list with color.
@@ -297,16 +299,16 @@ class ProjectList(Template):
 
       return project.status
 
-    list_config.addColumn('status', 'Status',
-                          lambda entity, *args: status(entity))
+    list_config.addHtmlColumn('status', 'Status',
+        lambda entity, *args: status(entity))
 
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
 
     # hidden keys
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'full_project_key', 'Full project key',
-        (lambda ent, *args: str(ent.key())), hidden=True)
+        lambda ent, *args: str(ent.key()), hidden=True)
 
     # action button
     bounds = [1,'all']

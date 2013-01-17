@@ -332,9 +332,9 @@ class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
         idx=0)
 
     record_list.list_config.addSimpleColumn('grade', 'Passed?')
-    record_list.list_config.addColumn(
+    record_list.list_config.addPlainTextColumn(
         'project', 'Project', lambda ent, *args: ent.project.title)
-    record_list.list_config.addColumn(
+    record_list.list_config.addPlainTextColumn(
         'org', 'Organization', lambda ent, *args: ent.org.name)
 
     return record_list

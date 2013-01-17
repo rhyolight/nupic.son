@@ -37,10 +37,10 @@ class AllParticipatingStudentsList(student_list.StudentList):
       return "Yes" if verified_prop else "No"
 
     # Columns that display whether the student forms are already verified.
-    self._list_config.addColumn(
+    self._list_config.addPlainTextColumn(
         'consent_form_verified', 'Parental Verified',
         (lambda e, sp, *args: formVerified(e.consent_form_verified)))
-    self._list_config.addColumn(
+    self._list_config.addPlainTextColumn(
         'student_id_form_verified', 'Student Verified',
         (lambda e, sp, *args: formVerified(e.student_id_form_verified)))
 

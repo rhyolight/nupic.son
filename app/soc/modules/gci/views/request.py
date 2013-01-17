@@ -313,7 +313,7 @@ class UserRequestsList(Template):
     r = data.redirect
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('org', 'To',
+    list_config.addPlainTextColumn('org', 'To',
         lambda entity, *args: entity.org.name)
     list_config.addSimpleColumn('status', 'Status')
     list_config.setRowAction(

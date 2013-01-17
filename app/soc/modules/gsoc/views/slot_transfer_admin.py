@@ -40,12 +40,12 @@ class SlotsTransferAdminList(template.Template):
 
     list_config = lists.ListConfiguration()
     # hidden key
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'full_transfer_key', 'Full slot transfer key',
-        (lambda ent, *args: str(ent.key())), hidden=True)
-    list_config.addColumn(
+        lambda ent, *args: str(ent.key()), hidden=True)
+    list_config.addPlainTextColumn(
         'org', 'Organization',
-        (lambda e, *args: e.parent().short_name.strip()), width=75)
+        lambda e, *args: e.parent().short_name.strip(), width=75)
     options = [('', 'All'), ('pending', 'Pending'),
                ('accepted', 'Accepted'), ('rejected', 'Rejected')]
     list_config.addSimpleColumn('status', 'Status', width=40, options=options)
@@ -54,15 +54,15 @@ class SlotsTransferAdminList(template.Template):
     list_config.setColumnEditable('nr_slots', True)
     list_config.addSimpleColumn('admin_remarks', 'Admin remarks')
     list_config.setColumnEditable('admin_remarks', True) #, edittype='textarea')
-    list_config.addColumn(
+    list_config.addNumericalColumn(
         'slots_desired', 'Min desired',
-        (lambda e, *args: e.parent().slots_desired), width=25, hidden=True)
-    list_config.addColumn(
+        lambda e, *args: e.parent().slots_desired, width=25, hidden=True)
+    list_config.addNumericalColumn(
         'max_slots_desired', 'Max desired',
-        (lambda e, *args: e.parent().max_slots_desired), width=25, hidden=True)
-    list_config.addColumn(
+        lambda e, *args: e.parent().max_slots_desired, width=25, hidden=True)
+    list_config.addNumericalColumn(
         'slots', 'Slots',
-        (lambda e, *args: e.parent().slots), width=50, hidden=True)
+        lambda e, *args: e.parent().slots, width=50, hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('org')
     list_config.addPostEditButton('save', "Save", "",
