@@ -226,7 +226,7 @@ class MainDashboard(Dashboard):
             'name': 'withdraw_projects',
             'description': ugettext(
                 'Withdraw accepted projects or accept withdrawn projects'),
-            'title': 'Withdraw projects',
+            'title': 'Accept/withdraw projects',
             'link': r.urlOf('gsoc_withdraw_projects')
         },
         {
