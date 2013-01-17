@@ -283,6 +283,14 @@ class ListConfiguration(object):
     self._col_names.append(name)
     self._col_functions[col_id] = func
 
+  def addPlainTextColumn(self, col_id, name, func, **kwargs):
+    """Adds a plain text column to the end of the list.
+
+    The values may contain arbitrary content which will be HTML escaped.
+    """
+    self.addColumn(
+        col_id, name, func, column_type=ColumnType.PLAIN_TEXT, **kwargs)
+
   def addNumericalColumn(self, col_id, name, func, **kwargs):
     """Adds a numerical column to the end of the list.
 
