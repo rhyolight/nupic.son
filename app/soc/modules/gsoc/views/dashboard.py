@@ -912,7 +912,7 @@ class SubmittedProposalsComponent(Component):
         preload_list=False)
     return {
         'name': 'proposals_submitted',
-        'title': 'Proposals submitted to my orgs',
+        'title': 'Proposals submitted to my organizations',
         'lists': [list],
         'description': ugettext(
             'List of proposals submitted to my organizations'),
