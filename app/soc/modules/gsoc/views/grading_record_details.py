@@ -118,7 +118,7 @@ class GradingRecordsList(Template):
     list_config.addColumn('org_name', 'Organization', org_func)
     stud_rec_func = lambda rec, *args: \
         'Present' if rec.student_record else 'Missing'
-    list_config.addColumn('student_record', 'Survey by Student', stud_rec_func)
+    list_config.addColumn('student_record', 'Evaluation by Student', stud_rec_func)
     stud_id_func = lambda rec, *args: rec.parent().parent().link_id
     list_config.addColumn('student_id', 'Student username', stud_id_func,
                            hidden=True)
@@ -163,7 +163,7 @@ class GradingRecordsList(Template):
       else:
         return 'Fail Grade'
 
-    list_config.addColumn('mentor_record', 'Survey by Mentor', mentorRecordInfo)
+    list_config.addColumn('mentor_record', 'Evaluation by Mentor', mentorRecordInfo)
 
     list_config.addSimpleColumn('grade_decision', 'Decision')
     r = data.redirect

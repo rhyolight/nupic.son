@@ -149,7 +149,7 @@ DEF_NO_SUCH_PROGRAM = ugettext(
     'The url is wrong (no program was found).')
 
 DEF_NO_SURVEY_ACCESS = ugettext (
-    'You cannot take this survey because this survey is not created for'
+    'You cannot take this evaluation because this evaluation is not created for'
     'your role in the program.')
 
 DEF_NO_USER_LOGIN = ugettext(
