@@ -225,7 +225,6 @@ class DashboardPage(GSoCRequestHandler):
     components = []
 
     if self.data.student_info:
-      components.append(TodoComponent(self.request, self.data))
       components += self._getStudentComponents()
     elif self.data.is_mentor:
       components.append(TodoComponent(self.request, self.data))
@@ -245,6 +244,7 @@ class DashboardPage(GSoCRequestHandler):
     info = self.data.student_info
 
     if self.data.is_student and info.number_of_projects:
+      components.append(TodoComponent(self.request, self.data))
       # Add a component to show the evaluations
       evals = dictForSurveyModel(
           ProjectSurvey, self.data.program, ['midterm', 'final'])
