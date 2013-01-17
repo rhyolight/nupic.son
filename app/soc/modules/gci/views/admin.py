@@ -198,7 +198,7 @@ class ProgramSettingsDashboard(Dashboard):
             'description': ugettext(
                 'Edit your program settings such as information, slots, '
                 'documents, etc.'),
-            'title': 'Edit program',
+            'title': 'Edit program settings',
             'link': r.urlOf('edit_gci_program')
         },
         {
