@@ -84,7 +84,7 @@ class OrgProfilePageTest(GCIDjangoTestCase):
     postdata = {
         'founder': self.data.user, 'home': self.createDocument().key(),
         'scope': self.gci, 'irc_channel': 'irc://example.com',
-        'pub_mailing_list': 'http://example.com',
+        'pub_mailing_list': 'http://example.com', 'backup_winner': None,
     }
     response, properties = self.modelPost(create_url, GCIOrganization, postdata)
     self.assertResponseRedirect(response, url + '/new_org?validated')
