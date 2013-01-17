@@ -24,7 +24,6 @@ from soc.logic import accounts
 from soc.logic import cleaning
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
-from soc.views.dashboard import DashboardUserActions
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.models.profile import GCIProfile
@@ -101,7 +100,6 @@ class DashboardPage(GCIRequestHandler):
     dashboards.append(ParticipantsDashboard(self.request, self.data))
 
     return {
-        'colorbox': self.data.GET.get('colorbox'),
         'dashboards': dashboards,
         'page_name': 'Admin dashboard',
     }
@@ -420,12 +418,9 @@ class LookupLinkIdPage(GCIRequestHandler):
       profile = form.cleaned_data.get('profile')
 
     if profile:
-      cbox = bool(self.data.GET.get('cbox'))
-
       # TODO(nathaniel): setting redirection in a context() method?
       self.redirect.profile(profile.link_id)
-      self.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN,
-                       cbox=cbox, secure=True)
+      self.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN, secure=True)
 
     return {
       'forms': forms,

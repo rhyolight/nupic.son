@@ -31,7 +31,6 @@ from soc.logic import cleaning
 from soc.logic import exceptions
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
-from soc.views.dashboard import DashboardUserActions
 from soc.views.helper import addresses
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -94,17 +93,6 @@ class LookupForm(gsoc_forms.GSoCModelForm):
     self.cleaned_data['profile'] = q.get()
 
 
-class UserActions(DashboardUserActions):
-  """Template to render the left side user actions.
-  """
-
-  def actionURL(self):
-    r = self.data.redirect
-    r.program()
-
-    return r.urlOf('gsoc_admin_dashboard')
-
-
 class DashboardPage(GSoCRequestHandler):
   """Dashboard for admins.
   """
@@ -136,10 +124,8 @@ class DashboardPage(GSoCRequestHandler):
     dashboards.append(StudentsDashboard(self.request, self.data))
 
     return {
-        'colorbox': self.data.GET.get('colorbox'),
         'dashboards': dashboards,
         'page_name': 'Admin dashboard',
-        'user_actions': UserActions(self.data)
     }
 
   def post(self):
@@ -788,13 +774,10 @@ class LookupLinkIdPage(GSoCRequestHandler):
       profile = form.cleaned_data.get('profile')
 
     if profile:
-      cbox = bool(self.data.GET.get('cbox'))
-
       # TODO(nathaniel): Find a cleaner way to do this rather than
       # generating a response and then tossing it.
       self.redirect.profile(profile.link_id)
-      response = self.redirect.to(
-          url_names.GSOC_PROFILE_SHOW, cbox=cbox, secure=True)
+      response = self.redirect.to(url_names.GSOC_PROFILE_SHOW, secure=True)
       raise exceptions.RedirectRequest(response['Location'])
     else:
       return {
@@ -881,15 +864,13 @@ class ProposalsAcceptedOrgsList(AcceptedOrgsList):
   """
 
   def extraColumn(self, list_config):
-    use_cbox = bool(self.request.GET.get('cbox'))
-
     # TODO(nathaniel): squeeze this back into a lambda expression in the
     # call to setRowAction below.
     def RowAction(e, *args):
       # TODO(nathaniel): make this .organization call unnecessary.
       self.data.redirect.organization(organization=e)
 
-      return self.data.redirect.urlOf('gsoc_proposals_org', cbox=use_cbox)
+      return self.data.redirect.urlOf('gsoc_proposals_org')
 
     r = self.data.redirect
     list_config.setRowAction(RowAction)
@@ -949,15 +930,13 @@ class ProjectsAcceptedOrgsList(AcceptedOrgsList):
   """
 
   def extraColumn(self, list_config):
-    use_cbox = bool(self.request.GET.get('cbox'))
-
     # TODO(nathaniel): squeeze this back into a lambda expression in
     # the call to setRowAction below.
     def RowAction(e, *args):
       # TODO(nathaniel): make this .organization call unnecessary.
       self.data.redirect.organization(organization=e)
 
-      return self.data.redirect.urlOf('gsoc_projects_org', cbox=use_cbox)
+      return self.data.redirect.urlOf('gsoc_projects_org')
 
     r = self.data.redirect
     list_config.setRowAction(RowAction)

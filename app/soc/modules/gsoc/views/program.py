@@ -114,11 +114,9 @@ class ProgramPage(base.GSoCRequestHandler):
 
   def post(self):
     """Handler for HTTP POST request."""
-    cbox = bool(self.data.GET.get('cbox'))
-
     if self.validate():
       self.redirect.program()
-      return self.redirect.to('edit_gsoc_program', validated=True, cbox=cbox)
+      return self.redirect.to('edit_gsoc_program', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -161,11 +159,9 @@ class TimelinePage(base.GSoCRequestHandler):
 
   def post(self):
     """Handler for HTTP POST request."""
-    cbox = bool(self.data.GET.get('cbox'))
-
     if self.validate():
       self.redirect.program()
-      return self.redirect.to('edit_gsoc_timeline', validated=True, cbox=cbox)
+      return self.redirect.to('edit_gsoc_timeline', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

@@ -472,7 +472,7 @@ class RedirectHelper(object):
     self.kwargs['id'] = id
     return self
 
-  def urlOf(self, name, full=False, secure=False, cbox=False, extra=[]):
+  def urlOf(self, name, full=False, secure=False, extra=[]):
     """Returns the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -489,7 +489,7 @@ class RedirectHelper(object):
     else:
       url = urlresolvers.reverse(name)
 
-    url = self._appendGetArgs(url, cbox=cbox, extra_get_args=extra)
+    url = self._appendGetArgs(url, extra_get_args=extra)
 
     return self._fullUrl(url, full, secure)
 
@@ -522,11 +522,9 @@ class RedirectHelper(object):
 
   # TODO(nathaniel): Django's got to have a utility function for most of this.
   def _appendGetArgs(
-      self, url, cbox=False, validated=False, extra_get_args=None):
+      self, url, validated=False, extra_get_args=None):
     """Appends GET arguments to the specified URL."""
     get_args = extra_get_args or []
-    if cbox:
-      get_args.append('cbox=true')
 
     if validated:
       get_args.append('validated')
@@ -545,7 +543,7 @@ class RedirectHelper(object):
     return url
 
   def to(self, name=None, validated=False, full=False, secure=False,
-         cbox=False, extra=[], anchor=None):
+      extra=[], anchor=None):
     """Redirects to the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -555,7 +553,6 @@ class RedirectHelper(object):
       validated: If set to True will add &validated to GET arguments
       full: Whether the URL should include the protocol
       secure: Whether the protocol of the URL should be set to HTTPS
-      cbox: If set to True will add &cbox=true to GET arguments
       extra: List of additional arguments that will be added as GET arguments
 
     Returns:
@@ -570,7 +567,7 @@ class RedirectHelper(object):
     if anchor:
       url = '%s#%s' % (url, anchor)
 
-    url = self._appendGetArgs(url, cbox=cbox, validated=validated,
+    url = self._appendGetArgs(url, validated=validated,
         extra_get_args=extra)
 
     return self.toUrl(url, full=full, secure=secure)
