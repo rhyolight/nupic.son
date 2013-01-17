@@ -153,18 +153,19 @@ class Site(soc.models.presence.Presence):
 
   #: Reference to Program which is currently active
   active_program = db.ReferenceProperty(
-    reference_class=soc.models.program.Program)
+      reference_class=soc.models.program.Program,
+      verbose_name=ugettext('Active Program'))
   active_program.help_text = ugettext(
       'The Program which is currently active.')
 
   #: Last GSoC program
   latest_gsoc = db.StringProperty(
-        verbose_name=ugettext('Latest GSoC'))
+      verbose_name=ugettext('Latest GSoC'))
   latest_gsoc.help_text = ugettext(
-        'The key of the latest GSoC program')
+      'The key of the latest GSoC program')
 
   #: Last GCI program
   latest_gci = db.StringProperty(
-        verbose_name=ugettext('Latest GCI'))
+      verbose_name=ugettext('Latest GCI'))
   latest_gci.help_text = ugettext(
-        'The key of the latest GCI program')
+      'The key of the latest GCI program')
