@@ -104,7 +104,7 @@ class GradingRecordsList(Template):
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'key', 'Key',
         (lambda ent, *args: "%s/%d/%d" % (
             ent.parent_key().parent().name(),
@@ -113,44 +113,50 @@ class GradingRecordsList(Template):
         hidden=True)
 
     title_func = lambda rec, *args: rec.parent().title
-    list_config.addColumn('project_title', 'Project Title', title_func)
+    list_config.addPlainTextColumn(
+        'project_title', 'Project Title', title_func)
     org_func = lambda rec, *args: rec.parent().org.name
-    list_config.addColumn('org_name', 'Organization', org_func)
+    list_config.addPlainTextColumn('org_name', 'Organization', org_func)
+
     stud_rec_func = lambda rec, *args: \
         'Present' if rec.student_record else 'Missing'
-    list_config.addColumn('student_record', 'Evaluation by Student', stud_rec_func)
+    list_config.addPlainTextColumn(
+        'student_record', 'Evaluation by Student', stud_rec_func)
+
     stud_id_func = lambda rec, *args: rec.parent().parent().link_id
-    list_config.addColumn('student_id', 'Student username', stud_id_func,
-                           hidden=True)
+    list_config.addPlainTextColumn(
+        'student_id', 'Student username', stud_id_func, hidden=True)
 
     stud_email_func = lambda rec, *args: args[1][rec.key()].email
-    list_config.addColumn('student_email', 'Student Email Address',
-                          stud_email_func, hidden=True)
+    list_config.addPlainTextColumn('student_email', 'Student Email Address',
+        stud_email_func, hidden=True)
 
     stud_fn_func = lambda rec, *args: args[1][rec.key()].given_name
-    list_config.addColumn('student_fn', 'Student First Name',
-                          stud_fn_func, hidden=True)
+    list_config.addPlainTextColumn('student_fn', 'Student First Name',
+        stud_fn_func, hidden=True)
 
     stud_ln_func = lambda rec, *args: args[1][rec.key()].surname
-    list_config.addColumn('student_ln', 'Student Last Name',
-                          stud_ln_func, hidden=True)
+    list_config.addPlainTextColumn('student_ln', 'Student Last Name',
+        stud_ln_func, hidden=True)
 
     mentor_email_func = lambda rec, *args: args[0][rec.key()].email
 
-    list_config.addColumn('mentor_email', 'Mentor Email Address',
-                          mentor_email_func, hidden=True)
+    list_config.addPlainTextColumn('mentor_email', 'Mentor Email Address',
+        mentor_email_func, hidden=True)
 
     mentor_fn_func = lambda rec, *args: args[0][rec.key()].given_name
-    list_config.addColumn('mentor_fn', 'Mentor First Name',
-                          mentor_fn_func, hidden=True)
+    list_config.addPlainTextColumn('mentor_fn', 'Mentor First Name',
+        mentor_fn_func, hidden=True)
 
     mentor_ln_func = lambda rec, *args: args[0][rec.key()].surname
-    list_config.addColumn('mentor_ln', 'Mentor Last Name',
-                          mentor_ln_func, hidden=True)
+    list_config.addPlainTextColumn('mentor_ln', 'Mentor Last Name',
+        mentor_ln_func, hidden=True)
 
 
-    list_config.addPostButton('update_records', 'Update Records', '', [0,'all'], [])
-    list_config.addPostButton('update_projects', 'Update Projects', '', [0,'all'], [])
+    list_config.addPostButton(
+        'update_records', 'Update Records', '', [0,'all'], [])
+    list_config.addPostButton(
+        'update_projects', 'Update Projects', '', [0,'all'], [])
 
     def mentorRecordInfo(rec, *args):
       """Displays information about a GradingRecord's mentor_record property.
@@ -163,7 +169,12 @@ class GradingRecordsList(Template):
       else:
         return 'Fail Grade'
 
+<<<<<<< HEAD
     list_config.addColumn('mentor_record', 'Evaluation by Mentor', mentorRecordInfo)
+=======
+    list_config.addPlainTextColumn(
+        'mentor_record', 'Survey by Mentor', mentorRecordInfo)
+>>>>>>> columns
 
     list_config.addSimpleColumn('grade_decision', 'Decision')
     r = data.redirect

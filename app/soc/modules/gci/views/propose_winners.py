@@ -252,7 +252,7 @@ class OrganizationsForProposeWinnersList(org_list.OrgList):
     r = self.data.redirect
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
     list_config.setRowAction(self._getRedirect())
@@ -328,11 +328,11 @@ class ProposedWinnersForOrgsList(org_list.OrgList):
       return ', '.join([p.name() for p in profiles if p])
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
-    list_config.addColumn('proposed_winners', 'Proposed Winners',
+    list_config.addPlainTextColumn('proposed_winners', 'Proposed Winners',
         proposedWinnersFunc)
-    list_config.addColumn('backup_winner', 'Backup Winner',
+    list_config.addPlainTextColumn('backup_winner', 'Backup Winner',
         lambda e, *args: e.backup_winner.name() if e.backup_winner else '')
     list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
     list_config.setRowAction(self._getRedirect())

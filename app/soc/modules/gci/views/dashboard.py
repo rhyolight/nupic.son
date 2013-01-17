@@ -537,10 +537,10 @@ class MyOrgApplicationsComponent(Component):
 
     list_config.addSimpleColumn('name', 'Name')
     list_config.addSimpleColumn('org_id', 'Organization ID')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'created', 'Created On',
         lambda ent, *args: format(ent.created, DATETIME_FORMAT))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'modified', 'Last Modified On',
         lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
 
@@ -623,48 +623,48 @@ class MyOrgsTaskList(Component):
 
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'org', 'Organization', lambda ent, *args: ent.org.name)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'type', 'Type', lambda entity, *args: ", ".join(entity.types))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'tags', 'Tags', lambda entity, *args: ", ".join(entity.tags))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'time_to_complete', 'Time to complete',
         lambda entity, *args: entity.taskTimeToComplete())
 
 
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'mentors', 'Mentors',
         lambda entity, mentors, *args: ', '.join(
             mentors[i].name() for i in entity.mentors))
 
     list_config.addSimpleColumn('description', 'Description', hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'student', 'Student',
         lambda ent, *args: ent.student.name() if ent.student else '',
         hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'created_by', 'Created by',
         lambda entity, *args: entity.created_by.name() \
             if entity.created_by else '',
         hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'modified_by', 'Modified by',
         lambda entity, *args: entity.modified_by.name() \
             if entity.modified_by else '',
         hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'created_on', 'Created on',
         lambda entity, *args: format(entity.created_on, DATETIME_FORMAT) \
             if entity.created_on else '',
         hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'modified_on', 'Modified on',
         lambda entity, *args: format(entity.modified_on, DATETIME_FORMAT) \
             if entity.modified_on else '',
         hidden=True)
-    list_config.addColumn('closed_on', 'Closed on',
+    list_config.addPlainTextColumn('closed_on', 'Closed on',
         lambda entity, *args: format(
             entity.closed_on, DATETIME_FORMAT) if entity.closed_on else '',
         hidden=True)
@@ -1188,16 +1188,17 @@ class OrgAdminInvitesList(Component):
     # GCIRequest entities have user entities as parents, so the keys
     # for the list items should be parent scoped.
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
-    list_config.addColumn('to', 'To',
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('to', 'To',
         lambda entity, *args: entity.user.name)
     list_config.addSimpleColumn('status', 'Status')
 
     # organization column should be added only if the user is an administrator
     # for more than one organization
     if len(self.data.org_admin_for) > 1:
-      list_config.addColumn('org', 'From',
+      list_config.addPlainTextColumn('org', 'From',
         lambda entity, *args: entity.org.name)
 
     list_config.setRowAction(
@@ -1250,17 +1251,18 @@ class OrgAdminRequestsList(Component):
     # GCIRequest entities have user entities as parents, so the keys
     # for the list items should be parent scoped.
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('key', 'Key',
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
 
-    list_config.addColumn('from', 'From',
+    list_config.addPlainTextColumn('from', 'From',
         lambda entity, *args: entity.user.name)
     list_config.addSimpleColumn('status', 'Status')
 
     # organization column should be added only if the user is an administrator
     # for more than one organization
     if len(self.data.org_admin_for) > 1:
-      list_config.addColumn('org', 'Organization',
+      list_config.addPlainTextColumn('org', 'Organization',
         lambda entity, *args: entity.org.name)
 
     list_config.setRowAction(

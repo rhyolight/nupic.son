@@ -91,20 +91,20 @@ class TaskList(Template):
       list_config.addSimpleColumn('title', 'Title')
 
     if 'organization' in self._columns:
-      list_config.addColumn('org', 'Organization',
+      list_config.addPlainTextColumn('org', 'Organization',
           lambda entity, *args: entity.org.name)
 
     if 'mentors' in self._columns:
-      list_config.addColumn('mentors', 'Mentors',
+      list_config.addPlainTextColumn('mentors', 'Mentors',
           lambda entity, mentors, *args: ', '.join(
               mentors[i].name() for i in entity.mentors), hidden=True)
 
     if 'types' in self._columns:
-      list_config.addColumn('types', 'Category',
+      list_config.addPlainTextColumn('types', 'Category',
           lambda entity, *args: ', '.join(entity.types))
 
     if 'tags' in self._columns:
-      list_config.addColumn('tags', 'Tags',
+      list_config.addPlainTextColumn('tags', 'Tags',
           lambda entity, *args: ', '.join(entity.tags))
 
     if 'status' in self._columns:
