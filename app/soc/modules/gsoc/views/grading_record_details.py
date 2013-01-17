@@ -169,12 +169,8 @@ class GradingRecordsList(Template):
       else:
         return 'Fail Grade'
 
-<<<<<<< HEAD
-    list_config.addColumn('mentor_record', 'Evaluation by Mentor', mentorRecordInfo)
-=======
     list_config.addPlainTextColumn(
-        'mentor_record', 'Survey by Mentor', mentorRecordInfo)
->>>>>>> columns
+        'mentor_record', 'Evaluation by Mentor', mentorRecordInfo)
 
     list_config.addSimpleColumn('grade_decision', 'Decision')
     r = data.redirect
