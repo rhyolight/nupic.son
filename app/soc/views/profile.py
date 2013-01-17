@@ -196,7 +196,7 @@ class ProfilePage(object):
     elif role == 'mentor':
       page_name = 'Register as a Mentor'
     elif role == 'org_admin':
-      page_name = 'Register as Org Admin'
+      page_name = 'Register as an Org Admin'
 
     if self.data.user:
       user_form = EmptyForm(self.data.POST or None, instance=self.data.user)
