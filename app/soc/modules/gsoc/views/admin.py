@@ -226,7 +226,7 @@ class MainDashboard(Dashboard):
             'name': 'withdraw_projects',
             'description': ugettext(
                 'Withdraw accepted projects or accept withdrawn projects'),
-            'title': 'Withdraw projects',
+            'title': 'Accept/withdraw projects',
             'link': r.urlOf('gsoc_withdraw_projects')
         },
         {
@@ -598,7 +598,7 @@ class StudentEvaluationsDashboard(Dashboard):
             'name': 'edit_student_evaluation',
             'description': ugettext('Create or edit midterm evaluation for '
                 'students in active program'),
-            'title': 'Create or Edit Midterm',
+            'title': 'Create or Edit Midterm Evaluation',
             'link': r.urlOf('gsoc_edit_student_evaluation')
         },
         {
@@ -611,7 +611,7 @@ class StudentEvaluationsDashboard(Dashboard):
         {
             'name': 'view_student_evaluation',
             'description': ugettext('View midterm evaluation for students'),
-            'title': 'View Midterm Records',
+            'title': 'View Midterm Evaluation Records',
             'link': r.urlOf('gsoc_list_student_eval_records')
         },
     ]
