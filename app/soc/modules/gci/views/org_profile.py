@@ -24,7 +24,7 @@ from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
-    'task_quota_limit',
+    'task_quota_limit', 'backup_winner', 'proposed_winners'
 ]
 
 
