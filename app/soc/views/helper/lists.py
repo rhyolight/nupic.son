@@ -207,7 +207,7 @@ class ListConfiguration(object):
     """Adds a column for the key.
     """
     func = lambda e, *args: str(e.key().id_or_name())
-    self.addColumn('key', 'Key', func, hidden=True)
+    self._addColumn('key', 'Key', func, hidden=True)
 
   def setDefaultPagination(self, row_num, row_list=None):
     """Sets the default pagination.
@@ -230,7 +230,7 @@ class ListConfiguration(object):
     if row_list:
       self.row_list = row_list
 
-  def addColumn(self, col_id, name, func, width=None, resizable=True,
+  def _addColumn(self, col_id, name, func, width=None, resizable=True,
                 hidden=False, searchhidden=True, options=None,
                 column_type=ColumnType.PLAIN_TEXT):
     """Adds a column to the end of the list.
@@ -288,7 +288,7 @@ class ListConfiguration(object):
 
     The values may contain arbitrary content which will be HTML escaped.
     """
-    self.addColumn(
+    self._addColumn(
         col_id, name, func, column_type=ColumnType.PLAIN_TEXT, **kwargs)
 
   def addNumericalColumn(self, col_id, name, func, **kwargs):
@@ -297,7 +297,7 @@ class ListConfiguration(object):
     It is expected that all the values in this columns will be numbers.
     The rendered output will not be HTML escaped.
     """
-    self.addColumn(
+    self._addColumn(
         col_id, name, func, column_type=ColumnType.NUMERICAL, **kwargs)
 
   def addHtmlColumn(self, col_id, name, func, **kwargs):
@@ -307,7 +307,7 @@ class ListConfiguration(object):
     rendered on the page without being escaped. It is vulnerable to malicious
     inputs, so it should never be used for values which are entered by users.
     """
-    self.addColumn(
+    self._addColumn(
         col_id, name, func, column_type=ColumnType.HTML, **kwargs)
 
   def __addRowButton(self, col_id, button_id, caption, type, classes,
@@ -370,33 +370,33 @@ class ListConfiguration(object):
     """Adds a column to the end of the list which uses the id of the column as
     attribute name of the entity to get the data from.
 
-    This method is basically a shorthand for addColumn with the function as
+    This method is basically a shorthand for _addColumn with the function as
     lambda ent, *args: getattr(ent, id).
 
     Args:
       col_id: A unique identifier of this column and name of the field to get
           the data from.
       name: The header of the column that is shown to the user.
-      **kwargs: passed on to addColumn
+      **kwargs: passed on to _addColumn
     """
     func = lambda ent, *args: getattr(ent, col_id)
-    self.addColumn(col_id, name, func, **kwargs)
+    self._addColumn(col_id, name, func, **kwargs)
 
   def addDictColumn(self, col_id, name, **kwargs):
     """Adds a column to the end of the list which uses the id of the column as
     key of the dictionary to get the data from.
 
-    This method is basically a shorthand for addColumn with the function as
+    This method is basically a shorthand for _addColumn with the function as
     lambda d, *args: d[id].
 
     Args:
       col_id: A unique identifier of this column and name of the field to get
           the data from.
       name: The header of the column that is shown to the user.
-      **kwargs: passed on to addColumn
+      **kwargs: passed on to _addColumn
     """
     func = lambda d, *args: d[col_id]
-    self.addColumn(col_id, name, func, **kwargs)
+    self._addColumn(col_id, name, func, **kwargs)
 
   def __addButton(self, col_id, caption, bounds, col_type, parameters):
     """Internal method for adding buttons so that the uniqueness of the id can
@@ -484,7 +484,7 @@ class ListConfiguration(object):
     """Adds a new template column.
     """
       
-    self.addColumn(col_id, name, lambda *args, **kwargs: '' , **kwargs)
+    self._addColumn(col_id, name, lambda *args, **kwargs: '' , **kwargs)
 
     if self._templates.get(col_id):
       logging.warning(
