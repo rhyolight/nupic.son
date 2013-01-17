@@ -147,10 +147,6 @@
     tpjs + "jquery/jquery.formbuilder.js"
   ];
 
-  s.colorbox = [
-    tpjs + "jquery/jquery.colorbox.js"
-  ];
-
   s.hashchange = [
     tpjs + "jquery/jquery.ba-hashchange.js"
   ];
