@@ -60,7 +60,7 @@ class HowItWorks(Template):
       if self.data.program.example_tasks:
         example_tasks_link = self.data.program.example_tasks
     elif self.data.timeline.studentSignup() and not self.data.profile:
-      start_text = 'Register As Student'
+      start_text = 'Register as a Student'
 
       start_link = self.data.redirect.createProfile('student').urlOf(
           'create_gci_profile', secure=True)
