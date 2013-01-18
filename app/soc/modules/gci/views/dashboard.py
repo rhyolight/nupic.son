@@ -347,8 +347,6 @@ class DashboardPage(GCIRequestHandler):
         links += self._getOrgAdminLinks()
       if self.data.is_mentor:
         links += self._getMentorLinks()
-    else:
-      links += self._getLoneUserLinks()
 
     return links
 
@@ -380,16 +378,6 @@ class DashboardPage(GCIRequestHandler):
     """Get the main dashboard links for mentor.
     """
     links = []
-    return links
-
-  def _getLoneUserLinks(self):
-    """Get the main dashboard links for users without any role.
-    """
-    links = []
-
-    # add link to my invitations list
-    links.append(self._getMyInvitationsLink())
-
     return links
 
   def _getMyInvitationsLink(self):
