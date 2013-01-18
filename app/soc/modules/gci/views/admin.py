@@ -154,8 +154,7 @@ class MainDashboard(Dashboard):
         },
         {
             'name': 'org_app',
-            'description': ugettext(
-                'Edit organization application'),
+            'description': ugettext('Manage Mentoring Organizations'),
             'title': 'Organizations',
             'link': '',
             'subpage_links': organizations.getSubpagesLink(),
