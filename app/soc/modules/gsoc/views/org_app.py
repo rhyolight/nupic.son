@@ -147,7 +147,8 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
 
 
 class GSoCOrgAppPreviewPage(GSoCRequestHandler):
-  """View for organizations to submit their application.
+  """View for Organization Administrators to preview the organization
+  application for the program specified in the URL.
   """
 
   def djangoURLPatterns(self):
