@@ -119,7 +119,7 @@ class DashboardPage(GCIRequestHandler):
   def checkAccess(self):
     """Denies access if you are not logged in.
     """
-    self.check.isLoggedIn()
+    self.check.isProfileActive()
 
   def templatePath(self):
     """Returns the path to the template.
