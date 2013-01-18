@@ -55,7 +55,7 @@ def siteMenuContext(data):
   else:
     context['login_link'] = redirect.login().url()
 
-  if data.user:
+  if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
 
   if data.timeline.tasksPubliclyVisible():
