@@ -235,14 +235,11 @@ class DashboardPage(GCIRequestHandler):
       components += self._getMentorComponents()
     elif self.data.is_mentor:
       components += self._getMentorComponents()
-    else:
-      components += self._getLoneUserComponents()
 
     return components
 
-  def _getStudentComponents(self):
-    """Get the dashboard components for a student.
-    """
+  def _getStudentComponents(self):    
+    """Get the dashboard components for a student."""    
     components = []
 
     return components
@@ -295,20 +292,6 @@ class DashboardPage(GCIRequestHandler):
 
     # add org scores component
     components.append(MyOrgsScoresList(self.request, self.data))
-
-    return components
-
-  def _getLoneUserComponents(self):
-    """Get the dashboard components for users without any role.
-    """
-    components = []
-
-    component = self._getMyOrgApplicationsComponent()
-    if component:
-      components.append(component)
-
-    # add request to become mentor component
-    components.append(AllOrgsListBeforeRequestRole(self.request, self.data))
 
     return components
 
