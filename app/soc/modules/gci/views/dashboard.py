@@ -259,9 +259,6 @@ class DashboardPage(GCIRequestHandler):
     # choose which organization the task or invitite will be created for
     components.append(MyOrgsListBeforeCreateTask(self.request, self.data))
 
-    # add request to become mentor component
-    components.append(AllOrgsListBeforeRequestRole(self.request, self.data))
-
     return components
 
   def _getOrgAdminComponents(self):
