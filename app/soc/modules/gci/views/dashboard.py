@@ -281,9 +281,6 @@ class DashboardPage(GCIRequestHandler):
     # add list of all the invitations
     components.append(OrgAdminInvitesList(self.request, self.data))
 
-    # add list of all the requests
-    components.append(OrgAdminRequestsList(self.request, self.data))
-
     # add bulk create tasks component 
     components.append(MyOrgsListBeforeBulkCreateTask(self.request, self.data))
 
@@ -1164,70 +1161,6 @@ class OrgAdminInvitesList(Component):
         'description': ugettext(
             'See all the invitations that have been sent '
             'by your organizations.')
-    }
-
-  def templatePath(self):
-    return 'v2/modules/gci/dashboard/list_component.html'
-
-
-class OrgAdminRequestsList(Component):
-  """Template for list of requests that have been sent to the organizations
-  that the current user is organization admin for.
-  """
-
-  def __init__(self, request, data):
-    self.request = request
-    self.data = data
-    r = data.redirect
-
-    # GCIRequest entities have user entities as parents, so the keys
-    # for the list items should be parent scoped.
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        (lambda ent, *args: "%s/%s" % (
-            ent.parent().key().name(), ent.key().id())), hidden=True)
-
-    list_config.addPlainTextColumn('from', 'From',
-        lambda entity, *args: entity.user.name)
-    list_config.addSimpleColumn('status', 'Status')
-
-    # organization column should be added only if the user is an administrator
-    # for more than one organization
-    if len(self.data.org_admin_for) > 1:
-      list_config.addPlainTextColumn('org', 'Organization',
-        lambda entity, *args: entity.org.name)
-
-    list_config.setRowAction(
-        lambda e, *args: r.userId(e.parent_key().name(), e.key().id())
-            .urlOf(url_names.GCI_RESPOND_REQUEST))
-
-    self.idx = 10
-    self._list_config = list_config
-
-  def getListData(self):
-    if lists.getListIndex(self.request) != self.idx:
-      return None
-
-    q = GCIRequest.all()
-    q.filter('type', 'Request')
-    q.filter('org IN', [e.key() for e in self.data.org_admin_for])
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
-
-    return response_builder.build()
-
-  def context(self):
-    request_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, self.idx)
-
-    return {
-        'name': 'incoming_requests',
-        'title': 'Incoming Requests',
-        'lists': [request_list],
-        'description': ugettext(
-            'See all the requests that have been sent to '
-            'your organizations.')
     }
 
   def templatePath(self):
