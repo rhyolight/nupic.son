@@ -158,7 +158,8 @@ class ProjectList(Template):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn(
         'mentors', 'Mentor',
-        lambda entity, m, *args: [m[i].name() for i in entity.mentors])
+        lambda entity, m, *args: ", ".join(
+            [m[i].name() for i in entity.mentors]))
     list_config.setDefaultSort('student')
     list_config.setRowAction(lambda e, *args, **kwargs:
         r.project(id=e.key().id_or_name(), student=e.parent().link_id).
