@@ -166,7 +166,7 @@ class DashboardPage(GCIRequestHandler):
     return dashboards
 
   def shouldSubmitForms(self):
-    """Checks if the current user should submit the student forms
+    """Checks if the current user should submit the student forms.
     """
     student_id_form = False
     consent_form = False

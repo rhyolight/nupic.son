@@ -112,7 +112,9 @@ class GCIOrgAppEditPage(GCIRequestHandler):
 
 
 class GCIOrgAppPreviewPage(GCIRequestHandler):
-  """View for Organization Administrators to preview the organization
+  """Organization Application preview page.
+
+  View for Organization Administrators to preview the organization
   application for the program specified in the URL.
   """
 
