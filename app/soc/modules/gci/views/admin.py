@@ -270,6 +270,13 @@ class OrgDashboard(Dashboard):
             'link': r.urlOf('gci_edit_org_app')
         },
         {
+            'name': 'preview_org_app',
+            'description': ugettext(
+                'Preview of the organization application.'),
+            'title': 'Preview organization application',
+            'link': r.urlOf('gci_preview_org_app')
+        },
+        {
             'name': 'org_app_records',
             'description': ugettext(
                 'List of submitted organization application'),
