@@ -247,14 +247,15 @@ class AccessChecker(access_checker.AccessChecker):
       self.isLoggedIn()
 
   def hasNonStudentProfileInAProgram(self):
-    """Check if the user has a participated in the previous programs.
+    """Check if the user has participated in the previous programs.
 
     This checks if the user has at least one non-student profile in previous
     programs.
     """
     from soc.modules.gsoc.models.profile import GSoCProfile
 
-    self.isUser()
+    if not self.data.user:
+      raise AccessViolation(DEF_NO_PREV_ORG_MEMBER)
 
     q = GSoCProfile.all(keys_only=True)
     q.filter('is_student', False)
@@ -277,6 +278,9 @@ class AccessChecker(access_checker.AccessChecker):
     A user can take the GCI org app if he/she participated in GSoC or GCI as
     a non-student and has a non-student profile for the current program.
     """
+
+    # TODO(daniel): make this a program setting - sometimes it may be possible
+    # to accept organizations which have not participated before
     self.hasNonStudentProfileInAProgram()
 
     program = self.data.program
