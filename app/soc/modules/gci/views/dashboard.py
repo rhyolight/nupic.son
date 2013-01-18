@@ -1063,44 +1063,6 @@ class MyOrgsListBeforeOrgProfile(MyOrgsList):
     self._list_config.setRowAction(RowAction)
 
 
-class AllOrgsListBeforeRequestRole(MyOrgsList):
-  """Component for listing all the organizations that the current user may
-  request to become mentor for.
-  """
-
-  def _setIdx(self):
-    self.idx = 8
-
-  def _setRowAction(self, request, data):
-    self._list_config.setRowAction(
-        lambda e, *args: data.redirect.invite('mentor', e)
-            .urlOf(url_names.GCI_SEND_REQUEST))
-
-  def getListData(self):
-    if lists.getListIndex(self.request) != self.idx:
-      return None
-
-    q = GCIOrganization.all()
-    q.filter('scope', self.data.program)
-    q.filter('status IN', ['new', 'active'])
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
-
-    return response_builder.build()
-
-  def _getContext(self):
-    org_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=self.idx, preload_list=False)
-
-    return {
-        'name': 'request_to_become_mentor',
-        'title': 'Request to become a mentor',
-        'lists': [org_list],
-        'description': ugettext('Request to become a mentor for one of '
-            'the mentoring organizations.')}
-
-
 class OrgAdminInvitesList(Component):
   """Template for list of invites that have been sent by the organizations
   that the current user is organization admin for.
