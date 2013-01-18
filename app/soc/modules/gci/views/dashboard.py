@@ -390,9 +390,6 @@ class DashboardPage(GCIRequestHandler):
     # add link to my invitations list
     links.append(self._getMyInvitationsLink())
 
-    # add link to my requests list
-    links.append(self._getMyRequestsLink())
-
     return links
 
   def _getMyInvitationsLink(self):
@@ -407,20 +404,6 @@ class DashboardPage(GCIRequestHandler):
             'List of all invites which have been sent to me.'),
         'title': 'Invites to me',
         'link': r.urlOf(url_names.GCI_LIST_INVITES)
-        }
-
-  def _getMyRequestsLink(self):
-    """Get the link of requests which belong to the current user.
-    """
-    r = self.data.redirect
-    r.program()
-
-    return {
-        'name': 'list_requests',
-        'description': ugettext(
-            'List of all requests which have been sent by me.'),
-        'title': 'My requests',
-        'link': r.urlOf(url_names.GCI_LIST_REQUESTS)
         }
 
   def _getMyOrgInvitationsLink(self):
