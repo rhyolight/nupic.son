@@ -387,10 +387,6 @@ class DashboardPage(GCIRequestHandler):
     """
     links = []
 
-    link = self._getAddNewOrgAppLink()
-    if link:
-      links.append(link)
-
     # add link to my invitations list
     links.append(self._getMyInvitationsLink())
 
@@ -398,24 +394,6 @@ class DashboardPage(GCIRequestHandler):
     links.append(self._getMyRequestsLink())
 
     return links
-
-  def _getAddNewOrgAppLink(self):
-    """Get the link for org admins to take organization application survey.
-    """
-    survey = org_app_logic.getForProgram(self.data.program)
-    if not survey or not self.data.timeline.surveyPeriod(survey):
-      return []
-
-    r = self.data.redirect
-    r.program()
-
-    return {
-        'name': 'take_org_app',
-        'description': ugettext(
-            'Submit organization application.'),
-        'title': 'Submit organization application',
-        'link': r.urlOf('gci_take_org_app')
-        }
 
   def _getMyInvitationsLink(self):
     """Get the link of incoming invitations list (invitations sent to me).
