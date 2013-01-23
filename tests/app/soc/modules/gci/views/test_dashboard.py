@@ -54,8 +54,7 @@ class DashboardTest(GCIDjangoTestCase):
   def testDashboardAsHost(self):
     self.data.createHost()
     response = self.get(self._getDashboardUrl())
-    self.assertResponseOK(response)
-    self.assertDashboardComponentTemplatesUsed(response)
+    self.assertResponseForbidden(response)
 
   def testDashboardAsMentorWithTask(self):
     self.data.createMentorWithTask('Open', self.org)
