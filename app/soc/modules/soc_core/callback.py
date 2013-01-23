@@ -42,6 +42,7 @@ class Callback(object):
     from soc.views import oauth
     from soc.views import site
     from soc.views import user
+    from soc.views import warmup
 
     self.views.append(host.HostProfilePage())
     self.views.append(legacy.Legacy())
@@ -52,6 +53,7 @@ class Callback(object):
     self.views.append(site.SiteHomepage())
     self.views.append(user.CreateUserPage())
     self.views.append(user.EditUserPage())
+    self.views.append(warmup.WarmupPage())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.
