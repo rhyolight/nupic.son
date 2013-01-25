@@ -147,8 +147,7 @@ class MainDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    # TODO(nathaniel): Drop the request parameter of the super class.
-    super(MainDashboard, self).__init__(data.request, data)
+    super(MainDashboard, self).__init__(data)
 
   def context(self):
     """Returns the context of main dashboard."""
@@ -306,7 +305,7 @@ class ProgramSettingsDashboard(Dashboard):
         },
     ]
 
-    super(ProgramSettingsDashboard, self).__init__(data.request, data, subpages)
+    super(ProgramSettingsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of program settings dashboard.
@@ -383,7 +382,7 @@ class ManageOrganizationsDashboard(Dashboard):
         },
     ]
 
-    super(ManageOrganizationsDashboard, self).__init__(data.request, data, subpages)
+    super(ManageOrganizationsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of manage organizations dashboard."""
@@ -443,7 +442,7 @@ class EvaluationsDashboard(Dashboard):
         },
     ]
 
-    super(EvaluationsDashboard, self).__init__(data.request, data, subpages)
+    super(EvaluationsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of manage organizations dashboard.
@@ -522,7 +521,7 @@ class MentorEvaluationsDashboard(Dashboard):
         },
     ]
 
-    super(MentorEvaluationsDashboard, self).__init__(data.request, data, subpages)
+    super(MentorEvaluationsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of mentor evaluations dashboard.
@@ -605,7 +604,7 @@ class StudentEvaluationsDashboard(Dashboard):
         },
     ]
 
-    super(StudentEvaluationsDashboard, self).__init__(data.request, data, subpages)
+    super(StudentEvaluationsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of student evaluations dashboard.
@@ -653,7 +652,7 @@ class EvaluationGroupDashboard(Dashboard):
         },
     ]
 
-    super(EvaluationGroupDashboard, self).__init__(data.request, data, subpages)
+    super(EvaluationGroupDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of evaluation group dashboard."""
@@ -706,7 +705,7 @@ class StudentsDashboard(Dashboard):
         },
     ]
 
-    super(StudentsDashboard, self).__init__(data.request, data, subpages)
+    super(StudentsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of manage students dashboard."""

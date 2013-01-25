@@ -93,11 +93,10 @@ class DashboardPage(GCIRequestHandler):
     """Context for dashboard page."""
     dashboards = []
 
-    # TODO(nathaniel): Drop all these first parameters.
-    dashboards.append(MainDashboard(self.data.request, self.data))
-    dashboards.append(ProgramSettingsDashboard(self.data.request, self.data))
-    dashboards.append(OrgDashboard(self.data.request, self.data))
-    dashboards.append(ParticipantsDashboard(self.data.request, self.data))
+    dashboards.append(MainDashboard(self.data))
+    dashboards.append(ProgramSettingsDashboard(self.data))
+    dashboards.append(OrgDashboard(self.data))
+    dashboards.append(ParticipantsDashboard(self.data))
 
     return {
         'dashboards': dashboards,
@@ -114,17 +113,15 @@ class DashboardPage(GCIRequestHandler):
 
 
 class MainDashboard(Dashboard):
-  """Dashboard for admin's main-dashboard
-  """
+  """Dashboard for admin's main-dashboard."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MainDashboard, self).__init__(request, data)
+    super(MainDashboard, self).__init__(data)
 
   def context(self):
     """Returns the context of main dashboard.
@@ -132,9 +129,9 @@ class MainDashboard(Dashboard):
     r = self.data.redirect
     r.program()
 
-    program_settings = ProgramSettingsDashboard(self.request, self.data)
-    organizations = OrgDashboard(self.request, self.data)
-    participants = ParticipantsDashboard(self.request, self.data)
+    program_settings = ProgramSettingsDashboard(self.data)
+    organizations = OrgDashboard(self.data)
+    participants = ParticipantsDashboard(self.data)
 
     subpages = [
         {
@@ -181,11 +178,10 @@ class ProgramSettingsDashboard(Dashboard):
   """Dashboard for admin's program-settings-dashboard
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -225,7 +221,7 @@ class ProgramSettingsDashboard(Dashboard):
         },
     ]
 
-    super(ProgramSettingsDashboard, self).__init__(request, data, subpages)
+    super(ProgramSettingsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of program settings dashboard.
@@ -251,11 +247,10 @@ class OrgDashboard(Dashboard):
   This page includes links for Org app surveys, mentoring org info, etc.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -315,7 +310,7 @@ class OrgDashboard(Dashboard):
         },
     ]
 
-    super(OrgDashboard, self).__init__(request, data, subpages)
+    super(OrgDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of organization dashboard.
@@ -339,11 +334,10 @@ class ParticipantsDashboard(Dashboard):
   """Dashboard for admin's all participants dashboard
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -373,7 +367,7 @@ class ParticipantsDashboard(Dashboard):
         },
     ]
 
-    super(ParticipantsDashboard, self).__init__(request, data, subpages)
+    super(ParticipantsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of participants dashboard.

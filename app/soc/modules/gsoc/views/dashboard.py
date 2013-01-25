@@ -75,14 +75,13 @@ def colorize(choice, yes, no):
 class MainDashboard(Dashboard):
   """Main dashboard that shows all component dashboard icons."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MainDashboard, self).__init__(request, data)
+    super(MainDashboard, self).__init__(data)
     self.subpages = []
 
   def context(self):
@@ -100,26 +99,23 @@ class MainDashboard(Dashboard):
 
 
 class ComponentsDashboard(Dashboard):
-  """Dashboard that holds component list
-  """
+  """Dashboard that holds component list."""
 
-  def __init__(self, request, data, component_property):
+  def __init__(self, data, component_property):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
       component_property: Component property
     """
-    super(ComponentsDashboard, self).__init__(request, data)
+    super(ComponentsDashboard, self).__init__(data)
     self.name = component_property.get('name')
     self.title = component_property.get('title')
     self.components = [component_property.get('component'),]
     self.backlinks = [component_property.get('backlinks'),]
 
   def context(self):
-    """Returns the context of components dashboard.
-    """
+    """Returns the context of components dashboard."""
     return {
         'title': self.title,
         'name': self.name,
@@ -180,7 +176,7 @@ class DashboardPage(GSoCRequestHandler):
     dashboards = []
 
     # main container that contains all component list
-    main = MainDashboard(self.data.request, self.data)
+    main = MainDashboard(self.data)
 
     # retrieve active component(s) for currently logged-in user
     components = self.components()
@@ -196,7 +192,7 @@ class DashboardPage(GSoCRequestHandler):
           }
       main.addSubpages(c)
 
-      dashboards.append(ComponentsDashboard(self.data.request, self.data, {
+      dashboards.append(ComponentsDashboard(self.data, {
           'name': component.context().get('name'),
           'title': component.context().get('title'),
           'component': component,

@@ -52,19 +52,17 @@ class MainDashboard(Dashboard):
   """Dashboard for user's main-dashboard
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MainDashboard, self).__init__(request, data)
+    super(MainDashboard, self).__init__(data)
     self.subpages = []
 
   def context(self):
-    """Returns the context of main dashboard.
-    """
+    """Returns the context of main dashboard."""
     return {
         'title': 'Participant dashboard',
         'name': 'main',
@@ -77,18 +75,16 @@ class MainDashboard(Dashboard):
 
 
 class ComponentsDashboard(Dashboard):
-  """Dashboard that holds component list
-  """
+  """Dashboard that holds component list."""
 
-  def __init__(self, request, data, component_property):
+  def __init__(self, data, component_property):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
       component_property: Component property
     """
-    super(ComponentsDashboard, self).__init__(request, data)
+    super(ComponentsDashboard, self).__init__(data)
     self.name = component_property.get('name')
     self.title = component_property.get('title')
     self.components = [component_property.get('component'),]
@@ -133,8 +129,7 @@ class DashboardPage(GCIRequestHandler):
     dashboards = []
 
     # main container that contains all component list
-    # TODO(nathaniel): Drop the first parameter of MainDashboard.
-    main = MainDashboard(self.data.request, self.data)
+    main = MainDashboard(self.data)
 
     # retrieve active links and add it to the main dashboard
     links = self.links()
@@ -155,8 +150,7 @@ class DashboardPage(GCIRequestHandler):
           }
       main.addSubpages(c)
 
-      # TODO(nathaniel): Drop the first parameter of ComponentsDashboard.
-      dashboards.append(ComponentsDashboard(self.data.request, self.data, {
+      dashboards.append(ComponentsDashboard(self.data, {
           'name': component.context().get('name'),
           'title': component.context().get('title'),
           'component': component,
@@ -168,8 +162,8 @@ class DashboardPage(GCIRequestHandler):
     return dashboards
 
   def shouldSubmitForms(self):
-    """Checks if the current user should submit the student forms.
-    """
+    """Checks if the current user should submit the student forms."""
+    # TODO(nathaniel): tweak this control flow.
     student_id_form = False
     consent_form = False
 
