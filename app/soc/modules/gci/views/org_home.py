@@ -69,8 +69,7 @@ class ContactUs(Template):
 class OpenTasksList(Template):
   """List to display all the open tasks for the current organization."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
     list_config = lists.ListConfiguration()
 
@@ -99,7 +98,7 @@ class OpenTasksList(Template):
     }
 
   def getListData(self):
-    if lists.getListIndex(self.request) != 0:
+    if lists.getListIndex(self.data.request) != 0:
       return None
     q = GCITask.all()
     q.filter('org', self.data.organization)
@@ -107,7 +106,7 @@ class OpenTasksList(Template):
     starter = lists.keyStarter
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self.list_config, q, starter)
+        self.data.request, self.list_config, q, starter)
     return response_builder.build()
 
   def templatePath(self):
@@ -116,8 +115,7 @@ class OpenTasksList(Template):
 class CompletedTasksList(Template):
   """List to display all the closed/completed tasks for the current organization."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     list_config = lists.ListConfiguration()
@@ -143,7 +141,7 @@ class CompletedTasksList(Template):
     }
 
   def getListData(self):
-    if lists.getListIndex(self.request) != 1:
+    if lists.getListIndex(self.data.request) != 1:
       return None
     q = GCITask.all()
     q.filter('org', self.data.organization)
@@ -151,7 +149,7 @@ class CompletedTasksList(Template):
     starter = lists.keyStarter
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self.list_config, q, starter)
+        self.data.request, self.list_config, q, starter)
     return response_builder.build()
 
   def templatePath(self):
@@ -199,25 +197,23 @@ class OrgHomepage(GCIRequestHandler):
             name=url_names.GCI_ORG_HOME),
         url(r'org/home/%s' % url_patterns.ORG, self),
     ]
-    
+
   def checkAccess(self):
     pass
-  
+
   def jsonContext(self):
     idx = lists.getListIndex(self.data.request)
     list_content = None
     if idx == 0:
-      # TODO(nathaniel): Drop the first parameter of OpenTasksList.
-      list_content = OpenTasksList(self.data.request, self.data).getListData()
+      list_content = OpenTasksList(self.data).getListData()
     elif idx == 1:
-      # TODO(nathaniel): Drop the first parameter of CompletedTasksList.
-      list_content = CompletedTasksList(self.data.request, self.data).getListData()
+      list_content = CompletedTasksList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-  
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
+
   def context(self):
     context = {
         'page_name': '%s - Home page' % (self.data.organization.name),
@@ -227,9 +223,8 @@ class OrgHomepage(GCIRequestHandler):
     }
 
     if self.data.timeline.tasksPubliclyVisible():
-      context['open_tasks_list'] = OpenTasksList(self.data.request, self.data)
-      context['completed_tasks_list'] = CompletedTasksList(
-          self.data.request, self.data)
+      context['open_tasks_list'] = OpenTasksList(self.data)
+      context['completed_tasks_list'] = CompletedTasksList(self.data)
 
     if self.data.is_host or accounts.isDeveloper():
       context['host_actions'] = GCIHostActions(self.data)

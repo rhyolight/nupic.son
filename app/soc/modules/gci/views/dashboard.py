@@ -249,8 +249,7 @@ class DashboardPage(GCIRequestHandler):
     if component:
       components.append(component)
 
-    # TODO(nathaniel): Drop the first parameter of MyOrgsTaskList.
-    components.append(MyOrgsTaskList(self.data.request, self.data))
+    components.append(MyOrgsTaskList(self.data))
 
     # add org list just before creating task and invitation, so mentor can
     # choose which organization the task or invitite will be created for
@@ -537,14 +536,13 @@ class MyOrgsTaskList(Component):
   PUBLISH_BUTTON_ID = 'publish'
   UNPUBLISH_BUTTON_ID = 'unpublish'
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the component.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MyOrgsTaskList, self).__init__(request, data)
+    super(MyOrgsTaskList, self).__init__(data.request, data)
 
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')

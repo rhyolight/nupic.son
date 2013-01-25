@@ -411,11 +411,9 @@ class RespondInvite(GCIRequestHandler):
 
 
 class UserInvitesList(Template):
-  """Template for list of invites that have been sent to the current user.
-  """
+  """Template for list of invites that have been sent to the current user."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
     r = data.redirect
 
@@ -435,7 +433,7 @@ class UserInvitesList(Template):
     q.filter('user', self.data.user)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
+        self.data.request, self._list_config, q, lists.keyStarter)
 
     return response_builder.build()
 
@@ -469,16 +467,15 @@ class ListUserInvitesPage(GCIRequestHandler):
     self.check.isProfileActive()
 
   def jsonContext(self):
-    # TODO(nathaniel): Drop the first parameter of UserInvitesList.
-    list_content = UserInvitesList(self.data.request, self.data).getListData()
+    list_content = UserInvitesList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': 'Invitations to you',
-        'invite_list': UserInvitesList(self.data.request, self.data),
+        'invite_list': UserInvitesList(self.data),
     }

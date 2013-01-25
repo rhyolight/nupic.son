@@ -304,11 +304,9 @@ class RespondRequestPage(GCIRequestHandler):
 
 
 class UserRequestsList(Template):
-  """Template for list of requests that have been sent by the current user.
-  """
+  """Template for list of requests that have been sent by the current user."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
     r = data.redirect
 
@@ -328,7 +326,7 @@ class UserRequestsList(Template):
     q.filter('user', self.data.user)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
+        self.data.request, self._list_config, q, lists.keyStarter)
 
     return response_builder.build()
 
@@ -362,16 +360,15 @@ class ListUserRequestsPage(GCIRequestHandler):
     self.check.isProfileActive()
 
   def jsonContext(self):
-    # TODO(nathaniel): Drop the first parameter of UserRequestsList.
-    list_content = UserRequestsList(self.data.request, self.data).getListData()
+    list_content = UserRequestsList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise exceptions.AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': 'Your requests',
-        'request_list': UserRequestsList(self.data.request, self.data),
+        'request_list': UserRequestsList(self.data),
     }
