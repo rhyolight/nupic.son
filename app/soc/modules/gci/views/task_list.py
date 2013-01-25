@@ -144,9 +144,7 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
     self.mutator.profileFromKwargs()
 
   def jsonContext(self):
-    # TODO(nathaniel): Drop the first parameter of StudentTasksForOrganizationList.
-    list_content = StudentTasksForOrganizationList(
-        self.data.request, self.data).getListData()
+    list_content = StudentTasksForOrganizationList(self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -157,7 +155,7 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
     return {
         'page_name': "Tasks closed by %s for %s" % (
             self.data.url_profile.name(), self.data.organization.name),
-        'task_list': StudentTasksForOrganizationList(self.data.request, self.data),
+        'task_list': StudentTasksForOrganizationList(self.data),
     }
 
 
@@ -246,17 +244,15 @@ class AllOrganizationTasksPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    # TODO(nathaniel): Drop the first parameter of AllOrganizationTasksList.
-    list_content = AllOrganizationTasksList(
-        self.data.request, self.data).getListData()
+    list_content = AllOrganizationTasksList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': 'Tasks created by %s' % self.data.organization.name,
-        'task_list': AllOrganizationTasksList(self.data.request, self.data),
+        'task_list': AllOrganizationTasksList(self.data),
     }

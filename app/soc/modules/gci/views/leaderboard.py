@@ -97,8 +97,8 @@ class AllStudentTasksList(TaskList):
 
   _LIST_COLUMNS = ['title', 'organization']
 
-  def __init__(self, request, data):
-    super(AllStudentTasksList, self).__init__(request, data)
+  def __init__(self, data):
+    super(AllStudentTasksList, self).__init__(data)
 
   def _getColumns(self):
     return self._LIST_COLUMNS
@@ -176,16 +176,15 @@ class StudentTasksPage(GCIRequestHandler):
         raise AccessViolation('You do not have access to this data')
 
   def jsonContext(self):
-    # TODO(nathaniel): Drop the first parameter of AllStudentTasksList.
-    list_content = AllStudentTasksList(self.data.request, self.data).getListData()
+    list_content = AllStudentTasksList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': "Tasks closed by %s" % self.data.url_profile.name(),
-        'tasks_list': AllStudentTasksList(self.data.request, self.data),
+        'tasks_list': AllStudentTasksList(self.data),
     }

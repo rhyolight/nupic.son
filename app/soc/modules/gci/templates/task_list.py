@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2012 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing template with a list of GCITask entities.
-"""
-
+"""Module containing template with a list of GCITask entities."""
 
 from soc.views.helper import lists
 from soc.views.template import Template
@@ -25,11 +21,9 @@ from soc.modules.gci.models.task import GCITask
 
 
 class TaskList(Template):
-  """Template for list of tasks.
-  """
+  """Template for list of tasks."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     self._columns = self._getColumns()
@@ -46,7 +40,7 @@ class TaskList(Template):
     }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       query = self._getQuery()
 
@@ -54,7 +48,7 @@ class TaskList(Template):
       prefetcher = self._getPrefetcher()
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, query,
+          self.data.request, self._list_config, query,
           starter=starter, prefetcher=prefetcher)
 
       return response_builder.build()
