@@ -469,7 +469,8 @@ class ListUserInvitesPage(GCIRequestHandler):
     self.check.isProfileActive()
 
   def jsonContext(self):
-    list_content = UserInvitesList(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the first parameter of UserInvitesList.
+    list_content = UserInvitesList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -479,5 +480,5 @@ class ListUserInvitesPage(GCIRequestHandler):
   def context(self):
     return {
         'page_name': 'Invitations to you',
-        'invite_list': UserInvitesList(self.request, self.data),
+        'invite_list': UserInvitesList(self.data.request, self.data),
     }

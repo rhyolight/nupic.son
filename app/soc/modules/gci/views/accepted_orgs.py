@@ -83,7 +83,8 @@ class AcceptedOrgsPage(GCIRequestHandler):
     self.check.acceptedOrgsAnnounced()
 
   def jsonContext(self):
-    list_content = AcceptedOrgsList(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the first parameter of AcceptedOrgsList.
+    list_content = AcceptedOrgsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -93,7 +94,7 @@ class AcceptedOrgsPage(GCIRequestHandler):
   def context(self):
     return {
         'page_name': "Accepted organizations for %s" % self.data.program.name,
-        'accepted_orgs_list': AcceptedOrgsList(self.request, self.data),
+        'accepted_orgs_list': AcceptedOrgsList(self.data.request, self.data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }
 
@@ -162,7 +163,8 @@ class AcceptedOrgsAdminPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = AcceptedOrgsAdminList(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the first parameter of AcceptedOrgsAdminList.
+    list_content = AcceptedOrgsAdminList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -172,5 +174,5 @@ class AcceptedOrgsAdminPage(GCIRequestHandler):
   def context(self):
     return {
         'page_name': "Accepted organizations for %s" % self.data.program.name,
-        'accepted_orgs_list': AcceptedOrgsAdminList(self.request, self.data),
+        'accepted_orgs_list': AcceptedOrgsAdminList(self.data.request, self.data),
     }

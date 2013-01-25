@@ -133,7 +133,8 @@ class DashboardPage(GCIRequestHandler):
     dashboards = []
 
     # main container that contains all component list
-    main = MainDashboard(self.request, self.data)
+    # TODO(nathaniel): Drop the first parameter of MainDashboard.
+    main = MainDashboard(self.data.request, self.data)
 
     # retrieve active links and add it to the main dashboard
     links = self.links()
@@ -154,7 +155,8 @@ class DashboardPage(GCIRequestHandler):
           }
       main.addSubpages(c)
 
-      dashboards.append(ComponentsDashboard(self.request, self.data, {
+      # TODO(nathaniel): Drop the first parameter of ComponentsDashboard.
+      dashboards.append(ComponentsDashboard(self.data.request, self.data, {
           'name': component.context().get('name'),
           'title': component.context().get('title'),
           'component': component,
@@ -256,45 +258,49 @@ class DashboardPage(GCIRequestHandler):
     if component:
       components.append(component)
 
-    components.append(MyOrgsTaskList(self.request, self.data))
+    # TODO(nathaniel): Drop the first parameter of MyOrgsTaskList.
+    components.append(MyOrgsTaskList(self.data.request, self.data))
 
     # add org list just before creating task and invitation, so mentor can
     # choose which organization the task or invitite will be created for
-    components.append(MyOrgsListBeforeCreateTask(self.request, self.data))
+    # TODO(nathaniel): Drop the first parameter of MyOrgsListBeforeCreateTask.
+    components.append(MyOrgsListBeforeCreateTask(self.data.request, self.data))
 
     # add request to become mentor component
-    components.append(AllOrgsListBeforeRequestRole(self.request, self.data))
+    # TODO(nathaniel): Drop the first parameter of AllOrgsListBeforeRequestRole.
+    components.append(AllOrgsListBeforeRequestRole(self.data.request, self.data))
 
     return components
 
   def _getOrgAdminComponents(self):
-    """Get the dashboard components for org admins.
-    """
+    """Get the dashboard components for org admins."""
     components = []
 
+    # TODO(nathaniel): Drop first parameters.
+
     # add list of mentors component
-    components.append(MyOrgsMentorsList(self.request, self.data))
+    components.append(MyOrgsMentorsList(self.data.request, self.data))
 
     # add invite mentors component
-    components.append(MyOrgsListBeforeInviteMentor(self.request, self.data))
+    components.append(MyOrgsListBeforeInviteMentor(self.data.request, self.data))
 
     # add invite org admins component
-    components.append(MyOrgsListBeforeInviteOrgAdmin(self.request, self.data))
+    components.append(MyOrgsListBeforeInviteOrgAdmin(self.data.request, self.data))
 
     # add list of all the invitations
-    components.append(OrgAdminInvitesList(self.request, self.data))
+    components.append(OrgAdminInvitesList(self.data.request, self.data))
 
     # add list of all the requests
-    components.append(OrgAdminRequestsList(self.request, self.data))
+    components.append(OrgAdminRequestsList(self.data.request, self.data))
 
     # add bulk create tasks component 
-    components.append(MyOrgsListBeforeBulkCreateTask(self.request, self.data))
+    components.append(MyOrgsListBeforeBulkCreateTask(self.data.request, self.data))
 
     # add edit org profile component
-    components.append(MyOrgsListBeforeOrgProfile(self.request, self.data))
+    components.append(MyOrgsListBeforeOrgProfile(self.data.request, self.data))
 
     # add org scores component
-    components.append(MyOrgsScoresList(self.request, self.data))
+    components.append(MyOrgsScoresList(self.data.request, self.data))
 
     return components
 
@@ -308,7 +314,7 @@ class DashboardPage(GCIRequestHandler):
       components.append(component)
 
     # add request to become mentor component
-    components.append(AllOrgsListBeforeRequestRole(self.request, self.data))
+    components.append(AllOrgsListBeforeRequestRole(self.data.request, self.data))
 
     return components
 

@@ -166,7 +166,8 @@ class DocumentListPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = DocumentList(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the first parameter of DocumentList.
+    list_content = DocumentList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -175,6 +176,6 @@ class DocumentListPage(GCIRequestHandler):
   def context(self):
     return {
         'page_name': "Documents for %s" % self.data.program.name,
-        'document_list': DocumentList(self.request, self.data),
+        'document_list': DocumentList(self.data.request, self.data),
 #        'program_select': ProgramSelect(self.data, 'list_gci_documents'),
     }

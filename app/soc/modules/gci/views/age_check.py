@@ -62,7 +62,7 @@ class AgeCheck(gci_base.GCIRequestHandler):
         'failed_check': False
         }
 
-    age_check_result =  self.request.COOKIES.get('age_check', None)
+    age_check_result =  self.data.request.COOKIES.get('age_check', None)
 
     if age_check_result == '0':
       context['failed_check'] = True

@@ -203,12 +203,14 @@ class OrgHomepage(GCIRequestHandler):
     pass
   
   def jsonContext(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     list_content = None
     if idx == 0:
-      list_content = OpenTasksList(self.request, self.data).getListData()
+      # TODO(nathaniel): Drop the first parameter of OpenTasksList.
+      list_content = OpenTasksList(self.data.request, self.data).getListData()
     elif idx == 1:
-      list_content = CompletedTasksList(self.request, self.data).getListData()
+      # TODO(nathaniel): Drop the first parameter of CompletedTasksList.
+      list_content = CompletedTasksList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -224,9 +226,9 @@ class OrgHomepage(GCIRequestHandler):
     }
 
     if self.data.timeline.tasksPubliclyVisible():
-      context['open_tasks_list'] = OpenTasksList(self.request, self.data)
+      context['open_tasks_list'] = OpenTasksList(self.data.request, self.data)
       context['completed_tasks_list'] = CompletedTasksList(
-          self.request, self.data)
+          self.data.request, self.data)
 
     if self.data.is_host or accounts.isDeveloper():
       context['host_actions'] = GCIHostActions(self.data)

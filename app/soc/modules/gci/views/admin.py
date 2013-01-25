@@ -91,14 +91,14 @@ class DashboardPage(GCIRequestHandler):
     return 'v2/modules/gci/admin/base.html'
 
   def context(self):
-    """Context for dashboard page.
-    """
+    """Context for dashboard page."""
     dashboards = []
 
-    dashboards.append(MainDashboard(self.request, self.data))
-    dashboards.append(ProgramSettingsDashboard(self.request, self.data))
-    dashboards.append(OrgDashboard(self.request, self.data))
-    dashboards.append(ParticipantsDashboard(self.request, self.data))
+    # TODO(nathaniel): Drop all these first parameters.
+    dashboards.append(MainDashboard(self.data.request, self.data))
+    dashboards.append(ProgramSettingsDashboard(self.data.request, self.data))
+    dashboards.append(OrgDashboard(self.data.request, self.data))
+    dashboards.append(ParticipantsDashboard(self.data.request, self.data))
 
     return {
         'colorbox': self.data.GET.get('colorbox'),

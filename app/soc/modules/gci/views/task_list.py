@@ -91,7 +91,8 @@ class TaskListPage(GCIRequestHandler):
     pass
 
   def jsonContext(self):
-    list_content = TaskList2(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the first parameter of TaskList2.
+    list_content = TaskList2(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -101,7 +102,7 @@ class TaskListPage(GCIRequestHandler):
   def context(self):
     return {
         'page_name': "Tasks for %s" % self.data.program.name,
-        'task_list': TaskList2(self.request, self.data),
+        'task_list': TaskList2(self.data.request, self.data),
 #        'program_select': ProgramSelect(self.data, 'list_gci_finished_tasks'),
     }
 
@@ -143,8 +144,9 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
     self.mutator.profileFromKwargs()
 
   def jsonContext(self):
+    # TODO(nathaniel): Drop the first parameter of StudentTasksForOrganizationList.
     list_content = StudentTasksForOrganizationList(
-        self.request, self.data).getListData()
+        self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -155,7 +157,7 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
     return {
         'page_name': "Tasks closed by %s for %s" % (
             self.data.url_profile.name(), self.data.organization.name),
-        'task_list': StudentTasksForOrganizationList(self.request, self.data),
+        'task_list': StudentTasksForOrganizationList(self.data.request, self.data),
     }
 
 
@@ -194,8 +196,9 @@ class ChooseOrganizationPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
+    # TODO(nathaniel): Drop the first parameter of ChooseOrganizationList.
     list_content = ChooseOrganizationList(
-        self.request, self.data).getListData()
+        self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -205,7 +208,7 @@ class ChooseOrganizationPage(GCIRequestHandler):
   def context(self):
     return {
         'page_name': "Choose an organization for which to display tasks.",
-        'org_list': ChooseOrganizationList(self.request, self.data),
+        'org_list': ChooseOrganizationList(self.data.request, self.data),
     }
 
 
@@ -243,8 +246,9 @@ class AllOrganizationTasksPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
+    # TODO(nathaniel): Drop the first parameter of AllOrganizationTasksList.
     list_content = AllOrganizationTasksList(
-        self.request, self.data).getListData()
+        self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -254,5 +258,5 @@ class AllOrganizationTasksPage(GCIRequestHandler):
   def context(self):
     return {
         'page_name': 'Tasks created by %s' % self.data.organization.name,
-        'task_list': AllOrganizationTasksList(self.request, self.data),
+        'task_list': AllOrganizationTasksList(self.data.request, self.data),
     }

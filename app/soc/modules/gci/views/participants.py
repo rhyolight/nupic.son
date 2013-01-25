@@ -107,7 +107,8 @@ class MentorsListAdminPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = MentorsList(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the first parameter of MentorsList.
+    list_content = MentorsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -118,5 +119,5 @@ class MentorsListAdminPage(GCIRequestHandler):
     return {
         'page_name': "List of organization admins and mentors for %s" % (
             self.data.program.name),
-        'mentors_list': MentorsList(self.request, self.data),
+        'mentors_list': MentorsList(self.data.request, self.data),
     }

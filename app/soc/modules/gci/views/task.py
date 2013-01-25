@@ -194,7 +194,7 @@ class TaskViewPage(GCIRequestHandler):
       # and the GAE task was late to run. Reload the page.
       raise RedirectRequest('')
 
-    if self.request.method == 'POST':
+    if self.data.request.method == 'POST':
       # Access checks for the different forms on this page. Note that there
       # are no elif clauses because one could add multiple GET params :).
       self.check.isProfileActive()
@@ -722,7 +722,7 @@ class WorkSubmissionDownload(GCIRequestHandler):
     """Attempts to download the blob in the worksubmission that is specified
     in the GET argument.
     """
-    id_string = self.request.GET.get('id', '')
+    id_string = self.data.request.GET.get('id', '')
     submission_id = int(id_string) if id_string.isdigit() else -1
 
     work = GCIWorkSubmission.get_by_id(submission_id, self.data.task)

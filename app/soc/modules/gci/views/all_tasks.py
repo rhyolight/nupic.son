@@ -67,7 +67,8 @@ class TaskListPage(GCIRequestHandler):
     pass
 
   def jsonContext(self):
-    list_content = AllTasksList(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the first parameter of AllTasksList.
+    list_content = AllTasksList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -77,5 +78,5 @@ class TaskListPage(GCIRequestHandler):
   def context(self):
     return {
         'page_name': "Tasks for %s" % self.data.program.name,
-        'task_list': AllTasksList(self.request, self.data),
+        'task_list': AllTasksList(self.data.request, self.data),
     }

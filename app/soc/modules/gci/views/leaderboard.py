@@ -127,7 +127,8 @@ class LeaderboardPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = LeaderboardList(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the first parameter of LeaderboardList.
+    list_content = LeaderboardList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -137,7 +138,7 @@ class LeaderboardPage(GCIRequestHandler):
   def context(self):
     context = {
         'page_name': "Leaderboard for %s" % self.data.program.name,
-        'leaderboard_list': LeaderboardList(self.request, self.data),
+        'leaderboard_list': LeaderboardList(self.data.request, self.data),
         'timeline': common_templates.Timeline(self.data),
         'complete_percentage': self.data.timeline.completePercentage(),
         'your_score': common_templates.YourScore(self.data),
@@ -174,7 +175,8 @@ class StudentTasksPage(GCIRequestHandler):
         raise AccessViolation('You do not have access to this data')
 
   def jsonContext(self):
-    list_content = AllStudentTasksList(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the first parameter of AllStudentTasksList.
+    list_content = AllStudentTasksList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation('You do not have access to this data')
@@ -184,5 +186,5 @@ class StudentTasksPage(GCIRequestHandler):
   def context(self):
     return {
         'page_name': "Tasks closed by %s" % self.data.url_profile.name(),
-        'tasks_list': AllStudentTasksList(self.request, self.data),
+        'tasks_list': AllStudentTasksList(self.data.request, self.data),
     }

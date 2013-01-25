@@ -82,7 +82,7 @@ class StudentsInfoPage(base.GCIRequestHandler):
 
   def jsonContext(self):
     all_participating_students_list = AllParticipatingStudentsList(
-        self.request, self.data)
+        self.data.request, self.data)
     list_content = all_participating_students_list.getListData()
 
     if list_content:
@@ -94,5 +94,5 @@ class StudentsInfoPage(base.GCIRequestHandler):
     return {
         'page_name': 'List of Students for %s' % self.data.program.name,
         'students_info_list': AllParticipatingStudentsList(
-            self.request, self.data),
+            self.data.request, self.data),
     }
