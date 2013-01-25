@@ -75,14 +75,14 @@ class OpenTasksList(Template):
     list_config = lists.ListConfiguration()
 
     list_config.addSimpleColumn('title', 'Title')
-    #list_config.addColumn(
+    #list_config.addPlainTextColumn(
     #    'task_type', 'Type',
     #    lambda entity, all_d, all_t, *args: entity.taskType(all_t))
-    #list_config.addColumn('arbit_tag', 'Tags', lambda entity,
+    #list_config.addPlainTextColumn('arbit_tag', 'Tags', lambda entity,
     #                      *args: entity.taskArbitTag())
-    list_config.addColumn('time_to_complete', 'Time to complete',
+    list_config.addPlainTextColumn('time_to_complete', 'Time to complete',
                           lambda entity, *args: entity.taskTimeToComplete())
-    list_config.addColumn('types', 'Type',
+    list_config.addPlainTextColumn('types', 'Type',
                           lambda entity, *args: ", ".join(entity.types))
 
     list_config.setRowAction(
@@ -123,13 +123,14 @@ class CompletedTasksList(Template):
     list_config = lists.ListConfiguration()
 
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('student', 'Student',
-                          lambda entity, *args: entity.student.name())
-    list_config.addColumn('types', 'Type',
-                          lambda entity, *args: ", ".join(entity.types))
+    list_config.addPlainTextColumn('student', 'Student',
+        lambda entity, *args: entity.student.name())
+    list_config.addPlainTextColumn('types', 'Type',
+        lambda entity, *args: ", ".join(entity.types))
 
     list_config.setRowAction(
-        lambda e, *args: data.redirect.id(e.key().id()).urlOf(url_names.GCI_VIEW_TASK))
+        lambda e, *args: data.redirect.id(e.key().id()).urlOf(
+            url_names.GCI_VIEW_TASK))
 
     self.list_config = list_config
 

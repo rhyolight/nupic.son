@@ -1,6 +1,6 @@
 {% if participating_orgs_table_rows %}
  <div class="block block-participating-orgs">
-  <div class="block-title">Participating Organizations</div>
+  <div class="block-title">Mentoring Organizations</div>
   <div class="block-content">
    <table class="participating-orgs-table">
     {% for row in participating_orgs_table_rows %}
@@ -14,7 +14,7 @@
     {% endfor %}
    </table>
   </div>
-  <div class="block-footer"><a href="{{ org_list_url }}">{% if all_participating_orgs %}Participating organization details{% else %}See all participating organizations{% endif %}</a></div>
+  <div class="block-footer"><a href="{{ org_list_url }}">{% if all_participating_orgs %}Mentoring organization details{% else %}See all mentoring organizations{% endif %}</a></div>
  </div>
 {% endif %}
 <!-- end .block.block-home-participating-orgs -->

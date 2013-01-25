@@ -14,6 +14,9 @@
 
 """Module containing the views for GCI home page."""
 
+
+from django.utils import translation
+
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
@@ -28,9 +31,11 @@ from soc.modules.gci.views.helper import url_names
 class HowItWorks(Template):
   """How it works template."""
 
-  CONTEST_BEGINS_ON_MSG = "Contest begins on %s %s"
+  CONTEST_BEGINS_ON_MSG = translation.ugettext('Contest begins on %s')
 
-  GET_STARTED_NOW_MSG = "Get Started Now!"
+  CONTEST_CLOSED_ON_MSG = translation.ugettext('Contest closed on %s')
+
+  GET_STARTED_NOW_MSG = translation.ugettext('Get Started Now!')
 
   def __init__(self, data):
     self.data = data
@@ -55,7 +60,7 @@ class HowItWorks(Template):
       if self.data.program.example_tasks:
         example_tasks_link = self.data.program.example_tasks
     elif self.data.timeline.studentSignup() and not self.data.profile:
-      start_text = 'Register As Student'
+      start_text = 'Register as a Student'
 
       start_link = self.data.redirect.createProfile('student').urlOf(
           'create_gci_profile', secure=True)
@@ -89,13 +94,14 @@ class HowItWorks(Template):
     return "v2/modules/gci/homepage/_how_it_works.html"
 
   def _getMainText(self):
-    if self.data.timeline.studentSignup():
-      return self.GET_STARTED_NOW_MSG
-    else:
+    if self.data.timeline.beforeStudentSignupStart():
       sign_up_start = self.data.timeline.studentSignupStart()
-      month = sign_up_start.strftime("%b")
-      day = sign_up_start.strftime("%d")
-      return self.CONTEST_BEGINS_ON_MSG % (month, day)
+      return self.CONTEST_BEGINS_ON_MSG % (sign_up_start.strftime('%b %d'),)
+    elif self.data.timeline.studentSignup():
+      return self.GET_STARTED_NOW_MSG
+    elif self.data.timeline.afterStopAllWorkDeadline():
+      contest_closed = self.data.timeline.stopAllWorkDeadline()
+      return self.CONTEST_CLOSED_ON_MSG % (contest_closed.strftime('%b %d'),)
 
 
 class FeaturedTask(Template):

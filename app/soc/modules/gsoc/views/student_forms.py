@@ -49,7 +49,7 @@ class TaxForm(GSoCModelForm):
     return self.request_data.kwargs['admin']
 
   def _r(self):
-    if self._admin:
+    if self._admin():
       self.request_data.redirect.profile()
     else:
       self.request_data.redirect.program()

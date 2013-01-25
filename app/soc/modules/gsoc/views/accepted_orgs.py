@@ -44,15 +44,15 @@ class AcceptedOrgsList(Template):
       return self.data.redirect.urlOf('gsoc_org_home')
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
     list_config.setRowAction(RowAction)
-    list_config.addColumn('tags', 'Tags',
+    list_config.addPlainTextColumn('tags', 'Tags',
                           lambda e, *args: ", ".join(e.tags))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'ideas', 'Ideas',
-        (lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]")),
+        lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]"),
         hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')

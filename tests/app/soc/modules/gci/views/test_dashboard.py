@@ -51,11 +51,15 @@ class DashboardTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 
+  def testDashboardAsLoneUser(self):
+    self.data.createUser()
+    response = self.get(self._getDashboardUrl())
+    self.assertResponseForbidden(response)
+
   def testDashboardAsHost(self):
     self.data.createHost()
     response = self.get(self._getDashboardUrl())
-    self.assertResponseOK(response)
-    self.assertDashboardComponentTemplatesUsed(response)
+    self.assertResponseForbidden(response)
 
   def testDashboardAsMentorWithTask(self):
     self.data.createMentorWithTask('Open', self.org)

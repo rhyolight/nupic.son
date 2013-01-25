@@ -74,6 +74,12 @@ class ProfileForm(forms.ModelForm):
 
   public_name = fields.CharField(required=True)
 
+  clean_public_name = cleaning.clean_html_content('public_name')
+  clean_name_on_documents = cleaning.clean_html_content('name_on_documents')
+  clean_im_network = cleaning.clean_html_content('im_network')
+  clean_im_handle = cleaning.clean_html_content('im_handle')
+  clean_program_knowledge = cleaning.clean_html_content('program_knowledge')
+
   clean_given_name = cleaning.clean_valid_shipping_chars('given_name')
   clean_surname = cleaning.clean_valid_shipping_chars('surname')
   clean_email = cleaning.clean_email('email')
@@ -190,7 +196,7 @@ class ProfilePage(object):
     elif role == 'mentor':
       page_name = 'Register as a Mentor'
     elif role == 'org_admin':
-      page_name = 'Register as Org Admin'
+      page_name = 'Register as an Org Admin'
 
     if self.data.user:
       user_form = EmptyForm(self.data.POST or None, instance=self.data.user)

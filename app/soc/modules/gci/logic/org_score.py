@@ -26,6 +26,12 @@ from soc.modules.gci.models.score import GCIOrgScore
 from soc.modules.gci.models.task import GCITask
 
 
+# TODO(daniel): this should be a parameter of the program
+# determines the maximal position from which the student may be
+# proposed to be a winner by organization admins
+POSSIBLE_WINNER_MAX_POSITION = 5
+
+
 def updateOrgScoreTxn(task):
   """Returns a transactional function that updates GCIOrgScore for
   the specified task.
@@ -115,6 +121,22 @@ def clearOrgScoresTxn(profile_key):
     student_info.put()
 
   return txn
+
+
+def getPossibleWinners(org):
+  """Returns the possible winners for the specified organization which can
+  be chosen by the organization admins.
+  """
+  # TODO(daniel): this should not retrieve all the students and sort them.
+  # Currently it is necessary, as it is not possible to order the entities
+  # by the length of the list. Instead, number of completed tasks should
+  # be explicitly added to OrgScore model.
+  org_scores = queryForOrg(org).fetch(1000)
+  org_scores = sorted(org_scores, key=lambda e: len(e.tasks), reverse=True)
+
+  profiles = [org_score.parent() for org_score in org_scores]
+
+  return profiles[:POSSIBLE_WINNER_MAX_POSITION]
 
 
 def queryForOrg(org, keys_only=False):

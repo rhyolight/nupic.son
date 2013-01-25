@@ -80,7 +80,7 @@ class GSoCUserForm(gsoc_forms.GSoCModelForm):
     css_prefix = 'user'
     fields = ['link_id']
 
-  link_id = gsoc_forms.CharField(label='URL ID')
+  link_id = gsoc_forms.CharField(label='Username')
   clean_link_id = cleaning.clean_user_not_exist('link_id')
 
 
@@ -189,6 +189,9 @@ class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
 
   school_home_page = fields.URLField(required=True)
   clean_school_home_page =  cleaning.clean_url('school_home_page')
+
+  clean_school_name = cleaning.clean_html_content('school_name')
+  clean_major = cleaning.clean_html_content('major')
 
 
 class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):

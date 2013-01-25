@@ -17,8 +17,11 @@
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
+from soc.logic import exceptions
+
 from soc.views import forms
 from soc.views import survey
+from soc.views.helper import access_checker
 from soc.views.helper import lists
 
 from soc.logic import cleaning
@@ -46,7 +49,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
 
   backup_admin_id = django_forms.CharField(
       label=ugettext('Backup Admin'), required=True,
-      help_text=ugettext('The Link ID of the user who will serve as the '
+      help_text=ugettext('The username of the user who will serve as the '
                          'backup admin for this organization.'))
 
   def __init__(self, survey, tos_content, bound_class_field, *args, **kwargs):
@@ -129,8 +132,11 @@ class OrgAppRecordsList(object):
   def checkAccess(self):
     """Defines access checks for this list, all hosts should be able to see it.
     """
+    if not self.data.org_app:
+      raise exceptions.NotFound(
+          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+
     self.check.isHost()
-    self.mutator.orgAppFromKwargs()
 
   def context(self):
     """Returns the context of the page to render.

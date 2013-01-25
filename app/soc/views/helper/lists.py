@@ -22,10 +22,116 @@ import logging
 
 from google.appengine.ext import db
 
+from django.utils import html
 from django.utils import simplejson
 
 from soc.views.template import Template
 
+
+class ColumnType(object):
+  # TODO(daniel): add doc string
+  """
+  """
+  PLAIN_TEXT = 'plain_text'
+  NUMERICAL = 'numerical'
+  HTML = 'html'
+
+  def safe(self, value):
+    """Returns a safe representation of the specified value which can be safely
+    rendered as HTML in the list.
+
+    This method should be overridden by all non-abstract subclasses.
+
+    Args:
+      value: the specified value for which to return the safe representation
+    """
+    raise NotImplementedError
+
+
+class PlainTextColumnType(ColumnType):
+  """Class which represents a column which contains textual values.
+
+  As it may hold arbitrary string of bytes, the returned value must be
+  HTML escaped.
+  """
+
+  def safe(self, value):
+    """Returns HTML escaped representation of the specified value.
+
+    Args:
+      value: the specified value which is to be HTML escaped
+    """
+    return html.conditional_escape(value)
+
+
+class NumericalColumnType(ColumnType):
+  """Class which represents a column which contains numerical values."""
+
+  def safe(self, value):
+    """Returns the safe representation of the specified value. It is assumed
+    that only numerical values are passed here, so the the output is not HTML
+    escaped.
+
+    Args:
+      value: the specified string or a number for which 
+          to return the safe representation
+
+    Returns:
+      numerical representation of the specified value or the empty string for
+      None and the empty string.
+
+    Raises:
+      ValueError: if the specified value is invalid
+      TypeError: if the specified value is neither a number nor a string
+    """
+    if value is None or value == '':
+      safe_value = ''
+    elif isinstance(value, int) or isinstance(value, long) or \
+        isinstance(value, float):
+      safe_value = value
+    else:
+      try:
+        safe_value = int(value)
+      except ValueError:
+        safe_value = float(value)
+
+    return safe_value
+
+
+class HtmlColumnType(ColumnType):
+  """Class which represents a column which contains HTML content."""
+
+  def safe(self, value):
+    """Returns the safe representation of the specified value. The output is
+    not HTML escaped so it is developer's responsibility to assure it does
+    not contain any malicious content.
+
+    Args:
+      value: the specified value for which to return the safe representation
+    """
+    return value
+
+
+class ColumnTypeFactory(object):
+  """Parametric factory which creates concrete instances of."""
+
+  @classmethod
+  def create(cls, column_type):
+    """Returns an instance of the subclass of ColumnType class which
+    corresponds to the specified column_type parameter.
+
+    Args:
+      column_type: the specified column type which must be one of the constant
+          values specified in ColumnType class.
+    """
+    if column_type == ColumnType.PLAIN_TEXT:
+      return PlainTextColumnType()
+    elif column_type == ColumnType.NUMERICAL:
+      return NumericalColumnType()
+    elif column_type == ColumnType.HTML:
+      return HtmlColumnType()
+    else:
+      raise ValueError("Invalid column_type: %s" % column_type)
 
 def getListIndex(request):
   """Returns the index of the requested list.
@@ -101,7 +207,7 @@ class ListConfiguration(object):
     """Adds a column for the key.
     """
     func = lambda e, *args: str(e.key().id_or_name())
-    self.addColumn('key', 'Key', func, hidden=True)
+    self._addColumn('key', 'Key', func, hidden=True)
 
   def setDefaultPagination(self, row_num, row_list=None):
     """Sets the default pagination.
@@ -124,9 +230,9 @@ class ListConfiguration(object):
     if row_list:
       self.row_list = row_list
 
-  def addColumn(self, col_id, name, func,
-                width=None, resizable=True,
-                hidden=False, searchhidden=True, options=None):
+  def _addColumn(self, col_id, name, func, width=None, resizable=True,
+                hidden=False, searchhidden=True, options=None,
+                column_type=ColumnType.PLAIN_TEXT):
     """Adds a column to the end of the list.
 
     Args:
@@ -142,6 +248,7 @@ class ListConfiguration(object):
       hidden: Whether the column should be hidden by default.
       searchhidden: Whether this column should be searchable when hidden.
       options: An array of (regexp, display_value) tuples.
+      column_type: One of the types specified in ColumnType class.
     """
     if self._col_functions.get(col_id):
       logging.warning('Column with id %s is already defined' % col_id)
@@ -154,6 +261,7 @@ class ListConfiguration(object):
         'index': col_id,
         'resizable': resizable,
         'hidden': hidden,
+        'column_type': column_type,
     }
 
     if width:
@@ -174,6 +282,33 @@ class ListConfiguration(object):
     self._col_map[col_id] = model
     self._col_names.append(name)
     self._col_functions[col_id] = func
+
+  def addPlainTextColumn(self, col_id, name, func, **kwargs):
+    """Adds a plain text column to the end of the list.
+
+    The values may contain arbitrary content which will be HTML escaped.
+    """
+    self._addColumn(
+        col_id, name, func, column_type=ColumnType.PLAIN_TEXT, **kwargs)
+
+  def addNumericalColumn(self, col_id, name, func, **kwargs):
+    """Adds a numerical column to the end of the list.
+
+    It is expected that all the values in this columns will be numbers.
+    The rendered output will not be HTML escaped.
+    """
+    self._addColumn(
+        col_id, name, func, column_type=ColumnType.NUMERICAL, **kwargs)
+
+  def addHtmlColumn(self, col_id, name, func, **kwargs):
+    """Adds a HTML column to the end of the list.
+
+    The content of the column may contain arbitrary HTML code which will be
+    rendered on the page without being escaped. It is vulnerable to malicious
+    inputs, so it should never be used for values which are entered by users.
+    """
+    self._addColumn(
+        col_id, name, func, column_type=ColumnType.HTML, **kwargs)
 
   def __addRowButton(self, col_id, button_id, caption, type, classes,
                      parameters):
@@ -235,33 +370,33 @@ class ListConfiguration(object):
     """Adds a column to the end of the list which uses the id of the column as
     attribute name of the entity to get the data from.
 
-    This method is basically a shorthand for addColumn with the function as
+    This method is basically a shorthand for _addColumn with the function as
     lambda ent, *args: getattr(ent, id).
 
     Args:
       col_id: A unique identifier of this column and name of the field to get
           the data from.
       name: The header of the column that is shown to the user.
-      **kwargs: passed on to addColumn
+      **kwargs: passed on to _addColumn
     """
     func = lambda ent, *args: getattr(ent, col_id)
-    self.addColumn(col_id, name, func, **kwargs)
+    self._addColumn(col_id, name, func, **kwargs)
 
   def addDictColumn(self, col_id, name, **kwargs):
     """Adds a column to the end of the list which uses the id of the column as
     key of the dictionary to get the data from.
 
-    This method is basically a shorthand for addColumn with the function as
+    This method is basically a shorthand for _addColumn with the function as
     lambda d, *args: d[id].
 
     Args:
       col_id: A unique identifier of this column and name of the field to get
           the data from.
       name: The header of the column that is shown to the user.
-      **kwargs: passed on to addColumn
+      **kwargs: passed on to _addColumn
     """
     func = lambda d, *args: d[col_id]
-    self.addColumn(col_id, name, func, **kwargs)
+    self._addColumn(col_id, name, func, **kwargs)
 
   def __addButton(self, col_id, caption, bounds, col_type, parameters):
     """Internal method for adding buttons so that the uniqueness of the id can
@@ -349,7 +484,7 @@ class ListConfiguration(object):
     """Adds a new template column.
     """
       
-    self.addColumn(col_id, name, lambda *args, **kwargs: '' , **kwargs)
+    self._addColumn(col_id, name, lambda *args, **kwargs: '' , **kwargs)
 
     if self._templates.get(col_id):
       logging.warning(
@@ -742,8 +877,10 @@ class ListContentResponse(object):
     """
     columns = {}
     for col_id, func in self._config._col_functions.iteritems():
-      val = func(entity, *args, **kwargs)
-      columns[col_id] = val if val != None else ''
+      col_model = self._config._col_map.get(col_id, {})
+      value = func(entity, *args, **kwargs) or ''
+      column_type = ColumnTypeFactory.create(col_model['column_type'])
+      columns[col_id] = column_type.safe(value)
 
     row = {}
     buttons= {}

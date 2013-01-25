@@ -35,17 +35,17 @@ class MentorsList(Template):
 
     list_config = lists.ListConfiguration()
 
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
                           lambda e, *args: e.name().strip())
-    list_config.addSimpleColumn('link_id', 'Link ID')
-    list_config.addColumn('is_org_admin', 'Org Admin',
+    list_config.addSimpleColumn('link_id', 'Username')
+    list_config.addPlainTextColumn('is_org_admin', 'Org Admin',
         lambda e, *args: 'Yes' if e.is_org_admin else 'No', hidden=True)
     list_config.addSimpleColumn('email', 'Email')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'org_admin_for', 'Org Admin For',
         lambda e, org_admin_for, *args: ', '.join(
             [org_admin_for[k].name for k in e.org_admin_for]))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'mentor_for', 'Mentor For',
         lambda e, mentor_for, *args: ', '.join(
             [mentor_for[k].name for k in e.mentor_for]))

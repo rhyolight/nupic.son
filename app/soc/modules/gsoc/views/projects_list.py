@@ -50,15 +50,16 @@ class ProjectList(Template):
 
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent_key().name(), ent.key().id())), hidden=True)
-    list_config.addColumn('student', 'Student',
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent_key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('student', 'Student',
         lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org', 'Organization',
+    list_config.addPlainTextColumn('org', 'Organization',
         lambda entity, *args: entity.org.name)
     list_config.addSimpleColumn('status', 'Status', hidden=True)
-    list_config.addColumn('mentors', 'Mentors',
+    list_config.addPlainTextColumn('mentors', 'Mentors',
         lambda entity, *args: args[0][entity.key()], hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')

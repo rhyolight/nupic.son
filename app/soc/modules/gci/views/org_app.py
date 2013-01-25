@@ -20,7 +20,7 @@ from django import http
 from django.utils import simplejson
 from django.utils.translation import ugettext
 
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
@@ -46,7 +46,6 @@ class GCIOrgAppEditPage(GCIRequestHandler):
 
   def checkAccess(self):
     self.check.isHost()
-    self.mutator.orgAppFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/edit.html'
@@ -113,7 +112,10 @@ class GCIOrgAppEditPage(GCIRequestHandler):
 
 
 class GCIOrgAppPreviewPage(GCIRequestHandler):
-  """View for organizations to submit their application.
+  """Organization Application preview page.
+
+  View for Organization Administrators to preview the organization
+  application for the program specified in the URL.
   """
 
   def djangoURLPatterns(self):
@@ -124,7 +126,6 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
 
   def checkAccess(self):
     self.check.isHost()
-    self.mutator.orgAppFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'
@@ -155,7 +156,10 @@ class GCIOrgAppTakePage(GCIRequestHandler):
     ]
 
   def checkAccess(self):
-    self.mutator.orgAppFromKwargs()
+    if not self.data.org_app:
+      raise exceptions.NotFound(
+          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+
     self.mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(self.data.org_app)
 
@@ -266,11 +270,11 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
           url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
 
     if not post_data.get('button_id', None) == 'save':
-      raise BadRequest('No valid POST data found')
+      raise exceptions.BadRequest('No valid POST data found')
 
     data = self.data.POST.get('data')
     if not data:
-      raise BadRequest('Missing data')
+      raise exceptions.BadRequest('Missing data')
 
     parsed = simplejson.loads(data)
     self.data.redirect.program()
@@ -310,7 +314,10 @@ class GCIOrgAppShowPage(GCIRequestHandler):
     ]
 
   def checkAccess(self):
-    self.mutator.orgAppFromKwargs()
+    if not self.data.org_app:
+      raise exceptions.NotFound(
+          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+
     self.mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(self.data.org_app_record)
 

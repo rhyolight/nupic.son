@@ -234,7 +234,7 @@ class SurveyReminderTask(object):
       # set the receiver and subject
       mail_context['to'] = to_address
       mail_context['subject'] = \
-          'Evaluation Survey "%s" Reminder' %(survey.title)
+          'Evaluation "%s" Reminder' %(survey.title)
 
       # find all org admins for the project's organization
       org = project.org

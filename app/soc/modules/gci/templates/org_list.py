@@ -85,9 +85,9 @@ class BasicOrgList(OrgList):
     r = self.data.redirect
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
     list_config.setRowAction(self._getRedirect())
     return list_config
 

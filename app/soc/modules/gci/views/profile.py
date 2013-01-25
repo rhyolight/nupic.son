@@ -75,13 +75,12 @@ SHOW_STUDENT_EXCLUDE = STUDENT_EXCLUDE + [
 class GCIUserForm(gci_forms.GCIModelForm):
   """Django form for User model in GCI program.
   """
-  link_id = gci_forms.CharField(label='URL ID')
   class Meta:
     model = User
     css_prefix = 'user'
     fields = ['link_id']
 
-  link_id = gci_forms.CharField(label='URL ID', help_text=LINK_ID_HELP_TEXT)
+  link_id = gci_forms.CharField(label='Username', help_text=LINK_ID_HELP_TEXT)
   clean_link_id = cleaning.clean_user_not_exist('link_id')
 
 
@@ -262,6 +261,9 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
     widgets = forms.choiceWidgets(
         model, ['school_country', 'school_type', 'degree'])
 
+  clean_school_name = cleaning.clean_html_content('school_name')
+  clean_major = cleaning.clean_html_content('major')
+
 
 class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
   """View for the GCI participant profile."""
@@ -373,7 +375,6 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
         form = GCIShowCreateStudentProfileForm
       if self.data.POST:
         birth_date = self.data.request.COOKIES.get('age_check')
-        self.data.POST = self.data.POST.copy()
         self.data.POST['birth_date'] = birth_date
     else:
       form = GCICreateProfileForm

@@ -24,7 +24,6 @@ from soc.logic import accounts
 from soc.logic import cleaning
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
-from soc.views.dashboard import DashboardUserActions
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.models.profile import GCIProfile
@@ -101,7 +100,6 @@ class DashboardPage(GCIRequestHandler):
     dashboards.append(ParticipantsDashboard(self.data.request, self.data))
 
     return {
-        'colorbox': self.data.GET.get('colorbox'),
         'dashboards': dashboards,
         'page_name': 'Admin dashboard',
     }
@@ -156,8 +154,7 @@ class MainDashboard(Dashboard):
         },
         {
             'name': 'org_app',
-            'description': ugettext(
-                'Edit organization application'),
+            'description': ugettext('Manage Mentoring Organizations'),
             'title': 'Organizations',
             'link': '',
             'subpage_links': organizations.getSubpagesLink(),
@@ -200,7 +197,7 @@ class ProgramSettingsDashboard(Dashboard):
             'description': ugettext(
                 'Edit your program settings such as information, slots, '
                 'documents, etc.'),
-            'title': 'Edit program',
+            'title': 'Edit program settings',
             'link': r.urlOf('edit_gci_program')
         },
         {
@@ -251,7 +248,7 @@ class ProgramSettingsDashboard(Dashboard):
 class OrgDashboard(Dashboard):
   """Dashboard for admin's Organization related information.
 
-  This page includes links for Org app surveys, participating org info, etc.
+  This page includes links for Org app surveys, mentoring org info, etc.
   """
 
   def __init__(self, request, data):
@@ -271,6 +268,13 @@ class OrgDashboard(Dashboard):
                 'Create or edit organization application'),
             'title': 'Edit organization application',
             'link': r.urlOf('gci_edit_org_app')
+        },
+        {
+            'name': 'preview_org_app',
+            'description': ugettext(
+                'Preview of the organization application.'),
+            'title': 'Preview organization application',
+            'link': r.urlOf('gci_preview_org_app')
         },
         {
             'name': 'org_app_records',
@@ -300,6 +304,14 @@ class OrgDashboard(Dashboard):
                 'the chosen organization'),
             'title': 'Organization Tasks',
             'link': r.urlOf(url_names.GCI_ORG_CHOOSE_FOR_ALL_TASKS)
+        },
+        {
+            'name': 'proposed_winners',
+            'description': ugettext(
+                'List of the Grand Prize Winners that have been proposed by '
+                'organizations'),
+            'title': 'Proposed Grand Prize Winners',
+            'link': r.urlOf(url_names.GCI_VIEW_PROPOSED_WINNERS)
         },
     ]
 
@@ -412,12 +424,9 @@ class LookupLinkIdPage(GCIRequestHandler):
       profile = form.cleaned_data.get('profile')
 
     if profile:
-      cbox = bool(self.data.GET.get('cbox'))
-
       # TODO(nathaniel): setting redirection in a context() method?
       self.redirect.profile(profile.link_id)
-      self.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN,
-                       cbox=cbox, secure=True)
+      self.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN, secure=True)
 
     return {
       'forms': forms,

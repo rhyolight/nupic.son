@@ -317,7 +317,8 @@ class GCIProgramHelper(ProgramHelper):
     properties = {'scope': self.program, 'status': 'active',
                   'founder': self.founder,
                   'home': None,
-                  'task_quota_limit': 100}
+                  'task_quota_limit': 100,
+                  'backup_winner': None}
     properties.update(override)
     return self.seed(GCIOrganization, properties)
 

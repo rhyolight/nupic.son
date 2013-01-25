@@ -420,7 +420,7 @@ class UserInvitesList(Template):
     r = data.redirect
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('org', 'From',
+    list_config.addPlainTextColumn('org', 'From',
         lambda entity, *args: entity.org.name)
     list_config.addSimpleColumn('status', 'Status')
     list_config.setRowAction(

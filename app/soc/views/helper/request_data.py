@@ -1,5 +1,3 @@
-# Copyright 2011 the Melange authors.
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,7 +11,7 @@
 # limitations under the License.
 
 """Module containing the RequestData object that will be created for each
-request in the GSoC module.
+request.
 """
 
 import datetime
@@ -27,7 +25,7 @@ from django.core import urlresolvers
 from django.utils import encoding
 
 from soc.logic import system
-from soc.logic import site
+from soc.logic import site as site_logic
 from soc.logic import user
 from soc.views.helper import access_checker
 
@@ -98,6 +96,9 @@ class TimelineHelper(object):
   def studentSignupEnd(self):
     return self.timeline.student_signup_end
 
+  def stopAllWorkDeadline(self):
+    return self.timeline.stop_all_work_deadline
+
   def studentsSignupBetween(self):
     return (self.timeline.student_signup_start,
             self.timeline.student_signup_end)
@@ -134,6 +135,9 @@ class TimelineHelper(object):
   def afterStudentSignupEnd(self):
     return isAfter(self.studentSignupEnd())
 
+  def afterStopAllWorkDeadline(self):
+    return isAfter(self.stopAllWorkDeadline())
+
   def surveyPeriod(self, survey):
     start = survey.survey_start
     end = survey.survey_end
@@ -150,7 +154,7 @@ class RequestData(object):
   """Object containing data we query for each request.
 
   Fields:
-    site: the Site entity
+    site: the singleton site.Site entity
     user: the user entity (if logged in)
     request: the request object (as provided by django)
     args: the request args (as provided by djang)
@@ -165,79 +169,162 @@ class RequestData(object):
     gae_user: the Google Appengine user object
   """
 
-  def __init__(self):
-    """Constructs an empty RequestData object."""
-    self.site = None
-    self.user = None
-    self.request = None
-    self.args = []
-    self.kwargs = {}
-    self.GET = None
-    self.POST = None
-    self.path = None
-    self.full_path = None
-    self.is_developer = False
-    self.gae_user = None
-    self.css_path = 'gsoc'
-    self._login_url = None
-    self._logout_url = None
-    self._ds_write_disabled = None
+  # class attribute which is assigned to all fields which have not been set
+  _unset = object()
+
+
+  def __init__(self, request, args, kwargs):
+    """Constructs a new RequestData object.
+
+    Args:
+      request: Django HTTPRequest object.
+      args: The args that Django sends along with the request.
+      kwargs: The kwargs that Django sends along with the request.
+    """
+
+    self.request = request
+    self.args = args
+    self.kwargs = kwargs
+
+    self._redirect = self._unset
+    self._site = self._unset
+    self._user = self._unset
+    self._GET = self._unset
+    self._POST = self._unset
+    # TODO(daniel): check if this field is really used
+    self._path = self._unset
+    self._is_developer = self._unset
+    self._gae_user = self._unset
+    self._css_path = self._unset
+    self._login_url = self._unset
+    self._logout_url = self._unset
+    self._ds_write_disabled = self._unset
+
+    # explicitly copy POST and GET dictionaries so they can be modified
+    # the default QueryDict objects used by Django are immutable, but their
+    # copies may be modified
+    # TODO(daniel): these dictionaries should not be modified in the first
+    # place, so these copying must be eventually eliminated
+    if self.request:
+      self.request.POST = self.request.POST.copy()
+      self.request.GET = self.request.GET.copy()
+
+  def _isSet(self, value):
+    """Checks whether the specified field has been set or not.
+
+    Args:
+      value: the specified value of one of the fields supported by this class.
+
+    Returns:
+      True if the value is set or False otherwise.
+    """
+    return value is not self._unset
+
+  @property
+  def css_path(self):
+    """Returns the css_path property."""
+    if not self._isSet(self._css_path):
+      # TODO(daniel): this should not return gsoc in module
+      # I believe css_path is needed in the main module because of a few sites
+      # that are not specific to any module, like site or host
+      self._css_path = 'gsoc'
+    return self._css_path
+
+  @property
+  def gae_user(self):
+    """Returns the gae_user property."""
+    if not self._isSet(self._gae_user):
+      self._gae_user = users.get_current_user()
+    return self._gae_user
+    
+  @property
+  def is_developer(self):
+    """Returns the is_developer field."""
+    if not self._isSet(self._is_developer):
+      if users.is_current_user_admin():
+        self._is_developer = True
+      elif self.user and self.user.is_developer:
+        self._is_developer = True
+      else:
+        self._is_developer = False
+    return self._is_developer
+
+  @property
+  def path(self):
+    """Returns the path field."""
+    if not self._isSet(self._path):
+      self._path = request.path.encode('utf-8')
+    return self._path
+
+  @property
+  def redirect(self):
+    """Returns the redirect helper."""
+    if not self._isSet(self._redirect):
+      self._redirect = RedirectHelper(self)
+    return self._redirect
+
+  @property
+  def site(self):
+    """Returns the site field."""
+    if not self._isSet(self._site):
+      # XSRF middleware might have already retrieved it for us
+      if not hasattr(self.request, 'site'):
+        # populate site.Site singleton to request field
+        self.request.site = site_logic.singleton()
+
+      self._site = self.request.site
+    return self._site
+
+  @property
+  def user(self):
+    """Returns the user field."""
+    if not self._isSet(self._user):
+      self._user = user.current()
+    return self._user
+
+  @property
+  def GET(self):
+    """Returns the GET dictionary associated with the processed request."""
+    if not self._isSet(self._GET):
+      self._GET = self.request.GET
+    return self._GET
+
+  @property
+  def POST(self):
+    """Returns the POST dictionary associated with the processed request."""
+    if not self._isSet(self._POST):
+      self._POST = self.request.POST
+    return self._POST
 
   @property
   def login_url(self):
     """Memoizes and returns the login_url for the current path."""
-    if not self._login_url:
-      self._login_url = users.create_login_url(self.full_path)
+    if not self._isSet(self._login_url):
+      self._login_url = users.create_login_url(
+          self.request.get_full_path().encode('utf-8'))
     return self._login_url
 
   @property
   def logout_url(self):
     """Memoizes and returns the logout_url for the current path."""
-    if not self._logout_url:
-      self._logout_url = users.create_logout_url(self.full_path)
+    if not self._isSet(self._logout_url):
+      self._logout_url = users.create_logout_url(
+          self.request.get_full_path().encode('utf-8'))
     return self._logout_url
 
   @property
   def ds_write_disabled(self):
     """Memoizes and returns whether datastore writes are disabled."""
-    if self._ds_write_disabled is not None:
-      return self._ds_write_disabled
+    if not self._isSet(self._ds_write_disabled):
+      if self.request.method == 'GET':
+        value = self.request.GET.get('dsw_disabled', '')
 
-    if self.request.method == 'GET':
-      val= self.request.GET.get('dsw_disabled', '')
+        if value.isdigit() and int(value) == 1:
+          self._ds_write_disabled = True
 
-      if val.isdigit() and int(val) == 1:
-        self._ds_write_disabled = True
-        return True
-
-    self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
+      if not self._isSet(self._ds_write_disabled):
+        self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
     return self._ds_write_disabled
-
-  def populate(self, redirect, request, args, kwargs):
-    """Populates the fields in the RequestData object.
-
-    Args:
-      request: Django HTTPRequest object.
-      args & kwargs: The args and kwargs django sends along.
-    """
-    self.redirect = redirect
-    self.request = request
-    self.args = args
-    self.kwargs = kwargs
-    self.GET = request.GET
-    self.POST = request.POST
-    self.path = request.path.encode('utf-8')
-    self.full_path = request.get_full_path().encode('utf-8')
-    # XSRF middleware already retrieved it for us
-    if not hasattr(request, 'site'):
-      request.site = site.singleton()
-    self.site = request.site
-    self.user = user.current()
-    if users.is_current_user_admin():
-      self.is_developer = True
-    if self.user and self.user.is_developer:
-      self.is_developer = True
-    self.gae_user = users.get_current_user()
 
   def appliedTo(self, organization):
     """Returns true iff the user has applied for the specified organization.
@@ -385,7 +472,7 @@ class RedirectHelper(object):
     self.kwargs['id'] = id
     return self
 
-  def urlOf(self, name, full=False, secure=False, cbox=False, extra=[]):
+  def urlOf(self, name, full=False, secure=False, extra=[]):
     """Returns the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -402,7 +489,7 @@ class RedirectHelper(object):
     else:
       url = urlresolvers.reverse(name)
 
-    url = self._appendGetArgs(url, cbox=cbox, extra_get_args=extra)
+    url = self._appendGetArgs(url, extra_get_args=extra)
 
     return self._fullUrl(url, full, secure)
 
@@ -435,11 +522,9 @@ class RedirectHelper(object):
 
   # TODO(nathaniel): Django's got to have a utility function for most of this.
   def _appendGetArgs(
-      self, url, cbox=False, validated=False, extra_get_args=None):
+      self, url, validated=False, extra_get_args=None):
     """Appends GET arguments to the specified URL."""
     get_args = extra_get_args or []
-    if cbox:
-      get_args.append('cbox=true')
 
     if validated:
       get_args.append('validated')
@@ -458,7 +543,7 @@ class RedirectHelper(object):
     return url
 
   def to(self, name=None, validated=False, full=False, secure=False,
-         cbox=False, extra=[], anchor=None):
+      extra=[], anchor=None):
     """Redirects to the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -468,7 +553,6 @@ class RedirectHelper(object):
       validated: If set to True will add &validated to GET arguments
       full: Whether the URL should include the protocol
       secure: Whether the protocol of the URL should be set to HTTPS
-      cbox: If set to True will add &cbox=true to GET arguments
       extra: List of additional arguments that will be added as GET arguments
 
     Returns:
@@ -483,7 +567,7 @@ class RedirectHelper(object):
     if anchor:
       url = '%s#%s' % (url, anchor)
 
-    url = self._appendGetArgs(url, cbox=cbox, validated=validated,
+    url = self._appendGetArgs(url, validated=validated,
         extra_get_args=extra)
 
     return self.toUrl(url, full=full, secure=secure)

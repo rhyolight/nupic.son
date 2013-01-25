@@ -124,9 +124,8 @@ class SystemTest(unittest.TestCase):
   def testGetHostName(self):
     """Tests that a correct host name is returned.
     """
-    test_data = RequestData()
-    test_site = site.Site(link_id='test', hostname='test_host')
-    test_data.site = test_site
+    test_data = RequestData(None, None, None)
+    test_data._site = site.Site(link_id='test', hostname='test_host')
 
     try:
       expected_host = os.environ['HTTP_HOST'] = 'some.testing.host.tld'
@@ -167,9 +166,8 @@ class SystemTest(unittest.TestCase):
   def testIsSecondaryHostName(self):
     """Tests if a request is from a secondary hostname.
     """
-    test_data = RequestData()
-    test_site = site.Site(link_id='test', hostname='test_host')
-    test_data.site = test_site
+    test_data = RequestData(None, None, None)
+    test_data._site = site.Site(link_id='test', hostname='test_host')
 
     try:
       os.environ['HTTP_HOST'] = 'some.testing.host.tld'

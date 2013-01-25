@@ -24,7 +24,6 @@ iconic dashboard (Dashboard) and component list (Component).
 from django.utils.translation import ugettext
 
 from soc.views.template import Template
-from soc.views.toggle_button import ToggleButtonTemplate
 
 
 class Component(Template):
@@ -106,44 +105,3 @@ class Dashboard(Template):
         subpages[:middle_ceil],
         subpages[middle_ceil:],
     ]
-
-
-class DashboardUserActions(Template):
-  """Template to render the left side user actions of dashboard.
-  """
-
-  DEF_USE_COLORBOX_HELP = ugettext(
-      'Choosing Yes will allow you to open link in the dashboard within '
-      'a box without leaving the page.')
-
-  def __init__(self, data):
-    super(DashboardUserActions, self).__init__(data)
-
-    self.toggle_buttons = []
-
-    state = self.data.GET.get('colorbox')
-    use_colorbox = ToggleButtonTemplate(
-        self.data, 'on_off', 'Use colorbox', 'use-colorbox',
-        self.actionURL(),
-        checked=state,
-        help_text=self.DEF_USE_COLORBOX_HELP,
-        labels = {
-            'checked': 'Yes',
-            'unchecked': 'No'})
-
-    self.toggle_buttons.append(use_colorbox)
-
-  def actionURL(self):
-    """Derived class must implement this method by returning a URL.
-
-    After the button is toggled, the page will be redirected to a given URL.
-    """
-    raise NotImplementedError()
-
-  def context(self):
-    return {
-        'toggle_buttons': self.toggle_buttons
-    }
-
-  def templatePath(self):
-    return 'soc/_user_action.html'

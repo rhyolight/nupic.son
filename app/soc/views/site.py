@@ -40,7 +40,7 @@ DEF_NO_DEVELOPER = ugettext(
 
 
 def getProgramMap():
-  choices = [('', 'Active program')]
+  choices = [('', '-----')]
   choices += callback.getCore().getProgramMap()
   return choices
 

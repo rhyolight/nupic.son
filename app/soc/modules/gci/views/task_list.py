@@ -171,7 +171,7 @@ class ChooseOrganizationList(BasicOrgList):
       # TODO(nathaniel): make this .organization call unnecessary.
       self.data.redirect.organization(organization=e)
 
-      return r.urlOf(url_names.GCI_ORG_TASKS_ALL)
+      return self.data.redirect.urlOf(url_names.GCI_ORG_TASKS_ALL)
     return redirect
 
   def _getDescription(self):

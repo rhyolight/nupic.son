@@ -134,8 +134,8 @@ DEF_IS_STUDENT = ugettext(
 DEF_NO_DOCUMENT = ugettext(
     'The document was not found')
 
-DEF_NO_LINK_ID = ugettext(
-    'Link ID should not be empty')
+DEF_NO_USERNAME = ugettext(
+    'Username should not be empty')
 
 DEF_NO_ORG_APP = ugettext(
     'The organization application for the program %s does not exist.')
@@ -149,7 +149,7 @@ DEF_NO_SUCH_PROGRAM = ugettext(
     'The url is wrong (no program was found).')
 
 DEF_NO_SURVEY_ACCESS = ugettext (
-    'You cannot take this survey because this survey is not created for'
+    'You cannot take this evaluation because this evaluation is not created for'
     'your role in the program.')
 
 DEF_NO_USER_LOGIN = ugettext(
@@ -160,7 +160,7 @@ DEF_NO_USER_PROFILE = ugettext(
     'You must not have a User profile to visit this page.')
 
 DEF_NO_USER = ugettext(
-    'User with the Link ID %s does not exist.')
+    'User with username %s does not exist.')
 
 DEF_NOT_ADMIN = ugettext(
     'You need to be a organization administrator for %s to access this page.')
@@ -191,7 +191,7 @@ DEF_NOT_VALID_REQUEST = ugettext(
     'This is not a valid request.')
 
 DEF_ORG_DOES_NOT_EXISTS = ugettext(
-    'Organization, whose link_id is %(link_id)s, does not exist in '
+    'Organization, whose Organization ID %(link_id)s, does not exist in '
     '%(program)s.')
 
 DEF_ORG_NOT_ACTIVE = ugettext(
@@ -384,21 +384,6 @@ class Mutator(object):
     if self.data.host or self.data.user.host_for:
       self.data.is_host = True
 
-  def orgAppFromKwargs(self, raise_not_found=True):
-    """Sets the organization application in RequestData object.
-
-    Args:
-      raise_not_found: iff False do not send 404 response.
-    """
-    assert self.data.program
-
-    q = OrgAppSurvey.all()
-    q.filter('program', self.data.program)
-    self.data.org_app = q.get()
-
-    if raise_not_found and not self.data.org_app:
-      raise NotFound(DEF_NO_ORG_APP % self.data.program.name)
-
   def orgAppRecordIfIdInKwargs(self):
     """Sets the organization application in RequestData object.
     """
@@ -433,7 +418,7 @@ class DeveloperMutator(Mutator):
       if self.data.is_host:
         return
       else:
-        raise NotFound(DEF_NO_LINK_ID)
+        raise NotFound(DEF_NO_USERNAME)
 
     user_key = db.Key.from_path('User', key_name)
 
@@ -455,7 +440,9 @@ class BaseAccessChecker(object):
     """Initializes the access checker object.
     """
     self.data = data
-    self.gae_user = users.get_current_user()
+
+    # TODO(daniel): get rid of it and use request_data directly
+    self.gae_user = data.gae_user
 
   def fail(self, message):
     """Raises an AccessViolation with the specified message.
@@ -504,14 +491,8 @@ class BaseAccessChecker(object):
 
 
   def isDeveloper(self):
-    """Checks if the current user is a Developer.
-    """
-    self.isUser()
-
-    if self.data.user.is_developer:
-      return
-
-    if users.is_current_user_admin():
+    """Checks if the current user is a Developer."""
+    if self.data.is_developer:
       return
 
     raise AccessViolation(DEF_NOT_DEVELOPER)

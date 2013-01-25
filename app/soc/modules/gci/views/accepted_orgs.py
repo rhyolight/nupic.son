@@ -47,11 +47,11 @@ class AcceptedOrgsList(OrgList):
       return self.data.redirect.urlOf(url_names.GCI_ORG_HOME)
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
     list_config.setRowAction(RowAction)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'ideas', 'Ideas',
         (lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]")),
         hidden=True)
@@ -117,13 +117,13 @@ class AcceptedOrgsAdminList(OrgList):
       return self.data.redirect.urlOf(url_names.GCI_ORG_HOME)
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
     list_config.setRowAction(RowAction)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
       'org_admins', 'Org Admins',
       lambda e, org_admins, *args: ", ".join(
           ["%s <%s>" % (o.name(), o.email) for o in org_admins[e.key()]]),

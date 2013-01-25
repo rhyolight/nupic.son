@@ -22,6 +22,8 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from soc.modules.gci.models import profile
+
 import soc.models.organization
 
 
@@ -40,3 +42,11 @@ class GCIOrganization(soc.models.organization.Organization):
     'to this address, in addition to those users who subscribed to the '
     'individual task.')
   notification_mailing_list.group = ugettext('4. Organization Preferences')
+
+  #: List of keys of the student profiles that are nominated to be
+  #: the grand prize winners by the organization
+  proposed_winners = db.ListProperty(db.Key)
+
+  #: Backup nomination for the grand prize winner by the organization
+  backup_winner = db.ReferenceProperty(reference_class=profile.GCIProfile,
+      required=False, collection_name='backup_winner_for')

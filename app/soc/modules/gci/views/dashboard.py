@@ -119,7 +119,7 @@ class DashboardPage(GCIRequestHandler):
   def checkAccess(self):
     """Denies access if you are not logged in.
     """
-    self.check.isLoggedIn()
+    self.check.isProfileActive()
 
   def templatePath(self):
     """Returns the path to the template.
@@ -168,7 +168,7 @@ class DashboardPage(GCIRequestHandler):
     return dashboards
 
   def shouldSubmitForms(self):
-    """Checks if the current user should submit the student forms
+    """Checks if the current user should submit the student forms.
     """
     student_id_form = False
     consent_form = False
@@ -237,14 +237,11 @@ class DashboardPage(GCIRequestHandler):
       components += self._getMentorComponents()
     elif self.data.is_mentor:
       components += self._getMentorComponents()
-    else:
-      components += self._getLoneUserComponents()
 
     return components
 
   def _getStudentComponents(self):
-    """Get the dashboard components for a student.
-    """
+    """Get the dashboard components for a student."""
     components = []
 
     return components
@@ -266,10 +263,6 @@ class DashboardPage(GCIRequestHandler):
     # TODO(nathaniel): Drop the first parameter of MyOrgsListBeforeCreateTask.
     components.append(MyOrgsListBeforeCreateTask(self.data.request, self.data))
 
-    # add request to become mentor component
-    # TODO(nathaniel): Drop the first parameter of AllOrgsListBeforeRequestRole.
-    components.append(AllOrgsListBeforeRequestRole(self.data.request, self.data))
-
     return components
 
   def _getOrgAdminComponents(self):
@@ -290,10 +283,7 @@ class DashboardPage(GCIRequestHandler):
     # add list of all the invitations
     components.append(OrgAdminInvitesList(self.data.request, self.data))
 
-    # add list of all the requests
-    components.append(OrgAdminRequestsList(self.data.request, self.data))
-
-    # add bulk create tasks component 
+    # add bulk create tasks component
     components.append(MyOrgsListBeforeBulkCreateTask(self.data.request, self.data))
 
     # add edit org profile component
@@ -301,20 +291,6 @@ class DashboardPage(GCIRequestHandler):
 
     # add org scores component
     components.append(MyOrgsScoresList(self.data.request, self.data))
-
-    return components
-
-  def _getLoneUserComponents(self):
-    """Get the dashboard components for users without any role.
-    """
-    components = []
-
-    component = self._getMyOrgApplicationsComponent()
-    if component:
-      components.append(component)
-
-    # add request to become mentor component
-    components.append(AllOrgsListBeforeRequestRole(self.data.request, self.data))
 
     return components
 
@@ -337,7 +313,7 @@ class DashboardPage(GCIRequestHandler):
 
     if record or q.get():
       # add a component showing the organization application of the user
-      return MyOrgApplicationsComponent(self.request, self.data, survey)
+      return MyOrgApplicationsComponent(self.data.request, self.data, survey)
 
     return None
 
@@ -353,8 +329,6 @@ class DashboardPage(GCIRequestHandler):
         links += self._getOrgAdminLinks()
       if self.data.is_mentor:
         links += self._getMentorLinks()
-    else:
-      links += self._getLoneUserLinks()
 
     return links
 
@@ -376,6 +350,10 @@ class DashboardPage(GCIRequestHandler):
     """Get the main dashboard links for org-admin.
     """
     links = []
+
+    # add propose winners component
+    if self.data.timeline.allReviewsStopped():
+      links.append(self._getProposeWinnersLink())
     return links
 
   def _getMentorLinks(self):
@@ -383,41 +361,6 @@ class DashboardPage(GCIRequestHandler):
     """
     links = []
     return links
-
-  def _getLoneUserLinks(self):
-    """Get the main dashboard links for users without any role.
-    """
-    links = []
-
-    link = self._getAddNewOrgAppLink()
-    if link:
-      links.append(link)
-
-    # add link to my invitations list
-    links.append(self._getMyInvitationsLink())
-
-    # add link to my requests list
-    links.append(self._getMyRequestsLink())
-
-    return links
-
-  def _getAddNewOrgAppLink(self):
-    """Get the link for org admins to take organization application survey.
-    """
-    survey = org_app_logic.getForProgram(self.data.program)
-    if not survey or not self.data.timeline.surveyPeriod(survey):
-      return []
-
-    r = self.data.redirect
-    r.program()
-
-    return {
-        'name': 'take_org_app',
-        'description': ugettext(
-            'Take organization application survey.'),
-        'title': 'Take organization application',
-        'link': r.urlOf('gci_take_org_app')
-        }
 
   def _getMyInvitationsLink(self):
     """Get the link of incoming invitations list (invitations sent to me).
@@ -431,20 +374,6 @@ class DashboardPage(GCIRequestHandler):
             'List of all invites which have been sent to me.'),
         'title': 'Invites to me',
         'link': r.urlOf(url_names.GCI_LIST_INVITES)
-        }
-
-  def _getMyRequestsLink(self):
-    """Get the link of requests which belong to the current user.
-    """
-    r = self.data.redirect
-    r.program()
-
-    return {
-        'name': 'list_requests',
-        'description': ugettext(
-            'List of all requests which have been sent by me.'),
-        'title': 'My requests',
-        'link': r.urlOf(url_names.GCI_LIST_REQUESTS)
         }
 
   def _getMyOrgInvitationsLink(self):
@@ -504,6 +433,19 @@ class DashboardPage(GCIRequestHandler):
         'link': r.urlOf('gci_view_task')
         }
 
+  def _getProposeWinnersLink(self):
+    """Get the link to the list of organization to propose winners for."""
+    r = self.data.redirect
+    r.program()
+
+    return {
+        'name': 'propose_winners',
+        'description': ugettext(
+            'Propose the Grand Prize Winners'),
+        'title': 'Propose the Grand Prize Winners',
+        'link': r.urlOf(url_names.GCI_ORG_CHOOSE_FOR_PROPOSE_WINNNERS)
+        }
+
 
 class MyOrgApplicationsComponent(Component):
   """Component for listing the Organization Applications of the current user.
@@ -526,10 +468,10 @@ class MyOrgApplicationsComponent(Component):
 
     list_config.addSimpleColumn('name', 'Name')
     list_config.addSimpleColumn('org_id', 'Organization ID')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'created', 'Created On',
         lambda ent, *args: format(ent.created, DATETIME_FORMAT))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'modified', 'Last Modified On',
         lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
 
@@ -612,55 +554,55 @@ class MyOrgsTaskList(Component):
 
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'org', 'Organization', lambda ent, *args: ent.org.name)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'type', 'Type', lambda entity, *args: ", ".join(entity.types))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'tags', 'Tags', lambda entity, *args: ", ".join(entity.tags))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'time_to_complete', 'Time to complete',
         lambda entity, *args: entity.taskTimeToComplete())
 
 
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'mentors', 'Mentors',
         lambda entity, mentors, *args: ', '.join(
             mentors[i].name() for i in entity.mentors))
 
     list_config.addSimpleColumn('description', 'Description', hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'student', 'Student',
         lambda ent, *args: ent.student.name() if ent.student else '',
         hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'created_by', 'Created by',
         lambda entity, *args: entity.created_by.name() \
             if entity.created_by else '',
         hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'modified_by', 'Modified by',
         lambda entity, *args: entity.modified_by.name() \
             if entity.modified_by else '',
         hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'created_on', 'Created on',
         lambda entity, *args: format(entity.created_on, DATETIME_FORMAT) \
             if entity.created_on else '',
         hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'modified_on', 'Modified on',
         lambda entity, *args: format(entity.modified_on, DATETIME_FORMAT) \
             if entity.modified_on else '',
         hidden=True)
-    list_config.addColumn('closed_on', 'Closed on',
+    list_config.addPlainTextColumn('closed_on', 'Closed on',
         lambda entity, *args: format(
             entity.closed_on, DATETIME_FORMAT) if entity.closed_on else '',
         hidden=True)
     list_config.addSimpleColumn('status', 'Status')
 
     # TODO (madhu): Super temporary solution until the pretty lists are up.
-    list_config.addColumn('edit', 'Edit',
+    list_config.addHtmlColumn('edit', 'Edit',
         lambda entity, *args: (
           '<a href="%s" style="color:#0000ff;text-decoration:underline;">'
           'Edit</a>' % (data.redirect.id(entity.key().id()).urlOf(
@@ -1126,44 +1068,6 @@ class MyOrgsListBeforeOrgProfile(MyOrgsList):
     self._list_config.setRowAction(RowAction)
 
 
-class AllOrgsListBeforeRequestRole(MyOrgsList):
-  """Component for listing all the organizations that the current user may
-  request to become mentor for.
-  """
-
-  def _setIdx(self):
-    self.idx = 8
-
-  def _setRowAction(self, request, data):
-    self._list_config.setRowAction(
-        lambda e, *args: data.redirect.invite('mentor', e)
-            .urlOf(url_names.GCI_SEND_REQUEST))
-
-  def getListData(self):
-    if lists.getListIndex(self.request) != self.idx:
-      return None
-
-    q = GCIOrganization.all()
-    q.filter('scope', self.data.program)
-    q.filter('status IN', ['new', 'active'])
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
-
-    return response_builder.build()
-
-  def _getContext(self):
-    org_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=self.idx, preload_list=False)
-
-    return {
-        'name': 'request_to_become_mentor',
-        'title': 'Request to become a mentor',
-        'lists': [org_list],
-        'description': ugettext('Request to become a mentor for one of '
-            'the participating organizations.')}
-
-
 class OrgAdminInvitesList(Component):
   """Template for list of invites that have been sent by the organizations
   that the current user is organization admin for.
@@ -1177,16 +1081,17 @@ class OrgAdminInvitesList(Component):
     # GCIRequest entities have user entities as parents, so the keys
     # for the list items should be parent scoped.
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
-    list_config.addColumn('to', 'To',
+    list_config.addPlainTextColumn('key', 'Key',
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('to', 'To',
         lambda entity, *args: entity.user.name)
     list_config.addSimpleColumn('status', 'Status')
 
     # organization column should be added only if the user is an administrator
     # for more than one organization
     if len(self.data.org_admin_for) > 1:
-      list_config.addColumn('org', 'From',
+      list_config.addPlainTextColumn('org', 'From',
         lambda entity, *args: entity.org.name)
 
     list_config.setRowAction(
@@ -1220,69 +1125,6 @@ class OrgAdminInvitesList(Component):
         'description': ugettext(
             'See all the invitations that have been sent '
             'by your organizations.')
-    }
-
-  def templatePath(self):
-    return 'v2/modules/gci/dashboard/list_component.html'
-
-
-class OrgAdminRequestsList(Component):
-  """Template for list of requests that have been sent to the organizations
-  that the current user is organization admin for.
-  """
-
-  def __init__(self, request, data):
-    self.request = request
-    self.data = data
-    r = data.redirect
-
-    # GCIRequest entities have user entities as parents, so the keys
-    # for the list items should be parent scoped.
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
-
-    list_config.addColumn('from', 'From',
-        lambda entity, *args: entity.user.name)
-    list_config.addSimpleColumn('status', 'Status')
-
-    # organization column should be added only if the user is an administrator
-    # for more than one organization
-    if len(self.data.org_admin_for) > 1:
-      list_config.addColumn('org', 'Organization',
-        lambda entity, *args: entity.org.name)
-
-    list_config.setRowAction(
-        lambda e, *args: r.userId(e.parent_key().name(), e.key().id())
-            .urlOf(url_names.GCI_RESPOND_REQUEST))
-
-    self.idx = 10
-    self._list_config = list_config
-
-  def getListData(self):
-    if lists.getListIndex(self.request) != self.idx:
-      return None
-
-    q = GCIRequest.all()
-    q.filter('type', 'Request')
-    q.filter('org IN', [e.key() for e in self.data.org_admin_for])
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
-
-    return response_builder.build()
-
-  def context(self):
-    request_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, self.idx)
-
-    return {
-        'name': 'incoming_requests',
-        'title': 'Incoming Requests',
-        'lists': [request_list],
-        'description': ugettext(
-            'See all the requests that have been sent to '
-            'your organizations.')
     }
 
   def templatePath(self):
