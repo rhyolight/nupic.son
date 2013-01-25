@@ -54,19 +54,16 @@ class GradingRecordsOverview(GSoCRequestHandler):
   def context(self):
     return {
         'page_name': 'Evaluation Group Overview',
-        # TODO(nathaniel): GradingRecordsList looks like it wants to
-        # only take a RequestData parameter.
-        'record_list': GradingRecordsList(self.data.request, self.data)
+        'record_list': GradingRecordsList(self.data),
         }
 
   def jsonContext(self):
-    """Handler for JSON requests.
-    """
+    """Handler for JSON requests."""
     idx = lists.getListIndex(self.data.request)
     if idx == 0:
-      return GradingRecordsList(
-          self.data.request, self.data).listContent().content()
+      return GradingRecordsList(self.data).listContent().content()
     else:
+      # TODO(nathaniel): Should this be a return statement?
       super(GradingRecordsOverview, self).jsonContext()
 
   def post(self):
@@ -95,14 +92,12 @@ class GradingRecordsList(Template):
   """Lists all GradingRecords for a single GradingSurveyGroup.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the template.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    self.request = request
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
@@ -220,7 +215,7 @@ class GradingRecordsList(Template):
       return ([mentors, student_profiles], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q,
+        self.data.request, self._list_config, q,
         starter, prefetcher=prefetcher)
     return response_builder.build()
 

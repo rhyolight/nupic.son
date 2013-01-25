@@ -31,8 +31,7 @@ from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
 
 class GSoCDocumentForm(GSoCModelForm):
-  """Django form for creating documents.
-  """
+  """Django form for creating documents."""
 
   class Meta:
     model = Document
@@ -149,11 +148,12 @@ class EventsPage(GSoCRequestHandler):
 
 
 class DocumentList(document.DocumentList):
-  """Template for list of documents.
-  """
+  """Template for list of documents."""
 
-  def __init__(self, request, data):
-    super(DocumentList, self).__init__(request, data, 'edit_gsoc_document')
+  def __init__(self, data):
+    super(DocumentList, self).__init__(
+        # TODO(nathaniel): I'll bet this request parameter is eliminable.
+        data.request, data, 'edit_gsoc_document')
 
   def templatePath(self):
     return 'v2/modules/gsoc/document/_document_list.html'
@@ -175,18 +175,16 @@ class DocumentListPage(GSoCRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    # TODO(nathaniel): DocumentList looks like it wants to take just
-    # a single RequestData parameter.
-    list_content = DocumentList(self.data.request, self.data).getListData()
+    list_content = DocumentList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def context(self):
     return {
         'page_name': "Documents for %s" % self.data.program.name,
-        'document_list': DocumentList(self.data.request, self.data),
+        'document_list': DocumentList(self.data),
         'program_select': ProgramSelect(self.data, 'list_gsoc_documents'),
     }

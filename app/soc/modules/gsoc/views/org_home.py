@@ -38,8 +38,7 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class Apply(Template):
-  """Apply template.
-  """
+  """Apply template."""
 
   def __init__(self, data, current_timeline):
     self.data = data
@@ -141,16 +140,14 @@ class Contact(Template):
 
 
 class ProjectList(Template):
-  """Template for list of student projects accepted under the organization.
-  """
+  """Template for list of student projects accepted under the organization."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addPlainTextColumn('student', 'Student',
@@ -182,7 +179,7 @@ class ProjectList(Template):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       list_query = project_logic.getAcceptedProjectsQuery(
           program=self.data.program, org=self.data.organization)
@@ -192,7 +189,7 @@ class ProjectList(Template):
           GSoCProject, [],  ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
+          self.data.request, self._list_config, list_query,
           starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
@@ -234,15 +231,13 @@ class GSoCHostActions(HostActions):
 
 
 class OrgHome(GSoCRequestHandler):
-  """View methods for Organization Home page.
-  """
+  """View methods for Organization Home page."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_home/base.html'
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
+    """Returns the list of tuples for containing URL to view method mapping."""
 
     return [
         url(r'org/%s$' % url_patterns.ORG, self,
@@ -254,25 +249,21 @@ class OrgHome(GSoCRequestHandler):
     ]
 
   def checkAccess(self):
-    """Access checks for GSoC Organization Homepage.
-    """
+    """Access checks for GSoC Organization Homepage."""
     pass
 
   def jsonContext(self):
-    """Handler for JSON requests.
-    """
+    """Handler for JSON requests."""
     assert isSet(self.data.organization)
-    list_content = ProjectList(self.data.request, self.data).getListData()
+    list_content = ProjectList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def context(self):
-    """Handler to for GSoC Organization Home page HTTP get request.
-    """
+    """Handler to for GSoC Organization Home page HTTP get request."""
     current_timeline = self.getCurrentTimeline(
         self.data.program_timeline, self.data.org_app)
 
@@ -313,8 +304,7 @@ class OrgHome(GSoCRequestHandler):
     if self.data.timeline.studentsAnnounced():
       context['students_announced'] = True
 
-      # TODO(nathaniel): Drop the first parameter of ProjectList.
-      context['project_list'] = ProjectList(self.data.request, self.data)
+      context['project_list'] = ProjectList(self.data)
 
     if self.data.is_host or accounts.isDeveloper():
       context['host_actions'] = GSoCHostActions(self.data)
