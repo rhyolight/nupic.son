@@ -95,8 +95,7 @@ class LookupForm(gsoc_forms.GSoCModelForm):
 
 
 class DashboardPage(GSoCRequestHandler):
-  """Dashboard for admins.
-  """
+  """Dashboard for admins."""
 
   def djangoURLPatterns(self):
     return [
@@ -116,14 +115,14 @@ class DashboardPage(GSoCRequestHandler):
     dashboards = []
 
     # TODO(nathaniel): All of these should drop their first parameter.
-    dashboards.append(MainDashboard(self.data.request, self.data))
-    dashboards.append(ProgramSettingsDashboard(self.data.request, self.data))
-    dashboards.append(ManageOrganizationsDashboard(self.data.request, self.data))
-    dashboards.append(EvaluationsDashboard(self.data.request, self.data))
-    dashboards.append(MentorEvaluationsDashboard(self.data.request, self.data))
-    dashboards.append(StudentEvaluationsDashboard(self.data.request, self.data))
-    dashboards.append(EvaluationGroupDashboard(self.data.request, self.data))
-    dashboards.append(StudentsDashboard(self.data.request, self.data))
+    dashboards.append(MainDashboard(self.data))
+    dashboards.append(ProgramSettingsDashboard(self.data))
+    dashboards.append(ManageOrganizationsDashboard(self.data))
+    dashboards.append(EvaluationsDashboard(self.data))
+    dashboards.append(MentorEvaluationsDashboard(self.data))
+    dashboards.append(StudentEvaluationsDashboard(self.data))
+    dashboards.append(EvaluationGroupDashboard(self.data))
+    dashboards.append(StudentsDashboard(self.data))
 
     return {
         'dashboards': dashboards,
@@ -140,28 +139,26 @@ class DashboardPage(GSoCRequestHandler):
 
 
 class MainDashboard(Dashboard):
-  """Dashboard for admin's main-dashboard
-  """
+  """Dashboard for admin's main-dashboard."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MainDashboard, self).__init__(request, data)
+    # TODO(nathaniel): Drop the request parameter of the super class.
+    super(MainDashboard, self).__init__(data.request, data)
 
   def context(self):
-    """Returns the context of main dashboard.
-    """
+    """Returns the context of main dashboard."""
     r = self.data.redirect
     r.program()
 
-    manage_orgs = ManageOrganizationsDashboard(self.request, self.data)
-    program_settings = ProgramSettingsDashboard(self.request, self.data)
-    evaluations = EvaluationsDashboard(self.request, self.data)
-    students = StudentsDashboard(self.request, self.data)
+    manage_orgs = ManageOrganizationsDashboard(self.data)
+    program_settings = ProgramSettingsDashboard(self.data)
+    evaluations = EvaluationsDashboard(self.data)
+    students = StudentsDashboard(self.data)
 
     subpages = [
         {
@@ -264,14 +261,12 @@ class MainDashboard(Dashboard):
 
 
 class ProgramSettingsDashboard(Dashboard):
-  """Dashboard for admin's program-settings-dashboard
-  """
+  """Dashboard for admin's program-settings-dashboard."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -311,7 +306,7 @@ class ProgramSettingsDashboard(Dashboard):
         },
     ]
 
-    super(ProgramSettingsDashboard, self).__init__(request, data, subpages)
+    super(ProgramSettingsDashboard, self).__init__(data.request, data, subpages)
 
   def context(self):
     """Returns the context of program settings dashboard.
@@ -332,14 +327,12 @@ class ProgramSettingsDashboard(Dashboard):
 
 
 class ManageOrganizationsDashboard(Dashboard):
-  """Dashboard for admin's manage-organizations-dashboard
-  """
+  """Dashboard for admin's manage-organizations-dashboard."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -390,11 +383,10 @@ class ManageOrganizationsDashboard(Dashboard):
         },
     ]
 
-    super(ManageOrganizationsDashboard, self).__init__(request, data, subpages)
+    super(ManageOrganizationsDashboard, self).__init__(data.request, data, subpages)
 
   def context(self):
-    """Returns the context of manage organizations dashboard.
-    """
+    """Returns the context of manage organizations dashboard."""
     subpages = self._divideSubPages(self.subpages)
 
     return {
@@ -411,18 +403,16 @@ class ManageOrganizationsDashboard(Dashboard):
 
 
 class EvaluationsDashboard(Dashboard):
-  """Dashboard for admin's evaluations-dashboard
-  """
+  """Dashboard for admin's evaluations-dashboard."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    mentor_evaluations = MentorEvaluationsDashboard(request, data)
-    student_evaluations = StudentEvaluationsDashboard(request, data)
+    mentor_evaluations = MentorEvaluationsDashboard(data)
+    student_evaluations = StudentEvaluationsDashboard(data)
 
     r = data.redirect
     r.program()
@@ -453,7 +443,7 @@ class EvaluationsDashboard(Dashboard):
         },
     ]
 
-    super(EvaluationsDashboard, self).__init__(request, data, subpages)
+    super(EvaluationsDashboard, self).__init__(data.request, data, subpages)
 
   def context(self):
     """Returns the context of manage organizations dashboard.
@@ -474,14 +464,12 @@ class EvaluationsDashboard(Dashboard):
 
 
 class MentorEvaluationsDashboard(Dashboard):
-  """Dashboard for mentor's evaluations
-  """
+  """Dashboard for mentor's evaluations."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -534,7 +522,7 @@ class MentorEvaluationsDashboard(Dashboard):
         },
     ]
 
-    super(MentorEvaluationsDashboard, self).__init__(request, data, subpages)
+    super(MentorEvaluationsDashboard, self).__init__(data.request, data, subpages)
 
   def context(self):
     """Returns the context of mentor evaluations dashboard.
@@ -559,14 +547,12 @@ class MentorEvaluationsDashboard(Dashboard):
 
 
 class StudentEvaluationsDashboard(Dashboard):
-  """Dashboard for student's evaluations
-  """
+  """Dashboard for student's evaluations."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -619,7 +605,7 @@ class StudentEvaluationsDashboard(Dashboard):
         },
     ]
 
-    super(StudentEvaluationsDashboard, self).__init__(request, data, subpages)
+    super(StudentEvaluationsDashboard, self).__init__(data.request, data, subpages)
 
   def context(self):
     """Returns the context of student evaluations dashboard.
@@ -644,14 +630,12 @@ class StudentEvaluationsDashboard(Dashboard):
 
 
 class EvaluationGroupDashboard(Dashboard):
-  """Dashboard for evaluation group
-  """
+  """Dashboard for evaluation group."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     subpages = [
@@ -669,11 +653,10 @@ class EvaluationGroupDashboard(Dashboard):
         },
     ]
 
-    super(EvaluationGroupDashboard, self).__init__(request, data, subpages)
+    super(EvaluationGroupDashboard, self).__init__(data.request, data, subpages)
 
   def context(self):
-    """Returns the context of evaluation group dashboard.
-    """
+    """Returns the context of evaluation group dashboard."""
     subpages = self._divideSubPages(self.subpages)
 
     return {
@@ -694,14 +677,12 @@ class EvaluationGroupDashboard(Dashboard):
 
 
 class StudentsDashboard(Dashboard):
-  """Dashboard for student related items.
-  """
+  """Dashboard for student related items."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
 
@@ -725,11 +706,10 @@ class StudentsDashboard(Dashboard):
         },
     ]
 
-    super(StudentsDashboard, self).__init__(request, data, subpages)
+    super(StudentsDashboard, self).__init__(data.request, data, subpages)
 
   def context(self):
-    """Returns the context of manage students dashboard.
-    """
+    """Returns the context of manage students dashboard."""
     subpages = self._divideSubPages(self.subpages)
 
     return {
@@ -746,8 +726,7 @@ class StudentsDashboard(Dashboard):
 
 
 class LookupLinkIdPage(GSoCRequestHandler):
-  """View for the participant profile.
-  """
+  """View for the participant profile."""
 
   def djangoURLPatterns(self):
     return [
@@ -791,11 +770,9 @@ class LookupLinkIdPage(GSoCRequestHandler):
 
 
 class AcceptedOrgsList(Template):
-  """Template for list of accepted organizations.
-  """
+  """Template for list of accepted organizations."""
 
   def __init__(self, request, data):
-    self.request = request
     self.data = data
 
     list_config = lists.ListConfiguration()
@@ -834,7 +811,7 @@ class AcceptedOrgsList(Template):
     }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
@@ -855,7 +832,7 @@ class AcceptedOrgsList(Template):
       return ([org_admins], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -1015,13 +992,11 @@ class ProposalsList(Template):
   """
 
   def __init__(self, request, data):
-    """Initializes this proposals list.
-    """
-    self.request = request
+    """Initializes this proposals list."""
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
@@ -1105,7 +1080,7 @@ class ProposalsList(Template):
         }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
@@ -1135,7 +1110,7 @@ class ProposalsList(Template):
     prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
     return response_builder.build(accepted, duplicates)
 
 
@@ -1179,15 +1154,13 @@ class ProposalsPage(GSoCRequestHandler):
 
 
 class ProjectsList(Template):
-  """Template for listing all projects of particular org.
-  """
+  """Template for listing all projects of particular org."""
 
   def __init__(self, request, data):
-    self.request = request
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addPlainTextColumn('student', 'Student',
@@ -1220,7 +1193,7 @@ class ProjectsList(Template):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       list_query = project_logic.getAcceptedProjectsQuery(
           program=self.data.program, org=self.data.organization)
@@ -1230,7 +1203,7 @@ class ProjectsList(Template):
           GSoCProject, ['org'], ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
+          self.data.request, self._list_config, list_query,
           starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
@@ -1312,7 +1285,7 @@ class SlotsList(AcceptedOrgsList):
     return list_config
 
   def post(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return False
 
@@ -1366,7 +1339,7 @@ class SlotsList(AcceptedOrgsList):
     return True
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
@@ -1388,7 +1361,7 @@ class SlotsList(AcceptedOrgsList):
       return ([org_slots_unused], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -1486,9 +1459,7 @@ class StudentsList(AcceptedOrgsList):
   """
 
   def __init__(self, request, data):
-    """Initializes this component.
-    """
-    self.request = request
+    """Initializes this component."""
     self.data = data
 
     r = self.data.redirect
@@ -1568,7 +1539,7 @@ class StudentsList(AcceptedOrgsList):
     return 'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
 
     if idx != 0:
       return None
@@ -1597,7 +1568,7 @@ class StudentsList(AcceptedOrgsList):
       return ([si, o], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
 
     return response_builder.build()
 
