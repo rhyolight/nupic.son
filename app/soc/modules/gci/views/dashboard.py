@@ -261,8 +261,6 @@ class DashboardPage(GCIRequestHandler):
     """Get the dashboard components for org admins."""
     components = []
 
-    # TODO(nathaniel): Drop first parameters.
-
     # add list of mentors component
     components.append(MyOrgsMentorsList(self.data))
 
