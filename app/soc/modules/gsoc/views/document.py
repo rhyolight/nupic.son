@@ -160,8 +160,7 @@ class DocumentList(document.DocumentList):
 
 
 class DocumentListPage(GSoCRequestHandler):
-  """View for the list documents page.
-  """
+  """View for the list documents page."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/document/document_list.html'
@@ -176,7 +175,9 @@ class DocumentListPage(GSoCRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = DocumentList(self.request, self.data).getListData()
+    # TODO(nathaniel): DocumentList looks like it wants to take just
+    # a single RequestData parameter.
+    list_content = DocumentList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -186,6 +187,6 @@ class DocumentListPage(GSoCRequestHandler):
   def context(self):
     return {
         'page_name': "Documents for %s" % self.data.program.name,
-        'document_list': DocumentList(self.request, self.data),
+        'document_list': DocumentList(self.data.request, self.data),
         'program_select': ProgramSelect(self.data, 'list_gsoc_documents'),
     }

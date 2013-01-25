@@ -234,7 +234,7 @@ class SlotsTransferAdminPage(base.GSoCRequestHandler):
     return 'v2/modules/gsoc/slot_transfer_admin/base.html'
 
   def jsonContext(self):
-    list_content = SlotsTransferAdminList(self.request, self.data).getListData()
+    list_content = SlotsTransferAdminList(self.data.request, self.data).getListData()
 
     if list_content:
       return list_content.content()
@@ -242,7 +242,7 @@ class SlotsTransferAdminPage(base.GSoCRequestHandler):
       raise exceptions.AccessViolation('You do not have access to this data')
 
   def post(self):
-    slots_list = SlotsTransferAdminList(self.request, self.data)
+    slots_list = SlotsTransferAdminList(self.data.request, self.data)
 
     if slots_list.post():
       return http.HttpResponse()
@@ -252,5 +252,5 @@ class SlotsTransferAdminPage(base.GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Slots transfer action page',
-      'slot_transfer_list': SlotsTransferAdminList(self.request, self.data),
+      'slot_transfer_list': SlotsTransferAdminList(self.data.request, self.data),
     }

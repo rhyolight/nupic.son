@@ -314,7 +314,7 @@ class CodeSampleDownloadFileGet(GSoCRequestHandler):
     assert isSet(self.data.project)
 
     try:
-      id_value = int(self.request.GET['id'])
+      id_value = int(self.data.request.GET['id'])
       code_sample = GSoCCodeSample.get_by_id(id_value, self.data.project)
       if not code_sample or not code_sample.upload_of_work:
         raise BadRequest('Requested project or code sample not found')
@@ -347,7 +347,7 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
     assert isSet(self.data.project)
 
     try:
-      id_value = int(self.request.POST['id'])
+      id_value = int(self.data.request.POST['id'])
       code_sample = GSoCCodeSample.get_by_id(id_value, self.data.project)
 
       if not code_sample:

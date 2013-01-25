@@ -155,7 +155,7 @@ class OrgProfilePage(GSoCRequestHandler):
       self.check.isOrgAdminForOrganization(self.data.organization)
       #probably check if the org is active
     else:
-      self.data.org_id = self.request.GET.get('org_id')
+      self.data.org_id = self.data.request.GET.get('org_id')
       if not self.data.org_id:
         self.check.fail(DEF_NO_ORG_ID_FOR_CREATE)
         return

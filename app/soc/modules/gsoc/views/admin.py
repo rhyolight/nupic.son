@@ -126,14 +126,15 @@ class DashboardPage(GSoCRequestHandler):
     """
     dashboards = []
 
-    dashboards.append(MainDashboard(self.request, self.data))
-    dashboards.append(ProgramSettingsDashboard(self.request, self.data))
-    dashboards.append(ManageOrganizationsDashboard(self.request, self.data))
-    dashboards.append(EvaluationsDashboard(self.request, self.data))
-    dashboards.append(MentorEvaluationsDashboard(self.request, self.data))
-    dashboards.append(StudentEvaluationsDashboard(self.request, self.data))
-    dashboards.append(EvaluationGroupDashboard(self.request, self.data))
-    dashboards.append(StudentsDashboard(self.request, self.data))
+    # TODO(nathaniel): All of these should drop their first parameter.
+    dashboards.append(MainDashboard(self.data.request, self.data))
+    dashboards.append(ProgramSettingsDashboard(self.data.request, self.data))
+    dashboards.append(ManageOrganizationsDashboard(self.data.request, self.data))
+    dashboards.append(EvaluationsDashboard(self.data.request, self.data))
+    dashboards.append(MentorEvaluationsDashboard(self.data.request, self.data))
+    dashboards.append(StudentEvaluationsDashboard(self.data.request, self.data))
+    dashboards.append(EvaluationGroupDashboard(self.data.request, self.data))
+    dashboards.append(StudentsDashboard(self.data.request, self.data))
 
     return {
         'colorbox': self.data.GET.get('colorbox'),
@@ -939,7 +940,7 @@ class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
 
   def jsonContext(self):
     list_content = ProposalsAcceptedOrgsList(
-        self.request, self.data).getListData()
+        self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -949,7 +950,7 @@ class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Proposal page',
-      'list': ProposalsAcceptedOrgsList(self.request, self.data),
+      'list': ProposalsAcceptedOrgsList(self.data.request, self.data),
     }
 
 
@@ -1016,7 +1017,7 @@ class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
 
   def jsonContext(self):
     list_content = ProjectsAcceptedOrgsList(
-        self.request, self.data).getListData()
+        self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1026,7 +1027,7 @@ class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Projects page',
-      'list': ProjectsAcceptedOrgsList(self.request, self.data),
+      'list': ProjectsAcceptedOrgsList(self.data.request, self.data),
     }
 
 
@@ -1158,8 +1159,7 @@ class ProposalsList(Template):
 
 
 class ProposalsPage(GSoCRequestHandler):
-  """View for proposals for particular org.
-  """
+  """View for proposals for particular org."""
 
   def djangoURLPatterns(self):
     return [
@@ -1174,7 +1174,7 @@ class ProposalsPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = ProposalsList(self.request, self.data).getListData()
+    list_content = ProposalsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1183,7 +1183,7 @@ class ProposalsPage(GSoCRequestHandler):
 
   def post(self):
     """Handler for POST requests."""
-    proposals_list = ProposalsList(self.request, self.data)
+    proposals_list = ProposalsList(self.data.request, self.data)
 
     if proposals_list.post():
       return http.HttpResponse()
@@ -1193,7 +1193,7 @@ class ProposalsPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Proposal page',
-      'list': ProposalsList(self.request, self.data),
+      'list': ProposalsList(self.data.request, self.data),
     }
 
 
@@ -1275,7 +1275,7 @@ class ProjectsPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = ProjectsList(self.request, self.data).getListData()
+    list_content = ProjectsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1284,7 +1284,7 @@ class ProjectsPage(GSoCRequestHandler):
 
   def post(self):
     """Handler for POST requests."""
-    projects_list = ProjectsList(self.request, self.data)
+    projects_list = ProjectsList(self.data.request, self.data)
 
     if projects_list.post():
       return http.HttpResponse()
@@ -1294,7 +1294,7 @@ class ProjectsPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Projects page',
-      'list': ProjectsList(self.request, self.data),
+      'list': ProjectsList(self.data.request, self.data),
     }
 
 
@@ -1425,7 +1425,7 @@ class SlotsPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = SlotsList(self.request, self.data).getListData()
+    list_content = SlotsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1433,7 +1433,7 @@ class SlotsPage(GSoCRequestHandler):
     return list_content.content()
 
   def post(self):
-    slots_list = SlotsList(self.request, self.data)
+    slots_list = SlotsList(self.data.request, self.data)
 
     if slots_list.post():
       return http.HttpResponse()
@@ -1443,7 +1443,7 @@ class SlotsPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Slots page',
-      'list': SlotsList(self.request, self.data),
+      'list': SlotsList(self.data.request, self.data),
     }
 
 
@@ -1464,7 +1464,7 @@ class SurveyReminderPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/survey_reminder.html'
 
   def post(self):
-    post_dict = self.request.POST
+    post_dict = self.data.request.POST
 
     task_params = {
         'program_key': self.data.program.key().id_or_name(),
@@ -1477,7 +1477,7 @@ class SurveyReminderPage(GSoCRequestHandler):
     task.add()
 
     return http.HttpResponseRedirect(
-        self.request.path + '?msg=Reminders are being sent')
+        self.data.request.path + '?msg=Reminders are being sent')
 
   def context(self):
     q = GradingProjectSurvey.all()
@@ -1492,7 +1492,7 @@ class SurveyReminderPage(GSoCRequestHandler):
       'page_name': 'Sending Evaluation Reminders',
       'mentor_surveys': mentor_surveys,
       'student_surveys': student_surveys,
-      'msg': self.request.GET.get('msg', '')
+      'msg': self.data.request.GET.get('msg', '')
     }
 
 
@@ -1629,8 +1629,7 @@ class StudentsList(AcceptedOrgsList):
 
 
 class StudentsListPage(GSoCRequestHandler):
-  """View that lists all the students associated with the program.
-  """
+  """View that lists all the students associated with the program."""
 
   def djangoURLPatterns(self):
     return [
@@ -1645,7 +1644,7 @@ class StudentsListPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = StudentsList(self.request, self.data).getListData()
+    list_content = StudentsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1655,13 +1654,12 @@ class StudentsListPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Students list page',
-      'list': StudentsList(self.request, self.data),
+      'list': StudentsList(self.data.request, self.data),
     }
 
 
 class ProjectsListPage(GSoCRequestHandler):
-  """View that lists all the projects associated with the program.
-  """
+  """View that lists all the projects associated with the program."""
 
   LIST_IDX = 1
 
@@ -1680,7 +1678,7 @@ class ProjectsListPage(GSoCRequestHandler):
   def jsonContext(self):
     list_query = project_logic.getProjectsQuery(program=self.data.program)
     list_content = ProjectList(
-        self.request, self.data, list_query, self.LIST_IDX).getListData()
+        self.data.request, self.data, list_query, self.LIST_IDX).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1691,7 +1689,7 @@ class ProjectsListPage(GSoCRequestHandler):
     list_query = project_logic.getProjectsQuery(program=self.data.program)
     return {
       'page_name': 'Projects list page',
-      'list': ProjectList(self.request, self.data, list_query, self.LIST_IDX),
+      'list': ProjectList(self.data.request, self.data, list_query, self.LIST_IDX),
     }
 
 
@@ -1714,7 +1712,7 @@ class OrgsListPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = AcceptedOrgsList(self.request, self.data).getListData()
+    list_content = AcceptedOrgsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1724,5 +1722,5 @@ class OrgsListPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Organizations list page',
-      'list': AcceptedOrgsList(self.request, self.data)
+      'list': AcceptedOrgsList(self.data.request, self.data)
     }

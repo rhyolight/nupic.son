@@ -316,12 +316,13 @@ class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
   def jsonContext(self):
     """Handler for JSON requests.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       record_list = self._createSurveyRecordList()
       return record_list.listContentResponse(
-          self.request, prefetch=['project', 'org']).content()
+          self.data.request, prefetch=['project', 'org']).content()
     else:
+      # TODO(nathaniel): missing return statement?
       super(GSoCMentorEvaluationRecordsList, self).jsonContext()
 
   def _createSurveyRecordList(self):

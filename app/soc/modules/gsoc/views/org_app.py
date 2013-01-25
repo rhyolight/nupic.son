@@ -284,7 +284,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
 
   def post(self):
     """Edits records from commands received by the list code."""
-    post_data = self.request.POST
+    post_data = self.data.request.POST
 
     self.data.redirect.program()
 

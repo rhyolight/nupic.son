@@ -108,16 +108,17 @@ class AcceptedOrgsPage(GSoCRequestHandler):
     self.check.acceptedOrgsAnnounced()
 
   def jsonContext(self):
-    list_content = AcceptedOrgsList(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the first parameter of AcceptedOrgsList.
+    list_content = AcceptedOrgsList(self.data.request, self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def context(self):
     return {
         'page_name': "Accepted organizations for %s" % self.data.program.name,
-        'accepted_orgs_list': AcceptedOrgsList(self.request, self.data),
+        'accepted_orgs_list': AcceptedOrgsList(self.data.request, self.data),
         'program_select': ProgramSelect(self.data, 'gsoc_accepted_orgs'),
     }

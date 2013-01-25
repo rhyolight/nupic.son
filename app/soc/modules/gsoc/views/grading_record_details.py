@@ -36,8 +36,7 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class GradingRecordsOverview(GSoCRequestHandler):
-  """View to display all GradingRecords for a single group.
-  """
+  """View to display all GradingRecords for a single group."""
 
   def djangoURLPatterns(self):
     return [
@@ -55,15 +54,18 @@ class GradingRecordsOverview(GSoCRequestHandler):
   def context(self):
     return {
         'page_name': 'Evaluation Group Overview',
-        'record_list': GradingRecordsList(self.request, self.data)
+        # TODO(nathaniel): GradingRecordsList looks like it wants to
+        # only take a RequestData parameter.
+        'record_list': GradingRecordsList(self.data.request, self.data)
         }
 
   def jsonContext(self):
     """Handler for JSON requests.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
-      return GradingRecordsList(self.request, self.data).listContent().content()
+      return GradingRecordsList(
+          self.data.request, self.data).listContent().content()
     else:
       super(GradingRecordsOverview, self).jsonContext()
 

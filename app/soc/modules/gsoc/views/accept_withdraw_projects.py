@@ -16,7 +16,6 @@
 into a GSoC program.
 """
 
-
 import logging
 
 from google.appengine.ext import db
@@ -41,8 +40,7 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class ProposalList(Template):
-  """Template for listing the student proposals submitted to the program.
-  """
+  """Template for listing the student proposals submitted to the program."""
 
   def __init__(self, request, data):
     self.request = request
@@ -234,14 +232,14 @@ class AcceptProposals(GSoCRequestHandler):
     ]
 
   def checkAccess(self):
-    """Access checks for the view.
-    """
+    """Access checks for the view."""
     self.check.isHost()
 
   def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    list_content = ProposalList(self.request, self.data).getListData()
+    """Handler for JSON requests."""
+    # TODO(nathaniel): It looks like ProposalList should just take a
+    # RequestData parameter only.
+    list_content = ProposalList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -249,7 +247,7 @@ class AcceptProposals(GSoCRequestHandler):
     return list_content.content()
 
   def post(self):
-    list_content = ProposalList(self.request, self.data)
+    list_content = ProposalList(self.data.request, self.data)
 
     if list_content.post():
       return http.HttpResponse()
@@ -264,7 +262,7 @@ class AcceptProposals(GSoCRequestHandler):
     return {
         'page_name': '%s - Proposals' % program.short_name,
         'program_name': program.name,
-        'list': ProposalList(self.request, self.data),
+        'list': ProposalList(self.data.request, self.data),
         'program_select': ProgramSelect(self.data,
                                         'gsoc_admin_accept_proposals'),
     }
@@ -451,7 +449,8 @@ class WithdrawProjects(GSoCRequestHandler):
 
   def jsonContext(self):
     """Handler for JSON requests."""
-    list_content = ProjectList(self.request, self.data).getListData()
+    # TODO(nathaniel): Drop the request parameter from ProjectList.
+    list_content = ProjectList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -459,7 +458,7 @@ class WithdrawProjects(GSoCRequestHandler):
     return list_content.content()
 
   def post(self):
-    list_content = ProjectList(self.request, self.data)
+    list_content = ProjectList(self.data.request, self.data)
 
     if list_content.post():
       return http.HttpResponse()
@@ -471,6 +470,6 @@ class WithdrawProjects(GSoCRequestHandler):
     return {
         'page_name': '%s - Projects' % self.data.program.short_name,
         'program_name': self.data.program.name,
-        'list': ProjectList(self.request, self.data),
+        'list': ProjectList(self.data.request, self.data),
         'program_select': ProgramSelect(self.data, 'gsoc_withdraw_projects'),
     }

@@ -33,7 +33,6 @@ from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
 
-
 DEF_CANNOT_ACCESS_EVALUATION = ugettext(
     'Organization Administrators can view this evaluation submitted by the '
     'student only after the evaluation deadline. Please visit this page '
@@ -41,8 +40,7 @@ DEF_CANNOT_ACCESS_EVALUATION = ugettext(
 
 
 class GSoCStudentEvaluationEditForm(gsoc_forms.SurveyEditForm):
-  """Form to create/edit GSoC project survey for students.
-  """
+  """Form to create/edit GSoC project survey for students."""
 
   class Meta:
     model = ProjectSurvey
@@ -302,17 +300,16 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
   def jsonContext(self):
     """Handler for JSON requests.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       record_list = self._createSurveyRecordList()
       return record_list.listContentResponse(
-          self.request, prefetch=['org', 'project']).content()
+          self.data.request, prefetch=['org', 'project']).content()
     else:
       super(GSoCStudentEvaluationRecordsList, self).jsonContext()
 
   def _createSurveyRecordList(self):
-    """Creates a SurveyRecordList for the requested survey.
-    """
+    """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
         self.data, self.data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
 

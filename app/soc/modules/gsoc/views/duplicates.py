@@ -45,8 +45,7 @@ class DuplicatesPage(GSoCRequestHandler):
     self.check.isHost()
 
   def context(self):
-    """Returns the context for this page.
-    """
+    """Returns the context for this page."""
     program = self.data.program
 
     q = GSoCProposalDuplicate.all()
@@ -67,7 +66,7 @@ class DuplicatesPage(GSoCRequestHandler):
 
   def post(self):
     """Handles the POST request to (re)start calcuation."""
-    post_data = self.request.POST
+    post_data = self.data.request.POST
 
     # pass along these params as POST to the new task
     task_params = {'program_key': self.data.program.key().id_or_name()}
@@ -85,6 +84,7 @@ class DuplicatesPage(GSoCRequestHandler):
     new_task = taskqueue.Task(params=task_params, url=task_url)
     new_task.add()
 
+    # TODO(nathaniel): WTF?
     # redirect to self
     return http.HttpResponseRedirect('')
 

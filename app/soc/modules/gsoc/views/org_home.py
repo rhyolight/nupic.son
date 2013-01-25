@@ -260,7 +260,7 @@ class OrgHome(GSoCRequestHandler):
     """Handler for JSON requests.
     """
     assert isSet(self.data.organization)
-    list_content = ProjectList(self.request, self.data).getListData()
+    list_content = ProjectList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise AccessViolation(
@@ -311,7 +311,8 @@ class OrgHome(GSoCRequestHandler):
     if self.data.timeline.studentsAnnounced():
       context['students_announced'] = True
 
-      context['project_list'] = ProjectList(self.request, self.data)
+      # TODO(nathaniel): Drop the first parameter of ProjectList.
+      context['project_list'] = ProjectList(self.data.request, self.data)
 
     if self.data.is_host or accounts.isDeveloper():
       context['host_actions'] = GSoCHostActions(self.data)

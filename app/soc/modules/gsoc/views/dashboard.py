@@ -59,15 +59,13 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
-
 DATETIME_FORMAT = 'Y-m-d H:i:s'
 BIRTHDATE_FORMAT = 'd-m-Y'
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
 
 def colorize(choice, yes, no):
-  """Differentiate between yes and no status with green and red colors.
-  """
+  """Differentiate between yes and no status with green and red colors."""
   if choice:
     return """<font color="green">%s</font>""" % yes
   else:
@@ -75,8 +73,7 @@ def colorize(choice, yes, no):
 
 
 class MainDashboard(Dashboard):
-  """ Main dashboard that shows all component dashboard icons
-  """
+  """Main dashboard that shows all component dashboard icons."""
 
   def __init__(self, request, data):
     """Initializes the dashboard.
@@ -178,13 +175,12 @@ class DashboardPage(GSoCRequestHandler):
           'You cannot change this data')
 
   def context(self):
-    """Handler for default HTTP GET request.
-    """
+    """Handler for default HTTP GET request."""
     # dashboard container, will hold each component list
     dashboards = []
 
     # main container that contains all component list
-    main = MainDashboard(self.request, self.data)
+    main = MainDashboard(self.data.request, self.data)
 
     # retrieve active component(s) for currently logged-in user
     components = self.components()
@@ -200,7 +196,7 @@ class DashboardPage(GSoCRequestHandler):
           }
       main.addSubpages(c)
 
-      dashboards.append(ComponentsDashboard(self.request, self.data, {
+      dashboards.append(ComponentsDashboard(self.data.request, self.data, {
           'name': component.context().get('name'),
           'title': component.context().get('title'),
           'component': component,
@@ -225,15 +221,15 @@ class DashboardPage(GSoCRequestHandler):
     components = []
 
     if self.data.student_info:
-      components.append(TodoComponent(self.request, self.data))
+      components.append(TodoComponent(self.data.request, self.data))
       components += self._getStudentComponents()
     elif self.data.is_mentor:
-      components.append(TodoComponent(self.request, self.data))
+      components.append(TodoComponent(self.data.request, self.data))
       components += self._getOrgMemberComponents()
-      components.append(RequestComponent(self.request, self.data, False))
+      components.append(RequestComponent(self.data.request, self.data, False))
     else:
       components += self._getLoneUserComponents()
-      components.append(RequestComponent(self.request, self.data, False))
+      components.append(RequestComponent(self.data.request, self.data, False))
 
     return components
 
@@ -250,13 +246,13 @@ class DashboardPage(GSoCRequestHandler):
           ProjectSurvey, self.data.program, ['midterm', 'final'])
       if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):
         components.append(MyEvaluationsComponent(
-            self.request, self.data, evals))
+            self.data.request, self.data, evals))
 
       # Add a component to show all the projects
-      components.append(MyProjectsComponent(self.request, self.data))
+      components.append(MyProjectsComponent(self.data.request, self.data))
 
     # Add all the proposals of this current user
-    components.append(MyProposalsComponent(self.request, self.data))
+    components.append(MyProposalsComponent(self.data.request, self.data))
 
     return components
 
@@ -274,15 +270,15 @@ class DashboardPage(GSoCRequestHandler):
 
     if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):
       components.append(OrgEvaluationsComponent(
-          self.request, self.data, evals))
+          self.data.request, self.data, evals))
 
     if self.data.is_mentor:
       if self.data.timeline.studentsAnnounced():
         # add a component to show all projects a user is mentoring
         components.append(
-            ProjectsIMentorComponent(self.request, self.data))
+            ProjectsIMentorComponent(self.data.request, self.data))
 
-    orgs = OrganizationsIParticipateInComponent(self.request, self.data)
+    orgs = OrganizationsIParticipateInComponent(self.data.request, self.data)
 
     # move to the top during student signup
     if self.data.timeline.studentSignup():
@@ -291,12 +287,12 @@ class DashboardPage(GSoCRequestHandler):
     if self.data.timeline.afterStudentSignupStart():
       # Add the submitted proposals component
       components.append(
-          SubmittedProposalsComponent(self.request, self.data))
+          SubmittedProposalsComponent(self.data.request, self.data))
 
     if self.data.is_org_admin:
       # add a component for all organization that this user administers
-      components.append(RequestComponent(self.request, self.data, True))
-      components.append(ParticipantsComponent(self.request, self.data))
+      components.append(RequestComponent(self.data.request, self.data, True))
+      components.append(ParticipantsComponent(self.data.request, self.data))
 
     # move to the bottom after student signup
     if not self.data.timeline.studentSignup():
@@ -334,7 +330,7 @@ class DashboardPage(GSoCRequestHandler):
 
     if record or q.get():
       # add a component showing the organization application of the user
-      return MyOrgApplicationsComponent(self.request, self.data, survey)
+      return MyOrgApplicationsComponent(self.data.request, self.data, survey)
 
     return None
 
