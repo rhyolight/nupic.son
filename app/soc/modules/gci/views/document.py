@@ -138,20 +138,18 @@ class EventsPage(GCIRequestHandler):
     }
 
 
-class DocumentList(document.DocumentList):
-  """Template for list of documents.
-  """
+class GCIDocumentList(document.DocumentList):
+  """Template for list of documents."""
 
-  def __init__(self, request, data):
-    super(DocumentList, self).__init__(request, data, 'edit_gci_document')
+  def __init__(self, data):
+    super(GCIDocumentList, self).__init__(data, 'edit_gci_document')
 
   def templatePath(self):
     return 'v2/modules/gci/document/_document_list.html'
 
 
 class DocumentListPage(GCIRequestHandler):
-  """View for the list documents page.
-  """
+  """View for the list documents page."""
 
   def templatePath(self):
     return 'v2/modules/gci/document/document_list.html'
@@ -166,16 +164,16 @@ class DocumentListPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    # TODO(nathaniel): Drop the first parameter of DocumentList.
-    list_content = DocumentList(self.data.request, self.data).getListData()
+    list_content = GCIDocumentList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': "Documents for %s" % self.data.program.name,
-        'document_list': DocumentList(self.data.request, self.data),
+        'document_list': GCIDocumentList(self.data),
 #        'program_select': ProgramSelect(self.data, 'list_gci_documents'),
     }

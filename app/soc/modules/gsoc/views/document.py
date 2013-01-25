@@ -147,13 +147,11 @@ class EventsPage(GSoCRequestHandler):
     }
 
 
-class DocumentList(document.DocumentList):
+class GSoCDocumentList(document.DocumentList):
   """Template for list of documents."""
 
   def __init__(self, data):
-    super(DocumentList, self).__init__(
-        # TODO(nathaniel): I'll bet this request parameter is eliminable.
-        data.request, data, 'edit_gsoc_document')
+    super(GSoCDocumentList, self).__init__(data, 'edit_gsoc_document')
 
   def templatePath(self):
     return 'v2/modules/gsoc/document/_document_list.html'
@@ -175,7 +173,7 @@ class DocumentListPage(GSoCRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = DocumentList(self.data).getListData()
+    list_content = GSoCDocumentList(self.data).getListData()
 
     if list_content:
       return list_content.content()
@@ -185,6 +183,6 @@ class DocumentListPage(GSoCRequestHandler):
   def context(self):
     return {
         'page_name': "Documents for %s" % self.data.program.name,
-        'document_list': DocumentList(self.data),
+        'document_list': GSoCDocumentList(self.data),
         'program_select': ProgramSelect(self.data, 'list_gsoc_documents'),
     }
