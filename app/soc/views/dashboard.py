@@ -24,17 +24,14 @@ from soc.views.template import Template
 
 
 class Component(Template):
-  """Base component for the list component.
-  """
+  """Base component for the list component."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the list component.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    self.request = request
     self.data = data
 
   def getListData(self):
