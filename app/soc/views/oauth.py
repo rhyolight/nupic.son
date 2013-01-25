@@ -38,7 +38,7 @@ class OAuthRedirectPage(GSoCRequestHandler):
   def context(self):
     service = oauth_helper.createDocsService(self.data)
     next = '%s?next=%s' % (self.redirect.urlOf('gdata_oauth_verify'),
-                           self.request.GET.get('next','/'))
+                           self.data.request.GET.get('next','/'))
     url = oauth_helper.generateOAuthRedirectURL(
         service, self.data.user,
         next)
@@ -66,7 +66,7 @@ class OAuthVerifyToken(GSoCRequestHandler):
   def get(self):
     service = oauth_helper.createDocsService(self.data)
     oauth_helper.checkOAuthVerifier(service, self.data)
-    next = self.request.GET.get('next','/')
+    next = self.data.request.GET.get('next','/')
     return self.redirect.toUrl(next)
 
 
