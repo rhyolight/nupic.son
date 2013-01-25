@@ -42,12 +42,11 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 class ProposalList(Template):
   """Template for listing the student proposals submitted to the program."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addPlainTextColumn('student', 'Student',
@@ -96,7 +95,7 @@ class ProposalList(Template):
         }
 
   def post(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
@@ -197,7 +196,7 @@ class ProposalList(Template):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       list_query = proposal_logic.getProposalsQuery(program=self.data.program)
 
@@ -206,7 +205,7 @@ class ProposalList(Template):
           parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
+          self.data.request, self._list_config, list_query,
           starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
@@ -238,17 +237,15 @@ class AcceptProposals(GSoCRequestHandler):
 
   def jsonContext(self):
     """Handler for JSON requests."""
-    # TODO(nathaniel): It looks like ProposalList should just take a
-    # RequestData parameter only.
-    list_content = ProposalList(self.data.request, self.data).getListData()
+    list_content = ProposalList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def post(self):
-    list_content = ProposalList(self.data.request, self.data)
+    list_content = ProposalList(self.data)
 
     if list_content.post():
       return http.HttpResponse()
@@ -256,14 +253,13 @@ class AcceptProposals(GSoCRequestHandler):
       raise AccessViolation('You cannot change this data')
 
   def context(self):
-    """Builds the context for GSoC proposals List page HTTP get request.
-    """
+    """Builds the context for GSoC proposals List page HTTP get request."""
     program = self.data.program
 
     return {
         'page_name': '%s - Proposals' % program.short_name,
         'program_name': program.name,
-        'list': ProposalList(self.data.request, self.data),
+        'list': ProposalList(self.data),
         'program_select': ProgramSelect(self.data,
                                         'gsoc_admin_accept_proposals'),
     }
@@ -273,12 +269,11 @@ class ProjectList(Template):
   """Template for listing the student projects accepted in the program.
   """
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addPlainTextColumn('student', 'Student',
@@ -328,7 +323,7 @@ class ProjectList(Template):
         }
 
   def post(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
@@ -410,7 +405,7 @@ class ProjectList(Template):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       list_query = project_logic.getProjectsQuery(program=self.data.program)
 
@@ -419,7 +414,7 @@ class ProjectList(Template):
           parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
+          self.data.request, self._list_config, list_query,
           starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
@@ -451,16 +446,15 @@ class WithdrawProjects(GSoCRequestHandler):
 
   def jsonContext(self):
     """Handler for JSON requests."""
-    # TODO(nathaniel): Drop the request parameter from ProjectList.
-    list_content = ProjectList(self.data.request, self.data).getListData()
+    list_content = ProjectList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def post(self):
-    list_content = ProjectList(self.data.request, self.data)
+    list_content = ProjectList(self.data)
 
     if list_content.post():
       return http.HttpResponse()
@@ -472,6 +466,6 @@ class WithdrawProjects(GSoCRequestHandler):
     return {
         'page_name': '%s - Projects' % self.data.program.short_name,
         'program_name': self.data.program.name,
-        'list': ProjectList(self.data.request, self.data),
+        'list': ProjectList(self.data),
         'program_select': ProgramSelect(self.data, 'gsoc_withdraw_projects'),
     }
