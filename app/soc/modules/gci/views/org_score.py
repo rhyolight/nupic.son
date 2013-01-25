@@ -153,18 +153,16 @@ class ChooseOrganizationForOrgScorePage(GCIRequestHandler):
     pass
 
   def jsonContext(self):
-    # TODO(nathaniel): Drop the first parameter of ...
-    list_content = OrganizationsForOrgScoreList(
-        self.data.request, self.data).getListData()
+    list_content = OrganizationsForOrgScoreList(self.data).getListData()
 
-    if not list_content:
-      raise exceptions.AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exceptions.AccessViolation('You do not have access to this data')
 
   def context(self):
     return {
         'page_name': "Choose an organization for which to display scores.",
-        'org_list': OrganizationsForOrgScoreList(self.data.request, self.data),
+        'org_list': OrganizationsForOrgScoreList(self.data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }

@@ -67,8 +67,7 @@ class AcceptedOrgsList(OrgList):
 
 
 class AcceptedOrgsPage(GCIRequestHandler):
-  """View for the accepted organizations page.
-  """
+  """View for the accepted organizations page."""
 
   def templatePath(self):
     return 'v2/modules/gci/accepted_orgs/base.html'
@@ -83,25 +82,23 @@ class AcceptedOrgsPage(GCIRequestHandler):
     self.check.acceptedOrgsAnnounced()
 
   def jsonContext(self):
-    # TODO(nathaniel): Drop the first parameter of AcceptedOrgsList.
-    list_content = AcceptedOrgsList(self.data.request, self.data).getListData()
+    list_content = AcceptedOrgsList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def context(self):
     return {
         'page_name': "Accepted organizations for %s" % self.data.program.name,
-        'accepted_orgs_list': AcceptedOrgsList(self.data.request, self.data),
+        'accepted_orgs_list': AcceptedOrgsList(self.data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }
 
 
 class AcceptedOrgsAdminList(OrgList):
-  """Template for list of accepted organizations for admins.
-  """
+  """Template for list of accepted organizations for admins."""
 
   def _getDescription(self):
     return 'List of organizations accepted into %s' % (
@@ -163,16 +160,15 @@ class AcceptedOrgsAdminPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    # TODO(nathaniel): Drop the first parameter of AcceptedOrgsAdminList.
-    list_content = AcceptedOrgsAdminList(self.data.request, self.data).getListData()
+    list_content = AcceptedOrgsAdminList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def context(self):
     return {
         'page_name': "Accepted organizations for %s" % self.data.program.name,
-        'accepted_orgs_list': AcceptedOrgsAdminList(self.data.request, self.data),
+        'accepted_orgs_list': AcceptedOrgsAdminList(self.data),
     }

@@ -143,10 +143,10 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
   def jsonContext(self):
     list_content = StudentTasksForOrganizationList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
@@ -191,9 +191,7 @@ class ChooseOrganizationPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    # TODO(nathaniel): Drop the first parameter of ChooseOrganizationList.
-    list_content = ChooseOrganizationList(
-        self.data.request, self.data).getListData()
+    list_content = ChooseOrganizationList(self.data).getListData()
 
     if list_content:
       return list_content.content()
@@ -203,7 +201,7 @@ class ChooseOrganizationPage(GCIRequestHandler):
   def context(self):
     return {
         'page_name': "Choose an organization for which to display tasks.",
-        'org_list': ChooseOrganizationList(self.data.request, self.data),
+        'org_list': ChooseOrganizationList(self.data),
     }
 
 
