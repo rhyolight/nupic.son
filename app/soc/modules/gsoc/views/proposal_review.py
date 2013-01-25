@@ -578,7 +578,8 @@ class PostComment(GSoCRequestHandler):
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
       self.data.request.method = 'GET'
-      return proposal_view(self.data.request, *self.args, **self.kwargs)
+      return proposal_view(
+          self.data.request, *self.data.args, **self.data.kwargs)
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""
