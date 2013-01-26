@@ -165,7 +165,7 @@ class GCIOrgAppTakePage(GCIRequestHandler):
 
     # FIXME: There will never be organization in kwargs
     show_url = None
-    if 'organization' in self.kwargs:
+    if 'organization' in self.data.kwargs:
       # TODO(nathaniel): make this .organization() call unnecessary. Like,
       # more than it already is (see the note above).
       self.data.redirect.organization()

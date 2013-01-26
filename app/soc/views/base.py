@@ -282,8 +282,6 @@ class RequestHandler(object):
     4. Delegates dispatching to the handler to the _dispatch method.
     5. Returns the response.
     """
-    self.kwargs = kwargs
-
     try:
       self.init(request, args, kwargs)
       self.checkAccess()
@@ -299,7 +297,6 @@ class RequestHandler(object):
     except exceptions.Error, e:
       return self.error(e.status, message=e.args[0])
     finally:
-      self.kwargs = None
       self.data = None
       self.check = None
       self.mutator = None

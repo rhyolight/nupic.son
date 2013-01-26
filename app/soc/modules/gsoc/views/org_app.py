@@ -201,7 +201,7 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
     assert access_checker.isSet(self.data.org_app)
 
     show_url = None
-    if 'id' in self.kwargs:
+    if 'id' in self.data.kwargs:
       show_url = self.data.redirect.id().urlOf('gsoc_show_org_app')
 
     self.check.isSurveyActive(self.data.org_app, show_url)
