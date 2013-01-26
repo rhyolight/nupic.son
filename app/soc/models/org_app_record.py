@@ -73,6 +73,13 @@ class OrgAppRecord(SurveyRecord):
       reference_class=soc.models.user.User, required=True,
       verbose_name="Backup Admin", collection_name='backup_admin_org_app')
 
+  #: field storing whether the organization applying is a new organization or
+  #: is a veteran in the given program.
+  new_org = db.BooleanProperty(required=True, default=True,
+                               verbose_name=ugettext('Veteran/New'))
+  new_org.help_text = ugettext('Choose veteran if have participated in this '
+                               'program in the previous years')
+
   #: field storing whether the User has agreed to the org admin agreement
   agreed_to_admin_agreement = db.BooleanProperty(required=True, default=False,
       verbose_name=ugettext('I Agree to the Admin Agreement'))
