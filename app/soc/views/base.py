@@ -257,18 +257,31 @@ class RequestHandler(object):
     else:
       return self.error(httplib.NOT_IMPLEMENTED)
 
-  # TODO(nathaniel): Note that while this says that it sets the "data" and
-  # "check" attributes, this implementation makes use of the "data" attribute
-  # without having set it. Therefore extending classes must set at least the
-  # "data" attribute before calling this superclass implementation if they
-  # choose to do so (they do). This is an obstacle just waiting to cause
-  # bigger problems.
   def init(self, request, args, kwargs):
-    """Initializes the RequestHandler.
+    """Creates objects necessary for serving the request.
 
-    Sets the data and check fields.
+    Subclasses must override this abstract method.
+
+    Args:
+      request: The http.HttpRequest for the current request.
+      args: Additional arguments passed to this request handler.
+      kwargs: Additional keyword arguments passed to this request handler.
+
+    Returns:
+      A quartet of the RequestData, Check, Mutator, and RedirectHelper to
+        be used to service the request.
     """
-    if self.data.site.maintenance_mode and not self.data.is_developer:
+    raise NotImplementedError()
+
+  # TODO(nathaniel): Migrate this elsewhere.
+  def checkMaintenanceMode(self, data):
+    """Checks whether or not the site is in maintenance mode.
+
+    Raises:
+      exceptions.MaintainceMode: If the site is in maintenance mode and the
+        user is not a developer.
+    """
+    if data.site.maintenance_mode and not data.is_developer:
       raise exceptions.MaintainceMode(
           'The site is currently in maintenance mode. Please try again later.')
 
@@ -283,7 +296,8 @@ class RequestHandler(object):
     5. Returns the response.
     """
     try:
-      self.init(request, args, kwargs)
+      self.data, self.check, self.mutator, self.redirect = self.init(
+          request, args, kwargs)
       self.checkAccess()
       return self._dispatch()
     except exceptions.LoginRequest, e:
@@ -307,12 +321,12 @@ class SiteRequestHandler(RequestHandler):
   """Customization required by global site pages to handle HTTP requests."""
 
   def init(self, request, args, kwargs):
-    self.data = request_data.RequestData(request, args, kwargs)
-    self.redirect = self.data.redirect
-    if self.data.is_developer:
-      self.mutator = access_checker.DeveloperMutator(self.data)
-      self.check = access_checker.DeveloperAccessChecker(self.data)
+    data = request_data.RequestData(request, args, kwargs)
+    if data.is_developer:
+      mutator = access_checker.DeveloperMutator(data)
+      check = access_checker.DeveloperAccessChecker(data)
     else:
-      self.mutator = access_checker.Mutator(self.data)
-      self.check = access_checker.AccessChecker(self.data)
-    super(SiteRequestHandler, self).init(request, args, kwargs)
+      mutator = access_checker.Mutator(data)
+      check = access_checker.AccessChecker(data)
+    self.checkMaintenanceMode(data)
+    return data, check, mutator, data.redirect
