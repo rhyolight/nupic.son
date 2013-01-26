@@ -34,7 +34,7 @@ class OrgAppRecord(SurveyRecord):
   This record also contains the status of the application.
   """
 
-#: Required field storing "ID" used in URL links. ASCII characters,
+  #: Required field storing "ID" used in URL links. ASCII characters,
   #: digits and underscores only.  Valid link IDs successfully match
   #: the LINK_ID_REGEX.
   org_id = db.StringProperty(required=False,
