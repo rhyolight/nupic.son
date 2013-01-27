@@ -226,6 +226,7 @@ class OrgProfilePage(GSoCRequestHandler):
       form.cleaned_data['scope'] = self.data.program
       form.cleaned_data['scope_path'] = self.data.program.key().name()
       form.cleaned_data['link_id'] = self.data.org_id
+      form.cleaned_data['new_org'] = self.data.org_app_record.new_org
       key_name = '%s/%s' % (
           self.data.program.key().name(),
           form.cleaned_data['link_id']
