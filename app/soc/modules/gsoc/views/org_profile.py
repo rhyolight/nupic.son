@@ -166,7 +166,7 @@ class OrgProfilePage(GSoCRequestHandler):
       # For the creation of a new organization profile the org should not
       # exist yet.
       self.check.orgDoesnotExist(self.data.org_id)
-      self.check.canCreateOrgProfile(self.data.org_id)
+      self.check.canCreateOrgProfile()
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_profile/base.html'
