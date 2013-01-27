@@ -202,7 +202,6 @@ class Mutator(access_checker.Mutator):
     if raise_not_found and not self.data.student_evaluation:
       raise NotFound(DEF_NO_STUDENT_EVALUATION % key_name)
 
-
   def studentEvaluationRecordFromKwargs(self):
     """Sets the student evaluation record in RequestData object.
     """
@@ -261,7 +260,7 @@ class Mutator(access_checker.Mutator):
     record = GSoCGradingRecord.get_by_id(record_id, parent=self.data.project)
 
     if not record or record.grading_survey_group.key().id() != group_id:
-      raise NotFound(DEF_NO_RECORD_FOUND) 
+      raise NotFound(DEF_NO_RECORD_FOUND)
 
     self.data.record = record
 
