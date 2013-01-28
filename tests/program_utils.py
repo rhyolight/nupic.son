@@ -38,6 +38,8 @@ from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import timeline_utils
+
 
 class ProgramHelper(object):
   """Helper class to aid in manipulating program data.
@@ -243,6 +245,8 @@ class GSoCProgramHelper(ProgramHelper):
     """
     override.update({
         'key_name': 'gsoc_program/%s/orgapp' % self.program.key().name(),
+        'survey_start': timeline_utils.past(),
+        'survey_end': timeline_utils.future(),
         })
     return super(GSoCProgramHelper, self).createOrgApp(override)
 
