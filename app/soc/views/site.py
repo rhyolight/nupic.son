@@ -140,14 +140,14 @@ class SiteHomepage(base.SiteRequestHandler):
   def __call__(self, request, *args, **kwargs):
     """Custom call implementation that avoids looking up unneeded data."""
     try:
-      self.init(request, args, kwargs)
+      data, _, _, _ = self.init(request, args, kwargs)
 
       action = args[0] if args else ''
 
       if action == 'login':
-        return self.redirect.toUrl(users.create_login_url('/'))
+        return data.redirect.toUrl(users.create_login_url('/'))
       elif action == 'logout':
-        return self.redirect.toUrl(users.create_logout_url('/'))
+        return data.redirect.toUrl(users.create_logout_url('/'))
       else:
         settings = site_logic.singleton()
         program = settings.active_program
@@ -155,6 +155,6 @@ class SiteHomepage(base.SiteRequestHandler):
           program_url = self.linker.program(program, program.homepage_url_name)
           return http.HttpResponseRedirect(program_url)
         else:
-          return self.redirect.to('edit_site_settings')
+          return data.redirect.to('edit_site_settings')
     except exceptions.Error, e:
       return self.error(e.status, message=e.args[0])
