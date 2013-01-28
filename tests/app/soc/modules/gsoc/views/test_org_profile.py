@@ -58,9 +58,8 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     url = '/gsoc/profile/organization/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
-  """
-  
-  def testAUserNotLoggedInIsRedirectedToLoginPage(self):
+
+  def testNonUserLoginRedirect(self):
     """Tests that a user who is not logged in is redirected to its login page.
     """
     current_logged_in_account = os.environ.get('USER_EMAIL', None)
@@ -84,7 +83,7 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
       else:
         os.environ['USER_EMAIL'] = current_logged_in_account
 
-  def testAUserWithoutProfileIsForbiddenToEditAnOrgProfilePage(self):
+  def testNoProfileUserCantEditOrgProfile(self):
     """Tests that a user without a profile can not edit an org profile.
     """
     self.timeline.kickoff()
@@ -93,7 +92,7 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-  def testOnlyACorrectOrgAdminCanEditAnrOrgProfilePage(self):
+  def testOrgAdminForOrgCanEditOrgProfile(self):
     """Tests that only the assigned org admin for an organization can edit the
     org profile.
     """
