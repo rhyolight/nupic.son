@@ -14,6 +14,40 @@
 
 """Module containing the GSoC Callback."""
 
+from soc.modules.gsoc.models import program as program_model
+from soc.modules.gsoc.tasks import grading_survey_group as grading_survey_group_tasks
+from soc.modules.gsoc.tasks import accept_proposals as accept_proposals_tasks
+from soc.modules.gsoc.tasks import proposal_duplicates as proposal_duplicates_tasks
+from soc.modules.gsoc.tasks import survey_reminders as survey_reminders_tasks
+from soc.modules.gsoc.views import accept_proposals
+from soc.modules.gsoc.views import accept_withdraw_projects
+from soc.modules.gsoc.views import accepted_orgs
+from soc.modules.gsoc.views import admin
+from soc.modules.gsoc.views import dashboard
+from soc.modules.gsoc.views import document
+from soc.modules.gsoc.views import duplicates
+from soc.modules.gsoc.views import grading_record_details
+from soc.modules.gsoc.views import homepage
+from soc.modules.gsoc.views import invite
+from soc.modules.gsoc.views import mentor_evaluation
+from soc.modules.gsoc.views import org_app
+from soc.modules.gsoc.views import org_home
+from soc.modules.gsoc.views import org_profile
+from soc.modules.gsoc.views import profile
+from soc.modules.gsoc.views import profile_show
+from soc.modules.gsoc.views import program
+from soc.modules.gsoc.views import project_details
+from soc.modules.gsoc.views import projects_list
+from soc.modules.gsoc.views import proposal
+from soc.modules.gsoc.views import proposal_review
+from soc.modules.gsoc.views import request
+from soc.modules.gsoc.views import search
+from soc.modules.gsoc.views import slot_transfer
+from soc.modules.gsoc.views import slot_transfer_admin
+from soc.modules.gsoc.views import student_evaluation
+from soc.modules.gsoc.views import student_forms
+from soc.modules.gsoc.views import oauth
+
 
 class Callback(object):
   """Callback object that handles interaction between the core."""
@@ -28,35 +62,6 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
-    from soc.modules.gsoc.views import accept_proposals
-    from soc.modules.gsoc.views import accept_withdraw_projects
-    from soc.modules.gsoc.views import accepted_orgs
-    from soc.modules.gsoc.views import admin
-    from soc.modules.gsoc.views import dashboard
-    from soc.modules.gsoc.views import document
-    from soc.modules.gsoc.views import duplicates
-    from soc.modules.gsoc.views import grading_record_details
-    from soc.modules.gsoc.views import homepage
-    from soc.modules.gsoc.views import invite
-    from soc.modules.gsoc.views import mentor_evaluation
-    from soc.modules.gsoc.views import org_app
-    from soc.modules.gsoc.views import org_home
-    from soc.modules.gsoc.views import org_profile
-    from soc.modules.gsoc.views import profile
-    from soc.modules.gsoc.views import profile_show
-    from soc.modules.gsoc.views import program
-    from soc.modules.gsoc.views import project_details
-    from soc.modules.gsoc.views import projects_list
-    from soc.modules.gsoc.views import proposal
-    from soc.modules.gsoc.views import proposal_review
-    from soc.modules.gsoc.views import request
-    from soc.modules.gsoc.views import search
-    from soc.modules.gsoc.views import slot_transfer
-    from soc.modules.gsoc.views import slot_transfer_admin
-    from soc.modules.gsoc.views import student_evaluation
-    from soc.modules.gsoc.views import student_forms
-    from soc.modules.gsoc.views import oauth
-
     self.views.append(accept_proposals.AcceptProposalsPage())
     self.views.append(accept_withdraw_projects.AcceptProposals())
     self.views.append(accept_withdraw_projects.WithdrawProjects())
@@ -140,23 +145,13 @@ class Callback(object):
     self.views.append(oauth.OAuthVerifyToken())
 
     # Appengine Task related views
-    from soc.modules.gsoc.tasks.grading_survey_group import \
-        GradingRecordTasks
-    from soc.modules.gsoc.tasks.accept_proposals import \
-        ProposalAcceptanceTask
-    from soc.modules.gsoc.tasks.proposal_duplicates import \
-        ProposalDuplicatesTask
-    from soc.modules.gsoc.tasks.survey_reminders import \
-        SurveyReminderTask
-
-    self.views.append(GradingRecordTasks())
-    self.views.append(ProposalAcceptanceTask())
-    self.views.append(ProposalDuplicatesTask())
-    self.views.append(SurveyReminderTask())
+    self.views.append(grading_survey_group_tasks.GradingRecordTasks())
+    self.views.append(accept_proposals_tasks.ProposalAcceptanceTask())
+    self.views.append(proposal_duplicates_tasks.ProposalDuplicatesTask())
+    self.views.append(survey_reminders_tasks.SurveyReminderTask())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered."""
-
     self.core.requireUniqueService('registerWithSitemap')
 
     # Redesigned view registration
@@ -165,12 +160,10 @@ class Callback(object):
 
   def registerWithProgramMap(self):
     """Called by the server when program_map entries should be registered."""
-
     self.core.requireUniqueService('registerWithProgramMap')
 
-    from soc.modules.gsoc.models.program import GSoCProgram
-    program_entities = GSoCProgram.all().fetch(1000)
-    map = ('GSoC Programs', [
+    program_entities = program_model.GSoCProgram.all().fetch(1000)
+    program_map = ('GSoC Programs', [
         (str(e.key()), e.name) for e in program_entities])
 
-    self.core.registerProgramEntry(map)
+    self.core.registerProgramEntry(program_map)

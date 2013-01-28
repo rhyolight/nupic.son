@@ -33,14 +33,17 @@ from soc.models import site
 from soc.views import base
 from soc.views import forms as views_forms
 
-from soc.modules import callback
-
 DEF_NO_DEVELOPER = ugettext(
     'This page is only accessible to developers.')
 
 
 def getProgramMap():
+  # TODO(nathaniel): Magic string? This isn't a program.
   choices = [('', '-----')]
+
+  # TODO(nathaniel): Eliminate the circularity behind this non-top-level
+  # import.
+  from soc.modules import callback
   choices += callback.getCore().getProgramMap()
   return choices
 
