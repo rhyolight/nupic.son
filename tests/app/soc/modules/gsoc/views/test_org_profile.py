@@ -19,6 +19,8 @@
 """
 
 
+import os
+
 from google.appengine.ext import db
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
@@ -27,6 +29,7 @@ from tests.test_utils import GSoCDjangoTestCase
 
 #TODO(Praveen): Test r'profile/organization/%s$' % url_patterns.PROGRAM when
 #org creation is implemented.
+
 
 class OrgProfilePageTest(GSoCDjangoTestCase):
   """Tests the view for organization profile page.
@@ -42,9 +45,9 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
   #TODO(Praveen): Activate this test as soon as the timeline checks are in place.
   """
   def testOrgProfilePageOffSeason(self):
-    '''Tests that it is forbidden to create or edit an org profile during off 
+    """Tests that it is forbidden to create or edit an org profile during off
     season.
-    '''
+    """
     self.timeline.offSeason()
     self.data.createOrgAdmin(self.org)
     #Profile creation URL is not implemented currently.
@@ -60,7 +63,6 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
   def testAUserNotLoggedInIsRedirectedToLoginPage(self):
     """Tests that a user who is not logged in is redirected to its login page.
     """
-    import os
     current_logged_in_account = os.environ.get('USER_EMAIL', None)
     try:
       os.environ['USER_EMAIL'] = ''
@@ -138,7 +140,7 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     self.assertResponseOK(response)
     self.assertOrgProfilePageTemplatesUsed(response)
     self.assertFalse('slot_transfer_page_link' in response.context)
-    
+
   def test404IsReturnedWhenOrgDoesNotExists(self):
     """Tests that when an org admin tries to access the profile page for an
     org which does not exists a 404 is shown.
@@ -150,7 +152,7 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     import httplib
     response = self.get(url)
     self.assertResponseCode(response, httplib.NOT_FOUND)
-    
+
   def testAnOrgAdminCanUpdateOrgProfile(self):
     """Tests if an org admin can update the profile for its organization.
     """
@@ -167,16 +169,15 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
         'contact_postalcode': '247667', 'contact_country': 'India',
         'dev_mailing_list': 'http://d.com', 'home': postdata['home'].key(),
         'max_score': 5,
-    }
+        }
     postdata.update(updates)
     self.assertNotEqual(updates['email'], self.org.email)
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
-    
+
     expected_redirect_url = 'http://testserver' + url + '?validated'
     actual_redirect_url = response.get('location', None)
     self.assertEqual(expected_redirect_url, actual_redirect_url)
-     
+
     updated_org = db.get(self.org.key())
     self.assertEqual(updates['email'], updated_org.email)
-    
