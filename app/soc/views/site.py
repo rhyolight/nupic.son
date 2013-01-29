@@ -60,9 +60,7 @@ class SiteForm(views_forms.ModelForm):
     }
 
   def clean_tos(self):
-    if self.cleaned_data['tos'] is None:
-      return ''
-    return self.cleaned_data['tos']
+    return '' if self.cleaned_data['tos'] is None else self.cleaned_data['tos']
 
   def templatePath(self):
     return 'v2/modules/gsoc/_form.html'
@@ -120,14 +118,13 @@ class EditSitePage(base.SiteRequestHandler):
 
   def post(self):
     """Handler for HTTP POST request."""
-    if self.validate():
-      return self.redirect.to('edit_site_settings')
-    else:
-      context = self.context()
-      template_path = self.templatePath()
-      response_content = self.render(template_path, context)
-      return http.HttpResponse(
-          status=httplib.BAD_REQUEST, content=response_content)
+    post_accepted = self.validate()
+    context = self.context()
+    template_path = self.templatePath()
+    response_content = self.render(template_path, context)
+    return http.HttpResponse(
+        status=httplib.OK if post_accepted else httplib.BAD_REQUEST,
+        content=response_content)
 
 
 class SiteHomepage(base.SiteRequestHandler):
