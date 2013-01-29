@@ -161,8 +161,7 @@ class OrgAppRecordsList(object):
       super(OrgAppRecordsList, self).jsonContext()
 
   def _createOrgAppsList(self):
-    """Creates a SurveyRecordList for the requested survey.
-    """
+    """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
         self.data, self.data.org_app, OrgAppRecord, idx=0)
     record_list.list_config.addSimpleColumn('name', 'Name')
@@ -185,7 +184,7 @@ class OrgAppRecordsList(object):
     record_list.list_config.addPostEditButton('save', 'Save')
 
     record_list.list_config.setRowAction(
-        lambda e, *args: self.redirect.id(e.key().id_or_name()).
+        lambda e, *args: self.data.redirect.id(e.key().id_or_name()).
             urlOf(self.read_only_view))
 
     return record_list

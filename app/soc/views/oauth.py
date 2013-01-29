@@ -37,7 +37,7 @@ class OAuthRedirectPage(GSoCRequestHandler):
 
   def context(self):
     service = oauth_helper.createDocsService(self.data)
-    next = '%s?next=%s' % (self.redirect.urlOf('gdata_oauth_verify'),
+    next = '%s?next=%s' % (self.data.redirect.urlOf('gdata_oauth_verify'),
                            self.data.request.GET.get('next','/'))
     url = oauth_helper.generateOAuthRedirectURL(
         service, self.data.user,
@@ -67,7 +67,7 @@ class OAuthVerifyToken(GSoCRequestHandler):
     service = oauth_helper.createDocsService(self.data)
     oauth_helper.checkOAuthVerifier(service, self.data)
     next = self.data.request.GET.get('next','/')
-    return self.redirect.toUrl(next)
+    return self.data.redirect.toUrl(next)
 
 
 class PopupOAuthRedirectPage(GSoCRequestHandler):
@@ -86,15 +86,16 @@ class PopupOAuthRedirectPage(GSoCRequestHandler):
   def get(self):
     access_token = oauth_helper.getAccessToken(self.data.user)
     if access_token:
-      url = self.redirect.urlOf('gdata_popup_oauth_verified')
+      url = self.data.redirect.urlOf('gdata_popup_oauth_verified')
     else:
       service = oauth_helper.createDocsService(self.data)
-      next = '%s?next=%s' % (self.redirect.urlOf('gdata_oauth_verify'),
-                             self.redirect.urlOf('gdata_popup_oauth_verified'))
+      next = '%s?next=%s' % (
+          self.data.redirect.urlOf('gdata_oauth_verify'),
+          self.data.redirect.urlOf('gdata_popup_oauth_verified'))
       url = oauth_helper.generateOAuthRedirectURL(
           service, self.data.user,
           next)
-    return self.redirect.toUrl(url)
+    return self.data.redirect.toUrl(url)
 
 
 class PopupOAuthVerified(GSoCRequestHandler):
