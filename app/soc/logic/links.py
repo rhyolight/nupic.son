@@ -20,6 +20,18 @@ from django.core import urlresolvers
 class Linker(object):
   """URL creator for Melange."""
 
+  def site(self, url_name):
+    """Returns the URL of a named page on the site.
+
+    Args:
+      url_name: The name with which a url was registered with Django
+        (such as "edit_site_settings").
+
+    Returns:
+      The url of the site-wide page matching the given name.
+    """
+    return urlresolvers.reverse(url_name)
+
   def program(self, program, url_name):
     """Returns the URL of a program's named page.
 
