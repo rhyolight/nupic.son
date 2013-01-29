@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,11 +24,12 @@ from google.appengine.ext import db
 from soc.modules.gsoc.models import organization
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests.test_utils import GSoCDjangoTestCase
+from tests import profile_utils
 from tests import survey_utils
+from tests import test_utils
 
 
-class OrgProfilePageTest(GSoCDjangoTestCase):
+class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
   """Tests the view for organization profile page.
   """
 
@@ -72,22 +71,27 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/org_profile/base.html')
 
-  #TODO(Praveen): Activate this test as soon as the timeline checks are in place.
-  """
-  def testOrgProfilePageOffSeason(self):
-    """Tests that it is forbidden to create or edit an org profile during off
-    season.
+  def testOrgProfileCreateOffSeason(self):
+    """Tests that it is Ok to create an org profile during off season.
     """
     self.timeline.offSeason()
     self.data.createOrgAdmin(self.org)
-    #Profile creation URL is not implemented currently.
-    url = '/gsoc/profile/organization/' + self.gsoc.key().name()
+    record = self.createOrgAppRecord()
+
+    url = '/gsoc/profile/organization/%s?org_id=%s' % (
+        self.gsoc.key().name(), record.org_id)
     response = self.get(url)
-    self.assertResponseForbidden(response)
+    self.assertResponseOK(response)
+
+  def testOrgProfileEditOffSeason(self):
+    """Tests that it is Ok to edit an org profile during off season.
+    """
+    self.timeline.offSeason()
+    self.data.createOrgAdmin(self.org)
 
     url = '/gsoc/profile/organization/' + self.org.key().name()
     response = self.get(url)
-    self.assertResponseForbidden(response)
+    self.assertResponseOK(response)
 
   def testNonUserLoginRedirect(self):
     """Tests that a user who is not logged in is redirected to its login page.
@@ -95,16 +99,20 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     current_logged_in_account = os.environ.get('USER_EMAIL', None)
     try:
       os.environ['USER_EMAIL'] = ''
-      #TODO(Praveen): Activate code below when org profile creation is implemented.
-      #url = '/gsoc/profile/organization/' + self.gsoc.key().name()
-      #response = self.get(url)
-      #self.assertResponseRedirect(response)
+      url = '/gsoc/profile/organization/' + self.gsoc.key().name()
+      response = self.get(url)
+      self.assertResponseRedirect(response)
+
+      expected_redirect_base = 'https://www.google.com/accounts/Login?'\
+          +'continue=http%3A//some.testing.host.tld'
+      expected_redirect_address = expected_redirect_base + url
+      actual_redirect_address = response.get('location', None)
+      self.assertEqual(expected_redirect_address, actual_redirect_address)
 
       url = '/gsoc/profile/organization/' + self.org.key().name()
       response = self.get(url)
       self.assertResponseRedirect(response)
-      expected_redirect_address = 'https://www.google.com/accounts/Login?'\
-          +'continue=http%3A//some.testing.host.tld' + url
+      expected_redirect_address = expected_redirect_base + url
       actual_redirect_address = response.get('location', None)
       self.assertEqual(expected_redirect_address, actual_redirect_address)
     finally:
@@ -255,13 +263,12 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     """Tests if an org admin can update the profile for its organization.
     """
     self.timeline.orgSignup()
-    from soc.modules.gsoc.models.organization import GSoCOrganization
     self.data.createOrgAdmin(self.org)
 
     orig_new_org = self.org.new_org
 
     url = '/gsoc/profile/organization/' + self.org.key().name()
-    postdata = seeder_logic.seed_properties(GSoCOrganization)
+    postdata = seeder_logic.seed_properties(organization.GSoCOrganization)
     updates = {
         'email': 'temp@gmail.com', 'irc_channel': 'irc://i.f.net/gsoc',
         'pub_mailing_list': 'https://l.s.net',
