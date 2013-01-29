@@ -111,6 +111,12 @@ class OrgProfileForm(org_profile.OrgProfileForm):
       cols = [i.strip() for i in value.split(',') if i.strip()]
       self.cleaned_data['proposal_extra'] = cols
 
+    # If there is a key called new_org in the form, probably maliciously
+    # induced into the form data, since this field does not appear on the
+    # org profile form, we need to make sure to remove it.
+    if self.cleaned_data.has_key('new_org'):
+      self.cleaned_data.pop('new_org')
+
     return self.cleaned_data
 
   def clean_max_score(self):
