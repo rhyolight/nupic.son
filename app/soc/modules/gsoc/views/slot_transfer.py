@@ -237,9 +237,9 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
     slot_transfer_entity = self.createOrUpdateFromForm()
     if slot_transfer_entity:
       # TODO(nathaniel): make this .organization call unnecessary.
-      self.redirect.organization(organization=self.data.organization)
+      self.data.redirect.organization(organization=self.data.organization)
 
-      return self.redirect.to('gsoc_update_slot_transfer', validated=True)
+      return self.data.redirect.to('gsoc_update_slot_transfer', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

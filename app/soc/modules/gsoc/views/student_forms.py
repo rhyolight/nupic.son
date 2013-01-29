@@ -198,10 +198,10 @@ class FormPage(GSoCRequestHandler):
 
   def _r(self):
     if self._admin():
-      self.redirect.profile()
+      self.data.redirect.profile()
     else:
-      self.redirect.program()
-    return self.redirect
+      self.data.redirect.program()
+    return self.data.redirect
 
   def jsonContext(self):
     url = self._r().urlOf(self._urlName(), secure=True)

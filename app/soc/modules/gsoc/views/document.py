@@ -81,16 +81,16 @@ class EditDocumentPage(GSoCRequestHandler):
     form = GSoCDocumentForm(self.data.POST or None, instance=self.data.document)
     validated_document = document.validateForm(self.data, form)
     if validated_document:
-      self.redirect.document(validated_document)
-      return self.redirect.to('edit_gsoc_document')
+      self.data.redirect.document(validated_document)
+      # TODO(nathaniel): Redirection to self?
+      return self.data.redirect.to('edit_gsoc_document')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
 
 
 class DocumentPage(GSoCRequestHandler):
-  """Encapsulate all the methods required to show documents.
-  """
+  """Encapsulate all the methods required to show documents."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/base.html'

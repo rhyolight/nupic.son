@@ -294,8 +294,8 @@ class GradingRecordDetails(GSoCRequestHandler):
     mail_task = taskqueue.Task(params=task_params, url=task_url)
     mail_task.add('mail')
 
-    self.redirect.id(record.grading_survey_group.key().id_or_name())
-    return self.redirect.to('gsoc_grading_record_overview')
+    self.data.redirect.id(record.grading_survey_group.key().id_or_name())
+    return self.data.redirect.to('gsoc_grading_record_overview')
 
   def templatePath(self):
     return 'v2/modules/gsoc/grading_record/details.html'

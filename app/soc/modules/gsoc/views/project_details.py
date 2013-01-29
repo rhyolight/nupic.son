@@ -227,8 +227,8 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
   def post(self):
     """Post handler for the project details update form."""
     if self.validate():
-      self.redirect.project()
-      return self.redirect.to('gsoc_project_details')
+      self.data.redirect.project()
+      return self.data.redirect.to('gsoc_project_details')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -266,7 +266,7 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
       for blob_info in self.data.request.file_uploads.itervalues():
         blob_info.delete()
       # TODO(nathaniel): make this .project() call unnecessary.
-      return self.redirect.project().to(
+      return self.data.redirect.project().to(
           url_names.GSOC_PROJECT_UPDATE, extra=['file=0'])
 
     form.cleaned_data['user'] = self.data.user
@@ -287,9 +287,9 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
     db.run_in_transaction(txn)
 
     # TODO(nathaniel): Make this .project() call unnecessary.
-    self.redirect.project()
+    self.data.redirect.project()
 
-    return self.redirect.to('gsoc_project_details')
+    return self.data.redirect.to('gsoc_project_details')
 
 
 class CodeSampleDownloadFileGet(GSoCRequestHandler):
@@ -368,8 +368,8 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
 
       db.run_in_transaction(txn)
 
-      self.redirect.project()
-      return self.redirect.to(url_names.GSOC_PROJECT_UPDATE)
+      self.data.redirect.project()
+      return self.data.redirect.to(url_names.GSOC_PROJECT_UPDATE)
     except KeyError:
       raise BadRequest('id argument missing in POST data')
     except ValueError:
@@ -446,12 +446,12 @@ class ProjectDetails(GSoCRequestHandler):
   def context(self):
     """Handler to for GSoC project details page HTTP get request."""
     # TODO(nathaniel): make this .organization call unnecessary?
-    self.redirect.organization(organization=self.data.project.org)
+    self.data.redirect.organization(organization=self.data.project.org)
 
     context = {
         'page_name': 'Project details',
         'project': self.data.project,
-        'org_home_link': self.redirect.urlOf('gsoc_org_home'),
+        'org_home_link': self.data.redirect.urlOf('gsoc_org_home'),
     }
 
     if self.data.orgAdminFor(self.data.project.org):
@@ -460,7 +460,7 @@ class ProjectDetails(GSoCRequestHandler):
     user_is_owner = self.data.user and \
         (self.data.user.key() == self.data.project_owner.parent_key())
     if user_is_owner:
-      context['update_link'] = self.redirect.project().urlOf(
+      context['update_link'] = self.data.redirect.project().urlOf(
           url_names.GSOC_PROJECT_UPDATE)
 
     if len(self.data.project.passed_evaluations) >= \
@@ -532,9 +532,9 @@ class AssignMentors(GSoCRequestHandler):
 
     project_owner = self.data.project.parent()
 
-    self.redirect.project(self.data.project.key().id(),
-                          project_owner.link_id)
-    return self.redirect.to('gsoc_project_details')
+    self.data.redirect.project(self.data.project.key().id(),
+                               project_owner.link_id)
+    return self.data.redirect.to('gsoc_project_details')
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""

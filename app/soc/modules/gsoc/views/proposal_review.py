@@ -565,16 +565,17 @@ class PostComment(GSoCRequestHandler):
 
     comment = self.createCommentFromForm()
     if comment:
-      self.redirect.program()
-      return self.redirect.to('gsoc_dashboard', anchor='proposals_submitted')
+      self.data.redirect.program()
+      return self.data.redirect.to(
+          'gsoc_dashboard', anchor='proposals_submitted')
     else:
       # This is an insanely and absolutely hacky solution. We definitely
       # do not want any one to use this a model for writing code elsewhere
       # in Melange.
       # TODO (Madhu): Replace this in favor of PJAX for loading comments.
-      r = self.redirect.review(self.data.proposal.key().id(),
-                               self.data.proposer.link_id)
-      redirect_url = r.urlOf('review_gsoc_proposal')
+      self.data.redirect.review(self.data.proposal.key().id(),
+                                self.data.proposer.link_id)
+      redirect_url = self.data.redirect.urlOf('review_gsoc_proposal')
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
       self.data.request.method = 'GET'
@@ -816,9 +817,9 @@ class AssignMentor(GSoCRequestHandler):
 
     self.data.proposer = self.data.proposal.parent()
 
-    self.redirect.review(self.data.proposal.key().id(),
-                         self.data.proposer.link_id)
-    return self.redirect.to('review_gsoc_proposal')
+    self.data.redirect.review(self.data.proposal.key().id(),
+                              self.data.proposer.link_id)
+    return self.data.redirect.to('review_gsoc_proposal')
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""

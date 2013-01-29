@@ -285,20 +285,20 @@ class OrgHome(GSoCRequestHandler):
 
     if self.data.orgAdminFor(organization):
       # TODO(nathaniel): make this .organization call unnecessary.
-      self.redirect.organization(organization=organization)
+      self.data.redirect.organization(organization=organization)
 
-      context['edit_link'] =  self.redirect.urlOf('edit_gsoc_org_profile')
-      context['invite_admin_link'] = self.redirect.invite('org_admin').urlOf(
-          'gsoc_invite')
-      context['invite_mentor_link'] = self.redirect.invite('mentor').urlOf(
-          'gsoc_invite')
+      context['edit_link'] =  self.data.redirect.urlOf('edit_gsoc_org_profile')
+      context['invite_admin_link'] = self.data.redirect.invite(
+          'org_admin').urlOf('gsoc_invite')
+      context['invite_mentor_link'] = self.data.redirect.invite(
+          'mentor').urlOf('gsoc_invite')
 
       if (self.data.program.allocations_visible and
           self.data.timeline.beforeStudentsAnnounced()):
         # TODO(nathaniel): make this .organization call unnecessary.
-        self.redirect.organization(organization=organization)
+        self.data.redirect.organization(organization=organization)
 
-        context['slot_transfer_link'] = self.redirect.urlOf(
+        context['slot_transfer_link'] = self.data.redirect.urlOf(
             'gsoc_slot_transfer')
 
     if self.data.timeline.studentsAnnounced():

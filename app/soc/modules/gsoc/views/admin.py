@@ -756,8 +756,9 @@ class LookupLinkIdPage(GSoCRequestHandler):
     if profile:
       # TODO(nathaniel): Find a cleaner way to do this rather than
       # generating a response and then tossing it.
-      self.redirect.profile(profile.link_id)
-      response = self.redirect.to(url_names.GSOC_PROFILE_SHOW, secure=True)
+      self.data.redirect.profile(profile.link_id)
+      response = self.data.redirect.to(
+          url_names.GSOC_PROFILE_SHOW, secure=True)
       raise exceptions.RedirectRequest(response['Location'])
     else:
       return {
