@@ -23,12 +23,11 @@ import os
 
 from google.appengine.ext import db
 
+from soc.modules.gsoc.models import organization
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests.test_utils import GSoCDjangoTestCase
-
-#TODO(Praveen): Test r'profile/organization/%s$' % url_patterns.PROGRAM when
-#org creation is implemented.
+from tests import survey_utils
 
 
 class OrgProfilePageTest(GSoCDjangoTestCase):
@@ -37,6 +36,37 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
 
   def setUp(self):
     self.init()
+    self.survey_helper = survey_utils.SurveyHelper(self.gsoc, self.dev_test,
+                                                   self.org_app)
+
+  def getOrgPostData(self):
+    """Create a post data dictionary for creating a new organization.
+    """
+    return {
+        'name': 'New Test Org',
+        'home_page': 'http://newtestorg.example.com',
+        'description': 'We are the best of the test orgs',
+        'tags': 'Test, org, language',
+        'short_name': 'NTO',
+        'email': 'nto@newtestorg.example.com',
+        'contact_street': 'Test org street',
+        'contact_city': 'Test org city',
+        'contact_country': 'Belgium',
+        'contact_postalcode': 111111,
+        'phone': 1111111111,
+        'max_score': 5,
+        }
+
+  def createOrgAppRecord(self):
+    """Creates the org application record entity.
+    """
+    backup_admin = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
+    backup_admin.createOtherUser('backupadmin@example.com')
+    backup_admin_profile = backup_admin.createOrgAdmin(self.org)
+    backup_admin.notificationSettings()
+
+    return self.survey_helper.createOrgAppRecord(
+        'test_org', self.data.user, backup_admin_profile.parent())
 
   def assertOrgProfilePageTemplatesUsed(self, response):
     self.assertGSoCTemplatesUsed(response)
@@ -82,6 +112,75 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
         del os.environ['USER_EMAIL']
       else:
         os.environ['USER_EMAIL'] = current_logged_in_account
+
+  def testOrgAdminCanCreateOrgProfile(self):
+    """Tests if the org admin for the org can create org profile.
+    """
+    self.data.createProfile()
+    record = self.createOrgAppRecord()
+
+    base_url = '/gsoc/profile/organization/'
+    suffix = '%s?org_id=%s' % (self.gsoc.key().name(), record.org_id)
+    url = base_url + suffix
+
+    response = self.get(url)
+    self.assertOrgProfilePageTemplatesUsed(response)
+    self.assertResponseOK(response)
+
+    org_key_name = '%s/%s' % (self.gsoc.key().name(), record.org_id)
+    org = organization.GSoCOrganization.get_by_key_name(org_key_name)
+
+    self.assertEqual(org, None)
+
+    postdata = self.getOrgPostData()
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(
+        response, base_url + '%s/%s?validated' % (
+            self.gsoc.key().name(), record.org_id))
+
+    org = organization.GSoCOrganization.get_by_key_name(org_key_name)
+    self.assertEqual(org.link_id, record.org_id)
+
+    # Make sure that the new org/veteran value is copied from the organization
+    # application
+    self.assertEqual(org.new_org, record.new_org)
+
+  def testBackupAdminCanCreateOrgProfile(self):
+    """Tests if the backup admin for the org can create org profile.
+    """
+    self.data.createProfile()
+    record = self.createOrgAppRecord()
+
+    # Swap main admin and backupadmin
+    record.backup_admin, record.main_admin = (
+        record.main_admin, record.backup_admin)
+    record.put()
+
+    base_url = '/gsoc/profile/organization/'
+    suffix = '%s?org_id=%s' % (self.gsoc.key().name(), record.org_id)
+    url = base_url + suffix
+
+    response = self.get(url)
+    self.assertOrgProfilePageTemplatesUsed(response)
+    self.assertResponseOK(response)
+
+    org_key_name = '%s/%s' % (self.gsoc.key().name(), record.org_id)
+    org = organization.GSoCOrganization.get_by_key_name(org_key_name)
+
+    self.assertEqual(org, None)
+
+    postdata = self.getOrgPostData()
+    response = self.post(url, postdata)
+    self.assertResponseRedirect(
+        response, base_url + '%s/%s?validated' % (
+            self.gsoc.key().name(), record.org_id))
+
+    org = organization.GSoCOrganization.get_by_key_name(org_key_name)
+    self.assertEqual(org.link_id, record.org_id)
+
+    # Make sure that the new org/veteran value is copied from the organization
+    # application
+    self.assertEqual(org.new_org, record.new_org)
 
   def testNoProfileUserCantEditOrgProfile(self):
     """Tests that a user without a profile can not edit an org profile.
