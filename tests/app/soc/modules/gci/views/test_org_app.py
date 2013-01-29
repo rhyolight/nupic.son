@@ -255,8 +255,8 @@ class GCIOrgAppRecordsPageTest(test_utils.MailTestCase,
 
   def testGetRecords(self):
     self.data.createHost()
-    record = self.record.createOrgApp('org1', self.data.user,
-                                      {'status': 'needs review'})
+    record = self.record.createOrgAppRecord(
+        'org1', self.data.user, self.data.user, {'status': 'needs review'})
 
     response = self.get(self.url)
     self.assertTemplatesUsed(response)

@@ -99,15 +99,22 @@ class SurveyHelper(object):
     return self.createEvaluation(grading_project_survey.GradingProjectSurvey,
                                  host=host, override=override)
 
-  def createOrgApp(self, link_id, user, override={}):
+  def createOrgAppRecord(self, link_id, main_admin, backup_admin, override={}):
     """Creates a new OrgAppRecord for the specified link_id.
+
+    Args:
+      link_id: Link ID of the organization to which the application record
+          should be created.
+      main_admin: User entity of the main admin of the organization.
+      backup_admin: User entity of the backup admin of the organization.
+      override: A dictionary of override parameters for the seeder.
     """
     properties = {
       'org_id': link_id,
       'survey': self.org_app,
-      'backup_admin': user,
-      'user': user,
-      'main_admin': user,
+      'backup_admin': backup_admin,
+      'user': main_admin,
+      'main_admin': main_admin,
       'status': 'accepted',
       'program': self.program,
     }

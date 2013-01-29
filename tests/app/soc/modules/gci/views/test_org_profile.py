@@ -50,8 +50,8 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
 
   def testCreateOrgRejectedApp(self):
     self.data.createUser()
-    self.record.createOrgApp('rejected', self.data.user,
-                             override={'status': 'rejected'})
+    self.record.createOrgAppRecord('rejected', self.data.user, self.data.user,
+                                   override={'status': 'rejected'})
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url + '?org_id=rejected')
@@ -59,7 +59,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
 
   def testCreateOrgNoProfile(self):
     self.data.createUser()
-    self.record.createOrgApp('new_org', self.data.user)
+    self.record.createOrgAppRecord('new_org', self.data.user, self.data.user)
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url + '?org_id=new_org')
@@ -72,7 +72,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     """
     self.timeline.orgSignup()
     self.data.createProfile()
-    self.record.createOrgApp('new_org', self.data.user)
+    self.record.createOrgAppRecord('new_org', self.data.user, self.data.user)
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     create_url = url + '?org_id=new_org'
