@@ -318,9 +318,9 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
   def deleteAccountPostAction(self):
     """Handler for Delete Account POST action."""
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.redirect.program()
+    self.data.redirect.program()
 
-    return self.redirect.to('gci_delete_account', secure=True)
+    return self.data.redirect.to('gci_delete_account', secure=True)
 
   def editProfilePostAction(self):
     """Handler for regular (edit/create profile) POST action."""
@@ -336,9 +336,9 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
       raise RedirectRequest(create_url + '?org_id=' + org_id)
     else:
       # TODO(nathaniel): make this .program() call unnecessary.
-      self.redirect.program()
+      self.data.redirect.program()
 
-      return self.redirect.to(
+      return self.data.redirect.to(
           self._getEditProfileURLName(), validated=True, secure=True)
 
   def _getModulePrefix(self):

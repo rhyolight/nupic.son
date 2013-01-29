@@ -245,7 +245,7 @@ class TaskViewPage(GCIRequestHandler):
 
   def jsonContext(self):
     url = '%s?submit_work' %(
-          self.data.redirect.id().urlOf('gci_view_task'))
+          self.data.redirect.id().urlOf(url_names.GCI_VIEW_TASK))
     return {
         'upload_link': blobstore.create_upload_url(url),
         }
@@ -320,7 +320,7 @@ class TaskViewPage(GCIRequestHandler):
 
     # TODO(ljvderijk): Indicate that a comment was successfully created to the
     # user.
-    return self.redirect.id().to('gci_view_task')
+    return self.data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
   def _postButton(self):
     """Handles the POST call for any of the control buttons on the task page.
@@ -334,11 +334,11 @@ class TaskViewPage(GCIRequestHandler):
     elif button_name == 'button_publish':
       task_logic.setTaskStatus(task.key(), 'Open')
     elif button_name == 'button_edit':
-      r = self.redirect.id(id=task.key().id_or_name())
-      return r.to('gci_edit_task')
+      self.data.redirect.id(id=task.key().id_or_name())
+      return self.data.redirect.to('gci_edit_task')
     elif button_name == 'button_delete':
       task_logic.delete(task)
-      return self.redirect.homepage().to()
+      return self.data.redirect.homepage().to()
     elif button_name == 'button_assign':
       task_logic.assignTask(task, task.student, self.data.profile)
     elif button_name == 'button_unassign':
@@ -374,7 +374,7 @@ class TaskViewPage(GCIRequestHandler):
           task.put()
       db.run_in_transaction(txn)
 
-    return self.redirect.id().to('gci_view_task')
+    return self.data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
   def _buttonName(self):
     """Returns the name of the button specified in the POST dict.
@@ -400,11 +400,13 @@ class TaskViewPage(GCIRequestHandler):
         # we are not storing this form, remove the uploaded blob from the cloud
         for f in self.data.request.file_uploads.itervalues():
           f.delete()
-        return self.redirect.id().to('gci_view_task', extra=['file=0'])
+        return self.data.redirect.id().to(
+            url_names.GCI_VIEW_TASK, extra=['file=0'])
     else:
       logging.warning('Neither the URL nor the files were provided for work '
                       'submission.')
-      return self.redirect.id().to('gci_view_task', extra=['ws_error=1'])
+      return self.data.redirect.id().to(
+          url_names.GCI_VIEW_TASK, extra=['ws_error=1'])
 
     task = self.data.task
     # TODO(ljvderijk): Add a non-required profile property?
@@ -415,13 +417,13 @@ class TaskViewPage(GCIRequestHandler):
     # store the submission, parented by the task
     form.create(parent=task)
 
-    return self.redirect.id().to('gci_view_task')
+    return self.data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
   def _postSendForReview(self):
     """POST handler for the mark as complete button."""
     task_logic.sendForReview(self.data.task, self.data.profile)
 
-    return self.redirect.id().to('gci_view_task')
+    return self.data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
   def _postDeleteSubmission(self):
     """POST handler to delete a GCIWorkSubmission.
@@ -440,7 +442,8 @@ class TaskViewPage(GCIRequestHandler):
     if upload:
       upload.delete()
 
-    return self.redirect.id().to('gci_view_task')
+    # TODO(nathaniel): Redirection to self.
+    return self.data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
   def _submissionId(self):
     """Retrieves the submission id from the POST data.
@@ -627,7 +630,7 @@ class WorkSubmissions(Template):
         context['ws_error'] = True
 
       url = '%s?submit_work' %(
-          self.data.redirect.id().urlOf('gci_view_task'))
+          self.data.redirect.id().urlOf(url_names.GCI_VIEW_TASK))
       context['direct_post_url'] = url
 
     return context

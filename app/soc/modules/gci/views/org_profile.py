@@ -106,9 +106,9 @@ class OrgProfilePage(GCIRequestHandler):
     org_profile = self.createOrgProfileFromForm()
     if org_profile:
       # TODO(nathaniel): make this .organization call unnecessary.
-      self.redirect.organization(organization=org_profile)
+      self.data.redirect.organization(organization=org_profile)
 
-      return self.redirect.to('edit_gci_org_profile', validated=True)
+      return self.data.redirect.to('edit_gci_org_profile', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

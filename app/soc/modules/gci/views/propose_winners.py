@@ -173,8 +173,8 @@ class ProposeWinnersPage(GCIRequestHandler):
 
     db.run_in_transaction(txn)
 
-    self.redirect.organization()
-    return self.redirect.to(url_names.GCI_ORG_PROPOSE_WINNERS)
+    self.data.redirect.organization()
+    return self.data.redirect.to(url_names.GCI_ORG_PROPOSE_WINNERS)
 
   def _getProfileByKeyStr(self, key_str):
     """Returns the GCIProfile entity based on the specified string

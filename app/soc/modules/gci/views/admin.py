@@ -419,8 +419,8 @@ class LookupLinkIdPage(GCIRequestHandler):
 
     if profile:
       # TODO(nathaniel): setting redirection in a context() method?
-      self.redirect.profile(profile.link_id)
-      self.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN, secure=True)
+      self.data.redirect.profile(profile.link_id)
+      self.data.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN, secure=True)
 
     return {
       'forms': forms,

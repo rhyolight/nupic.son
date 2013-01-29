@@ -70,7 +70,7 @@ class AgeCheck(gci_base.GCIRequestHandler):
       # age check passed, redirect to create profile page
       # TODO(nathaniel): Can this be cleaned up at all? Creating and
       # discarding a response feels weird.
-      response = self.redirect.createProfile('student').to(
+      response = self.data.redirect.createProfile('student').to(
           'create_gci_profile', secure=True)
       raise exceptions.RedirectRequest(response['Location'])
 
@@ -94,9 +94,9 @@ class AgeCheck(gci_base.GCIRequestHandler):
 
     # redirect to the same page and have the cookies sent across
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.redirect.program()
+    self.data.redirect.program()
 
-    response = self.redirect.to('gci_age_check')
+    response = self.data.redirect.to('gci_age_check')
 
     age_sufficient = validate.isAgeSufficientForProgram(birth_date, program)
     response.set_cookie('age_check', birth_date if age_sufficient else '0')

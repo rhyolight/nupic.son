@@ -137,8 +137,8 @@ class ProgramPage(GCIRequestHandler):
     """Handler for HTTP POST request."""
 
     if self.validate():
-      self.redirect.program()
-      return self.redirect.to('edit_gci_program', validated=True)
+      self.data.redirect.program()
+      return self.data.redirect.to('edit_gci_program', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -182,8 +182,8 @@ class TimelinePage(GCIRequestHandler):
   def post(self):
     """Handler for HTTP POST request."""
     if self.validate():
-      self.redirect.program()
-      return self.redirect.to('edit_gci_timeline', validated=True)
+      self.data.redirect.program()
+      return self.data.redirect.to('edit_gci_timeline', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
