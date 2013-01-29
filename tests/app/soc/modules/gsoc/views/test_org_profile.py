@@ -258,6 +258,8 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
     from soc.modules.gsoc.models.organization import GSoCOrganization
     self.data.createOrgAdmin(self.org)
 
+    orig_new_org = self.org.new_org
+
     url = '/gsoc/profile/organization/' + self.org.key().name()
     postdata = seeder_logic.seed_properties(GSoCOrganization)
     updates = {
@@ -266,7 +268,7 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
         'tags': 'foo, bar', 'gsoc_org_page_home': 'http://www.xyz.com',
         'contact_postalcode': '247667', 'contact_country': 'India',
         'dev_mailing_list': 'http://d.com', 'home': postdata['home'].key(),
-        'max_score': 5,
+        'max_score': 5, 'new_org': not orig_new_org, # swap orig new org value
         }
     postdata.update(updates)
     self.assertNotEqual(updates['email'], self.org.email)
@@ -279,3 +281,6 @@ class OrgProfilePageTest(GSoCDjangoTestCase):
 
     updated_org = db.get(self.org.key())
     self.assertEqual(updates['email'], updated_org.email)
+
+    # Make sure that the orig new_org value is retained.
+    self.assertEqual(updated_org.new_org, orig_new_org)
