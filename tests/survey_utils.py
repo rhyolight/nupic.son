@@ -19,14 +19,16 @@
 """
 
 
-from tests.profile_utils import GSoCProfileHelper
-from tests import timeline_utils
+from soc.models import org_app_record
 
-from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
-from soc.modules.gsoc.models.project_survey import ProjectSurvey
+from soc.modules.gsoc.models import grading_project_survey
+from soc.modules.gsoc.models import project_survey
 
-from soc.modules.seeder.logic.providers.string import SurveyKeyNameProvider
+from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import profile_utils
+from tests import timeline_utils
 
 
 class SurveyHelper(object):
@@ -66,7 +68,8 @@ class SurveyHelper(object):
 
   def createEvaluation(self, survey, host=None, override={}):
     if not host:
-      host_profile = GSoCProfileHelper(self.program, self.dev_test)
+      host_profile = profile_utils.GSoCProfileHelper(self.program,
+                                                     self.dev_test)
       host_profile.createOtherUser('host@example.com')
       host = host_profile.createHost()
 
@@ -81,7 +84,7 @@ class SurveyHelper(object):
         'author': host,
         'modified_by': host,
         'scope': self.program,
-        'key_name': SurveyKeyNameProvider(),
+        'key_name': string_provider.SurveyKeyNameProvider(),
         'survey_start': timeline_utils.past(),
         'survey_end': timeline_utils.future(),
         }
@@ -89,16 +92,16 @@ class SurveyHelper(object):
     return self.seed(survey, properties)
 
   def createStudentEvaluation(self, host=None, override={}):
-    return self.createEvaluation(ProjectSurvey, host=host, override=override)
+    return self.createEvaluation(project_survey.ProjectSurvey, host=host,
+                                 override=override)
 
   def createMentorEvaluation(self, host=None, override={}):
-    return self.createEvaluation(GradingProjectSurvey, host=host,
-                                 override=override)
+    return self.createEvaluation(grading_project_survey.GradingProjectSurvey,
+                                 host=host, override=override)
 
   def createOrgApp(self, link_id, user, override={}):
     """Creates a new OrgAppRecord for the specified link_id.
     """
-    from soc.models.org_app_record import OrgAppRecord
     properties = {
       'org_id': link_id,
       'survey': self.org_app,
@@ -109,5 +112,5 @@ class SurveyHelper(object):
       'program': self.program,
     }
     properties.update(override)
-    entity = self.seed(OrgAppRecord, properties)
+    entity = self.seed(org_app_record.OrgAppRecord, properties)
     return entity
