@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the boiler plate required to construct views. This
+"""Module containing the boilerplate required to construct views. This
 module is largely based on appengine's webapp framework's code.
 """
 
@@ -268,8 +268,8 @@ class RequestHandler(object):
       kwargs: Additional keyword arguments passed to this request handler.
 
     Returns:
-      A quartet of the RequestData, Check, Mutator, and RedirectHelper to
-        be used to service the request.
+      A triplet of the RequestData, Check, and Mutator to be used to
+        service the request.
     """
     raise NotImplementedError()
 
@@ -296,7 +296,7 @@ class RequestHandler(object):
     5. Returns the response.
     """
     try:
-      self.data, self.check, self.mutator, self.redirect = self.init(
+      self.data, self.check, self.mutator = self.init(
           request, args, kwargs)
       self.checkAccess()
       return self._dispatch()
@@ -315,7 +315,6 @@ class RequestHandler(object):
       self.data = None
       self.check = None
       self.mutator = None
-      self.redirect = None
 
 
 class SiteRequestHandler(RequestHandler):
@@ -330,4 +329,4 @@ class SiteRequestHandler(RequestHandler):
       mutator = access_checker.Mutator(data)
       check = access_checker.AccessChecker(data)
     self.checkMaintenanceMode(data)
-    return data, check, mutator, data.redirect
+    return data, check, mutator

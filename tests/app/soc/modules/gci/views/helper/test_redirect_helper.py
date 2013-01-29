@@ -33,7 +33,7 @@ class RedirectHelperTest(GCITestCase):
 
     self.handler = GCIRequestHandler()
     self.handler.response = Response()
-    data, _, _, _ = self.handler.init(request, (), {})
+    data, _, _ = self.handler.init(request, (), {})
 
     self.redirect = data.redirect
 
