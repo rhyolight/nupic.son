@@ -108,7 +108,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
       'description': 'Melange',
       'home_page': 'code.google.com/p/soc',
       'license': 'Apache License, 2.0',
-      'new_org': False,
+      'new_org': 'Veteran',
       'agreed_to_admin_agreement': 'on',
       'item': 'test',
     }
