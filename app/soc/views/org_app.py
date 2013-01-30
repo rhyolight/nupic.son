@@ -126,8 +126,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     """Converts the select widget value of the new_org field from the form to
     the boolean value required by the backing data model.
     """
-    new_org_str = self.cleaned_data['new_org']
-    return True if new_org_str == 'New' else False
+    return self.cleaned_data['new_org'] == 'New'
 
   def clean(self):
     cleaned_data = self.cleaned_data
