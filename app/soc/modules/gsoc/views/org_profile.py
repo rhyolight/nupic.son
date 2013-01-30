@@ -114,8 +114,7 @@ class OrgProfileForm(org_profile.OrgProfileForm):
     # If there is a key called new_org in the form, probably maliciously
     # induced into the form data, since this field does not appear on the
     # org profile form, we need to make sure to remove it.
-    if self.cleaned_data.has_key('new_org'):
-      self.cleaned_data.pop('new_org')
+    self.cleaned_data.pop('new_org', None)
 
     return self.cleaned_data
 
