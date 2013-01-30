@@ -19,6 +19,8 @@
 
 import os
 
+from django.utils import simplejson
+
 from soc.models import org_app_record
 from soc.models import org_app_survey
 
@@ -27,22 +29,66 @@ from tests import test_utils
 from tests import timeline_utils
 
 
-ORG_APP_SCHEMA_JSON = ('[["frm-t1359271954246-item","frm-t1359347613687-item",'
-    '"frm-t1359347873346-item","frm-t1359347876071-item"],'
-    '{"frm-t1359271954246-item":{"field_type":"input_text","required":'
-    'true,"label":"Text%20field%20sample%20question%3F"},'
-    '"frm-t1359347613687-item":{"field_type":"textarea","required":'
-    'false,"label":"Paragraph%20field%20sample%20question%3F"},'
-    '"frm-t1359347873346-item":{"field_type":"checkbox","required":'
-    'true,"other":false,"values":[{"value":"Ckbx%201","checked":false},'
-    '{"value":"Ckbx%202","checked":false},{"value":"Ckbx%203",'
-    '"checked":false},{"value":"Ckbx%204","checked":false}],"label":'
-    '"Checkbox%20field%20sample%20question%3F"},"frm-t1359347876071-'
-    'item":{"field_type":"radio","required":false,"other":true,'
-    '"values":[{"value":"Radio1","checked":false},{"value":"Radio2",'
-    '"checked":false},{"value":"Radio3","checked":false},{"value":'
-    '"Radio4","checked":false}],"label":'
-    '"Radio%20field%20sample%20question%3F"}}]')
+ORG_APP_SCHEMA = ([
+    ["frm-t1359271954246-item","frm-t1359347613687-item", 
+     "frm-t1359347873346-item","frm-t1359347876071-item"],
+    {
+        "frm-t1359271954246-item": {
+            "field_type": "input_text",
+            "required": True,
+            "label": "Text field sample question?",
+            },
+        "frm-t1359347613687-item": {
+            "field_type": "textarea",
+            "required": False,
+            "label": "Paragraph field sample question?",
+            },
+        "frm-t1359347873346-item": {
+            "field_type": "checkbox",
+            "required": True,
+            "other": False,
+            "values": [{
+                "value": "Ckbx 1",
+                "checked": False,
+                },
+            {
+                "value": "Ckbx 2",
+                "checked": False,
+                },
+            {
+                "value": "Ckbx 3",
+                "checked": False,
+                },
+            {
+                "value": "Ckbx 4",
+                "checked": False,
+                }],
+            "label": "Checkbox field sample question?",
+            },
+        "frm-t1359347876071-item": {
+            "field_type": "radio",
+            "required": False,
+            "other": True,
+            "values": [{
+                "value": "Radio1",
+                "checked": False,
+                },
+            {
+                "value": "Radio2",
+                "checked": False,
+                },
+            {
+                "value": "Radio3",
+                "checked": False,
+                },
+            {
+                "value": "Radio4",
+                "checked": False
+                }],
+            "label": "Radio field sample question?",
+            }
+         }
+    ])
 
 
 class OrgAppTest(test_utils.GSoCDjangoTestCase):
@@ -68,7 +114,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
         'content': 'Organization application for GSoC',
         'survey_start': timeline_utils.past().strftime(time_fmt),
         'survey_end': timeline_utils.future().strftime(time_fmt),
-        'schema': ORG_APP_SCHEMA_JSON
+        'schema': simplejson.dumps(ORG_APP_SCHEMA),
         }
 
   def getOrgAppTakePostData(self):
