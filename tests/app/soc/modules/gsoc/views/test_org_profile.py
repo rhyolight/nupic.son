@@ -29,6 +29,22 @@ from tests import survey_utils
 from tests import test_utils
 
 
+TEST_ORG_POST_DATA = {
+    'name': 'New Test Org',
+    'home_page': 'http://newtestorg.example.com',
+    'description': 'We are the best of the test orgs',
+    'tags': 'Test, org, language',
+    'short_name': 'NTO',
+    'email': 'nto@newtestorg.example.com',
+    'contact_street': 'Test org street',
+    'contact_city': 'Test org city',
+    'contact_country': 'Belgium',
+    'contact_postalcode': 111111,
+    'phone': 1111111111,
+    'max_score': 5,
+    }
+
+
 class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
   """Tests the view for organization profile page.
   """
@@ -37,24 +53,6 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     self.init()
     self.survey_helper = survey_utils.SurveyHelper(self.gsoc, self.dev_test,
                                                    self.org_app)
-
-  def getOrgPostData(self):
-    """Create a post data dictionary for creating a new organization.
-    """
-    return {
-        'name': 'New Test Org',
-        'home_page': 'http://newtestorg.example.com',
-        'description': 'We are the best of the test orgs',
-        'tags': 'Test, org, language',
-        'short_name': 'NTO',
-        'email': 'nto@newtestorg.example.com',
-        'contact_street': 'Test org street',
-        'contact_city': 'Test org city',
-        'contact_country': 'Belgium',
-        'contact_postalcode': 111111,
-        'phone': 1111111111,
-        'max_score': 5,
-        }
 
   def createOrgAppRecord(self):
     """Creates the org application record entity.
@@ -140,7 +138,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
 
     self.assertEqual(org, None)
 
-    postdata = self.getOrgPostData()
+    postdata = TEST_ORG_POST_DATA
     response = self.post(url, postdata)
     self.assertResponseRedirect(
         response, base_url + '%s/%s?validated' % (
@@ -177,7 +175,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
 
     self.assertEqual(org, None)
 
-    postdata = self.getOrgPostData()
+    postdata = TEST_ORG_POST_DATA
     response = self.post(url, postdata)
     self.assertResponseRedirect(
         response, base_url + '%s/%s?validated' % (
