@@ -138,8 +138,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
 
     self.assertEqual(org, None)
 
-    postdata = TEST_ORG_POST_DATA
-    response = self.post(url, postdata)
+    response = self.post(url, TEST_ORG_POST_DATA)
     self.assertResponseRedirect(
         response, base_url + '%s/%s?validated' % (
             self.gsoc.key().name(), record.org_id))
@@ -175,8 +174,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
 
     self.assertEqual(org, None)
 
-    postdata = TEST_ORG_POST_DATA
-    response = self.post(url, postdata)
+    response = self.post(url, TEST_ORG_POST_DATA)
     self.assertResponseRedirect(
         response, base_url + '%s/%s?validated' % (
             self.gsoc.key().name(), record.org_id))
