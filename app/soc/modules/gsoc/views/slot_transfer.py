@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC slot transfer page.
-"""
-
+"""Module for the GSoC slot transfer page."""
 
 from google.appengine.ext import db
 
@@ -26,12 +22,12 @@ from soc.logic import cleaning
 from soc.logic import host as host_logic
 from soc.logic.exceptions import RedirectRequest
 from soc.tasks import mailer
-from soc.views import readonly_template
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views import readonly_template
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -56,7 +52,7 @@ class SlotTransferForm(forms.GSoCModelForm):
   clean_remarks = cleaning.clean_html_content('remarks')
 
 
-class SlotTransferReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
+class SlotTransferReadOnlyTemplate(readonly_template.GSoCModelReadOnlyTemplate):
   """Template to display readonly information from previous requests.
   """
 
@@ -72,7 +68,7 @@ class SlotTransferReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
     exclude = ['program']
 
 
-class SlotTransferPage(RequestHandler):
+class SlotTransferPage(GSoCRequestHandler):
   """View for transferring the slots.
   """
 
@@ -92,8 +88,10 @@ class SlotTransferPage(RequestHandler):
     self.mutator.slotTransferEntities()
     if not self.data.slot_transfer_entities:
       if 'new' not in self.data.kwargs:
-        r = self.data.redirect
-        new_url = r.organization().urlOf('gsoc_update_slot_transfer')
+        # TODO(nathaniel): make this .organization() call unnecessary.
+        self.data.redirect.organization()
+
+        new_url = self.data.redirect.urlOf('gsoc_update_slot_transfer')
         raise RedirectRequest(new_url)
 
   def templatePath(self):
@@ -114,8 +112,10 @@ class SlotTransferPage(RequestHandler):
 
     if (self.data.program.allocations_visible and
         self.data.timeline.beforeStudentsAnnounced()):
-      r = self.data.redirect.organization()
-      edit_url = r.urlOf('gsoc_update_slot_transfer')
+      # TODO(nathaniel): make this .organization() call unnecessary.
+      self.data.redirect.organization()
+
+      edit_url = self.data.redirect.urlOf('gsoc_update_slot_transfer')
       if require_new_link:
         context['new_slot_transfer_page_link'] = edit_url
       else:
@@ -124,7 +124,7 @@ class SlotTransferPage(RequestHandler):
     return context
 
 
-class UpdateSlotTransferPage(RequestHandler):
+class UpdateSlotTransferPage(GSoCRequestHandler):
   """View for transferring the slots.
   """
 
@@ -170,9 +170,12 @@ class UpdateSlotTransferPage(RequestHandler):
         'error': slot_transfer_form.errors
         }
 
-    r = self.data.redirect.organization()
-    context['org_home_page_link'] = r.urlOf('gsoc_org_home')
-    context['slot_transfer_page_link'] = r.urlOf('gsoc_slot_transfer')
+    # TODO(nathaniel): make this .organization() call unnecessary.
+    self.data.redirect.organization()
+
+    context['org_home_page_link'] = self.data.redirect.urlOf('gsoc_org_home')
+    context['slot_transfer_page_link'] = self.data.redirect.urlOf(
+        'gsoc_slot_transfer')
 
     return context
 
@@ -230,12 +233,13 @@ class UpdateSlotTransferPage(RequestHandler):
     return db.run_in_transaction(create_or_update_slot_transfer_trx)
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
-
+    """Handler for HTTP POST request."""
     slot_transfer_entity = self.createOrUpdateFromForm()
     if slot_transfer_entity:
-      self.redirect.organization(self.data.organization)
-      self.redirect.to('gsoc_update_slot_transfer', validated=True)
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.redirect.organization(organization=self.data.organization)
+
+      return self.redirect.to('gsoc_update_slot_transfer', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()

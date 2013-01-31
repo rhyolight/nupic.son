@@ -84,6 +84,7 @@ HEADER_MAP = {
     'CONTENT_TYPE': 'Content-Type',
     'CURRENT_VERSION_ID': 'X-AppEngine-Inbound-Version-Id',
     'REMOTE_ADDR': 'X-AppEngine-Remote-Addr',
+    'REQUEST_LOG_ID': 'X-AppEngine-Request-Log-Id',
     'USER_EMAIL': 'X-AppEngine-Inbound-User-Email',
     'USER_ID': 'X-AppEngine-Inbound-User-Id',
     'USER_IS_ADMIN': 'X-AppEngine-Inbound-User-Is-Admin',
@@ -95,7 +96,23 @@ ENV_PASSTHROUGH = re.compile(
 )
 
 
+OS_ENV_PASSTHROUGH = (
+
+    'SYSTEMROOT',
+
+    'USER',
+)
+
+
 APP_CONFIG = None
+
+
+def quiet_kill(pid):
+  """Send a SIGTERM to pid; won't raise an exception if pid is not running."""
+  try:
+    os.kill(pid, signal.SIGTERM)
+  except OSError:
+    pass
 
 
 def pick_unused_port():
@@ -112,7 +129,7 @@ def pick_unused_port():
   raise dev_appserver.ExecuteError('could not pick an unused port')
 
 
-def gab_work_dir():
+def gab_work_dir(config, user, port):
   base = os.getenv('XDG_CACHE_HOME')
   if not base:
     if sys.platform == 'darwin':
@@ -120,7 +137,7 @@ def gab_work_dir():
                           'com.google.GoAppEngine')
     else:
 
-      base = os.path.join(os.getenv('HOME'), '.cache')
+      base = os.path.join(os.path.expanduser('~'), '.cache')
 
 
   if os.path.islink(base):
@@ -130,7 +147,10 @@ def gab_work_dir():
 
       if e.errno != errno.EEXIST:
         raise
-  return os.path.join(base, 'dev_appserver_%s_go_app_work_dir')
+
+  app = re.sub(r'[.:]', '_', config.application)
+  return os.path.join(base,
+      'dev_appserver_%s_%s_%s_go_app_work_dir' % (app, user, port))
 
 
 def cleanup():
@@ -301,7 +321,7 @@ def wait_until_go_app_ready(proc, tee):
       return
     except:
       time.sleep(0.1)
-  os.kill(proc.pid, signal.SIGTERM)
+  quiet_kill(proc.pid)
   raise dev_appserver.ExecuteError('unable to start ' + GO_APP_NAME, tee.buf)
 
 
@@ -351,6 +371,7 @@ class GoApp:
       raise Exception('no goroot found at ' + self.goroot)
 
 
+    self.arch = None
     arch_map = {
         'arm': '5',
         'amd64': '6',
@@ -371,7 +392,7 @@ class GoApp:
 
   def cleanup(self):
     if self.proc:
-      os.kill(self.proc.pid, signal.SIGTERM)
+      quiet_kill(self.proc.pid)
       self.proc = None
 
   def make_and_run(self, env):
@@ -396,7 +417,7 @@ class GoApp:
       restart = True
 
     if restart and self.proc:
-      os.kill(self.proc.pid, signal.SIGTERM)
+      quiet_kill(self.proc.pid)
       self.proc.wait()
       self.proc = None
     if rebuild:
@@ -408,12 +429,16 @@ class GoApp:
           GO_APP_NAME, GO_HTTP_PORT, GO_API_PORT)
 
       limited_env = {
+          'GOROOT': self.goroot,
           'PWD': self.root_path,
           'TZ': 'UTC',
       }
       for k, v in env.items():
         if ENV_PASSTHROUGH.match(k):
           limited_env[k] = v
+      for e in OS_ENV_PASSTHROUGH:
+        if e in os.environ:
+          limited_env[e] = os.environ[e]
       self.proc_start = app_mtime
       self.proc = subprocess.Popen([bin_name,
           '-addr_http', 'tcp:127.0.0.1:%d' % GO_HTTP_PORT,
@@ -455,17 +480,41 @@ def SigTermHandler(signum, frame):
   if OldSigTermHandler:
     OldSigTermHandler(signum, frame)
 
-def execute_go_cgi(root_path, handler_path, cgi_path, env, infile, outfile):
+def execute_go_cgi(root_path, config, handler_path, cgi_path,
+                   env, infile, outfile):
 
   global RAPI_HANDLER, GAB_WORK_DIR, GO_APP, GO_HTTP_PORT, GO_API_PORT
   global OldSigTermHandler
   if not RAPI_HANDLER:
-    user_port = '%s_%s' % (getpass.getuser(), env['SERVER_PORT'])
-    GAB_WORK_DIR = gab_work_dir() % user_port
+    GAB_WORK_DIR = gab_work_dir(config, getpass.getuser(), env['SERVER_PORT'])
     GO_HTTP_PORT = pick_unused_port()
     GO_API_PORT = pick_unused_port()
     atexit.register(cleanup)
-    OldSigTermHandler = signal.signal(signal.SIGTERM, SigTermHandler)
+    try:
+
+
+
+
+
+
+
+
+
+      OldSigTermHandler = signal.signal(signal.SIGTERM, SigTermHandler)
+    except ValueError:
+
+
+
+
+
+
+
+
+
+
+
+
+      pass
     DelegateServer()
     RAPI_HANDLER = handler.ApiCallHandler()
     GO_APP = GoApp(root_path)

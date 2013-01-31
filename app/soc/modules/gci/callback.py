@@ -43,13 +43,16 @@ class Callback(object):
     from soc.modules.gci.views import homepage
     from soc.modules.gci.views import invite
     from soc.modules.gci.views import leaderboard
+    from soc.modules.gci.views import moderate_delete_account
     from soc.modules.gci.views import org_app
     from soc.modules.gci.views import org_home
     from soc.modules.gci.views import org_profile
+    from soc.modules.gci.views import org_score
     from soc.modules.gci.views import participants
     from soc.modules.gci.views import profile
     from soc.modules.gci.views import profile_show
     from soc.modules.gci.views import program
+    from soc.modules.gci.views import propose_winners
     from soc.modules.gci.views import request
     from soc.modules.gci.views import student_forms
     from soc.modules.gci.views import students_info
@@ -77,6 +80,7 @@ class Callback(object):
     self.views.append(invite.ListUserInvitesPage())
     self.views.append(leaderboard.LeaderboardPage())
     self.views.append(leaderboard.StudentTasksPage())
+    self.views.append(moderate_delete_account.ModerateDeleteAccountPage())
     self.views.append(org_app.GCIOrgAppEditPage())
     self.views.append(org_profile.OrgProfilePage())
     self.views.append(org_app.GCIOrgAppPreviewPage())
@@ -85,11 +89,19 @@ class Callback(object):
     self.views.append(org_app.GCIOrgAppTakePage())
     self.views.append(org_home.GCIBanOrgPost())
     self.views.append(org_home.OrgHomepage())
+    self.views.append(org_score.ChooseOrganizationForOrgScorePage())
+    self.views.append(org_score.OrgScoresForOrgzanizationPage())
     self.views.append(participants.MentorsListAdminPage())
     self.views.append(profile.GCIProfilePage())
     self.views.append(profile_show.GCIProfileShowPage())
+    self.views.append(profile_show.GCIProfileShowAdminPage())
     self.views.append(program.ProgramPage())
+    self.views.append(program.GCIProgramMessagesPage())
     self.views.append(program.TimelinePage())
+    self.views.append(propose_winners.ProposeWinnersPage())
+    self.views.append(
+        propose_winners.ChooseOrganizationForProposeWinnersPage())
+    self.views.append(propose_winners.ViewProposedWinnersPage())
     self.views.append(request.ListUserRequestsPage())
     self.views.append(request.SendRequestPage())
     self.views.append(request.ManageRequestPage())
@@ -99,17 +111,22 @@ class Callback(object):
     self.views.append(students_info.StudentsInfoPage())
     self.views.append(task.TaskViewPage())
     self.views.append(task.WorkSubmissionDownload())
+    self.views.append(task_list.AllOrganizationTasksPage())
+    self.views.append(task_list.ChooseOrganizationPage())
+    self.views.append(task_list.StudentTasksForOrganizationPage())
     self.views.append(task_list.TaskListPage())
     self.views.append(task_create.TaskCreatePage())
 
     # Google Appengine Tasks
     from soc.modules.gci.tasks.bulk_create import BulkCreateTask
     from soc.modules.gci.tasks.ranking_update import RankingUpdater
+    from soc.modules.gci.tasks.score_update import ScoreUpdate
     from soc.modules.gci.tasks.task_update import TaskUpdate
 
     self.views.append(BulkCreateTask())
     self.views.append(RankingUpdater())
     self.views.append(TaskUpdate())
+    self.views.append(ScoreUpdate())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered.

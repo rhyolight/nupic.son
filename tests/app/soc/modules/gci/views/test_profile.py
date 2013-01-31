@@ -105,7 +105,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.assertProfileTemplatesUsed(response)
 
   def testCreateMentorProfilePage(self):
-    self.timeline.studentSignup()
+    self.timeline.orgsAnnounced()
     url = '/gci/profile/mentor/' + self.gci.key().name()
     response = self.get(url)
     self.assertProfileTemplatesUsed(response)
@@ -136,6 +136,53 @@ class ProfileViewTest(GCIDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
+  def testRegistrationTimeline(self):
+    # no registration should be available just after the program is started
+    self.timeline.kickoff()
+
+    url = '/gci/profile/student/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+    url = '/gci/profile/mentor/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)    
+
+    url = '/gci/profile/org_admin/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+    # only org admins should be able to register in org sign up period
+    self.timeline.orgSignup()
+
+    url = '/gci/profile/student/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+    url = '/gci/profile/mentor/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)  
+
+    url = '/gci/profile/org_admin/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+    # only org admins and mentors should be able to register after the orgs
+    # are announced
+    self.timeline.orgsAnnounced()
+
+    url = '/gci/profile/student/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)    
+
+    url = '/gci/profile/mentor/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+    url = '/gci/profile/org_admin/' + self.gci.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)
+
   def testForbiddenWithMentorProfilePage(self):
     self.timeline.studentSignup()
     self.data.createMentor(self.org)
@@ -149,6 +196,10 @@ class ProfileViewTest(GCIDjangoTestCase):
     url = '/gci/profile/' + self.gci.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
+
+    self.assertNotContains(
+        response,
+        '<input id="agreed_to_tos" type="checkbox" name="agreed_to_tos">')
 
   #TODO(daniel): this test should work, when we disable edition of profiles
   # after the project is over

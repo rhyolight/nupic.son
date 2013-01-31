@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Views for creating/editing GCI Tasks.
-"""
-
+"""Views for creating/editing GCI Tasks."""
 
 import datetime
 
@@ -27,18 +23,15 @@ from django.forms.util import ErrorList
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
-from soc.views import forms
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models import task
-from soc.modules.gci.models.task import DIFFICULTIES
-from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -113,9 +106,9 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
     for tag in self.data.get('tags').split(','):
       tags.append(tag.strip())
     return tags
-    
+
   def clean_mentors(self):
-    mentor_key_strs = self.data.getlist('mentors')
+    mentor_key_strs = set(self.data.getlist('mentors'))
 
     if not mentor_key_strs:
       raise django_forms.ValidationError(
@@ -160,10 +153,6 @@ class TaskCreateForm(TaskEditPostClaimForm):
   def __init__(self, data, *args, **kwargs):
     super(TaskCreateForm, self).__init__(data, *args, **kwargs)
 
-    difficulties = [(d, d) for d in DIFFICULTIES[:-1]]
-    self.fields['difficulty_level'] = django_forms.ChoiceField(
-        label=ugettext('Difficulty'), choices=difficulties)
-
     types = []
     for t in data.program.task_types:
       types.append((t, t))
@@ -178,8 +167,6 @@ class TaskCreateForm(TaskEditPostClaimForm):
       ttc = datetime.timedelta(hours=self.instance.time_to_complete)
       self.fields['time_to_complete_days'].initial = ttc.days
       self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
-
-      self.fields['difficulty_level'].initial = self.instance.difficulty_level
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
@@ -196,6 +183,9 @@ class TaskCreateForm(TaskEditPostClaimForm):
     profile = self.request_data.profile
     self.cleaned_data['created_by'] = profile
     self.cleaned_data['modified_by'] = profile
+
+    # Difficulty is hardcoded to easy for GCI2012.
+    self.cleaned_data['difficulty_level'] = DifficultyLevel.EASY
 
     entity = super(TaskCreateForm, self).create(
         commit=False, key_name=key_name, parent=parent)
@@ -235,17 +225,12 @@ class TaskCreateForm(TaskEditPostClaimForm):
       errors = self._errors.setdefault('time_to_complete_days', ErrorList())
       errors.append(ugettext('Time to complete must be specified.'))
 
-    # Disallow "Unknown" difficulty
-    if 'difficulty' in cleaned_data and \
-        cleaned_data['difficulty'] not in DIFFICULTIES[:-1]:
-      raise django_forms.ValidationError('Unknown difficulty is not supported')
-
     return cleaned_data
 
   class Meta:
     model = task.GCITask
     css_prefix = 'gci-task'
-    fields = ['title', 'description', 'difficulty_level', 'mentors']
+    fields = ['title', 'description', 'mentors']
 
 
 class TaskFormErrorTemplate(Template):
@@ -300,9 +285,8 @@ class TaskEditFormTemplate(Template):
       return "v2/modules/gci/task_create/_full_edit.html"
 
 
-class TaskCreatePage(RequestHandler):
-  """View to create a new task.
-  """
+class TaskCreatePage(GCIRequestHandler):
+  """View to create a new task."""
 
   def djangoURLPatterns(self):
     return [
@@ -385,6 +369,7 @@ class TaskCreatePage(RequestHandler):
     task = self.createTaskFromForm()
     if task:
       r = self.redirect.id(id=task.key().id_or_name())
-      r.to('gci_edit_task', validated=True)
+      return r.to('gci_edit_task', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()

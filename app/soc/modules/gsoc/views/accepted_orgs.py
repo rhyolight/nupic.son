@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC accepted orgs.
-"""
-
+"""Module containing the views for GSoC accepted orgs."""
 
 from django.conf.urls.defaults import url as django_url
 
@@ -28,30 +24,35 @@ from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class AcceptedOrgsList(Template):
-  """Template for list of accepted organizations.
-  """
+  """Template for list of accepted organizations."""
 
   def __init__(self, request, data):
     self.request = request
     self.data = data
-    r = data.redirect
+
+    # TODO(nathaniel): reduce this back to a lambda expression
+    # inside the setRowAction call below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(e)
+
+      return self.data.redirect.urlOf('gsoc_org_home')
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
-    list_config.addColumn('tags', 'Tags',
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
+    list_config.setRowAction(RowAction)
+    list_config.addPlainTextColumn('tags', 'Tags',
                           lambda e, *args: ", ".join(e.tags))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'ideas', 'Ideas',
-        (lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]")),
+        lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]"),
         hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
@@ -88,7 +89,7 @@ class AcceptedOrgsList(Template):
     return "v2/modules/gsoc/accepted_orgs/_project_list.html"
 
 
-class AcceptedOrgsPage(RequestHandler):
+class AcceptedOrgsPage(GSoCRequestHandler):
   """View for the accepted organizations page.
   """
 

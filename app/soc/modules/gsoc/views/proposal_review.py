@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC proposal page.
-"""
+"""Module for the GSoC proposal page."""
 
+import httplib
 
 from google.appengine.ext import db
 
+from django import http
 from django.core.urlresolvers import resolve
 from django.core.urlresolvers import reverse
 from django import forms as django_forms
@@ -41,15 +40,14 @@ from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views import assign_mentor
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class CommentForm(GSoCModelForm):
-  """Django form for the comment.
-  """
+  """Django form for the comment."""
 
   class Meta:
     model = GSoCComment
@@ -95,10 +93,7 @@ class Duplicate(Template):
     super(Duplicate, self).__init__(data)
 
   def context(self):
-    """The context for this template used in render().
-    """
-    r = self.data.redirect
-
+    """The context for this template used in render()."""
     orgs = []
     for org in db.get(self.duplicate.orgs):
       q = GSoCProfile.all()
@@ -106,8 +101,11 @@ class Duplicate(Template):
       q.filter('status', 'active')
       admins = q.fetch(1000)
 
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=org)
+
       data = {'name': org.name,
-              'link': r.organization(org).urlOf('gsoc_org_home'),
+              'link': self.data.redirect.urlOf('gsoc_org_home'),
               'admins': admins}
 
       orgs.append(data)
@@ -301,7 +299,7 @@ class UserActions(Template):
     return "v2/modules/gsoc/proposal/_user_action.html"
 
 
-class ReviewProposal(RequestHandler):
+class ReviewProposal(GSoCRequestHandler):
   """View for the Propsal Review page.
   """
 
@@ -492,7 +490,7 @@ class ReviewProposal(RequestHandler):
     return context
 
 
-class PostComment(RequestHandler):
+class PostComment(GSoCRequestHandler):
   """View which handles publishing comments.
   """
 
@@ -568,27 +566,27 @@ class PostComment(RequestHandler):
     comment = self.createCommentFromForm()
     if comment:
       self.redirect.program()
-      self.redirect.to('gsoc_dashboard', anchor='proposals_submitted')
+      return self.redirect.to('gsoc_dashboard', anchor='proposals_submitted')
     else:
       # This is an insanely and absolutely hacky solution. We definitely
       # do not want any one to use this a model for writing code elsewhere
       # in Melange.
       # TODO (Madhu): Replace this in favor of PJAX for loading comments.
       r = self.redirect.review(self.data.proposal.key().id(),
-                           self.data.proposer.link_id)
+                               self.data.proposer.link_id)
       redirect_url = r.urlOf('review_gsoc_proposal')
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
       self.request.method = 'GET'
-      self.response = proposal_view(self.request, *self.args, **self.kwargs)
+      return proposal_view(self.request, *self.args, **self.kwargs)
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    # TODO(nathaniel): Do this without a self-call.
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class PostScore(RequestHandler):
+class PostScore(GSoCRequestHandler):
   """View which handles posting scores.
   """
 
@@ -670,14 +668,14 @@ class PostScore(RequestHandler):
     value_str = self.data.POST.get('value', '')
     value = int(value_str) if value_str.isdigit() else None
     self.createOrUpdateScore(value)
+    return http.HttpResponse()
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class WishToMentor(RequestHandler):
+class WishToMentor(GSoCRequestHandler):
   """View handling wishing to mentor requests.
   """
 
@@ -733,17 +731,15 @@ class WishToMentor(RequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.addToPotentialMentors(value)
-
+    return http.HttpResponse()
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class AssignMentor(RequestHandler):
-  """View which handles assigning mentor to a proposal.
-  """
+class AssignMentor(GSoCRequestHandler):
+  """View which handles assigning mentor to a proposal."""
 
   def djangoURLPatterns(self):
     return [
@@ -821,17 +817,15 @@ class AssignMentor(RequestHandler):
 
     self.redirect.review(self.data.proposal.key().id(),
                          self.data.proposer.link_id)
-    self.redirect.to('review_gsoc_proposal')
+    return self.redirect.to('review_gsoc_proposal')
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class IgnoreProposal(RequestHandler):
-  """View which allows org admins to ignore a proposal.
-  """
+class IgnoreProposal(GSoCRequestHandler):
+  """View which allows org admins to ignore a proposal."""
 
   def djangoURLPatterns(self):
     return [
@@ -880,14 +874,14 @@ class IgnoreProposal(RequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleIgnoreProposal(value)
+    return http.HttpResponse()
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class ProposalModificationPostDeadline(RequestHandler):
+class ProposalModificationPostDeadline(GSoCRequestHandler):
   """View allowing mentors to allow students to modify the proposal.
   """
 
@@ -936,14 +930,14 @@ class ProposalModificationPostDeadline(RequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleModificationPermission(value)
+    return http.HttpResponse()
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class AcceptProposal(RequestHandler):
+class AcceptProposal(GSoCRequestHandler):
   """View allowing org admins to directly accept the proposal.
   """
 
@@ -991,14 +985,14 @@ class AcceptProposal(RequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleStatus(value)
+    return http.HttpResponse()
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class ProposalPubliclyVisible(RequestHandler):
+class ProposalPubliclyVisible(GSoCRequestHandler):
   """View allowing the proposer to make the proposal publicly visible.
   """
 
@@ -1045,14 +1039,14 @@ class ProposalPubliclyVisible(RequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.togglePublicVisibilty(value)
+    return http.HttpResponse()
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class WithdrawProposal(RequestHandler):
+class WithdrawProposal(GSoCRequestHandler):
   """View allowing the proposer to withdraw the proposal.
   """
 
@@ -1100,8 +1094,8 @@ class WithdrawProposal(RequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleWithdrawProposal(value)
+    return http.HttpResponse()
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special handler for HTTP GET since this view only handles POST."""
+    return self.error(httplib.METHOD_NOT_ALLOWED)

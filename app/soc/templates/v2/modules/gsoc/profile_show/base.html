@@ -86,9 +86,5 @@ limitations under the License.
       {% endfor %}
     },
     css("/soc/content/{{ app_version }}/css/v2/gsoc/readonly.css"),
-    css("/soc/content/{{ app_version }}/css/v2/gsoc/map.css"),
-    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/profile_readonly.js", {
-      '_css_prefix': '{{ css_prefix }}'
-    })
   ]
 {% endblock dependencies %}

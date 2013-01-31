@@ -32,12 +32,20 @@ import logging
 import re
 import urlparse
 
+from google.appengine.api import datastore
+from google.appengine.api import datastore_errors
 from google.appengine.api.images import images_service_pb
 
 BLOBIMAGE_URL_PATTERN = '/_ah/img(?:/.*)?'
 
-BLOBIMAGE_RESPONSE_TEMPLATE = ('Status: %(status)s\r\nContent-Type: %(content_type)s'
-                               '\r\n\r\n%(data)s')
+BLOBIMAGE_RESPONSE_TEMPLATE = (
+    'Status: %(status)s\r\nContent-Type: %(content_type)s\r\n'
+    'Cache-Control: public, max-age=600, no-transform'
+    '\r\n\r\n%(data)s')
+
+
+BLOB_SERVING_URL_KIND = '__BlobServingUrl__'
+
 
 DEFAULT_SERVING_SIZE = 512
 
@@ -167,7 +175,7 @@ def CreateBlobImageDispatcher(images_stub):
         (blob_key, option) tuple parsed out of the URL.
       """
       path = urlparse.urlsplit(url)[2]
-      match = re.search('/_ah/img/([-\\w]+)([=]*)([-\\w]+)?', path)
+      match = re.search('/_ah/img/([-\\w:]+)([=]*)([-\\w]+)?', path)
       if not match or not match.group(1):
         raise ValueError, 'Failed to parse image url.'
       options = ''
@@ -202,9 +210,20 @@ def CreateBlobImageDispatcher(images_stub):
           raise RuntimeError, 'BlobImage only handles GET requests.'
 
         blobkey, options = self._ParseUrl(request.relative_url)
+
+
+        key = datastore.Key.from_path(BLOB_SERVING_URL_KIND,
+                                      blobkey,
+                                      namespace='')
+        try:
+          datastore.Get(key)
+        except datastore_errors.EntityNotFoundError:
+          logging.warning('The blobkey %s has not registered for image '
+                          'serving. Please ensure get_serving_url is '
+                          'called before attempting to serve blobs.', blobkey)
         image, mime_type = self._TransformImage(blobkey, options)
-        output_dict = { 'status': 200, 'content_type': mime_type,
-                        'data': image }
+        output_dict = {'status': 200, 'content_type': mime_type,
+                       'data': image}
         outfile.write(BLOBIMAGE_RESPONSE_TEMPLATE % output_dict)
       except ValueError:
         logging.exception('ValueError while serving image.')

@@ -19,14 +19,11 @@
 """
 
 
-from nose.plugins import skip
-
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import profile_utils
 
 from tests.test_utils import GSoCDjangoTestCase
-
-# TODO: perhaps we should move this out?
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 class ProfileViewTest(GSoCDjangoTestCase):
@@ -81,6 +78,53 @@ class ProfileViewTest(GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseOK(response)
 
+  def testRegistrationTimeline(self):
+    # no registration should be available just after the program is started
+    self.timeline.kickoff()
+
+    url = '/gsoc/profile/student/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+    url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)    
+
+    url = '/gsoc/profile/org_admin/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+    # only org admins should be able to register in org sign up period
+    self.timeline.orgSignup()
+
+    url = '/gsoc/profile/student/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+    url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)  
+
+    url = '/gsoc/profile/org_admin/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+    # only org admins and mentors should be able to register after the orgs
+    # are announced
+    self.timeline.orgsAnnounced()
+
+    url = '/gsoc/profile/student/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseForbidden(response)    
+
+    url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+    url = '/gsoc/profile/org_admin/' + self.gsoc.key().name()
+    response = self.get(url)
+    self.assertResponseOK(response)
+
   def testCreateProfile(self):
     from soc.modules.gsoc.models.profile import GSoCProfile
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
@@ -116,18 +160,16 @@ class ProfileViewTest(GSoCDjangoTestCase):
     postdata.update(props)
     postdata.update({
         'link_id': self.data.user.link_id,
-        'student_info': None,
         'user': self.data.user, 'parent': self.data.user,
         'scope': self.gsoc, 'status': 'active',
         'email': self.data.user.account.email(),
         'mentor_for': [], 'org_admin_for': [],
         'is_org_admin': False, 'is_mentor': False,
+        'birth_date':
+            profile_utils.generate_eligible_student_birth_date(self.gsoc)
     })
 
     response = self.post(role_url, postdata)
-
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
 
     self.assertResponseRedirect(response, url + '?validated')
 

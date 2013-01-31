@@ -179,8 +179,9 @@ class GSoCOrganization(soc.models.organization.Organization):
       ' to the organization.')
   contrib_template.group = ugettext("1. Public Info")
 
-  # whether this org is new to the program
-  new_org = db.BooleanProperty(default=False)
+  #: Whether this org is new to the program, since this is a required property
+  #: and if no data is supplied, we will assume the organization to be new.
+  new_org = db.BooleanProperty(default=True, required=True)
 
   slots = db.IntegerProperty(required=False, default=0,
       verbose_name=ugettext('Slots allocated'))
@@ -242,6 +243,17 @@ class GSoCOrganization(soc.models.organization.Organization):
       'the select box to assign a mentor on the proposal review page.')
   list_all_mentors.group = ugettext('4. Organization Preferences')
 
+  google_plus = db.LinkProperty(
+      required=False, verbose_name=ugettext('Google+ URL'))
+  google_plus.help_text = ugettext(
+      'URL to the Google+ page of your organization')
+  google_plus.group = ugettext("1. Public Info")
+
+  blog = db.LinkProperty(
+      required=False, verbose_name=ugettext("Blog URL"))
+  blog.help_text = ugettext("URL of the Blog of your Organization")
+  blog.group = ugettext("1. Public Info")
+
   facebook = db.LinkProperty(
       required=False, verbose_name=ugettext("Facebook URL"))
   facebook.help_text = ugettext("URL of the Facebook page of your Organization")
@@ -251,17 +263,6 @@ class GSoCOrganization(soc.models.organization.Organization):
       required=False, verbose_name=ugettext("Twitter URL"))
   twitter.help_text = ugettext("URL of the Twitter profile of your Organization")
   twitter.group = ugettext("1. Public Info")
-
-  blog = db.LinkProperty(
-      required=False, verbose_name=ugettext("Blog URL"))
-  blog.help_text = ugettext("URL of the Blog of your Organization")
-  blog.group = ugettext("1. Public Info")
-
-  google_plus = db.LinkProperty(
-      required=False, verbose_name=ugettext('Google+ URL'))
-  google_plus.help_text = ugettext(
-      'URL to the Google+ page of your organization')
-  google_plus.group = ugettext("1. Public Info")
 
   tags = db.StringListProperty(verbose_name=ugettext('Tags'))
 

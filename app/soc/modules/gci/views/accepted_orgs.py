@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,81 +12,61 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GCI accepted orgs.
-"""
-
+"""Module containing the views for GCI accepted orgs."""
 
 from django.conf.urls.defaults import url as django_url
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.helper import lists
-from soc.views.template import Template
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.views.base import RequestHandler
-#from soc.modules.gci.views.base_templates import ProgramSelect
+from soc.modules.gci.templates.org_list import OrgList
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
 
-class AcceptedOrgsList(Template):
+class AcceptedOrgsList(OrgList):
   """Template for list of accepted organizations.
   """
 
-  def __init__(self, request, data):
-    self.request = request
-    self.data = data
-    r = data.redirect
+  def _getDescription(self):
+    return 'List of organizations accepted into %s' % (
+        self.data.program.name)
+
+  def _getListConfig(self):
+    # TODO(nathaniel): squeeze this back into a lambda expression in
+    # the call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf(url_names.GCI_ORG_HOME)
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf(url_names.GCI_ORG_HOME))
-    list_config.addColumn(
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
+    list_config.setRowAction(RowAction)
+    list_config.addPlainTextColumn(
         'ideas', 'Ideas',
         (lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]")),
         hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
+    return list_config
 
-    self._list_config = list_config
-
-  def context(self):
-    description = 'List of organizations accepted into %s' % (
-            self.data.program.name)
-
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
-    return {
-        'lists': [list],
-    }
-
-  def getListData(self):
-    idx = lists.getListIndex(self.request)
-    if idx == 0:
-      q = GCIOrganization.all()
-      q.filter('scope', self.data.program)
-      q.filter('status IN', ['new', 'active'])
-
-      starter = lists.keyStarter
-
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, starter)
-      return response_builder.build()
-    else:
-      return None
-
-  def templatePath(self):
-    return "v2/modules/gci/accepted_orgs/_project_list.html"
+  def _getQuery(self):
+    query = GCIOrganization.all()
+    query.filter('scope', self.data.program)
+    query.filter('status IN', ['new', 'active'])
+    return query
 
 
-class AcceptedOrgsPage(RequestHandler):
+class AcceptedOrgsPage(GCIRequestHandler):
   """View for the accepted organizations page.
   """
 
@@ -120,69 +98,54 @@ class AcceptedOrgsPage(RequestHandler):
     }
 
 
-class AcceptedOrgsAdminList(Template):
+class AcceptedOrgsAdminList(OrgList):
   """Template for list of accepted organizations for admins.
   """
 
-  def __init__(self, request, data):
-    self.request = request
-    self.data = data
-    r = data.redirect
+  def _getDescription(self):
+    return 'List of organizations accepted into %s' % (
+        self.data.program.name)
+
+  def _getListConfig(self):
+    # TODO(nathaniel): squeeze this back into a lambda expression in the
+    # call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf(url_names.GCI_ORG_HOME)
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf(url_names.GCI_ORG_HOME))
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
+    list_config.setRowAction(RowAction)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
       'org_admins', 'Org Admins',
       lambda e, org_admins, *args: ", ".join(
           ["%s <%s>" % (o.name(), o.email) for o in org_admins[e.key()]]),
       hidden=True)
+    return list_config
 
-    self._list_config = list_config
+  def _getPrefetcher(self):
+    def prefetcher(entities):
+      prefetched_dict = {}
+      for ent in entities:
+        prefetched_dict[ent.key()] = profile_logic.orgAdminsForOrg(ent)
 
-  def context(self):
-    description = 'List of organizations accepted into %s' % (
-            self.data.program.name)
+      return [prefetched_dict], {}
+    return prefetcher
 
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
-    return {
-        'lists': [list],
-    }
-
-  def getListData(self):
-    idx = lists.getListIndex(self.request)
-    if idx == 0:
-      q = GCIOrganization.all()
-      q.filter('scope', self.data.program)
-      q.filter('status IN', ['new', 'active'])
-
-      starter = lists.keyStarter
-
-      def prefetcher(entities):
-        prefetched_dict = {}
-        for ent in entities:
-          prefetched_dict[ent.key()] = profile_logic.orgAdminsForOrg(ent)
-
-        return [prefetched_dict], {}
-
-      response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, starter, prefetcher=prefetcher)
-      return response_builder.build()
-    else:
-      return None
-
-  def templatePath(self):
-    return "v2/modules/gci/accepted_orgs/_project_list.html"
+  def _getQuery(self):
+    query = GCIOrganization.all()
+    query.filter('scope', self.data.program)
+    query.filter('status IN', ['new', 'active'])
+    return query
 
 
-class AcceptedOrgsAdminPage(RequestHandler):
+class AcceptedOrgsAdminPage(GCIRequestHandler):
   """View for the accepted organizations page for admin with additional info.
   """
 

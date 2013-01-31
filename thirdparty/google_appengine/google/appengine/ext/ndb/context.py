@@ -126,7 +126,7 @@ class AutoBatcher(object):
     fut = self._todo_tasklet(todo, options)
     self._running.append(fut)
     # Add a callback when we're done.
-    fut.add_callback(self._finished_callback, fut)
+    fut.add_callback(self._finished_callback, fut, todo)
 
   def _on_idle(self):
     if not self.action():
@@ -165,9 +165,14 @@ class AutoBatcher(object):
     self.run_queue(options, todo)
     return True
 
-  def _finished_callback(self, fut):
+  def _finished_callback(self, fut, todo):
     self._running.remove(fut)
-    fut.check_success()
+    err = fut.get_exception()
+    if err is not None:
+      tb = fut.get_traceback()
+      for (f, _) in todo:
+        if not f.done():
+          f.set_exception(err, tb)
 
   @tasklets.tasklet
   def flush(self):
@@ -225,6 +230,7 @@ class Context(object):
                       ]
     self._cache = {}
     self._memcache = memcache.Client()
+    self._on_commit_queue = []
 
   # NOTE: The default memcache prefix is altered if an incompatible change is
   # required. Remember to check release notes when using a custom prefix.
@@ -641,12 +647,18 @@ class Context(object):
       if use_memcache and mvalue != _LOCKED:
         # Don't serialize the key since it's already the memcache key.
         pbs = entity._to_pb(set_key=False).SerializePartialToString()
-        timeout = self._get_memcache_timeout(key, options)
-        # Don't use fire-and-forget -- for users who forget
-        # @ndb.toplevel, it's too painful to diagnose why their simple
-        # code using a single synchronous call doesn't seem to use
-        # memcache.  See issue 105.  http://goo.gl/JQZxp
-        yield self.memcache_cas(mkey, pbs, time=timeout, namespace=ns)
+        # Don't attempt to write to memcache if too big.  Note that we
+        # use LBYL ("look before you leap") because a multi-value
+        # memcache operation would fail for all entities rather than
+        # for just the one that's too big.  (Also, the AutoBatcher
+        # class doesn't pass back exceptions very well.)
+        if len(pbs) <= memcache.MAX_VALUE_SIZE:
+          timeout = self._get_memcache_timeout(key, options)
+          # Don't use fire-and-forget -- for users who forget
+          # @ndb.toplevel, it's too painful to diagnose why their simple
+          # code using a single synchronous call doesn't seem to use
+          # memcache.  See issue 105.  http://goo.gl/JQZxp
+          yield self.memcache_cas(mkey, pbs, time=timeout, namespace=ns)
 
     if use_cache:
       # Cache hit or miss.  NOTE: In this case it is okay to cache a
@@ -678,6 +690,12 @@ class Context(object):
                                   namespace=ns, use_cache=True)
         else:
           pbs = entity._to_pb(set_key=False).SerializePartialToString()
+          # If the byte string to be written is too long for memcache,
+          # raise ValueError.  (See LBYL explanation in get().)
+          if len(pbs) > memcache.MAX_VALUE_SIZE:
+            raise ValueError('Values may not be more than %d bytes in length; '
+                             'received %d bytes' % (memcache.MAX_VALUE_SIZE,
+                                                    len(pbs)))
           timeout = self._get_memcache_timeout(key, options)
           yield self.memcache_set(mkey, pbs, time=timeout, namespace=ns)
 
@@ -777,6 +795,8 @@ class Context(object):
   def _update_cache_from_query_result(self, ent, options):
     if isinstance(ent, model.Key):
       return ent  # It was a keys-only query and ent is really a Key.
+    if ent._projection:
+      return ent  # Never cache partial entities (projection query results).
     key = ent._key
     if not self._use_cache(key, options):
       return ent  # This key should not be cached.
@@ -804,7 +824,7 @@ class Context(object):
   def transaction(self, callback, **ctx_options):
     # Will invoke callback() one or more times with the default
     # context set to a new, transactional Context.  Returns a Future.
-    # Callback may be a tasklet.
+    # Callback may be a tasklet; in that case it will be waited on.
     options = _make_ctx_options(ctx_options, TransactionOptions)
     propagation = TransactionOptions.propagation(options)
     if propagation is None:
@@ -819,10 +839,16 @@ class Context(object):
       if not self.in_transaction():
         raise datastore_errors.BadRequestError(
           'Requires an existing transaction.')
-      raise tasklets.Return(callback())
+      result = callback()
+      if isinstance(result, tasklets.Future):
+        result = yield result
+      raise tasklets.Return(result)
     elif propagation == TransactionOptions.ALLOWED:
       if self.in_transaction():
-        raise tasklets.Return(callback())
+        result = callback()
+        if isinstance(result, tasklets.Future):
+          result = yield result
+        raise tasklets.Return(result)
     elif propagation == TransactionOptions.INDEPENDENT:
       while parent.in_transaction():
         parent = parent._parent_context
@@ -849,6 +875,7 @@ class Context(object):
       tctx = parent.__class__(conn=tconn,
                               auto_batcher_class=parent._auto_batcher_class,
                               parent_context=parent)
+      ok = False
       try:
         # Copy memcache policies.  Note that get() will never use
         # memcache in a transaction, but put and delete should do their
@@ -882,8 +909,17 @@ class Context(object):
             parent._cache.update(tctx._cache)
             yield parent._clear_memcache(tctx._cache)
             raise tasklets.Return(result)
+            # The finally clause will run the on-commit queue.
       finally:
         datastore._SetConnection(old_ds_conn)
+        if ok:
+          # Call the callbacks collected in the transaction context's
+          # on-commit queue.  If the transaction failed the queue is
+          # abandoned.  We must do this after the connection has been
+          # restored, but we can't do it after the for-loop because we
+          # leave it by raising tasklets.Return().
+          for on_commit_callback in tctx._on_commit_queue:
+            on_commit_callback()  # This better not raise.
 
     # Out of retries
     raise datastore_errors.TransactionFailedError(
@@ -892,6 +928,28 @@ class Context(object):
   def in_transaction(self):
     """Return whether a transaction is currently active."""
     return isinstance(self._conn, datastore_rpc.TransactionalConnection)
+
+  def call_on_commit(self, callback):
+    """Call a callback upon successful commit of a transaction.
+
+    If not in a transaction, the callback is called immediately.
+
+    In a transaction, multiple callbacks may be registered and will be
+    called once the transaction commits, in the order in which they
+    were registered.  If the transaction fails, the callbacks will not
+    be called.
+
+    If the callback raises an exception, it bubbles up normally.  This
+    means: If the callback is called immediately, any exception it
+    raises will bubble up immediately.  If the call is postponed until
+    commit, remaining callbacks will be skipped and the exception will
+    bubble up through the transaction() call.  (However, the
+    transaction is already committed at that point.)
+    """
+    if not self.in_transaction():
+      callback()
+    else:
+      self._on_commit_queue.append(callback)
 
   def clear_cache(self):
     """Clears the in-memory cache.
@@ -990,7 +1048,7 @@ class Context(object):
       A Future (!) whose return value is the value retrieved from
       memcache, or None.
     """
-    if not isinstance(key, str):
+    if not isinstance(key, basestring):
       raise TypeError('key must be a string; received %r' % key)
     if not isinstance(for_cas, bool):
       raise TypeError('for_cas must be a bool; received %r' % for_cas)
@@ -1010,7 +1068,7 @@ class Context(object):
                              use_cache=use_cache)
 
   def memcache_set(self, key, value, time=0, namespace=None, use_cache=False):
-    if not isinstance(key, str):
+    if not isinstance(key, basestring):
       raise TypeError('key must be a string; received %r' % key)
     if not isinstance(time, (int, long)):
       raise TypeError('time must be a number; received %r' % time)
@@ -1024,7 +1082,7 @@ class Context(object):
       return batcher.add((key, value), options)
 
   def memcache_add(self, key, value, time=0, namespace=None):
-    if not isinstance(key, str):
+    if not isinstance(key, basestring):
       raise TypeError('key must be a string; received %r' % key)
     if not isinstance(time, (int, long)):
       raise TypeError('time must be a number; received %r' % time)
@@ -1034,7 +1092,7 @@ class Context(object):
                                           ('add', time, namespace))
 
   def memcache_replace(self, key, value, time=0, namespace=None):
-    if not isinstance(key, str):
+    if not isinstance(key, basestring):
       raise TypeError('key must be a string; received %r' % key)
     if not isinstance(time, (int, long)):
       raise TypeError('time must be a number; received %r' % time)
@@ -1044,7 +1102,7 @@ class Context(object):
                                           ('replace', time, namespace))
 
   def memcache_cas(self, key, value, time=0, namespace=None):
-    if not isinstance(key, str):
+    if not isinstance(key, basestring):
       raise TypeError('key must be a string; received %r' % key)
     if not isinstance(time, (int, long)):
       raise TypeError('time must be a number; received %r' % time)
@@ -1054,7 +1112,7 @@ class Context(object):
                                           ('cas', time, namespace))
 
   def memcache_delete(self, key, seconds=0, namespace=None):
-    if not isinstance(key, str):
+    if not isinstance(key, basestring):
       raise TypeError('key must be a string; received %r' % key)
     if not isinstance(seconds, (int, long)):
       raise TypeError('seconds must be a number; received %r' % seconds)
@@ -1063,7 +1121,7 @@ class Context(object):
     return self._memcache_del_batcher.add(key, (seconds, namespace))
 
   def memcache_incr(self, key, delta=1, initial_value=None, namespace=None):
-    if not isinstance(key, str):
+    if not isinstance(key, basestring):
       raise TypeError('key must be a string; received %r' % key)
     if not isinstance(delta, (int, long)):
       raise TypeError('delta must be a number; received %r' % delta)
@@ -1076,7 +1134,7 @@ class Context(object):
                                           (initial_value, namespace))
 
   def memcache_decr(self, key, delta=1, initial_value=None, namespace=None):
-    if not isinstance(key, str):
+    if not isinstance(key, basestring):
       raise TypeError('key must be a string; received %r' % key)
     if not isinstance(delta, (int, long)):
       raise TypeError('delta must be a number; received %r' % delta)

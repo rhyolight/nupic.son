@@ -23,7 +23,6 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 from soc.models import licenses
-from soc.models.linkable import LINK_ID_PATTERN_CORE
 from soc.models.survey_record import SurveyRecord
 
 import soc.models.user
@@ -35,7 +34,7 @@ class OrgAppRecord(SurveyRecord):
   This record also contains the status of the application.
   """
 
-#: Required field storing "ID" used in URL links. ASCII characters,
+  #: Required field storing "ID" used in URL links. ASCII characters,
   #: digits and underscores only.  Valid link IDs successfully match
   #: the LINK_ID_REGEX.
   org_id = db.StringProperty(required=False,
@@ -44,8 +43,7 @@ class OrgAppRecord(SurveyRecord):
       'Organization ID is used as part of various URL links throughout '
       'the site. You may reuse the same id for different years of the '
       'program. <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
-      'alphanumeric characters, digits, and underscores only. '
-      'The regexp used to validate is "%s".') % LINK_ID_PATTERN_CORE
+      'alphanumeric characters, digits, and underscores only. ')
 
   #: field storing the name of the organization.
   name = db.StringProperty(
@@ -74,6 +72,13 @@ class OrgAppRecord(SurveyRecord):
   backup_admin = db.ReferenceProperty(
       reference_class=soc.models.user.User, required=True,
       verbose_name="Backup Admin", collection_name='backup_admin_org_app')
+
+  #: field storing whether the organization applying is a new organization or
+  #: is a veteran in the given program.
+  new_org = db.BooleanProperty(required=True, default=True,
+                               verbose_name=ugettext('Veteran/New'))
+  new_org.help_text = ugettext('Choose veteran if have participated in this '
+                               'program in the previous years')
 
   #: field storing whether the User has agreed to the org admin agreement
   agreed_to_admin_agreement = db.BooleanProperty(required=True, default=False,

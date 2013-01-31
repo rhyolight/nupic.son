@@ -22,10 +22,10 @@ from google.appengine.ext import blobstore
 
 from django.utils.translation import ugettext
 
-import soc.models.profile
+from soc.models import profile
 
 
-class GSoCProfile(soc.models.profile.Profile):
+class GSoCProfile(profile.Profile):
   """GSoCProfile Model.
   """
 
@@ -33,28 +33,28 @@ class GSoCProfile(soc.models.profile.Profile):
       verbose_name=ugettext('Notify of new proposals'))
   notify_new_proposals.help_text = ugettext(
       'Whether to send an email notification when new proposals are submitted.')
-  notify_new_proposals.group = ugettext("6. Notification settings")
+  notify_new_proposals.group = profile.NOTIFICATION_SETTINGS_GROUP
 
   notify_proposal_updates = db.BooleanProperty(required=False, default=True,
       verbose_name=ugettext('Notify of proposal updates'))
   notify_proposal_updates.help_text = ugettext(
       'Whether to send an email notification when a proposal is updated.')
-  notify_proposal_updates.group = ugettext("6. Notification settings")
+  notify_proposal_updates.group = profile.NOTIFICATION_SETTINGS_GROUP
 
   notify_public_comments = db.BooleanProperty(required=False, default=True,
       verbose_name=ugettext('Notify of new public comments'))
   notify_public_comments.help_text = ugettext(
       'Whether to send an email notification for new public comment.')
-  notify_public_comments.group = ugettext("6. Notification settings")
+  notify_public_comments.group = profile.NOTIFICATION_SETTINGS_GROUP
 
   notify_private_comments = db.BooleanProperty(required=False, default=True,
       verbose_name=ugettext('Notify of new private comments'))
   notify_private_comments.help_text = ugettext(
       'Whether to send an email notification for new private comment.')
-  notify_private_comments.group = ugettext("6. Notification settings")
+  notify_private_comments.group = profile.NOTIFICATION_SETTINGS_GROUP
 
 
-class GSoCStudentInfo(soc.models.profile.StudentInfo):
+class GSoCStudentInfo(profile.StudentInfo):
   """GSoCStudentInfo Model.
 
   Parent:
@@ -92,4 +92,4 @@ class GSoCStudentInfo(soc.models.profile.StudentInfo):
   #: backwards compatibility.
   school_home_page = db.LinkProperty(
       required=False, verbose_name=ugettext("School Home Page URL"))
-  school_home_page.group = ugettext("5. Education")
+  school_home_page.group = profile.EDUCATION_GROUP

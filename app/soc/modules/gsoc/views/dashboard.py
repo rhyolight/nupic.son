@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC participant dashboard.
-"""
+"""Module for the GSoC participant dashboard."""
+
+import logging
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
@@ -55,7 +55,7 @@ from soc.modules.gsoc.models.project_survey_record import \
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.score import GSoCScore
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -148,7 +148,7 @@ class ComponentsDashboard(Dashboard):
     }
 
 
-class DashboardPage(RequestHandler):
+class DashboardPage(GSoCRequestHandler):
   """View for the participant dashboard.
   """
 
@@ -186,13 +186,10 @@ class DashboardPage(RequestHandler):
     return list_content.content()
 
   def post(self):
-    """Handler for POST requests.
-    """
-    components = self.components()
-
-    for component in components:
+    """Handler for POST requests."""
+    for component in self.components():
       if component.post():
-        break
+        return http.HttpResponse()
     else:
       raise AccessViolation(
           'You cannot change this data')
@@ -245,7 +242,6 @@ class DashboardPage(RequestHandler):
     components = []
 
     if self.data.student_info:
-      components.append(TodoComponent(self.request, self.data))
       components += self._getStudentComponents()
     elif self.data.is_mentor:
       components.append(TodoComponent(self.request, self.data))
@@ -263,6 +259,7 @@ class DashboardPage(RequestHandler):
     info = self.data.student_info
 
     if self.data.is_student and info.number_of_projects:
+      components.append(TodoComponent(self.request, self.data))
       # Add a component to show the evaluations
       evals = dictForSurveyModel(
           ProjectSurvey, self.data.program, ['midterm', 'final'])
@@ -321,6 +318,16 @@ class DashboardPage(RequestHandler):
     # move to the bottom after student signup
     if not self.data.timeline.studentSignup():
       components.append(orgs)
+
+    if self.data.is_org_admin:
+      mentor_evals = dictForSurveyModel(
+          GradingProjectSurvey, self.data.program, ['midterm', 'final'])
+      student_evals = dictForSurveyModel(
+          ProjectSurvey, self.data.program, ['midterm', 'final'])
+      components.append(
+          MentorEvaluationComponent(self.request, self.data, mentor_evals))
+      components.append(
+          StudentEvaluationComponent(self.request, self.data, student_evals))
 
     return components
 
@@ -384,10 +391,10 @@ class MyOrgApplicationsComponent(Component):
 
     list_config.addSimpleColumn('name', 'Name')
     list_config.addSimpleColumn('org_id', 'Organization ID')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'created', 'Created On',
         lambda ent, *args: format(ent.created, DATETIME_FORMAT))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'modified', 'Last Modified On',
         lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
 
@@ -465,7 +472,7 @@ class MyProposalsComponent(Component):
     r = data.redirect
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org', 'Organization',
+    list_config.addPlainTextColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args:
         r.review(e.key().id_or_name(), e.parent().link_id).
@@ -524,11 +531,12 @@ class MyProjectsComponent(Component):
     r = data.redirect
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org', 'Organization Name',
-                          lambda ent, *args: ent.org.name)
+    list_config.addPlainTextColumn('org', 'Organization Name',
+        lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args:
         r.project(id=e.key().id_or_name(), student=e.parent().link_id).
         urlOf('gsoc_project_details'))
@@ -590,21 +598,21 @@ class MyEvaluationsComponent(Component):
     self.record = None
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'key', 'Key', (lambda ent, eval, *args: '%s/%s/%s' % (
             eval, ent.parent().key().name(),
             ent.key().id())), hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'evaluation', 'Evaluation',
         lambda ent, eval, *args: eval.capitalize() if eval else '')
     list_config.addSimpleColumn('title', 'Project')
-    list_config.addColumn('status', 'Status', self._getStatus)
-    list_config.addColumn(
+    list_config.addHtmlColumn('status', 'Status', self._getStatus)
+    list_config.addPlainTextColumn(
         'created', 'Submitted on',
         lambda ent, eval, *args: format(
             self.record.created, DATETIME_FORMAT) if \
             self.record else 'N/A')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'modified', 'Last modified on',
         lambda ent, eval, *args: format(
             self.record.modified, DATETIME_FORMAT) if (
@@ -681,7 +689,7 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
     """
     super(OrgEvaluationsComponent, self).__init__(request, data, evals)
 
-    self._list_config.addColumn(
+    self._list_config.addPlainTextColumn(
         'student', 'Student',
         lambda ent, eval, *args: ent.parent().name())
 
@@ -731,9 +739,9 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
 
     return {
         'name': 'evaluations',
-        'title': 'Evaluations',
+        'title': 'My Evaluations',
         'lists': [list],
-        'description': ugettext('Evaluations'),
+        'description': ugettext('Evaluations that I must complete'),
     }
 
 
@@ -759,10 +767,11 @@ class SubmittedProposalsComponent(Component):
     """
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'email', 'Student Email',
         (lambda ent, *args: ent.parent().email), hidden=True)
     list_config.addSimpleColumn('score', 'Score')
@@ -770,21 +779,21 @@ class SubmittedProposalsComponent(Component):
 
     def getAverage(ent):
       if not ent.nr_scores:
-        return "N/A"
+        return ''
 
       average = float(ent.score)/float(ent.nr_scores)
       return float("%.2f" % average)
 
-    list_config.addColumn(
+    list_config.addNumericalColumn(
         'average', 'Average', lambda ent, *a: getAverage(ent))
 
     query = db.Query(GSoCScore)
     query.filter('author', data.profile.key())
     myScores = dict((q.parent_key(), q.value) for q in query.fetch(1000))
     def getMyScore(ent, *args):
-      return myScores.get(ent.key(), 'N/A')
+      return myScores.get(ent.key(), '')
 
-    list_config.addColumn(
+    list_config.addNumericalColumn(
         'my_score', 'My score', getMyScore)
 
     def getStatusOnDashboard(proposal, accepted, duplicates):
@@ -810,17 +819,17 @@ class SubmittedProposalsComponent(Component):
         ('', 'All'),
         ('(invalid|withdrawn|ignored)', 'Invalid'),
     ]
-    list_config.addColumn('status', 'Status', getStatusOnDashboard,
-                          options=options)
+    list_config.addHtmlColumn('status', 'Status', getStatusOnDashboard,
+        options=options)
 
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'last_modified_on', 'Last modified',
         lambda ent, *args: format(ent.last_modified_on, DATETIME_FORMAT))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'created_on', 'Created on',
         (lambda ent, *args: format(ent.created_on, DATETIME_FORMAT)),
         hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'student', 'Student',
         lambda ent, *args: ent.parent().name())
     list_config.addSimpleColumn('accept_as_project', 'Should accept')
@@ -839,10 +848,11 @@ class SubmittedProposalsComponent(Component):
     def mentor_keys(ent, *args):
       return ', '.join(split_key(i) for i in ent.possible_mentors)
 
-    list_config.addColumn('mentor', 'Assigned mentor link_id',
-                          mentor_key, hidden=True)
-    list_config.addColumn('possible_mentors', 'Possible mentor link_ids',
-                          mentor_keys, hidden=True)
+    list_config.addPlainTextColumn(
+        'mentor', 'Assigned mentor usernames', mentor_key, hidden=True)
+    list_config.addPlainTextColumn(
+        'possible_mentors', 'Possible mentor usernames',
+        mentor_keys, hidden=True)
 
     # organization column
     if not data.is_host:
@@ -855,15 +865,15 @@ class SubmittedProposalsComponent(Component):
       options = [('', 'All')] + options
 
     hidden = len(data.mentor_for) < 2
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'org', 'Organization', (lambda ent, *args: ent.org.short_name),
         options=options, hidden=hidden)
 
     # hidden keys
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'full_proposal_key', 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'org_key', 'Organization key',
         (lambda ent, *args: ent.org.key().name()), hidden=True)
 
@@ -888,7 +898,7 @@ class SubmittedProposalsComponent(Component):
         extra_columns.append(column)
         col_name = "%s" % (column)
 
-        list_config.addColumn(
+        list_config.addPlainTextColumn(
             column, col_name, get_col_prop(column))
         list_config.setColumnEditable(column, True, 'text', {})
         list_config.setColumnExtra(column, org="^%s$" % org.short_name)
@@ -924,7 +934,7 @@ class SubmittedProposalsComponent(Component):
         preload_list=False)
     return {
         'name': 'proposals_submitted',
-        'title': 'Proposals submitted to my orgs',
+        'title': 'Proposals submitted to my organizations',
         'lists': [list],
         'description': ugettext(
             'List of proposals submitted to my organizations'),
@@ -1083,12 +1093,13 @@ class ProjectsIMentorComponent(Component):
     """
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('student', 'Student',
+    list_config.addPlainTextColumn('student', 'Student',
                           lambda ent, *args: ent.parent().name())
-    list_config.addColumn('org', 'Organization',
+    list_config.addPlainTextColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setDefaultSort('title')
     list_config.setRowAction(lambda e, *args:
@@ -1152,12 +1163,17 @@ class OrganizationsIParticipateInComponent(Component):
   """
 
   def __init__(self, request, data):
-    """Initializes this component.
-    """
-    r = data.redirect
+    """Initializes this component."""
+    # TODO(nathaniel): put this back into a lambda expression in the
+    # setRowAction call below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      data.redirect.organization(organization=e)
+
+      return data.redirect.urlOf('gsoc_org_home')
+
     list_config = lists.ListConfiguration()
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
+    list_config.setRowAction(RowAction)
 
     if not data.program.allocations_visible:
       list_config.addSimpleColumn('name', 'name')
@@ -1167,15 +1183,16 @@ class OrganizationsIParticipateInComponent(Component):
           return text
         return """<strong><font color="red">%s</font></strong>""" % text
 
-      list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
-      list_config.addColumn('name', 'name', lambda ent, s, *args: c(ent, s, ent.name))
+      list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
+      list_config.addHtmlColumn(
+          'name', 'name', lambda ent, s, *args: c(ent, s, ent.name))
       list_config.addSimpleColumn('slots', 'Slots allowed')
-      list_config.addColumn(
+      list_config.addNumericalColumn(
           'slots_used', 'Slots used', lambda ent, s, *args: s)
-      list_config.addColumn(
+      list_config.addNumericalColumn(
           'delta', 'Slots difference',
           lambda ent, s, *args: c(ent, s, (ent.slots - s)))
-      list_config.addColumn(
+      list_config.addNumericalColumn(
           'delta_sortable', 'Slots difference (sortable)',
           (lambda ent, s, *args: abs(ent.slots - s)), hidden=True)
 
@@ -1250,12 +1267,12 @@ class OrgConnectionComponent(Component):
     """Initializes this component.
     """
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key',
+    list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: '%s' % e.keyName(), hidden=True)
     
     list_config.addColumn('username', 'Username',
         lambda e, *args: e.parent().link_id)
-    list_config.addColumn('role', 'Role',
+    list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: e.role,
         options=CONN_ROLE_OPTS)
     list_config.addColumn('status', 'Status',
@@ -1387,7 +1404,7 @@ class ParticipantsComponent(Component):
     """
     self.data = data
     list_config = lists.ListConfiguration()
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'name', 'Name', lambda ent, *args: ent.name())
     list_config.addSimpleColumn('email', "Email")
 
@@ -1396,17 +1413,17 @@ class ParticipantsComponent(Component):
     else:
       get = lambda i, orgs: orgs[i].name
 
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'mentor_for', 'Mentor for',
         lambda ent, orgs, *args: ', '.join(
             [get(i, orgs) for i in ent.mentor_for if data.orgAdminFor(i)]))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'admin_for', 'Organization admin for',
         lambda ent, orgs, *args: ', '.join(
             [get(i, orgs) for i in ent.org_admin_for if data.orgAdminFor(i)]))
 
     if self.data.is_host:
-      list_config.addColumn(
+      list_config.addPlainTextColumn(
           'created_on', 'Created On',
           lambda ent, *args: format(ent.created_on, DATETIME_FORMAT)),
       addresses.addAddressColumns(list_config)
@@ -1463,19 +1480,21 @@ class TodoComponent(Component):
   def __init__(self, request, data):
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'key', 'Key', (lambda d, *args: d['key']), hidden=True)
     list_config.addDictColumn('name', 'Name')
     list_config.addDictColumn('status', 'Status')
     def rowAction(d, *args):
       key = d['key']
       if key == 'tax_form':
-        return data.redirect.program().urlOf('gsoc_tax_form', secure=True)
+        data.redirect.program()
+        return data.redirect.urlOf('gsoc_tax_form', secure=True)
       if key == 'enrollment_form':
-        return data.redirect.program().urlOf('gsoc_enrollment_form',
-                                             secure=True)
+        data.redirect.program()
+        return data.redirect.urlOf('gsoc_enrollment_form', secure=True)
       if key == 'school_name':
-        url = data.redirect.program().urlOf('edit_gsoc_profile', secure=True)
+        data.redirect.program()
+        url = data.redirect.urlOf('edit_gsoc_profile', secure=True)
         return url + '#form_row_school_name'
       if key.isdigit():
         project_id = int(key)
@@ -1549,3 +1568,168 @@ class TodoComponent(Component):
         'lists': [list],
         'description': ugettext('List of my todos'),
     }
+
+
+class StudentEvaluationComponent(Component):
+  """Component for listing student evaluations for organizations.
+  """
+
+  IDX = 12
+
+  def __init__(self, request, data, evals):
+    """Initializes this component.
+
+    Args:
+      request: The Django HTTP Request object
+      data: The RequestData object containing the entities from the request
+      evals: Dictionary containing evaluations for which the list must be built
+      idx: The id for this list component
+    """
+    self.request = request
+    self.data = data
+    self.evals = evals
+
+    self.record = None
+
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addPlainTextColumn(
+        'key', 'Key',
+        (lambda ent, eval, *args: "%s/%s/%s" % (
+            eval, ent.parent().key().name(),
+            ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn(
+        'evaluation', 'Evaluation',
+        lambda ent, eval, *args: eval.capitalize() if eval else '')
+    list_config.addPlainTextColumn(
+        'student', 'Student',
+        lambda entity, eval, *args: entity.parent().name())
+    list_config.addSimpleColumn('title', 'Project Title')
+    list_config.addPlainTextColumn('org', 'Organization',
+        lambda entity, eval, *args: entity.org.name)
+    list_config.addPlainTextColumn(
+        'mentors', 'Mentors',
+        lambda ent, eval, mentors, *args: ', '.join(
+            [mentors.get(m).name() for m in ent.mentors]))
+    list_config.addHtmlColumn(
+        'status', 'Status', self._getStatus)
+    list_config.addPlainTextColumn(
+        'created', 'Submitted on',
+        lambda ent, eval, *args: format(
+            self.record.created, DATETIME_FORMAT) if \
+            self.record else 'N/A')
+    list_config.addPlainTextColumn(
+        'modified', 'Last modified on',
+        lambda ent, eval, *args: format(
+            self.record.modified, DATETIME_FORMAT) if (
+            self.record and self.record.modified) else 'N/A')
+    list_config.setDefaultSort('student')
+
+    def getRowAction(entity, eval, *args):
+      eval_ent = self.evals.get(eval)
+
+      if not self.data.timeline.afterSurveyEnd(eval_ent):
+        return ''
+
+      url = self.data.redirect.survey_record(
+          eval, entity.key().id_or_name(),
+          entity.parent().link_id).urlOf('gsoc_show_student_evaluation')
+      return url
+    list_config.setRowAction(getRowAction)
+
+    self._list_config = list_config
+
+  def _getStatus(self, entity, eval, *args):
+    eval_ent = self.evals.get(eval)
+    self.record = getEvalRecord(GSoCProjectSurveyRecord, eval_ent, entity)
+    return colorize(bool(self.record), "Submitted", "Not submitted")
+
+  def context(self):
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.IDX, preload_list=False)
+
+    return {
+        'name': 'student_evaluations',
+        'lists': [list],
+        'title': 'Student Evaluations',
+        'description': ugettext(
+          'List of student evaluations for my organizations'),
+        'idx': self.IDX,
+        }
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    idx = lists.getListIndex(self.request)
+    if idx == self.IDX:
+      list_query = project_logic.getProjectsQueryForEvalForOrgs(
+          orgs=self.data.org_admin_for)
+
+      starter = lists.keyStarter
+      prefetcher = lists.listModelPrefetcher(
+          GSoCProject, ['org'],
+          ['mentors', 'failed_evaluations'],
+          parent=True)
+      row_adder = evaluationRowAdder(self.evals)
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.request, self._list_config, list_query,
+          starter, prefetcher=prefetcher, row_adder=row_adder)
+      return response_builder.build()
+    else:
+      return None
+
+  def templatePath(self):
+    return'v2/modules/gsoc/dashboard/list_component.html'
+
+
+class MentorEvaluationComponent(StudentEvaluationComponent):
+  """Component for listing mentor evaluations for organizations.
+  """
+
+  IDX = 13
+
+  def __init__(self, request, data, evals):
+    """Initializes this component.
+
+    Args:
+      request: The Django HTTP Request object
+      data: The RequestData object containing the entities from the request
+      evals: Dictionary containing evaluations for which the list must be built
+      idx: The id for this list component
+    """
+    super(MentorEvaluationComponent, self).__init__(request, data, evals)
+
+    self.record = None
+
+    self._list_config.addHtmlColumn(
+        'grade', 'Grade', self._getGrade)
+    self._list_config.setRowAction(lambda entity, eval, *args:
+        data.redirect.survey_record(
+            eval, entity.key().id_or_name(),
+            entity.parent().link_id).urlOf(
+                'gsoc_take_mentor_evaluation'))
+
+  def _getStatus(self, entity, eval, *args):
+    eval_ent = self.evals.get(eval)
+    self.record = getEvalRecord(GSoCGradingProjectSurveyRecord,
+                                eval_ent, entity)
+    return colorize(
+        bool(self.record), "Submitted", "Not submitted")
+
+  def _getGrade(self, entity, eval, *args):
+    if self.record:
+      return colorize(
+        self.record.grade, "Pass", "Fail")
+    else:
+      return "N/A"
+
+  def context(self):
+    context = super(MentorEvaluationComponent, self).context()
+    context['title'] = 'Mentor Evaluations'
+    context['description'] = ugettext(
+        'List of mentor evaluations for my organizations')
+    context['name'] = 'mentor_evaluations'
+    return context

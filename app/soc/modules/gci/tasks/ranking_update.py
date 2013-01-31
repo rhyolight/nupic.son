@@ -28,7 +28,8 @@ from django.conf.urls.defaults import url
 from soc.tasks import responses
 from soc.views.helper import url_patterns
 
-from soc.modules.gci.logic import ranking as ranking_logic
+from soc.modules.gci.logic import ranking as score_logic
+from soc.modules.gci.logic import org_score as org_score_logic
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.score import GCIScore
@@ -69,7 +70,7 @@ class RankingUpdater(object):
       logging.warning('Ranking update queued for non-existing task: %s' %id)
       responses.terminateTask()
 
-    ranking_logic.updateScore(task)
+    score_logic.updateScore(task)
 
     logging.info("ranking_update updateRankingWithTask ends")
     return responses.terminateTask()
@@ -109,9 +110,11 @@ class RankingUpdater(object):
 
       tasks = task_q.fetch(1000)
 
-      # calculate ranking with all the tasks
-     # ranking_logic.calculateRankingForStudent(student, tasks)
-      ranking_logic.calculateScore(student, tasks, program)
+      # calculate score with all the tasks
+      score_logic.calculateScore(student, tasks, program)
+
+      # calculate org score with all the tasks
+      db.run_in_transaction(org_score_logic.updateOrgScoresTxn(tasks))
 
     if students:
       # schedule task to do the rest of the students
@@ -166,7 +169,7 @@ class RankingUpdater(object):
     q.filter('status', 'Closed')
     tasks = q.fetch(1000)
 
-    ranking_logic.calculateRankingForStudent(student, tasks)
+    score_logic.calculateRankingForStudent(student, tasks)
 
     return responses.terminateTask()
 

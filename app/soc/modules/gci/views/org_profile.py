@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,33 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI organization profile page.
-"""
+"""Module for the GCI organization profile page."""
 
-
-from soc.views import forms
-
-from django import forms as django_forms
-from django.utils.translation import ugettext
-
-from soc.logic import cleaning
-from soc.logic.exceptions import RedirectRequest
 from soc.views.helper import url_patterns
 from soc.views import org_profile
 
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
-    'task_quota_limit',
+    'task_quota_limit', 'backup_winner', 'proposed_winners'
 ]
 
+
 class OrgProfileForm(org_profile.OrgProfileForm):
-  """Django form for the organization profile.
-  """
+  """Django form for the organization profile."""
 
   def __init__(self, *args, **kwargs):
     super(OrgProfileForm, self).__init__(
@@ -56,8 +45,7 @@ class OrgProfileForm(org_profile.OrgProfileForm):
 
 
 class OrgCreateProfileForm(OrgProfileForm):
-  """Django form to create the organization profile.
-  """
+  """Django form to create the organization profile."""
 
   class Meta:
     model = GCIOrganization
@@ -65,9 +53,8 @@ class OrgCreateProfileForm(OrgProfileForm):
     exclude = PROFILE_EXCLUDE
 
 
-class OrgProfilePage(RequestHandler):
-  """View for the Organization Profile page.
-  """
+class OrgProfilePage(GCIRequestHandler):
+  """View for the Organization Profile page."""
 
   def djangoURLPatterns(self):
     return [
@@ -88,7 +75,9 @@ class OrgProfilePage(RequestHandler):
     else:
       self.data.organization = None
       self.mutator.orgAppFromOrgId()
-      self.check.canCreateNewOrg()
+      self.check.isOrgAppAccepted()
+      self.check.isUserAdminForOrgApp()
+      self.check.hasProfileOrRedirectToCreate()
 
   def templatePath(self):
     return 'v2/modules/gci/org_profile/base.html'
@@ -107,18 +96,22 @@ class OrgProfilePage(RequestHandler):
         }
 
     if self.data.organization:
-      r = self.data.redirect.organization()
-      context['org_home_page_link'] = r.urlOf('gci_org_home')
+      # TODO(nathaniel): make this .organization() call unnecessary.
+      self.data.redirect.organization()
+      context['org_home_page_link'] = self.data.redirect.urlOf('gci_org_home')
 
     return context
 
   def post(self):
     org_profile = self.createOrgProfileFromForm()
     if org_profile:
-      self.redirect.organization(org_profile)
-      self.redirect.to('edit_gci_org_profile', validated=True)
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.redirect.organization(organization=org_profile)
+
+      return self.redirect.to('edit_gci_org_profile', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
   def createOrgProfileFromForm(self):
     """Creates a new organization based on the data inserted in the form.
@@ -126,7 +119,6 @@ class OrgProfilePage(RequestHandler):
     Returns:
       a newly created organization entity or None
     """
-
     if self.data.organization:
       form = OrgProfileForm(self.data.POST, instance=self.data.organization)
     else:
@@ -139,7 +131,7 @@ class OrgProfilePage(RequestHandler):
       org_id = self.data.GET['org_id']
       form.cleaned_data['founder'] = self.data.user
       form.cleaned_data['scope'] = self.data.program
-      form.cleaned_data['scope_path'] = self.data.program.key().name() 
+      form.cleaned_data['scope_path'] = self.data.program.key().name()
       form.cleaned_data['link_id'] = org_id
       key_name = '%s/%s' % (self.data.program.key().name(), org_id)
       entity = form.create(key_name=key_name)

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,30 +16,28 @@
 module is largely based on appengine's webapp framework's code.
 """
 
-
+import httplib
 import urllib
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils import simplejson
 from django.template import loader
 
-from soc.logic.exceptions import LoginRequest
-from soc.logic.exceptions import RedirectRequest
-from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import GDocsLoginRequest
-from soc.logic.exceptions import MaintainceMode
-from soc.logic.exceptions import Error
+from soc.logic import exceptions
+from soc.logic import links
 from soc.views.helper import access_checker
-from soc.views.helper.response import Response
 from soc.views.helper import context as context_helper
-from soc.views.helper.request_data import RequestData
-from soc.views.helper.request_data import RedirectHelper
+from soc.views.helper import request_data
 
 
 class RequestHandler(object):
-  """Base class managing HTTP Requests.
-  """
+  """Base class managing HTTP Requests."""
+
+  # TODO(nathaniel): Pass this as a construction parameter like
+  # a real injected dependency.
+  linker = links.Linker()
 
   def context(self):
     return {}
@@ -51,170 +47,229 @@ class RequestHandler(object):
 
     Default implementation calls templatePath and context and passes
     those to render to construct the page.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        attribute.
     """
     context = self.context()
-    self.render(self.templatePath(), context)
+    template_path = self.templatePath()
+    response_content = self.render(template_path, context)
+    return http.HttpResponse(content=response_content)
 
   def json(self):
-    """Handler for HTTP GET request with a 'fmt=json' parameter.
-    """
-
-    if not self.request.GET.get('plain'):
-      self.response['Content-Type'] = 'application/json'
-
-    # if the browser supports HTTP/1.1
-    # post-check and pre-check and no-store for IE7
-    self.response['Cache-Control'] = 'no-store, no-cache, must-revalidate, ' \
-                                     'post-check=0, pre-check=0' # HTTP/1.1, IE7
-    self.response['Pragma'] = 'no-cache'
-
+    """Handler for HTTP GET request with a 'fmt=json' parameter."""
     context = self.jsonContext()
-
-    if self.request.GET.get('marker'):
-      # allow the django test framework to capture the context dictionary
-      loader.render_to_string('json_marker.html', dictionary=context)
 
     if isinstance(context, unicode) or isinstance(context, str):
       data = context
     else:
       data = simplejson.dumps(context)
 
-    self.response.write(data)
+    if self.data.request.GET.get('plain'):
+      content_type = http.DEFAULT_CONTENT_TYPE
+    else:
+      content_type = 'application/json'
+
+    response = http.HttpResponse(content=data, content_type=content_type)
+
+    # if the browser supports HTTP/1.1
+    # post-check and pre-check and no-store for IE7
+    # TODO(nathaniel): We need no longer support IE7. Can this be simplified
+    # or eliminated?
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, ' \
+                                'post-check=0, pre-check=0' # HTTP/1.1, IE7
+    response['Pragma'] = 'no-cache'
+
+    # TODO(nathaniel): find a better way to do this - I mean, the
+    # jsonContext method is already as exposed as this method.
+    if self.data.request.GET.get('marker'):
+      # allow the django test framework to capture the context dictionary
+      loader.render_to_string('json_marker.html', dictionary=context)
+
+    return response
 
   def jsonContext(self):
     """Defines the JSON object to be dumped and returned on a HTTP GET request
     with 'fmt=json' parameter.
     """
     return {
-        'error': "json() method not implemented",
+        'error': 'json() method not implemented',
     }
 
   def post(self):
     """Handler for HTTP POST request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
     """
-    self.error(405)
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def head(self):
     """Handler for HTTP HEAD request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
     """
-    self.error(405)
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def options(self):
     """Handler for HTTP OPTIONS request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
     """
-    self.error(405)
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def put(self):
     """Handler for HTTP PUT request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
     """
-    self.error(405)
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def delete(self):
     """Handler for HTTP DELETE request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
     """
-    self.error(405)
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def trace(self):
     """Handler for HTTP TRACE request.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
     """
-    self.error(405)
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def error(self, status, message=None):
-    """Sets the error response code and message when an error is encountered.
+    """Constructs an HttpResponse indicating an error.
 
     Args:
-      status: the HTTP status error code
-      message: the message to set, uses default if None
+      status: The HTTP status code for the error.
+      message: A message to display to the user. If not supplied, a default
+        appropriate for the given status code (such as "Bad Gateway" or
+        "Payment Required") will be used.
+
+    Returns:
+      An http.HttpResponse indicating an error.
     """
-    self.response.set_status(status, message=message)
-    template_path = "v2/error.html"
+    message = message or httplib.responses.get(status, '')
+
+    template_path = 'error.html'
     context = {
-        'page_name': self.response.content,
-        'message': self.response.content,
+        'page_name': message,
+        'message': message,
     }
 
-    self.response.content = ''
-    self.render(template_path, context)
+    return http.HttpResponse(
+        content=self.render(template_path, context), status=status)
 
   def djangoURLPatterns(self):
     """Returns a list of Django URL pattern tuples.
+
+    Implementing subclasses must override this method.
     """
-    patterns = []
-    return patterns
+    raise NotImplementedError()
 
   def checkAccess(self):
-    """Raise an exception if the user doesn't have access to the
-    requested URL.
+    # TODO(nathaniel): eliminate this - it doesn't actually simplify
+    # the HTTP method implementations all that much to have it
+    # separated out.
+    """Ensure that the user's request should be satisfied.
+
+    Implementing subclasses must override this method.
+
+    Implementations must not mutate any of this RequestHandler's state and
+    should merely raise an exception if the user's request should not be
+    satisfied or return normally if the user's request should be satisfied.
+
+    Raises:
+      exceptions.Error: If the user's request should not be satisfied for
+        any reason.
     """
-    self.error(401, "checkAccess in base RequestHandler has not been changed "
-               "to grant access")
+    raise NotImplementedError()
 
   def render(self, template_path, render_context):
-    """Renders the page using the specified context.
+    """Renders the page content from the specified template and context.
 
-    The page is rendered using the template and context specified and
-    is written to the response object.
-
-    The context object is extended with the values from helper.context.default.
+    Values supplied by helper.context.default are used in the rendering in
+    addition to those supplied by render_context (render_context overrides
+    in cases of conflict).
 
     Args:
-      template_path: the path of the template that should be used
-      render_context: the context that should be used
-    """
+      template_path: The path of the template that should be used.
+      render_context: The context dictionary that should be used.
 
+    Returns:
+      The page content.
+    """
     context = context_helper.default(self.data)
     context.update(render_context)
-    rendered = loader.render_to_string(template_path, dictionary=context)
-    self.response.write(rendered)
+    return loader.render_to_string(template_path, dictionary=context)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
 
-    Subclasses should override this method.
+    Implementing subclasses must override this method.
     """
     raise NotImplementedError()
 
-  def accessViolation(self, status, message):
-    """Default access violation handler.
-    """
-    self.error(status, message)
-
   def _dispatch(self):
     """Dispatches the HTTP request to its respective handler method.
+
+    Returns:
+      An http.HttpResponse appropriate for this RequestHandler's request
+        object.
     """
-    if self.request.method == 'GET':
-      if self.request.GET.get('fmt') == 'json':
-        self.json()
+    if self.data.request.method == 'GET':
+      if self.data.request.GET.get('fmt') == 'json':
+        return self.json()
       else:
-        self.get()
-    elif self.request.method == 'POST':
+        return self.get()
+    elif self.data.request.method == 'POST':
       if db.WRITE_CAPABILITY.is_enabled():
-        self.post()
+        return self.post()
       else:
-        referrer = self.request.META.get('HTTP_REFERER', '')
+        referrer = self.data.request.META.get('HTTP_REFERER', '')
         params = urllib.urlencode({'dsw_disabled': 1})
         url_with_params = '%s?%s' % (referrer, params)
-        self.redirect.toUrl(url_with_params)
-    elif self.request.method == 'HEAD':
-      self.head()
-    elif self.request.method == 'OPTIONS':
-      self.options()
-    elif self.request.method == 'PUT':
-      self.put()
-    elif self.request.method == 'DELETE':
-      self.delete()
-    elif self.request.method == 'TRACE':
-      self.trace()
+        return http.HttpResponseRedirect('%s?%s' % (referrer, params))
+    elif self.data.request.method == 'HEAD':
+      return self.head()
+    elif self.data.request.method == 'OPTIONS':
+      return self.options()
+    elif self.data.request.method == 'PUT':
+      return self.put()
+    elif self.data.request.method == 'DELETE':
+      return self.delete()
+    elif self.data.request.method == 'TRACE':
+      return self.trace()
     else:
-      self.error(501)
+      return self.error(httplib.NOT_IMPLEMENTED)
 
+  # TODO(nathaniel): Note that while this says that it sets the "data" and
+  # "check" attributes, this implementation makes use of the "data" attribute
+  # without having set it. Therefore extending classes must set at least the
+  # "data" attribute before calling this superclass implementation if they
+  # choose to do so (they do). This is an obstacle just waiting to cause
+  # bigger problems.
   def init(self, request, args, kwargs):
     """Initializes the RequestHandler.
 
     Sets the data and check fields.
     """
     if self.data.site.maintenance_mode and not self.data.is_developer:
-      raise MaintainceMode(
+      raise exceptions.MaintainceMode(
           'The site is currently in maintenance mode. Please try again later.')
 
   def __call__(self, request, *args, **kwargs):
@@ -231,27 +286,21 @@ class RequestHandler(object):
     self.args = args
     self.kwargs = kwargs
 
-    self.response = Response()
-
     try:
       self.init(request, args, kwargs)
       self.checkAccess()
-      self._dispatch()
-    except LoginRequest, e:
+      return self._dispatch()
+    except exceptions.LoginRequest, e:
       request.get_full_path().encode('utf-8')
-      self.redirect.login().to()
-    except RedirectRequest, e:
-      self.redirect.toUrl(e.url)
-    except AccessViolation, e:
-      self.accessViolation(e.status, e.args[0])
-    except GDocsLoginRequest, e:
-      self.redirect.toUrl('%s?%s' % (self.redirect.urlOf(e.url_name),
-                                     urllib.urlencode({'next':e.next})))
-    except Error, e:
-      self.error(e.status, message=e.args[0])
+      return self.redirect.login().to()
+    except exceptions.RedirectRequest, e:
+      return self.redirect.toUrl(e.url)
+    except exceptions.GDocsLoginRequest, e:
+      return self.redirect.toUrl('%s?%s' % (
+          self.redirect.urlOf(e.url_name), urllib.urlencode({'next':e.path})))
+    except exceptions.Error, e:
+      return self.error(e.status, message=e.args[0])
     finally:
-      response = self.response
-      self.response = None
       self.request = None
       self.args = None
       self.kwargs = None
@@ -260,17 +309,13 @@ class RequestHandler(object):
       self.mutator = None
       self.redirect = None
 
-    return response
-
 
 class SiteRequestHandler(RequestHandler):
-  """Customization required by global site pages to handle HTTP requests.
-  """
+  """Customization required by global site pages to handle HTTP requests."""
 
   def init(self, request, args, kwargs):
-    self.data = RequestData()
-    self.redirect = RedirectHelper(self.data, self.response)
-    self.data.populate(None, request, args, kwargs)
+    self.data = request_data.RequestData(request, args, kwargs)
+    self.redirect = self.data.redirect
     if self.data.is_developer:
       self.mutator = access_checker.DeveloperMutator(self.data)
       self.check = access_checker.DeveloperAccessChecker(self.data)

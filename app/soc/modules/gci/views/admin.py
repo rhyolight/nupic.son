@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the admin pages.
-"""
-
+"""Module for the admin pages."""
 
 from google.appengine.api import users
 
 from django import forms as djangoforms
+from django import http
 from django.utils.translation import ugettext
 
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
-from soc.views.dashboard import DashboardUserActions
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -77,7 +73,7 @@ class LookupForm(gci_forms.GCIModelForm):
     self.cleaned_data['profile'] = q.get()
 
 
-class DashboardPage(RequestHandler):
+class DashboardPage(GCIRequestHandler):
   """Dashboard for admins.
   """
 
@@ -104,7 +100,6 @@ class DashboardPage(RequestHandler):
     dashboards.append(ParticipantsDashboard(self.request, self.data))
 
     return {
-        'colorbox': self.data.GET.get('colorbox'),
         'dashboards': dashboards,
         'page_name': 'Admin dashboard',
     }
@@ -115,7 +110,7 @@ class DashboardPage(RequestHandler):
     Do nothing, since toggle button posting to this handler
     without expecting any response.
     """
-    return False
+    return http.HttpResponse()
 
 
 class MainDashboard(Dashboard):
@@ -159,8 +154,7 @@ class MainDashboard(Dashboard):
         },
         {
             'name': 'org_app',
-            'description': ugettext(
-                'Edit organization application'),
+            'description': ugettext('Manage Mentoring Organizations'),
             'title': 'Organizations',
             'link': '',
             'subpage_links': organizations.getSubpagesLink(),
@@ -203,7 +197,7 @@ class ProgramSettingsDashboard(Dashboard):
             'description': ugettext(
                 'Edit your program settings such as information, slots, '
                 'documents, etc.'),
-            'title': 'Edit program',
+            'title': 'Edit program settings',
             'link': r.urlOf('edit_gci_program')
         },
         {
@@ -215,18 +209,19 @@ class ProgramSettingsDashboard(Dashboard):
             'link': r.urlOf('edit_gci_timeline')
         },
         {
+            'name': 'edit_program_messages',
+            'description': ugettext(
+                'Edit program messages which will be sent in emails '
+                'to the specified participants.'),
+            'title': 'Edit messages',
+            'link': r.urlOf(url_names.GCI_EDIT_PROGRAM_MESSAGES)
+        },
+        {
             'name': 'documents',
             'description': ugettext(
                 'List of documents from various program.'),
             'title': 'List of documents',
             'link': r.urlOf('list_gci_documents')
-        },
-        {
-            'name': 'students_info',
-            'description': ugettext(
-                'Details of students participating in the current program.'),
-            'title': 'Details of students',
-            'link': r.urlOf(url_names.GCI_STUDENTS_INFO) 
         },
     ]
 
@@ -253,7 +248,7 @@ class ProgramSettingsDashboard(Dashboard):
 class OrgDashboard(Dashboard):
   """Dashboard for admin's Organization related information.
 
-  This page includes links for Org app surveys, participating org info, etc.
+  This page includes links for Org app surveys, mentoring org info, etc.
   """
 
   def __init__(self, request, data):
@@ -275,6 +270,13 @@ class OrgDashboard(Dashboard):
             'link': r.urlOf('gci_edit_org_app')
         },
         {
+            'name': 'preview_org_app',
+            'description': ugettext(
+                'Preview of the organization application.'),
+            'title': 'Preview organization application',
+            'link': r.urlOf('gci_preview_org_app')
+        },
+        {
             'name': 'org_app_records',
             'description': ugettext(
                 'List of submitted organization application'),
@@ -287,6 +289,29 @@ class OrgDashboard(Dashboard):
                 'List of accepted organizations'),
             'title': 'Accepted Organizations',
             'link': r.urlOf('gci_admin_accepted_orgs')
+        },
+        {
+            'name': 'org_scores',
+            'description': ugettext(
+                'List of student scores for the chosen organization'),
+            'title': 'Organization Scores',
+            'link': r.urlOf(url_names.GCI_ORG_CHOOSE_FOR_SCORE)
+        },
+        {
+            'name': 'org_tasks',
+            'description': ugettext(
+                'List of tasks that have been created by '
+                'the chosen organization'),
+            'title': 'Organization Tasks',
+            'link': r.urlOf(url_names.GCI_ORG_CHOOSE_FOR_ALL_TASKS)
+        },
+        {
+            'name': 'proposed_winners',
+            'description': ugettext(
+                'List of the Grand Prize Winners that have been proposed by '
+                'organizations'),
+            'title': 'Proposed Grand Prize Winners',
+            'link': r.urlOf(url_names.GCI_VIEW_PROPOSED_WINNERS)
         },
     ]
 
@@ -339,6 +364,13 @@ class ParticipantsDashboard(Dashboard):
             'title': 'List students',
             'link': r.urlOf(url_names.GCI_STUDENTS_INFO)
         },
+        {
+            'name': 'leaderboard',
+            'description': ugettext(
+                'Leaderboard for the program'),
+            'title': 'Leaderboard',
+            'link': r.urlOf(url_names.GCI_LEADERBOARD)
+        },
     ]
 
     super(ParticipantsDashboard, self).__init__(request, data, subpages)
@@ -361,7 +393,7 @@ class ParticipantsDashboard(Dashboard):
     }
 
 
-class LookupLinkIdPage(RequestHandler):
+class LookupLinkIdPage(GCIRequestHandler):
   """View for the participant profile.
   """
 
@@ -378,7 +410,8 @@ class LookupLinkIdPage(RequestHandler):
     return 'v2/modules/gci/admin/lookup.html'
 
   def post(self):
-    self.get()
+    # TODO(nathaniel): problematic self-call.
+    return self.get()
 
   def context(self):
     form = LookupForm(self.data, self.data.POST or None)
@@ -391,12 +424,9 @@ class LookupLinkIdPage(RequestHandler):
       profile = form.cleaned_data.get('profile')
 
     if profile:
-      cbox = False
-      if self.data.GET.get('cbox'):
-        cbox = True
-
+      # TODO(nathaniel): setting redirection in a context() method?
       self.redirect.profile(profile.link_id)
-      self.redirect.to('gci_profile_admin', cbox=cbox, secure=True)
+      self.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN, secure=True)
 
     return {
       'forms': forms,
@@ -404,4 +434,3 @@ class LookupLinkIdPage(RequestHandler):
       'posted': error,
       'page_name': 'Lookup profile',
     }
-

@@ -43,6 +43,7 @@ try:
   from cStringIO import StringIO
 except ImportError:
   from StringIO import StringIO
+import copy_reg
 import struct
 import weakref
 
@@ -61,9 +62,10 @@ from google.net.proto2.python.public import text_format
 _FieldDescriptor = descriptor_mod.FieldDescriptor
 
 
-def NewMessage(descriptor, dictionary):
+def NewMessage(bases, descriptor, dictionary):
   _AddClassAttributesForNestedExtensions(descriptor, dictionary)
   _AddSlots(descriptor, dictionary)
+  return bases
 
 
 def InitMessage(descriptor, cls):
@@ -86,6 +88,7 @@ def InitMessage(descriptor, cls):
   _AddStaticMethods(cls)
   _AddMessageMethods(descriptor, cls)
   _AddPrivateHelperMethods(cls)
+  copy_reg.pickle(cls, lambda obj: (cls, (), obj.__getstate__()))
 
 
 
@@ -134,6 +137,10 @@ def _VerifyExtensionHandle(message, extension_handle):
 
   if not extension_handle.is_extension:
     raise KeyError('"%s" is not an extension.' % extension_handle.full_name)
+
+  if not extension_handle.containing_type:
+    raise KeyError('"%s" is missing a containing_type.'
+                   % extension_handle.full_name)
 
   if extension_handle.containing_type is not message.DESCRIPTOR:
     raise KeyError('Extension "%s" extends message type "%s", but this '
@@ -242,7 +249,7 @@ def _DefaultValueConstructorForField(field):
   """
 
   if field.label == _FieldDescriptor.LABEL_REPEATED:
-    if field.default_value != []:
+    if field.has_default_value and field.default_value != []:
       raise ValueError('Repeated field default value not empty list: %s' % (
           field.default_value))
     if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
@@ -270,6 +277,8 @@ def _DefaultValueConstructorForField(field):
     return MakeSubMessageDefault
 
   def MakeScalarDefault(message):
+
+
     return field.default_value
   return MakeScalarDefault
 
@@ -425,6 +434,8 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
   valid_values = set()
 
   def getter(self):
+
+
     return self._fields.get(field, default_value)
   getter.__module__ = None
   getter.__doc__ = 'Getter for %s.' % proto_field_name
@@ -741,8 +752,8 @@ def _AddSerializeToStringMethod(message_descriptor, cls):
     errors = []
     if not self.IsInitialized():
       raise message_mod.EncodeError(
-          'Message is missing required fields: ' +
-          ','.join(self.FindInitializationErrors()))
+          'Message %s is missing required fields: %s' % (
+          self.DESCRIPTOR.full_name, ','.join(self.FindInitializationErrors())))
     return self.SerializePartialToString()
   cls.SerializeToString = SerializeToString
 
@@ -896,7 +907,8 @@ def _AddMergeFromMethod(cls):
   def MergeFrom(self, msg):
     if not isinstance(msg, cls):
       raise TypeError(
-          "Parameter to MergeFrom() must be instance of same class.")
+          "Parameter to MergeFrom() must be instance of same class: "
+          "expected %s got %s." % (cls.__name__, type(msg).__name__))
 
     assert msg is not self
     self._Modified()

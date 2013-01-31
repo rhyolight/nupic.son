@@ -19,7 +19,15 @@
 """
 
 
+from datetime import datetime
+from datetime import timedelta
+
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+
+def generate_eligible_student_birth_date(program):
+  eligible_age = program.student_min_age + program.student_max_age // 2
+  return datetime.date(datetime.today() - timedelta(days=eligible_age * 365))
 
 
 class ProfileHelper(object):
@@ -261,10 +269,11 @@ class GSoCProfileHelper(ProfileHelper):
     self.createProfile()
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
-                  'school': None, 'tax_form': None, 'enrollment_form': None,
-                  'number_of_projects': 0, 'number_of_proposals': 0,
-                  'passed_evaluations': 0, 'failed_evaluations': 0,
-                  'program': self.program}
+        'school': None, 'tax_form': None, 'enrollment_form': None,
+        'number_of_projects': 0, 'number_of_proposals': 0,
+        'passed_evaluations': 0, 'failed_evaluations': 0,
+        'program': self.program,
+        'birth_date': generate_eligible_student_birth_date(self.program)}
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()
@@ -304,12 +313,15 @@ class GSoCProfileHelper(ProfileHelper):
     """Sets the current user to be a student with specified number of 
     projects for the current program.
     """
-    student = self.createStudent()
+    student = self.createStudentWithProposal(org, mentor)
+    from soc.modules.gsoc.models.proposal import GSoCProposal
+    proposal = GSoCProposal.all().ancestor(student).get()
+
     student.student_info.number_of_projects = n
     student.student_info.put()
     from soc.modules.gsoc.models.project import GSoCProject
     properties = {'program': self.program, 'org': org, 'status': 'accepted',
-                  'parent': self.profile, 'mentors': [mentor.key()]}
+        'parent': self.profile, 'mentors': [mentor.key()], 'proposal': proposal}
     self.seedn(GSoCProject, properties, n)
     return self.profile
 
@@ -317,9 +329,13 @@ class GSoCProfileHelper(ProfileHelper):
     """Creates an mentor profile with a project for the current user.
     """
     self.createMentor(org)
+    from soc.modules.gsoc.models.proposal import GSoCProposal
+    proposal = GSoCProposal.all().ancestor(student).get()
+
     from soc.modules.gsoc.models.project import GSoCProject
     properties = {'mentors': [self.profile.key()], 'program': self.program,
-                  'parent': student, 'org': org, 'status': 'accepted'}
+                  'parent': student, 'org': org, 'status': 'accepted',
+                  'proposal': proposal}
     self.seed(GSoCProject, properties)
     return self.profile
 
@@ -387,14 +403,18 @@ class GCIProfileHelper(ProfileHelper):
     self.profile.notify_comments = comments
     self.profile.put()
 
-  def createStudent(self):
+  def createStudent(self, **kwargs):
     """Sets the current user to be a student for the current program.
     """
-    self.createProfile()
     from soc.modules.gci.models.profile import GCIStudentInfo
+
+    self.createProfile()
+
     properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
-                  'school': None, 'number_of_tasks_completed': 0,
+                  'school': None, 'number_of_completed_tasks': 0,
                   'program': self.program}
+    properties.update(kwargs)
+
     self.profile.student_info = self.seed(GCIStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()
@@ -419,6 +439,22 @@ class GCIProfileHelper(ProfileHelper):
         task = gci_task_helper.createTask(status, org, mentor, student)
         tasks.append(task)
     return tasks
+
+  def createStudentWithConsentForms(self, status='active', consent_form=False,
+      student_id_form=False):
+    """Creates a student who might have submitted consent forms required
+    by the program Terms of Service.
+    """
+    from tests.forms_to_submit_utils import FormsToSubmitHelper
+    forms_helper = FormsToSubmitHelper()
+
+    properties = {}
+    if consent_form:
+      properties['consent_form'] = forms_helper.createBlobStoreForm()
+    if student_id_form:
+      properties['student_id_form'] = forms_helper.createBlobStoreForm()
+
+    return self.createStudent(**properties)
 
   def createMentorWithTask(self, status, org):
     """Creates an mentor profile with a task for the current user.

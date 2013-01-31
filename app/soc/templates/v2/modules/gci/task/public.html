@@ -24,11 +24,6 @@ limitations under the License.
       {{ comments.render }}
     {% endif %}
   </div>
-
-<div id="dialog-confirm" title="Unpublish Confirmation?">
-  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>This task will be unpublished and you cannot publish them back manually. Are you sure you want to unpublish?</p>
-</div>
-
 {% endblock page_content %}
 
 {% block synchronous_scripts %}
@@ -62,6 +57,16 @@ limitations under the License.
         jQuery(".task-btn-comment-new").click(function(){
           jQuery(this).toggleClass("active").next().slideToggle("slow");
         });
+
+		/* If there is an error in the comment form, it should be expanded */
+		jQuery(".form-comment-post-new").each(function() {
+
+		  var errors = jQuery(this).find(".error");
+		  if (errors.length > 0) {
+			jQuery("div.block-comments-post-new").slideToggle("slow");
+		  }
+
+		});
 
         jQuery(".task-btn-extended-deadline").click(function() {
             jQuery("#deadline-extend").toggle();

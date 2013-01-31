@@ -27,28 +27,9 @@ from django.utils.datastructures import SortedDict
 
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.score import GCIScore
-from soc.modules.gci.models.student_ranking import GCIStudentRanking
 from soc.modules.gci.models.task import POINTS
 from soc.modules.gci.views import forms
 from soc.modules.gci.views.helper import url_names
-
-
-def getOrCreateForStudent(student):
-  """Gets or creates the ranking object for the student.
-
-  Args:
-    student: GCIProfile entity representing the student.
-  """
-  q = GCIStudentRanking.all()
-  q.filter('student', student)
-  ranking = q.get()
-
-  if not ranking:
-    # create a new one
-    ranking = GCIStudentRanking(program=student.scope, student=student)
-    ranking.put()
-
-  return ranking
 
 
 def get(profile):

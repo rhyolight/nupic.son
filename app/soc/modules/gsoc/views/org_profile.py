@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC organization profile page.
-"""
-
+"""Module for the GSoC organization profile page."""
 
 from soc.views import forms
 
@@ -27,20 +23,17 @@ from soc.views.helper import url_patterns
 from soc.views import org_profile
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 
-
 DEF_NO_ORG_ID_FOR_CREATE = ugettext(
     'There is no organization id specified to create a new organization.')
-
 
 DEF_TAG_TOO_LONG = ugettext(
     'Each tag should be less than 450 characters, but tag "%s" has %d '
     'characters.')
-
 
 PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
     'proposal_extra', 'tags',
@@ -48,8 +41,7 @@ PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
 
 
 class OrgProfileForm(org_profile.OrgProfileForm):
-  """Django form for the organization profile.
-  """
+  """Django form for the organization profile."""
 
   def __init__(self, *args, **kwargs):
     super(OrgProfileForm, self).__init__(
@@ -119,6 +111,11 @@ class OrgProfileForm(org_profile.OrgProfileForm):
       cols = [i.strip() for i in value.split(',') if i.strip()]
       self.cleaned_data['proposal_extra'] = cols
 
+    # If there is a key called new_org in the form, probably maliciously
+    # induced into the form data, since this field does not appear on the
+    # org profile form, we need to make sure to remove it.
+    self.cleaned_data.pop('new_org', None)
+
     return self.cleaned_data
 
   def clean_max_score(self):
@@ -143,7 +140,7 @@ class OrgCreateProfileForm(OrgProfileForm):
         ['contact_country', 'shipping_country'])
 
 
-class OrgProfilePage(RequestHandler):
+class OrgProfilePage(GSoCRequestHandler):
   """View for the Organization Profile page.
   """
 
@@ -164,6 +161,9 @@ class OrgProfilePage(RequestHandler):
       #probably check if the org is active
     else:
       self.data.org_id = self.request.GET.get('org_id')
+
+      self.mutator.orgAppRecord(self.data.org_id)
+
       if not self.data.org_id:
         self.check.fail(DEF_NO_ORG_ID_FOR_CREATE)
         return
@@ -171,7 +171,7 @@ class OrgProfilePage(RequestHandler):
       # For the creation of a new organization profile the org should not
       # exist yet.
       self.check.orgDoesnotExist(self.data.org_id)
-      self.check.canCreateOrgProfile(self.data.org_id)
+      self.check.canCreateOrgProfile()
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_profile/base.html'
@@ -191,21 +191,25 @@ class OrgProfilePage(RequestHandler):
         }
 
     if self.data.organization:
-      r = self.data.redirect.organization()
-      context['org_home_page_link'] = r.urlOf('gsoc_org_home')
+      # TODO(nathaniel): make this .organization() unnecessary.
+      self.data.redirect.organization()
+
+      context['org_home_page_link'] = self.data.redirect.urlOf('gsoc_org_home')
       if (self.data.program.allocations_visible and
             self.data.timeline.beforeStudentsAnnounced()):
-        context['slot_transfer_page_link'] = r.urlOf('gsoc_slot_transfer')
+        context['slot_transfer_page_link'] = self.data.redirect.urlOf(
+            'gsoc_slot_transfer')
 
     return context
 
   def post(self):
     org_profile = self.createOrgProfileFromForm()
     if org_profile:
-      self.redirect.organization(org_profile)
-      self.redirect.to('edit_gsoc_org_profile', validated=True)
+      self.redirect.organization(organization=org_profile)
+      return self.redirect.to('edit_gsoc_org_profile', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
   def createOrgProfileFromForm(self):
     """Creates a new organization based on the data inserted in the form.
@@ -227,6 +231,7 @@ class OrgProfilePage(RequestHandler):
       form.cleaned_data['scope'] = self.data.program
       form.cleaned_data['scope_path'] = self.data.program.key().name()
       form.cleaned_data['link_id'] = self.data.org_id
+      form.cleaned_data['new_org'] = self.data.org_app_record.new_org
       key_name = '%s/%s' % (
           self.data.program.key().name(),
           form.cleaned_data['link_id']

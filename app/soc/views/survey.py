@@ -66,13 +66,13 @@ class SurveyRecordList(Template):
     for field in schema:
       label = field.getLabel()
       field_id = field.getFieldName()
-      list_config.addColumn(
+      list_config.addPlainTextColumn(
           field_id, label, field_or_empty(field_id), hidden=True)
 
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'created', 'Created On',
         lambda ent, *args: format(ent.created, DATETIME_FORMAT))
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'modified', 'Last Modified On',
         lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
     self.list_config = list_config
@@ -108,4 +108,4 @@ class SurveyRecordList(Template):
   def templatePath(self):
     """Returns the path to the template.
     """
-    return 'v2/soc/list/lists.html'
+    return 'soc/list/lists.html'

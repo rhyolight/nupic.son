@@ -43,6 +43,7 @@ Options:
                              file stub data.
   --clear_prospective_search Clear the Prospective Search subscription index
                              (Default false).
+  --clear_search_indexes     Clear the Full Text Search indexes (Default false).
   --datastore_path=DS_FILE   Path to file to use for storing Datastore file
                              stub data.
                              (Default %(datastore_path)s)
@@ -85,6 +86,8 @@ Options:
                              logs to enable later access. (Default false).
   --require_indexes          Disallows queries that require composite indexes
                              not defined in index.yaml.
+  --search_indexes_path=PATH Path to file to use for storing Full Text Search
+                             indexes (Default %(search_indexes_path)s).
   --show_mail_body           Log the body of emails in mail stub.
                              (Default false)
   --skip_sdk_update_check    Skip checking for SDK updates. If false, fall back
@@ -105,6 +108,12 @@ Options:
                              (Default '%(task_retry_seconds)s')
   --use_sqlite               Use the new, SQLite based datastore stub.
                              (Default false)
+  --port_sqlite_data         Converts the data from the file based datastore
+                             stub to the new SQLite stub, one time use only.
+                             (Default false)
+  --[enable|disable]_console Enables/disables the interactive console.
+                             (Default enabled if --address is unset,
+                              disabled if --address is set)
 """
 
 
@@ -174,6 +183,7 @@ ARG_BACKENDS = 'backends'
 ARG_BLOBSTORE_PATH = 'blobstore_path'
 ARG_CLEAR_DATASTORE = 'clear_datastore'
 ARG_CLEAR_PROSPECTIVE_SEARCH = 'clear_prospective_search'
+ARG_CLEAR_SEARCH_INDEX = 'clear_search_indexes'
 ARG_DATASTORE_PATH = 'datastore_path'
 ARG_DEBUG_IMPORTS = 'debug_imports'
 ARG_DEFAULT_PARTITION = 'default_partition'
@@ -189,6 +199,7 @@ ARG_MULTIPROCESS_API_SERVER = multiprocess.ARG_MULTIPROCESS_API_SERVER
 ARG_MULTIPROCESS_APP_INSTANCE_ID = multiprocess.ARG_MULTIPROCESS_APP_INSTANCE_ID
 ARG_MULTIPROCESS_BACKEND_ID = multiprocess.ARG_MULTIPROCESS_BACKEND_ID
 ARG_MULTIPROCESS_BACKEND_INSTANCE_ID = multiprocess.ARG_MULTIPROCESS_BACKEND_INSTANCE_ID
+ARG_MULTIPROCESS_FRONTEND_PORT = multiprocess.ARG_MULTIPROCESS_FRONTEND_PORT
 ARG_MULTIPROCESS_MIN_PORT = multiprocess.ARG_MULTIPROCESS_MIN_PORT
 ARG_MYSQL_HOST = 'mysql_host'
 ARG_MYSQL_PASSWORD = 'mysql_password'
@@ -199,6 +210,7 @@ ARG_PERSIST_LOGS = 'persist_logs'
 ARG_PORT = 'port'
 ARG_PROSPECTIVE_SEARCH_PATH = 'prospective_search_path'
 ARG_REQUIRE_INDEXES = 'require_indexes'
+ARG_SEARCH_INDEX_PATH = 'search_indexes_path'
 ARG_SHOW_MAIL_BODY = 'show_mail_body'
 ARG_SKIP_SDK_UPDATE_CHECK = 'skip_sdk_update_check'
 ARG_SMTP_HOST = 'smtp_host'
@@ -211,14 +223,16 @@ ARG_TASK_RETRY_SECONDS = 'task_retry_seconds'
 
 ARG_TRUSTED = 'trusted'
 ARG_USE_SQLITE = 'use_sqlite'
+ARG_PORT_SQLITE_DATA = 'port_sqlite_data'
+ARG_CONSOLE = 'console'
 
 
 SDK_PATH = os.path.dirname(
-             os.path.dirname(
                os.path.dirname(
-                 os.path.dirname(os_compat.__file__)
+                   os.path.dirname(
+                       os.path.dirname(os_compat.__file__)
+                   )
                )
-             )
            )
 
 
@@ -235,6 +249,7 @@ DEFAULT_ARGS = {
                                    'dev_appserver.blobstore'),
   ARG_CLEAR_DATASTORE: False,
   ARG_CLEAR_PROSPECTIVE_SEARCH: False,
+  ARG_CLEAR_SEARCH_INDEX: False,
   ARG_DATASTORE_PATH: os.path.join(tempfile.gettempdir(),
                                    'dev_appserver.datastore'),
   ARG_DEFAULT_PARTITION: 'dev',
@@ -255,6 +270,8 @@ DEFAULT_ARGS = {
   ARG_PROSPECTIVE_SEARCH_PATH: os.path.join(tempfile.gettempdir(),
                                             'dev_appserver.prospective_search'),
   ARG_REQUIRE_INDEXES: False,
+  ARG_SEARCH_INDEX_PATH: os.path.join(tempfile.gettempdir(),
+                                      'dev_appserver.searchindexes'),
   ARG_SHOW_MAIL_BODY: False,
   ARG_SKIP_SDK_UPDATE_CHECK: False,
   ARG_SMTP_HOST: '',
@@ -265,7 +282,64 @@ DEFAULT_ARGS = {
   ARG_TASK_RETRY_SECONDS: 30,
   ARG_TRUSTED: False,
   ARG_USE_SQLITE: False,
+  ARG_PORT_SQLITE_DATA: False
 }
+
+
+OPTIONS = 'a:cdhp:'
+
+
+LONG_OPTIONS = [
+    'address=',
+    'admin_console_host=',
+    'admin_console_server=',
+    'allow_skipped_files',
+    'auth_domain=',
+    'backends',
+    'blobstore_path=',
+    'clear_datastore',
+    'clear_prospective_search',
+    'clear_search_indexes',
+    'datastore_path=',
+    'debug',
+    'debug_imports',
+    'default_partition=',
+    'disable_static_caching',
+    'disable_task_running',
+    'enable_sendmail',
+    'help',
+    'high_replication',
+    'history_path=',
+    'multiprocess',
+    'multiprocess_api_port=',
+    'multiprocess_api_server',
+    'multiprocess_app_instance_id=',
+    'multiprocess_backend_id=',
+    'multiprocess_backend_instance_id=',
+    'multiprocess_frontend_port=',
+    'multiprocess_min_port=',
+    'mysql_host=',
+    'mysql_password=',
+    'mysql_port=',
+    'mysql_socket=',
+    'mysql_user=',
+    'persist_logs',
+    'port=',
+    'require_indexes',
+    'search_indexes_path=',
+    'show_mail_body',
+    'skip_sdk_update_check',
+    'smtp_host=',
+    'smtp_password=',
+    'smtp_port=',
+    'smtp_user=',
+    'task_retry_seconds=',
+    'trusted',
+    'use_sqlite',
+    'port_sqlite_data',
+    'enable_console',
+    'disable_console',
+]
 
 
 def PrintUsageExit(code):
@@ -298,53 +372,7 @@ def ParseArguments(argv):
   option_dict = DEFAULT_ARGS.copy()
 
   try:
-    opts, args = getopt.gnu_getopt(
-      argv[1:],
-      'a:cdhp:',
-      [ 'address=',
-        'admin_console_host=',
-        'admin_console_server=',
-        'allow_skipped_files',
-        'auth_domain=',
-        'backends',
-        'blobstore_path=',
-        'clear_datastore',
-        'clear_prospective_search',
-        'datastore_path=',
-        'debug',
-        'debug_imports',
-        'default_partition=',
-        'disable_static_caching',
-        'disable_task_running',
-        'enable_sendmail',
-        'help',
-        'high_replication',
-        'history_path=',
-        'multiprocess',
-        'multiprocess_api_port=',
-        'multiprocess_api_server',
-        'multiprocess_app_instance_id=',
-        'multiprocess_backend_id=',
-        'multiprocess_backend_instance_id=',
-        'multiprocess_min_port=',
-        'mysql_host=',
-        'mysql_password=',
-        'mysql_port=',
-        'mysql_socket=',
-        'mysql_user=',
-        'persist_logs',
-        'port=',
-        'require_indexes',
-        'show_mail_body',
-        'skip_sdk_update_check',
-        'smtp_host=',
-        'smtp_password=',
-        'smtp_port=',
-        'smtp_user=',
-        'task_retry_seconds=',
-        'trusted',
-        'use_sqlite',
-      ])
+    opts, args = getopt.gnu_getopt(argv[1:], OPTIONS, LONG_OPTIONS)
   except getopt.GetoptError, e:
     print >>sys.stderr, 'Error: %s' % e
     PrintUsageExit(1)
@@ -377,6 +405,9 @@ def ParseArguments(argv):
     if option == '--datastore_path':
       option_dict[ARG_DATASTORE_PATH] = expand_path(value)
 
+    if option == '--search_indexes_path':
+      option_dict[ARG_SEARCH_INDEX_PATH] = expand_path(value)
+
     if option == '--prospective_search_path':
       option_dict[ARG_PROSPECTIVE_SEARCH_PATH] = expand_path(value)
 
@@ -385,6 +416,9 @@ def ParseArguments(argv):
 
     if option == '--use_sqlite':
       option_dict[ARG_USE_SQLITE] = True
+
+    if option == '--port_sqlite_data':
+      option_dict[ARG_PORT_SQLITE_DATA] = True
 
     if option == '--high_replication':
       option_dict[ARG_HIGH_REPLICATION] = True
@@ -397,6 +431,9 @@ def ParseArguments(argv):
 
     if option == '--clear_prospective_search':
       option_dict[ARG_CLEAR_PROSPECTIVE_SEARCH] = True
+
+    if option == '--clear_search_indexes':
+      option_dict[ARG_CLEAR_SEARCH_INDEX] = True
 
     if option == '--require_indexes':
       option_dict[ARG_REQUIRE_INDEXES] = True
@@ -486,10 +523,19 @@ def ParseArguments(argv):
       option_dict[ARG_MULTIPROCESS_BACKEND_ID] = value
     if option == '--multiprocess_backend_instance_id':
       option_dict[ARG_MULTIPROCESS_BACKEND_INSTANCE_ID] = value
+    if option == '--multiprocess_frontend_port':
+      option_dict[ARG_MULTIPROCESS_FRONTEND_PORT] = value
 
     if option == '--default_partition':
       option_dict[ARG_DEFAULT_PARTITION] = value
 
+    if option == '--enable_console':
+      option_dict[ARG_CONSOLE] = True
+    if option == '--disable_console':
+      option_dict[ARG_CONSOLE] = False
+
+  option_dict.setdefault(ARG_CONSOLE,
+                         option_dict[ARG_ADDRESS] == DEFAULT_ARGS[ARG_ADDRESS])
   return args, option_dict
 
 
@@ -607,6 +653,9 @@ def main(argv):
                            version_tuple[0], version_tuple[1],
                            expected_version[0], expected_version[1]))
 
+  if appinfo.runtime == 'python':
+    appcfg.MigratePython27Notice()
+
   multiprocess.Init(argv, option_dict, root_path, appinfo)
   dev_process = multiprocess.GlobalProcess()
   port = option_dict[ARG_PORT]
@@ -616,6 +665,7 @@ def main(argv):
   static_caching = option_dict[ARG_STATIC_CACHING]
   persist_logs = option_dict[ARG_PERSIST_LOGS]
   skip_sdk_update_check = option_dict[ARG_SKIP_SDK_UPDATE_CHECK]
+  interactive_console = option_dict[ARG_CONSOLE]
 
   if (option_dict[ARG_ADMIN_CONSOLE_SERVER] != '' and
       not dev_process.IsSubprocess()):
@@ -633,7 +683,9 @@ def main(argv):
     logging.getLogger().setLevel(logging.WARNING)
 
   try:
-    dev_appserver.SetupStubs(appinfo.application, **option_dict)
+    dev_appserver.SetupStubs(appinfo.application,
+                             _use_atexit_for_datastore_stub=True,
+                             **option_dict)
   except:
     exc_type, exc_value, exc_traceback = sys.exc_info()
     logging.error(str(exc_type) + ': ' + str(exc_value))
@@ -641,6 +693,9 @@ def main(argv):
           exc_type, exc_value, exc_traceback)))
     return 1
 
+  frontend_port=option_dict.get(ARG_MULTIPROCESS_FRONTEND_PORT, None)
+  if frontend_port is not None:
+    frontend_port = int(frontend_port)
   http_server = dev_appserver.CreateServer(
       root_path,
       login_url,
@@ -650,7 +705,9 @@ def main(argv):
       allow_skipped_files=allow_skipped_files,
       static_caching=static_caching,
       default_partition=default_partition,
-      persist_logs=persist_logs)
+      persist_logs=persist_logs,
+      frontend_port=frontend_port,
+      interactive_console=interactive_console)
 
   signal.signal(signal.SIGTERM, SigTermHandler)
 

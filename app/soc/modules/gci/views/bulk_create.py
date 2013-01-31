@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI view to bulk create GCITasks.
-"""
-
+"""Module for the GCI view to bulk create GCITasks."""
 
 from django import forms
 
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.models.bulk_create_data import GCIBulkCreateData
-from soc.modules.gci.models.task import DIFFICULTIES
 from soc.modules.gci.tasks import bulk_create
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
@@ -43,7 +39,7 @@ class BulkCreateForm(gci_forms.GCIModelForm):
                               widget=forms.Textarea)
 
 
-class BulkCreate(RequestHandler):
+class BulkCreate(GCIRequestHandler):
   """View for bulk creation of GCITasks.
   """
 
@@ -52,12 +48,14 @@ class BulkCreate(RequestHandler):
     """
     return [
         url(r'bulk/%s$' % url_patterns.ORG, self,
-            name='gci_bulk_create')]
+            name=url_names.GCI_TASK_BULK_CREATE)]
 
   def checkAccess(self):
-    """Denies access if you are not the org admin.
+    """Denies access if the currently logged user is not allowed to
+    bulk create tasks.
     """
-    self.check.isOrgAdmin()
+    self.check.isLoggedIn()
+    self.check.canBulkCreateTask()
 
   def templatePath(self):
     """Returns the path to the template.
@@ -68,11 +66,8 @@ class BulkCreate(RequestHandler):
     """Handler for default HTTP GET request.
     """
     context = {
-        'page_name': 'Bulk upload tasks for %s' %self.data.organization.name,
+        'page_name': 'Bulk upload tasks for %s' % self.data.organization.name,
         }
-
-    # get a list difficulty levels stored for the program entity
-    context['difficulties'] = DIFFICULTIES[:-1]
 
     # get a list of task type tags stored for the program entity
     tts = self.data.program.task_types
@@ -87,16 +82,18 @@ class BulkCreate(RequestHandler):
     return context
 
   def post(self):
-    """Handles POST requests for the bulk create page.
-    """
+    """Handles POST requests for the bulk create page."""
     form = BulkCreateForm(self.data.POST)
 
     if not form.is_valid():
+      # TODO(nathaniel): problematic self-call.
       return self.get()
 
     bulk_create.spawnBulkCreateTasks(
         form.cleaned_data['task_data'], self.data.organization,
         self.data.profile)
 
-    self.redirect.organization(self.data.organization)
-    self.redirect.to('gci_bulk_create', validated=True)
+    # TODO(nathaniel): make this .organization call unnecessary.
+    self.redirect.organization(organization=self.data.organization)
+
+    return self.redirect.to(url_names.GCI_TASK_BULK_CREATE, validated=True)

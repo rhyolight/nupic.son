@@ -21,6 +21,8 @@
 
 import datetime
 
+from soc.modules.gci.logic import org_score as org_score_logic
+from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.logic.helper.notifications import (
     DEF_NEW_TASK_COMMENT_SUBJECT)
 from soc.modules.gci.models.task import GCITask
@@ -129,6 +131,120 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Unpublished')
 
+  def testPostButtonUnpublishReopenedTaskForbidden(self):
+    """Tests the unpublish button on.
+    """
+    self.data.createOrgAdmin(self.org)
+
+    url = self._taskPageUrl(self.task)
+
+    # try to unpublish a reopened task
+    task = GCITask.get(self.task.key())
+    task.status = 'Reopened'
+    task.put()
+
+    response = self.buttonPost(url, 'button_unpublish')
+
+    task = GCITask.get(self.task.key())
+
+    self.assertResponseForbidden(response)
+    self.assertEqual(task.status, 'Reopened')
+
+  def testPostButtonUnpublishByUserWithNoRole(self):
+    """Tests the unpublish button by a user with no role.
+    """
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_unpublish')
+
+    self.assertResponseForbidden(response)
+
+  def testPostButtonUnpublishByMentor(self):
+    """Tests the unpublish button by a mentor.
+    """
+    self.data.createMentor(self.org)
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_unpublish')
+
+    self.assertResponseForbidden(response)
+
+  def testPostButtonUnpublishByStudent(self):
+    """Tests the unpublish button by a mentor.
+    """
+    self.data.createStudent()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_unpublish')
+
+    self.assertResponseForbidden(response)
+
+  def testPostButtonPublishUnpublishedTask(self):
+    """Tests the publish button.
+    """
+    self.data.createOrgAdmin(self.org)
+
+    self.task.status = 'Unpublished'
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_publish')
+
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'Open')
+
+  def testPostButtonPublishUnapprovedTask(self):
+    """Tests the publish button.
+    """
+    self.data.createOrgAdmin(self.org)
+
+    self.task.status = 'Unapproved'
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_publish')
+
+    task = GCITask.get(self.task.key())
+    self.assertResponseRedirect(response)
+    self.assertEqual(task.status, 'Open')
+
+  def testPostButtonPublishByUserWithNoRole(self):
+    """Tests the publish button pressed by a user with no role.
+    """
+    self.task.status = 'Unpublished'
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_publish')
+
+    self.assertResponseForbidden(response)
+
+  def testPostButtonPublishByMentor(self):
+    """Tests the publish button pressed by a mentor.
+    """
+    self.data.createMentor(self.org)
+
+    self.task.status = 'Unpublished'
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_publish')
+
+    self.assertResponseForbidden(response)
+
+  def testPostButtonPublishByStudent(self):
+    """Tests the publish button pressed by a student.
+    """
+    self.data.createStudent()
+
+    self.task.status = 'Unpublished'
+    self.task.put()
+
+    url = self._taskPageUrl(self.task)
+    response = self.buttonPost(url, 'button_publish')
+
+    self.assertResponseForbidden(response)
+
   def testPostButtonDelete(self):
     """Tests the delete button.
     """
@@ -230,6 +346,17 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertLength(comments, 1)
     self.assertMailSentToSubscribers(comments[0])
 
+    # check if OrgScore has been updated
+    org_score = org_score_logic.queryForAncestorAndOrg(
+        task.student, task.org).get()
+    self.assertIsNotNone(org_score)
+    self.assertEqual(org_score.numberOfTasks(), 1)
+    self.assertEqual(org_score.tasks[0], task.key())
+
+    # check if number_of_completed_tasks has been updated
+    student_info = profile_logic.queryStudentInfoForParent(task.student).get()
+    self.assertEqual(student_info.number_of_completed_tasks, 1)
+
     self.assertTasksInQueue(n=1, url='/tasks/gci/ranking/update')
 
   def testPostButtonNeedsWork(self):
@@ -295,7 +422,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonClaim(self):
     """Tests the claim task button.
     """
-    self.data.createStudent()
+    self.data.createStudentWithConsentForms(
+        consent_form=True, student_id_form=True)
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_claim')
@@ -405,18 +533,42 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.status = 'Claimed'
     self.task.student = self.data.profile
     # set deadline to far future
-    self.task.deadline = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+    self.task.deadline = datetime.datetime.utcnow() + \
+        datetime.timedelta(days=1)
     self.task.put()
 
     GCITaskHelper(self.program).createWorkSubmission(
         self.task, self.data.profile)
 
-    url = '%s?send_for_review' %self._taskPageUrl(self.task)
+    url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
 
     task = GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'NeedsReview')
+
+  def testPostSendForReviewClosedTaskForbidden(self):
+    """Tests for submitting work for a task whose status is Closed.
+    """
+    self.data.createStudent()
+
+    self.task.status = 'Closed'
+    self.task.student = self.data.profile
+    # set deadline to far future
+    self.task.deadline = datetime.datetime.utcnow() + \
+        datetime.timedelta(days=1)
+    self.task.put()
+
+    GCITaskHelper(self.program).createWorkSubmission(
+        self.task, self.data.profile)
+
+    url = '%s?send_for_review' % self._taskPageUrl(self.task)
+    response = self.post(url)
+
+    self.assertResponseForbidden(response)
+
+    task = GCITask.get(self.task.key())
+    self.assertEqual(task.status, 'Closed')
 
   def testPostDeleteSubmission(self):
     """Tests for deleting work.

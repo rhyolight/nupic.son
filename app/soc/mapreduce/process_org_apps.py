@@ -29,8 +29,15 @@ from soc.models.org_app_survey import OrgAppSurvey
 from soc.modules.gsoc.models.program import GSoCProgram
 
 from soc.modules.gci.models.program import GCIProgram
-from soc.modules.gci.views.helper.request_data import RequestData
 from soc.modules.gci.views.helper.request_data import RedirectHelper
+
+
+class MapreduceRequestData(object):
+  """Simple class to use for convenience with RequestData object"""
+
+  def __init__(self, program, site):
+    self.program = program
+    self.site = site
 
 
 def process(org_app):
@@ -54,11 +61,9 @@ def process(org_app):
   if org_app.survey.key() != survey_key:
     return
 
-  # TODO(SRabbelier): create a MapReduce/Task RequestData
-  data = RequestData()
-  data.program = program
-  data.site = Site.get_by_key_name('site')
-  redirect = RedirectHelper(data, None)
+  # TODO(daniel): create a MapReduce/Task RequestData
+  data = MapreduceRequestData(program, Site.get_by_key_name('site'))
+  redirect = RedirectHelper(data)
 
   url = '/%s/profile/organization/%s' % (program_type, program_key_str)
 

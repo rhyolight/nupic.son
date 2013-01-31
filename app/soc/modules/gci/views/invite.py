@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GCI invitation page.
-"""
-
+"""Module containing the view for GCI invitation page."""
 
 import logging
 
@@ -46,7 +42,7 @@ from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.request import GCIRequest
 
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -82,7 +78,7 @@ class InviteForm(gci_forms.GCIModelForm):
     self.fields.insert(0, 'identifiers', field)
     field.help_text = ugettext(
         "Comma separated usernames or emails of the people to invite.")
-    
+
   def clean_identifiers(self):
     """Accepts link_ids or email addresses of users which may be invited.
     """
@@ -165,7 +161,7 @@ class InviteForm(gci_forms.GCIModelForm):
     query.filter('role', self.request_data.kwargs['role'])
     query.filter('org', self.request_data.organization)
     return query
-  
+
   def _getProfile(self, user_to_invite):
     key_name = '/'.join([
         self.request_data.program.key().name(), user_to_invite.link_id])
@@ -182,7 +178,7 @@ class ManageInviteForm(gci_forms.GCIModelForm):
     fields = ['message']
 
 
-class InvitePage(RequestHandler):
+class InvitePage(GCIRequestHandler):
   """Encapsulate all the methods required to generate Invite page.
   """
 
@@ -227,7 +223,7 @@ class InvitePage(RequestHandler):
     assert isSet(self.data.organization)
 
     invite_form = InviteForm(self.data, self.data.POST)
-    
+
     if not invite_form.is_valid():
       return False
 
@@ -255,16 +251,15 @@ class InvitePage(RequestHandler):
     return True
 
   def post(self):
-    """Handler to for GCI Invitation Page HTTP post request.
-    """
-    if not self.validate():
-      self.get()
-      return
+    """Handler to for GCI Invitation Page HTTP post request."""
+    if self.validate():
+      return self.redirect.dashboard().to()
+    else:
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
-    self.redirect.dashboard().to()
 
-
-class ManageInvite(RequestHandler):
+class ManageInvite(GCIRequestHandler):
   """View to manage the invitation by organization admins.
   """
 
@@ -273,15 +268,18 @@ class ManageInvite(RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'invite/manage/%s$' % url_patterns.ID, self,
+        url(r'invite/manage/%s$' % url_patterns.USER_ID, self,
             name=url_names.GCI_MANAGE_INVITE)
     ]
 
   def checkAccess(self):
     self.check.isProfileActive()
-    
+
+    key_name = self.data.kwargs['user']
+    user_key = db.Key.from_path('User', key_name)
+
     invite_id = int(self.data.kwargs['id'])
-    self.data.invite = GCIRequest.get_by_id(invite_id)
+    self.data.invite = GCIRequest.get_by_id(invite_id, parent=user_key)
     self.check.isInvitePresent(invite_id)
 
     # get invited user and check if it is not deleted
@@ -328,7 +326,7 @@ class ManageInvite(RequestHandler):
     elif 'resubmit' in self.data.POST:
       invite_logic.resubmitInvite(self.data)
 
-    self.redirect.id().to(url_names.GCI_MANAGE_INVITE)
+    return self.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite
@@ -355,7 +353,7 @@ class ManageInvite(RequestHandler):
     return GCIProfile.get_by_key_name(key_name, parent=self.data.invited_user)
 
 
-class RespondInvite(RequestHandler):
+class RespondInvite(GCIRequestHandler):
   """View to respond to the invitation by the user.
   """
 
@@ -372,7 +370,7 @@ class RespondInvite(RequestHandler):
     self.check.isUser()
 
     invite_id = int(self.data.kwargs['id'])
-    self.data.invite = GCIRequest.get_by_id(invite_id)
+    self.data.invite = GCIRequest.get_by_id(invite_id, parent=self.data.user)
     self.check.isInvitePresent(invite_id)
 
     self.check.canRespondInvite()
@@ -395,6 +393,9 @@ class RespondInvite(RequestHandler):
   def post(self):
     if 'accept' in self.data.POST:
       if not self.data.profile:
+        # TODO(nathaniel): is this dead code? How is this not overwritten
+        # by the self.redirect.id().to(url_names.GCI_RESPOND_INVITE) at the
+        # bottom of this method?
         self.redirect.program()
         self.redirect.to('edit_gci_profile')
 
@@ -402,7 +403,7 @@ class RespondInvite(RequestHandler):
     else: # reject
       invite_logic.rejectInvite(self.data)
 
-    self.redirect.id().to(url_names.GCI_RESPOND_INVITE)
+    return self.redirect.id().to(url_names.GCI_RESPOND_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite
@@ -419,7 +420,7 @@ class UserInvitesList(Template):
     r = data.redirect
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('org', 'From',
+    list_config.addPlainTextColumn('org', 'From',
         lambda entity, *args: entity.org.name)
     list_config.addSimpleColumn('status', 'Status')
     list_config.setRowAction(
@@ -450,7 +451,7 @@ class UserInvitesList(Template):
     return 'v2/modules/gci/invite/_invite_list.html'
 
 
-class ListUserInvitesPage(RequestHandler):
+class ListUserInvitesPage(GCIRequestHandler):
   """View for the page that lists all the invites which have been sent to
   the current user.
   """

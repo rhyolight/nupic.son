@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,49 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the site global pages.
-"""
-
+"""Module for the site global pages."""
 
 import os
 
 from google.appengine.api import users
 
+from django import http
 from django.conf.urls.defaults import url as django_url
 from django.forms import widgets as django_widgets
 from django.utils.functional import lazy
 from django.utils.translation import ugettext
 
-from soc.models.document import Document
 from soc.logic import cleaning
-from soc.logic import site
-from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import Error
-from soc.models.site import Site
-from soc.views.base import Response
-from soc.views.base import SiteRequestHandler
-from soc.views.forms import ModelForm
-
+from soc.logic import exceptions
+from soc.logic import site as site_logic
+from soc.models import document
+from soc.models import site
+from soc.views import base
+from soc.views import forms as views_forms
 
 from soc.modules import callback
-
 
 DEF_NO_DEVELOPER = ugettext(
     'This page is only accessible to developers.')
 
 
 def getProgramMap():
-  choices = [('', 'Active program')]
+  choices = [('', '-----')]
   choices += callback.getCore().getProgramMap()
   return choices
 
 
-class SiteForm(ModelForm):
-  """Django form for the site settings.
-  """
+class SiteForm(views_forms.ModelForm):
+  """Django form for the site settings."""
 
   class Meta:
-    model = Site
+    model = site.Site
     exclude = ['link_id', 'scope', 'scope_path', 'home', 'xsrf_secret_key']
     widgets = {
         'active_program': django_widgets.Select(
@@ -74,9 +66,8 @@ class SiteForm(ModelForm):
   clean_noreply_email = cleaning.clean_empty_field('noreply_email')
 
 
-class EditSitePage(SiteRequestHandler):
-  """View for the participant profile.
-  """
+class EditSitePage(base.SiteRequestHandler):
+  """View for the participant profile."""
 
   def djangoURLPatterns(self):
     return [
@@ -84,7 +75,7 @@ class EditSitePage(SiteRequestHandler):
     ]
 
   def jsonContext(self):
-    entities = Document.all().filter('prefix', 'site')
+    entities = document.Document.all().filter('prefix', 'site')
 
     data = [{'key': str(i.key()),
             'link_id': i.link_id,
@@ -95,11 +86,11 @@ class EditSitePage(SiteRequestHandler):
 
   def checkAccess(self):
     if not self.data.is_developer:
-      raise AccessViolation(DEF_NO_DEVELOPER)
+      raise exceptions.AccessViolation(DEF_NO_DEVELOPER)
 
   def templatePath(self):
     # TODO: make this specific to the current active program
-    return 'v2/soc/site/base.html'
+    return 'soc/site/base.html'
 
   def context(self):
     # TODO: suboptimal
@@ -117,23 +108,23 @@ class EditSitePage(SiteRequestHandler):
     site_form = SiteForm(GSoCBoundField, self.data.POST,
                          instance=self.data.site)
 
-    if not site_form.is_valid():
+    if site_form.is_valid():
+      site_form.save()
+      return True
+    else:
       return False
 
-    site_form.save()
-
   def post(self):
-    """Handler for HTTP POST request.
-    """
+    """Handler for HTTP POST request."""
     if self.validate():
-      self.redirect.to('edit_site_settings')
+      return self.redirect.to('edit_site_settings')
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
 
-class SiteHomepage(SiteRequestHandler):
-  """View for the site home page.
-  """
+class SiteHomepage(base.SiteRequestHandler):
+  """View for the site home page."""
 
   def djangoURLPatterns(self):
     return [
@@ -143,29 +134,23 @@ class SiteHomepage(SiteRequestHandler):
     ]
 
   def __call__(self, request, *args, **kwargs):
-    """Custom call implementation.
-
-    This avoids looking up unneeded data.
-    """
-    self.response = Response()
-
+    """Custom call implementation that avoids looking up unneeded data."""
     try:
       self.init(request, args, kwargs)
-  
+
       action = args[0] if args else ''
-  
+
       if action == 'login':
-        self.redirect.toUrl(users.create_login_url('/'))
+        return self.redirect.toUrl(users.create_login_url('/'))
       elif action == 'logout':
-        self.redirect.toUrl(users.create_logout_url('/'))
+        return self.redirect.toUrl(users.create_logout_url('/'))
       else:
-        settings = site.singleton()
+        settings = site_logic.singleton()
         program = settings.active_program
         if program:
-          self.redirect.program(program).to(program.homepage_url_name)
+          program_url = self.linker.program(program, program.homepage_url_name)
+          return http.HttpResponseRedirect(program_url)
         else:
-          self.redirect.to('edit_site_settings')
-    except Error, e:
-      self.error(e.status, message=e.args[0])
-
-    return self.response
+          return self.redirect.to('edit_site_settings')
+    except exceptions.Error, e:
+      return self.error(e.status, message=e.args[0])

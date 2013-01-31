@@ -21,14 +21,24 @@
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
+from soc.logic import exceptions
+
 from soc.views import forms
 from soc.views import survey
+from soc.views.helper import access_checker
 from soc.views.helper import lists
 
 from soc.logic import cleaning
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
+
+
+PROCESS_ORG_APPS_FORM_BUTTON_VALUE = \
+    'Finalize decisions and send acceptance/rejection emails'
+
+
+NEW_ORG_CHOICES = [('Veteran', 'Veteran'), ('New', 'New')]
 
 
 class OrgAppEditForm(forms.SurveyEditForm):
@@ -47,8 +57,16 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
 
   backup_admin_id = django_forms.CharField(
       label=ugettext('Backup Admin'), required=True,
-      help_text=ugettext('The Link ID of the user who will serve as the '
+      help_text=ugettext('The username of the user who will serve as the '
                          'backup admin for this organization.'))
+
+  # We render this field as a select field instead of a checkbox because
+  # of the visibility on the form. The checkbox field because of its location
+  # is not correctly visible to the person who fills the form, so we may
+  # have trouble later. As a precaution, we display this field as a select
+  # widget and then convert the data back to boolean value in the corresponding
+  # field cleaner.
+  new_org = forms.CharField(widget=django_forms.Select(choices=NEW_ORG_CHOICES))
 
   def __init__(self, survey, tos_content, bound_class_field, *args, **kwargs):
     super(OrgAppTakeForm, self).__init__(survey, bound_class_field, *args,
@@ -104,6 +122,12 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     self.cleaned_data['backup_admin'] = backup_admin
     return backup_admin
 
+  def clean_new_org(self):
+    """Converts the select widget value of the new_org field from the form to
+    the boolean value required by the backing data model.
+    """
+    return self.cleaned_data['new_org'] == 'New'
+
   def clean(self):
     cleaned_data = self.cleaned_data
 
@@ -130,8 +154,11 @@ class OrgAppRecordsList(object):
   def checkAccess(self):
     """Defines access checks for this list, all hosts should be able to see it.
     """
+    if not self.data.org_app:
+      raise exceptions.NotFound(
+          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+
     self.check.isHost()
-    self.mutator.orgAppFromKwargs()
 
   def context(self):
     """Returns the context of the page to render.
@@ -186,7 +213,7 @@ class OrgAppRecordsList(object):
     return record_list
 
   def templatePath(self):
-    return 'v2/soc/org_app/records.html'
+    return 'soc/org_app/records.html'
 
 
 class OrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):

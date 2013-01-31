@@ -311,6 +311,12 @@ class Client(object):
   string (unicode or not), int, long, or pickle-able Python object, including
   all native types.  You'll get back from the cache the same type that you
   originally put in.
+
+  The Client class is not thread-safe with respect to the gets(), cas() and
+  cas_multi() methods (and other compare-and-set-related methods). Therefore,
+  Client objects should not be used by more than one thread for CAS purposes.
+  Note that the global Client for the module-level functions is okay because it
+  does not expose any of the CAS methods.
   """
 
   def __init__(self, servers=None, debug=0,
@@ -323,7 +329,8 @@ class Client(object):
                _app_id=None,
                _num_memcacheg_backends=None,
                _ignore_shardlock=None,
-               _memcache_pool_hint=None):
+               _memcache_pool_hint=None,
+               _memcache_sharding_strategy=None):
     """Create a new Client object.
 
     No parameters are required.
@@ -351,6 +358,8 @@ class Client(object):
 
 
 
+
+
     self._pickler_factory = pickler
     self._unpickler_factory = unpickler
     self._pickle_protocol = pickleProtocol
@@ -360,10 +369,14 @@ class Client(object):
     self._num_memcacheg_backends = _num_memcacheg_backends
     self._ignore_shardlock = _ignore_shardlock
     self._memcache_pool_hint = _memcache_pool_hint
+    self._memcache_sharding_strategy = _memcache_sharding_strategy
     self._cas_ids = {}
-    if _app_id and not(_num_memcacheg_backends and _memcache_pool_hint):
+    if _app_id and not(_num_memcacheg_backends and
+                       _memcache_pool_hint and
+                       _memcache_sharding_strategy is not None):
       raise ValueError('If you specify an _app_id, you must also provide '
-                       '_num_memcacheg_backends and _memcache_pool_hint')
+                       '_num_memcacheg_backends, _memcache_pool_hint, and '
+                       '_memcache_sharding_strategy')
 
   def cas_reset(self):
     """Clear the remembered CAS ids."""
@@ -424,6 +437,8 @@ class Client(object):
       if self._ignore_shardlock:
         app_override.set_ignore_shardlock(self._ignore_shardlock)
       app_override.set_memcache_pool_hint(self._memcache_pool_hint)
+      app_override.set_memcache_sharding_strategy(
+          self._memcache_sharding_strategy)
 
   def set_servers(self, servers):
     """Sets the pool of memcache servers used by the client.

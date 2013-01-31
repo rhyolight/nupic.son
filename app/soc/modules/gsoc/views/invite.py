@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GSoC invitation page.
-"""
-
+"""Module containing the view for GSoC invitation page."""
 
 from google.appengine.ext import db
 from google.appengine.api import users
@@ -34,10 +30,9 @@ from soc.tasks import mailer
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.request import GSoCRequest
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views import forms as gsoc_forms
-
 
 DEF_STATUS_FOR_USER_MSG = ugettext(
     'You are now %s for this organization.')
@@ -50,7 +45,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
   """Django form for the invite page.
   """
 
-  link_id = gsoc_forms.CharField(label='Link ID/Email')
+  link_id = gsoc_forms.CharField(label='Username/Email')
 
   class Meta:
     model = GSoCRequest
@@ -69,7 +64,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
     field.help_text = ugettext(
         'The link_id or email address of the invitee, '
         ' separate multiple values with a comma')
-    
+
   def clean_link_id(self):
     """Accepts link_id of users which may be invited.
     """
@@ -155,7 +150,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
       raise djangoforms.ValidationError('That user already has this role.')
 
 
-class InvitePage(RequestHandler):
+class InvitePage(GSoCRequestHandler):
   """Encapsulate all the methods required to generate Invite page.
   """
 
@@ -201,7 +196,7 @@ class InvitePage(RequestHandler):
     assert isSet(self.data.organization)
 
     invite_form = InviteForm(self.data, self.data.POST)
-    
+
     if not invite_form.is_valid():
       return None
 
@@ -229,17 +224,16 @@ class InvitePage(RequestHandler):
     return True
 
   def post(self):
-    """Handler to for GSoC Invitation Page HTTP post request.
-    """
-
+    """Handler to for GSoC Invitation Page HTTP post request."""
     if self._createFromForm():
       self.redirect.invite()
-      self.redirect.to('gsoc_invite', validated=True)
+      return self.redirect.to('gsoc_invite', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
 
-class ShowInvite(RequestHandler):
+class ShowInvite(GSoCRequestHandler):
   """Encapsulate all the methods required to generate Show Invite page.
   """
 
@@ -251,7 +245,7 @@ class ShowInvite(RequestHandler):
       }
 
   def templatePath(self):
-    return 'v2/soc/request/base.html'
+    return 'soc/request/base.html'
 
 
   def djangoURLPatterns(self):
@@ -361,11 +355,10 @@ class ShowInvite(RequestHandler):
         'can_reject': can_reject,
         'can_withdraw': can_withdraw,
         'can_resubmit': can_resubmit,
-        } 
+        }
 
   def post(self):
-    """Handler to for GSoC Show Invitation Page HTTP post request.
-    """
+    """Handler to for GSoC Show Invitation Page HTTP post request."""
 
     assert self.data.action
     assert self.data.invite
@@ -380,15 +373,16 @@ class ShowInvite(RequestHandler):
       self._withdrawInvitation()
 
     self.redirect.dashboard()
-    self.redirect.to()
+    return self.redirect.to()
 
   def _acceptInvitation(self):
-    """Accepts an invitation.
-    """
-
+    """Accepts an invitation."""
     assert isSet(self.data.organization)
 
     if not self.data.profile:
+      # TODO(nathaniel): is this dead code? Is what's done here not
+      # overwritten by the redirect.dashboard() call in the enclosing
+      # post() method call?
       self.redirect.program()
       self.redirect.to('edit_gsoc_profile', secure=True)
 
@@ -417,8 +411,7 @@ class ShowInvite(RequestHandler):
     db.run_in_transaction(accept_invitation_txn)
 
   def _rejectInvitation(self):
-    """Rejects a invitation. 
-    """
+    """Rejects a invitation."""
     assert isSet(self.data.invite)
     invite_key = self.data.invite.key()
 

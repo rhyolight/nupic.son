@@ -27,6 +27,7 @@ from django.utils.translation import ugettext
 
 from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import profile as profile_logic
+from soc.modules.gci.logic import org_score as org_score_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import CLAIMABLE
@@ -131,7 +132,9 @@ def canClaimRequestTask(task, profile):
   max_tasks = task.program.nr_simultaneous_tasks
   count = q.count(max_tasks)
 
-  return count < max_tasks
+  has_forms = profile_logic.hasStudentFormsUploaded(profile.student_info)
+
+  return count < max_tasks and has_forms
 
 
 def canSubmitWork(task, profile):
@@ -243,20 +246,24 @@ def closeTask(task, profile):
   student = task.student
 
   # student, who worked on the task, should receive a confirmation
-  # having submitted his first task
+  # having submitted his or her first task
   query = queryAllTasksClosedByStudent(student, keys_only=True)
   if query.get() is None: # this is the first task
     confirmation = profile_logic.sendFirstTaskConfirmationTxn(student, task)
   else:
     confirmation = lambda: None
-  
+
+  org_score_txn = org_score_logic.updateOrgScoreTxn(task)
+
+  @db.transactional(xg=True)
   def closeTaskTxn():
     task.put()
     comment_txn()
     startUpdatingTask(task, transactional=True)
     confirmation()
+    org_score_txn()
 
-  return db.run_in_transaction(closeTaskTxn)
+  return closeTaskTxn()
 
 
 def needsWorkTask(task, user):
@@ -616,6 +623,18 @@ def getFeaturedTask(program):
   return new_task
 
 
+def setTaskStatus(task_key, status):
+  """Set the status of the specified task in a transaction.
+  """
+
+  def setTaskStatusTxn():
+    task = GCITask.get(task_key)
+    task.status = status
+    task.put()
+
+  db.run_in_transaction(setTaskStatusTxn)
+
+
 # define the state transition functions
 STATE_TRANSITIONS = {
     'Claimed': transitFromClaimed,
@@ -641,3 +660,37 @@ def queryAllTasksClosedByStudent(profile, keys_only=False):
 
   return GCITask.all(keys_only=keys_only).filter(
       'student', profile).filter('status', 'Closed')
+
+
+def queryCurrentTaskForStudent(profile, keys_only=False):
+  """Returns a query for the task that the specified student
+  is currently working on.
+  """
+  if not profile.student_info:
+    raise ValueError('Only students can be queried for their current task.')
+
+  return GCITask.all(keys_only=keys_only).filter(
+      'student', profile).filter('status != ', 'Closed')
+
+
+def queryForStudentAndOrganizationAndStatus(student, org, status,
+    keys_only=False):
+  """Returns a query for all tasks for the specified student,
+  organization and status.
+  """
+  query = GCITask.all()
+  query.filter('student', student)
+  query.filter('org', org)
+
+  if isinstance(status, list):
+    query.filter('status IN', status)
+  else:
+    query.filter('status', status)
+
+  return query
+
+
+def queryForOrganization(org, keys_only=False):
+  """Returns a query for all tasks for the specified organization.
+  """
+  return GCITask.all().filter('org', org)

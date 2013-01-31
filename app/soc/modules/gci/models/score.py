@@ -20,6 +20,7 @@
 
 from google.appengine.ext import db
 
+from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.program import GCIProgram
 
 
@@ -43,3 +44,27 @@ class GCIScore(db.Model):
 
   #: tasks that have been taken into account when calculating the score
   tasks = db.ListProperty(item_type=db.Key, default=[])
+
+
+class GCIOrgScore(db.Model):
+  """GCIOrgScore model.
+
+  It describes the number of tasks that the specified student, whose
+  GCIProfile is set as a parent of this entity, has completed for
+  the specified organization.
+
+  Parent:
+    soc.modules.gci.models.profile.GCIProfile (specifically student profiles).
+  """
+
+  #: Organization to which the score refers
+  org = db.ReferenceProperty(reference_class=GCIOrganization, required=True)
+
+  #: Lists of tasks the student has completed for the organization
+  tasks = db.ListProperty(item_type=db.Key, default=[])
+
+  def numberOfTasks(self):
+    """Returns the number of tasks that the student completed for
+    the organization.
+    """
+    return len(self.tasks)

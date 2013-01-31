@@ -111,8 +111,6 @@ class ModelReadOnlyTemplate(object):
 
   __metaclass__ = ModelReadOnlyTemplateMetaclass
 
-  template_path = 'v2/modules/gsoc/_readonly_template.html'
-
   def __init__(self, instance=None):
     """Constructor to initialize the model instance.
 

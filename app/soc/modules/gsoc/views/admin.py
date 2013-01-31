@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the admin pages.
-"""
-
+"""Module for the admin pages."""
 
 import logging
 
@@ -26,17 +22,16 @@ from google.appengine.ext import db
 
 from django import forms as djangoforms
 from django import http
+from django.utils import dateformat
+from django.utils import html as http_utils
 from django.utils import simplejson
-from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic import accounts
 from soc.logic import cleaning
-from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
-from soc.views.dashboard import DashboardUserActions
 from soc.views.helper import addresses
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -53,7 +48,7 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.dashboard import BIRTHDATE_FORMAT
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -61,8 +56,7 @@ from soc.modules.gsoc.views.projects_list import ProjectList
 
 
 class LookupForm(gsoc_forms.GSoCModelForm):
-  """Django form for the lookup profile page.
-  """
+  """Django form for the lookup profile page."""
 
   class Meta:
     model = None
@@ -100,18 +94,7 @@ class LookupForm(gsoc_forms.GSoCModelForm):
     self.cleaned_data['profile'] = q.get()
 
 
-class UserActions(DashboardUserActions):
-  """Template to render the left side user actions.
-  """
-
-  def actionURL(self):
-    r = self.data.redirect
-    r.program()
-
-    return r.urlOf('gsoc_admin_dashboard')
-
-
-class DashboardPage(RequestHandler):
+class DashboardPage(GSoCRequestHandler):
   """Dashboard for admins.
   """
 
@@ -142,10 +125,8 @@ class DashboardPage(RequestHandler):
     dashboards.append(StudentsDashboard(self.request, self.data))
 
     return {
-        'colorbox': self.data.GET.get('colorbox'),
         'dashboards': dashboards,
         'page_name': 'Admin dashboard',
-        'user_actions': UserActions(self.data)
     }
 
   def post(self):
@@ -154,7 +135,7 @@ class DashboardPage(RequestHandler):
     Do nothing, since toggle button posting to this handler
     without expecting any response.
     """
-    return False
+    return http.HttpResponse()
 
 
 class MainDashboard(Dashboard):
@@ -232,7 +213,7 @@ class MainDashboard(Dashboard):
             'name': 'withdraw_projects',
             'description': ugettext(
                 'Withdraw accepted projects or accept withdrawn projects'),
-            'title': 'Withdraw projects',
+            'title': 'Accept/withdraw projects',
             'link': r.urlOf('gsoc_withdraw_projects')
         },
         {
@@ -301,7 +282,7 @@ class ProgramSettingsDashboard(Dashboard):
             'description': ugettext(
                 'Edit your program settings such as information, slots, '
                 'documents, etc.'),
-            'title': 'Edit program',
+            'title': 'Edit program settings',
             'link': r.urlOf('edit_gsoc_program')
         },
         {
@@ -441,7 +422,6 @@ class EvaluationsDashboard(Dashboard):
     """
     mentor_evaluations = MentorEvaluationsDashboard(request, data)
     student_evaluations = StudentEvaluationsDashboard(request, data)
-    evaluation_group = EvaluationGroupDashboard(request, data)
 
     r = data.redirect
     r.program()
@@ -453,14 +433,6 @@ class EvaluationsDashboard(Dashboard):
                 'Send reminder emails for evaluations.'),
             'title': 'Send reminder',
             'link': r.urlOf('gsoc_survey_reminder_admin')
-        },
-        {
-            'name': 'evaluation_group',
-            'description': ugettext(
-                'Create and view evaluation group'),
-            'title': 'Evaluation group',
-            'link': '',
-            'subpage_links': evaluation_group.getSubpagesLink(),
         },
         {
             'name': 'mentor_evaluations',
@@ -604,7 +576,7 @@ class StudentEvaluationsDashboard(Dashboard):
             'name': 'edit_student_evaluation',
             'description': ugettext('Create or edit midterm evaluation for '
                 'students in active program'),
-            'title': 'Create or Edit Midterm',
+            'title': 'Create or Edit Midterm Evaluation',
             'link': r.urlOf('gsoc_edit_student_evaluation')
         },
         {
@@ -617,7 +589,7 @@ class StudentEvaluationsDashboard(Dashboard):
         {
             'name': 'view_student_evaluation',
             'description': ugettext('View midterm evaluation for students'),
-            'title': 'View Midterm Records',
+            'title': 'View Midterm Evaluation Records',
             'link': r.urlOf('gsoc_list_student_eval_records')
         },
     ]
@@ -772,7 +744,7 @@ class StudentsDashboard(Dashboard):
     }
 
 
-class LookupLinkIdPage(RequestHandler):
+class LookupLinkIdPage(GSoCRequestHandler):
   """View for the participant profile.
   """
 
@@ -789,7 +761,8 @@ class LookupLinkIdPage(RequestHandler):
     return 'v2/modules/gsoc/admin/lookup.html'
 
   def post(self):
-    self.get()
+    # TODO(nathaniel): problematic self-call.
+    return self.get()
 
   def context(self):
     form = LookupForm(self.data, self.data.POST or None)
@@ -802,19 +775,18 @@ class LookupLinkIdPage(RequestHandler):
       profile = form.cleaned_data.get('profile')
 
     if profile:
-      cbox = False
-      if self.data.GET.get('cbox'):
-        cbox = True
-
+      # TODO(nathaniel): Find a cleaner way to do this rather than
+      # generating a response and then tossing it.
       self.redirect.profile(profile.link_id)
-      self.redirect.to(url_names.GSOC_PROFILE_SHOW, cbox=cbox, secure=True)
-
-    return {
-      'forms': forms,
-      'error': error,
-      'posted': error,
-      'page_name': 'Lookup profile',
-    }
+      response = self.redirect.to(url_names.GSOC_PROFILE_SHOW, secure=True)
+      raise exceptions.RedirectRequest(response['Location'])
+    else:
+      return {
+        'forms': forms,
+        'error': error,
+        'posted': error,
+        'page_name': 'Lookup profile',
+      }
 
 
 class AcceptedOrgsList(Template):
@@ -826,26 +798,32 @@ class AcceptedOrgsList(Template):
     self.data = data
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('name', 'Name',
+    list_config.addPlainTextColumn('name', 'Name',
         (lambda e, *args: e.short_name.strip()), width=75)
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
 
     list_config = self.extraColumn(list_config)
     self._list_config = list_config
 
   def extraColumn(self, list_config):
-    list_config.addColumn('org_admin', 'Org Admins',
+    list_config.addHtmlColumn('org_admin', 'Org Admins',
         (lambda e, *args: args[0][e.key()]))
 
-    r = self.data.redirect
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf('gsoc_org_home'))
+    # TODO(nathaniel): squeeze this back into a lambda expression
+    # in the call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf('gsoc_org_home')
+
+    list_config.setRowAction(RowAction)
 
     return list_config
 
   def context(self):
     description = 'List of organizations accepted into %s' % (
-            self.data.program.name)
+        self.data.program.name)
 
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, description)
@@ -869,7 +847,9 @@ class AcceptedOrgsList(Template):
         oas = GSoCProfile.all().filter(
             'org_admin_for', org).fetch(limit=1000)
         org_admins[org.key()] = ', '.join(
-            ['"%s" &lt;%s&gt;' % (oa.name(), oa.email) for oa in oas])
+            ['"%s" &lt;%s&gt;' % (
+                http_utils.conditional_escape(oa.name()),
+                http_utils.conditional_escape(oa.email)) for oa in oas])
 
       return ([org_admins], {})
 
@@ -887,17 +867,22 @@ class ProposalsAcceptedOrgsList(AcceptedOrgsList):
   """
 
   def extraColumn(self, list_config):
-    use_cbox = False
-    if self.request.GET.get('cbox'):
-      use_cbox = True
+    # TODO(nathaniel): squeeze this back into a lambda expression in the
+    # call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf('gsoc_proposals_org')
 
     r = self.data.redirect
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf('gsoc_proposals_org',
-            cbox=use_cbox))
-    list_config.addSimpleColumn('slots_desired', 'min', width=20)
-    list_config.addSimpleColumn('max_slots_desired', 'max', width=20)
-    list_config.addSimpleColumn('slots', 'Slots', width=20)
+    list_config.setRowAction(RowAction)
+    list_config.addSimpleColumn('slots_desired', 'min', width=20,
+        column_type=lists.ColumnType.NUMERICAL)
+    list_config.addSimpleColumn('max_slots_desired', 'max', width=20,
+        column_type=lists.ColumnType.NUMERICAL)
+    list_config.addSimpleColumn('slots', 'Slots', width=20,
+        column_type=lists.ColumnType.NUMERICAL)
 
     return list_config
 
@@ -914,7 +899,7 @@ class ProposalsAcceptedOrgsList(AcceptedOrgsList):
     }
 
 
-class ProposalsAcceptedOrgsPage(RequestHandler):
+class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
   """View for accepted orgs.
   """
 
@@ -935,8 +920,7 @@ class ProposalsAcceptedOrgsPage(RequestHandler):
         self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -952,17 +936,22 @@ class ProjectsAcceptedOrgsList(AcceptedOrgsList):
   """
 
   def extraColumn(self, list_config):
-    use_cbox = False
-    if self.request.GET.get('cbox'):
-      use_cbox = True
+    # TODO(nathaniel): squeeze this back into a lambda expression in
+    # the call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf('gsoc_projects_org')
 
     r = self.data.redirect
-    list_config.setRowAction(
-        lambda e, *args: r.organization(e).urlOf('gsoc_projects_org',
-            cbox=use_cbox))
-    list_config.addSimpleColumn('slots_desired', 'min', width=20)
-    list_config.addSimpleColumn('max_slots_desired', 'max', width=20)
-    list_config.addSimpleColumn('slots', 'Slots', width=20)
+    list_config.setRowAction(RowAction)
+    list_config.addSimpleColumn('slots_desired', 'min', width=20,
+        column_type=lists.ColumnType.NUMERICAL)
+    list_config.addSimpleColumn('max_slots_desired', 'max', width=20,
+        column_type=lists.ColumnType.NUMERICAL)
+    list_config.addSimpleColumn('slots', 'Slots', width=20,
+        column_type=lists.ColumnType.NUMERICAL)
 
     def getTotalProjects(ent):
       q = GSoCProject.all()
@@ -970,7 +959,7 @@ class ProjectsAcceptedOrgsList(AcceptedOrgsList):
       q.filter('org', ent)
       return q.count()
 
-    list_config.addColumn('projects', 'Projects',
+    list_config.addNumericalColumn('projects', 'Projects',
         lambda ent, *a: getTotalProjects(ent))
 
     return list_config
@@ -988,7 +977,7 @@ class ProjectsAcceptedOrgsList(AcceptedOrgsList):
     }
 
 
-class ProjectsAcceptedOrgsPage(RequestHandler):
+class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
   """View for accepted orgs.
   """
 
@@ -1009,8 +998,7 @@ class ProjectsAcceptedOrgsPage(RequestHandler):
         self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -1031,12 +1019,12 @@ class ProposalsList(Template):
     self.request = request
     self.data = data
 
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'email', 'Student Email',
         (lambda ent, *args: ent.parent().email), hidden=True)
     list_config.addSimpleColumn('score', 'Score')
@@ -1048,7 +1036,7 @@ class ProposalsList(Template):
       average = float(ent.score)/float(ent.nr_scores)
       return float("%.2f" % average)
 
-    list_config.addColumn(
+    list_config.addNumericalColumn(
         'average', 'Average', lambda ent, *a: getAverage(ent))
 
     def getStatusOnDashboard(proposal, accepted, duplicates):
@@ -1074,25 +1062,26 @@ class ProposalsList(Template):
         ('', 'All'),
         ('(invalid|withdrawn|ignored)', 'Invalid'),
     ]
-    list_config.addColumn('status', 'Status', getStatusOnDashboard, options=options)
+    list_config.addHtmlColumn('status', 'Status',
+        getStatusOnDashboard, options=options)
 
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'last_modified_on', 'Last modified',
-        lambda ent, *args: format(ent.last_modified_on, 'Y-m-d H:i:s'))
-    list_config.addColumn(
+        lambda ent, *args: dateformat.format(ent.last_modified_on, 'Y-m-d H:i:s'))
+    list_config.addPlainTextColumn(
         'created_on', 'Created on',
-        (lambda ent, *args: format(ent.created_on, 'Y-m-d H:i:s')),
+        (lambda ent, *args: dateformat.format(ent.created_on, 'Y-m-d H:i:s')),
         hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'student', 'Student',
         lambda ent, *args: ent.parent().name())
     list_config.addSimpleColumn('accept_as_project', 'Should accept')
 
     # hidden keys
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'full_proposal_key', 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'org_key', 'Organization key',
         (lambda ent, *args: ent.org.key().name()), hidden=True)
 
@@ -1149,7 +1138,7 @@ class ProposalsList(Template):
     return response_builder.build(accepted, duplicates)
 
 
-class ProposalsPage(RequestHandler):
+class ProposalsPage(GSoCRequestHandler):
   """View for proposals for particular org.
   """
 
@@ -1169,19 +1158,18 @@ class ProposalsPage(RequestHandler):
     list_content = ProposalsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
   def post(self):
-    """Handler for POST requests.
-    """
+    """Handler for POST requests."""
     proposals_list = ProposalsList(self.request, self.data)
 
-    if not proposals_list.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if proposals_list.post():
+      return http.HttpResponse()
+    else:
+      raise exceptions.AccessViolation('You cannot change this data')
 
   def context(self):
     return {
@@ -1199,14 +1187,15 @@ class ProjectsList(Template):
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
-    list_config.addColumn('student', 'Student',
-                          lambda entity, *args: entity.parent().name())
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('student', 'Student',
+        lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org', 'Organization',
-                          lambda entity, *args: entity.org.name)
-    list_config.addColumn(
+    list_config.addPlainTextColumn('org', 'Organization',
+        lambda entity, *args: entity.org.name)
+    list_config.addPlainTextColumn(
         'mentors', 'Mentor',
         lambda entity, m, *args: [m[i].name() for i in entity.mentors])
     list_config.setDefaultPagination(False)
@@ -1251,7 +1240,7 @@ class ProjectsList(Template):
     return "v2/modules/gsoc/admin/_projects_list.html"
 
 
-class ProjectsPage(RequestHandler):
+class ProjectsPage(GSoCRequestHandler):
   """View for projects of particular org.
   """
 
@@ -1271,19 +1260,18 @@ class ProjectsPage(RequestHandler):
     list_content = ProjectsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
   def post(self):
-    """Handler for POST requests.
-    """
+    """Handler for POST requests."""
     projects_list = ProjectsList(self.request, self.data)
 
-    if not projects_list.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if projects_list.post():
+      return http.HttpResponse()
+    else:
+      raise exceptions.AccessViolation('You cannot change this data')
 
   def context(self):
     return {
@@ -1298,17 +1286,20 @@ class SlotsList(AcceptedOrgsList):
 
   def extraColumn(self, list_config):
     options = [('', 'All'), ('true', 'New'), ('false', 'Veteran')]
-    list_config.addColumn('new_org', 'New/Veteran',
+    list_config.addPlainTextColumn('new_org', 'New/Veteran',
         lambda e, *args:'New' if e.new_org else 'Veteran', width=60,
         options=options)
     list_config.setColumnEditable('new_org', True, 'select')
 
-    list_config.addSimpleColumn('slots_desired', 'Min', width=25)
-    list_config.addSimpleColumn('max_slots_desired', 'Max', width=25)
-    list_config.addSimpleColumn('slots', 'Slots', width=50)
+    list_config.addSimpleColumn('slots_desired', 'Min',
+        width=25, column_type=lists.ColumnType.NUMERICAL)
+    list_config.addSimpleColumn('max_slots_desired', 'Max',
+         width=25, column_type=lists.ColumnType.NUMERICAL)
+    list_config.addSimpleColumn('slots', 'Slots',
+        width=50, column_type=lists.ColumnType.NUMERICAL)
     list_config.setColumnEditable('slots', True)
     list_config.setColumnSummary('slots', 'sum', "<b>Total: {0}</b>")
-    list_config.addColumn(
+    list_config.addHtmlColumn(
           'slots_unused', 'Unused slots',
           lambda ent, s, *args: ('<strong><font color="red">%s</font></strong>'
                                  % (s[ent.key()])))
@@ -1328,7 +1319,7 @@ class SlotsList(AcceptedOrgsList):
     data = self.data.POST.get('data')
 
     if not data:
-      raise BadRequest("Missing data")
+      raise exceptions.BadRequest("Missing data")
 
     parsed = simplejson.loads(data)
 
@@ -1402,7 +1393,7 @@ class SlotsList(AcceptedOrgsList):
     return response_builder.build()
 
 
-class SlotsPage(RequestHandler):
+class SlotsPage(GSoCRequestHandler):
   """View for the participant profile.
   """
 
@@ -1422,17 +1413,17 @@ class SlotsPage(RequestHandler):
     list_content = SlotsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
   def post(self):
     slots_list = SlotsList(self.request, self.data)
 
-    if not slots_list.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if slots_list.post():
+      return http.HttpResponse()
+    else:
+      raise exceptions.AccessViolation('You cannot change this data')
 
   def context(self):
     return {
@@ -1441,7 +1432,7 @@ class SlotsPage(RequestHandler):
     }
 
 
-class SurveyReminderPage(RequestHandler):
+class SurveyReminderPage(GSoCRequestHandler):
   """Page to send out reminder emails to fill out a Survey.
   """
 
@@ -1470,9 +1461,8 @@ class SurveyReminderPage(RequestHandler):
                           params=task_params)
     task.add()
 
-    self.response = http.HttpResponseRedirect(
-        self.request.path+'?msg=Reminders are being sent')
-    return
+    return http.HttpResponseRedirect(
+        self.request.path + '?msg=Reminders are being sent')
 
   def context(self):
     q = GradingProjectSurvey.all()
@@ -1503,17 +1493,17 @@ class StudentsList(AcceptedOrgsList):
 
     r = self.data.redirect
     list_config = lists.ListConfiguration()
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'name', 'Name', lambda ent, *args: ent.name())
-    list_config.addSimpleColumn('link_id', "Link ID")
+    list_config.addSimpleColumn('link_id', "Username")
     list_config.addSimpleColumn('email', "Email")
     list_config.addSimpleColumn('given_name', "Given name", hidden=True)
     list_config.addSimpleColumn('surname', "Surname", hidden=True)
     list_config.addSimpleColumn('name_on_documents', "Legal name", hidden=True)
     list_config.addSimpleColumn('gender', 'Gender', hidden=True)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'birth_date', "Birthdate",
-        (lambda ent, *args: format(ent.birth_date, BIRTHDATE_FORMAT)),
+        (lambda ent, *args: dateformat.format(ent.birth_date, BIRTHDATE_FORMAT)),
         hidden=True)
     list_config.setRowAction(lambda e, *args:
         r.profile(e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW, secure=True))
@@ -1524,50 +1514,50 @@ class StudentsList(AcceptedOrgsList):
       enroll = GSoCStudentInfo.enrollment_form.get_value_for_datastore(info)
       return [tax, enroll]
 
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'tax_submitted', "Tax form submitted",
-        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[0])),
+        lambda ent, si, *args: bool(formsSubmitted(ent, si)[0]),
         hidden=True)
 
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'enroll_submitted', "Enrollment form submitted",
-        (lambda ent, si, *args: bool(formsSubmitted(ent, si)[1])),
+        lambda ent, si, *args: bool(formsSubmitted(ent, si)[1]),
         hidden=True)
 
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'forms_submitted', "Forms submitted",
         lambda ent, si, *args: all(formsSubmitted(ent, si)))
 
     addresses.addAddressColumns(list_config)
 
-    list_config.addColumn('school_name', "school_name",
+    list_config.addPlainTextColumn('school_name', "school_name",
         (lambda ent, si, *args: si[ent.key()].school_name), hidden=True)
-    list_config.addColumn('school_country', "school_country",
+    list_config.addPlainTextColumn('school_country', "school_country",
         (lambda ent, si, *args: si[ent.key()].school_country), hidden=True)
-    list_config.addColumn('school_home_page', "school_home_page",
+    list_config.addPlainTextColumn('school_home_page', "school_home_page",
         (lambda ent, si, *args: si[ent.key()].school_home_page), hidden=True)
-    list_config.addColumn('school_type', "school_type",
+    list_config.addPlainTextColumn('school_type', "school_type",
         (lambda ent, si, *args: si[ent.key()].school_type), hidden=True)
-    list_config.addColumn('major', "major",
+    list_config.addPlainTextColumn('major', "major",
         (lambda ent, si, *args: si[ent.key()].major), hidden=True)
-    list_config.addColumn('degree', "degree",
+    list_config.addPlainTextColumn('degree', "degree",
         (lambda ent, si, *args: si[ent.key()].degree), hidden=True)
-    list_config.addColumn('expected_graduation', "expected_graduation",
+    list_config.addPlainTextColumn('expected_graduation', "expected_graduation",
         (lambda ent, si, *args: si[ent.key()].expected_graduation), hidden=True)
 
-    list_config.addColumn(
+    list_config.addNumericalColumn(
         'number_of_proposals', "#proposals",
         lambda ent, si, *args: si[ent.key()].number_of_proposals)
-    list_config.addColumn(
+    list_config.addNumericalColumn(
         'number_of_projects', "#projects",
         lambda ent, si, *args: si[ent.key()].number_of_projects)
-    list_config.addColumn(
+    list_config.addNumericalColumn(
         'passed_evaluations', "#passed",
         lambda ent, si, *args: si[ent.key()].passed_evaluations)
-    list_config.addColumn(
+    list_config.addNumericalColumn(
         'failed_evaluations', "#failed",
         lambda ent, si, *args: si[ent.key()].failed_evaluations)
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'project_for_orgs', "Organizations",
         lambda ent, si, o, *args: ', '.join(
             [o[i].name for i in si[ent.key()].project_for_orgs]))
@@ -1623,7 +1613,7 @@ class StudentsList(AcceptedOrgsList):
     }
 
 
-class StudentsListPage(RequestHandler):
+class StudentsListPage(GSoCRequestHandler):
   """View that lists all the students associated with the program.
   """
 
@@ -1643,8 +1633,7 @@ class StudentsListPage(RequestHandler):
     list_content = StudentsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -1655,7 +1644,7 @@ class StudentsListPage(RequestHandler):
     }
 
 
-class ProjectsListPage(RequestHandler):
+class ProjectsListPage(GSoCRequestHandler):
   """View that lists all the projects associated with the program.
   """
 
@@ -1679,8 +1668,7 @@ class ProjectsListPage(RequestHandler):
         self.request, self.data, list_query, self.LIST_IDX).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 
@@ -1692,7 +1680,7 @@ class ProjectsListPage(RequestHandler):
     }
 
 
-class OrgsListPage(RequestHandler):
+class OrgsListPage(GSoCRequestHandler):
   """View that lists all the projects associated with the program.
   """
 
@@ -1714,8 +1702,7 @@ class OrgsListPage(RequestHandler):
     list_content = AcceptedOrgsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 

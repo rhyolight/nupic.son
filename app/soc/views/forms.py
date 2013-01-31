@@ -86,11 +86,55 @@ def mergeWidgets(*args):
   return widgets
 
 
+class LabelVerificationNotRequiredState(object):
+  """Represents the state where the AsyncFileField does not require
+  verification label.
+  """
+
+  def toBeVerifiedHide(self):
+    """ "To be verified" label should be hidden."""
+    return 'button-hide'
+
+  def verifiedHide(self):
+    """ "Verified" label should be hidden."""
+    return 'button-hide'
+
+
+class LabelToBeVerifiedState(object):
+  """Represents the state where the AsyncFileField should display the to be
+  verified label.
+  """
+
+  def toBeVerifiedHide(self):
+    """ "To be verified" label should be displayed (not hidden)."""
+    return ''
+
+  def verifiedHide(self):
+    """ "Verified" label should be hidden."""
+    return 'button-hide'
+
+
+class LabelVerifiedState(object):
+  """Represents the state where the AsyncFileField should display the verified
+  label.
+  """
+
+  def toBeVerifiedHide(self):
+    """ "To be verified" label should be hidden."""
+    return 'button-hide'
+
+  def verifiedHide(self):
+    """ "Verified" label should be displayed (not hidden)."""
+    return ''
+
+
 # The standard input fields should be available to all importing modules
 CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
+ChoiceField = forms.ChoiceField
 DateInput = forms.DateInput
 DateTimeInput = forms.DateTimeInput
+FileField = forms.FileField
 FileInput = forms.FileInput
 HiddenInput = forms.HiddenInput
 RadioSelect = forms.RadioSelect
@@ -101,6 +145,78 @@ Textarea = forms.Textarea
 
 # The standard error classes should be available to all importing modules
 ValidationError = forms.ValidationError
+
+
+class AsyncFileInput(FileInput):
+  """HTML field to be rendered for asynchronous file uploads.
+  """
+
+  def __init__(self, *args, **kwargs):
+    self.download_url = kwargs.pop('download_url', None)
+
+    # This mutation to kwargs is *required* because Django will complain
+    # if you pass the kwargs that its widgets don't understand.
+    verified = kwargs.pop('verified', None)
+
+    # When there is no need for the files uploaded to be verified or when
+    # such a feature is not required on the UI, this widget should neither
+    # display the "verified" nor "to-be-verfied" label. So there is no need
+    # for the underlying data model to also store the state. Which effectively
+    # means that when this form field widget is constructed and the labels
+    # are not required, the model does not know anything about the verfied
+    # state and does not tell us anything. Thich is represented by "verified"
+    # argument not being present in the keyword arguments to the constructor.
+    # However, when there is a need for such a label, the underlying data
+    # stores whether the file corresponding to this widget is verified or
+    # not and that is represented by "True" and "False" values to the
+    # "verified" keyword argument. And these states are translated into
+    # classes here.
+    if verified is None:
+      self.verification = LabelVerificationNotRequiredState()
+    elif not verified:
+      self.verification = LabelToBeVerifiedState()
+    else:
+      self.verification = LabelVerifiedState()
+
+    super(AsyncFileInput, self).__init__(*args, **kwargs)
+
+  def render(self, name, value, attrs=None):
+    download_hide = 'button-hide'
+    upload_hide = ''
+
+    to_be_verified_hide = self.verification.toBeVerifiedHide()
+    verified_hide = self.verification.verifiedHide()
+
+    if value is None:
+      value = ''
+    final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+    if value != '':
+      # Only add the 'value' attribute if a value is non-empty.
+      final_attrs['value'] = force_unicode(self._format_value(value.filename))
+      download_hide = ''
+      upload_hide = 'button-hide'
+
+    iparams = u''.join([u' %s=%s' % (
+        k, conditional_escape(v)) for k, v in final_attrs.items()])
+
+    context = {
+        'dhide': download_hide,
+        'uhide': upload_hide,
+        'verified_hide': verified_hide,
+        'to_be_verified_hide': to_be_verified_hide,
+        'durl': self.download_url,
+        'fname': final_attrs.get('value', ''),
+        'iparams': iparams,
+        }
+
+    rendered = loader.render_to_string(
+        self.templatePath(), dictionary=context)
+
+    # markup for buttons taken from bootstrap
+    return mark_safe(rendered)
+
+  def templatePath(self):
+    return 'soc/_async_file_input_field.html'
 
 
 class RadioInput(forms.widgets.RadioInput):

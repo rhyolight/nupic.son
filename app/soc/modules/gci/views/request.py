@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GCI request page.
-"""
-
+"""Module containing the view for GCI request page."""
 
 from google.appengine.ext import db
 
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
 from soc.logic.helper import notifications
 
 from soc.views.helper import lists
@@ -33,23 +29,21 @@ from soc.tasks import mailer
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
 class RequestForm(gci_forms.GCIModelForm):
-  """Django form for the invite page.
-  """
+  """Django form for the invite page."""
 
   class Meta:
     model = GCIRequest
     css_prefix = 'gci_intivation'
     fields = ['message']
 
-class SendRequestPage(RequestHandler):
-  """Encapsulate all the methods required to generate Send Request page.
-  """
+class SendRequestPage(GCIRequestHandler):
+  """Encapsulate all the methods required to generate Send Request page."""
 
   def templatePath(self):
     return 'v2/modules/gci/request/base.html'
@@ -85,7 +79,7 @@ class SendRequestPage(RequestHandler):
 
   def validate(self):
     """Validates the form data.
-    
+
     Returns a newly created request entity or None if an error occurs.
     """
     assert isSet(self.data.organization)
@@ -115,19 +109,18 @@ class SendRequestPage(RequestHandler):
     return db.run_in_transaction(create_request_txn)
 
   def post(self):
-    """Handler to for GCI Send Request Page HTTP post request.
-    """
+    """Handler to for GCI Send Request Page HTTP post request."""
     request = self.validate()
-    if not request:
-      self.get()
-      return
+    if request:
+      return self.redirect.id(request.key().id()).to(
+          url_names.GCI_MANAGE_REQUEST)
+    else:
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
-    self.redirect.id(request.key().id()).to(url_names.GCI_MANAGE_REQUEST)
 
-
-class ManageRequestPage(RequestHandler):
-  """View to manage the invitation by the sender.
-  """
+class ManageRequestPage(GCIRequestHandler):
+  """View to manage the invitation by the sender."""
 
   def templatePath(self):
     return 'v2/modules/gci/request/base.html'
@@ -151,7 +144,8 @@ class ManageRequestPage(RequestHandler):
     # check if the submitted action is legal
     if self.data.POST:
       if 'withdraw' not in self.data.POST and 'resubmit' not in self.data.POST:
-        raise BadRequest('Valid action is not specified in the request.')
+        raise exceptions.BadRequest(
+            'Valid action is not specified in the request.')
       self.check.isRequestManageable()
 
   def context(self):
@@ -184,7 +178,7 @@ class ManageRequestPage(RequestHandler):
         request.put()
       db.run_in_transaction(resubmit_request_txn)
 
-    self.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
+    return self.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
 
   def _constructPageName(self):
     request = self.data.request_entity
@@ -205,25 +199,28 @@ class ManageRequestPage(RequestHandler):
       return 'Resubmit'
 
 
-class RespondRequestPage(RequestHandler):
-  """View to accept or reject requests by organization admins. 
-  """
+class RespondRequestPage(GCIRequestHandler):
+  """View to accept or reject requests by organization admins."""
 
   def templatePath(self):
     return 'v2/modules/gci/request/show.html'
 
   def djangoURLPatterns(self):
     return [
-        url(r'request/respond/%s$' % url_patterns.ID, self,
+        url(r'request/respond/%s$' % url_patterns.USER_ID, self,
             name=url_names.GCI_RESPOND_REQUEST)
     ]
 
   def checkAccess(self):
     self.check.isProfileActive()
 
-    # fetch the request entity based on the id
+    key_name = self.data.kwargs['user']
+    user_key = db.Key.from_path('User', key_name)
+
+    # fetch the request entity based on the id and parent key
     request_id = int(self.data.kwargs['id'])
-    self.data.request_entity = GCIRequest.get_by_id(request_id)
+    self.data.request_entity = GCIRequest.get_by_id(
+        request_id, parent=user_key)
     self.check.isRequestPresent(request_id)
 
     # get the organization and check if the current user can manage the request
@@ -242,8 +239,17 @@ class RespondRequestPage(RequestHandler):
         }
 
   def post(self):
-    """Handler to for GCI Respond Request Page HTTP post request.
-    """
+    """Handler to for GCI Respond Request Page HTTP post request."""
+    user_key = GCIRequest.user.get_value_for_datastore(
+        self.data.request_entity)
+
+    profile_key_name = '/'.join([
+        self.data.program.key().name(), user_key.name()])
+    profile_key = db.Key.from_path(
+        'GCIProfile', profile_key_name, parent=user_key)
+
+    self.data.requester_profile = profile = db.get(profile_key)
+
     if 'accept' in self.data.POST:
       options = db.create_transaction_options(xg=True)
 
@@ -251,16 +257,8 @@ class RespondRequestPage(RequestHandler):
       organization_key = self.data.organization.key()
       messages = self.data.program.getProgramMessages()
 
-      user_key = GCIRequest.user.get_value_for_datastore(
-          self.data.request_entity)
-      link_id = user_key.name()
-      profile_key_name = '/'.join([self.data.program.key().name(), link_id])
-      profile_key = db.Key.from_path(
-          'GCIProfile', profile_key_name, parent=user_key)
-
       def accept_request_txn():
         request = db.get(request_key)
-        self.data.requester_profile = profile = db.get(profile_key)
 
         request.status = 'accepted'
 
@@ -301,7 +299,8 @@ class RespondRequestPage(RequestHandler):
 
       db.run_in_transaction(reject_request_txn)
 
-    self.redirect.id().to(url_names.GCI_RESPOND_REQUEST)
+    return self.redirect.userId(user_key.name()).to(
+        url_names.GCI_RESPOND_REQUEST)
 
 
 class UserRequestsList(Template):
@@ -314,7 +313,7 @@ class UserRequestsList(Template):
     r = data.redirect
 
     list_config = lists.ListConfiguration()
-    list_config.addColumn('org', 'To',
+    list_config.addPlainTextColumn('org', 'To',
         lambda entity, *args: entity.org.name)
     list_config.addSimpleColumn('status', 'Status')
     list_config.setRowAction(
@@ -345,7 +344,7 @@ class UserRequestsList(Template):
     return 'v2/modules/gci/request/_request_list.html'
 
 
-class ListUserRequestsPage(RequestHandler):
+class ListUserRequestsPage(GCIRequestHandler):
   """View for the page that lists all the requests which have been sent by
   the current user.
   """
@@ -366,7 +365,7 @@ class ListUserRequestsPage(RequestHandler):
     list_content = UserRequestsList(self.request, self.data).getListData()
 
     if not list_content:
-      raise AccessViolation('You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
     return list_content.content()
 

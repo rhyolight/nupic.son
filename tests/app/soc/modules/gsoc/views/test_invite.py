@@ -105,9 +105,9 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
 
     # test withdraw/resubmit invite
     url = '/gsoc/invitation/%s/%s/%s' % (
-	self.gsoc.key().name(),
-	invitation.parent_key().name(),
-	invitation.key().id())
+        self.gsoc.key().name(),
+        invitation.parent_key().name(),
+        invitation.key().id())
 
     other_data.notificationSettings(invite_handled=True)
 
@@ -136,12 +136,13 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     self.data.createProfile()
     invitation = self.createInvitation()
     url = '/gsoc/invitation/%s/%s/%s' % (
-	self.gsoc.key().name(),
-	invitation.parent_key().name(),
-	invitation.key().id())
+        self.gsoc.key().name(),
+        invitation.parent_key().name(),
+        invitation.key().id())
+
     response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/soc/request/base.html')
+    self.assertTemplateUsed(response, 'soc/request/base.html')
 
     postdata = {'action': 'Reject'}
     response = self.post(url, postdata)

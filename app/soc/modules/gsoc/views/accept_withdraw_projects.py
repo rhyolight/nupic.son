@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +21,7 @@ import logging
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils import simplejson
 
 from soc.logic.exceptions import AccessViolation
@@ -37,7 +36,7 @@ from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -50,12 +49,13 @@ class ProposalList(Template):
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
-    list_config.addColumn('student', 'Student',
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('student', 'Student',
                           lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org', 'Organization',
+    list_config.addPlainTextColumn('org', 'Organization',
                           lambda entity, *args: entity.org.name)
 
     def status(proposal):
@@ -68,14 +68,14 @@ class ProposalList(Template):
 
       return proposal.status.capitalize()
 
-    list_config.addColumn('status', 'Status',
-                          lambda entity, *args: status(entity))
+    list_config.addHtmlColumn('status', 'Status',
+        lambda entity, *args: status(entity))
 
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
 
     # hidden keys
-    list_config.addColumn(
+    list_config.addHtmlColumn(
         'full_proposal_key', 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
 
@@ -218,7 +218,7 @@ class ProposalList(Template):
     return "v2/modules/gsoc/accept_withdraw_projects/_project_list.html"
 
 
-class AcceptProposals(RequestHandler):
+class AcceptProposals(GSoCRequestHandler):
   """View for accepting individual proposals.
   """
 
@@ -252,9 +252,10 @@ class AcceptProposals(RequestHandler):
   def post(self):
     list_content = ProposalList(self.request, self.data)
 
-    if not list_content.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if list_content.post():
+      return http.HttpResponse()
+    else:
+      raise AccessViolation('You cannot change this data')
 
   def context(self):
     """Builds the context for GSoC proposals List page HTTP get request.
@@ -279,13 +280,14 @@ class ProjectList(Template):
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
-    list_config.addColumn('student', 'Student',
-                          lambda entity, *args: entity.parent().name())
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('student', 'Student',
+        lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn('org', 'Organization',
-                          lambda entity, *args: entity.org.name)
+    list_config.addPlainTextColumn('org', 'Organization',
+        lambda entity, *args: entity.org.name)
 
     def status(project):
       """Status to show on the list with color.
@@ -297,16 +299,16 @@ class ProjectList(Template):
 
       return project.status
 
-    list_config.addColumn('status', 'Status',
-                          lambda entity, *args: status(entity))
+    list_config.addHtmlColumn('status', 'Status',
+        lambda entity, *args: status(entity))
 
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
 
     # hidden keys
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'full_project_key', 'Full project key',
-        (lambda ent, *args: str(ent.key())), hidden=True)
+        lambda ent, *args: str(ent.key()), hidden=True)
 
     # action button
     bounds = [1,'all']
@@ -429,7 +431,7 @@ class ProjectList(Template):
     return "v2/modules/gsoc/accept_withdraw_projects/_project_list.html"
 
 
-class WithdrawProjects(RequestHandler):
+class WithdrawProjects(GSoCRequestHandler):
   """View methods for withdraw projects
   """
 
@@ -446,13 +448,11 @@ class WithdrawProjects(RequestHandler):
     ]
 
   def checkAccess(self):
-    """Access checks for the view.
-    """
+    """Access checks for the view."""
     self.check.isHost()
 
   def jsonContext(self):
-    """Handler for JSON requests.
-    """
+    """Handler for JSON requests."""
     list_content = ProjectList(self.request, self.data).getListData()
 
     if not list_content:
@@ -463,18 +463,16 @@ class WithdrawProjects(RequestHandler):
   def post(self):
     list_content = ProjectList(self.request, self.data)
 
-    if not list_content.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if list_content.post():
+      return http.HttpResponse()
+    else:
+      raise AccessViolation('You cannot change this data')
 
   def context(self):
-    """Handler for GSoC Accepted Projects List page HTTP get request.
-    """
-    program = self.data.program
-
+    """Handler for GSoC Accepted Projects List page HTTP get request."""
     return {
-        'page_name': '%s - Projects' % program.short_name,
-        'program_name': program.name,
+        'page_name': '%s - Projects' % self.data.program.short_name,
+        'program_name': self.data.program.name,
         'list': ProjectList(self.request, self.data),
         'program_select': ProgramSelect(self.data, 'gsoc_withdraw_projects'),
     }

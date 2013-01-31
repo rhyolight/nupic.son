@@ -42,11 +42,11 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/accepted_orgs/base.html')
     self.assertTemplateUsed(response, 
                             'v2/modules/gsoc/accepted_orgs/_project_list.html')
-    self.assertTemplateUsed(response, 'v2/soc/_program_select.html')
+    self.assertTemplateUsed(response, 'soc/_program_select.html')
     self.assertTemplateUsed(response, 
                             'v2/modules/gsoc/accepted_orgs/_project_list.html') 
-    self.assertTemplateUsed(response, 'v2/soc/list/lists.html') 
-    self.assertTemplateUsed(response, 'v2/soc/list/list.html')
+    self.assertTemplateUsed(response, 'soc/list/lists.html') 
+    self.assertTemplateUsed(response, 'soc/list/list.html')
     
   def testAcceptedOrgsAreDisplayedOnlyAfterTheyAreAnnounced(self):
     """Tests that the list of accepted organizations can be accessed only after

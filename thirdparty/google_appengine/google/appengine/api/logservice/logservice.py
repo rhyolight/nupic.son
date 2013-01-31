@@ -37,6 +37,7 @@ import re
 import sys
 import threading
 import time
+import warnings
 
 from google.net.proto import ProtocolBuffer
 from google.appengine.api import api_base_pb
@@ -68,7 +69,14 @@ LOG_LEVEL_WARNING = 2
 LOG_LEVEL_ERROR = 3
 LOG_LEVEL_CRITICAL = 4
 
-_MAJOR_VERSION_ID_PATTERN = r'^[a-z\d][a-z\d\-]{0,99}$'
+
+SERVER_ID_RE_STRING = r'(?!-)[a-z\d\-]{1,63}'
+
+
+SERVER_VERSION_RE_STRING = r'(?!-)[a-z\d\-]{1,100}'
+_MAJOR_VERSION_ID_PATTERN = r'^(?:(?:(%s):)?)(%s)$' % (SERVER_ID_RE_STRING,
+                                                       SERVER_VERSION_RE_STRING)
+
 _MAJOR_VERSION_ID_RE = re.compile(_MAJOR_VERSION_ID_PATTERN)
 
 
@@ -83,9 +91,10 @@ class InvalidArgumentError(Error):
 class TimeoutError(Error):
   """Requested timeout for fetch() call has expired while iterating results."""
 
-  def __init__(self, msg, offset):
+  def __init__(self, msg, offset, last_end_time):
     Error.__init__(self, msg)
     self.__offset = offset
+    self.__last_end_time = last_end_time
 
   @property
   def offset(self):
@@ -98,6 +107,16 @@ class TimeoutError(Error):
         A byte string representing an offset into the log stream, or None.
     """
     return self.__offset
+
+  @property
+  def last_end_time(self):
+    """End time of the last request examined prior to the timeout, or None.
+
+    Returns:
+        A float representing the completion time in seconds since the Unix
+        epoch of the last request examined.
+    """
+    return self.__last_end_time
 
 
 class LogsBuffer(object):
@@ -255,7 +274,9 @@ class LogsBuffer(object):
     logs = self.parse_logs()
     self._clear()
 
-    while logs:
+    first_iteration = True
+    while logs or first_iteration:
+      first_iteration = False
       request = log_service_pb.FlushRequest()
       group = log_service_pb.UserAppLogGroup()
       byte_size = 0
@@ -276,7 +297,7 @@ class LogsBuffer(object):
         line.set_message(entry[2])
         byte_size += 1 + group.lengthString(line.ByteSize())
         n += 1
-      assert n > 0
+      assert n > 0 or not logs
       logs = logs[n:]
       request.set_logs(group.Encode())
       response = api_base_pb.VoidProto()
@@ -298,7 +319,7 @@ class LogsBuffer(object):
 
   def autoflush_enabled(self):
     """Indicates if the buffer will periodically flush logs during a request."""
-    return AUTOFLUSH_ENABLED and 'BACKEND_ID' in os.environ
+    return AUTOFLUSH_ENABLED
 
 
 
@@ -389,18 +410,13 @@ class _LogQueryResult(object):
     self._request = request
     self._logs = []
     self._read_called = False
+    self._last_end_time = None
     self._end_time = None
     if timeout is not None:
       self._end_time = time.time() + timeout
 
   def __iter__(self):
-    """Provides an iterator that yields log records one at a time.
-
-    This iterator yields items held locally first, and once these items have
-    been exhausted, it fetches more items via _advance() and yields them. The
-    number of items it holds is min(MAX_ITEMS_PER_FETCH, batch_size) - the
-    latter value can be provided by the user on an initial call to fetch().
-    """
+    """Provides an iterator that yields log records one at a time."""
     while True:
       for log_item in self._logs:
         yield RequestLog(log_item)
@@ -410,7 +426,7 @@ class _LogQueryResult(object):
           if self._request.has_offset():
             offset = self._request.offset().Encode()
           raise TimeoutError('A timeout occurred while iterating results',
-                             offset=offset)
+                             offset=offset, last_end_time=self._last_end_time)
         self._read_called = True
         self._advance()
       else:
@@ -436,6 +452,9 @@ class _LogQueryResult(object):
     self._request.clear_offset()
     if response.has_offset():
       self._request.mutable_offset().CopyFrom(response.offset())
+    self._last_end_time = None
+    if response.has_last_end_time():
+      self._last_end_time = response.last_end_time() / 1e6
 
 
 class RequestLog(object):
@@ -617,9 +636,13 @@ class RequestLog(object):
   def api_mcycles(self):
     """Number of machine cycles spent in API calls while processing request.
 
+    Deprecated. This value is no longer meaningful.
+
     Returns:
        Number of API machine cycles used as a long, or None if not available.
     """
+    warnings.warn('api_mcycles does not return a meaningful value.',
+                  DeprecationWarning, stacklevel=2)
     if self.__pb.has_api_mcycles():
       return self.__pb.api_mcycles()
     return None
@@ -757,7 +780,7 @@ class AppLog(object):
     return self._message
 
 
-_FETCH_KWARGS = frozenset(['prototype_request', 'timeout'])
+_FETCH_KWARGS = frozenset(['prototype_request', 'timeout', 'batch_size'])
 
 
 @datastore_rpc._positional(0)
@@ -768,7 +791,6 @@ def fetch(start_time=None,
           include_incomplete=False,
           include_app_logs=False,
           version_ids=None,
-          batch_size=None,
           **kwargs):
   """Returns an iterator yielding an application's request and application logs.
 
@@ -801,8 +823,6 @@ def fetch(start_time=None,
       results, as a boolean.  Defaults to False.
     version_ids: A list of version ids whose logs should be queried against.
       Defaults to the application's current version id only.
-    batch_size: The number of log records that the iterator for this request
-      should request from the storage infrastructure at a time.
 
   Returns:
     An iterable object containing the logs that the user has queried for.
@@ -835,17 +855,6 @@ def fetch(start_time=None,
       request.mutable_offset().ParseFromString(offset)
     except (TypeError, ProtocolBuffer.ProtocolBufferDecodeError):
       raise InvalidArgumentError('offset must be a string or read-only buffer')
-
-  if batch_size is not None:
-    if not isinstance(batch_size, (int, long)):
-      raise InvalidArgumentError('batch_size must be an integer')
-
-    if batch_size < 1:
-      raise InvalidArgumentError('batch_size must be greater than zero')
-
-    if batch_size > MAX_ITEMS_PER_FETCH:
-      raise InvalidArgumentError('batch_size specified is too large')
-    request.set_count(batch_size)
 
   if minimum_log_level is not None:
     if not isinstance(minimum_log_level, int):
@@ -887,5 +896,17 @@ def fetch(start_time=None,
   if timeout is not None:
     if not isinstance(timeout, (float, int, long)):
       raise InvalidArgumentError('timeout must be a float or integer')
+
+  batch_size = kwargs.get('batch_size')
+  if batch_size is not None:
+    if not isinstance(batch_size, (int, long)):
+      raise InvalidArgumentError('batch_size must be an integer')
+
+    if batch_size < 1:
+      raise InvalidArgumentError('batch_size must be greater than zero')
+
+    if batch_size > MAX_ITEMS_PER_FETCH:
+      raise InvalidArgumentError('batch_size specified is too large')
+    request.set_count(batch_size)
 
   return _LogQueryResult(request, timeout=timeout)

@@ -1,4 +1,3 @@
-#
 # Copyright 2010 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,18 +33,32 @@ from soc.logic import site
 
 
 _HTML_TYPES = ('text/html', 'application/xhtml+xml')
-_POST_FORM_RE = \
-  re.compile(r'(<form\W[^>]*\bmethod\s*=\s*(\'|"|)POST(\'|"|)\b[^>]*>)',
-    re.IGNORECASE)
+_POST_FORM_RE = re.compile(
+    r'(<form\W[^>]*\bmethod\s*=\s*(\'|"|)POST(\'|"|)\b[^>]*>)', re.IGNORECASE)
+
+
+def _GetSecretKey(request):
+  """Gets the XSRF secret key from the request context.
+
+  This function sets the key if it is not present.
+
+  Args:
+    request: A django.http.HttpRequest.
+
+  Returns:
+    The XSRF secret key for the request.
+  """
+  if not hasattr(request, 'site'):
+    request.site = site.singleton()
+  return site.xsrfSecretKey(request.site)
+
 
 class XsrfMiddleware(object):
-  """Middleware for preventing cross-site request forgery attacks."""
+  """Middleware for preventing cross-site request forgery attacks.
 
-  def _getSecretKey(self, request):
-    """Gets the XSRF secret key from the request context."""
-    if not hasattr(request, 'site'):
-      request.site = site.singleton()
-    return site.xsrfSecretKey(request.site)
+  This class implements the specification defined at
+  https://docs.djangoproject.com/en/dev/topics/http/middleware/.
+  """
 
   def process_request(self, request):
     """Requires a valid XSRF token on POST requests."""
@@ -54,33 +67,34 @@ class XsrfMiddleware(object):
       return None
 
     # HTTPRequests from AppEngine do not have to have a key
-    app_engine_request = ('HTTP_X_APPENGINE_CRON' in os.environ) or \
-        ('HTTP_X_APPENGINE_QUEUENAME' in os.environ)
-
-    if app_engine_request:
+    if ('HTTP_X_APPENGINE_CRON' in os.environ
+        or 'HTTP_X_APPENGINE_QUEUENAME' in os.environ):
       return None
 
     post_token = request.POST.get('xsrf_token')
 
     if not post_token:
-      logging.warn('Missing XSRF token for post data %s' % (request.POST))
+      logging.warn('Missing XSRF token for post data %s' % request.POST)
       return http.HttpResponse('Missing XSRF token.', status=403)
 
-    result = xsrfutil.isTokenValid(self._getSecretKey(request), post_token)
+    token_validity = xsrfutil.isTokenValid(_GetSecretKey(request), post_token)
 
-    if result is True:
+    if token_validity:
       return None
-
-    logging.warn('Invalid XSRF token for post data %s' % (request.POST))
-    return http.HttpResponse('Invalid XSRF token: %s' % result, status=403)
+    else:
+      logging.warn('Invalid XSRF token for post data %s' % request.POST)
+      # TODO(nathaniel): xsrfutil.isTokenValid always returns a boolean value,
+      # not the-token-itself-if-the-token-is-not-valid.
+      return http.HttpResponse(
+          'Invalid XSRF token: %s' % token_validity, status=403)
 
   def process_response(self, request, response):
     """Alters HTML responses containing <form> tags to embed the XSRF token."""
 
     content_type = response.get('Content-Type', None)
     if content_type and content_type.split(';')[0] in _HTML_TYPES:
-      xsrf_token = \
-        xsrfutil.getGeneratedTokenForCurrentUser(self._getSecretKey(request))
+      xsrf_token = xsrfutil.getGeneratedTokenForCurrentUser(
+          _GetSecretKey(request))
 
       # there may be multiple forms per page, but we only id= one of them
       idattributes = itertools.chain(("id='xsrftoken'",), itertools.repeat(''))

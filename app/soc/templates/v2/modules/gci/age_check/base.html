@@ -24,13 +24,13 @@ limitations under the License.
 
 {% if failed_check %}
   <div class="block block-user-message">
-    This contest is only open to people {{ program.student_min_age }} and no older than {{ program.student_max_age }}.
+    This contest is only open to people who are at least {{ program.student_min_age }} and no older than {{ program.student_max_age }}.
   </div>
 {% else %}
   <form action="" method="post" id="form" class="form-age_check">
     {{ form.render }}
-    <div id="form-age-check-fieldset-button-row" class="row button-row">
-      <input id="form-bulk-submit" type="submit" value="Submit" class="submit" />
+    <div id="form-age-check-fieldset-button-row" class="form-row button-row">
+      <input id="form-bulk-submit" type="submit" value="Submit" class="button" />
     </div>
   </form>
 {% endif %}
@@ -39,9 +39,12 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.uniform,
     dep.jqueryui.datepicker,
     null,
     function () {
+      jQuery("select, input:radio, input:checkbox").uniform();
+
       jQuery("#birthdate").datepicker({
         changeMonth: true,
         changeYear: true,

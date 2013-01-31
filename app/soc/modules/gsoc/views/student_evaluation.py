@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC project student survey.
-"""
-
+"""Module for the GSoC project student survey."""
 
 from soc.views import forms
 from soc.views import survey
@@ -33,7 +29,7 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
 
@@ -66,7 +62,7 @@ class GSoCStudentEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
     exclude = ['project', 'org', 'user', 'survey', 'created', 'modified']
 
 
-class GSoCStudentEvaluationEditPage(RequestHandler):
+class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
   """View for creating/editing student evalution.
   """
 
@@ -139,12 +135,14 @@ class GSoCStudentEvaluationEditPage(RequestHandler):
   def post(self):
     evaluation = self.evaluationFromForm()
     if evaluation:
-      r = self.redirect.survey()
-      r.to('gsoc_edit_student_evaluation', validated=True)
+      return self.redirect.survey().to(
+          'gsoc_edit_student_evaluation', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
-class GSoCStudentEvaluationTakePage(RequestHandler):
+
+class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
   """View for students to submit their evaluation.
   """
 
@@ -231,14 +229,14 @@ class GSoCStudentEvaluationTakePage(RequestHandler):
   def post(self):
     student_evaluation_record = self.recordEvaluationFromForm()
     if student_evaluation_record:
-      r = self.redirect.survey_record(
-          self.data.student_evaluation.link_id)
-      r.to('gsoc_take_student_evaluation', validated=True)
+      self.redirect.survey_record(self.data.student_evaluation.link_id)
+      return self.redirect.to('gsoc_take_student_evaluation', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
-class GSoCStudentEvaluationPreviewPage(RequestHandler):
+class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
   """View for the host to preview the evaluation.
   """
 
@@ -272,7 +270,7 @@ class GSoCStudentEvaluationPreviewPage(RequestHandler):
     return context
 
 
-class GSoCStudentEvaluationRecordsList(RequestHandler):
+class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
   """View for listing all records of a GSoCGProjectSurveyRecord.
   """
 
@@ -318,9 +316,9 @@ class GSoCStudentEvaluationRecordsList(RequestHandler):
     record_list = survey.SurveyRecordList(
         self.data, self.data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
 
-    record_list.list_config.addColumn(
+    record_list.list_config.addPlainTextColumn(
         'project', 'Project', lambda ent, *args: ent.project.title)
-    record_list.list_config.addColumn(
+    record_list.list_config.addPlainTextColumn(
         'org', 'Organization', lambda ent, *args: ent.org.name)
 
     return record_list
@@ -339,7 +337,7 @@ class GSoCStudentEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
     survey_name = 'Student Evaluation'
 
 
-class GSoCStudentEvaluationShowPage(RequestHandler):
+class GSoCStudentEvaluationShowPage(GSoCRequestHandler):
   """View to display the readonly page for student evaluation.
   """
 

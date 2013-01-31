@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC proposal page.
-"""
-
+"""Module for the GSoC proposal page."""
 
 from google.appengine.ext import db
 
@@ -30,7 +26,7 @@ from soc.tasks import mailer
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -49,7 +45,7 @@ class ProposalForm(GSoCModelForm):
 
   clean_content = cleaning.clean_html_content('content')
 
-class ProposalPage(RequestHandler):
+class ProposalPage(GSoCRequestHandler):
   """View for the submit proposal.
   """
 
@@ -127,19 +123,18 @@ class ProposalPage(RequestHandler):
     return db.run_in_transaction(create_proposal_trx)
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
-
+    """Handler for HTTP POST request."""
     proposal = self.createFromForm()
     if proposal:
       self.redirect.review(proposal.key().id(),
                            self.data.user.link_id)
-      self.redirect.to('review_gsoc_proposal')
+      return self.redirect.to('review_gsoc_proposal')
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
-class UpdateProposal(RequestHandler):
+class UpdateProposal(GSoCRequestHandler):
   """View for the update proposal page.
   """
 
@@ -258,17 +253,16 @@ class UpdateProposal(RequestHandler):
     db.run_in_transaction(resubmit_proposal_txn)
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
+    """Handler for HTTP POST request."""
     if self.data.action == self.ACTIONS['update']:
       proposal = self._updateFromForm()
       if not proposal:
-        self.get()
-        return
+        # TODO(nathaniel): problematic self-use.
+        return self.get()
     elif self.data.action == self.ACTIONS['withdraw']:
       self._withdraw()
     elif self.data.action == self.ACTIONS['resubmit']:
       self._resubmit()
 
     self.redirect.review(self.data.proposal.key().id(), self.data.user.link_id)
-    self.redirect.to('review_gsoc_proposal')
+    return self.redirect.to('review_gsoc_proposal')

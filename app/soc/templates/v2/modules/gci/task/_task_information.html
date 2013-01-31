@@ -1,3 +1,12 @@
+{% if student_forms_link %}
+  <div class="block block-user-message">
+    You cannot claim this task at this time because you you have not submitted
+    the parental consent or the enrollment form. To submit the forms please
+    <a class="more" href="{{ student_forms_link }}">click here</a>.
+  </div>
+{% endif %}
+
+<div class="block">
 <div class="cog"></div>
 
 <div class="block-title clearfix">
@@ -20,7 +29,9 @@
     {% endif %}
    <form action="?button" id="task_form" method="post">
       {% if button_unpublish %}<input type="submit" class="task-btn task-btn-publish" name="button_unpublish" value="Unpublish">
-      {% else %}{% if button_delete %}<div class="task-btn task-tbn-publish"></div>{% endif %}
+      {% else %}
+        {% if button_publish %}<input type="submit" class="task-btn task-btn-publish" name="button_publish" value="Publish Task">{% endif %}
+        {% if button_delete %}<div class="task-btn task-tbn-publish"></div>{% endif %}
       {% endif %}
       {% if button_edit %}<input type="submit" class="task-btn task-btn-edit" name="button_edit" value="Edit Task">{% endif %}
       {% if button_delete %}<input type="submit" class="task-btn task-btn-delete" name="button_delete" value="Delete">{% endif %}
@@ -37,7 +48,10 @@
 </div>
 
 <div class="block-task-difficulty">
-  <span class="difficulty">Difficulty: <span class="emph">{{ task.difficulty_level }}</span></span>
+  {% comment %}
+    No longer show difficulty in the info block for GCI2012.
+    <span class="difficulty">Difficulty: <span class="emph">{{ task.difficulty_level }}</span></span>
+  {% endcomment %}
   <span class="status">Status: <span class="emph">{{ task.status }}</span></span>
   {% if task.deadline %}
     <span class="remaining">Time left: <span class="emph">{% if remaining_days %}{{ remaining_days }} days {% endif %}{{ remaining_hours }} hrs {{ remaining_minutes }} min</span></span>
@@ -116,4 +130,5 @@
     {{ task.description|safe }}
   </div>
   <!-- end .block-task-description -->
+</div>
 </div>

@@ -22,12 +22,10 @@ from google.appengine.ext import blobstore
 
 from django.utils.translation import ugettext
 
-from soc.modules.gci.models import avatars
-
-import soc.models.profile
+from soc.models import profile
 
 
-class GCIProfile(soc.models.profile.Profile):
+class GCIProfile(profile.Profile):
   """GCIProfile Model.
   """
   automatic_task_subscription = db.BooleanProperty(
@@ -36,22 +34,22 @@ class GCIProfile(soc.models.profile.Profile):
   automatic_task_subscription.help_text = ugettext(
       'Whether to subscribe to tasks of interest automatically. These are '
       'tasks which you have claimed or are mentoring.')
-  automatic_task_subscription.group = ugettext("6. Notification settings")
+  automatic_task_subscription.group = profile.NOTIFICATION_SETTINGS_GROUP
 
   # Avatar figure chosen by student and mentor
   avatar = db.StringProperty(
       required=False, verbose_name=ugettext('Avatar'))
-  avatar.group = ugettext("1. Public Info")
+  avatar.group = profile.PUBLIC_INFO_GROUP
 
 
-class GCIStudentInfo(soc.models.profile.StudentInfo):
+class GCIStudentInfo(profile.StudentInfo):
   """GCIStudentInfo Model.
 
   Parent:
     soc.modules.gci.models.profile.GCIProfile
   """
-  #: number of tasks completed
-  number_of_tasks_completed = db.IntegerProperty(default=0)
+  #: number of tasks completed by the student
+  number_of_completed_tasks = db.IntegerProperty(default=0)
 
   #: Property determining whether the student has closed at least one task
   task_closed = db.BooleanProperty(default=False)
@@ -66,6 +64,9 @@ class GCIStudentInfo(soc.models.profile.StudentInfo):
   consent_form.help_text = ugettext(
       'A signed Parental Consent Form from your legal parent or guardian')
 
+  #: Stores whether the consent form is verified by the program host.
+  consent_form_verified = db.BooleanProperty(default=False)
+
   #: Property pointing to the second page of the consent form
   #: (Deprecated since GCI2011)
   consent_form_two = blobstore.BlobReferenceProperty(
@@ -75,6 +76,7 @@ class GCIStudentInfo(soc.models.profile.StudentInfo):
 
   #: Property pointing to the student id form
   student_id_form = blobstore.BlobReferenceProperty(
-      required=False, verbose_name=ugettext('Student ID form'))
-  student_id_form.help_text = ugettext(
-      'A scan of your student ID to verify your student status and birthday.')
+      required=False, verbose_name=ugettext('Enrollment Form'))
+
+  #: Stores whether the student id form is verified by the program host.
+  student_id_form_verified = db.BooleanProperty(default=False)

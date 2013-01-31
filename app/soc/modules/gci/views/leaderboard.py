@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing the view for GCI leaderboard page.
-"""
+
+"""Module containing the view for GCI leaderboard page."""
 
 from soc.logic.exceptions import AccessViolation
 
@@ -26,9 +24,9 @@ from soc.modules.gci.logic import task as task_logic
 
 from soc.modules.gci.models.score import GCIScore
 
-from soc.modules.gci.views.all_tasks import TaskList
+from soc.modules.gci.templates.task_list import TaskList
 from soc.modules.gci.views import common_templates
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -45,12 +43,13 @@ class LeaderboardList(Template):
     r = data.redirect
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s" % (
+    list_config.addPlainTextColumn('key', 'Key', (lambda ent, *args: "%s" % (
         ent.parent().key().id_or_name())), hidden=True)
-    list_config.addColumn('student', 'Student',
+    list_config.addPlainTextColumn('student', 'Student',
         lambda e, *args: e.parent().name())
     list_config.addSimpleColumn('points', 'Points')
-    list_config.addColumn('tasks', 'Tasks', lambda e, *args: len(e.tasks))
+    list_config.addNumericalColumn('tasks', 'Tasks',
+        lambda e, *args: len(e.tasks))
     list_config.setDefaultSort('points', 'desc')
 
     list_config.setRowAction(
@@ -99,25 +98,20 @@ class AllStudentTasksList(TaskList):
   _LIST_COLUMNS = ['title', 'organization']
 
   def __init__(self, request, data):
-    super(AllStudentTasksList, self).__init__(
-        request, data, self._LIST_COLUMNS)
+    super(AllStudentTasksList, self).__init__(request, data)
 
-  def context(self):
-    description = 'List of tasks closed by %s' % (
-            self.data.url_profile.name())
+  def _getColumns(self):
+    return self._LIST_COLUMNS
 
-    task_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
+  def _getDescription(self):
+    return 'List of tasks closed by %s' % (
+        self.data.url_profile.name())
 
-    return {
-        'lists': [task_list],
-    }
-
-  def _getQueryForTasks(self):
+  def _getQuery(self):
     return task_logic.queryAllTasksClosedByStudent(self.data.url_profile)
 
 
-class LeaderboardPage(RequestHandler):
+class LeaderboardPage(GCIRequestHandler):
   """View for the leaderboard page.
   """
 
@@ -131,7 +125,7 @@ class LeaderboardPage(RequestHandler):
     ]
 
   def checkAccess(self):
-    pass
+    self.check.isHost()
 
   def jsonContext(self):
     list_content = LeaderboardList(self.request, self.data).getListData()
@@ -157,7 +151,7 @@ class LeaderboardPage(RequestHandler):
     return context
 
 
-class StudentTasksPage(RequestHandler):
+class StudentTasksPage(GCIRequestHandler):
   """View for the list of all the tasks closed by the specified student.
   """
 
@@ -171,10 +165,16 @@ class StudentTasksPage(RequestHandler):
     ]
 
   def checkAccess(self):
-    pass
+    self.mutator.studentFromKwargs()
+    try:
+      self.check.isHost()
+    except AccessViolation:
+      self.check.hasProfile()
+      # check if the profile in URL kwargs is the current profile
+      if self.data.profile.key() != self.data.url_profile.key():
+        raise AccessViolation('You do not have access to this data')
 
   def jsonContext(self):
-    self.mutator.studentFromKwargs()
     list_content = AllStudentTasksList(self.request, self.data).getListData()
 
     if not list_content:
@@ -183,7 +183,6 @@ class StudentTasksPage(RequestHandler):
     return list_content.content()
 
   def context(self):
-    self.mutator.studentFromKwargs()
     return {
         'page_name': "Tasks closed by %s" % self.data.url_profile.name(),
         'tasks_list': AllStudentTasksList(self.request, self.data),

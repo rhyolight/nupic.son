@@ -18,16 +18,8 @@
 """
 
 
-import httplib
-import urllib
-
-from nose.plugins import skip
-
-from django.utils import simplejson
-
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
-from tests.timeline_utils import GSoCTimelineHelper
 
 
 class WithdrawProjectsTest(GSoCDjangoTestCase):
@@ -42,20 +34,14 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     and all contexts were passed
     """
     self.assertTrue('base_layout' in response.context)
-    self.assertTrue('cbox' in response.context)
-    if response.context['cbox']:
-      self.assertGSoCColorboxTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base_colorbox.html')
-    else:
-      self.assertGSoCTemplatesUsed(response)
-      self.assertEqual(response.context['base_layout'],
+    self.assertGSoCTemplatesUsed(response)
+    self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
 
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/withdraw_projects/base.html')
+        'v2/modules/gsoc/accept_withdraw_projects/base.html')
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/withdraw_projects/_project_list.html')
+        'v2/modules/gsoc/accept_withdraw_projects/base.html')
 
   def testWithdrawProjects(self):
     self.data.createHost()
@@ -63,9 +49,6 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
 
     url = '/gsoc/withdraw_projects/' + self.gsoc.key().name()
     response = self.get(url)
-
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy!")
 
     self.assertWithdrawProjects(response)
 

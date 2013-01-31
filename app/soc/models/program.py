@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2008 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,23 +66,26 @@ class Program(soc.models.presence.Presence):
   #: participate
   student_min_age = db.IntegerProperty(
       required=False, verbose_name=ugettext('Student minimum age'))
-  student_min_age.group = ugettext('Contest Rules')
+  student_min_age.group = ugettext('Age Requirements')
   student_min_age.help_text = ugettext(
       'Minimum age (in years) of the student participate.')
 
+  # TODO(nathaniel): In the offseason, fix this to be the maximum
+  # allowed age (rounded down to year) rather than user-unfriendly
+  # "youngest disallowed age".
   #: Property that contains the maximum age of a student allowed to
   #: participate
   student_max_age = db.IntegerProperty(default=100,
-      required=False, verbose_name=ugettext('Student maximum age'))
-  student_max_age.group = ugettext('Contest Rules')
+      required=False, verbose_name=ugettext('Student age ceiling'))
+  student_max_age.group = ugettext('Age Requirements')
   student_max_age.help_text = ugettext(
-      'Maximum age (in years) of the student to participate.')
+      'Youngest disallowed age (in years).')
 
   #: Property that contains the date as of which above student
   #: minimum/maximum age requirement holds.
   student_min_age_as_of = db.DateProperty(
       required=False, verbose_name=ugettext('Minimum age as of'))
-  student_min_age_as_of.group = ugettext('Contest Rules')
+  student_min_age_as_of.group = ugettext('Age Requirements')
   student_min_age_as_of.help_text = ugettext(
       'Date as of which the student minimum age requirement '
       'should be reached.')
@@ -187,7 +188,7 @@ class Program(soc.models.presence.Presence):
 
   gplus = db.LinkProperty(
       required=False, verbose_name=ugettext("Google+ URL"))
-  gplus.help_text = ugettext("URL of the Google+ home page for GSoc")
+  gplus.help_text = ugettext("URL of the Google+ home page for the program")
   gplus.group = ugettext("1. Public Info")
 
   email = db.EmailProperty(

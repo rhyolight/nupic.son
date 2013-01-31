@@ -16,7 +16,7 @@
 	height:16px;
 }
 .dd .ddTitle span.arrow {
-	background:url(../../../images/v2/gci/dd-arrow-sm.png) no-repeat 0 0; float:right; display:inline-block;width:22px; height: 25px; cursor:pointer; 
+	background:url(../../../images/gci/dd-arrow-sm.png) no-repeat 0 0; float:right; display:inline-block;width:22px; height: 25px; cursor:pointer; 
 }
 
 .dd .ddTitle span.ddTitleText {text-indent:1px; overflow:hidden; line-height:16px; float: left; width: 40px; height: 40px; }
@@ -74,7 +74,7 @@
 	height: 52px;
 	width: 75px;
 }
-#avatar-icon-picker .dd .ddTitle span.arrow { background:url(../../../images/v2/gci/dd-arrow.png) no-repeat 0 0; width:22px; height: 52px; }
+#avatar-icon-picker .dd .ddTitle span.arrow { background:url(../../../images/gci/dd-arrow.png) no-repeat 0 0; width:22px; height: 52px; }
 
 #avatar-icon-picker .dd .ddTitle span.ddTitleText { width: 40px; height: 40px; }
 	#avatar-icon-picker .dd .ddTitle span#avatar-icon_titletext {

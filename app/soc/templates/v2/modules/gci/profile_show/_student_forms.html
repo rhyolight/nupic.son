@@ -1,0 +1,39 @@
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+
+<div id="gci_profile_show-student-forms" class="block block-page block-gci_profile_show-student_forms">
+  <div id="title-section-gci_profile_show-student-forms" class="block-form-title">
+    <span class="title">Student Forms</span>
+  </div>
+  <div id="block-gci_profile_show-student-forms-content" class="block-content model-readonly">
+    <div id="gci_profile_show-student-forms-consent-form" class="row">
+      <label>Parental consent form</label>
+      <span class="readonly-row-content">
+        {% if consent_form %}<a href="{{ consent_form_url }}">{{ consent_form.filename }} ({{ consent_form.size|filesizeformat }})</a>{% else %}N/A{% endif %}
+      </span>
+    </div>
+    <div class="verify_togglebutton on_off">
+      <input type="checkbox" name="consent_form" value="consent_form" id="verify-consent-form" {% if consent_form_verified %}checked="checked"{% endif %} />
+    </div>
+    <div id="gci_profile_show-student-forms-id-form" class="row">
+      <label>Enrollment form</label>
+      <span class="readonly-row-content">
+        {% if student_id_form %}<a href="{{ student_id_form_url }}">{{ student_id_form.filename }} ({{ student_id_form.size|filesizeformat }})</a>{% else %}N/A{% endif %}
+      </span>
+    </div>
+    <div class="verify_togglebutton on_off">
+      <input type="checkbox" name="student_id_form" value="student_id_form" id="verify-student-id-form" {% if student_id_form_verified %}checked="checked"{% endif %} />
+    </div>
+  </div>
+</div>

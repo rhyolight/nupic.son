@@ -249,6 +249,7 @@ _ALLOWED_PROPERTY_TYPES = set([
     datetime.date,
     datetime.time,
     Blob,
+    datastore_types.EmbeddedEntity,
     ByteString,
     Text,
     users.User,
@@ -361,7 +362,7 @@ def model_from_protobuf(pb, _entity_class=datastore.Entity):
     Model instance resulting from decoding the protocol buffer
   """
 
-  entity = _entity_class.FromPb(pb)
+  entity = _entity_class.FromPb(pb, default_kind=Expando.kind())
   return class_for_kind(entity.kind()).from_entity(entity)
 
 
@@ -1230,9 +1231,9 @@ class Model(object):
 
     Returns:
       If a single key was given: a Model instance associated with key
-      for provided class if it exists in the datastore, otherwise
-      None; if a list of keys was given: a list whose items are either
-      a Model instance or None.
+      for the provided class if it exists in the datastore, otherwise
+      None. If a list of keys was given: a list where list[i] is the
+      Model instance for keys[i], or None if no instance exists.
 
     Raises:
       KindError if any of the retreived objects are not instances of the
@@ -1529,9 +1530,9 @@ def get(keys, **kwargs):
 
     Returns:
       If a single key was given: a Model instance associated with key
-      for if it exists in the datastore, otherwise None; if a list of
-      keys was given: a list whose items are either a Model instance or
-      None.
+      if it exists in the datastore, otherwise None. If a list of keys was
+      given: a list where list[i] is the Model instance for keys[i], or
+      None if no instance exists.
   """
   return get_async(keys, **kwargs).get_result()
 
@@ -1563,7 +1564,8 @@ def put(models, **kwargs):
       specified as a keyword argument.
 
   Returns:
-    A Key or a list of Keys (corresponding to the argument's plurality).
+    A Key if models is an instance, a list of Keys in the same order
+    as models if models is a list.
 
   Raises:
     TransactionFailedError if the data could not be committed.
@@ -3605,6 +3607,10 @@ class ReferenceProperty(Property):
 
     self.reference_class = self.data_type = reference_class
 
+  def make_value_from_datastore_index_value(self, index_value):
+    value = datastore_types.RestoreFromIndexValue(index_value, Key)
+    return self.make_value_from_datastore(value)
+
   def __property_config__(self, model_class, property_name):
     """Loads all of the references that point to this model.
 
@@ -3739,7 +3745,7 @@ class ReferenceProperty(Property):
 
     if value is not None and not isinstance(value, self.reference_class):
       raise KindError('Property %s must be an instance of %s' %
-                            (self.name, self.reference_class.kind()))
+                      (self.name, self.reference_class.kind()))
 
     return value
 

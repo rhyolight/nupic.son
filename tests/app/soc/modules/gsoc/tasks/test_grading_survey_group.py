@@ -19,9 +19,6 @@
 
 
 import httplib
-import urllib
-
-from nose.plugins import skip
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
@@ -48,7 +45,6 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
 
   def setUp(self):
     super(GradingSurveyGroupTest, self).setUp()
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     self.init()
     self.createMentor()
     self.createStudent()

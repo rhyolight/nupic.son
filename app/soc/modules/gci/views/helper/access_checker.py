@@ -47,6 +47,12 @@ DEF_ALL_WORK_STOPPED = ugettext(
 DEF_COMMENTING_NOT_ALLOWED = ugettext(
     "No more comments can be placed at this time.")
 
+DEF_NO_ORG_ADMIN_PROFILE = ugettext(
+    'You must have an organization administrator profile to apply to be an '
+    'an organization. If you want to register as an organization '
+    'administrator for %s please <a href="%s">click here</a>, register and '
+    'then come back to this page.')
+
 DEF_NO_TASK_CREATE_PRIV = ugettext(
     'You do not have sufficient privileges to create a new task for %s.' )
 
@@ -56,6 +62,11 @@ DEF_NO_TASK_EDIT_PRIV = ugettext(
 DEF_NO_PREV_ORG_MEMBER = ugettext(
     'To apply as an organization for GCI you must have been a member of an '
     'organization in Google Summer of Code or Google Code In.')
+
+DEF_NOT_ORG_ADMIN_FOR_ORG_APP = ugettext(
+    "You should be listed as one of the administrators on %(org_name)s's "
+    "organization application to create a new organization profile for "
+    "%(org_name)s.")
 
 DEF_TASK_UNEDITABLE_STATUS = ugettext(
     'This task is already published and published tasks cannot be edited.')
@@ -142,9 +153,6 @@ class Mutator(access_checker.Mutator):
 
     if not self.data.org_app_record:
       raise NotFound("There is no org_app for the org_id %s" % org_id)
-
-    if self.data.org_app_record.status != 'accepted':
-      raise AccessViolation(DEF_ORG_APP_REJECTED)
 
   def fullEdit(self, full_edit=False):
     """Sets full_edit to True/False depending on the status of the task.
@@ -238,21 +246,24 @@ class AccessChecker(access_checker.AccessChecker):
     else:
       self.isLoggedIn()
 
-  def canTakeOrgApp(self):
-    """A user can take the GCI org app if he/she participated in GSoC or GCI
-    as a non-student.
+  def hasNonStudentProfileInAProgram(self):
+    """Check if the user has participated in the previous programs.
+
+    This checks if the user has at least one non-student profile in previous
+    programs.
     """
     from soc.modules.gsoc.models.profile import GSoCProfile
 
-    self.isUser()
+    if not self.data.user:
+      raise AccessViolation(DEF_NO_PREV_ORG_MEMBER)
 
-    q = GSoCProfile.all()
+    q = GSoCProfile.all(keys_only=True)
     q.filter('is_student', False)
     q.filter('status', 'active')
     q.filter('user', self.data.user)
     gsoc_profile = q.get()
 
-    q = GCIProfile.all()
+    q = GCIProfile.all(keys_only=True)
     q.filter('is_student', False)
     q.filter('status', 'active')
     q.filter('user', self.data.user)
@@ -261,11 +272,56 @@ class AccessChecker(access_checker.AccessChecker):
     if not (gsoc_profile or gci_profile):
       raise AccessViolation(DEF_NO_PREV_ORG_MEMBER)
 
-  def canCreateNewOrg(self):
-    """A user can create a new org if they have an accepted org app.
+  def canTakeOrgApp(self):
+    """Check if the user can take the org app.
+
+    A user can take the GCI org app if he/she participated in GSoC or GCI as
+    a non-student and has a non-student profile for the current program.
+    """
+
+    # TODO(daniel): make this a program setting - sometimes it may be possible
+    # to accept organizations which have not participated before
+    self.hasNonStudentProfileInAProgram()
+
+    program = self.data.program
+    r = self.data.redirect.createProfile('org_admin')
+    msg = DEF_NO_ORG_ADMIN_PROFILE % (
+        program.short_name, r.urlOf('create_gci_profile', secure=True))
+
+    q = GCIProfile.all(keys_only=True)
+    q.ancestor(self.data.user)
+    q.filter('scope', self.data.program)
+    q.filter('is_student', False)
+    q.filter('status', 'active')
+    gci_org_admin_profile = q.get()
+    if not gci_org_admin_profile:
+      raise AccessViolation(msg)
+
+  def isOrgAppAccepted(self):
+    """Checks if the org app stored in request data is accepted.
+    """
+    assert self.data.org_app_record
+
+    if self.data.org_app_record.status != 'accepted':
+      raise AccessViolation(DEF_ORG_APP_REJECTED)
+
+  def isUserAdminForOrgApp(self):
+    """Checks if the user is listed as an admin for the org app in RequestData.
     """
     assert self.data.org_app
+    assert self.data.org_app_record
 
+    if not self.data.user or self.data.user.key() not in [
+        self.data.org_app_record.main_admin.key(),
+        self.data.org_app_record.backup_admin.key()]:
+      raise AccessViolation(DEF_NOT_ORG_ADMIN_FOR_ORG_APP % {
+          'org_name': self.data.org_app_record.name})
+
+  def hasProfileOrRedirectToCreate(self):
+    """Checks if user has a profile and redirect to create an org admin
+    profile for the organization listed in the GET data if the user does
+    not have a profile.
+    """
     if not self.data.profile:
       org_id = self.data.GET['org_id']
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
@@ -293,10 +349,28 @@ class AccessChecker(access_checker.AccessChecker):
   def canCreateTask(self):
     """Checks whether the currently logged in user can edit the task.
     """
+    return self.canCreateTaskWithRequiredRole('mentor')
+
+  def canBulkCreateTask(self):
+    """Checks whether the currently logged in user can bulk create tasks.
+    """
+    return self.canCreateTaskWithRequiredRole('org_admin')
+
+  def canCreateTaskWithRequiredRole(self, required_role):
+    """Checks whether the currently logged in user can create or edit
+    a task, when the specified role is required.
+    """
     assert access_checker.isSet(self.data.organization)
+    assert access_checker.isSet(self.data.org_admin_for)
     assert access_checker.isSet(self.data.mentor_for)
 
-    valid_org_keys = [o.key() for o in self.data.mentor_for]
+    if required_role == 'mentor':
+      valid_org_keys = [o.key() for o in self.data.mentor_for]
+    elif required_role == 'org_admin':
+      valid_org_keys = [o.key() for o in self.data.org_admin_for]
+    else:
+      raise ValueError('Invalid required_role argument ' + str(required_role))
+
     if self.data.organization.key() not in valid_org_keys:
       raise AccessViolation(DEF_NO_TASK_CREATE_PRIV % (
           self.data.organization.name))

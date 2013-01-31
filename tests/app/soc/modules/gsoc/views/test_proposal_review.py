@@ -90,7 +90,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     response, properties = self.modelPost(url, GSoCComment, override)
     self.assertResponseRedirect(response)
 
-    comment = GSoCComment.all().get()
+    comment = GSoCComment.all().ancestor(proposal).get()
     self.assertPropertiesEqual(properties, comment)
 
     self.assertEmailSent(to=mentor.profile.email, n=1)
@@ -106,7 +106,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     response, properties = self.modelPost(url, GSoCScore, override)
     self.assertResponseOK(response)
 
-    score = GSoCScore.all().get()
+    score = GSoCScore.all().ancestor(proposal).get()
     self.assertPropertiesEqual(properties, score)
 
     proposal = GSoCProposal.all().get()
@@ -118,7 +118,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     response, properties = self.modelPost(url, GSoCScore, override)
     self.assertResponseOK(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(4, proposal.score)
     self.assertEqual(1, proposal.nr_scores)
 
@@ -127,7 +127,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     response, properties = self.modelPost(url, GSoCScore, override)
     self.assertResponseOK(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(0, proposal.score)
     self.assertEqual(0, proposal.nr_scores)
 
@@ -197,7 +197,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     # fail if mentor tries to accept the proposal
     self.assertResponseForbidden(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertFalse(proposal.accept_as_project)
 
     # accept the proposal as project when the org admin tries to accept
@@ -206,7 +206,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     response = self.post(url, postdata)
     self.assertResponseOK(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertTrue(proposal.accept_as_project)
 
   def testProposalModificationButton(self):
@@ -230,7 +230,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseOK(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertTrue(proposal.is_editable_post_deadline)
 
   def testWishToMentorButton(self):
@@ -254,13 +254,13 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     postdata = {'value': 'unchecked'}
     response = self.post(url, postdata)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertTrue(self.data.profile.key() in proposal.possible_mentors)
 
     postdata = {'value': 'checked'}
     response = self.post(url, postdata)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertFalse(self.data.profile.key() in proposal.possible_mentors)
 
     other_mentor.profile.mentor_for = []
@@ -272,7 +272,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     url = '/gsoc/proposal/review/' + suffix
     response = self.get(url)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertFalse(other_mentor.profile.key() in proposal.possible_mentors)
 
   def testPubliclyVisibleButton(self):
@@ -292,7 +292,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseOK(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertTrue(proposal.is_publicly_visible)
 
   def testWithdrawProposalButton(self):
@@ -313,7 +313,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseOK(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(proposal.status, 'withdrawn')
 
     url = '/gsoc/proposal/withdraw/' + suffix
@@ -322,7 +322,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseBadRequest(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(proposal.status, 'withdrawn')
 
     url = '/gsoc/proposal/withdraw/' + suffix
@@ -331,7 +331,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseOK(response)
 
-    proposal = GSoCProposal.all().get()
+    proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(proposal.status, 'pending')
 
   def testAssignMentor(self):

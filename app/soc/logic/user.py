@@ -19,17 +19,20 @@
 
 
 from google.appengine.api import users
-from google.appengine.ext import db
+from google.appengine.runtime import apiproxy_errors
 
 from soc.logic import accounts
+from soc.logic import exceptions
+from soc.models import user
 
-from soc.models.user import User
+
+MELANGE_DELETED_USER = 'melange_deleted_user'
 
 
 def isFormerAccount(account):
   """Returns true if account is a former account of some User.
   """
-  return User.all().filter('former_accounts', account).count() > 0
+  return user.User.all().filter('former_accounts', account).count() > 0
 
 
 def forCurrentAccount():
@@ -41,25 +44,24 @@ def forCurrentAccount():
   If there is no user logged in, or they have no valid associated User
   entity, None is returned.
   """
-
   account = accounts.getCurrentAccount()
 
   if not account:
     return None
 
-  user = forAccount(account)
+  user_ent = forAccount(account)
 
-  if user and not user.user_id and account.user_id():
-    from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
+  if user_ent and not user_ent.user_id and account.user_id():
     # update the user id that was added to GAE after Melange was launched
     try:
-      user.user_id = account.user_id()
-      user.put()
-    except CapabilityDisabledError, e:
+      user_ent.user_id = account.user_id()
+      user_ent.put()
+    except apiproxy_errors.CapabilityDisabledError, _:
       # readonly mode, that's fine
       pass
 
-  return user
+  return user_ent
+
 
 def forCurrentUserId():
   """Retrieves the user entity for the currently logged in user id.
@@ -67,26 +69,26 @@ def forCurrentUserId():
   If there is no user logged in, or they have no valid associated User
   entity, None is returned.
   """
-
   user_id = accounts.getCurrentUserId()
 
   if not user_id:
     return None
 
-  user = forUserId(user_id)
+  user_ent = forUserId(user_id)
 
   current_account = accounts.getCurrentAccount()
-  if user and (str(user.account) != str(current_account)):
+  if user_ent and (str(user_ent.account) != str(current_account)):
     # The account of the user has changed, we use this account to send system
     # emails to.
     try:
-      user.account = current_account
-      user.put()
-    except CapabilityDisabledError, e:
+      user_ent.account = current_account
+      user_ent.put()
+    except apiproxy_errors.CapabilityDisabledError, _:
       # readonly mode, that's fine
       pass
 
-  return user
+  return user_ent
+
 
 def current():
   """Retrieves the user entity for the currently logged in user.
@@ -95,10 +97,10 @@ def current():
     The User entity of the logged in user or None if not available.
   """
   # look up with the unique id first
-  user = forCurrentUserId()
+  user_ent = forCurrentUserId()
 
-  if user:
-    return user
+  if user_ent:
+    return user_ent
 
   # look up using the account address thereby setting the unique id
   return forCurrentAccount()
@@ -110,13 +112,12 @@ def forAccount(account):
   If there is no user logged in, or they have no valid associated User
   entity, None is returned.
   """
-
   if not account:
-    raise base.InvalidArgumentError("Missing argument 'account'")
+    raise exceptions.BadRequest("Missing argument 'account'")
 
   account = accounts.normalizeAccount(account)
 
-  q = User.all()
+  q = user.User.all()
   q.filter('account', account)
   q.filter('status', 'valid')
   return q.get()
@@ -128,38 +129,52 @@ def forUserId(user_id):
   If there is no user logged in, or they have no valid associated User
   entity, None is returned.
   """
-
   if not user_id:
-    raise base.InvalidArgumentError("Missing argument 'user_id'")
+    raise exceptions.BadRequest("Missing argument 'user_id'")
 
-  q = User.all()
+  q = user.User.all()
   q.filter('user_id', user_id)
   q.filter('status', 'valid')
   return q.get()
 
 
-def isDeveloper(account=None, user=None):
+def isDeveloper(account=None, user_ent=None):
   """Returns true iff the specified user is a Developer.
 
   Args:
     account: if not supplied, defaults to the current account
-    user: if not specified, defaults to the current user
+    user_ent: if not specified, defaults to the current user
   """
-
   current = accounts.getCurrentAccount()
 
   if not account:
     # default account to the current logged in account
     account = current
 
-  if account and (not user):
+  if account and (not user_ent):
     # default user to the current logged in user
-    user = forAccount(account)
+    user_ent = forAccount(account)
 
   # pylint: disable=E1103
-  if user and user.is_developer:
+  if user_ent and user_ent.is_developer:
     return True
 
   if account and (account == current):
     return users.is_current_user_admin()
 
+
+def getOrCreateDummyMelangeDeletedUser():
+  """Fetches or creates the dummy melange deleted user entity.
+  """
+  q = user.User.all().filter('link_id', MELANGE_DELETED_USER)
+  user_ent = q.get()
+
+  # If the requested user does not exist, create one.
+  if not user_ent:
+    account = users.User(email=MELANGE_DELETED_USER)
+    user_ent = user.User(
+        key_name=MELANGE_DELETED_USER, account=account,
+        link_id=MELANGE_DELETED_USER)
+    user_ent.put()
+
+  return user_ent

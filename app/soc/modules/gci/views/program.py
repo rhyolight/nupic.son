@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the program settings pages.
-"""
-
+"""Module for the program settings pages."""
 
 from google.appengine.ext import db
 
@@ -27,18 +23,20 @@ from django.utils.translation import ugettext
 from soc.logic import tags as tags_logic
 from soc.models.document import Document
 from soc.views import forms
+from soc.views import program as program_view
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.models.program import GCIProgram
+from soc.modules.gci.models.program import GCIProgramMessages
 from soc.modules.gci.models.timeline import GCITimeline
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.forms import GCIModelForm
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
 class TimelineForm(GCIModelForm):
-  """Django form to edit timeline settings.
-  """
+  """Django form to edit timeline settings."""
 
   class Meta:
     css_prefix = 'timeline_form'
@@ -47,8 +45,7 @@ class TimelineForm(GCIModelForm):
 
 
 class ProgramForm(GCIModelForm):
-  """Django form for the program settings.
-  """
+  """Django form for the program settings."""
 
   def __init__(self, data, *args, **kwargs):
     self.request_data = data
@@ -76,9 +73,21 @@ class ProgramForm(GCIModelForm):
     return self.cleaned_data
 
 
-class ProgramPage(RequestHandler):
-  """View for the program profile.
+class GCIProgramMessagesForm(GCIModelForm):
+  """Django form for the program messages settings.
   """
+
+  def __init__(self, request_data, *args, **kwargs):
+    self.request_data = request_data
+    super(GCIProgramMessagesForm, self).__init__(*args, **kwargs)
+
+  class Meta:
+    css_prefix = 'program_messages_form'
+    model = GCIProgramMessages
+
+
+class ProgramPage(GCIRequestHandler):
+  """View for the program profile."""
 
   def djangoURLPatterns(self):
     return [
@@ -115,34 +124,28 @@ class ProgramPage(RequestHandler):
     }
 
   def validate(self):
-    program_form = ProgramForm(self.data, self.data.POST,
-                               instance=self.data.program)
+    program_form = ProgramForm(
+        self.data, self.data.POST, instance=self.data.program)
 
-    if not program_form.is_valid():
+    if program_form.is_valid():
+      program_form.save()
+      return True
+    else:
       return False
 
-    program_form.save()
-
-    return True
-
   def post(self):
-    """Handler for HTTP POST request.
-    """
-    if self.data.GET.get('cbox'):
-      cbox = True
-    else:
-      cbox = False
+    """Handler for HTTP POST request."""
 
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gci_program', validated=True, cbox=cbox)
+      return self.redirect.to('edit_gci_program', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
 
-class TimelinePage(RequestHandler):
-  """View for the participant profile.
-  """
+class TimelinePage(GCIRequestHandler):
+  """View for the participant profile."""
 
   def djangoURLPatterns(self):
     return [
@@ -170,22 +173,41 @@ class TimelinePage(RequestHandler):
     timeline_form = TimelineForm(self.data.POST,
                                 instance=self.data.program_timeline)
 
-    if not timeline_form.is_valid():
+    if timeline_form.is_valid():
+      timeline_form.save()
+      return True
+    else:
       return False
 
-    timeline_form.save()
-    return True
-
   def post(self):
-    """Handler for HTTP POST request.
-    """
-    if self.data.GET.get('cbox'):
-      cbox = True
-    else:
-      cbox = False
-
+    """Handler for HTTP POST request."""
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gci_timeline', validated=True, cbox=cbox)
+      return self.redirect.to('edit_gci_timeline', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
+
+
+class GCIProgramMessagesPage(
+    program_view.ProgramMessagesPage, GCIRequestHandler):
+  """View for the content of GCI program specific messages to be sent."""
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'program/messages/edit/%s$' % url_patterns.PROGRAM, self,
+            name=self._getUrlName()),
+    ]
+
+  def templatePath(self):
+    return 'v2/modules/gci/program/messages.html'
+
+  def _getForm(self, entity):
+    return GCIProgramMessagesForm(
+        self.data, self.data.POST or None, instance=entity)
+
+  def _getModel(self):
+    return GCIProgramMessages
+
+  def _getUrlName(self):
+    return url_names.GCI_EDIT_PROGRAM_MESSAGES

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC Homepage.
-"""
-
+"""Module containing the views for GSoC Homepage."""
 
 from django.conf.urls.defaults import url as django_url
-from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from soc.logic import accounts
@@ -37,7 +32,7 @@ from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -52,7 +47,6 @@ class Apply(Template):
 
   def context(self):
     organization = self.data.organization
-    r = self.data.redirect
 
     context = {
         'request_data': self.data,
@@ -68,21 +62,24 @@ class Apply(Template):
 
       if self.data.timeline.studentSignup():
         context['student_apply_block'] = True
-        profile_link = r.createProfile('student').urlOf('create_gsoc_profile',
-                                                        secure=True)
+        profile_link = self.data.redirect.createProfile('student').urlOf(
+            'create_gsoc_profile', secure=True)
         context['student_profile_link'] = profile_link + suffix
       else:
         context['mentor_apply_block'] = True
 
-      profile_link = r.createProfile('mentor').urlOf('create_gsoc_profile',
-                                                     secure=True)
+      profile_link = self.data.redirect.createProfile('mentor').urlOf(
+          'create_gsoc_profile', secure=True)
       context['mentor_profile_link'] = profile_link + suffix
       return context
 
     if self.data.student_info:
       if self.data.timeline.studentSignup():
         context['student_apply_block'] = True
-        submit_proposal_link = r.organization().urlOf('submit_gsoc_proposal')
+        # TODO(nathaniel): make this .organization() call unnecessary.
+        self.data.redirect.organization()
+
+        submit_proposal_link = self.data.redirect.urlOf('submit_gsoc_proposal')
         context['submit_proposal_link'] = submit_proposal_link
 
       return context
@@ -150,14 +147,16 @@ class ProjectList(Template):
 
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key', (lambda ent, *args: "%s/%s" % (
-        ent.parent().key().name(), ent.key().id())), hidden=True)
-    list_config.addColumn('student', 'Student',
-                          lambda entity, *args: entity.parent().name())
+    list_config.addPlainTextColumn('key', 'Key', 
+        (lambda ent, *args: "%s/%s" % (
+            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config.addPlainTextColumn('student', 'Student',
+        lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'mentors', 'Mentor',
-        lambda entity, m, *args: [m[i].name() for i in entity.mentors])
+        lambda entity, m, *args: ", ".join(
+            [m[i].name() for i in entity.mentors]))
     list_config.setDefaultSort('student')
     list_config.setRowAction(lambda e, *args, **kwargs:
         r.project(id=e.key().id_or_name(), student=e.parent().link_id).
@@ -200,7 +199,7 @@ class ProjectList(Template):
     return "v2/modules/gsoc/org_home/_project_list.html"
 
 
-class GSoCBanOrgPost(BanOrgPost, RequestHandler):
+class GSoCBanOrgPost(BanOrgPost, GSoCRequestHandler):
   """Handles banning/unbanning of GSoC organizations.
   """
 
@@ -220,7 +219,7 @@ class GSoCBanOrgPost(BanOrgPost, RequestHandler):
 class GSoCHostActions(HostActions):
   """Template to render the left side host actions.
   """
-  
+
   DEF_BAN_ORGANIZATION_HELP = ugettext(
       'When an organization is banned, it is not active in the program')
 
@@ -231,7 +230,7 @@ class GSoCHostActions(HostActions):
     return self.DEF_BAN_ORGANIZATION_HELP
 
 
-class OrgHome(RequestHandler):
+class OrgHome(GSoCRequestHandler):
   """View methods for Organization Home page.
   """
 
@@ -268,88 +267,6 @@ class OrgHome(RequestHandler):
     return list_content.content()
 
 
-  def _getJSONMapData(self):
-    """Constructs the JSON for Google Maps on organization home page.
-
-    Returns:
-      A JSON object containing map data.
-    """
-    r = self.data.redirect
-
-    students = {}
-    mentors = {}
-    student_projects = {}
-
-    # get the query object which returns the Keys for project entities
-    # for the given organization
-    projects = project_logic.getAcceptedProjectsForOrg(
-        self.data.organization)
-
-    # Construct a dictionary of mentors and students. For each mentor construct
-    # a list of 3-tuples containing student name, project title and url.
-    # And for each student a list of 3 tuples containing mentor name, project
-    # title and url. Only students and mentors who have agreed to publish their
-    # locations will be in the dictionary.
-    for project in projects:
-      student = project.parent()
-      student_key = str(student.key())
-
-      # TODO(SRabbelier): also display secondary mentors
-      mentor_key = str(project.mentors[0])
-      mentor = GSoCProfile.get(mentor_key)
-
-      project_key_object = project.key()
-      project_key = str(project_key_object)
-      project_link = r.project(
-          id=project_key_object.id_or_name(),
-          student=student.link_id).urlOf(
-              'gsoc_project_details')
-
-      # store the project data in the projects dictionary
-      student_projects[project_key] = {
-         'title': project.title,
-         'link': project_link,
-         'student_key': student_key,
-         'student_name': student.name(),
-         'mentor_key': mentor_key,
-         'mentor_name': mentor.name()
-         }
-
-      if mentor.publish_location:
-        if mentor_key not in mentors:
-          # we have not stored the information of this mentor yet
-          mentors[mentor_key] = {
-              'name': mentor.name(),
-              'lat': mentor.latitude,
-              'lng': mentor.longitude,
-              'projects': []
-              }
-
-        # add this project to the mentor's list
-        mentors[mentor_key]['projects'].append(project_key)
-
-      if student.publish_location:
-        if student_key not in students:
-          # new student, store the name and location
-          students[student_key] = {
-              'name': student.name(),
-              'lat': student.latitude,
-              'lng': student.longitude,
-              'projects': [],
-              }
-
-        # append the current project to the known student's list of projects
-        students[student_key]['projects'].append(project_key)
-
-    # combine the people and projects data into one JSON object
-    data = {
-        'mentors': mentors,
-        'students': students,
-        'projects': student_projects
-        }
-
-    return simplejson.dumps(data)
-
   def context(self):
     """Handler to for GSoC Organization Home page HTTP get request.
     """
@@ -377,11 +294,14 @@ class OrgHome(RequestHandler):
       r.organization(organization)
       context['edit_link'] =  r.urlOf('edit_gsoc_org_profile')
       context['start_connection_link'] = r.organization().urlOf(
-                                                url_names.GSOC_ORG_CONNECTION)
+          url_names.GSOC_ORG_CONNECTION)
 
       if (self.data.program.allocations_visible and
           self.data.timeline.beforeStudentsAnnounced()):
-        context['slot_transfer_link'] = r.organization(organization).urlOf(
+        # TODO(nathaniel): make this .organization call unnecessary.
+        self.redirect.organization(organization=organization)
+
+        context['slot_transfer_link'] = self.redirect.urlOf(
             'gsoc_slot_transfer')
 
     if self.data.timeline.studentsAnnounced():
@@ -389,22 +309,18 @@ class OrgHome(RequestHandler):
 
       context['project_list'] = ProjectList(self.request, self.data)
 
-      # obtain a json object that contains the organization home page map data
-      context['org_map_data'] = self._getJSONMapData()
-
     if self.data.is_host or accounts.isDeveloper():
       context['host_actions'] = GSoCHostActions(self.data)
 
     return context
 
   def getCurrentTimeline(self, timeline, org_app):
-    """Return where we are currently on the timeline.
-    """
+    """Return where we are currently on the timeline."""
     if timeline_helper.isActivePeriod(org_app, 'survey'):
       return 'org_signup_period'
     elif timeline_helper.isActivePeriod(timeline, 'student_signup'):
       return 'student_signup_period'
     elif timeline_helper.isActivePeriod(timeline, 'program'):
       return 'program_period'
-
-    return 'offseason'
+    else:
+      return 'offseason'

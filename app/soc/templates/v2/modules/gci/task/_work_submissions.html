@@ -54,6 +54,13 @@
 
     {% if work_file_form %}
       <span class="block-task-uploaded-code-note">Upload your final work file or paste in its URL, then click Submit.</span>
+      {% if ws_error %}
+        <div class="form-row error">
+          <span class="form-row-error-msg">
+            Your work was not submitted due to an error, please retry.
+          </span>
+        </div>
+      {% endif %}
       <form method="post" enctype="multipart/form-data" id="file-form" class="form-upload-code clearfix">
         {{ work_file_form.render }}
         <div class="form-row form-row-buttons">

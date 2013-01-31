@@ -66,4 +66,4 @@ class ToggleButtonTemplate(Template):
     return "checked" if self.checked else "unchecked"
 
   def templatePath(self):
-    return 'v2/soc/_toggle_button.html'
+    return 'soc/_toggle_button.html'

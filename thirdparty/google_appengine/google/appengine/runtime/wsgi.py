@@ -31,9 +31,16 @@ code.
 
 
 import logging
+import sys
 import types
 
+from google.appengine import runtime
 from google.appengine.api import lib_config
+
+
+
+
+_DEADLINE_DURING_LOADING = 22
 
 
 class Error(Exception):
@@ -125,8 +132,8 @@ class WsgiRequest(object):
       InvalidResponseError: The arguments passed are invalid.
     """
     if not isinstance(status, str):
-      raise InvalidResponseError('status must be a str, got %r' %
-                                 _GetTypeName(status))
+      raise InvalidResponseError('status must be a str, got %r (%r)' %
+                                 (_GetTypeName(status), status))
     if not status:
       raise InvalidResponseError('status must not be empty')
     if not isinstance(response_headers, list):
@@ -139,16 +146,18 @@ class WsgiRequest(object):
       if len(header) != 2:
         raise InvalidResponseError('header tuples must have length 2, '
                                    'actual length %d' % len(header))
-      if not isinstance(header[0], str):
-        raise InvalidResponseError('header names must be str, got %r' %
-                                   _GetTypeName(header[0]))
-      if not isinstance(header[1], str):
-        raise InvalidResponseError('header values must be str, got %r' %
-                                   _GetTypeName(header[1]))
+      name, value = header
+      if not isinstance(name, str):
+        raise InvalidResponseError('header names must be str, got %r (%r)' %
+                                   (_GetTypeName(name), name))
+      if not isinstance(value, str):
+        raise InvalidResponseError('header values must be str, '
+                                   'got %r (%r) for %r' %
+                                   (_GetTypeName(value), value, name))
     try:
       status_number = int(status.split(' ')[0])
     except ValueError:
-      raise InvalidResponseError('status code is not a number')
+      raise InvalidResponseError('status code %r is not a number' % status)
     if status_number < 200 or status_number >= 600:
       raise InvalidResponseError('status code must be in the range [200,600), '
                                  'got %d' % status_number)
@@ -185,12 +194,33 @@ class WsgiRequest(object):
     """
     try:
       handler = _config_handle.add_wsgi_middleware(self._LoadHandler())
+    except runtime.DeadlineExceededError:
+
+
+
+
+
+
+
+
+      exc_info = sys.exc_info()
+      try:
+        logging.error('', exc_info=exc_info)
+      except runtime.DeadlineExceededError:
+
+        logging.exception('Deadline exception ocurred while logging a '
+                          'deadline exception.')
+
+
+
+        logging.error('Original exception:', exc_info=exc_info)
+      return {'error': _DEADLINE_DURING_LOADING}
     except:
       logging.exception('')
       return {'error': 1}
     result = None
     try:
-      result = handler(self._environ, self._StartResponse)
+      result = handler(dict(self._environ), self._StartResponse)
       for chunk in result:
         if not isinstance(chunk, str):
           raise InvalidResponseError('handler must return an iterable of str')

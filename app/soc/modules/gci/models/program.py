@@ -45,7 +45,7 @@ class GCIProgram(soc.models.program.Program):
   nr_simultaneous_tasks = db.IntegerProperty(
       required=True, default=1,
       verbose_name=ugettext('Simultaneous tasks'))
-  nr_simultaneous_tasks.group = ugettext('Contest Rules')
+  nr_simultaneous_tasks.group = ugettext('Contest')
   nr_simultaneous_tasks.help_text = ugettext(
       'Number of tasks students can work on simultaneously in the program.')
 
@@ -54,8 +54,8 @@ class GCIProgram(soc.models.program.Program):
   nr_winners = db.IntegerProperty(
       required=True, default=10,
       verbose_name=ugettext('Number of winners'))
-  nr_simultaneous_tasks.group = ugettext('Contest Rules')
-  nr_simultaneous_tasks.help_text = ugettext(
+  nr_winners.group = ugettext('Contest')
+  nr_winners.help_text = ugettext(
       'Number of winners to be selected at the end of the program.')
 
   #: A list of task types that a Task can belong to
@@ -68,8 +68,22 @@ class GCIProgram(soc.models.program.Program):
 
   #: Document reference property used for the Student Agreement
   terms_and_conditions = db.ReferenceProperty(
-    reference_class=soc.models.document.Document,
-    verbose_name=ugettext('Terms and Conditions'),
-    collection_name='terms_and_conditions')
+      reference_class=soc.models.document.Document,
+      verbose_name=ugettext('Terms and Conditions'),
+      collection_name='terms_and_conditions')
   terms_and_conditions.help_text = ugettext(
       'Document containing Terms and Conditions for participants.')
+
+  #: An URL to a page with example tasks so that students can get
+  #: some intuition about the types of tasks in the program
+  example_tasks = db.LinkProperty(
+      required=False, verbose_name=ugettext('Example tasks'))
+  example_tasks.help_text = ugettext(
+      'URL to a page with example tasks.')
+
+  #: URL to a page that contains the form translations.
+  form_translations_url = db.LinkProperty(
+      required=False, verbose_name=ugettext('Form translation URL'))
+  form_translations_url.help_text = ugettext(
+      'URL to the page containing translations of the forms students '
+      'should upload.')

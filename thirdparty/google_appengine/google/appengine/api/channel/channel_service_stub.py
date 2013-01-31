@@ -74,6 +74,9 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
     apiproxy_stub.APIProxyStub.__init__(self, service_name)
     self._log = log
     self._time_func = time_func
+
+
+
     self._connected_channel_messages = {}
 
 
@@ -93,7 +96,7 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
 
 
   def _Dynamic_CreateChannel(self, request, response):
-    """Implementation of channel.get_channel.
+    """Implementation of channel.create_channel.
 
     Args:
       request: A ChannelServiceRequest.
@@ -124,6 +127,7 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
     response.set_token(token)
 
 
+  @apiproxy_stub.Synchronized
   def _Dynamic_SendChannelMessage(self, request, response):
     """Implementation of channel.send_message.
 
@@ -168,25 +172,30 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
     else:
       return None
 
-  def is_valid_token(self, token):
-    """Checks if a token is valid and not expired.
+
+  def check_token_validity(self, token):
+    """Checks if a token is well-formed and its expiration status.
 
     Args:
       token: a token returned by CreateChannel.
 
     Returns:
-      True if the token is well-formed and not expired. False otherwise.
+      A tuple (syntax_valid, time_valid) where syntax_valid is true if the
+      token is well-formed and time_valid is true if the token is not expired.
+      In other words, a usable token will return (true, true).
     """
     pieces = token.split('-', 3)
     if len(pieces) != 4:
-      return False
+      return False, False
 
     (constant_identifier, token_id, expiration_sec, clientid) = pieces
+    syntax_valid = (
+        constant_identifier == ChannelServiceStub.CHANNEL_TOKEN_IDENTIFIER
+        and expiration_sec.isdigit())
+    time_valid = syntax_valid and long(expiration_sec) > self._time_func()
+    return (syntax_valid, time_valid)
 
-    return (constant_identifier == ChannelServiceStub.CHANNEL_TOKEN_IDENTIFIER
-            and all(c.isdigit() for c in expiration_sec)
-            and long(expiration_sec) > self._time_func())
-
+  @apiproxy_stub.Synchronized
   def get_channel_messages(self, token):
     """Returns the pending messages for a given channel.
 
@@ -205,6 +214,7 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
 
     return None
 
+  @apiproxy_stub.Synchronized
   def has_channel_messages(self, token):
     """Checks to see if the given channel has any pending messages.
 
@@ -222,6 +232,7 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
               token, has_messages)
     return has_messages
 
+  @apiproxy_stub.Synchronized
   def pop_first_message(self, token):
     """Returns and clears the first message from the message queue.
 
@@ -239,6 +250,7 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
 
     return None
 
+  @apiproxy_stub.Synchronized
   def clear_channel_messages(self, token):
     """Clears all messages from the channel.
 
@@ -255,7 +267,7 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
       self._log('Ignoring clear messages for nonexistent token (' +
                 token + ')')
 
-  class ChannelPresenceSocket():
+  class ChannelPresenceSocket(object):
     """A socket object to update channel client presence."""
 
     def __init__(self, path, client_id):
@@ -286,7 +298,6 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
     def shutdown(self, how):
       pass
 
-
   def connect_channel_event(self, client_id):
     """Tell the application that the client has connected."""
     return (self.ChannelPresenceSocket('connected/', client_id),
@@ -295,6 +306,9 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
 
   def add_connect_event(self, client_id):
     """Add an event to make a POST to the /_ah/channel/connect path.
+
+    Args:
+      client_id:  A client ID used for a particular channel.
 
     In production, the BuzzBot will make an HttpOverRpc call to the above path
     when it receives a presence stanza. We simulate the same thing here by using
@@ -306,12 +320,15 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
 
     """
 
+
     def DefineSendConnectPresenceCallback(client_id):
       return lambda: self.connect_channel_event(client_id)
+
 
     self._add_event(0, DefineSendConnectPresenceCallback(client_id),
                     'channel-connect', client_id)
 
+  @apiproxy_stub.Synchronized
   def disconnect_channel_event(self, client_id):
     """Removes the channel from the list of connected channels."""
     self._log('Removing channel %s', client_id)
@@ -323,6 +340,9 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
 
   def add_disconnect_event(self, client_id):
     """Add an event to notify the app if a client has disconnected.
+
+    Args:
+      client_id:  A client ID used for a particular channel.
 
     See the comments in add_connect_event above.
     """
@@ -336,6 +356,7 @@ class ChannelServiceStub(apiproxy_stub.APIProxyStub):
     self._add_event(timeout, DefineDisconnectCallback(client_id),
                     'channel-disconnect', client_id)
 
+  @apiproxy_stub.Synchronized
   def connect_channel(self, token):
     """Marks the channel identified by the token (token) as connected."""
     client_id = self.client_id_from_token(token)

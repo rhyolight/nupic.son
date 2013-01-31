@@ -45,8 +45,8 @@ class OrgHomeTest(GCIDjangoTestCase):
     self.assertTemplateUsed(
         response, "v2/modules/gci/org_home/_contact_us.html")
     self.assertTemplateUsed(response, 'v2/modules/gci/org_home/_about_us.html')
-    self.assertTemplateUsed(response, 'v2/soc/list/lists.html')
-    self.assertTemplateUsed(response, 'v2/soc/list/list.html')
+    self.assertTemplateUsed(response, 'soc/list/lists.html')
+    self.assertTemplateUsed(response, 'soc/list/list.html')
     
 
   def testAboutUs(self):

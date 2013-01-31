@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC profile page.
-"""
+"""Module for the GSoC profile page."""
 
 from google.appengine.ext import db
 
@@ -40,7 +37,7 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 
@@ -122,10 +119,8 @@ class GSoCProfileForm(profile.ProfileForm):
     _choiceWidgets = forms.choiceWidgets(GSoCProfile,
         ['res_country', 'ship_country',
          'tshirt_style', 'tshirt_size', 'gender'])
-    _hiddenWidgets = forms.hiddenWidgets(GSoCProfile,
-        ['longitude', 'latitude'])
 
-    widgets = forms.mergeWidgets(_choiceWidgets, _hiddenWidgets)
+    widgets = forms.mergeWidgets(_choiceWidgets)
 
   def templatePath(self):
     return gsoc_forms.TEMPLATE_PATH
@@ -202,10 +197,12 @@ class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
   school_home_page = fields.URLField(required=True)
   clean_school_home_page =  cleaning.clean_url('school_home_page')
 
+  clean_school_name = cleaning.clean_html_content('school_name')
+  clean_major = cleaning.clean_html_content('major')
 
-class GSoCProfilePage(profile.ProfilePage, RequestHandler):
-  """View for the GSoC participant profile.
-  """
+
+class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
+  """View for the GSoC participant profile."""
 
   def djangoURLPatterns(self):
     return profile.ProfilePage.djangoURLPatterns(self) + [
@@ -252,12 +249,10 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     return UNIVERSITIES
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
-
+    """Handler for HTTP POST request."""
     if not self.validate():
-      self.get()
-      return
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
     if self.data.anonymous_connection:
       self._handleAnonymousConnection()
@@ -272,18 +267,19 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
       organization = None
 
     if not organization:
+      # TODO(nathaniel): make this .program() call unnecessary.
       self.redirect.program()
-      self.redirect.to('edit_gsoc_profile', validated=True, secure=True)
-      return
+
+      return self.redirect.to('edit_gsoc_profile', validated=True, secure=True)
 
     if self.data.anonymous_connection:
       self.redirect.dashboard()
     else:
       self.redirect.organization(organization)
 
-    extra_get_args = []
     if self.data.student_info:
       link = 'submit_gsoc_proposal'
+      extra_get_args = []
     else:
       link = url_names.GSOC_USER_CONNECTION
       extra_get_args.append('profile=created')
@@ -291,6 +287,8 @@ class GSoCProfilePage(profile.ProfilePage, RequestHandler):
     user = User.get_by_key_name(self.data.request.POST['public_name'])
     
     self.redirect.connect(user, organization)
+    # (dcrodman): May need to add return in front of this line - removed
+    # from master during merge.
     self.redirect.to(link, extra=extra_get_args)
 
   def _handleAnonymousConnection(self):

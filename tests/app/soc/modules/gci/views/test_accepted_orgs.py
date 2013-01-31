@@ -39,8 +39,8 @@ class AcceptedOrgsPageTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gci/accepted_orgs/base.html')
     self.assertTemplateUsed(
         response, 'v2/modules/gci/accepted_orgs/_project_list.html')
-    self.assertTemplateUsed(response, 'v2/soc/list/lists.html')
-    self.assertTemplateUsed(response, 'v2/soc/list/list.html')
+    self.assertTemplateUsed(response, 'soc/list/lists.html')
+    self.assertTemplateUsed(response, 'soc/list/list.html')
 
   def testAcceptedOrgsAreDisplayedOnlyAfterTheyAreAnnounced(self):
     """Tests that the list of accepted organizations can be accessed only after
@@ -57,7 +57,7 @@ class AcceptedOrgsPageTest(GCIDjangoTestCase):
     self.data.createUser()
     org_properties = {
         'scope': self.gci, 'status': 'active', 'founder': self.data.user,
-        'home': None,
+        'home': None, 'backup_winner': None,
     }
     self.seed(GCIOrganization, org_properties)
     self.seed(GCIOrganization, org_properties)

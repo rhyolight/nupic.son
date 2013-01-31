@@ -41,6 +41,7 @@ import logging
 import os
 import socket
 import StringIO
+import sys
 import urllib
 import urlparse
 
@@ -75,6 +76,9 @@ _API_CALL_DEADLINE = 5.0
 
 
 _API_CALL_VALIDATE_CERTIFICATE_DEFAULT = True
+
+
+_CONNECTION_SUPPORTS_TIMEOUT = sys.version_info >= (2, 6)
 
 
 
@@ -179,7 +183,7 @@ class URLFetchServiceStub(apiproxy_stub.APIProxyStub):
     else:
       logging.error('Invalid method: %s', request.method())
       raise apiproxy_errors.ApplicationError(
-        urlfetch_service_pb.URLFetchServiceError.UNSPECIFIED_ERROR)
+        urlfetch_service_pb.URLFetchServiceError.INVALID_URL)
 
     if not (protocol == 'http' or protocol == 'https'):
       logging.error('Invalid protocol: %s', protocol)
@@ -188,15 +192,11 @@ class URLFetchServiceStub(apiproxy_stub.APIProxyStub):
 
     if not host:
       logging.error('Missing host.')
-
-
       raise apiproxy_errors.ApplicationError(
-          urlfetch_service_pb.URLFetchServiceError.FETCH_ERROR)
+          urlfetch_service_pb.URLFetchServiceError.INVALID_URL)
 
-    sanitized_headers = self._SanitizeHttpHeaders(_UNTRUSTED_REQUEST_HEADERS,
-                                                  request.header_list())
-    request.clear_header()
-    request.header_list().extend(sanitized_headers)
+    self._SanitizeHttpHeaders(_UNTRUSTED_REQUEST_HEADERS,
+                              request.header_list())
     deadline = _API_CALL_DEADLINE
     if request.has_deadline():
       deadline = request.deadline()
@@ -231,11 +231,12 @@ class URLFetchServiceStub(apiproxy_stub.APIProxyStub):
         the certificate.
 
     Raises:
-      Raises an apiproxy_errors.ApplicationError exception with FETCH_ERROR
-      in cases where:
-        - MAX_REDIRECTS is exceeded
+      Raises an apiproxy_errors.ApplicationError exception with
+      INVALID_URL_ERROR in cases where:
         - The protocol of the redirected URL is bad or missing.
         - The port is not in the allowable range of ports.
+      Raises an apiproxy_errors.ApplicationError exception with
+      TOO_MANY_REDIRECTS in cases when MAX_REDIRECTS is exceeded
     """
     last_protocol = ''
     last_host = ''
@@ -264,13 +265,13 @@ class URLFetchServiceStub(apiproxy_stub.APIProxyStub):
 
 
         raise apiproxy_errors.ApplicationError(
-          urlfetch_service_pb.URLFetchServiceError.FETCH_ERROR)
+          urlfetch_service_pb.URLFetchServiceError.INVALID_URL)
 
       if protocol and not host:
 
         logging.error('Missing host on redirect; target url is %s' % url)
         raise apiproxy_errors.ApplicationError(
-          urlfetch_service_pb.URLFetchServiceError.FETCH_ERROR)
+          urlfetch_service_pb.URLFetchServiceError.INVALID_URL)
 
 
 
@@ -312,27 +313,36 @@ class URLFetchServiceStub(apiproxy_stub.APIProxyStub):
         escaped_payload = payload.encode('string_escape')
       else:
         escaped_payload = ''
-      logging.debug('Making HTTP request: host = %s, '
-                    'url = %s, payload = %s, headers = %s',
+      logging.debug('Making HTTP request: host = %r, '
+                    'url = %r, payload = %.1000r, headers = %r',
                     host, url, escaped_payload, adjusted_headers)
       try:
         if protocol == 'http':
-          connection = httplib.HTTPConnection(host)
+          connection_class = httplib.HTTPConnection
         elif protocol == 'https':
           if (validate_certificate and _CanValidateCerts() and
               CERT_PATH):
 
             connection_class = fancy_urllib.create_fancy_connection(
                 ca_certs=CERT_PATH)
-            connection = connection_class(host)
           else:
-            connection = httplib.HTTPSConnection(host)
+            connection_class = httplib.HTTPSConnection
         else:
 
           error_msg = 'Redirect specified invalid protocol: "%s"' % protocol
           logging.error(error_msg)
           raise apiproxy_errors.ApplicationError(
-              urlfetch_service_pb.URLFetchServiceError.FETCH_ERROR, error_msg)
+              urlfetch_service_pb.URLFetchServiceError.INVALID_URL, error_msg)
+
+
+
+
+
+
+        if _CONNECTION_SUPPORTS_TIMEOUT:
+          connection = connection_class(host, timeout=deadline)
+        else:
+          connection = connection_class(host)
 
 
 
@@ -344,9 +354,13 @@ class URLFetchServiceStub(apiproxy_stub.APIProxyStub):
         else:
           full_path = path
 
-        orig_timeout = socket.getdefaulttimeout()
+        if not _CONNECTION_SUPPORTS_TIMEOUT:
+          orig_timeout = socket.getdefaulttimeout()
         try:
-          socket.setdefaulttimeout(deadline)
+          if not _CONNECTION_SUPPORTS_TIMEOUT:
+
+
+            socket.setdefaulttimeout(deadline)
           connection.request(method, full_path, payload, adjusted_headers)
           http_response = connection.getresponse()
           if method == 'HEAD':
@@ -354,7 +368,8 @@ class URLFetchServiceStub(apiproxy_stub.APIProxyStub):
           else:
             http_response_data = http_response.read()
         finally:
-          socket.setdefaulttimeout(orig_timeout)
+          if not _CONNECTION_SUPPORTS_TIMEOUT:
+            socket.setdefaulttimeout(orig_timeout)
           connection.close()
       except (_fancy_urllib_InvalidCertException,
               _fancy_urllib_SSLError), e:
@@ -378,7 +393,8 @@ class URLFetchServiceStub(apiproxy_stub.APIProxyStub):
           error_msg = 'Redirecting response was missing "Location" header'
           logging.error(error_msg)
           raise apiproxy_errors.ApplicationError(
-              urlfetch_service_pb.URLFetchServiceError.FETCH_ERROR, error_msg)
+              urlfetch_service_pb.URLFetchServiceError.MALFORMED_REPLY,
+              error_msg)
       else:
         response.set_statuscode(http_response.status)
         if (http_response.getheader('content-encoding') == 'gzip' and
@@ -387,16 +403,19 @@ class URLFetchServiceStub(apiproxy_stub.APIProxyStub):
           gzip_file = gzip.GzipFile(fileobj=gzip_stream)
           http_response_data = gzip_file.read()
         response.set_content(http_response_data[:MAX_RESPONSE_SIZE])
-        for header_key, header_value in http_response.getheaders():
-          if (header_key.lower() == 'content-encoding' and
-              header_value == 'gzip' and
-              not passthrough_content_encoding):
-            continue
-          if header_key.lower() == 'content-length' and method != 'HEAD':
-            header_value = str(len(response.content()))
-          header_proto = response.add_header()
-          header_proto.set_key(header_key)
-          header_proto.set_value(header_value)
+
+
+        for header_key in http_response.msg.keys():
+          for header_value in http_response.msg.getheaders(header_key):
+            if (header_key.lower() == 'content-encoding' and
+                header_value == 'gzip' and
+                not passthrough_content_encoding):
+              continue
+            if header_key.lower() == 'content-length' and method != 'HEAD':
+              header_value = str(len(response.content()))
+            header_proto = response.add_header()
+            header_proto.set_key(header_key)
+            header_proto.set_value(header_value)
 
         if len(http_response_data) > MAX_RESPONSE_SIZE:
           response.set_contentwastruncated(True)
@@ -412,18 +431,22 @@ class URLFetchServiceStub(apiproxy_stub.APIProxyStub):
       error_msg = 'Too many repeated redirects'
       logging.error(error_msg)
       raise apiproxy_errors.ApplicationError(
-          urlfetch_service_pb.URLFetchServiceError.FETCH_ERROR, error_msg)
+          urlfetch_service_pb.URLFetchServiceError.TOO_MANY_REDIRECTS,
+          error_msg)
 
   def _SanitizeHttpHeaders(self, untrusted_headers, headers):
-    """Cleans "unsafe" headers from the HTTP request/response.
+    """Cleans "unsafe" headers from the HTTP request, in place.
 
     Args:
-      untrusted_headers: set of untrusted headers names
-      headers: list of string pairs, first is header name and the second is header's value
+      untrusted_headers: Set of untrusted headers names (all lowercase).
+      headers: List of Header objects. The list is modified in place.
     """
     prohibited_headers = [h.key() for h in headers
                           if h.key().lower() in untrusted_headers]
     if prohibited_headers:
       logging.warn('Stripped prohibited headers from URLFetch request: %s',
                    prohibited_headers)
-    return (h for h in headers if h.key().lower() not in untrusted_headers)
+
+      for index in reversed(xrange(len(headers))):
+        if headers[index].key().lower() in untrusted_headers:
+          del headers[index]

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2012 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for displaying the Profile read-only page.
-"""
-
+"""Module for displaying the Profile read-only page."""
 
 from google.appengine.ext import db
 
@@ -26,8 +22,6 @@ from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
-
-from soc.modules.gsoc.views.base import RequestHandler
 
 
 class UserReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
@@ -78,7 +72,7 @@ class HostActions(Template):
     return context
 
   def templatePath(self):
-    return "v2/soc/_user_action.html"
+    return "soc/_user_action.html"
 
   def _getActionURLName(self):
     raise NotImplementedError
@@ -105,7 +99,7 @@ class BanProfilePost(object):
 
   def post(self):
     assert isSet(self.data.url_profile)
-    
+
     value = self.data.POST.get('value')
     profile_key = self.data.url_profile.key()
 
@@ -144,10 +138,9 @@ class ProfileShowPage(object):
 
   def context(self):
     assert isSet(self.data.program)
-    assert isSet(self.data.profile)
     assert isSet(self.data.user)
 
-    profile = self.data.profile
+    profile = self._getProfile()
     program = self.data.program
 
     user_template = self._getUserReadOnlyTemplate(self.data.user)
@@ -167,3 +160,15 @@ class ProfileShowPage(object):
 
   def _getProfileReadOnlyTemplate(self, profile):
     raise NotImplementedError
+
+  def _getProfile(self):
+    """Returns the profile entity whose information should be displayed.
+
+    Some subclasses of this class like profile pages that admin have access
+    to use request_data.url_profile instead of request_data.profile. So the
+    subclasses should be able to use the profile entity that it needs
+    depending on the view it is rendering. So this method provides the
+    required abstraction which can be overridden in the subclasses.
+    """
+    assert isSet(self.data.profile)
+    return self.data.profile

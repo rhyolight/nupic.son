@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,20 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing views for Open Auth.
-"""
+"""Module containing views for Open Auth."""
 
-
+from django import http
 from django.conf.urls.defaults import url as django_url
 
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
-from soc.modules.gsoc.views.base import RequestHandler
+# TODO(nathaniel): modules-gsoc code being imported in non modules-gsoc code.
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 
 
-class OAuthRedirectPage(RequestHandler):
-  """Redirect page to Google Documents.
-  """
+class OAuthRedirectPage(GSoCRequestHandler):
+  """Redirect page to Google Documents."""
 
   def djangoURLPatterns(self):
     patterns = [
@@ -57,9 +54,8 @@ class OAuthRedirectPage(RequestHandler):
     pass
 
 
-class OAuthVerifyToken(RequestHandler):
-  """Verify request token and redirect user.
-  """
+class OAuthVerifyToken(GSoCRequestHandler):
+  """Verify request token and redirect user."""
 
   def djangoURLPatterns(self):
     patterns = [
@@ -71,13 +67,11 @@ class OAuthVerifyToken(RequestHandler):
     service = oauth_helper.createDocsService(self.data)
     oauth_helper.checkOAuthVerifier(service, self.data)
     next = self.request.GET.get('next','/')
-    self.redirect.toUrl(next)
-    return self.response
+    return self.redirect.toUrl(next)
 
 
-class PopupOAuthRedirectPage(RequestHandler):
-  """Redirects popup page to Google Documents.
-  """
+class PopupOAuthRedirectPage(GSoCRequestHandler):
+  """Redirects popup page to Google Documents."""
 
   def djangoURLPatterns(self):
     patterns = [
@@ -100,13 +94,11 @@ class PopupOAuthRedirectPage(RequestHandler):
       url = oauth_helper.generateOAuthRedirectURL(
           service, self.data.user,
           next)
-    self.redirect.toUrl(url)
-    return self.response
+    return self.redirect.toUrl(url)
 
 
-class PopupOAuthVerified(RequestHandler):
-  """ Calls parent window's methods to indicate successful login.
-  """
+class PopupOAuthVerified(GSoCRequestHandler):
+  """ Calls parent window's methods to indicate successful login."""
 
   def djangoURLPatterns(self):
     patterns = [
@@ -125,4 +117,4 @@ class PopupOAuthVerified(RequestHandler):
         "    window.close();"
         "</script></body></html>"
     )
-    self.response.write(html)
+    return http.HttpResponse(content=html)

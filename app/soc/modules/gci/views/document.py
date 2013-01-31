@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GCI documents page.
-"""
-
+"""Module containing the views for GCI documents page."""
 
 from soc.logic.exceptions import AccessViolation
 from soc.models.document import Document
@@ -25,7 +21,7 @@ from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.forms import GCIModelForm
 #from soc.modules.gci.views.base_templates import ProgramSelect
 from soc.modules.gci.views.helper.url_patterns import url
@@ -44,7 +40,7 @@ class GCIDocumentForm(GCIModelForm):
     ]
 
 
-class EditDocumentPage(RequestHandler):
+class EditDocumentPage(GCIRequestHandler):
   """Encapsulate all the methods required to edit documents.
   """
 
@@ -80,18 +76,18 @@ class EditDocumentPage(RequestHandler):
     }
 
   def post(self):
-    """Handler for HTTP POST request.
-    """
+    """Handler for HTTP POST request."""
     form = GCIDocumentForm(self.data.POST or None, instance=self.data.document)
     entity = document.validateForm(self.data, form)
     if entity:
       self.redirect.document(entity)
-      self.redirect.to('edit_gci_document')
+      return self.redirect.to('edit_gci_document')
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get()
 
 
-class DocumentPage(RequestHandler):
+class DocumentPage(GCIRequestHandler):
   """Encapsulate all the methods required to show documents.
   """
 
@@ -117,7 +113,7 @@ class DocumentPage(RequestHandler):
     }
 
 
-class EventsPage(RequestHandler):
+class EventsPage(GCIRequestHandler):
   """Encapsulates all the methods required to show the events page.
   """
 
@@ -153,7 +149,7 @@ class DocumentList(document.DocumentList):
     return 'v2/modules/gci/document/_document_list.html'
 
 
-class DocumentListPage(RequestHandler):
+class DocumentListPage(GCIRequestHandler):
   """View for the list documents page.
   """
 

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Views for the GCI Task view page.
-"""
-
+"""Views for the GCI Task view page."""
 
 import datetime
+import httplib
+import logging
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
@@ -44,11 +42,10 @@ from soc.modules.gci.models.task import TASK_IN_PROGRESS
 from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_patterns
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
-
 
 DEF_NOT_ALLOWED_TO_OPERATE_BUTTON = ugettext(
     'You are not allowed to operate the button named %s')
@@ -62,19 +59,18 @@ DEF_NO_UPLOAD = ugettext(
 DEF_NO_URL = ugettext(
     'An error occurred, please submit a valid URL.')
 
-DEF_NO_WORK_FOUND = ugettext('No submission found with id %i')
+DEF_NO_WORK_FOUND = ugettext('No submission found with id %s')
 
 DEF_NOT_ALLOWED_TO_DELETE = ugettext(
     'You are not allowed to delete this submission')
 
 DEF_CANT_SEND_FOR_REVIEW = ugettext(
-    'Only a task that you own and that has submitted work can be send in '
-    'for review.')
+    'Only a task that you own and that has submitted work and that has '
+    'not been closed can be send in for review.')
 
 
 class CommentForm(gci_forms.GCIModelForm):
-  """Django form for the comment.
-  """
+  """Django form for the comment."""
 
   class Meta:
     model = GCIComment
@@ -176,9 +172,8 @@ class WorkSubmissionURLForm(gci_forms.GCIModelForm):
     return url
 
 
-class TaskViewPage(RequestHandler):
-  """View for the GCI Task view page where all the actions happen.
-  """
+class TaskViewPage(GCIRequestHandler):
+  """View for the GCI Task view page where all the actions happen."""
 
   def djangoURLPatterns(self):
     """URL pattern for this view.
@@ -231,7 +226,8 @@ class TaskViewPage(RequestHandler):
       if 'send_for_review' in self.data.GET:
         self.check.isBeforeAllWorkStopped()
         if not task_logic.isOwnerOfTask(self.data.task, self.data.profile) or \
-            not self.data.work_submissions:
+            not self.data.work_submissions or \
+            self.data.task.status not in TASK_IN_PROGRESS:
           self.check.fail(DEF_CANT_SEND_FOR_REVIEW)
 
       if 'delete_submission' in self.data.GET:
@@ -291,8 +287,7 @@ class TaskViewPage(RequestHandler):
     return context
 
   def post(self):
-    """Handles all POST calls for the TaskViewPage.
-    """
+    """Handles all POST calls for the TaskViewPage."""
     if self.data.is_visible and 'reply' in self.data.GET:
       return self._postComment()
     elif 'button' in self.data.GET:
@@ -304,7 +299,7 @@ class TaskViewPage(RequestHandler):
     elif 'work_file_submit' in self.data.POST or 'submit_work' in self.data.GET:
       return self._postSubmitWork()
     else:
-      self.error(405)
+      return self.error(httplib.METHOD_NOT_ALLOWED)
 
   def _postComment(self):
     """Handles the POST call for the form that creates comments.
@@ -325,7 +320,7 @@ class TaskViewPage(RequestHandler):
 
     # TODO(ljvderijk): Indicate that a comment was successfully created to the
     # user.
-    self.redirect.id().to('gci_view_task')
+    return self.redirect.id().to('gci_view_task')
 
   def _postButton(self):
     """Handles the POST call for any of the control buttons on the task page.
@@ -335,19 +330,15 @@ class TaskViewPage(RequestHandler):
     task_key = task.key()
 
     if button_name == 'button_unpublish':
-      def txn():
-        task = db.get(task_key)
-        task.status = 'Unpublished'
-        task.put()
-      db.run_in_transaction(txn)
+      task_logic.setTaskStatus(task.key(), 'Unpublished')
+    elif button_name == 'button_publish':
+      task_logic.setTaskStatus(task.key(), 'Open')
     elif button_name == 'button_edit':
       r = self.redirect.id(id=task.key().id_or_name())
-      r.to('gci_edit_task')
-      return
+      return r.to('gci_edit_task')
     elif button_name == 'button_delete':
       task_logic.delete(task)
-      self.redirect.homepage().to()
-      return
+      return self.redirect.homepage().to()
     elif button_name == 'button_assign':
       task_logic.assignTask(task, task.student, self.data.profile)
     elif button_name == 'button_unassign':
@@ -383,7 +374,7 @@ class TaskViewPage(RequestHandler):
           task.put()
       db.run_in_transaction(txn)
 
-    self.redirect.id().to('gci_view_task')
+    return self.redirect.id().to('gci_view_task')
 
   def _buttonName(self):
     """Returns the name of the button specified in the POST dict.
@@ -401,16 +392,19 @@ class TaskViewPage(RequestHandler):
       form = WorkSubmissionURLForm(data=self.data.POST)
       if not form.is_valid():
         return self.get()
-    elif 'work_file_submit' in self.data.POST:
+    elif self.data.request.file_uploads:
       form = WorkSubmissionFileForm(
           data=self.data.POST,
           files=self.data.request.file_uploads)
       if not form.is_valid():
         # we are not storing this form, remove the uploaded blob from the cloud
-        for file in self.data.request.file_uploads.itervalues():
-          file.delete()
+        for f in self.data.request.file_uploads.itervalues():
+          f.delete()
         return self.redirect.id().to('gci_view_task', extra=['file=0'])
-
+    else:
+      logging.warning('Neither the URL nor the files were provided for work '
+                      'submission.')
+      return self.redirect.id().to('gci_view_task', extra=['ws_error=1'])
 
     task = self.data.task
     # TODO(ljvderijk): Add a non-required profile property?
@@ -424,20 +418,20 @@ class TaskViewPage(RequestHandler):
     return self.redirect.id().to('gci_view_task')
 
   def _postSendForReview(self):
-    """POST handler for the mark as complete button.
-    """
+    """POST handler for the mark as complete button."""
     task_logic.sendForReview(self.data.task, self.data.profile)
 
-    self.redirect.id().to('gci_view_task')
+    return self.redirect.id().to('gci_view_task')
 
   def _postDeleteSubmission(self):
     """POST handler to delete a GCIWorkSubmission.
     """
-    id = self._submissionId()
-    work = GCIWorkSubmission.get_by_id(id, parent=self.data.task)
+    submission_id = self._submissionId()
+    work = GCIWorkSubmission.get_by_id(submission_id, parent=self.data.task)
 
     if not work:
-      return self.error(400, DEF_NO_WORK_FOUND %id)
+      return self.error(
+          httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % submission_id)
 
     # Deletion of blobs always runs separately from transaction so it has no
     # added value to use it here.
@@ -446,7 +440,7 @@ class TaskViewPage(RequestHandler):
     if upload:
       upload.delete()
 
-    self.redirect.id().to('gci_view_task')
+    return self.redirect.id().to('gci_view_task')
 
   def _submissionId(self):
     """Retrieves the submission id from the POST data.
@@ -518,8 +512,12 @@ class TaskInformation(Template):
     is_owner = task_logic.isOwnerOfTask(task, profile)
 
     if is_org_admin:
-      can_unpublish = (task.status in CLAIMABLE) and not task.student
+      can_unpublish = task.status == 'Open' and not task.student
       context['button_unpublish'] = can_unpublish
+
+      can_publish = task.status in UNPUBLISHED
+      context['button_publish'] = can_publish
+
       context['button_delete'] = not task.student
 
     if is_mentor:
@@ -533,6 +531,14 @@ class TaskInformation(Template):
 
     if is_student:
       if not self.data.timeline.tasksClaimEnded():
+        if not profile_logic.hasStudentFormsUploaded(profile.student_info):
+          # TODO(nathaniel): make this .program() call unnecessary.
+          self.data.redirect.program()
+
+          context['student_forms_link'] = self.data.redirect.urlOf(
+              url_names.GCI_STUDENT_FORM_UPLOAD)
+        # TODO(lennie): Separate the access check out in to different
+        # methods and add a context variable to show separate messages.
         context['button_claim'] = task_logic.canClaimRequestTask(
             task, profile)
 
@@ -617,6 +623,9 @@ class WorkSubmissions(Template):
       if self.data.GET.get('file', None) == '0':
         context['work_file_form'].addFileRequiredError()
 
+      if self.data.GET.get('ws_error', None) == '1':
+        context['ws_error'] = True
+
       url = '%s?submit_work' %(
           self.data.redirect.id().urlOf('gci_view_task'))
       context['direct_post_url'] = url
@@ -685,33 +694,28 @@ class CommentsTemplate(Template):
     return context
 
   def _commentingAllowed(self):
-    """Returns true iff the comments are allowed to be posted at this time.
-    """
+    """Returns true iff the comments are allowed to be posted at this time."""
     return not self.data.timeline.allWorkStopped() or (
         not self.data.timeline.allReviewsStopped() and
         self.data.mentorFor(self.data.task.org))
 
   def templatePath(self):
-    """Returns the path to the template that should be used in render().
-    """
+    """Returns the path to the template that should be used in render()."""
     return 'v2/modules/gci/task/_comments.html'
 
 
-class WorkSubmissionDownload(RequestHandler):
-  """Request handler for downloading blobs from a GCIWorkSubmission.
-  """
+class WorkSubmissionDownload(GCIRequestHandler):
+  """Request handler for downloading blobs from a GCIWorkSubmission."""
 
   def djangoURLPatterns(self):
-    """URL pattern for this view.
-    """
+    """URL pattern for this view."""
     return [
         url(r'work/download/%s$' % url_patterns.TASK, self,
             name='gci_download_work'),
     ]
 
   def checkAccess(self):
-    """Checks whether this task is visible to the public.
-    """
+    """Checks whether this task is visible to the public."""
     self.mutator.taskFromKwargs()
     self.check.isTaskVisible()
 
@@ -719,13 +723,15 @@ class WorkSubmissionDownload(RequestHandler):
     """Attempts to download the blob in the worksubmission that is specified
     in the GET argument.
     """
-    id_s = self.request.GET.get('id', '')
-    id = int(id_s) if id_s.isdigit() else -1
+    id_string = self.request.GET.get('id', '')
+    submission_id = int(id_string) if id_string.isdigit() else -1
 
-    work = GCIWorkSubmission.get_by_id(id, self.data.task)
+    work = GCIWorkSubmission.get_by_id(submission_id, self.data.task)
 
-    if not work or not work.upload_of_work:
-      return self.error(400, DEF_NO_WORK_FOUND %id)
-
-    upload = work.upload_of_work
-    self.response = bs_helper.sendBlob(upload)
+    if work and work.upload_of_work:
+      return bs_helper.sendBlob(work.upload_of_work)
+    else:
+      # TODO(nathaniel): This should probably be the raising of some sort
+      # of exception rather than a self-call.
+      return self.error(
+          httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % id_string)

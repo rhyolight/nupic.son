@@ -18,11 +18,44 @@
 """
 
 
+import datetime
+
+from soc.logic import user as user_logic
 from soc.tasks import mailer
 
+from soc.modules.gsoc.models import profile as gsoc_profile_model
+
 from soc.modules.gci.logic.helper import notifications
-from soc.modules.gci.models.profile import GCIProfile
-from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models import comment as comment_model
+from soc.modules.gci.models import profile as profile_model
+from soc.modules.gci.models import task as task_model
+
+
+MELANGE_DELETED_USER_PNAME = 'Melange Deleted User'
+
+MELANGE_DELETED_USER_GNAME = 'Melange Deleted User GName'
+
+MELANGE_DELETED_USER_SNAME = 'Melange Deleted User Surname'
+
+MELANGE_DELETED_USER_EMAIL = 'melange_deleted_user@gmail.com'
+
+MELANGE_DELETED_USER_RES_STREET = 'No address'
+
+MELANGE_DELETED_USER_RES_CITY = 'No city'
+
+MELANGE_DELETED_USER_RES_COUNTY = 'United States'
+
+MELANGE_DELETED_USER_RES_POSTAL_CODE = '00000'
+
+MELANGE_DELETED_USER_PHONE = '0000000000'
+
+MELANGE_DELETED_USER_BIRTH_DATE = datetime.date(1, 1, 1)
+
+
+def hasStudentFormsUploaded(student):
+  """Whether the specified student has uploaded their forms.
+  """
+  return student.consent_form and student.student_id_form
 
 
 def queryAllMentorsForOrg(org, keys_only=False, limit=1000):
@@ -39,7 +72,7 @@ def queryAllMentorsForOrg(org, keys_only=False, limit=1000):
   """
 
   # get all mentors keys first
-  query = GCIProfile.all(keys_only=keys_only)
+  query = profile_model.GCIProfile.all(keys_only=keys_only)
   query.filter('mentor_for', org)
   mentors = query.fetch(limit=limit)
 
@@ -77,7 +110,7 @@ def orgAdminsForOrg(org, limit=1000):
   Args:
     org: The GCIOrganization entity for which the admins should be found.
   """
-  query = GCIProfile.all()
+  query = profile_model.GCIProfile.all()
   query.filter('org_admin_for', org)
 
   return query.fetch(limit)
@@ -91,4 +124,124 @@ def queryProfileForUserAndProgram(user, program):
     user: User entity for which the profile should be found
     program: GCIProgram entity for which the profile should be found
   """
-  return GCIProfile.all().ancestor(user).filter('scope = ', program)
+  return profile_model.GCIProfile.all().ancestor(user).filter('scope = ', program)
+
+
+def queryStudentInfoForParent(parent):
+  """Returns the query to fetch GCIStudentInfo entity for the specified
+  parent.
+
+  Args:
+    parent: GCIProfile entity which is the parent of the entity to retrieve
+  """
+  return profile_model.GCIStudentInfo.all().ancestor(parent)
+
+
+def hasTasks(profile):
+  """Returns True if the given student profile has been assigned to a task.
+
+  Assign also means the tasks completed by the student.
+
+  Args:
+    profile: GCIProfile entity of the student.
+  """
+  q = task_model.GCITask.all()
+  q.filter('student', profile)
+  return q.count() > 0
+
+
+def hasCreatedOrModifiedTask(profile):
+  """Returns True if the given user has created or modified a task.
+
+  Args:
+    profile: GCIProfile entity of the user.
+  """
+  q = task_model.GCITask.all()
+  q.filter('created_by', profile)
+  if q.count() > 0:
+    return True
+
+  q = task_model.GCITask.all()
+  q.filter('modified_by', profile)
+  return q.count() > 0
+
+
+def hasTaskComments(profile):
+  """Returns True if the given profile has task comments associated with it.
+
+  Args:
+    profile: GCIProfile entity of the user.
+  """
+  user = profile.parent()
+
+  q = comment_model.GCIComment.all()
+  q.filter('created_by', user)
+
+  return q.count() > 0
+
+
+def hasOtherGCIProfiles(profile):
+  """Returns True if the given user had profiles in previous GCIs.
+
+  Args:
+    profile: GCIProfile entity of the user.
+  """
+  user = profile.parent()
+
+  q = profile_model.GCIProfile.all()
+  q.ancestor(user)
+
+  # We check for > 1 not > 0 because we already know that there is one profile
+  # for this program. So we need to check if there are others.
+  return q.count() > 1
+
+
+def hasOtherGSoCProfiles(profile):
+  """Returns True if the given user has profiles in previous GSoCs.
+
+  Args:
+    profile: GCIProfile entity of the user.
+  """
+  user = profile.parent()
+
+  q = gsoc_profile_model.GSoCProfile.all()
+  q.ancestor(user)
+
+  return q.count() > 0
+
+
+def getOrCreateDummyMelangeDeletedProfile(program):
+  """Fetches or creates the dummy melange deleted profile for the given program.
+
+  Args:
+    program: The program entity for which the dummy profile should be fetched
+        or created.
+  """
+  q = profile_model.GCIProfile.all()
+  q.filter('link_id', user_logic.MELANGE_DELETED_USER)
+  q.filter('scope', program)
+  profile_ent = q.get()
+
+  # If the requested user does not exist, create one.
+  if not profile_ent:
+    user_ent = user_logic.getOrCreateDummyMelangeDeletedUser()
+    key_name = '%s/%s' % (program.key(), user_logic.MELANGE_DELETED_USER)
+
+    profile_ent = profile_model.GCIProfile(
+        parent=user_ent, key_name=key_name,
+        link_id=user_logic.MELANGE_DELETED_USER, scope=program,
+        scope_path=program.key().id_or_name(), user=user_ent,
+        public_name=MELANGE_DELETED_USER_PNAME,
+        given_name=MELANGE_DELETED_USER_GNAME,
+        surname=MELANGE_DELETED_USER_SNAME,
+        email=MELANGE_DELETED_USER_EMAIL,
+        res_street=MELANGE_DELETED_USER_RES_STREET,
+        res_city=MELANGE_DELETED_USER_RES_CITY,
+        res_country=MELANGE_DELETED_USER_RES_COUNTY,
+        res_postalcode=MELANGE_DELETED_USER_RES_POSTAL_CODE,
+        phone=MELANGE_DELETED_USER_PHONE,
+        birth_date=MELANGE_DELETED_USER_BIRTH_DATE)
+
+    profile_ent.put()
+
+  return profile_ent

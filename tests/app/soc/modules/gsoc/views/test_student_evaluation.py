@@ -20,8 +20,6 @@
 
 import urllib
 
-from nose.plugins import skip
-
 from django import forms as django_forms
 from django.utils import simplejson as json
 from django.utils.html import escape
@@ -31,7 +29,6 @@ from tests.profile_utils import GSoCProfileHelper
 from tests.survey_utils import SurveyHelper
 from tests.test_utils import GSoCDjangoTestCase
 
-
 from soc.views import forms
 
 from soc.modules.gsoc.models.project import GSoCProject
@@ -39,12 +36,12 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
 from soc.modules.seeder.logic.providers.string import LinkIDProvider
 
+
 class StudentEvaluationTest(GSoCDjangoTestCase):
   """Tests proposal review page.
   """
 
   def setUp(self):
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     super(StudentEvaluationTest, self).setUp()
     self.init()
     self.evaluation = SurveyHelper(self.gsoc, self.dev_test)

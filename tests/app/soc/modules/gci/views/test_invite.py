@@ -379,5 +379,6 @@ class ManageInviteTest(BaseInviteTest):
     self.assertResponseForbidden(response)    
 
   def _manageInviteUrl(self, invite):
-    return '/gci/invite/manage/%s/%s' % (
-        self.invite.org.scope.key().name(), self.invite.key().id())
+    return '/gci/invite/manage/%s/%s/%s/%s' % (
+        self.sponsor.link_id, self.gci.link_id,
+        self.invite.parent_key().name(), self.invite.key().id())

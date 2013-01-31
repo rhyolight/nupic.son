@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +14,6 @@
 
 """This module contains the view for the site menus."""
 
-
 import datetime
 
 from google.appengine.api import users
@@ -30,6 +27,7 @@ from soc.modules.gsoc.logic.program import getMostRecentProgram
 
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.views.helper import url_names
 
 
 def siteMenuContext(data):
@@ -52,16 +50,18 @@ def siteMenuContext(data):
       'help_link': redirect.document(help_page).url(),
   }
 
-  if users.get_current_user():
+  if data.gae_user:
     context['logout_link'] = redirect.logout().url()
   else:
     context['login_link'] = redirect.login().url()
 
-  if data.user:
+  if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
 
   if data.timeline.tasksPubliclyVisible():
-    context['tasks_link'] = redirect.program().urlOf('gci_list_tasks')
+    # TODO(nathaniel): make this .program() call unnecessary.
+    redirect.program()
+    context['tasks_link'] = redirect.urlOf('gci_list_tasks')
     if not data.user:
       context['register_as_student_link'] = redirect.createProfile(
           'student').urlOf('create_gci_profile', secure=True)
@@ -102,6 +102,7 @@ class Header(Template):
     return {
         'home_link': self.data.redirect.homepage().url(),
         'gsoc_link': gsoc_link,
+        'program_id': self.data.program.link_id,
     }
 
 
@@ -118,21 +119,14 @@ class MainMenu(Template):
         'home_link': self.data.redirect.homepage().url(),
     })
 
-    if self.data.profile:
+    if self.data.profile and self.data.profile.status == 'active':
       self.data.redirect.program()
-      if self.data.profile.status == 'active':
-        if self.data.timeline.programActive():
-          context['profile_link'] = self.data.redirect.urlOf(
-              'edit_gci_profile', secure=True)
-        else:
-          context['profile_link'] = self.data.redirect.urlOf(
-              'show_gci_profile', secure=True)
-
-        if self.data.is_org_admin:
-          # Add org admin dashboard link if the user has active
-          # org admin profile and is an org admin of some organization
-          context['org_dashboard_link'] = self.data.redirect.urlOf(
-              'gci_dashboard')
+      if self.data.timeline.programActive():
+        context['profile_link'] = self.data.redirect.urlOf(
+            'edit_gci_profile', secure=True)
+      else:
+        context['profile_link'] = self.data.redirect.urlOf(
+            url_names.GCI_PROFILE_SHOW, secure=True)
 
     if self.data.is_host:
       self.data.redirect.program()

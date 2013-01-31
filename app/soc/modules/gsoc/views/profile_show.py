@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,28 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for displaying the GSoC profile read only page.
-"""
-
+"""Module for displaying the GSoC profile read only page."""
 
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import NotFound
 
-from soc.views import readonly_template
 from soc.views import profile_show
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views import readonly_template
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class GSoCProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
+class GSoCProfileReadOnlyTemplate(readonly_template.GSoCModelReadOnlyTemplate):
   """Template to construct read-only GSoCProfile data.
   """
 
@@ -43,20 +39,18 @@ class GSoCProfileReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
     model = GSoCProfile
     css_prefix = 'gsoc_profile_show'
     fields = ['public_name', 'given_name', 'surname', 'im_network',
-              'im_handle', 'home_page', 'blog', 'photo_url',
-              'publish_location', 'email', 'res_street',
-              'res_street_extra', 'res_city', 'res_state', 'res_country',
-              'res_postalcode', 'phone', 'ship_name', 'ship_street',
-              'ship_street_extra', 'ship_city', 'ship_state',
+              'im_handle', 'home_page', 'blog', 'photo_url', 'email',
+              'res_street', 'res_street_extra', 'res_city', 'res_state',
+              'res_country', 'res_postalcode', 'phone', 'ship_name',
+              'ship_street', 'ship_street_extra', 'ship_city', 'ship_state',
               'ship_country', 'ship_postalcode', 'birth_date',
               'tshirt_style', 'tshirt_size', 'gender', 'program_knowledge']
-    hidden_fields = ['latitude', 'longitude']
 
 
 class GSoCHostActions(profile_show.HostActions):
   """Template to render the left side host actions.
   """
-  
+
   DEF_BAN_PROFILE_HELP = ugettext(
       'When a profile is banned, the user cannot participate in the program')
 
@@ -67,7 +61,7 @@ class GSoCHostActions(profile_show.HostActions):
     return self.DEF_BAN_PROFILE_HELP
 
 
-class GSoCBanProfilePost(profile_show.BanProfilePost, RequestHandler):
+class GSoCBanProfilePost(profile_show.BanProfilePost, GSoCRequestHandler):
   """Handles banning/unbanning of GSoC profiles.
   """
 
@@ -84,7 +78,7 @@ class GSoCBanProfilePost(profile_show.BanProfilePost, RequestHandler):
     return GSoCProfile
 
 
-class GSoCProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
+class GSoCProfileShowPage(profile_show.ProfileShowPage, GSoCRequestHandler):
   """View to display the read-only profile page.
   """
 
@@ -101,7 +95,7 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, RequestHandler):
     return GSoCProfileReadOnlyTemplate(profile)
 
 
-class GSoCProfileAdminPage(RequestHandler):
+class GSoCProfileAdminPage(GSoCRequestHandler):
   """View to display the readonly profile page.
   """
 
@@ -145,6 +139,15 @@ class GSoCProfileAdminPage(RequestHandler):
         r.project(project.key().id())
         links.append(r.urlOf('gsoc_project_details', full=True))
       r = self.redirect.profile()
+
+      user_role = None
+      if profile.is_student:
+          user_role = 'Student'
+      elif profile.is_org_admin:
+          user_role = 'Org Admin'
+      elif profile.is_mentor:
+          user_role = 'Mentor'
+
       context.update({
           'profile': GSoCProfileReadOnlyTemplate(profile),
           'links': links,

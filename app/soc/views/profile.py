@@ -55,9 +55,7 @@ PROFILE_EXCLUDE = [
     'is_student', 'is_mentor', 'is_org_admin',
 ]
 
-PREFILL_PROFILE_EXCLUDE = PROFILE_EXCLUDE + [
-    'publish_location', 'agreed_to_tos',
-]
+PREFILL_PROFILE_EXCLUDE = PROFILE_EXCLUDE + ['agreed_to_tos']
 
 
 class ProfileForm(forms.ModelForm):
@@ -75,6 +73,12 @@ class ProfileForm(forms.ModelForm):
     self.program = request_data.program if request_data else None
 
   public_name = fields.CharField(required=True)
+
+  clean_public_name = cleaning.clean_html_content('public_name')
+  clean_name_on_documents = cleaning.clean_html_content('name_on_documents')
+  clean_im_network = cleaning.clean_html_content('im_network')
+  clean_im_handle = cleaning.clean_html_content('im_handle')
+  clean_program_knowledge = cleaning.clean_html_content('program_knowledge')
 
   clean_given_name = cleaning.clean_valid_shipping_chars('given_name')
   clean_surname = cleaning.clean_valid_shipping_chars('surname')
@@ -192,7 +196,7 @@ class ProfilePage(object):
     elif role == 'mentor':
       page_name = 'Register as a Mentor'
     elif role == 'org_admin':
-      page_name = 'Register as Org Admin'
+      page_name = 'Register as an Org Admin'
 
     if self.data.user:
       user_form = EmptyForm(self.data.POST or None, instance=self.data.user)

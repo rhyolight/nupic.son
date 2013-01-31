@@ -1,12 +1,20 @@
-{% if participating_orgs %}
-  <div class="block block-participating-orgs">
-    <div class="block-title">Participating Organizations</div>
-    <div class="block-content">
-      {% for org in participating_orgs %}
-        <a href="{{ org.link }}"><img src="{{ org.logo }}" alt="{{ name }}" /></a>
+{% if participating_orgs_table_rows %}
+ <div class="block block-participating-orgs">
+  <div class="block-title">Mentoring Organizations</div>
+  <div class="block-content">
+   <table class="participating-orgs-table">
+    {% for row in participating_orgs_table_rows %}
+     <tr>
+      {% for org in row %}
+       <td>
+        <a href="{{ org.link }}"><img src="{{ org.logo }}" alt="{{ org.name }} logo" title="{{ org.name }}"/></a>
+       </td>
       {% endfor %}
-    </div>
-    <div class="block-footer"><a href="{{ org_list_url }}">See all participating organizations</a></div>
+     </tr>
+    {% endfor %}
+   </table>
   </div>
+  <div class="block-footer"><a href="{{ org_list_url }}">{% if all_participating_orgs %}Mentoring organization details{% else %}See all mentoring organizations{% endif %}</a></div>
+ </div>
 {% endif %}
-<!-- end .bolock.block-home-participating-orgs -->
+<!-- end .block.block-home-participating-orgs -->

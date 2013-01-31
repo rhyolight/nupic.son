@@ -68,7 +68,7 @@
           uncheckedLabel: button_labels.unchecked
         }).change(function (){
           jQuery.post(button_post_url,
-              {value: button_state, xsrf_token: window.xsrf_token},
+              {id: id, value: button_state, xsrf_token: window.xsrf_token},
               function(data) {
             if (button_state == "checked") {
               button_state = "unchecked";

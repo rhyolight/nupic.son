@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,37 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the program settings pages.
-"""
+"""Module for the program settings pages."""
 
+from soc.models import document
 
-from google.appengine.ext import db
+from soc.views import program as soc_program_view
+from soc.views.helper import url_patterns as soc_url_patterns
 
-from soc.views.helper import url_patterns
-
-from soc.models.document import Document
-from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.program import GSoCProgramMessages
-from soc.modules.gsoc.models.timeline import GSoCTimeline
-from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.forms import GSoCModelForm
+from soc.modules.gsoc.models import program
+from soc.modules.gsoc.models import timeline
+from soc.modules.gsoc.views import base
+from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views.helper import url_names
-from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gsoc.views.helper import url_patterns
 
 
-class TimelineForm(GSoCModelForm):
-  """Django form to edit timeline settings.
-  """
+class TimelineForm(forms.GSoCModelForm):
+  """Django form to edit timeline settings."""
 
   class Meta:
     css_prefix = 'timeline_form'
-    model = GSoCTimeline
+    model = timeline.GSoCTimeline
     exclude = ['link_id', 'scope', 'scope_path']
 
 
-class ProgramForm(GSoCModelForm):
-  """Django form for the program settings.
-  """
+class ProgramForm(forms.GSoCModelForm):
+  """Django form for the program settings."""
 
   def __init__(self, request_data, *args, **kwargs):
     self.request_data = request_data
@@ -52,14 +45,14 @@ class ProgramForm(GSoCModelForm):
 
   class Meta:
     css_prefix = 'program_form'
-    model = GSoCProgram
+    model = program.GSoCProgram
     exclude = ['link_id', 'scope', 'scope_path', 'timeline',
-               'home', 'slots_allocation', 'student_max_age']
+               'home', 'slots_allocation', 'student_max_age',
+               'min_slots']
 
 
-class GSoCProgramMessagesForm(GSoCModelForm):
-  """Django form for the program settings.
-  """
+class GSoCProgramMessagesForm(forms.GSoCModelForm):
+  """Django form for the program settings."""
 
   def __init__(self, request_data, *args, **kwargs):
     self.request_data = request_data
@@ -67,22 +60,21 @@ class GSoCProgramMessagesForm(GSoCModelForm):
 
   class Meta:
     css_prefix = 'program_messages_form'
-    model = GSoCProgramMessages
+    model = program.GSoCProgramMessages
 
 
-class ProgramPage(RequestHandler):
-  """View for the program profile.
-  """
+class ProgramPage(base.GSoCRequestHandler):
+  """View for the program profile."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'program/%s$' % url_patterns.PROGRAM, self,
+        url_patterns.url(r'program/%s$' % soc_url_patterns.PROGRAM, self,
             name='edit_gsoc_program'),
-        url(r'program/edit/%s$' % url_patterns.PROGRAM, self),
+        url_patterns.url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self),
     ]
 
   def jsonContext(self):
-    q = Document.all()
+    q = document.Document.all()
     q.filter('prefix', 'gsoc_program')
     q.filter('scope', self.data.program.key())
 
@@ -114,36 +106,30 @@ class ProgramPage(RequestHandler):
     program_form = ProgramForm(self.data, self.data.POST,
                                instance=self.data.program)
 
-    if not program_form.is_valid():
+    if program_form.is_valid():
+      program_form.save()
+      return True
+    else:
       return False
 
-    program_form.save()
-    return True
-
   def post(self):
-    """Handler for HTTP POST request.
-    """
-    if self.data.GET.get('cbox'):
-      cbox = True
-    else:
-      cbox = False
-
+    """Handler for HTTP POST request."""
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gsoc_program', validated=True, cbox=cbox)
+      return self.redirect.to('edit_gsoc_program', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
-class TimelinePage(RequestHandler):
-  """View for the participant profile.
-  """
+class TimelinePage(base.GSoCRequestHandler):
+  """View for the participant profile."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'timeline/%s$' % url_patterns.PROGRAM, self,
+        url_patterns.url(r'timeline/%s$' % soc_url_patterns.PROGRAM, self,
             name='edit_gsoc_timeline'),
-        url(r'timeline/edit/%s$' % url_patterns.PROGRAM, self),
+        url_patterns.url(r'timeline/edit/%s$' % soc_url_patterns.PROGRAM, self),
     ]
 
   def checkAccess(self):
@@ -165,88 +151,42 @@ class TimelinePage(RequestHandler):
     timeline_form = TimelineForm(self.data.POST,
                                  instance=self.data.program_timeline)
 
-    if not timeline_form.is_valid():
+    if timeline_form.is_valid():
+      timeline_form.save()
+      return True
+    else:
       return False
 
-    timeline_form.save()
-    return True
-
   def post(self):
-    """Handler for HTTP POST request.
-    """
-    if self.data.GET.get('cbox'):
-      cbox = True
-    else:
-      cbox = False
-
+    """Handler for HTTP POST request."""
     if self.validate():
       self.redirect.program()
-      self.redirect.to('edit_gsoc_timeline', validated=True, cbox=cbox)
+      return self.redirect.to('edit_gsoc_timeline', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
-class GSoCProgramMessagesPage(RequestHandler):
-  """View for the content of program specific messages to be sent.
-  """
-
-  def checkAccess(self):
-    self.check.isHost()
+class GSoCProgramMessagesPage(
+    soc_program_view.ProgramMessagesPage, base.GSoCRequestHandler):
+  """View for the content of GSoC program specific messages to be sent."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'program/messages/edit/%s$' % url_patterns.PROGRAM, self,
-            name=url_names.GSOC_EDIT_PROGRAM_MESSAGES),
+        url_patterns.url(
+            r'program/messages/edit/%s$' % soc_url_patterns.PROGRAM, self,
+            name=self._getUrlName()),
     ]
 
   def templatePath(self):
     return 'v2/modules/gsoc/program/messages.html'
 
-  def context(self):    
-    entity = self._getSingletonEntity(self.data.program)
-    form = self._getForm(entity)
-    
-    return {
-        'page_name': 'Edit program messages',
-        'forms': [form],
-        'error': form.errors,
-        }
-
-  def post(self):
-    """Handler for HTTP POST request.
-    """
-    if self.data.GET.get('cbox'):
-      cbox = True
-    else:
-      cbox = False
-
-    if self.validate():
-      self.redirect.program()
-      self.redirect.to(url_names.GSOC_EDIT_PROGRAM_MESSAGES,
-          validated=True, cbox=cbox)
-    else:
-      self.get()
-
-  def validate(self):
-    entity = self._getSingletonEntity(self.data.program)
-    form = self._getForm(entity)
-
-    if not form.is_valid():
-      return False
-
-    form.save()
-    return True
-
   def _getForm(self, entity):
     return GSoCProgramMessagesForm(self.data, self.data.POST or None,
         instance=entity)
 
-  def _getSingletonEntity(self, program):
-    def get_or_create_txn():
-      entity = GSoCProgramMessages.all().ancestor(program).get()
-      if not entity:
-        entity = GSoCProgramMessages(parent=program)
-        entity.put()
-      return entity
+  def _getModel(self):
+    return program.GSoCProgramMessages
 
-    return db.run_in_transaction(get_or_create_txn)
+  def _getUrlName(self):
+    return url_names.GSOC_EDIT_PROGRAM_MESSAGES

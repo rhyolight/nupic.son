@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,30 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC slot transfer admin page.
-"""
-
+"""Module for the GSoC slot transfer admin page."""
 
 import logging
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils import simplejson
 
-from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
+from soc.views import template
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
-from soc.views.template import Template
 
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
-from soc.modules.gsoc.views.base import RequestHandler
-from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gsoc.views import base
+from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
 
-class SlotsTransferAdminList(Template):
-  """Template for list of slot transfer requests.
-  """
+class SlotsTransferAdminList(template.Template):
+  """Template for list of slot transfer requests."""
 
   def __init__(self, request, data):
     self.request = request
@@ -45,12 +40,12 @@ class SlotsTransferAdminList(Template):
 
     list_config = lists.ListConfiguration()
     # hidden key
-    list_config.addColumn(
+    list_config.addPlainTextColumn(
         'full_transfer_key', 'Full slot transfer key',
-        (lambda ent, *args: str(ent.key())), hidden=True)
-    list_config.addColumn(
+        lambda ent, *args: str(ent.key()), hidden=True)
+    list_config.addPlainTextColumn(
         'org', 'Organization',
-        (lambda e, *args: e.parent().short_name.strip()), width=75)
+        lambda e, *args: e.parent().short_name.strip(), width=75)
     options = [('', 'All'), ('pending', 'Pending'),
                ('accepted', 'Accepted'), ('rejected', 'Rejected')]
     list_config.addSimpleColumn('status', 'Status', width=40, options=options)
@@ -59,15 +54,15 @@ class SlotsTransferAdminList(Template):
     list_config.setColumnEditable('nr_slots', True)
     list_config.addSimpleColumn('admin_remarks', 'Admin remarks')
     list_config.setColumnEditable('admin_remarks', True) #, edittype='textarea')
-    list_config.addColumn(
-        'slots_desired', 'Min desired', 
-        (lambda e, *args: e.parent().slots_desired), width=25, hidden=True)
-    list_config.addColumn(
+    list_config.addNumericalColumn(
+        'slots_desired', 'Min desired',
+        lambda e, *args: e.parent().slots_desired, width=25, hidden=True)
+    list_config.addNumericalColumn(
         'max_slots_desired', 'Max desired',
-        (lambda e, *args: e.parent().max_slots_desired), width=25, hidden=True)
-    list_config.addColumn(
+        lambda e, *args: e.parent().max_slots_desired, width=25, hidden=True)
+    list_config.addNumericalColumn(
         'slots', 'Slots',
-        (lambda e, *args: e.parent().slots), width=50, hidden=True)
+        lambda e, *args: e.parent().slots, width=50, hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('org')
     list_config.addPostEditButton('save', "Save", "",
@@ -82,13 +77,13 @@ class SlotsTransferAdminList(Template):
 
   def context(self):
     description = 'List of slot transfer requests for the program %s' % (
-            self.data.program.name)
+        self.data.program.name)
 
-    list = lists.ListConfigurationResponse(
+    slot_transfer_request_list = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, description)
 
     return {
-        'lists': [list],
+        'lists': [slot_transfer_request_list],
     }
 
   def post(self):
@@ -101,7 +96,7 @@ class SlotsTransferAdminList(Template):
     button_id = self.data.POST.get('button_id')
 
     if not data:
-      raise BadRequest("Missing data")
+      raise exceptions.BadRequest("Missing data")
 
     parsed = simplejson.loads(data)
 
@@ -110,7 +105,7 @@ class SlotsTransferAdminList(Template):
 
     if button_id == 'reject':
       return self.postAccept(parsed, False)
-  
+
     if button_id == 'save':
       return self.postSave(parsed)
 
@@ -125,7 +120,7 @@ class SlotsTransferAdminList(Template):
         slot_transfer = db.get(slot_transfer_key)
 
         if not slot_transfer:
-          logging.warning("Invalid slot_transfer_key '%s'" % 
+          logging.warning("Invalid slot_transfer_key '%s'" %
                           slot_transfer_key)
           return
 
@@ -222,14 +217,14 @@ class SlotsTransferAdminList(Template):
     return "v2/modules/gsoc/slot_transfer_admin/_list.html"
 
 
-class SlotsTransferAdminPage(RequestHandler):
-  """View for the the list of slot transfer requests.
-  """
+class SlotsTransferAdminPage(base.GSoCRequestHandler):
+  """View for the the list of slot transfer requests."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/slots/transfer/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_admin_slots_transfer'),
+        gsoc_url_patterns.url(
+            r'admin/slots/transfer/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_admin_slots_transfer'),
     ]
 
   def checkAccess(self):
@@ -241,18 +236,18 @@ class SlotsTransferAdminPage(RequestHandler):
   def jsonContext(self):
     list_content = SlotsTransferAdminList(self.request, self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exceptions.AccessViolation('You do not have access to this data')
 
   def post(self):
     slots_list = SlotsTransferAdminList(self.request, self.data)
 
-    if not slots_list.post():
-      raise AccessViolation(
-          'You cannot change this data')
+    if slots_list.post():
+      return http.HttpResponse()
+    else:
+      raise exceptions.AccessViolation('You cannot change this data')
 
   def context(self):
     return {

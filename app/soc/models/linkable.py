@@ -102,12 +102,11 @@ class Linkable(db.Model):
   #: digits and underscores only.  Valid link IDs successfully match
   #: the LINK_ID_REGEX.
   link_id = db.StringProperty(required=True,
-      verbose_name=ugettext('Link ID'))
+      verbose_name=ugettext('Username'))
   link_id.help_text = ugettext(
       'Used as part of various URL links throughout the site.'
       ' <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> '
-      ' alphanumeric characters, digits, and underscores only.'
-      ' The regexp used to validate is "%s".') % LINK_ID_PATTERN_CORE
+      ' alphanumeric characters, digits, and underscores only.')
 
   #: Optional Self Reference property to another Linkable entity which defines
   #: the "scope" of this Linkable entity. The back-reference in the Linkable 

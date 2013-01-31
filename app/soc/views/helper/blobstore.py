@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2008 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,12 +24,12 @@ Credits and big thanks to to: sebastian.serrano and emi420
 
 import cgi
 import logging
-import urllib
+
+from django import http
 
 from google.appengine.ext import blobstore
 
-from soc.logic.exceptions import BadRequest
-from soc.views.helper.response import Response
+from soc.logic import exceptions
 
 
 def _parseField(request, key, field):
@@ -107,17 +105,25 @@ def getUploads(request, field_name=None):
 
 
 def sendBlob(blob_info):
-  """Send a blob-response based on a blob_key.
+  """Constructs a response that App Engine will interpret as a blob send.
 
-  Sets the correct response header for serving a blob.  If BlobInfo
-  is provided and no content_type specified, will set request content type
-  to BlobInfo's content type.
+  The returned http.HttpResponse will have a "Content-Disposition" header
+  based on blob_info's stored file name, a "Content-Type" header based on
+  blob_info's stored content type, and a blobstore.BLOB_KEY_HEADER header
+  storing blob key of the blob to be sent to the user.
+
+  The returned http.HttpResponse may also have other headers set.
 
   Args:
-    blob_info: BlobInfo record to serve
+    blob_info: BlobInfo record representing the blob to be received by
+      the user.
+
+  Returns:
+    An http.HttpResponse object with at least "Content-Type",
+      "Content-Disposition", and blobstore.BLOB_KEY_HEADER headers set.
 
   Raises:
-    BadRequest: on missing filename in blob_info
+    exceptions.BadRequest: If blob_info is missing a file name.
   """
   logging.debug(blob_info)
   assert isinstance(blob_info, blobstore.BlobInfo)
@@ -131,14 +137,19 @@ def sendBlob(blob_info):
     content_type = content_type.encode('utf-8')
 
   if not filename:
-    raise BadRequest('No filename in blob_info.')
+    raise exceptions.BadRequest('No filename in blob_info.')
 
   if isinstance(filename, unicode):
     filename = filename.encode('utf-8')
 
-  response = Response()
-  response['Content-Type'] = content_type
-  response['Content-Disposition'] = (CONTENT_DISPOSITION % filename)
+  response = http.HttpResponse(content_type=content_type)
+  # We set the cache control to disable all kinds of caching hoping
+  # that Appengine does not cache the blob keys in the header if we
+  # set this.
+  response['Cache-Control'] = (
+      'no-store, no-cache, must-revalidate, post-check=0, pre-check=0')
+
+  response['Content-Disposition'] = CONTENT_DISPOSITION % filename
   response[blobstore.BLOB_KEY_HEADER] = str(blob_info.key())
 
   return response

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC student forms.
-"""
-
+"""Module for the GSoC student forms."""
 
 from google.appengine.ext import blobstore
 
@@ -26,7 +22,7 @@ from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -53,8 +49,11 @@ class TaxForm(GSoCModelForm):
     return self.request_data.kwargs['admin']
 
   def _r(self):
-    r = self.request_data.redirect
-    return r.profile() if self._admin() else r.program()
+    if self._admin():
+      self.request_data.redirect.profile()
+    else:
+      self.request_data.redirect.program()
+    return self.request_data.redirect
 
   def _urlName(self):
     if self._admin():
@@ -97,8 +96,11 @@ class EnrollmentForm(GSoCModelForm):
     return self.request_data.kwargs['admin']
 
   def _r(self):
-    r = self.request_data.redirect
-    return r.profile() if self._admin() else r.program()
+    if self._admin():
+      self.request_data.redirect.profile()
+    else:
+      self.request_data.redirect.program()
+    return self.request_data.redirect
 
   def _urlName(self):
     if self._admin():
@@ -119,7 +121,7 @@ class EnrollmentForm(GSoCModelForm):
       field._link = self._r().urlOf(self._urlName())
 
 
-class FormPage(RequestHandler):
+class FormPage(GSoCRequestHandler):
   """View to upload student forms.
   """
 
@@ -195,7 +197,11 @@ class FormPage(RequestHandler):
     return 'gsoc_enrollment_form'
 
   def _r(self):
-    return self.redirect.profile() if self._admin() else self.redirect.program()
+    if self._admin():
+      self.redirect.profile()
+    else:
+      self.redirect.program()
+    return self.redirect
 
   def jsonContext(self):
     url = self._r().urlOf(self._urlName(), secure=True)
@@ -216,8 +222,7 @@ class FormPage(RequestHandler):
 
       # since this is a file upload we must return a 300 response
       error = form.errors[form.fileFieldName()]
-      self._r().to(self._urlName(), extra=['error=%s'%error.as_text()])
-      return
+      return self._r().to(self._urlName(), extra=['error=%s'%error.as_text()])
 
     # delete the old blob, if it exists
     oldBlob = getattr(self.data.student_info, form.fileFieldName())
@@ -227,12 +232,11 @@ class FormPage(RequestHandler):
     # write information about the new blob to the datastore
     form.save()
 
-    self._r().to(self._urlName(), validated=True)
+    return self._r().to(self._urlName(), validated=True)
 
 
-class DownloadForm(RequestHandler):
-  """View for downloading a student form.
-  """
+class DownloadForm(GSoCRequestHandler):
+  """View for downloading a student form."""
 
   def djangoURLPatterns(self):
     return [
@@ -276,4 +280,4 @@ class DownloadForm(RequestHandler):
     else:
       blob_info = self._studentInfo().enrollment_form
 
-    self.response = bs_helper.sendBlob(blob_info)
+    return bs_helper.sendBlob(blob_info)

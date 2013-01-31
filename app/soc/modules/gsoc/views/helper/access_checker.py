@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +15,6 @@
 """Module containing the AccessChecker class that contains helper functions
 for checking access.
 """
-
 
 from google.appengine.ext import db
 
@@ -54,8 +51,11 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
     'You have reached the maximum number of proposals (%d) allowed '
     'for this program.')
 
+DEF_NO_ORG_APP_RECORD_FOUND = ugettext(
+    'The organization application for the given organization ID was not found.')
+
 DEF_NO_STUDENT_EVALUATION = ugettext(
-    'The project survey with name %s parameters does not exist.')
+    'The project evaluation with name %s parameters does not exist.')
 
 DEF_NO_MENTOR_EVALUATION = ugettext(
     'The project evaluation with name %s does not exist.')
@@ -111,6 +111,11 @@ DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM = ugettext(
 
 DEF_PROJECT_NOT_COMPLETED = ugettext(
     'The specified project has not been completed')
+
+DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
+    'An organization administrator has flagged this proposal to be '
+    'ignored. If you think this is incorrect, contact an organization '
+    'administrator to resolve the situation.')
 
 
 class Mutator(access_checker.Mutator):
@@ -218,7 +223,6 @@ class Mutator(access_checker.Mutator):
     if raise_not_found and not self.data.student_evaluation:
       raise NotFound(DEF_NO_STUDENT_EVALUATION % key_name)
 
-
   def studentEvaluationRecordFromKwargs(self):
     """Sets the student evaluation record in RequestData object.
     """
@@ -277,9 +281,27 @@ class Mutator(access_checker.Mutator):
     record = GSoCGradingRecord.get_by_id(record_id, parent=self.data.project)
 
     if not record or record.grading_survey_group.key().id() != group_id:
-      raise NotFound(DEF_NO_RECORD_FOUND) 
+      raise NotFound(DEF_NO_RECORD_FOUND)
 
     self.data.record = record
+
+  def orgAppRecord(self, org_id):
+    """Sets the org app record corresponding to the given org id.
+
+    Args:
+      org_id: The link_id of the organization.
+    """
+    assert access_checker.isSet(self.data.program)
+
+    q = OrgAppRecord.all()
+    q.filter('org_id', org_id)
+    q.filter('program', self.data.program)
+    record = q.get()
+
+    if not record:
+      raise NotFound(DEF_NO_ORG_APP_RECORD_FOUND)
+
+    self.data.org_app_record = record
 
   def surveyGroupFromKwargs(self):
     """Sets the GradingSurveyGroup from kwargs.
@@ -456,32 +478,28 @@ class AccessChecker(access_checker.AccessChecker):
     gsoc_org = q.get()
 
     if gsoc_org:
-      edit_url = self.data.redirect.organization(gsoc_org).urlOf(
-          'edit_gsoc_org_profile')
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=gsoc_org)
+
+      edit_url = self.data.redirect.urlOf('edit_gsoc_org_profile')
 
       raise AccessViolation(DEF_ORG_EXISTS % (org_id, edit_url))
 
-  def canCreateOrgProfile(self, org_id):
+  def canCreateOrgProfile(self):
     """Checks if the current user is an admin or a backup admin for the org app
     and also check whether the organization application is accepted.
-
-    Args:
-      org_id: The link_id of the organization.
     """
-    q = OrgAppRecord.all()
-    q.filter('org_id', org_id)
-    q.filter('program', self.data.program)
-    app_record = q.get()
+    app_record = self.data.org_app_record
 
     if not app_record:
-      raise NotFound(DEF_ORG_APP_NOT_FOUND % org_id)
+      raise NotFound(DEF_ORG_APP_NOT_FOUND % app_record.org_id)
 
     if self.data.user.key() not in [
         app_record.main_admin.key(), app_record.backup_admin.key()]:
       raise AccessViolation(DEF_NOT_ADMIN_FOR_ORG_APP)
 
     if app_record.status != 'accepted':
-      raise AccessViolation(DEF_ORG_APP_NOT_ACCEPTED % (org_id))
+      raise AccessViolation(DEF_ORG_APP_NOT_ACCEPTED % (app_record.org_id))
 
   def isProjectCompleted(self):
     """Checks whether the project specified in the request is completed.
@@ -507,7 +525,7 @@ class AccessChecker(access_checker.AccessChecker):
     # check if the proposal belongs to the current user
     expected_profile = self.data.proposal.parent()
     if expected_profile.key().name() != self.data.profile.key().name():
-      error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
+      error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'model': 'GSoCProposal'
           }
       raise AccessViolation(error_msg)
@@ -517,8 +535,8 @@ class AccessChecker(access_checker.AccessChecker):
     if status == 'ignored':
       raise AccessViolation(DEF_PROPOSAL_IGNORED_MESSAGE)
     elif status in ['invalid', 'accepted', 'rejected']:
-      raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
-          'model': 'GSoCProposal'
+      raise AccessViolation(access_checker.DEF_CANNOT_UPDATE_ENTITY % {
+          'name': 'proposal'
           })
 
     # determine what can be done with the proposal

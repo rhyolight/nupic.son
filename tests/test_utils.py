@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2008 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Common testing utilities.
-"""
+"""Common testing utilities."""
 
 
 import collections
@@ -28,13 +25,15 @@ import unittest
 import gaetestbed
 from mox import stubout
 
+from google.appengine.datastore import datastore_stub_util
 from google.appengine.ext import db
+from google.appengine.ext import testbed
 
 from django.test import client
 from django.test import TestCase
 
 from soc.logic.helper import xsrfutil
-from soc.middleware.xsrf import XsrfMiddleware
+from soc.middleware import xsrf as xsrf_middleware
 from soc.modules import callback
 
 
@@ -171,6 +170,36 @@ class SoCTestCase(unittest.TestCase):
       dev_test: True iff DEV_TEST is in environment (in parent)
     """
     self.dev_test = 'DEV_TEST' in os.environ
+
+    self.testbed = testbed.Testbed()
+    self.testbed.activate()
+
+    self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(
+        probability=1)
+    self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
+
+  @staticmethod
+  def use_hr_schema(func):
+    """Wrapper that makes the specified function to be called in HR datastore
+    schema environment.
+
+    It is important to mention that only the tested function is executed in
+    this environment. In particular, setUp() and tearDown() function are
+    run in the regular schema that is similar to Master/Slave.
+    """
+
+    def wrapper(self):
+      """Wrapper that sets the probability to zero and calls the wrapped
+      function.
+
+      Args:
+        self: an instance of SoCTestCase that invoked the wrapped function
+      """
+      self.policy.SetProbability(0)
+      func(self)
+      self.policy.SetProbability(1)
+
+    return wrapper
 
   def assertItemsEqual(self, expected_seq, actual_seq, msg=''):
     """An unordered sequence / set specific comparison.
@@ -400,8 +429,8 @@ class DjangoTestCase(TestCase):
         if site:
           self.site = site
     request = SiteContainingRequest(site)
-    xsrf = XsrfMiddleware()
-    key = xsrf._getSecretKey(request)
+    # TODO(nathaniel): module API violation.
+    key = xsrf_middleware._GetSecretKey(request)
     user_id = xsrfutil._getCurrentUserId()
     xsrf_token = xsrfutil._generateToken(key, user_id)
     return xsrf_token
@@ -599,18 +628,6 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/header.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/mainmenu.html')
 
-  def assertGSoCColorboxTemplatesUsed(self, response):
-    """Asserts that all the templates from the base_colorbox view were used.
-    """
-    self.assertResponseOK(response)
-    for contexts in response.context:
-      for context in contexts:
-        for value in context.values():
-          # make it easier to debug render failures
-          if hasattr(value, 'render'):
-            value.render()
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/base_colorbox.html')
-
 
 class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
   """DjangoTestCase specifically for GCI view tests.
@@ -620,6 +637,7 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
     """Performs test setup.
     """
     # Initialize instances in the parent first
+    super(GCIDjangoTestCase, self).init()
     super(GCIDjangoTestCase, self).init()
 
   def assertGCITemplatesUsed(self, response):

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GCI home page.
-"""
+"""Module containing the views for GCI home page."""
 
+
+from django.utils import translation
 
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -24,46 +23,85 @@ from soc.views.template import Template
 from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.views import common_templates
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
 
 class HowItWorks(Template):
-  """How it works template.
-  """
+  """How it works template."""
+
+  CONTEST_BEGINS_ON_MSG = translation.ugettext('Contest begins on %s')
+
+  CONTEST_CLOSED_ON_MSG = translation.ugettext('Contest closed on %s')
+
+  GET_STARTED_NOW_MSG = translation.ugettext('Get Started Now!')
 
   def __init__(self, data):
     self.data = data
 
   def context(self):
-    r = self.data.redirect
     program = self.data.program
 
     from soc.modules.gci.models.program import GCIProgram
     about_page = GCIProgram.about_page.get_value_for_datastore(program)
 
+    example_tasks_link = ''
+    all_tasks_link = ''
+
+    main_text = self._getMainText()
+
     if self.data.timeline.orgSignup():
+      # TODO(nathaniel): make this .program() call unnecessary.
+      self.data.redirect.program()
+
       start_text = 'Sign up as organization'
-      start_link = r.program().urlOf('gci_take_org_app')
+      start_link = self.data.redirect.urlOf('gci_take_org_app')
+      if self.data.program.example_tasks:
+        example_tasks_link = self.data.program.example_tasks
     elif self.data.timeline.studentSignup() and not self.data.profile:
-      start_text = 'Register As Student'
-      start_link = r.createProfile('student').urlOf('create_gci_profile',
-                                                    secure=True)
+      start_text = 'Register as a Student'
+
+      start_link = self.data.redirect.createProfile('student').urlOf(
+          'create_gci_profile', secure=True)
+
+      # TODO(nathaniel): make this .program() call unnecessary.
+      self.data.redirect.program()
+
+      all_tasks_link = self.data.redirect.urlOf(url_names.GCI_ALL_TASKS_LIST)
     elif self.data.timeline.tasksPubliclyVisible():
+      # TODO(nathaniel): make this .program() call unnecessary.
+      self.data.redirect.program()
+
       start_text = 'Search for tasks'
-      start_link = self.data.redirect.program().urlOf('gci_list_tasks')
+      start_link = self.data.redirect.urlOf('gci_list_tasks')
+    elif self.data.program.example_tasks:
+      start_text = 'See example tasks'
+      start_link = self.data.program.example_tasks
     else:
       start_text = start_link = ''
 
     return {
-        'about_link': r.document(about_page).url(),
+        'about_link': self.data.redirect.document(about_page).url(),
         'start_text': start_text,
         'start_link': start_link,
+        'example_tasks_link': example_tasks_link,
+        'all_tasks_link': all_tasks_link,
+        'main_text': main_text,
     }
 
   def templatePath(self):
     return "v2/modules/gci/homepage/_how_it_works.html"
+
+  def _getMainText(self):
+    if self.data.timeline.beforeStudentSignupStart():
+      sign_up_start = self.data.timeline.studentSignupStart()
+      return self.CONTEST_BEGINS_ON_MSG % (sign_up_start.strftime('%b %d'),)
+    elif self.data.timeline.studentSignup():
+      return self.GET_STARTED_NOW_MSG
+    elif self.data.timeline.afterStopAllWorkDeadline():
+      contest_closed = self.data.timeline.stopAllWorkDeadline()
+      return self.CONTEST_CLOSED_ON_MSG % (contest_closed.strftime('%b %d'),)
 
 
 class FeaturedTask(Template):
@@ -88,29 +126,48 @@ class FeaturedTask(Template):
 
 
 class ParticipatingOrgs(Template):
-  """Participating orgs template.
-  """
+  """Participating orgs template."""
+
+  _TABLE_WIDTH = 5
+  _ORG_COUNT = 10
 
   def __init__(self, data):
     self.data = data
 
   def context(self):
-    r = self.data.redirect
-
     participating_orgs = []
-    current_orgs = org_logic.participating(self.data.program)
+    current_orgs = org_logic.participating(
+        self.data.program, org_count=self._ORG_COUNT)
     for org in current_orgs:
       participating_orgs.append({
-          'link': r.orgHomepage(org.link_id).url(),
+          'link': self.data.redirect.orgHomepage(org.link_id).url(),
           'logo': org.logo_url,
           'name': org.short_name,
           })
 
-    accepted_orgs_url = r.program().urlOf('gci_accepted_orgs')
+    participating_orgs_table_rows = []
+    orgs = list(participating_orgs)
+    while True:
+      if not orgs:
+        break
+      elif len(orgs) <= self._TABLE_WIDTH:
+        participating_orgs_table_rows.append(orgs)
+        break
+      else:
+        row, orgs = orgs[:self._TABLE_WIDTH], orgs[self._TABLE_WIDTH:]
+        participating_orgs_table_rows.append(row)
+
+    # TODO(nathaniel): make this .program() call unnecessary.
+    self.data.redirect.program()
+
+    accepted_orgs_url = self.data.redirect.urlOf('gci_accepted_orgs')
 
     return {
         'participating_orgs': participating_orgs,
+        'participating_orgs_table_rows': participating_orgs_table_rows,
         'org_list_url': accepted_orgs_url,
+        'all_participating_orgs': (
+            self.data.program.nr_accepted_orgs <= len(participating_orgs)),
     }
 
   def templatePath(self):
@@ -118,16 +175,17 @@ class ParticipatingOrgs(Template):
 
 
 class Leaderboard(Template):
-  """Leaderboard template.
-  """
+  """Leaderboard template."""
 
   def __init__(self, data):
     self.data = data
 
   def context(self):
-    r = self.data.redirect
+    # TODO(nathaniel): make this .program() call unnecessary.
+    self.data.redirect.program()
+
     return {
-        'leaderboard_url': r.program().urlOf(url_names.GCI_LEADERBOARD),
+        'leaderboard_url': self.data.redirect.urlOf(url_names.GCI_LEADERBOARD),
     }
 
   def templatePath(self):
@@ -150,7 +208,7 @@ class ConnectWithUs(Template):
     return "v2/modules/gci/homepage/_connect_with_us.html"
 
 
-class Homepage(RequestHandler):
+class Homepage(GCIRequestHandler):
   """Encapsulate all the methods required to generate GCI Home page.
   """
 
@@ -183,7 +241,6 @@ class Homepage(RequestHandler):
 
     if current_timeline in ['student_signup_period',
         'working_period', 'offseason']:
-      context['leaderboard'] = Leaderboard(self.data)
       featured_task = task_logic.getFeaturedTask(self.data.program)
 
       if featured_task:

@@ -14,21 +14,21 @@ limitations under the License.
 
 {% if accepted_orgs_link %}
   <div id="participants" class="block block-participants">
-    <h4 id="title-section-participating-orgs">Participating Organizations</h4>
+    <h4 id="title-section-participating-orgs">Mentoring Organizations</h4>
     <div id="block-participants-content" class="block-content">
       {% for org in participating_orgs %}
         <a href="{{ org.link }}"><img src="{{ org.logo }}" class="particpating-orgs" alt="{{ org.name }}" title="{{ org.name }}" /></a>
       {% endfor %}
     </div>
     <div id="block-participants-readmore" class="readmore">
-      <a href="{{ accepted_orgs_link }}">See all {{ nr_accepted_orgs }} participating organizations</a>
+      <a href="{{ accepted_orgs_link }}">See all {{ nr_accepted_orgs }} mentoring organizations</a>
     </div>
   </div>
 {% endif %}
 
 {% if org_signup %}
   <div id="apply-orgs" class="block block-orgs">
-  <img src="/soc/content/{{ app_version }}/images/v2/gsoc/students-apply-now.jpg" height="107" width="429" alt="" id="block-apply-image" />
+  <img src="/soc/content/{{ app_version }}/images/gsoc/students-apply-now.jpg" height="107" width="429" alt="" id="block-apply-image" />
   {% if profile_role == "mentor" %}
      <h3 id="title-section-apply">Organizations: Apply now!</h3>
   {% else %}
@@ -36,11 +36,11 @@ limitations under the License.
   {% endif %}
 {% else %}{% if student_signup and not profile_role == "mentor" and not profile_role == "org_admin" %}
   <div id="apply-students" class="block block-students">
-    <img src="/soc/content/{{ app_version }}/images/v2/gsoc/students-apply-now.jpg" height="107" width="429" alt="" id="block-apply-image" />
+    <img src="/soc/content/{{ app_version }}/images/gsoc/students-apply-now.jpg" height="107" width="429" alt="" id="block-apply-image" />
     <h3 id="title-section-apply">Students: Apply now!</h3>
 {% else %}{% if mentor_signup and not profile_role == "student" %}
   <div id="apply-mentors" class="block block-mentors">
-    <img src="/soc/content/{{ app_version }}/images/v2/gsoc/students-apply-now.jpg" height="107" width="429" alt="" id="block-apply-image" />
+    <img src="/soc/content/{{ app_version }}/images/gsoc/students-apply-now.jpg" height="107" width="429" alt="" id="block-apply-image" />
     <h3 id="title-section-apply">Mentors: Apply now!</h3>
 {% endif %}{% endif %}{% endif %}
 

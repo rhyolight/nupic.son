@@ -28,12 +28,15 @@ from soc.modules.gci.models.task import GCITask
 from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
 from tests.program_utils import GCIProgramHelper
+from tests.test_utils import SoCTestCase
 
-class OrganizationTest(unittest.TestCase):
+
+class OrganizationTest(SoCTestCase):
   """Tests the logic for GCIOrganization.
   """
   
   def setUp(self):
+    self.init()
     self.gci_program_helper = GCIProgramHelper()
     self.program = self.gci_program_helper.createProgram()
     self.task_helper = GCITaskHelper(self.program)
@@ -66,16 +69,19 @@ class OrganizationTest(unittest.TestCase):
     """Tests if a list of all the organizations participating in a given gci
     program is returned.
     """
+    test_org_count = 2
     expected = []
     actual = organization_logic.participating(self.program)
     self.assertEqual(expected, actual)
     org1 = self.gci_program_helper.createOrg()
     org2 = self.gci_program_helper.createNewOrg()
-    #We need to clear the cache with the key given below as the first call to
-    #the function being tested sets an empty cache with the same key.
-    key = 'participating_orgs_for' + self.program.key().name()
+    # We need to clear the cache with the key given below as the first call to
+    # the function being tested sets an empty cache with the same key.
+    key = '%s_participating_orgs_for_%s' % (
+        test_org_count, self.program.key().name())
     memcache.delete(key)
     expected = set([org1.key(), org2.key()])
-    actual = organization_logic.participating(self.gci_program_helper.program)
+    actual = organization_logic.participating(
+        self.gci_program_helper.program, org_count=test_org_count)
     actual = set([org.key() for org in actual])
     self.assertEqual(expected, set(actual))

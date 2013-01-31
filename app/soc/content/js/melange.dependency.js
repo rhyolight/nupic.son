@@ -147,10 +147,6 @@
     tpjs + "jquery/jquery.formbuilder.js"
   ];
 
-  s.colorbox = [
-    tpjs + "jquery/jquery.colorbox.js"
-  ];
-
   s.hashchange = [
     tpjs + "jquery/jquery.ba-hashchange.js"
   ];
@@ -298,6 +294,10 @@
     tpjs + "jlinq/jLinq-2.2.1.js"
   ];
 
+  s.fileupload = [
+    s.jqueryui.widget,
+    tpjs + "jquery/jquery.fileupload.js"
+  ];
   /** Melange packages **/
 
   s.melange = {};
@@ -371,6 +371,8 @@
   ];
 
   s.melange.uploadform = [
+    s.fileupload,
+    null,
     mpjs + "upload-form.js"
   ];
 

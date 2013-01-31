@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC proposal duplicates.
-"""
-
+"""Module containing the views for GSoC proposal duplicates."""
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
@@ -29,13 +25,12 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class DuplicatesPage(RequestHandler):
-  """View for the host to see duplicates.
-  """
+class DuplicatesPage(GSoCRequestHandler):
+  """View for the host to see duplicates."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/duplicates/base.html'
@@ -71,8 +66,7 @@ class DuplicatesPage(RequestHandler):
     return context
 
   def post(self):
-    """Handles the POST request to (re)start calcuation.
-    """
+    """Handles the POST request to (re)start calcuation."""
     post_data = self.request.POST
 
     # pass along these params as POST to the new task
@@ -92,12 +86,11 @@ class DuplicatesPage(RequestHandler):
     new_task.add()
 
     # redirect to self
-    self.response = http.HttpResponseRedirect('')
+    return http.HttpResponseRedirect('')
 
 
 class Duplicate(Template):
-  """Template for showing a duplicate to the host.
-  """
+  """Template for showing a duplicate to the host."""
 
   def __init__(self, data, duplicate):
     """Constructs the template for showing a duplicate.
@@ -110,19 +103,19 @@ class Duplicate(Template):
     super(Duplicate, self).__init__(data)
 
   def context(self):
-    """Returns the context for the current template.
-    """
-    r = self.data.redirect
-
+    """Returns the context for the current template."""
     context = {'duplicate': self.duplicate}
     orgs = db.get(self.duplicate.orgs)
     proposals = db.get(self.duplicate.duplicates)
 
     orgs_details = {}
     for org in orgs:
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=org)
+
       orgs_details[org.key().id_or_name()] = {
           'name': org.name,
-          'link': r.organization(org).urlOf('gsoc_org_home')
+          'link': self.data.redirect.urlOf('gsoc_org_home')
           }
       q = GSoCProfile.all()
       q.filter('org_admin_for', org)
@@ -142,9 +135,9 @@ class Duplicate(Template):
           orgs_details[org.key().id_or_name()]['proposals'].append({
               'key': proposal.key().id_or_name(),
               'title': proposal.title,
-              'link': r.review(proposal.key().id_or_name(),
-                               proposal.parent().link_id).urlOf(
-                                   'review_gsoc_proposal')
+              'link': self.data.redirect.review(
+                  proposal.key().id_or_name(),
+                  proposal.parent().link_id).urlOf('review_gsoc_proposal'),
               })
 
     context['orgs'] = orgs_details
@@ -152,6 +145,5 @@ class Duplicate(Template):
     return context
 
   def templatePath(self):
-    """Returns the path to the template that should be used in render().
-    """
+    """Returns the path to the template that should be used in render()."""
     return 'v2/modules/gsoc/duplicates/proposal_duplicate.html'

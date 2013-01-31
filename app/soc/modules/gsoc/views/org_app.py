@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,28 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the views for GSoC Organization Application.
-"""
-
+"""Module containing the views for GSoC Organization Application."""
 
 import logging
 
-from google.appengine.ext import db 
-
+from django import http
 from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from soc.logic.exceptions import BadRequest
+from soc.logic.exceptions import NotFound
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
-from soc.views import profile_show
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
 from soc.logic import org_app as org_app_logic
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -74,7 +69,7 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
     return 'v2/modules/gsoc/_form.html'
 
 
-class GSoCOrgAppEditPage(RequestHandler):
+class GSoCOrgAppEditPage(GSoCRequestHandler):
   """View for creating/editing organization application.
   """
 
@@ -86,7 +81,6 @@ class GSoCOrgAppEditPage(RequestHandler):
 
   def checkAccess(self):
     self.check.isHost()
-    self.mutator.orgAppFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/edit.html'
@@ -105,7 +99,8 @@ class GSoCOrgAppEditPage(RequestHandler):
 
     context = {
         'page_name': page_name,
-        'post_url': self.redirect.program().urlOf('gsoc_edit_org_app'),
+        'post_url': self.linker.program(
+            self.data.program, 'gsoc_edit_org_app'),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -142,14 +137,20 @@ class GSoCOrgAppEditPage(RequestHandler):
   def post(self):
     org_app = self.orgAppFromForm()
     if org_app:
-      r = self.redirect.program()
-      r.to('gsoc_edit_org_app', validated=True)
+      # TODO(nathaniel): is this .program() necessary?
+      self.redirect.program()
+
+      return self.redirect.to('gsoc_edit_org_app', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
-class GSoCOrgAppPreviewPage(RequestHandler):
-  """View for organizations to submit their application.
+class GSoCOrgAppPreviewPage(GSoCRequestHandler):
+  """Organization Application preview page.
+
+  View for Organization Administrators to preview the organization
+  application for the program specified in the URL.
   """
 
   def djangoURLPatterns(self):
@@ -160,7 +161,8 @@ class GSoCOrgAppPreviewPage(RequestHandler):
 
   def checkAccess(self):
     self.check.isHost()
-    self.mutator.orgAppFromKwargs(raise_not_found=True)
+    if not self.data.org_app:
+      raise NotFound(access_checker.DEF_NO_ORG_APP % self.data.program.name)
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/take.html'
@@ -180,7 +182,7 @@ class GSoCOrgAppPreviewPage(RequestHandler):
     return context
 
 
-class GSoCOrgAppTakePage(RequestHandler):
+class GSoCOrgAppTakePage(GSoCRequestHandler):
   """View for organizations to submit their application.
   """
 
@@ -193,7 +195,8 @@ class GSoCOrgAppTakePage(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.mutator.orgAppFromKwargs()
+    if not self.data.org_app:
+      raise NotFound(access_checker.DEF_NO_ORG_APP % self.data.program.name)
     self.mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(self.data.org_app)
 
@@ -263,17 +266,18 @@ class GSoCOrgAppTakePage(RequestHandler):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
       r = self.redirect.id(org_app_record.key().id())
-      r.to('gsoc_retake_org_app', validated=True)
+      return r.to('gsoc_retake_org_app', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
-class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
+class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
   """View for listing all records of a GSoC Organization application.
   """
 
   def __init__(self, *args, **kwargs):
-    RequestHandler.__init__(self, *args, **kwargs)
+    GSoCRequestHandler.__init__(self, *args, **kwargs)
     org_app.OrgAppRecordsList.__init__(self, 'gsoc_show_org_app')
 
   def djangoURLPatterns(self):
@@ -284,20 +288,18 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
          ]
 
   def post(self):
-    """Edits records from commands received by the list code.
-    """
+    """Edits records from commands received by the list code."""
     post_data = self.request.POST
 
     self.data.redirect.program()
 
     if (post_data.get('process', '') ==
-        'Finalize decisions and send acceptance/rejection emails'):
+        org_app.PROCESS_ORG_APPS_FORM_BUTTON_VALUE):
       mapreduce_control.start_map('ProcessOrgApp', {
           'program_type': 'gsoc',
           'program_key': self.data.program.key().name()
           })
-      self.redirect.to('gsoc_list_org_app_records', validated=True)
-      return
+      return self.redirect.to('gsoc_list_org_app_records', validated=True)
 
     if not post_data.get('button_id', None) == 'save':
       raise BadRequest('No valid POST data found')
@@ -310,21 +312,22 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, RequestHandler):
     parsed = simplejson.loads(data)
     url = self.data.redirect.urlOf('create_gsoc_org_profile', full=True)
 
-    for id, properties in parsed.iteritems():
-      record = OrgAppRecord.get_by_id(long(id))
+    for oaid, properties in parsed.iteritems():
+      record = OrgAppRecord.get_by_id(long(oaid))
 
       if not record:
-        logging.warning('%s is an invalid OrgAppRecord ID' %id)
+        logging.warning('%s is an invalid OrgAppRecord ID' % oaid)
         continue
 
       if record.survey.key() != self.data.org_app.key():
-        logging.warning('%s is not a record for the Org App in the URL' %record.key())
+        logging.warning(
+            '%s is not a record for the Org App in the URL' % record.key())
         continue
 
       new_status = properties['status']
       org_app_logic.setStatus(self.data, record, new_status, url)
 
-    self.response.set_status(200)
+    return http.HttpResponse()
 
 
 class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):
@@ -334,7 +337,7 @@ class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):
   template_path = 'v2/modules/gsoc/org_app/readonly_template.html'
 
 
-class GSoCOrgAppShowPage(RequestHandler):
+class GSoCOrgAppShowPage(GSoCRequestHandler):
   """View to display the readonly page for organization application.
   """
 
@@ -345,7 +348,8 @@ class GSoCOrgAppShowPage(RequestHandler):
     ]
 
   def checkAccess(self):
-    self.mutator.orgAppFromKwargs()
+    if not self.data.org_app:
+      raise NotFound(access_checker.DEF_NO_ORG_APP % self.data.program.name)
     self.mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(self.data.org_app_record)
 
@@ -365,9 +369,9 @@ class GSoCOrgAppShowPage(RequestHandler):
 
     if record:
       context['record'] = OrgAppReadOnlyTemplate(record)
-      
+
       # admin info should be available only to the hosts
-      if self.data.is_host: 
+      if self.data.is_host:
         context['main_admin_url'] = self.data.redirect.profile(
             record.main_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW)
         context['backup_admin_url'] = self.data.redirect.profile(
@@ -378,7 +382,7 @@ class GSoCOrgAppShowPage(RequestHandler):
         context['update_link'] = self.data.redirect.id().urlOf(
             'gsoc_retake_org_app')
       else:
-        context['create_link'] = self.data.redirect.program().urlOf(
-            'gsoc_take_org_app')
+        context['create_link'] = self.linker.program(
+            self.data.program, 'gsoc_take_org_app')
 
     return context

@@ -19,8 +19,6 @@
 
 
 import itertools
-import logging
-import random
 import datetime
 
 from google.appengine.api import users
@@ -30,8 +28,6 @@ from google.appengine.ext import db
 from django import http
 
 from soc.logic import accounts
-from soc.logic import dicts
-from soc.logic import user
 from soc.models.document import Document
 from soc.models.host import Host
 
@@ -69,6 +65,8 @@ def seed(request, *args, **kwargs):
   site_properties = {
       'key_name': 'site',
       'link_id': 'site',
+      'latest_gsoc': 'google/gsoc2009',
+      'latest_gci': 'google/gci2009',
       }
 
   site = Site(**site_properties)
@@ -140,12 +138,9 @@ def seed(request, *args, **kwargs):
   google_host = Host(**role_properties)
   google_host.put()
 
-  from datetime import datetime
-  from datetime import timedelta
-
-  now = datetime.now()
-  before = now - timedelta(365)
-  after = now + timedelta(365)
+  now = datetime.datetime.now()
+  before = now - datetime.timedelta(365)
+  after = now + datetime.timedelta(365)
 
   timeline_properties = {
       'key_name': 'google/gsoc2009',
@@ -365,7 +360,6 @@ def seed(request, *args, **kwargs):
       'res_city': 'city',
       'res_street': 'test street',
       'res_postalcode': '12345',
-      'publish_location': True,
       'blog': 'http://www.blog.com/',
       'home_page': 'http://www.homepage.com/',
       'photo_url': 'http://www.photosite.com/thumbnail.png',
@@ -388,7 +382,6 @@ def seed(request, *args, **kwargs):
       'school_country': 'United States',
       'school_name': 'Test School',
       'school_home_page': 'http://www.example.com',
-      'program': gsoc2009,
   }
   student_info = GSoCStudentInfo(**student_info_properties)
   student_info.put()
@@ -555,7 +548,6 @@ def clear(*args, **kwargs):
   # this method will not clear all instances.  Instead, it should continually
   # call .all(), delete all those, and loop until .all() is empty.
   entities = itertools.chain(*[
-      GCIStudent.all(),
       Survey.all(),
       SurveyRecord.all(),
       StudentProposal.all(),

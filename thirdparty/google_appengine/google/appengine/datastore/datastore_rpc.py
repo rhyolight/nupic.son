@@ -64,6 +64,8 @@ from google.appengine.api import apiproxy_stub_map
 
 from google.appengine.api import datastore_errors
 from google.appengine.api import datastore_types
+
+from google.appengine.api.app_identity import app_identity
 from google.appengine.datastore import datastore_pb
 from google.appengine.runtime import apiproxy_errors
 
@@ -95,6 +97,25 @@ def _positional(max_pos_args):
   return positional_decorator
 
 
+def _GetDatastoreType(app=None):
+  """Tries to get the datastore type for the given app.
+
+  This function is only guaranteed to return something other than
+  UNKNOWN_DATASTORE when running in production and querying the current app.
+  """
+  current_app = datastore_types.ResolveAppId(None)
+  if app not in (current_app, None):
+    return BaseConnection.UNKNOWN_DATASTORE
+
+
+
+
+  partition, _, _ = app_identity._ParseFullAppId(current_app)
+  if partition:
+    return BaseConnection.HIGH_REPLICATION_DATASTORE
+  return BaseConnection.MASTER_SLAVE_DATASTORE
+
+
 class AbstractAdapter(object):
   """Abstract interface between protobufs and user-level classes.
 
@@ -123,9 +144,9 @@ class AbstractAdapter(object):
     raise NotImplementedError
 
   def pb_to_index(self, pb):
-   """Turn an entity_pb.CompositeIndex into a user-level Index
-   representation."""
-   raise NotImplementedError
+    """Turn an entity_pb.CompositeIndex into a user-level Index
+    representation."""
+    raise NotImplementedError
 
   def pb_to_query_result(self, pb, query_options):
     """Turn an entity_pb.EntityProto into a user-level query result."""
@@ -928,7 +949,6 @@ class BaseConnection(object):
 
   UNKNOWN_DATASTORE = 0
   MASTER_SLAVE_DATASTORE = 1
-
   HIGH_REPLICATION_DATASTORE = 2
 
   @_positional(1)
@@ -1030,17 +1050,7 @@ class BaseConnection(object):
     This function is only guaranteed to return something other than
     UNKNOWN_DATASTORE when running in production and querying the current app.
     """
-
-
-
-
-
-    current_app = datastore_types.ResolveAppId(None)
-    if app not in (current_app, None):
-      return BaseConnection.UNKNOWN_DATASTORE
-    if current_app.startswith('s~'):
-      return BaseConnection.HIGH_REPLICATION_DATASTORE
-    return BaseConnection.MASTER_SLAVE_DATASTORE
+    return _GetDatastoreType(app)
 
   def wait_for_all_pending_rpcs(self):
     """Wait for all currently pending RPCs to complete."""
@@ -1371,20 +1381,6 @@ class BaseConnection(object):
     """
     return self.async_get(None, keys).get_result()
 
-
-
-
-
-  DEFAULT_MAX_ENTITY_GROUPS_PER_HIGH_REP_READ_RPC = 1
-
-  def __get_max_entity_groups_per_high_rep_read_rpc(self, config):
-    """Like __get_max_entity_groups_per_rpc but for HRD reads."""
-
-
-
-    return Configuration.max_entity_groups_per_rpc(
-        config, self.__config) or self.DEFAULT_MAX_ENTITY_GROUPS_PER_HIGH_REP_READ_RPC
-
   def async_get(self, config, keys, extra_hook=None):
     """Asynchronous Get operation.
 
@@ -1417,6 +1413,7 @@ class BaseConnection(object):
     base_size = self._get_base_size(base_req)
     max_count = (Configuration.max_get_keys(config, self.__config) or
                  self.MAX_GET_KEYS)
+
     if base_req.has_strong():
       is_read_current = base_req.strong()
     else:
@@ -1429,16 +1426,11 @@ class BaseConnection(object):
 
 
 
-
-
-
-
     if is_read_current and not base_req.has_transaction():
-
-
-      max_egs_per_rpc = self.__get_max_entity_groups_per_high_rep_read_rpc(config)
+      max_egs_per_rpc = self.__get_max_entity_groups_per_rpc(config)
     else:
       max_egs_per_rpc = None
+
 
 
     pbsgen = self.__generate_pb_lists(

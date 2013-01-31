@@ -36,8 +36,22 @@
     </div>
     {% if start_text %}
     <div class="block-how-it-works-start">
-        <span>Get Started Now!</span>
-        <a href="{{ start_link }}">{{ start_text }}</a>
+        <div class="block-how-it-works-start-inner">
+            {% if main_text|length < 20 %}
+              <span class="short-text">{{ main_text }}</span>
+            {% else %}
+              <span class="long-text">{{ main_text }}</span>
+            {% endif %}
+            <div class="block-start-link">
+                <a class="start-link" href="{{ start_link }}">{{ start_text }}</a>
+            </div>
+            {% if example_tasks_link %}
+            <a class="example-tasks" href="{{ example_tasks_link }}">Or see example tasks</a>
+            {% endif %}
+            {% if all_tasks_link %}
+            <a class="all-tasks-tasks" href="{{ all_tasks_link }}">Or see list of tasks</a>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
 </div>

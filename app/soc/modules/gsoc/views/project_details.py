@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GSoC project details page.
-"""
+"""Module containing the view for GSoC project details page."""
 
+import httplib
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 from django import forms as django_forms
+from django import http
 from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
@@ -37,7 +36,7 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.code_sample import GSoCCodeSample
 from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -118,7 +117,7 @@ class ListCodeSamples(Template):
         code_sample['is_blob_valid'] = True
       else:
         code_sample['is_blob_valid'] = False
-        
+
       code_samples.append(code_sample)
 
     return code_samples
@@ -169,7 +168,7 @@ class UploadCodeSamples(Template):
     return 'v2/modules/gsoc/project_details/_upload_code_samples.html'
 
 
-class ProjectDetailsUpdate(RequestHandler):
+class ProjectDetailsUpdate(GSoCRequestHandler):
   """Encapsulate the methods required to generate Project Details update form.
   """
 
@@ -226,16 +225,16 @@ class ProjectDetailsUpdate(RequestHandler):
     return True
 
   def post(self):
-    """Post handler for the project details update form.
-    """
+    """Post handler for the project details update form."""
     if self.validate():
       self.redirect.project()
-      self.redirect.to('gsoc_project_details')
+      return self.redirect.to('gsoc_project_details')
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
-class CodeSampleUploadFilePost(RequestHandler):
+class CodeSampleUploadFilePost(GSoCRequestHandler):
   """Handler for POST requests to upload files with code samples.
   """
 
@@ -256,8 +255,7 @@ class CodeSampleUploadFilePost(RequestHandler):
     self.check.isProjectCompleted()
 
   def post(self):
-    """Post handler for the code sample upload file.
-    """
+    """Post handler for the code sample upload file."""
     assert isSet(self.data.project)
 
     form = CodeSampleUploadFileForm(
@@ -267,6 +265,7 @@ class CodeSampleUploadFilePost(RequestHandler):
       # we are not storing this form, remove the uploaded blob from the cloud
       for blob_info in self.data.request.file_uploads.itervalues():
         blob_info.delete()
+      # TODO(nathaniel): make this .project() call unnecessary.
       return self.redirect.project().to(
           url_names.GSOC_PROJECT_UPDATE, extra=['file=0'])
 
@@ -287,11 +286,13 @@ class CodeSampleUploadFilePost(RequestHandler):
 
     db.run_in_transaction(txn)
 
+    # TODO(nathaniel): Make this .project() call unnecessary.
     self.redirect.project()
-    self.redirect.to('gsoc_project_details')
+
+    return self.redirect.to('gsoc_project_details')
 
 
-class CodeSampleDownloadFileGet(RequestHandler):
+class CodeSampleDownloadFileGet(GSoCRequestHandler):
   """Handler for POST requests to download files with code samples.
   """
 
@@ -309,8 +310,7 @@ class CodeSampleDownloadFileGet(RequestHandler):
     self.check.isProjectCompleted()
 
   def get(self):
-    """Get handler for the code sample download file.
-    """
+    """Get handler for the code sample download file."""
     assert isSet(self.data.project)
 
     try:
@@ -318,14 +318,14 @@ class CodeSampleDownloadFileGet(RequestHandler):
       code_sample = GSoCCodeSample.get_by_id(id_value, self.data.project)
       if not code_sample or not code_sample.upload_of_work:
         raise BadRequest('Requested project or code sample not found')
-      self.response = bs_helper.sendBlob(code_sample.upload_of_work)
+      return bs_helper.sendBlob(code_sample.upload_of_work)
     except KeyError:
       raise BadRequest('id argument missing in GET data')
     except ValueError:
       raise BadRequest('id argument in GET data is not a number')
 
 
-class CodeSampleDeleteFilePost(RequestHandler):
+class CodeSampleDeleteFilePost(GSoCRequestHandler):
   """Handler for POST requests to delete code sample files.
   """
 
@@ -343,8 +343,7 @@ class CodeSampleDeleteFilePost(RequestHandler):
     self.check.isProjectCompleted()
 
   def post(self):
-    """Get handler for the code sample delete file.
-    """
+    """Get handler for the code sample delete file."""
     assert isSet(self.data.project)
 
     try:
@@ -370,7 +369,7 @@ class CodeSampleDeleteFilePost(RequestHandler):
       db.run_in_transaction(txn)
 
       self.redirect.project()
-      self.redirect.to(url_names.GSOC_PROJECT_UPDATE)
+      return self.redirect.to(url_names.GSOC_PROJECT_UPDATE)
     except KeyError:
       raise BadRequest('id argument missing in POST data')
     except ValueError:
@@ -423,7 +422,7 @@ class UserActions(Template):
     return "v2/modules/gsoc/project_details/_user_action.html"
 
 
-class ProjectDetails(RequestHandler):
+class ProjectDetails(GSoCRequestHandler):
   """Encapsulate all the methods required to generate GSoC project
   details page.
   """
@@ -441,21 +440,18 @@ class ProjectDetails(RequestHandler):
     ]
 
   def checkAccess(self):
-    """Access checks for GSoC project details page.
-    """
+    """Access checks for GSoC project details page."""
     self.mutator.projectFromKwargs()
 
   def context(self):
-    """Handler to for GSoC project details page HTTP get request.
-    """
-    project = self.data.project
-
-    r = self.redirect
+    """Handler to for GSoC project details page HTTP get request."""
+    # TODO(nathaniel): make this .organization call unnecessary?
+    self.redirect.organization(organization=self.data.project.org)
 
     context = {
         'page_name': 'Project details',
-        'project': project,
-        'org_home_link': r.organization(project.org).urlOf('gsoc_org_home'),
+        'project': self.data.project,
+        'org_home_link': self.redirect.urlOf('gsoc_org_home'),
     }
 
     if self.data.orgAdminFor(self.data.project.org):
@@ -464,7 +460,8 @@ class ProjectDetails(RequestHandler):
     user_is_owner = self.data.user and \
         (self.data.user.key() == self.data.project_owner.parent_key())
     if user_is_owner:
-      context['update_link'] = r.project().urlOf(url_names.GSOC_PROJECT_UPDATE)
+      context['update_link'] = self.redirect.project().urlOf(
+          url_names.GSOC_PROJECT_UPDATE)
 
     if len(self.data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
@@ -473,7 +470,7 @@ class ProjectDetails(RequestHandler):
     return context
 
 
-class AssignMentors(RequestHandler):
+class AssignMentors(GSoCRequestHandler):
   """View which handles assigning mentor to a project.
   """
 
@@ -537,15 +534,17 @@ class AssignMentors(RequestHandler):
 
     self.redirect.project(self.data.project.key().id(),
                           project_owner.link_id)
-    self.redirect.to('gsoc_project_details')
+    return self.redirect.to('gsoc_project_details')
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    # TODO(nathaniel): This should probably be the raising of some sort
+    # of exception (or in the distant future, not even registered as a
+    # handler) rather than this self-call.
+    return self.error(httplib.METHOD_NOT_ALLOWED)
 
 
-class FeaturedProject(RequestHandler):
+class FeaturedProject(GSoCRequestHandler):
   """View which handles making the project featured by toggle button.
   """
 
@@ -593,8 +592,9 @@ class FeaturedProject(RequestHandler):
   def post(self):
     value = self.data.POST.get('value')
     self.toggleFeatured(value)
+    return http.HttpResponse()
 
   def get(self):
-    """Special Handler for HTTP GET request since this view only handles POST.
-    """
-    self.error(405)
+    """Special Handler for HTTP GET since this view only handles POST."""
+    # TODO(nathaniel): Achieve this same behavior without this self-call.
+    return self.error(httplib.METHOD_NOT_ALLOWED)

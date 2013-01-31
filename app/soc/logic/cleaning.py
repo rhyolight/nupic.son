@@ -40,7 +40,7 @@ from soc.logic import user
 DEF_VALID_SHIPPING_CHARS = re.compile('^[A-Za-z0-9\s-]+$')
 
 DEF_LINK_ID_IN_USE = ugettext(
-    'This link ID is already in use, please specify another one')
+    'This username is already in use, please specify another one')
 
 DEF_NO_RIGHTS_FOR_ACL = ugettext(
     'You do not have the required rights for that ACL.')
@@ -49,7 +49,7 @@ DEF_ORGANZIATION_NOT_ACTIVE = ugettext(
     "This organization is not active or doesn't exist.")
 
 DEF_NO_SUCH_DOCUMENT = ugettext(
-    "There is no such document with that link ID under this entity.")
+    "There is no such document with that username under this entity.")
 
 DEF_MUST_BE_ABOVE_AGE_LIMIT = ugettext(
     "To sign up as a student for this program, you "
@@ -154,7 +154,7 @@ def clean_link_id(field_name):
     link_id = self.cleaned_data.get(field_name).lower()
     if not validate.isLinkIdFormatValid(link_id):
       raise forms.ValidationError(
-                                "The link ID %s is in wrong format." % link_id,
+                                "The username %s is in wrong format." % link_id,
                                   code='invalid')
     return link_id
   return wrapper
@@ -232,7 +232,7 @@ def clean_user_not_exist(field_name):
 
     if user_entity:
       # user exists already
-      raise forms.ValidationError("There is already a user with this link id.")
+      raise forms.ValidationError("There is already a user with this username.")
 
     return link_id
   return wrapped

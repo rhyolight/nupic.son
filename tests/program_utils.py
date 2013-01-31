@@ -38,6 +38,8 @@ from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import timeline_utils
+
 
 class ProgramHelper(object):
   """Helper class to aid in manipulating program data.
@@ -108,7 +110,6 @@ class ProgramHelper(object):
     # TODO (Madhu): Remove scope and author fields once the data
     # conversion is done.
     properties = {
-        'key_name': 'gci_program/%s/orgapp' % self.program.key().name(),
         'scope': self.program, 'program': self.program,
         'modified_by': self.founder,
         'created_by': self.founder,
@@ -196,7 +197,8 @@ class GSoCProgramHelper(ProgramHelper):
                   'help_page': None, 'connect_with_us_page': None,
                   'mentor_agreement': None, 'org_admin_agreement': None,
                   'terms_and_conditions': None,
-                  'home': None, 'about_page': None}
+                  'home': None, 'about_page': None,
+                  'student_min_age': 18, 'student_max_age': 999}
     properties.update(override)
     self.program = self.seed(GSoCProgram, properties)
 
@@ -237,6 +239,17 @@ class GSoCProgramHelper(ProgramHelper):
                   'founder': self.founder, 'home': None,}
     properties.update(override)
     return self.seed(GSoCOrganization, properties)
+
+  def createOrgApp(self, override={}):
+    """Creates an organization application for the defined properties.
+    """
+    override.update({
+        'key_name': 'gsoc_program/%s/orgapp' % self.program.key().name(),
+        'survey_start': timeline_utils.past(),
+        'survey_end': timeline_utils.future(),
+        })
+    return super(GSoCProgramHelper, self).createOrgApp(override)
+
 
 class GCIProgramHelper(ProgramHelper):
   """Helper class to aid in manipulating GCI program data.
@@ -308,6 +321,15 @@ class GCIProgramHelper(ProgramHelper):
     properties = {'scope': self.program, 'status': 'active',
                   'founder': self.founder,
                   'home': None,
-                  'task_quota_limit': 100}
+                  'task_quota_limit': 100,
+                  'backup_winner': None}
     properties.update(override)
     return self.seed(GCIOrganization, properties)
+
+  def createOrgApp(self, override={}):
+    """Creates an organization application for the defined properties.
+    """
+    override.update({
+        'key_name': 'gci_program/%s/orgapp' % self.program.key().name(),
+        })
+    return super(GCIProgramHelper, self).createOrgApp(override)

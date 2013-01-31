@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the view for GSoC request page.
-"""
-
+"""Module containing the view for GSoC request page."""
 
 from google.appengine.ext import db
 
@@ -33,11 +29,10 @@ from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.request import GSoCRequest
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
-
 
 DEF_YOU_ARE_ORG_ADMIN = ugettext(
     'You are now an organization administrator for this organization.')
@@ -74,7 +69,7 @@ class RequestForm(GSoCModelForm):
     fields = ['message']
 
 
-class RequestPage(RequestHandler):
+class RequestPage(GSoCRequestHandler):
   """Encapsulate all the methods required to generate Request page.
   """
   def templatePath(self):
@@ -125,14 +120,14 @@ class RequestPage(RequestHandler):
     }
 
   def post(self):
-    """Handler for GSoC Request Page HTTP post request.
-    """
+    """Handler for GSoC Request Page HTTP post request."""
     request = self._createFromForm()
     if request:
       self.redirect.request(request)
-      self.redirect.to('show_gsoc_request')
+      return self.redirect.to('show_gsoc_request')
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
   def _createFromForm(self):
     """Creates a new request based on the data inserted in the form.
@@ -169,7 +164,7 @@ class RequestPage(RequestHandler):
     return db.run_in_transaction(create_request_txn)
 
 
-class ShowRequest(RequestHandler):
+class ShowRequest(GSoCRequestHandler):
   """Encapsulate all the methods required to generate Show Request page.
   """
   # maps actions with button names
@@ -182,7 +177,7 @@ class ShowRequest(RequestHandler):
       }
 
   def templatePath(self):
-    return 'v2/soc/request/base.html'
+    return 'soc/request/base.html'
 
 
   def djangoURLPatterns(self):
@@ -294,8 +289,7 @@ class ShowRequest(RequestHandler):
         }
 
   def post(self):
-    """Handler to for GSoC Show Request Page HTTP post request.
-    """
+    """Handler to for GSoC Show Request Page HTTP post request."""
     assert isSet(self.data.action)
     assert isSet(self.data.request_entity)
 
@@ -310,8 +304,10 @@ class ShowRequest(RequestHandler):
     elif self.data.action == self.ACTIONS['revoke']:
       self._revokeRequest()
 
+    # TODO(nathaniel): Make this .program() call unnecessary.
     self.redirect.program()
-    self.redirect.to('gsoc_dashboard')
+
+    return self.redirect.to('gsoc_dashboard')
 
   def _acceptRequest(self):
     """Accepts a request.

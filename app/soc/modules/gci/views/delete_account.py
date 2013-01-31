@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GCI delete account page.
-"""
-
+"""Module for the GCI delete account page."""
 
 from soc.logic import delete_account
 
 from soc.views.helper import url_patterns
 
-from soc.modules.gci.views.base import RequestHandler
+from soc.modules.gci.views import base
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-class DeleteAccountPage(RequestHandler):
-  """View for the GCI delete account page.
-  """
+class DeleteAccountPage(base.GCIRequestHandler):
+  """View for the GCI delete account page."""
 
   def templatePath(self):
     return 'v2/modules/gci/delete_account/base.html'
@@ -49,4 +44,7 @@ class DeleteAccountPage(RequestHandler):
 
   def post(self):
     delete_account.request_account_deletion(self.data.user)
-    self.redirect.program().to('gci_delete_account', validated=True)
+    # TODO(nathaniel): make this .program() call unnecessary.
+    self.redirect.program()
+
+    return self.redirect.to('gci_delete_account', validated=True)

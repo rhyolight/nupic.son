@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,59 +12,65 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the exceptions from the AccessChecker class.
-"""
+"""Module containing the exceptions from the AccessChecker class."""
+
+import httplib
 
 
 class Error(Exception):
-  """Error class for the access_exception module.
-  """
-  status = 500
+  """Error class for the access_exception module."""
+
+  status = httplib.INTERNAL_SERVER_ERROR
 
 
 class LoginRequest(Error):
-  """Use needs to be logged in to view this page.
-  """
+  """User needs to be logged in to view this page."""
+
   pass
 
 
 class RedirectRequest(Error):
-  """User should be redirected to specific url.
-  """
+  """User should be redirected to specific url."""
 
-  status = 302
+  status = httplib.FOUND
 
   def __init__(self, url):
     self.url = url
 
 
 class AccessViolation(Error):
-  """An access requirement was not met.
-  """
-  status = 403
+  """An access requirement was not met."""
+
+  status = httplib.FORBIDDEN
+
 
 class GDocsLoginRequest(Error):
-  """GDocs login required.
-  """
+  """GDocs login required."""
 
   url_name = 'gdata_oauth_redirect'
 
-  def __init__(self, next):
-    self.next = next
+  def __init__(self, path):
+    """Instance constructor.
+
+    Args:
+      path: The path to which to direct the user after log-in.
+    """
+    self.path = path
+
 
 class NotFound(Error):
-  """Item Not Found.
-  """
-  status = 404
+  """Item Not Found."""
+
+  status = httplib.NOT_FOUND
 
 
 class BadRequest(Error):
-  """Bad Request
-  """
-  status = 400
+  """Bad Request."""
+
+  status = httplib.BAD_REQUEST
 
 
 class MaintainceMode(Error):
-  """Maintaince Mode
-  """
-  status = 503
+  """Maintaince Mode."""
+
+  status = httplib.SERVICE_UNAVAILABLE

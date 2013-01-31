@@ -17,19 +17,11 @@
 
 
 from django import forms
-from nose.plugins import skip
 
-from google.appengine.ext import db
 from google.appengine.api import users
 
 from soc.models.user import User
-from soc.logic import accounts
 from soc.logic import cleaning
-from soc.logic import site
-from soc.logic import user
-from soc.models import user
-from soc.models import group
-from soc.models import organization
 from tests.test_utils import GSoCDjangoTestCase
 
 
@@ -388,18 +380,18 @@ class CleaningTest(GSoCDjangoTestCase):
     # Test that normal html can be cleaned
     html = '<html>f9-+@4</html>'
     self.form.cleaned_data = {field_name: html}
-    expected = html[6:-7]
-    # TODO(nathaniel): fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
-    self.assertEqual(clean_field(self.form), expected)
-    # Test that unicode is also supported
+    expected = html.replace('<', '&lt;').replace('>', '&gt;')
+    actual = clean_field(self.form)
+    self.assertEqual(actual, expected)
     expected = html = u'\ua000'
     self.form.cleaned_data = {field_name: html}
     self.assertEqual(clean_field(self.form), expected)
-    # Test that input with scripts will raise forms.ValidationError
+    # Test that input with scripts will be encoded as well
     html = '<script></script>'
     self.form.cleaned_data = {field_name: html}
-    self.assertRaises(forms.ValidationError, clean_field, self.form)
+    actual = clean_field(self.form)
+    expected = html.replace('<', '&lt;').replace('>', '&gt;')
+    self.assertEqual(actual, expected)
     # Test that input can contain scripts when the current user is a developer
     self.user.is_developer = True
     self.user.put()

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the GSoC project evaluations.
-"""
-
+"""Module for the GSoC project evaluations."""
 
 from django.utils.translation import ugettext
 
@@ -32,10 +28,9 @@ from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
-
 
 EVALUATION_CHOICES = (
     (True, 'Pass'),
@@ -44,8 +39,7 @@ EVALUATION_CHOICES = (
 
 
 class GSoCMentorEvaluationEditForm(gsoc_forms.SurveyEditForm):
-  """Form to create/edit GSoC evaluation for the organization.
-  """
+  """Form to create/edit GSoC evaluation for the organization."""
 
   class Meta:
     model = GradingProjectSurvey
@@ -56,8 +50,7 @@ class GSoCMentorEvaluationEditForm(gsoc_forms.SurveyEditForm):
                'is_featured']
 
 class GSoCMentorEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
-  """Form for the organization to evaluate a student project.
-  """
+  """Form for the organization to evaluate a student project."""
 
   def __init__(self, survey, *args, **kwargs):
     """Initialize the form field by adding a new grading field.
@@ -89,7 +82,7 @@ class GSoCMentorEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
     return True if grade == 'True' else False
 
 
-class GSoCMentorEvaluationEditPage(RequestHandler):
+class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
   """View for creating/editing organization evaluation form.
   """
 
@@ -163,12 +156,13 @@ class GSoCMentorEvaluationEditPage(RequestHandler):
     evaluation = self.evaluationFromForm()
     if evaluation:
       r = self.redirect.survey()
-      r.to('gsoc_edit_mentor_evaluation', validated=True)
+      return r.to('gsoc_edit_mentor_evaluation', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
-class GSoCMentorEvaluationTakePage(RequestHandler):
+class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
   """View for the organization to submit student evaluation.
   """
 
@@ -250,12 +244,13 @@ class GSoCMentorEvaluationTakePage(RequestHandler):
     if mentor_evaluation_record:
       r = self.redirect.survey_record(
           self.data.mentor_evaluation.link_id)
-      r.to('gsoc_take_mentor_evaluation', validated=True)
+      return r.to('gsoc_take_mentor_evaluation', validated=True)
     else:
-      self.get()
+      # TODO(nathaniel): problematic self-use.
+      return self.get()
 
 
-class GSoCMentorEvaluationPreviewPage(RequestHandler):
+class GSoCMentorEvaluationPreviewPage(GSoCRequestHandler):
   """View for the host preview mentor evaluation.
   """
 
@@ -289,7 +284,7 @@ class GSoCMentorEvaluationPreviewPage(RequestHandler):
     return context
 
 
-class GSoCMentorEvaluationRecordsList(RequestHandler):
+class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
   """View for listing all records of a GSoCGradingProjectSurveyRecord.
   """
 
@@ -337,9 +332,9 @@ class GSoCMentorEvaluationRecordsList(RequestHandler):
         idx=0)
 
     record_list.list_config.addSimpleColumn('grade', 'Passed?')
-    record_list.list_config.addColumn(
+    record_list.list_config.addPlainTextColumn(
         'project', 'Project', lambda ent, *args: ent.project.title)
-    record_list.list_config.addColumn(
+    record_list.list_config.addPlainTextColumn(
         'org', 'Organization', lambda ent, *args: ent.org.name)
 
     return record_list
@@ -358,7 +353,7 @@ class GSoCMentorEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
     survey_name = 'Mentor Evaluation'
 
 
-class GSoCMentorEvaluationShowPage(RequestHandler):
+class GSoCMentorEvaluationShowPage(GSoCRequestHandler):
   """View to display the readonly page for mentor evaluation.
   """
 

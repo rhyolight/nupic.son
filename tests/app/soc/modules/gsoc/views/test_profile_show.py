@@ -19,8 +19,6 @@
 """
 
 
-from nose.plugins import skip
-
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -56,8 +54,8 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
       os.environ['USER_EMAIL'] = ''
       url = '/gsoc/profile/show/' + self.gsoc.key().name()
       response = self.get(url)
-      expected_redirect_url = 'https://www.google.com/accounts/Login?'+\
-          'continue=http%3A//Foo%3A8080'+url
+      expected_redirect_url = 'https://www.google.com/accounts/Login?' + \
+          'continue=http%3A//some.testing.host.tld' + url
       actual_redirect_url = response.get('location', None)
       self.assertResponseRedirect(response)
       self.assertEqual(expected_redirect_url, actual_redirect_url)
@@ -122,8 +120,8 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
       url = '/gsoc/profile/admin/' + profile_helper.profile.key().name()
       response = self.get(url)
       self.assertResponseRedirect(response)
-      expected_redirect_url = 'https://www.google.com/accounts/Login?'+\
-          'continue=http%3A//Foo%3A8080'+url
+      expected_redirect_url = 'https://www.google.com/accounts/Login?' + \
+          'continue=http%3A//some.testing.host.tld' + url
       actual_redirect_url = response.get('location', None)
       self.assertEqual(expected_redirect_url, actual_redirect_url)
     finally:
@@ -155,8 +153,6 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     mentor.createOtherUser('mentor@example.com').createMentor(self.org)
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
-    # TODO(nathaniel): Fix this test bankruptcy.
-    raise skip.SkipTest("TODO(nathaniel): test bankruptcy.")
     student.createStudentWithProject(self.org, mentor.profile)
 
     url = '/gsoc/profile/admin/' + student.profile.key().name()

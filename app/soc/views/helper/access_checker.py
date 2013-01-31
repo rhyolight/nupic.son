@@ -62,7 +62,7 @@ DEF_CANNOT_ACCESS_ORG_APP = ugettext(
     'You do not have access to this organization application.')
 
 DEF_CANNOT_UPDATE_ENTITY = ugettext(
-    'This %(model)s cannot be updated.')
+    'This %(name)s cannot be updated.')
 
 DEF_DEV_LOGOUT_LOGIN = ugettext(
     'Please <a href="%%(sign_out)s">sign out</a>'
@@ -70,7 +70,7 @@ DEF_DEV_LOGOUT_LOGIN = ugettext(
     ' again as %(role)s to view this page.')
 
 DEF_ENTITY_DOES_NOT_BELONG_TO_YOU = ugettext(
-    'This %(model)s entity does not belong to you.')
+    'This %(name)s does not belong to you.')
 
 DEF_HAS_ALREADY_ROLE_FOR_ORG = ugettext(
     'You already have %(role)s role for %(org)s.')
@@ -110,8 +110,8 @@ DEF_IS_STUDENT = ugettext(
 DEF_NO_DOCUMENT = ugettext(
     'The document was not found')
 
-DEF_NO_LINK_ID = ugettext(
-    'Link ID should not be empty')
+DEF_NO_USERNAME = ugettext(
+    'Username should not be empty')
 
 DEF_NO_ORG_APP = ugettext(
     'The organization application for the program %s does not exist.')
@@ -125,7 +125,7 @@ DEF_NO_SUCH_PROGRAM = ugettext(
     'The url is wrong (no program was found).')
 
 DEF_NO_SURVEY_ACCESS = ugettext (
-    'You cannot take this survey because this survey is not created for'
+    'You cannot take this evaluation because this evaluation is not created for'
     'your role in the program.')
 
 DEF_NO_USER_LOGIN = ugettext(
@@ -136,7 +136,7 @@ DEF_NO_USER_PROFILE = ugettext(
     'You must not have a User profile to visit this page.')
 
 DEF_NO_USER = ugettext(
-    'User with the Link ID %s does not exist.')
+    'User with username %s does not exist.')
 
 DEF_NOT_ADMIN = ugettext(
     'You need to be a organization administrator for %s to access this page.')
@@ -167,7 +167,7 @@ DEF_NOT_VALID_CONNECTION = ugettext(
     'This is not a valid connection.')
 
 DEF_ORG_DOES_NOT_EXISTS = ugettext(
-    'Organization, whose link_id is %(link_id)s, does not exist in '
+    'Organization, whose Organization ID %(link_id)s, does not exist in '
     '%(program)s.')
 
 DEF_ORG_NOT_ACTIVE = ugettext(
@@ -187,11 +187,6 @@ DEF_PROGRAM_NOT_VISIBLE = ugettext(
 
 DEF_PROGRAM_NOT_RUNNING = ugettext(
     'This page is inaccessible because %s is not running at this time.')
-
-DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
-    'An organization administrator has flagged this proposal to be '
-    'ignored. If you think this is incorrect, contact an organization '
-    'administrator to resolve the situation.')
 
 DEF_PROPOSAL_MODIFICATION_REQUEST = ugettext(
     'If you would like to update this proposal, request your organization '
@@ -371,21 +366,6 @@ class Mutator(object):
     if self.data.host or self.data.user.host_for:
       self.data.is_host = True
 
-  def orgAppFromKwargs(self, raise_not_found=True):
-    """Sets the organization application in RequestData object.
-
-    Args:
-      raise_not_found: iff False do not send 404 response.
-    """
-    assert self.data.program
-
-    q = OrgAppSurvey.all()
-    q.filter('program', self.data.program)
-    self.data.org_app = q.get()
-
-    if raise_not_found and not self.data.org_app:
-      raise NotFound(DEF_NO_ORG_APP % self.data.program.name)
-
   def orgAppRecordIfIdInKwargs(self):
     """Sets the organization application in RequestData object.
     """
@@ -420,7 +400,7 @@ class DeveloperMutator(Mutator):
       if self.data.is_host:
         return
       else:
-        raise NotFound(DEF_NO_LINK_ID)
+        raise NotFound(DEF_NO_USERNAME)
 
     user_key = db.Key.from_path('User', key_name)
 
@@ -442,7 +422,9 @@ class BaseAccessChecker(object):
     """Initializes the access checker object.
     """
     self.data = data
-    self.gae_user = users.get_current_user()
+
+    # TODO(daniel): get rid of it and use request_data directly
+    self.gae_user = data.gae_user
 
   def fail(self, message):
     """Raises an AccessViolation with the specified message.
@@ -491,14 +473,8 @@ class BaseAccessChecker(object):
 
 
   def isDeveloper(self):
-    """Checks if the current user is a Developer.
-    """
-    self.isUser()
-
-    if self.data.user.is_developer:
-      return
-
-    if users.is_current_user_admin():
+    """Checks if the current user is a Developer."""
+    if self.data.is_developer:
       return
 
     raise AccessViolation(DEF_NOT_DEVELOPER)
@@ -634,6 +610,14 @@ class AccessChecker(BaseAccessChecker):
 
     if self.data.profile and not self.data.profile.student_info:
       raise RedirectRequest(edit_url)
+
+    if role == 'org_admin' and self.data.timeline.beforeOrgSignupStart():
+      period = self.data.timeline.orgSignupStart()
+      raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE % period)
+
+    if role == 'mentor' and not self.data.timeline.orgsAnnounced():
+      period = self.data.timeline.orgsAnnouncedOn()
+      raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE % period)
 
     if not self.data.profile:
       return
@@ -810,6 +794,7 @@ class AccessChecker(BaseAccessChecker):
     if expected_profile.key().name() != self.data.profile.key().name():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'model': 'GSoCProposal'
+          'name': 'request'
           }
       raise AccessViolation(error_msg)
 
@@ -1004,7 +989,7 @@ class AccessChecker(BaseAccessChecker):
     # check if the request belongs to the current user
     if self.data.requester.key() != self.data.user.key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'model': 'Request'
+          'name': 'request'
           }
       raise AccessViolation(error_msg)
 
@@ -1181,14 +1166,14 @@ class AccessChecker(BaseAccessChecker):
     expected_profile_key = self.data.project.parent_key()
     if expected_profile_key != self.data.profile.key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'model': 'GSoCProject'
+          'name': 'project'
           }
       raise AccessViolation(error_msg)
 
     # check if the status allows the project to be updated
     if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
       raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
-          'model': 'GSoCProject'
+          'name': 'project'
           })
 
   def isSurveyActive(self, survey, show_url=None):
