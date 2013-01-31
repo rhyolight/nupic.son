@@ -298,6 +298,7 @@ class RequestHandler(object):
     try:
       self.data, self.check, self.mutator = self.init(
           request, args, kwargs)
+      self.checkMaintenanceMode(self.data)
       self.checkAccess()
       return self._dispatch()
     except exceptions.LoginRequest, e:
@@ -328,5 +329,4 @@ class SiteRequestHandler(RequestHandler):
     else:
       mutator = access_checker.Mutator(data)
       check = access_checker.AccessChecker(data)
-    self.checkMaintenanceMode(data)
     return data, check, mutator

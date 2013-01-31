@@ -55,7 +55,6 @@ class GSoCRequestHandler(base.RequestHandler):
     else:
       mutator = access_checker.Mutator(data)
       check = access_checker.AccessChecker(data)
-    self.checkMaintenanceMode(data)
     return data, check, mutator
 
   def error(self, status, message=None):

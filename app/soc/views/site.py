@@ -140,7 +140,20 @@ class SiteHomepage(base.SiteRequestHandler):
   def __call__(self, request, *args, **kwargs):
     """Custom call implementation that avoids looking up unneeded data."""
     try:
-      data, _, _, _ = self.init(request, args, kwargs)
+      data, _, _ = self.init(request, args, kwargs)
+
+      # TODO(nathaniel): self.error in the except block below relies upon
+      # self.data having been assigned. The following assignment can be
+      # removed once that reliance has been eliminated.
+      self.data = data
+
+      # NOTE(nathaniel): While this doesn't directly rely on self.data
+      # having been assigned, it can generate an exception which as mentioned
+      # above would be handled by something that does require self.data to
+      # have been set.
+      #
+      # This will all be made much less interdependent. :-)
+      self.checkMaintenanceMode(data)
 
       action = args[0] if args else ''
 
