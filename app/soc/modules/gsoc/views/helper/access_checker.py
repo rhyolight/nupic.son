@@ -50,6 +50,9 @@ DEF_MAX_PROPOSALS_REACHED = ugettext(
     'You have reached the maximum number of proposals (%d) allowed '
     'for this program.')
 
+DEF_NO_ORG_APP_RECORD_FOUND = ugettext(
+    'The organization application for the given organization ID was not found.')
+
 DEF_NO_STUDENT_EVALUATION = ugettext(
     'The project evaluation with name %s parameters does not exist.')
 
@@ -199,7 +202,6 @@ class Mutator(access_checker.Mutator):
     if raise_not_found and not self.data.student_evaluation:
       raise NotFound(DEF_NO_STUDENT_EVALUATION % key_name)
 
-
   def studentEvaluationRecordFromKwargs(self):
     """Sets the student evaluation record in RequestData object.
     """
@@ -258,9 +260,27 @@ class Mutator(access_checker.Mutator):
     record = GSoCGradingRecord.get_by_id(record_id, parent=self.data.project)
 
     if not record or record.grading_survey_group.key().id() != group_id:
-      raise NotFound(DEF_NO_RECORD_FOUND) 
+      raise NotFound(DEF_NO_RECORD_FOUND)
 
     self.data.record = record
+
+  def orgAppRecord(self, org_id):
+    """Sets the org app record corresponding to the given org id.
+
+    Args:
+      org_id: The link_id of the organization.
+    """
+    assert access_checker.isSet(self.data.program)
+
+    q = OrgAppRecord.all()
+    q.filter('org_id', org_id)
+    q.filter('program', self.data.program)
+    record = q.get()
+
+    if not record:
+      raise NotFound(DEF_NO_ORG_APP_RECORD_FOUND)
+
+    self.data.org_app_record = record
 
   def surveyGroupFromKwargs(self):
     """Sets the GradingSurveyGroup from kwargs.
@@ -444,27 +464,21 @@ class AccessChecker(access_checker.AccessChecker):
 
       raise AccessViolation(DEF_ORG_EXISTS % (org_id, edit_url))
 
-  def canCreateOrgProfile(self, org_id):
+  def canCreateOrgProfile(self):
     """Checks if the current user is an admin or a backup admin for the org app
     and also check whether the organization application is accepted.
-
-    Args:
-      org_id: The link_id of the organization.
     """
-    q = OrgAppRecord.all()
-    q.filter('org_id', org_id)
-    q.filter('program', self.data.program)
-    app_record = q.get()
+    app_record = self.data.org_app_record
 
     if not app_record:
-      raise NotFound(DEF_ORG_APP_NOT_FOUND % org_id)
+      raise NotFound(DEF_ORG_APP_NOT_FOUND % app_record.org_id)
 
     if self.data.user.key() not in [
         app_record.main_admin.key(), app_record.backup_admin.key()]:
       raise AccessViolation(DEF_NOT_ADMIN_FOR_ORG_APP)
 
     if app_record.status != 'accepted':
-      raise AccessViolation(DEF_ORG_APP_NOT_ACCEPTED % (org_id))
+      raise AccessViolation(DEF_ORG_APP_NOT_ACCEPTED % (app_record.org_id))
 
   def isProjectCompleted(self):
     """Checks whether the project specified in the request is completed.

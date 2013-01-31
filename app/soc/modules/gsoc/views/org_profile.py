@@ -111,6 +111,11 @@ class OrgProfileForm(org_profile.OrgProfileForm):
       cols = [i.strip() for i in value.split(',') if i.strip()]
       self.cleaned_data['proposal_extra'] = cols
 
+    # If there is a key called new_org in the form, probably maliciously
+    # induced into the form data, since this field does not appear on the
+    # org profile form, we need to make sure to remove it.
+    self.cleaned_data.pop('new_org', None)
+
     return self.cleaned_data
 
   def clean_max_score(self):
@@ -156,6 +161,9 @@ class OrgProfilePage(GSoCRequestHandler):
       #probably check if the org is active
     else:
       self.data.org_id = self.data.request.GET.get('org_id')
+
+      self.mutator.orgAppRecord(self.data.org_id)
+
       if not self.data.org_id:
         self.check.fail(DEF_NO_ORG_ID_FOR_CREATE)
         return
@@ -163,7 +171,7 @@ class OrgProfilePage(GSoCRequestHandler):
       # For the creation of a new organization profile the org should not
       # exist yet.
       self.check.orgDoesnotExist(self.data.org_id)
-      self.check.canCreateOrgProfile(self.data.org_id)
+      self.check.canCreateOrgProfile()
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_profile/base.html'
@@ -223,6 +231,7 @@ class OrgProfilePage(GSoCRequestHandler):
       form.cleaned_data['scope'] = self.data.program
       form.cleaned_data['scope_path'] = self.data.program.key().name()
       form.cleaned_data['link_id'] = self.data.org_id
+      form.cleaned_data['new_org'] = self.data.org_app_record.new_org
       key_name = '%s/%s' % (
           self.data.program.key().name(),
           form.cleaned_data['link_id']

@@ -34,7 +34,7 @@ class OrgAppRecord(SurveyRecord):
   This record also contains the status of the application.
   """
 
-#: Required field storing "ID" used in URL links. ASCII characters,
+  #: Required field storing "ID" used in URL links. ASCII characters,
   #: digits and underscores only.  Valid link IDs successfully match
   #: the LINK_ID_REGEX.
   org_id = db.StringProperty(required=False,
@@ -72,6 +72,13 @@ class OrgAppRecord(SurveyRecord):
   backup_admin = db.ReferenceProperty(
       reference_class=soc.models.user.User, required=True,
       verbose_name="Backup Admin", collection_name='backup_admin_org_app')
+
+  #: field storing whether the organization applying is a new organization or
+  #: is a veteran in the given program.
+  new_org = db.BooleanProperty(required=True, default=True,
+                               verbose_name=ugettext('Veteran/New'))
+  new_org.help_text = ugettext('Choose veteran if have participated in this '
+                               'program in the previous years')
 
   #: field storing whether the User has agreed to the org admin agreement
   agreed_to_admin_agreement = db.BooleanProperty(required=True, default=False,

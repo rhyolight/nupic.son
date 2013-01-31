@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,18 +24,15 @@ from google.appengine.ext import db
 
 from django.utils import simplejson
 
-from soc.models.org_app_survey import OrgAppSurvey
-from soc.models.org_app_record import OrgAppRecord
+from soc.models import org_app_survey
+from soc.models import org_app_record
 
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
-
-from tests.test_utils import GCIDjangoTestCase
-from tests.test_utils import MailTestCase
-from tests.survey_utils import SurveyHelper
-from tests.profile_utils import GCIProfileHelper
+from tests import test_utils
+from tests import survey_utils
+from tests import profile_utils
 
 
-class GCIOrgAppEditPageTest(GCIDjangoTestCase):
+class GCIOrgAppEditPageTest(test_utils.GCIDjangoTestCase):
   """Tests for organization applications edit page.
   """
 
@@ -87,7 +82,7 @@ class GCIOrgAppEditPageTest(GCIDjangoTestCase):
     response = self.post(self.url, self.post_params)
     self.assertResponseRedirect(response, '%s?validated' % self.url)
 
-    query = OrgAppSurvey.all().filter('program = ', self.gci)
+    query = org_app_survey.OrgAppSurvey.all().filter('program = ', self.gci)
     self.assertEqual(query.count(), 1,
                      ('There must be one and only one OrgAppSurvey '
                       'instance for the program.'))
@@ -97,7 +92,7 @@ class GCIOrgAppEditPageTest(GCIDjangoTestCase):
     self.assertEqual(survey.modified_by.key(), self.data.user.key())
 
 
-class GCIOrgAppTakePageTest(GCIDjangoTestCase):
+class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
   """Tests for organizations to submit and edit their application.
   """
 
@@ -113,6 +108,7 @@ class GCIOrgAppTakePageTest(GCIDjangoTestCase):
       'description': 'Melange',
       'home_page': 'code.google.com/p/soc',
       'license': 'Apache License, 2.0',
+      'new_org': 'Veteran',
       'agreed_to_admin_agreement': 'on',
       'item': 'test',
     }
@@ -177,7 +173,7 @@ class GCIOrgAppTakePageTest(GCIDjangoTestCase):
     self.updateOrgAppSurvey()
 
     self.data.createOrgAdmin(self.org)
-    backup_admin = GCIProfileHelper(self.gci, self.dev_test)
+    backup_admin = profile_utils.GCIProfileHelper(self.gci, self.dev_test)
     backup_admin.createMentor(self.org)
 
     response = self.get(self.take_url)
@@ -187,7 +183,7 @@ class GCIOrgAppTakePageTest(GCIDjangoTestCase):
               'backup_admin_id': backup_admin.user.link_id}
     params.update(self.post_params)
     response = self.post(self.take_url, params)
-    query = OrgAppRecord.all()
+    query = org_app_record.OrgAppRecord.all()
     query.filter('main_admin = ', self.data.user)
     self.assertEqual(query.count(), 1, 'Survey record is not created.')
 
@@ -212,18 +208,20 @@ class GCIOrgAppTakePageTest(GCIDjangoTestCase):
 
     response = self.post(retake_url, params)
     self.assertResponseRedirect(response, retake_url + '?validated')
-    record = OrgAppRecord.get_by_id(record.key().id())
+    record = org_app_record.OrgAppRecord.get_by_id(record.key().id())
     self.assertEqual(record.name, params['name'])
 
 
-class GCIOrgAppRecordsPageTest(MailTestCase, GCIDjangoTestCase):
+class GCIOrgAppRecordsPageTest(test_utils.MailTestCase,
+                               test_utils.GCIDjangoTestCase):
   """Tests for organization applications edit page.
   """
 
   def setUp(self):
     super(GCIOrgAppRecordsPageTest, self).setUp()
     self.init()
-    self.record = SurveyHelper(self.gci, self.dev_test, self.org_app)
+    self.record = survey_utils.SurveyHelper(
+        self.gci, self.dev_test, self.org_app)
     self.url = '/gci/org/application/records/%s' % self.gci.key().name()
 
   def assertTemplatesUsed(self, response):
@@ -258,8 +256,8 @@ class GCIOrgAppRecordsPageTest(MailTestCase, GCIDjangoTestCase):
 
   def testGetRecords(self):
     self.data.createHost()
-    record = self.record.createOrgApp('org1', self.data.user,
-                                      {'status': 'needs review'})
+    record = self.record.createOrgAppRecord(
+        'org1', self.data.user, self.data.user, {'status': 'needs review'})
 
     response = self.get(self.url)
     self.assertTemplatesUsed(response)

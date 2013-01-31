@@ -253,7 +253,7 @@ class RequestData(object):
   def path(self):
     """Returns the path field."""
     if not self._isSet(self._path):
-      self._path = request.path.encode('utf-8')
+      self._path = self.request.path.encode('utf-8')
     return self._path
 
   @property

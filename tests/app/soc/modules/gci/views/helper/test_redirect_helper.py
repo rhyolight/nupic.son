@@ -15,7 +15,6 @@
 """This module unit tests for RedirectHelper class."""
 
 from soc.views.helper.access_checker import unset
-from soc.views.helper.response import Response
 
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
@@ -32,7 +31,6 @@ class RedirectHelperTest(GCITestCase):
     request = MockRequest(path="/")
 
     self.handler = GCIRequestHandler()
-    self.handler.response = Response()
     data, _, _ = self.handler.init(request, (), {})
 
     self.redirect = data.redirect
