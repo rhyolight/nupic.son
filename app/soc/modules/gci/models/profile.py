@@ -80,3 +80,6 @@ class GCIStudentInfo(profile.StudentInfo):
 
   #: Stores whether the student id form is verified by the program host.
   student_id_form_verified = db.BooleanProperty(default=False)
+
+  #: Whether the student is a grand prize winner of the program
+  is_winner = db.BooleanProperty(default=False, required=False)
