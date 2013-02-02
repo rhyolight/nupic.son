@@ -22,7 +22,6 @@ from google.appengine.api import users
 from django import http
 from django.conf.urls.defaults import url as django_url
 from django.forms import widgets as django_widgets
-from django.utils.functional import lazy
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
@@ -54,10 +53,10 @@ class SiteForm(views_forms.ModelForm):
   class Meta:
     model = site.Site
     exclude = ['link_id', 'scope', 'scope_path', 'home', 'xsrf_secret_key']
-    widgets = {
-        'active_program': django_widgets.Select(
-            choices=lazy(getProgramMap, list)()),
-    }
+    # NOTE(nathaniel): There aren't really no choices, it's just that we
+    # can't know what the choices are at module-load-time. For the moment
+    # we have to set the available choices below in EditSitePage.context.
+    widgets = {'active_program': django_widgets.Select(choices=[])}
 
   def clean_tos(self):
     return '' if self.cleaned_data['tos'] is None else self.cleaned_data['tos']
@@ -99,6 +98,13 @@ class EditSitePage(base.SiteRequestHandler):
     from soc.modules.gsoc.views.forms import GSoCBoundField
     site_form = SiteForm(GSoCBoundField, self.data.POST or None,
                          instance=self.data.site)
+
+    # NOTE(nathaniel): This is an unfortunate workaround for the fact
+    # that in its current form the SiteForm class will only ever present
+    # to the user those choices that were discoverable at module-load time.
+    site_form.fields['active_program'].widget = django_widgets.Select(
+        choices=getProgramMap())
+
     return {
         'app_version': os.environ.get('CURRENT_VERSION_ID', '').split('.')[0],
         'page_name': 'Edit site settings',
