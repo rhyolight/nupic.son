@@ -22,6 +22,7 @@ from soc.views.template import Template
 
 from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.logic import task as task_logic
+from soc.modules.gci.models import program as program_model
 from soc.modules.gci.views import common_templates
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
@@ -247,6 +248,27 @@ class Homepage(GCIRequestHandler):
         context['featured_task'] = FeaturedTask(self.data, featured_task)
 
     if self.data.is_host or self.data.timeline.winnersAnnounced():
-      context['winners'] = common_templates.Winners(self.data)
+      context['winners'] = self._getWinnersTemplate(
+          self.data.program.winner_selection_type)
 
     return context
+
+  def _getWinnersTemplate(self, winner_selection_type):
+    """Factory method that returns a template to displays the Grand
+    Prize Winners of the program with the specified winner selection type.
+
+    Args:
+      winner_selection_type: the specified WinnerSelectionType.
+
+    Returns:
+      a template appropriate for the specified winner selection type.
+    """
+    if (winner_selection_type ==
+        program_model.WinnerSelectionType.ORG_NOMINATED):
+      return common_templates.OrgNominatedWinners(self.data)
+    elif (winner_selection_type ==
+        program_model.WinnerSelectionType.GLOBAL_RANKING):
+      return common_templates.Winners(self.data)
+    else:
+      raise ValueError(
+         'Invalid value of winner_selection_type %s' % winner_selection_type)
