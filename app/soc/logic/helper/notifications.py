@@ -273,7 +273,7 @@ def getDefaultContext(request_data, emails, subject, extra_context=None):
   if extra_context:
     default_context.update(extra_context)
 
-  return default_context  
+  return default_context
 
 
 def getContext(data, receivers, message_properties, subject, template):
