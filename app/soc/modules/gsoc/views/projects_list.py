@@ -17,7 +17,6 @@ into a GSoC program, excluding those which have been withdrawn
 or failed one of the evaluations.
 """
 
-
 from soc.logic.exceptions import AccessViolation
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
@@ -31,26 +30,23 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class ProjectList(Template):
-  """Template for listing the student projects accepted in the program.
-  """
+  """Template for listing the student projects accepted in the program."""
 
-  def __init__(self, request, data, query, idx=0):
+  def __init__(self, data, query, idx=0):
     """Initializes a new object.
 
     Args:
-      request: request object
       data: RequestData object associated with the request
       query: query to be used to retrieve Project entities
       idx: index of the list
     """
-    self.request = request
     self.data = data
     self.query = query
     self.idx = idx
 
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent_key().name(), ent.key().id())), hidden=True)
     list_config.addPlainTextColumn('student', 'Student',
@@ -84,7 +80,7 @@ class ProjectList(Template):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == self.idx:
       starter = lists.keyStarter
 
@@ -106,7 +102,7 @@ class ProjectList(Template):
         return [mentor_names], {}
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, self.query,
+          self.data.request, self._list_config, self.query,
           starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
@@ -117,15 +113,13 @@ class ProjectList(Template):
 
 
 class ListProjects(GSoCRequestHandler):
-  """View methods for listing all the projects accepted into a program.
-  """
+  """View methods for listing all the projects accepted into a program."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/projects_list/base.html'
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
+    """Returns the list of tuples for containing URL to view method mapping."""
 
     return [
         url(r'projects/list/%s$' % url_patterns.PROGRAM, self,
@@ -133,26 +127,22 @@ class ListProjects(GSoCRequestHandler):
     ]
 
   def checkAccess(self):
-    """Access checks for the view.
-    """
+    """Access checks for the view."""
     self.check.acceptedStudentsAnnounced()
 
   def jsonContext(self):
-    """Handler for JSON requests.
-    """
+    """Handler for JSON requests."""
     list_query = project_logic.getAcceptedProjectsQuery(
         program=self.data.program)
-    list_content = ProjectList(
-        self.request, self.data, list_query).getListData()
+    list_content = ProjectList(self.data, list_query).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def context(self):
-    """Handler for GSoC Accepted Projects List page HTTP get request.
-    """
+    """Handler for GSoC Accepted Projects List page HTTP get request."""
     program = self.data.program
     list_query = project_logic.getAcceptedProjectsQuery(
         program=self.data.program)
@@ -160,6 +150,6 @@ class ListProjects(GSoCRequestHandler):
     return {
         'page_name': '%s - Accepted Projects' % program.short_name,
         'program_name': program.name,
-        'project_list': ProjectList(self.request, self.data, list_query),
+        'project_list': ProjectList(self.data, list_query),
         'program_select': ProgramSelect(self.data, 'gsoc_accepted_projects'),
     }

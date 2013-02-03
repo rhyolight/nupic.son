@@ -103,9 +103,9 @@ class GCIOrgAppEditPage(GCIRequestHandler):
     org_app = self.orgAppFromForm()
     if org_app:
       # TODO(nathaniel): make unnecessary this .program() call.
-      self.redirect.program()
+      self.data.redirect.program()
 
-      return self.redirect.to('gci_edit_org_app', validated=True)
+      return self.data.redirect.to('gci_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -165,7 +165,7 @@ class GCIOrgAppTakePage(GCIRequestHandler):
 
     # FIXME: There will never be organization in kwargs
     show_url = None
-    if 'organization' in self.kwargs:
+    if 'organization' in self.data.kwargs:
       # TODO(nathaniel): make this .organization() call unnecessary. Like,
       # more than it already is (see the note above).
       self.data.redirect.organization()
@@ -232,8 +232,8 @@ class GCIOrgAppTakePage(GCIRequestHandler):
   def post(self):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
-      r = self.redirect.id(org_app_record.key().id())
-      return r.to('gci_retake_org_app', validated=True)
+      self.data.redirect.id(org_app_record.key().id())
+      return self.data.redirect.to('gci_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -256,7 +256,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
 
   def post(self):
     """Edits records from commands received by the list code."""
-    post_data = self.request.POST
+    post_data = self.data.request.POST
 
     self.data.redirect.program()
 
@@ -266,7 +266,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
           'program_type': 'gci',
           'program_key': self.data.program.key().name()
           })
-      return self.redirect.to(
+      return self.data.redirect.to(
           url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
 
     if not post_data.get('button_id', None) == 'save':

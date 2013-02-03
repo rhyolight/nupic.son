@@ -160,7 +160,7 @@ class OrgProfilePage(GSoCRequestHandler):
       self.check.isOrgAdminForOrganization(self.data.organization)
       #probably check if the org is active
     else:
-      self.data.org_id = self.request.GET.get('org_id')
+      self.data.org_id = self.data.request.GET.get('org_id')
 
       self.mutator.orgAppRecord(self.data.org_id)
 
@@ -205,8 +205,8 @@ class OrgProfilePage(GSoCRequestHandler):
   def post(self):
     org_profile = self.createOrgProfileFromForm()
     if org_profile:
-      self.redirect.organization(organization=org_profile)
-      return self.redirect.to('edit_gsoc_org_profile', validated=True)
+      self.data.redirect.organization(organization=org_profile)
+      return self.data.redirect.to('edit_gsoc_org_profile', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

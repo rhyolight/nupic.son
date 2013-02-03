@@ -32,13 +32,11 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 class LeaderboardList(Template):
-  """Template for the leaderboard list.
-  """
+  """Template for the leaderboard list."""
 
   LEADERBOARD_LIST_IDX = 0
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
     r = data.redirect
 
@@ -70,7 +68,7 @@ class LeaderboardList(Template):
     }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == self.LEADERBOARD_LIST_IDX:
       q = GCIScore.all()
       q.filter('program', self.data.program)
@@ -78,8 +76,8 @@ class LeaderboardList(Template):
       skipper = lambda entity, start: entity.points <= 0
       prefetcher = lists.modelPrefetcher(GCIScore, [], True)
 
-      response_builder = lists.RawQueryContentResponseBuilder(self.request,
-          self._list_config, q, lists.keyStarter,
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.data.request, self._list_config, q, lists.keyStarter,
           skipper=skipper, prefetcher=prefetcher)
 
       return response_builder.build()
@@ -97,8 +95,8 @@ class AllStudentTasksList(TaskList):
 
   _LIST_COLUMNS = ['title', 'organization']
 
-  def __init__(self, request, data):
-    super(AllStudentTasksList, self).__init__(request, data)
+  def __init__(self, data):
+    super(AllStudentTasksList, self).__init__(data)
 
   def _getColumns(self):
     return self._LIST_COLUMNS
@@ -128,17 +126,17 @@ class LeaderboardPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = LeaderboardList(self.request, self.data).getListData()
+    list_content = LeaderboardList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     context = {
         'page_name': "Leaderboard for %s" % self.data.program.name,
-        'leaderboard_list': LeaderboardList(self.request, self.data),
+        'leaderboard_list': LeaderboardList(self.data),
         'timeline': common_templates.Timeline(self.data),
         'complete_percentage': self.data.timeline.completePercentage(),
         'your_score': common_templates.YourScore(self.data),
@@ -175,15 +173,15 @@ class StudentTasksPage(GCIRequestHandler):
         raise AccessViolation('You do not have access to this data')
 
   def jsonContext(self):
-    list_content = AllStudentTasksList(self.request, self.data).getListData()
+    list_content = AllStudentTasksList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': "Tasks closed by %s" % self.data.url_profile.name(),
-        'tasks_list': AllStudentTasksList(self.request, self.data),
+        'tasks_list': AllStudentTasksList(self.data),
     }

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the site global pages."""
+"""Handler for App Engine's _ah/warmup requests."""
 
 import httplib
 

@@ -30,7 +30,6 @@ from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.score import GCIOrgScore
 from soc.modules.gci.views.helper import url_names
 
-
 DATE_FORMAT = 'd-m-Y'
 
 
@@ -38,9 +37,8 @@ class StudentList(Template):
   """Component for listing all the students in GCI.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     self.data = data
-    self.request = request
     self.idx = 1
 
     list_config = lists.ListConfiguration(add_key_column=False)
@@ -57,11 +55,11 @@ class StudentList(Template):
         'link_id', 'Username', lambda e, sp, *args: sp[e.parent_key()].link_id)
     list_config.addPlainTextColumn(
         'email', 'Email', lambda e, sp, *args: sp[e.parent_key()].email)
-    list_config.addPlainTextColumn('given_name', 'Given name', 
+    list_config.addPlainTextColumn('given_name', 'Given name',
         (lambda e, sp, *args: sp[e.parent_key()].given_name), hidden=True)
-    list_config.addPlainTextColumn('surname', 'Surname', 
+    list_config.addPlainTextColumn('surname', 'Surname',
         (lambda e, sp, *args: sp[e.parent_key()].surname), hidden=True)
-    list_config.addPlainTextColumn('name_on_documents', 'Legal name', 
+    list_config.addPlainTextColumn('name_on_documents', 'Legal name',
         (lambda e, sp, *args: sp[e.parent_key()].name_on_documents),
         hidden=True)
     list_config.addPlainTextColumn(
@@ -87,7 +85,7 @@ class StudentList(Template):
         (lambda e, sp, *args: sp[e.parent_key()].student_info.major),
         hidden=True)
     list_config.addPlainTextColumn('degree', 'Degree',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.degree), 
+        (lambda e, sp, *args: sp[e.parent_key()].student_info.degree),
         hidden=True)
     list_config.addPlainTextColumn('grade', 'Grade',
         (lambda e, sp, *args: sp[e.parent_key()].student_info.grade),
@@ -155,7 +153,7 @@ class StudentList(Template):
     self._list_config = list_config
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
 
     if idx != self.idx:
       return None
@@ -179,7 +177,8 @@ class StudentList(Template):
       return ([sp], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, query, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, query, starter,
+        prefetcher=prefetcher)
 
     return response_builder.build()
 

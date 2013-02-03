@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2012 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing template with a list of GCIOrganization entities.
-"""
-
+"""Module containing template with a list of GCIOrganization entities."""
 
 from soc.views.helper import lists
 from soc.views.template import Template
@@ -25,11 +21,9 @@ from soc.modules.gci.logic import organization as org_logic
 
 
 class OrgList(Template):
-  """Template for list of organizations.
-  """
+  """Template for list of organizations."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     self._list_config = self._getListConfig()
@@ -45,15 +39,16 @@ class OrgList(Template):
     }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       query = self._getQuery()
 
       starter = lists.keyStarter
       prefetcher = self._getPrefetcher()
 
-      response_builder = lists.RawQueryContentResponseBuilder(self.request,
-          self._list_config, query, starter, prefetcher=prefetcher)
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.data.request, self._list_config, query, starter,
+          prefetcher=prefetcher)
       return response_builder.build()
     else:
       return None

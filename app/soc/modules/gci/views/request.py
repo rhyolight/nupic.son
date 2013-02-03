@@ -112,7 +112,7 @@ class SendRequestPage(GCIRequestHandler):
     """Handler to for GCI Send Request Page HTTP post request."""
     request = self.validate()
     if request:
-      return self.redirect.id(request.key().id()).to(
+      return self.data.redirect.id(request.key().id()).to(
           url_names.GCI_MANAGE_REQUEST)
     else:
       # TODO(nathaniel): problematic self-call.
@@ -178,7 +178,7 @@ class ManageRequestPage(GCIRequestHandler):
         request.put()
       db.run_in_transaction(resubmit_request_txn)
 
-    return self.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
+    return self.data.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
 
   def _constructPageName(self):
     request = self.data.request_entity
@@ -299,25 +299,22 @@ class RespondRequestPage(GCIRequestHandler):
 
       db.run_in_transaction(reject_request_txn)
 
-    return self.redirect.userId(user_key.name()).to(
+    return self.data.redirect.userId(user_key.name()).to(
         url_names.GCI_RESPOND_REQUEST)
 
 
 class UserRequestsList(Template):
-  """Template for list of requests that have been sent by the current user.
-  """
+  """Template for list of requests that have been sent by the current user."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
-    r = data.redirect
 
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('org', 'To',
         lambda entity, *args: entity.org.name)
     list_config.addSimpleColumn('status', 'Status')
     list_config.setRowAction(
-        lambda e, *args: r.id(e.key().id())
+        lambda e, *args: data.redirect.id(e.key().id())
             .urlOf(url_names.GCI_MANAGE_REQUEST))
 
     self._list_config = list_config
@@ -328,7 +325,7 @@ class UserRequestsList(Template):
     q.filter('user', self.data.user)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
+        self.data.request, self._list_config, q, lists.keyStarter)
 
     return response_builder.build()
 
@@ -362,15 +359,15 @@ class ListUserRequestsPage(GCIRequestHandler):
     self.check.isProfileActive()
 
   def jsonContext(self):
-    list_content = UserRequestsList(self.request, self.data).getListData()
+    list_content = UserRequestsList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise exceptions.AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': 'Your requests',
-        'request_list': UserRequestsList(self.request, self.data),
+        'request_list': UserRequestsList(self.data),
     }

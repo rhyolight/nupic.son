@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,24 +18,20 @@ The classes in this module are intended to serve as base classes for
 iconic dashboard (Dashboard) and component list (Component).
 """
 
-
 from django.utils.translation import ugettext
 
 from soc.views.template import Template
 
 
 class Component(Template):
-  """Base component for the list component.
-  """
+  """Base component for the list component."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the list component.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    self.request = request
     self.data = data
 
   def getListData(self):
@@ -73,15 +67,13 @@ class Dashboard(Template):
   dashboard implementation.
   """
 
-  def __init__(self, request, data, subpages=None):
+  def __init__(self, data, subpages=None):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
       subpages: Subpages of current dashboard
     """
-    self.request = request
     self.data = data
     self.subpages = subpages
 

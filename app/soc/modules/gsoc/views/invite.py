@@ -226,8 +226,8 @@ class InvitePage(GSoCRequestHandler):
   def post(self):
     """Handler to for GSoC Invitation Page HTTP post request."""
     if self._createFromForm():
-      self.redirect.invite()
-      return self.redirect.to('gsoc_invite', validated=True)
+      self.data.redirect.invite()
+      return self.data.redirect.to('gsoc_invite', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -372,8 +372,8 @@ class ShowInvite(GSoCRequestHandler):
     elif self.data.action == self.ACTIONS['withdraw']:
       self._withdrawInvitation()
 
-    self.redirect.dashboard()
-    return self.redirect.to()
+    self.data.redirect.dashboard()
+    return self.data.redirect.to()
 
   def _acceptInvitation(self):
     """Accepts an invitation."""
@@ -383,8 +383,8 @@ class ShowInvite(GSoCRequestHandler):
       # TODO(nathaniel): is this dead code? Is what's done here not
       # overwritten by the redirect.dashboard() call in the enclosing
       # post() method call?
-      self.redirect.program()
-      self.redirect.to('edit_gsoc_profile', secure=True)
+      self.data.redirect.program()
+      self.data.redirect.to('edit_gsoc_profile', secure=True)
 
     invite_key = self.data.invite.key()
     profile_key = self.data.profile.key()

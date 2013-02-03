@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the org applications.
-"""
-
+"""Module for the org applications."""
 
 from django import forms as django_forms
 from django.utils.translation import ugettext
@@ -32,7 +28,6 @@ from soc.logic import cleaning
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
-
 
 PROCESS_ORG_APPS_FORM_BUTTON_VALUE = \
     'Finalize decisions and send acceptance/rejection emails'
@@ -175,16 +170,15 @@ class OrgAppRecordsList(object):
   def jsonContext(self):
     """Handler for JSON requests.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       record_list = self._createOrgAppsList()
-      return record_list.listContentResponse(self.request).content()
+      return record_list.listContentResponse(self.data.request).content()
     else:
       super(OrgAppRecordsList, self).jsonContext()
 
   def _createOrgAppsList(self):
-    """Creates a SurveyRecordList for the requested survey.
-    """
+    """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
         self.data, self.data.org_app, OrgAppRecord, idx=0)
     record_list.list_config.addSimpleColumn('name', 'Name')
@@ -207,7 +201,7 @@ class OrgAppRecordsList(object):
     record_list.list_config.addPostEditButton('save', 'Save')
 
     record_list.list_config.setRowAction(
-        lambda e, *args: self.redirect.id(e.key().id_or_name()).
+        lambda e, *args: self.data.redirect.id(e.key().id_or_name()).
             urlOf(self.read_only_view))
 
     return record_list

@@ -138,9 +138,9 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
     org_app = self.orgAppFromForm()
     if org_app:
       # TODO(nathaniel): is this .program() necessary?
-      self.redirect.program()
+      self.data.redirect.program()
 
-      return self.redirect.to('gsoc_edit_org_app', validated=True)
+      return self.data.redirect.to('gsoc_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -201,7 +201,7 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
     assert access_checker.isSet(self.data.org_app)
 
     show_url = None
-    if 'id' in self.kwargs:
+    if 'id' in self.data.kwargs:
       show_url = self.data.redirect.id().urlOf('gsoc_show_org_app')
 
     self.check.isSurveyActive(self.data.org_app, show_url)
@@ -265,8 +265,8 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
   def post(self):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
-      r = self.redirect.id(org_app_record.key().id())
-      return r.to('gsoc_retake_org_app', validated=True)
+      self.data.redirect.id(org_app_record.key().id())
+      return self.data.redirect.to('gsoc_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -289,7 +289,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
 
   def post(self):
     """Edits records from commands received by the list code."""
-    post_data = self.request.POST
+    post_data = self.data.request.POST
 
     self.data.redirect.program()
 
@@ -299,7 +299,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
           'program_type': 'gsoc',
           'program_key': self.data.program.key().name()
           })
-      return self.redirect.to('gsoc_list_org_app_records', validated=True)
+      return self.data.redirect.to('gsoc_list_org_app_records', validated=True)
 
     if not post_data.get('button_id', None) == 'save':
       raise BadRequest('No valid POST data found')
