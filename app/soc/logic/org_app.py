@@ -22,9 +22,8 @@ from google.appengine.ext import db
 
 from soc.logic import mail_dispatcher
 from soc.logic.helper import notifications
-from soc.models.org_app_survey import OrgAppSurvey
-from soc.models.org_app_record import OrgAppRecord
-from soc.tasks import mailer
+from soc.models import org_app_survey
+from soc.models import org_app_record
 
 
 def getForProgram(program):
@@ -34,7 +33,7 @@ def getForProgram(program):
     program: program entity for which the survey should be searched
   """
   # retrieve a OrgAppSurvey
-  q = OrgAppSurvey.all()
+  q = org_app_survey.OrgAppSurvey.all()
   q.filter('program', program)
   survey = q.get()
 
@@ -51,7 +50,7 @@ def setStatus(data, record, new_status, accept_url):
   if record.status == new_status:
     return
 
-  if new_status not in OrgAppRecord.status.choices:
+  if new_status not in org_app_record.OrgAppRecord.status.choices:
     return
 
   record_key = record.key()
