@@ -25,6 +25,16 @@ from django.utils.translation import ugettext
 import soc.models.program
 
 
+class WinnerSelectionType(object):
+  """Enumerates all winner selection types for GCI Programs.
+  """
+
+  ORG_NOMINATED = 'Nominated by Organizations'
+  GLOBAL_RANKING = 'Global ranking'
+
+WINNER_SELECTION_TYPES = [
+    WinnerSelectionType.ORG_NOMINATED, WinnerSelectionType.GLOBAL_RANKING]
+
 
 class GCIProgramMessages(soc.models.program.ProgramMessages):
   """The GCIProgramMessages model.
@@ -48,6 +58,12 @@ class GCIProgram(soc.models.program.Program):
   nr_simultaneous_tasks.group = ugettext('Contest')
   nr_simultaneous_tasks.help_text = ugettext(
       'Number of tasks students can work on simultaneously in the program.')
+
+  #: Determines what winner selection model is used for the program
+  winner_selection_type = db.StringProperty(required=True,
+      verbose_name=ugettext('Winner selection type'),
+      choices=WINNER_SELECTION_TYPES,
+      default=WinnerSelectionType.ORG_NOMINATED)
 
   #: Required property containing the number of winners to be selected in
   #: the program. Defaults to 10
