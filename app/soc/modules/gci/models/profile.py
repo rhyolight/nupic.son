@@ -16,7 +16,6 @@
 
 """This module contains the  GCIProfile Model."""
 
-
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
 
@@ -48,6 +47,7 @@ class GCIStudentInfo(profile.StudentInfo):
   Parent:
     soc.modules.gci.models.profile.GCIProfile
   """
+
   #: number of tasks completed by the student
   number_of_completed_tasks = db.IntegerProperty(default=0)
 
@@ -80,6 +80,10 @@ class GCIStudentInfo(profile.StudentInfo):
 
   #: Stores whether the student id form is verified by the program host.
   student_id_form_verified = db.BooleanProperty(default=False)
+
+  #: GCIOrganiztion for which the student is a winner
+  winner_for = db.ReferenceProperty(
+      required=False, collection_name='winners')
 
   #: Whether the student is a grand prize winner of the program
   is_winner = db.BooleanProperty(default=False, required=False)
