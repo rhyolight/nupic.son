@@ -17,6 +17,8 @@
 """GCI logic for program.
 """
 
+from soc.modules.gci.models import profile as profile_model
+
 
 def getMostRecentProgram(data):
   """Returns the most recent program.
@@ -25,3 +27,19 @@ def getMostRecentProgram(data):
     The program link_id for the most recent gsoc program.
   """
   return data.site.latest_gci
+
+
+def getWinnersForProgram(program):
+  """Returns the Grand Prize Winners for the specified program.
+
+  Args:
+    program: GCIProgram instance for which to retrieve the winners
+  Returns:
+    a list of GCIProfile instances containing winners of the program
+  """
+
+  student_keys = profile_model.GCIStudentInfo.all(keys_only=True).filter(
+      'is_winner', True).filter('program', program).fetch(1000)
+
+  return profile_model.GCIProfile.get(
+      [key.parent() for key in student_keys])
