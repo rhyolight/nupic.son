@@ -2264,6 +2264,9 @@ body {
 	.block-leaderboard-top-scores .leaderboard-top-tasks {
 		width: 70px;
 	}
+	.block-leaderboard-top-organization .leaderboard-top-organization {
+		width: 90px;
+	}
 .block-leaderboard-all-scores {/*Leaderboard all scores*/
 
 }
