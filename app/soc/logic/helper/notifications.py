@@ -19,7 +19,6 @@
 
 
 from django.template import loader
-from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
 
 from soc.logic import mail_dispatcher
@@ -53,12 +52,6 @@ DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
 
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
     'soc/notification/new_request.html'
-
-DEF_ACCEPTED_ORG_TEMPLATE = \
-    'soc/notification/org_accepted.html'
-
-DEF_REJECTED_ORG_TEMPLATE = \
-    'soc/notification/org_rejected.html'
 
 DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
     'soc/notification/handled_request.html'

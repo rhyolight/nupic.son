@@ -218,7 +218,6 @@ class ProgramPage(base.GSoCRequestHandler):
     return 'v2/modules/gsoc/program/base.html'
 
   def context(self):
-    scope_path = self.data.program.key().id_or_name()
     program_form = ProgramForm(self.data, self.data.POST or None,
                                instance=self.data.program)
     return {
@@ -228,7 +227,6 @@ class ProgramPage(base.GSoCRequestHandler):
     }
 
   def validate(self):
-    scope_path = self.data.program.key().id_or_name()
     program_form = ProgramForm(self.data, self.data.POST,
                                instance=self.data.program)
 

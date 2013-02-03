@@ -17,8 +17,6 @@ request in the GSoC module.
 """
 
 
-import logging
-
 from google.appengine.ext import db
 
 from soc.models import site as site_model

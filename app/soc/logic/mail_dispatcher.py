@@ -59,8 +59,6 @@ Usage:
 """
 
 
-import logging
-
 from django.template import Context
 from django.template import loader
 
