@@ -223,6 +223,9 @@ def orgAppContext(data, record, new_status, apply_url):
 
   Args:
     data: a RequestData object
+    record: an OrgAppRecord
+    new_status: the new status that should be assigned to the record
+    apply_url: Full URL to the org profile create page for accepted orgs
   """
 
   context = {
