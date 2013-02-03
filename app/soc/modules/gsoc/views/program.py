@@ -14,9 +14,17 @@
 
 """Module for the program settings pages."""
 
-from soc.models import document
 
+from google.appengine.ext import db
+
+from django import forms as django_forms
+from django.utils import translation
+
+from soc.logic import mail_dispatcher
+from soc.logic.helper import notifications
+from soc.models import document
 from soc.views import program as soc_program_view
+from soc.views.helper import access_checker
 from soc.views.helper import url_patterns as soc_url_patterns
 
 from soc.modules.gsoc.models import program
@@ -25,6 +33,31 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns
+
+
+TEST_EMAIL_HELP_TEXT = translation.ugettext(
+    'Email address to which test messages must be sent. If provided, a'
+    'test email is sent for each of the messages on this page to '
+    'the given address.')
+
+TEST_ORG_ID = 'test_org'
+
+TEST_ORG_NAME = 'Test organization name'
+
+TEST_ORG_ENTITY = {
+    'name': TEST_ORG_NAME,
+    'accepted_student_msg': translation.ugettext(
+        "This part of the email will be filled out by the organization on "
+        "their organization profile page's accepted student message field."
+        "This is just a test stub."),
+    'rejected_student_msg': translation.ugettext(
+        "This part of the email will be filled out by the organization on "
+        "their organization profile page's rejected student message field."
+        "This is just a test stub."),
+    }
+
+TEST_PROPOSAL_TITLE = translation.ugettext(
+    'Proposal title for test')
 
 
 class TimelineForm(forms.GSoCModelForm):
@@ -54,6 +87,10 @@ class ProgramForm(forms.GSoCModelForm):
 class GSoCProgramMessagesForm(forms.GSoCModelForm):
   """Django form for the program settings."""
 
+  test_email = django_forms.EmailField(
+      max_length=254, label='Test email address',
+      help_text=TEST_EMAIL_HELP_TEXT, required=False)
+
   def __init__(self, request_data, *args, **kwargs):
     self.request_data = request_data
     super(GSoCProgramMessagesForm, self).__init__(*args, **kwargs)
@@ -61,6 +98,95 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
   class Meta:
     css_prefix = 'program_messages_form'
     model = program.GSoCProgramMessages
+
+  def getSendMailFromTemplateStringTxn(self, to, subject, template_string, context):
+    """Returns the transaction for sending the email
+
+    Args:
+      to: Email address to which the test messages must be sent
+      subject: Subject for the mail
+      template_string: Template string to be used to construct mail body
+      context: Context variables to render the mail body from template string
+    """
+    sender_name, sender = mail_dispatcher.getDefaultMailSender()
+
+    common_context = {
+        'to': to,
+        'sender': sender,
+        'sender_name': sender_name,
+        'program_name': self.request_data.program.name,
+        'subject': subject,
+        }
+    context.update(common_context)
+    return mail_dispatcher.getSendMailFromTemplateStringTxn(
+          template_string, context, parent=self.request_data.user,
+          transactional=True)
+
+  def sendTestEmail(self, message_entity):
+    """Send the test emails to the requested address.
+
+    Args:
+      messages_entity: Messages entity containing the messages to be emailed.
+    """
+    assert access_checker.isSet(self.request_data.program)
+
+    test_email_addr = self.cleaned_data.get('test_email', None)
+    if not test_email_addr:
+      return
+
+    r = self.request_data.redirect
+    r.program()
+    apply_url = r.urlOf('create_gsoc_org_profile', full=True, secure=True)
+
+    org_app_context = {
+      'url': apply_url + '?org_id=' + TEST_ORG_ID,
+      'org': TEST_ORG_NAME,
+      }
+
+    proposal_context = {
+        'proposal_title': TEST_PROPOSAL_TITLE,
+        'org_entity': TEST_ORG_ENTITY,
+        }
+
+    mail_txns = []
+
+    if message_entity.accepted_orgs_msg:
+      mail_txns.append(self.getSendMailFromTemplateStringTxn(
+          test_email_addr, notifications.DEF_ACCEPTED_ORG % (org_app_context),
+          message_entity.accepted_orgs_msg, org_app_context))
+
+    if message_entity.rejected_orgs_msg:
+      mail_txns.append(self.getSendMailFromTemplateStringTxn(
+          test_email_addr, notifications.DEF_REJECTED_ORG % (org_app_context),
+          message_entity.rejected_orgs_msg, org_app_context))
+
+    if message_entity.accepted_students_msg:
+      mail_txns.append(self.getSendMailFromTemplateStringTxn(
+          test_email_addr, 'Congratulations!',
+          message_entity.accepted_students_msg, proposal_context))
+
+    if message_entity.rejected_students_msg:
+      mail_txns.append(self.getSendMailFromTemplateStringTxn(
+          test_email_addr,
+          'Thank you for applying to %s' % (self.request_data.program.name),
+          message_entity.rejected_students_msg, proposal_context))
+
+    def txn():
+      for mail_txn in mail_txns:
+        mail_txn()
+
+    db.run_in_transaction(txn)
+
+  def create(self, *args, **kwargs):
+    """After creating the entity
+    """
+    entity = super(GSoCProgramMessagesForm, self).create(*args, **kwargs)
+    self.sendTestEmail(entity)
+
+  def save(self, *args, **kwargs):
+    """After saving the form, send the test emails to the requested address."""
+    entity = super(GSoCProgramMessagesForm, self).save(*args, **kwargs)
+    self.sendTestEmail(entity)
 
 
 class ProgramPage(base.GSoCRequestHandler):
