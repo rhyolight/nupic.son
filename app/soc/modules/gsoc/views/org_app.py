@@ -63,10 +63,9 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
   class Meta(org_app.OrgAppTakeForm.Meta):
     pass
 
-  def __init__(self, request_data, tos_content, *args, **kwargs):
+  def __init__(self, request_data, *args, **kwargs):
     super(GSoCOrgAppTakeForm, self).__init__(
-        request_data, tos_content, gsoc_forms.GSoCBoundField,
-        *args, **kwargs)
+        request_data, gsoc_forms.GSoCBoundField, *args, **kwargs)
 
   def clean_backup_admin_id(self):
     """Extends the backup admin cleaner to check if the backup admin has a
@@ -178,9 +177,7 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/org_app/take.html'
 
   def context(self):
-    oa_agreement = self.data.program.org_admin_agreement.content if \
-        self.data.program.org_admin_agreement else ''
-    form = GSoCOrgAppTakeForm(self.data, oa_agreement)
+    form = GSoCOrgAppTakeForm(self.data)
 
     context = {
         'page_name': '%s' % (self.data.org_app.title),
@@ -223,17 +220,12 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/take.html'
 
-  def _getTOSContent(self):
-    return self.data.program.org_admin_agreement.content if \
-        self.data.program.org_admin_agreement else ''
-
   def context(self):
     if self.data.org_app_record:
-      form = GSoCOrgAppTakeForm(self.data, self._getTOSContent(),
-          self.data.POST or None, instance=self.data.org_app_record)
+      form = GSoCOrgAppTakeForm(self.data, self.data.POST or None,
+                                instance=self.data.org_app_record)
     else:
-      form = GSoCOrgAppTakeForm(self.data, self._getTOSContent(),
-          self.data.POST or None)
+      form = GSoCOrgAppTakeForm(self.data, self.data.POST or None)
 
     context = {
         'page_name': '%s' % (self.data.org_app.title),
@@ -250,11 +242,10 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
       a newly created or updated evaluation record entity or None
     """
     if self.data.org_app_record:
-      form = GSoCOrgAppTakeForm(self.data, self._getTOSContent(),
-          self.data.POST, instance=self.data.org_app_record)
+      form = GSoCOrgAppTakeForm(self.data, self.data.POST,
+                                instance=self.data.org_app_record)
     else:
-      form = GSoCOrgAppTakeForm(
-          self.data, self._getTOSContent(), self.data.POST)
+      form = GSoCOrgAppTakeForm(self.data, self.data.POST)
 
     if not form.is_valid():
       return None

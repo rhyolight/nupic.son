@@ -286,9 +286,9 @@ class OrgAppTakeForm(org_app.OrgAppTakeForm):
   class Meta(org_app.OrgAppTakeForm.Meta):
     pass
 
-  def __init__(self, request_data, tos_content, *args, **kwargs):
+  def __init__(self, request_data, *args, **kwargs):
     super(OrgAppTakeForm, self).__init__(
-        request_data, tos_content, GCIBoundField, *args, **kwargs)
+        request_data, GCIBoundField, *args, **kwargs)
 
   def clean_backup_admin_id(self):
     """Extends the backup admin cleaner to check if the backup admin has a
