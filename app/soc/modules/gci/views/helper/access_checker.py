@@ -279,7 +279,6 @@ class AccessChecker(access_checker.AccessChecker):
     A user can take the GCI org app if he/she participated in GSoC or GCI as
     a non-student and has a non-student profile for the current program.
     """
-
     # TODO(daniel): make this a program setting - sometimes it may be possible
     # to accept organizations which have not participated before
     self.hasNonStudentProfileInAProgram()

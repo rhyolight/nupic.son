@@ -20,6 +20,7 @@ from django import http
 from django.utils import simplejson
 from django.utils.translation import ugettext
 
+from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.mapreduce.helper import control as mapreduce_control
@@ -28,7 +29,6 @@ from soc.views import org_app
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
-from soc.logic import org_app as org_app_logic
 
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.views import forms as gsoc_forms

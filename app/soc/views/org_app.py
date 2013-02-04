@@ -38,7 +38,6 @@ DEF_BACKUP_ADMIN_NO_PROFILE = ugettext(
 PROCESS_ORG_APPS_FORM_BUTTON_VALUE = \
     'Finalize decisions and send acceptance/rejection emails'
 
-
 NEW_ORG_CHOICES = [('Veteran', 'Veteran'), ('New', 'New')]
 
 
