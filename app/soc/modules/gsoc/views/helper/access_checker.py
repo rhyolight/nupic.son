@@ -20,6 +20,7 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from soc.logic import validate
 from soc.logic.exceptions import AccessViolation, BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import RedirectRequest
@@ -434,13 +435,8 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.user:
       raise AccessViolation(msg)
 
-    q = GSoCProfile.all(keys_only=True)
-    q.ancestor(self.data.user)
-    q.filter('scope', self.data.program)
-    q.filter('is_student', False)
-    q.filter('status', 'active')
-    gsoc_profile = q.get()
-    if not gsoc_profile:
+    if not validate.hasNonStudentProfileForProgram(
+        self.data.user, program, GSoCProfile):
       raise AccessViolation(msg)
 
   def orgDoesnotExist(self, org_id):
