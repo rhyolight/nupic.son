@@ -97,7 +97,7 @@ class ProgramSelect(ProgramSelect):
     return 'v2/modules/gci/common_templates/_program_select.html'
 
 
-class Winners(Template):
+class GlobalRankingWinners(Template):
   """Templates to display winners of the program.
   """
 

@@ -268,7 +268,7 @@ class Homepage(GCIRequestHandler):
       return common_templates.OrgNominatedWinners(self.data)
     elif (winner_selection_type ==
         program_model.WinnerSelectionType.GLOBAL_RANKING):
-      return common_templates.Winners(self.data)
+      return common_templates.GlobalRankingWinners(self.data)
     else:
       raise ValueError(
          'Invalid value of winner_selection_type %s' % winner_selection_type)
