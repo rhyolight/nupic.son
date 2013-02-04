@@ -36,7 +36,7 @@ from soc.modules.gsoc.views.helper import url_patterns
 
 
 TEST_EMAIL_HELP_TEXT = translation.ugettext(
-    'Email address to which test messages must be sent. If provided, a'
+    'Email address to which test messages must be sent. If provided, a '
     'test email is sent for each of the messages on this page to '
     'the given address.')
 
@@ -103,10 +103,13 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
     """Returns the transaction for sending the email
 
     Args:
-      to: Email address to which the test messages must be sent
-      subject: Subject for the mail
-      template_string: Template string to be used to construct mail body
-      context: Context variables to render the mail body from template string
+      to: Email address to which the test messages must be sent.
+      subject: Subject for the mail.
+      template_string: Template string to be used to construct mail body.
+      context: Context variables to render the mail body from template string.
+
+    Returns:
+      A function object for sending email in the background using task queue.
     """
     sender_name, sender = mail_dispatcher.getDefaultMailSender()
 
@@ -134,9 +137,9 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
     if not test_email_addr:
       return
 
-    r = self.request_data.redirect
-    r.program()
-    apply_url = r.urlOf('create_gsoc_org_profile', full=True, secure=True)
+    self.request_data.redirect.program()
+    apply_url = self.request_data.redirect.urlOf(
+        'create_gsoc_org_profile', full=True, secure=True)
 
     org_app_context = {
       'url': apply_url + '?org_id=' + TEST_ORG_ID,
@@ -178,7 +181,7 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
     db.run_in_transaction(txn)
 
   def create(self, *args, **kwargs):
-    """After creating the entity
+    """After creating the entity, send the test emails to the requested address.
     """
     entity = super(GSoCProgramMessagesForm, self).create(*args, **kwargs)
     self.sendTestEmail(entity)
