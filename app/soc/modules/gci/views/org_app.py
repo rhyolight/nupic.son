@@ -181,10 +181,6 @@ class GCIOrgAppTakePage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'
 
-  def _getTOSContent(self):
-    return self.data.program.org_admin_agreement.content if \
-        self.data.program.org_admin_agreement else ''
-
   def context(self):
     if self.data.org_app_record:
       form = gci_forms.OrgAppTakeForm(
