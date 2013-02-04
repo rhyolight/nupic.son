@@ -20,6 +20,7 @@ from google.appengine.api import urlfetch
 from google.appengine.api import urlfetch_errors
 
 from soc.models import linkable
+from soc.models import user
 
 
 def isFeedURLValid(feed_url=None):
@@ -108,3 +109,25 @@ def isAgeSufficientForProgram(birth_date, program):
       return False
 
   return True
+
+
+def hasNonStudentProfileForProgram(user, program, profile_model):
+  """Returns True if the user has a non student profile for the given program.
+
+  Args:
+    user: User entity for the user whose must have a profile in the program.
+    program: Program entity which must be checked for profile.
+
+  Returns:
+    True if the given user has a non student profile for the given program,
+    False otherwise.
+  """
+  q = profile_model.all(keys_only=True)
+  q.ancestor(user)
+  q.filter('scope', program)
+  q.filter('is_student', False)
+  q.filter('status', 'active')
+
+  # There should be exactly one profile entity for the given link id per
+  # program, no more, no less
+  return q.count() == 1
