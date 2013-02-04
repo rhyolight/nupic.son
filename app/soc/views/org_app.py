@@ -63,7 +63,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
   # field cleaner.
   new_org = forms.CharField(widget=django_forms.Select(choices=NEW_ORG_CHOICES))
 
-  def __init__(self, survey, tos_content, bound_class_field, *args, **kwargs):
+  def __init__(self, survey, bound_class_field, *args, **kwargs):
     super(OrgAppTakeForm, self).__init__(survey, bound_class_field, *args,
                                          **kwargs)
     if self.instance:
