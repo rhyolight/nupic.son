@@ -123,8 +123,8 @@ class RequestPage(GSoCRequestHandler):
     """Handler for GSoC Request Page HTTP post request."""
     request = self._createFromForm()
     if request:
-      self.redirect.request(request)
-      return self.redirect.to('show_gsoc_request')
+      self.data.redirect.request(request)
+      return self.data.redirect.to('show_gsoc_request')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -305,9 +305,9 @@ class ShowRequest(GSoCRequestHandler):
       self._revokeRequest()
 
     # TODO(nathaniel): Make this .program() call unnecessary.
-    self.redirect.program()
+    self.data.redirect.program()
 
-    return self.redirect.to('gsoc_dashboard')
+    return self.data.redirect.to('gsoc_dashboard')
 
   def _acceptRequest(self):
     """Accepts a request.

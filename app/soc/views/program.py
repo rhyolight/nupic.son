@@ -37,9 +37,9 @@ class ProgramMessagesPage(object):
     """Handler for HTTP POST request."""
     if self.validate():
       # TODO(nathaniel): Make this .program() call unnecessary.
-      self.redirect.program()
-
-      return self.redirect.to(self._getUrlName(), validated=True)
+      self.data.redirect.program()
+      # TODO(nathaniel): Redirection to same page?
+      return self.data.redirect.to(self._getUrlName(), validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

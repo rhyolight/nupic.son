@@ -253,7 +253,7 @@ class InvitePage(GCIRequestHandler):
   def post(self):
     """Handler to for GCI Invitation Page HTTP post request."""
     if self.validate():
-      return self.redirect.dashboard().to()
+      return self.data.redirect.dashboard().to()
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -326,7 +326,7 @@ class ManageInvite(GCIRequestHandler):
     elif 'resubmit' in self.data.POST:
       invite_logic.resubmitInvite(self.data)
 
-    return self.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
+    return self.data.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite
@@ -394,16 +394,16 @@ class RespondInvite(GCIRequestHandler):
     if 'accept' in self.data.POST:
       if not self.data.profile:
         # TODO(nathaniel): is this dead code? How is this not overwritten
-        # by the self.redirect.id().to(url_names.GCI_RESPOND_INVITE) at the
+        # by the data.redirect.id().to(url_names.GCI_RESPOND_INVITE) at the
         # bottom of this method?
-        self.redirect.program()
-        self.redirect.to('edit_gci_profile')
+        self.data.redirect.program()
+        self.data.redirect.to('edit_gci_profile')
 
       invite_logic.acceptInvite(self.data)
     else: # reject
       invite_logic.rejectInvite(self.data)
 
-    return self.redirect.id().to(url_names.GCI_RESPOND_INVITE)
+    return self.data.redirect.id().to(url_names.GCI_RESPOND_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite
@@ -411,11 +411,9 @@ class RespondInvite(GCIRequestHandler):
 
 
 class UserInvitesList(Template):
-  """Template for list of invites that have been sent to the current user.
-  """
+  """Template for list of invites that have been sent to the current user."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
     r = data.redirect
 
@@ -435,7 +433,7 @@ class UserInvitesList(Template):
     q.filter('user', self.data.user)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
+        self.data.request, self._list_config, q, lists.keyStarter)
 
     return response_builder.build()
 
@@ -469,15 +467,15 @@ class ListUserInvitesPage(GCIRequestHandler):
     self.check.isProfileActive()
 
   def jsonContext(self):
-    list_content = UserInvitesList(self.request, self.data).getListData()
+    list_content = UserInvitesList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': 'Invitations to you',
-        'invite_list': UserInvitesList(self.request, self.data),
+        'invite_list': UserInvitesList(self.data),
     }

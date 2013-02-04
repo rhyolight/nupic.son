@@ -17,11 +17,10 @@ request in the GSoC module.
 """
 
 
-import logging
-
 from google.appengine.ext import db
 
-from soc.logic.exceptions import NotFound
+from soc.models import site as site_model
+from soc.logic import exceptions
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
@@ -256,7 +255,7 @@ class RequestData(request_data.RequestData):
         self._organization = org_model.GSoCOrganization.get_by_key_name(
             org_key_name)
         if not self._organization:
-          raise NotFound(
+          raise exceptions.NotFound(
               "There is no organization for url '%s'" % org_key_name)
       else:
         self._organization = None
@@ -371,7 +370,8 @@ class RequestData(request_data.RequestData):
           self.kwargs['sponsor'], self.kwargs['program'])
       program_key = db.Key.from_path('GSoCProgram', program_key_name)
     else:
-      program_key = Site.active_program.get_value_for_datastore(self.site)
+      program_key = site_model.Site.active_program.get_value_for_datastore(
+          self.site)
       program_key_name = program_key.name()
     keys.append(program_key)
 
@@ -386,7 +386,8 @@ class RequestData(request_data.RequestData):
 
     # raise an exception if no program is found
     if not self._program:
-      raise NotFound("There is no program for url '%s'" % program_key_name)
+      raise exceptions.NotFound(
+          "There is no program for url '%s'" % program_key_name)
 
   def getOrganization(self, org_key):
     """Retrieves the specified organization.

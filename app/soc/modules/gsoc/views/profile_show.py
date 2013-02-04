@@ -134,11 +134,11 @@ class GSoCProfileAdminPage(GSoCRequestHandler):
 
     if profile:
       links = []
-      r = self.redirect.profile()
+      r = self.data.redirect.profile()
       for project in GSoCProject.all().ancestor(profile):
         r.project(project.key().id())
         links.append(r.urlOf('gsoc_project_details', full=True))
-      r = self.redirect.profile()
+      r = self.data.redirect.profile()
 
       user_role = None
       if profile.is_student:

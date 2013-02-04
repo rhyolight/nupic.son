@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the boiler plate required to construct views. This
+"""Module containing the boilerplate required to construct views. This
 module is largely based on appengine's webapp framework's code.
 """
 
@@ -257,18 +257,31 @@ class RequestHandler(object):
     else:
       return self.error(httplib.NOT_IMPLEMENTED)
 
-  # TODO(nathaniel): Note that while this says that it sets the "data" and
-  # "check" attributes, this implementation makes use of the "data" attribute
-  # without having set it. Therefore extending classes must set at least the
-  # "data" attribute before calling this superclass implementation if they
-  # choose to do so (they do). This is an obstacle just waiting to cause
-  # bigger problems.
   def init(self, request, args, kwargs):
-    """Initializes the RequestHandler.
+    """Creates objects necessary for serving the request.
 
-    Sets the data and check fields.
+    Subclasses must override this abstract method.
+
+    Args:
+      request: The http.HttpRequest for the current request.
+      args: Additional arguments passed to this request handler.
+      kwargs: Additional keyword arguments passed to this request handler.
+
+    Returns:
+      A triplet of the RequestData, Check, and Mutator to be used to
+        service the request.
     """
-    if self.data.site.maintenance_mode and not self.data.is_developer:
+    raise NotImplementedError()
+
+  # TODO(nathaniel): Migrate this elsewhere.
+  def checkMaintenanceMode(self, data):
+    """Checks whether or not the site is in maintenance mode.
+
+    Raises:
+      exceptions.MaintainceMode: If the site is in maintenance mode and the
+        user is not a developer.
+    """
+    if data.site.maintenance_mode and not data.is_developer:
       raise exceptions.MaintainceMode(
           'The site is currently in maintenance mode. Please try again later.')
 
@@ -282,44 +295,38 @@ class RequestHandler(object):
     4. Delegates dispatching to the handler to the _dispatch method.
     5. Returns the response.
     """
-    self.request = request
-    self.args = args
-    self.kwargs = kwargs
-
     try:
-      self.init(request, args, kwargs)
+      self.data, self.check, self.mutator = self.init(
+          request, args, kwargs)
+      self.checkMaintenanceMode(self.data)
       self.checkAccess()
       return self._dispatch()
     except exceptions.LoginRequest, e:
       request.get_full_path().encode('utf-8')
-      return self.redirect.login().to()
+      return self.data.redirect.login().to()
     except exceptions.RedirectRequest, e:
-      return self.redirect.toUrl(e.url)
+      return self.data.redirect.toUrl(e.url)
     except exceptions.GDocsLoginRequest, e:
-      return self.redirect.toUrl('%s?%s' % (
-          self.redirect.urlOf(e.url_name), urllib.urlencode({'next':e.path})))
+      return self.data.redirect.toUrl('%s?%s' % (
+          self.data.redirect.urlOf(e.url_name),
+          urllib.urlencode({'next': e.path})))
     except exceptions.Error, e:
       return self.error(e.status, message=e.args[0])
     finally:
-      self.request = None
-      self.args = None
-      self.kwargs = None
       self.data = None
       self.check = None
       self.mutator = None
-      self.redirect = None
 
 
 class SiteRequestHandler(RequestHandler):
   """Customization required by global site pages to handle HTTP requests."""
 
   def init(self, request, args, kwargs):
-    self.data = request_data.RequestData(request, args, kwargs)
-    self.redirect = self.data.redirect
-    if self.data.is_developer:
-      self.mutator = access_checker.DeveloperMutator(self.data)
-      self.check = access_checker.DeveloperAccessChecker(self.data)
+    data = request_data.RequestData(request, args, kwargs)
+    if data.is_developer:
+      mutator = access_checker.DeveloperMutator(data)
+      check = access_checker.DeveloperAccessChecker(data)
     else:
-      self.mutator = access_checker.Mutator(self.data)
-      self.check = access_checker.AccessChecker(self.data)
-    super(SiteRequestHandler, self).init(request, args, kwargs)
+      mutator = access_checker.Mutator(data)
+      check = access_checker.AccessChecker(data)
+    return data, check, mutator

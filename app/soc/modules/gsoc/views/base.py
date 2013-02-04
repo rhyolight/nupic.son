@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the boiler plate required to construct GSoC views."""
+"""Module containing the boilerplate required to construct GSoC views."""
 
 import httplib
 
@@ -47,15 +47,15 @@ class GSoCRequestHandler(base.RequestHandler):
     return super(GSoCRequestHandler, self).render(template_path, context)
 
   def init(self, request, args, kwargs):
-    self.data = request_data.RequestData(request, args, kwargs)
-    self.redirect = self.data.redirect
-    if self.data.is_developer:
-      self.mutator = access_checker.DeveloperMutator(self.data)
-      self.check = access_checker.DeveloperAccessChecker(self.data)
+    """See base.RequestHandler.init for specification."""
+    data = request_data.RequestData(request, args, kwargs)
+    if data.is_developer:
+      mutator = access_checker.DeveloperMutator(data)
+      check = access_checker.DeveloperAccessChecker(data)
     else:
-      self.mutator = access_checker.Mutator(self.data)
-      self.check = access_checker.AccessChecker(self.data)
-    super(GSoCRequestHandler, self).init(request, args, kwargs)
+      mutator = access_checker.Mutator(data)
+      check = access_checker.AccessChecker(data)
+    return data, check, mutator
 
   def error(self, status, message=None):
     """See base.RequestHandler.error for specification."""

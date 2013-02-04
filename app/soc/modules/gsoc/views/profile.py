@@ -246,11 +246,12 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
 
     if not organization:
       # TODO(nathaniel): make this .program() call unnecessary.
-      self.redirect.program()
+      self.data.redirect.program()
 
-      return self.redirect.to('edit_gsoc_profile', validated=True, secure=True)
+      return self.data.redirect.to(
+          'edit_gsoc_profile', validated=True, secure=True)
 
-    self.redirect.organization(organization)
+    self.data.redirect.organization(organization)
 
     if self.data.student_info:
       link = 'submit_gsoc_proposal'
@@ -259,7 +260,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
       link = 'gsoc_request'
       extra_get_args = ['profile=created']
 
-    return self.redirect.to(link, extra=extra_get_args)
+    return self.data.redirect.to(link, extra=extra_get_args)
 
   def _getModulePrefix(self):
     return 'gsoc'

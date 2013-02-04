@@ -30,11 +30,9 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 class TaskList2(Template):
-  """Template for list of tasks.
-  """
+  """Template for list of tasks."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
     r = data.redirect
 
@@ -57,14 +55,14 @@ class TaskList2(Template):
     }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       q = GCITask.all()
       q.filter('program', self.data.program)
       q.filter('status', 'Closed')
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, lists.keyStarter)
+          self.data.request, self._list_config, q, lists.keyStarter)
 
       return response_builder.build()
     else:
@@ -91,17 +89,17 @@ class TaskListPage(GCIRequestHandler):
     pass
 
   def jsonContext(self):
-    list_content = TaskList2(self.request, self.data).getListData()
+    list_content = TaskList2(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': "Tasks for %s" % self.data.program.name,
-        'task_list': TaskList2(self.request, self.data),
+        'task_list': TaskList2(self.data),
 #        'program_select': ProgramSelect(self.data, 'list_gci_finished_tasks'),
     }
 
@@ -143,19 +141,18 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
     self.mutator.profileFromKwargs()
 
   def jsonContext(self):
-    list_content = StudentTasksForOrganizationList(
-        self.request, self.data).getListData()
+    list_content = StudentTasksForOrganizationList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': "Tasks closed by %s for %s" % (
             self.data.url_profile.name(), self.data.organization.name),
-        'task_list': StudentTasksForOrganizationList(self.request, self.data),
+        'task_list': StudentTasksForOrganizationList(self.data),
     }
 
 
@@ -194,18 +191,17 @@ class ChooseOrganizationPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = ChooseOrganizationList(
-        self.request, self.data).getListData()
+    list_content = ChooseOrganizationList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def context(self):
     return {
         'page_name': "Choose an organization for which to display tasks.",
-        'org_list': ChooseOrganizationList(self.request, self.data),
+        'org_list': ChooseOrganizationList(self.data),
     }
 
 
@@ -243,16 +239,15 @@ class AllOrganizationTasksPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = AllOrganizationTasksList(
-        self.request, self.data).getListData()
+    list_content = AllOrganizationTasksList(self.data).getListData()
 
-    if not list_content:
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
         'page_name': 'Tasks created by %s' % self.data.organization.name,
-        'task_list': AllOrganizationTasksList(self.request, self.data),
+        'task_list': AllOrganizationTasksList(self.data),
     }

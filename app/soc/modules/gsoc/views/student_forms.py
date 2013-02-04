@@ -181,10 +181,10 @@ class FormPage(GSoCRequestHandler):
       return self.data.student_info
 
   def _admin(self):
-    return self.kwargs['admin']
+    return self.data.kwargs['admin']
 
   def _tax(self):
-    return self.kwargs['form'] == 'tax'
+    return self.data.kwargs['form'] == 'tax'
 
   def _urlName(self):
     if self._admin():
@@ -198,10 +198,10 @@ class FormPage(GSoCRequestHandler):
 
   def _r(self):
     if self._admin():
-      self.redirect.profile()
+      self.data.redirect.profile()
     else:
-      self.redirect.program()
-    return self.redirect
+      self.data.redirect.program()
+    return self.data.redirect
 
   def jsonContext(self):
     url = self._r().urlOf(self._urlName(), secure=True)
@@ -263,10 +263,10 @@ class DownloadForm(GSoCRequestHandler):
       self.check.canStudentDownloadForms()
 
   def _admin(self):
-    return self.kwargs['admin']
+    return self.data.kwargs['admin']
 
   def _tax(self):
-    return self.kwargs['form'] == 'tax'
+    return self.data.kwargs['form'] == 'tax'
 
   def _studentInfo(self):
     if self._admin():

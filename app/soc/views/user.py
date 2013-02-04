@@ -89,6 +89,7 @@ class CreateUserPage(SiteRequestHandler):
     form = UserCreateForm(GSoCBoundField, self.data.POST)
 
     if not form.is_valid():
+      # TODO(nathaniel): problematic self-call.
       return self.get()
 
     cleaned_data = form.cleaned_data
@@ -98,7 +99,7 @@ class CreateUserPage(SiteRequestHandler):
 
     form.create(key_name=cleaned_data['link_id'])
 
-    return self.redirect.to('edit_user', validated=True)
+    return self.data.redirect.to('edit_user', validated=True)
 
 
 class EditUserPage(SiteRequestHandler):
@@ -136,8 +137,10 @@ class EditUserPage(SiteRequestHandler):
                          instance=self.data.user)
 
     if not form.is_valid():
+      # TODO(nathaniel): problematic self-call.
       return self.get()
 
     form.save()
 
-    return self.redirect.to('edit_user', validated=True)
+    # TODO(nathaniel): redirection to same page.
+    return self.data.redirect.to('edit_user', validated=True)

@@ -26,11 +26,9 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 class MentorsList(Template):
-  """Template for list of mentors for admins.
-  """
+  """Template for list of mentors for admins."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     list_config = lists.ListConfiguration()
@@ -70,7 +68,7 @@ class MentorsList(Template):
     }
 
   def getListData(self):
-    if lists.getListIndex(self.request) != 0:
+    if lists.getListIndex(self.data.request) != 0:
       return None
 
     q = GCIProfile.all()
@@ -83,7 +81,8 @@ class MentorsList(Template):
         GCIProfile, ['org_admin_for', 'mentor_for'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter,
+        prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -107,16 +106,16 @@ class MentorsListAdminPage(GCIRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = MentorsList(self.request, self.data).getListData()
+    list_content = MentorsList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def context(self):
     return {
         'page_name': "List of organization admins and mentors for %s" % (
             self.data.program.name),
-        'mentors_list': MentorsList(self.request, self.data),
+        'mentors_list': MentorsList(self.data),
     }

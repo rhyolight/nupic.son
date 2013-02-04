@@ -33,7 +33,6 @@ from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
 
-
 DEF_CANNOT_ACCESS_EVALUATION = ugettext(
     'Organization Administrators can view this evaluation submitted by the '
     'student only after the evaluation deadline. Please visit this page '
@@ -41,8 +40,7 @@ DEF_CANNOT_ACCESS_EVALUATION = ugettext(
 
 
 class GSoCStudentEvaluationEditForm(gsoc_forms.SurveyEditForm):
-  """Form to create/edit GSoC project survey for students.
-  """
+  """Form to create/edit GSoC project survey for students."""
 
   class Meta:
     model = ProjectSurvey
@@ -90,7 +88,7 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
         if self.data.student_evaluation else 'Create new student evaluation'
     context = {
         'page_name': page_name,
-        'post_url': self.redirect.survey().urlOf(
+        'post_url': self.data.redirect.survey().urlOf(
             'gsoc_edit_student_evaluation'),
         'forms': [form],
         'error': bool(form.errors),
@@ -135,7 +133,8 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
   def post(self):
     evaluation = self.evaluationFromForm()
     if evaluation:
-      return self.redirect.survey().to(
+      # TODO(nathaniel): Redirection to self?
+      return self.data.redirect.survey().to(
           'gsoc_edit_student_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
@@ -229,8 +228,9 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
   def post(self):
     student_evaluation_record = self.recordEvaluationFromForm()
     if student_evaluation_record:
-      self.redirect.survey_record(self.data.student_evaluation.link_id)
-      return self.redirect.to('gsoc_take_student_evaluation', validated=True)
+      self.data.redirect.survey_record(self.data.student_evaluation.link_id)
+      return self.data.redirect.to(
+          'gsoc_take_student_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -302,17 +302,16 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
   def jsonContext(self):
     """Handler for JSON requests.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       record_list = self._createSurveyRecordList()
       return record_list.listContentResponse(
-          self.request, prefetch=['org', 'project']).content()
+          self.data.request, prefetch=['org', 'project']).content()
     else:
       super(GSoCStudentEvaluationRecordsList, self).jsonContext()
 
   def _createSurveyRecordList(self):
-    """Creates a SurveyRecordList for the requested survey.
-    """
+    """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
         self.data, self.data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
 

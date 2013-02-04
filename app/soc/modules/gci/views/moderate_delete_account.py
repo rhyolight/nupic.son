@@ -58,5 +58,6 @@ class ModerateDeleteAccountPage(base.GCIRequestHandler):
   def post(self):
     link_id = self.data.url_profile.link_id
     delete_account.confirm_delete(self.data.url_profile)
-    return self.redirect.profile(link_id).to(
+    # TODO(nathaniel): Self-redirection.
+    return self.data.redirect.profile(link_id).to(
         'gci_moderate_delete_account', validated=True)

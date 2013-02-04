@@ -33,8 +33,7 @@ class OrgScoresList(Template):
 
   ORG_SCORE_LIST_IDX = 0
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
     r = data.redirect
 
@@ -65,7 +64,7 @@ class OrgScoresList(Template):
     }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == self.ORG_SCORE_LIST_IDX:
       q = GCIOrgScore.all()
       q.filter('org', self.data.organization)
@@ -73,8 +72,9 @@ class OrgScoresList(Template):
       skipper = lambda entity, start: entity.numberOfTasks() <= 0
     #  prefetcher = lists.modelPrefetcher(GCIScore, [], True)
 
-      response_builder = lists.RawQueryContentResponseBuilder(self.request,
-          self._list_config, q, lists.keyStarter, skipper=skipper)
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.data.request, self._list_config, q, lists.keyStarter,
+          skipper=skipper)
 
       return response_builder.build()
     else:
@@ -104,16 +104,16 @@ class OrgScoresForOrgzanizationPage(GCIRequestHandler):
     return {
         'page_name': "Organization scores for %s" %
             self.data.organization.name,
-        'org_scores_list': OrgScoresList(self.request, self.data),
+        'org_scores_list': OrgScoresList(self.data),
     }
 
   def jsonContext(self):
-    list_content = OrgScoresList(self.request, self.data).getListData()
+    list_content = OrgScoresList(self.data).getListData()
 
-    if not list_content:
-      raise exceptions.AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exceptions.AccessViolation('You do not have access to this data')
 
 
 class OrganizationsForOrgScoreList(BasicOrgList):
@@ -153,17 +153,16 @@ class ChooseOrganizationForOrgScorePage(GCIRequestHandler):
     pass
 
   def jsonContext(self):
-    list_content = OrganizationsForOrgScoreList(
-        self.request, self.data).getListData()
+    list_content = OrganizationsForOrgScoreList(self.data).getListData()
 
-    if not list_content:
-      raise exceptions.AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exceptions.AccessViolation('You do not have access to this data')
 
   def context(self):
     return {
         'page_name': "Choose an organization for which to display scores.",
-        'org_list': OrganizationsForOrgScoreList(self.request, self.data),
+        'org_list': OrganizationsForOrgScoreList(self.data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }
