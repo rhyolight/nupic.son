@@ -5,8 +5,8 @@
       {% for winner in winners %}
       <tr>
         <td class="leaderboard-top-color-block blue"><img src="/soc/content/{{ app_version }}/images/gci/avatars/{{ winner.avatarPrefix }}/{{ winner.avatarName }}"></img></td>
-        <td class="leaderboard-top-name">{{ winner.profile.full_name }}</td>
-        <td class="leaderboard-top-organization">{{ winner.organization.name }}</td>
+        <td class="leaderboard-top-name">{{ winner.profile.full_name|escape }}</td>
+        <td class="leaderboard-top-organization">{{ winner.organization.name|escape }}</td>
       </tr>
       {% endfor %}
     </table>
