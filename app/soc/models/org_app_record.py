@@ -81,7 +81,7 @@ class OrgAppRecord(SurveyRecord):
                                'program in the previous years')
 
   #: field storing whether the User has agreed to the org admin agreement
-  agreed_to_admin_agreement = db.BooleanProperty(required=True, default=False,
+  agreed_to_admin_agreement = db.BooleanProperty(required=True, default=True,
       verbose_name=ugettext('I Agree to the Admin Agreement'))
   agreed_to_admin_agreement.help_text = ugettext(
       'Indicates whether the user agreed to the Admin Agreement.')
