@@ -29,6 +29,8 @@ from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
 from soc.logic import org_app as org_app_logic
+
+from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_names
@@ -65,6 +67,13 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
     super(GSoCOrgAppTakeForm, self).__init__(
         request_data, tos_content, gsoc_forms.GSoCBoundField,
         *args, **kwargs)
+
+  def clean_backup_admin_id(self):
+    """Extends the backup admin cleaner to check if the backup admin has a
+    valid profile in the program.
+    """
+    backup_admin = super(GSoCOrgAppTakeForm, self).clean_backup_admin_id()
+    self.validateBackupAdminProfile(backup_admin, profile_model.GSoCProfile)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_form.html'

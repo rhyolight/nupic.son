@@ -36,6 +36,7 @@ from django.utils.formats import dateformat
 from soc.views import forms
 from soc.views import org_app
 
+from soc.modules.gci.models import profile as profile_model
 
 AVATAR_LOWER_BOUND = 1
 AVATAR_UPPER_BOUND = 26
@@ -288,6 +289,13 @@ class OrgAppTakeForm(org_app.OrgAppTakeForm):
   def __init__(self, request_data, tos_content, *args, **kwargs):
     super(OrgAppTakeForm, self).__init__(
         request_data, tos_content, GCIBoundField, *args, **kwargs)
+
+  def clean_backup_admin_id(self):
+    """Extends the backup admin cleaner to check if the backup admin has a
+    valid profile in the program.
+    """
+    backup_admin = super(OrgAppTakeForm, self).clean_backup_admin_id()
+    self.validateBackupAdminProfile(backup_admin, profile_model.GCIProfile)
 
   def templatePath(self):
     return TEMPLATE_PATH
