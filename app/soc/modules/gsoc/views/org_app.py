@@ -61,9 +61,10 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
   class Meta(org_app.OrgAppTakeForm.Meta):
     pass
 
-  def __init__(self, survey, tos_content, *args, **kwargs):
+  def __init__(self, request_data, tos_content, *args, **kwargs):
     super(GSoCOrgAppTakeForm, self).__init__(
-        survey, tos_content, gsoc_forms.GSoCBoundField, *args, **kwargs)
+        request_data, tos_content, gsoc_forms.GSoCBoundField,
+        *args, **kwargs)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_form.html'
@@ -170,8 +171,7 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
   def context(self):
     oa_agreement = self.data.program.org_admin_agreement.content if \
         self.data.program.org_admin_agreement else ''
-    form = GSoCOrgAppTakeForm(
-        self.data.org_app, oa_agreement)
+    form = GSoCOrgAppTakeForm(self.data, oa_agreement)
 
     context = {
         'page_name': '%s' % (self.data.org_app.title),
@@ -220,10 +220,10 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
 
   def context(self):
     if self.data.org_app_record:
-      form = GSoCOrgAppTakeForm(self.data.org_app, self._getTOSContent(),
+      form = GSoCOrgAppTakeForm(self.data, self._getTOSContent(),
           self.data.POST or None, instance=self.data.org_app_record)
     else:
-      form = GSoCOrgAppTakeForm(self.data.org_app, self._getTOSContent(),
+      form = GSoCOrgAppTakeForm(self.data, self._getTOSContent(),
           self.data.POST or None)
 
     context = {
@@ -241,12 +241,11 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
       a newly created or updated evaluation record entity or None
     """
     if self.data.org_app_record:
-      form = GSoCOrgAppTakeForm(
-          self.data.org_app, self._getTOSContent(),
+      form = GSoCOrgAppTakeForm(self.data, self._getTOSContent(),
           self.data.POST, instance=self.data.org_app_record)
     else:
       form = GSoCOrgAppTakeForm(
-          self.data.org_app, self._getTOSContent(), self.data.POST)
+          self.data, self._getTOSContent(), self.data.POST)
 
     if not form.is_valid():
       return None

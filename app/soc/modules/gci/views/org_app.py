@@ -132,7 +132,7 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
 
   def context(self):
     form = gci_forms.OrgAppTakeForm(
-        self.data.org_app, self.data.program.org_admin_agreement.content)
+        self.data, self.data.program.org_admin_agreement.content)
 
     context = {
         'page_name': '%s' % (self.data.org_app.title),
@@ -188,10 +188,10 @@ class GCIOrgAppTakePage(GCIRequestHandler):
 
   def context(self):
     if self.data.org_app_record:
-      form = gci_forms.OrgAppTakeForm(self.data.org_app, self._getTOSContent(),
+      form = gci_forms.OrgAppTakeForm(self.data, self._getTOSContent(),
           self.data.POST or None, instance=self.data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(self.data.org_app, self._getTOSContent(),
+      form = gci_forms.OrgAppTakeForm(self.data, self._getTOSContent(),
           self.data.POST or None)
 
     context = {
@@ -210,11 +210,11 @@ class GCIOrgAppTakePage(GCIRequestHandler):
     """
     if self.data.org_app_record:
       form = gci_forms.OrgAppTakeForm(
-          self.data.org_app, self._getTOSContent(),
+          self.data, self._getTOSContent(),
           self.data.POST, instance=self.data.org_app_record)
     else:
       form = gci_forms.OrgAppTakeForm(
-          self.data.org_app, self._getTOSContent(), self.data.POST)
+          self.data, self._getTOSContent(), self.data.POST)
 
     if not form.is_valid():
       return None

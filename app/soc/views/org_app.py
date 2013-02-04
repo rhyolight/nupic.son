@@ -63,9 +63,11 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
   # field cleaner.
   new_org = forms.CharField(widget=django_forms.Select(choices=NEW_ORG_CHOICES))
 
-  def __init__(self, survey, tos_content, bound_class_field, *args, **kwargs):
-    super(OrgAppTakeForm, self).__init__(survey, bound_class_field, *args,
-                                         **kwargs)
+  def __init__(self, request_data, tos_content, bound_class_field, *args,
+               **kwargs):
+    self.request_data = request_data
+    super(OrgAppTakeForm, self).__init__(
+        self.request_data.org_app, bound_class_field, *args, **kwargs)
     if self.instance:
       self.fields['backup_admin_id'].initial = \
           self.instance.backup_admin.link_id
