@@ -164,7 +164,7 @@ class OrgNominatedWinners(Template):
 
     Returns:
       a list containing GCIProfile instances which represent the winners
-      ordered by the organization which chose the student.
+      ordered by the first name.
     """
     winners = []
 
@@ -172,6 +172,6 @@ class OrgNominatedWinners(Template):
     for profile in profiles:
       winners.append(OrgNominatedWinners.Winner(profile))
 
-    # TODO(daniel): sort by organization names
+    winners.sort(key=lambda o: o.profile.given_name.lower())
 
     return winners
