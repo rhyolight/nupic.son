@@ -18,7 +18,8 @@ from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from soc.logic import exceptions
-
+from soc.logic import validate
+from soc.models import user
 from soc.views import forms
 from soc.views import survey
 from soc.views.helper import access_checker
@@ -28,6 +29,11 @@ from soc.logic import cleaning
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
+
+
+DEF_BACKUP_ADMIN_NO_PROFILE = ugettext(
+    'Backup admin does not have an org admin profile for the program. Please '
+    'ask your backup admin to register a profile for %s at %s')
 
 PROCESS_ORG_APPS_FORM_BUTTON_VALUE = \
     'Finalize decisions and send acceptance/rejection emails'
@@ -85,6 +91,25 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
                'created', 'modified', 'program']
     widgets = forms.choiceWidgets(model,
         ['license'])
+
+  def validateBackupAdminProfile(self, backup_admin_user, profile_model):
+    """Validates if backup admin has a profile for the current program.
+
+    Args:
+      backup_admin_user: User entity for the backup admin.
+      profile_model: Model class from which the profile must be fetched.
+
+    Raises:
+      django_forms.ValidationError if the backup admin does not have a profile.
+    """
+    if not validate.hasNonStudentProfileForProgram(
+        backup_admin_user, self.request_data.program, profile_model):
+      r = self.request_data.redirect.createProfile('org_admin')
+
+      raise django_forms.ValidationError(
+          DEF_BACKUP_ADMIN_NO_PROFILE % (
+              self.request_data.program.short_name,
+              r.urlOf('create_gsoc_profile', full=True, secure=True)))
 
   def clean_org_id(self):
     org_id = cleaning.clean_link_id('org_id')(self)
