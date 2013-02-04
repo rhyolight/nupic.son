@@ -63,7 +63,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
   # field cleaner.
   new_org = forms.CharField(widget=django_forms.Select(choices=NEW_ORG_CHOICES))
 
-  def __init__(self, survey, tos_content, bound_class_field, *args, **kwargs):
+  def __init__(self, survey, bound_class_field, *args, **kwargs):
     super(OrgAppTakeForm, self).__init__(survey, bound_class_field, *args,
                                          **kwargs)
     if self.instance:
@@ -73,14 +73,11 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     # not marked required by data model for backwards compatibility
     self.fields['org_id'].required = True
 
-    self.fields['agreed_to_admin_agreement'].widget = forms.TOSWidget(
-        tos_content)
-
   class Meta:
     model = OrgAppRecord
     css_prefix = 'org-app-record'
     exclude = ['main_admin', 'backup_admin', 'status', 'user', 'survey',
-               'created', 'modified', 'program']
+               'created', 'modified', 'program', 'agreed_to_admin_agreement']
     widgets = forms.choiceWidgets(model,
         ['license'])
 
@@ -217,6 +214,5 @@ class OrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
   class Meta:
     model = OrgAppRecord
     css_prefix = 'org-app-show'
-    fields = ['org_id', 'name', 'description', 'home_page', 'license',
-              'agreed_to_admin_agreement']
+    fields = ['org_id', 'name', 'description', 'home_page', 'license']
     survey_name = 'Organization Application'
