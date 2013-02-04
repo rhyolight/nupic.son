@@ -222,10 +222,10 @@ def orgAppContext(data, record, new_status, apply_url):
   """Sends out an invite notification to the applicant of the Organization.
 
   Args:
-    data: a RequestData object
-    record: an OrgAppRecord
-    new_status: the new status that should be assigned to the record
-    apply_url: Full URL to the org profile create page for accepted orgs
+    data: a RequestData object.
+    record: an OrgAppRecord.
+    new_status: the new status that should be assigned to the record.
+    apply_url: Full URL to the org profile create page for accepted orgs.
   """
 
   context = {

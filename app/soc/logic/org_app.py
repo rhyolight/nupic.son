@@ -28,7 +28,7 @@ def getForProgram(program):
   """Return the org_app survey for a given program.
 
   Args:
-    program: program entity for which the survey should be searched
+    program: program entity for which the survey should be searched.
   """
   # retrieve a OrgAppSurvey
   q = org_app_survey.OrgAppSurvey.all()
@@ -42,10 +42,10 @@ def setStatus(data, record, new_status, accept_url):
   """Updates the status of an org_app record.
 
   Args:
-    data: RequestData object
-    record: an OrgAppRecord
-    new_status: the new status that should be assigned to the record
-    accept_url: Full URL to the org profile create page for accepted orgs
+    data: RequestData object.
+    record: an OrgAppRecord.
+    new_status: the new status that should be assigned to the record.
+    accept_url: Full URL to the org profile create page for accepted orgs.
   """
   if record.status == new_status:
     return
