@@ -73,14 +73,11 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     # not marked required by data model for backwards compatibility
     self.fields['org_id'].required = True
 
-    self.fields['agreed_to_admin_agreement'].widget = forms.TOSWidget(
-        tos_content)
-
   class Meta:
     model = OrgAppRecord
     css_prefix = 'org-app-record'
     exclude = ['main_admin', 'backup_admin', 'status', 'user', 'survey',
-               'created', 'modified', 'program']
+               'created', 'modified', 'program', 'agreed_to_admin_agreement']
     widgets = forms.choiceWidgets(model,
         ['license'])
 
