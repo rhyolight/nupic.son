@@ -59,13 +59,13 @@ DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
 
 #(dcrodman): This needs to be removed once connection is stable.
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
-    'soc/notification/new_request.html'
+    'soc/modules/gsoc/notification/new_request.html'
 
 DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/initiated_connection.html'
+    'v2/modules/gsoc/notification/initiated_connection.html'
 
 DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/anonymous_connection.html'
+    'v2/modules/gsoc/notification/anonymous_connection.html'
 
 DEF_ACCEPTED_ORG_TEMPLATE = \
     'soc/notification/org_accepted.html'

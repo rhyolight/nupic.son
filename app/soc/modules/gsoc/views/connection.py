@@ -41,7 +41,7 @@ from soc.modules.gsoc.models.connection import GSoCAnonymousConnection
 from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.models.connection_message import GSoCConnectionMessage
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import RequestHandler
+from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
@@ -249,7 +249,7 @@ class UserConnectionForm(ConnectionForm):
     exclude = GSoCConnection.allFields()
 
 
-class OrgConnectionPage(RequestHandler):
+class OrgConnectionPage(GSoCRequestHandler):
   """ Class to encapsulate the methods for an org admin to initiate a
   connection between the organization and a given user. """
   
@@ -305,10 +305,10 @@ class OrgConnectionPage(RequestHandler):
       if len(self.data.duplicate_email) > 0:
         dupes = ','.join(self.data.duplicate_email)
         extra.append('dupes=%s' % dupes)
-      self.redirect.to(url_names.GSOC_ORG_CONNECTION, validated=True, 
+      return self.redirect.to(url_names.GSOC_ORG_CONNECTION, validated=True, 
           extra=extra)
     else:
-      self.get()
+      return self.get()
 
   def generate(self):
     """ Create a GSoCConnection instance and notify all parties involved """
@@ -389,7 +389,7 @@ class OrgConnectionPage(RequestHandler):
     return True
 
 
-class UserConnectionPage(RequestHandler):
+class UserConnectionPage(GSoCRequestHandler):
   """ Class to encapsulate the methods for a user to initiate a connection
   between him or her self and an organization. """
   
@@ -430,9 +430,9 @@ class UserConnectionPage(RequestHandler):
     
     if self.generate():
       self.redirect.connect(user=self.data.user)
-      self.redirect.to(url_names.GSOC_USER_CONNECTION, validated=True)
+      return self.redirect.to(url_names.GSOC_USER_CONNECTION, validated=True)
     else:
-      self.get()
+      return self.get()
     
   def generate(self):
     """ Create a GSoCConnection instance and notify all parties involved. """
@@ -484,7 +484,7 @@ class UserConnectionPage(RequestHandler):
 
     return True
 
-class ShowConnection(RequestHandler):
+class ShowConnection(GSoCRequestHandler):
   """Class to encapsulate the methods required to display information
   about a GSoCConnection for both Users and Org Admins."""
   
@@ -657,9 +657,9 @@ class ShowConnection(RequestHandler):
     if response != 'none':
       self.redirect.dashboard()
     else:
-      self.redirect.show_connection(user=self.data.connection.parent(),
+      return self.redirect.show_connection(user=self.data.connection.parent(),
           connection=self.data.connection)
-    self.redirect.to()
+    return self.redirect.to()
 
   def _acceptMentor(self):
     """ The User has accepted the Mentoring role, so we need to add the user
@@ -821,7 +821,7 @@ class ShowConnection(RequestHandler):
 
     db.run_in_transaction(delete_connection_txn)
 
-class SubmitConnectionMessagePost(RequestHandler):
+class SubmitConnectionMessagePost(GSoCRequestHandler):
   """POST request handler for submission of connection messages.
   """
 
