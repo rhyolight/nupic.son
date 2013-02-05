@@ -129,7 +129,7 @@ class DashboardPage(GSoCRequestHandler):
         'page_name': 'Admin dashboard',
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles a post request.
 
     Do nothing, since toggle button posting to this handler
@@ -739,7 +739,7 @@ class LookupLinkIdPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/lookup.html'
 
-  def post(self):
+  def post(self, data, check, mutator):
     # TODO(nathaniel): problematic self-call.
     return self.get()
 
@@ -1137,9 +1137,9 @@ class ProposalsPage(GSoCRequestHandler):
 
     return list_content.content()
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for POST requests."""
-    proposals_list = ProposalsList(self.data.request, self.data)
+    proposals_list = ProposalsList(data.request, data)
 
     if proposals_list.post():
       return http.HttpResponse()
@@ -1237,9 +1237,9 @@ class ProjectsPage(GSoCRequestHandler):
 
     return list_content.content()
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for POST requests."""
-    projects_list = ProjectsList(self.data.request, self.data)
+    projects_list = ProjectsList(data.request, data)
 
     if projects_list.post():
       return http.HttpResponse()
@@ -1390,8 +1390,8 @@ class SlotsPage(GSoCRequestHandler):
 
     return list_content.content()
 
-  def post(self):
-    slots_list = SlotsList(self.data.request, self.data)
+  def post(self, data, check, mutator):
+    slots_list = SlotsList(data.request, data)
 
     if slots_list.post():
       return http.HttpResponse()
@@ -1421,21 +1421,21 @@ class SurveyReminderPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/survey_reminder.html'
 
-  def post(self):
-    post_dict = self.data.request.POST
+  def post(self, data, check, mutator):
+    post_dict = data.request.POST
 
     task_params = {
-        'program_key': self.data.program.key().id_or_name(),
+        'program_key': data.program.key().id_or_name(),
         'survey_key': post_dict['key'],
         'survey_type': post_dict['type']
     }
 
-    task = taskqueue.Task(url=self.data.redirect.urlOf('spawn_survey_reminders'),
+    task = taskqueue.Task(url=data.redirect.urlOf('spawn_survey_reminders'),
                           params=task_params)
     task.add()
 
     return http.HttpResponseRedirect(
-        self.data.request.path + '?msg=Reminders are being sent')
+        data.request.path + '?msg=Reminders are being sent')
 
   def context(self):
     q = GradingProjectSurvey.all()

@@ -286,20 +286,20 @@ class TaskViewPage(GCIRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles all POST calls for the TaskViewPage."""
-    if self.data.is_visible and 'reply' in self.data.GET:
+    if data.is_visible and 'reply' in data.GET:
       return self._postComment()
-    elif 'button' in self.data.GET:
+    elif 'button' in data.GET:
       return self._postButton()
-    elif 'send_for_review' in self.data.GET:
+    elif 'send_for_review' in data.GET:
       return self._postSendForReview()
-    elif 'delete_submission' in self.data.GET:
+    elif 'delete_submission' in data.GET:
       return self._postDeleteSubmission()
-    elif 'work_file_submit' in self.data.POST or 'submit_work' in self.data.GET:
+    elif 'work_file_submit' in data.POST or 'submit_work' in data.GET:
       return self._postSubmitWork()
     else:
-      return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+      return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
   def _postComment(self):
     """Handles the POST call for the form that creates comments.

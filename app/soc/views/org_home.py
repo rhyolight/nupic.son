@@ -16,6 +16,8 @@
 
 from google.appengine.ext import db
 
+from django import http
+
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -36,11 +38,12 @@ class BanOrgPost(object):
   def checkAccess(self):
     self.check.isHost();
 
-  def post(self):
-    assert isSet(self.data.organization)
+  def post(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.post for specification."""
+    assert isSet(data.organization)
 
-    value = self.data.POST.get('value')
-    org_key = self.data.organization.key()
+    value = data.POST.get('value')
+    org_key = data.organization.key()
 
     def banOrgTxn(value):
       org_model = self._getOrgModel()
@@ -53,6 +56,8 @@ class BanOrgPost(object):
         org.put()
 
     db.run_in_transaction(banOrgTxn, value)
+
+    return http.HttpResponse()
 
   def _getModulePrefix(self):
     raise NotImplementedError

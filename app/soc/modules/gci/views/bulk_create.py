@@ -81,20 +81,20 @@ class BulkCreate(GCIRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles POST requests for the bulk create page."""
-    form = BulkCreateForm(self.data.POST)
+    form = BulkCreateForm(data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
       return self.get()
 
     bulk_create.spawnBulkCreateTasks(
-        form.cleaned_data['task_data'], self.data.organization,
-        self.data.profile)
+        form.cleaned_data['task_data'], data.organization,
+        data.profile)
 
     # TODO(nathaniel): make this .organization call unnecessary.
-    self.data.redirect.organization(organization=self.data.organization)
+    data.redirect.organization(organization=data.organization)
 
-    return self.data.redirect.to(
+    return data.redirect.to(
         url_names.GCI_TASK_BULK_CREATE, validated=True)

@@ -184,15 +184,15 @@ class StudentFormUpload(GCIRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles POST requests for the bulk create page."""
     form = UploadForm(
-        self.data, data=self.data.POST, instance=self.data.student_info,
-        files=self.data.request.file_uploads)
+        data, data=data.POST, instance=data.student_info,
+        files=data.request.file_uploads)
 
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blobs from the cloud
-      for f in self.data.request.file_uploads.itervalues():
+      for f in data.request.file_uploads.itervalues():
         f.delete()
 
       # since this is a file upload we must return a 300 response
@@ -200,22 +200,22 @@ class StudentFormUpload(GCIRequestHandler):
       for field, error in form.errors.iteritems():
         extra_args.append('error_%s=%s' %(field, error.as_text()))
 
-      return self.data.redirect.to('gci_student_form_upload', extra=extra_args)
+      return data.redirect.to('gci_student_form_upload', extra=extra_args)
 
     # delete existing data
     cleaned_data = form.cleaned_data
-    for field_name in self.data.request.file_uploads.keys():
+    for field_name in data.request.file_uploads.keys():
       if field_name in cleaned_data:
-        existing = getattr(self.data.student_info, field_name)
+        existing = getattr(data.student_info, field_name)
         if existing:
           existing.delete()
 
     form.save()
 
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.data.redirect.program()
+    data.redirect.program()
 
-    return self.data.redirect.to('gci_student_form_upload')
+    return data.redirect.to('gci_student_form_upload')
 
 
 class StudentFormDownload(GCIRequestHandler):

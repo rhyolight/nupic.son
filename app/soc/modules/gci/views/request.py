@@ -108,11 +108,11 @@ class SendRequestPage(GCIRequestHandler):
 
     return db.run_in_transaction(create_request_txn)
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler to for GCI Send Request Page HTTP post request."""
     request = self.validate()
     if request:
-      return self.data.redirect.id(request.key().id()).to(
+      return data.redirect.id(request.key().id()).to(
           url_names.GCI_MANAGE_REQUEST)
     else:
       # TODO(nathaniel): problematic self-call.
@@ -164,21 +164,21 @@ class ManageRequestPage(GCIRequestHandler):
         'button_value': button_value
         }
 
-  def post(self):
-    if 'withdraw' in self.data.POST:
+  def post(self, data, check, mutator):
+    if 'withdraw' in data.POST:
       def withdraw_request_txn():
-        request = db.get(self.data.request_entity.key())
+        request = db.get(data.request_entity.key())
         request.status = 'withdrawn'
         request.put()
       db.run_in_transaction(withdraw_request_txn)
-    elif 'resubmit' in self.data.POST:
+    elif 'resubmit' in data.POST:
       def resubmit_request_txn():
-        request = db.get(self.data.request_entity.key())
+        request = db.get(data.request_entity.key())
         request.status = 'pending'
         request.put()
       db.run_in_transaction(resubmit_request_txn)
 
-    return self.data.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
+    return data.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
 
   def _constructPageName(self):
     request = self.data.request_entity
@@ -238,24 +238,23 @@ class RespondRequestPage(GCIRequestHandler):
         'is_respondable': self.data.is_respondable
         }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler to for GCI Respond Request Page HTTP post request."""
-    user_key = GCIRequest.user.get_value_for_datastore(
-        self.data.request_entity)
+    user_key = GCIRequest.user.get_value_for_datastore(data.request_entity)
 
     profile_key_name = '/'.join([
-        self.data.program.key().name(), user_key.name()])
+        data.program.key().name(), user_key.name()])
     profile_key = db.Key.from_path(
         'GCIProfile', profile_key_name, parent=user_key)
 
     self.data.requester_profile = profile = db.get(profile_key)
 
-    if 'accept' in self.data.POST:
+    if 'accept' in data.POST:
       options = db.create_transaction_options(xg=True)
 
-      request_key = self.data.request_entity.key()
-      organization_key = self.data.organization.key()
-      messages = self.data.program.getProgramMessages()
+      request_key = data.request_entity.key()
+      organization_key = data.organization.key()
+      messages = data.program.getProgramMessages()
 
       def accept_request_txn():
         request = db.get(request_key)
@@ -274,14 +273,14 @@ class RespondRequestPage(GCIRequestHandler):
         # Send out a welcome email to new mentors.
         if new_mentor:
           mentor_mail = notifications.getMentorWelcomeMailContext(
-              profile, self.data, messages)
+              profile, data, messages)
           if mentor_mail:
             mailer.getSpawnMailTaskTxn(mentor_mail, parent=request)()
 
         profile.put()
         request.put()
 
-        context = notifications.handledRequestContext(self.data, request.status)
+        context = notifications.handledRequestContext(data, request.status)
         sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
         sub_txn()
 
@@ -289,17 +288,17 @@ class RespondRequestPage(GCIRequestHandler):
 
     else: # reject
       def reject_request_txn():
-        request = db.get(self.data.request_entity.key())
+        request = db.get(data.request_entity.key())
         request.status = 'rejected'
         request.put()
 
-        context = notifications.handledRequestContext(self.data, request.status)
+        context = notifications.handledRequestContext(data, request.status)
         sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
         sub_txn()
 
       db.run_in_transaction(reject_request_txn)
 
-    return self.data.redirect.userId(user_key.name()).to(
+    return data.redirect.userId(user_key.name()).to(
         url_names.GCI_RESPOND_REQUEST)
 
 

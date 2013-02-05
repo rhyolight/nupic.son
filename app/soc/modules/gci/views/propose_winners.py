@@ -142,21 +142,21 @@ class ProposeWinnersPage(GCIRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles POST requests."""
-    form = ProposeWinnersForm(self.data, self.data.POST)
+    form = ProposeWinnersForm(data, data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
       return self.get()
 
-    first_key_str = self.data.POST.get(
+    first_key_str = data.POST.get(
         'first_proposed_winner', ProposeWinnersForm.EMPTY_CHOICE)
 
-    second_key_str = self.data.POST.get(
+    second_key_str = data.POST.get(
         'second_proposed_winner', ProposeWinnersForm.EMPTY_CHOICE)
 
-    backup_key_str = self.data.POST.get(
+    backup_key_str = data.POST.get(
         'backup_proposed_winner', ProposeWinnersForm.EMPTY_CHOICE)
 
     proposed_winners = self._getProposedWinnersList(
@@ -166,15 +166,15 @@ class ProposeWinnersPage(GCIRequestHandler):
 
     def txn():
       organization = organization_model.GCIOrganization.get(
-          self.data.organization.key())
+          data.organization.key())
       organization.proposed_winners = proposed_winners
       organization.backup_winner = backup_winner
       organization.put()
 
     db.run_in_transaction(txn)
 
-    self.data.redirect.organization()
-    return self.data.redirect.to(url_names.GCI_ORG_PROPOSE_WINNERS)
+    data.redirect.organization()
+    return data.redirect.to(url_names.GCI_ORG_PROPOSE_WINNERS)
 
   def _getProfileByKeyStr(self, key_str):
     """Returns the GCIProfile entity based on the specified string

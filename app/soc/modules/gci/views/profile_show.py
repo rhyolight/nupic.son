@@ -147,13 +147,13 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles student form verification by host."""
-    if not self.data.url_profile.student_info:
+    if not data.url_profile.student_info:
       logging.warn(NON_STUDENT_ERR_MSG)
-      return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+      return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
-    post_data = self.data.POST
+    post_data = data.POST
     button_id = post_data.get('id')
     value = post_data.get('value')
 

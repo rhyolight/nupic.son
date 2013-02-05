@@ -241,8 +241,8 @@ class SlotsTransferAdminPage(base.GSoCRequestHandler):
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def post(self):
-    slots_list = SlotsTransferAdminList(self.data)
+  def post(self, data, check, mutator):
+    slots_list = SlotsTransferAdminList(data)
 
     if slots_list.post():
       return http.HttpResponse()

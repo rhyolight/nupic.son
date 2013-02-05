@@ -211,7 +211,7 @@ class DashboardPage(GCIRequestHandler):
           'You do not have access to this data')
     return list_content.content()
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for POST requests for each component."""
     for component in self.components():
       if component.post():

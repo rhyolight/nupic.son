@@ -103,7 +103,7 @@ class DashboardPage(GCIRequestHandler):
         'page_name': 'Admin dashboard',
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles a post request.
 
     Do nothing, since toggle button posting to this handler
@@ -403,7 +403,7 @@ class LookupLinkIdPage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/admin/lookup.html'
 
-  def post(self):
+  def post(self, data, check, mutator):
     # TODO(nathaniel): problematic self-call.
     return self.get()
 

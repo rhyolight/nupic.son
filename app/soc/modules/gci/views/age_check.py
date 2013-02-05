@@ -81,22 +81,22 @@ class AgeCheck(gci_base.GCIRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles POST requests."""
-    form = AgeCheckForm(self.data.POST)
+    form = AgeCheckForm(data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
       return self.get()
 
-    program = self.data.program
+    program = data.program
     birth_date = form.cleaned_data['birth_date']
 
     # redirect to the same page and have the cookies sent across
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.data.redirect.program()
+    data.redirect.program()
 
-    response = self.data.redirect.to('gci_age_check')
+    response = data.redirect.to('gci_age_check')
 
     age_sufficient = validate.isAgeSufficientForProgram(birth_date, program)
     response.set_cookie('age_check', birth_date if age_sufficient else '0')

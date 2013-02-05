@@ -161,14 +161,13 @@ class DashboardPage(GSoCRequestHandler):
           'You do not have access to this data')
     return list_content.content()
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for POST requests."""
     for component in self.components():
       if component.post():
         return http.HttpResponse()
     else:
-      raise AccessViolation(
-          'You cannot change this data')
+      raise AccessViolation('You cannot change this data')
 
   def context(self):
     """Handler for default HTTP GET request."""

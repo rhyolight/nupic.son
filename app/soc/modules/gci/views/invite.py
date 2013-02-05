@@ -250,10 +250,10 @@ class InvitePage(GCIRequestHandler):
 
     return True
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler to for GCI Invitation Page HTTP post request."""
     if self.validate():
-      return self.data.redirect.dashboard().to()
+      return data.redirect.dashboard().to()
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -317,16 +317,16 @@ class ManageInvite(GCIRequestHandler):
         'button_value': button_value
         }
 
-  def post(self):
+  def post(self, data, check, mutator):
     # it is needed to handle notifications
-    self.data.invited_profile = self._getInvitedProfile()
+    data.invited_profile = self._getInvitedProfile()
 
-    if 'withdraw' in self.data.POST:
-      invite_logic.withdrawInvite(self.data)
-    elif 'resubmit' in self.data.POST:
-      invite_logic.resubmitInvite(self.data)
+    if 'withdraw' in data.POST:
+      invite_logic.withdrawInvite(data)
+    elif 'resubmit' in data.POST:
+      invite_logic.resubmitInvite(data)
 
-    return self.data.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
+    return data.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite
@@ -390,20 +390,20 @@ class RespondInvite(GCIRequestHandler):
         'request': self.data.invite
         }
 
-  def post(self):
-    if 'accept' in self.data.POST:
-      if not self.data.profile:
+  def post(self, data, check, mutator):
+    if 'accept' in data.POST:
+      if not data.profile:
         # TODO(nathaniel): is this dead code? How is this not overwritten
         # by the data.redirect.id().to(url_names.GCI_RESPOND_INVITE) at the
         # bottom of this method?
-        self.data.redirect.program()
-        self.data.redirect.to('edit_gci_profile')
+        data.redirect.program()
+        data.redirect.to('edit_gci_profile')
 
-      invite_logic.acceptInvite(self.data)
+      invite_logic.acceptInvite(data)
     else: # reject
-      invite_logic.rejectInvite(self.data)
+      invite_logic.rejectInvite(data)
 
-    return self.data.redirect.id().to(url_names.GCI_RESPOND_INVITE)
+    return data.redirect.id().to(url_names.GCI_RESPOND_INVITE)
 
   def _constructPageName(self):
     invite = self.data.invite

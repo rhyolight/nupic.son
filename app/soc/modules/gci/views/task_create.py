@@ -365,11 +365,11 @@ class TaskCreatePage(GCIRequestHandler):
 
     return entity
 
-  def post(self):
+  def post(self, data, check, mutator):
     task = self.createTaskFromForm()
     if task:
-      self.data.redirect.id(id=task.key().id_or_name())
-      return self.data.redirect.to('gci_edit_task', validated=True)
+      data.redirect.id(id=task.key().id_or_name())
+      return data.redirect.to('gci_edit_task', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

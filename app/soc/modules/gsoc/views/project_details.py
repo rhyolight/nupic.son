@@ -156,7 +156,7 @@ class UploadCodeSamples(Template):
             self.data.redirect.urlOf(
                 url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD))
         }
-    
+
     if self.data.GET.get('file', None) == '0':
       context['code_sample_upload_file_form'].addFileRequiredError()
 
@@ -224,11 +224,11 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
     project_details_form.save()
     return True
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Post handler for the project details update form."""
     if self.validate():
-      self.data.redirect.project()
-      return self.data.redirect.to('gsoc_project_details')
+      data.redirect.project()
+      return data.redirect.to('gsoc_project_details')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -254,26 +254,26 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
     self.check.canStudentUpdateProject()
     self.check.isProjectCompleted()
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Post handler for the code sample upload file."""
-    assert isSet(self.data.project)
+    assert isSet(data.project)
 
     form = CodeSampleUploadFileForm(
-        data=self.data.POST, files=self.data.request.file_uploads)
+        data=data.POST, files=data.request.file_uploads)
 
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blob from the cloud
-      for blob_info in self.data.request.file_uploads.itervalues():
+      for blob_info in data.request.file_uploads.itervalues():
         blob_info.delete()
       # TODO(nathaniel): make this .project() call unnecessary.
-      return self.data.redirect.project().to(
+      return data.redirect.project().to(
           url_names.GSOC_PROJECT_UPDATE, extra=['file=0'])
 
-    form.cleaned_data['user'] = self.data.user
-    form.cleaned_data['org'] = self.data.project.org
-    form.cleaned_data['program'] = self.data.project.program
+    form.cleaned_data['user'] = data.user
+    form.cleaned_data['org'] = data.project.org
+    form.cleaned_data['program'] = data.project.program
 
-    project_key = self.data.project.key()
+    project_key = data.project.key()
     code_sample = form.create(commit=False, parent=project_key)
 
     def txn():
@@ -287,9 +287,9 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
     db.run_in_transaction(txn)
 
     # TODO(nathaniel): Make this .project() call unnecessary.
-    self.data.redirect.project()
+    data.redirect.project()
 
-    return self.data.redirect.to('gsoc_project_details')
+    return data.redirect.to('gsoc_project_details')
 
 
 class CodeSampleDownloadFileGet(GSoCRequestHandler):
@@ -342,13 +342,13 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
     self.check.canStudentUpdateProject()
     self.check.isProjectCompleted()
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Get handler for the code sample delete file."""
-    assert isSet(self.data.project)
+    assert isSet(data.project)
 
     try:
-      id_value = int(self.data.request.POST['id'])
-      code_sample = GSoCCodeSample.get_by_id(id_value, self.data.project)
+      id_value = int(data.request.POST['id'])
+      code_sample = GSoCCodeSample.get_by_id(id_value, data.project)
 
       if not code_sample:
         raise BadRequest('Requested code sample not found')
@@ -361,19 +361,20 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
           # this is executed outside of transaction
           upload_of_work.delete()
 
-        if self.data.project.countCodeSamples() <= 1:
-          project = GSoCProject.get(self.data.project.key())
+        if data.project.countCodeSamples() <= 1:
+          project = GSoCProject.get(data.project.key())
           project.code_samples_submitted = False
           project.put()
 
       db.run_in_transaction(txn)
 
-      self.data.redirect.project()
-      return self.data.redirect.to(url_names.GSOC_PROJECT_UPDATE)
+      data.redirect.project()
+      return data.redirect.to(url_names.GSOC_PROJECT_UPDATE)
     except KeyError:
       raise BadRequest('id argument missing in POST data')
     except ValueError:
       raise BadRequest('id argument in POST data is not a number')
+
 
 class UserActions(Template):
   """Template to render the left side user actions.
@@ -523,18 +524,17 @@ class AssignMentors(GSoCRequestHandler):
 
     return None
 
-  def post(self):
-    assert isSet(self.data.project)
+  def post(self, data, check, mutator):
+    assert isSet(data.project)
 
     mentor_keys = self.validate()
     if mentor_keys:
       self.assignMentors(mentor_keys)
 
-    project_owner = self.data.project.parent()
+    project_owner = data.project.parent()
 
-    self.data.redirect.project(self.data.project.key().id(),
-                               project_owner.link_id)
-    return self.data.redirect.to('gsoc_project_details')
+    data.redirect.project(data.project.key().id(), project_owner.link_id)
+    return data.redirect.to('gsoc_project_details')
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""
@@ -589,8 +589,8 @@ class FeaturedProject(GSoCRequestHandler):
 
     db.run_in_transaction(make_featured_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
     self.toggleFeatured(value)
     return http.HttpResponse()
 

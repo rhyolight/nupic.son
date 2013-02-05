@@ -133,12 +133,11 @@ class ProgramPage(GCIRequestHandler):
     else:
       return False
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-
     if self.validate():
-      self.data.redirect.program()
-      return self.data.redirect.to('edit_gci_program', validated=True)
+      data.redirect.program()
+      return data.redirect.to('edit_gci_program', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -179,11 +178,11 @@ class TimelinePage(GCIRequestHandler):
     else:
       return False
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     if self.validate():
-      self.data.redirect.program()
-      return self.data.redirect.to('edit_gci_timeline', validated=True)
+      data.redirect.program()
+      return data.redirect.to('edit_gci_timeline', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

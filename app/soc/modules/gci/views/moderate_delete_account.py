@@ -55,9 +55,9 @@ class ModerateDeleteAccountPage(base.GCIRequestHandler):
         'has_other_gsoc_profiles': profile_logic.hasOtherGSoCProfiles(profile),
         }
 
-  def post(self):
-    link_id = self.data.url_profile.link_id
-    delete_account.confirm_delete(self.data.url_profile)
+  def post(self, data, check, mutator):
+    link_id = data.url_profile.link_id
+    delete_account.confirm_delete(data.url_profile)
     # TODO(nathaniel): Self-redirection.
-    return self.data.redirect.profile(link_id).to(
+    return data.redirect.profile(link_id).to(
         'gci_moderate_delete_account', validated=True)

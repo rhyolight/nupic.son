@@ -119,12 +119,12 @@ class RequestPage(GSoCRequestHandler):
         'invite_form': request_form,
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for GSoC Request Page HTTP post request."""
     request = self._createFromForm()
     if request:
-      self.data.redirect.request(request)
-      return self.data.redirect.to('show_gsoc_request')
+      data.redirect.request(request)
+      return data.redirect.to('show_gsoc_request')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -288,26 +288,26 @@ class ShowRequest(GSoCRequestHandler):
         'can_revoke': can_revoke,
         }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler to for GSoC Show Request Page HTTP post request."""
-    assert isSet(self.data.action)
-    assert isSet(self.data.request_entity)
+    assert isSet(data.action)
+    assert isSet(data.request_entity)
 
-    if self.data.action == self.ACTIONS['accept']:
+    if data.action == self.ACTIONS['accept']:
       self._acceptRequest()
-    elif self.data.action == self.ACTIONS['reject']:
+    elif data.action == self.ACTIONS['reject']:
       self._rejectRequest()
-    elif self.data.action == self.ACTIONS['resubmit']:
+    elif data.action == self.ACTIONS['resubmit']:
       self._resubmitRequest()
-    elif self.data.action == self.ACTIONS['withdraw']:
+    elif data.action == self.ACTIONS['withdraw']:
       self._withdrawRequest()
-    elif self.data.action == self.ACTIONS['revoke']:
+    elif data.action == self.ACTIONS['revoke']:
       self._revokeRequest()
 
     # TODO(nathaniel): Make this .program() call unnecessary.
-    self.data.redirect.program()
+    data.redirect.program()
 
-    return self.data.redirect.to('gsoc_dashboard')
+    return data.redirect.to('gsoc_dashboard')
 
   def _acceptRequest(self):
     """Accepts a request.

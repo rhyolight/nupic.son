@@ -76,14 +76,14 @@ class EditDocumentPage(GSoCRequestHandler):
         'document_form': form,
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    form = GSoCDocumentForm(self.data.POST or None, instance=self.data.document)
-    validated_document = document.validateForm(self.data, form)
+    form = GSoCDocumentForm(data.POST or None, instance=data.document)
+    validated_document = document.validateForm(data, form)
     if validated_document:
-      self.data.redirect.document(validated_document)
+      data.redirect.document(validated_document)
       # TODO(nathaniel): Redirection to self?
-      return self.data.redirect.to('edit_gsoc_document')
+      return data.redirect.to('edit_gsoc_document')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

@@ -83,23 +83,23 @@ class CreateUserPage(SiteRequestHandler):
         'forms': [form],
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserCreateForm(GSoCBoundField, self.data.POST)
+    form = UserCreateForm(GSoCBoundField, data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
       return self.get()
 
     cleaned_data = form.cleaned_data
-    norm_account = accounts.normalizeAccount(self.data.gae_user)
+    norm_account = accounts.normalizeAccount(data.gae_user)
     cleaned_data['account'] = norm_account
-    cleaned_data['account_id'] = self.data.gae_user.user_id()
+    cleaned_data['account_id'] = data.gae_user.user_id()
 
     form.create(key_name=cleaned_data['link_id'])
 
-    return self.data.redirect.to('edit_user', validated=True)
+    return data.redirect.to('edit_user', validated=True)
 
 
 class EditUserPage(SiteRequestHandler):
@@ -130,11 +130,11 @@ class EditUserPage(SiteRequestHandler):
         'forms': [form],
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserEditForm(GSoCBoundField, self.data.POST,
-                         instance=self.data.user)
+    form = UserEditForm(GSoCBoundField, data.POST,
+                         instance=data.user)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
@@ -143,4 +143,4 @@ class EditUserPage(SiteRequestHandler):
     form.save()
 
     # TODO(nathaniel): redirection to same page.
-    return self.data.redirect.to('edit_user', validated=True)
+    return data.redirect.to('edit_user', validated=True)

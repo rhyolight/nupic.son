@@ -209,23 +209,23 @@ class FormPage(GSoCRequestHandler):
         'upload_link': blobstore.create_upload_url(url),
         }
 
-  def post(self):
+  def post(self, data, check, mutator):
     Form = self._form()
-    form = Form(self.data, data=self.data.POST,
-                files=self.data.request.file_uploads,
+    form = Form(data, data=data.POST,
+                files=data.request.file_uploads,
                 instance=self._studentInfo())
 
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blob from the cloud
-      for file in self.data.request.file_uploads.itervalues():
-        file.delete()
+      for blob_info in data.request.file_uploads.itervalues():
+        blob_info.delete()
 
       # since this is a file upload we must return a 300 response
       error = form.errors[form.fileFieldName()]
       return self._r().to(self._urlName(), extra=['error=%s'%error.as_text()])
 
     # delete the old blob, if it exists
-    oldBlob = getattr(self.data.student_info, form.fileFieldName())
+    oldBlob = getattr(data.student_info, form.fileFieldName())
     if oldBlob:
       oldBlob.delete()
 

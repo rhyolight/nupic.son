@@ -112,17 +112,17 @@ class HostProfilePage(SiteRequestHandler):
 
     return db.run_in_transaction(create_or_update_host_txn)
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     host = self.createOrUpdateHost()
     if host:
-      link_id = self.data.kwargs.get('link_id')
+      link_id = data.kwargs.get('link_id')
       if link_id:
         kwargs = {'link_id': link_id}
-        return self.data.redirect.to('edit_host_profile_linkid', kwargs=kwargs)
+        return data.redirect.to('edit_host_profile_linkid', kwargs=kwargs)
       else:
         # TODO(nathaniel): redirection to self.
-        return self.data.redirect.to('edit_host_profile')
+        return data.redirect.to('edit_host_profile')
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

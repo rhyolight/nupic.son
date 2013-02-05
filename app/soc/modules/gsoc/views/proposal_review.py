@@ -559,28 +559,25 @@ class PostComment(GSoCRequestHandler):
 
     return db.run_in_transaction(create_comment_txn)
 
-  def post(self):
-    assert isSet(self.data.proposer)
-    assert isSet(self.data.proposal)
+  def post(self, data, check, mutator):
+    assert isSet(data.proposer)
+    assert isSet(data.proposal)
 
     comment = self.createCommentFromForm()
     if comment:
-      self.data.redirect.program()
-      return self.data.redirect.to(
-          'gsoc_dashboard', anchor='proposals_submitted')
+      data.redirect.program()
+      return data.redirect.to('gsoc_dashboard', anchor='proposals_submitted')
     else:
       # This is an insanely and absolutely hacky solution. We definitely
       # do not want any one to use this a model for writing code elsewhere
       # in Melange.
       # TODO (Madhu): Replace this in favor of PJAX for loading comments.
-      self.data.redirect.review(self.data.proposal.key().id(),
-                                self.data.proposer.link_id)
-      redirect_url = self.data.redirect.urlOf('review_gsoc_proposal')
+      data.redirect.review(data.proposal.key().id(), data.proposer.link_id)
+      redirect_url = data.redirect.urlOf('review_gsoc_proposal')
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
-      self.data.request.method = 'GET'
-      return proposal_view(
-          self.data.request, *self.data.args, **self.data.kwargs)
+      data.request.method = 'GET'
+      return proposal_view(data.request, *data.args, **data.kwargs)
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""
@@ -666,8 +663,8 @@ class PostScore(GSoCRequestHandler):
 
     db.run_in_transaction(update_score_trx)
 
-  def post(self):
-    value_str = self.data.POST.get('value', '')
+  def post(self, data, check, mutator):
+    value_str = data.POST.get('value', '')
     value = int(value_str) if value_str.isdigit() else None
     self.createOrUpdateScore(value)
     return http.HttpResponse()
@@ -730,8 +727,8 @@ class WishToMentor(GSoCRequestHandler):
 
     db.run_in_transaction(update_possible_mentors_trx)
 
-  def post(self):
-    value = self.data.POST.get('value')
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
     self.addToPotentialMentors(value)
     return http.HttpResponse()
 
@@ -806,8 +803,8 @@ class AssignMentor(GSoCRequestHandler):
 
     return None
 
-  def post(self):
-    assert isSet(self.data.proposal)
+  def post(self, data, check, mutator):
+    assert isSet(data.proposal)
 
     mentor_entity= self.validate()
     if mentor_entity:
@@ -815,11 +812,10 @@ class AssignMentor(GSoCRequestHandler):
     else:
       self.unassignMentor()
 
-    self.data.proposer = self.data.proposal.parent()
+    data.proposer = data.proposal.parent()
 
-    self.data.redirect.review(self.data.proposal.key().id(),
-                              self.data.proposer.link_id)
-    return self.data.redirect.to('review_gsoc_proposal')
+    data.redirect.review(data.proposal.key().id(), data.proposer.link_id)
+    return data.redirect.to('review_gsoc_proposal')
 
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""
@@ -873,8 +869,8 @@ class IgnoreProposal(GSoCRequestHandler):
 
     db.run_in_transaction(update_status_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
     self.toggleIgnoreProposal(value)
     return http.HttpResponse()
 
@@ -929,8 +925,8 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
 
     db.run_in_transaction(update_modification_perm_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
     self.toggleModificationPermission(value)
     return http.HttpResponse()
 
@@ -984,8 +980,8 @@ class AcceptProposal(GSoCRequestHandler):
 
     db.run_in_transaction(update_status_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
     self.toggleStatus(value)
     return http.HttpResponse()
 
@@ -1038,8 +1034,8 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
 
     db.run_in_transaction(update_publicly_visibility_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
     self.togglePublicVisibilty(value)
     return http.HttpResponse()
 
@@ -1093,8 +1089,8 @@ class WithdrawProposal(GSoCRequestHandler):
 
     db.run_in_transaction(update_withdraw_status_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
     self.toggleWithdrawProposal(value)
     return http.HttpResponse()
 

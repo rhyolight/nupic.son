@@ -122,12 +122,12 @@ class EditSitePage(base.SiteRequestHandler):
     else:
       return False
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     post_accepted = self.validate()
     context = self.context()
     template_path = self.templatePath()
-    response_content = self.render(self.data, template_path, context)
+    response_content = self.render(data, template_path, context)
     return http.HttpResponse(
         status=httplib.OK if post_accepted else httplib.BAD_REQUEST,
         content=response_content)

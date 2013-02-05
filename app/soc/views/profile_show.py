@@ -16,6 +16,8 @@
 
 from google.appengine.ext import db
 
+from django import http
+
 from soc.models.user import User
 from soc.views import readonly_template
 from soc.views.helper import url_patterns
@@ -97,11 +99,12 @@ class BanProfilePost(object):
     self.check.isHost()
     self.mutator.profileFromKwargs()
 
-  def post(self):
-    assert isSet(self.data.url_profile)
+  def post(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.post for specification."""
+    assert isSet(data.url_profile)
 
-    value = self.data.POST.get('value')
-    profile_key = self.data.url_profile.key()
+    value = data.POST.get('value')
+    profile_key = data.url_profile.key()
 
     def banProfileTxn(value):
       profile_model = self._getProfileModel()
@@ -114,6 +117,8 @@ class BanProfilePost(object):
         profile.put()
 
     db.run_in_transaction(banProfileTxn, value)
+
+    return http.HttpResponse()
 
   def _getModulePrefix(self):
     raise NotImplementedError

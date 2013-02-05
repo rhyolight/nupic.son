@@ -97,14 +97,18 @@ class RequestHandler(object):
         'error': 'json() method not implemented',
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request.
 
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
     Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
+      An http.HttpResponse appropriate for the given request parameters.
     """
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
   def head(self, data, check, mutator):
     """Handler for HTTP HEAD request.
@@ -268,7 +272,7 @@ class RequestHandler(object):
         return self.get()
     elif data.request.method == 'POST':
       if db.WRITE_CAPABILITY.is_enabled():
-        return self.post()
+        return self.post(data, check, mutator)
       else:
         referrer = data.request.META.get('HTTP_REFERER', '')
         params = urllib.urlencode({'dsw_disabled': 1})

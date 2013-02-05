@@ -53,16 +53,17 @@ class AcceptProposalsPage(GSoCRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles the POST request to (re)start conversion."""
 
     # pass along these params as POST to the new task
-    task_params = {'program_key': self.data.program.key().id_or_name()}
+    task_params = {'program_key': data.program.key().id_or_name()}
     task_url = '/tasks/gsoc/accept_proposals/main'
 
     # adds a new task
     new_task = taskqueue.Task(params=task_params, url=task_url)
     new_task.add()
 
+    # TODO(nathaniel): redirect to self?
     # redirect to self
     return http.HttpResponseRedirect('')

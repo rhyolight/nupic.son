@@ -202,11 +202,11 @@ class OrgProfilePage(GSoCRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     org_profile = self.createOrgProfileFromForm()
     if org_profile:
-      self.data.redirect.organization(organization=org_profile)
-      return self.data.redirect.to('edit_gsoc_org_profile', validated=True)
+      data.redirect.organization(organization=org_profile)
+      return data.redirect.to('edit_gsoc_org_profile', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

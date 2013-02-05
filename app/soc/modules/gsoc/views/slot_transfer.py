@@ -232,14 +232,14 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
 
     return db.run_in_transaction(create_or_update_slot_transfer_trx)
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     slot_transfer_entity = self.createOrUpdateFromForm()
     if slot_transfer_entity:
       # TODO(nathaniel): make this .organization call unnecessary.
-      self.data.redirect.organization(organization=self.data.organization)
+      data.redirect.organization(organization=data.organization)
 
-      return self.data.redirect.to('gsoc_update_slot_transfer', validated=True)
+      return data.redirect.to('gsoc_update_slot_transfer', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

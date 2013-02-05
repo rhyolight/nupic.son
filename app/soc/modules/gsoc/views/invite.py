@@ -223,11 +223,11 @@ class InvitePage(GSoCRequestHandler):
 
     return True
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler to for GSoC Invitation Page HTTP post request."""
     if self._createFromForm():
-      self.data.redirect.invite()
-      return self.data.redirect.to('gsoc_invite', validated=True)
+      data.redirect.invite()
+      return data.redirect.to('gsoc_invite', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -357,23 +357,22 @@ class ShowInvite(GSoCRequestHandler):
         'can_resubmit': can_resubmit,
         }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler to for GSoC Show Invitation Page HTTP post request."""
+    assert data.action
+    assert data.invite
 
-    assert self.data.action
-    assert self.data.invite
-
-    if self.data.action == self.ACTIONS['accept']:
+    if data.action == self.ACTIONS['accept']:
       self._acceptInvitation()
-    elif self.data.action == self.ACTIONS['reject']:
+    elif data.action == self.ACTIONS['reject']:
       self._rejectInvitation()
-    elif self.data.action == self.ACTIONS['resubmit']:
+    elif data.action == self.ACTIONS['resubmit']:
       self._resubmitInvitation()
-    elif self.data.action == self.ACTIONS['withdraw']:
+    elif data.action == self.ACTIONS['withdraw']:
       self._withdrawInvitation()
 
-    self.data.redirect.dashboard()
-    return self.data.redirect.to()
+    data.redirect.dashboard()
+    return data.redirect.to()
 
   def _acceptInvitation(self):
     """Accepts an invitation."""

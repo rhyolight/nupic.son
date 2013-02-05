@@ -305,12 +305,12 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request.
 
     Based on the action, the request is dispatched to a specific handler.
     """
-    if 'delete_account' in self.data.POST:
+    if 'delete_account' in data.POST:
       return self.deleteAccountPostAction()
     else: # regular POST request
       return self.editProfilePostAction()

@@ -229,38 +229,35 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
   def jsonContext(self):
     return UNIVERSITIES
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     if not self.validate():
       # TODO(nathaniel): problematic self-use.
       return self.get()
 
-    link_id = self.data.GET.get('org')
+    link_id = data.GET.get('org')
     if link_id:
-      key_name = '%s/%s' % (
-          self.data.program.key().name(), link_id
-          )
+      key_name = '%s/%s' % (data.program.key().name(), link_id)
       organization = GSoCOrganization.get_by_key_name(key_name)
     else:
       organization = None
 
     if not organization:
       # TODO(nathaniel): make this .program() call unnecessary.
-      self.data.redirect.program()
+      data.redirect.program()
 
-      return self.data.redirect.to(
-          'edit_gsoc_profile', validated=True, secure=True)
+      return data.redirect.to('edit_gsoc_profile', validated=True, secure=True)
 
-    self.data.redirect.organization(organization)
+    self.redirect.organization(organization)
 
-    if self.data.student_info:
+    if data.student_info:
       link = 'submit_gsoc_proposal'
       extra_get_args = []
     else:
       link = 'gsoc_request'
       extra_get_args = ['profile=created']
 
-    return self.data.redirect.to(link, extra=extra_get_args)
+    return data.redirect.to(link, extra=extra_get_args)
 
   def _getModulePrefix(self):
     return 'gsoc'

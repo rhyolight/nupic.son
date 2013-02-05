@@ -130,11 +130,11 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
 
     return entity
 
-  def post(self):
+  def post(self, data, check, mutator):
     evaluation = self.evaluationFromForm()
     if evaluation:
       # TODO(nathaniel): Redirection to self?
-      return self.data.redirect.survey().to(
+      return data.redirect.survey().to(
           'gsoc_edit_student_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
@@ -225,12 +225,11 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
 
     return entity
 
-  def post(self):
+  def post(self, data, check, mutator):
     student_evaluation_record = self.recordEvaluationFromForm()
     if student_evaluation_record:
-      self.data.redirect.survey_record(self.data.student_evaluation.link_id)
-      return self.data.redirect.to(
-          'gsoc_take_student_evaluation', validated=True)
+      data.redirect.survey_record(data.student_evaluation.link_id)
+      return data.redirect.to('gsoc_take_student_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

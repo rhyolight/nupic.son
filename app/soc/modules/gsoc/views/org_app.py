@@ -134,13 +134,13 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
 
     return entity
 
-  def post(self):
+  def post(self, data, check, mutator):
     org_app = self.orgAppFromForm()
     if org_app:
       # TODO(nathaniel): is this .program() necessary?
-      self.data.redirect.program()
+      data.redirect.program()
 
-      return self.data.redirect.to('gsoc_edit_org_app', validated=True)
+      return data.redirect.to('gsoc_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -253,11 +253,11 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
 
     return entity
 
-  def post(self):
+  def post(self, data, check, mutator):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
-      self.data.redirect.id(org_app_record.key().id())
-      return self.data.redirect.to('gsoc_retake_org_app', validated=True)
+      data.redirect.id(org_app_record.key().id())
+      return data.redirect.to('gsoc_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -278,30 +278,30 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
              self, name='gsoc_list_org_app_records')
          ]
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Edits records from commands received by the list code."""
-    post_data = self.data.request.POST
+    post_dict = data.request.POST
 
-    self.data.redirect.program()
+    data.redirect.program()
 
-    if (post_data.get('process', '') ==
+    if (post_dict.get('process', '') ==
         org_app.PROCESS_ORG_APPS_FORM_BUTTON_VALUE):
       mapreduce_control.start_map('ProcessOrgApp', {
           'program_type': 'gsoc',
-          'program_key': self.data.program.key().name()
+          'program_key': data.program.key().name()
           })
-      return self.data.redirect.to('gsoc_list_org_app_records', validated=True)
+      return data.redirect.to('gsoc_list_org_app_records', validated=True)
 
-    if not post_data.get('button_id', None) == 'save':
+    if post_dict.get('button_id', None) != 'save':
       raise BadRequest('No valid POST data found')
 
-    data = self.data.POST.get('data')
+    post_data = post_dict.get('data')
 
-    if not data:
+    if not post_data:
       raise BadRequest('Missing data')
 
-    parsed = simplejson.loads(data)
-    url = self.data.redirect.urlOf('create_gsoc_org_profile', full=True)
+    parsed = simplejson.loads(post_data)
+    url = data.redirect.urlOf('create_gsoc_org_profile', full=True)
 
     for oaid, properties in parsed.iteritems():
       record = OrgAppRecord.get_by_id(long(oaid))
@@ -310,13 +310,13 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
         logging.warning('%s is an invalid OrgAppRecord ID' % oaid)
         continue
 
-      if record.survey.key() != self.data.org_app.key():
+      if record.survey.key() != data.org_app.key():
         logging.warning(
             '%s is not a record for the Org App in the URL' % record.key())
         continue
 
       new_status = properties['status']
-      org_app_logic.setStatus(self.data, record, new_status, url)
+      org_app_logic.setStatus(data, record, new_status, url)
 
     return http.HttpResponse()
 

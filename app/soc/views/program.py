@@ -33,13 +33,13 @@ class ProgramMessagesPage(object):
         'error': form.errors,
         }
 
-  def post(self):
-    """Handler for HTTP POST request."""
+  def post(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.post for specification."""
     if self.validate():
       # TODO(nathaniel): Make this .program() call unnecessary.
-      self.data.redirect.program()
+      data.redirect.program()
       # TODO(nathaniel): Redirection to same page?
-      return self.data.redirect.to(self._getUrlName(), validated=True)
+      return data.redirect.to(self._getUrlName(), validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

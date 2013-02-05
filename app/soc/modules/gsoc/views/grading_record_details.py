@@ -66,19 +66,19 @@ class GradingRecordsOverview(GSoCRequestHandler):
       # TODO(nathaniel): Should this be a return statement?
       super(GradingRecordsOverview, self).jsonContext()
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles the POST request from the list and starts the appropriate task.
     """
-    post_dict = self.data.POST
+    post_dict = data.POST
 
     if post_dict['button_id'] == 'update_records':
-      task_params = {'group_key': self.data.survey_group.key().id_or_name()}
+      task_params = {'group_key': data.survey_group.key().id_or_name()}
       task_url = '/tasks/gsoc/grading_record/update_records'
 
       task = taskqueue.Task(params=task_params, url=task_url)
       task.add()
     elif post_dict['button_id'] == 'update_projects':
-      task_params = {'group_key': self.data.survey_group.key().id_or_name(),
+      task_params = {'group_key': data.survey_group.key().id_or_name(),
                      'send_mail': 'true'}
       task_url = '/tasks/gsoc/grading_record/update_projects'
 
@@ -267,12 +267,11 @@ class GradingRecordDetails(GSoCRequestHandler):
         'record_form': record_form,
         }
 
-  def post(self):
-    """Handles the POST request when editing a GradingRecord.
-    """
-    assert isSet(self.data.record)
+  def post(self, data, check, mutator):
+    """Handles the POST request when editing a GradingRecord."""
+    assert isSet(data.record)
 
-    record_form = GradingRecordForm(self.data.POST)
+    record_form = GradingRecordForm(data.POST)
 
     if not record_form.is_valid():
       return self.get()
@@ -280,7 +279,7 @@ class GradingRecordDetails(GSoCRequestHandler):
     decision = record_form.cleaned_data['grade_decision']
     locked = record_form.cleaned_data['locked']
 
-    record = self.data.record
+    record = data.record
     record.grade_decision = decision
     record.locked = locked
     record.put()
@@ -294,8 +293,8 @@ class GradingRecordDetails(GSoCRequestHandler):
     mail_task = taskqueue.Task(params=task_params, url=task_url)
     mail_task.add('mail')
 
-    self.data.redirect.id(record.grading_survey_group.key().id_or_name())
-    return self.data.redirect.to('gsoc_grading_record_overview')
+    data.redirect.id(record.grading_survey_group.key().id_or_name())
+    return data.redirect.to('gsoc_grading_record_overview')
 
   def templatePath(self):
     return 'v2/modules/gsoc/grading_record/details.html'

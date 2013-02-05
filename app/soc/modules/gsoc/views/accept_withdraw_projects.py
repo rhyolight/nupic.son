@@ -99,21 +99,19 @@ class ProposalList(Template):
     if idx != 0:
       return None
 
-    data = self.data.POST.get('data')
+    list_data = self.data.POST.get('data')
 
-    if not data:
+    if not list_data:
       raise BadRequest("Missing data")
-
-    parsed = simplejson.loads(data)
 
     button_id = self.data.POST.get('button_id')
 
-    if not button_id:
+    if button_id == 'accept':
+      return self.postHandler(simplejson.loads(list_data))
+    elif button_id:
+      raise BadRequest('Unknown button_id')
+    else:
       raise BadRequest("Missing button_id")
-    elif button_id == 'accept':
-      return self.postHandler(parsed)
-
-    raise BadRequest("Unknown button_id")
 
   def postHandler(self, data):
     for properties in data:
@@ -132,7 +130,7 @@ class ProposalList(Template):
         logging.warning("Proposal '%s' already accepted" % proposal_key)
         continue
 
-      # organization for the proposal 
+      # organization for the proposal
       org = proposal.org
       # key of the student profile for the project
       profile_key = proposal.parent_key()
@@ -244,8 +242,8 @@ class AcceptProposals(GSoCRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def post(self):
-    list_content = ProposalList(self.data)
+  def post(self, data, check, mutator):
+    list_content = ProposalList(data)
 
     if list_content.post():
       return http.HttpResponse()
@@ -453,8 +451,9 @@ class WithdrawProjects(GSoCRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def post(self):
-    list_content = ProjectList(self.data)
+  def post(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.post for specification."""
+    list_content = ProjectList(data)
 
     if list_content.post():
       return http.HttpResponse()

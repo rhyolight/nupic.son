@@ -75,14 +75,14 @@ class EditDocumentPage(GCIRequestHandler):
         'document_form': form,
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    form = GCIDocumentForm(self.data.POST or None, instance=self.data.document)
-    entity = document.validateForm(self.data, form)
+    form = GCIDocumentForm(data.POST or None, instance=data.document)
+    entity = document.validateForm(data, form)
     if entity:
-      self.data.redirect.document(entity)
+      data.redirect.document(entity)
       # TODO(nathaniel): Self-redirection?
-      return self.data.redirect.to('edit_gci_document')
+      return data.redirect.to('edit_gci_document')
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

@@ -152,12 +152,11 @@ class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
 
     return entity
 
-  def post(self):
+  def post(self, data, check, mutator):
     evaluation = self.evaluationFromForm()
     if evaluation:
-      self.data.redirect.survey()
-      return self.data.redirect.to(
-          'gsoc_edit_mentor_evaluation', validated=True)
+      data.redirect.survey()
+      return data.redirect.to('gsoc_edit_mentor_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -240,12 +239,11 @@ class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
 
     return entity
 
-  def post(self):
+  def post(self, data, check, mutator):
     mentor_evaluation_record = self.recordEvaluationFromForm()
     if mentor_evaluation_record:
-      self.data.redirect.survey_record(self.data.mentor_evaluation.link_id)
-      return self.data.redirect.to(
-          'gsoc_take_mentor_evaluation', validated=True)
+      data.redirect.survey_record(data.mentor_evaluation.link_id)
+      return data.redirect.to('gsoc_take_mentor_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()

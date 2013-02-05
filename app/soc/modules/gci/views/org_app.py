@@ -99,13 +99,13 @@ class GCIOrgAppEditPage(GCIRequestHandler):
 
     return entity
 
-  def post(self):
+  def post(self, data, check, mutator):
     org_app = self.orgAppFromForm()
     if org_app:
       # TODO(nathaniel): make unnecessary this .program() call.
-      self.data.redirect.program()
+      data.redirect.program()
 
-      return self.data.redirect.to('gci_edit_org_app', validated=True)
+      return data.redirect.to('gci_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -223,11 +223,11 @@ class GCIOrgAppTakePage(GCIRequestHandler):
 
     return entity
 
-  def post(self):
+  def post(self, data, check, mutator):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
-      self.data.redirect.id(org_app_record.key().id())
-      return self.data.redirect.to('gci_retake_org_app', validated=True)
+      data.redirect.id(org_app_record.key().id())
+      return data.redirect.to('gci_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -248,31 +248,31 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
              self, name=url_names.GCI_LIST_ORG_APP_RECORDS)
          ]
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Edits records from commands received by the list code."""
-    post_data = self.data.request.POST
+    post_dict = data.request.POST
 
-    self.data.redirect.program()
+    data.redirect.program()
 
-    if (post_data.get('process', '') ==
+    if (post_dict.get('process', '') ==
         org_app.PROCESS_ORG_APPS_FORM_BUTTON_VALUE):
       mapreduce_control.start_map('ProcessOrgApp', {
           'program_type': 'gci',
-          'program_key': self.data.program.key().name()
+          'program_key': data.program.key().name()
           })
-      return self.data.redirect.to(
+      return data.redirect.to(
           url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
 
-    if not post_data.get('button_id', None) == 'save':
+    if post_dict.get('button_id', None) != 'save':
       raise exceptions.BadRequest('No valid POST data found')
 
-    data = self.data.POST.get('data')
-    if not data:
+    post_data = post_dict.get('data')
+    if not post_data:
       raise exceptions.BadRequest('Missing data')
 
-    parsed = simplejson.loads(data)
-    self.data.redirect.program()
-    url = self.data.redirect.urlOf('create_gci_org_profile', full=True)
+    parsed = simplejson.loads(post_data)
+    data.redirect.program()
+    url = data.redirect.urlOf('create_gci_org_profile', full=True)
 
     for oaid, properties in parsed.iteritems():
       record = OrgAppRecord.get_by_id(long(oaid))
@@ -281,13 +281,13 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
         logging.warning('%s is an invalid OrgAppRecord ID' % oaid)
         continue
 
-      if record.survey.key() != self.data.org_app.key():
+      if record.survey.key() != data.org_app.key():
         logging.warning(
             '%s is not a record for the Org App in the URL' % record.key())
         continue
 
       new_status = properties['status']
-      org_app_logic.setStatus(self.data, record, new_status, url)
+      org_app_logic.setStatus(data, record, new_status, url)
 
     return http.HttpResponse()
 

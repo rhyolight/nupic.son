@@ -64,12 +64,12 @@ class DuplicatesPage(GSoCRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, request, mutator):
     """Handles the POST request to (re)start calcuation."""
-    post_data = self.data.request.POST
+    post_data = data.request.POST
 
     # pass along these params as POST to the new task
-    task_params = {'program_key': self.data.program.key().id_or_name()}
+    task_params = {'program_key': data.program.key().id_or_name()}
     task_url = '/tasks/gsoc/proposal_duplicates/start'
 
     # checks if the task newly added is the first task
