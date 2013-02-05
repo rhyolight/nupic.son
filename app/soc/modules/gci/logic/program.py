@@ -34,10 +34,10 @@ def getWinnersForProgram(program):
 
   Args:
     program: GCIProgram instance for which to retrieve the winners
+
   Returns:
     a list of GCIProfile instances containing winners of the program
   """
-
   student_keys = profile_model.GCIStudentInfo.all(keys_only=True).filter(
       'is_winner', True).filter('program', program).fetch(1000)
 
