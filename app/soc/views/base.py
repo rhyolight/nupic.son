@@ -224,35 +224,41 @@ class RequestHandler(object):
     """
     raise NotImplementedError()
 
-  def _dispatch(self):
+  def _dispatch(self, data, check, mutator):
     """Dispatches the HTTP request to its respective handler method.
 
+    Args:
+      data: The request_data.RequestData object for the current request.
+      check: The access_checker.AccessChecker object for the current
+        request.
+      mutator: The access_checker.Mutator object for the current
+        request.
+
     Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
+      An http.HttpResponse appropriate for the current request.
     """
-    if self.data.request.method == 'GET':
-      if self.data.request.GET.get('fmt') == 'json':
+    if data.request.method == 'GET':
+      if data.request.GET.get('fmt') == 'json':
         return self.json()
       else:
         return self.get()
-    elif self.data.request.method == 'POST':
+    elif data.request.method == 'POST':
       if db.WRITE_CAPABILITY.is_enabled():
         return self.post()
       else:
-        referrer = self.data.request.META.get('HTTP_REFERER', '')
+        referrer = data.request.META.get('HTTP_REFERER', '')
         params = urllib.urlencode({'dsw_disabled': 1})
         url_with_params = '%s?%s' % (referrer, params)
         return http.HttpResponseRedirect('%s?%s' % (referrer, params))
-    elif self.data.request.method == 'HEAD':
+    elif data.request.method == 'HEAD':
       return self.head()
-    elif self.data.request.method == 'OPTIONS':
+    elif data.request.method == 'OPTIONS':
       return self.options()
-    elif self.data.request.method == 'PUT':
+    elif data.request.method == 'PUT':
       return self.put()
-    elif self.data.request.method == 'DELETE':
+    elif data.request.method == 'DELETE':
       return self.delete()
-    elif self.data.request.method == 'TRACE':
+    elif data.request.method == 'TRACE':
       return self.trace()
     else:
       return self.error(httplib.NOT_IMPLEMENTED)
@@ -290,17 +296,19 @@ class RequestHandler(object):
 
     In detail, this method does the following:
     1. Initialize request, arguments and keyword arguments as instance variables
-    2. Construct the response object.
-    3. Calls the access check.
-    4. Delegates dispatching to the handler to the _dispatch method.
+    2. Calls the access check.
+    3. Delegates dispatching to the handler to the _dispatch method.
+    4. Handles several known exception types that may have been raised.
     5. Returns the response.
     """
     try:
+      # TODO(nathaniel): eliminate these attribute assignments by passing
+      # the associated values through the call stack instead (issue 1665).
       self.data, self.check, self.mutator = self.init(
           request, args, kwargs)
       self.checkMaintenanceMode(self.data)
       self.checkAccess()
-      return self._dispatch()
+      return self._dispatch(self.data, self.check, self.mutator)
     except exceptions.LoginRequest, e:
       request.get_full_path().encode('utf-8')
       return self.data.redirect.login().to()
