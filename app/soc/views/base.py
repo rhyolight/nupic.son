@@ -106,50 +106,72 @@ class RequestHandler(object):
     """
     return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
 
-  def head(self):
+  def head(self, data, check, mutator):
     """Handler for HTTP HEAD request.
 
-    Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
-    """
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
-  def options(self):
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    # TODO(nathaniel): This probably wouldn't be all that unreasonable to
+    # implement?
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+
+  def options(self, data, check, mutator):
     """Handler for HTTP OPTIONS request.
 
-    Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
-    """
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
-  def put(self):
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+
+  def put(self, data, check, mutator):
     """Handler for HTTP PUT request.
 
-    Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
-    """
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
-  def delete(self):
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+
+  def delete(self, data, check, mutator):
     """Handler for HTTP DELETE request.
 
-    Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
-    """
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
-  def trace(self):
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+
+  def trace(self, data, check, mutator):
     """Handler for HTTP TRACE request.
 
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
     Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
+      An http.HttpResponse appropriate for the given request parameters.
     """
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
   def error(self, data, status, message=None):
     """Constructs an HttpResponse indicating an error.
@@ -253,15 +275,15 @@ class RequestHandler(object):
         url_with_params = '%s?%s' % (referrer, params)
         return http.HttpResponseRedirect('%s?%s' % (referrer, params))
     elif data.request.method == 'HEAD':
-      return self.head()
+      return self.head(data, check, mutator)
     elif data.request.method == 'OPTIONS':
-      return self.options()
+      return self.options(data, check, mutator)
     elif data.request.method == 'PUT':
-      return self.put()
+      return self.put(data, check, mutator)
     elif data.request.method == 'DELETE':
-      return self.delete()
+      return self.delete(data, check, mutator)
     elif data.request.method == 'TRACE':
-      return self.trace()
+      return self.trace(data, check, mutator)
     else:
       return self.error(data, httplib.NOT_IMPLEMENTED)
 
