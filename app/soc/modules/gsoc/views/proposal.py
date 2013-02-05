@@ -126,9 +126,8 @@ class ProposalPage(GSoCRequestHandler):
     """Handler for HTTP POST request."""
     proposal = self.createFromForm()
     if proposal:
-      self.redirect.review(proposal.key().id(),
-                           self.data.user.link_id)
-      return self.redirect.to('review_gsoc_proposal')
+      self.data.redirect.review(proposal.key().id(), self.data.user.link_id)
+      return self.data.redirect.to('review_gsoc_proposal')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -264,5 +263,6 @@ class UpdateProposal(GSoCRequestHandler):
     elif self.data.action == self.ACTIONS['resubmit']:
       self._resubmit()
 
-    self.redirect.review(self.data.proposal.key().id(), self.data.user.link_id)
-    return self.redirect.to('review_gsoc_proposal')
+    self.data.redirect.review(
+        self.data.proposal.key().id(), self.data.user.link_id)
+    return self.data.redirect.to('review_gsoc_proposal')

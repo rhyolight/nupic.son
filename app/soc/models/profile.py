@@ -506,6 +506,12 @@ class Profile(soc.models.linkable.Linkable):
     else:
       return self.name()
 
+  def full_name(self):
+    """Property which returns given name followed by surname and separated
+    by a single space character.
+    """
+    return '%s %s' % (self.given_name, self.surname)
+
   def shipping_name(self):
     """Property recipient_name that returns shipping name if shipping
     address is set else the given name and surname.

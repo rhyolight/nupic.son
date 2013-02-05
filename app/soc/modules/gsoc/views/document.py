@@ -31,8 +31,7 @@ from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
 
 class GSoCDocumentForm(GSoCModelForm):
-  """Django form for creating documents.
-  """
+  """Django form for creating documents."""
 
   class Meta:
     model = Document
@@ -82,16 +81,16 @@ class EditDocumentPage(GSoCRequestHandler):
     form = GSoCDocumentForm(self.data.POST or None, instance=self.data.document)
     validated_document = document.validateForm(self.data, form)
     if validated_document:
-      self.redirect.document(validated_document)
-      return self.redirect.to('edit_gsoc_document')
+      self.data.redirect.document(validated_document)
+      # TODO(nathaniel): Redirection to self?
+      return self.data.redirect.to('edit_gsoc_document')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
 
 
 class DocumentPage(GSoCRequestHandler):
-  """Encapsulate all the methods required to show documents.
-  """
+  """Encapsulate all the methods required to show documents."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/base.html'
@@ -148,20 +147,18 @@ class EventsPage(GSoCRequestHandler):
     }
 
 
-class DocumentList(document.DocumentList):
-  """Template for list of documents.
-  """
+class GSoCDocumentList(document.DocumentList):
+  """Template for list of documents."""
 
-  def __init__(self, request, data):
-    super(DocumentList, self).__init__(request, data, 'edit_gsoc_document')
+  def __init__(self, data):
+    super(GSoCDocumentList, self).__init__(data, 'edit_gsoc_document')
 
   def templatePath(self):
     return 'v2/modules/gsoc/document/_document_list.html'
 
 
 class DocumentListPage(GSoCRequestHandler):
-  """View for the list documents page.
-  """
+  """View for the list documents page."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/document/document_list.html'
@@ -176,16 +173,16 @@ class DocumentListPage(GSoCRequestHandler):
     self.check.isHost()
 
   def jsonContext(self):
-    list_content = DocumentList(self.request, self.data).getListData()
+    list_content = GSoCDocumentList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def context(self):
     return {
         'page_name': "Documents for %s" % self.data.program.name,
-        'document_list': DocumentList(self.request, self.data),
+        'document_list': GSoCDocumentList(self.data),
         'program_select': ProgramSelect(self.data, 'list_gsoc_documents'),
     }

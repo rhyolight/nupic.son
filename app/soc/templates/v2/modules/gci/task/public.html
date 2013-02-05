@@ -63,7 +63,7 @@ limitations under the License.
 
 		  var errors = jQuery(this).find(".error");
 		  if (errors.length > 0) {
-			jQuery("div.block-comments-post-new").slideToggle("slow");
+			jQuery(this).closest("div.block-comments-post-new").slideDown("slow");
 		  }
 
 		});

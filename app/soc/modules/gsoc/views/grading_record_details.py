@@ -36,8 +36,7 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class GradingRecordsOverview(GSoCRequestHandler):
-  """View to display all GradingRecords for a single group.
-  """
+  """View to display all GradingRecords for a single group."""
 
   def djangoURLPatterns(self):
     return [
@@ -55,16 +54,16 @@ class GradingRecordsOverview(GSoCRequestHandler):
   def context(self):
     return {
         'page_name': 'Evaluation Group Overview',
-        'record_list': GradingRecordsList(self.request, self.data)
+        'record_list': GradingRecordsList(self.data),
         }
 
   def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    idx = lists.getListIndex(self.request)
+    """Handler for JSON requests."""
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
-      return GradingRecordsList(self.request, self.data).listContent().content()
+      return GradingRecordsList(self.data).listContent().content()
     else:
+      # TODO(nathaniel): Should this be a return statement?
       super(GradingRecordsOverview, self).jsonContext()
 
   def post(self):
@@ -93,14 +92,12 @@ class GradingRecordsList(Template):
   """Lists all GradingRecords for a single GradingSurveyGroup.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the template.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    self.request = request
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
@@ -218,7 +215,7 @@ class GradingRecordsList(Template):
       return ([mentors, student_profiles], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q,
+        self.data.request, self._list_config, q,
         starter, prefetcher=prefetcher)
     return response_builder.build()
 
@@ -297,8 +294,8 @@ class GradingRecordDetails(GSoCRequestHandler):
     mail_task = taskqueue.Task(params=task_params, url=task_url)
     mail_task.add('mail')
 
-    self.redirect.id(record.grading_survey_group.key().id_or_name())
-    return self.redirect.to('gsoc_grading_record_overview')
+    self.data.redirect.id(record.grading_survey_group.key().id_or_name())
+    return self.data.redirect.to('gsoc_grading_record_overview')
 
   def templatePath(self):
     return 'v2/modules/gsoc/grading_record/details.html'

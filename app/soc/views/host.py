@@ -119,9 +119,10 @@ class HostProfilePage(SiteRequestHandler):
       link_id = self.data.kwargs.get('link_id')
       if link_id:
         kwargs = {'link_id': link_id}
-        return self.redirect.to('edit_host_profile_linkid', kwargs=kwargs)
+        return self.data.redirect.to('edit_host_profile_linkid', kwargs=kwargs)
       else:
-        return self.redirect.to('edit_host_profile')
+        # TODO(nathaniel): redirection to self.
+        return self.data.redirect.to('edit_host_profile')
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()

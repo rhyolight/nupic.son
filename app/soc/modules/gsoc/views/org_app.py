@@ -61,9 +61,9 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
   class Meta(org_app.OrgAppTakeForm.Meta):
     pass
 
-  def __init__(self, survey, tos_content, *args, **kwargs):
+  def __init__(self, survey, *args, **kwargs):
     super(GSoCOrgAppTakeForm, self).__init__(
-        survey, tos_content, gsoc_forms.GSoCBoundField, *args, **kwargs)
+        survey, gsoc_forms.GSoCBoundField, *args, **kwargs)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_form.html'
@@ -138,9 +138,9 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
     org_app = self.orgAppFromForm()
     if org_app:
       # TODO(nathaniel): is this .program() necessary?
-      self.redirect.program()
+      self.data.redirect.program()
 
-      return self.redirect.to('gsoc_edit_org_app', validated=True)
+      return self.data.redirect.to('gsoc_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -168,10 +168,7 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/org_app/take.html'
 
   def context(self):
-    oa_agreement = self.data.program.org_admin_agreement.content if \
-        self.data.program.org_admin_agreement else ''
-    form = GSoCOrgAppTakeForm(
-        self.data.org_app, oa_agreement)
+    form = GSoCOrgAppTakeForm(self.data.org_app)
 
     context = {
         'page_name': '%s' % (self.data.org_app.title),
@@ -201,7 +198,7 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
     assert access_checker.isSet(self.data.org_app)
 
     show_url = None
-    if 'id' in self.kwargs:
+    if 'id' in self.data.kwargs:
       show_url = self.data.redirect.id().urlOf('gsoc_show_org_app')
 
     self.check.isSurveyActive(self.data.org_app, show_url)
@@ -214,17 +211,13 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/take.html'
 
-  def _getTOSContent(self):
-    return self.data.program.org_admin_agreement.content if \
-        self.data.program.org_admin_agreement else ''
-
   def context(self):
     if self.data.org_app_record:
-      form = GSoCOrgAppTakeForm(self.data.org_app, self._getTOSContent(),
-          self.data.POST or None, instance=self.data.org_app_record)
+      form = GSoCOrgAppTakeForm(
+          self.data.org_app, self.data.POST or None,
+          instance=self.data.org_app_record)
     else:
-      form = GSoCOrgAppTakeForm(self.data.org_app, self._getTOSContent(),
-          self.data.POST or None)
+      form = GSoCOrgAppTakeForm(self.data.org_app, self.data.POST or None)
 
     context = {
         'page_name': '%s' % (self.data.org_app.title),
@@ -242,11 +235,9 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
     """
     if self.data.org_app_record:
       form = GSoCOrgAppTakeForm(
-          self.data.org_app, self._getTOSContent(),
-          self.data.POST, instance=self.data.org_app_record)
+          self.data.org_app, self.data.POST, instance=self.data.org_app_record)
     else:
-      form = GSoCOrgAppTakeForm(
-          self.data.org_app, self._getTOSContent(), self.data.POST)
+      form = GSoCOrgAppTakeForm(self.data.org_app, self.data.POST)
 
     if not form.is_valid():
       return None
@@ -265,8 +256,8 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
   def post(self):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
-      r = self.redirect.id(org_app_record.key().id())
-      return r.to('gsoc_retake_org_app', validated=True)
+      self.data.redirect.id(org_app_record.key().id())
+      return self.data.redirect.to('gsoc_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -289,7 +280,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
 
   def post(self):
     """Edits records from commands received by the list code."""
-    post_data = self.request.POST
+    post_data = self.data.request.POST
 
     self.data.redirect.program()
 
@@ -299,7 +290,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
           'program_type': 'gsoc',
           'program_key': self.data.program.key().name()
           })
-      return self.redirect.to('gsoc_list_org_app_records', validated=True)
+      return self.data.redirect.to('gsoc_list_org_app_records', validated=True)
 
     if not post_data.get('button_id', None) == 'save':
       raise BadRequest('No valid POST data found')

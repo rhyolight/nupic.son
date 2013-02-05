@@ -110,7 +110,7 @@ class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
         if self.data.mentor_evaluation else 'Create new mentor evaluation'
     context = {
         'page_name': page_name,
-        'post_url': self.redirect.survey().urlOf(
+        'post_url': self.data.redirect.survey().urlOf(
             'gsoc_edit_mentor_evaluation'),
         'forms': [form],
         'error': bool(form.errors),
@@ -155,8 +155,9 @@ class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
   def post(self):
     evaluation = self.evaluationFromForm()
     if evaluation:
-      r = self.redirect.survey()
-      return r.to('gsoc_edit_mentor_evaluation', validated=True)
+      self.data.redirect.survey()
+      return self.data.redirect.to(
+          'gsoc_edit_mentor_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -242,9 +243,9 @@ class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
   def post(self):
     mentor_evaluation_record = self.recordEvaluationFromForm()
     if mentor_evaluation_record:
-      r = self.redirect.survey_record(
-          self.data.mentor_evaluation.link_id)
-      return r.to('gsoc_take_mentor_evaluation', validated=True)
+      self.data.redirect.survey_record(self.data.mentor_evaluation.link_id)
+      return self.data.redirect.to(
+          'gsoc_take_mentor_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get()
@@ -316,12 +317,13 @@ class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
   def jsonContext(self):
     """Handler for JSON requests.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       record_list = self._createSurveyRecordList()
       return record_list.listContentResponse(
-          self.request, prefetch=['project', 'org']).content()
+          self.data.request, prefetch=['project', 'org']).content()
     else:
+      # TODO(nathaniel): missing return statement?
       super(GSoCMentorEvaluationRecordsList, self).jsonContext()
 
   def _createSurveyRecordList(self):

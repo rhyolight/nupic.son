@@ -59,13 +59,15 @@ SCHOOL_NAME_HELP_TEXT = ugettext(
 GCI_PROFILE_EXCLUDE = ['automatic_task_subscription', 'notify_comments',
                        'photo_url']
 
+GCI_STUDENT_EXCLUDE = ['is_winner', 'winner_for']
+
 PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + GCI_PROFILE_EXCLUDE
 
 PREFILL_PROFILE_EXCLUDE = profile.PREFILL_PROFILE_EXCLUDE + GCI_PROFILE_EXCLUDE
 
-STUDENT_EXCLUDE = PROFILE_EXCLUDE
+STUDENT_EXCLUDE = PROFILE_EXCLUDE + GCI_STUDENT_EXCLUDE
 
-PREFILL_STUDENT_EXCLUDE = PREFILL_PROFILE_EXCLUDE
+PREFILL_STUDENT_EXCLUDE = PREFILL_PROFILE_EXCLUDE + GCI_STUDENT_EXCLUDE
 
 SHOW_STUDENT_EXCLUDE = STUDENT_EXCLUDE + [
     'birth_date',
@@ -256,7 +258,7 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
         'number_of_completed_tasks', 'task_closed', 'parental_form_mail',
         'consent_form', 'consent_form_verified', 'consent_form_two',
         'student_id_form', 'major', 'student_id_form_verified', 'degree',
-        'school', 'school_type', 'program',
+        'school', 'school_type', 'program', 'is_winner', 'winner_for'
     ]
     widgets = forms.choiceWidgets(
         model, ['school_country', 'school_type', 'degree'])
@@ -318,9 +320,9 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
   def deleteAccountPostAction(self):
     """Handler for Delete Account POST action."""
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.redirect.program()
+    self.data.redirect.program()
 
-    return self.redirect.to('gci_delete_account', secure=True)
+    return self.data.redirect.to('gci_delete_account', secure=True)
 
   def editProfilePostAction(self):
     """Handler for regular (edit/create profile) POST action."""
@@ -336,9 +338,9 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
       raise RedirectRequest(create_url + '?org_id=' + org_id)
     else:
       # TODO(nathaniel): make this .program() call unnecessary.
-      self.redirect.program()
+      self.data.redirect.program()
 
-      return self.redirect.to(
+      return self.data.redirect.to(
           self._getEditProfileURLName(), validated=True, secure=True)
 
   def _getModulePrefix(self):

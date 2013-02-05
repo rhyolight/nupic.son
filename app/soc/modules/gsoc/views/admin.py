@@ -95,8 +95,7 @@ class LookupForm(gsoc_forms.GSoCModelForm):
 
 
 class DashboardPage(GSoCRequestHandler):
-  """Dashboard for admins.
-  """
+  """Dashboard for admins."""
 
   def djangoURLPatterns(self):
     return [
@@ -115,14 +114,15 @@ class DashboardPage(GSoCRequestHandler):
     """
     dashboards = []
 
-    dashboards.append(MainDashboard(self.request, self.data))
-    dashboards.append(ProgramSettingsDashboard(self.request, self.data))
-    dashboards.append(ManageOrganizationsDashboard(self.request, self.data))
-    dashboards.append(EvaluationsDashboard(self.request, self.data))
-    dashboards.append(MentorEvaluationsDashboard(self.request, self.data))
-    dashboards.append(StudentEvaluationsDashboard(self.request, self.data))
-    dashboards.append(EvaluationGroupDashboard(self.request, self.data))
-    dashboards.append(StudentsDashboard(self.request, self.data))
+    # TODO(nathaniel): All of these should drop their first parameter.
+    dashboards.append(MainDashboard(self.data))
+    dashboards.append(ProgramSettingsDashboard(self.data))
+    dashboards.append(ManageOrganizationsDashboard(self.data))
+    dashboards.append(EvaluationsDashboard(self.data))
+    dashboards.append(MentorEvaluationsDashboard(self.data))
+    dashboards.append(StudentEvaluationsDashboard(self.data))
+    dashboards.append(EvaluationGroupDashboard(self.data))
+    dashboards.append(StudentsDashboard(self.data))
 
     return {
         'dashboards': dashboards,
@@ -139,28 +139,25 @@ class DashboardPage(GSoCRequestHandler):
 
 
 class MainDashboard(Dashboard):
-  """Dashboard for admin's main-dashboard
-  """
+  """Dashboard for admin's main-dashboard."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MainDashboard, self).__init__(request, data)
+    super(MainDashboard, self).__init__(data)
 
   def context(self):
-    """Returns the context of main dashboard.
-    """
+    """Returns the context of main dashboard."""
     r = self.data.redirect
     r.program()
 
-    manage_orgs = ManageOrganizationsDashboard(self.request, self.data)
-    program_settings = ProgramSettingsDashboard(self.request, self.data)
-    evaluations = EvaluationsDashboard(self.request, self.data)
-    students = StudentsDashboard(self.request, self.data)
+    manage_orgs = ManageOrganizationsDashboard(self.data)
+    program_settings = ProgramSettingsDashboard(self.data)
+    evaluations = EvaluationsDashboard(self.data)
+    students = StudentsDashboard(self.data)
 
     subpages = [
         {
@@ -263,14 +260,12 @@ class MainDashboard(Dashboard):
 
 
 class ProgramSettingsDashboard(Dashboard):
-  """Dashboard for admin's program-settings-dashboard
-  """
+  """Dashboard for admin's program-settings-dashboard."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -310,7 +305,7 @@ class ProgramSettingsDashboard(Dashboard):
         },
     ]
 
-    super(ProgramSettingsDashboard, self).__init__(request, data, subpages)
+    super(ProgramSettingsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of program settings dashboard.
@@ -331,14 +326,12 @@ class ProgramSettingsDashboard(Dashboard):
 
 
 class ManageOrganizationsDashboard(Dashboard):
-  """Dashboard for admin's manage-organizations-dashboard
-  """
+  """Dashboard for admin's manage-organizations-dashboard."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -389,11 +382,10 @@ class ManageOrganizationsDashboard(Dashboard):
         },
     ]
 
-    super(ManageOrganizationsDashboard, self).__init__(request, data, subpages)
+    super(ManageOrganizationsDashboard, self).__init__(data, subpages)
 
   def context(self):
-    """Returns the context of manage organizations dashboard.
-    """
+    """Returns the context of manage organizations dashboard."""
     subpages = self._divideSubPages(self.subpages)
 
     return {
@@ -410,18 +402,16 @@ class ManageOrganizationsDashboard(Dashboard):
 
 
 class EvaluationsDashboard(Dashboard):
-  """Dashboard for admin's evaluations-dashboard
-  """
+  """Dashboard for admin's evaluations-dashboard."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    mentor_evaluations = MentorEvaluationsDashboard(request, data)
-    student_evaluations = StudentEvaluationsDashboard(request, data)
+    mentor_evaluations = MentorEvaluationsDashboard(data)
+    student_evaluations = StudentEvaluationsDashboard(data)
 
     r = data.redirect
     r.program()
@@ -452,7 +442,7 @@ class EvaluationsDashboard(Dashboard):
         },
     ]
 
-    super(EvaluationsDashboard, self).__init__(request, data, subpages)
+    super(EvaluationsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of manage organizations dashboard.
@@ -473,14 +463,12 @@ class EvaluationsDashboard(Dashboard):
 
 
 class MentorEvaluationsDashboard(Dashboard):
-  """Dashboard for mentor's evaluations
-  """
+  """Dashboard for mentor's evaluations."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -533,7 +521,7 @@ class MentorEvaluationsDashboard(Dashboard):
         },
     ]
 
-    super(MentorEvaluationsDashboard, self).__init__(request, data, subpages)
+    super(MentorEvaluationsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of mentor evaluations dashboard.
@@ -558,14 +546,12 @@ class MentorEvaluationsDashboard(Dashboard):
 
 
 class StudentEvaluationsDashboard(Dashboard):
-  """Dashboard for student's evaluations
-  """
+  """Dashboard for student's evaluations."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -618,7 +604,7 @@ class StudentEvaluationsDashboard(Dashboard):
         },
     ]
 
-    super(StudentEvaluationsDashboard, self).__init__(request, data, subpages)
+    super(StudentEvaluationsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of student evaluations dashboard.
@@ -643,14 +629,12 @@ class StudentEvaluationsDashboard(Dashboard):
 
 
 class EvaluationGroupDashboard(Dashboard):
-  """Dashboard for evaluation group
-  """
+  """Dashboard for evaluation group."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     subpages = [
@@ -668,11 +652,10 @@ class EvaluationGroupDashboard(Dashboard):
         },
     ]
 
-    super(EvaluationGroupDashboard, self).__init__(request, data, subpages)
+    super(EvaluationGroupDashboard, self).__init__(data, subpages)
 
   def context(self):
-    """Returns the context of evaluation group dashboard.
-    """
+    """Returns the context of evaluation group dashboard."""
     subpages = self._divideSubPages(self.subpages)
 
     return {
@@ -693,14 +676,12 @@ class EvaluationGroupDashboard(Dashboard):
 
 
 class StudentsDashboard(Dashboard):
-  """Dashboard for student related items.
-  """
+  """Dashboard for student related items."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
 
@@ -724,11 +705,10 @@ class StudentsDashboard(Dashboard):
         },
     ]
 
-    super(StudentsDashboard, self).__init__(request, data, subpages)
+    super(StudentsDashboard, self).__init__(data, subpages)
 
   def context(self):
-    """Returns the context of manage students dashboard.
-    """
+    """Returns the context of manage students dashboard."""
     subpages = self._divideSubPages(self.subpages)
 
     return {
@@ -745,8 +725,7 @@ class StudentsDashboard(Dashboard):
 
 
 class LookupLinkIdPage(GSoCRequestHandler):
-  """View for the participant profile.
-  """
+  """View for the participant profile."""
 
   def djangoURLPatterns(self):
     return [
@@ -777,8 +756,9 @@ class LookupLinkIdPage(GSoCRequestHandler):
     if profile:
       # TODO(nathaniel): Find a cleaner way to do this rather than
       # generating a response and then tossing it.
-      self.redirect.profile(profile.link_id)
-      response = self.redirect.to(url_names.GSOC_PROFILE_SHOW, secure=True)
+      self.data.redirect.profile(profile.link_id)
+      response = self.data.redirect.to(
+          url_names.GSOC_PROFILE_SHOW, secure=True)
       raise exceptions.RedirectRequest(response['Location'])
     else:
       return {
@@ -790,11 +770,9 @@ class LookupLinkIdPage(GSoCRequestHandler):
 
 
 class AcceptedOrgsList(Template):
-  """Template for list of accepted organizations.
-  """
+  """Template for list of accepted organizations."""
 
   def __init__(self, request, data):
-    self.request = request
     self.data = data
 
     list_config = lists.ListConfiguration()
@@ -833,7 +811,7 @@ class AcceptedOrgsList(Template):
     }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
@@ -854,7 +832,7 @@ class AcceptedOrgsList(Template):
       return ([org_admins], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -917,7 +895,7 @@ class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
 
   def jsonContext(self):
     list_content = ProposalsAcceptedOrgsList(
-        self.request, self.data).getListData()
+        self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -927,7 +905,7 @@ class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Proposal page',
-      'list': ProposalsAcceptedOrgsList(self.request, self.data),
+      'list': ProposalsAcceptedOrgsList(self.data.request, self.data),
     }
 
 
@@ -995,7 +973,7 @@ class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
 
   def jsonContext(self):
     list_content = ProjectsAcceptedOrgsList(
-        self.request, self.data).getListData()
+        self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1005,7 +983,7 @@ class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Projects page',
-      'list': ProjectsAcceptedOrgsList(self.request, self.data),
+      'list': ProjectsAcceptedOrgsList(self.data.request, self.data),
     }
 
 
@@ -1014,13 +992,11 @@ class ProposalsList(Template):
   """
 
   def __init__(self, request, data):
-    """Initializes this proposals list.
-    """
-    self.request = request
+    """Initializes this proposals list."""
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
@@ -1104,7 +1080,7 @@ class ProposalsList(Template):
         }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
@@ -1134,13 +1110,12 @@ class ProposalsList(Template):
     prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
     return response_builder.build(accepted, duplicates)
 
 
 class ProposalsPage(GSoCRequestHandler):
-  """View for proposals for particular org.
-  """
+  """View for proposals for particular org."""
 
   def djangoURLPatterns(self):
     return [
@@ -1155,7 +1130,7 @@ class ProposalsPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = ProposalsList(self.request, self.data).getListData()
+    list_content = ProposalsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1164,7 +1139,7 @@ class ProposalsPage(GSoCRequestHandler):
 
   def post(self):
     """Handler for POST requests."""
-    proposals_list = ProposalsList(self.request, self.data)
+    proposals_list = ProposalsList(self.data.request, self.data)
 
     if proposals_list.post():
       return http.HttpResponse()
@@ -1174,20 +1149,18 @@ class ProposalsPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Proposal page',
-      'list': ProposalsList(self.request, self.data),
+      'list': ProposalsList(self.data.request, self.data),
     }
 
 
 class ProjectsList(Template):
-  """Template for listing all projects of particular org.
-  """
+  """Template for listing all projects of particular org."""
 
   def __init__(self, request, data):
-    self.request = request
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addPlainTextColumn('student', 'Student',
@@ -1220,7 +1193,7 @@ class ProjectsList(Template):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       list_query = project_logic.getAcceptedProjectsQuery(
           program=self.data.program, org=self.data.organization)
@@ -1230,7 +1203,7 @@ class ProjectsList(Template):
           GSoCProject, ['org'], ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
+          self.data.request, self._list_config, list_query,
           starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
@@ -1257,7 +1230,7 @@ class ProjectsPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = ProjectsList(self.request, self.data).getListData()
+    list_content = ProjectsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1266,7 +1239,7 @@ class ProjectsPage(GSoCRequestHandler):
 
   def post(self):
     """Handler for POST requests."""
-    projects_list = ProjectsList(self.request, self.data)
+    projects_list = ProjectsList(self.data.request, self.data)
 
     if projects_list.post():
       return http.HttpResponse()
@@ -1276,7 +1249,7 @@ class ProjectsPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Projects page',
-      'list': ProjectsList(self.request, self.data),
+      'list': ProjectsList(self.data.request, self.data),
     }
 
 
@@ -1312,7 +1285,7 @@ class SlotsList(AcceptedOrgsList):
     return list_config
 
   def post(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return False
 
@@ -1366,7 +1339,7 @@ class SlotsList(AcceptedOrgsList):
     return True
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
@@ -1388,7 +1361,7 @@ class SlotsList(AcceptedOrgsList):
       return ([org_slots_unused], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -1410,7 +1383,7 @@ class SlotsPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = SlotsList(self.request, self.data).getListData()
+    list_content = SlotsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1418,7 +1391,7 @@ class SlotsPage(GSoCRequestHandler):
     return list_content.content()
 
   def post(self):
-    slots_list = SlotsList(self.request, self.data)
+    slots_list = SlotsList(self.data.request, self.data)
 
     if slots_list.post():
       return http.HttpResponse()
@@ -1428,7 +1401,7 @@ class SlotsPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Slots page',
-      'list': SlotsList(self.request, self.data),
+      'list': SlotsList(self.data.request, self.data),
     }
 
 
@@ -1449,7 +1422,7 @@ class SurveyReminderPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/survey_reminder.html'
 
   def post(self):
-    post_dict = self.request.POST
+    post_dict = self.data.request.POST
 
     task_params = {
         'program_key': self.data.program.key().id_or_name(),
@@ -1462,7 +1435,7 @@ class SurveyReminderPage(GSoCRequestHandler):
     task.add()
 
     return http.HttpResponseRedirect(
-        self.request.path + '?msg=Reminders are being sent')
+        self.data.request.path + '?msg=Reminders are being sent')
 
   def context(self):
     q = GradingProjectSurvey.all()
@@ -1477,7 +1450,7 @@ class SurveyReminderPage(GSoCRequestHandler):
       'page_name': 'Sending Evaluation Reminders',
       'mentor_surveys': mentor_surveys,
       'student_surveys': student_surveys,
-      'msg': self.request.GET.get('msg', '')
+      'msg': self.data.request.GET.get('msg', '')
     }
 
 
@@ -1486,9 +1459,7 @@ class StudentsList(AcceptedOrgsList):
   """
 
   def __init__(self, request, data):
-    """Initializes this component.
-    """
-    self.request = request
+    """Initializes this component."""
     self.data = data
 
     r = self.data.redirect
@@ -1568,7 +1539,7 @@ class StudentsList(AcceptedOrgsList):
     return 'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
 
     if idx != 0:
       return None
@@ -1597,7 +1568,7 @@ class StudentsList(AcceptedOrgsList):
       return ([si, o], {})
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -1614,8 +1585,7 @@ class StudentsList(AcceptedOrgsList):
 
 
 class StudentsListPage(GSoCRequestHandler):
-  """View that lists all the students associated with the program.
-  """
+  """View that lists all the students associated with the program."""
 
   def djangoURLPatterns(self):
     return [
@@ -1630,7 +1600,7 @@ class StudentsListPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = StudentsList(self.request, self.data).getListData()
+    list_content = StudentsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1640,13 +1610,12 @@ class StudentsListPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Students list page',
-      'list': StudentsList(self.request, self.data),
+      'list': StudentsList(self.data.request, self.data),
     }
 
 
 class ProjectsListPage(GSoCRequestHandler):
-  """View that lists all the projects associated with the program.
-  """
+  """View that lists all the projects associated with the program."""
 
   LIST_IDX = 1
 
@@ -1665,7 +1634,7 @@ class ProjectsListPage(GSoCRequestHandler):
   def jsonContext(self):
     list_query = project_logic.getProjectsQuery(program=self.data.program)
     list_content = ProjectList(
-        self.request, self.data, list_query, self.LIST_IDX).getListData()
+        self.data.request, self.data, list_query, self.LIST_IDX).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1676,7 +1645,7 @@ class ProjectsListPage(GSoCRequestHandler):
     list_query = project_logic.getProjectsQuery(program=self.data.program)
     return {
       'page_name': 'Projects list page',
-      'list': ProjectList(self.request, self.data, list_query, self.LIST_IDX),
+      'list': ProjectList(self.data.request, self.data, list_query, self.LIST_IDX),
     }
 
 
@@ -1699,7 +1668,7 @@ class OrgsListPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self):
-    list_content = AcceptedOrgsList(self.request, self.data).getListData()
+    list_content = AcceptedOrgsList(self.data.request, self.data).getListData()
 
     if not list_content:
       raise exceptions.AccessViolation('You do not have access to this data')
@@ -1709,5 +1678,5 @@ class OrgsListPage(GSoCRequestHandler):
   def context(self):
     return {
       'page_name': 'Organizations list page',
-      'list': AcceptedOrgsList(self.request, self.data)
+      'list': AcceptedOrgsList(self.data.request, self.data)
     }

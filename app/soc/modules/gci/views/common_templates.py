@@ -16,12 +16,15 @@
 
 """This module contains the templates which are used across the views."""
 
+import re
 
 from soc.views.base_templates import ProgramSelect
 from soc.views.template import Template
 
+from soc.modules.gci.logic import program as program_logic
 from soc.modules.gci.logic import ranking as ranking_logic
 from soc.modules.gci.logic.ranking import winnersForProgram
+from soc.modules.gci.views import forms
 from soc.modules.gci.views.helper import url_names
 
 
@@ -94,7 +97,7 @@ class ProgramSelect(ProgramSelect):
     return 'v2/modules/gci/common_templates/_program_select.html'
 
 
-class Winners(Template):
+class GlobalRankingWinners(Template):
   """Templates to display winners of the program.
   """
 
@@ -107,3 +110,68 @@ class Winners(Template):
 
   def templatePath(self):
     return 'v2/modules/gci/common_templates/_winners.html'
+
+
+class OrgNominatedWinners(Template):
+  """Template to display Grand Prize Winners of the program in
+  which each organization nominates students who receive the award.
+  """
+
+  class Winner(object):
+    """Representation of a single winner used by the template."""
+
+    def __init__(self, profile):
+      self.profile = profile
+      self.avatar_name = None
+      self.avatar_prefix = None
+
+      if profile.avatar:
+        avatar_groups = re.findall(forms.RE_AVATAR_COLOR, profile.avatar)
+        # Being a bit pessimistic
+        if avatar_groups:
+          # We only want the first match, so pick group[0]
+          name, prefix = avatar_groups[0]
+          self.avatar_name = '%s-%s.jpg' % (name, prefix)
+          self.avatar_prefix = prefix
+
+    def organization(self):
+      """Returns GCIOrganization associated with the winner."""
+      return self.profile.student_info.winner_for
+
+    def avatarPrefix(self):
+      """Returns avatar prefix associated with the winner."""
+      return self.avatar_prefix
+
+    def avatarName(self):
+      """Returns avatar name associated with the winner."""
+      return self.avatar_name
+
+  def context(self):
+    winners = self._getWinnersForProgram(self.data.program)
+
+    return {
+        'winners': winners,
+        }
+
+  def templatePath(self):
+    return 'v2/modules/gci/common_templates/_org_nominated_winners.html'
+
+  def _getWinnersForProgram(self, program):
+    """Returns the Grand Prize Winners for the specified program.
+
+    Args:
+      program: GCIProgram instance for which to retrieve the winners.
+
+    Returns:
+      a list containing GCIProfile instances which represent the winners
+      ordered by the first name.
+    """
+    winners = []
+
+    profiles = program_logic.getWinnersForProgram(program)
+    for profile in profiles:
+      winners.append(OrgNominatedWinners.Winner(profile))
+
+    winners.sort(key=lambda o: o.profile.given_name.lower())
+
+    return winners

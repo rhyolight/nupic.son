@@ -45,6 +45,6 @@ class DeleteAccountPage(base.GCIRequestHandler):
   def post(self):
     delete_account.request_account_deletion(self.data.user)
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.redirect.program()
+    self.data.redirect.program()
 
-    return self.redirect.to('gci_delete_account', validated=True)
+    return self.data.redirect.to('gci_delete_account', validated=True)

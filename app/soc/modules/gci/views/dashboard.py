@@ -52,19 +52,17 @@ class MainDashboard(Dashboard):
   """Dashboard for user's main-dashboard
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MainDashboard, self).__init__(request, data)
+    super(MainDashboard, self).__init__(data)
     self.subpages = []
 
   def context(self):
-    """Returns the context of main dashboard.
-    """
+    """Returns the context of main dashboard."""
     return {
         'title': 'Participant dashboard',
         'name': 'main',
@@ -77,18 +75,16 @@ class MainDashboard(Dashboard):
 
 
 class ComponentsDashboard(Dashboard):
-  """Dashboard that holds component list
-  """
+  """Dashboard that holds component list."""
 
-  def __init__(self, request, data, component_property):
+  def __init__(self, data, component_property):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
       component_property: Component property
     """
-    super(ComponentsDashboard, self).__init__(request, data)
+    super(ComponentsDashboard, self).__init__(data)
     self.name = component_property.get('name')
     self.title = component_property.get('title')
     self.components = [component_property.get('component'),]
@@ -133,7 +129,7 @@ class DashboardPage(GCIRequestHandler):
     dashboards = []
 
     # main container that contains all component list
-    main = MainDashboard(self.request, self.data)
+    main = MainDashboard(self.data)
 
     # retrieve active links and add it to the main dashboard
     links = self.links()
@@ -154,7 +150,7 @@ class DashboardPage(GCIRequestHandler):
           }
       main.addSubpages(c)
 
-      dashboards.append(ComponentsDashboard(self.request, self.data, {
+      dashboards.append(ComponentsDashboard(self.data, {
           'name': component.context().get('name'),
           'title': component.context().get('title'),
           'component': component,
@@ -166,8 +162,8 @@ class DashboardPage(GCIRequestHandler):
     return dashboards
 
   def shouldSubmitForms(self):
-    """Checks if the current user should submit the student forms.
-    """
+    """Checks if the current user should submit the student forms."""
+    # TODO(nathaniel): tweak this control flow.
     student_id_form = False
     consent_form = False
 
@@ -238,8 +234,8 @@ class DashboardPage(GCIRequestHandler):
 
     return components
 
-  def _getStudentComponents(self):    
-    """Get the dashboard components for a student."""    
+  def _getStudentComponents(self):
+    """Get the dashboard components for a student."""
     components = []
 
     return components
@@ -253,39 +249,38 @@ class DashboardPage(GCIRequestHandler):
     if component:
       components.append(component)
 
-    components.append(MyOrgsTaskList(self.request, self.data))
+    components.append(MyOrgsTaskList(self.data))
 
     # add org list just before creating task and invitation, so mentor can
     # choose which organization the task or invitite will be created for
-    components.append(MyOrgsListBeforeCreateTask(self.request, self.data))
+    components.append(MyOrgsListBeforeCreateTask(self.data))
 
     return components
 
   def _getOrgAdminComponents(self):
-    """Get the dashboard components for org admins.
-    """
+    """Get the dashboard components for org admins."""
     components = []
 
     # add list of mentors component
-    components.append(MyOrgsMentorsList(self.request, self.data))
+    components.append(MyOrgsMentorsList(self.data))
 
     # add invite mentors component
-    components.append(MyOrgsListBeforeInviteMentor(self.request, self.data))
+    components.append(MyOrgsListBeforeInviteMentor(self.data))
 
     # add invite org admins component
-    components.append(MyOrgsListBeforeInviteOrgAdmin(self.request, self.data))
+    components.append(MyOrgsListBeforeInviteOrgAdmin(self.data))
 
     # add list of all the invitations
-    components.append(OrgAdminInvitesList(self.request, self.data))
+    components.append(OrgAdminInvitesList(self.data))
 
-    # add bulk create tasks component 
-    components.append(MyOrgsListBeforeBulkCreateTask(self.request, self.data))
+    # add bulk create tasks component
+    components.append(MyOrgsListBeforeBulkCreateTask(self.data))
 
     # add edit org profile component
-    components.append(MyOrgsListBeforeOrgProfile(self.request, self.data))
+    components.append(MyOrgsListBeforeOrgProfile(self.data))
 
     # add org scores component
-    components.append(MyOrgsScoresList(self.request, self.data))
+    components.append(MyOrgsScoresList(self.data))
 
     return components
 
@@ -308,7 +303,7 @@ class DashboardPage(GCIRequestHandler):
 
     if record or q.get():
       # add a component showing the organization application of the user
-      return MyOrgApplicationsComponent(self.request, self.data, survey)
+      return MyOrgApplicationsComponent(self.data, survey)
 
     return None
 
@@ -446,15 +441,15 @@ class MyOrgApplicationsComponent(Component):
   """Component for listing the Organization Applications of the current user.
   """
 
-  def __init__(self, request, data, survey):
+  # TODO(nathaniel): Huh? This constructor calls its super constructor twice?
+  def __init__(self, data, survey):
     """Initializes the component.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
       survey: the OrgApplicationSurvey entity
     """
-    super(MyOrgApplicationsComponent, self).__init__(request, data)
+    super(MyOrgApplicationsComponent, self).__init__(data)
 
     # passed in so we don't have to do double queries
     self.survey = survey
@@ -481,7 +476,7 @@ class MyOrgApplicationsComponent(Component):
 
     self._list_config = list_config
 
-    super(MyOrgApplicationsComponent, self).__init__(request, data)
+    super(MyOrgApplicationsComponent, self).__init__(data)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
@@ -507,7 +502,7 @@ class MyOrgApplicationsComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 0:
+    if lists.getListIndex(self.data.request) != 0:
       return None
 
     q = OrgAppRecord.all()
@@ -522,7 +517,7 @@ class MyOrgApplicationsComponent(Component):
 
     records.extend(q.fetch(1000))
 
-    response = lists.ListContentResponse(self.request, self._list_config)
+    response = lists.ListContentResponse(self.data.request, self._list_config)
 
     for record in records:
       response.addRow(record)
@@ -538,14 +533,13 @@ class MyOrgsTaskList(Component):
   PUBLISH_BUTTON_ID = 'publish'
   UNPUBLISH_BUTTON_ID = 'unpublish'
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the component.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MyOrgsTaskList, self).__init__(request, data)
+    super(MyOrgsTaskList, self).__init__(data)
 
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
@@ -637,7 +631,7 @@ class MyOrgsTaskList(Component):
   def post(self):
     """Processes the form post data by checking what buttons were pressed.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != self.IDX:
       return None
 
@@ -727,7 +721,7 @@ class MyOrgsTaskList(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 1:
+    if lists.getListIndex(self.data.request) != 1:
       return None
 
     q = GCITask.all()
@@ -739,7 +733,8 @@ class MyOrgsTaskList(Component):
         GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter,
+        prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -750,14 +745,13 @@ class MyOrgsList(Component):
   Since mentor_for is a list of orgs, we need to give org selection first
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the component.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MyOrgsList, self).__init__(request, data)
+    super(MyOrgsList, self).__init__(data)
 
     list_config = lists.ListConfiguration()
 
@@ -765,18 +759,19 @@ class MyOrgsList(Component):
 
     self._list_config = list_config
 
-    self._setRowAction(request, data)
+    self._setRowAction(data.request, data)
 
     self._setIdx()
 
   def _setIdx(self):
     raise NotImplemented
 
+  # TODO(nathaniel): Drop the "request" parameter of this method.
   def _setRowAction(self, request, data):
     """Since setRowAction can be vary, it must be implemented individually.
     """
     raise NotImplemented
-    
+
   def _getContext(self):
     raise NotImplemented
 
@@ -796,10 +791,10 @@ class MyOrgsList(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != self.idx:
+    if lists.getListIndex(self.data.request) != self.idx:
       return None
 
-    response = lists.ListContentResponse(self.request, self._list_config)
+    response = lists.ListContentResponse(self.data.request, self._list_config)
 
     for org in self.data.mentor_for:
       response.addRow(org)
@@ -948,7 +943,7 @@ class MyOrgsScoresList(MyOrgsList):
     self._list_config.setRowAction(RowAction)
 
   def getListData(self):
-    if lists.getListIndex(self.request) != self.idx:
+    if lists.getListIndex(self.data.request) != self.idx:
       return None
 
     q = GCIOrganization.all()
@@ -956,7 +951,7 @@ class MyOrgsScoresList(MyOrgsList):
     q.filter('status IN', ['new', 'active'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
+        self.data.request, self._list_config, q, lists.keyStarter)
 
     return response_builder.build()
 
@@ -976,14 +971,13 @@ class MyOrgsMentorsList(Component):
   """Component for listing the mentors of the orgs of the current user.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the component.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MyOrgsMentorsList, self).__init__(request, data)
+    super(MyOrgsMentorsList, self).__init__(data)
 
     list_config = lists.ListConfiguration()
 
@@ -1017,7 +1011,7 @@ class MyOrgsMentorsList(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 6:
+    if lists.getListIndex(self.data.request) != 6:
       return None
 
     q = GCIProfile.all()
@@ -1026,7 +1020,7 @@ class MyOrgsMentorsList(Component):
     starter = lists.keyStarter
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter)
+        self.data.request, self._list_config, q, starter)
 
     return response_builder.build()
 
@@ -1037,6 +1031,7 @@ class MyOrgsListBeforeOrgProfile(MyOrgsList):
   """
 
   def _setIdx(self):
+    # TODO(nathaniel): Magic number.
     self.idx = 7
 
   def _getContext(self):
@@ -1068,15 +1063,14 @@ class OrgAdminInvitesList(Component):
   that the current user is organization admin for.
   """
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
     r = data.redirect
 
     # GCIRequest entities have user entities as parents, so the keys
     # for the list items should be parent scoped.
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addPlainTextColumn('to', 'To',
@@ -1097,7 +1091,7 @@ class OrgAdminInvitesList(Component):
     self._list_config = list_config
 
   def getListData(self):
-    if lists.getListIndex(self.request) != self.idx:
+    if lists.getListIndex(self.data.request) != self.idx:
       return None
 
     q = GCIRequest.all()
@@ -1105,7 +1099,7 @@ class OrgAdminInvitesList(Component):
     q.filter('org IN', [e.key() for e in self.data.org_admin_for])
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
+        self.data.request, self._list_config, q, lists.keyStarter)
 
     return response_builder.build()
 

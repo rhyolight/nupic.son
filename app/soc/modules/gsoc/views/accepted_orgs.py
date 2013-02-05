@@ -31,8 +31,7 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 class AcceptedOrgsList(Template):
   """Template for list of accepted organizations."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     # TODO(nathaniel): reduce this back to a lambda expression
@@ -71,7 +70,7 @@ class AcceptedOrgsList(Template):
     }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       q = GSoCOrganization.all()
       q.filter('scope', self.data.program)
@@ -80,7 +79,7 @@ class AcceptedOrgsList(Template):
       starter = lists.keyStarter
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, starter)
+          self.data.request, self._list_config, q, starter)
       return response_builder.build()
     else:
       return None
@@ -90,8 +89,7 @@ class AcceptedOrgsList(Template):
 
 
 class AcceptedOrgsPage(GSoCRequestHandler):
-  """View for the accepted organizations page.
-  """
+  """View for the accepted organizations page."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/accepted_orgs/base.html'
@@ -108,16 +106,16 @@ class AcceptedOrgsPage(GSoCRequestHandler):
     self.check.acceptedOrgsAnnounced()
 
   def jsonContext(self):
-    list_content = AcceptedOrgsList(self.request, self.data).getListData()
+    list_content = AcceptedOrgsList(self.data).getListData()
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def context(self):
     return {
         'page_name': "Accepted organizations for %s" % self.data.program.name,
-        'accepted_orgs_list': AcceptedOrgsList(self.request, self.data),
+        'accepted_orgs_list': AcceptedOrgsList(self.data),
         'program_select': ProgramSelect(self.data, 'gsoc_accepted_orgs'),
     }

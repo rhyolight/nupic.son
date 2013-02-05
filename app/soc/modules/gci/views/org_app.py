@@ -103,9 +103,9 @@ class GCIOrgAppEditPage(GCIRequestHandler):
     org_app = self.orgAppFromForm()
     if org_app:
       # TODO(nathaniel): make unnecessary this .program() call.
-      self.redirect.program()
+      self.data.redirect.program()
 
-      return self.redirect.to('gci_edit_org_app', validated=True)
+      return self.data.redirect.to('gci_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -131,8 +131,7 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
     return 'v2/modules/gci/org_app/take.html'
 
   def context(self):
-    form = gci_forms.OrgAppTakeForm(
-        self.data.org_app, self.data.program.org_admin_agreement.content)
+    form = gci_forms.OrgAppTakeForm(self.data.org_app)
 
     context = {
         'page_name': '%s' % (self.data.org_app.title),
@@ -165,7 +164,7 @@ class GCIOrgAppTakePage(GCIRequestHandler):
 
     # FIXME: There will never be organization in kwargs
     show_url = None
-    if 'organization' in self.kwargs:
+    if 'organization' in self.data.kwargs:
       # TODO(nathaniel): make this .organization() call unnecessary. Like,
       # more than it already is (see the note above).
       self.data.redirect.organization()
@@ -182,17 +181,14 @@ class GCIOrgAppTakePage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'
 
-  def _getTOSContent(self):
-    return self.data.program.org_admin_agreement.content if \
-        self.data.program.org_admin_agreement else ''
-
   def context(self):
     if self.data.org_app_record:
-      form = gci_forms.OrgAppTakeForm(self.data.org_app, self._getTOSContent(),
-          self.data.POST or None, instance=self.data.org_app_record)
+      form = gci_forms.OrgAppTakeForm(
+          self.data.org_app, self.data.POST or None,
+          instance=self.data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(self.data.org_app, self._getTOSContent(),
-          self.data.POST or None)
+      form = gci_forms.OrgAppTakeForm(self.data.org_app,
+                                      self.data.POST or None)
 
     context = {
         'page_name': '%s' % (self.data.org_app.title),
@@ -210,11 +206,9 @@ class GCIOrgAppTakePage(GCIRequestHandler):
     """
     if self.data.org_app_record:
       form = gci_forms.OrgAppTakeForm(
-          self.data.org_app, self._getTOSContent(),
-          self.data.POST, instance=self.data.org_app_record)
+          self.data.org_app, self.data.POST, instance=self.data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(
-          self.data.org_app, self._getTOSContent(), self.data.POST)
+      form = gci_forms.OrgAppTakeForm(self.data.org_app, self.data.POST)
 
     if not form.is_valid():
       return None
@@ -232,8 +226,8 @@ class GCIOrgAppTakePage(GCIRequestHandler):
   def post(self):
     org_app_record = self.recordOrgAppFromForm()
     if org_app_record:
-      r = self.redirect.id(org_app_record.key().id())
-      return r.to('gci_retake_org_app', validated=True)
+      self.data.redirect.id(org_app_record.key().id())
+      return self.data.redirect.to('gci_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get()
@@ -256,7 +250,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
 
   def post(self):
     """Edits records from commands received by the list code."""
-    post_data = self.request.POST
+    post_data = self.data.request.POST
 
     self.data.redirect.program()
 
@@ -266,7 +260,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
           'program_type': 'gci',
           'program_key': self.data.program.key().name()
           })
-      return self.redirect.to(
+      return self.data.redirect.to(
           url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
 
     if not post_data.get('button_id', None) == 'save':
