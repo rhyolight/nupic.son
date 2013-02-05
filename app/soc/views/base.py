@@ -104,7 +104,7 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for this RequestHandler's request
         object.
     """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
 
   def head(self):
     """Handler for HTTP HEAD request.
@@ -113,7 +113,7 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for this RequestHandler's request
         object.
     """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
 
   def options(self):
     """Handler for HTTP OPTIONS request.
@@ -122,7 +122,7 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for this RequestHandler's request
         object.
     """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
 
   def put(self):
     """Handler for HTTP PUT request.
@@ -131,7 +131,7 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for this RequestHandler's request
         object.
     """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
 
   def delete(self):
     """Handler for HTTP DELETE request.
@@ -140,7 +140,7 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for this RequestHandler's request
         object.
     """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
 
   def trace(self):
     """Handler for HTTP TRACE request.
@@ -149,12 +149,13 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for this RequestHandler's request
         object.
     """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
 
-  def error(self, status, message=None):
+  def error(self, data, status, message=None):
     """Constructs an HttpResponse indicating an error.
 
     Args:
+      data: The request_data.RequestData object for the current request.
       status: The HTTP status code for the error.
       message: A message to display to the user. If not supplied, a default
         appropriate for the given status code (such as "Bad Gateway" or
@@ -261,7 +262,7 @@ class RequestHandler(object):
     elif data.request.method == 'TRACE':
       return self.trace()
     else:
-      return self.error(httplib.NOT_IMPLEMENTED)
+      return self.error(data, httplib.NOT_IMPLEMENTED)
 
   def init(self, request, args, kwargs):
     """Creates objects necessary for serving the request.
@@ -319,7 +320,7 @@ class RequestHandler(object):
           self.data.redirect.urlOf(e.url_name),
           urllib.urlencode({'next': e.path})))
     except exceptions.Error, e:
-      return self.error(e.status, message=e.args[0])
+      return self.error(self.data, e.status, message=e.args[0])
     finally:
       self.data = None
       self.check = None

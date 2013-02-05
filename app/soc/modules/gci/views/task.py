@@ -299,7 +299,7 @@ class TaskViewPage(GCIRequestHandler):
     elif 'work_file_submit' in self.data.POST or 'submit_work' in self.data.GET:
       return self._postSubmitWork()
     else:
-      return self.error(httplib.METHOD_NOT_ALLOWED)
+      return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
 
   def _postComment(self):
     """Handles the POST call for the form that creates comments.
@@ -433,7 +433,8 @@ class TaskViewPage(GCIRequestHandler):
 
     if not work:
       return self.error(
-          httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % submission_id)
+          self.data, httplib.BAD_REQUEST,
+          message=DEF_NO_WORK_FOUND % submission_id)
 
     # Deletion of blobs always runs separately from transaction so it has no
     # added value to use it here.
@@ -737,4 +738,5 @@ class WorkSubmissionDownload(GCIRequestHandler):
       # TODO(nathaniel): This should probably be the raising of some sort
       # of exception rather than a self-call.
       return self.error(
-          httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % id_string)
+          self.data, httplib.BAD_REQUEST,
+          message=DEF_NO_WORK_FOUND % id_string)

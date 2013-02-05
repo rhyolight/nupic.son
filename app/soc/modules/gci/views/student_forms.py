@@ -157,7 +157,7 @@ class StudentFormUpload(GCIRequestHandler):
     else:
       # TODO(nathaniel): this should probably be some sort of exception
       # rather than a self-call.
-      return self.error(httplib.NOT_FOUND, message='File not found')
+      return self.error(self.data, httplib.NOT_FOUND, message='File not found')
 
   def context(self):
     """Handler for default HTTP GET request."""
@@ -247,4 +247,4 @@ class StudentFormDownload(GCIRequestHandler):
     else:
       # TODO(nathaniel): This should probably be some sort of exception
       # rather than a self-call.
-      return self.error(httplib.NOT_FOUND, 'File not found')
+      return self.error(self.data, httplib.NOT_FOUND, message='File not found')

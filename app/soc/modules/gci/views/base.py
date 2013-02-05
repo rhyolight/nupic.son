@@ -58,10 +58,11 @@ class GCIRequestHandler(base.RequestHandler):
       check = access_checker.AccessChecker(data)
     return data, check, mutator
 
-  def error(self, status, message=None):
+  def error(self, data, status, message=None):
     """See base.RequestHandler.error for specification."""
-    if not self.data.program:
-      return super(GCIRequestHandler, self).error(status, message)
+    if not data.program:
+      return super(GCIRequestHandler, self).error(
+          data, status, message=message)
 
     # If message is not set, set it to the default associated with the
     # given status (such as "Method Not Allowed" or "Service Unavailable").

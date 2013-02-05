@@ -541,7 +541,7 @@ class AssignMentors(GSoCRequestHandler):
     # TODO(nathaniel): This should probably be the raising of some sort
     # of exception (or in the distant future, not even registered as a
     # handler) rather than this self-call.
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
 
 
 class FeaturedProject(GSoCRequestHandler):
@@ -597,4 +597,4 @@ class FeaturedProject(GSoCRequestHandler):
   def get(self):
     """Special Handler for HTTP GET since this view only handles POST."""
     # TODO(nathaniel): Achieve this same behavior without this self-call.
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
