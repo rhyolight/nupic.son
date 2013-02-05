@@ -54,7 +54,7 @@ class RequestHandler(object):
     """
     context = self.context()
     template_path = self.templatePath()
-    response_content = self.render(template_path, context)
+    response_content = self.render(self.data, template_path, context)
     return http.HttpResponse(content=response_content)
 
   def json(self):
@@ -173,7 +173,7 @@ class RequestHandler(object):
     }
 
     return http.HttpResponse(
-        content=self.render(template_path, context), status=status)
+        content=self.render(data, template_path, context), status=status)
 
   def djangoURLPatterns(self):
     """Returns a list of Django URL pattern tuples.
@@ -200,7 +200,7 @@ class RequestHandler(object):
     """
     raise NotImplementedError()
 
-  def render(self, template_path, render_context):
+  def render(self, data, template_path, render_context):
     """Renders the page content from the specified template and context.
 
     Values supplied by helper.context.default are used in the rendering in
@@ -208,13 +208,14 @@ class RequestHandler(object):
     in cases of conflict).
 
     Args:
+      data: The RequestData that should be used.
       template_path: The path of the template that should be used.
       render_context: The context dictionary that should be used.
 
     Returns:
       The page content.
     """
-    context = context_helper.default(self.data)
+    context = context_helper.default(data)
     context.update(render_context)
     return loader.render_to_string(template_path, dictionary=context)
 

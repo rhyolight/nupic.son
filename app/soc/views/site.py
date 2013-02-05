@@ -127,7 +127,7 @@ class EditSitePage(base.SiteRequestHandler):
     post_accepted = self.validate()
     context = self.context()
     template_path = self.templatePath()
-    response_content = self.render(template_path, context)
+    response_content = self.render(self.data, template_path, context)
     return http.HttpResponse(
         status=httplib.OK if post_accepted else httplib.BAD_REQUEST,
         content=response_content)
@@ -148,17 +148,6 @@ class SiteHomepage(base.SiteRequestHandler):
     try:
       data, _, _ = self.init(request, args, kwargs)
 
-      # TODO(nathaniel): self.error in the except block below relies upon
-      # self.data having been assigned. The following assignment can be
-      # removed once that reliance has been eliminated.
-      self.data = data
-
-      # NOTE(nathaniel): While this doesn't directly rely on self.data
-      # having been assigned, it can generate an exception which as mentioned
-      # above would be handled by something that does require self.data to
-      # have been set.
-      #
-      # This will all be made much less interdependent. :-)
       self.checkMaintenanceMode(data)
 
       action = args[0] if args else ''
