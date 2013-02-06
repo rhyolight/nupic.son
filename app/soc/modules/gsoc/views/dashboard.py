@@ -1270,17 +1270,17 @@ class OrgConnectionComponent(Component):
     list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: '%s' % e.keyName(), hidden=True)
     
-    list_config.addColumn('username', 'Username',
+    list_config.addPlainTextColumn('username', 'Username',
         lambda e, *args: e.parent().link_id)
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: e.role,
         options=CONN_ROLE_OPTS)
-    list_config.addColumn('status', 'Status',
+    list_config.addPlainTextColumn('status', 'Status',
         lambda e, *args: e.status(), 
         options=CONN_STATUS_OPTS)
     
     if len(data.org_admin_for) > 1:
-      list_config.addColumn('org', 'Organization',
+      list_config.addPlainTextColumn('org', 'Organization',
           lambda e, *args: e.organization.name)
 
     list_config.setRowAction(
@@ -1343,13 +1343,13 @@ class UserConnectionComponent(Component):
     """Initializes this component.
     """
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addColumn('key', 'Key',
+    list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: '%s' % e.keyName(), hidden=True)
-    list_config.addColumn('org', 'Organization',
+    list_config.addPlainTextColumn('org', 'Organization',
         lambda e, *args: e.organization.name)
-    list_config.addColumn('role', 'Role',
+    list_config.addPlainTextColumn('role', 'Role',
        lambda e, *args: e.role, options=CONN_ROLE_OPTS)
-    list_config.addColumn('status', 'Status',
+    list_config.addPlainTextColumn('status', 'Status',
         lambda e, *args: e.status(), options=CONN_STATUS_OPTS)
 
     list_config.setRowAction(
