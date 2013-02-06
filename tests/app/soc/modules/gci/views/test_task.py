@@ -118,7 +118,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertEqual(comment_title, comment.title)
     self.assertEqual(comment_content, comment.content)
     self.assertEqual(self.data.user.key(), comment.created_by.key())
+    self.assertEqual(self.data.user.key(), comment.modified_by.key())
     self.assertEqual(self.task.key(), comment.parent_key())
+    self.assertIsNone(comment.reply)
     self.assertMailSentToSubscribers(comment)
 
   def testPostButtonUnpublish(self):
