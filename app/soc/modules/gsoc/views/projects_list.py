@@ -130,11 +130,11 @@ class ListProjects(GSoCRequestHandler):
     """Access checks for the view."""
     self.check.acceptedStudentsAnnounced()
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
     list_query = project_logic.getAcceptedProjectsQuery(
-        program=self.data.program)
-    list_content = ProjectList(self.data, list_query).getListData()
+        program=data.program)
+    list_content = ProjectList(data, list_query).getListData()
 
     if list_content:
       return list_content.content()

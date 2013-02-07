@@ -202,17 +202,17 @@ class ProgramPage(base.GSoCRequestHandler):
         url_patterns.url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self),
     ]
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     q = document.Document.all()
     q.filter('prefix', 'gsoc_program')
-    q.filter('scope', self.data.program.key())
+    q.filter('scope', data.program.key())
 
-    data = [{'key': str(i.key()),
-            'key_name': i.key().name(),
-            'label': i.title}
-            for i in q]
+    json_data = [{'key': str(i.key()),
+                  'key_name': i.key().name(),
+                  'label': i.title}
+                  for i in q]
 
-    return {'data': data}
+    return {'data': json_data}
 
   def checkAccess(self):
     self.check.isHost()

@@ -133,11 +133,11 @@ class StudentFormUpload(GCIRequestHandler):
     """
     return 'v2/modules/gci/student_forms/base.html'
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.data.redirect.program()
+    data.redirect.program()
 
-    url = self.data.redirect.urlOf('gci_student_form_upload', secure=True)
+    url = data.redirect.urlOf('gci_student_form_upload', secure=True)
     return {
         'upload_link': blobstore.create_upload_url(url),
         }

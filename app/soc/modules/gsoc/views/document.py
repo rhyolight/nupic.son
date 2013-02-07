@@ -172,8 +172,8 @@ class DocumentListPage(GSoCRequestHandler):
   def checkAccess(self):
     self.check.isHost()
 
-  def jsonContext(self):
-    list_content = GSoCDocumentList(self.data).getListData()
+  def jsonContext(self, data, check, mutator):
+    list_content = GSoCDocumentList(data).getListData()
 
     if list_content:
       return list_content.content()

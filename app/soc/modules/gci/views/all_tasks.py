@@ -60,9 +60,8 @@ class TaskListPage(GCIRequestHandler):
   def checkAccess(self):
     pass
 
-  def jsonContext(self):
-    list_content = AllTasksList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = AllTasksList(data).getListData()
     if list_content:
       return list_content.content()
     else:

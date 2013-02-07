@@ -105,8 +105,8 @@ class AcceptedOrgsPage(GSoCRequestHandler):
   def checkAccess(self):
     self.check.acceptedOrgsAnnounced()
 
-  def jsonContext(self):
-    list_content = AcceptedOrgsList(self.data).getListData()
+  def jsonContext(self, data, check, mutator):
+    list_content = AcceptedOrgsList(data).getListData()
 
     if list_content:
       return list_content.content()

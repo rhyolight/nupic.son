@@ -125,9 +125,8 @@ class LeaderboardPage(GCIRequestHandler):
   def checkAccess(self):
     self.check.isHost()
 
-  def jsonContext(self):
-    list_content = LeaderboardList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = LeaderboardList(data).getListData()
     if list_content:
       return list_content.content()
     else:
@@ -172,9 +171,8 @@ class StudentTasksPage(GCIRequestHandler):
       if self.data.profile.key() != self.data.url_profile.key():
         raise AccessViolation('You do not have access to this data')
 
-  def jsonContext(self):
-    list_content = AllStudentTasksList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = AllStudentTasksList(data).getListData()
     if list_content:
       return list_content.content()
     else:

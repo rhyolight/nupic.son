@@ -357,9 +357,8 @@ class ListUserRequestsPage(GCIRequestHandler):
   def checkAccess(self):
     self.check.isProfileActive()
 
-  def jsonContext(self):
-    list_content = UserRequestsList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = UserRequestsList(data).getListData()
     if list_content:
       return list_content.content()
     else:

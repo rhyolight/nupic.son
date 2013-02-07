@@ -164,9 +164,8 @@ class DocumentListPage(GCIRequestHandler):
   def checkAccess(self):
     self.check.isHost()
 
-  def jsonContext(self):
-    list_content = GCIDocumentList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = GCIDocumentList(data).getListData()
     if list_content:
       return list_content.content()
     else:

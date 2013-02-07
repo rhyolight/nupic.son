@@ -107,9 +107,8 @@ class OrgScoresForOrgzanizationPage(GCIRequestHandler):
         'org_scores_list': OrgScoresList(self.data),
     }
 
-  def jsonContext(self):
-    list_content = OrgScoresList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = OrgScoresList(data).getListData()
     if list_content:
       return list_content.content()
     else:
@@ -152,9 +151,8 @@ class ChooseOrganizationForOrgScorePage(GCIRequestHandler):
     self.check.isHost()
     pass
 
-  def jsonContext(self):
-    list_content = OrganizationsForOrgScoreList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = OrganizationsForOrgScoreList(data).getListData()
     if list_content:
       return list_content.content()
     else:

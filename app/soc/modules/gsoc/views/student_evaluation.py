@@ -298,16 +298,17 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
         }
     return context
 
-  def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    idx = lists.getListIndex(self.data.request)
+  def jsonContext(self, data, check, mutator):
+    """Handler for JSON requests."""
+    idx = lists.getListIndex(data.request)
     if idx == 0:
       record_list = self._createSurveyRecordList()
       return record_list.listContentResponse(
-          self.data.request, prefetch=['org', 'project']).content()
+          data.request, prefetch=['org', 'project']).content()
     else:
-      super(GSoCStudentEvaluationRecordsList, self).jsonContext()
+      # TODO(nathaniel): This smells like it is missing a return statement.
+      super(GSoCStudentEvaluationRecordsList, self).jsonContext(
+          data, check, mutator)
 
   def _createSurveyRecordList(self):
     """Creates a SurveyRecordList for the requested survey."""

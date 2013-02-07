@@ -893,14 +893,12 @@ class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
 
-  def jsonContext(self):
-    list_content = ProposalsAcceptedOrgsList(
-        self.data.request, self.data).getListData()
-
-    if not list_content:
+  def jsonContext(self, data, check, mutator):
+    list_content = ProposalsAcceptedOrgsList(data.request, data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
       raise exceptions.AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
@@ -971,14 +969,12 @@ class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
 
-  def jsonContext(self):
-    list_content = ProjectsAcceptedOrgsList(
-        self.data.request, self.data).getListData()
-
-    if not list_content:
+  def jsonContext(self, data, check, mutator):
+    list_content = ProjectsAcceptedOrgsList(data.request, data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
       raise exceptions.AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
@@ -1129,13 +1125,12 @@ class ProposalsPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
 
-  def jsonContext(self):
-    list_content = ProposalsList(self.data.request, self.data).getListData()
-
-    if not list_content:
+  def jsonContext(self, data, check, mutator):
+    list_content = ProposalsList(data.request, data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
       raise exceptions.AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def post(self, data, check, mutator):
     """Handler for POST requests."""
@@ -1229,13 +1224,12 @@ class ProjectsPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
 
-  def jsonContext(self):
-    list_content = ProjectsList(self.data.request, self.data).getListData()
-
-    if not list_content:
+  def jsonContext(self, data, check, mutator):
+    list_content = ProjectsList(data.request, data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
       raise exceptions.AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def post(self, data, check, mutator):
     """Handler for POST requests."""
@@ -1382,13 +1376,12 @@ class SlotsPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
 
-  def jsonContext(self):
-    list_content = SlotsList(self.data.request, self.data).getListData()
-
-    if not list_content:
+  def jsonContext(self, data, check, mutator):
+    list_content = SlotsList(data.request, data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
       raise exceptions.AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def post(self, data, check, mutator):
     slots_list = SlotsList(data.request, data)
@@ -1599,13 +1592,12 @@ class StudentsListPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
 
-  def jsonContext(self):
-    list_content = StudentsList(self.data.request, self.data).getListData()
-
-    if not list_content:
+  def jsonContext(self, data, check, mutator):
+    list_content = StudentsList(data.request, data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
       raise exceptions.AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {
@@ -1631,15 +1623,14 @@ class ProjectsListPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
 
-  def jsonContext(self):
-    list_query = project_logic.getProjectsQuery(program=self.data.program)
+  def jsonContext(self, data, check, mutator):
+    list_query = project_logic.getProjectsQuery(program=data.program)
     list_content = ProjectList(
-        self.data.request, self.data, list_query, self.LIST_IDX).getListData()
-
-    if not list_content:
+        data.request, data, list_query, self.LIST_IDX).getListData()
+    if list_content:
+      return list_content.content()
+    else:
       raise exceptions.AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     list_query = project_logic.getProjectsQuery(program=self.data.program)
@@ -1667,13 +1658,12 @@ class OrgsListPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
 
-  def jsonContext(self):
-    list_content = AcceptedOrgsList(self.data.request, self.data).getListData()
-
-    if not list_content:
+  def jsonContext(self, data, check, mutator):
+    list_content = AcceptedOrgsList(data.request, data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
       raise exceptions.AccessViolation('You do not have access to this data')
-
-    return list_content.content()
 
   def context(self):
     return {

@@ -201,13 +201,13 @@ class OrgHomepage(GCIRequestHandler):
   def checkAccess(self):
     pass
 
-  def jsonContext(self):
-    idx = lists.getListIndex(self.data.request)
+  def jsonContext(self, data, check, mutator):
+    idx = lists.getListIndex(data.request)
     list_content = None
     if idx == 0:
-      list_content = OpenTasksList(self.data).getListData()
+      list_content = OpenTasksList(data).getListData()
     elif idx == 1:
-      list_content = CompletedTasksList(self.data).getListData()
+      list_content = CompletedTasksList(data).getListData()
 
     if list_content:
       return list_content.content()

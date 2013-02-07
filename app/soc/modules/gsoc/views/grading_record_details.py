@@ -57,14 +57,14 @@ class GradingRecordsOverview(GSoCRequestHandler):
         'record_list': GradingRecordsList(self.data),
         }
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
-    idx = lists.getListIndex(self.data.request)
+    idx = lists.getListIndex(data.request)
     if idx == 0:
-      return GradingRecordsList(self.data).listContent().content()
+      return GradingRecordsList(data).listContent().content()
     else:
       # TODO(nathaniel): Should this be a return statement?
-      super(GradingRecordsOverview, self).jsonContext()
+      super(GradingRecordsOverview, self).jsonContext(data, check, mutator)
 
   def post(self, data, check, mutator):
     """Handles the POST request from the list and starts the appropriate task.

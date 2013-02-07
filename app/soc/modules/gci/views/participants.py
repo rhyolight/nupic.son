@@ -105,9 +105,8 @@ class MentorsListAdminPage(GCIRequestHandler):
   def checkAccess(self):
     self.check.isHost()
 
-  def jsonContext(self):
-    list_content = MentorsList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = MentorsList(data).getListData()
     if list_content:
       return list_content.content()
     else:

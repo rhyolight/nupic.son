@@ -283,9 +283,8 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
   def checkAccess(self):
     pass
 
-  def jsonContext(self):
-    list_content = OrganizationsForProposeWinnersList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = OrganizationsForProposeWinnersList(data).getListData()
     if list_content:
       return list_content.content()
     else:
@@ -361,9 +360,8 @@ class ViewProposedWinnersPage(GCIRequestHandler):
   def checkAccess(self):
     self.check.isHost()
 
-  def jsonContext(self):
-    list_content = ProposedWinnersForOrgsList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = ProposedWinnersForOrgsList(data).getListData()
     if list_content:
       return list_content.content()
     else:

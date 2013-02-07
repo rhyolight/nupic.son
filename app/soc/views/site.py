@@ -75,15 +75,15 @@ class EditSitePage(base.SiteRequestHandler):
         django_url(r'^site/edit$', self, name='edit_site_settings'),
     ]
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     entities = document.Document.all().filter('prefix', 'site')
 
-    data = [{'key': str(i.key()),
-            'link_id': i.link_id,
-            'label': i.title}
-            for i in entities]
+    json_data = [{'key': str(i.key()),
+                  'link_id': i.link_id,
+                  'label': i.title}
+                 for i in entities]
 
-    return {'data': data}
+    return {'data': json_data}
 
   def checkAccess(self):
     if not self.data.is_developer:

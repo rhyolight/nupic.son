@@ -145,21 +145,14 @@ class DashboardPage(GSoCRequestHandler):
     """
     return 'v2/modules/gsoc/dashboard/base.html'
 
-  def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    components = self.components()
-
-    list_content = None
-    for component in components:
+  def jsonContext(self, data, check, mutator):
+    """Handler for JSON requests."""
+    for component in self.components():
       list_content = component.getListData()
       if list_content:
-        break
-
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
+        return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
   def post(self, data, check, mutator):
     """Handler for POST requests."""

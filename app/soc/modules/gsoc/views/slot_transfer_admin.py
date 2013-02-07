@@ -233,9 +233,8 @@ class SlotsTransferAdminPage(base.GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer_admin/base.html'
 
-  def jsonContext(self):
-    list_content = SlotsTransferAdminList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = SlotsTransferAdminList(data).getListData()
     if list_content:
       return list_content.content()
     else:

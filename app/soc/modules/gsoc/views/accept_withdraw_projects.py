@@ -233,9 +233,9 @@ class AcceptProposals(GSoCRequestHandler):
     """Access checks for the view."""
     self.check.isHost()
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
-    list_content = ProposalList(self.data).getListData()
+    list_content = ProposalList(data).getListData()
 
     if list_content:
       return list_content.content()
@@ -366,7 +366,7 @@ class ProjectList(Template):
         logging.warning("Project '%s' already accepted" % project_key)
         continue
 
-      # key of the organization for the project 
+      # key of the organization for the project
       org_key = GSoCProject.org.get_value_for_datastore(project)
       # key of the student profile for the project
       profile_key = project.parent_key()
@@ -442,9 +442,9 @@ class WithdrawProjects(GSoCRequestHandler):
     """Access checks for the view."""
     self.check.isHost()
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
-    list_content = ProjectList(self.data).getListData()
+    list_content = ProjectList(data).getListData()
 
     if list_content:
       return list_content.content()

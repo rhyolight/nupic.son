@@ -466,9 +466,8 @@ class ListUserInvitesPage(GCIRequestHandler):
   def checkAccess(self):
     self.check.isProfileActive()
 
-  def jsonContext(self):
-    list_content = UserInvitesList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = UserInvitesList(data).getListData()
     if list_content:
       return list_content.content()
     else:

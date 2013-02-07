@@ -252,11 +252,10 @@ class OrgHome(GSoCRequestHandler):
     """Access checks for GSoC Organization Homepage."""
     pass
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
-    assert isSet(self.data.organization)
-    list_content = ProjectList(self.data).getListData()
-
+    assert isSet(data.organization)
+    list_content = ProjectList(data).getListData()
     if list_content:
       return list_content.content()
     else:

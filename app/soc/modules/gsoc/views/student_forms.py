@@ -203,7 +203,7 @@ class FormPage(GSoCRequestHandler):
       self.data.redirect.program()
     return self.data.redirect
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     url = self._r().urlOf(self._urlName(), secure=True)
     return {
         'upload_link': blobstore.create_upload_url(url),

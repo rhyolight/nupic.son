@@ -72,7 +72,7 @@ class RequestHandler(object):
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
     """
-    context = self.jsonContext()
+    context = self.jsonContext(data, check, mutator)
 
     if isinstance(context, unicode) or isinstance(context, str):
       json_formatted_context = context
@@ -104,10 +104,23 @@ class RequestHandler(object):
 
     return response
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Defines the JSON object to be dumped and returned on a HTTP GET request
     with 'fmt=json' parameter.
+
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
+    Returns:
+      An object to be used as the content in a response to a json GET request
+        after having been put through simplejson.dumps if it is not a string
+        or unicode object.
     """
+    # TODO(nathaniel): That return value description is a travesty. Just make
+    # this method return "a dictionary to be serialized into JSON response
+    # content" or something like that always.
     return {
         'error': 'json() method not implemented',
     }
