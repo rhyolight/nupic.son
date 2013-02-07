@@ -144,7 +144,7 @@ class LeaderboardPage(GCIRequestHandler):
             self.data, url_names.GCI_LEADERBOARD),
         }
     if self.data.is_host or self.data.timeline.winnersAnnounced():
-      context['winners'] = common_templates.Winners(self.data)
+      context['winners'] = common_templates.GlobalRankingWinners(self.data)
 
     return context
 

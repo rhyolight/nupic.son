@@ -66,12 +66,14 @@ class RequestHandler(object):
     else:
       data = simplejson.dumps(context)
 
+    # NOTE(nathaniel): The Django documentation and code disagree
+    # on what the default value of content_type is, so the best way
+    # to use the default value is to avoid passing the parameter.
     if self.data.request.GET.get('plain'):
-      content_type = http.DEFAULT_CONTENT_TYPE
+      response = http.HttpResponse(content=data)
     else:
-      content_type = 'application/json'
-
-    response = http.HttpResponse(content=data, content_type=content_type)
+      response = http.HttpResponse(
+          content=data, content_type='application/json')
 
     # if the browser supports HTTP/1.1
     # post-check and pre-check and no-store for IE7
