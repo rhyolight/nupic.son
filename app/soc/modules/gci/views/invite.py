@@ -256,7 +256,7 @@ class InvitePage(GCIRequestHandler):
       return data.redirect.dashboard().to()
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class ManageInvite(GCIRequestHandler):

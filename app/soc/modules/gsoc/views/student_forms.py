@@ -274,7 +274,7 @@ class DownloadForm(GSoCRequestHandler):
     else:
       return self.data.student_info
 
-  def get(self):
+  def get(self, data, check, mutator):
     if self._tax():
       blob_info = self._studentInfo().tax_form
     else:

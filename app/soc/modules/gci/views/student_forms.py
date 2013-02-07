@@ -142,14 +142,14 @@ class StudentFormUpload(GCIRequestHandler):
         'upload_link': blobstore.create_upload_url(url),
         }
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Handles download of the forms otherwise resumes normal rendering."""
-    if 'consent_form' in self.data.GET:
-      download = self.data.student_info.consent_form
-    elif 'student_id_form' in self.data.GET:
-      download = self.data.student_info.student_id_form
+    if 'consent_form' in data.GET:
+      download = data.student_info.consent_form
+    elif 'student_id_form' in data.GET:
+      download = data.student_info.student_id_form
     else:
-      return super(StudentFormUpload, self).get()
+      return super(StudentFormUpload, self).get(data, check, mutator)
 
     # download has been requested
     if download:
@@ -157,7 +157,7 @@ class StudentFormUpload(GCIRequestHandler):
     else:
       # TODO(nathaniel): this should probably be some sort of exception
       # rather than a self-call.
-      return self.error(self.data, httplib.NOT_FOUND, message='File not found')
+      return self.error(data, httplib.NOT_FOUND, message='File not found')
 
   def context(self):
     """Handler for default HTTP GET request."""
@@ -232,12 +232,12 @@ class StudentFormDownload(GCIRequestHandler):
     self.check.isHost()
     self.mutator.studentFromKwargs()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Allows hosts to download the student forms."""
-    if url_names.CONSENT_FORM_GET_PARAM in self.data.GET:
-      download = self.data.url_student_info.consent_form
-    elif url_names.STUDENT_ID_FORM_GET_PARAM in self.data.GET:
-      download = self.data.url_student_info.student_id_form
+    if url_names.CONSENT_FORM_GET_PARAM in data.GET:
+      download = data.url_student_info.consent_form
+    elif url_names.STUDENT_ID_FORM_GET_PARAM in data.GET:
+      download = data.url_student_info.student_id_form
     else:
       raise BadRequest('No file requested')
 
@@ -247,4 +247,4 @@ class StudentFormDownload(GCIRequestHandler):
     else:
       # TODO(nathaniel): This should probably be some sort of exception
       # rather than a self-call.
-      return self.error(self.data, httplib.NOT_FOUND, message='File not found')
+      return self.error(data, httplib.NOT_FOUND, message='File not found')

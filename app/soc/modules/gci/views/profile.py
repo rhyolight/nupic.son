@@ -328,7 +328,7 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
     """Handler for regular (edit/create profile) POST action."""
     if not self.validate():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(self.data, self.check, self.mutator)
 
     org_id = self.data.GET.get('new_org')
 

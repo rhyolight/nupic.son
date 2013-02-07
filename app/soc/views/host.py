@@ -125,4 +125,4 @@ class HostProfilePage(SiteRequestHandler):
         return data.redirect.to('edit_host_profile')
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)

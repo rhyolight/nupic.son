@@ -159,7 +159,7 @@ class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
       return data.redirect.to('gsoc_edit_mentor_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
@@ -246,7 +246,7 @@ class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
       return data.redirect.to('gsoc_take_mentor_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GSoCMentorEvaluationPreviewPage(GSoCRequestHandler):

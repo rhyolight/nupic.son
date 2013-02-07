@@ -233,7 +233,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
     """Handler for HTTP POST request."""
     if not self.validate():
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
     link_id = data.GET.get('org')
     if link_id:

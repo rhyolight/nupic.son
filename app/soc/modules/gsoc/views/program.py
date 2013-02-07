@@ -246,7 +246,7 @@ class ProgramPage(base.GSoCRequestHandler):
       return data.redirect.to('edit_gsoc_program', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class TimelinePage(base.GSoCRequestHandler):
@@ -291,7 +291,7 @@ class TimelinePage(base.GSoCRequestHandler):
       return data.redirect.to('edit_gsoc_timeline', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GSoCProgramMessagesPage(

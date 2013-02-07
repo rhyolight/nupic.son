@@ -148,7 +148,7 @@ class ProposeWinnersPage(GCIRequestHandler):
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
     first_key_str = data.POST.get(
         'first_proposed_winner', ProposeWinnersForm.EMPTY_CHOICE)

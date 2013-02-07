@@ -242,4 +242,4 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
       return data.redirect.to('gsoc_update_slot_transfer', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)

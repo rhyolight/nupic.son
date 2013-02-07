@@ -274,7 +274,7 @@ class GradingRecordDetails(GSoCRequestHandler):
     record_form = GradingRecordForm(data.POST)
 
     if not record_form.is_valid():
-      return self.get()
+      return self.get(data, check, mutator)
 
     decision = record_form.cleaned_data['grade_decision']
     locked = record_form.cleaned_data['locked']

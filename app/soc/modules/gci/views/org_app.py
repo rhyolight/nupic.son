@@ -108,7 +108,7 @@ class GCIOrgAppEditPage(GCIRequestHandler):
       return data.redirect.to('gci_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GCIOrgAppPreviewPage(GCIRequestHandler):
@@ -230,7 +230,7 @@ class GCIOrgAppTakePage(GCIRequestHandler):
       return data.redirect.to('gci_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):

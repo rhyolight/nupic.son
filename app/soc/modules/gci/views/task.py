@@ -309,7 +309,8 @@ class TaskViewPage(GCIRequestHandler):
     comment_form = CommentForm(reply, self.data.POST)
 
     if not comment_form.is_valid():
-      return self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get(self.data, self.check, self.mutator)
 
     comment_form.cleaned_data['reply'] = reply
     comment_form.cleaned_data['created_by'] = self.data.user
@@ -391,7 +392,8 @@ class TaskViewPage(GCIRequestHandler):
     if 'url_to_work' in self.data.POST:
       form = WorkSubmissionURLForm(data=self.data.POST)
       if not form.is_valid():
-        return self.get()
+        # TODO(nathaniel): Problematic self-call.
+        return self.get(self.data, self.check, self.mutator)
     elif self.data.request.file_uploads:
       form = WorkSubmissionFileForm(
           data=self.data.POST,
@@ -723,14 +725,14 @@ class WorkSubmissionDownload(GCIRequestHandler):
     self.mutator.taskFromKwargs()
     self.check.isTaskVisible()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Attempts to download the blob in the worksubmission that is specified
     in the GET argument.
     """
-    id_string = self.data.request.GET.get('id', '')
+    id_string = data.request.GET.get('id', '')
     submission_id = int(id_string) if id_string.isdigit() else -1
 
-    work = GCIWorkSubmission.get_by_id(submission_id, self.data.task)
+    work = GCIWorkSubmission.get_by_id(submission_id, data.task)
 
     if work and work.upload_of_work:
       return bs_helper.sendBlob(work.upload_of_work)
@@ -738,5 +740,4 @@ class WorkSubmissionDownload(GCIRequestHandler):
       # TODO(nathaniel): This should probably be the raising of some sort
       # of exception rather than a self-call.
       return self.error(
-          self.data, httplib.BAD_REQUEST,
-          message=DEF_NO_WORK_FOUND % id_string)
+          data, httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % id_string)

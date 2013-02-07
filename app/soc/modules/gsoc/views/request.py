@@ -127,7 +127,7 @@ class RequestPage(GSoCRequestHandler):
       return data.redirect.to('show_gsoc_request')
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
   def _createFromForm(self):
     """Creates a new request based on the data inserted in the form.

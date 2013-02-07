@@ -87,7 +87,7 @@ class BulkCreate(GCIRequestHandler):
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
     bulk_create.spawnBulkCreateTasks(
         form.cleaned_data['task_data'], data.organization,

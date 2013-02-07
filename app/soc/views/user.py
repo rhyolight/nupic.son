@@ -90,7 +90,7 @@ class CreateUserPage(SiteRequestHandler):
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
     cleaned_data = form.cleaned_data
     norm_account = accounts.normalizeAccount(data.gae_user)
@@ -138,7 +138,7 @@ class EditUserPage(SiteRequestHandler):
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
     form.save()
 

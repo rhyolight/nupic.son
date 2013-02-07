@@ -579,10 +579,10 @@ class PostComment(GSoCRequestHandler):
       data.request.method = 'GET'
       return proposal_view(data.request, *data.args, **data.kwargs)
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
     # TODO(nathaniel): Do this without a self-call.
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class PostScore(GSoCRequestHandler):
@@ -669,9 +669,9 @@ class PostScore(GSoCRequestHandler):
     self.createOrUpdateScore(value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class WishToMentor(GSoCRequestHandler):
@@ -732,9 +732,9 @@ class WishToMentor(GSoCRequestHandler):
     self.addToPotentialMentors(value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class AssignMentor(GSoCRequestHandler):
@@ -817,9 +817,9 @@ class AssignMentor(GSoCRequestHandler):
     data.redirect.review(data.proposal.key().id(), data.proposer.link_id)
     return data.redirect.to('review_gsoc_proposal')
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class IgnoreProposal(GSoCRequestHandler):
@@ -874,9 +874,9 @@ class IgnoreProposal(GSoCRequestHandler):
     self.toggleIgnoreProposal(value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class ProposalModificationPostDeadline(GSoCRequestHandler):
@@ -930,9 +930,9 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
     self.toggleModificationPermission(value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class AcceptProposal(GSoCRequestHandler):
@@ -985,9 +985,9 @@ class AcceptProposal(GSoCRequestHandler):
     self.toggleStatus(value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class ProposalPubliclyVisible(GSoCRequestHandler):
@@ -1039,9 +1039,9 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
     self.togglePublicVisibilty(value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class WithdrawProposal(GSoCRequestHandler):
@@ -1094,6 +1094,6 @@ class WithdrawProposal(GSoCRequestHandler):
     self.toggleWithdrawProposal(value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(self.data, httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)

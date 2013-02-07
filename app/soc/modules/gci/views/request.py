@@ -116,7 +116,7 @@ class SendRequestPage(GCIRequestHandler):
           url_names.GCI_MANAGE_REQUEST)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class ManageRequestPage(GCIRequestHandler):

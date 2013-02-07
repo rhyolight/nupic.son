@@ -143,7 +143,7 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
       return data.redirect.to('gsoc_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GSoCOrgAppPreviewPage(GSoCRequestHandler):
@@ -260,7 +260,7 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
       return data.redirect.to('gsoc_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):

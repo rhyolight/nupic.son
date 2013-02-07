@@ -42,19 +42,23 @@ class RequestHandler(object):
   def context(self):
     return {}
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Handler for HTTP GET request.
 
     Default implementation calls templatePath and context and passes
     those to render to construct the page.
 
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
     Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        attribute.
+      An http.HttpResponse appropriate for the given request parameters.
     """
     context = self.context()
     template_path = self.templatePath()
-    response_content = self.render(self.data, template_path, context)
+    response_content = self.render(data, template_path, context)
     return http.HttpResponse(content=response_content)
 
   def json(self):
@@ -271,7 +275,7 @@ class RequestHandler(object):
       if data.request.GET.get('fmt') == 'json':
         return self.json()
       else:
-        return self.get()
+        return self.get(data, check, mutator)
     elif data.request.method == 'POST':
       if db.WRITE_CAPABILITY.is_enabled():
         return self.post(data, check, mutator)

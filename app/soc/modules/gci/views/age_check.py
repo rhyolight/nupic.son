@@ -87,7 +87,7 @@ class AgeCheck(gci_base.GCIRequestHandler):
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
     program = data.program
     birth_date = form.cleaned_data['birth_date']

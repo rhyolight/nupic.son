@@ -111,7 +111,7 @@ class OrgProfilePage(GCIRequestHandler):
       return data.redirect.to('edit_gci_org_profile', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
   def createOrgProfileFromForm(self):
     """Creates a new organization based on the data inserted in the form.

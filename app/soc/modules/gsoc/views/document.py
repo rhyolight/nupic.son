@@ -86,7 +86,7 @@ class EditDocumentPage(GSoCRequestHandler):
       return data.redirect.to('edit_gsoc_document')
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class DocumentPage(GSoCRequestHandler):

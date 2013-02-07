@@ -130,7 +130,7 @@ class ProposalPage(GSoCRequestHandler):
       return data.redirect.to('review_gsoc_proposal')
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class UpdateProposal(GSoCRequestHandler):
@@ -257,7 +257,7 @@ class UpdateProposal(GSoCRequestHandler):
       proposal = self._updateFromForm()
       if not proposal:
         # TODO(nathaniel): problematic self-use.
-        return self.get()
+        return self.get(data, check, mutator)
     elif data.action == self.ACTIONS['withdraw']:
       self._withdraw()
     elif data.action == self.ACTIONS['resubmit']:

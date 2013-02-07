@@ -138,7 +138,7 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
           'gsoc_edit_student_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
@@ -232,7 +232,7 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
       return data.redirect.to('gsoc_take_student_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):

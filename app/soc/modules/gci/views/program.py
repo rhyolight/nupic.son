@@ -140,7 +140,7 @@ class ProgramPage(GCIRequestHandler):
       return data.redirect.to('edit_gci_program', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class TimelinePage(GCIRequestHandler):
@@ -185,7 +185,7 @@ class TimelinePage(GCIRequestHandler):
       return data.redirect.to('edit_gci_timeline', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GCIProgramMessagesPage(

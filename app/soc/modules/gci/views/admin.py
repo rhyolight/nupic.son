@@ -405,7 +405,7 @@ class LookupLinkIdPage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     # TODO(nathaniel): problematic self-call.
-    return self.get()
+    return self.get(data, check, mutator)
 
   def context(self):
     form = LookupForm(self.data, self.data.POST or None)

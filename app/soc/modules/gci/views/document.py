@@ -85,7 +85,7 @@ class EditDocumentPage(GCIRequestHandler):
       return data.redirect.to('edit_gci_document')
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class DocumentPage(GCIRequestHandler):
