@@ -61,23 +61,32 @@ class RequestHandler(object):
     response_content = self.render(data, template_path, context)
     return http.HttpResponse(content=response_content)
 
-  def json(self):
-    """Handler for HTTP GET request with a 'fmt=json' parameter."""
+  def json(self, data, check, mutator):
+    """Handler for HTTP GET request with a 'fmt=json' parameter.
+
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
     context = self.jsonContext()
 
     if isinstance(context, unicode) or isinstance(context, str):
-      data = context
+      json_formatted_context = context
     else:
-      data = simplejson.dumps(context)
+      json_formatted_context = simplejson.dumps(context)
 
     # NOTE(nathaniel): The Django documentation and code disagree
     # on what the default value of content_type is, so the best way
     # to use the default value is to avoid passing the parameter.
-    if self.data.request.GET.get('plain'):
-      response = http.HttpResponse(content=data)
+    if data.request.GET.get('plain'):
+      response = http.HttpResponse(content=json_formatted_context)
     else:
       response = http.HttpResponse(
-          content=data, content_type='application/json')
+          content=json_formatted_context, content_type='application/json')
 
     # if the browser supports HTTP/1.1
     # post-check and pre-check and no-store for IE7
@@ -89,7 +98,7 @@ class RequestHandler(object):
 
     # TODO(nathaniel): find a better way to do this - I mean, the
     # jsonContext method is already as exposed as this method.
-    if self.data.request.GET.get('marker'):
+    if data.request.GET.get('marker'):
       # allow the django test framework to capture the context dictionary
       loader.render_to_string('json_marker.html', dictionary=context)
 
@@ -273,7 +282,7 @@ class RequestHandler(object):
     """
     if data.request.method == 'GET':
       if data.request.GET.get('fmt') == 'json':
-        return self.json()
+        return self.json(data, check, mutator)
       else:
         return self.get(data, check, mutator)
     elif data.request.method == 'POST':
