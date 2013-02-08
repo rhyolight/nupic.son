@@ -996,23 +996,24 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
     mutator.proposalFromKwargs()
     check.isProposer()
 
-  def togglePublicVisibilty(self, value):
+  def togglePublicVisibilty(self, data, value):
     """Toggles the the public visibility of the application.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and not self.data.proposal.is_publicly_visible:
+    if value == 'checked' and not data.proposal.is_publicly_visible:
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.proposal.is_publicly_visible:
+    if value == 'unchecked' and data.proposal.is_publicly_visible:
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def update_publicly_visibility_txn():
       # transactionally get latest version of the proposal
@@ -1028,7 +1029,7 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     value = data.POST.get('value')
-    self.togglePublicVisibilty(value)
+    self.togglePublicVisibilty(data, value)
     return http.HttpResponse()
 
   def get(self, data, check, mutator):
