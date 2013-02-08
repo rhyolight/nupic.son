@@ -510,30 +510,32 @@ class PostComment(GSoCRequestHandler):
     data.public_only = False
     check.isMentorForOrganization(data.proposal_org)
 
-  def createCommentFromForm(self):
+  def createCommentFromForm(self, data):
     """Creates a new comment based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created comment entity or None
     """
+    assert isSet(data.public_only)
+    assert isSet(data.proposal)
 
-    assert isSet(self.data.public_only)
-    assert isSet(self.data.proposal)
-
-    if self.data.public_only:
-      comment_form = CommentForm(self.data.request.POST)
+    if data.public_only:
+      comment_form = CommentForm(data.request.POST)
     else:
       # this form contains checkbox for indicating private/public comments
-      comment_form = PrivateCommentForm(self.data.request.POST)
+      comment_form = PrivateCommentForm(data.request.POST)
 
     if not comment_form.is_valid():
       return None
 
-    if self.data.public_only:
+    if data.public_only:
       comment_form.cleaned_data['is_private'] = False
-    comment_form.cleaned_data['author'] = self.data.profile
+    comment_form.cleaned_data['author'] = data.profile
 
-    q = GSoCProfile.all().filter('mentor_for', self.data.proposal.org)
+    q = GSoCProfile.all().filter('mentor_for', data.proposal.org)
     q = q.filter('status', 'active')
     if comment_form.cleaned_data.get('is_private'):
       q.filter('notify_private_comments', True)
@@ -541,12 +543,11 @@ class PostComment(GSoCRequestHandler):
       q.filter('notify_public_comments', True)
     mentors = q.fetch(1000)
 
-    to_emails = [i.email for i in mentors \
-                 if i.key() != self.data.profile.key()]
+    to_emails = [i.email for i in mentors if i.key() != data.profile.key()]
 
     def create_comment_txn():
-      comment = comment_form.create(commit=True, parent=self.data.proposal)
-      context = notifications.newReviewContext(self.data, comment, to_emails)
+      comment = comment_form.create(commit=True, parent=data.proposal)
+      context = notifications.newReviewContext(data, comment, to_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=comment)
       sub_txn()
       return comment
@@ -557,7 +558,7 @@ class PostComment(GSoCRequestHandler):
     assert isSet(data.proposer)
     assert isSet(data.proposal)
 
-    comment = self.createCommentFromForm()
+    comment = self.createCommentFromForm(data)
     if comment:
       data.redirect.program()
       return data.redirect.to('gsoc_dashboard', anchor='proposals_submitted')
