@@ -102,17 +102,15 @@ class AssignMentorFields(template.Template):
     return mentor_context
 
   def context(self):
-    mentors = []
-
-    # add a select drop down context for each assigned mentor with that
-    # mentor set as initial value
-    for mentor in self.current_mentors:
-      mentors.append(self._getMentorContext(current_mentor=mentor))
-
-    # if there are no mentors assigned at all render a single drop down
-    # without any initial mentor set
-    if not self.current_mentors:
-      mentors.append(self._getMentorContext())
+    if self.current_mentors:
+      # add a select drop down context for each assigned mentor with that
+      # mentor set as initial value
+      mentors = [self._getMentorContext(current_mentor=current_mentor)
+                 for current_mentor in self.current_mentors]
+    else:
+      # if there are no mentors assigned at all render a single drop down
+      # without any initial mentor set
+      mentors = [self._getMentorContext()]
 
     return {
         'action': self.action,
