@@ -77,33 +77,30 @@ class HostProfilePage(SiteRequestHandler):
         'forms': [host_profile_form],
     }
 
-  def createOrUpdateHost(self):
-    """Creates or Updates the host entity
-    """
-    host_profile_form = HostProfileForm(self.data.POST,
-                                        instance=self.data.host)
+  def createOrUpdateHost(self, data):
+    """Creates or Updates the host entity."""
+    host_profile_form = HostProfileForm(data.POST, instance=data.host)
 
     if not host_profile_form.is_valid():
       return None
 
-    if self.data.is_developer:
-      if self.data.host_user_key:
-        user_key = self.data.host_user_key
+    if data.is_developer:
+      if data.host_user_key:
+        user_key = data.host_user_key
       else:
-        user_key = self.data.user.key()
-    elif self.data.is_host:
-      user_key = self.data.user.key()
+        user_key = data.user.key()
+    elif data.is_host:
+      user_key = data.user.key()
 
     def create_or_update_host_txn():
-      if self.data.host:
+      if data.host:
         # get the latest host entity
-        host = db.get(self.data.host.key())
+        host = db.get(data.host.key())
         host_profile_form.instance = host
         host = host_profile_form.save(commit=True)
       else:
         user_entity = db.get(user_key)
-        host = host_profile_form.create(
-            commit=True, parent=user_entity)
+        host = host_profile_form.create(commit=True, parent=user_entity)
 
       return host
 
@@ -111,7 +108,7 @@ class HostProfilePage(SiteRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    host = self.createOrUpdateHost()
+    host = self.createOrUpdateHost(data)
     if host:
       link_id = data.kwargs.get('link_id')
       if link_id:
