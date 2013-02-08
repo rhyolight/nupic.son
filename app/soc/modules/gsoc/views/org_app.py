@@ -70,8 +70,7 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
 
 
 class GSoCOrgAppEditPage(GSoCRequestHandler):
-  """View for creating/editing organization application.
-  """
+  """View for creating/editing organization application."""
 
   def djangoURLPatterns(self):
     return [
@@ -105,27 +104,29 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
 
     return context
 
-  def orgAppFromForm(self):
+  def orgAppFromForm(self, data):
     """Create/edit the organization application entity from form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated organization application entity or None.
     """
-    if self.data.org_app:
-      form = GSoCOrgAppEditForm(
-          self.data.POST, instance=self.data.org_app)
+    if data.org_app:
+      form = GSoCOrgAppEditForm(data.POST, instance=data.org_app)
     else:
-      form = GSoCOrgAppEditForm(self.data.POST)
+      form = GSoCOrgAppEditForm(data.POST)
 
     if not form.is_valid():
       return None
 
-    form.cleaned_data['modified_by'] = self.data.user
+    form.cleaned_data['modified_by'] = data.user
 
-    if not self.data.org_app:
-      form.cleaned_data['created_by'] = self.data.user
-      form.cleaned_data['program'] = self.data.program
-      key_name = 'gsoc_program/%s/orgapp' % self.data.program.key().name()
+    if not data.org_app:
+      form.cleaned_data['created_by'] = data.user
+      form.cleaned_data['program'] = data.program
+      key_name = 'gsoc_program/%s/orgapp' % data.program.key().name()
       entity = form.create(key_name=key_name, commit=True)
     else:
       entity = form.save(commit=True)
@@ -133,7 +134,7 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
     return entity
 
   def post(self, data, check, mutator):
-    org_app = self.orgAppFromForm()
+    org_app = self.orgAppFromForm(data)
     if org_app:
       # TODO(nathaniel): is this .program() necessary?
       data.redirect.program()
