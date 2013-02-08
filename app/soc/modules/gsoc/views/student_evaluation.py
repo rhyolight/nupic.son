@@ -61,8 +61,7 @@ class GSoCStudentEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
 
 
 class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
-  """View for creating/editing student evalution.
-  """
+  """View for creating/editing student evalution."""
 
   def djangoURLPatterns(self):
     return [
@@ -96,33 +95,36 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
 
     return context
 
-  def evaluationFromForm(self):
+  def evaluationFromForm(self, data):
     """Create/edit the student evaluation entity from form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated student evaluation entity or None.
     """
-    if self.data.student_evaluation:
+    if data.student_evaluation:
       form = GSoCStudentEvaluationEditForm(
-          self.data.POST, instance=self.data.student_evaluation)
+          data.POST, instance=data.student_evaluation)
     else:
-      form = GSoCStudentEvaluationEditForm(self.data.POST)
+      form = GSoCStudentEvaluationEditForm(data.POST)
 
     if not form.is_valid():
       return None
 
-    form.cleaned_data['modified_by'] = self.data.user
+    form.cleaned_data['modified_by'] = data.user
 
-    if not self.data.student_evaluation:
-      form.cleaned_data['link_id'] = self.data.kwargs.get('survey')
+    if not data.student_evaluation:
+      form.cleaned_data['link_id'] = data.kwargs.get('survey')
       form.cleaned_data['prefix'] = 'gsoc_program'
-      form.cleaned_data['author'] = self.data.user
-      form.cleaned_data['scope'] = self.data.program
+      form.cleaned_data['author'] = data.user
+      form.cleaned_data['scope'] = data.program
       # kwargs which defines an evaluation
       fields = ['sponsor', 'program', 'survey']
 
       key_name = '/'.join(['gsoc_program'] +
-                          [self.data.kwargs[field] for field in fields])
+                          [data.kwargs[field] for field in fields])
 
       entity = form.create(commit=True, key_name=key_name)
     else:
@@ -131,7 +133,7 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
     return entity
 
   def post(self, data, check, mutator):
-    evaluation = self.evaluationFromForm()
+    evaluation = self.evaluationFromForm(data)
     if evaluation:
       # TODO(nathaniel): Redirection to self?
       return data.redirect.survey().to(
