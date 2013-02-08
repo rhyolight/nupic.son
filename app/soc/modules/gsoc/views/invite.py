@@ -151,16 +151,14 @@ class InviteForm(gsoc_forms.GSoCModelForm):
 
 
 class InvitePage(GSoCRequestHandler):
-  """Encapsulate all the methods required to generate Invite page.
-  """
+  """Encapsulate all the methods required to generate Invite page."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/invite/base.html'
 
   def djangoURLPatterns(self):
     return [
-        url(r'invite/%s$' % url_patterns.INVITE,
-            self, name='gsoc_invite')
+        url(r'invite/%s$' % url_patterns.INVITE, self, name='gsoc_invite')
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -183,37 +181,40 @@ class InvitePage(GSoCRequestHandler):
         'error': bool(invite_form.errors)
     }
 
-  def _createFromForm(self):
+  def _createFromForm(self, data):
     """Creates a new invitation based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created Request entity or None
     """
+    # TODO(nathaniel): Actually this looks like it returns None or True?
+    assert isSet(data.organization)
 
-    assert isSet(self.data.organization)
-
-    invite_form = InviteForm(self.data, self.data.POST)
+    invite_form = InviteForm(data, data.POST)
 
     if not invite_form.is_valid():
       return None
 
-    assert isSet(self.data.invited_user)
-    assert self.data.invited_user
+    assert isSet(data.invited_user)
+    assert data.invited_user
 
     # create a new invitation entity
 
-    invite_form.cleaned_data['org'] = self.data.organization
-    invite_form.cleaned_data['role'] = self.data.kwargs['role']
+    invite_form.cleaned_data['org'] = data.organization
+    invite_form.cleaned_data['role'] = data.kwargs['role']
     invite_form.cleaned_data['type'] = 'Invitation'
 
     def create_invite_txn(user):
       invite = invite_form.create(commit=True, parent=user)
-      context = notifications.inviteContext(self.data, invite)
+      context = notifications.inviteContext(data, invite)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()
       return invite
 
-    for user in self.data.invited_user:
+    for user in data.invited_user:
       invite_form.instance = None
       invite_form.cleaned_data['user'] = user
       db.run_in_transaction(create_invite_txn, user)
@@ -222,7 +223,7 @@ class InvitePage(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler to for GSoC Invitation Page HTTP post request."""
-    if self._createFromForm():
+    if self._createFromForm(data):
       data.redirect.invite()
       return data.redirect.to('gsoc_invite', validated=True)
     else:
@@ -231,8 +232,7 @@ class InvitePage(GSoCRequestHandler):
 
 
 class ShowInvite(GSoCRequestHandler):
-  """Encapsulate all the methods required to generate Show Invite page.
-  """
+  """Encapsulate all the methods required to generate Show Invite page."""
 
   ACTIONS = {
       'accept': 'Accept',
