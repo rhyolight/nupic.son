@@ -179,8 +179,7 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
 
 
 class GSoCOrgAppTakePage(GSoCRequestHandler):
-  """View for organizations to submit their application.
-  """
+  """View for organizations to submit their application."""
 
   def djangoURLPatterns(self):
     return [
@@ -225,26 +224,29 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
 
     return context
 
-  def recordOrgAppFromForm(self):
+  def recordOrgAppFromForm(self, data):
     """Create/edit a new student evaluation record based on the form input.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated evaluation record entity or None
     """
-    if self.data.org_app_record:
+    if data.org_app_record:
       form = GSoCOrgAppTakeForm(
-          self.data.org_app, self.data.POST, instance=self.data.org_app_record)
+          data.org_app, data.POST, instance=data.org_app_record)
     else:
-      form = GSoCOrgAppTakeForm(self.data.org_app, self.data.POST)
+      form = GSoCOrgAppTakeForm(data.org_app, data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.org_app_record:
-      form.cleaned_data['user'] = self.data.user
-      form.cleaned_data['main_admin'] = self.data.user
-      form.cleaned_data['survey'] = self.data.org_app
-      form.cleaned_data['program'] = self.data.program
+    if not data.org_app_record:
+      form.cleaned_data['user'] = data.user
+      form.cleaned_data['main_admin'] = data.user
+      form.cleaned_data['survey'] = data.org_app
+      form.cleaned_data['program'] = data.program
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
@@ -252,7 +254,7 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
     return entity
 
   def post(self, data, check, mutator):
-    org_app_record = self.recordOrgAppFromForm()
+    org_app_record = self.recordOrgAppFromForm(data)
     if org_app_record:
       data.redirect.id(org_app_record.key().id())
       return data.redirect.to('gsoc_retake_org_app', validated=True)
