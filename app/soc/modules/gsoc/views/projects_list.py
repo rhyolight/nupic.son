@@ -141,15 +141,14 @@ class ListProjects(GSoCRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler for GSoC Accepted Projects List page HTTP get request."""
-    program = self.data.program
-    list_query = project_logic.getAcceptedProjectsQuery(
-        program=self.data.program)
+    program = data.program
+    list_query = project_logic.getAcceptedProjectsQuery(program=data.program)
 
     return {
         'page_name': '%s - Accepted Projects' % program.short_name,
         'program_name': program.name,
-        'project_list': ProjectList(self.data, list_query),
-        'program_select': ProgramSelect(self.data, 'gsoc_accepted_projects'),
+        'project_list': ProjectList(data, list_query),
+        'program_select': ProgramSelect(data, 'gsoc_accepted_projects'),
     }

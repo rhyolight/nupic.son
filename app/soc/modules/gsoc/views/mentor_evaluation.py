@@ -99,18 +99,18 @@ class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation.html'
 
-  def context(self):
-    if self.data.mentor_evaluation:
+  def context(self, data, check, mutator):
+    if data.mentor_evaluation:
       form = GSoCMentorEvaluationEditForm(
-          self.data.POST or None, instance=self.data.mentor_evaluation)
+          data.POST or None, instance=data.mentor_evaluation)
     else:
-      form = GSoCMentorEvaluationEditForm(self.data.POST or None)
+      form = GSoCMentorEvaluationEditForm(data.POST or None)
 
-    page_name = ugettext('Edit - %s' % (self.data.mentor_evaluation.title)) \
-        if self.data.mentor_evaluation else 'Create new mentor evaluation'
+    page_name = ugettext('Edit - %s' % (data.mentor_evaluation.title)) \
+        if data.mentor_evaluation else 'Create new mentor evaluation'
     context = {
         'page_name': page_name,
-        'post_url': self.data.redirect.survey().urlOf(
+        'post_url': data.redirect.survey().urlOf(
             'gsoc_edit_mentor_evaluation'),
         'forms': [form],
         'error': bool(form.errors),
@@ -189,22 +189,22 @@ class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation_take.html'
 
-  def context(self):
-    if self.data.mentor_evaluation_record:
+  def context(self, data, check, mutator):
+    if data.mentor_evaluation_record:
       form = GSoCMentorEvaluationTakeForm(
-          self.data.mentor_evaluation,
-          self.data.POST or None, instance=self.data.mentor_evaluation_record)
+          data.mentor_evaluation,
+          data.POST or None, instance=data.mentor_evaluation_record)
     else:
       form = GSoCMentorEvaluationTakeForm(
-          self.data.mentor_evaluation, self.data.POST or None)
+          data.mentor_evaluation, data.POST or None)
 
     context = {
-        'page_name': '%s' % (self.data.mentor_evaluation.title),
-        'description': self.data.mentor_evaluation.content,
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False,
+        'page_name': '%s' % (data.mentor_evaluation.title),
+        'description': data.mentor_evaluation.content,
+        'form_top_msg': LoggedInMsg(data, apply_link=False,
                                     div_name='user-login'),
-        'project': self.data.project.title,
-        'student': self.data.project_owner.name(),
+        'project': data.project.title,
+        'student': data.project_owner.name(),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -266,13 +266,13 @@ class GSoCMentorEvaluationPreviewPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation_take.html'
 
-  def context(self):
-    form = GSoCMentorEvaluationTakeForm(self.data.mentor_evaluation)
+  def context(self, data, check, mutator):
+    form = GSoCMentorEvaluationTakeForm(data.mentor_evaluation)
 
     context = {
-        'page_name': '%s' % (self.data.mentor_evaluation.title),
-        'description': self.data.mentor_evaluation.content,
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False,
+        'page_name': '%s' % (data.mentor_evaluation.title),
+        'description': data.mentor_evaluation.content,
+        'form_top_msg': LoggedInMsg(data, apply_link=False,
                                     div_name='user-login'),
         'project': 'The Project Title',
         'student': "The Student's Name",
@@ -300,12 +300,11 @@ class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
     self.check.isHost()
     self.mutator.mentorEvaluationFromKwargs()
 
-  def context(self):
-    """Returns the context of the page to render.
-    """
+  def context(self, data, check, mutator):
+    """Returns the context of the page to render."""
     record_list = self._createSurveyRecordList()
 
-    page_name = ugettext('Records - %s' % (self.data.mentor_evaluation.title))
+    page_name = ugettext('Records - %s' % (data.mentor_evaluation.title))
     context = {
         'page_name': page_name,
         'record_list': record_list,
@@ -377,27 +376,26 @@ class GSoCMentorEvaluationShowPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/_survey/show.html'
 
-  def context(self):
-    assert isSet(self.data.mentor_evaluation_record)
+  def context(self, data, check, mutator):
+    assert isSet(data.mentor_evaluation_record)
 
-    record = self.data.mentor_evaluation_record
-    student = self.data.url_profile
+    record = data.mentor_evaluation_record
+    student = data.url_profile
 
     context = {
         'page_name': 'Student evaluation - %s' % (student.name()),
         'student': student.name(),
-        'organization': self.data.project.org.name,
-        'project': self.data.project.title,
-        'top_msg': LoggedInMsg(self.data, apply_link=False),
+        'organization': data.project.org.name,
+        'project': data.project.title,
+        'top_msg': LoggedInMsg(data, apply_link=False),
         'css_prefix': GSoCMentorEvaluationReadOnlyTemplate.Meta.css_prefix,
         }
 
     if record:
       context['record'] = GSoCMentorEvaluationReadOnlyTemplate(record)
 
-    if self.data.timeline.surveyPeriod(self.data.mentor_evaluation):
-      context['update_link'] = self.data.redirect.survey_record(
-          self.data.mentor_evaluation.link_id).urlOf(
-          'gsoc_take_mentor_evaluation')
+    if self.data.timeline.surveyPeriod(data.mentor_evaluation):
+      context['update_link'] = data.redirect.survey_record(
+          data.mentor_evaluation.link_id).urlOf('gsoc_take_mentor_evaluation')
 
     return context

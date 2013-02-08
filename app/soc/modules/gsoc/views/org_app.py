@@ -85,22 +85,20 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/edit.html'
 
-  def context(self):
-    if self.data.org_app:
-      form = GSoCOrgAppEditForm(
-          self.data.POST or None, instance=self.data.org_app)
+  def context(self, data, check, mutator):
+    if data.org_app:
+      form = GSoCOrgAppEditForm(data.POST or None, instance=data.org_app)
     else:
-      form = GSoCOrgAppEditForm(self.data.POST or None)
+      form = GSoCOrgAppEditForm(data.POST or None)
 
-    if self.data.org_app:
-      page_name = ugettext('Edit - %s' % (self.data.org_app.title))
+    if data.org_app:
+      page_name = ugettext('Edit - %s' % (data.org_app.title))
     else:
       page_name = 'Create new organization application'
 
     context = {
         'page_name': page_name,
-        'post_url': self.linker.program(
-            self.data.program, 'gsoc_edit_org_app'),
+        'post_url': self.linker.program(data.program, 'gsoc_edit_org_app'),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -167,11 +165,11 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/take.html'
 
-  def context(self):
-    form = GSoCOrgAppTakeForm(self.data.org_app)
+  def context(self, data, check, mutator):
+    form = GSoCOrgAppTakeForm(data.org_app)
 
     context = {
-        'page_name': '%s' % (self.data.org_app.title),
+        'page_name': '%s' % (data.org_app.title),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -211,16 +209,15 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/take.html'
 
-  def context(self):
-    if self.data.org_app_record:
+  def context(self, data, check, mutator):
+    if data.org_app_record:
       form = GSoCOrgAppTakeForm(
-          self.data.org_app, self.data.POST or None,
-          instance=self.data.org_app_record)
+          data.org_app, data.POST or None, instance=data.org_app_record)
     else:
-      form = GSoCOrgAppTakeForm(self.data.org_app, self.data.POST or None)
+      form = GSoCOrgAppTakeForm(data.org_app, data.POST or None)
 
     context = {
-        'page_name': '%s' % (self.data.org_app.title),
+        'page_name': '%s' % (data.org_app.title),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -349,8 +346,8 @@ class GSoCOrgAppShowPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/show.html'
 
-  def context(self):
-    record = self.data.org_app_record
+  def context(self, data, check, mutator):
+    record = data.org_app_record
 
     context = {
         'page_name': 'Organization application - %s' % (record.name),
@@ -362,18 +359,18 @@ class GSoCOrgAppShowPage(GSoCRequestHandler):
       context['record'] = OrgAppReadOnlyTemplate(record)
 
       # admin info should be available only to the hosts
-      if self.data.is_host:
-        context['main_admin_url'] = self.data.redirect.profile(
+      if data.is_host:
+        context['main_admin_url'] = data.redirect.profile(
             record.main_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW)
-        context['backup_admin_url'] = self.data.redirect.profile(
+        context['backup_admin_url'] = data.redirect.profile(
             record.backup_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW)
 
-    if self.data.timeline.surveyPeriod(self.data.org_app):
+    if data.timeline.surveyPeriod(data.org_app):
       if record:
-        context['update_link'] = self.data.redirect.id().urlOf(
+        context['update_link'] = data.redirect.id().urlOf(
             'gsoc_retake_org_app')
       else:
         context['create_link'] = self.linker.program(
-            self.data.program, 'gsoc_take_org_app')
+            data.program, 'gsoc_take_org_app')
 
     return context

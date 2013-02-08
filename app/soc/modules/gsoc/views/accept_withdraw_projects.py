@@ -250,9 +250,9 @@ class AcceptProposals(GSoCRequestHandler):
     else:
       raise AccessViolation('You cannot change this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Builds the context for GSoC proposals List page HTTP get request."""
-    program = self.data.program
+    program = data.program
 
     return {
         'page_name': '%s - Proposals' % program.short_name,
@@ -460,11 +460,11 @@ class WithdrawProjects(GSoCRequestHandler):
     else:
       raise AccessViolation('You cannot change this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler for GSoC Accepted Projects List page HTTP get request."""
     return {
-        'page_name': '%s - Projects' % self.data.program.short_name,
-        'program_name': self.data.program.name,
-        'list': ProjectList(self.data),
-        'program_select': ProgramSelect(self.data, 'gsoc_withdraw_projects'),
+        'page_name': '%s - Projects' % data.program.short_name,
+        'program_name': data.program.name,
+        'list': ProjectList(data),
+        'program_select': ProgramSelect(data, 'gsoc_withdraw_projects'),
     }

@@ -250,33 +250,33 @@ class TaskViewPage(GCIRequestHandler):
         'upload_link': blobstore.create_upload_url(url),
         }
 
-  def context(self):
-    """Returns the context for this view.
-    """
-    task = self.data.task
+  def context(self, data, check, mutator):
+    """Returns the context for this view."""
+    task = data.task
 
     context = {
-      'page_name': '%s - %s' %(task.title, task.org.name),
+      'page_name': '%s - %s' % (task.title, task.org.name),
       'task': task,
-      'is_mentor': self.data.mentorFor(task.org),
-      'task_info': TaskInformation(self.data),
+      'is_mentor': data.mentorFor(task.org),
+      'task_info': TaskInformation(data),
     }
 
     if task.deadline:
+      # TODO(nathaniel): This is math - move it to a helper function.
       context['complete_percentage'] = timeline_helper.completePercentage(
           end=task.deadline, duration=(task.time_to_complete*3600))
 
-    if self.data.is_visible:
-      context['work_submissions'] = WorkSubmissions(self.data)
-      context['comment_ids'] = [i.key().id() for i in self.data.comments]
-      context['comments'] = CommentsTemplate(self.data)
+    if data.is_visible:
+      context['work_submissions'] = WorkSubmissions(data)
+      context['comment_ids'] = [i.key().id() for i in data.comments]
+      context['comments'] = CommentsTemplate(data)
 
     if not context['is_mentor']:
       # Programmatically change css for non-mentors, to for instance show
       # the open cog when a task can be claimed.
       if task.status == 'Closed':
         block_type = 'completed'
-      elif task_logic.isOwnerOfTask(task, self.data.profile):
+      elif task_logic.isOwnerOfTask(task, data.profile):
         block_type = 'owned'
       elif task.status in ACTIVE_CLAIMED_TASK:
         block_type = 'claimed'

@@ -159,22 +159,22 @@ class StudentFormUpload(GCIRequestHandler):
       # rather than a self-call.
       return self.error(data, httplib.NOT_FOUND, message='File not found')
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
     context = {
         'page_name': 'Student form upload'
         }
 
-    upload_form = UploadForm(self.data, instance=self.data.student_info)
+    upload_form = UploadForm(data, instance=data.student_info)
 
-    if profile_logic.hasStudentFormsUploaded(self.data.student_info):
-      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+    if profile_logic.hasStudentFormsUploaded(data.student_info):
+      kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
       claim_tasks_url = reverse('gci_list_tasks', kwargs=kwargs)
       context['form_instructions'] = CLAIM_TASKS_NOW % claim_tasks_url
     # TODO(ljvderijk): This can be removed when AppEngine supports 200 response
     # in the BlobStore API.
-    if self.data.GET:
-      for key, error in self.data.GET.iteritems():
+    if data.GET:
+      for key, error in data.GET.iteritems():
         if not key.startswith('error_'):
           continue
         field_name = key.split('error_', 1)[1]

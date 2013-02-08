@@ -132,18 +132,18 @@ class LeaderboardPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     context = {
-        'page_name': "Leaderboard for %s" % self.data.program.name,
-        'leaderboard_list': LeaderboardList(self.data),
-        'timeline': common_templates.Timeline(self.data),
-        'complete_percentage': self.data.timeline.completePercentage(),
-        'your_score': common_templates.YourScore(self.data),
+        'page_name': "Leaderboard for %s" % data.program.name,
+        'leaderboard_list': LeaderboardList(data),
+        'timeline': common_templates.Timeline(data),
+        'complete_percentage': data.timeline.completePercentage(),
+        'your_score': common_templates.YourScore(data),
         'program_select': common_templates.ProgramSelect(
-            self.data, url_names.GCI_LEADERBOARD),
+            data, url_names.GCI_LEADERBOARD),
         }
-    if self.data.is_host or self.data.timeline.winnersAnnounced():
-      context['winners'] = common_templates.GlobalRankingWinners(self.data)
+    if data.is_host or data.timeline.winnersAnnounced():
+      context['winners'] = common_templates.GlobalRankingWinners(data)
 
     return context
 
@@ -178,8 +178,8 @@ class StudentTasksPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Tasks closed by %s" % self.data.url_profile.name(),
-        'tasks_list': AllStudentTasksList(self.data),
+        'page_name': "Tasks closed by %s" % data.url_profile.name(),
+        'tasks_list': AllStudentTasksList(data),
     }

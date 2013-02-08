@@ -23,8 +23,9 @@ class ProgramMessagesPage(object):
   def checkAccess(self):
     self.check.isHost()
 
-  def context(self):
-    entity = self._getSingletonEntity(self.data.program)
+  def context(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.context for specification."""
+    entity = self._getSingletonEntity(data.program)
     form = self._getForm(entity)
 
     return {

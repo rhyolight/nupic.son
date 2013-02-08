@@ -39,7 +39,17 @@ class RequestHandler(object):
   # a real injected dependency.
   linker = links.Linker()
 
-  def context(self):
+  def context(self, data, check, mutator):
+    """Provides a dictionary of values needed to render a template.
+
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
+    Returns:
+      A dictionary of values to be used in rendering a template.
+    """
     return {}
 
   def get(self, data, check, mutator):
@@ -56,7 +66,7 @@ class RequestHandler(object):
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
     """
-    context = self.context()
+    context = self.context(data, check, mutator)
     template_path = self.templatePath()
     response_content = self.render(data, template_path, context)
     return http.HttpResponse(content=response_content)

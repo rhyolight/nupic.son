@@ -388,12 +388,12 @@ class ReviewProposal(GSoCRequestHandler):
 
     return result
 
-  def context(self):
-    assert isSet(self.data.public_comments_visible)
-    assert isSet(self.data.private_comments_visible)
-    assert isSet(self.data.url_profile)
-    assert isSet(self.data.url_user)
-    assert isSet(self.data.proposal)
+  def context(self, data, check, mutator):
+    assert isSet(data.public_comments_visible)
+    assert isSet(data.private_comments_visible)
+    assert isSet(data.url_profile)
+    assert isSet(data.url_user)
+    assert isSet(data.proposal)
 
     context = {}
 
@@ -402,23 +402,23 @@ class ReviewProposal(GSoCRequestHandler):
     scores = self.getScores()
 
     # TODO: check if the scoring is not disabled
-    score_action = reverse('score_gsoc_proposal', kwargs=self.data.kwargs)
+    score_action = reverse('score_gsoc_proposal', kwargs=data.kwargs)
 
     # get all the comments for the the proposal
     public_comments, private_comments = self.getComments()
 
     # TODO: check if it is possible to post a comment
-    comment_action = reverse('comment_gsoc_proposal', kwargs=self.data.kwargs)
+    comment_action = reverse('comment_gsoc_proposal', kwargs=data.kwargs)
 
-    if self.data.private_comments_visible:
-      form = PrivateCommentForm(self.data.POST or None)
-      if self.data.orgAdminFor(self.data.proposal.org):
+    if data.private_comments_visible:
+      form = PrivateCommentForm(data.POST or None)
+      if data.orgAdminFor(data.proposal.org):
         user_role = 'org_admin'
       else:
         user_role = 'mentor'
 
     else:
-      form = CommentForm(self.data.POST or None)
+      form = CommentForm(data.POST or None)
 
     comment_box = {
         'action': comment_action,
@@ -427,63 +427,61 @@ class ReviewProposal(GSoCRequestHandler):
 
     # to keep the blocks as simple as possible, the if branches have
     # been broken down into several if blocks
-    user_is_proposer = self.data.user and \
-        (self.data.user.key() == self.data.url_user.key())
+    user_is_proposer = data.user and (data.user.key() == data.url_user.key())
     if user_is_proposer:
       user_role = 'proposer'
 
       # we will check if the student is allowed to modify the proposal
       # after the student proposal deadline
-      is_editable = self.data.timeline.afterStudentSignupEnd() and \
-          self.data.proposal.is_editable_post_deadline
-      if self.data.timeline.studentSignup() or is_editable:
-        context['update_link'] = self.data.redirect.id().urlOf(
+      is_editable = data.timeline.afterStudentSignupEnd() and \
+          data.proposal.is_editable_post_deadline
+      if data.timeline.studentSignup() or is_editable:
+        context['update_link'] = data.redirect.id().urlOf(
             'update_gsoc_proposal')
 
-    possible_mentors = db.get(self.data.proposal.possible_mentors)
+    possible_mentors = db.get(data.proposal.possible_mentors)
     possible_mentors = self.sanitizePossibleMentors(possible_mentors)
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
 
-    scoring_visible = self.data.private_comments_visible and (
-        not self.data.proposal_org.scoring_disabled)
+    scoring_visible = data.private_comments_visible and (
+        not data.proposal_org.scoring_disabled)
 
-    if self.data.orgAdminFor(self.data.proposal_org):
+    if data.orgAdminFor(data.proposal_org):
       scoring_visible = True
 
     duplicate = None
-    if self.data.program.duplicates_visible and self.data.orgAdminFor(
-        self.data.proposal_org):
+    if data.program.duplicates_visible and data.orgAdminFor(data.proposal_org):
       q = GSoCProposalDuplicate.all()
-      q.filter('duplicates', self.data.proposal)
+      q.filter('duplicates', data.proposal)
       q.filter('is_duplicate', True)
       dup_entity = q.get()
-      duplicate = Duplicate(self.data, dup_entity) if dup_entity else None
+      duplicate = Duplicate(data, dup_entity) if dup_entity else None
 
     additional_info = self.data.proposal.additional_info
 
     if user_role:
-      context['user_actions'] = UserActions(self.data, user_role)
+      context['user_actions'] = UserActions(data, user_role)
 
     context.update({
         'additional_info': url_helper.trim_url_to(additional_info, 50),
         'additional_info_link': additional_info,
         'comment_box': comment_box,
         'duplicate': duplicate,
-        'max_score': self.data.proposal_org.max_score,
-        'mentor': self.data.proposal.mentor,
-        'page_name': self.data.proposal.title,
+        'max_score': data.proposal_org.max_score,
+        'mentor': data.proposal.mentor,
+        'page_name': data.proposal.title,
         'possible_mentors': possible_mentors_names,
         'private_comments': private_comments,
-        'private_comments_visible': self.data.private_comments_visible,
-        'proposal': self.data.proposal,
+        'private_comments_visible': data.private_comments_visible,
+        'proposal': data.proposal,
         'public_comments': public_comments,
-        'public_comments_visible': self.data.public_comments_visible,
+        'public_comments_visible': data.public_comments_visible,
         'score_action': score_action,
         'scores': scores,
         'scoring_visible': scoring_visible,
-        'student_email': self.data.url_profile.email,
-        'student_name': self.data.url_profile.name(),
-        'proposal_ignored': self.data.proposal.status == 'ignored',
+        'student_email': data.url_profile.email,
+        'student_name': data.url_profile.name(),
+        'proposal_ignored': data.proposal.status == 'ignored',
         'user_role': user_role,
         })
 

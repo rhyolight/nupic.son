@@ -141,14 +141,15 @@ class ProfileShowPage(object):
     self.check.isLoggedIn()
     self.check.hasProfile()
 
-  def context(self):
-    assert isSet(self.data.program)
-    assert isSet(self.data.user)
+  def context(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.context for specification."""
+    assert isSet(data.program)
+    assert isSet(data.user)
 
     profile = self._getProfile()
-    program = self.data.program
+    program = data.program
 
-    user_template = self._getUserReadOnlyTemplate(self.data.user)
+    user_template = self._getUserReadOnlyTemplate(data.user)
     profile_template = self._getProfileReadOnlyTemplate(profile)
     css_prefix = profile_template.Meta.css_prefix
 

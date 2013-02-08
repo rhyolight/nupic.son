@@ -226,30 +226,30 @@ class Homepage(GCIRequestHandler):
   def checkAccess(self):
     self.check.isProgramVisible()
 
-  def context(self):
-    current_timeline = self.data.timeline.currentPeriod()
+  def context(self, data, check, mutator):
+    current_timeline = data.timeline.currentPeriod()
 
     context = {
-        'page_name': '%s - Home page' % (self.data.program.name),
-        'how_it_works': HowItWorks(self.data),
-        'participating_orgs': ParticipatingOrgs(self.data),
-        'timeline': common_templates.Timeline(self.data),
-        'complete_percentage': self.data.timeline.completePercentage(),
+        'page_name': '%s - Home page' % data.program.name,
+        'how_it_works': HowItWorks(data),
+        'participating_orgs': ParticipatingOrgs(data),
+        'timeline': common_templates.Timeline(data),
+        'complete_percentage': data.timeline.completePercentage(),
         'current_timeline': current_timeline,
-        'connect_with_us': ConnectWithUs(self.data),
-        'program': self.data.program,
+        'connect_with_us': ConnectWithUs(data),
+        'program': data.program,
     }
 
     if current_timeline in ['student_signup_period',
         'working_period', 'offseason']:
-      featured_task = task_logic.getFeaturedTask(self.data.program)
+      featured_task = task_logic.getFeaturedTask(data.program)
 
       if featured_task:
-        context['featured_task'] = FeaturedTask(self.data, featured_task)
+        context['featured_task'] = FeaturedTask(data, featured_task)
 
-    if self.data.is_host or self.data.timeline.winnersAnnounced():
+    if data.is_host or data.timeline.winnersAnnounced():
       context['winners'] = self._getWinnersTemplate(
-          self.data.program.winner_selection_type)
+          data.program.winner_selection_type)
 
     return context
 

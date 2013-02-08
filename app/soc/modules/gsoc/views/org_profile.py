@@ -176,28 +176,27 @@ class OrgProfilePage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/org_profile/base.html'
 
-  def context(self):
-    if not self.data.organization:
-      form = OrgCreateProfileForm(self.data.POST or None)
+  def context(self, data, check, mutator):
+    if not data.organization:
+      form = OrgCreateProfileForm(data.POST or None)
     else:
-      form = OrgProfileForm(self.data.POST or None,
-                            instance=self.data.organization)
+      form = OrgProfileForm(data.POST or None, instance=data.organization)
 
     context = {
         'page_name': "Organization profile",
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False),
+        'form_top_msg': LoggedInMsg(data, apply_link=False),
         'forms': [form],
         'error': bool(form.errors),
         }
 
-    if self.data.organization:
+    if data.organization:
       # TODO(nathaniel): make this .organization() unnecessary.
-      self.data.redirect.organization()
+      data.redirect.organization()
 
-      context['org_home_page_link'] = self.data.redirect.urlOf('gsoc_org_home')
-      if (self.data.program.allocations_visible and
-            self.data.timeline.beforeStudentsAnnounced()):
-        context['slot_transfer_page_link'] = self.data.redirect.urlOf(
+      context['org_home_page_link'] = data.redirect.urlOf('gsoc_org_home')
+      if (data.program.allocations_visible and
+          data.timeline.beforeStudentsAnnounced()):
+        context['slot_transfer_page_link'] = data.redirect.urlOf(
             'gsoc_slot_transfer')
 
     return context

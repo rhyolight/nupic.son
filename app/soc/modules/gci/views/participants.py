@@ -112,9 +112,9 @@ class MentorsListAdminPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': "List of organization admins and mentors for %s" % (
-            self.data.program.name),
-        'mentors_list': MentorsList(self.data),
+            data.program.name),
+        'mentors_list': MentorsList(data),
     }

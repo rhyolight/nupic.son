@@ -67,17 +67,17 @@ class ProposalPage(GSoCRequestHandler):
   def buttonsTemplate(self):
     return 'v2/modules/gsoc/proposal/_buttons_create.html'
 
-  def context(self):
-    if self.data.POST:
-      proposal_form = ProposalForm(self.data.POST)
+  def context(self, data, check, mutator):
+    if data.POST:
+      proposal_form = ProposalForm(data.POST)
     else:
-      initial = {'content': self.data.organization.contrib_template}
+      initial = {'content': data.organization.contrib_template}
       proposal_form = ProposalForm(initial=initial)
 
     return {
         'page_name': 'Submit proposal',
         'form_header_message': 'Submit proposal to %s' % (
-            self.data.organization.name),
+            data.organization.name),
         'proposal_form': proposal_form,
         'buttons_template': self.buttonsTemplate()
         }
@@ -180,17 +180,16 @@ class UpdateProposal(GSoCRequestHandler):
   def buttonsTemplate(self):
     return 'v2/modules/gsoc/proposal/_buttons_update.html'
 
-  def context(self):
-    proposal = self.data.proposal
+  def context(self, data, check, mutator):
+    proposal = data.proposal
 
-    proposal_form = ProposalForm(self.data.POST or None,
-        instance=proposal)
+    proposal_form = ProposalForm(data.POST or None, instance=proposal)
 
     return {
         'page_name': 'Update proposal',
         'form_header_message': 'Update proposal to %s' % (proposal.org.name),
         'proposal_form': proposal_form,
-        'is_pending': self.data.is_pending,
+        'is_pending': data.is_pending,
         'buttons_template': self.buttonsTemplate(),
         }
 

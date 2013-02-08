@@ -44,16 +44,15 @@ class DuplicatesPage(GSoCRequestHandler):
   def checkAccess(self):
     self.check.isHost()
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Returns the context for this page."""
-    program = self.data.program
+    program = data.program
 
     q = GSoCProposalDuplicate.all()
     q.filter('program', program)
     q.filter('is_duplicate', True)
 
-    duplicates = [Duplicate(self.data, duplicate)
-                  for duplicate in q.fetch(1000)]
+    duplicates = [Duplicate(data, duplicate) for duplicate in q.fetch(1000)]
     duplicates_status = duplicates_logic.getOrCreateStatusForProgram(program)
 
     context = {

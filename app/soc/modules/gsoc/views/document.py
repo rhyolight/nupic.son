@@ -63,11 +63,11 @@ class EditDocumentPage(GSoCRequestHandler):
 
     self.check.canEditDocument()
 
-  def context(self):
-    form = GSoCDocumentForm(self.data.POST or None, instance=self.data.document)
+  def context(self, data, check, mutator):
+    form = GSoCDocumentForm(data.POST or None, instance=data.document)
 
-    if self.data.document:
-      page_name = 'Edit %s' % self.data.document.title
+    if data.document:
+      page_name = 'Edit %s' % data.document.title
     else:
       page_name = 'Create new Document'
 
@@ -115,10 +115,10 @@ class DocumentPage(GSoCRequestHandler):
 
     self.check.canViewDocument()
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'tmpl': document.Document(self.data, self.data.document),
-        'page_name': self.data.document.title,
+        'tmpl': document.Document(data, data.document),
+        'page_name': data.document.title,
     }
 
 
@@ -139,10 +139,10 @@ class EventsPage(GSoCRequestHandler):
     self.data.document = self.data.program.events_page
     self.check.canViewDocument()
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'document': self.data.program.events_page,
-        'frame_url': self.data.program.events_frame_url,
+        'document': data.program.events_page,
+        'frame_url': data.program.events_frame_url,
         'page_name': 'Events and Timeline',
     }
 
@@ -180,9 +180,9 @@ class DocumentListPage(GSoCRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Documents for %s" % self.data.program.name,
-        'document_list': GSoCDocumentList(self.data),
-        'program_select': ProgramSelect(self.data, 'list_gsoc_documents'),
+        'page_name': "Documents for %s" % data.program.name,
+        'document_list': GSoCDocumentList(data),
+        'program_select': ProgramSelect(data, 'list_gsoc_documents'),
     }

@@ -114,9 +114,9 @@ class ProgramPage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/program/base.html'
 
-  def context(self):
-    program_form = ProgramForm(self.data, self.data.POST or None,
-                               instance=self.data.program)
+  def context(self, data, check, mutator):
+    program_form = ProgramForm(data, data.POST or None,
+                               instance=data.program)
     return {
         'page_name': 'Edit program settings',
         'forms': [program_form],
@@ -159,9 +159,9 @@ class TimelinePage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/timeline/base.html'
 
-  def context(self):
-    timeline_form = TimelineForm(self.data.POST or None,
-                                 instance=self.data.program_timeline)
+  def context(self, data, check, mutator):
+    timeline_form = TimelineForm(data.POST or None,
+                                 instance=data.program_timeline)
     return {
         'page_name': 'Edit program timeline',
         'forms': [timeline_form],

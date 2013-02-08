@@ -67,8 +67,8 @@ class TaskListPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Tasks for %s" % self.data.program.name,
-        'task_list': AllTasksList(self.data),
+        'page_name': "Tasks for %s" % data.program.name,
+        'task_list': AllTasksList(data),
     }

@@ -215,28 +215,26 @@ class Homepage(GSoCRequestHandler):
     """
     self.check.isProgramVisible()
 
-  def context(self):
-    """Handler to for GSoC Home page HTTP get request.
-    """
+  def context(self, data, check, mutator):
+    """Handler to for GSoC Home page HTTP get request."""
 
-    current_timeline = self.data.timeline.currentPeriod()
-    next_deadline = self.data.timeline.nextDeadline()
+    current_timeline = data.timeline.currentPeriod()
+    next_deadline = data.timeline.nextDeadline()
 
     context = {
-        'logged_in_msg': LoggedInMsg(self.data, apply_link=False,
+        'logged_in_msg': LoggedInMsg(data, apply_link=False,
                                      div_name='user-login'),
-        'timeline': Timeline(self.data, current_timeline, next_deadline),
-        'apply': Apply(self.data),
-        'connect_with_us': ConnectWithUs(self.data),
-        'page_name': '%s - Home page' % (self.data.program.name),
-        'program': self.data.program,
+        'timeline': Timeline(data, current_timeline, next_deadline),
+        'apply': Apply(data),
+        'connect_with_us': ConnectWithUs(data),
+        'page_name': '%s - Home page' % (data.program.name),
+        'program': data.program,
     }
 
     featured_project = project_logic.getFeaturedProject(
-        current_timeline, self.data.program)
+        current_timeline, data.program)
 
     if featured_project:
-      context['featured_project'] = FeaturedProject(
-        self.data, featured_project)
+      context['featured_project'] = FeaturedProject(data, featured_project)
 
     return context

@@ -95,10 +95,10 @@ class TaskListPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Tasks for %s" % self.data.program.name,
-        'task_list': TaskList2(self.data),
+        'page_name': "Tasks for %s" % data.program.name,
+        'task_list': TaskList2(data),
 #        'program_select': ProgramSelect(self.data, 'list_gci_finished_tasks'),
     }
 
@@ -146,11 +146,11 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': "Tasks closed by %s for %s" % (
-            self.data.url_profile.name(), self.data.organization.name),
-        'task_list': StudentTasksForOrganizationList(self.data),
+            data.url_profile.name(), data.organization.name),
+        'task_list': StudentTasksForOrganizationList(data),
     }
 
 
@@ -195,10 +195,10 @@ class ChooseOrganizationPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': "Choose an organization for which to display tasks.",
-        'org_list': ChooseOrganizationList(self.data),
+        'org_list': ChooseOrganizationList(data),
     }
 
 
@@ -242,8 +242,8 @@ class AllOrganizationTasksPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': 'Tasks created by %s' % self.data.organization.name,
-        'task_list': AllOrganizationTasksList(self.data),
+        'page_name': 'Tasks created by %s' % data.organization.name,
+        'task_list': AllOrganizationTasksList(data),
     }

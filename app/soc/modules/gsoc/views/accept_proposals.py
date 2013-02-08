@@ -40,9 +40,9 @@ class AcceptProposalsPage(GSoCRequestHandler):
   def checkAccess(self):
     self.check.isHost()
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Returns the context for this page."""
-    program = self.data.program
+    program = data.program
 
     conversion_status = conversion_logic.getOrCreateStatusForProgram(program)
 

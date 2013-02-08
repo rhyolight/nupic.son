@@ -170,18 +170,17 @@ class InvitePage(GSoCRequestHandler):
     self.check.isProgramVisible()
     self.check.isOrgAdmin()
 
-  def context(self):
-    """Handler to for GSoC Invitation Page HTTP get request.
-    """
+  def context(self, data, check, mutator):
+    """Handler to for GSoC Invitation Page HTTP get request."""
 
-    role = 'Org Admin' if self.data.kwargs['role'] == 'org_admin' else 'Mentor'
+    role = 'Org Admin' if data.kwargs['role'] == 'org_admin' else 'Mentor'
 
-    invite_form = InviteForm(self.data, self.data.POST or None)
+    invite_form = InviteForm(data, data.POST or None)
 
     return {
-        'logout_link': self.data.redirect.logout(),
+        'logout_link': data.redirect.logout(),
         'page_name': 'Invite a new %s' % role,
-        'program': self.data.program,
+        'program': data.program,
         'invite_form': invite_form,
         'error': bool(invite_form.errors)
     }
@@ -294,23 +293,21 @@ class ShowInvite(GSoCRequestHandler):
     self.data.invited_profile = GSoCProfile.get_by_key_name(
         key_name, parent=self.data.invited_user)
 
-  def context(self):
-    """Handler to for GSoC Show Invitation Page HTTP get request.
-    """
-
-    assert isSet(self.data.invite)
-    assert isSet(self.data.can_respond)
-    assert isSet(self.data.organization)
-    assert isSet(self.data.invited_user)
-    assert isSet(self.data.invited_profile)
-    assert self.data.invited_profile
+  def context(self, data, check, mutator):
+    """Handler to for GSoC Show Invitation Page HTTP get request."""
+    assert isSet(data.invite)
+    assert isSet(data.can_respond)
+    assert isSet(data.organization)
+    assert isSet(data.invited_user)
+    assert isSet(data.invited_profile)
+    assert data.invited_profile
 
     # This code is dupcliated between request and invite
-    status = self.data.invite.status
+    status = data.invite.status
 
     can_accept = can_reject = can_withdraw = can_resubmit = False
 
-    if self.data.can_respond:
+    if data.can_respond:
       # invitee speaking
       if status == 'pending':
         can_accept = True
@@ -326,30 +323,30 @@ class ShowInvite(GSoCRequestHandler):
 
     show_actions = can_accept or can_reject or can_withdraw or can_resubmit
 
-    org_key = self.data.organization.key()
+    org_key = data.organization.key()
     status_msg = None
 
-    if self.data.invited_profile.key() == self.data.profile.key():
-      if org_key in self.data.invited_profile.org_admin_for:
+    if data.invited_profile.key() == data.profile.key():
+      if org_key in data.invited_profile.org_admin_for:
         status_msg =  DEF_STATUS_FOR_USER_MSG % 'an organization administrator'
-      elif org_key in self.data.invited_profile.mentor_for:
+      elif org_key in data.invited_profile.mentor_for:
         status_msg =  DEF_STATUS_FOR_USER_MSG % 'a mentor'
     else:
-      if org_key in self.data.invited_profile.org_admin_for:
+      if org_key in data.invited_profile.org_admin_for:
         status_msg = DEF_STATUS_FOR_ADMIN_MSG % 'an organization administrator'
-      elif org_key in self.data.invited_profile.mentor_for:
+      elif org_key in data.invited_profile.mentor_for:
         status_msg = DEF_STATUS_FOR_ADMIN_MSG % 'a mentor'
 
     return {
-        'request': self.data.invite,
+        'request': data.invite,
         'page_name': 'Invite',
-        'org': self.data.organization,
+        'org': data.organization,
         'actions': self.ACTIONS,
         'status_msg': status_msg,
-        'user_name': self.data.invited_profile.name(),
-        'user_link_id': self.data.invited_user.link_id,
+        'user_name': data.invited_profile.name(),
+        'user_link_id': data.invited_user.link_id,
         'user_email': accounts.denormalizeAccount(
-            self.data.invited_user.account).email(),
+             data.invited_user.account).email(),
         'show_actions': show_actions,
         'can_accept': can_accept,
         'can_reject': can_reject,

@@ -82,12 +82,12 @@ class OrgProfilePage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/org_profile/base.html'
 
-  def context(self):
-    if not self.data.organization:
-      form = OrgCreateProfileForm(self.data.POST or None)
+  def context(self, data, check, mutator):
+    if not data.organization:
+      form = OrgCreateProfileForm(data.POST or None)
     else:
-      form = OrgProfileForm(self.data.POST or None,
-                            instance=self.data.organization)
+      form = OrgProfileForm(data.POST or None,
+                            instance=data.organization)
 
     context = {
         'page_name': "Organization profile",
@@ -95,10 +95,10 @@ class OrgProfilePage(GCIRequestHandler):
         'error': bool(form.errors),
         }
 
-    if self.data.organization:
+    if data.organization:
       # TODO(nathaniel): make this .organization() call unnecessary.
-      self.data.redirect.organization()
-      context['org_home_page_link'] = self.data.redirect.urlOf('gci_org_home')
+      data.redirect.organization()
+      context['org_home_page_link'] = data.redirect.urlOf('gci_org_home')
 
     return context
 

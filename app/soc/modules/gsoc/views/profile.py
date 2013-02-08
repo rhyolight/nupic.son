@@ -213,13 +213,12 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
     else:
       self.check.isProfileActive()
 
-  def context(self):
-    """Context for the profile page.
-    """
-    context = super(GSoCProfilePage, self).context()
+  def context(self, data, check, mutator):
+    """Context for the profile page."""
+    context = super(GSoCProfilePage, self).context(data, check, mutator)
 
     # GSoC has a special "you are logged in" message on top of the form
-    context['form_top_msg'] = LoggedInMsg(self.data, apply_role=True)
+    context['form_top_msg'] = LoggedInMsg(data, apply_role=True)
 
     return context
 

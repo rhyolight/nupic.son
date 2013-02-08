@@ -77,18 +77,18 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation.html'
 
-  def context(self):
-    if self.data.student_evaluation:
+  def context(self, data, check, mutator):
+    if data.student_evaluation:
       form = GSoCStudentEvaluationEditForm(
-          self.data.POST or None, instance=self.data.student_evaluation)
+          data.POST or None, instance=data.student_evaluation)
     else:
-      form = GSoCStudentEvaluationEditForm(self.data.POST or None)
+      form = GSoCStudentEvaluationEditForm(data.POST or None)
 
-    page_name = ugettext('Edit - %s' % (self.data.student_evaluation.title)) \
-        if self.data.student_evaluation else 'Create new student evaluation'
+    page_name = ugettext('Edit - %s' % (data.student_evaluation.title)) \
+        if data.student_evaluation else 'Create new student evaluation'
     context = {
         'page_name': page_name,
-        'post_url': self.data.redirect.survey().urlOf(
+        'post_url': data.redirect.survey().urlOf(
             'gsoc_edit_student_evaluation'),
         'forms': [form],
         'error': bool(form.errors),
@@ -176,21 +176,21 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation_take.html'
 
-  def context(self):
-    if self.data.student_evaluation_record:
+  def context(self, data, check, mutator):
+    if data.student_evaluation_record:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.student_evaluation,
-          self.data.POST or None, instance=self.data.student_evaluation_record)
+          data.student_evaluation,
+          data.POST or None, instance=data.student_evaluation_record)
     else:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.student_evaluation, self.data.POST or None)
+          data.student_evaluation, data.POST or None)
 
     context = {
-        'page_name': '%s' % (self.data.student_evaluation.title),
-        'description': self.data.student_evaluation.content,
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False,
+        'page_name': '%s' % data.student_evaluation.title,
+        'description': data.student_evaluation.content,
+        'form_top_msg': LoggedInMsg(data, apply_link=False,
                                     div_name='user-login'),
-        'project': self.data.project.title,
+        'project': data.project.title,
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -253,13 +253,13 @@ class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation_take.html'
 
-  def context(self):
-    form = GSoCStudentEvaluationTakeForm(self.data.student_evaluation)
+  def context(self, data, check, mutator):
+    form = GSoCStudentEvaluationTakeForm(data.student_evaluation)
 
     context = {
-        'page_name': '%s' % (self.data.student_evaluation.title),
-        'description': self.data.student_evaluation.content,
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False,
+        'page_name': '%s' % data.student_evaluation.title,
+        'description': data.student_evaluation.content,
+        'form_top_msg': LoggedInMsg(data, apply_link=False,
                                     div_name='user-login'),
         'project': "The Project Title",
         'forms': [form],
@@ -286,12 +286,11 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
     self.check.isHost()
     self.mutator.studentEvaluationFromKwargs()
 
-  def context(self):
-    """Returns the context of the page to render.
-    """
+  def context(self, data, check, mutator):
+    """Returns the context of the page to render."""
     record_list = self._createSurveyRecordList()
 
-    page_name = ugettext('Records - %s' % (self.data.student_evaluation.title))
+    page_name = ugettext('Records - %s' % (data.student_evaluation.title))
     context = {
         'page_name': page_name,
         'record_list': record_list,
@@ -368,30 +367,30 @@ class GSoCStudentEvaluationShowPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/_survey/show.html'
 
-  def context(self):
-    assert isSet(self.data.program)
-    assert isSet(self.data.timeline)
-    assert isSet(self.data.student_evaluation_record)
+  def context(self, data, check, mutator):
+    assert isSet(data.program)
+    assert isSet(data.timeline)
+    assert isSet(data.student_evaluation_record)
 
-    record = self.data.student_evaluation_record
-    student = self.data.url_profile
+    record = data.student_evaluation_record
+    student = data.url_profile
 
     context = {
         'page_name': 'Student evaluation - %s' % (student.name()),
         'student': student.name(),
-        'organization': self.data.project.org.name,
-        'project': self.data.project.title,
-        'top_msg': LoggedInMsg(self.data, apply_link=False),
+        'organization': data.project.org.name,
+        'project': data.project.title,
+        'top_msg': LoggedInMsg(data, apply_link=False),
         'css_prefix': GSoCStudentEvaluationReadOnlyTemplate.Meta.css_prefix,
         }
 
     if record:
       context['record'] = GSoCStudentEvaluationReadOnlyTemplate(record)
 
-    if self.data.timeline.surveyPeriod(self.data.student_evaluation):
-      if self.data.role == 'student':
-        context['update_link'] = self.data.redirect.survey_record(
-            self.data.student_evaluation.link_id).urlOf(
+    if data.timeline.surveyPeriod(data.student_evaluation):
+      if data.role == 'student':
+        context['update_link'] = data.redirect.survey_record(
+            data.student_evaluation.link_id).urlOf(
             'gsoc_take_student_evaluation')
       else:
         context['submission_msg'] = ugettext(

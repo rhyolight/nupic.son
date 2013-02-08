@@ -62,19 +62,18 @@ class BulkCreate(GCIRequestHandler):
     """
     return 'v2/modules/gci/bulk_create/base.html'
 
-  def context(self):
-    """Handler for default HTTP GET request.
-    """
+  def context(self, data, check, mutator):
+    """Handler for default HTTP GET request."""
     context = {
-        'page_name': 'Bulk upload tasks for %s' % self.data.organization.name,
+        'page_name': 'Bulk upload tasks for %s' % data.organization.name,
         }
 
     # get a list of task type tags stored for the program entity
-    tts = self.data.program.task_types
+    tts = data.program.task_types
     context['types'] = ', '.join([str(x) for x in tts])
 
-    if self.data.POST:
-      form = BulkCreateForm(self.data.POST)
+    if data.POST:
+      form = BulkCreateForm(data.POST)
       context['form'] = form
     else:
       context['form'] = BulkCreateForm()

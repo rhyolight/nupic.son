@@ -72,9 +72,8 @@ class HostProfilePage(SiteRequestHandler):
   def templatePath(self):
     return 'soc/host/base.html'
 
-  def context(self):
-    host_profile_form = HostProfileForm(self.data.POST or None,
-                                        instance=self.data.host)
+  def context(self, data, check, mutator):
+    host_profile_form = HostProfileForm(data.POST or None, instance=data.host)
     return {
         'page_name': 'Host profile settings',
         'forms': [host_profile_form],

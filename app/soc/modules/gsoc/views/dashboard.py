@@ -162,13 +162,13 @@ class DashboardPage(GSoCRequestHandler):
     else:
       raise AccessViolation('You cannot change this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
     # dashboard container, will hold each component list
     dashboards = []
 
     # main container that contains all component list
-    main = MainDashboard(self.data)
+    main = MainDashboard(data)
 
     # retrieve active component(s) for currently logged-in user
     components = self.components()
@@ -184,7 +184,7 @@ class DashboardPage(GSoCRequestHandler):
           }
       main.addSubpages(c)
 
-      dashboards.append(ComponentsDashboard(self.data, {
+      dashboards.append(ComponentsDashboard(data, {
           'name': component.context().get('name'),
           'title': component.context().get('title'),
           'component': component,
@@ -194,10 +194,10 @@ class DashboardPage(GSoCRequestHandler):
     dashboards.append(main)
 
     return {
-        'page_name': self.data.program.name,
-        'user_name': self.data.profile.name() if self.data.profile else None,
-        'logged_in_msg': LoggedInMsg(self.data),
-        'program_select': ProgramSelect(self.data, 'gsoc_dashboard'),
+        'page_name': data.program.name,
+        'user_name': data.profile.name() if data.profile else None,
+        'logged_in_msg': LoggedInMsg(data),
+        'program_select': ProgramSelect(data, 'gsoc_dashboard'),
     # TODO(ljvderijk): Implement code for setting dashboard messages.
     #   'alert_msg': 'Default <strong>alert</strong> goes here',
         'dashboards': dashboards,

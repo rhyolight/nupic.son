@@ -97,10 +97,10 @@ class SlotTransferPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     requests = []
     require_new_link = True
-    for i, ent in enumerate(self.data.slot_transfer_entities):
+    for i, ent in enumerate(data.slot_transfer_entities):
       requests.append(SlotTransferReadOnlyTemplate(i, instance=ent))
       if ent.status == 'pending':
         require_new_link = False
@@ -110,12 +110,12 @@ class SlotTransferPage(GSoCRequestHandler):
         'requests': requests,
         }
 
-    if (self.data.program.allocations_visible and
-        self.data.timeline.beforeStudentsAnnounced()):
+    if (data.program.allocations_visible and
+        data.timeline.beforeStudentsAnnounced()):
       # TODO(nathaniel): make this .organization() call unnecessary.
-      self.data.redirect.organization()
+      data.redirect.organization()
 
-      edit_url = self.data.redirect.urlOf('gsoc_update_slot_transfer')
+      edit_url = data.redirect.urlOf('gsoc_update_slot_transfer')
       if require_new_link:
         context['new_slot_transfer_page_link'] = edit_url
       else:
@@ -146,22 +146,20 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer/form.html'
 
-  def context(self):
-    slots = self.data.organization.slots
+  def context(self, data, check, mutator):
+    slots = data.organization.slots
 
-    if self.data.POST:
-      slot_transfer_form = SlotTransferForm(slots, self.data.POST)
+    if data.POST:
+      slot_transfer_form = SlotTransferForm(slots, data.POST)
     else:
       slot_transfer_form = SlotTransferForm(slots)
 
-    for ent in self.data.slot_transfer_entities:
+    for ent in data.slot_transfer_entities:
       if ent.status == 'pending':
-        if self.data.POST:
-          slot_transfer_form = SlotTransferForm(slots, self.data.POST,
-                                                instance=ent)
+        if data.POST:
+          slot_transfer_form = SlotTransferForm(slots, data.POST, instance=ent)
         else:
-          slot_transfer_form = SlotTransferForm(slots,
-                                                instance=ent)
+          slot_transfer_form = SlotTransferForm(slots, instance=ent)
 
     context = {
         'page_name': 'Transfer slots to pool',
@@ -171,10 +169,10 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
         }
 
     # TODO(nathaniel): make this .organization() call unnecessary.
-    self.data.redirect.organization()
+    data.redirect.organization()
 
-    context['org_home_page_link'] = self.data.redirect.urlOf('gsoc_org_home')
-    context['slot_transfer_page_link'] = self.data.redirect.urlOf(
+    context['org_home_page_link'] = data.redirect.urlOf('gsoc_org_home')
+    context['slot_transfer_page_link'] = data.redirect.urlOf(
         'gsoc_slot_transfer')
 
     return context

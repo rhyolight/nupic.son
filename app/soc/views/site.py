@@ -93,11 +93,10 @@ class EditSitePage(base.SiteRequestHandler):
     # TODO: make this specific to the current active program
     return 'soc/site/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     # TODO: suboptimal
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    site_form = SiteForm(GSoCBoundField, self.data.POST or None,
-                         instance=self.data.site)
+    site_form = SiteForm(GSoCBoundField, data.POST or None, instance=data.site)
 
     # NOTE(nathaniel): This is an unfortunate workaround for the fact
     # that in its current form the SiteForm class will only ever present
@@ -125,7 +124,7 @@ class EditSitePage(base.SiteRequestHandler):
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     post_accepted = self.validate()
-    context = self.context()
+    context = self.context(data, check, mutator)
     template_path = self.templatePath()
     response_content = self.render(data, template_path, context)
     return http.HttpResponse(

@@ -109,20 +109,18 @@ class DashboardPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/admin/base.html'
 
-  def context(self):
-    """Context for dashboard page.
-    """
+  def context(self, data, check, mutator):
+    """Context for dashboard page."""
     dashboards = []
 
-    # TODO(nathaniel): All of these should drop their first parameter.
-    dashboards.append(MainDashboard(self.data))
-    dashboards.append(ProgramSettingsDashboard(self.data))
-    dashboards.append(ManageOrganizationsDashboard(self.data))
-    dashboards.append(EvaluationsDashboard(self.data))
-    dashboards.append(MentorEvaluationsDashboard(self.data))
-    dashboards.append(StudentEvaluationsDashboard(self.data))
-    dashboards.append(EvaluationGroupDashboard(self.data))
-    dashboards.append(StudentsDashboard(self.data))
+    dashboards.append(MainDashboard(data))
+    dashboards.append(ProgramSettingsDashboard(data))
+    dashboards.append(ManageOrganizationsDashboard(data))
+    dashboards.append(EvaluationsDashboard(data))
+    dashboards.append(MentorEvaluationsDashboard(data))
+    dashboards.append(StudentEvaluationsDashboard(data))
+    dashboards.append(EvaluationGroupDashboard(data))
+    dashboards.append(StudentsDashboard(data))
 
     return {
         'dashboards': dashboards,
@@ -743,22 +741,21 @@ class LookupLinkIdPage(GSoCRequestHandler):
     # TODO(nathaniel): problematic self-call.
     return self.get(data, check, mutator)
 
-  def context(self):
-    form = LookupForm(self.data, self.data.POST or None)
+  def context(self, data, check, mutator):
+    form = LookupForm(data, data.POST or None)
     error = bool(form.errors)
 
     forms = [form]
     profile = None
 
-    if not form.errors and self.data.request.method == 'POST':
+    if not form.errors and data.request.method == 'POST':
       profile = form.cleaned_data.get('profile')
 
     if profile:
       # TODO(nathaniel): Find a cleaner way to do this rather than
       # generating a response and then tossing it.
-      self.data.redirect.profile(profile.link_id)
-      response = self.data.redirect.to(
-          url_names.GSOC_PROFILE_SHOW, secure=True)
+      data.redirect.profile(profile.link_id)
+      response = data.redirect.to(url_names.GSOC_PROFILE_SHOW, secure=True)
       raise exceptions.RedirectRequest(response['Location'])
     else:
       return {
@@ -900,10 +897,11 @@ class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
       'page_name': 'Proposal page',
-      'list': ProposalsAcceptedOrgsList(self.data.request, self.data),
+      # TODO(nathaniel): Drop the first parameter of ProposalsAcceptedOrgsList.
+      'list': ProposalsAcceptedOrgsList(data.request, data),
     }
 
 
@@ -976,10 +974,11 @@ class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
       'page_name': 'Projects page',
-      'list': ProjectsAcceptedOrgsList(self.data.request, self.data),
+      # TODO(nathaniel): Drop the first parameter of ProjectsAcceptedOrgsList.
+      'list': ProjectsAcceptedOrgsList(data.request, data),
     }
 
 
@@ -1141,10 +1140,11 @@ class ProposalsPage(GSoCRequestHandler):
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
       'page_name': 'Proposal page',
-      'list': ProposalsList(self.data.request, self.data),
+      # TODO(nathaniel): Drop the first parameter of ProposalsList.
+      'list': ProposalsList(data.request, data),
     }
 
 
@@ -1240,10 +1240,11 @@ class ProjectsPage(GSoCRequestHandler):
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
       'page_name': 'Projects page',
-      'list': ProjectsList(self.data.request, self.data),
+      # TODO(nathaniel): Drop the first parameter of ProjectsList.
+      'list': ProjectsList(data.request, data),
     }
 
 
@@ -1391,10 +1392,11 @@ class SlotsPage(GSoCRequestHandler):
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
       'page_name': 'Slots page',
-      'list': SlotsList(self.data.request, self.data),
+      # TODO(nathaniel): Drop the first parameter of SlotsList.
+      'list': SlotsList(data.request, data),
     }
 
 
@@ -1430,20 +1432,20 @@ class SurveyReminderPage(GSoCRequestHandler):
     return http.HttpResponseRedirect(
         data.request.path + '?msg=Reminders are being sent')
 
-  def context(self):
+  def context(self, data, check, mutator):
     q = GradingProjectSurvey.all()
-    q.filter('scope', self.data.program)
+    q.filter('scope', data.program)
     mentor_surveys = q.fetch(1000)
 
     q = ProjectSurvey.all()
-    q.filter('scope', self.data.program)
+    q.filter('scope', data.program)
     student_surveys = q.fetch(1000)
 
     return {
       'page_name': 'Sending Evaluation Reminders',
       'mentor_surveys': mentor_surveys,
       'student_surveys': student_surveys,
-      'msg': self.data.request.GET.get('msg', '')
+      'msg': data.request.GET.get('msg', '')
     }
 
 
@@ -1599,10 +1601,11 @@ class StudentsListPage(GSoCRequestHandler):
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
       'page_name': 'Students list page',
-      'list': StudentsList(self.data.request, self.data),
+      # TODO(nathaniel): Drop the first parameter of StudentsList.
+      'list': StudentsList(data.request, data),
     }
 
 
@@ -1632,11 +1635,12 @@ class ProjectsListPage(GSoCRequestHandler):
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
-    list_query = project_logic.getProjectsQuery(program=self.data.program)
+  def context(self, data, check, mutator):
+    list_query = project_logic.getProjectsQuery(program=data.program)
     return {
       'page_name': 'Projects list page',
-      'list': ProjectList(self.data.request, self.data, list_query, self.LIST_IDX),
+      # TODO(nathaniel): Drop the first parameter of ProjectList.
+      'list': ProjectList(data.request, data, list_query, self.LIST_IDX),
     }
 
 
@@ -1665,8 +1669,9 @@ class OrgsListPage(GSoCRequestHandler):
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
       'page_name': 'Organizations list page',
-      'list': AcceptedOrgsList(self.data.request, self.data)
+      # TODO(nathaniel): Drop the first parameter of AcceptedOrgsList.
+      'list': AcceptedOrgsList(data.request, data)
     }

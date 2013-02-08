@@ -88,8 +88,8 @@ class StudentsInfoPage(base.GCIRequestHandler):
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': 'List of Students for %s' % self.data.program.name,
-        'students_info_list': AllParticipatingStudentsList(self.data),
+        'page_name': 'List of Students for %s' % data.program.name,
+        'students_info_list': AllParticipatingStudentsList(data),
     }

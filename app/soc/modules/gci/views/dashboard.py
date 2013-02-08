@@ -178,12 +178,11 @@ class DashboardPage(GCIRequestHandler):
 
     return student_id_form, consent_form
 
-  def context(self):
-    """Handler for default HTTP GET request.
-    """
+  def context(self, data, check, mutator):
+    """Handler for default HTTP GET request."""
     context = {
-        'page_name': self.data.program.name,
-        'user_name': self.data.user.name if self.data.user else None,
+        'page_name': data.program.name,
+        'user_name': data.user.name if data.user else None,
         }
 
     # Check if the student should submit either of the forms

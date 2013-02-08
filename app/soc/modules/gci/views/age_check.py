@@ -54,15 +54,15 @@ class AgeCheck(gci_base.GCIRequestHandler):
     """Returns the path to the template."""
     return 'v2/modules/gci/age_check/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
     context = {
-        'page_name': 'Age Verification for %s' % self.data.program.name,
-        'program': self.data.program,
+        'page_name': 'Age Verification for %s' % data.program.name,
+        'program': data.program,
         'failed_check': False
         }
 
-    age_check_result =  self.data.request.COOKIES.get('age_check', None)
+    age_check_result = data.request.COOKIES.get('age_check', None)
 
     if age_check_result == '0':
       context['failed_check'] = True
@@ -70,12 +70,12 @@ class AgeCheck(gci_base.GCIRequestHandler):
       # age check passed, redirect to create profile page
       # TODO(nathaniel): Can this be cleaned up at all? Creating and
       # discarding a response feels weird.
-      response = self.data.redirect.createProfile('student').to(
+      response = data.redirect.createProfile('student').to(
           'create_gci_profile', secure=True)
       raise exceptions.RedirectRequest(response['Location'])
 
-    if self.data.POST:
-      context['form'] = AgeCheckForm(self.data.POST)
+    if data.POST:
+      context['form'] = AgeCheckForm(data.POST)
     else:
       context['form'] = AgeCheckForm()
 

@@ -113,9 +113,9 @@ class AcceptedOrgsPage(GSoCRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Accepted organizations for %s" % self.data.program.name,
-        'accepted_orgs_list': AcceptedOrgsList(self.data),
-        'program_select': ProgramSelect(self.data, 'gsoc_accepted_orgs'),
+        'page_name': "Accepted organizations for %s" % data.program.name,
+        'accepted_orgs_list': AcceptedOrgsList(data),
+        'program_select': ProgramSelect(data, 'gsoc_accepted_orgs'),
     }

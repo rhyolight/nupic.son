@@ -62,13 +62,12 @@ class SendRequestPage(GCIRequestHandler):
     # check if the user is not a student
     # check if the user does not have role for the organization
 
-  def context(self):
-    """Handler to for GCI Send Request page HTTP get request.
-    """
-    request_form = RequestForm(self.data.POST or None)
+  def context(self, data, check, mutator):
+    """Handler to for GCI Send Request page HTTP get request."""
+    request_form = RequestForm(data.POST or None)
 
     return {
-        'logout_link': self.data.redirect.logout(),
+        'logout_link': data.redirect.logout(),
         'forms': [request_form],
         'page_name': self._constructPageName()
         }
@@ -148,11 +147,10 @@ class ManageRequestPage(GCIRequestHandler):
             'Valid action is not specified in the request.')
       self.check.isRequestManageable()
 
-  def context(self):
+  def context(self, data, check, mutator):
     page_name = self._constructPageName()
 
-    form = RequestForm(
-        self.data.POST or None, instance=self.data.request_entity)
+    form = RequestForm(data.POST or None, instance=data.request_entity)
 
     button_name = self._constructButtonName()
     button_value = self._constructButtonValue()
@@ -364,8 +362,8 @@ class ListUserRequestsPage(GCIRequestHandler):
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': 'Your requests',
-        'request_list': UserRequestsList(self.data),
+        'request_list': UserRequestsList(data),
     }

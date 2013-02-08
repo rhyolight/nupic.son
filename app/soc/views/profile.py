@@ -179,9 +179,10 @@ class ProfilePage(object):
 
     return properties
 
-  def context(self):
-    role = self.data.kwargs.get('role')
-    if self.data.student_info or role == 'student':
+  def context(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.context for specification."""
+    role = data.kwargs.get('role')
+    if data.student_info or role == 'student':
       student_info_form = self._getStudentInfoForm()
       # student's age should be checked
       is_student = True
@@ -198,13 +199,13 @@ class ProfilePage(object):
     elif role == 'org_admin':
       page_name = 'Register as an Org Admin'
 
-    if self.data.user:
-      user_form = EmptyForm(self.data.POST or None, instance=self.data.user)
+    if data.user:
+      user_form = EmptyForm(data.POST or None, instance=data.user)
     else:
       user_form = self._getCreateUserForm()
 
-    if self.data.profile:
-      self.data.profile._fix_name()
+    if data.profile:
+      data.profile._fix_name()
       profile_form = self._getEditProfileForm(is_student)
     else:
       profile_form = self._getCreateProfileForm(is_student, prefill_data=True)
@@ -212,8 +213,8 @@ class ProfilePage(object):
     error = user_form.errors or profile_form.errors or student_info_form.errors
 
     form = self._getNotificationForm()
-    notification_form = form(self.data.POST or None,
-                             instance=self.data.profile)
+    notification_form = form(data.POST or None,
+                             instance=data.profile)
 
     forms = [user_form, profile_form, notification_form, student_info_form]
 

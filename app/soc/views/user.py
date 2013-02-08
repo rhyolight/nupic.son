@@ -71,10 +71,10 @@ class CreateUserPage(SiteRequestHandler):
     # TODO: make this specific to the current active program
     return 'soc/user/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     # TODO: program specific in core module, needs to be avoided
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserCreateForm(GSoCBoundField, self.data.POST or None)
+    form = UserCreateForm(GSoCBoundField, data.POST or None)
 
     return {
         'base_layout': 'v2/modules/gsoc/base.html',
@@ -117,11 +117,10 @@ class EditUserPage(SiteRequestHandler):
     # TODO: make this specific to the current active program
     return 'soc/user/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     # TODO: program specific in core module
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserEditForm(
-        GSoCBoundField, self.data.POST or None, instance=self.data.user)
+    form = UserEditForm(GSoCBoundField, data.POST or None, instance=data.user)
 
     return {
         'base_layout': 'v2/modules/gsoc/base.html',

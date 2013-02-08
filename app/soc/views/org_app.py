@@ -152,12 +152,11 @@ class OrgAppRecordsList(object):
 
     self.check.isHost()
 
-  def context(self):
-    """Returns the context of the page to render.
-    """
+  def context(self, data, check, mutator):
+    """Returns the context of the page to render."""
     record_list = self._createOrgAppsList()
 
-    page_name = ugettext('Records - %s' % (self.data.org_app.title))
+    page_name = ugettext('Records - %s' % (data.org_app.title))
     context = {
         'page_name': page_name,
         'record_list': record_list,

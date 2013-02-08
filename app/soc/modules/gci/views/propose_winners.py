@@ -132,11 +132,10 @@ class ProposeWinnersPage(GCIRequestHandler):
       raise exceptions.AccessViolation(
           'This page may be accessed when the review period is over')
 
-  def context(self):
-    form = ProposeWinnersForm(
-        self.data, self.data.POST or None)
+  def context(self, data, check, mutator):
+    form = ProposeWinnersForm(data, data.POST or None)
     context = {
-        'page_name': 'Propose winners for %s' % (self.data.organization.name),
+        'page_name': 'Propose winners for %s' % data.organization.name,
         'forms': [form]
     }
 
@@ -290,10 +289,10 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': "Choose an organization for which to display scores.",
-        'org_list': OrganizationsForProposeWinnersList(self.data),
+        'org_list': OrganizationsForProposeWinnersList(data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }
 
@@ -367,9 +366,9 @@ class ViewProposedWinnersPage(GCIRequestHandler):
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': "Proposed Grand Prize Winners.",
-        'org_list': ProposedWinnersForOrgsList(self.data),
+        'org_list': ProposedWinnersForOrgsList(data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }

@@ -192,23 +192,22 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
     self.mutator.projectFromKwargs()
     self.check.canStudentUpdateProject()
 
-  def context(self):
-    """Handler to for GSoC project details page HTTP get request.
-    """
-    project_details_form = ProjectDetailsForm(self.data.POST or None,
-                                              instance=self.data.project)
+  def context(self, data, check, mutator):
+    """Handler to for GSoC project details page HTTP get request."""
+    project_details_form = ProjectDetailsForm(data.POST or None,
+                                              instance=data.project)
 
     context = {
         'page_name': 'Update project details',
-        'project': self.data.project,
+        'project': data.project,
         'forms': [project_details_form],
         'error': project_details_form.errors,
     }
 
     if len(self.data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
-      context['upload_code_samples'] = UploadCodeSamples(self.data)
-      context['list_code_samples'] = ListCodeSamples(self.data, True)
+      context['upload_code_samples'] = UploadCodeSamples(data)
+      context['list_code_samples'] = ListCodeSamples(data, True)
 
     return context
 
@@ -444,29 +443,29 @@ class ProjectDetails(GSoCRequestHandler):
     """Access checks for GSoC project details page."""
     self.mutator.projectFromKwargs()
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
     # TODO(nathaniel): make this .organization call unnecessary?
-    self.data.redirect.organization(organization=self.data.project.org)
+    data.redirect.organization(organization=data.project.org)
 
     context = {
         'page_name': 'Project details',
-        'project': self.data.project,
-        'org_home_link': self.data.redirect.urlOf('gsoc_org_home'),
+        'project': data.project,
+        'org_home_link': data.redirect.urlOf('gsoc_org_home'),
     }
 
-    if self.data.orgAdminFor(self.data.project.org):
-      context['user_actions'] = UserActions(self.data)
+    if data.orgAdminFor(data.project.org):
+      context['user_actions'] = UserActions(data)
 
-    user_is_owner = self.data.user and \
-        (self.data.user.key() == self.data.project_owner.parent_key())
+    user_is_owner = data.user and \
+        (data.user.key() == data.project_owner.parent_key())
     if user_is_owner:
-      context['update_link'] = self.data.redirect.project().urlOf(
+      context['update_link'] = data.redirect.project().urlOf(
           url_names.GSOC_PROJECT_UPDATE)
 
-    if len(self.data.project.passed_evaluations) >= \
+    if len(data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
-      context['list_code_samples'] = ListCodeSamples(self.data, False)
+      context['list_code_samples'] = ListCodeSamples(data, False)
 
     return context
 

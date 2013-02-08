@@ -315,15 +315,15 @@ class TaskCreatePage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/task_create/base.html'
 
-  def context(self):
-    if self.data.task:
-      page_name = "Edit task - %s" % (self.data.task.title)
+  def context(self, data, check, mutator):
+    if data.task:
+      page_name = "Edit task - %s" % data.task.title
     else:
       page_name = "Create a new task"
 
     return {
       'page_name':  page_name,
-      'task_edit_form_template': TaskEditFormTemplate(self.data),
+      'task_edit_form_template': TaskEditFormTemplate(data),
     }
 
   def createTaskFromForm(self):

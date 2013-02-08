@@ -51,10 +51,10 @@ class GradingRecordsOverview(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/grading_record/overview.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': 'Evaluation Group Overview',
-        'record_list': GradingRecordsList(self.data),
+        'record_list': GradingRecordsList(data),
         }
 
   def jsonContext(self, data, check, mutator):
@@ -250,13 +250,13 @@ class GradingRecordDetails(GSoCRequestHandler):
     self.mutator.gradingSurveyRecordFromKwargs()
     self.check.isHost()
 
-  def context(self):
-    assert isSet(self.data.record)
+  def context(self, data, check, mutator):
+    assert isSet(data.record)
 
-    record = self.data.record
+    record = data.record
 
-    if self.data.POST:
-      record_form = GradingRecordForm(self.data.POST)
+    if data.POST:
+      record_form = GradingRecordForm(data.POST)
     else:
       # locked is initially set to true because the user is editing it manually
       record_form = GradingRecordForm(instance=record, initial={'locked': True})

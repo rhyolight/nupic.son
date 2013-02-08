@@ -50,22 +50,20 @@ class GCIOrgAppEditPage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/org_app/edit.html'
 
-  def context(self):
-    if self.data.org_app:
-      form = gci_forms.OrgAppEditForm(
-          self.data.POST or None, instance=self.data.org_app)
+  def context(self, data, check, mutator):
+    if data.org_app:
+      form = gci_forms.OrgAppEditForm(data.POST or None, instance=data.org_app)
     else:
-      form = gci_forms.OrgAppEditForm(self.data.POST or None)
+      form = gci_forms.OrgAppEditForm(data.POST or None)
 
-    if self.data.org_app:
-      page_name = ugettext('Edit - %s' % (self.data.org_app.title))
+    if data.org_app:
+      page_name = ugettext('Edit - %s' % data.org_app.title)
     else:
       page_name = 'Create new organization application'
 
     context = {
         'page_name': page_name,
-        'post_url': self.linker.program(
-            self.data.program, 'gci_edit_org_app'),
+        'post_url': self.linker.program(data.program, 'gci_edit_org_app'),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -130,11 +128,11 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'
 
-  def context(self):
-    form = gci_forms.OrgAppTakeForm(self.data.org_app)
+  def context(self, data, check, mutator):
+    form = gci_forms.OrgAppTakeForm(data.org_app)
 
     context = {
-        'page_name': '%s' % (self.data.org_app.title),
+        'page_name': '%s' % data.org_app.title,
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -181,17 +179,15 @@ class GCIOrgAppTakePage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'
 
-  def context(self):
-    if self.data.org_app_record:
+  def context(self, data, check, mutator):
+    if data.org_app_record:
       form = gci_forms.OrgAppTakeForm(
-          self.data.org_app, self.data.POST or None,
-          instance=self.data.org_app_record)
+          data.org_app, data.POST or None, instance=data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(self.data.org_app,
-                                      self.data.POST or None)
+      form = gci_forms.OrgAppTakeForm(data.org_app, data.POST or None)
 
     context = {
-        'page_name': '%s' % (self.data.org_app.title),
+        'page_name': '%s' % data.org_app.title,
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -320,8 +316,8 @@ class GCIOrgAppShowPage(GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/org_app/show.html'
 
-  def context(self):
-    record = self.data.org_app_record
+  def context(self, data, check, mutator):
+    record = data.org_app_record
 
     context = {
         'page_name': 'Organization application - %s' % (record.name),

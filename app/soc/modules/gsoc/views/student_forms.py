@@ -154,12 +154,12 @@ class FormPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/student_forms/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     Form = self._form()
-    form = Form(self.data, self.data.POST or None, instance=self._studentInfo())
+    form = Form(data, data.POST or None, instance=self._studentInfo())
 
-    if 'error' in self.data.GET:
-      error = self.data.GET['error']
+    if 'error' in data.GET:
+      error = data.GET['error']
       form.errors[form.fileFieldName()] = form.error_class([error])
 
     return {

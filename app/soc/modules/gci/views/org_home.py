@@ -214,19 +214,19 @@ class OrgHomepage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     context = {
-        'page_name': '%s - Home page' % (self.data.organization.name),
-        'about_us': AboutUs(self.data),
-        'contact_us': ContactUs(self.data),
-        'feed_url': self.data.organization.feed_url,
+        'page_name': '%s - Home page' % data.organization.name,
+        'about_us': AboutUs(data),
+        'contact_us': ContactUs(data),
+        'feed_url': data.organization.feed_url,
     }
 
-    if self.data.timeline.tasksPubliclyVisible():
-      context['open_tasks_list'] = OpenTasksList(self.data)
-      context['completed_tasks_list'] = CompletedTasksList(self.data)
+    if data.timeline.tasksPubliclyVisible():
+      context['open_tasks_list'] = OpenTasksList(data)
+      context['completed_tasks_list'] = CompletedTasksList(data)
 
-    if self.data.is_host or accounts.isDeveloper():
-      context['host_actions'] = GCIHostActions(self.data)
+    if data.is_host or accounts.isDeveloper():
+      context['host_actions'] = GCIHostActions(data)
 
     return context

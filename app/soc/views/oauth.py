@@ -35,13 +35,11 @@ class OAuthRedirectPage(GSoCRequestHandler):
   def checkAccess(self):
     self.check.isUser()
 
-  def context(self):
-    service = oauth_helper.createDocsService(self.data)
-    next = '%s?next=%s' % (self.data.redirect.urlOf('gdata_oauth_verify'),
-                           self.data.request.GET.get('next','/'))
-    url = oauth_helper.generateOAuthRedirectURL(
-        service, self.data.user,
-        next)
+  def context(self, data, check, mutator):
+    service = oauth_helper.createDocsService(data)
+    next = '%s?next=%s' % (data.redirect.urlOf('gdata_oauth_verify'),
+                           data.request.GET.get('next','/'))
+    url = oauth_helper.generateOAuthRedirectURL(service, data.user, next)
     context = {
         'approval_page_url': url,
         'page_name': 'Authorization Required',

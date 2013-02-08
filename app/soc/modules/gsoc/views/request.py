@@ -104,18 +104,16 @@ class RequestPage(GSoCRequestHandler):
       raise AccessViolation(
           'You have already sent a request to this organization.')
 
-  def context(self):
-    """Handler for GSoC Request Page HTTP get request.
-    """
+  def context(self, data, check, mutator):
+    """Handler for GSoC Request Page HTTP get request."""
     request_form = RequestForm(
-        self.data.organization.role_request_message,
-        data=self.data.POST or None)
+        data.organization.role_request_message, data=data.POST or None)
 
     return {
-        'logged_in_msg': LoggedInMsg(self.data, apply_link=False),
-        'profile_created': self.data.GET.get('profile') == 'created',
+        'logged_in_msg': LoggedInMsg(data, apply_link=False),
+        'profile_created': data.GET.get('profile') == 'created',
         'page_name': 'Request to become a mentor',
-        'program': self.data.program,
+        'program': data.program,
         'invite_form': request_form,
     }
 
@@ -224,16 +222,15 @@ class ShowRequest(GSoCRequestHandler):
     self.data.requester_profile = GSoCProfile.get_by_key_name(
         key_name, parent=self.data.requester)
 
-  def context(self):
-    """Handler to for GSoC Show Request Page HTTP get request.
-    """
-    assert isSet(self.data.request_entity)
-    assert isSet(self.data.can_respond)
-    assert isSet(self.data.organization)
-    assert isSet(self.data.requester)
+  def context(self, data, check, mutator):
+    """Handler to for GSoC Show Request Page HTTP get request."""
+    assert isSet(data.request_entity)
+    assert isSet(data.can_respond)
+    assert isSet(data.organization)
+    assert isSet(data.requester)
 
     # This code is dupcliated between request and invite
-    status = self.data.request_entity.status
+    status = data.request_entity.status
 
     can_accept = can_reject = can_withdraw = can_resubmit = can_revoke = False
 
@@ -256,30 +253,30 @@ class ShowRequest(GSoCRequestHandler):
     show_actions = (can_accept or can_reject or can_withdraw or
                     can_resubmit or can_revoke)
 
-    org_key = self.data.organization.key()
+    org_key = data.organization.key()
     status_msg = None
 
-    if self.data.requester_profile.key() == self.data.profile.key():
-      if org_key in self.data.requester_profile.org_admin_for:
+    if data.requester_profile.key() == data.profile.key():
+      if org_key in data.requester_profile.org_admin_for:
         status_msg = DEF_YOU_ARE_ORG_ADMIN
-      elif org_key in self.data.requester_profile.mentor_for:
+      elif org_key in data.requester_profile.mentor_for:
         status_msg = DEF_YOU_ARE_MENTOR
     else:
-      if org_key in self.data.requester_profile.org_admin_for:
+      if org_key in data.requester_profile.org_admin_for:
         status_msg = DEF_USER_ORG_ADMIN
-      elif org_key in self.data.requester_profile.mentor_for:
+      elif org_key in data.requester_profile.mentor_for:
         status_msg = DEF_USER_MENTOR
 
     return {
         'page_name': "Request to become a mentor",
-        'request': self.data.request_entity,
-        'org': self.data.organization,
+        'request': data.request_entity,
+        'org': data.organization,
         'actions': self.ACTIONS,
         'status_msg': status_msg,
-        'user_name': self.data.requester_profile.name(),
-        'user_link_id': self.data.requester.link_id,
+        'user_name': data.requester_profile.name(),
+        'user_link_id': data.requester.link_id,
         'user_email': accounts.denormalizeAccount(
-            self.data.requester.account).email(),
+            data.requester.account).email(),
         'show_actions': show_actions,
         'can_accept': can_accept,
         'can_reject': can_reject,

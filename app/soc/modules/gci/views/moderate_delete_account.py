@@ -41,8 +41,8 @@ class ModerateDeleteAccountPage(base.GCIRequestHandler):
 
     self.mutator.profileFromKwargs()
 
-  def context(self):
-    profile = self.data.url_profile
+  def context(self, data, check, mutator):
+    profile = data.url_profile
 
     return {
         'page_name': 'Moderate delete account requests',

@@ -88,11 +88,11 @@ class AcceptedOrgsPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Accepted organizations for %s" % self.data.program.name,
-        'accepted_orgs_list': AcceptedOrgsList(self.data),
-        #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
+        'page_name': "Accepted organizations for %s" % data.program.name,
+        'accepted_orgs_list': AcceptedOrgsList(data),
+        #'program_select': ProgramSelect(data, 'gci_accepted_orgs'),
     }
 
 
@@ -165,8 +165,8 @@ class AcceptedOrgsAdminPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Accepted organizations for %s" % self.data.program.name,
-        'accepted_orgs_list': AcceptedOrgsAdminList(self.data),
+        'page_name': "Accepted organizations for %s" % data.program.name,
+        'accepted_orgs_list': AcceptedOrgsAdminList(data),
     }

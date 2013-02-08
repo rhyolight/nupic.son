@@ -289,16 +289,16 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
   def templatePath(self):
     return 'v2/modules/gci/profile/base.html'
 
-  def context(self):
-    context = super(GCIProfilePage, self).context()
+  def context(self, data, check, mutator):
+    context = super(GCIProfilePage, self).context(data, check, mutator)
 
     if self.isCreateProfileRequest():
       if self.isStudentRequest():
         context['form_instructions'] = PARENTAL_CONSENT_ADVICE
     else:
-      if self.data.is_student and \
-          not profile_logic.hasStudentFormsUploaded(self.data.student_info):
-        kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+      if data.is_student and \
+          not profile_logic.hasStudentFormsUploaded(data.student_info):
+        kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
         upload_forms_url = reverse(
             url_names.GCI_STUDENT_FORM_UPLOAD, kwargs=kwargs)
 

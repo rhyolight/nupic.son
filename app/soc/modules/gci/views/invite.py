@@ -198,18 +198,17 @@ class InvitePage(GCIRequestHandler):
     self.check.isProgramVisible()
     self.check.isOrgAdmin()
 
-  def context(self):
-    """Handler to for GCI Invitation Page HTTP get request.
-    """
+  def context(self, data, check, mutator):
+    """Handler to for GCI Invitation Page HTTP get request."""
 
-    role = 'Org Admin' if self.data.kwargs['role'] == 'org_admin' else 'Mentor'
+    role = 'Org Admin' if data.kwargs['role'] == 'org_admin' else 'Mentor'
 
-    invite_form = InviteForm(self.data, self.data.POST or None)
+    invite_form = InviteForm(data, data.POST or None)
 
     return {
-        'logout_link': self.data.redirect.logout(),
+        'logout_link': data.redirect.logout(),
         'page_name': 'Invite a new %s' % role,
-        'program': self.data.program,
+        'program': data.program,
         'forms': [invite_form]
     }
 
@@ -301,11 +300,10 @@ class ManageInvite(GCIRequestHandler):
       else:
         raise BadRequest('No action specified in manage_gci_invite request.')
 
-  def context(self):
+  def context(self, data, check, mutator):
     page_name = self._constructPageName()
 
-    form = ManageInviteForm(
-        self.data.POST or None, instance=self.data.invite)
+    form = ManageInviteForm(data.POST or None, instance=data.invite)
 
     button_name = self._constructButtonName()
     button_value = self._constructButtonValue()
@@ -382,12 +380,12 @@ class RespondInvite(GCIRequestHandler):
         raise BadRequest('Valid action is not specified in the request.')
       self.check.isInviteRespondable()
 
-  def context(self):
+  def context(self, data, check, mutator):
     page_name = self._constructPageName()
     return {
-        'is_respondable': self.data.is_respondable,
+        'is_respondable': data.is_respondable,
         'page_name': page_name,
-        'request': self.data.invite
+        'request': data.invite
         }
 
   def post(self, data, check, mutator):
@@ -473,8 +471,8 @@ class ListUserInvitesPage(GCIRequestHandler):
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': 'Invitations to you',
-        'invite_list': UserInvitesList(self.data),
+        'invite_list': UserInvitesList(data),
     }

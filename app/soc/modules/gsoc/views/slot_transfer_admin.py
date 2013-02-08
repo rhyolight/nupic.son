@@ -242,14 +242,13 @@ class SlotsTransferAdminPage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     slots_list = SlotsTransferAdminList(data)
-
     if slots_list.post():
       return http.HttpResponse()
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
       'page_name': 'Slots transfer action page',
-      'slot_transfer_list': SlotsTransferAdminList(self.data),
+      'slot_transfer_list': SlotsTransferAdminList(data),
     }
