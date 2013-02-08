@@ -70,8 +70,8 @@ class RequestForm(GSoCModelForm):
 
 
 class RequestPage(GSoCRequestHandler):
-  """Encapsulate all the methods required to generate Request page.
-  """
+  """Encapsulate all the methods required to generate Request page."""
+
   def templatePath(self):
     return 'v2/modules/gsoc/invite/base.html'
 
@@ -118,7 +118,7 @@ class RequestPage(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for GSoC Request Page HTTP post request."""
-    request = self._createFromForm()
+    request = self._createFromForm(data)
     if request:
       data.redirect.request(request)
       return data.redirect.to('show_gsoc_request')
@@ -126,34 +126,36 @@ class RequestPage(GSoCRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
 
-  def _createFromForm(self):
+  def _createFromForm(self, data):
     """Creates a new request based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created Request entity or None
     """
-    assert isSet(self.data.organization)
+    assert isSet(data.organization)
 
-    request_form = RequestForm(
-        data=self.data.POST)
+    request_form = RequestForm(data=data.POST)
 
     if not request_form.is_valid():
       return None
 
     # create a new invitation entity
-    request_form.cleaned_data['user'] = self.data.user
-    request_form.cleaned_data['org'] = self.data.organization
+    request_form.cleaned_data['user'] = data.user
+    request_form.cleaned_data['org'] = data.organization
     request_form.cleaned_data['role'] = 'mentor'
     request_form.cleaned_data['type'] = 'Request'
 
-    q = GSoCProfile.all().filter('org_admin_for', self.data.organization)
+    q = GSoCProfile.all().filter('org_admin_for', data.organization)
     q = q.filter('status', 'active').filter('notify_new_requests', True)
     admins = q.fetch(1000)
     admin_emails = [i.email for i in admins]
 
     def create_request_txn():
-      request = request_form.create(commit=True, parent=self.data.user)
-      context = notifications.requestContext(self.data, request, admin_emails)
+      request = request_form.create(commit=True, parent=data.user)
+      context = notifications.requestContext(data, request, admin_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
       sub_txn()
       return request
