@@ -531,8 +531,7 @@ class AssignMentors(GSoCRequestHandler):
 
 
 class FeaturedProject(GSoCRequestHandler):
-  """View which handles making the project featured by toggle button.
-  """
+  """View which handles making the project featured by toggle button."""
 
   def djangoURLPatterns(self):
     return [
@@ -545,23 +544,23 @@ class FeaturedProject(GSoCRequestHandler):
     assert isSet(data.project.org)
     check.isOrgAdminForOrganization(data.project.org)
 
-  def toggleFeatured(self, value):
+  def toggleFeatured(self, data, value):
     """Makes the project featured.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.project)
+    assert isSet(data.project)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
-
-    if value == 'checked' and not self.data.project.is_featured:
+    if value == 'checked' and not data.project.is_featured:
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.project.is_featured:
+    if value == 'unchecked' and data.project.is_featured:
       raise BadRequest("Invalid post data.")
 
-    project_key = self.data.project.key()
+    project_key = data.project.key()
 
     def make_featured_txn():
       # transactionally get latest version of the project
@@ -577,7 +576,7 @@ class FeaturedProject(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     value = data.POST.get('value')
-    self.toggleFeatured(value)
+    self.toggleFeatured(data, value)
     return http.HttpResponse()
 
   def get(self, data, check, mutator):
