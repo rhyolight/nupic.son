@@ -304,9 +304,8 @@ class GSoCProgramMessagesPage(
   def templatePath(self):
     return 'v2/modules/gsoc/program/messages.html'
 
-  def _getForm(self, entity):
-    return GSoCProgramMessagesForm(self.data, self.data.POST or None,
-        instance=entity)
+  def _getForm(self, data, entity):
+    return GSoCProgramMessagesForm(data, data.POST or None, instance=entity)
 
   def _getModel(self):
     return program.GSoCProgramMessages

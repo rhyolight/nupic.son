@@ -201,9 +201,8 @@ class GCIProgramMessagesPage(
   def templatePath(self):
     return 'v2/modules/gci/program/messages.html'
 
-  def _getForm(self, entity):
-    return GCIProgramMessagesForm(
-        self.data, self.data.POST or None, instance=entity)
+  def _getForm(self, data, entity):
+    return GCIProgramMessagesForm(data, data.POST or None, instance=entity)
 
   def _getModel(self):
     return GCIProgramMessages
