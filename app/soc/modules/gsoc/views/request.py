@@ -234,7 +234,7 @@ class ShowRequest(GSoCRequestHandler):
 
     can_accept = can_reject = can_withdraw = can_resubmit = can_revoke = False
 
-    if self.data.can_respond:
+    if data.can_respond:
       # admin speaking
       if status == 'pending':
         can_accept = True
@@ -291,31 +291,30 @@ class ShowRequest(GSoCRequestHandler):
     assert isSet(data.request_entity)
 
     if data.action == self.ACTIONS['accept']:
-      self._acceptRequest()
+      self._acceptRequest(data)
     elif data.action == self.ACTIONS['reject']:
-      self._rejectRequest()
+      self._rejectRequest(data)
     elif data.action == self.ACTIONS['resubmit']:
-      self._resubmitRequest()
+      self._resubmitRequest(data)
     elif data.action == self.ACTIONS['withdraw']:
-      self._withdrawRequest()
+      self._withdrawRequest(data)
     elif data.action == self.ACTIONS['revoke']:
-      self._revokeRequest()
+      self._revokeRequest(data)
 
     # TODO(nathaniel): Make this .program() call unnecessary.
     data.redirect.program()
 
     return data.redirect.to('gsoc_dashboard')
 
-  def _acceptRequest(self):
-    """Accepts a request.
-    """
-    assert isSet(self.data.organization)
-    assert isSet(self.data.requester_profile)
+  def _acceptRequest(self, data):
+    """Accepts a request."""
+    assert isSet(data.organization)
+    assert isSet(data.requester_profile)
 
-    request_key = self.data.request_entity.key()
-    profile_key = self.data.requester_profile.key()
-    organization_key = self.data.organization.key()
-    messages = self.data.program.getProgramMessages()
+    request_key = data.request_entity.key()
+    profile_key = data.requester_profile.key()
+    organization_key = data.organization.key()
+    messages = data.program.getProgramMessages()
 
     def accept_request_txn():
       request = db.get(request_key)
@@ -331,41 +330,39 @@ class ShowRequest(GSoCRequestHandler):
       # Send out a welcome email to new mentors.
       if new_mentor:
         mentor_mail = notifications.getMentorWelcomeMailContext(
-            profile, self.data, messages)
+            profile, data, messages)
         if mentor_mail:
           mailer.getSpawnMailTaskTxn(mentor_mail, parent=request)()
 
       profile.put()
       request.put()
 
-      context = notifications.handledRequestContext(self.data, request.status)
+      context = notifications.handledRequestContext(data, request.status)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
       sub_txn()
 
     db.run_in_transaction(accept_request_txn)
 
-  def _rejectRequest(self):
-    """Rejects a request. 
-    """
-    assert isSet(self.data.request_entity)
-    request_key = self.data.request_entity.key()
+  def _rejectRequest(self, data):
+    """Rejects a request."""
+    assert isSet(data.request_entity)
+    request_key = data.request_entity.key()
 
     def reject_request_txn():
       request = db.get(request_key)
       request.status = 'rejected'
       request.put()
 
-      context = notifications.handledRequestContext(self.data, request.status)
+      context = notifications.handledRequestContext(data, request.status)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
       sub_txn()
 
     db.run_in_transaction(reject_request_txn)
 
-  def _resubmitRequest(self):
-    """Resubmits a request.
-    """
-    assert isSet(self.data.request_entity)
-    request_key = self.data.request_entity.key()
+  def _resubmitRequest(self, data):
+    """Resubmits a request."""
+    assert isSet(data.request_entity)
+    request_key = data.request_entity.key()
 
     def resubmit_request_txn():
       request = db.get(request_key)
@@ -374,11 +371,10 @@ class ShowRequest(GSoCRequestHandler):
 
     db.run_in_transaction(resubmit_request_txn)
 
-  def _withdrawRequest(self):
-    """Withdraws an invitation.
-    """
-    assert isSet(self.data.request_entity)
-    request_key = self.data.request_entity.key()
+  def _withdrawRequest(self, data):
+    """Withdraws an invitation."""
+    assert isSet(data.request_entity)
+    request_key = data.request_entity.key()
 
     def withdraw_request_txn():
       request = db.get(request_key)
@@ -387,16 +383,15 @@ class ShowRequest(GSoCRequestHandler):
 
     db.run_in_transaction(withdraw_request_txn)
 
-  def _revokeRequest(self):
-    """Withdraws an invitation.
-    """
-    assert isSet(self.data.request_entity)
-    assert isSet(self.data.organization)
-    assert isSet(self.data.requester_profile)
+  def _revokeRequest(self, data):
+    """Withdraws an invitation."""
+    assert isSet(data.request_entity)
+    assert isSet(data.organization)
+    assert isSet(data.requester_profile)
 
-    request_key = self.data.request_entity.key()
-    profile_key = self.data.requester_profile.key()
-    organization_key = self.data.organization.key()
+    request_key = data.request_entity.key()
+    profile_key = data.requester_profile.key()
+    organization_key = data.organization.key()
 
     def revoke_request_txn():
       request = db.get(request_key)
@@ -410,7 +405,7 @@ class ShowRequest(GSoCRequestHandler):
       profile.put()
       request.put()
 
-      context = notifications.handledRequestContext(self.data, 'revoked')
+      context = notifications.handledRequestContext(data, 'revoked')
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
       sub_txn()
 
