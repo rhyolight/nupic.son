@@ -121,12 +121,12 @@ class StudentFormUpload(GCIRequestHandler):
         url(r'student/forms/%s$' % url_patterns.PROGRAM, self,
             name=url_names.GCI_STUDENT_FORM_UPLOAD)]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Denies access if you are not a student or the program is not running.
     """
-    self.check.isActiveStudent()
-    if self.data.POST:
-      self.check.isProgramRunning()
+    check.isActiveStudent()
+    if data.POST:
+      check.isProgramRunning()
 
   def templatePath(self):
     """Returns the path to the template.
@@ -227,10 +227,10 @@ class StudentFormDownload(GCIRequestHandler):
         url(r'student/forms/%s$' % url_patterns.PROFILE, self,
             name=url_names.GCI_STUDENT_FORM_DOWNLOAD)]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Denies access if you are not a host."""
-    self.check.isHost()
-    self.mutator.studentFromKwargs()
+    check.isHost()
+    mutator.studentFromKwargs()
 
   def get(self, data, check, mutator):
     """Allows hosts to download the student forms."""

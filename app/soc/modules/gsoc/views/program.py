@@ -214,8 +214,8 @@ class ProgramPage(base.GSoCRequestHandler):
 
     return {'data': json_data}
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/program/base.html'
@@ -258,8 +258,8 @@ class TimelinePage(base.GSoCRequestHandler):
         url_patterns.url(r'timeline/edit/%s$' % soc_url_patterns.PROGRAM, self),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/timeline/base.html'

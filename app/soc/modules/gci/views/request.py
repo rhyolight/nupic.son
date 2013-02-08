@@ -54,11 +54,10 @@ class SendRequestPage(GCIRequestHandler):
             self, name=url_names.GCI_SEND_REQUEST)
     ]
 
-  def checkAccess(self):
-    """Access checks for GCI Send Request page.
-    """
+  def checkAccess(self, data, check, mutator):
+    """Access checks for GCI Send Request page."""
     #TODO(dhans): check if the program is visible
-    self.check.isProfileActive()
+    check.isProfileActive()
     # check if the user is not a student
     # check if the user does not have role for the organization
 
@@ -130,22 +129,22 @@ class ManageRequestPage(GCIRequestHandler):
             name=url_names.GCI_MANAGE_REQUEST)
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
 
-    request_id = int(self.data.kwargs['id'])
-    self.data.request_entity = GCIRequest.get_by_id(
-        request_id, parent=self.data.user)
-    self.check.isRequestPresent(request_id)
+    request_id = int(data.kwargs['id'])
+    data.request_entity = GCIRequest.get_by_id(
+        request_id, parent=data.user)
+    check.isRequestPresent(request_id)
 
-    self.check.canManageRequest()
+    check.canManageRequest()
 
     # check if the submitted action is legal
-    if self.data.POST:
-      if 'withdraw' not in self.data.POST and 'resubmit' not in self.data.POST:
+    if data.POST:
+      if 'withdraw' not in data.POST and 'resubmit' not in data.POST:
         raise exceptions.BadRequest(
             'Valid action is not specified in the request.')
-      self.check.isRequestManageable()
+      check.isRequestManageable()
 
   def context(self, data, check, mutator):
     page_name = self._constructPageName()
@@ -209,23 +208,23 @@ class RespondRequestPage(GCIRequestHandler):
             name=url_names.GCI_RESPOND_REQUEST)
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
 
-    key_name = self.data.kwargs['user']
+    key_name = data.kwargs['user']
     user_key = db.Key.from_path('User', key_name)
 
     # fetch the request entity based on the id and parent key
-    request_id = int(self.data.kwargs['id'])
-    self.data.request_entity = GCIRequest.get_by_id(
+    request_id = int(data.kwargs['id'])
+    data.request_entity = GCIRequest.get_by_id(
         request_id, parent=user_key)
-    self.check.isRequestPresent(request_id)
+    check.isRequestPresent(request_id)
 
     # get the organization and check if the current user can manage the request
-    self.data.organization = self.data.request_entity.org
-    self.check.isOrgAdmin()
+    data.organization = data.request_entity.org
+    check.isOrgAdmin()
 
-    self.data.is_respondable = self.data.request_entity.status == 'pending'
+    data.is_respondable = data.request_entity.status == 'pending'
 
   def context(self):
     """Handler to for GCI Respond Request page HTTP get request.
@@ -352,8 +351,8 @@ class ListUserRequestsPage(GCIRequestHandler):
             name=url_names.GCI_LIST_REQUESTS),
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
 
   def jsonContext(self, data, check, mutator):
     list_content = UserRequestsList(data).getListData()

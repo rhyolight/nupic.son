@@ -85,8 +85,8 @@ class EditSitePage(base.SiteRequestHandler):
 
     return {'data': json_data}
 
-  def checkAccess(self):
-    if not self.data.is_developer:
+  def checkAccess(self, data, check, mutator):
+    if not data.is_developer:
       raise exceptions.AccessViolation(DEF_NO_DEVELOPER)
 
   def templatePath(self):

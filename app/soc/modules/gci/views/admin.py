@@ -83,8 +83,8 @@ class DashboardPage(GCIRequestHandler):
          self, name='gci_admin_dashboard'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/admin/base.html'
@@ -397,8 +397,8 @@ class LookupLinkIdPage(GCIRequestHandler):
          self, name='lookup_gci_profile'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/admin/lookup.html'

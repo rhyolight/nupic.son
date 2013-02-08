@@ -197,21 +197,21 @@ class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
 class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
   """View for the GSoC participant profile."""
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isProgramVisible()
-    self.check.isProgramRunning()
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isProgramVisible()
+    check.isProgramRunning()
 
-    if 'role' in self.data.kwargs:
-      role = self.data.kwargs['role']
-      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+    if 'role' in data.kwargs:
+      role = data.kwargs['role']
+      kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
       edit_url = reverse('edit_gsoc_profile', kwargs=kwargs)
       if role == 'student':
-        self.check.canApplyStudent(edit_url)
+        check.canApplyStudent(edit_url)
       else:
-        self.check.canApplyNonStudent(role, edit_url)
+        check.canApplyNonStudent(role, edit_url)
     else:
-      self.check.isProfileActive()
+      check.isProfileActive()
 
   def context(self, data, check, mutator):
     """Context for the profile page."""

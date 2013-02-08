@@ -126,9 +126,9 @@ class ProposeWinnersPage(GCIRequestHandler):
             name=url_names.GCI_ORG_PROPOSE_WINNERS),
     ]
 
-  def checkAccess(self):
-    self.check.isOrgAdmin()
-    if not self.data.timeline.allReviewsStopped():
+  def checkAccess(self, data, check, mutator):
+    check.isOrgAdmin()
+    if not data.timeline.allReviewsStopped():
       raise exceptions.AccessViolation(
           'This page may be accessed when the review period is over')
 
@@ -279,7 +279,7 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
             name=url_names.GCI_ORG_CHOOSE_FOR_PROPOSE_WINNNERS),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     pass
 
   def jsonContext(self, data, check, mutator):
@@ -356,8 +356,8 @@ class ViewProposedWinnersPage(GCIRequestHandler):
             name=url_names.GCI_VIEW_PROPOSED_WINNERS),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = ProposedWinnersForOrgsList(data).getListData()

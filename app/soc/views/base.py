@@ -246,7 +246,7 @@ class RequestHandler(object):
     """
     raise NotImplementedError()
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     # TODO(nathaniel): eliminate this - it doesn't actually simplify
     # the HTTP method implementations all that much to have it
     # separated out.
@@ -257,6 +257,11 @@ class RequestHandler(object):
     Implementations must not mutate any of this RequestHandler's state and
     should merely raise an exception if the user's request should not be
     satisfied or return normally if the user's request should be satisfied.
+
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
     Raises:
       exceptions.Error: If the user's request should not be satisfied for
@@ -373,7 +378,7 @@ class RequestHandler(object):
       self.data, self.check, self.mutator = self.init(
           request, args, kwargs)
       self.checkMaintenanceMode(self.data)
-      self.checkAccess()
+      self.checkAccess(self.data, self.check, self.mutator)
       return self._dispatch(self.data, self.check, self.mutator)
     except exceptions.LoginRequest, e:
       request.get_full_path().encode('utf-8')

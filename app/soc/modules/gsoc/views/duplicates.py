@@ -41,8 +41,8 @@ class DuplicatesPage(GSoCRequestHandler):
             name='gsoc_view_duplicates'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def context(self, data, check, mutator):
     """Returns the context for this page."""

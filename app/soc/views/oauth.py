@@ -32,8 +32,8 @@ class OAuthRedirectPage(GSoCRequestHandler):
     ]
     return patterns
 
-  def checkAccess(self):
-    self.check.isUser()
+  def checkAccess(self, data, check, mutator):
+    check.isUser()
 
   def context(self, data, check, mutator):
     service = oauth_helper.createDocsService(data)
@@ -78,8 +78,8 @@ class PopupOAuthRedirectPage(GSoCRequestHandler):
     ]
     return patterns
 
-  def checkAccess(self):
-    self.check.isUser()
+  def checkAccess(self, data, check, mutator):
+    check.isUser()
 
   def get(self, data, check, mutator):
     access_token = oauth_helper.getAccessToken(data.user)
@@ -106,8 +106,8 @@ class PopupOAuthVerified(GSoCRequestHandler):
     ]
     return patterns
 
-  def checkAccess(self):
-    self.check.canAccessGoogleDocs()
+  def checkAccess(self, data, check, mutator):
+    check.canAccessGoogleDocs()
 
   def get(self, data, check, mutator):
     html = (

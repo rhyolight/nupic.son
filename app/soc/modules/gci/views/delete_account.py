@@ -34,8 +34,8 @@ class DeleteAccountPage(base.GCIRequestHandler):
             self, name='gci_delete_account')
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
 
   def context(self, data, check, mutator):
     return {

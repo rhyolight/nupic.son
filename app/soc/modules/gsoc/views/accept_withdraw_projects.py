@@ -229,14 +229,13 @@ class AcceptProposals(GSoCRequestHandler):
             name='gsoc_admin_accept_proposals')
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Access checks for the view."""
-    self.check.isHost()
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
     list_content = ProposalList(data).getListData()
-
     if list_content:
       return list_content.content()
     else:
@@ -244,7 +243,6 @@ class AcceptProposals(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     list_content = ProposalList(data)
-
     if list_content.post():
       return http.HttpResponse()
     else:
@@ -438,14 +436,13 @@ class WithdrawProjects(GSoCRequestHandler):
             name='gsoc_withdraw_projects')
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Access checks for the view."""
-    self.check.isHost()
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
     list_content = ProjectList(data).getListData()
-
     if list_content:
       return list_content.content()
     else:
@@ -454,7 +451,6 @@ class WithdrawProjects(GSoCRequestHandler):
   def post(self, data, check, mutator):
     """See soc.views.base.RequestHandler.post for specification."""
     list_content = ProjectList(data)
-
     if list_content.post():
       return http.HttpResponse()
     else:

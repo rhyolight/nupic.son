@@ -36,10 +36,9 @@ class ModerateDeleteAccountPage(base.GCIRequestHandler):
             name='gci_moderate_delete_account'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-
-    self.mutator.profileFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    mutator.profileFromKwargs()
 
   def context(self, data, check, mutator):
     profile = data.url_profile

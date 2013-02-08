@@ -191,12 +191,10 @@ class InvitePage(GCIRequestHandler):
             self, name=url_names.GCI_SEND_INVITE)
     ]
 
-  def checkAccess(self):
-    """Access checks for GCI Invite page.
-    """
-
-    self.check.isProgramVisible()
-    self.check.isOrgAdmin()
+  def checkAccess(self, data, check, mutator):
+    """Access checks for GCI Invite page."""
+    check.isProgramVisible()
+    check.isOrgAdmin()
 
   def context(self, data, check, mutator):
     """Handler to for GCI Invitation Page HTTP get request."""
@@ -271,32 +269,32 @@ class ManageInvite(GCIRequestHandler):
             name=url_names.GCI_MANAGE_INVITE)
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
 
-    key_name = self.data.kwargs['user']
+    key_name = data.kwargs['user']
     user_key = db.Key.from_path('User', key_name)
 
-    invite_id = int(self.data.kwargs['id'])
-    self.data.invite = GCIRequest.get_by_id(invite_id, parent=user_key)
-    self.check.isInvitePresent(invite_id)
+    invite_id = int(data.kwargs['id'])
+    data.invite = GCIRequest.get_by_id(invite_id, parent=user_key)
+    check.isInvitePresent(invite_id)
 
     # get invited user and check if it is not deleted
-    self.data.invited_user = self.data.invite.user
-    if not self.data.invited_user:
+    data.invited_user = data.invite.user
+    if not data.invited_user:
       logging.warning(
           'User entity does not exist for request with id %s', invite_id)
       raise NotFound('Invited user does not exist')
 
     # get the organization and check if the current user can manage the invite
-    self.data.organization = self.data.invite.org
-    self.check.isOrgAdmin()
+    data.organization = data.invite.org
+    check.isOrgAdmin()
 
-    if self.data.POST:
-      if 'withdraw' in self.data.POST:
-        self.check.canInviteBeWithdrawn()
-      elif 'resubmit' in self.data.POST:
-        self.check.canInviteBeResubmitted()
+    if data.POST:
+      if 'withdraw' in data.POST:
+        check.canInviteBeWithdrawn()
+      elif 'resubmit' in data.POST:
+        check.canInviteBeResubmitted()
       else:
         raise BadRequest('No action specified in manage_gci_invite request.')
 
@@ -364,21 +362,21 @@ class RespondInvite(GCIRequestHandler):
             name=url_names.GCI_RESPOND_INVITE)
     ]
 
-  def checkAccess(self):
-    self.check.isUser()
+  def checkAccess(self, data, check, mutator):
+    check.isUser()
 
-    invite_id = int(self.data.kwargs['id'])
-    self.data.invite = GCIRequest.get_by_id(invite_id, parent=self.data.user)
-    self.check.isInvitePresent(invite_id)
+    invite_id = int(data.kwargs['id'])
+    data.invite = GCIRequest.get_by_id(invite_id, parent=data.user)
+    check.isInvitePresent(invite_id)
 
-    self.check.canRespondInvite()
-    self.data.is_respondable = self.data.invite.status == 'pending'
+    check.canRespondInvite()
+    data.is_respondable = data.invite.status == 'pending'
 
     # actual response may be sent only to pending requests
-    if self.data.POST:
-      if 'accept' not in self.data.POST and 'reject' not in self.data.POST:
+    if data.POST:
+      if 'accept' not in data.POST and 'reject' not in data.POST:
         raise BadRequest('Valid action is not specified in the request.')
-      self.check.isInviteRespondable()
+      check.isInviteRespondable()
 
   def context(self, data, check, mutator):
     page_name = self._constructPageName()
@@ -461,8 +459,8 @@ class ListUserInvitesPage(GCIRequestHandler):
             name=url_names.GCI_LIST_INVITES),
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
 
   def jsonContext(self, data, check, mutator):
     list_content = UserInvitesList(data).getListData()

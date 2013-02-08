@@ -77,8 +77,8 @@ class StudentsInfoPage(base.GCIRequestHandler):
                              self, name=url_names.GCI_STUDENTS_INFO),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     all_participating_students_list = AllParticipatingStudentsList(data)

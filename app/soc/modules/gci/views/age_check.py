@@ -45,10 +45,10 @@ class AgeCheck(gci_base.GCIRequestHandler):
     return [gci_url_patterns.url(r'age_check/%s$' % url_patterns.PROGRAM,
                                  self, name='gci_age_check')]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Ensures that student sign up is active and the user is logged out."""
-    self.check.studentSignupActive()
-    self.check.isLoggedOut()
+    check.studentSignupActive()
+    check.isLoggedOut()
 
   def templatePath(self):
     """Returns the path to the template."""

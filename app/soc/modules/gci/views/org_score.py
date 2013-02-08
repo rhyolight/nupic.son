@@ -97,7 +97,7 @@ class OrgScoresForOrgzanizationPage(GCIRequestHandler):
             name=url_names.GCI_ORG_SCORES),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     pass
 
   def context(self, data, check, mutator):
@@ -145,10 +145,9 @@ class ChooseOrganizationForOrgScorePage(GCIRequestHandler):
             name=url_names.GCI_ORG_CHOOSE_FOR_SCORE),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     # TODO(daniel): check if the program has started
-    self.check.isHost()
-    pass
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = OrganizationsForOrgScoreList(data).getListData()

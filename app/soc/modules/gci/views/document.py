@@ -55,12 +55,12 @@ class EditDocumentPage(GCIRequestHandler):
             name='edit_gci_document'),
     ]
 
-  def checkAccess(self):
-    self.mutator.documentKeyNameFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.documentKeyNameFromKwargs()
 
-    assert isSet(self.data.key_name)
+    assert isSet(data.key_name)
 
-    self.check.canEditDocument()
+    check.canEditDocument()
 
   def context(self, data, check, mutator):
     form = GCIDocumentForm(data.POST or None, instance=data.document)
@@ -103,9 +103,9 @@ class DocumentPage(GCIRequestHandler):
             name='show_gci_document'),
     ]
 
-  def checkAccess(self):
-    self.mutator.documentKeyNameFromKwargs()
-    self.check.canViewDocument()
+  def checkAccess(self, data, check, mutator):
+    mutator.documentKeyNameFromKwargs()
+    check.canViewDocument()
 
   def context(self, data, check, mutator):
     return {
@@ -127,9 +127,9 @@ class EventsPage(GCIRequestHandler):
             name='gci_events')
     ]
 
-  def checkAccess(self):
-    self.data.document = self.data.program.events_page
-    self.check.canViewDocument()
+  def checkAccess(self, data, check, mutator):
+    data.document = data.program.events_page
+    check.canViewDocument()
 
   def context(self, data, check, mutator):
     return {
@@ -161,8 +161,8 @@ class DocumentListPage(GCIRequestHandler):
             name='list_gci_documents'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = GCIDocumentList(data).getListData()

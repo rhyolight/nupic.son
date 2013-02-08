@@ -79,8 +79,8 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
              self, name='gsoc_edit_org_app'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/edit.html'
@@ -157,10 +157,10 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
              self, name='gsoc_preview_org_app'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    if not self.data.org_app:
-      raise NotFound(access_checker.DEF_NO_ORG_APP % self.data.program.name)
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    if not data.org_app:
+      raise NotFound(access_checker.DEF_NO_ORG_APP % data.program.name)
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/take.html'
@@ -189,22 +189,22 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
              self, name='gsoc_retake_org_app'),
     ]
 
-  def checkAccess(self):
-    if not self.data.org_app:
-      raise NotFound(access_checker.DEF_NO_ORG_APP % self.data.program.name)
-    self.mutator.orgAppRecordIfIdInKwargs()
-    assert access_checker.isSet(self.data.org_app)
+  def checkAccess(self, data, check, mutator):
+    if not data.org_app:
+      raise NotFound(access_checker.DEF_NO_ORG_APP % data.program.name)
+    mutator.orgAppRecordIfIdInKwargs()
+    assert access_checker.isSet(data.org_app)
 
     show_url = None
-    if 'id' in self.data.kwargs:
-      show_url = self.data.redirect.id().urlOf('gsoc_show_org_app')
+    if 'id' in data.kwargs:
+      show_url = data.redirect.id().urlOf('gsoc_show_org_app')
 
-    self.check.isSurveyActive(self.data.org_app, show_url)
+    check.isSurveyActive(data.org_app, show_url)
 
-    if self.data.org_app_record:
-      self.check.canRetakeOrgApp()
+    if data.org_app_record:
+      check.canRetakeOrgApp()
     else:
-      self.check.canTakeOrgApp()
+      check.canTakeOrgApp()
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/take.html'
@@ -335,13 +335,13 @@ class GSoCOrgAppShowPage(GSoCRequestHandler):
             self, name='gsoc_show_org_app'),
     ]
 
-  def checkAccess(self):
-    if not self.data.org_app:
-      raise NotFound(access_checker.DEF_NO_ORG_APP % self.data.program.name)
-    self.mutator.orgAppRecordIfIdInKwargs()
-    assert access_checker.isSet(self.data.org_app_record)
+  def checkAccess(self, data, check, mutator):
+    if not data.org_app:
+      raise NotFound(access_checker.DEF_NO_ORG_APP % data.program.name)
+    mutator.orgAppRecordIfIdInKwargs()
+    assert access_checker.isSet(data.org_app_record)
 
-    self.check.canViewOrgApp()
+    check.canViewOrgApp()
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/show.html'

@@ -102,12 +102,11 @@ class AcceptedOrgsPage(GSoCRequestHandler):
         django_url(r'^program/accepted_orgs/%s$' % url_patterns.PROGRAM, self),
     ]
 
-  def checkAccess(self):
-    self.check.acceptedOrgsAnnounced()
+  def checkAccess(self, data, check, mutator):
+    check.acceptedOrgsAnnounced()
 
   def jsonContext(self, data, check, mutator):
     list_content = AcceptedOrgsList(data).getListData()
-
     if list_content:
       return list_content.content()
     else:

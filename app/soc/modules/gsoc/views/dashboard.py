@@ -125,24 +125,20 @@ class ComponentsDashboard(Dashboard):
 
 
 class DashboardPage(GSoCRequestHandler):
-  """View for the participant dashboard.
-  """
+  """View for the participant dashboard."""
 
   def djangoURLPatterns(self):
-    """The URL pattern for the dashboard.
-    """
+    """The URL pattern for the dashboard."""
     return [
         url(r'dashboard/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_dashboard')]
 
-  def checkAccess(self):
-    """Denies access if you don't have a role in the current program.
-    """
-    self.check.isLoggedIn()
+  def checkAccess(self, data, check, mutator):
+    """Denies access if you don't have a role in the current program."""
+    check.isLoggedIn()
 
   def templatePath(self):
-    """Returns the path to the template.
-    """
+    """Returns the path to the template."""
     return 'v2/modules/gsoc/dashboard/base.html'
 
   def jsonContext(self, data, check, mutator):

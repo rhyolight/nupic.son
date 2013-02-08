@@ -44,9 +44,9 @@ class GradingRecordsOverview(GSoCRequestHandler):
          self, name='gsoc_grading_record_overview'),
     ]
 
-  def checkAccess(self):
-    self.mutator.surveyGroupFromKwargs()
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    mutator.surveyGroupFromKwargs()
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/grading_record/overview.html'
@@ -246,9 +246,9 @@ class GradingRecordDetails(GSoCRequestHandler):
          self, name='gsoc_grading_record_detail'),
     ]
 
-  def checkAccess(self):
-    self.mutator.gradingSurveyRecordFromKwargs()
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    mutator.gradingSurveyRecordFromKwargs()
+    check.isHost()
 
   def context(self, data, check, mutator):
     assert isSet(data.record)

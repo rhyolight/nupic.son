@@ -55,11 +55,11 @@ class ProposalPage(GSoCRequestHandler):
          self, name='submit_gsoc_proposal'),
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isActiveStudent()
-    self.check.isOrganizationInURLActive()
-    self.check.canStudentPropose()
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isActiveStudent()
+    check.isOrganizationInURLActive()
+    check.canStudentPropose()
 
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/base.html'
@@ -149,20 +149,20 @@ class UpdateProposal(GSoCRequestHandler):
          self, name='update_gsoc_proposal'),
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isActiveStudent()
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isActiveStudent()
 
-    self.data.proposal = GSoCProposal.get_by_id(
-        int(self.data.kwargs['id']), parent=self.data.profile)
-    self.data.organization = self.data.proposal.org
+    data.proposal = GSoCProposal.get_by_id(
+        int(data.kwargs['id']), parent=data.profile)
+    data.organization = data.proposal.org
 
-    self.check.canStudentUpdateProposal()
+    check.canStudentUpdateProposal()
 
-    if self.data.POST:
-      action = self.data.POST['action']
+    if data.POST:
+      action = data.POST['action']
 
-      status = self.data.proposal.status
+      status = data.proposal.status
       if status == 'pending' and action == self.ACTIONS['resubmit']:
         error_msg = ugettext('You cannot resubmit a pending proposal')
         raise AccessViolation(error_msg)
@@ -172,7 +172,7 @@ class UpdateProposal(GSoCRequestHandler):
       if status == 'withdrawn' and action == self.ACTIONS['update']:
         error_msg = ugettext('This proposal has been withdrawn')
         raise AccessViolation(error_msg)
-      self.data.action = action
+      data.action = action
 
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/base.html'

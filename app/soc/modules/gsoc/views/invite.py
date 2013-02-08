@@ -163,12 +163,10 @@ class InvitePage(GSoCRequestHandler):
             self, name='gsoc_invite')
     ]
 
-  def checkAccess(self):
-    """Access checks for GSoC Invite page.
-    """
-
-    self.check.isProgramVisible()
-    self.check.isOrgAdmin()
+  def checkAccess(self, data, check, mutator):
+    """Access checks for GSoC Invite page."""
+    check.isProgramVisible()
+    check.isOrgAdmin()
 
   def context(self, data, check, mutator):
     """Handler to for GSoC Invitation Page HTTP get request."""
@@ -253,45 +251,43 @@ class ShowInvite(GSoCRequestHandler):
             name='gsoc_invitation')
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
 
-    invite_id = int(self.data.kwargs['id'])
-    invited_user_link_id = self.data.kwargs['user']
-    if invited_user_link_id == self.data.user.link_id:
-      invited_user = self.data.user
+    invite_id = int(data.kwargs['id'])
+    invited_user_link_id = data.kwargs['user']
+    if invited_user_link_id == data.user.link_id:
+      invited_user = data.user
     else:
       invited_user = User.get_by_key_name(invited_user_link_id)
 
-    self.data.invite = GSoCRequest.get_by_id(invite_id, parent=invited_user)
-    self.check.isInvitePresent(invite_id)
+    data.invite = GSoCRequest.get_by_id(invite_id, parent=invited_user)
+    check.isInvitePresent(invite_id)
 
-    self.data.organization = self.data.invite.org
-    self.data.invited_user = invited_user
+    data.organization = data.invite.org
+    data.invited_user = invited_user
 
-    if self.data.POST:
-      self.data.action = self.data.POST['action']
+    if data.POST:
+      data.action = data.POST['action']
 
-      if self.data.action == self.ACTIONS['accept']:
-        self.check.canRespondToInvite()
-      elif self.data.action == self.ACTIONS['reject']:
-        self.check.canRespondToInvite()
-      elif self.data.action == self.ACTIONS['resubmit']:
-        self.check.canResubmitInvite()
+      if data.action == self.ACTIONS['accept']:
+        check.canRespondToInvite()
+      elif data.action == self.ACTIONS['reject']:
+        check.canRespondToInvite()
+      elif data.action == self.ACTIONS['resubmit']:
+        check.canResubmitInvite()
     else:
-      self.check.canViewInvite()
+      check.canViewInvite()
 
-    self.mutator.canRespondForUser()
+    mutator.canRespondForUser()
 
-    if self.data.user.key() == self.data.invited_user.key():
-      self.data.invited_profile = self.data.profile
+    if data.user.key() == data.invited_user.key():
+      data.invited_profile = data.profile
       return
 
-    key_name = '/'.join([
-        self.data.program.key().name(),
-        self.data.invited_user.link_id])
-    self.data.invited_profile = GSoCProfile.get_by_key_name(
-        key_name, parent=self.data.invited_user)
+    key_name = '/'.join([data.program.key().name(), data.invited_user.link_id])
+    data.invited_profile = GSoCProfile.get_by_key_name(
+        key_name, parent=data.invited_user)
 
   def context(self, data, check, mutator):
     """Handler to for GSoC Show Invitation Page HTTP get request."""

@@ -54,20 +54,18 @@ class HostProfilePage(SiteRequestHandler):
                    name='edit_host_profile_linkid'),
     ]
 
-  def checkAccess(self):
-    if self.data.is_developer:
-      self.mutator.hostFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    if data.is_developer:
+      mutator.hostFromKwargs()
       return
 
-    link_id = self.data.kwargs.get('link_id')
-    if link_id and self.data.user.link_id != link_id:
+    link_id = data.kwargs.get('link_id')
+    if link_id and data.user.link_id != link_id:
       raise AccessViolation(DEF_DEVELOPER_ONLY)
 
-    self.mutator.host()
-    if self.data.is_host:
-      return
-
-    raise AccessViolation(DEF_NO_HOST)
+    mutator.host()
+    if not data.is_host:
+      raise AccessViolation(DEF_NO_HOST)
 
   def templatePath(self):
     return 'soc/host/base.html'

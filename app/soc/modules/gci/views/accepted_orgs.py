@@ -78,8 +78,8 @@ class AcceptedOrgsPage(GCIRequestHandler):
             name='gci_accepted_orgs'),
     ]
 
-  def checkAccess(self):
-    self.check.acceptedOrgsAnnounced()
+  def checkAccess(self, data, check, mutator):
+    check.acceptedOrgsAnnounced()
 
   def jsonContext(self, data, check, mutator):
     list_content = AcceptedOrgsList(data).getListData()
@@ -155,8 +155,8 @@ class AcceptedOrgsAdminPage(GCIRequestHandler):
             name='gci_admin_accepted_orgs'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = AcceptedOrgsAdminList(data).getListData()

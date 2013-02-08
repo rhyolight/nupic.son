@@ -309,10 +309,10 @@ class ReviewProposal(GSoCRequestHandler):
          self, name='review_gsoc_proposal'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    self.check.canAccessProposalEntity()
-    self.mutator.commentVisible()
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    check.canAccessProposalEntity()
+    mutator.commentVisible()
 
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/review.html'
@@ -498,21 +498,21 @@ class PostComment(GSoCRequestHandler):
          self, name='comment_gsoc_proposal'),
     ]
 
-  def checkAccess(self):
-    self.check.isProgramVisible()
-    self.check.isProfileActive()
-    self.mutator.proposalFromKwargs()
-    self.mutator.commentVisible()
-    assert isSet(self.data.proposer)
-    assert isSet(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    check.isProgramVisible()
+    check.isProfileActive()
+    mutator.proposalFromKwargs()
+    mutator.commentVisible()
+    assert isSet(data.proposer)
+    assert isSet(data.proposal_org)
 
     # check if the comment is given by the author of the proposal
-    if self.data.proposer.key() == self.data.profile.key():
-      self.data.public_only = True
+    if data.proposer.key() == data.profile.key():
+      data.public_only = True
       return
 
-    self.data.public_only = False
-    self.check.isMentorForOrganization(self.data.proposal_org)
+    data.public_only = False
+    check.isMentorForOrganization(data.proposal_org)
 
   def createCommentFromForm(self):
     """Creates a new comment based on the data inserted in the form.
@@ -593,16 +593,16 @@ class PostScore(GSoCRequestHandler):
          self, name='score_gsoc_proposal'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
 
-    org = self.data.proposal_org
+    org = data.proposal_org
 
-    if not self.data.orgAdminFor(org) and org.scoring_disabled:
+    if not data.orgAdminFor(org) and org.scoring_disabled:
       raise BadRequest('Scoring is disabled for this organization')
 
-    self.check.isMentorForOrganization(org)
+    check.isMentorForOrganization(org)
 
   def createOrUpdateScore(self, value):
     """Creates a new score or updates a score if there is already one
@@ -682,11 +682,11 @@ class WishToMentor(GSoCRequestHandler):
          self, name='gsoc_proposal_wish_to_mentor'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
 
-    self.check.isMentorForOrganization(self.data.proposal_org)
+    check.isMentorForOrganization(data.proposal_org)
 
   def addToPotentialMentors(self, value):
     """Toggles the user from the potential mentors list.
@@ -744,10 +744,10 @@ class AssignMentor(GSoCRequestHandler):
          self, name='gsoc_proposal_assign_mentor'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
-    self.check.isOrgAdminForOrganization(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
+    check.isOrgAdminForOrganization(data.proposal_org)
 
   def assignMentor(self, mentor_entity):
     """Assigns the mentor to the proposal.
@@ -829,11 +829,11 @@ class IgnoreProposal(GSoCRequestHandler):
          self, name='gsoc_proposal_ignore'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
-    self.check.isOrgAdminForOrganization(self.data.proposal_org)
-    if self.data.proposal.status == 'withdrawn':
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
+    check.isOrgAdminForOrganization(data.proposal_org)
+    if data.proposal.status == 'withdrawn':
       raise AccessViolation("You cannot ignore a withdrawn proposal")
 
   def toggleIgnoreProposal(self, value):
@@ -887,10 +887,10 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
          self, name='gsoc_proposal_modification'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
-    self.check.isMentorForOrganization(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
+    check.isMentorForOrganization(data.proposal_org)
 
   def toggleModificationPermission(self, value):
     """Toggles the permission to modify the proposal after proposal deadline.
@@ -943,10 +943,10 @@ class AcceptProposal(GSoCRequestHandler):
          self, name='gsoc_proposal_accept'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
-    self.check.isOrgAdminForOrganization(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
+    check.isOrgAdminForOrganization(data.proposal_org)
 
   def toggleStatus(self, value):
     """Toggles the the application state between accept and pending.
@@ -989,8 +989,7 @@ class AcceptProposal(GSoCRequestHandler):
 
 
 class ProposalPubliclyVisible(GSoCRequestHandler):
-  """View allowing the proposer to make the proposal publicly visible.
-  """
+  """View allowing the proposer to make the proposal publicly visible."""
 
   def djangoURLPatterns(self):
     return [
@@ -998,9 +997,9 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
          self, name='gsoc_proposal_publicly_visible'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    self.check.isProposer()
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    check.isProposer()
 
   def togglePublicVisibilty(self, value):
     """Toggles the the public visibility of the application.
@@ -1052,10 +1051,10 @@ class WithdrawProposal(GSoCRequestHandler):
          self, name='gsoc_proposal_withdraw'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    self.check.isProposer()
-    self.check.canStudentUpdateProposal()
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    check.isProposer()
+    check.canStudentUpdateProposal()
 
   def toggleWithdrawProposal(self, value):
     """Toggles the the application state between withdraw and pending.

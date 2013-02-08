@@ -44,8 +44,8 @@ class GCIOrgAppEditPage(GCIRequestHandler):
              self, name='gci_edit_org_app'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/edit.html'
@@ -122,8 +122,8 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
              self, name='gci_preview_org_app'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'
@@ -152,29 +152,29 @@ class GCIOrgAppTakePage(GCIRequestHandler):
              self, name='gci_retake_org_app'),
     ]
 
-  def checkAccess(self):
-    if not self.data.org_app:
+  def checkAccess(self, data, check, mutator):
+    if not data.org_app:
       raise exceptions.NotFound(
-          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+          access_checker.DEF_NO_ORG_APP % data.program.name)
 
-    self.mutator.orgAppRecordIfIdInKwargs()
-    assert access_checker.isSet(self.data.org_app)
+    mutator.orgAppRecordIfIdInKwargs()
+    assert access_checker.isSet(data.org_app)
 
     # FIXME: There will never be organization in kwargs
     show_url = None
-    if 'organization' in self.data.kwargs:
+    if 'organization' in data.kwargs:
       # TODO(nathaniel): make this .organization() call unnecessary. Like,
       # more than it already is (see the note above).
-      self.data.redirect.organization()
+      data.redirect.organization()
 
-      show_url = self.data.redirect.urlOf('gci_show_org_app')
+      show_url = data.redirect.urlOf('gci_show_org_app')
 
-    self.check.isSurveyActive(self.data.org_app, show_url)
+    check.isSurveyActive(data.org_app, show_url)
 
-    if self.data.org_app_record:
-      self.check.canRetakeOrgApp()
+    if data.org_app_record:
+      check.canRetakeOrgApp()
     else:
-      self.check.canTakeOrgApp()
+      check.canTakeOrgApp()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'
@@ -303,15 +303,15 @@ class GCIOrgAppShowPage(GCIRequestHandler):
             self, name='gci_show_org_app'),
     ]
 
-  def checkAccess(self):
-    if not self.data.org_app:
+  def checkAccess(self, data, check, mutator):
+    if not data.org_app:
       raise exceptions.NotFound(
-          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+          access_checker.DEF_NO_ORG_APP % data.program.name)
 
-    self.mutator.orgAppRecordIfIdInKwargs()
-    assert access_checker.isSet(self.data.org_app_record)
+    mutator.orgAppRecordIfIdInKwargs()
+    assert access_checker.isSet(data.org_app_record)
 
-    self.check.canViewOrgApp()
+    check.canViewOrgApp()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/show.html'

@@ -20,8 +20,8 @@ from google.appengine.ext import db
 class ProgramMessagesPage(object):
   """View for the content of program specific messages to be sent."""
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def context(self, data, check, mutator):
     """See soc.views.base.RequestHandler.context for specification."""

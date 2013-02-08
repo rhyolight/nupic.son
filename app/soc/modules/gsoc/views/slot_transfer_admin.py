@@ -227,8 +227,8 @@ class SlotsTransferAdminPage(base.GSoCRequestHandler):
             name='gsoc_admin_slots_transfer'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer_admin/base.html'

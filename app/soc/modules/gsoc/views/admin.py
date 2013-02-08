@@ -103,8 +103,8 @@ class DashboardPage(GSoCRequestHandler):
          self, name='gsoc_admin_dashboard'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/base.html'
@@ -731,8 +731,8 @@ class LookupLinkIdPage(GSoCRequestHandler):
          self, name='lookup_gsoc_profile'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/lookup.html'
@@ -884,8 +884,8 @@ class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
          self, name='gsoc_proposals_orgs'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
@@ -961,8 +961,8 @@ class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
          self, name='gsoc_projects_orgs'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
@@ -1118,8 +1118,8 @@ class ProposalsPage(GSoCRequestHandler):
          self, name='gsoc_proposals_org'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
@@ -1218,8 +1218,8 @@ class ProjectsPage(GSoCRequestHandler):
          self, name='gsoc_projects_org'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
@@ -1371,8 +1371,8 @@ class SlotsPage(GSoCRequestHandler):
          self, name='gsoc_slots'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
@@ -1410,8 +1410,8 @@ class SurveyReminderPage(GSoCRequestHandler):
             self, name='gsoc_survey_reminder_admin'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/survey_reminder.html'
@@ -1588,8 +1588,8 @@ class StudentsListPage(GSoCRequestHandler):
             self, name='gsoc_students_list_admin'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
@@ -1620,8 +1620,8 @@ class ProjectsListPage(GSoCRequestHandler):
             self, name='gsoc_projects_list_admin'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'
@@ -1656,8 +1656,8 @@ class OrgsListPage(GSoCRequestHandler):
             self, name='gsoc_orgs_list_admin'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/admin/list.html'

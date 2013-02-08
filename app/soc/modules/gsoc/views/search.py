@@ -40,5 +40,5 @@ class SearchGsocPage(base.GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/search.html'
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     pass

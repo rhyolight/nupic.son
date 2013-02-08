@@ -108,8 +108,8 @@ class ProgramPage(GCIRequestHandler):
 
     return {'data': json_data}
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/program/base.html'
@@ -153,8 +153,8 @@ class TimelinePage(GCIRequestHandler):
         url(r'timeline/edit/%s$' % url_patterns.PROGRAM, self),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/timeline/base.html'

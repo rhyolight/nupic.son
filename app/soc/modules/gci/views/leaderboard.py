@@ -122,8 +122,8 @@ class LeaderboardPage(GCIRequestHandler):
             name=url_names.GCI_LEADERBOARD),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = LeaderboardList(data).getListData()
@@ -161,14 +161,14 @@ class StudentTasksPage(GCIRequestHandler):
             name=url_names.GCI_STUDENT_TASKS),
     ]
 
-  def checkAccess(self):
-    self.mutator.studentFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.studentFromKwargs()
     try:
-      self.check.isHost()
+      check.isHost()
     except AccessViolation:
-      self.check.hasProfile()
+      check.hasProfile()
       # check if the profile in URL kwargs is the current profile
-      if self.data.profile.key() != self.data.url_profile.key():
+      if data.profile.key() != data.url_profile.key():
         raise AccessViolation('You do not have access to this data')
 
   def jsonContext(self, data, check, mutator):

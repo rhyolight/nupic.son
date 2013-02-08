@@ -64,20 +64,20 @@ class OrgProfilePage(GCIRequestHandler):
          self, name=url_names.EDIT_GCI_ORG_PROFILE),
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isProgramVisible()
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isProgramVisible()
 
-    if 'organization' in self.data.kwargs:
-      self.check.isProfileActive()
-      self.check.isOrgAdminForOrganization(self.data.organization)
+    if 'organization' in data.kwargs:
+      check.isProfileActive()
+      check.isOrgAdminForOrganization(data.organization)
       #probably check if the org is active
     else:
-      self.data.organization = None
-      self.mutator.orgAppFromOrgId()
-      self.check.isOrgAppAccepted()
-      self.check.isUserAdminForOrgApp()
-      self.check.hasProfileOrRedirectToCreate()
+      data.organization = None
+      mutator.orgAppFromOrgId()
+      check.isOrgAppAccepted()
+      check.isUserAdminForOrgApp()
+      check.hasProfileOrRedirectToCreate()
 
   def templatePath(self):
     return 'v2/modules/gci/org_profile/base.html'

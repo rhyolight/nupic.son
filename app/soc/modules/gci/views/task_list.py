@@ -85,7 +85,7 @@ class TaskListPage(GCIRequestHandler):
             name='list_gci_finished_tasks'),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     pass
 
   def jsonContext(self, data, check, mutator):
@@ -135,9 +135,9 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
             name=url_names.GCI_STUDENT_TASKS_FOR_ORG),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     # TODO(daniel): who should be able to access it?
-    self.mutator.profileFromKwargs()
+    mutator.profileFromKwargs()
 
   def jsonContext(self, data, check, mutator):
     list_content = StudentTasksForOrganizationList(data).getListData()
@@ -185,8 +185,8 @@ class ChooseOrganizationPage(GCIRequestHandler):
             name=url_names.GCI_ORG_CHOOSE_FOR_ALL_TASKS),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = ChooseOrganizationList(data).getListData()
@@ -232,8 +232,8 @@ class AllOrganizationTasksPage(GCIRequestHandler):
             name=url_names.GCI_ORG_TASKS_ALL),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = AllOrganizationTasksList(data).getListData()

@@ -35,8 +35,8 @@ class BanOrgPost(object):
              self, name=self._getURLName()),
     ]
 
-  def checkAccess(self):
-    self.check.isHost();
+  def checkAccess(self, data, check, mutator):
+    check.isHost();
 
   def post(self, data, check, mutator):
     """See soc.views.base.RequestHandler.post for specification."""

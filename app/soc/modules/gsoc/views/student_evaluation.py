@@ -70,9 +70,9 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
              self, name='gsoc_edit_student_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.studentEvaluationFromKwargs(raise_not_found=False)
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    mutator.studentEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation.html'
@@ -151,27 +151,27 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
              self, name='gsoc_take_student_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    self.mutator.studentEvaluationFromKwargs()
-    self.mutator.studentEvaluationRecordFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    mutator.studentEvaluationFromKwargs()
+    mutator.studentEvaluationRecordFromKwargs()
 
-    assert isSet(self.data.student_evaluation)
+    assert isSet(data.student_evaluation)
 
-    if self.data.is_host:
+    if data.is_host:
       return
 
-    show_url = self.data.redirect.survey_record(
-          self.data.student_evaluation.link_id).urlOf(
+    show_url = data.redirect.survey_record(
+          data.student_evaluation.link_id).urlOf(
           'gsoc_show_student_evaluation')
-    self.check.isSurveyActive(self.data.student_evaluation, show_url)
+    check.isSurveyActive(data.student_evaluation, show_url)
 
-    self.check.isProfileActive()
-    if self.data.orgAdminFor(self.data.project.org):
+    check.isProfileActive()
+    if data.orgAdminFor(data.project.org):
       raise RedirectRequest(show_url)
 
-    self.check.canUserTakeSurvey(self.data.student_evaluation, 'student')
-    self.check.isStudentForSurvey()
+    check.canUserTakeSurvey(data.student_evaluation, 'student')
+    check.isStudentForSurvey()
 
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation_take.html'
@@ -246,9 +246,9 @@ class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
              self, name='gsoc_preview_student_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.studentEvaluationFromKwargs(raise_not_found=False)
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    mutator.studentEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation_take.html'
@@ -280,11 +280,11 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
              self, name='gsoc_list_student_eval_records')
          ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Defines access checks for this list, all hosts should be able to see it.
     """
-    self.check.isHost()
-    self.mutator.studentEvaluationFromKwargs()
+    check.isHost()
+    mutator.studentEvaluationFromKwargs()
 
   def context(self, data, check, mutator):
     """Returns the context of the page to render."""
@@ -345,24 +345,24 @@ class GSoCStudentEvaluationShowPage(GSoCRequestHandler):
             self, name='gsoc_show_student_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    self.mutator.studentEvaluationFromKwargs()
-    self.mutator.studentEvaluationRecordFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    mutator.studentEvaluationFromKwargs()
+    mutator.studentEvaluationRecordFromKwargs()
 
-    assert isSet(self.data.project)
-    assert isSet(self.data.student_evaluation)
+    assert isSet(data.project)
+    assert isSet(data.student_evaluation)
 
-    self.check.isProfileActive()
-    if self.data.orgAdminFor(self.data.project.org):
-      self.data.role = 'org_admin'
-      if self.data.timeline.afterSurveyEnd(self.data.student_evaluation):
+    check.isProfileActive()
+    if data.orgAdminFor(data.project.org):
+      data.role = 'org_admin'
+      if data.timeline.afterSurveyEnd(data.student_evaluation):
         return
       else:
         raise AccessViolation(DEF_CANNOT_ACCESS_EVALUATION)
 
-    self.check.isStudentForSurvey()
-    self.data.role = 'student'
+    check.isStudentForSurvey()
+    data.role = 'student'
 
   def templatePath(self):
     return 'v2/modules/gsoc/_survey/show.html'

@@ -141,15 +141,15 @@ class FormPage(GSoCRequestHandler):
             kwargs=dict(form='tax', admin=True)),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     if self._admin():
-      self.check.isHost()
-      self.mutator.studentFromKwargs()
+      check.isHost()
+      mutator.studentFromKwargs()
     else:
-      self.check.isStudentWithProject()
-      if self.data.POST:
+      check.isStudentWithProject()
+      if data.POST:
         # No uploading after program ends.
-        self.check.isProgramRunning()
+        check.isProgramRunning()
 
   def templatePath(self):
     return 'v2/modules/gsoc/student_forms/base.html'
@@ -255,12 +255,12 @@ class DownloadForm(GSoCRequestHandler):
             kwargs=dict(form='tax', admin=True)),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     if self._admin():
-      self.check.isHost()
-      self.mutator.studentFromKwargs()
+      check.isHost()
+      mutator.studentFromKwargs()
     else:
-      self.check.canStudentDownloadForms()
+      check.canStudentDownloadForms()
 
   def _admin(self):
     return self.data.kwargs['admin']

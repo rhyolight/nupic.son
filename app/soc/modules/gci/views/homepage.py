@@ -223,8 +223,8 @@ class Homepage(GCIRequestHandler):
         url(r'program/home/%s$' % url_patterns.PROGRAM, self),
     ]
 
-  def checkAccess(self):
-    self.check.isProgramVisible()
+  def checkAccess(self, data, check, mutator):
+    check.isProgramVisible()
 
   def context(self, data, check, mutator):
     current_timeline = data.timeline.currentPeriod()

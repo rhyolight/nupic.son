@@ -92,9 +92,9 @@ class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
              self, name='gsoc_edit_mentor_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.mentorEvaluationFromKwargs(raise_not_found=False)
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    mutator.mentorEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation.html'
@@ -172,19 +172,19 @@ class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
              self, name='gsoc_take_mentor_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    self.mutator.mentorEvaluationFromKwargs()
-    self.mutator.mentorEvaluationRecordFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    mutator.mentorEvaluationFromKwargs()
+    mutator.mentorEvaluationRecordFromKwargs()
 
-    assert isSet(self.data.mentor_evaluation)
+    assert isSet(data.mentor_evaluation)
 
-    show_url = self.data.redirect.survey_record(
-        self.data.mentor_evaluation.link_id).urlOf(
+    show_url = data.redirect.survey_record(
+        data.mentor_evaluation.link_id).urlOf(
         'gsoc_show_mentor_evaluation')
-    self.check.isSurveyActive(self.data.mentor_evaluation, show_url)
-    self.check.canUserTakeSurvey(self.data.mentor_evaluation, 'org')
-    self.check.isMentorForSurvey()
+    check.isSurveyActive(data.mentor_evaluation, show_url)
+    check.canUserTakeSurvey(data.mentor_evaluation, 'org')
+    check.isMentorForSurvey()
 
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation_take.html'
@@ -259,9 +259,9 @@ class GSoCMentorEvaluationPreviewPage(GSoCRequestHandler):
              self, name='gsoc_preview_mentor_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.mentorEvaluationFromKwargs(raise_not_found=False)
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    mutator.mentorEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation_take.html'
@@ -294,11 +294,11 @@ class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
              self, name='gsoc_list_mentor_eval_records')
          ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Defines access checks for this list, all hosts should be able to see it.
     """
-    self.check.isHost()
-    self.mutator.mentorEvaluationFromKwargs()
+    check.isHost()
+    mutator.mentorEvaluationFromKwargs()
 
   def context(self, data, check, mutator):
     """Returns the context of the page to render."""
@@ -362,16 +362,16 @@ class GSoCMentorEvaluationShowPage(GSoCRequestHandler):
             self, name='gsoc_show_mentor_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    self.mutator.mentorEvaluationFromKwargs()
-    self.mutator.mentorEvaluationRecordFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    mutator.mentorEvaluationFromKwargs()
+    mutator.mentorEvaluationRecordFromKwargs()
 
-    assert isSet(self.data.project)
-    assert isSet(self.data.mentor_evaluation)
+    assert isSet(data.project)
+    assert isSet(data.mentor_evaluation)
 
-    self.check.isProfileActive()
-    self.check.isMentorForSurvey()
+    check.isProfileActive()
+    check.isMentorForSurvey()
 
   def templatePath(self):
     return 'v2/modules/gsoc/_survey/show.html'

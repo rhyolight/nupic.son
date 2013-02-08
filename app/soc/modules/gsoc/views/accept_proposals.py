@@ -37,8 +37,8 @@ class AcceptProposalsPage(GSoCRequestHandler):
             name='gsoc_accept_proposals'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def context(self, data, check, mutator):
     """Returns the context for this page."""

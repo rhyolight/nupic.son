@@ -248,7 +248,7 @@ class OrgHome(GSoCRequestHandler):
         django_url(r'^org/home/%s$' % url_patterns.ORG, self),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Access checks for GSoC Organization Homepage."""
     pass
 

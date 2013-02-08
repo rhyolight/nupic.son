@@ -57,7 +57,7 @@ class TaskListPage(GCIRequestHandler):
             name=url_names.GCI_ALL_TASKS_LIST),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     pass
 
   def jsonContext(self, data, check, mutator):

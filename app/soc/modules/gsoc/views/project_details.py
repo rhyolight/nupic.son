@@ -184,13 +184,12 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
             name=url_names.GSOC_PROJECT_UPDATE)
     ]
 
-  def checkAccess(self):
-    """Access checks for GSoC project details page.
-    """
-    self.check.isLoggedIn()
-    self.check.isActiveStudent()
-    self.mutator.projectFromKwargs()
-    self.check.canStudentUpdateProject()
+  def checkAccess(self, data, check, mutator):
+    """Access checks for GSoC project details page."""
+    check.isLoggedIn()
+    check.isActiveStudent()
+    mutator.projectFromKwargs()
+    check.canStudentUpdateProject()
 
   def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
@@ -246,12 +245,12 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD)
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isActiveStudent()
-    self.mutator.projectFromKwargs()
-    self.check.canStudentUpdateProject()
-    self.check.isProjectCompleted()
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isActiveStudent()
+    mutator.projectFromKwargs()
+    check.canStudentUpdateProject()
+    check.isProjectCompleted()
 
   def post(self, data, check, mutator):
     """Post handler for the code sample upload file."""
@@ -304,9 +303,9 @@ class CodeSampleDownloadFileGet(GSoCRequestHandler):
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    self.check.isProjectCompleted()
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    check.isProjectCompleted()
 
   def get(self, data, check, mutator):
     """Get handler for the code sample download file."""
@@ -336,10 +335,10 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_DELETE)
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    self.check.canStudentUpdateProject()
-    self.check.isProjectCompleted()
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    check.canStudentUpdateProject()
+    check.isProjectCompleted()
 
   def post(self, data, check, mutator):
     """Get handler for the code sample delete file."""
@@ -439,9 +438,9 @@ class ProjectDetails(GSoCRequestHandler):
             name='gsoc_project_details')
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Access checks for GSoC project details page."""
-    self.mutator.projectFromKwargs()
+    mutator.projectFromKwargs()
 
   def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
@@ -480,10 +479,10 @@ class AssignMentors(GSoCRequestHandler):
          self, name='gsoc_project_assign_mentors'),
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    assert isSet(self.data.project.org)
-    self.check.isOrgAdminForOrganization(self.data.project.org)
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    assert isSet(data.project.org)
+    check.isOrgAdminForOrganization(data.project.org)
 
   def assignMentors(self, mentor_keys):
     """Assigns the mentor to the project.
@@ -553,10 +552,10 @@ class FeaturedProject(GSoCRequestHandler):
          self, name='gsoc_featured_project'),
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    assert isSet(self.data.project.org)
-    self.check.isOrgAdminForOrganization(self.data.project.org)
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    assert isSet(data.project.org)
+    check.isOrgAdminForOrganization(data.project.org)
 
   def toggleFeatured(self, value):
     """Makes the project featured.

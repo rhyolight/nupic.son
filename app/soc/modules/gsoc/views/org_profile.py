@@ -152,26 +152,26 @@ class OrgProfilePage(GSoCRequestHandler):
          self, name='edit_gsoc_org_profile'),
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
-    self.check.isProgramVisible()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
+    check.isProgramVisible()
 
-    if 'organization' in self.data.kwargs:
-      self.check.isOrgAdminForOrganization(self.data.organization)
+    if 'organization' in data.kwargs:
+      check.isOrgAdminForOrganization(data.organization)
       #probably check if the org is active
     else:
-      self.data.org_id = self.data.request.GET.get('org_id')
+      data.org_id = data.request.GET.get('org_id')
 
-      self.mutator.orgAppRecord(self.data.org_id)
+      mutator.orgAppRecord(data.org_id)
 
-      if not self.data.org_id:
-        self.check.fail(DEF_NO_ORG_ID_FOR_CREATE)
+      if not data.org_id:
+        check.fail(DEF_NO_ORG_ID_FOR_CREATE)
         return
 
       # For the creation of a new organization profile the org should not
       # exist yet.
-      self.check.orgDoesnotExist(self.data.org_id)
-      self.check.canCreateOrgProfile()
+      check.orgDoesnotExist(data.org_id)
+      check.canCreateOrgProfile()
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_profile/base.html'

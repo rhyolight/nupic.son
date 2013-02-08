@@ -81,25 +81,24 @@ class RequestPage(GSoCRequestHandler):
             self, name='gsoc_request')
     ]
 
-  def checkAccess(self):
-    """Access checks for GSoC Invite page.
-    """
-    self.check.isProgramVisible()
+  def checkAccess(self, data, check, mutator):
+    """Access checks for GSoC Invite page."""
+    check.isProgramVisible()
 
     # check if the current user has a profile, but is not a student
-    self.check.notStudent()
+    check.notStudent()
 
     # check if the organization exists
-    self.check.isOrganizationInURLActive()
+    check.isOrganizationInURLActive()
 
     # check if the user is not already mentor role for the organization
-    self.check.notMentor()
+    check.notMentor()
 
     # check if there is already a request
     query = db.Query(GSoCRequest)
     query.filter('type = ', 'Request')
-    query.filter('user = ', self.data.user)
-    query.filter('org = ', self.data.organization)
+    query.filter('user = ', data.user)
+    query.filter('org = ', data.organization)
     if query.get():
       raise AccessViolation(
           'You have already sent a request to this organization.')
@@ -184,43 +183,42 @@ class ShowRequest(GSoCRequestHandler):
             name='show_gsoc_request')
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
 
-    request_id = int(self.data.kwargs['id'])
-    invited_user_link_id = self.data.kwargs['user']
-    if invited_user_link_id == self.data.user.link_id:
-      invited_user = self.data.user
+    request_id = int(data.kwargs['id'])
+    invited_user_link_id = data.kwargs['user']
+    if invited_user_link_id == data.user.link_id:
+      invited_user = data.user
     else:
       invited_user = User.get_by_key_name(invited_user_link_id)
 
-    self.data.invite = self.data.request_entity = GSoCRequest.get_by_id(
+    data.invite = data.request_entity = GSoCRequest.get_by_id(
         request_id, parent=invited_user)
-    self.check.isRequestPresent(request_id)
+    check.isRequestPresent(request_id)
 
-    self.data.organization = self.data.request_entity.org
-    self.data.invited_user = self.data.requester = self.data.request_entity.user
+    data.organization = data.request_entity.org
+    data.invited_user = data.request_entity.user
+    data.requester = data.request_entity.user
 
-    if self.data.POST:
-      self.data.action = self.data.POST['action']
+    if data.POST:
+      data.action = data.POST['action']
 
-      if self.data.action == self.ACTIONS['accept']:
-        self.check.canRespondToRequest()
-      elif self.data.action == self.ACTIONS['reject']:
-        self.check.canRespondToRequest()
-      elif self.data.action == self.ACTIONS['resubmit']:
-        self.check.canResubmitRequest()
+      if data.action == self.ACTIONS['accept']:
+        check.canRespondToRequest()
+      elif data.action == self.ACTIONS['reject']:
+        check.canRespondToRequest()
+      elif data.action == self.ACTIONS['resubmit']:
+        check.canResubmitRequest()
       # withdraw action
     else:
-      self.check.canViewRequest()
+      check.canViewRequest()
 
-    self.mutator.canRespondForUser()
+    mutator.canRespondForUser()
 
-    key_name = '/'.join([
-        self.data.program.key().name(),
-        self.data.requester.link_id])
-    self.data.requester_profile = GSoCProfile.get_by_key_name(
-        key_name, parent=self.data.requester)
+    key_name = '/'.join([data.program.key().name(), data.requester.link_id])
+    data.requester_profile = GSoCProfile.get_by_key_name(
+        key_name, parent=data.requester)
 
   def context(self, data, check, mutator):
     """Handler to for GSoC Show Request Page HTTP get request."""

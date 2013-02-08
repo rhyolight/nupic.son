@@ -210,10 +210,9 @@ class Homepage(GSoCRequestHandler):
         django_url(r'^program/home/%s$' % url_patterns.PROGRAM, self),
     ]
 
-  def checkAccess(self):
-    """Access checks for GSoC Home page.
-    """
-    self.check.isProgramVisible()
+  def checkAccess(self, data, check, mutator):
+    """Access checks for GSoC Home page."""
+    check.isProgramVisible()
 
   def context(self, data, check, mutator):
     """Handler to for GSoC Home page HTTP get request."""

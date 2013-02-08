@@ -112,10 +112,9 @@ class DashboardPage(GCIRequestHandler):
         url(r'dashboard/%s$' % url_patterns.PROGRAM, self,
             name='gci_dashboard')]
 
-  def checkAccess(self):
-    """Denies access if you are not logged in.
-    """
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    """Denies access if you are not logged in."""
+    check.isProfileActive()
 
   def templatePath(self):
     """Returns the path to the template.

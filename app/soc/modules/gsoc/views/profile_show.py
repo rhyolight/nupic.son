@@ -105,11 +105,11 @@ class GSoCProfileAdminPage(GSoCRequestHandler):
          self, name=url_names.GSOC_PROFILE_SHOW),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.userFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    mutator.userFromKwargs()
     try:
-      self.mutator.profileFromKwargs()
+      mutator.profileFromKwargs()
     except NotFound:
       # it is not a terminal error, when Profile does not exist
       pass

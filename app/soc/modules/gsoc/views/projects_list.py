@@ -126,9 +126,9 @@ class ListProjects(GSoCRequestHandler):
             name='gsoc_accepted_projects')
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Access checks for the view."""
-    self.check.acceptedStudentsAnnounced()
+    check.acceptedStudentsAnnounced()
 
   def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""

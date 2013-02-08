@@ -78,20 +78,20 @@ class SlotTransferPage(GSoCRequestHandler):
             self, name='gsoc_slot_transfer'),
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isProgramVisible()
-    self.check.isOrganizationInURLActive()
-    self.check.isOrgAdminForOrganization(self.data.organization)
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isProgramVisible()
+    check.isOrganizationInURLActive()
+    check.isOrgAdminForOrganization(data.organization)
 
-    self.check.isSlotTransferActive()
-    self.mutator.slotTransferEntities()
-    if not self.data.slot_transfer_entities:
-      if 'new' not in self.data.kwargs:
+    check.isSlotTransferActive()
+    mutator.slotTransferEntities()
+    if not data.slot_transfer_entities:
+      if 'new' not in data.kwargs:
         # TODO(nathaniel): make this .organization() call unnecessary.
-        self.data.redirect.organization()
+        data.redirect.organization()
 
-        new_url = self.data.redirect.urlOf('gsoc_update_slot_transfer')
+        new_url = data.redirect.urlOf('gsoc_update_slot_transfer')
         raise RedirectRequest(new_url)
 
   def templatePath(self):
@@ -134,14 +134,14 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
             self, name='gsoc_update_slot_transfer'),
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isProgramVisible()
-    self.check.isOrganizationInURLActive()
-    self.check.isOrgAdminForOrganization(self.data.organization)
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isProgramVisible()
+    check.isOrganizationInURLActive()
+    check.isOrgAdminForOrganization(data.organization)
 
-    self.check.isSlotTransferActive()
-    self.mutator.slotTransferEntities()
+    check.isSlotTransferActive()
+    mutator.slotTransferEntities()
 
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer/form.html'

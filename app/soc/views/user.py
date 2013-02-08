@@ -62,10 +62,9 @@ class CreateUserPage(SiteRequestHandler):
         django_url(r'^user/create$', self, name='create_user'),
     ]
 
-  def checkAccess(self):
-    """Ensures that the user is logged in and does not have a User profile.
-    """
-    self.check.isNotUser()
+  def checkAccess(self, data, check, mutator):
+    """Ensures that the user is logged in and does not have a User profile."""
+    check.isNotUser()
 
   def templatePath(self):
     # TODO: make this specific to the current active program
@@ -110,8 +109,8 @@ class EditUserPage(SiteRequestHandler):
         django_url(r'^user/edit', self, name='edit_user'),
     ]
 
-  def checkAccess(self):
-    self.check.isUser()
+  def checkAccess(self, data, check, mutator):
+    check.isUser()
 
   def templatePath(self):
     # TODO: make this specific to the current active program

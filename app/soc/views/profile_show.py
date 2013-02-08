@@ -84,8 +84,7 @@ class HostActions(Template):
 
 
 class BanProfilePost(object):
-  """Handles banning/unbanning of profiles.
-  """
+  """Handles banning/unbanning of profiles."""
 
   def djangoURLPatterns(self):
     return [
@@ -95,9 +94,10 @@ class BanProfilePost(object):
              self, name=self._getURLName()),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.profileFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.checkAccess for specification."""
+    check.isHost()
+    mutator.profileFromKwargs()
 
   def post(self, data, check, mutator):
     """See soc.views.base.RequestHandler.post for specification."""
@@ -134,12 +134,12 @@ class BanProfilePost(object):
 
 
 class ProfileShowPage(object):
-  """View to display the read-only profile page.
-  """
+  """View to display the read-only profile page."""
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.hasProfile()
+  def checkAccess(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.checkAccess for specification."""
+    check.isLoggedIn()
+    check.hasProfile()
 
   def context(self, data, check, mutator):
     """See soc.views.base.RequestHandler.context for specification."""

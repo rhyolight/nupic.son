@@ -56,12 +56,12 @@ class EditDocumentPage(GSoCRequestHandler):
             name='edit_gsoc_document'),
     ]
 
-  def checkAccess(self):
-    self.mutator.documentKeyNameFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.documentKeyNameFromKwargs()
 
-    assert isSet(self.data.key_name)
+    assert isSet(data.key_name)
 
-    self.check.canEditDocument()
+    check.canEditDocument()
 
   def context(self, data, check, mutator):
     form = GSoCDocumentForm(data.POST or None, instance=data.document)
@@ -107,13 +107,13 @@ class DocumentPage(GSoCRequestHandler):
                    self),
     ]
 
-  def checkAccess(self):
-    self.mutator.documentKeyNameFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.documentKeyNameFromKwargs()
 
-    if not self.data.document:
-      raise NotFound("No such document: '%s'" % self.data.key_name)
+    if not data.document:
+      raise NotFound("No such document: '%s'" % data.key_name)
 
-    self.check.canViewDocument()
+    check.canViewDocument()
 
   def context(self, data, check, mutator):
     return {
@@ -136,8 +136,8 @@ class EventsPage(GSoCRequestHandler):
     ]
 
   def checkAccess(self):
-    self.data.document = self.data.program.events_page
-    self.check.canViewDocument()
+    data.document = data.program.events_page
+    check.canViewDocument()
 
   def context(self, data, check, mutator):
     return {
@@ -169,12 +169,11 @@ class DocumentListPage(GSoCRequestHandler):
             name='list_gsoc_documents'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = GSoCDocumentList(data).getListData()
-
     if list_content:
       return list_content.content()
     else:

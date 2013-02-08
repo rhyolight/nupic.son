@@ -143,14 +143,14 @@ class OrgAppRecordsList(object):
     """
     self.read_only_view = read_only_view
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Defines access checks for this list, all hosts should be able to see it.
     """
-    if not self.data.org_app:
+    if not data.org_app:
       raise exceptions.NotFound(
-          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+          access_checker.DEF_NO_ORG_APP % data.program.name)
 
-    self.check.isHost()
+    check.isHost()
 
   def context(self, data, check, mutator):
     """Returns the context of the page to render."""

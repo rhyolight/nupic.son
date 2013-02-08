@@ -50,12 +50,12 @@ class BulkCreate(GCIRequestHandler):
         url(r'bulk/%s$' % url_patterns.ORG, self,
             name=url_names.GCI_TASK_BULK_CREATE)]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Denies access if the currently logged user is not allowed to
     bulk create tasks.
     """
-    self.check.isLoggedIn()
-    self.check.canBulkCreateTask()
+    check.isLoggedIn()
+    check.canBulkCreateTask()
 
   def templatePath(self):
     """Returns the path to the template.

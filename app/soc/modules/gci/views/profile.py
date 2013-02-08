@@ -270,21 +270,21 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
 class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
   """View for the GCI participant profile."""
 
-  def checkAccess(self):
-    self.check.isProgramVisible()
-    self.check.isProgramRunning()
+  def checkAccess(self, data, check, mutator):
+    check.isProgramVisible()
+    check.isProgramRunning()
 
-    if 'role' in self.data.kwargs:
-      role = self.data.kwargs['role']
-      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+    if 'role' in data.kwargs:
+      role = data.kwargs['role']
+      kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
       edit_url = reverse('edit_gci_profile', kwargs=kwargs)
       if role == 'student':
-        self.check.canApplyStudent(edit_url)
+        check.canApplyStudent(edit_url)
       else:
-        self.check.isLoggedIn()
-        self.check.canApplyNonStudent(role, edit_url)
+        check.isLoggedIn()
+        check.canApplyNonStudent(role, edit_url)
     else:
-      self.check.isProfileActive()
+      check.isProfileActive()
 
   def templatePath(self):
     return 'v2/modules/gci/profile/base.html'

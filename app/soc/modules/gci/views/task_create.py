@@ -296,21 +296,21 @@ class TaskCreatePage(GCIRequestHandler):
             self, name='gci_edit_task'),
     ]
 
-  def checkAccess(self):
-    self.mutator.taskFromKwargsIfId()
+  def checkAccess(self, data, check, mutator):
+    mutator.taskFromKwargsIfId()
 
-    self.check.isLoggedIn()
+    check.isLoggedIn()
 
-    assert access_checker.isSet(self.data.task)
+    assert access_checker.isSet(data.task)
 
-    if self.data.task:
-      self.check.checkCanUserEditTask()
-      self.check.checkTimelineAllowsTaskEditing()
+    if data.task:
+      check.checkCanUserEditTask()
+      check.checkTimelineAllowsTaskEditing()
 
       # Set full_edit status depending on the task status
-      self.mutator.fullEdit(self.check.hasTaskEditableStatus())
+      mutator.fullEdit(check.hasTaskEditableStatus())
     else:
-      self.check.canCreateTask()
+      check.canCreateTask()
 
   def templatePath(self):
     return 'v2/modules/gci/task_create/base.html'

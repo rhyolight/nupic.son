@@ -183,65 +183,65 @@ class TaskViewPage(GCIRequestHandler):
             name=url_names.GCI_VIEW_TASK),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Checks whether this task is visible to the public and any other checks
     if it is a POST request.
     """
-    self.mutator.taskFromKwargs(comments=True, work_submissions=True)
-    self.data.is_visible = self.check.isTaskVisible()
+    mutator.taskFromKwargs(comments=True, work_submissions=True)
+    data.is_visible = check.isTaskVisible()
 
-    if task_logic.updateTaskStatus(self.data.task):
+    if task_logic.updateTaskStatus(data.task):
       # The task logic updated the status of the task since the deadline passed
       # and the GAE task was late to run. Reload the page.
       raise RedirectRequest('')
 
-    if self.data.request.method == 'POST':
+    if data.request.method == 'POST':
       # Access checks for the different forms on this page. Note that there
       # are no elif clauses because one could add multiple GET params :).
-      self.check.isProfileActive()
+      check.isProfileActive()
 
       # Tasks for non-active organizations cannot be touched
-      self.check.isOrganizationActive(self.data.task.org)
+      check.isOrganizationActive(data.task.org)
 
-      if 'reply' in self.data.GET:
+      if 'reply' in data.GET:
         # checks for posting comments
         # valid tasks and profile are already checked.
-        self.check.isBeforeAllWorkStopped()
-        self.check.isCommentingAllowed()
+        check.isBeforeAllWorkStopped()
+        check.isCommentingAllowed()
 
-      if 'submit_work' in self.data.GET:
-        self.check.isBeforeAllWorkStopped()
-        if not task_logic.canSubmitWork(self.data.task, self.data.profile):
-          self.check.fail(DEF_NOT_ALLOWED_TO_UPLOAD_WORK)
+      if 'submit_work' in data.GET:
+        check.isBeforeAllWorkStopped()
+        if not task_logic.canSubmitWork(data.task, data.profile):
+          check.fail(DEF_NOT_ALLOWED_TO_UPLOAD_WORK)
 
-      if 'button' in self.data.GET:
+      if 'button' in data.GET:
         # check for any of the buttons
         button_name = self._buttonName()
 
         buttons = {}
-        TaskInformation(self.data).setButtonControls(buttons)
+        TaskInformation(data).setButtonControls(buttons)
         if not buttons.get(button_name):
-          self.check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON % button_name)
+          check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON % button_name)
 
-      if 'send_for_review' in self.data.GET:
-        self.check.isBeforeAllWorkStopped()
-        if not task_logic.isOwnerOfTask(self.data.task, self.data.profile) or \
-            not self.data.work_submissions or \
-            self.data.task.status not in TASK_IN_PROGRESS:
-          self.check.fail(DEF_CANT_SEND_FOR_REVIEW)
+      if 'send_for_review' in data.GET:
+        check.isBeforeAllWorkStopped()
+        if not task_logic.isOwnerOfTask(data.task, data.profile) or \
+            not data.work_submissions or \
+            data.task.status not in TASK_IN_PROGRESS:
+          check.fail(DEF_CANT_SEND_FOR_REVIEW)
 
-      if 'delete_submission' in self.data.GET:
-        self.check.isBeforeAllWorkStopped()
+      if 'delete_submission' in data.GET:
+        check.isBeforeAllWorkStopped()
         id = self._submissionId()
-        work = GCIWorkSubmission.get_by_id(id, parent=self.data.task)
+        work = GCIWorkSubmission.get_by_id(id, parent=data.task)
 
         if not work:
-          self.check.fail(DEF_NO_WORK_FOUND %id)
+          check.fail(DEF_NO_WORK_FOUND %id)
 
         time_expired = work.submitted_on - datetime.datetime.now()
-        if work.user.key() != self.data.user.key() or \
+        if work.user.key() != data.user.key() or \
             time_expired > task_logic.DELETE_EXPIRATION:
-          self.check.fail(DEF_NOT_ALLOWED_TO_DELETE)
+          check.fail(DEF_NOT_ALLOWED_TO_DELETE)
 
   def jsonContext(self, data, check, mutator):
     url = '%s?submit_work' % (
@@ -720,10 +720,10 @@ class WorkSubmissionDownload(GCIRequestHandler):
             name='gci_download_work'),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Checks whether this task is visible to the public."""
-    self.mutator.taskFromKwargs()
-    self.check.isTaskVisible()
+    mutator.taskFromKwargs()
+    check.isTaskVisible()
 
   def get(self, data, check, mutator):
     """Attempts to download the blob in the worksubmission that is specified

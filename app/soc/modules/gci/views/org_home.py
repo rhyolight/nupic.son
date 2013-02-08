@@ -198,7 +198,7 @@ class OrgHomepage(GCIRequestHandler):
         url(r'org/home/%s' % url_patterns.ORG, self),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     pass
 
   def jsonContext(self, data, check, mutator):
