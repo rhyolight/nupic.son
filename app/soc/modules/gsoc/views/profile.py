@@ -230,7 +230,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if not self.validate():
+    if not self.validate(data):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
 
@@ -286,10 +286,10 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
 
   def _getCreateProfileForm(
       self, data, check_age, save=False, prefill_data=False):
-    tos_content = self._getTOSContent()
+    tos_content = self._getTOSContent(data)
 
     if prefill_data:
-      prefilled_data = self.prefilledProfileData()
+      prefilled_data = self.prefilledProfileData(data)
     else:
       prefilled_data = None
 

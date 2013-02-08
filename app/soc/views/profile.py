@@ -128,14 +128,14 @@ class ProfilePage(object):
             self, name=self._getCreateProfileURLName()),
     ]
 
-  def _getTOSContent(self):
+  def _getTOSContent(self, data):
     """Convenience method to obtain the relevant Terms of Service content
     for the role in the program.
     """
     tos_content = None
-    role = self.data.kwargs.get('role')
+    role = data.kwargs.get('role')
 
-    program = self.data.program
+    program = data.program
     if role == 'student' and program.student_agreement:
       tos_content = program.student_agreement.content
     elif role == 'mentor' and program.mentor_agreement:
@@ -145,24 +145,23 @@ class ProfilePage(object):
 
     return tos_content
 
-  def isCreateProfileRequest(self):
+  def isCreateProfileRequest(self, data):
     """Returns True if the current request is supposed to create a new profile.
     Otherwise, the result is false.
     """
-    return self.data.kwargs.get('role') is not None
+    return data.kwargs.get('role') is not None
 
-  def isStudentRequest(self):
+  def isStudentRequest(self, data):
     """Returns True if the current request refers to a student which means it
     is either Create or Edit Student Profile.
     """
-    role = self.data.kwargs.get('role')
-    return self.data.student_info or role == 'student'
+    return data.student_info or data.kwargs.get('role') == 'student'
 
-  def prefilledProfileData(self):
-    if not self.data.user:
+  def prefilledProfileData(self, data):
+    if not data.user:
       return None
 
-    profile = self._getProfileForCurrentUser(self.data)
+    profile = self._getProfileForCurrentUser(data)
     if not profile:
       return None
 
@@ -198,7 +197,7 @@ class ProfilePage(object):
     if data.user:
       user_form = EmptyForm(data.POST or None, instance=data.user)
     else:
-      user_form = self._getCreateUserForm(self.data)
+      user_form = self._getCreateUserForm(data)
 
     if data.profile:
       data.profile._fix_name()
@@ -223,17 +222,17 @@ class ProfilePage(object):
 
     return context
 
-  def validateUser(self, dirty):
-    if self.data.user:
-      return EmptyForm(), self.data.user
+  def validateUser(self, data, dirty):
+    if data.user:
+      return EmptyForm(), data.user
     else:
-      user_form = self._getCreateUserForm(self.data)
+      user_form = self._getCreateUserForm(data)
 
     if not user_form.is_valid():
       return user_form, None
 
     key_name = user_form.cleaned_data['link_id']
-    account = self.data.gae_user
+    account = data.gae_user
     norm_account = accounts.normalizeAccount(account)
     user_form.cleaned_data['account'] = norm_account
     user_form.cleaned_data['user_id'] = account.user_id()
@@ -243,29 +242,24 @@ class ProfilePage(object):
 
     return user_form, user
 
-  def validateProfile(self, dirty, user):
-    if self.data.student_info or self.data.kwargs.get('role') == 'student':
-      # student's age should be checked
-      check_age = True
-    else:
-      check_age = False
+  def validateProfile(self, data, dirty, user):
+    check_age = data.student_info or data.kwargs.get('role') == 'student'
 
-    if self.data.profile:
-      profile_form = self._getEditProfileForm(self.data, check_age)
+    if data.profile:
+      profile_form = self._getEditProfileForm(data, check_age)
     else:
-      profile_form = self._getCreateProfileForm(
-          self.data, check_age, save=True)
+      profile_form = self._getCreateProfileForm(data, check_age, save=True)
 
     if not profile_form.is_valid() or not user:
       return profile_form, None
 
-    key_name = '%s/%s' % (self.data.program.key().name(), user.link_id)
+    key_name = '%s/%s' % (data.program.key().name(), user.link_id)
 
     profile_form.cleaned_data['user'] = user
     profile_form.cleaned_data['link_id'] = user.link_id
-    profile_form.cleaned_data['scope'] = self.data.program
+    profile_form.cleaned_data['scope'] = data.program
 
-    if self.data.profile:
+    if data.profile:
       profile = profile_form.save(commit=False)
     else:
       profile = profile_form.create(commit=False, key_name=key_name,
@@ -279,13 +273,13 @@ class ProfilePage(object):
 
     return profile_form, profile
 
-  def validateNotifications(self, dirty, profile):
+  def validateNotifications(self, data, dirty, profile):
     if not profile:
-      return EmptyForm(self.data.POST)
+      return EmptyForm(data.POST)
 
-    form = self._getNotificationForm(self.data)
+    form = self._getNotificationForm(data)
 
-    notification_form = form(self.data.POST, instance=profile)
+    notification_form = form(data.POST, instance=profile)
 
     if not notification_form.is_valid():
       return notification_form
@@ -296,24 +290,23 @@ class ProfilePage(object):
 
     return notification_form
 
-  def validateStudent(self, dirty, profile):
-    if not (self.data.student_info or
-        self.data.kwargs.get('role') == 'student'):
-      return EmptyForm(self.data.POST)
+  def validateStudent(self, data, dirty, profile):
+    if not data.student_info or data.kwargs.get('role') == 'student':
+      return EmptyForm(data.POST)
 
-    student_form = self._getStudentInfoForm(self.data)
+    student_form = self._getStudentInfoForm(data)
 
     if not profile or not student_form.is_valid():
       return student_form
 
     key_name = profile.key().name()
 
-    if self.data.student_info:
+    if data.student_info:
       student_info = student_form.save(commit=False)
     else:
       student_info = student_form.create(
           commit=False, key_name=key_name, parent=profile)
-      student_info.program = self.data.program
+      student_info.program = data.program
       profile.is_student = True
       profile.student_info = student_info
 
@@ -321,18 +314,18 @@ class ProfilePage(object):
 
     return student_form
 
-  def validate(self):
+  def validate(self, data):
     dirty = []
-    user_form, user = self.validateUser(dirty)
+    user_form, user = self.validateUser(data, dirty)
 
     if not user_form.is_valid():
       return False
 
-    profile_form, profile = self.validateProfile(dirty, user)
+    profile_form, profile = self.validateProfile(data, dirty, user)
 
-    notification_form = self.validateNotifications(dirty, profile)
+    notification_form = self.validateNotifications(data, dirty, profile)
 
-    student_form = self.validateStudent(dirty, profile)
+    student_form = self.validateStudent(data, dirty, profile)
 
     if (user_form.is_valid() and profile_form.is_valid() and
         notification_form.is_valid() and student_form.is_valid()):

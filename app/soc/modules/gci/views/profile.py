@@ -292,8 +292,8 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
   def context(self, data, check, mutator):
     context = super(GCIProfilePage, self).context(data, check, mutator)
 
-    if self.isCreateProfileRequest():
-      if self.isStudentRequest():
+    if self.isCreateProfileRequest(data):
+      if self.isStudentRequest(data):
         context['form_instructions'] = PARENTAL_CONSENT_ADVICE
     else:
       if data.is_student and \
@@ -326,7 +326,7 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
 
   def editProfilePostAction(self, data, check, mutator):
     """Handler for regular (edit/create profile) POST action."""
-    if not self.validate():
+    if not self.validate(data):
       # TODO(nathaniel): problematic self-call.
       return self.get(data, check, mutator)
 
@@ -381,7 +381,7 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
     else:
       form = GCICreateProfileForm
 
-    tos_content = self._getTOSContent()
+    tos_content = self._getTOSContent(data)
     return form(tos_content, data=data.POST or None, request_data=data)
 
   def _getNotificationForm(self, data):
