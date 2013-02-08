@@ -875,8 +875,7 @@ class IgnoreProposal(GSoCRequestHandler):
 
 
 class ProposalModificationPostDeadline(GSoCRequestHandler):
-  """View allowing mentors to allow students to modify the proposal.
-  """
+  """View allowing mentors to allow students to modify the proposal."""
 
   def djangoURLPatterns(self):
     return [
@@ -889,24 +888,24 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
     assert isSet(data.proposal_org)
     check.isMentorForOrganization(data.proposal_org)
 
-  def toggleModificationPermission(self, value):
+  def toggleModificationPermission(self, data, value):
     """Toggles the permission to modify the proposal after proposal deadline.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and not self.data.proposal.is_editable_post_deadline:
+    if value == 'checked' and not data.proposal.is_editable_post_deadline:
       raise BadRequest("Invalid post data.")
-    if (value == 'unchecked' and
-        self.data.proposal.is_editable_post_deadline):
+    if value == 'unchecked' and data.proposal.is_editable_post_deadline:
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def update_modification_perm_txn():
       # transactionally get latest version of the proposal
@@ -922,7 +921,7 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     value = data.POST.get('value')
-    self.toggleModificationPermission(value)
+    self.toggleModificationPermission(data, value)
     return http.HttpResponse()
 
   def get(self, data, check, mutator):
