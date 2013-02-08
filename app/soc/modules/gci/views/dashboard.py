@@ -102,12 +102,10 @@ class ComponentsDashboard(Dashboard):
 
 
 class DashboardPage(GCIRequestHandler):
-  """View for the participant dashboard.
-  """
+  """View for the participant dashboard."""
 
   def djangoURLPatterns(self):
-    """The URL pattern for the dashboard.
-    """
+    """The URL pattern for the dashboard."""
     return [
         url(r'dashboard/%s$' % url_patterns.PROGRAM, self,
             name='gci_dashboard')]
@@ -117,26 +115,25 @@ class DashboardPage(GCIRequestHandler):
     check.isProfileActive()
 
   def templatePath(self):
-    """Returns the path to the template.
-    """
+    """Returns the path to the template."""
     return 'v2/modules/gci/dashboard/base.html'
 
-  def populateDashboards(self):
+  def populateDashboards(self, data):
     """Populates the various dashboard subpages and components for each subpage.
     """
     # dashboard container, will hold each component list
     dashboards = []
 
     # main container that contains all component list
-    main = MainDashboard(self.data)
+    main = MainDashboard(data)
 
     # retrieve active links and add it to the main dashboard
-    links = self.links()
+    links = self.links(data)
     for link in links:
       main.addSubpages(link)
 
     # retrieve active component(s) for currently logged-in user
-    components = self.components()
+    components = self.components(data)
 
     # add components as children of main dashboard and treat the component
     # as dashboard element
@@ -149,7 +146,7 @@ class DashboardPage(GCIRequestHandler):
           }
       main.addSubpages(c)
 
-      dashboards.append(ComponentsDashboard(self.data, {
+      dashboards.append(ComponentsDashboard(data, {
           'name': component.context().get('name'),
           'title': component.context().get('title'),
           'component': component,
@@ -160,19 +157,19 @@ class DashboardPage(GCIRequestHandler):
 
     return dashboards
 
-  def shouldSubmitForms(self):
+  def shouldSubmitForms(self, data):
     """Checks if the current user should submit the student forms."""
     # TODO(nathaniel): tweak this control flow.
     student_id_form = False
     consent_form = False
 
-    if not self.data.student_info:
+    if not data.student_info:
       return False, False
 
-    if not self.data.student_info.student_id_form:
+    if not data.student_info.student_id_form:
       student_id_form = True
 
-    if not self.data.student_info.consent_form:
+    if not data.student_info.consent_form:
       consent_form = True
 
     return student_id_form, consent_form
@@ -185,17 +182,17 @@ class DashboardPage(GCIRequestHandler):
         }
 
     # Check if the student should submit either of the forms
-    student_id_form, consent_form = self.shouldSubmitForms()
+    student_id_form, consent_form = self.shouldSubmitForms(data)
     context['student_id_form'] = student_id_form
     context['consent_form'] = consent_form
 
-    context['dashboards'] = self.populateDashboards()
+    context['dashboards'] = self.populateDashboards(data)
 
     return context
 
   def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
-    for component in self.components():
+    for component in self.components(data):
       list_content = component.getListData()
       if list_content:
         return list_content.content()
@@ -204,149 +201,141 @@ class DashboardPage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for POST requests for each component."""
-    for component in self.components():
+    for component in self.components(data):
       if component.post():
         return http.HttpResponse()
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 
-  def components(self):
-    """Returns the list components that are active on the page.
-    """
+  def components(self, data):
+    """Returns the list components that are active on the page."""
     components = []
 
-    if self.data.student_info:
-      components += self._getStudentComponents()
-    elif self.data.is_org_admin:
-      components += self._getOrgAdminComponents()
-      components += self._getMentorComponents()
-    elif self.data.is_mentor:
-      components += self._getMentorComponents()
+    if data.student_info:
+      components += self._getStudentComponents(data)
+    elif data.is_org_admin:
+      components += self._getOrgAdminComponents(data)
+      components += self._getMentorComponents(data)
+    elif data.is_mentor:
+      components += self._getMentorComponents(data)
 
     return components
 
-  def _getStudentComponents(self):
+  def _getStudentComponents(self, data):
     """Get the dashboard components for a student."""
+    return []
+
+  def _getMentorComponents(self, data):
+    """Get the dashboard components for Organization members."""
     components = []
 
-    return components
-
-  def _getMentorComponents(self):
-    """Get the dashboard components for Organization members.
-    """
-    components = []
-
-    component = self._getMyOrgApplicationsComponent()
+    component = self._getMyOrgApplicationsComponent(data)
     if component:
       components.append(component)
 
-    components.append(MyOrgsTaskList(self.data))
+    components.append(MyOrgsTaskList(data))
 
     # add org list just before creating task and invitation, so mentor can
     # choose which organization the task or invitite will be created for
-    components.append(MyOrgsListBeforeCreateTask(self.data))
+    components.append(MyOrgsListBeforeCreateTask(data))
 
     return components
 
-  def _getOrgAdminComponents(self):
+  def _getOrgAdminComponents(self, data):
     """Get the dashboard components for org admins."""
     components = []
 
     # add list of mentors component
-    components.append(MyOrgsMentorsList(self.data))
+    components.append(MyOrgsMentorsList(data))
 
     # add invite mentors component
-    components.append(MyOrgsListBeforeInviteMentor(self.data))
+    components.append(MyOrgsListBeforeInviteMentor(data))
 
     # add invite org admins component
-    components.append(MyOrgsListBeforeInviteOrgAdmin(self.data))
+    components.append(MyOrgsListBeforeInviteOrgAdmin(data))
 
     # add list of all the invitations
-    components.append(OrgAdminInvitesList(self.data))
+    components.append(OrgAdminInvitesList(data))
 
     # add bulk create tasks component
-    components.append(MyOrgsListBeforeBulkCreateTask(self.data))
+    components.append(MyOrgsListBeforeBulkCreateTask(data))
 
     # add edit org profile component
-    components.append(MyOrgsListBeforeOrgProfile(self.data))
+    components.append(MyOrgsListBeforeOrgProfile(data))
 
     # add org scores component
-    components.append(MyOrgsScoresList(self.data))
+    components.append(MyOrgsScoresList(data))
 
     return components
 
-  def _getMyOrgApplicationsComponent(self):
+  def _getMyOrgApplicationsComponent(self, data):
     """Returns MyOrgApplicationsComponent iff this user is main_admin or
     backup_admin in an application.
     """
-    survey = org_app_logic.getForProgram(self.data.program)
+    survey = org_app_logic.getForProgram(data.program)
 
     # Test if this user is main admin or backup admin
     q = OrgAppRecord.all()
     q.filter('survey', survey)
-    q.filter('main_admin', self.data.user)
+    q.filter('main_admin', data.user)
 
     record = q.get()
 
     q = OrgAppRecord.all()
     q.filter('survey', survey)
-    q.filter('backup_admin', self.data.user)
+    q.filter('backup_admin', data.user)
 
     if record or q.get():
       # add a component showing the organization application of the user
-      return MyOrgApplicationsComponent(self.data, survey)
+      return MyOrgApplicationsComponent(data, survey)
 
     return None
 
-  def links(self):
+  def links(self, data):
     """Returns additional links of main dashboard that are active on the page.
     """
     links = []
 
-    if self.data.student_info:
-      links += self._getStudentLinks()
-    elif self.data.is_org_admin or self.data.is_mentor:
-      if self.data.is_org_admin:
-        links += self._getOrgAdminLinks()
-      if self.data.is_mentor:
-        links += self._getMentorLinks()
+    # TODO(nathaniel): tweak control flow.
+    if data.student_info:
+      links += self._getStudentLinks(data)
+    elif data.is_org_admin or data.is_mentor:
+      if data.is_org_admin:
+        links += self._getOrgAdminLinks(data)
+      if data.is_mentor:
+        links += self._getMentorLinks(data)
 
     return links
 
-  def _getStudentLinks(self):
-    """Get the main dashboard links for student.
-    """
+  def _getStudentLinks(self, data):
+    """Get the main dashboard links for student."""
     links = [
-        self._getStudentFormsLink(), self._getMyTasksLink()
+        self._getStudentFormsLink(data), self._getMyTasksLink(data)
         ]
 
-    current_task = task_logic.queryCurrentTaskForStudent(
-        self.data.profile).get()
+    current_task = task_logic.queryCurrentTaskForStudent(data.profile).get()
     if current_task:
-      links.append(self._getCurrentTaskLink(current_task))
+      links.append(self._getCurrentTaskLink(data, current_task))
 
     return links
 
-  def _getOrgAdminLinks(self):
-    """Get the main dashboard links for org-admin.
-    """
+  def _getOrgAdminLinks(self, data):
+    """Get the main dashboard links for org-admin."""
     links = []
 
     # add propose winners component
-    if self.data.timeline.allReviewsStopped():
-      links.append(self._getProposeWinnersLink())
+    if data.timeline.allReviewsStopped():
+      links.append(self._getProposeWinnersLink(data))
     return links
 
-  def _getMentorLinks(self):
-    """Get the main dashboard links for mentor.
-    """
-    links = []
-    return links
+  def _getMentorLinks(self, data):
+    """Get the main dashboard links for mentor."""
+    return []
 
-  def _getMyInvitationsLink(self):
-    """Get the link of incoming invitations list (invitations sent to me).
-    """
-    r = self.data.redirect
+  def _getMyInvitationsLink(self, data):
+    """Get the link of incoming invitations list (invitations sent to me)."""
+    # TODO(nathaniel): This doesn't appear to be used?
+    r = data.redirect
     r.program()
 
     return {
@@ -357,10 +346,11 @@ class DashboardPage(GCIRequestHandler):
         'link': r.urlOf(url_names.GCI_LIST_INVITES)
         }
 
-  def _getMyOrgInvitationsLink(self):
+  def _getMyOrgInvitationsLink(self, data):
     """Get the link of outgoing invitations list (invitations sent by my orgs).
     """
-    r = self.data.redirect
+    # TODO(nathaniel): This also doesn't appear to be used?
+    r = data.redirect
     r.program()
 
     return {
@@ -371,10 +361,9 @@ class DashboardPage(GCIRequestHandler):
         'link': r.urlOf(url_names.GCI_LIST_ORG_INVITES)
         }
 
-  def _getStudentFormsLink(self):
-    """Get the link for uploading student forms.
-    """
-    r = self.data.redirect
+  def _getStudentFormsLink(self, data):
+    """Get the link for uploading student forms."""
+    r = data.redirect
     r.program()
 
     return {
@@ -385,12 +374,12 @@ class DashboardPage(GCIRequestHandler):
         'link': r.urlOf(url_names.GCI_STUDENT_FORM_UPLOAD)
         }
 
-  def _getMyTasksLink(self):
+  def _getMyTasksLink(self, data):
     """Get the link to the list of all the tasks for the student
     who is currently logged in.
     """
-    r = self.data.redirect
-    r.profile(self.data.user.link_id)
+    r = data.redirect
+    r.profile(data.user.link_id)
 
     return {
         'name': 'student_tasks',
@@ -400,10 +389,10 @@ class DashboardPage(GCIRequestHandler):
         'link': r.urlOf(url_names.GCI_STUDENT_TASKS)
         }
 
-  def _getCurrentTaskLink(self, current_task):
+  def _getCurrentTaskLink(self, data, current_task):
     """Get the link to the task that the student is currently working on.
     """
-    r = self.data.redirect
+    r = data.redirect
     r.id(current_task.key().id())
 
     return {
@@ -414,9 +403,9 @@ class DashboardPage(GCIRequestHandler):
         'link': r.urlOf('gci_view_task')
         }
 
-  def _getProposeWinnersLink(self):
+  def _getProposeWinnersLink(self, data):
     """Get the link to the list of organization to propose winners for."""
-    r = self.data.redirect
+    r = data.redirect
     r.program()
 
     return {
