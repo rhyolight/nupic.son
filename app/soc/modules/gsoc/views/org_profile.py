@@ -141,8 +141,7 @@ class OrgCreateProfileForm(OrgProfileForm):
 
 
 class OrgProfilePage(GSoCRequestHandler):
-  """View for the Organization Profile page.
-  """
+  """View for the Organization Profile page."""
 
   def djangoURLPatterns(self):
     return [
@@ -202,7 +201,7 @@ class OrgProfilePage(GSoCRequestHandler):
     return context
 
   def post(self, data, check, mutator):
-    org_profile = self.createOrgProfileFromForm()
+    org_profile = self.createOrgProfileFromForm(data)
     if org_profile:
       data.redirect.organization(organization=org_profile)
       return data.redirect.to('edit_gsoc_org_profile', validated=True)
@@ -210,38 +209,38 @@ class OrgProfilePage(GSoCRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
 
-  def createOrgProfileFromForm(self):
+  def createOrgProfileFromForm(self, data):
     """Creates a new organization based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created organization entity or None
     """
-
-    if self.data.organization:
-      form = OrgProfileForm(self.data.POST, instance=self.data.organization)
+    if data.organization:
+      form = OrgProfileForm(data.POST, instance=data.organization)
     else:
-      form = OrgCreateProfileForm(self.data.POST)
+      form = OrgCreateProfileForm(data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.organization:
-      form.cleaned_data['founder'] = self.data.user
-      form.cleaned_data['scope'] = self.data.program
-      form.cleaned_data['scope_path'] = self.data.program.key().name()
-      form.cleaned_data['link_id'] = self.data.org_id
-      form.cleaned_data['new_org'] = self.data.org_app_record.new_org
+    if not data.organization:
+      form.cleaned_data['founder'] = data.user
+      form.cleaned_data['scope'] = data.program
+      form.cleaned_data['scope_path'] = data.program.key().name()
+      form.cleaned_data['link_id'] = data.org_id
+      form.cleaned_data['new_org'] = data.org_app_record.new_org
       key_name = '%s/%s' % (
-          self.data.program.key().name(),
-          form.cleaned_data['link_id']
-          )
+          data.program.key().name(), form.cleaned_data['link_id'])
       # TODO(ljv): The backup admin is not assigned a role?
       entity = form.create(commit=True, key_name=key_name)
-      self.data.profile.org_admin_for.append(entity.key())
-      self.data.profile.is_org_admin = True
-      self.data.profile.mentor_for.append(entity.key())
-      self.data.profile.is_mentor = True
-      self.data.profile.put()
+      data.profile.org_admin_for.append(entity.key())
+      data.profile.is_org_admin = True
+      data.profile.mentor_for.append(entity.key())
+      data.profile.is_mentor = True
+      data.profile.put()
     else:
       entity = form.save(commit=True)
 
