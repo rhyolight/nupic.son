@@ -353,8 +353,7 @@ class GSoCMentorEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
 
 
 class GSoCMentorEvaluationShowPage(GSoCRequestHandler):
-  """View to display the readonly page for mentor evaluation.
-  """
+  """View to display the readonly page for mentor evaluation."""
 
   def djangoURLPatterns(self):
     return [
@@ -394,7 +393,7 @@ class GSoCMentorEvaluationShowPage(GSoCRequestHandler):
     if record:
       context['record'] = GSoCMentorEvaluationReadOnlyTemplate(record)
 
-    if self.data.timeline.surveyPeriod(data.mentor_evaluation):
+    if data.timeline.surveyPeriod(data.mentor_evaluation):
       context['update_link'] = data.redirect.survey_record(
           data.mentor_evaluation.link_id).urlOf('gsoc_take_mentor_evaluation')
 
