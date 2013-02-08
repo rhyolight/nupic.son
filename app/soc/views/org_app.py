@@ -131,8 +131,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
 
 
 class OrgAppRecordsList(object):
-  """View for listing all records of a Organization Applications.
-  """
+  """View for listing all records of a Organization Applications."""
 
   def __init__(self, read_only_view):
     """Initializes the OrgAppRecordsList.
@@ -154,7 +153,7 @@ class OrgAppRecordsList(object):
 
   def context(self, data, check, mutator):
     """Returns the context of the page to render."""
-    record_list = self._createOrgAppsList()
+    record_list = self._createOrgAppsList(data)
 
     page_name = ugettext('Records - %s' % (data.org_app.title))
     context = {
@@ -167,16 +166,16 @@ class OrgAppRecordsList(object):
     """Handler for JSON requests."""
     idx = lists.getListIndex(data.request)
     if idx == 0:
-      record_list = self._createOrgAppsList()
+      record_list = self._createOrgAppsList(data)
       return record_list.listContentResponse(data.request).content()
     else:
       # TODO(nathaniel): This needs to be a return statement, right?
       super(OrgAppRecordsList, self).jsonContext(data, check, mutator)
 
-  def _createOrgAppsList(self):
+  def _createOrgAppsList(self, data):
     """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
-        self.data, self.data.org_app, OrgAppRecord, idx=0)
+        data, data.org_app, OrgAppRecord, idx=0)
     record_list.list_config.addSimpleColumn('name', 'Name')
     record_list.list_config.addSimpleColumn('org_id', 'Organization ID')
 
@@ -197,7 +196,7 @@ class OrgAppRecordsList(object):
     record_list.list_config.addPostEditButton('save', 'Save')
 
     record_list.list_config.setRowAction(
-        lambda e, *args: self.data.redirect.id(e.key().id_or_name()).
+        lambda e, *args: data.redirect.id(e.key().id_or_name()).
             urlOf(self.read_only_view))
 
     return record_list
