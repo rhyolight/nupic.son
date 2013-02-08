@@ -832,24 +832,25 @@ class IgnoreProposal(GSoCRequestHandler):
     if data.proposal.status == 'withdrawn':
       raise AccessViolation("You cannot ignore a withdrawn proposal")
 
-  def toggleIgnoreProposal(self, value):
+  def toggleIgnoreProposal(self, data, value):
     """Toggles the ignore status of the proposal.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and self.data.proposal.status != 'ignored':
+    if value == 'checked' and data.proposal.status != 'ignored':
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.proposal.status not in [
+    if value == 'unchecked' and data.proposal.status not in [
         'pending', 'withdrawn']:
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def update_status_txn():
       # transactionally get latest version of the proposal
@@ -865,7 +866,7 @@ class IgnoreProposal(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     value = data.POST.get('value')
-    self.toggleIgnoreProposal(value)
+    self.toggleIgnoreProposal(data, value)
     return http.HttpResponse()
 
   def get(self, data, check, mutator):
