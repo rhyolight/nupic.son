@@ -356,31 +356,31 @@ class ShowInvite(GSoCRequestHandler):
     assert data.invite
 
     if data.action == self.ACTIONS['accept']:
-      self._acceptInvitation()
+      self._acceptInvitation(data)
     elif data.action == self.ACTIONS['reject']:
-      self._rejectInvitation()
+      self._rejectInvitation(data)
     elif data.action == self.ACTIONS['resubmit']:
-      self._resubmitInvitation()
+      self._resubmitInvitation(data)
     elif data.action == self.ACTIONS['withdraw']:
-      self._withdrawInvitation()
+      self._withdrawInvitation(data)
 
     data.redirect.dashboard()
     return data.redirect.to()
 
-  def _acceptInvitation(self):
+  def _acceptInvitation(self, data):
     """Accepts an invitation."""
-    assert isSet(self.data.organization)
+    assert isSet(data.organization)
 
-    if not self.data.profile:
+    if not data.profile:
       # TODO(nathaniel): is this dead code? Is what's done here not
       # overwritten by the redirect.dashboard() call in the enclosing
       # post() method call?
-      self.data.redirect.program()
-      self.data.redirect.to('edit_gsoc_profile', secure=True)
+      data.redirect.program()
+      data.redirect.to('edit_gsoc_profile', secure=True)
 
-    invite_key = self.data.invite.key()
-    profile_key = self.data.profile.key()
-    organization_key = self.data.organization.key()
+    invite_key = data.invite.key()
+    profile_key = data.profile.key()
+    organization_key = data.organization.key()
 
     def accept_invitation_txn():
       invite = db.get(invite_key)
@@ -402,10 +402,10 @@ class ShowInvite(GSoCRequestHandler):
 
     db.run_in_transaction(accept_invitation_txn)
 
-  def _rejectInvitation(self):
+  def _rejectInvitation(self, data):
     """Rejects a invitation."""
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
+    assert isSet(data.invite)
+    invite_key = data.invite.key()
 
     def reject_invite_txn():
       invite = db.get(invite_key)
@@ -414,35 +414,33 @@ class ShowInvite(GSoCRequestHandler):
 
     db.run_in_transaction(reject_invite_txn)
 
-  def _resubmitInvitation(self):
-    """Resubmits a invitation. 
-    """
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
+  def _resubmitInvitation(self, data):
+    """Resubmits a invitation."""
+    assert isSet(data.invite)
+    invite_key = data.invite.key()
 
     def resubmit_invite_txn():
       invite = db.get(invite_key)
       invite.status = 'pending'
       invite.put()
 
-      context = notifications.handledInviteContext(self.data)
+      context = notifications.handledInviteContext(data)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()
 
     db.run_in_transaction(resubmit_invite_txn)
 
-  def _withdrawInvitation(self):
-    """Withdraws an invitation.
-    """
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
+  def _withdrawInvitation(self, data):
+    """Withdraws an invitation."""
+    assert isSet(data.invite)
+    invite_key = data.invite.key()
 
     def withdraw_invite_txn():
       invite = db.get(invite_key)
       invite.status = 'withdrawn'
       invite.put()
 
-      context = notifications.handledInviteContext(self.data)
+      context = notifications.handledInviteContext(data)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()
 
