@@ -313,34 +313,33 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
     Based on the action, the request is dispatched to a specific handler.
     """
     if 'delete_account' in data.POST:
-      return self.deleteAccountPostAction()
+      return self.deleteAccountPostAction(data)
     else: # regular POST request
-      return self.editProfilePostAction()
+      return self.editProfilePostAction(data, check, mutator)
 
-  def deleteAccountPostAction(self):
+  def deleteAccountPostAction(self, data):
     """Handler for Delete Account POST action."""
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.data.redirect.program()
+    data.redirect.program()
 
-    return self.data.redirect.to('gci_delete_account', secure=True)
+    return data.redirect.to('gci_delete_account', secure=True)
 
-  def editProfilePostAction(self):
+  def editProfilePostAction(self, data, check, mutator):
     """Handler for regular (edit/create profile) POST action."""
     if not self.validate():
       # TODO(nathaniel): problematic self-call.
-      return self.get(self.data, self.check, self.mutator)
+      return self.get(data, check, mutator)
 
-    org_id = self.data.GET.get('new_org')
+    org_id = data.GET.get('new_org')
 
     if org_id:
-      create_url = self.linker.program(
-          self.data.program, 'create_gci_org_profile')
+      create_url = self.linker.program(data.program, 'create_gci_org_profile')
       raise RedirectRequest(create_url + '?org_id=' + org_id)
     else:
       # TODO(nathaniel): make this .program() call unnecessary.
-      self.data.redirect.program()
+      data.redirect.program()
 
-      return self.data.redirect.to(
+      return data.redirect.to(
           self._getEditProfileURLName(), validated=True, secure=True)
 
   def _getModulePrefix(self):
