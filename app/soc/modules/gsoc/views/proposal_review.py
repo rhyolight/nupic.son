@@ -485,8 +485,7 @@ class ReviewProposal(GSoCRequestHandler):
 
 
 class PostComment(GSoCRequestHandler):
-  """View which handles publishing comments.
-  """
+  """View which handles publishing comments."""
 
   def djangoURLPatterns(self):
     return [
@@ -581,8 +580,7 @@ class PostComment(GSoCRequestHandler):
 
 
 class PostScore(GSoCRequestHandler):
-  """View which handles posting scores.
-  """
+  """View which handles posting scores."""
 
   def djangoURLPatterns(self):
     return [
@@ -601,7 +599,7 @@ class PostScore(GSoCRequestHandler):
 
     check.isMentorForOrganization(org)
 
-  def createOrUpdateScore(self, value):
+  def createOrUpdateScore(self, data, value):
     """Creates a new score or updates a score if there is already one
     posted by the current user.
 
@@ -609,22 +607,23 @@ class PostScore(GSoCRequestHandler):
     None will be returned.
 
     Args:
+      data: A RequestData describing the current request.
       value: The value of the score the user gave as an integer.
 
     Returns:
       The score entity that was created/updated or None if value is 0.
     """
-    assert isSet(self.data.proposal)
-    assert isSet(self.data.proposal_org)
+    assert isSet(data.proposal)
+    assert isSet(data.proposal_org)
 
-    max_score = self.data.proposal_org.max_score
+    max_score = data.proposal_org.max_score
 
     if value < 0 or value > max_score:
       raise BadRequest("Score must not be higher than %d" % max_score)
 
     query = db.Query(GSoCScore)
-    query.filter('author = ', self.data.profile)
-    query.ancestor(self.data.proposal)
+    query.filter('author = ', data.profile)
+    query.ancestor(data.proposal)
 
     def update_score_trx():
       delta = 0
@@ -636,8 +635,8 @@ class PostScore(GSoCRequestHandler):
           return
         old_value = 0
         score = GSoCScore(
-            parent=self.data.proposal,
-            author=self.data.profile,
+            parent=data.proposal,
+            author=data.profile,
             value=value)
         score.put()
         delta = 1
@@ -651,7 +650,7 @@ class PostScore(GSoCRequestHandler):
           score.put()
 
       # update total score for the proposal
-      proposal = db.get(self.data.proposal.key())
+      proposal = db.get(data.proposal.key())
       proposal.score += value - old_value
       proposal.nr_scores += delta
       proposal.put()
@@ -661,7 +660,7 @@ class PostScore(GSoCRequestHandler):
   def post(self, data, check, mutator):
     value_str = data.POST.get('value', '')
     value = int(value_str) if value_str.isdigit() else None
-    self.createOrUpdateScore(value)
+    self.createOrUpdateScore(data, value)
     return http.HttpResponse()
 
   def get(self, data, check, mutator):
