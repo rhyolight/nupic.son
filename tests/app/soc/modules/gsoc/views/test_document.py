@@ -14,8 +14,6 @@
 
 """Tests for program related views."""
 
-import httplib
-
 from soc.models.document import Document
 
 from tests.test_utils import GSoCDjangoTestCase
@@ -93,4 +91,4 @@ class EventsPageTest(GSoCDjangoTestCase):
 
   def testEventsPageLoads(self):
     response = self.get('/gsoc/events/%s' % self.gsoc.key().name())
-    self.assertEqual(httplib.OK, response.status_code)
+    self.assertGSoCTemplatesUsed(response)
