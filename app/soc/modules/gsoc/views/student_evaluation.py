@@ -144,8 +144,7 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
 
 
 class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
-  """View for students to submit their evaluation.
-  """
+  """View for students to submit their evaluation."""
 
   def djangoURLPatterns(self):
     return [
@@ -199,28 +198,30 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
 
     return context
 
-  def recordEvaluationFromForm(self):
+  def recordEvaluationFromForm(self, data):
     """Create/edit a new student evaluation record based on the form input.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated evaluation record entity or None
     """
-    if self.data.student_evaluation_record:
+    if data.student_evaluation_record:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.student_evaluation,
-          self.data.POST, instance=self.data.student_evaluation_record)
+          data.student_evaluation, data.POST,
+          instance=data.student_evaluation_record)
     else:
-      form = GSoCStudentEvaluationTakeForm(
-          self.data.student_evaluation, self.data.POST)
+      form = GSoCStudentEvaluationTakeForm(data.student_evaluation, data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.student_evaluation_record:
-      form.cleaned_data['project'] = self.data.project
-      form.cleaned_data['org'] = self.data.project.org
-      form.cleaned_data['user'] = self.data.user
-      form.cleaned_data['survey'] = self.data.student_evaluation
+    if not data.student_evaluation_record:
+      form.cleaned_data['project'] = data.project
+      form.cleaned_data['org'] = data.project.org
+      form.cleaned_data['user'] = data.user
+      form.cleaned_data['survey'] = data.student_evaluation
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
@@ -228,7 +229,7 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
     return entity
 
   def post(self, data, check, mutator):
-    student_evaluation_record = self.recordEvaluationFromForm()
+    student_evaluation_record = self.recordEvaluationFromForm(data)
     if student_evaluation_record:
       data.redirect.survey_record(data.student_evaluation.link_id)
       return data.redirect.to('gsoc_take_student_evaluation', validated=True)
