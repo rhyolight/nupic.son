@@ -176,9 +176,7 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
     return 'v2/modules/gsoc/project_details/update.html'
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
-
+    """Returns the list of tuples for containing URL to view method mapping."""
     return [
         url(r'project/update/%s$' % url_patterns.PROJECT, self,
             name=url_names.GSOC_PROJECT_UPDATE)
@@ -203,28 +201,27 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
         'error': project_details_form.errors,
     }
 
-    if len(self.data.project.passed_evaluations) >= \
+    if len(data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
       context['upload_code_samples'] = UploadCodeSamples(data)
       context['list_code_samples'] = ListCodeSamples(data, True)
 
     return context
 
-  def validate(self):
-    """Validate the form data and save if valid.
-    """
-    project_details_form = ProjectDetailsForm(self.data.POST or None,
-                                              instance=self.data.project)
+  def validate(self, data):
+    """Validate the form data and save if valid."""
+    project_details_form = ProjectDetailsForm(
+        data.POST or None, instance=data.project)
 
-    if not project_details_form.is_valid():
+    if project_details_form.is_valid():
+      project_details_form.save()
+      return True
+    else:
       return False
-
-    project_details_form.save()
-    return True
 
   def post(self, data, check, mutator):
     """Post handler for the project details update form."""
-    if self.validate():
+    if self.validate(data):
       data.redirect.project()
       return data.redirect.to('gsoc_project_details')
     else:
