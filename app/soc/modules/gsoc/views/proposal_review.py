@@ -300,8 +300,7 @@ class UserActions(Template):
 
 
 class ReviewProposal(GSoCRequestHandler):
-  """View for the Propsal Review page.
-  """
+  """View for the Propsal Review page."""
 
   def djangoURLPatterns(self):
     return [
@@ -317,27 +316,26 @@ class ReviewProposal(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/review.html'
 
-  def getScores(self):
-    """Gets all the scores for the proposal.
-    """
-    assert isSet(self.data.private_comments_visible)
-    assert isSet(self.data.proposal_org)
-    assert isSet(self.data.proposal)
+  def getScores(self, data):
+    """Gets all the scores for the proposal."""
+    assert isSet(data.private_comments_visible)
+    assert isSet(data.proposal_org)
+    assert isSet(data.proposal)
 
-    if not self.data.private_comments_visible:
+    if not data.private_comments_visible:
       return None
 
     total = 0
     number = 0
     user_score = 0
 
-    query = db.Query(GSoCScore).ancestor(self.data.proposal)
+    query = db.Query(GSoCScore).ancestor(data.proposal)
     for score in query:
       total += score.value
       number += 1
 
       author_key = GSoCScore.author.get_value_for_datastore(score)
-      if author_key == self.data.profile.key():
+      if author_key == data.profile.key():
         user_score = score.value
 
     return {
@@ -347,44 +345,42 @@ class ReviewProposal(GSoCRequestHandler):
         'user_score': user_score,
         }
 
-  def getComments(self, limit=1000):
-    """Gets all the comments for the proposal visible by the current user.
-    """
-    assert isSet(self.data.private_comments_visible)
-    assert isSet(self.data.proposal)
+  def getComments(self, data, limit=1000):
+    """Gets all the comments for the proposal visible by the current user."""
+    assert isSet(data.private_comments_visible)
+    assert isSet(data.proposal)
 
     public_comments = []
     private_comments = []
 
-    query = db.Query(GSoCComment).ancestor(self.data.proposal)
+    query = db.Query(GSoCComment).ancestor(data.proposal)
     query.order('created')
     all_comments = query.fetch(limit=limit)
 
     for comment in all_comments:
       if not comment.is_private:
         public_comments.append(comment)
-      elif self.data.private_comments_visible:
+      elif data.private_comments_visible:
         private_comments.append(comment)
 
     return public_comments, private_comments
 
-  def sanitizePossibleMentors(self, possible_mentors):
-    """Removes possible mentors that are no longer mentors
-    """
+  def sanitizePossibleMentors(self, data, possible_mentors):
+    """Removes possible mentors that are no longer mentors."""
     changed = False
 
     result = []
 
     for mentor in possible_mentors:
-      if self.data.proposal_org.key() in mentor.mentor_for:
+      if data.proposal_org.key() in mentor.mentor_for:
         result.append(mentor)
         continue
 
       changed = True
-      self.data.proposal.possible_mentors.remove(mentor.key())
+      data.proposal.possible_mentors.remove(mentor.key())
 
     if changed:
-      self.data.proposal.put()
+      data.proposal.put()
 
     return result
 
@@ -399,13 +395,13 @@ class ReviewProposal(GSoCRequestHandler):
 
     user_role = None
 
-    scores = self.getScores()
+    scores = self.getScores(data)
 
     # TODO: check if the scoring is not disabled
     score_action = reverse('score_gsoc_proposal', kwargs=data.kwargs)
 
     # get all the comments for the the proposal
-    public_comments, private_comments = self.getComments()
+    public_comments, private_comments = self.getComments(data)
 
     # TODO: check if it is possible to post a comment
     comment_action = reverse('comment_gsoc_proposal', kwargs=data.kwargs)
@@ -440,7 +436,7 @@ class ReviewProposal(GSoCRequestHandler):
             'update_gsoc_proposal')
 
     possible_mentors = db.get(data.proposal.possible_mentors)
-    possible_mentors = self.sanitizePossibleMentors(possible_mentors)
+    possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
 
     scoring_visible = data.private_comments_visible and (
@@ -457,7 +453,7 @@ class ReviewProposal(GSoCRequestHandler):
       dup_entity = q.get()
       duplicate = Duplicate(data, dup_entity) if dup_entity else None
 
-    additional_info = self.data.proposal.additional_info
+    additional_info = data.proposal.additional_info
 
     if user_role:
       context['user_actions'] = UserActions(data, user_role)
