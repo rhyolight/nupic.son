@@ -125,8 +125,7 @@ class SlotTransferPage(GSoCRequestHandler):
 
 
 class UpdateSlotTransferPage(GSoCRequestHandler):
-  """View for transferring the slots.
-  """
+  """View for transferring the slots."""
 
   def djangoURLPatterns(self):
     return [
@@ -177,23 +176,26 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
 
     return context
 
-  def createOrUpdateFromForm(self):
+  def createOrUpdateFromForm(self, data):
     """Creates a new proposal based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created proposal entity or None
     """
     slot_transfer_entity = None
 
-    slot_transfer_form = SlotTransferForm(self.data.organization.slots,
-                                          self.data.POST)
+    slot_transfer_form = SlotTransferForm(
+         data.organization.slots, data.POST)
 
     if not slot_transfer_form.is_valid():
       return None
 
-    slot_transfer_form.cleaned_data['program'] = self.data.program
+    slot_transfer_form.cleaned_data['program'] = data.program
 
-    for ent in self.data.slot_transfer_entities:
+    for ent in data.slot_transfer_entities:
       if ent.status == 'pending':
         slot_transfer_entity = ent
         break
@@ -204,7 +206,7 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
     # without reference to their user entities as parents, so we don't
     # have a way to get the relationship between the user entities and
     # the host entities. So use the user entities for now.
-    host_users = host_logic.getHostsForProgram(self.data.program)
+    host_users = host_logic.getHostsForProgram(data.program)
     to_emails = [u.account.email() for u in host_users]
 
     def create_or_update_slot_transfer_trx():
@@ -217,11 +219,10 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
         update = True
       else:
         slot_transfer = slot_transfer_form.create(
-            commit=True, parent=self.data.organization)
+            commit=True, parent=data.organization)
 
       context = notifications.createOrUpdateSlotTransferContext(
-          self.data, slot_transfer,
-          to_emails, update)
+          data, slot_transfer, to_emails, update)
       sub_txn = mailer.getSpawnMailTaskTxn(
           context, parent=slot_transfer.parent())
       sub_txn()
@@ -232,7 +233,7 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    slot_transfer_entity = self.createOrUpdateFromForm()
+    slot_transfer_entity = self.createOrUpdateFromForm(data)
     if slot_transfer_entity:
       # TODO(nathaniel): make this .organization call unnecessary.
       data.redirect.organization(organization=data.organization)
