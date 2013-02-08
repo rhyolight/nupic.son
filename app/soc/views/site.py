@@ -110,10 +110,9 @@ class EditSitePage(base.SiteRequestHandler):
         'site_form': site_form,
     }
 
-  def validate(self):
+  def validate(self, data):
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    site_form = SiteForm(GSoCBoundField, self.data.POST,
-                         instance=self.data.site)
+    site_form = SiteForm(GSoCBoundField, data.POST, instance=data.site)
 
     if site_form.is_valid():
       site_form.save()
@@ -123,7 +122,7 @@ class EditSitePage(base.SiteRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    post_accepted = self.validate()
+    post_accepted = self.validate(data)
     context = self.context(data, check, mutator)
     template_path = self.templatePath()
     response_content = self.render(data, template_path, context)
