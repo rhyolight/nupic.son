@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for program related views."""
 
-"""Tests for program related views.
-"""
-
+import httplib
 
 from soc.models.document import Document
 
@@ -29,8 +26,7 @@ from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
 
 
 class ListDocumentTest(GSoCDjangoTestCase):
-  """Test document list page.
-  """
+  """Test document list page."""
 
   def setUp(self):
     self.init()
@@ -48,8 +44,7 @@ class ListDocumentTest(GSoCDjangoTestCase):
 
 
 class EditProgramTest(GSoCDjangoTestCase):
-  """Tests program edit page.
-  """
+  """Tests program edit page."""
 
   def setUp(self):
     self.init()
@@ -87,3 +82,15 @@ class EditProgramTest(GSoCDjangoTestCase):
     key_name = properties['key_name']
     document = Document.get_by_key_name(key_name)
     self.assertPropertiesEqual(properties, document)
+
+
+# TODO(nathaniel): More than just a simple smoke test.
+class EventsPageTest(GSoCDjangoTestCase):
+  """Tests the events page."""
+
+  def setUp(self):
+    self.init()
+
+  def testEventsPageLoads(self):
+    response = self.get('/gsoc/events/%s' % self.gsoc.key().name())
+    self.assertEqual(httplib.OK, response.status_code)
