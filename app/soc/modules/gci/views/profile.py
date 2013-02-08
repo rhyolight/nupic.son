@@ -357,36 +357,35 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
   def _getCreateProfileURLPattern(self):
     return url_patterns.CREATE_PROFILE
 
-  def _getCreateUserForm(self):
-    return GCIUserForm(self.data.POST or None)
+  def _getCreateUserForm(self, data):
+    return GCIUserForm(data.POST or None)
 
-  def _getEditProfileForm(self, is_student):
+  def _getEditProfileForm(self, data, is_student):
     if is_student:
       form = GCIStudentProfileForm
     else:
       form = GCIProfileForm
-    return form(data=self.data.POST or None,
-        request_data=self.data, instance=self.data.profile)
+    return form(
+        data=data.POST or None, request_data=data, instance=data.profile)
 
-  def _getCreateProfileForm(self, is_student, save=False, prefill_data=False):
+  def _getCreateProfileForm(
+      self, data, is_student, save=False, prefill_data=False):
     if is_student:
       if save:
         form = GCICreateStudentProfileForm
       else:
         form = GCIShowCreateStudentProfileForm
-      if self.data.POST:
-        birth_date = self.data.request.COOKIES.get('age_check')
-        self.data.POST['birth_date'] = birth_date
+      if data.POST:
+        birth_date = data.request.COOKIES.get('age_check')
+        data.POST['birth_date'] = birth_date
     else:
       form = GCICreateProfileForm
 
     tos_content = self._getTOSContent()
-    return form(tos_content, data=self.data.POST or None,
-                      request_data=self.data)
+    return form(tos_content, data=data.POST or None, request_data=data)
 
-  def _getNotificationForm(self):
+  def _getNotificationForm(self, data):
     return NotificationForm
 
-  def _getStudentInfoForm(self):
-    return GCIStudentInfoForm(self.data.POST or None,
-                              instance=self.data.student_info)
+  def _getStudentInfoForm(self, data):
+    return GCIStudentInfoForm(data.POST or None, instance=data.student_info)

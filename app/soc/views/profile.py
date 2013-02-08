@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the profile page.
-"""
-
+"""Module for the profile page."""
 
 from google.appengine.ext import db
 
@@ -166,7 +162,7 @@ class ProfilePage(object):
     if not self.data.user:
       return None
 
-    profile = self._getProfileForCurrentUser()
+    profile = self._getProfileForCurrentUser(self.data)
     if not profile:
       return None
 
@@ -183,7 +179,7 @@ class ProfilePage(object):
     """See soc.views.base.RequestHandler.context for specification."""
     role = data.kwargs.get('role')
     if data.student_info or role == 'student':
-      student_info_form = self._getStudentInfoForm()
+      student_info_form = self._getStudentInfoForm(data)
       # student's age should be checked
       is_student = True
     else:
@@ -202,17 +198,18 @@ class ProfilePage(object):
     if data.user:
       user_form = EmptyForm(data.POST or None, instance=data.user)
     else:
-      user_form = self._getCreateUserForm()
+      user_form = self._getCreateUserForm(self.data)
 
     if data.profile:
       data.profile._fix_name()
-      profile_form = self._getEditProfileForm(is_student)
+      profile_form = self._getEditProfileForm(data, is_student)
     else:
-      profile_form = self._getCreateProfileForm(is_student, prefill_data=True)
+      profile_form = self._getCreateProfileForm(
+          data, is_student, prefill_data=True)
 
     error = user_form.errors or profile_form.errors or student_info_form.errors
 
-    form = self._getNotificationForm()
+    form = self._getNotificationForm(data)
     notification_form = form(data.POST or None,
                              instance=data.profile)
 
@@ -230,7 +227,7 @@ class ProfilePage(object):
     if self.data.user:
       return EmptyForm(), self.data.user
     else:
-      user_form = self._getCreateUserForm()
+      user_form = self._getCreateUserForm(self.data)
 
     if not user_form.is_valid():
       return user_form, None
@@ -254,9 +251,10 @@ class ProfilePage(object):
       check_age = False
 
     if self.data.profile:
-      profile_form = self._getEditProfileForm(check_age)
+      profile_form = self._getEditProfileForm(self.data, check_age)
     else:
-      profile_form = self._getCreateProfileForm(check_age, save=True)
+      profile_form = self._getCreateProfileForm(
+          self.data, check_age, save=True)
 
     if not profile_form.is_valid() or not user:
       return profile_form, None
@@ -285,7 +283,7 @@ class ProfilePage(object):
     if not profile:
       return EmptyForm(self.data.POST)
 
-    form = self._getNotificationForm()
+    form = self._getNotificationForm(self.data)
 
     notification_form = form(self.data.POST, instance=profile)
 
@@ -303,7 +301,7 @@ class ProfilePage(object):
         self.data.kwargs.get('role') == 'student'):
       return EmptyForm(self.data.POST)
 
-    student_form = self._getStudentInfoForm()
+    student_form = self._getStudentInfoForm(self.data)
 
     if not profile or not student_form.is_valid():
       return student_form
@@ -358,19 +356,20 @@ class ProfilePage(object):
   def _getCreateProfileURLPattern(self):
     raise NotImplementedError
 
-  def _getEditProfileForm(self, check_age):
+  def _getEditProfileForm(self, data, check_age):
     raise NotImplementedError
 
-  def _getCreateProfileForm(self, check_age, save=False, prefill_data=False):
+  def _getCreateProfileForm(
+      self, data, check_age, save=False, prefill_data=False):
     raise NotImplementedError
 
-  def _getNotificationForm(self):
+  def _getNotificationForm(self, data):
     raise NotImplementedError
 
-  def _getStudentInfoForm(self):
+  def _getStudentInfoForm(self, data):
     raise NotImplementedError
 
-  def _getProfileForCurrentUser(self):
+  def _getProfileForCurrentUser(self, data):
     raise NotImplementedError
 
   def _getFieldsToExcludeInPrefill(self):

@@ -273,18 +273,19 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
   def _getCreateProfileURLPattern(self):
     return url_patterns.CREATE_PROFILE
 
-  def _getCreateUserForm(self):
-    return GSoCUserForm(self.data.POST or None)
+  def _getCreateUserForm(self, data):
+    return GSoCUserForm(data.POST or None)
 
-  def _getEditProfileForm(self, check_age):
+  def _getEditProfileForm(self, data, check_age):
     if check_age:
-      return GSoCStudentProfileForm(data=self.data.POST or None,
-        instance=self.data.profile, request_data=self.data)
+      return GSoCStudentProfileForm(
+          data=data.POST or None, instance=data.profile, request_data=data)
     else:
-      return GSoCProfileForm(data=self.data.POST or None,
-        instance=self.data.profile, request_data=self.data)
+      return GSoCProfileForm(
+          data=data.POST or None, instance=data.profile, request_data=data)
 
-  def _getCreateProfileForm(self, check_age, save=False, prefill_data=False):
+  def _getCreateProfileForm(
+      self, data, check_age, save=False, prefill_data=False):
     tos_content = self._getTOSContent()
 
     if prefill_data:
@@ -293,29 +294,27 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
       prefilled_data = None
 
     if check_age:
-      form = CreateGSoCStudentProfileForm(tos_content, request_data=self.data,
-        data=self.data.POST or prefilled_data)
+      form = CreateGSoCStudentProfileForm(
+          tos_content, request_data=data, data=data.POST or prefilled_data)
     else:
-      form = CreateGSoCProfileForm(tos_content, request_data=self.data,
-        data=self.data.POST or prefilled_data)
+      form = CreateGSoCProfileForm(
+          tos_content, request_data=data, data=data.POST or prefilled_data)
 
     return form
 
-  def _getNotificationForm(self):
-    if self.data.student_info or self.data.kwargs.get('role') == 'student':
+  def _getNotificationForm(self, data):
+    if data.student_info or data.kwargs.get('role') == 'student':
       return StudentNotificationForm
-
-    if self.data.is_org_admin or self.data.kwargs.get('role') == 'org_admin':
+    elif data.is_org_admin or data.kwargs.get('role') == 'org_admin':
       return AdminNotificationForm
+    else:
+      return MentorNotificationForm
 
-    return MentorNotificationForm
+  def _getStudentInfoForm(self, data):
+    return GSoCStudentInfoForm(data.POST or None, instance=data.student_info)
 
-  def _getStudentInfoForm(self):
-    return GSoCStudentInfoForm(self.data.POST or None, 
-        instance=self.data.student_info)
-
-  def _getProfileForCurrentUser(self):
-    query = profile_logic.queryProfilesForUser(self.data.user)
+  def _getProfileForCurrentUser(self, data):
+    query = profile_logic.queryProfilesForUser(data.user)
     profiles = query.fetch(1000)
 
     return profiles[-1] if profiles else None
