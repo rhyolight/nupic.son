@@ -930,8 +930,7 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
 
 
 class AcceptProposal(GSoCRequestHandler):
-  """View allowing org admins to directly accept the proposal.
-  """
+  """View allowing org admins to directly accept the proposal."""
 
   def djangoURLPatterns(self):
     return [
@@ -944,23 +943,23 @@ class AcceptProposal(GSoCRequestHandler):
     assert isSet(data.proposal_org)
     check.isOrgAdminForOrganization(data.proposal_org)
 
-  def toggleStatus(self, value):
+  def toggleStatus(self, data, value):
     """Toggles the the application state between accept and pending.
 
     Args:
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and not self.data.proposal.accept_as_project:
+    if value == 'checked' and not data.proposal.accept_as_project:
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.proposal.accept_as_project:
+    if value == 'unchecked' and data.proposal.accept_as_project:
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def update_status_txn():
       # transactionally get latest version of the proposal
@@ -976,7 +975,7 @@ class AcceptProposal(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     value = data.POST.get('value')
-    self.toggleStatus(value)
+    self.toggleStatus(data, value)
     return http.HttpResponse()
 
   def get(self, data, check, mutator):
