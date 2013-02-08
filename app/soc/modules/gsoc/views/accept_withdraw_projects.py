@@ -214,15 +214,13 @@ class ProposalList(Template):
 
 
 class AcceptProposals(GSoCRequestHandler):
-  """View for accepting individual proposals.
-  """
+  """View for accepting individual proposals."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/accept_withdraw_projects/base.html'
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
+    """Returns the list of tuples for containing URL to view method mapping."""
 
     return [
         url(r'admin/proposals/accept/%s$' % url_patterns.PROGRAM, self,
@@ -255,9 +253,8 @@ class AcceptProposals(GSoCRequestHandler):
     return {
         'page_name': '%s - Proposals' % program.short_name,
         'program_name': program.name,
-        'list': ProposalList(self.data),
-        'program_select': ProgramSelect(self.data,
-                                        'gsoc_admin_accept_proposals'),
+        'list': ProposalList(data),
+        'program_select': ProgramSelect(data, 'gsoc_admin_accept_proposals'),
     }
 
 
