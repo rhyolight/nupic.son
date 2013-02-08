@@ -288,8 +288,7 @@ class GSoCMentorEvaluationPreviewPage(GSoCRequestHandler):
 
 
 class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
-  """View for listing all records of a GSoCGradingProjectSurveyRecord.
-  """
+  """View for listing all records of a GSoCGradingProjectSurveyRecord."""
 
   def djangoURLPatterns(self):
     return [
@@ -306,7 +305,7 @@ class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """Returns the context of the page to render."""
-    record_list = self._createSurveyRecordList()
+    record_list = self._createSurveyRecordList(data)
 
     page_name = ugettext('Records - %s' % (data.mentor_evaluation.title))
     context = {
@@ -319,7 +318,7 @@ class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
     """Handler for JSON requests."""
     idx = lists.getListIndex(data.request)
     if idx == 0:
-      record_list = self._createSurveyRecordList()
+      record_list = self._createSurveyRecordList(data)
       return record_list.listContentResponse(
           data.request, prefetch=['project', 'org']).content()
     else:
@@ -327,12 +326,10 @@ class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
       super(GSoCMentorEvaluationRecordsList, self).jsonContext(
           data, check, mutator)
 
-  def _createSurveyRecordList(self):
-    """Creates a SurveyRecordList for the requested survey.
-    """
+  def _createSurveyRecordList(self, data):
+    """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
-        self.data, self.data.mentor_evaluation, GSoCGradingProjectSurveyRecord,
-        idx=0)
+        data, data.mentor_evaluation, GSoCGradingProjectSurveyRecord, idx=0)
 
     record_list.list_config.addSimpleColumn('grade', 'Passed?')
     record_list.list_config.addPlainTextColumn(
@@ -347,8 +344,7 @@ class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
 
 
 class GSoCMentorEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
-  """Template to construct readonly mentor evaluation record.
-  """
+  """Template to construct readonly mentor evaluation record."""
 
   class Meta:
     model = GSoCGradingProjectSurveyRecord
