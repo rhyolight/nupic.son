@@ -273,8 +273,7 @@ class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
 
 
 class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
-  """View for listing all records of a GSoCGProjectSurveyRecord.
-  """
+  """View for listing all records of a GSoCGProjectSurveyRecord."""
 
   def djangoURLPatterns(self):
     return [
@@ -291,7 +290,7 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """Returns the context of the page to render."""
-    record_list = self._createSurveyRecordList()
+    record_list = self._createSurveyRecordList(data)
 
     page_name = ugettext('Records - %s' % (data.student_evaluation.title))
     context = {
@@ -304,7 +303,7 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
     """Handler for JSON requests."""
     idx = lists.getListIndex(data.request)
     if idx == 0:
-      record_list = self._createSurveyRecordList()
+      record_list = self._createSurveyRecordList(data)
       return record_list.listContentResponse(
           data.request, prefetch=['org', 'project']).content()
     else:
@@ -312,10 +311,10 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
       super(GSoCStudentEvaluationRecordsList, self).jsonContext(
           data, check, mutator)
 
-  def _createSurveyRecordList(self):
+  def _createSurveyRecordList(self, data):
     """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
-        self.data, self.data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
+        data, data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
 
     record_list.list_config.addPlainTextColumn(
         'project', 'Project', lambda ent, *args: ent.project.title)
@@ -329,8 +328,7 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
 
 
 class GSoCStudentEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
-  """Template to construct readonly student evaluation record.
-  """
+  """Template to construct readonly student evaluation record."""
 
   class Meta:
     model = GSoCProjectSurveyRecord
