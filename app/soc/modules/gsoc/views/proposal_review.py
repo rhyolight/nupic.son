@@ -669,8 +669,7 @@ class PostScore(GSoCRequestHandler):
 
 
 class WishToMentor(GSoCRequestHandler):
-  """View handling wishing to mentor requests.
-  """
+  """View handling wishing to mentor requests."""
 
   def djangoURLPatterns(self):
     return [
@@ -684,25 +683,26 @@ class WishToMentor(GSoCRequestHandler):
 
     check.isMentorForOrganization(data.proposal_org)
 
-  def addToPotentialMentors(self, value):
+  def addToPotentialMentors(self, data, value):
     """Toggles the user from the potential mentors list.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.profile)
-    assert isSet(self.data.proposal)
+    assert isSet(data.profile)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and not self.data.isPossibleMentorForProposal():
+    if value == 'checked' and not data.isPossibleMentorForProposal():
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.isPossibleMentorForProposal():
+    if value == 'unchecked' and data.isPossibleMentorForProposal():
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
-    profile_key = self.data.profile.key()
+    proposal_key = data.proposal.key()
+    profile_key = data.profile.key()
 
     def update_possible_mentors_trx():
       # transactionally get latest version of the proposal
@@ -723,7 +723,7 @@ class WishToMentor(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     value = data.POST.get('value')
-    self.addToPotentialMentors(value)
+    self.addToPotentialMentors(data, value)
     return http.HttpResponse()
 
   def get(self, data, check, mutator):
