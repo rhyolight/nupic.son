@@ -47,8 +47,8 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.dashboard import BIRTHDATE_FORMAT
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -94,13 +94,13 @@ class LookupForm(gsoc_forms.GSoCModelForm):
     self.cleaned_data['profile'] = q.get()
 
 
-class DashboardPage(GSoCRequestHandler):
+class DashboardPage(base.GSoCRequestHandler):
   """Dashboard for admins."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_admin_dashboard'),
+        url(r'admin/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_admin_dashboard'),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -722,13 +722,13 @@ class StudentsDashboard(Dashboard):
     }
 
 
-class LookupLinkIdPage(GSoCRequestHandler):
+class LookupLinkIdPage(base.GSoCRequestHandler):
   """View for the participant profile."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/lookup/%s$' % url_patterns.PROGRAM,
-         self, name='lookup_gsoc_profile'),
+        url(r'admin/lookup/%s$' % url_patterns.PROGRAM, self,
+            name='lookup_gsoc_profile'),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -874,14 +874,13 @@ class ProposalsAcceptedOrgsList(AcceptedOrgsList):
     }
 
 
-class ProposalsAcceptedOrgsPage(GSoCRequestHandler):
-  """View for accepted orgs.
-  """
+class ProposalsAcceptedOrgsPage(base.GSoCRequestHandler):
+  """View for accepted orgs."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/proposals/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_proposals_orgs'),
+        url(r'admin/proposals/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_proposals_orgs'),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -951,14 +950,13 @@ class ProjectsAcceptedOrgsList(AcceptedOrgsList):
     }
 
 
-class ProjectsAcceptedOrgsPage(GSoCRequestHandler):
-  """View for accepted orgs.
-  """
+class ProjectsAcceptedOrgsPage(base.GSoCRequestHandler):
+  """View for accepted orgs."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/projects/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_projects_orgs'),
+        url(r'admin/projects/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_projects_orgs'),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -1109,13 +1107,13 @@ class ProposalsList(Template):
     return response_builder.build(accepted, duplicates)
 
 
-class ProposalsPage(GSoCRequestHandler):
+class ProposalsPage(base.GSoCRequestHandler):
   """View for proposals for particular org."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/proposals/%s$' % url_patterns.ORG,
-         self, name='gsoc_proposals_org'),
+        url(r'admin/proposals/%s$' % url_patterns.ORG, self,
+            name='gsoc_proposals_org'),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -1134,7 +1132,6 @@ class ProposalsPage(GSoCRequestHandler):
   def post(self, data, check, mutator):
     """Handler for POST requests."""
     proposals_list = ProposalsList(data.request, data)
-
     if proposals_list.post():
       return http.HttpResponse()
     else:
@@ -1208,14 +1205,13 @@ class ProjectsList(Template):
     return "v2/modules/gsoc/admin/_projects_list.html"
 
 
-class ProjectsPage(GSoCRequestHandler):
-  """View for projects of particular org.
-  """
+class ProjectsPage(base.GSoCRequestHandler):
+  """View for projects of particular org."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/projects/%s$' % url_patterns.ORG,
-         self, name='gsoc_projects_org'),
+        url(r'admin/projects/%s$' % url_patterns.ORG, self,
+            name='gsoc_projects_org'),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -1234,7 +1230,6 @@ class ProjectsPage(GSoCRequestHandler):
   def post(self, data, check, mutator):
     """Handler for POST requests."""
     projects_list = ProjectsList(data.request, data)
-
     if projects_list.post():
       return http.HttpResponse()
     else:
@@ -1361,14 +1356,13 @@ class SlotsList(AcceptedOrgsList):
     return response_builder.build()
 
 
-class SlotsPage(GSoCRequestHandler):
-  """View for the participant profile.
-  """
+class SlotsPage(base.GSoCRequestHandler):
+  """View for the participant profile."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/slots/%s$' % url_patterns.PROGRAM,
-         self, name='gsoc_slots'),
+        url(r'admin/slots/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_slots'),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -1386,7 +1380,6 @@ class SlotsPage(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     slots_list = SlotsList(data.request, data)
-
     if slots_list.post():
       return http.HttpResponse()
     else:
@@ -1400,14 +1393,13 @@ class SlotsPage(GSoCRequestHandler):
     }
 
 
-class SurveyReminderPage(GSoCRequestHandler):
-  """Page to send out reminder emails to fill out a Survey.
-  """
+class SurveyReminderPage(base.GSoCRequestHandler):
+  """Page to send out reminder emails to fill out a Survey."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/survey_reminder/%s$' % url_patterns.PROGRAM,
-            self, name='gsoc_survey_reminder_admin'),
+        url(r'admin/survey_reminder/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_survey_reminder_admin'),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -1579,13 +1571,13 @@ class StudentsList(AcceptedOrgsList):
     }
 
 
-class StudentsListPage(GSoCRequestHandler):
+class StudentsListPage(base.GSoCRequestHandler):
   """View that lists all the students associated with the program."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/students/%s$' % url_patterns.PROGRAM,
-            self, name='gsoc_students_list_admin'),
+        url(r'admin/students/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_students_list_admin'),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -1609,15 +1601,15 @@ class StudentsListPage(GSoCRequestHandler):
     }
 
 
-class ProjectsListPage(GSoCRequestHandler):
+class ProjectsListPage(base.GSoCRequestHandler):
   """View that lists all the projects associated with the program."""
 
   LIST_IDX = 1
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/all_projects/%s$' % url_patterns.PROGRAM,
-            self, name='gsoc_projects_list_admin'),
+        url(r'admin/all_projects/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_projects_list_admin'),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -1644,16 +1636,15 @@ class ProjectsListPage(GSoCRequestHandler):
     }
 
 
-class OrgsListPage(GSoCRequestHandler):
-  """View that lists all the projects associated with the program.
-  """
+class OrgsListPage(base.GSoCRequestHandler):
+  """View that lists all the projects associated with the program."""
 
   LIST_IDX = 0
 
   def djangoURLPatterns(self):
     return [
-        url(r'admin/accepted_orgs/%s$' % url_patterns.PROGRAM,
-            self, name='gsoc_orgs_list_admin'),
+        url(r'admin/accepted_orgs/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_orgs_list_admin'),
     ]
 
   def checkAccess(self, data, check, mutator):
