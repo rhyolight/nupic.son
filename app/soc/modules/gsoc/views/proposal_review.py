@@ -745,16 +745,17 @@ class AssignMentor(GSoCRequestHandler):
     assert isSet(data.proposal_org)
     check.isOrgAdminForOrganization(data.proposal_org)
 
-  def assignMentor(self, mentor_entity):
+  def assignMentor(self, data, mentor_entity):
     """Assigns the mentor to the proposal.
 
     Args:
+      data: A RequestData describing the current request.
       mentor_entity: The entity of the mentor profile which needs to assigned
           to the proposal.
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def assign_mentor_txn():
       proposal = db.get(proposal_key)
@@ -766,12 +767,11 @@ class AssignMentor(GSoCRequestHandler):
 
     db.run_in_transaction(assign_mentor_txn)
 
-  def unassignMentor(self):
-    """Removes the mentor assigned to the proposal.
-    """
-    assert isSet(self.data.proposal)
+  def unassignMentor(self, data):
+    """Removes the mentor assigned to the proposal."""
+    assert isSet(data.proposal)
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def unassign_mentor_txn():
       proposal = db.get(proposal_key)
@@ -781,13 +781,13 @@ class AssignMentor(GSoCRequestHandler):
 
     db.run_in_transaction(unassign_mentor_txn)
 
-  def validate(self):
-    mentor_key = self.data.POST.get('assign_mentor')
+  def validate(self, data):
+    mentor_key = data.POST.get('assign_mentor')
     if mentor_key:
       mentor_entity = db.get(mentor_key)
-      org = self.data.proposal.org
+      org = data.proposal.org
 
-      if mentor_entity and self.data.isPossibleMentorForProposal(
+      if mentor_entity and data.isPossibleMentorForProposal(
           mentor_entity) or (org.list_all_mentors
           and db.Key(mentor_key) in profile_logic.queryAllMentorsKeysForOrg(
           org)):
@@ -800,11 +800,11 @@ class AssignMentor(GSoCRequestHandler):
   def post(self, data, check, mutator):
     assert isSet(data.proposal)
 
-    mentor_entity= self.validate()
+    mentor_entity= self.validate(data)
     if mentor_entity:
-      self.assignMentor(mentor_entity)
+      self.assignMentor(data, mentor_entity)
     else:
-      self.unassignMentor()
+      self.unassignMentor(data)
 
     data.proposer = data.proposal.parent()
 
