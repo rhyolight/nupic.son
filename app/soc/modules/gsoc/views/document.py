@@ -123,8 +123,7 @@ class DocumentPage(GSoCRequestHandler):
 
 
 class EventsPage(GSoCRequestHandler):
-  """Encapsulates all the methods required to show the events page.
-  """
+  """Encapsulates all the methods required to show the events page."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/document/events.html'
@@ -135,7 +134,7 @@ class EventsPage(GSoCRequestHandler):
             name='gsoc_events')
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     data.document = data.program.events_page
     check.canViewDocument()
 
