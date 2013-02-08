@@ -258,28 +258,25 @@ class DownloadForm(GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    if self._admin():
+    if self._admin(data):
       check.isHost()
       mutator.studentFromKwargs()
     else:
       check.canStudentDownloadForms()
 
-  def _admin(self):
-    return self.data.kwargs['admin']
+  def _admin(self, data):
+    return data.kwargs['admin']
 
-  def _tax(self):
-    return self.data.kwargs['form'] == 'tax'
+  def _tax(self, data):
+    return data.kwargs['form'] == 'tax'
 
-  def _studentInfo(self):
-    if self._admin():
-      return self.data.url_student_info
-    else:
-      return self.data.student_info
+  def _studentInfo(self, data):
+    return data.url_student_info if self._admin(data) else data.student_info
 
   def get(self, data, check, mutator):
-    if self._tax():
-      blob_info = self._studentInfo().tax_form
+    if self._tax(data):
+      blob_info = self._studentInfo(data).tax_form
     else:
-      blob_info = self._studentInfo().enrollment_form
+      blob_info = self._studentInfo(data).enrollment_form
 
     return bs_helper.sendBlob(blob_info)
