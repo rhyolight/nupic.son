@@ -498,7 +498,7 @@ class ShowConnection(GSoCRequestHandler):
     'withdraw' : ('withdraw', 'Withdraw'),
     'delete' : ('delete', 'Delete')
   }
-  is_org_admin = False
+  is_org_admin_for_org = False
   
   def templatePath(self):
     return 'v2/modules/gsoc/connection/show_connection.html'
@@ -519,7 +519,7 @@ class ShowConnection(GSoCRequestHandler):
     self.data.organization = self.data.connection.organization
     self.check.canViewConnection()
 
-    self.is_org_admin = self.data.connection.organization.key() in \
+    self.is_org_admin_for_org = self.data.connection.organization.key() in \
         self.data.profile.org_admin_for 
 
   def getMessages(self, limit=1000):
@@ -553,7 +553,7 @@ class ShowConnection(GSoCRequestHandler):
     """ Handler for Show GSoCConnection get request. """
 
     header_name = self.data.url_user.link_id \
-        if self.data.is_org_admin else self.data.organization.name
+        if self.is_org_admin_for_org else self.data.organization.name
 
     # Shortcut for clarity/laziness.
     c = self.data.connection 
@@ -564,7 +564,7 @@ class ShowConnection(GSoCRequestHandler):
     choices = []
     if c.isWithdrawn():
       # Allow an org to delete or re-open the connection.
-      if self.is_org_admin:
+      if self.is_org_admin_for_org:
         if c.isOrgWithdrawn():
           choices.append(self.RESPONSES['accept_mentor'])
           choices.append(self.RESPONSES['accept_org_admin'])
@@ -576,7 +576,7 @@ class ShowConnection(GSoCRequestHandler):
     elif c.isStalemate() or c.isAccepted():
       # There's nothing else that can be done to the connection in either 
       # case, so the org admin has the option to delete it.
-      if self.is_org_admin:
+      if self.is_org_admin_for_org:
         choices.append(self.RESPONSES['delete'])
     else:
       mentor_options = {
@@ -589,7 +589,7 @@ class ShowConnection(GSoCRequestHandler):
           'reject' : self.RESPONSES['reject_org_admin'],
           'withdraw' : self.RESPONSES['withdraw']
           }    
-      if self.is_org_admin:
+      if self.is_org_admin_for_org:
         choices = self.getMentorChoices(mentor_options, c.isOrgUnreplied(), 
             c.isOrgAccepted(), c.isOrgRejected(), c.isOrgWithdrawn())
         if c.isOrgUnreplied():
@@ -629,7 +629,7 @@ class ShowConnection(GSoCRequestHandler):
 
     return {
         'page_name': 'Viewing Connection',
-        'is_admin' : self.is_org_admin,
+        'is_admin' : self.is_org_admin_for_org,
         'header_name': header_name,
         'connection' : self.data.connection,
         'message_box' : message_box,
@@ -680,7 +680,7 @@ class ShowConnection(GSoCRequestHandler):
       if connection.isWithdrawn():
         connection.org_state = connection.user_state = RESPONSE_STATE_UNREPLIED
 
-      if self.is_org_admin:
+      if self.is_org_admin_for_org:
         connection.org_state = RESPONSE_STATE_ACCEPTED
       else:
         connection.user_state = RESPONSE_STATE_ACCEPTED
@@ -717,7 +717,7 @@ class ShowConnection(GSoCRequestHandler):
 
     def decline_mentor_txn():
       connection = db.get(connection_key)
-      if self.is_org_admin:
+      if self.is_org_admin_for_org:
         connection.org_state = RESPONSE_STATE_REJECTED
       else:
         connection.user_state = RESPONSE_STATE_REJECTED
@@ -743,7 +743,7 @@ class ShowConnection(GSoCRequestHandler):
 
       connection.role = 'Org Admin'
 
-      if self.is_org_admin:
+      if self.is_org_admin_for_org:
         connection.org_state = RESPONSE_STATE_ACCEPTED
       else:
         connection.user_state = RESPONSE_STATE_ACCEPTED
@@ -768,7 +768,7 @@ class ShowConnection(GSoCRequestHandler):
           profile.mentor_for = list(set(profile.mentor_for))
         
         if org_key not in profile.org_admin_for:
-          profile.is_org_admin = True
+          profile.is_org_admin_for_org = True
           profile.org_admin_for.append(org_key)
           profile.org_admin_for = list(set(profile.org_admin_for))
           profile.put()
@@ -783,7 +783,7 @@ class ShowConnection(GSoCRequestHandler):
 
     def decline_org_admin_txn():
       connection = db.get(connection_key)
-      if self.is_org_admin:
+      if self.is_org_admin_for_org:
         # Org can just 'withdraw' the org admin offer.
         connection.org_state = RESPONSE_STATE_REJECTED
       else:
@@ -802,7 +802,7 @@ class ShowConnection(GSoCRequestHandler):
     def withdraw_connection_txn():
       # Mark the connection on the user or org side as 'Rejected' and add an auto-comment
       connection = db.get(connection_key)
-      if self.is_org_admin:
+      if self.is_org_admin_for_org:
         connection.org_state = RESPONSE_STATE_WITHDRAWN
       else:
         connection.user_state = RESPONSE_STATE_WITHDRAWN
