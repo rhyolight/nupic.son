@@ -123,9 +123,8 @@ class ProgramPage(GCIRequestHandler):
         'error': program_form.errors,
     }
 
-  def validate(self):
-    program_form = ProgramForm(
-        self.data, self.data.POST, instance=self.data.program)
+  def validate(self, data):
+    program_form = ProgramForm(data, data.POST, instance=data.program)
 
     if program_form.is_valid():
       program_form.save()
@@ -135,7 +134,7 @@ class ProgramPage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if self.validate():
+    if self.validate(data):
       data.redirect.program()
       return data.redirect.to('edit_gci_program', validated=True)
     else:
