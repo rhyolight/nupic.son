@@ -259,8 +259,7 @@ class InvitePage(GCIRequestHandler):
 
 
 class ManageInvite(GCIRequestHandler):
-  """View to manage the invitation by organization admins.
-  """
+  """View to manage the invitation by organization admins."""
 
   def templatePath(self):
     return 'v2/modules/gci/invite/base.html'
@@ -301,12 +300,12 @@ class ManageInvite(GCIRequestHandler):
         raise BadRequest('No action specified in manage_gci_invite request.')
 
   def context(self, data, check, mutator):
-    page_name = self._constructPageName()
+    page_name = self._constructPageName(data)
 
     form = ManageInviteForm(data.POST or None, instance=data.invite)
 
-    button_name = self._constructButtonName()
-    button_value = self._constructButtonValue()
+    button_name = self._constructButtonName(data)
+    button_value = self._constructButtonValue(data)
 
     return {
         'page_name': page_name,
@@ -317,7 +316,7 @@ class ManageInvite(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     # it is needed to handle notifications
-    data.invited_profile = self._getInvitedProfile()
+    data.invited_profile = self._getInvitedProfile(data)
 
     if 'withdraw' in data.POST:
       invite_logic.withdrawInvite(data)
@@ -326,29 +325,29 @@ class ManageInvite(GCIRequestHandler):
 
     return data.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
 
-  def _constructPageName(self):
-    invite = self.data.invite
-    return "%s Invite For %s" % (invite.role, self.data.invited_user.name)
+  def _constructPageName(self, data):
+    invite = data.invite
+    return "%s Invite For %s" % (invite.role, data.invited_user.name)
 
-  def _constructButtonName(self):
-    invite = self.data.invite
+  def _constructButtonName(self, data):
+    invite = data.invite
     if invite.status == 'pending':
       return 'withdraw'
     if invite.status in ['withdrawn', 'rejected']:
       return 'resubmit'
 
-  def _constructButtonValue(self):
-    invite = self.data.invite
+  def _constructButtonValue(self, data):
+    invite = data.invite
     if invite.status == 'pending':
       return 'Withdraw'
     if invite.status in ['withdrawn', 'rejected']:
       return 'Resubmit'
 
-  def _getInvitedProfile(self):
+  def _getInvitedProfile(self, data):
     key_name = '/'.join([
-        self.data.program.key().name(),
-        self.data.invited_user.link_id])
-    return GCIProfile.get_by_key_name(key_name, parent=self.data.invited_user)
+        data.program.key().name(),
+        data.invited_user.link_id])
+    return GCIProfile.get_by_key_name(key_name, parent=data.invited_user)
 
 
 class RespondInvite(GCIRequestHandler):
