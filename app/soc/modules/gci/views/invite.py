@@ -351,8 +351,7 @@ class ManageInvite(GCIRequestHandler):
 
 
 class RespondInvite(GCIRequestHandler):
-  """View to respond to the invitation by the user.
-  """
+  """View to respond to the invitation by the user."""
 
   def templatePath(self):
     return 'v2/modules/gci/invite/show.html'
@@ -380,7 +379,7 @@ class RespondInvite(GCIRequestHandler):
       check.isInviteRespondable()
 
   def context(self, data, check, mutator):
-    page_name = self._constructPageName()
+    page_name = self._constructPageName(data)
     return {
         'is_respondable': data.is_respondable,
         'page_name': page_name,
@@ -402,8 +401,8 @@ class RespondInvite(GCIRequestHandler):
 
     return data.redirect.id().to(url_names.GCI_RESPOND_INVITE)
 
-  def _constructPageName(self):
-    invite = self.data.invite
+  def _constructPageName(self, data):
+    invite = data.invite
     return "%s Invite" % (invite.role.capitalize())
 
 
