@@ -326,39 +326,42 @@ class TaskCreatePage(GCIRequestHandler):
       'task_edit_form_template': TaskEditFormTemplate(data),
     }
 
-  def createTaskFromForm(self):
+  def createTaskFromForm(self, data):
     """Creates a new task based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created task entity or None.
     """
-    if self.data.task:
-      if self.data.full_edit:
+    if data.task:
+      if data.full_edit:
         form_class = TaskCreateForm
       else:
         form_class = TaskEditPostClaimForm
 
-      form = form_class(self.data, self.data.POST, instance=self.data.task)
+      form = form_class(data, data.POST, instance=data.task)
     else:
-      form = TaskCreateForm(self.data, self.data.POST)
+      form = TaskCreateForm(data, data.POST)
 
     if not form.is_valid():
       return None
 
-    form.cleaned_data['program'] = self.data.program
+    form.cleaned_data['program'] = data.program
 
     # The creator of the task and all the mentors for the task who have
     # have enabled "Subscribe automatically for the tasks" should be
     # subscribed to this task.
     mentor_keys = form.cleaned_data.get('mentors', None)
     mentor_entities = db.get(mentor_keys)
-    subscribers = mentor_entities + [self.data.profile]
+    subscribers = mentor_entities + [data.profile]
 
     keys = [i.key() for i in subscribers if i.automatic_task_subscription]
 
     form.cleaned_data['subscribers'] = list(set(keys))
 
-    if not self.data.task:
+    if not data.task:
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
@@ -366,7 +369,7 @@ class TaskCreatePage(GCIRequestHandler):
     return entity
 
   def post(self, data, check, mutator):
-    task = self.createTaskFromForm()
+    task = self.createTaskFromForm(data)
     if task:
       data.redirect.id(id=task.key().id_or_name())
       return data.redirect.to('gci_edit_task', validated=True)
