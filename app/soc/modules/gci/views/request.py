@@ -150,12 +150,12 @@ class ManageRequestPage(GCIRequestHandler):
       check.isRequestManageable()
 
   def context(self, data, check, mutator):
-    page_name = self._constructPageName()
+    page_name = self._constructPageName(data)
 
     form = RequestForm(data.POST or None, instance=data.request_entity)
 
-    button_name = self._constructButtonName()
-    button_value = self._constructButtonValue()
+    button_name = self._constructButtonName(data)
+    button_value = self._constructButtonValue(data)
 
     return {
         'page_name': page_name,
@@ -180,19 +180,19 @@ class ManageRequestPage(GCIRequestHandler):
 
     return data.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
 
-  def _constructPageName(self):
-    request = self.data.request_entity
+  def _constructPageName(self, data):
+    request = data.request_entity
     return "%s Request To %s" % (request.role, request.org.name)
 
-  def _constructButtonName(self):
-    request = self.data.request_entity
+  def _constructButtonName(self, data):
+    request = data.request_entity
     if request.status == 'pending':
       return 'withdraw'
     if request.status in ['withdrawn', 'rejected']:
       return 'resubmit'
 
-  def _constructButtonValue(self):
-    request = self.data.request_entity
+  def _constructButtonValue(self, data):
+    request = data.request_entity
     if request.status == 'pending':
       return 'Withdraw'
     if request.status in ['withdrawn', 'rejected']:
