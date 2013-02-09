@@ -179,8 +179,7 @@ class ManageInviteForm(gci_forms.GCIModelForm):
 
 
 class InvitePage(GCIRequestHandler):
-  """Encapsulate all the methods required to generate Invite page.
-  """
+  """Encapsulate all the methods required to generate Invite page."""
 
   def templatePath(self):
     return 'v2/modules/gci/invite/base.html'
@@ -210,37 +209,40 @@ class InvitePage(GCIRequestHandler):
         'forms': [invite_form]
     }
 
-  def validate(self):
+  def validate(self, data):
     """Creates new invitation based on the data inserted in the form.
+
+    Args:
+      data: A RequestHandler describing the current request.
 
     Returns:
       True if the new invitations have been successfully saved; False otherwise
     """
 
-    assert isSet(self.data.organization)
+    assert isSet(data.organization)
 
-    invite_form = InviteForm(self.data, self.data.POST)
+    invite_form = InviteForm(data, data.POST)
 
     if not invite_form.is_valid():
       return False
 
-    assert isSet(self.data.users_to_invite)
-    assert len(self.data.users_to_invite)
+    assert isSet(data.users_to_invite)
+    assert len(data.users_to_invite)
 
     # create a new invitation entity
 
-    invite_form.cleaned_data['org'] = self.data.organization
-    invite_form.cleaned_data['role'] = self.data.kwargs['role']
+    invite_form.cleaned_data['org'] = data.organization
+    invite_form.cleaned_data['role'] = data.kwargs['role']
     invite_form.cleaned_data['type'] = 'Invitation'
 
     def create_invite_txn(user):
       invite = invite_form.create(commit=True, parent=user)
-      context = notifications.inviteContext(self.data, invite)
+      context = notifications.inviteContext(data, invite)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()
       return invite
 
-    for user in self.data.users_to_invite:
+    for user in data.users_to_invite:
       invite_form.instance = None
       invite_form.cleaned_data['user'] = user
       db.run_in_transaction(create_invite_txn, user)
@@ -249,7 +251,7 @@ class InvitePage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler to for GCI Invitation Page HTTP post request."""
-    if self.validate():
+    if self.validate(data):
       return data.redirect.dashboard().to()
     else:
       # TODO(nathaniel): problematic self-call.
