@@ -142,8 +142,7 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
 
 
 class GCIOrgAppTakePage(GCIRequestHandler):
-  """View for organizations to submit their application.
-  """
+  """View for organizations to submit their application."""
 
   def djangoURLPatterns(self):
     return [
@@ -195,25 +194,28 @@ class GCIOrgAppTakePage(GCIRequestHandler):
 
     return context
 
-  def recordOrgAppFromForm(self):
+  def recordOrgAppFromForm(self, data):
     """Create/edit a new student evaluation record based on the form input.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated evaluation record entity or None
     """
-    if self.data.org_app_record:
+    if data.org_app_record:
       form = gci_forms.OrgAppTakeForm(
-          self.data.org_app, self.data.POST, instance=self.data.org_app_record)
+          data.org_app, data.POST, instance=data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(self.data.org_app, self.data.POST)
+      form = gci_forms.OrgAppTakeForm(data.org_app, data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.org_app_record:
-      form.cleaned_data['user'] = self.data.user
-      form.cleaned_data['main_admin'] = self.data.user
-      form.cleaned_data['survey'] = self.data.org_app
+    if not data.org_app_record:
+      form.cleaned_data['user'] = data.user
+      form.cleaned_data['main_admin'] = data.user
+      form.cleaned_data['survey'] = data.org_app
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
@@ -221,7 +223,7 @@ class GCIOrgAppTakePage(GCIRequestHandler):
     return entity
 
   def post(self, data, check, mutator):
-    org_app_record = self.recordOrgAppFromForm()
+    org_app_record = self.recordOrgAppFromForm(data)
     if org_app_record:
       data.redirect.id(org_app_record.key().id())
       return data.redirect.to('gci_retake_org_app', validated=True)
