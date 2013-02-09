@@ -229,13 +229,12 @@ class RespondRequestPage(GCIRequestHandler):
 
     data.is_respondable = data.request_entity.status == 'pending'
 
-  def context(self):
-    """Handler to for GCI Respond Request page HTTP get request.
-    """
+  def context(self, data, check, mutator):
+    """Handler to for GCI Respond Request page HTTP get request."""
     return {
-        'request': self.data.request_entity,
+        'request': data.request_entity,
         'page_name': 'Respond to request',
-        'is_respondable': self.data.is_respondable
+        'is_respondable': data.is_respondable
         }
 
   def post(self, data, check, mutator):
@@ -247,7 +246,7 @@ class RespondRequestPage(GCIRequestHandler):
     profile_key = db.Key.from_path(
         'GCIProfile', profile_key_name, parent=user_key)
 
-    self.data.requester_profile = profile = db.get(profile_key)
+    data.requester_profile = profile = db.get(profile_key)
 
     if 'accept' in data.POST:
       options = db.create_transaction_options(xg=True)
