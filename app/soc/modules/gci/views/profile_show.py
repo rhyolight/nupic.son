@@ -93,7 +93,7 @@ class GCIProfileShowPage(profile_show.ProfileShowPage, base.GCIRequestHandler):
   def context(self, data, check, mutator):
     context = super(GCIProfileShowPage, self).context(data, check, mutator)
 
-    profile = self._getProfile()
+    profile = self._getProfile(data)
     if profile.student_info:
       context['student_forms_template'] = StudentFormsTemplate(profile, data)
 
@@ -157,33 +157,35 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
     value = post_data.get('value')
 
     if button_id == 'verify-consent-form':
-      self._verifyConsentForm(value)
+      self._verifyConsentForm(data, value)
     elif button_id == 'verify-student-id-form':
-      self._verifyStudentIDForm(value)
+      self._verifyStudentIDForm(data, value)
 
     return http.HttpResponse()
 
-  def _verifyConsentForm(self, value):
+  def _verifyConsentForm(self, data, value):
     """Mark the parental consent form as verified or not verified.
 
     Args:
+      data: A RequestData describing the current request.
       value: The value of the checkbox field - checked or unchecked
     """
-    student_info = self.data.url_profile.student_info
+    student_info = data.url_profile.student_info
     student_info.consent_form_verified = value == 'checked'
     student_info.put()
 
-  def _verifyStudentIDForm(self, value):
+  def _verifyStudentIDForm(self, data, value):
     """Mark the student id form as verified or not verified.
 
     Args:
+      data: A RequestData describing the current request.
       value: The value of the checkbox field - checked or unchecked
     """
-    student_info = self.data.url_profile.student_info
+    student_info = data.url_profile.student_info
     student_info.student_id_form_verified = value == 'checked'
     student_info.put()
 
-  def _getProfile(self):
+  def _getProfile(self, data):
     """See soc.views.profile_show.ProfileShowPage for the documentation."""
-    assert access_checker.isSet(self.data.url_profile)
-    return self.data.url_profile
+    assert access_checker.isSet(data.url_profile)
+    return data.url_profile

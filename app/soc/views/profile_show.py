@@ -146,7 +146,7 @@ class ProfileShowPage(object):
     assert isSet(data.program)
     assert isSet(data.user)
 
-    profile = self._getProfile()
+    profile = self._getProfile(data)
     program = data.program
 
     user_template = self._getUserReadOnlyTemplate(data.user)
@@ -167,7 +167,7 @@ class ProfileShowPage(object):
   def _getProfileReadOnlyTemplate(self, profile):
     raise NotImplementedError
 
-  def _getProfile(self):
+  def _getProfile(self, data):
     """Returns the profile entity whose information should be displayed.
 
     Some subclasses of this class like profile pages that admin have access
@@ -175,6 +175,12 @@ class ProfileShowPage(object):
     subclasses should be able to use the profile entity that it needs
     depending on the view it is rendering. So this method provides the
     required abstraction which can be overridden in the subclasses.
+
+    Args:
+      data: A RequestData describing the current request.
+
+    Returns:
+      The profile entity whose information should be displayed.
     """
-    assert isSet(self.data.profile)
-    return self.data.profile
+    assert isSet(data.profile)
+    return data.profile
