@@ -167,9 +167,8 @@ class TimelinePage(GCIRequestHandler):
         'error': timeline_form.errors,
     }
 
-  def validate(self):
-    timeline_form = TimelineForm(self.data.POST,
-                                instance=self.data.program_timeline)
+  def validate(self, data):
+    timeline_form = TimelineForm(data.POST, instance=data.program_timeline)
 
     if timeline_form.is_valid():
       timeline_form.save()
@@ -179,7 +178,7 @@ class TimelinePage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if self.validate():
+    if self.validate(data):
       data.redirect.program()
       return data.redirect.to('edit_gci_timeline', validated=True)
     else:
