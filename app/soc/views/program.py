@@ -17,6 +17,77 @@
 from google.appengine.ext import db
 
 
+class CreateProgramPage(object):
+  """View to create a new program."""
+
+  def checkAccess(self, data, check, mutatot):
+    check.isHost()
+
+  def context(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.context for specification."""
+    form = self._getForm()
+    context = {
+        'page_name': 'Create a new program',
+        'forms': [form],
+        'error': form.errors,
+        }
+
+    return context
+
+  def post(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.post for specification."""
+    form = self._getForm()
+    if form.is_valid():
+      timeline = self._createTimelineFromForm(form)
+      form.cleaned_data['timeline'] = timeline
+      form.cleaned_data['scope'] = self.data.sponsor
+      form.cleaned_data['scope_path'] = self.data.sponsor.key().name()
+
+      key_name = '%s/%s' % (
+          self.data.sponsor.key().name(), form.cleaned_data['link_id'])
+
+      program = form.create(key_name=key_name, commit=False)
+
+      db.put([timeline, program])
+
+      # TODO(nathaniel): Make this .program() call unnecessary.
+      data.redirect.program(program=program)
+      # TODO(nathaniel): Redirection to same page?
+      return data.redirect.to('edit_gsoc_program', validated=True)
+    else:
+      # TODO(nathaniel): problematic self-call.
+      return self.get(data, check, mutator)
+
+  def _createTimelineFromForm(self, form):
+    """Creates a new empty Timeline entity based on the information provided
+    in the form. The returned entity is not persisted in the datastore.
+
+    Args:
+      form: a validated model form used to collect information on the program
+          which is being created
+
+    Returns:
+      a new timeline for the program which is being created
+    """
+    key_name = '%s/%s' % (
+        self.data.sponsor.key().name(), form.cleaned_data['link_id'])
+
+    properties = {
+        'link_id': form.cleaned_data['link_id'],
+        'scope': self.data.sponsor,
+        'scope_path': self.data.sponsor.key().name(),
+        }
+
+    timeline_model = self._getTimelineModel()
+    return timeline_model(key_name=key_name, **properties)
+
+  def _getForm(self):
+    raise NotImplementedError
+
+  def _getTimelineModel(self):
+    raise NotImplementedError
+
+
 class ProgramMessagesPage(object):
   """View for the content of program specific messages to be sent."""
 
