@@ -69,19 +69,19 @@ class TimelineForm(forms.GSoCModelForm):
     exclude = ['link_id', 'scope', 'scope_path']
 
 
-class ProgramForm(forms.GSoCModelForm):
+class EditProgramForm(forms.GSoCModelForm):
   """Django form for the program settings."""
 
   def __init__(self, request_data, *args, **kwargs):
     self.request_data = request_data
-    super(ProgramForm, self).__init__(*args, **kwargs)
+    super(EditProgramForm, self).__init__(*args, **kwargs)
 
   class Meta:
     css_prefix = 'program_form'
     model = program.GSoCProgram
-    exclude = ['link_id', 'scope', 'scope_path', 'timeline',
-               'home', 'slots_allocation', 'student_max_age',
-               'min_slots']
+    exclude = [
+        'link_id', 'scope', 'scope_path', 'timeline', 'home',
+        'slots_allocation', 'student_max_age', 'min_slots']
 
 
 class GSoCProgramMessagesForm(forms.GSoCModelForm):
@@ -220,7 +220,8 @@ class ProgramPage(base.GSoCRequestHandler):
     return 'v2/modules/gsoc/program/base.html'
 
   def context(self, data, check, mutator):
-    program_form = ProgramForm(data, data.POST or None, instance=data.program)
+    program_form = EditProgramForm(
+        data, data.POST or None, instance=data.program)
     return {
         'page_name': 'Edit program settings',
         'forms': [program_form],
@@ -228,8 +229,8 @@ class ProgramPage(base.GSoCRequestHandler):
     }
 
   def validate(self):
-    program_form = ProgramForm(self.data, self.data.POST,
-                               instance=self.data.program)
+    program_form = EditProgramForm(self.data, self.data.POST,
+        instance=self.data.program)
 
     if program_form.is_valid():
       program_form.save()
