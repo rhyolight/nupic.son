@@ -196,6 +196,9 @@ class RequestData(request_data.RequestData):
     if not self._isSet(self._is_host):
       if not self.user:
         self._is_host = False
+      elif 'sponsor' in self.kwargs:
+        key = db.Key.from_path('Sponsor', self.kwargs.get('sponsor'))
+        self._is_host = key in self.user.host_for
       else:
         key = program_model.GSoCProgram.scope.get_value_for_datastore(
             self.program)
