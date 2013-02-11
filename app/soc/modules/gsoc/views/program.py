@@ -197,9 +197,9 @@ class ProgramPage(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url_patterns.url(r'program/%s$' % soc_url_patterns.PROGRAM, self,
+        url_patterns.url(r'program/%s$' % soc_url_patterns.PROGRAM, self),
+        url_patterns.url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self,
             name='edit_gsoc_program'),
-        url_patterns.url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self),
     ]
 
   def jsonContext(self, data, check, mutator):
