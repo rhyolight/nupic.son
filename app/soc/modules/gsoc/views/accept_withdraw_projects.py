@@ -339,8 +339,6 @@ class ProjectList(Template):
     raise BadRequest("Unknown button_id")
 
   def postHandler(self, data, withdraw=True):
-    program = self.data.program
-
     for properties in data:
       if 'full_project_key' not in properties:
         logging.warning("Missing key in '%s'" % properties)
