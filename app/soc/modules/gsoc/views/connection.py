@@ -768,7 +768,7 @@ class ShowConnection(GSoCRequestHandler):
           profile.mentor_for = list(set(profile.mentor_for))
         
         if org_key not in profile.org_admin_for:
-          profile.is_org_admin_for_org = True
+          profile.is_org_admin = True
           profile.org_admin_for.append(org_key)
           profile.org_admin_for = list(set(profile.org_admin_for))
           profile.put()

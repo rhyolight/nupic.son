@@ -293,7 +293,7 @@ class OrgHome(GSoCRequestHandler):
       r = self.redirect
       r.organization(organization)
       context['edit_link'] =  r.urlOf('edit_gsoc_org_profile')
-      context['start_connection_link'] = r.organization().urlOf(
+      context['start_connection_link'] = r.urlOf(
           url_names.GSOC_ORG_CONNECTION)
 
       if (self.data.program.allocations_visible and
