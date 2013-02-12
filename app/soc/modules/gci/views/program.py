@@ -107,9 +107,8 @@ class ProgramPage(GCIRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'program/%s$' % url_patterns.PROGRAM, self,
+        url(r'program/edit/%s$' % url_patterns.PROGRAM, self,
             name='edit_gci_program'),
-        url(r'program/edit/%s$' % url_patterns.PROGRAM, self),
     ]
 
   def jsonContext(self, data, check, mutator):
