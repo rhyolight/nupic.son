@@ -285,6 +285,9 @@ class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
   def _getTimelineModel(self):
     return timeline.GSoCTimeline
 
+  def _getUrlNameForRedirect(self):
+    return 'edit_gsoc_program'
+
 
 class TimelinePage(base.GSoCRequestHandler):
   """View for the participant profile."""

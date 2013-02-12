@@ -177,6 +177,9 @@ class GCICreateProgramPage(soc_program_view.CreateProgramPage,
   def _getTimelineModel(self):
     return GCITimeline
 
+  def _getUrlNameForRedirect(self):
+    return 'edit_gci_program'
+
 
 class TimelinePage(GCIRequestHandler):
   """View for the participant profile."""

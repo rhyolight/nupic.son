@@ -53,7 +53,7 @@ class CreateProgramPage(object):
       # TODO(nathaniel): Make this .program() call unnecessary.
       data.redirect.program(program=program)
       # TODO(nathaniel): Redirection to same page?
-      return data.redirect.to('edit_gsoc_program', validated=True)
+      return data.redirect.to(self._getUrlNameForRedirect(), validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get(data, check, mutator)
@@ -85,6 +85,9 @@ class CreateProgramPage(object):
     raise NotImplementedError
 
   def _getTimelineModel(self):
+    raise NotImplementedError
+
+  def _getUrlNameForRedirect(self):
     raise NotImplementedError
 
 
