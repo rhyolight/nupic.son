@@ -215,7 +215,7 @@ class GSoCEditProgramPage(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     return [
         url_patterns.url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self,
-            name='edit_gsoc_program'),
+            name=url_names.GSOC_PROGRAM_EDIT),
     ]
 
   def jsonContext(self, data, check, mutator):
@@ -259,7 +259,7 @@ class GSoCEditProgramPage(base.GSoCRequestHandler):
     """Handler for HTTP POST request."""
     if self.validate():
       data.redirect.program()
-      return data.redirect.to('edit_gsoc_program', validated=True)
+      return data.redirect.to(url_names.GSOC_PROGRAM_EDIT, validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
@@ -286,7 +286,7 @@ class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
     return timeline_model.GSoCTimeline
 
   def _getUrlNameForRedirect(self):
-    return 'edit_gsoc_program'
+    return url_names.GSOC_PROGRAM_EDIT
 
 
 class TimelinePage(base.GSoCRequestHandler):

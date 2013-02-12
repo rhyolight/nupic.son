@@ -24,6 +24,7 @@ GSOC_PROFILE_BAN = 'gsoc_profile_ban'
 GSOC_PROFILE_SHOW = 'gsoc_profile_show'
 
 GSOC_PROGRAM_CREATE = 'gsoc_program_create'
+GSOC_PROGRAM_EDIT = 'gsoc_program_edit'
 
 GSOC_PROJECT_UPDATE = 'gsoc_project_update'
 GSOC_PROJECT_CODE_SAMPLE_UPLOAD = 'gsoc_project_code_sample_upload'
