@@ -44,13 +44,13 @@ class TimelineForm(GCIModelForm):
     exclude = ['link_id', 'scope', 'scope_path']
 
 
-class ProgramForm(GCIModelForm):
+class EditProgramForm(GCIModelForm):
   """Django form for the program settings."""
 
   def __init__(self, data, *args, **kwargs):
     self.request_data = data
 
-    super(ProgramForm, self).__init__(*args, **kwargs)
+    super(EditProgramForm, self).__init__(*args, **kwargs)
 
     if self.instance:
       self.task_types_json = json.dumps(
@@ -65,7 +65,7 @@ class ProgramForm(GCIModelForm):
   def clean(self):
     """Cleans the data input by the user as a response to the form.
     """
-    super(ProgramForm, self).clean()
+    super(EditProgramForm, self).clean()
 
     self.cleaned_data['task_types'] = self.request_data.POST.getlist(
         'task_type_name')
@@ -115,7 +115,7 @@ class ProgramPage(GCIRequestHandler):
     return 'v2/modules/gci/program/base.html'
 
   def context(self, data, check, mutator):
-    program_form = ProgramForm(data, data.POST or None,
+    program_form = EditProgramForm(data, data.POST or None,
                                instance=data.program)
     return {
         'page_name': 'Edit program settings',
@@ -124,7 +124,7 @@ class ProgramPage(GCIRequestHandler):
     }
 
   def validate(self):
-    program_form = ProgramForm(
+    program_form = EditProgramForm(
         self.data, self.data.POST, instance=self.data.program)
 
     if program_form.is_valid():
