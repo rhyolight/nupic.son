@@ -108,7 +108,7 @@ class GCIEditProgramPage(GCIRequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self,
-            name='edit_gci_program'),
+            name=url_names.GCI_PROGRAM_EDIT),
     ]
 
   def jsonContext(self, data, check, mutator):
@@ -152,7 +152,7 @@ class GCIEditProgramPage(GCIRequestHandler):
     """Handler for HTTP POST request."""
     if self.validate():
       data.redirect.program()
-      return data.redirect.to('edit_gci_program', validated=True)
+      return data.redirect.to(url_names.GCI_PROGRAM_EDIT, validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get(data, check, mutator)
@@ -178,7 +178,7 @@ class GCICreateProgramPage(soc_program_view.CreateProgramPage,
     return GCITimeline
 
   def _getUrlNameForRedirect(self):
-    return 'edit_gci_program'
+    return url_names.GCI_PROGRAM_EDIT
 
 
 class TimelinePage(GCIRequestHandler):
