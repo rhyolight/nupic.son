@@ -133,6 +133,7 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
 
     context = {
         'page_name': '%s' % data.org_app.title,
+        'description': data.org_app.content,
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -188,6 +189,7 @@ class GCIOrgAppTakePage(GCIRequestHandler):
 
     context = {
         'page_name': '%s' % data.org_app.title,
+        'description': data.org_app.content,
         'forms': [form],
         'error': bool(form.errors),
         }

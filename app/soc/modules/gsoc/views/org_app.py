@@ -170,6 +170,7 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
 
     context = {
         'page_name': '%s' % (data.org_app.title),
+        'description': data.org_app.content,
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -218,6 +219,7 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
 
     context = {
         'page_name': '%s' % (data.org_app.title),
+        'description': data.org_app.content,
         'forms': [form],
         'error': bool(form.errors),
         }
