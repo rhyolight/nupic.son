@@ -742,5 +742,7 @@ fieldset .row.error .textarea {
 }
 #pre-form-header .description {
   clear: both;
-  margin-left: 23px;
+  padding-top: 10px;
+  margin: 0 25px 0 25px;
+  text-align: justify;
 }
