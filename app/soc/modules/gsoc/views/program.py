@@ -209,8 +209,8 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
     self.sendTestEmail(entity)
 
 
-class ProgramPage(base.GSoCRequestHandler):
-  """View for the program profile."""
+class GSoCEditProgramPage(base.GSoCRequestHandler):
+  """View to edit the program settings."""
 
   def djangoURLPatterns(self):
     return [

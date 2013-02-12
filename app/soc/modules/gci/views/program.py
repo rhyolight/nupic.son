@@ -102,8 +102,8 @@ class GCIProgramMessagesForm(gci_forms.GCIModelForm):
     model = GCIProgramMessages
 
 
-class ProgramPage(GCIRequestHandler):
-  """View for the program profile."""
+class GCIEditProgramPage(GCIRequestHandler):
+  """View to edit the program settings."""
 
   def djangoURLPatterns(self):
     return [
