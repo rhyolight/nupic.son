@@ -62,19 +62,18 @@ class CreateUserPage(SiteRequestHandler):
         django_url(r'^user/create$', self, name='create_user'),
     ]
 
-  def checkAccess(self):
-    """Ensures that the user is logged in and does not have a User profile.
-    """
-    self.check.isNotUser()
+  def checkAccess(self, data, check, mutator):
+    """Ensures that the user is logged in and does not have a User profile."""
+    check.isNotUser()
 
   def templatePath(self):
     # TODO: make this specific to the current active program
     return 'soc/user/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     # TODO: program specific in core module, needs to be avoided
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserCreateForm(GSoCBoundField, self.data.POST or None)
+    form = UserCreateForm(GSoCBoundField, data.POST or None)
 
     return {
         'base_layout': 'v2/modules/gsoc/base.html',
@@ -83,23 +82,23 @@ class CreateUserPage(SiteRequestHandler):
         'forms': [form],
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserCreateForm(GSoCBoundField, self.data.POST)
+    form = UserCreateForm(GSoCBoundField, data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
     cleaned_data = form.cleaned_data
-    norm_account = accounts.normalizeAccount(self.data.gae_user)
+    norm_account = accounts.normalizeAccount(data.gae_user)
     cleaned_data['account'] = norm_account
-    cleaned_data['account_id'] = self.data.gae_user.user_id()
+    cleaned_data['account_id'] = data.gae_user.user_id()
 
     form.create(key_name=cleaned_data['link_id'])
 
-    return self.data.redirect.to('edit_user', validated=True)
+    return data.redirect.to('edit_user', validated=True)
 
 
 class EditUserPage(SiteRequestHandler):
@@ -110,18 +109,17 @@ class EditUserPage(SiteRequestHandler):
         django_url(r'^user/edit', self, name='edit_user'),
     ]
 
-  def checkAccess(self):
-    self.check.isUser()
+  def checkAccess(self, data, check, mutator):
+    check.isUser()
 
   def templatePath(self):
     # TODO: make this specific to the current active program
     return 'soc/user/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     # TODO: program specific in core module
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserEditForm(
-        GSoCBoundField, self.data.POST or None, instance=self.data.user)
+    form = UserEditForm(GSoCBoundField, data.POST or None, instance=data.user)
 
     return {
         'base_layout': 'v2/modules/gsoc/base.html',
@@ -130,17 +128,17 @@ class EditUserPage(SiteRequestHandler):
         'forms': [form],
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserEditForm(GSoCBoundField, self.data.POST,
-                         instance=self.data.user)
+    form = UserEditForm(GSoCBoundField, data.POST,
+                         instance=data.user)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
     form.save()
 
     # TODO(nathaniel): redirection to same page.
-    return self.data.redirect.to('edit_user', validated=True)
+    return data.redirect.to('edit_user', validated=True)

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the organization profile page.
-"""
+"""Module for the organization profile page."""
 
-
-from soc.views import forms
-
-from django import forms as django_forms
-from django.utils.translation import ugettext
+from django.utils import translation
 
 from soc.logic import cleaning
 from soc.views import forms
-from soc.views.helper import url_patterns
 
 PROFILE_EXCLUDE = [
     'status', 'scope', 'scope_path', 'founder', 'founder', 'slots', 'note',
@@ -33,26 +25,25 @@ PROFILE_EXCLUDE = [
     'proposal_extra', 'new_org',
 ]
 
-HOMEPAGE_INFO_GROUP = ugettext('1. Homepage Info (displayed on org homepage)')
+HOMEPAGE_INFO_GROUP = translation.ugettext(
+    '1. Homepage Info (displayed on org homepage)')
+
+HOMEPAGE_FIELDS = [
+    'tags', 'name', 'feed_url', 'home_page', 'pub_mailing_list',
+    'description', 'ideas', 'contrib_template',
+    'facebook', 'twitter', 'blog', 'google_plus',
+]
 
 
 class OrgProfileForm(forms.ModelForm):
-  """Django form for the organization profile.
-  """
+  """Django form for the organization profile."""
 
   def __init__(self, bound_field_class=None, *args, **kwargs):
     super(OrgProfileForm, self).__init__(bound_field_class, *args, **kwargs)
 
-    homepage_fields = [
-        'tags', 'name', 'feed_url', 'home_page', 'pub_mailing_list',
-        'description', 'ideas', 'contrib_template',
-        'facebook', 'twitter', 'blog', 'google_plus',
-    ]
-
-    for field in homepage_fields:
-      if field not in self.fields:
-        continue
-      self.fields[field].group = HOMEPAGE_INFO_GROUP
+    for field in HOMEPAGE_FIELDS:
+      if field in self.fields:
+        self.fields[field].group = HOMEPAGE_INFO_GROUP
 
     feed_url = self.fields.pop('feed_url')
     self.fields.insert(len(self.fields), 'feed_url', feed_url)

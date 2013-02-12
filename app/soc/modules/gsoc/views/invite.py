@@ -151,91 +151,88 @@ class InviteForm(gsoc_forms.GSoCModelForm):
 
 
 class InvitePage(GSoCRequestHandler):
-  """Encapsulate all the methods required to generate Invite page.
-  """
+  """Encapsulate all the methods required to generate Invite page."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/invite/base.html'
 
   def djangoURLPatterns(self):
     return [
-        url(r'invite/%s$' % url_patterns.INVITE,
-            self, name='gsoc_invite')
+        url(r'invite/%s$' % url_patterns.INVITE, self, name='gsoc_invite')
     ]
 
-  def checkAccess(self):
-    """Access checks for GSoC Invite page.
-    """
+  def checkAccess(self, data, check, mutator):
+    """Access checks for GSoC Invite page."""
+    check.isProgramVisible()
+    check.isOrgAdmin()
 
-    self.check.isProgramVisible()
-    self.check.isOrgAdmin()
+  def context(self, data, check, mutator):
+    """Handler to for GSoC Invitation Page HTTP get request."""
 
-  def context(self):
-    """Handler to for GSoC Invitation Page HTTP get request.
-    """
+    role = 'Org Admin' if data.kwargs['role'] == 'org_admin' else 'Mentor'
 
-    role = 'Org Admin' if self.data.kwargs['role'] == 'org_admin' else 'Mentor'
-
-    invite_form = InviteForm(self.data, self.data.POST or None)
+    invite_form = InviteForm(data, data.POST or None)
 
     return {
-        'logout_link': self.data.redirect.logout(),
+        'logout_link': data.redirect.logout(),
         'page_name': 'Invite a new %s' % role,
-        'program': self.data.program,
+        'program': data.program,
         'invite_form': invite_form,
         'error': bool(invite_form.errors)
     }
 
-  def _createFromForm(self):
+  def _createFromForm(self, data):
     """Creates a new invitation based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created Request entity or None
     """
+    # TODO(nathaniel): Actually this looks like it returns None or True?
+    assert isSet(data.organization)
 
-    assert isSet(self.data.organization)
-
-    invite_form = InviteForm(self.data, self.data.POST)
+    invite_form = InviteForm(data, data.POST)
 
     if not invite_form.is_valid():
       return None
 
-    assert isSet(self.data.invited_user)
-    assert self.data.invited_user
+    assert isSet(data.invited_user)
+    assert data.invited_user
 
     # create a new invitation entity
 
-    invite_form.cleaned_data['org'] = self.data.organization
-    invite_form.cleaned_data['role'] = self.data.kwargs['role']
+    invite_form.cleaned_data['org'] = data.organization
+    invite_form.cleaned_data['role'] = data.kwargs['role']
     invite_form.cleaned_data['type'] = 'Invitation'
 
     def create_invite_txn(user):
       invite = invite_form.create(commit=True, parent=user)
-      context = notifications.inviteContext(self.data, invite)
+      context = notifications.inviteContext(data, invite)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()
       return invite
 
-    for user in self.data.invited_user:
+    for user in data.invited_user:
       invite_form.instance = None
       invite_form.cleaned_data['user'] = user
       db.run_in_transaction(create_invite_txn, user)
 
     return True
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler to for GSoC Invitation Page HTTP post request."""
-    if self._createFromForm():
-      self.data.redirect.invite()
-      return self.data.redirect.to('gsoc_invite', validated=True)
+    if self._createFromForm(data):
+      data.redirect.invite()
+      return data.redirect.to('gsoc_invite', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class ShowInvite(GSoCRequestHandler):
-  """Encapsulate all the methods required to generate Show Invite page.
-  """
+  """Encapsulate all the methods required to generate Show Invite page."""
 
   ACTIONS = {
       'accept': 'Accept',
@@ -254,63 +251,59 @@ class ShowInvite(GSoCRequestHandler):
             name='gsoc_invitation')
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
 
-    invite_id = int(self.data.kwargs['id'])
-    invited_user_link_id = self.data.kwargs['user']
-    if invited_user_link_id == self.data.user.link_id:
-      invited_user = self.data.user
+    invite_id = int(data.kwargs['id'])
+    invited_user_link_id = data.kwargs['user']
+    if invited_user_link_id == data.user.link_id:
+      invited_user = data.user
     else:
       invited_user = User.get_by_key_name(invited_user_link_id)
 
-    self.data.invite = GSoCRequest.get_by_id(invite_id, parent=invited_user)
-    self.check.isInvitePresent(invite_id)
+    data.invite = GSoCRequest.get_by_id(invite_id, parent=invited_user)
+    check.isInvitePresent(invite_id)
 
-    self.data.organization = self.data.invite.org
-    self.data.invited_user = invited_user
+    data.organization = data.invite.org
+    data.invited_user = invited_user
 
-    if self.data.POST:
-      self.data.action = self.data.POST['action']
+    if data.POST:
+      data.action = data.POST['action']
 
-      if self.data.action == self.ACTIONS['accept']:
-        self.check.canRespondToInvite()
-      elif self.data.action == self.ACTIONS['reject']:
-        self.check.canRespondToInvite()
-      elif self.data.action == self.ACTIONS['resubmit']:
-        self.check.canResubmitInvite()
+      if data.action == self.ACTIONS['accept']:
+        check.canRespondToInvite()
+      elif data.action == self.ACTIONS['reject']:
+        check.canRespondToInvite()
+      elif data.action == self.ACTIONS['resubmit']:
+        check.canResubmitInvite()
     else:
-      self.check.canViewInvite()
+      check.canViewInvite()
 
-    self.mutator.canRespondForUser()
+    mutator.canRespondForUser()
 
-    if self.data.user.key() == self.data.invited_user.key():
-      self.data.invited_profile = self.data.profile
+    if data.user.key() == data.invited_user.key():
+      data.invited_profile = data.profile
       return
 
-    key_name = '/'.join([
-        self.data.program.key().name(),
-        self.data.invited_user.link_id])
-    self.data.invited_profile = GSoCProfile.get_by_key_name(
-        key_name, parent=self.data.invited_user)
+    key_name = '/'.join([data.program.key().name(), data.invited_user.link_id])
+    data.invited_profile = GSoCProfile.get_by_key_name(
+        key_name, parent=data.invited_user)
 
-  def context(self):
-    """Handler to for GSoC Show Invitation Page HTTP get request.
-    """
-
-    assert isSet(self.data.invite)
-    assert isSet(self.data.can_respond)
-    assert isSet(self.data.organization)
-    assert isSet(self.data.invited_user)
-    assert isSet(self.data.invited_profile)
-    assert self.data.invited_profile
+  def context(self, data, check, mutator):
+    """Handler to for GSoC Show Invitation Page HTTP get request."""
+    assert isSet(data.invite)
+    assert isSet(data.can_respond)
+    assert isSet(data.organization)
+    assert isSet(data.invited_user)
+    assert isSet(data.invited_profile)
+    assert data.invited_profile
 
     # This code is dupcliated between request and invite
-    status = self.data.invite.status
+    status = data.invite.status
 
     can_accept = can_reject = can_withdraw = can_resubmit = False
 
-    if self.data.can_respond:
+    if data.can_respond:
       # invitee speaking
       if status == 'pending':
         can_accept = True
@@ -326,30 +319,30 @@ class ShowInvite(GSoCRequestHandler):
 
     show_actions = can_accept or can_reject or can_withdraw or can_resubmit
 
-    org_key = self.data.organization.key()
+    org_key = data.organization.key()
     status_msg = None
 
-    if self.data.invited_profile.key() == self.data.profile.key():
-      if org_key in self.data.invited_profile.org_admin_for:
+    if data.invited_profile.key() == data.profile.key():
+      if org_key in data.invited_profile.org_admin_for:
         status_msg =  DEF_STATUS_FOR_USER_MSG % 'an organization administrator'
-      elif org_key in self.data.invited_profile.mentor_for:
+      elif org_key in data.invited_profile.mentor_for:
         status_msg =  DEF_STATUS_FOR_USER_MSG % 'a mentor'
     else:
-      if org_key in self.data.invited_profile.org_admin_for:
+      if org_key in data.invited_profile.org_admin_for:
         status_msg = DEF_STATUS_FOR_ADMIN_MSG % 'an organization administrator'
-      elif org_key in self.data.invited_profile.mentor_for:
+      elif org_key in data.invited_profile.mentor_for:
         status_msg = DEF_STATUS_FOR_ADMIN_MSG % 'a mentor'
 
     return {
-        'request': self.data.invite,
+        'request': data.invite,
         'page_name': 'Invite',
-        'org': self.data.organization,
+        'org': data.organization,
         'actions': self.ACTIONS,
         'status_msg': status_msg,
-        'user_name': self.data.invited_profile.name(),
-        'user_link_id': self.data.invited_user.link_id,
+        'user_name': data.invited_profile.name(),
+        'user_link_id': data.invited_user.link_id,
         'user_email': accounts.denormalizeAccount(
-            self.data.invited_user.account).email(),
+             data.invited_user.account).email(),
         'show_actions': show_actions,
         'can_accept': can_accept,
         'can_reject': can_reject,
@@ -357,38 +350,37 @@ class ShowInvite(GSoCRequestHandler):
         'can_resubmit': can_resubmit,
         }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler to for GSoC Show Invitation Page HTTP post request."""
+    assert data.action
+    assert data.invite
 
-    assert self.data.action
-    assert self.data.invite
+    if data.action == self.ACTIONS['accept']:
+      self._acceptInvitation(data)
+    elif data.action == self.ACTIONS['reject']:
+      self._rejectInvitation(data)
+    elif data.action == self.ACTIONS['resubmit']:
+      self._resubmitInvitation(data)
+    elif data.action == self.ACTIONS['withdraw']:
+      self._withdrawInvitation(data)
 
-    if self.data.action == self.ACTIONS['accept']:
-      self._acceptInvitation()
-    elif self.data.action == self.ACTIONS['reject']:
-      self._rejectInvitation()
-    elif self.data.action == self.ACTIONS['resubmit']:
-      self._resubmitInvitation()
-    elif self.data.action == self.ACTIONS['withdraw']:
-      self._withdrawInvitation()
+    data.redirect.dashboard()
+    return data.redirect.to()
 
-    self.data.redirect.dashboard()
-    return self.data.redirect.to()
-
-  def _acceptInvitation(self):
+  def _acceptInvitation(self, data):
     """Accepts an invitation."""
-    assert isSet(self.data.organization)
+    assert isSet(data.organization)
 
-    if not self.data.profile:
+    if not data.profile:
       # TODO(nathaniel): is this dead code? Is what's done here not
       # overwritten by the redirect.dashboard() call in the enclosing
       # post() method call?
-      self.data.redirect.program()
-      self.data.redirect.to('edit_gsoc_profile', secure=True)
+      data.redirect.program()
+      data.redirect.to('edit_gsoc_profile', secure=True)
 
-    invite_key = self.data.invite.key()
-    profile_key = self.data.profile.key()
-    organization_key = self.data.organization.key()
+    invite_key = data.invite.key()
+    profile_key = data.profile.key()
+    organization_key = data.organization.key()
 
     def accept_invitation_txn():
       invite = db.get(invite_key)
@@ -410,10 +402,10 @@ class ShowInvite(GSoCRequestHandler):
 
     db.run_in_transaction(accept_invitation_txn)
 
-  def _rejectInvitation(self):
+  def _rejectInvitation(self, data):
     """Rejects a invitation."""
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
+    assert isSet(data.invite)
+    invite_key = data.invite.key()
 
     def reject_invite_txn():
       invite = db.get(invite_key)
@@ -422,35 +414,33 @@ class ShowInvite(GSoCRequestHandler):
 
     db.run_in_transaction(reject_invite_txn)
 
-  def _resubmitInvitation(self):
-    """Resubmits a invitation. 
-    """
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
+  def _resubmitInvitation(self, data):
+    """Resubmits a invitation."""
+    assert isSet(data.invite)
+    invite_key = data.invite.key()
 
     def resubmit_invite_txn():
       invite = db.get(invite_key)
       invite.status = 'pending'
       invite.put()
 
-      context = notifications.handledInviteContext(self.data)
+      context = notifications.handledInviteContext(data)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()
 
     db.run_in_transaction(resubmit_invite_txn)
 
-  def _withdrawInvitation(self):
-    """Withdraws an invitation.
-    """
-    assert isSet(self.data.invite)
-    invite_key = self.data.invite.key()
+  def _withdrawInvitation(self, data):
+    """Withdraws an invitation."""
+    assert isSet(data.invite)
+    invite_key = data.invite.key()
 
     def withdraw_invite_txn():
       invite = db.get(invite_key)
       invite.status = 'withdrawn'
       invite.put()
 
-      context = notifications.handledInviteContext(self.data)
+      context = notifications.handledInviteContext(data)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()
 

@@ -197,70 +197,66 @@ class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
 class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
   """View for the GSoC participant profile."""
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isProgramVisible()
-    self.check.isProgramRunning()
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isProgramVisible()
+    check.isProgramRunning()
 
-    if 'role' in self.data.kwargs:
-      role = self.data.kwargs['role']
-      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+    if 'role' in data.kwargs:
+      role = data.kwargs['role']
+      kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
       edit_url = reverse('edit_gsoc_profile', kwargs=kwargs)
       if role == 'student':
-        self.check.canApplyStudent(edit_url)
+        check.canApplyStudent(edit_url)
       else:
-        self.check.canApplyNonStudent(role, edit_url)
+        check.canApplyNonStudent(role, edit_url)
     else:
-      self.check.isProfileActive()
+      check.isProfileActive()
 
-  def context(self):
-    """Context for the profile page.
-    """
-    context = super(GSoCProfilePage, self).context()
+  def context(self, data, check, mutator):
+    """Context for the profile page."""
+    context = super(GSoCProfilePage, self).context(data, check, mutator)
 
     # GSoC has a special "you are logged in" message on top of the form
-    context['form_top_msg'] = LoggedInMsg(self.data, apply_role=True)
+    context['form_top_msg'] = LoggedInMsg(data, apply_role=True)
 
     return context
 
   def templatePath(self):
     return 'v2/modules/gsoc/profile/base.html'
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     return UNIVERSITIES
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if not self.validate():
+    if not self.validate(data):
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
-    link_id = self.data.GET.get('org')
+    link_id = data.GET.get('org')
     if link_id:
-      key_name = '%s/%s' % (
-          self.data.program.key().name(), link_id
-          )
+      key_name = '%s/%s' % (data.program.key().name(), link_id)
       organization = GSoCOrganization.get_by_key_name(key_name)
     else:
       organization = None
 
     if not organization:
       # TODO(nathaniel): make this .program() call unnecessary.
-      self.data.redirect.program()
+      data.redirect.program()
 
-      return self.data.redirect.to(
-          'edit_gsoc_profile', validated=True, secure=True)
+      return data.redirect.to('edit_gsoc_profile', validated=True, secure=True)
 
-    self.data.redirect.organization(organization)
+    self.redirect.organization(organization)
 
-    if self.data.student_info:
+    if data.student_info:
       link = 'submit_gsoc_proposal'
       extra_get_args = []
     else:
       link = 'gsoc_request'
       extra_get_args = ['profile=created']
 
-    return self.data.redirect.to(link, extra=extra_get_args)
+    return data.redirect.to(link, extra=extra_get_args)
 
   def _getModulePrefix(self):
     return 'gsoc'
@@ -277,49 +273,48 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
   def _getCreateProfileURLPattern(self):
     return url_patterns.CREATE_PROFILE
 
-  def _getCreateUserForm(self):
-    return GSoCUserForm(self.data.POST or None)
+  def _getCreateUserForm(self, data):
+    return GSoCUserForm(data.POST or None)
 
-  def _getEditProfileForm(self, check_age):
+  def _getEditProfileForm(self, data, check_age):
     if check_age:
-      return GSoCStudentProfileForm(data=self.data.POST or None,
-        instance=self.data.profile, request_data=self.data)
+      return GSoCStudentProfileForm(
+          data=data.POST or None, instance=data.profile, request_data=data)
     else:
-      return GSoCProfileForm(data=self.data.POST or None,
-        instance=self.data.profile, request_data=self.data)
+      return GSoCProfileForm(
+          data=data.POST or None, instance=data.profile, request_data=data)
 
-  def _getCreateProfileForm(self, check_age, save=False, prefill_data=False):
-    tos_content = self._getTOSContent()
+  def _getCreateProfileForm(
+      self, data, check_age, save=False, prefill_data=False):
+    tos_content = self._getTOSContent(data)
 
     if prefill_data:
-      prefilled_data = self.prefilledProfileData()
+      prefilled_data = self.prefilledProfileData(data)
     else:
       prefilled_data = None
 
     if check_age:
-      form = CreateGSoCStudentProfileForm(tos_content, request_data=self.data,
-        data=self.data.POST or prefilled_data)
+      form = CreateGSoCStudentProfileForm(
+          tos_content, request_data=data, data=data.POST or prefilled_data)
     else:
-      form = CreateGSoCProfileForm(tos_content, request_data=self.data,
-        data=self.data.POST or prefilled_data)
+      form = CreateGSoCProfileForm(
+          tos_content, request_data=data, data=data.POST or prefilled_data)
 
     return form
 
-  def _getNotificationForm(self):
-    if self.data.student_info or self.data.kwargs.get('role') == 'student':
+  def _getNotificationForm(self, data):
+    if data.student_info or data.kwargs.get('role') == 'student':
       return StudentNotificationForm
-
-    if self.data.is_org_admin or self.data.kwargs.get('role') == 'org_admin':
+    elif data.is_org_admin or data.kwargs.get('role') == 'org_admin':
       return AdminNotificationForm
+    else:
+      return MentorNotificationForm
 
-    return MentorNotificationForm
+  def _getStudentInfoForm(self, data):
+    return GSoCStudentInfoForm(data.POST or None, instance=data.student_info)
 
-  def _getStudentInfoForm(self):
-    return GSoCStudentInfoForm(self.data.POST or None, 
-        instance=self.data.student_info)
-
-  def _getProfileForCurrentUser(self):
-    query = profile_logic.queryProfilesForUser(self.data.user)
+  def _getProfileForCurrentUser(self, data):
+    query = profile_logic.queryProfilesForUser(data.user)
     profiles = query.fetch(1000)
 
     return profiles[-1] if profiles else None

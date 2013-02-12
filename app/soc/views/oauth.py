@@ -32,16 +32,14 @@ class OAuthRedirectPage(GSoCRequestHandler):
     ]
     return patterns
 
-  def checkAccess(self):
-    self.check.isUser()
+  def checkAccess(self, data, check, mutator):
+    check.isUser()
 
-  def context(self):
-    service = oauth_helper.createDocsService(self.data)
-    next = '%s?next=%s' % (self.data.redirect.urlOf('gdata_oauth_verify'),
-                           self.data.request.GET.get('next','/'))
-    url = oauth_helper.generateOAuthRedirectURL(
-        service, self.data.user,
-        next)
+  def context(self, data, check, mutator):
+    service = oauth_helper.createDocsService(data)
+    next = '%s?next=%s' % (data.redirect.urlOf('gdata_oauth_verify'),
+                           data.request.GET.get('next','/'))
+    url = oauth_helper.generateOAuthRedirectURL(service, data.user, next)
     context = {
         'approval_page_url': url,
         'page_name': 'Authorization Required',
@@ -63,11 +61,11 @@ class OAuthVerifyToken(GSoCRequestHandler):
     ]
     return patterns
 
-  def get(self):
-    service = oauth_helper.createDocsService(self.data)
-    oauth_helper.checkOAuthVerifier(service, self.data)
-    next = self.data.request.GET.get('next','/')
-    return self.data.redirect.toUrl(next)
+  def get(self, data, check, mutator):
+    service = oauth_helper.createDocsService(data)
+    oauth_helper.checkOAuthVerifier(service, data)
+    next = data.request.GET.get('next','/')
+    return data.redirect.toUrl(next)
 
 
 class PopupOAuthRedirectPage(GSoCRequestHandler):
@@ -80,22 +78,22 @@ class PopupOAuthRedirectPage(GSoCRequestHandler):
     ]
     return patterns
 
-  def checkAccess(self):
-    self.check.isUser()
+  def checkAccess(self, data, check, mutator):
+    check.isUser()
 
-  def get(self):
-    access_token = oauth_helper.getAccessToken(self.data.user)
+  def get(self, data, check, mutator):
+    access_token = oauth_helper.getAccessToken(data.user)
     if access_token:
-      url = self.data.redirect.urlOf('gdata_popup_oauth_verified')
+      url = data.redirect.urlOf('gdata_popup_oauth_verified')
     else:
-      service = oauth_helper.createDocsService(self.data)
+      service = oauth_helper.createDocsService(data)
       next = '%s?next=%s' % (
-          self.data.redirect.urlOf('gdata_oauth_verify'),
-          self.data.redirect.urlOf('gdata_popup_oauth_verified'))
+          data.redirect.urlOf('gdata_oauth_verify'),
+          data.redirect.urlOf('gdata_popup_oauth_verified'))
       url = oauth_helper.generateOAuthRedirectURL(
-          service, self.data.user,
+          service, data.user,
           next)
-    return self.data.redirect.toUrl(url)
+    return data.redirect.toUrl(url)
 
 
 class PopupOAuthVerified(GSoCRequestHandler):
@@ -108,10 +106,10 @@ class PopupOAuthVerified(GSoCRequestHandler):
     ]
     return patterns
 
-  def checkAccess(self):
-    self.check.canAccessGoogleDocs()
+  def checkAccess(self, data, check, mutator):
+    check.canAccessGoogleDocs()
 
-  def get(self):
+  def get(self, data, check, mutator):
     html = (
         "<html><body><script type='text/javascript'>"
         "    window.opener.melange.gdata.loginSuccessful();"

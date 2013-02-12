@@ -96,36 +96,35 @@ class ProgramPage(GCIRequestHandler):
         url(r'program/edit/%s$' % url_patterns.PROGRAM, self),
     ]
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     q = Document.all()
     q.filter('prefix', 'gci_program')
-    q.filter('scope', self.data.program.key())
+    q.filter('scope', data.program.key())
 
-    data = [{'key': str(i.key()),
-            'key_name': i.key().name(),
-            'label': i.title}
-            for i in q]
+    json_data = [{'key': str(i.key()),
+                  'key_name': i.key().name(),
+                  'label': i.title}
+                  for i in q]
 
-    return {'data': data}
+    return {'data': json_data}
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/program/base.html'
 
-  def context(self):
-    program_form = ProgramForm(self.data, self.data.POST or None,
-                               instance=self.data.program)
+  def context(self, data, check, mutator):
+    program_form = ProgramForm(data, data.POST or None,
+                               instance=data.program)
     return {
         'page_name': 'Edit program settings',
         'forms': [program_form],
         'error': program_form.errors,
     }
 
-  def validate(self):
-    program_form = ProgramForm(
-        self.data, self.data.POST, instance=self.data.program)
+  def validate(self, data):
+    program_form = ProgramForm(data, data.POST, instance=data.program)
 
     if program_form.is_valid():
       program_form.save()
@@ -133,15 +132,14 @@ class ProgramPage(GCIRequestHandler):
     else:
       return False
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-
-    if self.validate():
-      self.data.redirect.program()
-      return self.data.redirect.to('edit_gci_program', validated=True)
+    if self.validate(data):
+      data.redirect.program()
+      return data.redirect.to('edit_gci_program', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class TimelinePage(GCIRequestHandler):
@@ -154,24 +152,23 @@ class TimelinePage(GCIRequestHandler):
         url(r'timeline/edit/%s$' % url_patterns.PROGRAM, self),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/timeline/base.html'
 
-  def context(self):
-    timeline_form = TimelineForm(self.data.POST or None,
-                                 instance=self.data.program_timeline)
+  def context(self, data, check, mutator):
+    timeline_form = TimelineForm(data.POST or None,
+                                 instance=data.program_timeline)
     return {
         'page_name': 'Edit program timeline',
         'forms': [timeline_form],
         'error': timeline_form.errors,
     }
 
-  def validate(self):
-    timeline_form = TimelineForm(self.data.POST,
-                                instance=self.data.program_timeline)
+  def validate(self, data):
+    timeline_form = TimelineForm(data.POST, instance=data.program_timeline)
 
     if timeline_form.is_valid():
       timeline_form.save()
@@ -179,14 +176,14 @@ class TimelinePage(GCIRequestHandler):
     else:
       return False
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if self.validate():
-      self.data.redirect.program()
-      return self.data.redirect.to('edit_gci_timeline', validated=True)
+    if self.validate(data):
+      data.redirect.program()
+      return data.redirect.to('edit_gci_timeline', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GCIProgramMessagesPage(
@@ -202,9 +199,8 @@ class GCIProgramMessagesPage(
   def templatePath(self):
     return 'v2/modules/gci/program/messages.html'
 
-  def _getForm(self, entity):
-    return GCIProgramMessagesForm(
-        self.data, self.data.POST or None, instance=entity)
+  def _getForm(self, data, entity):
+    return GCIProgramMessagesForm(data, data.POST or None, instance=entity)
 
   def _getModel(self):
     return GCIProgramMessages

@@ -300,8 +300,7 @@ class UserActions(Template):
 
 
 class ReviewProposal(GSoCRequestHandler):
-  """View for the Propsal Review page.
-  """
+  """View for the Propsal Review page."""
 
   def djangoURLPatterns(self):
     return [
@@ -309,35 +308,34 @@ class ReviewProposal(GSoCRequestHandler):
          self, name='review_gsoc_proposal'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    self.check.canAccessProposalEntity()
-    self.mutator.commentVisible()
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    check.canAccessProposalEntity()
+    mutator.commentVisible()
 
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/review.html'
 
-  def getScores(self):
-    """Gets all the scores for the proposal.
-    """
-    assert isSet(self.data.private_comments_visible)
-    assert isSet(self.data.proposal_org)
-    assert isSet(self.data.proposal)
+  def getScores(self, data):
+    """Gets all the scores for the proposal."""
+    assert isSet(data.private_comments_visible)
+    assert isSet(data.proposal_org)
+    assert isSet(data.proposal)
 
-    if not self.data.private_comments_visible:
+    if not data.private_comments_visible:
       return None
 
     total = 0
     number = 0
     user_score = 0
 
-    query = db.Query(GSoCScore).ancestor(self.data.proposal)
+    query = db.Query(GSoCScore).ancestor(data.proposal)
     for score in query:
       total += score.value
       number += 1
 
       author_key = GSoCScore.author.get_value_for_datastore(score)
-      if author_key == self.data.profile.key():
+      if author_key == data.profile.key():
         user_score = score.value
 
     return {
@@ -347,78 +345,76 @@ class ReviewProposal(GSoCRequestHandler):
         'user_score': user_score,
         }
 
-  def getComments(self, limit=1000):
-    """Gets all the comments for the proposal visible by the current user.
-    """
-    assert isSet(self.data.private_comments_visible)
-    assert isSet(self.data.proposal)
+  def getComments(self, data, limit=1000):
+    """Gets all the comments for the proposal visible by the current user."""
+    assert isSet(data.private_comments_visible)
+    assert isSet(data.proposal)
 
     public_comments = []
     private_comments = []
 
-    query = db.Query(GSoCComment).ancestor(self.data.proposal)
+    query = db.Query(GSoCComment).ancestor(data.proposal)
     query.order('created')
     all_comments = query.fetch(limit=limit)
 
     for comment in all_comments:
       if not comment.is_private:
         public_comments.append(comment)
-      elif self.data.private_comments_visible:
+      elif data.private_comments_visible:
         private_comments.append(comment)
 
     return public_comments, private_comments
 
-  def sanitizePossibleMentors(self, possible_mentors):
-    """Removes possible mentors that are no longer mentors
-    """
+  def sanitizePossibleMentors(self, data, possible_mentors):
+    """Removes possible mentors that are no longer mentors."""
     changed = False
 
     result = []
 
     for mentor in possible_mentors:
-      if self.data.proposal_org.key() in mentor.mentor_for:
+      if data.proposal_org.key() in mentor.mentor_for:
         result.append(mentor)
         continue
 
       changed = True
-      self.data.proposal.possible_mentors.remove(mentor.key())
+      data.proposal.possible_mentors.remove(mentor.key())
 
     if changed:
-      self.data.proposal.put()
+      data.proposal.put()
 
     return result
 
-  def context(self):
-    assert isSet(self.data.public_comments_visible)
-    assert isSet(self.data.private_comments_visible)
-    assert isSet(self.data.url_profile)
-    assert isSet(self.data.url_user)
-    assert isSet(self.data.proposal)
+  def context(self, data, check, mutator):
+    assert isSet(data.public_comments_visible)
+    assert isSet(data.private_comments_visible)
+    assert isSet(data.url_profile)
+    assert isSet(data.url_user)
+    assert isSet(data.proposal)
 
     context = {}
 
     user_role = None
 
-    scores = self.getScores()
+    scores = self.getScores(data)
 
     # TODO: check if the scoring is not disabled
-    score_action = reverse('score_gsoc_proposal', kwargs=self.data.kwargs)
+    score_action = reverse('score_gsoc_proposal', kwargs=data.kwargs)
 
     # get all the comments for the the proposal
-    public_comments, private_comments = self.getComments()
+    public_comments, private_comments = self.getComments(data)
 
     # TODO: check if it is possible to post a comment
-    comment_action = reverse('comment_gsoc_proposal', kwargs=self.data.kwargs)
+    comment_action = reverse('comment_gsoc_proposal', kwargs=data.kwargs)
 
-    if self.data.private_comments_visible:
-      form = PrivateCommentForm(self.data.POST or None)
-      if self.data.orgAdminFor(self.data.proposal.org):
+    if data.private_comments_visible:
+      form = PrivateCommentForm(data.POST or None)
+      if data.orgAdminFor(data.proposal.org):
         user_role = 'org_admin'
       else:
         user_role = 'mentor'
 
     else:
-      form = CommentForm(self.data.POST or None)
+      form = CommentForm(data.POST or None)
 
     comment_box = {
         'action': comment_action,
@@ -427,63 +423,61 @@ class ReviewProposal(GSoCRequestHandler):
 
     # to keep the blocks as simple as possible, the if branches have
     # been broken down into several if blocks
-    user_is_proposer = self.data.user and \
-        (self.data.user.key() == self.data.url_user.key())
+    user_is_proposer = data.user and (data.user.key() == data.url_user.key())
     if user_is_proposer:
       user_role = 'proposer'
 
       # we will check if the student is allowed to modify the proposal
       # after the student proposal deadline
-      is_editable = self.data.timeline.afterStudentSignupEnd() and \
-          self.data.proposal.is_editable_post_deadline
-      if self.data.timeline.studentSignup() or is_editable:
-        context['update_link'] = self.data.redirect.id().urlOf(
+      is_editable = data.timeline.afterStudentSignupEnd() and \
+          data.proposal.is_editable_post_deadline
+      if data.timeline.studentSignup() or is_editable:
+        context['update_link'] = data.redirect.id().urlOf(
             'update_gsoc_proposal')
 
-    possible_mentors = db.get(self.data.proposal.possible_mentors)
-    possible_mentors = self.sanitizePossibleMentors(possible_mentors)
+    possible_mentors = db.get(data.proposal.possible_mentors)
+    possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
 
-    scoring_visible = self.data.private_comments_visible and (
-        not self.data.proposal_org.scoring_disabled)
+    scoring_visible = data.private_comments_visible and (
+        not data.proposal_org.scoring_disabled)
 
-    if self.data.orgAdminFor(self.data.proposal_org):
+    if data.orgAdminFor(data.proposal_org):
       scoring_visible = True
 
     duplicate = None
-    if self.data.program.duplicates_visible and self.data.orgAdminFor(
-        self.data.proposal_org):
+    if data.program.duplicates_visible and data.orgAdminFor(data.proposal_org):
       q = GSoCProposalDuplicate.all()
-      q.filter('duplicates', self.data.proposal)
+      q.filter('duplicates', data.proposal)
       q.filter('is_duplicate', True)
       dup_entity = q.get()
-      duplicate = Duplicate(self.data, dup_entity) if dup_entity else None
+      duplicate = Duplicate(data, dup_entity) if dup_entity else None
 
-    additional_info = self.data.proposal.additional_info
+    additional_info = data.proposal.additional_info
 
     if user_role:
-      context['user_actions'] = UserActions(self.data, user_role)
+      context['user_actions'] = UserActions(data, user_role)
 
     context.update({
         'additional_info': url_helper.trim_url_to(additional_info, 50),
         'additional_info_link': additional_info,
         'comment_box': comment_box,
         'duplicate': duplicate,
-        'max_score': self.data.proposal_org.max_score,
-        'mentor': self.data.proposal.mentor,
-        'page_name': self.data.proposal.title,
+        'max_score': data.proposal_org.max_score,
+        'mentor': data.proposal.mentor,
+        'page_name': data.proposal.title,
         'possible_mentors': possible_mentors_names,
         'private_comments': private_comments,
-        'private_comments_visible': self.data.private_comments_visible,
-        'proposal': self.data.proposal,
+        'private_comments_visible': data.private_comments_visible,
+        'proposal': data.proposal,
         'public_comments': public_comments,
-        'public_comments_visible': self.data.public_comments_visible,
+        'public_comments_visible': data.public_comments_visible,
         'score_action': score_action,
         'scores': scores,
         'scoring_visible': scoring_visible,
-        'student_email': self.data.url_profile.email,
-        'student_name': self.data.url_profile.name(),
-        'proposal_ignored': self.data.proposal.status == 'ignored',
+        'student_email': data.url_profile.email,
+        'student_name': data.url_profile.name(),
+        'proposal_ignored': data.proposal.status == 'ignored',
         'user_role': user_role,
         })
 
@@ -491,8 +485,7 @@ class ReviewProposal(GSoCRequestHandler):
 
 
 class PostComment(GSoCRequestHandler):
-  """View which handles publishing comments.
-  """
+  """View which handles publishing comments."""
 
   def djangoURLPatterns(self):
     return [
@@ -500,46 +493,48 @@ class PostComment(GSoCRequestHandler):
          self, name='comment_gsoc_proposal'),
     ]
 
-  def checkAccess(self):
-    self.check.isProgramVisible()
-    self.check.isProfileActive()
-    self.mutator.proposalFromKwargs()
-    self.mutator.commentVisible()
-    assert isSet(self.data.proposer)
-    assert isSet(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    check.isProgramVisible()
+    check.isProfileActive()
+    mutator.proposalFromKwargs()
+    mutator.commentVisible()
+    assert isSet(data.proposer)
+    assert isSet(data.proposal_org)
 
     # check if the comment is given by the author of the proposal
-    if self.data.proposer.key() == self.data.profile.key():
-      self.data.public_only = True
+    if data.proposer.key() == data.profile.key():
+      data.public_only = True
       return
 
-    self.data.public_only = False
-    self.check.isMentorForOrganization(self.data.proposal_org)
+    data.public_only = False
+    check.isMentorForOrganization(data.proposal_org)
 
-  def createCommentFromForm(self):
+  def createCommentFromForm(self, data):
     """Creates a new comment based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created comment entity or None
     """
+    assert isSet(data.public_only)
+    assert isSet(data.proposal)
 
-    assert isSet(self.data.public_only)
-    assert isSet(self.data.proposal)
-
-    if self.data.public_only:
-      comment_form = CommentForm(self.data.request.POST)
+    if data.public_only:
+      comment_form = CommentForm(data.request.POST)
     else:
       # this form contains checkbox for indicating private/public comments
-      comment_form = PrivateCommentForm(self.data.request.POST)
+      comment_form = PrivateCommentForm(data.request.POST)
 
     if not comment_form.is_valid():
       return None
 
-    if self.data.public_only:
+    if data.public_only:
       comment_form.cleaned_data['is_private'] = False
-    comment_form.cleaned_data['author'] = self.data.profile
+    comment_form.cleaned_data['author'] = data.profile
 
-    q = GSoCProfile.all().filter('mentor_for', self.data.proposal.org)
+    q = GSoCProfile.all().filter('mentor_for', data.proposal.org)
     q = q.filter('status', 'active')
     if comment_form.cleaned_data.get('is_private'):
       q.filter('notify_private_comments', True)
@@ -547,50 +542,45 @@ class PostComment(GSoCRequestHandler):
       q.filter('notify_public_comments', True)
     mentors = q.fetch(1000)
 
-    to_emails = [i.email for i in mentors \
-                 if i.key() != self.data.profile.key()]
+    to_emails = [i.email for i in mentors if i.key() != data.profile.key()]
 
     def create_comment_txn():
-      comment = comment_form.create(commit=True, parent=self.data.proposal)
-      context = notifications.newReviewContext(self.data, comment, to_emails)
+      comment = comment_form.create(commit=True, parent=data.proposal)
+      context = notifications.newReviewContext(data, comment, to_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=comment)
       sub_txn()
       return comment
 
     return db.run_in_transaction(create_comment_txn)
 
-  def post(self):
-    assert isSet(self.data.proposer)
-    assert isSet(self.data.proposal)
+  def post(self, data, check, mutator):
+    assert isSet(data.proposer)
+    assert isSet(data.proposal)
 
-    comment = self.createCommentFromForm()
+    comment = self.createCommentFromForm(data)
     if comment:
-      self.data.redirect.program()
-      return self.data.redirect.to(
-          'gsoc_dashboard', anchor='proposals_submitted')
+      data.redirect.program()
+      return data.redirect.to('gsoc_dashboard', anchor='proposals_submitted')
     else:
       # This is an insanely and absolutely hacky solution. We definitely
       # do not want any one to use this a model for writing code elsewhere
       # in Melange.
       # TODO (Madhu): Replace this in favor of PJAX for loading comments.
-      self.data.redirect.review(self.data.proposal.key().id(),
-                                self.data.proposer.link_id)
-      redirect_url = self.data.redirect.urlOf('review_gsoc_proposal')
+      data.redirect.review(data.proposal.key().id(), data.proposer.link_id)
+      redirect_url = data.redirect.urlOf('review_gsoc_proposal')
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
-      self.data.request.method = 'GET'
-      return proposal_view(
-          self.data.request, *self.data.args, **self.data.kwargs)
+      data.request.method = 'GET'
+      return proposal_view(data.request, *data.args, **data.kwargs)
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
     # TODO(nathaniel): Do this without a self-call.
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class PostScore(GSoCRequestHandler):
-  """View which handles posting scores.
-  """
+  """View which handles posting scores."""
 
   def djangoURLPatterns(self):
     return [
@@ -598,18 +588,18 @@ class PostScore(GSoCRequestHandler):
          self, name='score_gsoc_proposal'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
 
-    org = self.data.proposal_org
+    org = data.proposal_org
 
-    if not self.data.orgAdminFor(org) and org.scoring_disabled:
+    if not data.orgAdminFor(org) and org.scoring_disabled:
       raise BadRequest('Scoring is disabled for this organization')
 
-    self.check.isMentorForOrganization(org)
+    check.isMentorForOrganization(org)
 
-  def createOrUpdateScore(self, value):
+  def createOrUpdateScore(self, data, value):
     """Creates a new score or updates a score if there is already one
     posted by the current user.
 
@@ -617,22 +607,23 @@ class PostScore(GSoCRequestHandler):
     None will be returned.
 
     Args:
+      data: A RequestData describing the current request.
       value: The value of the score the user gave as an integer.
 
     Returns:
       The score entity that was created/updated or None if value is 0.
     """
-    assert isSet(self.data.proposal)
-    assert isSet(self.data.proposal_org)
+    assert isSet(data.proposal)
+    assert isSet(data.proposal_org)
 
-    max_score = self.data.proposal_org.max_score
+    max_score = data.proposal_org.max_score
 
     if value < 0 or value > max_score:
       raise BadRequest("Score must not be higher than %d" % max_score)
 
     query = db.Query(GSoCScore)
-    query.filter('author = ', self.data.profile)
-    query.ancestor(self.data.proposal)
+    query.filter('author = ', data.profile)
+    query.ancestor(data.proposal)
 
     def update_score_trx():
       delta = 0
@@ -644,8 +635,8 @@ class PostScore(GSoCRequestHandler):
           return
         old_value = 0
         score = GSoCScore(
-            parent=self.data.proposal,
-            author=self.data.profile,
+            parent=data.proposal,
+            author=data.profile,
             value=value)
         score.put()
         delta = 1
@@ -659,27 +650,26 @@ class PostScore(GSoCRequestHandler):
           score.put()
 
       # update total score for the proposal
-      proposal = db.get(self.data.proposal.key())
+      proposal = db.get(data.proposal.key())
       proposal.score += value - old_value
       proposal.nr_scores += delta
       proposal.put()
 
     db.run_in_transaction(update_score_trx)
 
-  def post(self):
-    value_str = self.data.POST.get('value', '')
+  def post(self, data, check, mutator):
+    value_str = data.POST.get('value', '')
     value = int(value_str) if value_str.isdigit() else None
-    self.createOrUpdateScore(value)
+    self.createOrUpdateScore(data, value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class WishToMentor(GSoCRequestHandler):
-  """View handling wishing to mentor requests.
-  """
+  """View handling wishing to mentor requests."""
 
   def djangoURLPatterns(self):
     return [
@@ -687,31 +677,32 @@ class WishToMentor(GSoCRequestHandler):
          self, name='gsoc_proposal_wish_to_mentor'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
 
-    self.check.isMentorForOrganization(self.data.proposal_org)
+    check.isMentorForOrganization(data.proposal_org)
 
-  def addToPotentialMentors(self, value):
+  def addToPotentialMentors(self, data, value):
     """Toggles the user from the potential mentors list.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.profile)
-    assert isSet(self.data.proposal)
+    assert isSet(data.profile)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and not self.data.isPossibleMentorForProposal():
+    if value == 'checked' and not data.isPossibleMentorForProposal():
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.isPossibleMentorForProposal():
+    if value == 'unchecked' and data.isPossibleMentorForProposal():
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
-    profile_key = self.data.profile.key()
+    proposal_key = data.proposal.key()
+    profile_key = data.profile.key()
 
     def update_possible_mentors_trx():
       # transactionally get latest version of the proposal
@@ -730,14 +721,14 @@ class WishToMentor(GSoCRequestHandler):
 
     db.run_in_transaction(update_possible_mentors_trx)
 
-  def post(self):
-    value = self.data.POST.get('value')
-    self.addToPotentialMentors(value)
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
+    self.addToPotentialMentors(data, value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class AssignMentor(GSoCRequestHandler):
@@ -749,21 +740,22 @@ class AssignMentor(GSoCRequestHandler):
          self, name='gsoc_proposal_assign_mentor'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
-    self.check.isOrgAdminForOrganization(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
+    check.isOrgAdminForOrganization(data.proposal_org)
 
-  def assignMentor(self, mentor_entity):
+  def assignMentor(self, data, mentor_entity):
     """Assigns the mentor to the proposal.
 
     Args:
+      data: A RequestData describing the current request.
       mentor_entity: The entity of the mentor profile which needs to assigned
           to the proposal.
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def assign_mentor_txn():
       proposal = db.get(proposal_key)
@@ -775,12 +767,15 @@ class AssignMentor(GSoCRequestHandler):
 
     db.run_in_transaction(assign_mentor_txn)
 
-  def unassignMentor(self):
+  def unassignMentor(self, data):
     """Removes the mentor assigned to the proposal.
-    """
-    assert isSet(self.data.proposal)
 
-    proposal_key = self.data.proposal.key()
+    Args:
+      data: A RequestData describing the current request.
+    """
+    assert isSet(data.proposal)
+
+    proposal_key = data.proposal.key()
 
     def unassign_mentor_txn():
       proposal = db.get(proposal_key)
@@ -790,13 +785,13 @@ class AssignMentor(GSoCRequestHandler):
 
     db.run_in_transaction(unassign_mentor_txn)
 
-  def validate(self):
-    mentor_key = self.data.POST.get('assign_mentor')
+  def validate(self, data):
+    mentor_key = data.POST.get('assign_mentor')
     if mentor_key:
       mentor_entity = db.get(mentor_key)
-      org = self.data.proposal.org
+      org = data.proposal.org
 
-      if mentor_entity and self.data.isPossibleMentorForProposal(
+      if mentor_entity and data.isPossibleMentorForProposal(
           mentor_entity) or (org.list_all_mentors
           and db.Key(mentor_key) in profile_logic.queryAllMentorsKeysForOrg(
           org)):
@@ -806,24 +801,23 @@ class AssignMentor(GSoCRequestHandler):
 
     return None
 
-  def post(self):
-    assert isSet(self.data.proposal)
+  def post(self, data, check, mutator):
+    assert isSet(data.proposal)
 
-    mentor_entity= self.validate()
+    mentor_entity= self.validate(data)
     if mentor_entity:
-      self.assignMentor(mentor_entity)
+      self.assignMentor(data, mentor_entity)
     else:
-      self.unassignMentor()
+      self.unassignMentor(data)
 
-    self.data.proposer = self.data.proposal.parent()
+    data.proposer = data.proposal.parent()
 
-    self.data.redirect.review(self.data.proposal.key().id(),
-                              self.data.proposer.link_id)
-    return self.data.redirect.to('review_gsoc_proposal')
+    data.redirect.review(data.proposal.key().id(), data.proposer.link_id)
+    return data.redirect.to('review_gsoc_proposal')
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class IgnoreProposal(GSoCRequestHandler):
@@ -835,31 +829,32 @@ class IgnoreProposal(GSoCRequestHandler):
          self, name='gsoc_proposal_ignore'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
-    self.check.isOrgAdminForOrganization(self.data.proposal_org)
-    if self.data.proposal.status == 'withdrawn':
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
+    check.isOrgAdminForOrganization(data.proposal_org)
+    if data.proposal.status == 'withdrawn':
       raise AccessViolation("You cannot ignore a withdrawn proposal")
 
-  def toggleIgnoreProposal(self, value):
+  def toggleIgnoreProposal(self, data, value):
     """Toggles the ignore status of the proposal.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and self.data.proposal.status != 'ignored':
+    if value == 'checked' and data.proposal.status != 'ignored':
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.proposal.status not in [
+    if value == 'unchecked' and data.proposal.status not in [
         'pending', 'withdrawn']:
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def update_status_txn():
       # transactionally get latest version of the proposal
@@ -873,19 +868,18 @@ class IgnoreProposal(GSoCRequestHandler):
 
     db.run_in_transaction(update_status_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
-    self.toggleIgnoreProposal(value)
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
+    self.toggleIgnoreProposal(data, value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class ProposalModificationPostDeadline(GSoCRequestHandler):
-  """View allowing mentors to allow students to modify the proposal.
-  """
+  """View allowing mentors to allow students to modify the proposal."""
 
   def djangoURLPatterns(self):
     return [
@@ -893,29 +887,29 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
          self, name='gsoc_proposal_modification'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
-    self.check.isMentorForOrganization(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
+    check.isMentorForOrganization(data.proposal_org)
 
-  def toggleModificationPermission(self, value):
+  def toggleModificationPermission(self, data, value):
     """Toggles the permission to modify the proposal after proposal deadline.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and not self.data.proposal.is_editable_post_deadline:
+    if value == 'checked' and not data.proposal.is_editable_post_deadline:
       raise BadRequest("Invalid post data.")
-    if (value == 'unchecked' and
-        self.data.proposal.is_editable_post_deadline):
+    if value == 'unchecked' and data.proposal.is_editable_post_deadline:
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def update_modification_perm_txn():
       # transactionally get latest version of the proposal
@@ -929,19 +923,18 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
 
     db.run_in_transaction(update_modification_perm_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
-    self.toggleModificationPermission(value)
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
+    self.toggleModificationPermission(data, value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class AcceptProposal(GSoCRequestHandler):
-  """View allowing org admins to directly accept the proposal.
-  """
+  """View allowing org admins to directly accept the proposal."""
 
   def djangoURLPatterns(self):
     return [
@@ -949,28 +942,29 @@ class AcceptProposal(GSoCRequestHandler):
          self, name='gsoc_proposal_accept'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    assert isSet(self.data.proposal_org)
-    self.check.isOrgAdminForOrganization(self.data.proposal_org)
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    assert isSet(data.proposal_org)
+    check.isOrgAdminForOrganization(data.proposal_org)
 
-  def toggleStatus(self, value):
+  def toggleStatus(self, data, value):
     """Toggles the the application state between accept and pending.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and not self.data.proposal.accept_as_project:
+    if value == 'checked' and not data.proposal.accept_as_project:
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.proposal.accept_as_project:
+    if value == 'unchecked' and data.proposal.accept_as_project:
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def update_status_txn():
       # transactionally get latest version of the proposal
@@ -984,19 +978,18 @@ class AcceptProposal(GSoCRequestHandler):
 
     db.run_in_transaction(update_status_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
-    self.toggleStatus(value)
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
+    self.toggleStatus(data, value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class ProposalPubliclyVisible(GSoCRequestHandler):
-  """View allowing the proposer to make the proposal publicly visible.
-  """
+  """View allowing the proposer to make the proposal publicly visible."""
 
   def djangoURLPatterns(self):
     return [
@@ -1004,27 +997,28 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
          self, name='gsoc_proposal_publicly_visible'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    self.check.isProposer()
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    check.isProposer()
 
-  def togglePublicVisibilty(self, value):
+  def togglePublicVisibilty(self, data, value):
     """Toggles the the public visibility of the application.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and not self.data.proposal.is_publicly_visible:
+    if value == 'checked' and not data.proposal.is_publicly_visible:
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.proposal.is_publicly_visible:
+    if value == 'unchecked' and data.proposal.is_publicly_visible:
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def update_publicly_visibility_txn():
       # transactionally get latest version of the proposal
@@ -1038,19 +1032,18 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
 
     db.run_in_transaction(update_publicly_visibility_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
-    self.togglePublicVisibilty(value)
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
+    self.togglePublicVisibilty(data, value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class WithdrawProposal(GSoCRequestHandler):
-  """View allowing the proposer to withdraw the proposal.
-  """
+  """View allowing the proposer to withdraw the proposal."""
 
   def djangoURLPatterns(self):
     return [
@@ -1058,28 +1051,29 @@ class WithdrawProposal(GSoCRequestHandler):
          self, name='gsoc_proposal_withdraw'),
     ]
 
-  def checkAccess(self):
-    self.mutator.proposalFromKwargs()
-    self.check.isProposer()
-    self.check.canStudentUpdateProposal()
+  def checkAccess(self, data, check, mutator):
+    mutator.proposalFromKwargs()
+    check.isProposer()
+    check.canStudentUpdateProposal()
 
-  def toggleWithdrawProposal(self, value):
+  def toggleWithdrawProposal(self, data, value):
     """Toggles the the application state between withdraw and pending.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.proposal)
+    assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
 
-    if value == 'checked' and not self.data.proposal.status == 'withdrawn':
+    if value == 'checked' and not data.proposal.status == 'withdrawn':
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.proposal.status == 'withdrawn':
+    if value == 'unchecked' and data.proposal.status == 'withdrawn':
       raise BadRequest("Invalid post data.")
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def update_withdraw_status_txn():
       # transactionally get latest version of the proposal
@@ -1093,11 +1087,11 @@ class WithdrawProposal(GSoCRequestHandler):
 
     db.run_in_transaction(update_withdraw_status_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
-    self.toggleWithdrawProposal(value)
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
+    self.toggleWithdrawProposal(data, value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)

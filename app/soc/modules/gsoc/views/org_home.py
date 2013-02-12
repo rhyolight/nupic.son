@@ -248,33 +248,32 @@ class OrgHome(GSoCRequestHandler):
         django_url(r'^org/home/%s$' % url_patterns.ORG, self),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Access checks for GSoC Organization Homepage."""
     pass
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
-    assert isSet(self.data.organization)
-    list_content = ProjectList(self.data).getListData()
-
+    assert isSet(data.organization)
+    list_content = ProjectList(data).getListData()
     if list_content:
       return list_content.content()
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler to for GSoC Organization Home page HTTP get request."""
     current_timeline = self.getCurrentTimeline(
-        self.data.program_timeline, self.data.org_app)
+        data.program_timeline, data.org_app)
 
-    assert isSet(self.data.organization)
-    organization = self.data.organization
+    assert isSet(data.organization)
+    organization = data.organization
 
     context = {
         'page_name': '%s - Homepage' % organization.short_name,
         'organization': organization,
-        'contact': Contact(self.data),
-        'apply': Apply(self.data, current_timeline),
+        'contact': Contact(data),
+        'apply': Apply(data, current_timeline),
     }
 
     ideas = organization.ideas
@@ -283,31 +282,31 @@ class OrgHome(GSoCRequestHandler):
       context['ideas_link'] = ideas
       context['ideas_link_trimmed'] = url_helper.trim_url_to(ideas, 50)
 
-    if self.data.orgAdminFor(organization):
+    if data.orgAdminFor(organization):
       # TODO(nathaniel): make this .organization call unnecessary.
-      self.data.redirect.organization(organization=organization)
+      data.redirect.organization(organization=organization)
 
-      context['edit_link'] =  self.data.redirect.urlOf('edit_gsoc_org_profile')
-      context['invite_admin_link'] = self.data.redirect.invite(
+      context['edit_link'] = data.redirect.urlOf('edit_gsoc_org_profile')
+      context['invite_admin_link'] = data.redirect.invite(
           'org_admin').urlOf('gsoc_invite')
-      context['invite_mentor_link'] = self.data.redirect.invite(
+      context['invite_mentor_link'] = data.redirect.invite(
           'mentor').urlOf('gsoc_invite')
 
-      if (self.data.program.allocations_visible and
-          self.data.timeline.beforeStudentsAnnounced()):
+      if (data.program.allocations_visible and
+          data.timeline.beforeStudentsAnnounced()):
         # TODO(nathaniel): make this .organization call unnecessary.
-        self.data.redirect.organization(organization=organization)
+        data.redirect.organization(organization=organization)
 
-        context['slot_transfer_link'] = self.data.redirect.urlOf(
+        context['slot_transfer_link'] = data.redirect.urlOf(
             'gsoc_slot_transfer')
 
-    if self.data.timeline.studentsAnnounced():
+    if data.timeline.studentsAnnounced():
       context['students_announced'] = True
 
-      context['project_list'] = ProjectList(self.data)
+      context['project_list'] = ProjectList(data)
 
-    if self.data.is_host or accounts.isDeveloper():
-      context['host_actions'] = GSoCHostActions(self.data)
+    if data.is_host or accounts.isDeveloper():
+      context['host_actions'] = GSoCHostActions(data)
 
     return context
 

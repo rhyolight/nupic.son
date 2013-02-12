@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,40 +16,42 @@
 and Projects.
 """
 
-
 from google.appengine.ext import db
 
-from soc.views.template import Template
+from soc.views import template
 
 
 def getMentorsChoicesToAssign(mentors, current_mentor=None):
-  """Returns a list of tuple containing the mentor key and mentor name.
+  """Returns a list of dictionaries containing the mentor key and mentor name.
 
   Args:
     mentors: List of potential mentor entities whose Django style choices
         must be returned
     current_mentor: Key of currently assigned mentor key
-    
-  """
 
+  Returns:
+    A list of dictionaries containing the mentor key (at key "key") and
+      mentor name (at key "name"). If a current_mentor is passed and
+      matched among the mentors, its dictionary will have key "selected"
+      mapped to True.
+  """
   # construct a choice list for all the mentors in possible mentors list
   mentors_choices = []
-  for m in mentors:
-    m_key = m.key()
+  for mentor in mentors:
+    mentor_key = mentor.key()
     choice = {
-        'key': m_key,
-        'name': m.name(),
+        'key': mentor_key,
+        'name': mentor.name(),
         }
-    if current_mentor and m_key == current_mentor:
+    if current_mentor and mentor_key == current_mentor:
       choice['selected'] = True
 
     mentors_choices.append(choice)
 
   return mentors_choices
 
-class AssignMentorFields(Template):
-  """Template to render the fields necessary to assign a mentor to a proposal.
-  """
+class AssignMentorFields(template.Template):
+  """Template to render the fields needed to assign a mentor to a proposal."""
 
   def __init__(self, data, current_mentors, action,
                all_mentors=None, possible_mentors=None,
@@ -86,7 +86,7 @@ class AssignMentorFields(Template):
     if self.possible_mentors:
       possible_mentors = db.get(self.possible_mentors)
       possible_mentor_choices = getMentorsChoicesToAssign(
-          possible_mentors, current_mentor)
+          possible_mentors, current_mentor=current_mentor)
       mentor_context['possible_mentors'] = sorted(
           possible_mentor_choices, key=lambda c: c.get('name', ''))
 
@@ -95,24 +95,22 @@ class AssignMentorFields(Template):
         self.all_mentors = set(self.all_mentors) - set(self.possible_mentors)
       all_mentors = db.get(self.all_mentors)
       all_mentor_choices = getMentorsChoicesToAssign(
-          all_mentors, current_mentor)
+          all_mentors, current_mentor=current_mentor)
       mentor_context['all_mentors'] = sorted(
           all_mentor_choices, key=lambda c: c.get('name', ''))
 
     return mentor_context
 
   def context(self):
-    mentors = []
-
-    # add a select drop down context for each assigned mentor with that
-    # mentor set as initial value
-    for m in self.current_mentors:
-      mentors.append(self._getMentorContext(current_mentor=m))
-
-    # if there are no mentors assigned at all render a single drop down
-    # without any initial mentor set
-    if not self.current_mentors:
-      mentors.append(self._getMentorContext())
+    if self.current_mentors:
+      # add a select drop down context for each assigned mentor with that
+      # mentor set as initial value
+      mentors = [self._getMentorContext(current_mentor=current_mentor)
+                 for current_mentor in self.current_mentors]
+    else:
+      # if there are no mentors assigned at all render a single drop down
+      # without any initial mentor set
+      mentors = [self._getMentorContext()]
 
     return {
         'action': self.action,

@@ -44,41 +44,41 @@ class GradingRecordsOverview(GSoCRequestHandler):
          self, name='gsoc_grading_record_overview'),
     ]
 
-  def checkAccess(self):
-    self.mutator.surveyGroupFromKwargs()
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    mutator.surveyGroupFromKwargs()
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/grading_record/overview.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': 'Evaluation Group Overview',
-        'record_list': GradingRecordsList(self.data),
+        'record_list': GradingRecordsList(data),
         }
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
-    idx = lists.getListIndex(self.data.request)
+    idx = lists.getListIndex(data.request)
     if idx == 0:
-      return GradingRecordsList(self.data).listContent().content()
+      return GradingRecordsList(data).listContent().content()
     else:
       # TODO(nathaniel): Should this be a return statement?
-      super(GradingRecordsOverview, self).jsonContext()
+      super(GradingRecordsOverview, self).jsonContext(data, check, mutator)
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles the POST request from the list and starts the appropriate task.
     """
-    post_dict = self.data.POST
+    post_dict = data.POST
 
     if post_dict['button_id'] == 'update_records':
-      task_params = {'group_key': self.data.survey_group.key().id_or_name()}
+      task_params = {'group_key': data.survey_group.key().id_or_name()}
       task_url = '/tasks/gsoc/grading_record/update_records'
 
       task = taskqueue.Task(params=task_params, url=task_url)
       task.add()
     elif post_dict['button_id'] == 'update_projects':
-      task_params = {'group_key': self.data.survey_group.key().id_or_name(),
+      task_params = {'group_key': data.survey_group.key().id_or_name(),
                      'send_mail': 'true'}
       task_url = '/tasks/gsoc/grading_record/update_projects'
 
@@ -246,17 +246,17 @@ class GradingRecordDetails(GSoCRequestHandler):
          self, name='gsoc_grading_record_detail'),
     ]
 
-  def checkAccess(self):
-    self.mutator.gradingSurveyRecordFromKwargs()
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    mutator.gradingSurveyRecordFromKwargs()
+    check.isHost()
 
-  def context(self):
-    assert isSet(self.data.record)
+  def context(self, data, check, mutator):
+    assert isSet(data.record)
 
-    record = self.data.record
+    record = data.record
 
-    if self.data.POST:
-      record_form = GradingRecordForm(self.data.POST)
+    if data.POST:
+      record_form = GradingRecordForm(data.POST)
     else:
       # locked is initially set to true because the user is editing it manually
       record_form = GradingRecordForm(instance=record, initial={'locked': True})
@@ -267,20 +267,19 @@ class GradingRecordDetails(GSoCRequestHandler):
         'record_form': record_form,
         }
 
-  def post(self):
-    """Handles the POST request when editing a GradingRecord.
-    """
-    assert isSet(self.data.record)
+  def post(self, data, check, mutator):
+    """Handles the POST request when editing a GradingRecord."""
+    assert isSet(data.record)
 
-    record_form = GradingRecordForm(self.data.POST)
+    record_form = GradingRecordForm(data.POST)
 
     if not record_form.is_valid():
-      return self.get()
+      return self.get(data, check, mutator)
 
     decision = record_form.cleaned_data['grade_decision']
     locked = record_form.cleaned_data['locked']
 
-    record = self.data.record
+    record = data.record
     record.grade_decision = decision
     record.locked = locked
     record.put()
@@ -294,8 +293,8 @@ class GradingRecordDetails(GSoCRequestHandler):
     mail_task = taskqueue.Task(params=task_params, url=task_url)
     mail_task.add('mail')
 
-    self.data.redirect.id(record.grading_survey_group.key().id_or_name())
-    return self.data.redirect.to('gsoc_grading_record_overview')
+    data.redirect.id(record.grading_survey_group.key().id_or_name())
+    return data.redirect.to('gsoc_grading_record_overview')
 
   def templatePath(self):
     return 'v2/modules/gsoc/grading_record/details.html'

@@ -102,20 +102,19 @@ class MentorsListAdminPage(GCIRequestHandler):
             name='gci_list_mentors'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
-  def jsonContext(self):
-    list_content = MentorsList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = MentorsList(data).getListData()
     if list_content:
       return list_content.content()
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': "List of organization admins and mentors for %s" % (
-            self.data.program.name),
-        'mentors_list': MentorsList(self.data),
+            data.program.name),
+        'mentors_list': MentorsList(data),
     }

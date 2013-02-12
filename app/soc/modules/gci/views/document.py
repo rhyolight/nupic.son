@@ -55,18 +55,18 @@ class EditDocumentPage(GCIRequestHandler):
             name='edit_gci_document'),
     ]
 
-  def checkAccess(self):
-    self.mutator.documentKeyNameFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.documentKeyNameFromKwargs()
 
-    assert isSet(self.data.key_name)
+    assert isSet(data.key_name)
 
-    self.check.canEditDocument()
+    check.canEditDocument()
 
-  def context(self):
-    form = GCIDocumentForm(self.data.POST or None, instance=self.data.document)
+  def context(self, data, check, mutator):
+    form = GCIDocumentForm(data.POST or None, instance=data.document)
 
-    if self.data.document:
-      page_name = 'Edit %s' % self.data.document.title
+    if data.document:
+      page_name = 'Edit %s' % data.document.title
     else:
       page_name = 'Create new Document'
 
@@ -75,17 +75,17 @@ class EditDocumentPage(GCIRequestHandler):
         'document_form': form,
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    form = GCIDocumentForm(self.data.POST or None, instance=self.data.document)
-    entity = document.validateForm(self.data, form)
+    form = GCIDocumentForm(data.POST or None, instance=data.document)
+    entity = document.validateForm(data, form)
     if entity:
-      self.data.redirect.document(entity)
+      data.redirect.document(entity)
       # TODO(nathaniel): Self-redirection?
-      return self.data.redirect.to('edit_gci_document')
+      return data.redirect.to('edit_gci_document')
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class DocumentPage(GCIRequestHandler):
@@ -103,14 +103,14 @@ class DocumentPage(GCIRequestHandler):
             name='show_gci_document'),
     ]
 
-  def checkAccess(self):
-    self.mutator.documentKeyNameFromKwargs()
-    self.check.canViewDocument()
+  def checkAccess(self, data, check, mutator):
+    mutator.documentKeyNameFromKwargs()
+    check.canViewDocument()
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'tmpl': document.Document(self.data, self.data.document),
-        'page_name': self.data.document.title,
+        'tmpl': document.Document(data, data.document),
+        'page_name': data.document.title,
     }
 
 
@@ -127,14 +127,14 @@ class EventsPage(GCIRequestHandler):
             name='gci_events')
     ]
 
-  def checkAccess(self):
-    self.data.document = self.data.program.events_page
-    self.check.canViewDocument()
+  def checkAccess(self, data, check, mutator):
+    data.document = data.program.events_page
+    check.canViewDocument()
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'document': self.data.program.events_page,
-        'frame_url': self.data.program.events_frame_url,
+        'document': data.program.events_page,
+        'frame_url': data.program.events_frame_url,
         'page_name': 'Events and Timeline',
     }
 
@@ -161,20 +161,19 @@ class DocumentListPage(GCIRequestHandler):
             name='list_gci_documents'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
-  def jsonContext(self):
-    list_content = GCIDocumentList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = GCIDocumentList(data).getListData()
     if list_content:
       return list_content.content()
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Documents for %s" % self.data.program.name,
-        'document_list': GCIDocumentList(self.data),
-#        'program_select': ProgramSelect(self.data, 'list_gci_documents'),
+        'page_name': "Documents for %s" % data.program.name,
+        'document_list': GCIDocumentList(data),
+#        'program_select': ProgramSelect(data, 'list_gci_documents'),
     }

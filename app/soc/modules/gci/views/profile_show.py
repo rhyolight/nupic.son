@@ -90,13 +90,12 @@ class GCIProfileShowPage(profile_show.ProfileShowPage, base.GCIRequestHandler):
          self, name=url_names.GCI_PROFILE_SHOW),
     ]
 
-  def context(self):
-    context = super(GCIProfileShowPage, self).context()
+  def context(self, data, check, mutator):
+    context = super(GCIProfileShowPage, self).context(data, check, mutator)
 
-    profile = self._getProfile()
+    profile = self._getProfile(data)
     if profile.student_info:
-      context['student_forms_template'] = StudentFormsTemplate(
-          profile, self.data)
+      context['student_forms_template'] = StudentFormsTemplate(profile, data)
 
     return context
 
@@ -116,20 +115,20 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
          self, name=url_names.GCI_PROFILE_SHOW_ADMIN),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.userFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    mutator.userFromKwargs()
     try:
-      self.mutator.profileFromKwargs()
+      mutator.profileFromKwargs()
     except NotFound:
       # it is not a terminal error, when Profile does not exist
       pass
 
-  def context(self):
-    context = super(GCIProfileShowAdminPage, self).context()
-    assert access_checker.isSet(self.data.url_profile.student_info)
+  def context(self, data, check, mutator):
+    context = super(GCIProfileShowAdminPage, self).context(data, check, mutator)
+    assert access_checker.isSet(data.url_profile.student_info)
 
-    profile = self.data.url_profile
+    profile = data.url_profile
     student_info = profile.student_info
     if student_info:
       if student_info.consent_form_verified:
@@ -142,49 +141,51 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
       else:
         context['verify_student_id_form_init'] = 'checked'
 
-      r = self.data.redirect.profile(profile.link_id)
+      r = data.redirect.profile(profile.link_id)
       context['student_task_link'] = r.urlOf(url_names.GCI_STUDENT_TASKS)
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles student form verification by host."""
-    if not self.data.url_profile.student_info:
+    if not data.url_profile.student_info:
       logging.warn(NON_STUDENT_ERR_MSG)
-      return self.error(httplib.METHOD_NOT_ALLOWED)
+      return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
-    post_data = self.data.POST
+    post_data = data.POST
     button_id = post_data.get('id')
     value = post_data.get('value')
 
     if button_id == 'verify-consent-form':
-      self._verifyConsentForm(value)
+      self._verifyConsentForm(data, value)
     elif button_id == 'verify-student-id-form':
-      self._verifyStudentIDForm(value)
+      self._verifyStudentIDForm(data, value)
 
     return http.HttpResponse()
 
-  def _verifyConsentForm(self, value):
+  def _verifyConsentForm(self, data, value):
     """Mark the parental consent form as verified or not verified.
 
     Args:
+      data: A RequestData describing the current request.
       value: The value of the checkbox field - checked or unchecked
     """
-    student_info = self.data.url_profile.student_info
+    student_info = data.url_profile.student_info
     student_info.consent_form_verified = value == 'checked'
     student_info.put()
 
-  def _verifyStudentIDForm(self, value):
+  def _verifyStudentIDForm(self, data, value):
     """Mark the student id form as verified or not verified.
 
     Args:
+      data: A RequestData describing the current request.
       value: The value of the checkbox field - checked or unchecked
     """
-    student_info = self.data.url_profile.student_info
+    student_info = data.url_profile.student_info
     student_info.student_id_form_verified = value == 'checked'
     student_info.put()
 
-  def _getProfile(self):
+  def _getProfile(self, data):
     """See soc.views.profile_show.ProfileShowPage for the documentation."""
-    assert access_checker.isSet(self.data.url_profile)
-    return self.data.url_profile
+    assert access_checker.isSet(data.url_profile)
+    return data.url_profile

@@ -83,27 +83,27 @@ class DashboardPage(GCIRequestHandler):
          self, name='gci_admin_dashboard'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/admin/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Context for dashboard page."""
     dashboards = []
 
-    dashboards.append(MainDashboard(self.data))
-    dashboards.append(ProgramSettingsDashboard(self.data))
-    dashboards.append(OrgDashboard(self.data))
-    dashboards.append(ParticipantsDashboard(self.data))
+    dashboards.append(MainDashboard(data))
+    dashboards.append(ProgramSettingsDashboard(data))
+    dashboards.append(OrgDashboard(data))
+    dashboards.append(ParticipantsDashboard(data))
 
     return {
         'dashboards': dashboards,
         'page_name': 'Admin dashboard',
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles a post request.
 
     Do nothing, since toggle button posting to this handler
@@ -397,30 +397,30 @@ class LookupLinkIdPage(GCIRequestHandler):
          self, name='lookup_gci_profile'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/admin/lookup.html'
 
-  def post(self):
+  def post(self, data, check, mutator):
     # TODO(nathaniel): problematic self-call.
-    return self.get()
+    return self.get(data, check, mutator)
 
-  def context(self):
-    form = LookupForm(self.data, self.data.POST or None)
+  def context(self, data, check, mutator):
+    form = LookupForm(data, data.POST or None)
     error = bool(form.errors)
 
     forms = [form]
     profile = None
 
-    if not form.errors and self.data.request.method == 'POST':
+    if not form.errors and data.request.method == 'POST':
       profile = form.cleaned_data.get('profile')
 
     if profile:
       # TODO(nathaniel): setting redirection in a context() method?
-      self.data.redirect.profile(profile.link_id)
-      self.data.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN, secure=True)
+      data.redirect.profile(profile.link_id)
+      data.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN, secure=True)
 
     return {
       'forms': forms,

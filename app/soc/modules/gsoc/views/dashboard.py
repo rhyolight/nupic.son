@@ -54,7 +54,7 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.models.score import GSoCScore
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -124,62 +124,50 @@ class ComponentsDashboard(Dashboard):
     }
 
 
-class DashboardPage(GSoCRequestHandler):
-  """View for the participant dashboard.
-  """
+class DashboardPage(base.GSoCRequestHandler):
+  """View for the participant dashboard."""
 
   def djangoURLPatterns(self):
-    """The URL pattern for the dashboard.
-    """
+    """The URL pattern for the dashboard."""
     return [
         url(r'dashboard/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_dashboard')]
 
-  def checkAccess(self):
-    """Denies access if you don't have a role in the current program.
-    """
-    self.check.isLoggedIn()
+  def checkAccess(self, data, check, mutator):
+    """Denies access if you don't have a role in the current program."""
+    check.isLoggedIn()
 
   def templatePath(self):
-    """Returns the path to the template.
-    """
+    """Returns the path to the template."""
     return 'v2/modules/gsoc/dashboard/base.html'
 
-  def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    components = self.components()
-
-    list_content = None
-    for component in components:
+  def jsonContext(self, data, check, mutator):
+    """Handler for JSON requests."""
+    for component in self.components(data):
       list_content = component.getListData()
       if list_content:
-        break
+        return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for POST requests."""
-    for component in self.components():
+    for component in self.components(data):
       if component.post():
         return http.HttpResponse()
     else:
-      raise AccessViolation(
-          'You cannot change this data')
+      raise AccessViolation('You cannot change this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
     # dashboard container, will hold each component list
     dashboards = []
 
     # main container that contains all component list
-    main = MainDashboard(self.data)
+    main = MainDashboard(data)
 
     # retrieve active component(s) for currently logged-in user
-    components = self.components()
+    components = self.components(data)
 
     # add components as children of main dashboard and treat the component
     # as dashboard element
@@ -192,7 +180,7 @@ class DashboardPage(GSoCRequestHandler):
           }
       main.addSubpages(c)
 
-      dashboards.append(ComponentsDashboard(self.data, {
+      dashboards.append(ComponentsDashboard(data, {
           'name': component.context().get('name'),
           'title': component.context().get('title'),
           'component': component,
@@ -202,139 +190,128 @@ class DashboardPage(GSoCRequestHandler):
     dashboards.append(main)
 
     return {
-        'page_name': self.data.program.name,
-        'user_name': self.data.profile.name() if self.data.profile else None,
-        'logged_in_msg': LoggedInMsg(self.data),
-        'program_select': ProgramSelect(self.data, 'gsoc_dashboard'),
+        'page_name': data.program.name,
+        'user_name': data.profile.name() if data.profile else None,
+        'logged_in_msg': LoggedInMsg(data),
+        'program_select': ProgramSelect(data, 'gsoc_dashboard'),
     # TODO(ljvderijk): Implement code for setting dashboard messages.
     #   'alert_msg': 'Default <strong>alert</strong> goes here',
         'dashboards': dashboards,
     }
 
-  def components(self):
-    """Returns the components that are active on the page.
-    """
+  def components(self, data):
+    """Returns the components that are active on the page."""
     components = []
 
-    if self.data.student_info:
-      components += self._getStudentComponents()
-    elif self.data.is_mentor:
-      components.append(TodoComponent(self.data))
-      components += self._getOrgMemberComponents()
-      components.append(RequestComponent(self.data, False))
+    if data.student_info:
+      components += self._getStudentComponents(data)
+    elif data.is_mentor:
+      components.append(TodoComponent(data))
+      components += self._getOrgMemberComponents(data)
+      components.append(RequestComponent(data, False))
     else:
-      components += self._getLoneUserComponents()
-      components.append(RequestComponent(self.data, False))
+      components += self._getLoneUserComponents(data)
+      components.append(RequestComponent(data, False))
 
     return components
 
-  def _getStudentComponents(self):
-    """Get the dashboard components for a student.
-    """
+  def _getStudentComponents(self, data):
+    """Get the dashboard components for a student."""
     components = []
 
-    info = self.data.student_info
+    info = data.student_info
 
-    if self.data.is_student and info.number_of_projects:
-      components.append(TodoComponent(self.data))
+    if data.is_student and info.number_of_projects:
+      components.append(TodoComponent(data))
       # Add a component to show the evaluations
       evals = dictForSurveyModel(
-          ProjectSurvey, self.data.program, ['midterm', 'final'])
-      if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):
-        components.append(MyEvaluationsComponent(self.data, evals))
+          ProjectSurvey, data.program, ['midterm', 'final'])
+      if evals and data.timeline.afterFirstSurveyStart(evals.values()):
+        components.append(MyEvaluationsComponent(data, evals))
 
       # Add a component to show all the projects
-      components.append(MyProjectsComponent(self.data))
+      components.append(MyProjectsComponent(data))
 
     # Add all the proposals of this current user
-    components.append(MyProposalsComponent(self.data))
+    components.append(MyProposalsComponent(data))
 
     return components
 
-  def _getOrgMemberComponents(self):
-    """Get the dashboard components for Organization members.
-    """
+  def _getOrgMemberComponents(self, data):
+    """Get the dashboard components for Organization members."""
     components = []
 
-    component = self._getMyOrgApplicationsComponent()
+    component = self._getMyOrgApplicationsComponent(data)
     if component:
       components.append(component)
 
-    evals = dictForSurveyModel(GradingProjectSurvey, self.data.program,
+    evals = dictForSurveyModel(GradingProjectSurvey, data.program,
                                ['midterm', 'final'])
 
-    if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):
-      components.append(OrgEvaluationsComponent(self.data, evals))
+    if evals and data.timeline.afterFirstSurveyStart(evals.values()):
+      components.append(OrgEvaluationsComponent(data, evals))
 
-    if self.data.is_mentor:
-      if self.data.timeline.studentsAnnounced():
+    if data.is_mentor:
+      if data.timeline.studentsAnnounced():
         # add a component to show all projects a user is mentoring
-        components.append(ProjectsIMentorComponent(self.data))
+        components.append(ProjectsIMentorComponent(data))
 
-    orgs = OrganizationsIParticipateInComponent(self.data)
+    orgs = OrganizationsIParticipateInComponent(data)
 
     # move to the top during student signup
-    if self.data.timeline.studentSignup():
+    if data.timeline.studentSignup():
       components.append(orgs)
 
-    if self.data.timeline.afterStudentSignupStart():
+    if data.timeline.afterStudentSignupStart():
       # Add the submitted proposals component
-      components.append(SubmittedProposalsComponent(self.data))
+      components.append(SubmittedProposalsComponent(data))
 
-    if self.data.is_org_admin:
+    if data.is_org_admin:
       # add a component for all organization that this user administers
-      components.append(RequestComponent(self.data, True))
-      components.append(ParticipantsComponent(self.data))
+      components.append(RequestComponent(data, True))
+      components.append(ParticipantsComponent(data))
 
     # move to the bottom after student signup
-    if not self.data.timeline.studentSignup():
+    if not data.timeline.studentSignup():
       components.append(orgs)
 
-    if self.data.is_org_admin:
+    if data.is_org_admin:
       mentor_evals = dictForSurveyModel(
-          GradingProjectSurvey, self.data.program, ['midterm', 'final'])
+          GradingProjectSurvey, data.program, ['midterm', 'final'])
       student_evals = dictForSurveyModel(
-          ProjectSurvey, self.data.program, ['midterm', 'final'])
-      components.append(
-          MentorEvaluationComponent(self.data, mentor_evals))
-      components.append(
-          StudentEvaluationComponent(self.data, student_evals))
+          ProjectSurvey, data.program, ['midterm', 'final'])
+      components.append(MentorEvaluationComponent(data, mentor_evals))
+      components.append(StudentEvaluationComponent(data, student_evals))
 
     return components
 
-  def _getLoneUserComponents(self):
-    """Get the dashboard components for users without any role.
-    """
-    components = []
+  def _getLoneUserComponents(self, data):
+    """Get the dashboard components for users without any role."""
+    component = self._getMyOrgApplicationsComponent(data)
+    return [component] if component else []
 
-    component = self._getMyOrgApplicationsComponent()
-    if component:
-      components.append(component)
-
-    return components
-
-  def _getMyOrgApplicationsComponent(self):
+  def _getMyOrgApplicationsComponent(self, data):
     """Returns MyOrgApplicationsComponent iff this user is main_admin or
     backup_admin in an application.
     """
-    survey = org_app_logic.getForProgram(self.data.program)
+    survey = org_app_logic.getForProgram(data.program)
 
     # Test if this user is main admin or backup admin
     q = OrgAppRecord.all()
     q.filter('survey', survey)
-    q.filter('main_admin', self.data.user)
+    q.filter('main_admin', data.user)
 
     record = q.get()
 
     q = OrgAppRecord.all()
     q.filter('survey', survey)
-    q.filter('backup_admin', self.data.user)
+    q.filter('backup_admin', data.user)
 
     if record or q.get():
       # add a component showing the organization application of the user
-      return MyOrgApplicationsComponent(self.data, survey)
-
-    return None
+      return MyOrgApplicationsComponent(data, survey)
+    else:
+      return None
 
 
 class MyOrgApplicationsComponent(Component):

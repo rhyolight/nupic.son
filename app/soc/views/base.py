@@ -39,39 +39,64 @@ class RequestHandler(object):
   # a real injected dependency.
   linker = links.Linker()
 
-  def context(self):
+  def context(self, data, check, mutator):
+    """Provides a dictionary of values needed to render a template.
+
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
+    Returns:
+      A dictionary of values to be used in rendering a template.
+    """
     return {}
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Handler for HTTP GET request.
 
     Default implementation calls templatePath and context and passes
     those to render to construct the page.
 
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
     Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        attribute.
+      An http.HttpResponse appropriate for the given request parameters.
     """
-    context = self.context()
+    context = self.context(data, check, mutator)
     template_path = self.templatePath()
-    response_content = self.render(template_path, context)
+    response_content = self.render(data, template_path, context)
     return http.HttpResponse(content=response_content)
 
-  def json(self):
-    """Handler for HTTP GET request with a 'fmt=json' parameter."""
-    context = self.jsonContext()
+  def json(self, data, check, mutator):
+    """Handler for HTTP GET request with a 'fmt=json' parameter.
+
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    context = self.jsonContext(data, check, mutator)
 
     if isinstance(context, unicode) or isinstance(context, str):
-      data = context
+      json_formatted_context = context
     else:
-      data = simplejson.dumps(context)
+      json_formatted_context = simplejson.dumps(context)
 
-    if self.data.request.GET.get('plain'):
-      content_type = http.DEFAULT_CONTENT_TYPE
+    # NOTE(nathaniel): The Django documentation and code disagree
+    # on what the default value of content_type is, so the best way
+    # to use the default value is to avoid passing the parameter.
+    if data.request.GET.get('plain'):
+      response = http.HttpResponse(content=json_formatted_context)
     else:
-      content_type = 'application/json'
-
-    response = http.HttpResponse(content=data, content_type=content_type)
+      response = http.HttpResponse(
+          content=json_formatted_context, content_type='application/json')
 
     # if the browser supports HTTP/1.1
     # post-check and pre-check and no-store for IE7
@@ -83,78 +108,118 @@ class RequestHandler(object):
 
     # TODO(nathaniel): find a better way to do this - I mean, the
     # jsonContext method is already as exposed as this method.
-    if self.data.request.GET.get('marker'):
+    if data.request.GET.get('marker'):
       # allow the django test framework to capture the context dictionary
       loader.render_to_string('json_marker.html', dictionary=context)
 
     return response
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Defines the JSON object to be dumped and returned on a HTTP GET request
     with 'fmt=json' parameter.
+
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
+    Returns:
+      An object to be used as the content in a response to a json GET request
+        after having been put through simplejson.dumps if it is not a string
+        or unicode object.
     """
+    # TODO(nathaniel): That return value description is a travesty. Just make
+    # this method return "a dictionary to be serialized into JSON response
+    # content" or something like that always.
     return {
         'error': 'json() method not implemented',
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request.
 
-    Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
-    """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
-  def head(self):
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+
+  def head(self, data, check, mutator):
     """Handler for HTTP HEAD request.
 
-    Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
-    """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
-  def options(self):
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    # TODO(nathaniel): This probably wouldn't be all that unreasonable to
+    # implement?
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+
+  def options(self, data, check, mutator):
     """Handler for HTTP OPTIONS request.
 
-    Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
-    """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
-  def put(self):
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+
+  def put(self, data, check, mutator):
     """Handler for HTTP PUT request.
 
-    Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
-    """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
-  def delete(self):
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+
+  def delete(self, data, check, mutator):
     """Handler for HTTP DELETE request.
 
-    Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
-    """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
-  def trace(self):
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+
+  def trace(self, data, check, mutator):
     """Handler for HTTP TRACE request.
 
-    Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
-    """
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
 
-  def error(self, status, message=None):
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+
+  def error(self, data, status, message=None):
     """Constructs an HttpResponse indicating an error.
 
     Args:
+      data: The request_data.RequestData object for the current request.
       status: The HTTP status code for the error.
       message: A message to display to the user. If not supplied, a default
         appropriate for the given status code (such as "Bad Gateway" or
@@ -172,7 +237,7 @@ class RequestHandler(object):
     }
 
     return http.HttpResponse(
-        content=self.render(template_path, context), status=status)
+        content=self.render(data, template_path, context), status=status)
 
   def djangoURLPatterns(self):
     """Returns a list of Django URL pattern tuples.
@@ -181,7 +246,7 @@ class RequestHandler(object):
     """
     raise NotImplementedError()
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     # TODO(nathaniel): eliminate this - it doesn't actually simplify
     # the HTTP method implementations all that much to have it
     # separated out.
@@ -193,13 +258,18 @@ class RequestHandler(object):
     should merely raise an exception if the user's request should not be
     satisfied or return normally if the user's request should be satisfied.
 
+    Args:
+      data: A request_data.RequestData.
+      check: An access_checker.AccessChecker.
+      mutator: An access_checker.Mutator.
+
     Raises:
       exceptions.Error: If the user's request should not be satisfied for
         any reason.
     """
     raise NotImplementedError()
 
-  def render(self, template_path, render_context):
+  def render(self, data, template_path, render_context):
     """Renders the page content from the specified template and context.
 
     Values supplied by helper.context.default are used in the rendering in
@@ -207,13 +277,14 @@ class RequestHandler(object):
     in cases of conflict).
 
     Args:
+      data: The RequestData that should be used.
       template_path: The path of the template that should be used.
       render_context: The context dictionary that should be used.
 
     Returns:
       The page content.
     """
-    context = context_helper.default(self.data)
+    context = context_helper.default(data)
     context.update(render_context)
     return loader.render_to_string(template_path, dictionary=context)
 
@@ -224,38 +295,44 @@ class RequestHandler(object):
     """
     raise NotImplementedError()
 
-  def _dispatch(self):
+  def _dispatch(self, data, check, mutator):
     """Dispatches the HTTP request to its respective handler method.
 
+    Args:
+      data: The request_data.RequestData object for the current request.
+      check: The access_checker.AccessChecker object for the current
+        request.
+      mutator: The access_checker.Mutator object for the current
+        request.
+
     Returns:
-      An http.HttpResponse appropriate for this RequestHandler's request
-        object.
+      An http.HttpResponse appropriate for the current request.
     """
-    if self.data.request.method == 'GET':
-      if self.data.request.GET.get('fmt') == 'json':
-        return self.json()
+    if data.request.method == 'GET':
+      if data.request.GET.get('fmt') == 'json':
+        return self.json(data, check, mutator)
       else:
-        return self.get()
-    elif self.data.request.method == 'POST':
+        return self.get(data, check, mutator)
+    elif data.request.method == 'POST':
       if db.WRITE_CAPABILITY.is_enabled():
-        return self.post()
+        return self.post(data, check, mutator)
       else:
-        referrer = self.data.request.META.get('HTTP_REFERER', '')
+        referrer = data.request.META.get('HTTP_REFERER', '')
         params = urllib.urlencode({'dsw_disabled': 1})
         url_with_params = '%s?%s' % (referrer, params)
         return http.HttpResponseRedirect('%s?%s' % (referrer, params))
-    elif self.data.request.method == 'HEAD':
-      return self.head()
-    elif self.data.request.method == 'OPTIONS':
-      return self.options()
-    elif self.data.request.method == 'PUT':
-      return self.put()
-    elif self.data.request.method == 'DELETE':
-      return self.delete()
-    elif self.data.request.method == 'TRACE':
-      return self.trace()
+    elif data.request.method == 'HEAD':
+      return self.head(data, check, mutator)
+    elif data.request.method == 'OPTIONS':
+      return self.options(data, check, mutator)
+    elif data.request.method == 'PUT':
+      return self.put(data, check, mutator)
+    elif data.request.method == 'DELETE':
+      return self.delete(data, check, mutator)
+    elif data.request.method == 'TRACE':
+      return self.trace(data, check, mutator)
     else:
-      return self.error(httplib.NOT_IMPLEMENTED)
+      return self.error(data, httplib.NOT_IMPLEMENTED)
 
   def init(self, request, args, kwargs):
     """Creates objects necessary for serving the request.
@@ -290,32 +367,26 @@ class RequestHandler(object):
 
     In detail, this method does the following:
     1. Initialize request, arguments and keyword arguments as instance variables
-    2. Construct the response object.
-    3. Calls the access check.
-    4. Delegates dispatching to the handler to the _dispatch method.
+    2. Calls the access check.
+    3. Delegates dispatching to the handler to the _dispatch method.
+    4. Handles several known exception types that may have been raised.
     5. Returns the response.
     """
     try:
-      self.data, self.check, self.mutator = self.init(
-          request, args, kwargs)
-      self.checkMaintenanceMode(self.data)
-      self.checkAccess()
-      return self._dispatch()
+      data, check, mutator = self.init(request, args, kwargs)
+      self.checkMaintenanceMode(data)
+      self.checkAccess(data, check, mutator)
+      return self._dispatch(data, check, mutator)
     except exceptions.LoginRequest, e:
       request.get_full_path().encode('utf-8')
-      return self.data.redirect.login().to()
+      return data.redirect.login().to()
     except exceptions.RedirectRequest, e:
-      return self.data.redirect.toUrl(e.url)
+      return data.redirect.toUrl(e.url)
     except exceptions.GDocsLoginRequest, e:
-      return self.data.redirect.toUrl('%s?%s' % (
-          self.data.redirect.urlOf(e.url_name),
-          urllib.urlencode({'next': e.path})))
+      return data.redirect.toUrl('%s?%s' % (
+          data.redirect.urlOf(e.url_name), urllib.urlencode({'next': e.path})))
     except exceptions.Error, e:
-      return self.error(e.status, message=e.args[0])
-    finally:
-      self.data = None
-      self.check = None
-      self.mutator = None
+      return self.error(data, e.status, message=e.args[0])
 
 
 class SiteRequestHandler(RequestHandler):

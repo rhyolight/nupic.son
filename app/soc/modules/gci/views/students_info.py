@@ -77,20 +77,19 @@ class StudentsInfoPage(base.GCIRequestHandler):
                              self, name=url_names.GCI_STUDENTS_INFO),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
-  def jsonContext(self):
-    all_participating_students_list = AllParticipatingStudentsList(self.data)
+  def jsonContext(self, data, check, mutator):
+    all_participating_students_list = AllParticipatingStudentsList(data)
     list_content = all_participating_students_list.getListData()
-
     if list_content:
       return list_content.content()
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': 'List of Students for %s' % self.data.program.name,
-        'students_info_list': AllParticipatingStudentsList(self.data),
+        'page_name': 'List of Students for %s' % data.program.name,
+        'students_info_list': AllParticipatingStudentsList(data),
     }

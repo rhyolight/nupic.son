@@ -75,29 +75,28 @@ class EditSitePage(base.SiteRequestHandler):
         django_url(r'^site/edit$', self, name='edit_site_settings'),
     ]
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     entities = document.Document.all().filter('prefix', 'site')
 
-    data = [{'key': str(i.key()),
-            'link_id': i.link_id,
-            'label': i.title}
-            for i in entities]
+    json_data = [{'key': str(i.key()),
+                  'link_id': i.link_id,
+                  'label': i.title}
+                 for i in entities]
 
-    return {'data': data}
+    return {'data': json_data}
 
-  def checkAccess(self):
-    if not self.data.is_developer:
+  def checkAccess(self, data, check, mutator):
+    if not data.is_developer:
       raise exceptions.AccessViolation(DEF_NO_DEVELOPER)
 
   def templatePath(self):
     # TODO: make this specific to the current active program
     return 'soc/site/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     # TODO: suboptimal
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    site_form = SiteForm(GSoCBoundField, self.data.POST or None,
-                         instance=self.data.site)
+    site_form = SiteForm(GSoCBoundField, data.POST or None, instance=data.site)
 
     # NOTE(nathaniel): This is an unfortunate workaround for the fact
     # that in its current form the SiteForm class will only ever present
@@ -111,10 +110,9 @@ class EditSitePage(base.SiteRequestHandler):
         'site_form': site_form,
     }
 
-  def validate(self):
+  def validate(self, data):
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    site_form = SiteForm(GSoCBoundField, self.data.POST,
-                         instance=self.data.site)
+    site_form = SiteForm(GSoCBoundField, data.POST, instance=data.site)
 
     if site_form.is_valid():
       site_form.save()
@@ -122,12 +120,12 @@ class EditSitePage(base.SiteRequestHandler):
     else:
       return False
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    post_accepted = self.validate()
-    context = self.context()
+    post_accepted = self.validate(data)
+    context = self.context(data, check, mutator)
     template_path = self.templatePath()
-    response_content = self.render(template_path, context)
+    response_content = self.render(data, template_path, context)
     return http.HttpResponse(
         status=httplib.OK if post_accepted else httplib.BAD_REQUEST,
         content=response_content)
@@ -148,17 +146,6 @@ class SiteHomepage(base.SiteRequestHandler):
     try:
       data, _, _ = self.init(request, args, kwargs)
 
-      # TODO(nathaniel): self.error in the except block below relies upon
-      # self.data having been assigned. The following assignment can be
-      # removed once that reliance has been eliminated.
-      self.data = data
-
-      # NOTE(nathaniel): While this doesn't directly rely on self.data
-      # having been assigned, it can generate an exception which as mentioned
-      # above would be handled by something that does require self.data to
-      # have been set.
-      #
-      # This will all be made much less interdependent. :-)
       self.checkMaintenanceMode(data)
 
       action = args[0] if args else ''
@@ -176,4 +163,4 @@ class SiteHomepage(base.SiteRequestHandler):
         else:
           return data.redirect.to('edit_site_settings')
     except exceptions.Error, e:
-      return self.error(e.status, message=e.args[0])
+      return self.error(data, e.status, message=e.args[0])

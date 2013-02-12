@@ -122,29 +122,28 @@ class LeaderboardPage(GCIRequestHandler):
             name=url_names.GCI_LEADERBOARD),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
-  def jsonContext(self):
-    list_content = LeaderboardList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = LeaderboardList(data).getListData()
     if list_content:
       return list_content.content()
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     context = {
-        'page_name': "Leaderboard for %s" % self.data.program.name,
-        'leaderboard_list': LeaderboardList(self.data),
-        'timeline': common_templates.Timeline(self.data),
-        'complete_percentage': self.data.timeline.completePercentage(),
-        'your_score': common_templates.YourScore(self.data),
+        'page_name': "Leaderboard for %s" % data.program.name,
+        'leaderboard_list': LeaderboardList(data),
+        'timeline': common_templates.Timeline(data),
+        'complete_percentage': data.timeline.completePercentage(),
+        'your_score': common_templates.YourScore(data),
         'program_select': common_templates.ProgramSelect(
-            self.data, url_names.GCI_LEADERBOARD),
+            data, url_names.GCI_LEADERBOARD),
         }
-    if self.data.is_host or self.data.timeline.winnersAnnounced():
-      context['winners'] = common_templates.Winners(self.data)
+    if data.is_host or data.timeline.winnersAnnounced():
+      context['winners'] = common_templates.GlobalRankingWinners(data)
 
     return context
 
@@ -162,26 +161,25 @@ class StudentTasksPage(GCIRequestHandler):
             name=url_names.GCI_STUDENT_TASKS),
     ]
 
-  def checkAccess(self):
-    self.mutator.studentFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.studentFromKwargs()
     try:
-      self.check.isHost()
+      check.isHost()
     except AccessViolation:
-      self.check.hasProfile()
+      check.hasProfile()
       # check if the profile in URL kwargs is the current profile
-      if self.data.profile.key() != self.data.url_profile.key():
+      if data.profile.key() != data.url_profile.key():
         raise AccessViolation('You do not have access to this data')
 
-  def jsonContext(self):
-    list_content = AllStudentTasksList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = AllStudentTasksList(data).getListData()
     if list_content:
       return list_content.content()
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Tasks closed by %s" % self.data.url_profile.name(),
-        'tasks_list': AllStudentTasksList(self.data),
+        'page_name': "Tasks closed by %s" % data.url_profile.name(),
+        'tasks_list': AllStudentTasksList(data),
     }

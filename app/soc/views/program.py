@@ -20,12 +20,13 @@ from google.appengine.ext import db
 class ProgramMessagesPage(object):
   """View for the content of program specific messages to be sent."""
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
-  def context(self):
-    entity = self._getSingletonEntity(self.data.program)
-    form = self._getForm(entity)
+  def context(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.context for specification."""
+    entity = self._getSingletonEntity(data.program)
+    form = self._getForm(data, entity)
 
     return {
         'page_name': 'Edit program messages',
@@ -33,20 +34,20 @@ class ProgramMessagesPage(object):
         'error': form.errors,
         }
 
-  def post(self):
-    """Handler for HTTP POST request."""
+  def post(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.post for specification."""
     if self.validate():
       # TODO(nathaniel): Make this .program() call unnecessary.
-      self.data.redirect.program()
+      data.redirect.program()
       # TODO(nathaniel): Redirection to same page?
-      return self.data.redirect.to(self._getUrlName(), validated=True)
+      return data.redirect.to(self._getUrlName(), validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
   def validate(self):
     entity = self._getSingletonEntity(self.data.program)
-    form = self._getForm(entity)
+    form = self._getForm(data, entity)
 
     if form.is_valid():
       form.save()
@@ -65,7 +66,7 @@ class ProgramMessagesPage(object):
 
     return db.run_in_transaction(get_or_create_txn)
 
-  def _getForm(self, entity):
+  def _getForm(self, data, entity):
     raise NotImplementedError
 
   def _getModel(self):

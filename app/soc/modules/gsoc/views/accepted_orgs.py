@@ -102,20 +102,19 @@ class AcceptedOrgsPage(GSoCRequestHandler):
         django_url(r'^program/accepted_orgs/%s$' % url_patterns.PROGRAM, self),
     ]
 
-  def checkAccess(self):
-    self.check.acceptedOrgsAnnounced()
+  def checkAccess(self, data, check, mutator):
+    check.acceptedOrgsAnnounced()
 
-  def jsonContext(self):
-    list_content = AcceptedOrgsList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = AcceptedOrgsList(data).getListData()
     if list_content:
       return list_content.content()
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Accepted organizations for %s" % self.data.program.name,
-        'accepted_orgs_list': AcceptedOrgsList(self.data),
-        'program_select': ProgramSelect(self.data, 'gsoc_accepted_orgs'),
+        'page_name': "Accepted organizations for %s" % data.program.name,
+        'accepted_orgs_list': AcceptedOrgsList(data),
+        'program_select': ProgramSelect(data, 'gsoc_accepted_orgs'),
     }

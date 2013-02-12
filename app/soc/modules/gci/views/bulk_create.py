@@ -50,51 +50,50 @@ class BulkCreate(GCIRequestHandler):
         url(r'bulk/%s$' % url_patterns.ORG, self,
             name=url_names.GCI_TASK_BULK_CREATE)]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Denies access if the currently logged user is not allowed to
     bulk create tasks.
     """
-    self.check.isLoggedIn()
-    self.check.canBulkCreateTask()
+    check.isLoggedIn()
+    check.canBulkCreateTask()
 
   def templatePath(self):
     """Returns the path to the template.
     """
     return 'v2/modules/gci/bulk_create/base.html'
 
-  def context(self):
-    """Handler for default HTTP GET request.
-    """
+  def context(self, data, check, mutator):
+    """Handler for default HTTP GET request."""
     context = {
-        'page_name': 'Bulk upload tasks for %s' % self.data.organization.name,
+        'page_name': 'Bulk upload tasks for %s' % data.organization.name,
         }
 
     # get a list of task type tags stored for the program entity
-    tts = self.data.program.task_types
+    tts = data.program.task_types
     context['types'] = ', '.join([str(x) for x in tts])
 
-    if self.data.POST:
-      form = BulkCreateForm(self.data.POST)
+    if data.POST:
+      form = BulkCreateForm(data.POST)
       context['form'] = form
     else:
       context['form'] = BulkCreateForm()
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles POST requests for the bulk create page."""
-    form = BulkCreateForm(self.data.POST)
+    form = BulkCreateForm(data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
     bulk_create.spawnBulkCreateTasks(
-        form.cleaned_data['task_data'], self.data.organization,
-        self.data.profile)
+        form.cleaned_data['task_data'], data.organization,
+        data.profile)
 
     # TODO(nathaniel): make this .organization call unnecessary.
-    self.data.redirect.organization(organization=self.data.organization)
+    data.redirect.organization(organization=data.organization)
 
-    return self.data.redirect.to(
+    return data.redirect.to(
         url_names.GCI_TASK_BULK_CREATE, validated=True)

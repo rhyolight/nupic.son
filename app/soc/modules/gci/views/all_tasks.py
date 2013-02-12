@@ -57,19 +57,18 @@ class TaskListPage(GCIRequestHandler):
             name=url_names.GCI_ALL_TASKS_LIST),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     pass
 
-  def jsonContext(self):
-    list_content = AllTasksList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = AllTasksList(data).getListData()
     if list_content:
       return list_content.content()
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Tasks for %s" % self.data.program.name,
-        'task_list': AllTasksList(self.data),
+        'page_name': "Tasks for %s" % data.program.name,
+        'task_list': AllTasksList(data),
     }

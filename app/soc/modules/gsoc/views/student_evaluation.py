@@ -61,8 +61,7 @@ class GSoCStudentEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
 
 
 class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
-  """View for creating/editing student evalution.
-  """
+  """View for creating/editing student evalution."""
 
   def djangoURLPatterns(self):
     return [
@@ -70,25 +69,25 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
              self, name='gsoc_edit_student_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.studentEvaluationFromKwargs(raise_not_found=False)
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    mutator.studentEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation.html'
 
-  def context(self):
-    if self.data.student_evaluation:
+  def context(self, data, check, mutator):
+    if data.student_evaluation:
       form = GSoCStudentEvaluationEditForm(
-          self.data.POST or None, instance=self.data.student_evaluation)
+          data.POST or None, instance=data.student_evaluation)
     else:
-      form = GSoCStudentEvaluationEditForm(self.data.POST or None)
+      form = GSoCStudentEvaluationEditForm(data.POST or None)
 
-    page_name = ugettext('Edit - %s' % (self.data.student_evaluation.title)) \
-        if self.data.student_evaluation else 'Create new student evaluation'
+    page_name = ugettext('Edit - %s' % (data.student_evaluation.title)) \
+        if data.student_evaluation else 'Create new student evaluation'
     context = {
         'page_name': page_name,
-        'post_url': self.data.redirect.survey().urlOf(
+        'post_url': data.redirect.survey().urlOf(
             'gsoc_edit_student_evaluation'),
         'forms': [form],
         'error': bool(form.errors),
@@ -96,33 +95,36 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
 
     return context
 
-  def evaluationFromForm(self):
+  def evaluationFromForm(self, data):
     """Create/edit the student evaluation entity from form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated student evaluation entity or None.
     """
-    if self.data.student_evaluation:
+    if data.student_evaluation:
       form = GSoCStudentEvaluationEditForm(
-          self.data.POST, instance=self.data.student_evaluation)
+          data.POST, instance=data.student_evaluation)
     else:
-      form = GSoCStudentEvaluationEditForm(self.data.POST)
+      form = GSoCStudentEvaluationEditForm(data.POST)
 
     if not form.is_valid():
       return None
 
-    form.cleaned_data['modified_by'] = self.data.user
+    form.cleaned_data['modified_by'] = data.user
 
-    if not self.data.student_evaluation:
-      form.cleaned_data['link_id'] = self.data.kwargs.get('survey')
+    if not data.student_evaluation:
+      form.cleaned_data['link_id'] = data.kwargs.get('survey')
       form.cleaned_data['prefix'] = 'gsoc_program'
-      form.cleaned_data['author'] = self.data.user
-      form.cleaned_data['scope'] = self.data.program
+      form.cleaned_data['author'] = data.user
+      form.cleaned_data['scope'] = data.program
       # kwargs which defines an evaluation
       fields = ['sponsor', 'program', 'survey']
 
       key_name = '/'.join(['gsoc_program'] +
-                          [self.data.kwargs[field] for field in fields])
+                          [data.kwargs[field] for field in fields])
 
       entity = form.create(commit=True, key_name=key_name)
     else:
@@ -130,20 +132,19 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
 
     return entity
 
-  def post(self):
-    evaluation = self.evaluationFromForm()
+  def post(self, data, check, mutator):
+    evaluation = self.evaluationFromForm(data)
     if evaluation:
       # TODO(nathaniel): Redirection to self?
-      return self.data.redirect.survey().to(
+      return data.redirect.survey().to(
           'gsoc_edit_student_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
-  """View for students to submit their evaluation.
-  """
+  """View for students to submit their evaluation."""
 
   def djangoURLPatterns(self):
     return [
@@ -151,89 +152,90 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
              self, name='gsoc_take_student_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    self.mutator.studentEvaluationFromKwargs()
-    self.mutator.studentEvaluationRecordFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    mutator.studentEvaluationFromKwargs()
+    mutator.studentEvaluationRecordFromKwargs()
 
-    assert isSet(self.data.student_evaluation)
+    assert isSet(data.student_evaluation)
 
-    if self.data.is_host:
+    if data.is_host:
       return
 
-    show_url = self.data.redirect.survey_record(
-          self.data.student_evaluation.link_id).urlOf(
+    show_url = data.redirect.survey_record(
+          data.student_evaluation.link_id).urlOf(
           'gsoc_show_student_evaluation')
-    self.check.isSurveyActive(self.data.student_evaluation, show_url)
+    check.isSurveyActive(data.student_evaluation, show_url)
 
-    self.check.isProfileActive()
-    if self.data.orgAdminFor(self.data.project.org):
+    check.isProfileActive()
+    if data.orgAdminFor(data.project.org):
       raise RedirectRequest(show_url)
 
-    self.check.canUserTakeSurvey(self.data.student_evaluation, 'student')
-    self.check.isStudentForSurvey()
+    check.canUserTakeSurvey(data.student_evaluation, 'student')
+    check.isStudentForSurvey()
 
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation_take.html'
 
-  def context(self):
-    if self.data.student_evaluation_record:
+  def context(self, data, check, mutator):
+    if data.student_evaluation_record:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.student_evaluation,
-          self.data.POST or None, instance=self.data.student_evaluation_record)
+          data.student_evaluation,
+          data.POST or None, instance=data.student_evaluation_record)
     else:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.student_evaluation, self.data.POST or None)
+          data.student_evaluation, data.POST or None)
 
     context = {
-        'page_name': '%s' % (self.data.student_evaluation.title),
-        'description': self.data.student_evaluation.content,
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False,
+        'page_name': '%s' % data.student_evaluation.title,
+        'description': data.student_evaluation.content,
+        'form_top_msg': LoggedInMsg(data, apply_link=False,
                                     div_name='user-login'),
-        'project': self.data.project.title,
+        'project': data.project.title,
         'forms': [form],
         'error': bool(form.errors),
         }
 
     return context
 
-  def recordEvaluationFromForm(self):
+  def recordEvaluationFromForm(self, data):
     """Create/edit a new student evaluation record based on the form input.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated evaluation record entity or None
     """
-    if self.data.student_evaluation_record:
+    if data.student_evaluation_record:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.student_evaluation,
-          self.data.POST, instance=self.data.student_evaluation_record)
+          data.student_evaluation, data.POST,
+          instance=data.student_evaluation_record)
     else:
-      form = GSoCStudentEvaluationTakeForm(
-          self.data.student_evaluation, self.data.POST)
+      form = GSoCStudentEvaluationTakeForm(data.student_evaluation, data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.student_evaluation_record:
-      form.cleaned_data['project'] = self.data.project
-      form.cleaned_data['org'] = self.data.project.org
-      form.cleaned_data['user'] = self.data.user
-      form.cleaned_data['survey'] = self.data.student_evaluation
+    if not data.student_evaluation_record:
+      form.cleaned_data['project'] = data.project
+      form.cleaned_data['org'] = data.project.org
+      form.cleaned_data['user'] = data.user
+      form.cleaned_data['survey'] = data.student_evaluation
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
 
     return entity
 
-  def post(self):
-    student_evaluation_record = self.recordEvaluationFromForm()
+  def post(self, data, check, mutator):
+    student_evaluation_record = self.recordEvaluationFromForm(data)
     if student_evaluation_record:
-      self.data.redirect.survey_record(self.data.student_evaluation.link_id)
-      return self.data.redirect.to(
-          'gsoc_take_student_evaluation', validated=True)
+      data.redirect.survey_record(data.student_evaluation.link_id)
+      return data.redirect.to('gsoc_take_student_evaluation', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
@@ -247,20 +249,20 @@ class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
              self, name='gsoc_preview_student_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.studentEvaluationFromKwargs(raise_not_found=False)
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    mutator.studentEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
     return 'v2/modules/gsoc/_evaluation_take.html'
 
-  def context(self):
-    form = GSoCStudentEvaluationTakeForm(self.data.student_evaluation)
+  def context(self, data, check, mutator):
+    form = GSoCStudentEvaluationTakeForm(data.student_evaluation)
 
     context = {
-        'page_name': '%s' % (self.data.student_evaluation.title),
-        'description': self.data.student_evaluation.content,
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False,
+        'page_name': '%s' % data.student_evaluation.title,
+        'description': data.student_evaluation.content,
+        'form_top_msg': LoggedInMsg(data, apply_link=False,
                                     div_name='user-login'),
         'project': "The Project Title",
         'forms': [form],
@@ -271,8 +273,7 @@ class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
 
 
 class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
-  """View for listing all records of a GSoCGProjectSurveyRecord.
-  """
+  """View for listing all records of a GSoCGProjectSurveyRecord."""
 
   def djangoURLPatterns(self):
     return [
@@ -281,39 +282,39 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
              self, name='gsoc_list_student_eval_records')
          ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Defines access checks for this list, all hosts should be able to see it.
     """
-    self.check.isHost()
-    self.mutator.studentEvaluationFromKwargs()
+    check.isHost()
+    mutator.studentEvaluationFromKwargs()
 
-  def context(self):
-    """Returns the context of the page to render.
-    """
-    record_list = self._createSurveyRecordList()
+  def context(self, data, check, mutator):
+    """Returns the context of the page to render."""
+    record_list = self._createSurveyRecordList(data)
 
-    page_name = ugettext('Records - %s' % (self.data.student_evaluation.title))
+    page_name = ugettext('Records - %s' % (data.student_evaluation.title))
     context = {
         'page_name': page_name,
         'record_list': record_list,
         }
     return context
 
-  def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    idx = lists.getListIndex(self.data.request)
+  def jsonContext(self, data, check, mutator):
+    """Handler for JSON requests."""
+    idx = lists.getListIndex(data.request)
     if idx == 0:
-      record_list = self._createSurveyRecordList()
+      record_list = self._createSurveyRecordList(data)
       return record_list.listContentResponse(
-          self.data.request, prefetch=['org', 'project']).content()
+          data.request, prefetch=['org', 'project']).content()
     else:
-      super(GSoCStudentEvaluationRecordsList, self).jsonContext()
+      # TODO(nathaniel): This smells like it is missing a return statement.
+      super(GSoCStudentEvaluationRecordsList, self).jsonContext(
+          data, check, mutator)
 
-  def _createSurveyRecordList(self):
+  def _createSurveyRecordList(self, data):
     """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
-        self.data, self.data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
+        data, data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
 
     record_list.list_config.addPlainTextColumn(
         'project', 'Project', lambda ent, *args: ent.project.title)
@@ -327,8 +328,7 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
 
 
 class GSoCStudentEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
-  """Template to construct readonly student evaluation record.
-  """
+  """Template to construct readonly student evaluation record."""
 
   class Meta:
     model = GSoCProjectSurveyRecord
@@ -346,52 +346,52 @@ class GSoCStudentEvaluationShowPage(GSoCRequestHandler):
             self, name='gsoc_show_student_evaluation'),
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    self.mutator.studentEvaluationFromKwargs()
-    self.mutator.studentEvaluationRecordFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    mutator.studentEvaluationFromKwargs()
+    mutator.studentEvaluationRecordFromKwargs()
 
-    assert isSet(self.data.project)
-    assert isSet(self.data.student_evaluation)
+    assert isSet(data.project)
+    assert isSet(data.student_evaluation)
 
-    self.check.isProfileActive()
-    if self.data.orgAdminFor(self.data.project.org):
-      self.data.role = 'org_admin'
-      if self.data.timeline.afterSurveyEnd(self.data.student_evaluation):
+    check.isProfileActive()
+    if data.orgAdminFor(data.project.org):
+      data.role = 'org_admin'
+      if data.timeline.afterSurveyEnd(data.student_evaluation):
         return
       else:
         raise AccessViolation(DEF_CANNOT_ACCESS_EVALUATION)
 
-    self.check.isStudentForSurvey()
-    self.data.role = 'student'
+    check.isStudentForSurvey()
+    data.role = 'student'
 
   def templatePath(self):
     return 'v2/modules/gsoc/_survey/show.html'
 
-  def context(self):
-    assert isSet(self.data.program)
-    assert isSet(self.data.timeline)
-    assert isSet(self.data.student_evaluation_record)
+  def context(self, data, check, mutator):
+    assert isSet(data.program)
+    assert isSet(data.timeline)
+    assert isSet(data.student_evaluation_record)
 
-    record = self.data.student_evaluation_record
-    student = self.data.url_profile
+    record = data.student_evaluation_record
+    student = data.url_profile
 
     context = {
         'page_name': 'Student evaluation - %s' % (student.name()),
         'student': student.name(),
-        'organization': self.data.project.org.name,
-        'project': self.data.project.title,
-        'top_msg': LoggedInMsg(self.data, apply_link=False),
+        'organization': data.project.org.name,
+        'project': data.project.title,
+        'top_msg': LoggedInMsg(data, apply_link=False),
         'css_prefix': GSoCStudentEvaluationReadOnlyTemplate.Meta.css_prefix,
         }
 
     if record:
       context['record'] = GSoCStudentEvaluationReadOnlyTemplate(record)
 
-    if self.data.timeline.surveyPeriod(self.data.student_evaluation):
-      if self.data.role == 'student':
-        context['update_link'] = self.data.redirect.survey_record(
-            self.data.student_evaluation.link_id).urlOf(
+    if data.timeline.surveyPeriod(data.student_evaluation):
+      if data.role == 'student':
+        context['update_link'] = data.redirect.survey_record(
+            data.student_evaluation.link_id).urlOf(
             'gsoc_take_student_evaluation')
       else:
         context['submission_msg'] = ugettext(

@@ -22,6 +22,7 @@ from soc.views.template import Template
 
 from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.logic import task as task_logic
+from soc.modules.gci.models import program as program_model
 from soc.modules.gci.views import common_templates
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
@@ -209,8 +210,7 @@ class ConnectWithUs(Template):
 
 
 class Homepage(GCIRequestHandler):
-  """Encapsulate all the methods required to generate GCI Home page.
-  """
+  """Encapsulate all the methods required to generate GCI Home page."""
 
   def templatePath(self):
     return 'v2/modules/gci/homepage/base.html'
@@ -222,31 +222,53 @@ class Homepage(GCIRequestHandler):
         url(r'program/home/%s$' % url_patterns.PROGRAM, self),
     ]
 
-  def checkAccess(self):
-    self.check.isProgramVisible()
+  def checkAccess(self, data, check, mutator):
+    check.isProgramVisible()
 
-  def context(self):
-    current_timeline = self.data.timeline.currentPeriod()
+  def context(self, data, check, mutator):
+    current_timeline = data.timeline.currentPeriod()
 
     context = {
-        'page_name': '%s - Home page' % (self.data.program.name),
-        'how_it_works': HowItWorks(self.data),
-        'participating_orgs': ParticipatingOrgs(self.data),
-        'timeline': common_templates.Timeline(self.data),
-        'complete_percentage': self.data.timeline.completePercentage(),
+        'page_name': '%s - Home page' % data.program.name,
+        'how_it_works': HowItWorks(data),
+        'participating_orgs': ParticipatingOrgs(data),
+        'timeline': common_templates.Timeline(data),
+        'complete_percentage': data.timeline.completePercentage(),
         'current_timeline': current_timeline,
-        'connect_with_us': ConnectWithUs(self.data),
-        'program': self.data.program,
+        'connect_with_us': ConnectWithUs(data),
+        'program': data.program,
     }
 
     if current_timeline in ['student_signup_period',
         'working_period', 'offseason']:
-      featured_task = task_logic.getFeaturedTask(self.data.program)
+      featured_task = task_logic.getFeaturedTask(data.program)
 
       if featured_task:
-        context['featured_task'] = FeaturedTask(self.data, featured_task)
+        context['featured_task'] = FeaturedTask(data, featured_task)
 
-    if self.data.is_host or self.data.timeline.winnersAnnounced():
-      context['winners'] = common_templates.Winners(self.data)
+    if data.is_host or data.timeline.winnersAnnounced():
+      context['winners'] = self._getWinnersTemplate(
+          data, data.program.winner_selection_type)
 
     return context
+
+  def _getWinnersTemplate(self, data, winner_selection_type):
+    """Factory method that returns a template to displays the Grand
+    Prize Winners of the program with the specified winner selection type.
+
+    Args:
+      data: A RequestData describing the current request.
+      winner_selection_type: the specified WinnerSelectionType.
+
+    Returns:
+      a template appropriate for the specified winner selection type.
+    """
+    if (winner_selection_type ==
+        program_model.WinnerSelectionType.ORG_NOMINATED):
+      return common_templates.OrgNominatedWinners(data)
+    elif (winner_selection_type ==
+        program_model.WinnerSelectionType.GLOBAL_RANKING):
+      return common_templates.GlobalRankingWinners(data)
+    else:
+      raise ValueError(
+         'Invalid value of winner_selection_type %s' % winner_selection_type)

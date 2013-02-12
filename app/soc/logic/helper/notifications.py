@@ -19,7 +19,6 @@
 
 
 from django.template import loader
-from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
 
 from soc.logic import mail_dispatcher
@@ -53,12 +52,6 @@ DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
 
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
     'soc/notification/new_request.html'
-
-DEF_ACCEPTED_ORG_TEMPLATE = \
-    'soc/notification/org_accepted.html'
-
-DEF_REJECTED_ORG_TEMPLATE = \
-    'soc/notification/org_rejected.html'
 
 DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
     'soc/notification/handled_request.html'
@@ -229,7 +222,10 @@ def orgAppContext(data, record, new_status, apply_url):
   """Sends out an invite notification to the applicant of the Organization.
 
   Args:
-    data: a RequestData object
+    data: a RequestData object.
+    record: an OrgAppRecord.
+    new_status: the new status that should be assigned to the record.
+    apply_url: Full URL to the org profile create page for accepted orgs.
   """
 
   context = {
@@ -277,7 +273,7 @@ def getDefaultContext(request_data, emails, subject, extra_context=None):
   if extra_context:
     default_context.update(extra_context)
 
-  return default_context  
+  return default_context
 
 
 def getContext(data, receivers, message_properties, subject, template):

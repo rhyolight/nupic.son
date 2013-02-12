@@ -28,24 +28,24 @@ from soc.modules.gci.views.helper import request_data
 class GCIRequestHandler(base.RequestHandler):
   """Customization required by GCI to handle HTTP requests."""
 
-  def render(self, template_path, context):
+  def render(self, data, template_path, context):
     """Renders the page using the specified context.
 
     See soc.views.base.RequestHandler for specification.
 
     The context object is extended with the following values:
       base_layout: path to the base template.
-      header: a rendered header.Header template for the current self.data
-      mainmenu: a rendered site_menu.MainMenu template for the current self.data
-      footer: a rendered site_menu.Footer template for the current self.data
+      header: a rendered header.Header template for the passed data.
+      mainmenu: a rendered site_menu.MainMenu template for the passed data.
+      footer: a rendered site_menu.Footer template for the passed data.
     """
     context['base_layout'] = 'v2/modules/gci/base.html'
-    if self.data.user:
-      context['status'] = base_templates.Status(self.data)
-    context['header'] = base_templates.Header(self.data)
-    context['mainmenu'] = base_templates.MainMenu(self.data)
-    context['footer'] = base_templates.Footer(self.data)
-    return super(GCIRequestHandler, self).render(template_path, context)
+    if data.user:
+      context['status'] = base_templates.Status(data)
+    context['header'] = base_templates.Header(data)
+    context['mainmenu'] = base_templates.MainMenu(data)
+    context['footer'] = base_templates.Footer(data)
+    return super(GCIRequestHandler, self).render(data, template_path, context)
 
   def init(self, request, args, kwargs):
     """See base.RequestHandler.init for specification."""
@@ -58,10 +58,11 @@ class GCIRequestHandler(base.RequestHandler):
       check = access_checker.AccessChecker(data)
     return data, check, mutator
 
-  def error(self, status, message=None):
+  def error(self, data, status, message=None):
     """See base.RequestHandler.error for specification."""
-    if not self.data.program:
-      return super(GCIRequestHandler, self).error(status, message)
+    if not data.program:
+      return super(GCIRequestHandler, self).error(
+          data, status, message=message)
 
     # If message is not set, set it to the default associated with the
     # given status (such as "Method Not Allowed" or "Service Unavailable").
@@ -74,4 +75,4 @@ class GCIRequestHandler(base.RequestHandler):
     }
 
     return http.HttpResponse(
-        content=self.render(template_path, context), status=status)
+        content=self.render(data, template_path, context), status=status)

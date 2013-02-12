@@ -59,8 +59,6 @@ Usage:
 """
 
 
-import logging
-
 from django.template import Context
 from django.template import loader
 
@@ -205,7 +203,6 @@ def getDefaultMailSender(data=None):
     - A tuple containing (sender_name, sender_address)
     Consisting of:
   """
-  from soc.logic import system
   from soc.logic import site
 
   # check if there is a noreply email address set

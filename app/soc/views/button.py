@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for rendering dual buttons for enabling/disabling feature.
-"""
-
+"""Module for rendering dual buttons for enabling/disabling feature."""
 
 from django.utils.translation import ugettext
 
@@ -24,8 +20,7 @@ from soc.views.template import Template
 
 
 class ButtonTemplate(Template):
-  """Template to render buttons on proposal review page.
-  """
+  """Template to render buttons on proposal review page."""
 
   DEF_ENABLE_BTN_DISABLED = ugettext(
       'This functionality is already enabled. To disable this functionality, '
@@ -58,8 +53,7 @@ class ButtonTemplate(Template):
     self._disabled_msgs = disabled_msgs
 
   def context(self):
-    """The context for this template used in render().
-    """
+    """The context for this template used in render()."""
     context = {
         'title': self.title,
         'id': self.id,
@@ -74,20 +68,17 @@ class ButtonTemplate(Template):
 
   @property
   def state(self):
-    """Returns the state as needed by the Javascript and HTML.
-    """
-    return "enable" if self._enable else "disable"
+    """Returns the state as needed by the Javascript and HTML."""
+    return 'enable' if self._enable else 'disable'
 
   @property
   def link(self):
-    """Returns the post url for the button.
-    """
+    """Returns the post url for the button."""
     return self.data.redirect.review().urlOf(self._url_name)
 
   @property
   def id(self):
-    """Returns the id to be used for the button.
-    """
+    """Returns the id to be used for the button."""
     return self._id
 
   @property

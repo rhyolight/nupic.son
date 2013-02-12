@@ -156,8 +156,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
 
 
 class OrgAppRecordsList(object):
-  """View for listing all records of a Organization Applications.
-  """
+  """View for listing all records of a Organization Applications."""
 
   def __init__(self, read_only_view):
     """Initializes the OrgAppRecordsList.
@@ -168,41 +167,40 @@ class OrgAppRecordsList(object):
     """
     self.read_only_view = read_only_view
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Defines access checks for this list, all hosts should be able to see it.
     """
-    if not self.data.org_app:
+    if not data.org_app:
       raise exceptions.NotFound(
-          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+          access_checker.DEF_NO_ORG_APP % data.program.name)
 
-    self.check.isHost()
+    check.isHost()
 
-  def context(self):
-    """Returns the context of the page to render.
-    """
-    record_list = self._createOrgAppsList()
+  def context(self, data, check, mutator):
+    """Returns the context of the page to render."""
+    record_list = self._createOrgAppsList(data)
 
-    page_name = ugettext('Records - %s' % (self.data.org_app.title))
+    page_name = ugettext('Records - %s' % (data.org_app.title))
     context = {
         'page_name': page_name,
         'record_list': record_list,
         }
     return context
 
-  def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    idx = lists.getListIndex(self.data.request)
+  def jsonContext(self, data, check, mutator):
+    """Handler for JSON requests."""
+    idx = lists.getListIndex(data.request)
     if idx == 0:
-      record_list = self._createOrgAppsList()
-      return record_list.listContentResponse(self.data.request).content()
+      record_list = self._createOrgAppsList(data)
+      return record_list.listContentResponse(data.request).content()
     else:
-      super(OrgAppRecordsList, self).jsonContext()
+      # TODO(nathaniel): This needs to be a return statement, right?
+      super(OrgAppRecordsList, self).jsonContext(data, check, mutator)
 
-  def _createOrgAppsList(self):
+  def _createOrgAppsList(self, data):
     """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
-        self.data, self.data.org_app, OrgAppRecord, idx=0)
+        data, data.org_app, OrgAppRecord, idx=0)
     record_list.list_config.addSimpleColumn('name', 'Name')
     record_list.list_config.addSimpleColumn('org_id', 'Organization ID')
 
@@ -223,7 +221,7 @@ class OrgAppRecordsList(object):
     record_list.list_config.addPostEditButton('save', 'Save')
 
     record_list.list_config.setRowAction(
-        lambda e, *args: self.data.redirect.id(e.key().id_or_name()).
+        lambda e, *args: data.redirect.id(e.key().id_or_name()).
             urlOf(self.read_only_view))
 
     return record_list

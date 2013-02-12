@@ -30,15 +30,15 @@ class SearchGsocPage(base.GSoCRequestHandler):
         url(r'search/%s$' % url_patterns.PROGRAM, self, name='search_gsoc'),
     ]
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'app_version': os.environ.get('CURRENT_VERSION_ID', '').split('.')[0],
         'page_name': 'Search GSoC',
-        'cse_key':  self.data.site.cse_key
+        'cse_key': data.site.cse_key
     }
 
   def templatePath(self):
     return 'v2/modules/gsoc/search.html'
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     pass

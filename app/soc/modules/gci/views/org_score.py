@@ -97,19 +97,17 @@ class OrgScoresForOrgzanizationPage(GCIRequestHandler):
             name=url_names.GCI_ORG_SCORES),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     pass
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Organization scores for %s" %
-            self.data.organization.name,
-        'org_scores_list': OrgScoresList(self.data),
+        'page_name': "Organization scores for %s" % data.organization.name,
+        'org_scores_list': OrgScoresList(data),
     }
 
-  def jsonContext(self):
-    list_content = OrgScoresList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = OrgScoresList(data).getListData()
     if list_content:
       return list_content.content()
     else:
@@ -147,22 +145,20 @@ class ChooseOrganizationForOrgScorePage(GCIRequestHandler):
             name=url_names.GCI_ORG_CHOOSE_FOR_SCORE),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     # TODO(daniel): check if the program has started
-    self.check.isHost()
-    pass
+    check.isHost()
 
-  def jsonContext(self):
-    list_content = OrganizationsForOrgScoreList(self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = OrganizationsForOrgScoreList(data).getListData()
     if list_content:
       return list_content.content()
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': "Choose an organization for which to display scores.",
-        'org_list': OrganizationsForOrgScoreList(self.data),
-        #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
+        'org_list': OrganizationsForOrgScoreList(data),
+        #'program_select': ProgramSelect(data, 'gci_accepted_orgs'),
     }

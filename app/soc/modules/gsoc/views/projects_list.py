@@ -126,30 +126,29 @@ class ListProjects(GSoCRequestHandler):
             name='gsoc_accepted_projects')
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Access checks for the view."""
-    self.check.acceptedStudentsAnnounced()
+    check.acceptedStudentsAnnounced()
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
     list_query = project_logic.getAcceptedProjectsQuery(
-        program=self.data.program)
-    list_content = ProjectList(self.data, list_query).getListData()
+        program=data.program)
+    list_content = ProjectList(data, list_query).getListData()
 
     if list_content:
       return list_content.content()
     else:
       raise AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler for GSoC Accepted Projects List page HTTP get request."""
-    program = self.data.program
-    list_query = project_logic.getAcceptedProjectsQuery(
-        program=self.data.program)
+    program = data.program
+    list_query = project_logic.getAcceptedProjectsQuery(program=data.program)
 
     return {
         'page_name': '%s - Accepted Projects' % program.short_name,
         'program_name': program.name,
-        'project_list': ProjectList(self.data, list_query),
-        'program_select': ProgramSelect(self.data, 'gsoc_accepted_projects'),
+        'project_list': ProjectList(data, list_query),
+        'program_select': ProgramSelect(data, 'gsoc_accepted_projects'),
     }

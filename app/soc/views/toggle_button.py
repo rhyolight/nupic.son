@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for rendering toggle buttons for enabling/disabling feature.
-"""
-
+"""Module for rendering toggle buttons for enabling/disabling feature."""
 
 from soc.views.template import Template
 
 
 class ToggleButtonTemplate(Template):
-  """Template to render toggle buttons.
-  """
+  """Template to render toggle buttons."""
 
   def __init__(self, data, type, title, id, post_url, checked=False,
                help_text=None, note=None, labels=None):
@@ -51,8 +46,7 @@ class ToggleButtonTemplate(Template):
     self.post_url = post_url
 
   def context(self):
-    """The context for this template used in render().
-    """
+    """The context for this template used in render()."""
     context = {
         'button': self,
         }
@@ -61,9 +55,8 @@ class ToggleButtonTemplate(Template):
 
   @property
   def state(self):
-    """Returns the state as needed by the Javascript and HTML.
-    """
-    return "checked" if self.checked else "unchecked"
+    """Returns the state as needed by the Javascript and HTML."""
+    return 'checked' if self.checked else 'unchecked'
 
   def templatePath(self):
     return 'soc/_toggle_button.html'

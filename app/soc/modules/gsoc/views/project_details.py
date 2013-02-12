@@ -156,7 +156,7 @@ class UploadCodeSamples(Template):
             self.data.redirect.urlOf(
                 url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD))
         }
-    
+
     if self.data.GET.get('file', None) == '0':
       context['code_sample_upload_file_form'].addFileRequiredError()
 
@@ -176,104 +176,96 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
     return 'v2/modules/gsoc/project_details/update.html'
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
-
+    """Returns the list of tuples for containing URL to view method mapping."""
     return [
         url(r'project/update/%s$' % url_patterns.PROJECT, self,
             name=url_names.GSOC_PROJECT_UPDATE)
     ]
 
-  def checkAccess(self):
-    """Access checks for GSoC project details page.
-    """
-    self.check.isLoggedIn()
-    self.check.isActiveStudent()
-    self.mutator.projectFromKwargs()
-    self.check.canStudentUpdateProject()
+  def checkAccess(self, data, check, mutator):
+    """Access checks for GSoC project details page."""
+    check.isLoggedIn()
+    check.isActiveStudent()
+    mutator.projectFromKwargs()
+    check.canStudentUpdateProject()
 
-  def context(self):
-    """Handler to for GSoC project details page HTTP get request.
-    """
-    project_details_form = ProjectDetailsForm(self.data.POST or None,
-                                              instance=self.data.project)
+  def context(self, data, check, mutator):
+    """Handler to for GSoC project details page HTTP get request."""
+    project_details_form = ProjectDetailsForm(data.POST or None,
+                                              instance=data.project)
 
     context = {
         'page_name': 'Update project details',
-        'project': self.data.project,
+        'project': data.project,
         'forms': [project_details_form],
         'error': project_details_form.errors,
     }
 
-    if len(self.data.project.passed_evaluations) >= \
+    if len(data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
-      context['upload_code_samples'] = UploadCodeSamples(self.data)
-      context['list_code_samples'] = ListCodeSamples(self.data, True)
+      context['upload_code_samples'] = UploadCodeSamples(data)
+      context['list_code_samples'] = ListCodeSamples(data, True)
 
     return context
 
-  def validate(self):
-    """Validate the form data and save if valid.
-    """
-    project_details_form = ProjectDetailsForm(self.data.POST or None,
-                                              instance=self.data.project)
+  def validate(self, data):
+    """Validate the form data and save if valid."""
+    project_details_form = ProjectDetailsForm(
+        data.POST or None, instance=data.project)
 
-    if not project_details_form.is_valid():
+    if project_details_form.is_valid():
+      project_details_form.save()
+      return True
+    else:
       return False
 
-    project_details_form.save()
-    return True
-
-  def post(self):
+  def post(self, data, check, mutator):
     """Post handler for the project details update form."""
-    if self.validate():
-      self.data.redirect.project()
-      return self.data.redirect.to('gsoc_project_details')
+    if self.validate(data):
+      data.redirect.project()
+      return data.redirect.to('gsoc_project_details')
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class CodeSampleUploadFilePost(GSoCRequestHandler):
-  """Handler for POST requests to upload files with code samples.
-  """
+  """Handler for POST requests to upload files with code samples."""
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
-
+    """Returns the list of tuples for containing URL to view method mapping."""
     return [
         url(r'project/code_sample/upload/%s$' % url_patterns.PROJECT, self,
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD)
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isActiveStudent()
-    self.mutator.projectFromKwargs()
-    self.check.canStudentUpdateProject()
-    self.check.isProjectCompleted()
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isActiveStudent()
+    mutator.projectFromKwargs()
+    check.canStudentUpdateProject()
+    check.isProjectCompleted()
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Post handler for the code sample upload file."""
-    assert isSet(self.data.project)
+    assert isSet(data.project)
 
     form = CodeSampleUploadFileForm(
-        data=self.data.POST, files=self.data.request.file_uploads)
+        data=data.POST, files=data.request.file_uploads)
 
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blob from the cloud
-      for blob_info in self.data.request.file_uploads.itervalues():
+      for blob_info in data.request.file_uploads.itervalues():
         blob_info.delete()
       # TODO(nathaniel): make this .project() call unnecessary.
-      return self.data.redirect.project().to(
+      return data.redirect.project().to(
           url_names.GSOC_PROJECT_UPDATE, extra=['file=0'])
 
-    form.cleaned_data['user'] = self.data.user
-    form.cleaned_data['org'] = self.data.project.org
-    form.cleaned_data['program'] = self.data.project.program
+    form.cleaned_data['user'] = data.user
+    form.cleaned_data['org'] = data.project.org
+    form.cleaned_data['program'] = data.project.program
 
-    project_key = self.data.project.key()
+    project_key = data.project.key()
     code_sample = form.create(commit=False, parent=project_key)
 
     def txn():
@@ -287,35 +279,32 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
     db.run_in_transaction(txn)
 
     # TODO(nathaniel): Make this .project() call unnecessary.
-    self.data.redirect.project()
+    data.redirect.project()
 
-    return self.data.redirect.to('gsoc_project_details')
+    return data.redirect.to('gsoc_project_details')
 
 
 class CodeSampleDownloadFileGet(GSoCRequestHandler):
-  """Handler for POST requests to download files with code samples.
-  """
+  """Handler for POST requests to download files with code samples."""
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
-
+    """Returns the list of tuples for containing URL to view method mapping."""
     return [
         url(r'project/code_sample/download/%s$' % url_patterns.PROJECT, self,
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    self.check.isProjectCompleted()
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    check.isProjectCompleted()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Get handler for the code sample download file."""
-    assert isSet(self.data.project)
+    assert isSet(data.project)
 
     try:
-      id_value = int(self.data.request.GET['id'])
-      code_sample = GSoCCodeSample.get_by_id(id_value, self.data.project)
+      id_value = int(data.request.GET['id'])
+      code_sample = GSoCCodeSample.get_by_id(id_value, data.project)
       if not code_sample or not code_sample.upload_of_work:
         raise BadRequest('Requested project or code sample not found')
       return bs_helper.sendBlob(code_sample.upload_of_work)
@@ -326,29 +315,27 @@ class CodeSampleDownloadFileGet(GSoCRequestHandler):
 
 
 class CodeSampleDeleteFilePost(GSoCRequestHandler):
-  """Handler for POST requests to delete code sample files.
-  """
+  """Handler for POST requests to delete code sample files."""
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
+    """Returns the list of tuples for containing URL to view method mapping."""
     return [
         url(r'project/code_sample/delete/%s$' % url_patterns.PROJECT, self,
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_DELETE)
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    self.check.canStudentUpdateProject()
-    self.check.isProjectCompleted()
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    check.canStudentUpdateProject()
+    check.isProjectCompleted()
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Get handler for the code sample delete file."""
-    assert isSet(self.data.project)
+    assert isSet(data.project)
 
     try:
-      id_value = int(self.data.request.POST['id'])
-      code_sample = GSoCCodeSample.get_by_id(id_value, self.data.project)
+      id_value = int(data.request.POST['id'])
+      code_sample = GSoCCodeSample.get_by_id(id_value, data.project)
 
       if not code_sample:
         raise BadRequest('Requested code sample not found')
@@ -361,19 +348,20 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
           # this is executed outside of transaction
           upload_of_work.delete()
 
-        if self.data.project.countCodeSamples() <= 1:
-          project = GSoCProject.get(self.data.project.key())
+        if data.project.countCodeSamples() <= 1:
+          project = GSoCProject.get(data.project.key())
           project.code_samples_submitted = False
           project.put()
 
       db.run_in_transaction(txn)
 
-      self.data.redirect.project()
-      return self.data.redirect.to(url_names.GSOC_PROJECT_UPDATE)
+      data.redirect.project()
+      return data.redirect.to(url_names.GSOC_PROJECT_UPDATE)
     except KeyError:
       raise BadRequest('id argument missing in POST data')
     except ValueError:
       raise BadRequest('id argument in POST data is not a number')
+
 
 class UserActions(Template):
   """Template to render the left side user actions.
@@ -431,48 +419,46 @@ class ProjectDetails(GSoCRequestHandler):
     return 'v2/modules/gsoc/project_details/base.html'
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
+    """Returns the list of tuples for containing URL to view method mapping."""
 
     return [
         url(r'project/%s$' % url_patterns.PROJECT, self,
             name='gsoc_project_details')
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Access checks for GSoC project details page."""
-    self.mutator.projectFromKwargs()
+    mutator.projectFromKwargs()
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
     # TODO(nathaniel): make this .organization call unnecessary?
-    self.data.redirect.organization(organization=self.data.project.org)
+    data.redirect.organization(organization=data.project.org)
 
     context = {
         'page_name': 'Project details',
-        'project': self.data.project,
-        'org_home_link': self.data.redirect.urlOf('gsoc_org_home'),
+        'project': data.project,
+        'org_home_link': data.redirect.urlOf('gsoc_org_home'),
     }
 
-    if self.data.orgAdminFor(self.data.project.org):
-      context['user_actions'] = UserActions(self.data)
+    if data.orgAdminFor(data.project.org):
+      context['user_actions'] = UserActions(data)
 
-    user_is_owner = self.data.user and \
-        (self.data.user.key() == self.data.project_owner.parent_key())
+    user_is_owner = data.user and \
+        (data.user.key() == data.project_owner.parent_key())
     if user_is_owner:
-      context['update_link'] = self.data.redirect.project().urlOf(
+      context['update_link'] = data.redirect.project().urlOf(
           url_names.GSOC_PROJECT_UPDATE)
 
-    if len(self.data.project.passed_evaluations) >= \
+    if len(data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
-      context['list_code_samples'] = ListCodeSamples(self.data, False)
+      context['list_code_samples'] = ListCodeSamples(data, False)
 
     return context
 
 
 class AssignMentors(GSoCRequestHandler):
-  """View which handles assigning mentor to a project.
-  """
+  """View which handles assigning mentor to a project."""
 
   def djangoURLPatterns(self):
     return [
@@ -480,21 +466,22 @@ class AssignMentors(GSoCRequestHandler):
          self, name='gsoc_project_assign_mentors'),
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    assert isSet(self.data.project.org)
-    self.check.isOrgAdminForOrganization(self.data.project.org)
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    assert isSet(data.project.org)
+    check.isOrgAdminForOrganization(data.project.org)
 
-  def assignMentors(self, mentor_keys):
+  def assignMentors(self, data, mentor_keys):
     """Assigns the mentor to the project.
 
     Args:
+      data: A RequestData describing the current request.
       mentor_keys: List of mentor profile keys to to be assigned
           to the project.
     """
-    assert isSet(self.data.project)
+    assert isSet(data.project)
 
-    project_key = self.data.project.key()
+    project_key = data.project.key()
 
     def assign_mentor_txn():
       project = db.get(project_key)
@@ -505,11 +492,11 @@ class AssignMentors(GSoCRequestHandler):
 
     db.run_in_transaction(assign_mentor_txn)
 
-  def validate(self):
-    str_mentor_keys = self.data.POST.getlist('assign_mentor')
+  def validate(self, data):
+    str_mentor_keys = data.POST.getlist('assign_mentor')
 
     if str_mentor_keys:
-      org = self.data.project.org
+      org = data.project.org
 
       # need the list to set conversion and back to list conversion
       # to ensure that same mentor doesn't get assigned to the
@@ -523,30 +510,28 @@ class AssignMentors(GSoCRequestHandler):
 
     return None
 
-  def post(self):
-    assert isSet(self.data.project)
+  def post(self, data, check, mutator):
+    assert isSet(data.project)
 
-    mentor_keys = self.validate()
+    mentor_keys = self.validate(data)
     if mentor_keys:
-      self.assignMentors(mentor_keys)
+      self.assignMentors(data, mentor_keys)
 
-    project_owner = self.data.project.parent()
+    project_owner = data.project.parent()
 
-    self.data.redirect.project(self.data.project.key().id(),
-                               project_owner.link_id)
-    return self.data.redirect.to('gsoc_project_details')
+    data.redirect.project(data.project.key().id(), project_owner.link_id)
+    return data.redirect.to('gsoc_project_details')
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
     # TODO(nathaniel): This should probably be the raising of some sort
     # of exception (or in the distant future, not even registered as a
     # handler) rather than this self-call.
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
 
 class FeaturedProject(GSoCRequestHandler):
-  """View which handles making the project featured by toggle button.
-  """
+  """View which handles making the project featured by toggle button."""
 
   def djangoURLPatterns(self):
     return [
@@ -554,28 +539,28 @@ class FeaturedProject(GSoCRequestHandler):
          self, name='gsoc_featured_project'),
     ]
 
-  def checkAccess(self):
-    self.mutator.projectFromKwargs()
-    assert isSet(self.data.project.org)
-    self.check.isOrgAdminForOrganization(self.data.project.org)
+  def checkAccess(self, data, check, mutator):
+    mutator.projectFromKwargs()
+    assert isSet(data.project.org)
+    check.isOrgAdminForOrganization(data.project.org)
 
-  def toggleFeatured(self, value):
+  def toggleFeatured(self, data, value):
     """Makes the project featured.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.project)
+    assert isSet(data.project)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
-
-    if value == 'checked' and not self.data.project.is_featured:
+    if value == 'checked' and not data.project.is_featured:
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.project.is_featured:
+    if value == 'unchecked' and data.project.is_featured:
       raise BadRequest("Invalid post data.")
 
-    project_key = self.data.project.key()
+    project_key = data.project.key()
 
     def make_featured_txn():
       # transactionally get latest version of the project
@@ -589,12 +574,12 @@ class FeaturedProject(GSoCRequestHandler):
 
     db.run_in_transaction(make_featured_txn)
 
-  def post(self):
-    value = self.data.POST.get('value')
-    self.toggleFeatured(value)
+  def post(self, data, check, mutator):
+    value = data.POST.get('value')
+    self.toggleFeatured(data, value)
     return http.HttpResponse()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
     # TODO(nathaniel): Achieve this same behavior without this self-call.
-    return self.error(httplib.METHOD_NOT_ALLOWED)
+    return self.error(data, httplib.METHOD_NOT_ALLOWED)
