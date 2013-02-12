@@ -30,12 +30,12 @@ from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.program import GCIProgramMessages
 from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gci.views.base import GCIRequestHandler
-from soc.modules.gci.views.forms import GCIModelForm
+from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
 
-class TimelineForm(GCIModelForm):
+class TimelineForm(gci_forms.GCIModelForm):
   """Django form to edit timeline settings."""
 
   class Meta:
@@ -44,7 +44,23 @@ class TimelineForm(GCIModelForm):
     exclude = ['link_id', 'scope', 'scope_path']
 
 
-class EditProgramForm(GCIModelForm):
+class CreateProgramForm(gci_forms.GCIModelForm):
+  """Django form to create the settings for a new program."""
+
+  def __init__(self, request_data, *args, **kwargs):
+    self.request_data = request_data
+    super(CreateProgramForm, self).__init__(*args, **kwargs)
+
+  class Meta:
+    css_prefix = 'create_program_form'
+    model = GCIProgram
+    exclude = [
+        'scope', 'scope_path', 'timeline', 'home', 'org_admin_agreement',
+        'mentor_agreement', 'student_agreement', 'about_page', 'events_page',
+        'connect_with_us_page', 'help_page', 'slots_allocation', 'task_types']
+
+
+class EditProgramForm(gci_forms.GCIModelForm):
   """Django form for the program settings."""
 
   def __init__(self, data, *args, **kwargs):
@@ -57,7 +73,7 @@ class EditProgramForm(GCIModelForm):
           [[t] for t in self.instance.task_types])
 
   class Meta:
-    css_prefix = 'program_form'
+    css_prefix = 'edit_program_form'
     model = GCIProgram
     exclude = ['link_id', 'scope', 'scope_path', 'timeline', 'home',
                'slots_allocation', 'task_types']
@@ -73,7 +89,7 @@ class EditProgramForm(GCIModelForm):
     return self.cleaned_data
 
 
-class GCIProgramMessagesForm(GCIModelForm):
+class GCIProgramMessagesForm(gci_forms.GCIModelForm):
   """Django form for the program messages settings.
   """
 
