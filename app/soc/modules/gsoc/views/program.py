@@ -69,15 +69,32 @@ class TimelineForm(forms.GSoCModelForm):
     exclude = ['link_id', 'scope', 'scope_path']
 
 
+class CreateProgramForm(forms.GSoCModelForm):
+  """Django form to create the settings for a new program."""
+
+  def __init__(self, request_data, *args, **kwargs):
+    self.request_data = request_data
+    super(CreateProgramForm, self).__init__(*args, **kwargs)
+
+  class Meta:
+    css_prefix = 'create_program_form'
+    model = program.GSoCProgram
+    exclude = [
+        'scope', 'scope_path', 'timeline', 'home', 'slots_allocation',
+        'student_max_age', 'min_slots', 'org_admin_agreement',
+        'mentor_agreement', 'student_agreement', 'about_page', 'events_page',
+        'connect_with_us_page', 'help_page']
+
+
 class EditProgramForm(forms.GSoCModelForm):
-  """Django form for the program settings."""
+  """Django form to edit the settings of an existing program."""
 
   def __init__(self, request_data, *args, **kwargs):
     self.request_data = request_data
     super(EditProgramForm, self).__init__(*args, **kwargs)
 
   class Meta:
-    css_prefix = 'program_form'
+    css_prefix = 'edit_program_form'
     model = program.GSoCProgram
     exclude = [
         'link_id', 'scope', 'scope_path', 'timeline', 'home',
@@ -246,6 +263,27 @@ class ProgramPage(base.GSoCRequestHandler):
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
+
+
+class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
+    base.GSoCRequestHandler):
+  """View to create a new GSoC program."""
+
+  def djangoURLPatterns(self):
+    return [
+        url_patterns.url(
+            r'program/create/%s$' % soc_url_patterns.SPONSOR, self,
+            name=url_names.GSOC_PROGRAM_CREATE),
+    ]
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/program/base.html'
+
+  def _getForm(self):
+    return CreateProgramForm(self.data, self.data.POST or None)
+
+  def _getTimelineModel(self):
+    return timeline.GSoCTimeline
 
 
 class TimelinePage(base.GSoCRequestHandler):
