@@ -106,6 +106,7 @@ class Callback(object):
     self.views.append(profile_show.GSoCProfileAdminPage())
     self.views.append(profile_show.GSoCProfileShowPage())
     self.views.append(program.ProgramPage())
+    self.views.append(program.GSoCCreateProgramPage())
     self.views.append(program.GSoCProgramMessagesPage())
     self.views.append(program.TimelinePage())
     self.views.append(project_details.AssignMentors())
