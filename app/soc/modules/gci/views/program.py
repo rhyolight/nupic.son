@@ -23,8 +23,8 @@ from django.utils.translation import ugettext
 from soc.logic import tags as tags_logic
 from soc.models.document import Document
 from soc.views import forms
-from soc.views import program as program_view
-from soc.views.helper import url_patterns
+from soc.views import program as soc_program_view
+from soc.views.helper import url_patterns as soc_url_patterns
 
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.program import GCIProgramMessages
@@ -107,7 +107,7 @@ class GCIEditProgramPage(GCIRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'program/edit/%s$' % url_patterns.PROGRAM, self,
+        url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self,
             name='edit_gci_program'),
     ]
 
@@ -158,14 +158,34 @@ class GCIEditProgramPage(GCIRequestHandler):
       return self.get(data, check, mutator)
 
 
+class GCICreateProgramPage(soc_program_view.CreateProgramPage,
+    GCIRequestHandler):
+  """View to create a new GCI program."""
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'program/create/%s$' % soc_url_patterns.SPONSOR, self,
+            name=url_names.GCI_PROGRAM_CREATE),
+    ]
+
+  def templatePath(self):
+    return 'v2/modules/gci/program/base.html'
+
+  def _getForm(self):
+    return CreateProgramForm(self.data, self.data.POST or None)
+
+  def _getTimelineModel(self):
+    return GCITimeline
+
+
 class TimelinePage(GCIRequestHandler):
   """View for the participant profile."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'timeline/%s$' % url_patterns.PROGRAM, self,
+        url(r'timeline/%s$' % soc_url_patterns.PROGRAM, self,
             name='edit_gci_timeline'),
-        url(r'timeline/edit/%s$' % url_patterns.PROGRAM, self),
+        url(r'timeline/edit/%s$' % soc_url_patterns.PROGRAM, self),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -204,12 +224,12 @@ class TimelinePage(GCIRequestHandler):
 
 
 class GCIProgramMessagesPage(
-    program_view.ProgramMessagesPage, GCIRequestHandler):
+    soc_program_view.ProgramMessagesPage, GCIRequestHandler):
   """View for the content of GCI program specific messages to be sent."""
 
   def djangoURLPatterns(self):
     return [
-        url(r'program/messages/edit/%s$' % url_patterns.PROGRAM, self,
+        url(r'program/messages/edit/%s$' % soc_url_patterns.PROGRAM, self,
             name=self._getUrlName()),
     ]
 
