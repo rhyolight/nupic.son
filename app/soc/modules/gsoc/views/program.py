@@ -28,7 +28,7 @@ from soc.views.helper import access_checker
 from soc.views.helper import url_patterns as soc_url_patterns
 
 from soc.modules.gsoc.models import program
-from soc.modules.gsoc.models import timeline
+from soc.modules.gsoc.models import timeline as timeline_model
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views.helper import url_names
@@ -65,7 +65,7 @@ class TimelineForm(forms.GSoCModelForm):
 
   class Meta:
     css_prefix = 'timeline_form'
-    model = timeline.GSoCTimeline
+    model = timeline_model.GSoCTimeline
     exclude = ['link_id', 'scope', 'scope_path']
 
 
@@ -283,7 +283,7 @@ class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
     return CreateProgramForm(self.data, self.data.POST or None)
 
   def _getTimelineModel(self):
-    return timeline.GSoCTimeline
+    return timeline_model.GSoCTimeline
 
   def _getUrlNameForRedirect(self):
     return 'edit_gsoc_program'
