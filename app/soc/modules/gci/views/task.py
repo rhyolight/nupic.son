@@ -176,8 +176,7 @@ class TaskViewPage(GCIRequestHandler):
   """View for the GCI Task view page where all the actions happen."""
 
   def djangoURLPatterns(self):
-    """URL pattern for this view.
-    """
+    """URL pattern for this view."""
     return [
         url(r'task/view/%s$' % url_patterns.TASK, self,
             name=url_names.GCI_VIEW_TASK),
@@ -216,7 +215,7 @@ class TaskViewPage(GCIRequestHandler):
 
       if 'button' in data.GET:
         # check for any of the buttons
-        button_name = self._buttonName()
+        button_name = self._buttonName(data)
 
         buttons = {}
         TaskInformation(data).setButtonControls(buttons)
@@ -232,7 +231,7 @@ class TaskViewPage(GCIRequestHandler):
 
       if 'delete_submission' in data.GET:
         check.isBeforeAllWorkStopped()
-        id = self._submissionId()
+        id = self._submissionId(data)
         work = GCIWorkSubmission.get_by_id(id, parent=data.task)
 
         if not work:
@@ -289,45 +288,44 @@ class TaskViewPage(GCIRequestHandler):
   def post(self, data, check, mutator):
     """Handles all POST calls for the TaskViewPage."""
     if data.is_visible and 'reply' in data.GET:
-      return self._postComment()
+      return self._postComment(data, check, mutator)
     elif 'button' in data.GET:
-      return self._postButton()
+      return self._postButton(data)
     elif 'send_for_review' in data.GET:
-      return self._postSendForReview()
+      return self._postSendForReview(data)
     elif 'delete_submission' in data.GET:
-      return self._postDeleteSubmission()
+      return self._postDeleteSubmission(data)
     elif 'work_file_submit' in data.POST or 'submit_work' in data.GET:
-      return self._postSubmitWork()
+      return self._postSubmitWork(data, check, mutator)
     else:
       return self.error(data, httplib.METHOD_NOT_ALLOWED)
 
-  def _postComment(self):
-    """Handles the POST call for the form that creates comments.
-    """
-    reply = self.data.GET.get('reply', '')
+  def _postComment(self, data, check, mutator):
+    """Handles the POST call for the form that creates comments."""
+    reply = data.GET.get('reply', '')
     reply = int(reply) if reply.isdigit() else None
-    comment_form = CommentForm(reply, self.data.POST)
+    comment_form = CommentForm(reply, data.POST)
 
     if not comment_form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get(self.data, self.check, self.mutator)
+      return self.get(data, check, mutator)
 
     comment_form.cleaned_data['reply'] = reply
-    comment_form.cleaned_data['created_by'] = self.data.user
-    comment_form.cleaned_data['modified_by'] = self.data.user
+    comment_form.cleaned_data['created_by'] = data.user
+    comment_form.cleaned_data['modified_by'] = data.user
 
-    comment = comment_form.create(commit=False, parent=self.data.task)
+    comment = comment_form.create(commit=False, parent=data.task)
     comment_logic.storeAndNotify(comment)
 
     # TODO(ljvderijk): Indicate that a comment was successfully created to the
     # user.
-    return self.data.redirect.id().to(url_names.GCI_VIEW_TASK)
+    return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
-  def _postButton(self):
+  def _postButton(self, data):
     """Handles the POST call for any of the control buttons on the task page.
     """
-    button_name = self._buttonName()
-    task = self.data.task
+    button_name = self._buttonName(data)
+    task = data.task
     task_key = task.key()
 
     if button_name == 'button_unpublish':
@@ -335,31 +333,31 @@ class TaskViewPage(GCIRequestHandler):
     elif button_name == 'button_publish':
       task_logic.setTaskStatus(task.key(), 'Open')
     elif button_name == 'button_edit':
-      self.data.redirect.id(id=task.key().id_or_name())
-      return self.data.redirect.to('gci_edit_task')
+      data.redirect.id(id=task.key().id_or_name())
+      return data.redirect.to('gci_edit_task')
     elif button_name == 'button_delete':
       task_logic.delete(task)
-      return self.data.redirect.homepage().to()
+      return data.redirect.homepage().to()
     elif button_name == 'button_assign':
-      task_logic.assignTask(task, task.student, self.data.profile)
+      task_logic.assignTask(task, task.student, data.profile)
     elif button_name == 'button_unassign':
-      task_logic.unassignTask(task, self.data.profile)
+      task_logic.unassignTask(task, data.profile)
     elif button_name == 'button_close':
-      task_logic.closeTask(task, self.data.profile)
+      task_logic.closeTask(task, data.profile)
     elif button_name == 'button_needs_work':
-      task_logic.needsWorkTask(task, self.data.profile)
+      task_logic.needsWorkTask(task, data.profile)
     elif button_name == 'button_extend_deadline':
-      hours = self.data.POST.get('hours', '')
+      hours = data.POST.get('hours', '')
       hours = int(hours) if hours.isdigit() else 0
       if hours > 0:
         delta = datetime.timedelta(hours=hours)
-        task_logic.extendDeadline(task, delta, self.data.profile)
+        task_logic.extendDeadline(task, delta, data.profile)
     elif button_name == 'button_claim':
-      task_logic.claimRequestTask(task, self.data.profile)
+      task_logic.claimRequestTask(task, data.profile)
     elif button_name == 'button_unclaim':
       task_logic.unclaimTask(task)
     elif button_name == 'button_subscribe':
-      profile_key = self.data.profile.key()
+      profile_key = data.profile.key()
       def txn():
         task = db.get(task_key)
         if profile_key not in task.subscribers:
@@ -367,7 +365,7 @@ class TaskViewPage(GCIRequestHandler):
           task.put()
       db.run_in_transaction(txn)
     elif button_name == 'button_unsubscribe':
-      profile_key = self.data.profile.key()
+      profile_key = data.profile.key()
       def txn():
         task = db.get(task_key)
         if profile_key in task.subscribers:
@@ -375,67 +373,63 @@ class TaskViewPage(GCIRequestHandler):
           task.put()
       db.run_in_transaction(txn)
 
-    return self.data.redirect.id().to(url_names.GCI_VIEW_TASK)
+    return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
-  def _buttonName(self):
-    """Returns the name of the button specified in the POST dict.
-    """
-    for key in self.data.POST.keys():
+  def _buttonName(self, data):
+    """Returns the name of the button specified in the POST dict."""
+    for key in data.POST.keys():
       if key.startswith('button'):
         return key
 
     return None
 
-  def _postSubmitWork(self):
-    """POST handler for the work submission form.
-    """
-    if 'url_to_work' in self.data.POST:
-      form = WorkSubmissionURLForm(data=self.data.POST)
+  def _postSubmitWork(self, data, check, mutator):
+    """POST handler for the work submission form."""
+    if 'url_to_work' in data.POST:
+      form = WorkSubmissionURLForm(data=data.POST)
       if not form.is_valid():
         # TODO(nathaniel): Problematic self-call.
-        return self.get(self.data, self.check, self.mutator)
-    elif self.data.request.file_uploads:
+        return self.get(data, check, mutator)
+    elif data.request.file_uploads:
       form = WorkSubmissionFileForm(
-          data=self.data.POST,
-          files=self.data.request.file_uploads)
+          data=data.POST, files=data.request.file_uploads)
       if not form.is_valid():
         # we are not storing this form, remove the uploaded blob from the cloud
-        for f in self.data.request.file_uploads.itervalues():
+        for f in data.request.file_uploads.itervalues():
           f.delete()
-        return self.data.redirect.id().to(
+        return data.redirect.id().to(
             url_names.GCI_VIEW_TASK, extra=['file=0'])
     else:
       logging.warning('Neither the URL nor the files were provided for work '
                       'submission.')
-      return self.data.redirect.id().to(
+      return data.redirect.id().to(
           url_names.GCI_VIEW_TASK, extra=['ws_error=1'])
 
-    task = self.data.task
+    task = data.task
     # TODO(ljvderijk): Add a non-required profile property?
-    form.cleaned_data['user'] = self.data.profile.user
+    form.cleaned_data['user'] = data.user
     form.cleaned_data['org'] =  task.org
     form.cleaned_data['program'] = task.program
 
     # store the submission, parented by the task
     form.create(parent=task)
 
-    return self.data.redirect.id().to(url_names.GCI_VIEW_TASK)
+    return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
-  def _postSendForReview(self):
+  def _postSendForReview(self, data):
     """POST handler for the mark as complete button."""
-    task_logic.sendForReview(self.data.task, self.data.profile)
+    task_logic.sendForReview(data.task, data.profile)
 
-    return self.data.redirect.id().to(url_names.GCI_VIEW_TASK)
+    return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
-  def _postDeleteSubmission(self):
-    """POST handler to delete a GCIWorkSubmission.
-    """
-    submission_id = self._submissionId()
-    work = GCIWorkSubmission.get_by_id(submission_id, parent=self.data.task)
+  def _postDeleteSubmission(self, data):
+    """POST handler to delete a GCIWorkSubmission."""
+    submission_id = self._submissionId(data)
+    work = GCIWorkSubmission.get_by_id(submission_id, parent=data.task)
 
     if not work:
       return self.error(
-          self.data, httplib.BAD_REQUEST,
+          data, httplib.BAD_REQUEST,
           message=DEF_NO_WORK_FOUND % submission_id)
 
     # Deletion of blobs always runs separately from transaction so it has no
@@ -446,12 +440,11 @@ class TaskViewPage(GCIRequestHandler):
       upload.delete()
 
     # TODO(nathaniel): Redirection to self.
-    return self.data.redirect.id().to(url_names.GCI_VIEW_TASK)
+    return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
-  def _submissionId(self):
-    """Retrieves the submission id from the POST data.
-    """
-    for key in self.data.POST.keys():
+  def _submissionId(self, data):
+    """Retrieves the submission id from the POST data."""
+    for key in data.POST.keys():
       if key.isdigit():
         return int(key)
 
@@ -686,9 +679,6 @@ class CommentsTemplate(Template):
     context = {
         'profile': self.data.profile,
         'comments': comments,
-        'login': self.data.redirect.login().url(),
-        'student_reg_link': self.data.redirect.createProfile('student')
-            .urlOf('create_gci_profile', secure=True),
     }
 
     if self._commentingAllowed():

@@ -123,9 +123,8 @@ class ProgramPage(GCIRequestHandler):
         'error': program_form.errors,
     }
 
-  def validate(self):
-    program_form = ProgramForm(
-        self.data, self.data.POST, instance=self.data.program)
+  def validate(self, data):
+    program_form = ProgramForm(data, data.POST, instance=data.program)
 
     if program_form.is_valid():
       program_form.save()
@@ -135,7 +134,7 @@ class ProgramPage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if self.validate():
+    if self.validate(data):
       data.redirect.program()
       return data.redirect.to('edit_gci_program', validated=True)
     else:
@@ -168,9 +167,8 @@ class TimelinePage(GCIRequestHandler):
         'error': timeline_form.errors,
     }
 
-  def validate(self):
-    timeline_form = TimelineForm(self.data.POST,
-                                instance=self.data.program_timeline)
+  def validate(self, data):
+    timeline_form = TimelineForm(data.POST, instance=data.program_timeline)
 
     if timeline_form.is_valid():
       timeline_form.save()
@@ -180,7 +178,7 @@ class TimelinePage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if self.validate():
+    if self.validate(data):
       data.redirect.program()
       return data.redirect.to('edit_gci_timeline', validated=True)
     else:
@@ -201,9 +199,8 @@ class GCIProgramMessagesPage(
   def templatePath(self):
     return 'v2/modules/gci/program/messages.html'
 
-  def _getForm(self, entity):
-    return GCIProgramMessagesForm(
-        self.data, self.data.POST or None, instance=entity)
+  def _getForm(self, data, entity):
+    return GCIProgramMessagesForm(data, data.POST or None, instance=entity)
 
   def _getModel(self):
     return GCIProgramMessages

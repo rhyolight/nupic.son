@@ -373,28 +373,20 @@ class RequestHandler(object):
     5. Returns the response.
     """
     try:
-      # TODO(nathaniel): eliminate these attribute assignments by passing
-      # the associated values through the call stack instead (issue 1665).
-      self.data, self.check, self.mutator = self.init(
-          request, args, kwargs)
-      self.checkMaintenanceMode(self.data)
-      self.checkAccess(self.data, self.check, self.mutator)
-      return self._dispatch(self.data, self.check, self.mutator)
+      data, check, mutator = self.init(request, args, kwargs)
+      self.checkMaintenanceMode(data)
+      self.checkAccess(data, check, mutator)
+      return self._dispatch(data, check, mutator)
     except exceptions.LoginRequest, e:
       request.get_full_path().encode('utf-8')
-      return self.data.redirect.login().to()
+      return data.redirect.login().to()
     except exceptions.RedirectRequest, e:
-      return self.data.redirect.toUrl(e.url)
+      return data.redirect.toUrl(e.url)
     except exceptions.GDocsLoginRequest, e:
-      return self.data.redirect.toUrl('%s?%s' % (
-          self.data.redirect.urlOf(e.url_name),
-          urllib.urlencode({'next': e.path})))
+      return data.redirect.toUrl('%s?%s' % (
+          data.redirect.urlOf(e.url_name), urllib.urlencode({'next': e.path})))
     except exceptions.Error, e:
-      return self.error(self.data, e.status, message=e.args[0])
-    finally:
-      self.data = None
-      self.check = None
-      self.mutator = None
+      return self.error(data, e.status, message=e.args[0])
 
 
 class SiteRequestHandler(RequestHandler):

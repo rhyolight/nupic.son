@@ -46,8 +46,7 @@ class ProposalForm(GSoCModelForm):
   clean_content = cleaning.clean_html_content('content')
 
 class ProposalPage(GSoCRequestHandler):
-  """View for the submit proposal.
-  """
+  """View for the submit proposal."""
 
   def djangoURLPatterns(self):
     return [
@@ -82,25 +81,27 @@ class ProposalPage(GSoCRequestHandler):
         'buttons_template': self.buttonsTemplate()
         }
 
-  def createFromForm(self):
+  def createFromForm(self, data):
     """Creates a new proposal based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created proposal entity or None
     """
-
-    proposal_form = ProposalForm(self.data.POST)
+    proposal_form = ProposalForm(data.POST)
 
     if not proposal_form.is_valid():
       return None
 
     # set the organization and program references
-    proposal_form.cleaned_data['org'] = self.data.organization
-    proposal_form.cleaned_data['program'] = self.data.program
+    proposal_form.cleaned_data['org'] = data.organization
+    proposal_form.cleaned_data['program'] = data.program
 
-    student_info_key = self.data.student_info.key()
+    student_info_key = data.student_info.key()
 
-    q = GSoCProfile.all().filter('mentor_for', self.data.organization)
+    q = GSoCProfile.all().filter('mentor_for', data.organization)
     q = q.filter('status', 'active')
     q.filter('notify_new_proposals', True)
     mentors = q.fetch(1000)
@@ -112,9 +113,9 @@ class ProposalPage(GSoCRequestHandler):
       student_info.number_of_proposals += 1
       student_info.put()
 
-      proposal = proposal_form.create(commit=True, parent=self.data.profile)
+      proposal = proposal_form.create(commit=True, parent=data.profile)
 
-      context = notifications.newProposalContext(self.data, proposal, to_emails)
+      context = notifications.newProposalContext(data, proposal, to_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=proposal)
       sub_txn()
 
@@ -124,7 +125,7 @@ class ProposalPage(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    proposal = self.createFromForm()
+    proposal = self.createFromForm(data)
     if proposal:
       data.redirect.review(proposal.key().id(), data.user.link_id)
       return data.redirect.to('review_gsoc_proposal')
@@ -193,32 +194,35 @@ class UpdateProposal(GSoCRequestHandler):
         'buttons_template': self.buttonsTemplate(),
         }
 
-  def _updateFromForm(self):
+  def _updateFromForm(self, data):
     """Updates a proposal based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       an updated proposal entity or None
     """
-    proposal_form = ProposalForm(self.data.POST, instance=self.data.proposal)
+    proposal_form = ProposalForm(data.POST, instance=data.proposal)
 
     if not proposal_form.is_valid():
       return None
 
-    q = GSoCProfile.all().filter('mentor_for', self.data.proposal.org)
+    q = GSoCProfile.all().filter('mentor_for', data.proposal.org)
     q = q.filter('status', 'active')
     q.filter('notify_proposal_updates', True)
     mentors = q.fetch(1000)
 
     to_emails = [i.email for i in mentors]
 
-    proposal_key = self.data.proposal.key()
+    proposal_key = data.proposal.key()
 
     def update_proposal_txn():
       proposal = db.get(proposal_key)
       proposal_form.instance = proposal
       proposal = proposal_form.save(commit=True)
 
-      context = notifications.updatedProposalContext(self.data, proposal, to_emails)
+      context = notifications.updatedProposalContext(data, proposal, to_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=proposal)
       sub_txn()
 
@@ -226,10 +230,9 @@ class UpdateProposal(GSoCRequestHandler):
 
     return db.run_in_transaction(update_proposal_txn)
 
-  def _withdraw(self):
-    """Withdraws a proposal.
-    """
-    proposal_key = self.data.proposal.key()
+  def _withdraw(self, data):
+    """Withdraws a proposal."""
+    proposal_key = data.proposal.key()
 
     def withdraw_proposal_txn():
       proposal = db.get(proposal_key)
@@ -238,10 +241,9 @@ class UpdateProposal(GSoCRequestHandler):
 
     db.run_in_transaction(withdraw_proposal_txn)
 
-  def _resubmit(self):
-    """Resubmits a proposal.
-    """
-    proposal_key = self.data.proposal.key()
+  def _resubmit(self, data):
+    """Resubmits a proposal."""
+    proposal_key = data.proposal.key()
 
     def resubmit_proposal_txn():
       proposal = db.get(proposal_key)
@@ -253,14 +255,14 @@ class UpdateProposal(GSoCRequestHandler):
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     if data.action == self.ACTIONS['update']:
-      proposal = self._updateFromForm()
+      proposal = self._updateFromForm(data)
       if not proposal:
         # TODO(nathaniel): problematic self-use.
         return self.get(data, check, mutator)
     elif data.action == self.ACTIONS['withdraw']:
-      self._withdraw()
+      self._withdraw(data)
     elif data.action == self.ACTIONS['resubmit']:
-      self._resubmit()
+      self._resubmit(data)
 
     data.redirect.review(data.proposal.key().id(), data.user.link_id)
     return data.redirect.to('review_gsoc_proposal')

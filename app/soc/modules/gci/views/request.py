@@ -68,38 +68,41 @@ class SendRequestPage(GCIRequestHandler):
     return {
         'logout_link': data.redirect.logout(),
         'forms': [request_form],
-        'page_name': self._constructPageName()
+        'page_name': self._constructPageName(data)
         }
 
-  def _constructPageName(self):
-    role = 'Mentor' if self.data.kwargs['role'] == 'mentor' else 'Org Admin'
+  def _constructPageName(self, data):
+    role = 'Mentor' if data.kwargs['role'] == 'mentor' else 'Org Admin'
     return "Request to become %s" % role
 
-  def validate(self):
+  def validate(self, data):
     """Validates the form data.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns a newly created request entity or None if an error occurs.
     """
-    assert isSet(self.data.organization)
+    assert isSet(data.organization)
 
-    request_form = RequestForm(self.data.POST)
+    request_form = RequestForm(data.POST)
 
     if not request_form.is_valid():
       return None
 
-    request_form.cleaned_data['org'] = self.data.organization
-    request_form.cleaned_data['role'] = self.data.kwargs['role']
+    request_form.cleaned_data['org'] = data.organization
+    request_form.cleaned_data['role'] = data.kwargs['role']
     request_form.cleaned_data['type'] = 'Request'
-    request_form.cleaned_data['user'] = self.data.user
+    request_form.cleaned_data['user'] = data.user
 
-    q = GCIProfile.all().filter('org_admin_for', self.data.organization)
+    q = GCIProfile.all().filter('org_admin_for', data.organization)
     q = q.filter('status', 'active').filter('notify_new_requests', True)
     admins = q.fetch(1000)
     admin_emails = [i.email for i in admins]
 
     def create_request_txn():
-      request = request_form.create(commit=True, parent=self.data.user)
-      context = notifications.requestContext(self.data, request, admin_emails)
+      request = request_form.create(commit=True, parent=data.user)
+      context = notifications.requestContext(data, request, admin_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
       sub_txn()
       return request
@@ -108,7 +111,7 @@ class SendRequestPage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler to for GCI Send Request Page HTTP post request."""
-    request = self.validate()
+    request = self.validate(data)
     if request:
       return data.redirect.id(request.key().id()).to(
           url_names.GCI_MANAGE_REQUEST)
@@ -147,12 +150,12 @@ class ManageRequestPage(GCIRequestHandler):
       check.isRequestManageable()
 
   def context(self, data, check, mutator):
-    page_name = self._constructPageName()
+    page_name = self._constructPageName(data)
 
     form = RequestForm(data.POST or None, instance=data.request_entity)
 
-    button_name = self._constructButtonName()
-    button_value = self._constructButtonValue()
+    button_name = self._constructButtonName(data)
+    button_value = self._constructButtonValue(data)
 
     return {
         'page_name': page_name,
@@ -177,19 +180,19 @@ class ManageRequestPage(GCIRequestHandler):
 
     return data.redirect.id().to(url_names.GCI_MANAGE_REQUEST)
 
-  def _constructPageName(self):
-    request = self.data.request_entity
+  def _constructPageName(self, data):
+    request = data.request_entity
     return "%s Request To %s" % (request.role, request.org.name)
 
-  def _constructButtonName(self):
-    request = self.data.request_entity
+  def _constructButtonName(self, data):
+    request = data.request_entity
     if request.status == 'pending':
       return 'withdraw'
     if request.status in ['withdrawn', 'rejected']:
       return 'resubmit'
 
-  def _constructButtonValue(self):
-    request = self.data.request_entity
+  def _constructButtonValue(self, data):
+    request = data.request_entity
     if request.status == 'pending':
       return 'Withdraw'
     if request.status in ['withdrawn', 'rejected']:
@@ -226,13 +229,12 @@ class RespondRequestPage(GCIRequestHandler):
 
     data.is_respondable = data.request_entity.status == 'pending'
 
-  def context(self):
-    """Handler to for GCI Respond Request page HTTP get request.
-    """
+  def context(self, data, check, mutator):
+    """Handler to for GCI Respond Request page HTTP get request."""
     return {
-        'request': self.data.request_entity,
+        'request': data.request_entity,
         'page_name': 'Respond to request',
-        'is_respondable': self.data.is_respondable
+        'is_respondable': data.is_respondable
         }
 
   def post(self, data, check, mutator):
@@ -244,7 +246,7 @@ class RespondRequestPage(GCIRequestHandler):
     profile_key = db.Key.from_path(
         'GCIProfile', profile_key_name, parent=user_key)
 
-    self.data.requester_profile = profile = db.get(profile_key)
+    data.requester_profile = profile = db.get(profile_key)
 
     if 'accept' in data.POST:
       options = db.create_transaction_options(xg=True)

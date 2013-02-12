@@ -26,7 +26,7 @@ class ProgramMessagesPage(object):
   def context(self, data, check, mutator):
     """See soc.views.base.RequestHandler.context for specification."""
     entity = self._getSingletonEntity(data.program)
-    form = self._getForm(entity)
+    form = self._getForm(data, entity)
 
     return {
         'page_name': 'Edit program messages',
@@ -47,7 +47,7 @@ class ProgramMessagesPage(object):
 
   def validate(self):
     entity = self._getSingletonEntity(self.data.program)
-    form = self._getForm(entity)
+    form = self._getForm(data, entity)
 
     if form.is_valid():
       form.save()
@@ -66,7 +66,7 @@ class ProgramMessagesPage(object):
 
     return db.run_in_transaction(get_or_create_txn)
 
-  def _getForm(self, entity):
+  def _getForm(self, data, entity):
     raise NotImplementedError
 
   def _getModel(self):

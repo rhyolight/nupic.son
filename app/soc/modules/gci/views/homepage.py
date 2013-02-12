@@ -210,8 +210,7 @@ class ConnectWithUs(Template):
 
 
 class Homepage(GCIRequestHandler):
-  """Encapsulate all the methods required to generate GCI Home page.
-  """
+  """Encapsulate all the methods required to generate GCI Home page."""
 
   def templatePath(self):
     return 'v2/modules/gci/homepage/base.html'
@@ -249,15 +248,16 @@ class Homepage(GCIRequestHandler):
 
     if data.is_host or data.timeline.winnersAnnounced():
       context['winners'] = self._getWinnersTemplate(
-          data.program.winner_selection_type)
+          data, data.program.winner_selection_type)
 
     return context
 
-  def _getWinnersTemplate(self, winner_selection_type):
+  def _getWinnersTemplate(self, data, winner_selection_type):
     """Factory method that returns a template to displays the Grand
     Prize Winners of the program with the specified winner selection type.
 
     Args:
+      data: A RequestData describing the current request.
       winner_selection_type: the specified WinnerSelectionType.
 
     Returns:
@@ -265,10 +265,10 @@ class Homepage(GCIRequestHandler):
     """
     if (winner_selection_type ==
         program_model.WinnerSelectionType.ORG_NOMINATED):
-      return common_templates.OrgNominatedWinners(self.data)
+      return common_templates.OrgNominatedWinners(data)
     elif (winner_selection_type ==
         program_model.WinnerSelectionType.GLOBAL_RANKING):
-      return common_templates.GlobalRankingWinners(self.data)
+      return common_templates.GlobalRankingWinners(data)
     else:
       raise ValueError(
          'Invalid value of winner_selection_type %s' % winner_selection_type)

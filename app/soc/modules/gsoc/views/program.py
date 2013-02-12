@@ -228,9 +228,8 @@ class ProgramPage(base.GSoCRequestHandler):
         'error': program_form.errors,
     }
 
-  def validate(self):
-    program_form = ProgramForm(self.data, self.data.POST,
-                               instance=self.data.program)
+  def validate(self, data):
+    program_form = ProgramForm(data, data.POST, instance=data.program)
 
     if program_form.is_valid():
       program_form.save()
@@ -240,7 +239,7 @@ class ProgramPage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if self.validate():
+    if self.validate(data):
       data.redirect.program()
       return data.redirect.to('edit_gsoc_program', validated=True)
     else:
@@ -273,10 +272,8 @@ class TimelinePage(base.GSoCRequestHandler):
         'error': timeline_form.errors,
     }
 
-  def validate(self):
-    timeline_form = TimelineForm(self.data.POST,
-                                 instance=self.data.program_timeline)
-
+  def validate(self, data):
+    timeline_form = TimelineForm(data.POST, instance=data.program_timeline)
     if timeline_form.is_valid():
       timeline_form.save()
       return True
@@ -285,7 +282,7 @@ class TimelinePage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if self.validate():
+    if self.validate(data):
       data.redirect.program()
       return data.redirect.to('edit_gsoc_timeline', validated=True)
     else:
@@ -307,9 +304,8 @@ class GSoCProgramMessagesPage(
   def templatePath(self):
     return 'v2/modules/gsoc/program/messages.html'
 
-  def _getForm(self, entity):
-    return GSoCProgramMessagesForm(self.data, self.data.POST or None,
-        instance=entity)
+  def _getForm(self, data, entity):
+    return GSoCProgramMessagesForm(data, data.POST or None, instance=entity)
 
   def _getModel(self):
     return program.GSoCProgramMessages

@@ -61,8 +61,7 @@ class GSoCStudentEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
 
 
 class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
-  """View for creating/editing student evalution.
-  """
+  """View for creating/editing student evalution."""
 
   def djangoURLPatterns(self):
     return [
@@ -96,33 +95,36 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
 
     return context
 
-  def evaluationFromForm(self):
+  def evaluationFromForm(self, data):
     """Create/edit the student evaluation entity from form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated student evaluation entity or None.
     """
-    if self.data.student_evaluation:
+    if data.student_evaluation:
       form = GSoCStudentEvaluationEditForm(
-          self.data.POST, instance=self.data.student_evaluation)
+          data.POST, instance=data.student_evaluation)
     else:
-      form = GSoCStudentEvaluationEditForm(self.data.POST)
+      form = GSoCStudentEvaluationEditForm(data.POST)
 
     if not form.is_valid():
       return None
 
-    form.cleaned_data['modified_by'] = self.data.user
+    form.cleaned_data['modified_by'] = data.user
 
-    if not self.data.student_evaluation:
-      form.cleaned_data['link_id'] = self.data.kwargs.get('survey')
+    if not data.student_evaluation:
+      form.cleaned_data['link_id'] = data.kwargs.get('survey')
       form.cleaned_data['prefix'] = 'gsoc_program'
-      form.cleaned_data['author'] = self.data.user
-      form.cleaned_data['scope'] = self.data.program
+      form.cleaned_data['author'] = data.user
+      form.cleaned_data['scope'] = data.program
       # kwargs which defines an evaluation
       fields = ['sponsor', 'program', 'survey']
 
       key_name = '/'.join(['gsoc_program'] +
-                          [self.data.kwargs[field] for field in fields])
+                          [data.kwargs[field] for field in fields])
 
       entity = form.create(commit=True, key_name=key_name)
     else:
@@ -131,7 +133,7 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
     return entity
 
   def post(self, data, check, mutator):
-    evaluation = self.evaluationFromForm()
+    evaluation = self.evaluationFromForm(data)
     if evaluation:
       # TODO(nathaniel): Redirection to self?
       return data.redirect.survey().to(
@@ -142,8 +144,7 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
 
 
 class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
-  """View for students to submit their evaluation.
-  """
+  """View for students to submit their evaluation."""
 
   def djangoURLPatterns(self):
     return [
@@ -197,28 +198,30 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
 
     return context
 
-  def recordEvaluationFromForm(self):
+  def recordEvaluationFromForm(self, data):
     """Create/edit a new student evaluation record based on the form input.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated evaluation record entity or None
     """
-    if self.data.student_evaluation_record:
+    if data.student_evaluation_record:
       form = GSoCStudentEvaluationTakeForm(
-          self.data.student_evaluation,
-          self.data.POST, instance=self.data.student_evaluation_record)
+          data.student_evaluation, data.POST,
+          instance=data.student_evaluation_record)
     else:
-      form = GSoCStudentEvaluationTakeForm(
-          self.data.student_evaluation, self.data.POST)
+      form = GSoCStudentEvaluationTakeForm(data.student_evaluation, data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.student_evaluation_record:
-      form.cleaned_data['project'] = self.data.project
-      form.cleaned_data['org'] = self.data.project.org
-      form.cleaned_data['user'] = self.data.user
-      form.cleaned_data['survey'] = self.data.student_evaluation
+    if not data.student_evaluation_record:
+      form.cleaned_data['project'] = data.project
+      form.cleaned_data['org'] = data.project.org
+      form.cleaned_data['user'] = data.user
+      form.cleaned_data['survey'] = data.student_evaluation
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
@@ -226,7 +229,7 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
     return entity
 
   def post(self, data, check, mutator):
-    student_evaluation_record = self.recordEvaluationFromForm()
+    student_evaluation_record = self.recordEvaluationFromForm(data)
     if student_evaluation_record:
       data.redirect.survey_record(data.student_evaluation.link_id)
       return data.redirect.to('gsoc_take_student_evaluation', validated=True)
@@ -270,8 +273,7 @@ class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
 
 
 class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
-  """View for listing all records of a GSoCGProjectSurveyRecord.
-  """
+  """View for listing all records of a GSoCGProjectSurveyRecord."""
 
   def djangoURLPatterns(self):
     return [
@@ -288,7 +290,7 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """Returns the context of the page to render."""
-    record_list = self._createSurveyRecordList()
+    record_list = self._createSurveyRecordList(data)
 
     page_name = ugettext('Records - %s' % (data.student_evaluation.title))
     context = {
@@ -301,7 +303,7 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
     """Handler for JSON requests."""
     idx = lists.getListIndex(data.request)
     if idx == 0:
-      record_list = self._createSurveyRecordList()
+      record_list = self._createSurveyRecordList(data)
       return record_list.listContentResponse(
           data.request, prefetch=['org', 'project']).content()
     else:
@@ -309,10 +311,10 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
       super(GSoCStudentEvaluationRecordsList, self).jsonContext(
           data, check, mutator)
 
-  def _createSurveyRecordList(self):
+  def _createSurveyRecordList(self, data):
     """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
-        self.data, self.data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
+        data, data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
 
     record_list.list_config.addPlainTextColumn(
         'project', 'Project', lambda ent, *args: ent.project.title)
@@ -326,8 +328,7 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
 
 
 class GSoCStudentEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
-  """Template to construct readonly student evaluation record.
-  """
+  """Template to construct readonly student evaluation record."""
 
   class Meta:
     model = GSoCProjectSurveyRecord

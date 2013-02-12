@@ -122,8 +122,7 @@ class EnrollmentForm(GSoCModelForm):
 
 
 class FormPage(GSoCRequestHandler):
-  """View to upload student forms.
-  """
+  """View to upload student forms."""
 
   def djangoURLPatterns(self):
     return [
@@ -142,7 +141,7 @@ class FormPage(GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    if self._admin():
+    if self._admin(data):
       check.isHost()
       mutator.studentFromKwargs()
     else:
@@ -155,65 +154,67 @@ class FormPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/student_forms/base.html'
 
   def context(self, data, check, mutator):
-    Form = self._form()
-    form = Form(data, data.POST or None, instance=self._studentInfo())
+    Form = self._form(data)
+    form = Form(data, data.POST or None, instance=self._studentInfo(data))
 
     if 'error' in data.GET:
       error = data.GET['error']
       form.errors[form.fileFieldName()] = form.error_class([error])
 
     return {
-        'page_name': self._name(),
+        'page_name': self._name(data),
         'forms': [form],
         'error': bool(form.errors),
         }
 
-  def _name(self):
-    return 'Tax form' if self._tax() else 'Enrollment form'
+  def _name(self, data):
+    return 'Tax form' if self._tax(data) else 'Enrollment form'
 
-  def _form(self):
-    return TaxForm if self._tax() else EnrollmentForm
+  def _form(self, data):
+    return TaxForm if self._tax(data) else EnrollmentForm
 
-  def _studentInfo(self):
-    if self._admin():
-      return self.data.url_student_info
+  def _studentInfo(self, data):
+    if self._admin(data):
+      return data.url_student_info
     else:
-      return self.data.student_info
+      return data.student_info
 
-  def _admin(self):
-    return self.data.kwargs['admin']
+  def _admin(self, data):
+    return data.kwargs['admin']
 
-  def _tax(self):
-    return self.data.kwargs['form'] == 'tax'
+  def _tax(self, data):
+    return data.kwargs['form'] == 'tax'
 
-  def _urlName(self):
-    if self._admin():
-      if self._tax():
+  def _urlName(self, data):
+    if self._admin(data):
+      if self._tax(data):
         return 'gsoc_tax_form_admin'
-      return 'gsoc_enrollment_form_admin'
-
-    if self._tax():
-      return 'gsoc_tax_form'
-    return 'gsoc_enrollment_form'
-
-  def _r(self):
-    if self._admin():
-      self.data.redirect.profile()
+      else:
+        return 'gsoc_enrollment_form_admin'
     else:
-      self.data.redirect.program()
-    return self.data.redirect
+      if self._tax(data):
+        return 'gsoc_tax_form'
+      else:
+        return 'gsoc_enrollment_form'
+
+  def _r(self, data):
+    if self._admin(data):
+      data.redirect.profile()
+    else:
+      data.redirect.program()
+    return data.redirect
 
   def jsonContext(self, data, check, mutator):
-    url = self._r().urlOf(self._urlName(), secure=True)
+    url = self._r(data).urlOf(self._urlName(data), secure=True)
     return {
         'upload_link': blobstore.create_upload_url(url),
         }
 
   def post(self, data, check, mutator):
-    Form = self._form()
+    Form = self._form(data)
     form = Form(data, data=data.POST,
                 files=data.request.file_uploads,
-                instance=self._studentInfo())
+                instance=self._studentInfo(data))
 
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blob from the cloud
@@ -222,7 +223,8 @@ class FormPage(GSoCRequestHandler):
 
       # since this is a file upload we must return a 300 response
       error = form.errors[form.fileFieldName()]
-      return self._r().to(self._urlName(), extra=['error=%s'%error.as_text()])
+      return self._r(data).to(
+          self._urlName(data), extra=['error=%s' % error.as_text()])
 
     # delete the old blob, if it exists
     oldBlob = getattr(data.student_info, form.fileFieldName())
@@ -232,7 +234,7 @@ class FormPage(GSoCRequestHandler):
     # write information about the new blob to the datastore
     form.save()
 
-    return self._r().to(self._urlName(), validated=True)
+    return self._r(data).to(self._urlName(data), validated=True)
 
 
 class DownloadForm(GSoCRequestHandler):
@@ -256,28 +258,25 @@ class DownloadForm(GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    if self._admin():
+    if self._admin(data):
       check.isHost()
       mutator.studentFromKwargs()
     else:
       check.canStudentDownloadForms()
 
-  def _admin(self):
-    return self.data.kwargs['admin']
+  def _admin(self, data):
+    return data.kwargs['admin']
 
-  def _tax(self):
-    return self.data.kwargs['form'] == 'tax'
+  def _tax(self, data):
+    return data.kwargs['form'] == 'tax'
 
-  def _studentInfo(self):
-    if self._admin():
-      return self.data.url_student_info
-    else:
-      return self.data.student_info
+  def _studentInfo(self, data):
+    return data.url_student_info if self._admin(data) else data.student_info
 
   def get(self, data, check, mutator):
-    if self._tax():
-      blob_info = self._studentInfo().tax_form
+    if self._tax(data):
+      blob_info = self._studentInfo(data).tax_form
     else:
-      blob_info = self._studentInfo().enrollment_form
+      blob_info = self._studentInfo(data).enrollment_form
 
     return bs_helper.sendBlob(blob_info)

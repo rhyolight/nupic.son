@@ -176,9 +176,7 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
     return 'v2/modules/gsoc/project_details/update.html'
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
-
+    """Returns the list of tuples for containing URL to view method mapping."""
     return [
         url(r'project/update/%s$' % url_patterns.PROJECT, self,
             name=url_names.GSOC_PROJECT_UPDATE)
@@ -203,28 +201,27 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
         'error': project_details_form.errors,
     }
 
-    if len(self.data.project.passed_evaluations) >= \
+    if len(data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
       context['upload_code_samples'] = UploadCodeSamples(data)
       context['list_code_samples'] = ListCodeSamples(data, True)
 
     return context
 
-  def validate(self):
-    """Validate the form data and save if valid.
-    """
-    project_details_form = ProjectDetailsForm(self.data.POST or None,
-                                              instance=self.data.project)
+  def validate(self, data):
+    """Validate the form data and save if valid."""
+    project_details_form = ProjectDetailsForm(
+        data.POST or None, instance=data.project)
 
-    if not project_details_form.is_valid():
+    if project_details_form.is_valid():
+      project_details_form.save()
+      return True
+    else:
       return False
-
-    project_details_form.save()
-    return True
 
   def post(self, data, check, mutator):
     """Post handler for the project details update form."""
-    if self.validate():
+    if self.validate(data):
       data.redirect.project()
       return data.redirect.to('gsoc_project_details')
     else:
@@ -233,13 +230,10 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
 
 
 class CodeSampleUploadFilePost(GSoCRequestHandler):
-  """Handler for POST requests to upload files with code samples.
-  """
+  """Handler for POST requests to upload files with code samples."""
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
-
+    """Returns the list of tuples for containing URL to view method mapping."""
     return [
         url(r'project/code_sample/upload/%s$' % url_patterns.PROJECT, self,
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD)
@@ -291,13 +285,10 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
 
 
 class CodeSampleDownloadFileGet(GSoCRequestHandler):
-  """Handler for POST requests to download files with code samples.
-  """
+  """Handler for POST requests to download files with code samples."""
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
-
+    """Returns the list of tuples for containing URL to view method mapping."""
     return [
         url(r'project/code_sample/download/%s$' % url_patterns.PROJECT, self,
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
@@ -324,12 +315,10 @@ class CodeSampleDownloadFileGet(GSoCRequestHandler):
 
 
 class CodeSampleDeleteFilePost(GSoCRequestHandler):
-  """Handler for POST requests to delete code sample files.
-  """
+  """Handler for POST requests to delete code sample files."""
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
+    """Returns the list of tuples for containing URL to view method mapping."""
     return [
         url(r'project/code_sample/delete/%s$' % url_patterns.PROJECT, self,
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_DELETE)
@@ -430,8 +419,7 @@ class ProjectDetails(GSoCRequestHandler):
     return 'v2/modules/gsoc/project_details/base.html'
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
+    """Returns the list of tuples for containing URL to view method mapping."""
 
     return [
         url(r'project/%s$' % url_patterns.PROJECT, self,
@@ -470,8 +458,7 @@ class ProjectDetails(GSoCRequestHandler):
 
 
 class AssignMentors(GSoCRequestHandler):
-  """View which handles assigning mentor to a project.
-  """
+  """View which handles assigning mentor to a project."""
 
   def djangoURLPatterns(self):
     return [
@@ -484,16 +471,17 @@ class AssignMentors(GSoCRequestHandler):
     assert isSet(data.project.org)
     check.isOrgAdminForOrganization(data.project.org)
 
-  def assignMentors(self, mentor_keys):
+  def assignMentors(self, data, mentor_keys):
     """Assigns the mentor to the project.
 
     Args:
+      data: A RequestData describing the current request.
       mentor_keys: List of mentor profile keys to to be assigned
           to the project.
     """
-    assert isSet(self.data.project)
+    assert isSet(data.project)
 
-    project_key = self.data.project.key()
+    project_key = data.project.key()
 
     def assign_mentor_txn():
       project = db.get(project_key)
@@ -504,11 +492,11 @@ class AssignMentors(GSoCRequestHandler):
 
     db.run_in_transaction(assign_mentor_txn)
 
-  def validate(self):
-    str_mentor_keys = self.data.POST.getlist('assign_mentor')
+  def validate(self, data):
+    str_mentor_keys = data.POST.getlist('assign_mentor')
 
     if str_mentor_keys:
-      org = self.data.project.org
+      org = data.project.org
 
       # need the list to set conversion and back to list conversion
       # to ensure that same mentor doesn't get assigned to the
@@ -525,9 +513,9 @@ class AssignMentors(GSoCRequestHandler):
   def post(self, data, check, mutator):
     assert isSet(data.project)
 
-    mentor_keys = self.validate()
+    mentor_keys = self.validate(data)
     if mentor_keys:
-      self.assignMentors(mentor_keys)
+      self.assignMentors(data, mentor_keys)
 
     project_owner = data.project.parent()
 
@@ -543,8 +531,7 @@ class AssignMentors(GSoCRequestHandler):
 
 
 class FeaturedProject(GSoCRequestHandler):
-  """View which handles making the project featured by toggle button.
-  """
+  """View which handles making the project featured by toggle button."""
 
   def djangoURLPatterns(self):
     return [
@@ -557,23 +544,23 @@ class FeaturedProject(GSoCRequestHandler):
     assert isSet(data.project.org)
     check.isOrgAdminForOrganization(data.project.org)
 
-  def toggleFeatured(self, value):
+  def toggleFeatured(self, data, value):
     """Makes the project featured.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(self.data.project)
+    assert isSet(data.project)
 
     if value != 'checked' and value != 'unchecked':
       raise BadRequest("Invalid post data.")
-
-    if value == 'checked' and not self.data.project.is_featured:
+    if value == 'checked' and not data.project.is_featured:
       raise BadRequest("Invalid post data.")
-    if value == 'unchecked' and self.data.project.is_featured:
+    if value == 'unchecked' and data.project.is_featured:
       raise BadRequest("Invalid post data.")
 
-    project_key = self.data.project.key()
+    project_key = data.project.key()
 
     def make_featured_txn():
       # transactionally get latest version of the project
@@ -589,7 +576,7 @@ class FeaturedProject(GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     value = data.POST.get('value')
-    self.toggleFeatured(value)
+    self.toggleFeatured(data, value)
     return http.HttpResponse()
 
   def get(self, data, check, mutator):
