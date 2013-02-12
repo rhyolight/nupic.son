@@ -412,7 +412,7 @@ class TaskViewPage(GCIRequestHandler):
 
     task = self.data.task
     # TODO(ljvderijk): Add a non-required profile property?
-    form.cleaned_data['user'] = self.data.profile.user
+    form.cleaned_data['user'] = self.data.user
     form.cleaned_data['org'] =  task.org
     form.cleaned_data['program'] = task.program
 
@@ -686,9 +686,6 @@ class CommentsTemplate(Template):
     context = {
         'profile': self.data.profile,
         'comments': comments,
-        'login': self.data.redirect.login().url(),
-        'student_reg_link': self.data.redirect.createProfile('student')
-            .urlOf('create_gci_profile', secure=True),
     }
 
     if self._commentingAllowed():
