@@ -99,12 +99,12 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     """
     if not validate.hasNonStudentProfileForProgram(
         backup_admin_user, self.request_data.program, profile_model):
-      r = self.request_data.redirect.createProfile('org_admin')
+      redirector = self.request_data.redirect.createProfile('org_admin')
 
       raise django_forms.ValidationError(
           DEF_BACKUP_ADMIN_NO_PROFILE % (
               self.request_data.program.short_name,
-              r.urlOf('create_gsoc_profile', full=True, secure=True)))
+              redirector.urlOf('create_gsoc_profile', full=True, secure=True)))
 
   def clean_org_id(self):
     org_id = cleaning.clean_link_id('org_id')(self)
