@@ -101,6 +101,8 @@ class ComponentsDashboard(Dashboard):
     }
 
 
+# TODO(nathaniel): Make all attributes of this class private except
+# those that fulfill the RequestHandler type.
 class DashboardPage(GCIRequestHandler):
   """View for the participant dashboard."""
 
@@ -158,7 +160,14 @@ class DashboardPage(GCIRequestHandler):
     return dashboards
 
   def shouldSubmitForms(self, data):
-    """Checks if the current user should submit the student forms."""
+    """Checks if the current user should submit the student forms.
+
+    Args:
+      data: A RequestData describing the current request.
+
+    Returns: True if the current user should submit their student
+      forms; False otherwise.
+    """
     # TODO(nathaniel): tweak this control flow.
     student_id_form = False
     consent_form = False
@@ -208,7 +217,14 @@ class DashboardPage(GCIRequestHandler):
       raise exceptions.AccessViolation('You cannot change this data')
 
   def components(self, data):
-    """Returns the list components that are active on the page."""
+    """Returns the list components that are active on the page.
+
+    Args:
+      data: A RequestData describing the current request.
+
+    Returns:
+      The list components that are active on the page.
+    """
     components = []
 
     if data.student_info:
@@ -293,6 +309,12 @@ class DashboardPage(GCIRequestHandler):
 
   def links(self, data):
     """Returns additional links of main dashboard that are active on the page.
+
+    Args:
+      data: A RequestData describing the current request.
+
+    Returns:
+      Additional links of the main dashboard that are active on the page.
     """
     links = []
 

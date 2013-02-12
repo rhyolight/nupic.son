@@ -225,7 +225,7 @@ class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
     if data.mentor_evaluation_record:
       form = GSoCMentorEvaluationTakeForm(
           data.mentor_evaluation, data.POST,
-           instance=data.mentor_evaluation_record)
+          instance=data.mentor_evaluation_record)
     else:
       form = GSoCMentorEvaluationTakeForm(data.mentor_evaluation, data.POST)
 

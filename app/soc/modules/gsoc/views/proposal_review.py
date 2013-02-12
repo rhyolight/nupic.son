@@ -768,7 +768,11 @@ class AssignMentor(GSoCRequestHandler):
     db.run_in_transaction(assign_mentor_txn)
 
   def unassignMentor(self, data):
-    """Removes the mentor assigned to the proposal."""
+    """Removes the mentor assigned to the proposal.
+
+    Args:
+      data: A RequestData describing the current request.
+    """
     assert isSet(data.proposal)
 
     proposal_key = data.proposal.key()
@@ -947,6 +951,7 @@ class AcceptProposal(GSoCRequestHandler):
     """Toggles the the application state between accept and pending.
 
     Args:
+      data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
     assert isSet(data.proposal)
