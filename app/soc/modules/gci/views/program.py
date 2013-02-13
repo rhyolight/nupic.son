@@ -27,7 +27,6 @@ from soc.views import program as soc_program_view
 from soc.views.helper import url_patterns as soc_url_patterns
 
 from soc.modules.gci.models import program as program_model
-from soc.modules.gci.models.program import GCIProgramMessages
 from soc.modules.gci.models import timeline as timeline_model
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms as gci_forms
@@ -99,7 +98,7 @@ class GCIProgramMessagesForm(gci_forms.GCIModelForm):
 
   class Meta:
     css_prefix = 'program_messages_form'
-    model = GCIProgramMessages
+    model = program_model.GCIProgramMessages
 
 
 class GCIEditProgramPage(GCIRequestHandler):
@@ -244,7 +243,7 @@ class GCIProgramMessagesPage(
         self.data, self.data.POST or None, instance=entity)
 
   def _getModel(self):
-    return GCIProgramMessages
+    return program_model.GCIProgramMessages
 
   def _getUrlName(self):
     return url_names.GCI_EDIT_PROGRAM_MESSAGES
