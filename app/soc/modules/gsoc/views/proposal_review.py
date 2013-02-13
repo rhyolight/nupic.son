@@ -25,8 +25,7 @@ from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
-from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -575,8 +574,7 @@ class PostComment(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    # TODO(nathaniel): Do this without a self-call.
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
 
 class PostScore(GSoCRequestHandler):
@@ -595,7 +593,7 @@ class PostScore(GSoCRequestHandler):
     org = data.proposal_org
 
     if not data.orgAdminFor(org) and org.scoring_disabled:
-      raise BadRequest('Scoring is disabled for this organization')
+      raise exceptions.BadRequest('Scoring is disabled for this organization')
 
     check.isMentorForOrganization(org)
 
@@ -619,7 +617,8 @@ class PostScore(GSoCRequestHandler):
     max_score = data.proposal_org.max_score
 
     if value < 0 or value > max_score:
-      raise BadRequest("Score must not be higher than %d" % max_score)
+      raise exceptions.BadRequest(
+          "Score must not be higher than %d" % max_score)
 
     query = db.Query(GSoCScore)
     query.filter('author = ', data.profile)
@@ -665,7 +664,7 @@ class PostScore(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
 
 class WishToMentor(GSoCRequestHandler):
@@ -694,12 +693,12 @@ class WishToMentor(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     if value == 'checked' and not data.isPossibleMentorForProposal():
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
     if value == 'unchecked' and data.isPossibleMentorForProposal():
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     proposal_key = data.proposal.key()
     profile_key = data.profile.key()
@@ -728,7 +727,7 @@ class WishToMentor(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
 
 class AssignMentor(GSoCRequestHandler):
@@ -797,7 +796,7 @@ class AssignMentor(GSoCRequestHandler):
           org)):
         return mentor_entity
       else:
-        raise BadRequest("Invalid post data.")
+        raise exceptions.BadRequest("Invalid post data.")
 
     return None
 
@@ -817,7 +816,7 @@ class AssignMentor(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
 
 class IgnoreProposal(GSoCRequestHandler):
@@ -834,7 +833,8 @@ class IgnoreProposal(GSoCRequestHandler):
     assert isSet(data.proposal_org)
     check.isOrgAdminForOrganization(data.proposal_org)
     if data.proposal.status == 'withdrawn':
-      raise AccessViolation("You cannot ignore a withdrawn proposal")
+      raise exceptions.AccessViolation(
+          "You cannot ignore a withdrawn proposal")
 
   def toggleIgnoreProposal(self, data, value):
     """Toggles the ignore status of the proposal.
@@ -846,13 +846,13 @@ class IgnoreProposal(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     if value == 'checked' and data.proposal.status != 'ignored':
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
     if value == 'unchecked' and data.proposal.status not in [
         'pending', 'withdrawn']:
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     proposal_key = data.proposal.key()
 
@@ -875,7 +875,7 @@ class IgnoreProposal(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
 
 class ProposalModificationPostDeadline(GSoCRequestHandler):
@@ -902,12 +902,12 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     if value == 'checked' and not data.proposal.is_editable_post_deadline:
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
     if value == 'unchecked' and data.proposal.is_editable_post_deadline:
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     proposal_key = data.proposal.key()
 
@@ -930,7 +930,7 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
 
 class AcceptProposal(GSoCRequestHandler):
@@ -957,12 +957,12 @@ class AcceptProposal(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     if value == 'checked' and not data.proposal.accept_as_project:
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
     if value == 'unchecked' and data.proposal.accept_as_project:
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     proposal_key = data.proposal.key()
 
@@ -985,7 +985,7 @@ class AcceptProposal(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
 
 class ProposalPubliclyVisible(GSoCRequestHandler):
@@ -1011,12 +1011,12 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     if value == 'checked' and not data.proposal.is_publicly_visible:
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
     if value == 'unchecked' and data.proposal.is_publicly_visible:
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     proposal_key = data.proposal.key()
 
@@ -1039,7 +1039,7 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
 
 class WithdrawProposal(GSoCRequestHandler):
@@ -1066,12 +1066,12 @@ class WithdrawProposal(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     if value == 'checked' and not data.proposal.status == 'withdrawn':
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
     if value == 'unchecked' and data.proposal.status == 'withdrawn':
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     proposal_key = data.proposal.key()
 
@@ -1094,4 +1094,4 @@ class WithdrawProposal(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()

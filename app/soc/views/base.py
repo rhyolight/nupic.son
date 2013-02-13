@@ -49,6 +49,10 @@ class RequestHandler(object):
 
     Returns:
       A dictionary of values to be used in rendering a template.
+
+    Raises:
+      An exceptions.Error describing a response appropriate for the
+        given request parameters.
     """
     return {}
 
@@ -65,6 +69,10 @@ class RequestHandler(object):
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
+
+    Raises:
+      An exceptions.Error describing a response appropriate for the
+        given request parameters.
     """
     context = self.context(data, check, mutator)
     template_path = self.templatePath()
@@ -81,6 +89,10 @@ class RequestHandler(object):
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
+
+    Raises:
+      An exceptions.Error describing a response appropriate for the
+        given request parameters.
     """
     context = self.jsonContext(data, check, mutator)
 
@@ -127,6 +139,10 @@ class RequestHandler(object):
       An object to be used as the content in a response to a json GET request
         after having been put through simplejson.dumps if it is not a string
         or unicode object.
+
+    Raises:
+      An exceptions.Error describing a response appropriate for the given
+        request parameters.
     """
     # TODO(nathaniel): That return value description is a travesty. Just make
     # this method return "a dictionary to be serialized into JSON response
@@ -145,8 +161,12 @@ class RequestHandler(object):
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
+
+    Raises:
+      An exceptions.Error describing a response appropriate for the
+        given request parameters.
     """
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
   def head(self, data, check, mutator):
     """Handler for HTTP HEAD request.
@@ -158,10 +178,14 @@ class RequestHandler(object):
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
+
+    Raises:
+      An exceptions.Error describing a response appropriate for the
+        given request parameters.
     """
     # TODO(nathaniel): This probably wouldn't be all that unreasonable to
     # implement?
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
   def options(self, data, check, mutator):
     """Handler for HTTP OPTIONS request.
@@ -173,8 +197,12 @@ class RequestHandler(object):
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
+
+    Raises:
+      An exceptions.Error describing a response appropriate for the
+        given request parameters.
     """
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
   def put(self, data, check, mutator):
     """Handler for HTTP PUT request.
@@ -186,8 +214,12 @@ class RequestHandler(object):
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
+
+    Raises:
+      An exceptions.Error describing a response appropriate for the
+        given request parameters.
     """
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
   def delete(self, data, check, mutator):
     """Handler for HTTP DELETE request.
@@ -199,8 +231,12 @@ class RequestHandler(object):
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
+
+    Raises:
+      An exceptions.Error describing a response appropriate for the
+        given request parameters.
     """
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
   def trace(self, data, check, mutator):
     """Handler for HTTP TRACE request.
@@ -212,8 +248,12 @@ class RequestHandler(object):
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
+
+    Raises:
+      An exceptions.Error describing a response appropriate for the
+        given request parameters.
     """
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
   def error(self, data, status, message=None):
     """Constructs an HttpResponse indicating an error.
