@@ -28,7 +28,7 @@ from soc.views.helper import url_patterns as soc_url_patterns
 
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.program import GCIProgramMessages
-from soc.modules.gci.models.timeline import GCITimeline
+from soc.modules.gci.models import timeline as timeline_model
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
@@ -40,7 +40,7 @@ class TimelineForm(gci_forms.GCIModelForm):
 
   class Meta:
     css_prefix = 'timeline_form'
-    model = GCITimeline
+    model = timeline_model.GCITimeline
     exclude = ['link_id', 'scope', 'scope_path']
 
 
@@ -175,7 +175,7 @@ class GCICreateProgramPage(soc_program_view.CreateProgramPage,
     return CreateProgramForm(self.data, self.data.POST or None)
 
   def _getTimelineModel(self):
-    return GCITimeline
+    return timeline_model.GCITimeline
 
   def _getUrlNameForRedirect(self):
     return url_names.GCI_PROGRAM_EDIT
