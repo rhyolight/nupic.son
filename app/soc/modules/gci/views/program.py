@@ -31,7 +31,7 @@ from soc.modules.gci.models import timeline as timeline_model
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
-from soc.modules.gci.views.helper.url_patterns import url
+from soc.modules.gci.views.helper import url_patterns
 
 
 class TimelineForm(gci_forms.GCIModelForm):
@@ -106,7 +106,8 @@ class GCIEditProgramPage(GCIRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self,
+        url_patterns.url(
+            r'program/edit/%s$' % soc_url_patterns.PROGRAM, self,
             name=url_names.GCI_PROGRAM_EDIT),
     ]
 
@@ -163,7 +164,8 @@ class GCICreateProgramPage(soc_program_view.CreateProgramPage,
 
   def djangoURLPatterns(self):
     return [
-        url(r'program/create/%s$' % soc_url_patterns.SPONSOR, self,
+        url_patterns.url(
+            r'program/create/%s$' % soc_url_patterns.SPONSOR, self,
             name=url_names.GCI_PROGRAM_CREATE),
     ]
 
@@ -185,9 +187,11 @@ class TimelinePage(GCIRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'timeline/%s$' % soc_url_patterns.PROGRAM, self,
+        url_patterns.url(
+            r'timeline/%s$' % soc_url_patterns.PROGRAM, self,
             name='edit_gci_timeline'),
-        url(r'timeline/edit/%s$' % soc_url_patterns.PROGRAM, self),
+        url_patterns.url(
+            r'timeline/edit/%s$' % soc_url_patterns.PROGRAM, self),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -231,8 +235,9 @@ class GCIProgramMessagesPage(
 
   def djangoURLPatterns(self):
     return [
-        url(r'program/messages/edit/%s$' % soc_url_patterns.PROGRAM, self,
-            name=self._getUrlName()),
+        url_patterns.url(
+            r'program/messages/edit/%s$' % soc_url_patterns.PROGRAM,
+            self, name=self._getUrlName()),
     ]
 
   def templatePath(self):
