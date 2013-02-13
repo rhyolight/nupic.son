@@ -26,7 +26,7 @@ from soc.views import forms
 from soc.views import program as soc_program_view
 from soc.views.helper import url_patterns as soc_url_patterns
 
-from soc.modules.gci.models.program import GCIProgram
+from soc.modules.gci.models import program as program_model
 from soc.modules.gci.models.program import GCIProgramMessages
 from soc.modules.gci.models import timeline as timeline_model
 from soc.modules.gci.views.base import GCIRequestHandler
@@ -53,7 +53,7 @@ class CreateProgramForm(gci_forms.GCIModelForm):
 
   class Meta:
     css_prefix = 'create_program_form'
-    model = GCIProgram
+    model = program_model.GCIProgram
     exclude = [
         'scope', 'scope_path', 'timeline', 'home', 'org_admin_agreement',
         'mentor_agreement', 'student_agreement', 'about_page', 'events_page',
@@ -74,7 +74,7 @@ class EditProgramForm(gci_forms.GCIModelForm):
 
   class Meta:
     css_prefix = 'edit_program_form'
-    model = GCIProgram
+    model = program_model.GCIProgram
     exclude = ['link_id', 'scope', 'scope_path', 'timeline', 'home',
         'task_types']
 
