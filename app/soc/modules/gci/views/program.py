@@ -28,7 +28,7 @@ from soc.views.helper import url_patterns as soc_url_patterns
 
 from soc.modules.gci.models import program as program_model
 from soc.modules.gci.models import timeline as timeline_model
-from soc.modules.gci.views.base import GCIRequestHandler
+from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper import url_patterns
@@ -101,7 +101,7 @@ class GCIProgramMessagesForm(gci_forms.GCIModelForm):
     model = program_model.GCIProgramMessages
 
 
-class GCIEditProgramPage(GCIRequestHandler):
+class GCIEditProgramPage(base.GCIRequestHandler):
   """View to edit the program settings."""
 
   def djangoURLPatterns(self):
@@ -159,7 +159,7 @@ class GCIEditProgramPage(GCIRequestHandler):
 
 
 class GCICreateProgramPage(soc_program_view.CreateProgramPage,
-    GCIRequestHandler):
+    base.GCIRequestHandler):
   """View to create a new GCI program."""
 
   def djangoURLPatterns(self):
@@ -182,7 +182,7 @@ class GCICreateProgramPage(soc_program_view.CreateProgramPage,
     return url_names.GCI_PROGRAM_EDIT
 
 
-class TimelinePage(GCIRequestHandler):
+class TimelinePage(base.GCIRequestHandler):
   """View for the participant profile."""
 
   def djangoURLPatterns(self):
@@ -230,7 +230,7 @@ class TimelinePage(GCIRequestHandler):
 
 
 class GCIProgramMessagesPage(
-    soc_program_view.ProgramMessagesPage, GCIRequestHandler):
+    soc_program_view.ProgramMessagesPage, base.GCIRequestHandler):
   """View for the content of GCI program specific messages to be sent."""
 
   def djangoURLPatterns(self):
