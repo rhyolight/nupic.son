@@ -14,15 +14,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests for program related views.
+"""Unit tests for program related views.
 """
 
-
-from tests.test_utils import GSoCDjangoTestCase
+from tests import test_utils
 
 # TODO: perhaps we should move this out?
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+
+class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
+  """Tests GSoCCreateProgramPage view.
+  """
+
+  def assertProgramTemplatesUsed(self, response):
+    """Asserts that all the templates from the program were used.
+    """
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/program/base.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+
+  def setUp(self):
+    self.init()
+
+  def testLoneUserAccessForbidden(self):
+    url = '/gsoc/program/create/' + self.sponsor.key().name()
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+
+  def testStudentAccessForbidden(self):
+    url = '/gsoc/program/create/' + self.sponsor.key().name()
+    self.data.createStudent()
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+
+  def testMentorAccessForbidden(self):
+    url = '/gsoc/program/create/' + self.sponsor.key().name()
+    self.data.createMentor(self.org)
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+
+  def testOrgAdminAccessForbidden(self):
+    url = '/gsoc/program/create/' + self.sponsor.key().name()
+    self.data.createOrgAdmin(self.org)
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+
+  def testHostAccessGranted(self):
+    url = '/gsoc/program/create/' + self.sponsor.key().name()
+    self.data.createHost()
+    response = self.get(url)
+    self.assertProgramTemplatesUsed(response)
 
 
 class EditProgramTest(GSoCDjangoTestCase):
