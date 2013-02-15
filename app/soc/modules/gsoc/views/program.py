@@ -270,6 +270,9 @@ class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
   """View to create a new GSoC program."""
 
   def djangoURLPatterns(self):
+    """See soc.views.base.RequestHandler.djangoURLPatterns
+    for specification.
+    """
     return [
         url_patterns.url(
             r'program/create/%s$' % soc_url_patterns.SPONSOR, self,
@@ -277,15 +280,23 @@ class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
     ]
 
   def templatePath(self):
+    """See soc.views.base.RequestHandler.templatePath for specification."""
     return 'v2/modules/gsoc/program/base.html'
 
   def _getForm(self):
+    """See soc.views.program.CreateProgram._getForm for specification."""
     return CreateProgramForm(self.data, self.data.POST or None)
 
   def _getTimelineModel(self):
+    """See soc.views.program.CreateProgram._getTimelineModel
+    for specification.
+    """
     return timeline_model.GSoCTimeline
 
   def _getUrlNameForRedirect(self):
+    """See soc.views.program.CreateProgram._getUrlNameForRedirect
+    for specification.
+    """
     return url_names.GSOC_PROGRAM_EDIT
 
 

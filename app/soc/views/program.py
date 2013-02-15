@@ -20,7 +20,8 @@ from google.appengine.ext import db
 class CreateProgramPage(object):
   """View to create a new program."""
 
-  def checkAccess(self, data, check, mutatot):
+  def checkAccess(self, data, check, mutator):
+    "See soc.views.base.RequestHandler.checkAccess for specification."
     check.isHost()
 
   def context(self, data, check, mutator):
@@ -52,7 +53,6 @@ class CreateProgramPage(object):
 
       # TODO(nathaniel): Make this .program() call unnecessary.
       data.redirect.program(program=program)
-      # TODO(nathaniel): Redirection to same page?
       return data.redirect.to(self._getUrlNameForRedirect(), validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
@@ -82,12 +82,30 @@ class CreateProgramPage(object):
     return timeline_model(key_name=key_name, **properties)
 
   def _getForm(self):
+    """Returns a form to be filled by the user with program specific settings.
+
+    Returns:
+      soc.views.forms.ModelForm to create a new program
+    """
     raise NotImplementedError
 
   def _getTimelineModel(self):
+    """Returns the timeline model which is appropriate for the program model
+    used by the class. A new instance of the resulted model will be used by
+    the timeline property of the created program.
+
+    Returns:
+      a timeline model class which inherits from soc.models.program.Timeline.
+    """
     raise NotImplementedError
 
   def _getUrlNameForRedirect(self):
+    """Returns the URL name of the redirect which should be used on successful
+    program creation.
+
+    Returns:
+      a string representing a PROGRAM scoped URL name
+    """
     raise NotImplementedError
 
 
