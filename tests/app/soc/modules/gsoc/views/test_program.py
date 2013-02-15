@@ -52,8 +52,6 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
         'status': 'visible',
         'apps_tasks_limit': 20,
         'slots': 500,
-        'student_min_age': 18,
-        'student_min_age_as_of': datetime.date.today()
         }
 
   def getEditProgramUrl(self):
