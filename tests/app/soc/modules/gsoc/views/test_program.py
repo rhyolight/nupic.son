@@ -113,6 +113,24 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     self.assertSameEntity(program.scope, self.sponsor)
     self.assertPropertiesEqual(properties, program)
 
+  def testCreateProgramWithInsufficientData(self):
+    url = '/gsoc/program/create/' + self.sponsor.key().name()
+    self.data.createHost()
+
+    properties = self.getCreateProgramFormRequiredProperties()
+
+    for k, v in properties.items():
+      # remove the property from the dictionary so as to check if
+      # it is possible to create a program without it
+      del properties[k]
+      response = self.post(url, properties)
+
+      self.assertResponseOK(response)
+      self.assertTrue(k in response.context['error'])
+
+      # restore the property
+      properties[k] = v
+
 
 class EditProgramTest(test_utils.GSoCDjangoTestCase):
   """Tests program edit page.
