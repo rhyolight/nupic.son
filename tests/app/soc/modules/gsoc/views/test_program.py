@@ -19,6 +19,8 @@
 
 import datetime
 
+from soc.modules.gsoc.models import program as program_model
+
 from tests import test_utils
 
 # TODO: perhaps we should move this out?
@@ -61,6 +63,10 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
         self.sponsor.key().name(),
         self.DEF_LINK_ID]) + '?validated'
 
+  def getProgramKeyName(self):
+    """Returns a key name of the newly created program."""
+    return '/'.join([self.sponsor.key().name(), self.DEF_LINK_ID])
+
   def setUp(self):
     self.init()
 
@@ -101,6 +107,13 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
 
     response = self.post(url, properties)
     self.assertResponseRedirect(response, self.getEditProgramUrl())
+
+    program = program_model.GSoCProgram.get_by_key_name(
+        self.getProgramKeyName())
+
+    self.assertEqual(self.getProgramKeyName(), program.key().name())
+    self.assertSameEntity(program.scope, self.sponsor)
+    self.assertPropertiesEqual(properties, program)
 
 
 class EditProgramTest(test_utils.GSoCDjangoTestCase):
