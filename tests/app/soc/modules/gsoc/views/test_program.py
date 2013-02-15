@@ -17,6 +17,8 @@
 """Unit tests for program related views.
 """
 
+import datetime
+
 from tests import test_utils
 
 # TODO: perhaps we should move this out?
@@ -27,12 +29,37 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
   """Tests GSoCCreateProgramPage view.
   """
 
+  DEF_LINK_ID = 'melange'
+
   def assertProgramTemplatesUsed(self, response):
     """Asserts that all the templates from the program were used.
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gsoc/program/base.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+
+  def getCreateProgramFormRequiredProperties(self):
+    """Returns all properties to be sent in a POST dictionary that are required
+    to create a new program.
+    """
+    return {
+        'link_id': self.DEF_LINK_ID,
+        'name': 'Melange Program',
+        'short_name': 'MP',
+        'description': 'This is a Melange Program',
+        'status': 'visible',
+        'apps_tasks_limit': 20,
+        'slots': 500,
+        'student_min_age': 18,
+        'student_min_age_as_of': datetime.date.today()
+        }
+
+  def getEditProgramUrl(self):
+    """Returns a URL to edit the newly created program."""
+    return '/'.join([
+        '/gsoc/program/edit',
+        self.sponsor.key().name(),
+        self.DEF_LINK_ID]) + '?validated'
 
   def setUp(self):
     self.init()
@@ -66,8 +93,17 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)
 
+  def testCreateProgramWithRequiredProperties(self):
+    url = '/gsoc/program/create/' + self.sponsor.key().name()
+    self.data.createHost()
 
-class EditProgramTest(GSoCDjangoTestCase):
+    properties = self.getCreateProgramFormRequiredProperties()
+
+    response = self.post(url, properties)
+    self.assertResponseRedirect(response, self.getEditProgramUrl())
+
+
+class EditProgramTest(test_utils.GSoCDjangoTestCase):
   """Tests program edit page.
   """
 
