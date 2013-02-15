@@ -18,7 +18,11 @@ from google.appengine.ext import db
 
 
 class CreateProgramPage(object):
-  """View to create a new program."""
+  """View to create a new program.
+
+  It implements some functionalities of soc.views.base.RequestHandler. These
+  function will be used by inheriting, module-specific classes.
+  """
 
   def checkAccess(self, data, check, mutator):
     "See soc.views.base.RequestHandler.checkAccess for specification."
