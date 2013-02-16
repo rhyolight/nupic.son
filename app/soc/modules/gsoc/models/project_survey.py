@@ -26,7 +26,7 @@ from soc.models import survey as survey_model
 
 
 class ProjectSurvey(survey_model.Survey):
-  """Survey for Students that have a StudentProject.
+  """Survey for Students that have a project.
   """
 
   #: Required field storing "ID" used in URL links. ASCII characters,
