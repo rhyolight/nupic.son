@@ -80,7 +80,7 @@ class CreateProgramForm(forms.GSoCModelForm):
     css_prefix = 'create_program_form'
     model = program.GSoCProgram
     exclude = [
-        'scope', 'scope_path', 'timeline', 'home', 'slots_allocation',
+        'scope', 'scope_path', 'timeline', 'slots_allocation',
         'student_max_age', 'min_slots', 'org_admin_agreement',
         'mentor_agreement', 'student_agreement', 'about_page', 'events_page',
         'connect_with_us_page', 'help_page']
@@ -97,7 +97,7 @@ class EditProgramForm(forms.GSoCModelForm):
     css_prefix = 'edit_program_form'
     model = program.GSoCProgram
     exclude = [
-        'link_id', 'scope', 'scope_path', 'timeline', 'home',
+        'link_id', 'scope', 'scope_path', 'timeline',
         'slots_allocation', 'student_max_age', 'min_slots']
 
 

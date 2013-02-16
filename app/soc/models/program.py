@@ -181,14 +181,6 @@ class Program(soc.models.linkable.Linkable):
   privacy_policy_url.help_text = ugettext(
       "The url for the <b>Privacy Policy</b>")
 
-  #: Reference to Document containing the contents of the "/home" page
-  home = db.ReferenceProperty(
-    reference_class=soc.models.document.Document,
-    collection_name='home_page')
-  home.help_text = ugettext(
-      'Document to be used as the "/home" page static contents.')
-  home.group = ugettext("1. Public Info")
-
   #: ATOM or RSS feed URL. Feed entries are shown on the site
   #: page using Google's JavaScript blog widget
   feed_url = db.LinkProperty(verbose_name=ugettext('Feed URL'))
