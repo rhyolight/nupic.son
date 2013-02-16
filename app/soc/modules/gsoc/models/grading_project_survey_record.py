@@ -14,15 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GradingProjectSurveyRecord extends ProjectSurveyRecord to store the grade.
+"""GradingProjectSurveyRecord extends GSoCProjectSurveyRecord
+to store the grade.
 """
 
 from google.appengine.ext import db
 
-from soc.modules.gsoc.models.project_survey_record import GSoCProjectSurveyRecord
+from soc.modules.gsoc.models import project_survey_record as project_survey_record_model
 
 
-class GSoCGradingProjectSurveyRecord(GSoCProjectSurveyRecord):
+class GSoCGradingProjectSurveyRecord(
+    project_survey_record_model.GSoCProjectSurveyRecord):
   """Grading record for evaluation surveys.
 
   Represents the grading part of a evaluation survey group (usually a pair)

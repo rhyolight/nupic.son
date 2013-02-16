@@ -14,19 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GradingRecord represents a cluster (mentor/student) of SurveyRecords
+"""GSoCGradingRecord represents a cluster (mentor/student) of SurveyRecords
 for an evaluation period.
 """
-
 
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.modules.gsoc.models.grading_project_survey_record \
-    import GSoCGradingProjectSurveyRecord
-from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
-from soc.modules.gsoc.models.project_survey_record import GSoCProjectSurveyRecord
+from soc.modules.gsoc.models import grading_project_survey_record as grading_project_survey_record_model
+from soc.modules.gsoc.models import grading_survey_group as grading_survey_group_model
+from soc.modules.gsoc.models import project_survey_record as project_survey_record_model
 
 
 class GSoCGradingRecord(db.Model):
@@ -35,7 +33,7 @@ class GSoCGradingRecord(db.Model):
   Because Mentors and Students take different surveys,
   we cannot simply link survey records by a common project and survey.
 
-  Instead, we establish a GradingRecord.
+  Instead, we establish a GSoCGradingRecord.
 
   A GradingRecord links a group of survey records with a common
   project, and links back to its records.
@@ -51,19 +49,22 @@ class GSoCGradingRecord(db.Model):
     soc.modules.gsoc.models.project.GSoCProject
   """
 
-  #: The GradingSurveyGroup to which this record belongs
+  #: The GSoCGradingSurveyGroup to which this record belongs
   grading_survey_group = db.ReferenceProperty(
-      reference_class=GSoCGradingSurveyGroup, required=True, 
+      required=True, reference_class=
+          grading_survey_group_model.GSoCGradingSurveyGroup, 
       collection_name='gsoc_grading_records')
 
-  #: Mentor's GradingProjectSurveyRecord for this evaluation. Iff exists.
+  #: Mentor's GSoCGradingProjectSurveyRecord for this evaluation. Iff exists.
   mentor_record = db.ReferenceProperty(
-      reference_class=GSoCGradingProjectSurveyRecord, required=False,
+      required=False, reference_class=
+          grading_project_survey_record_model.GSoCGradingProjectSurveyRecord,
       collection_name='gsoc_mentor_grading_records')
 
-  #: Student's ProjectSurveyRecord for this evaluation. Iff exists.
+  #: Student's GSoCProjectSurveyRecord for this evaluation. Iff exists.
   student_record = db.ReferenceProperty(
-      reference_class=GSoCProjectSurveyRecord, required=False,
+      required=False, reference_class=
+          project_survey_record_model.GSoCProjectSurveyRecord,
       collection_name='gsoc_student_grading_records')
 
   #: Grade decision set for this grading record.
@@ -76,15 +77,17 @@ class GSoCGradingRecord(db.Model):
   #:       set in the GradingSurveyGroup and the student_record property is not
   #:       set the decision will be fail.
   #: undecided: If no mentor_record has been set.
-  grade_decision = db.StringProperty(required=True, default='undecided',
-                                     choices=['pass', 'fail', 'undecided'],
-                                     verbose_name=ugettext('Grade'))
+  grade_decision = db.StringProperty(
+      required=True, default='undecided',
+      choices=['pass', 'fail', 'undecided'],
+      verbose_name=ugettext('Grade'))
 
   #: Boolean that states if the grade_decision property has been locked
   #: This is to prevent an automatic update from a GradingSurveyGroup to
   #: overwrite the decision made by for example a Program Administrator.
-  locked = db.BooleanProperty(required=False, default=False,
-                              verbose_name=ugettext('Grade locked'))
+  locked = db.BooleanProperty(
+      required=False, default=False,
+      verbose_name=ugettext('Grade locked'))
   locked.help_text = ugettext('When locked the grade can only be changed manually.')
 
   #: Property containing the date that this GradingRecord was created.

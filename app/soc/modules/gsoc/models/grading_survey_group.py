@@ -23,9 +23,9 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
-from soc.modules.gsoc.models.project_survey import ProjectSurvey
+from soc.modules.gsoc.models import program as program_model
+from soc.modules.gsoc.models import grading_project_survey as grading_project_survey_model
+from soc.modules.gsoc.models import project_survey as project_survey_model
 
 
 class GSoCGradingSurveyGroup(db.Model):
@@ -49,17 +49,17 @@ class GSoCGradingSurveyGroup(db.Model):
 
   #: Program that this group belongs to.
   program = db.ReferenceProperty(
-      reference_class=GSoCProgram, required=True,
+      reference_class=program_model.GSoCProgram, required=True,
       collection_name='gsoc_grading_survey_groups')
 
   #: GradingProjectSurvey which belongs to this group.
   grading_survey = db.ReferenceProperty(
-      reference_class=GradingProjectSurvey, required=True,
-      collection_name='gsoc_grading_survey_groups')
+      reference_class=grading_project_survey_model.GradingProjectSurvey,
+      required=True, collection_name='gsoc_grading_survey_groups')
 
   #: non-required ProjectSurvey that belongs to this group.
   student_survey = db.ReferenceProperty(
-      reference_class=ProjectSurvey, required=False,
+      reference_class=project_survey_model.ProjectSurvey, required=False,
       collection_name='gsoc_project_survey_groups')
 
   #: DateTime when the last GradingRecord update was started for this group.
