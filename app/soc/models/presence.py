@@ -34,7 +34,6 @@ class Presence(soc.models.linkable.Linkable):
 
   Models that have a "presence" on a Melange web site are (currently):
   * any Group (Organization, Club, etc.)
-  * the site itself, which is a singleton Presence
   """
 
   #: Reference to Document containing the contents of the "/home" page
