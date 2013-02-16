@@ -14,41 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""ProjectSurveyRecord allows linking two result sets by StudentProject.
+"""GSoCProjectSurveyRecord allows linking two result sets by GSoCProject.
 """
 
-
 from google.appengine.ext import db
-
-from soc.models.organization import Organization
-from soc.models.survey_record import SurveyRecord
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.project import GSoCProject
 
-import soc.modules.gsoc.models.student_project
-
-
-class ProjectSurveyRecord(SurveyRecord):
-  """Record linked to a Project, enabling to store which Projects had their
-  Survey done.
-  """
-
-  #: Reference to the Project that this record belongs to.
-  project = db.ReferenceProperty(
-      reference_class=soc.modules.gsoc.models.student_project.StudentProject,
-      required=True, collection_name='survey_records')
-
-  #: A many:1 relationship associating ProjectSurveyRecords 
-  #: with specific Organization. The back-reference in the 
-  #: Organization model is a Query named 'survey_records'.
-  org = db.ReferenceProperty(
-      reference_class=Organization, 
-      required=False, collection_name='survey_records')
 
 class GSoCProjectSurveyRecord(SurveyRecord):
   """Record linked to a Project, enabling to store which Projects had their
-  Survey done. Should be used instead of the deprecated ProjectSurveyRecord model.
+  Survey done.
   """
 
   #: Reference to the Project that this record belongs to.
