@@ -54,6 +54,27 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
         'slots': 500,
         }
 
+  def getCreateProgramFormOptionalProperties(self):
+    """Returns all properties to be optionally sent in a POST dictionary to
+    create a new program.
+    """
+    return {
+        'group_label': 'soc',
+        'nr_accepted_orgs': 200,
+        'student_min_age': 18,
+        'student_min_age_as_of': datetime.date.today(),
+        'events_frame_url': u'http://www.example1.com/',
+        'privacy_policy_url': u'http://www.example2.com/',
+        'blogger': u'http://www.example3.com/',
+        'gplus': u'http://www.example4.com/',
+        'feed_url': u'http://www.example5.com/',
+        'email': 'test@example.com',
+        'irc': 'irc://test@freenode.net',
+        'max_slots': 10,
+        'allocations_visible': True,
+        'duplicates_visible': True,
+        }
+
   def getEditProgramUrl(self):
     """Returns a URL to edit the newly created program."""
     return '/'.join([
@@ -130,6 +151,23 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
 
       # restore the property
       properties[k] = v
+
+  def testCreateProgramWithAllData(self):
+    url = '/gsoc/program/create/' + self.sponsor.key().name()
+    self.data.createHost()
+
+    properties = self.getCreateProgramFormRequiredProperties()
+    properties.update(self.getCreateProgramFormOptionalProperties())
+
+    response = self.post(url, properties)
+    self.assertResponseRedirect(response, self.getEditProgramUrl())
+
+    program = program_model.GSoCProgram.get_by_key_name(
+        self.getProgramKeyName())
+
+    self.assertEqual(self.getProgramKeyName(), program.key().name())
+    self.assertSameEntity(program.scope, self.sponsor)
+    self.assertPropertiesEqual(properties, program)
 
 
 class EditProgramTest(test_utils.GSoCDjangoTestCase):
