@@ -21,11 +21,11 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 import soc.models.document
-import soc.models.presence
+import soc.models.linkable
 import soc.models.timeline
 
 
-class Program(soc.models.presence.Presence):
+class Program(soc.models.linkable.Linkable):
   """The Program model, representing a Program ran by a Sponsor.
   """
 
@@ -180,6 +180,22 @@ class Program(soc.models.presence.Presence):
       verbose_name=ugettext("Privacy Policy"))
   privacy_policy_url.help_text = ugettext(
       "The url for the <b>Privacy Policy</b>")
+
+  #: Reference to Document containing the contents of the "/home" page
+  home = db.ReferenceProperty(
+    reference_class=soc.models.document.Document,
+    collection_name='home_page')
+  home.help_text = ugettext(
+      'Document to be used as the "/home" page static contents.')
+  home.group = ugettext("1. Public Info")
+
+  #: ATOM or RSS feed URL. Feed entries are shown on the site
+  #: page using Google's JavaScript blog widget
+  feed_url = db.LinkProperty(verbose_name=ugettext('Feed URL'))
+  feed_url.help_text = ugettext(
+      'The URL should be a valid ATOM or RSS feed. '
+      'Feed entries are shown on the program home page.')
+  feed_url.group = ugettext("1. Public Info")
 
   blogger = db.LinkProperty(
       required=False, verbose_name=ugettext("Blogger URL"))
