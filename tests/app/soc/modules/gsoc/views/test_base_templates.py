@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for base templates. All the templates will be tested on homepage.
+"""Tests for base templates. All the templates are tested on homepage.
 """
 
 
@@ -48,10 +48,10 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertTrue('accepted_orgs_link' not in mainmenu_context)
     self.assertTrue('projects_link' not in mainmenu_context)
 
-    # No profile
+    # No profile.
     self.assertTrue('dashboard_link' not in mainmenu_context)
 
-    # Create profile
+    # Create profile.
     self.data.createProfile()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
@@ -60,6 +60,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertMainMenuCommonLinks(mainmenu_context)
     self.assertTrue('dashboard_link' in mainmenu_context)
 
+    # Make the current user the host.
     self.data.createHost()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
