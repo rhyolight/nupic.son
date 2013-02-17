@@ -17,8 +17,6 @@
 """This module contains the view for the site menus."""
 
 
-from google.appengine.api import users
-
 from django.core.urlresolvers import reverse
 
 from soc.views.base_templates import LoggedInMsg
@@ -141,7 +139,6 @@ class Footer(Template):
 
   def context(self):
     context = siteMenuContext(self.data)
-    redirect = self.data.redirect
     program = self.data.program
 
     context.update({
