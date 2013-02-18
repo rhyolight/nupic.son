@@ -134,7 +134,7 @@ class GradingSurveyGroupTest(
 
     response = self.post(self.UPDATE_RECORDS_URL, post_data)
 
-    self.assertEqual(response.status_code, httplib.OK)
+    self.assertResponseOK(response)
     self.assertTasksInQueue(n=1, url=self.UPDATE_RECORDS_URL)
 
     record = gr_model.GSoCGradingRecord.all().get()
@@ -249,7 +249,7 @@ class GradingSurveyGroupTest(
 
     response = self.post(self.SEND_URL, post_data)
 
-    self.assertEqual(response.status_code, httplib.OK)
+    self.assertResponseOK(response)
     # URL explicitly added since the email task is in there
     self.assertTasksInQueue(n=0, url=self.SEND_URL)
     self.assertEmailSent(to=self.student.email)
