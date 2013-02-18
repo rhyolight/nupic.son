@@ -141,6 +141,50 @@ class GradingSurveyGroupTest(
     self.assertFalse(record is None)
     self.assertEqual(record.grade_decision, 'pass')
 
+  def testDoesNotCreateGradingRecordForWithdrawnProject(self):
+    # list response with projects
+    mentor_profile_helper = profile_utils.GSoCProfileHelper(
+        self.gsoc, self.dev_test)
+    mentor_profile_helper.createOtherUser('mentor@example.com')
+    mentor = mentor_profile_helper.createMentor(self.org)
+
+    # create another project and mark it withdrawn
+    student_profile_helper = profile_utils.GSoCProfileHelper(
+        self.gsoc, self.dev_test)
+    student_profile_helper.createStudentWithProposal(self.org, mentor)
+    student_profile = student_profile_helper.createStudentWithProject(
+        self.org, mentor)
+
+    # Retrieve the project, corresponding proposal.
+    project = project_model.GSoCProject.all().ancestor(student_profile).get()
+    proposal = project.proposal
+
+    # Update the properties for withdrawing the project.
+    student_profile.student_info.number_of_projects -= 1
+    student_profile.student_info.project_for_orgs.remove(self.org.key())
+    project.status = 'withdrawn'
+    proposal.status = 'withdrawn'
+
+    # Update the entities.
+    student_profile.student_info.put()
+    project.put()
+    proposal.put()
+
+    post_data = {
+        'group_key': self.survey_group.key().id_or_name()
+        }
+
+    response = self.post(self.UPDATE_RECORDS_URL, post_data)
+
+    self.assertResponseOK(response)
+    self.assertTasksInQueue(n=1, url=self.UPDATE_RECORDS_URL)
+
+    records = gr_model.GSoCGradingRecord.all().fetch(limit=1000)
+
+    # Only one record is expected of the two projects since no record should
+    # be created for the withdrawn project
+    self.assertEqual(len(records), 1)
+
   def testUpdateGradingRecord(self):
     """Test updating a GradingRecord.
     """
