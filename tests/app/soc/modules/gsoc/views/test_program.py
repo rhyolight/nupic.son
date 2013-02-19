@@ -205,3 +205,49 @@ class EditProgramTest(test_utils.GSoCDjangoTestCase):
     response = self.getJsonResponse(url)
     self.assertIsJsonResponse(response)
     self.assertEqual(1, len(response.context['data']))
+
+
+class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for GSoCProgramMessagesPage view."""
+
+  def assertProgramTemplatesUsed(self, response):
+    """Asserts that all the templates from the program were used.
+    """
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/program/messages.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+
+  def _getUrl(self):
+    return '/gsoc/program/messages/edit/' + self.program.key().name()
+
+  def setUp(self):
+    self.init()
+
+  def testLoneUserAccessForbidden(self):
+    url = self._getUrl()
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+
+  def testStudentAccessForbidden(self):
+    url = self._getUrl()
+    self.data.createStudent()
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+
+  def testMentorAccessForbidden(self):
+    url = self._getUrl()
+    self.data.createMentor(self.org)
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+
+  def testOrgAdminAccessForbidden(self):
+    url = self._getUrl()
+    self.data.createOrgAdmin(self.org)
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+
+  def testHostAccessGranted(self):
+    url = self._getUrl()
+    self.data.createHost()
+    response = self.get(url)
+    self.assertProgramTemplatesUsed(response)
