@@ -40,7 +40,7 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/program/base.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
 
-  def getCreateProgramFormRequiredProperties(self):
+  def _getCreateProgramFormRequiredProperties(self):
     """Returns all properties to be sent in a POST dictionary that are required
     to create a new program.
     """
@@ -54,7 +54,7 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
         'slots': 500,
         }
 
-  def getCreateProgramFormOptionalProperties(self):
+  def _getCreateProgramFormOptionalProperties(self):
     """Returns all properties to be optionally sent in a POST dictionary to
     create a new program.
     """
@@ -75,14 +75,14 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
         'duplicates_visible': True,
         }
 
-  def getEditProgramUrl(self):
+  def _getEditProgramUrl(self):
     """Returns a URL to edit the newly created program."""
     return '/'.join([
         '/gsoc/program/edit',
         self.sponsor.key().name(),
         self.DEF_LINK_ID]) + '?validated'
 
-  def getProgramKeyName(self):
+  def _getProgramKeyName(self):
     """Returns a key name of the newly created program."""
     return '/'.join([self.sponsor.key().name(), self.DEF_LINK_ID])
 
@@ -122,15 +122,15 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
     self.data.createHost()
 
-    properties = self.getCreateProgramFormRequiredProperties()
+    properties = self._getCreateProgramFormRequiredProperties()
 
     response = self.post(url, properties)
-    self.assertResponseRedirect(response, self.getEditProgramUrl())
+    self.assertResponseRedirect(response, self._getEditProgramUrl())
 
     program = program_model.GSoCProgram.get_by_key_name(
-        self.getProgramKeyName())
+        self._getProgramKeyName())
 
-    self.assertEqual(self.getProgramKeyName(), program.key().name())
+    self.assertEqual(self._getProgramKeyName(), program.key().name())
     self.assertSameEntity(program.scope, self.sponsor)
     self.assertPropertiesEqual(properties, program)
 
@@ -138,7 +138,7 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
     self.data.createHost()
 
-    properties = self.getCreateProgramFormRequiredProperties()
+    properties = self._getCreateProgramFormRequiredProperties()
 
     for k, v in properties.items():
       # remove the property from the dictionary so as to check if
@@ -156,16 +156,16 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
     self.data.createHost()
 
-    properties = self.getCreateProgramFormRequiredProperties()
-    properties.update(self.getCreateProgramFormOptionalProperties())
+    properties = self._getCreateProgramFormRequiredProperties()
+    properties.update(self._getCreateProgramFormOptionalProperties())
 
     response = self.post(url, properties)
-    self.assertResponseRedirect(response, self.getEditProgramUrl())
+    self.assertResponseRedirect(response, self._getEditProgramUrl())
 
     program = program_model.GSoCProgram.get_by_key_name(
-        self.getProgramKeyName())
+        self._getProgramKeyName())
 
-    self.assertEqual(self.getProgramKeyName(), program.key().name())
+    self.assertEqual(self._getProgramKeyName(), program.key().name())
     self.assertSameEntity(program.scope, self.sponsor)
     self.assertPropertiesEqual(properties, program)
 
