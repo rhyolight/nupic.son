@@ -282,9 +282,9 @@ class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
     """See soc.views.base.RequestHandler.templatePath for specification."""
     return 'v2/modules/gsoc/program/base.html'
 
-  def _getForm(self):
+  def _getForm(self, data):
     """See soc.views.program.CreateProgram._getForm for specification."""
-    return CreateProgramForm(self.data, self.data.POST or None)
+    return CreateProgramForm(data, data.POST or None)
 
   def _getTimelineModel(self):
     """See soc.views.program.CreateProgram._getTimelineModel

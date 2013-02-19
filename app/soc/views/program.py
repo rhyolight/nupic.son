@@ -30,7 +30,7 @@ class CreateProgramPage(object):
 
   def context(self, data, check, mutator):
     """See soc.views.base.RequestHandler.context for specification."""
-    form = self._getForm()
+    form = self._getForm(data)
     context = {
         'page_name': 'Create a new program',
         'forms': [form],
@@ -41,15 +41,15 @@ class CreateProgramPage(object):
 
   def post(self, data, check, mutator):
     """See soc.views.base.RequestHandler.post for specification."""
-    form = self._getForm()
+    form = self._getForm(data)
     if form.is_valid():
-      timeline = self._createTimelineFromForm(form)
+      timeline = self._createTimelineFromForm(data, form)
       form.cleaned_data['timeline'] = timeline
-      form.cleaned_data['scope'] = self.data.sponsor
-      form.cleaned_data['scope_path'] = self.data.sponsor.key().name()
+      form.cleaned_data['scope'] = data.sponsor
+      form.cleaned_data['scope_path'] = data.sponsor.key().name()
 
       key_name = '%s/%s' % (
-          self.data.sponsor.key().name(), form.cleaned_data['link_id'])
+          data.sponsor.key().name(), form.cleaned_data['link_id'])
 
       program = form.create(key_name=key_name, commit=False)
 
@@ -62,31 +62,35 @@ class CreateProgramPage(object):
       # TODO(nathaniel): problematic self-call.
       return self.get(data, check, mutator)
 
-  def _createTimelineFromForm(self, form):
+  def _createTimelineFromForm(self, data, form):
     """Creates a new empty Timeline entity based on the information provided
     in the form. The returned entity is not persisted in the datastore.
 
     Args:
-      form: a validated model form used to collect information on the program
+      data: A RequestData describing the current request.
+      form: A validated model form used to collect information on the program
           which is being created
 
     Returns:
-      a new timeline for the program which is being created
+      A new timeline for the program which is being created
     """
     key_name = '%s/%s' % (
-        self.data.sponsor.key().name(), form.cleaned_data['link_id'])
+        data.sponsor.key().name(), form.cleaned_data['link_id'])
 
     properties = {
         'link_id': form.cleaned_data['link_id'],
-        'scope': self.data.sponsor,
-        'scope_path': self.data.sponsor.key().name(),
+        'scope': data.sponsor,
+        'scope_path': data.sponsor.key().name(),
         }
 
     timeline_model = self._getTimelineModel()
     return timeline_model(key_name=key_name, **properties)
 
-  def _getForm(self):
+  def _getForm(self, data):
     """Returns a form to be filled by the user with program specific settings.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       soc.views.forms.ModelForm to create a new program
