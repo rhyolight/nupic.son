@@ -136,7 +136,7 @@ class ProgramMessagesPage(object):
 
   def post(self, data, check, mutator):
     """See soc.views.base.RequestHandler.post for specification."""
-    if self.validate():
+    if self.validate(data):
       # TODO(nathaniel): Make this .program() call unnecessary.
       data.redirect.program()
       # TODO(nathaniel): Redirection to same page?
@@ -145,8 +145,8 @@ class ProgramMessagesPage(object):
       # TODO(nathaniel): problematic self-call.
       return self.get(data, check, mutator)
 
-  def validate(self):
-    entity = self._getSingletonEntity(self.data.program)
+  def validate(self, data):
+    entity = self._getSingletonEntity(data.program)
     form = self._getForm(data, entity)
 
     if form.is_valid():
