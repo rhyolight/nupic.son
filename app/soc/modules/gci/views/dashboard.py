@@ -165,23 +165,16 @@ class DashboardPage(GCIRequestHandler):
     Args:
       data: A RequestData describing the current request.
 
-    Returns: True if the current user should submit their student
-      forms; False otherwise.
+    Returns: A pair of booleans the first of which indicates whether
+      or not the student should submit their Student ID form and the
+      second of which indicates whether or not the student should
+      submit their Consent form.
     """
-    # TODO(nathaniel): tweak this control flow.
-    student_id_form = False
-    consent_form = False
-
-    if not data.student_info:
+    if data.student_info:
+      return (not data.student_info.student_id_form,
+              not data.student_info.consent_form)
+    else:
       return False, False
-
-    if not data.student_info.student_id_form:
-      student_id_form = True
-
-    if not data.student_info.consent_form:
-      consent_form = True
-
-    return student_id_form, consent_form
 
   def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
@@ -318,10 +311,12 @@ class DashboardPage(GCIRequestHandler):
     """
     links = []
 
-    # TODO(nathaniel): tweak control flow.
+    # TODO(nathaniel): Does there have to be so much control flow here? Must
+    # this function be responsible for enforcing students-cannot-also-be-
+    # any-other-role or might enforcement of that rule elsewhere be enough?
     if data.student_info:
       links += self._getStudentLinks(data)
-    elif data.is_org_admin or data.is_mentor:
+    else:
       if data.is_org_admin:
         links += self._getOrgAdminLinks(data)
       if data.is_mentor:

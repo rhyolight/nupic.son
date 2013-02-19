@@ -15,20 +15,19 @@
 """Module for students in GCI to upload their forms."""
 
 from google.appengine.ext import blobstore
-from google.appengine.dist import httplib
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
 from soc.logic import dicts
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.profile import GCIStudentInfo
+from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -111,7 +110,7 @@ class UploadForm(gci_forms.GCIModelForm):
     return student_info
 
 
-class StudentFormUpload(GCIRequestHandler):
+class StudentFormUpload(base.GCIRequestHandler):
   """View for uploading your student forms."""
 
   def djangoURLPatterns(self):
@@ -155,9 +154,7 @@ class StudentFormUpload(GCIRequestHandler):
     if download:
       return bs_helper.sendBlob(download)
     else:
-      # TODO(nathaniel): this should probably be some sort of exception
-      # rather than a self-call.
-      return self.error(data, httplib.NOT_FOUND, message='File not found')
+      raise exceptions.NotFound('File not found')
 
   def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
@@ -218,7 +215,7 @@ class StudentFormUpload(GCIRequestHandler):
     return data.redirect.to('gci_student_form_upload')
 
 
-class StudentFormDownload(GCIRequestHandler):
+class StudentFormDownload(base.GCIRequestHandler):
   """View for uploading your student forms."""
 
   def djangoURLPatterns(self):
@@ -239,12 +236,10 @@ class StudentFormDownload(GCIRequestHandler):
     elif url_names.STUDENT_ID_FORM_GET_PARAM in data.GET:
       download = data.url_student_info.student_id_form
     else:
-      raise BadRequest('No file requested')
+      raise exceptions.BadRequest('No file requested')
 
     # download has been requested
     if download:
       return bs_helper.sendBlob(download)
     else:
-      # TODO(nathaniel): This should probably be some sort of exception
-      # rather than a self-call.
-      return self.error(data, httplib.NOT_FOUND, message='File not found')
+      raise exceptions.NotFound('File not found')

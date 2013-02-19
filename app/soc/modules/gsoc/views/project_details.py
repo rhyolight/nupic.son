@@ -24,7 +24,7 @@ from django import http
 from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -306,12 +306,14 @@ class CodeSampleDownloadFileGet(GSoCRequestHandler):
       id_value = int(data.request.GET['id'])
       code_sample = GSoCCodeSample.get_by_id(id_value, data.project)
       if not code_sample or not code_sample.upload_of_work:
-        raise BadRequest('Requested project or code sample not found')
-      return bs_helper.sendBlob(code_sample.upload_of_work)
+        raise exceptions.BadRequest(
+            'Requested project or code sample not found')
+      else:
+        return bs_helper.sendBlob(code_sample.upload_of_work)
     except KeyError:
-      raise BadRequest('id argument missing in GET data')
+      raise exceptions.BadRequest('id argument missing in GET data')
     except ValueError:
-      raise BadRequest('id argument in GET data is not a number')
+      raise exceptions.BadRequest('id argument in GET data is not a number')
 
 
 class CodeSampleDeleteFilePost(GSoCRequestHandler):
@@ -338,7 +340,7 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
       code_sample = GSoCCodeSample.get_by_id(id_value, data.project)
 
       if not code_sample:
-        raise BadRequest('Requested code sample not found')
+        raise exceptions.BadRequest('Requested code sample not found')
 
       upload_of_work = code_sample.upload_of_work
 
@@ -358,9 +360,9 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
       data.redirect.project()
       return data.redirect.to(url_names.GSOC_PROJECT_UPDATE)
     except KeyError:
-      raise BadRequest('id argument missing in POST data')
+      raise exceptions.BadRequest('id argument missing in POST data')
     except ValueError:
-      raise BadRequest('id argument in POST data is not a number')
+      raise exceptions.BadRequest('id argument in POST data is not a number')
 
 
 class UserActions(Template):
@@ -505,8 +507,8 @@ class AssignMentors(GSoCRequestHandler):
       if mentor_keys < set(
           profile_logic.queryAllMentorsKeysForOrg(org)):
         return list(mentor_keys)
-
-      raise BadRequest("Invalid post data.")
+      else:
+        raise exceptions.BadRequest("Invalid post data.")
 
     return None
 
@@ -524,10 +526,7 @@ class AssignMentors(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    # TODO(nathaniel): This should probably be the raising of some sort
-    # of exception (or in the distant future, not even registered as a
-    # handler) rather than this self-call.
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()
 
 
 class FeaturedProject(GSoCRequestHandler):
@@ -554,11 +553,11 @@ class FeaturedProject(GSoCRequestHandler):
     assert isSet(data.project)
 
     if value != 'checked' and value != 'unchecked':
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
     if value == 'checked' and not data.project.is_featured:
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
     if value == 'unchecked' and data.project.is_featured:
-      raise BadRequest("Invalid post data.")
+      raise exceptions.BadRequest("Invalid post data.")
 
     project_key = data.project.key()
 
@@ -581,5 +580,4 @@ class FeaturedProject(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    # TODO(nathaniel): Achieve this same behavior without this self-call.
-    return self.error(data, httplib.METHOD_NOT_ALLOWED)
+    raise exceptions.MethodNotAllowed()

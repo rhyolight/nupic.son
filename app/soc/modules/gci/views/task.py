@@ -15,7 +15,6 @@
 """Views for the GCI Task view page."""
 
 import datetime
-import httplib
 import logging
 
 from google.appengine.ext import blobstore
@@ -26,7 +25,7 @@ from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
-from soc.logic.exceptions import RedirectRequest
+from soc.logic import exceptions
 from soc.views.helper import blobstore as bs_helper
 from soc.views.template import Template
 
@@ -192,7 +191,7 @@ class TaskViewPage(GCIRequestHandler):
     if task_logic.updateTaskStatus(data.task):
       # The task logic updated the status of the task since the deadline passed
       # and the GAE task was late to run. Reload the page.
-      raise RedirectRequest('')
+      raise exceptions.RedirectRequest('')
 
     if data.request.method == 'POST':
       # Access checks for the different forms on this page. Note that there
@@ -287,6 +286,7 @@ class TaskViewPage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handles all POST calls for the TaskViewPage."""
+    # TODO(nathaniel): What? Why is data.GET being read in this POST handler?
     if data.is_visible and 'reply' in data.GET:
       return self._postComment(data, check, mutator)
     elif 'button' in data.GET:
@@ -298,7 +298,7 @@ class TaskViewPage(GCIRequestHandler):
     elif 'work_file_submit' in data.POST or 'submit_work' in data.GET:
       return self._postSubmitWork(data, check, mutator)
     else:
-      return self.error(data, httplib.METHOD_NOT_ALLOWED)
+      raise exceptions.BadRequest()
 
   def _postComment(self, data, check, mutator):
     """Handles the POST call for the form that creates comments."""
@@ -400,6 +400,8 @@ class TaskViewPage(GCIRequestHandler):
         return data.redirect.id().to(
             url_names.GCI_VIEW_TASK, extra=['file=0'])
     else:
+      # TODO(nathaniel): Is this user error? If so, we shouldn't be logging
+      # it at server-warning level.
       logging.warning('Neither the URL nor the files were provided for work '
                       'submission.')
       return data.redirect.id().to(
@@ -428,9 +430,7 @@ class TaskViewPage(GCIRequestHandler):
     work = GCIWorkSubmission.get_by_id(submission_id, parent=data.task)
 
     if not work:
-      return self.error(
-          data, httplib.BAD_REQUEST,
-          message=DEF_NO_WORK_FOUND % submission_id)
+      raise exceptions.BadRequest(DEF_NO_WORK_FOUND % submission_id)
 
     # Deletion of blobs always runs separately from transaction so it has no
     # added value to use it here.
@@ -727,7 +727,4 @@ class WorkSubmissionDownload(GCIRequestHandler):
     if work and work.upload_of_work:
       return bs_helper.sendBlob(work.upload_of_work)
     else:
-      # TODO(nathaniel): This should probably be the raising of some sort
-      # of exception rather than a self-call.
-      return self.error(
-          data, httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % id_string)
+      raise exceptions.BadRequest(DEF_NO_WORK_FOUND % id_string)

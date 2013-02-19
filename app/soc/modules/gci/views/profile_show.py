@@ -14,13 +14,12 @@
 
 """Module for displaying the GCI profile read-only page."""
 
-import httplib
 import logging
 
 from django import http
 from django.utils import translation
 
-from soc.logic.exceptions import NotFound
+from soc.logic import exceptions
 from soc.views import profile_show
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
@@ -67,7 +66,7 @@ class StudentFormsTemplate(Template):
 
 
 class GCIProfileReadOnlyTemplate(readonly_template.GCIModelReadOnlyTemplate):
-  """Template to construct read-only GSoCProfile data."""
+  """Template to construct read-only GCIProfile data."""
 
   class Meta:
     model = GCIProfile
@@ -120,7 +119,7 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
     mutator.userFromKwargs()
     try:
       mutator.profileFromKwargs()
-    except NotFound:
+    except exceptions.NotFound:
       # it is not a terminal error, when Profile does not exist
       pass
 
@@ -149,8 +148,10 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
   def post(self, data, check, mutator):
     """Handles student form verification by host."""
     if not data.url_profile.student_info:
+      # TODO(nathaniel): Is this user error? If so, should it be
+      # logged at server warning level, or even at all?
       logging.warn(NON_STUDENT_ERR_MSG)
-      return self.error(data, httplib.METHOD_NOT_ALLOWED)
+      raise exceptions.MethodNotAllowed()
 
     post_data = data.POST
     button_id = post_data.get('id')
