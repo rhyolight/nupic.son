@@ -17,12 +17,10 @@
 """This module contains the GradingProjectSurvey model.
 """
 
+from soc.modules.gsoc.models import project_survey as project_survey_model
 
-from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
-
-class GradingProjectSurvey(ProjectSurvey):
-  """Survey for Mentors for each of their StudentProjects.
+class GradingProjectSurvey(project_survey_model.ProjectSurvey):
+  """Survey for Mentors for each of their projects.
   """
-
   pass

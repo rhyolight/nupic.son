@@ -60,15 +60,15 @@ class SurveyReminderTask(object):
     return patterns
 
   def spawnRemindersForProjectSurvey(self, request, *args, **kwargs):
-    """Spawns tasks for each StudentProject in the given Program.
+    """Spawns tasks for each GSoCProject in the given Program.
 
     Expects the following to be present in the POST dict:
-      program_key: Specifies the program key name for which to loop over all the
-                   StudentProjects for
-      survey_key: specifies the key name for the ProjectSurvey to send reminders
-                  for
-      survey_type: a string which is project or grading depending on the type of
-                   Survey.
+      program_key: Specifies the program key name for which to loop over all
+                   the GSoCProject entities
+      survey_key: specifies the key name for the ProjectSurvey to send
+                  reminders for
+      survey_type: a string which is project or grading depending on
+                   the type of Survey.
       cursor: optional query cursor to indicate how far along we are.
 
     Args:
@@ -128,14 +128,14 @@ class SurveyReminderTask(object):
     return http.HttpResponse()
 
   def sendSurveyReminderForProject(self, request, *args, **kwargs):
-    """Sends a reminder mail for a given StudentProject and Survey.
+    """Sends a reminder mail for a given GSoCProject and Survey.
 
-    A reminder is only send if no record is on file for the given Survey and 
-    StudentProject.
+    A reminder is only send if no record is on file for the given Survey and
+    GSoCProject.
 
     Expects the following to be present in the POST dict:
-      survey_key: specifies the key name for the ProjectSurvey to send reminders
-                  for
+      survey_key: specifies the key name for the ProjectSurvey to send
+                  reminders for
       survey_type: either project or grading depending on the type of Survey
       project_key: encoded Key which specifies the project to send a reminder 
                    for

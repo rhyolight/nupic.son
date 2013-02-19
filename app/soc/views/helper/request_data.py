@@ -27,6 +27,8 @@ from django.utils import encoding
 from soc.logic import system
 from soc.logic import site as site_logic
 from soc.logic import user
+from soc.models import program as program_model
+from soc.models import sponsor as sponsor_model
 from soc.views.helper import access_checker
 
 
@@ -188,6 +190,7 @@ class RequestData(object):
 
     self._redirect = self._unset
     self._site = self._unset
+    self._sponsor = self._unset
     self._user = self._unset
     self._GET = self._unset
     self._POST = self._unset
@@ -274,6 +277,27 @@ class RequestData(object):
 
       self._site = self.request.site
     return self._site
+
+  @property
+  def sponsor(self):
+    """Returns the sponsor field."""
+    if not self._isSet(self._sponsor):
+      if self.kwargs.get('sponsor'):
+        sponsor_key = db.Key.from_path('Sponsor', self.kwargs['sponsor'])
+      else:
+        # In this case sponsor was not in the URL. Anyway, it may be still
+        # possible to retrieve a reasonable sponsor, if a default program
+        # is set for the site.
+        # It is not the most efficient way to access the sponsor itself,
+        # because it requires a program to be fetched first. It seems to
+        # be acceptable, because there is a great chance that program has
+        # to also be provided at some point of request's life cycle.
+        sponsor_key = program_model.Program.scope.get_value_for_datastore(
+            self.program)
+
+      self._sponsor = sponsor_model.Sponsor.get(sponsor_key)
+
+    return self._sponsor
 
   @property
   def user(self):
@@ -455,7 +479,6 @@ class RedirectHelper(object):
     self.kwargs['user'] = user
     self.kwargs['organization'] = organization.link_id
     return self
-
 
   def userId(self, user=None, id=None):
     """Sets args for url_patterns.USER_ID redirect."""

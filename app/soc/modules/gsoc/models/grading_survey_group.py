@@ -23,52 +23,9 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.models import linkable
-
-from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
-from soc.modules.gsoc.models.project_survey import ProjectSurvey
-
-
-class GradingSurveyGroup(linkable.Linkable):
-  """The GradingSurveyGroups links a ProjectSurvey with a GradingProjectSurvey.
-
-  The purpose of this model is to be able to link two different types of
-  Surveys together so that a decision can be made about whether or not a
-  Student has passed the evaluation. This model will link the Surveys together
-  a GradingRecord will link the SurveyRecords.
-
-  Since this model is only used in GSoC style programs the scope will be set to
-  a Program entity. The link_id can be auto-generated.
-
-  A GradingSurvey group can also work with only a GradingProjectSurvey defined.
-
-  The GradingSurveyGroup can have several GradingRecords attached to it. These
-  will contain matching SurveyRecords for the surveys set in this group, of
-  course only if they are filled in.
-  """
-
-  #: Name to give to this group for easy human-readable identification.
-  name = db.StringProperty(
-      required=True, verbose_name=ugettext('Survey Group Name'))
-
-  #: GradingProjectSurvey which belongs to this group.
-  grading_survey = db.ReferenceProperty(
-      reference_class=GradingProjectSurvey, required=True,
-      collection_name='grading_survey_groups')
-
-  #: non-required ProjectSurvey that belongs to this group.
-  student_survey = db.ReferenceProperty(
-      reference_class=ProjectSurvey, required=False,
-      collection_name='project_survey_groups')
-
-  #: DateTime when the last GradingRecord update was started for this group.
-  last_update_started = db.DateTimeProperty(
-      verbose_name=ugettext('Last Record update started'))
-
-  #: DateTime when the last GradingRecord update was completed for this group.
-  last_update_complete = db.DateTimeProperty(
-      verbose_name=ugettext('Last Record update completed'))
+from soc.modules.gsoc.models import program as program_model
+from soc.modules.gsoc.models import grading_project_survey as grading_project_survey_model
+from soc.modules.gsoc.models import project_survey as project_survey_model
 
 
 class GSoCGradingSurveyGroup(db.Model):
@@ -92,17 +49,17 @@ class GSoCGradingSurveyGroup(db.Model):
 
   #: Program that this group belongs to.
   program = db.ReferenceProperty(
-      reference_class=GSoCProgram, required=True,
+      reference_class=program_model.GSoCProgram, required=True,
       collection_name='gsoc_grading_survey_groups')
 
   #: GradingProjectSurvey which belongs to this group.
   grading_survey = db.ReferenceProperty(
-      reference_class=GradingProjectSurvey, required=True,
-      collection_name='gsoc_grading_survey_groups')
+      reference_class=grading_project_survey_model.GradingProjectSurvey,
+      required=True, collection_name='gsoc_grading_survey_groups')
 
   #: non-required ProjectSurvey that belongs to this group.
   student_survey = db.ReferenceProperty(
-      reference_class=ProjectSurvey, required=False,
+      reference_class=project_survey_model.ProjectSurvey, required=False,
       collection_name='gsoc_project_survey_groups')
 
   #: DateTime when the last GradingRecord update was started for this group.

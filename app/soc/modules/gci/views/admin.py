@@ -194,7 +194,7 @@ class ProgramSettingsDashboard(Dashboard):
                 'Edit your program settings such as information, slots, '
                 'documents, etc.'),
             'title': 'Edit program settings',
-            'link': r.urlOf('edit_gci_program')
+            'link': r.urlOf(url_names.GCI_PROGRAM_EDIT)
         },
         {
             'name': 'edit_timeline',

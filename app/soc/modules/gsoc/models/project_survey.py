@@ -22,11 +22,11 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.models.survey import Survey
+from soc.models import survey as survey_model
 
 
-class ProjectSurvey(Survey):
-  """Survey for Students that have a StudentProject.
+class ProjectSurvey(survey_model.Survey):
+  """Survey for Students that have a project.
   """
 
   #: Required field storing "ID" used in URL links. ASCII characters,

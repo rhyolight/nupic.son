@@ -42,7 +42,7 @@ class GradingRecordTasks(object):
   """Tasks that are involved in dealing with GradingRecords.
   """
 
-  # batch size to use when going through StudentProjects
+  # batch size to use when going through GSoCProject entities
   DEF_BATCH_SIZE = 25
 
   def djangoURLPatterns(self):
@@ -91,7 +91,7 @@ class GradingRecordTasks(object):
     if 'cursor' in post_dict:
       q.with_cursor(post_dict['cursor'])
 
-    # get the first batch_size number of StudentProjects
+    # get the first batch_size number of projects
     projects = q.fetch(self.DEF_BATCH_SIZE)
 
     if not projects:
@@ -114,7 +114,7 @@ class GradingRecordTasks(object):
     return http.HttpResponse('OK')
 
   def updateProjectsForSurveyGroup(self, request, *args, **kwargs):
-    """Updates each StudentProject for which a GradingRecord is found.
+    """Updates each GSoCProject for which a GradingRecord is found.
 
     Expects the following to be present in the POST dict:
       group_key: Specifies the GradingSurveyGroup key name.
@@ -212,12 +212,12 @@ class GradingRecordTasks(object):
     site_entity = site.singleton()
 
     mail_context = {
-      'survey_group': survey_group_entity,
-      'grading_record': record,
-      'project': project_entity,
-      'organization': org_entity,
-      'site_name': site_entity.site_name,
-      'to_name': student_entity.name()
+        'survey_group': survey_group_entity,
+        'grading_record': record,
+        'project': project_entity,
+        'organization': org_entity,
+        'site_name': site_entity.site_name,
+        'to_name': student_entity.name()
     }
 
     # set the sender
