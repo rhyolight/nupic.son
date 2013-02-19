@@ -210,6 +210,12 @@ class EditProgramTest(test_utils.GSoCDjangoTestCase):
 class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for GSoCProgramMessagesPage view."""
 
+  DEF_ACCEPTED_ORGS_MSG = 'Accepted Orgs Message'
+  DEF_REJECTED_ORGS_MSG = 'Rejected Orgs Message'
+  DEF_MENTOR_WELCOME_MSG = 'Mentor Welcome Message'
+  DEF_ACCEPTED_STUDENTS_MSG = 'Accepted Students Messages'
+  DEF_REJECTED_STUDENTS_MSG = 'Rejected Students Message'
+
   def assertProgramTemplatesUsed(self, response):
     """Asserts that all the templates from the program were used.
     """
@@ -217,8 +223,24 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'v2/modules/gsoc/program/messages.html')
     self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
 
-  def _getUrl(self):
-    return '/gsoc/program/messages/edit/' + self.program.key().name()
+  def _getUrl(self, validated=False):
+    return ''.join([
+        '/gsoc/program/messages/edit/',
+        self.program.key().name(),
+        '?validated' if validated else ''])
+
+  def _getGSoCProgramMessagesFormProperties(self):
+    return {
+        'accepted_orgs_msg': self.DEF_ACCEPTED_ORGS_MSG,
+        'rejected_orgs_msg': self.DEF_MENTOR_WELCOME_MSG,
+        'mentor_welcome_msg': self.DEF_MENTOR_WELCOME_MSG,
+        'accepted_students_msg': self.DEF_ACCEPTED_STUDENTS_MSG,
+        'rejected_students_msg': self.DEF_REJECTED_STUDENTS_MSG,
+        }
+
+  def _getEntities(self):
+    return program_model.GSoCProgramMessages.all().ancestor(
+        self.gsoc).fetch(1000)
 
   def setUp(self):
     self.init()
@@ -251,3 +273,21 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
     self.data.createHost()
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)
+
+  def testEditProgramMessages(self):
+    url = self._getUrl()
+    self.data.createHost()
+
+    properties = self._getGSoCProgramMessagesFormProperties()
+
+    response = self.post(url, properties)
+    self.assertResponseRedirect(response, self._getUrl(validated=True))
+
+    # check if there is only one entity for the program
+    entities = self._getEntities()
+    self.assertEqual(1, len(entities))
+
+    # check that the properties are set correctly
+    entity = entities[0]
+    for p in entity.properties():
+      self.assertEqual(properties[p], getattr(entity, p))
