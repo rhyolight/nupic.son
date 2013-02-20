@@ -242,6 +242,28 @@ class SoCTestCase(unittest.TestCase):
       error_message = '\n'.join(errors)
       self.fail(error_message)
 
+  def assertSameEntity(self, expected_entity, actual_entity, msg=''):
+    """App Engine entities comparison.
+
+    It asserts that both expected_entity and actual_entity represent
+    the same entity. The check is performed by comparing keys of the
+    two specified entities.
+
+    Args:
+      expected_entity: the expected entity
+      actual_entity: the actual entity
+      msg: the optional message
+    """
+    if not isinstance(expected_entity, db.Model):
+       raise TypeError('expected_entity has wrong type: %s' %
+           type(expected_entity))
+
+    if not isinstance(actual_entity, db.Model):
+       raise TypeError('actual_entity has wrong type: %s' %
+           type(actual_entity))
+
+    self.assertEqual(expected_entity.key(), actual_entity.key(), msg)
+
 
 class GSoCTestCase(SoCTestCase):
   """GSoCTestCase for GSoC tests.

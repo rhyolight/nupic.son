@@ -270,8 +270,8 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
         'pub_mailing_list': 'https://l.s.net',
         'tags': 'foo, bar', 'gsoc_org_page_home': 'http://www.xyz.com',
         'contact_postalcode': '247667', 'contact_country': 'India',
-        'dev_mailing_list': 'http://d.com', 'home': postdata['home'].key(),
-        'max_score': 5, 'new_org': not orig_new_org, # swap orig new org value
+        'dev_mailing_list': 'http://d.com', 'max_score': 5,
+        'new_org': not orig_new_org, # swap orig new org value
         }
     postdata.update(updates)
     self.assertNotEqual(updates['email'], self.org.email)
