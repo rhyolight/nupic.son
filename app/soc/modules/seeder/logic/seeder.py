@@ -362,7 +362,6 @@ class Logic(object):
                    'GSoCOrgAdmin': GSoCOrganization,
                    'GSoCMentor': GSoCOrganization,
                    'GSoCProfile': GSoCProgram,
-                   'StudentProject': GSoCOrganization,
                    'GCIProgram': Sponsor,
                    'GCITimeline': Sponsor,
                    'GCIOrganization': GCIProgram,

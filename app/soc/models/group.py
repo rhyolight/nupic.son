@@ -21,11 +21,11 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.presence
+import soc.models.linkable
 import soc.models.user
 
 
-class Group(soc.models.presence.Presence):
+class Group(soc.models.linkable.Linkable):
   """Common data fields for all groups.
   """
 
@@ -82,6 +82,13 @@ class Group(soc.models.presence.Presence):
   irc_channel = db.StringProperty(required=False,
       verbose_name=ugettext('Public IRC Channel (and Network)'))
   irc_channel.group = ugettext("1. Public Info")
+
+  #: Optional public feed URL
+  feed_url = db.LinkProperty(verbose_name=ugettext('Feed URL'))
+  feed_url.help_text = ugettext(
+      'The URL should be a valid ATOM or RSS feed. '
+      'Feed entries are shown on the home page.')
+  feed_url.group = ugettext("1. Public Info")
 
   #: Required property showing the current status of the group
   #: new: the group has not been active yet

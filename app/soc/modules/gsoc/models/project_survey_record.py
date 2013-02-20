@@ -14,50 +14,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""ProjectSurveyRecord allows linking two result sets by StudentProject.
+"""GSoCProjectSurveyRecord allows linking two result sets by GSoCProject.
 """
-
 
 from google.appengine.ext import db
 
-from soc.models.organization import Organization
-from soc.models.survey_record import SurveyRecord
+from soc.models import survey_record
 
-from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.models.project import GSoCProject
-
-import soc.modules.gsoc.models.student_project
+from soc.modules.gsoc.models import organization as org_model
+from soc.modules.gsoc.models import project as project_model
 
 
-class ProjectSurveyRecord(SurveyRecord):
-  """Record linked to a Project, enabling to store which Projects had their
-  Survey done.
+class GSoCProjectSurveyRecord(survey_record.SurveyRecord):
+  """Record linked to a GSoCProject, enabling to store which
+  projects have had their Survey done.
   """
 
-  #: Reference to the Project that this record belongs to.
+  #: Reference to the GSoCProject that this record belongs to.
   project = db.ReferenceProperty(
-      reference_class=soc.modules.gsoc.models.student_project.StudentProject,
-      required=True, collection_name='survey_records')
-
-  #: A many:1 relationship associating ProjectSurveyRecords 
-  #: with specific Organization. The back-reference in the 
-  #: Organization model is a Query named 'survey_records'.
-  org = db.ReferenceProperty(
-      reference_class=Organization, 
-      required=False, collection_name='survey_records')
-
-class GSoCProjectSurveyRecord(SurveyRecord):
-  """Record linked to a Project, enabling to store which Projects had their
-  Survey done. Should be used instead of the deprecated ProjectSurveyRecord model.
-  """
-
-  #: Reference to the Project that this record belongs to.
-  project = db.ReferenceProperty(
-      reference_class=GSoCProject,
+      reference_class=project_model.GSoCProject,
       required=True, collection_name='gsoc_survey_records')
 
-  #: A many:1 relationship associating ProjectSurveyRecords 
+  #: A many:1 relationship associating GSoCProjectSurveyRecords 
   #: with specific GSoCOrganization.
   org = db.ReferenceProperty(
-      reference_class=GSoCOrganization, 
+      reference_class=org_model.GSoCOrganization, 
       required=False, collection_name='gsoc_survey_records')

@@ -28,7 +28,7 @@ from soc.views.helper import access_checker
 from soc.views.helper import url_patterns as soc_url_patterns
 
 from soc.modules.gsoc.models import program
-from soc.modules.gsoc.models import timeline
+from soc.modules.gsoc.models import timeline as timeline_model
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views.helper import url_names
@@ -65,23 +65,40 @@ class TimelineForm(forms.GSoCModelForm):
 
   class Meta:
     css_prefix = 'timeline_form'
-    model = timeline.GSoCTimeline
+    model = timeline_model.GSoCTimeline
     exclude = ['link_id', 'scope', 'scope_path']
 
 
-class ProgramForm(forms.GSoCModelForm):
-  """Django form for the program settings."""
+class CreateProgramForm(forms.GSoCModelForm):
+  """Django form to create the settings for a new program."""
 
   def __init__(self, request_data, *args, **kwargs):
     self.request_data = request_data
-    super(ProgramForm, self).__init__(*args, **kwargs)
+    super(CreateProgramForm, self).__init__(*args, **kwargs)
 
   class Meta:
-    css_prefix = 'program_form'
+    css_prefix = 'create_program_form'
     model = program.GSoCProgram
-    exclude = ['link_id', 'scope', 'scope_path', 'timeline',
-               'home', 'slots_allocation', 'student_max_age',
-               'min_slots']
+    exclude = [
+        'scope', 'scope_path', 'timeline', 'slots_allocation',
+        'student_max_age', 'min_slots', 'org_admin_agreement',
+        'mentor_agreement', 'student_agreement', 'about_page', 'events_page',
+        'connect_with_us_page', 'help_page']
+
+
+class EditProgramForm(forms.GSoCModelForm):
+  """Django form to edit the settings of an existing program."""
+
+  def __init__(self, request_data, *args, **kwargs):
+    self.request_data = request_data
+    super(EditProgramForm, self).__init__(*args, **kwargs)
+
+  class Meta:
+    css_prefix = 'edit_program_form'
+    model = program.GSoCProgram
+    exclude = [
+        'link_id', 'scope', 'scope_path', 'timeline',
+        'slots_allocation', 'student_max_age', 'min_slots']
 
 
 class GSoCProgramMessagesForm(forms.GSoCModelForm):
@@ -192,14 +209,13 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
     self.sendTestEmail(entity)
 
 
-class ProgramPage(base.GSoCRequestHandler):
-  """View for the program profile."""
+class GSoCEditProgramPage(base.GSoCRequestHandler):
+  """View to edit the program settings."""
 
   def djangoURLPatterns(self):
     return [
-        url_patterns.url(r'program/%s$' % soc_url_patterns.PROGRAM, self,
-            name='edit_gsoc_program'),
-        url_patterns.url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self),
+        url_patterns.url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self,
+            name=url_names.GSOC_PROGRAM_EDIT),
     ]
 
   def jsonContext(self, data, check, mutator):
@@ -221,7 +237,8 @@ class ProgramPage(base.GSoCRequestHandler):
     return 'v2/modules/gsoc/program/base.html'
 
   def context(self, data, check, mutator):
-    program_form = ProgramForm(data, data.POST or None, instance=data.program)
+    program_form = EditProgramForm(
+        data, data.POST or None, instance=data.program)
     return {
         'page_name': 'Edit program settings',
         'forms': [program_form],
@@ -229,7 +246,7 @@ class ProgramPage(base.GSoCRequestHandler):
     }
 
   def validate(self, data):
-    program_form = ProgramForm(data, data.POST, instance=data.program)
+    program_form = EditProgramForm(data, data.POST, instance=data.program)
 
     if program_form.is_valid():
       program_form.save()
@@ -241,10 +258,45 @@ class ProgramPage(base.GSoCRequestHandler):
     """Handler for HTTP POST request."""
     if self.validate(data):
       data.redirect.program()
-      return data.redirect.to('edit_gsoc_program', validated=True)
+      return data.redirect.to(url_names.GSOC_PROGRAM_EDIT, validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
+
+
+class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
+    base.GSoCRequestHandler):
+  """View to create a new GSoC program."""
+
+  def djangoURLPatterns(self):
+    """See soc.views.base.RequestHandler.djangoURLPatterns
+    for specification.
+    """
+    return [
+        url_patterns.url(
+            r'program/create/%s$' % soc_url_patterns.SPONSOR, self,
+            name=url_names.GSOC_PROGRAM_CREATE),
+    ]
+
+  def templatePath(self):
+    """See soc.views.base.RequestHandler.templatePath for specification."""
+    return 'v2/modules/gsoc/program/base.html'
+
+  def _getForm(self, data):
+    """See soc.views.program.CreateProgram._getForm for specification."""
+    return CreateProgramForm(data, data.POST or None)
+
+  def _getTimelineModel(self):
+    """See soc.views.program.CreateProgram._getTimelineModel
+    for specification.
+    """
+    return timeline_model.GSoCTimeline
+
+  def _getUrlNameForRedirect(self):
+    """See soc.views.program.CreateProgram._getUrlNameForRedirect
+    for specification.
+    """
+    return url_names.GSOC_PROGRAM_EDIT
 
 
 class TimelinePage(base.GSoCRequestHandler):

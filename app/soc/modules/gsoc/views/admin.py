@@ -276,7 +276,7 @@ class ProgramSettingsDashboard(Dashboard):
                 'Edit your program settings such as information, slots, '
                 'documents, etc.'),
             'title': 'Edit program settings',
-            'link': r.urlOf('edit_gsoc_program')
+            'link': r.urlOf(url_names.GSOC_PROGRAM_EDIT)
         },
         {
             'name': 'edit_timeline',
