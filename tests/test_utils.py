@@ -163,6 +163,77 @@ class SoCTestCase(unittest.TestCase):
 
   Common data are seeded and common helpers are created to make testing easier.
   """
+
+  def __new__(cls, *args, **kwargs):
+    """Creates a new instance of the specified class.
+
+    The class will be extended with a number of assertion methods if they
+    have not been specified. In particular, these functions are defined by
+    unittest.TestCase class in Python 2.7. If the test runner is invoked on
+    an older release, this method will manually add these methods.
+
+    This function is to be removed when the application runtime is
+    upgraded to Python 2.7 environment.
+
+    Args:
+      cls: A class object whose instance is being created
+    """
+    if not hasattr(cls, 'assertIsNone'):
+      def assertIsNone(self, expr, msg=None):
+        if expr is not None:
+          raise AssertionError(msg if msg else '%s is not None' % expr)
+      cls.assertIsNone = assertIsNone
+
+    if not hasattr(cls, 'assertIsNotNone'):
+      def assertIsNotNone(self, expr, msg=None):
+        if expr is None:
+          raise AssertionError(msg if msg else 'unexpectedly None')
+      cls.assertIsNotNone = assertIsNotNone
+
+    if not hasattr(cls, 'assertIs'):
+      def assertIs(self, first, second, msg=None):
+        if first is not second:
+          raise AssertionError(msg if msg else '%s is not %s' %
+              (first, second))
+      cls.assertIs = assertIs
+
+    if not hasattr(cls, 'assertIsNot'):
+      def assertIsNot(self, first, second, msg=None):
+        if first is second:
+          raise AssertionError(msg if msg else 'unexpectedly identical: %s' %
+              first)
+      cls.assertIsNot = assertIsNot
+
+    if not hasattr(cls, 'assertIn'):
+      def assertIn(self, first, second, msg=None):
+        if first not in second:
+          raise AssertionError(msg if msg else '%s not found in %s' %
+              (first, second))
+      cls.assertIn = assertIn
+
+    if not hasattr(cls, 'assertNotIn'):
+      def assertNotIn(self, first, second, msg=None):
+        if first in second:
+          raise AssertionError(msg if msg else '%s unexpectedly found in %s' %
+              (first, second))
+      cls.assertNotIn = assertNotIn
+
+    if not hasattr(cls, 'assertIsInstance'):
+      def assertIsInstance(self, obj, cls, msg=None):
+        if not isinstance(obj, cls):
+          raise AssertionError(msg if msg else '%s is not an instance of %s' %
+              (obj, cls))
+      cls.assertIsInstance = assertIsInstance
+
+    if not hasattr(cls, 'assertNotIsInstance'):
+      def assertNotIsInstance(self, obj, cls, msg=None):
+        if isinstance(obj, cls):
+          raise AssertionError(msg if msg else '%s is an instance of %s' %
+              (obj, cls))
+      cls.assertNotIsInstance = assertNotIsInstance
+
+    return super(SoCTestCase, cls).__new__(cls)
+
   def init(self):
     """Performs test setup.
 
