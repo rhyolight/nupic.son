@@ -125,56 +125,55 @@ class ProposeWinnersPage(GCIRequestHandler):
         gci_url_patterns.url(r'propose_winners/%s$' % url_patterns.ORG, self,
             name=url_names.GCI_ORG_PROPOSE_WINNERS),
     ]
-    
-  def checkAccess(self):
-    self.check.isOrgAdmin()
-    if not self.data.timeline.allReviewsStopped():
+
+  def checkAccess(self, data, check, mutator):
+    check.isOrgAdmin()
+    if not data.timeline.allReviewsStopped():
       raise exceptions.AccessViolation(
           'This page may be accessed when the review period is over')
 
-  def context(self):
-    form = ProposeWinnersForm(
-        self.data, self.data.POST or None)
+  def context(self, data, check, mutator):
+    form = ProposeWinnersForm(data, data.POST or None)
     context = {
-        'page_name': 'Propose winners for %s' % (self.data.organization.name),
+        'page_name': 'Propose winners for %s' % data.organization.name,
         'forms': [form]
     }
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles POST requests."""
-    form = ProposeWinnersForm(self.data, self.data.POST)
+    form = ProposeWinnersForm(data, data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
-    first_key_str = self.data.POST.get(
+    first_key_str = data.POST.get(
         'first_proposed_winner', ProposeWinnersForm.EMPTY_CHOICE)
 
-    second_key_str = self.data.POST.get(
+    second_key_str = data.POST.get(
         'second_proposed_winner', ProposeWinnersForm.EMPTY_CHOICE)
 
-    backup_key_str = self.data.POST.get(
+    backup_key_str = data.POST.get(
         'backup_proposed_winner', ProposeWinnersForm.EMPTY_CHOICE)
 
     proposed_winners = self._getProposedWinnersList(
         first_key_str, second_key_str)
-      
+
     backup_winner = self._getBackupWinner(backup_key_str)
 
     def txn():
       organization = organization_model.GCIOrganization.get(
-          self.data.organization.key())
+          data.organization.key())
       organization.proposed_winners = proposed_winners
       organization.backup_winner = backup_winner
       organization.put()
 
     db.run_in_transaction(txn)
 
-    self.redirect.organization()
-    return self.redirect.to(url_names.GCI_ORG_PROPOSE_WINNERS)
+    data.redirect.organization()
+    return data.redirect.to(url_names.GCI_ORG_PROPOSE_WINNERS)
 
   def _getProfileByKeyStr(self, key_str):
     """Returns the GCIProfile entity based on the specified string
@@ -192,7 +191,7 @@ class ProposeWinnersPage(GCIRequestHandler):
     by the organization.
 
     Args:
-      backup_key_str: the string representation of the key associated with 
+      backup_key_str: the string representation of the key associated with
           the profile proposed by the organization.
 
     Returns:
@@ -204,11 +203,11 @@ class ProposeWinnersPage(GCIRequestHandler):
   def _getProposedWinnersList(self, first_key_str, second_key_str):
     """Returns the list which contains the keys of the GCIProfile entities
     belonging to students proposed by the organization.
-    
+
     Args:
       first_key_str: the string representation of the first key associated
           with the profile proposed by the organization.
-      second_key_str: the string representation of the second key associated 
+      second_key_str: the string representation of the second key associated
           with the profile proposed by the organization.
 
     Returns:
@@ -280,23 +279,20 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
             name=url_names.GCI_ORG_CHOOSE_FOR_PROPOSE_WINNNERS),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     pass
 
-  def jsonContext(self):
-    list_content = OrganizationsForProposeWinnersList(
-        self.request, self.data).getListData()
+  def jsonContext(self, data, check, mutator):
+    list_content = OrganizationsForProposeWinnersList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exceptions.AccessViolation('You do not have access to this data')
 
-    if not list_content:
-      raise exceptions.AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': "Choose an organization for which to display scores.",
-        'org_list': OrganizationsForProposeWinnersList(
-            self.request, self.data),
+        'org_list': OrganizationsForProposeWinnersList(data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }
 
@@ -360,22 +356,19 @@ class ViewProposedWinnersPage(GCIRequestHandler):
             name=url_names.GCI_VIEW_PROPOSED_WINNERS),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
-  def jsonContext(self):
-    list_content = ProposedWinnersForOrgsList(
-        self.request, self.data).getListData()
+  def jsonContext(self, data, check, mutator):
+    list_content = ProposedWinnersForOrgsList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exceptions.AccessViolation('You do not have access to this data')
 
-    if not list_content:
-      raise exceptions.AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': "Proposed Grand Prize Winners.",
-        'org_list': ProposedWinnersForOrgsList(
-            self.request, self.data),
+        'org_list': ProposedWinnersForOrgsList(data),
         #'program_select': ProgramSelect(self.data, 'gci_accepted_orgs'),
     }

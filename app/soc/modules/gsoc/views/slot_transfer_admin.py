@@ -34,8 +34,7 @@ from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 class SlotsTransferAdminList(template.Template):
   """Template for list of slot transfer requests."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     list_config = lists.ListConfiguration()
@@ -87,7 +86,7 @@ class SlotsTransferAdminList(template.Template):
     }
 
   def post(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return False
 
@@ -199,7 +198,7 @@ class SlotsTransferAdminList(template.Template):
     return True
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
@@ -209,7 +208,8 @@ class SlotsTransferAdminList(template.Template):
     prefetcher = lists.modelPrefetcher(GSoCSlotTransfer, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter,
+        prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -227,30 +227,28 @@ class SlotsTransferAdminPage(base.GSoCRequestHandler):
             name='gsoc_admin_slots_transfer'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer_admin/base.html'
 
-  def jsonContext(self):
-    list_content = SlotsTransferAdminList(self.request, self.data).getListData()
-
+  def jsonContext(self, data, check, mutator):
+    list_content = SlotsTransferAdminList(data).getListData()
     if list_content:
       return list_content.content()
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def post(self):
-    slots_list = SlotsTransferAdminList(self.request, self.data)
-
+  def post(self, data, check, mutator):
+    slots_list = SlotsTransferAdminList(data)
     if slots_list.post():
       return http.HttpResponse()
     else:
       raise exceptions.AccessViolation('You cannot change this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
       'page_name': 'Slots transfer action page',
-      'slot_transfer_list': SlotsTransferAdminList(self.request, self.data),
+      'slot_transfer_list': SlotsTransferAdminList(data),
     }

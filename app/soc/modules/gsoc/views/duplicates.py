@@ -41,20 +41,18 @@ class DuplicatesPage(GSoCRequestHandler):
             name='gsoc_view_duplicates'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
-  def context(self):
-    """Returns the context for this page.
-    """
-    program = self.data.program
+  def context(self, data, check, mutator):
+    """Returns the context for this page."""
+    program = data.program
 
     q = GSoCProposalDuplicate.all()
     q.filter('program', program)
     q.filter('is_duplicate', True)
 
-    duplicates = [Duplicate(self.data, duplicate)
-                  for duplicate in q.fetch(1000)]
+    duplicates = [Duplicate(data, duplicate) for duplicate in q.fetch(1000)]
     duplicates_status = duplicates_logic.getOrCreateStatusForProgram(program)
 
     context = {
@@ -65,12 +63,12 @@ class DuplicatesPage(GSoCRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, request, mutator):
     """Handles the POST request to (re)start calcuation."""
-    post_data = self.request.POST
+    post_data = data.request.POST
 
     # pass along these params as POST to the new task
-    task_params = {'program_key': self.data.program.key().id_or_name()}
+    task_params = {'program_key': data.program.key().id_or_name()}
     task_url = '/tasks/gsoc/proposal_duplicates/start'
 
     # checks if the task newly added is the first task
@@ -85,6 +83,7 @@ class DuplicatesPage(GSoCRequestHandler):
     new_task = taskqueue.Task(params=task_params, url=task_url)
     new_task.add()
 
+    # TODO(nathaniel): WTF?
     # redirect to self
     return http.HttpResponseRedirect('')
 

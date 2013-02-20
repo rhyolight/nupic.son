@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2012 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,19 +20,18 @@ from google.appengine.ext import db
 
 from soc.logic import mail_dispatcher
 from soc.logic.helper import notifications
-from soc.models.org_app_survey import OrgAppSurvey
-from soc.models.org_app_record import OrgAppRecord
-from soc.tasks import mailer
+from soc.models import org_app_survey
+from soc.models import org_app_record
 
 
 def getForProgram(program):
   """Return the org_app survey for a given program.
 
   Args:
-    program: program entity for which the survey should be searched
+    program: program entity for which the survey should be searched.
   """
   # retrieve a OrgAppSurvey
-  q = OrgAppSurvey.all()
+  q = org_app_survey.OrgAppSurvey.all()
   q.filter('program', program)
   survey = q.get()
 
@@ -45,13 +42,15 @@ def setStatus(data, record, new_status, accept_url):
   """Updates the status of an org_app record.
 
   Args:
-    record: an OrgAppRecord
-    new_status: the new status that should be assigned to the record
+    data: RequestData object.
+    record: an OrgAppRecord.
+    new_status: the new status that should be assigned to the record.
+    accept_url: Full URL to the org profile create page for accepted orgs.
   """
   if record.status == new_status:
     return
 
-  if new_status not in OrgAppRecord.status.choices:
+  if new_status not in org_app_record.OrgAppRecord.status.choices:
     return
 
   record_key = record.key()

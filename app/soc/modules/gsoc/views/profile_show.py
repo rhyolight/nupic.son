@@ -105,11 +105,11 @@ class GSoCProfileAdminPage(GSoCRequestHandler):
          self, name=url_names.GSOC_PROFILE_SHOW),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.userFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+    mutator.userFromKwargs()
     try:
-      self.mutator.profileFromKwargs()
+      mutator.profileFromKwargs()
     except NotFound:
       # it is not a terminal error, when Profile does not exist
       pass
@@ -117,28 +117,28 @@ class GSoCProfileAdminPage(GSoCRequestHandler):
   def templatePath(self):
     return 'v2/modules/gsoc/profile_show/base.html'
 
-  def context(self):
-    assert isSet(self.data.program)
-    assert isSet(self.data.url_user)
+  def context(self, data, check, mutator):
+    assert isSet(data.program)
+    assert isSet(data.url_user)
 
-    user = self.data.url_user
-    profile = self.data.url_profile
-    program = self.data.program
+    user = data.url_user
+    profile = data.url_profile
+    program = data.program
 
     context = {
         'program_name': program.name,
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False),
+        'form_top_msg': LoggedInMsg(data, apply_link=False),
         'user': profile_show.UserReadOnlyTemplate(user),
         'css_prefix': GSoCProfileReadOnlyTemplate.Meta.css_prefix,
         }
 
     if profile:
       links = []
-      r = self.redirect.profile()
+      r = data.redirect.profile()
       for project in GSoCProject.all().ancestor(profile):
         r.project(project.key().id())
         links.append(r.urlOf('gsoc_project_details', full=True))
-      r = self.redirect.profile()
+      r = data.redirect.profile()
 
       user_role = None
       if profile.is_student:
@@ -156,7 +156,7 @@ class GSoCProfileAdminPage(GSoCRequestHandler):
           'page_name': '%s Profile - %s' % (
               program.short_name, profile.name()),
           'user_role': user_role,
-          'host_actions': GSoCHostActions(self.data)
+          'host_actions': GSoCHostActions(data)
           })
     else:
       context.update({

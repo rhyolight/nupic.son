@@ -15,7 +15,6 @@
 """Views for the GCI Task view page."""
 
 import datetime
-import httplib
 import logging
 
 from google.appengine.ext import blobstore
@@ -26,7 +25,7 @@ from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
-from soc.logic.exceptions import RedirectRequest
+from soc.logic import exceptions
 from soc.views.helper import blobstore as bs_helper
 from soc.views.template import Template
 
@@ -176,107 +175,106 @@ class TaskViewPage(GCIRequestHandler):
   """View for the GCI Task view page where all the actions happen."""
 
   def djangoURLPatterns(self):
-    """URL pattern for this view.
-    """
+    """URL pattern for this view."""
     return [
         url(r'task/view/%s$' % url_patterns.TASK, self,
             name=url_names.GCI_VIEW_TASK),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Checks whether this task is visible to the public and any other checks
     if it is a POST request.
     """
-    self.mutator.taskFromKwargs(comments=True, work_submissions=True)
-    self.data.is_visible = self.check.isTaskVisible()
+    mutator.taskFromKwargs(comments=True, work_submissions=True)
+    data.is_visible = check.isTaskVisible()
 
-    if task_logic.updateTaskStatus(self.data.task):
+    if task_logic.updateTaskStatus(data.task):
       # The task logic updated the status of the task since the deadline passed
       # and the GAE task was late to run. Reload the page.
-      raise RedirectRequest('')
+      raise exceptions.RedirectRequest('')
 
-    if self.request.method == 'POST':
+    if data.request.method == 'POST':
       # Access checks for the different forms on this page. Note that there
       # are no elif clauses because one could add multiple GET params :).
-      self.check.isProfileActive()
+      check.isProfileActive()
 
       # Tasks for non-active organizations cannot be touched
-      self.check.isOrganizationActive(self.data.task.org)
+      check.isOrganizationActive(data.task.org)
 
-      if 'reply' in self.data.GET:
+      if 'reply' in data.GET:
         # checks for posting comments
         # valid tasks and profile are already checked.
-        self.check.isBeforeAllWorkStopped()
-        self.check.isCommentingAllowed()
+        check.isBeforeAllWorkStopped()
+        check.isCommentingAllowed()
 
-      if 'submit_work' in self.data.GET:
-        self.check.isBeforeAllWorkStopped()
-        if not task_logic.canSubmitWork(self.data.task, self.data.profile):
-          self.check.fail(DEF_NOT_ALLOWED_TO_UPLOAD_WORK)
+      if 'submit_work' in data.GET:
+        check.isBeforeAllWorkStopped()
+        if not task_logic.canSubmitWork(data.task, data.profile):
+          check.fail(DEF_NOT_ALLOWED_TO_UPLOAD_WORK)
 
-      if 'button' in self.data.GET:
+      if 'button' in data.GET:
         # check for any of the buttons
-        button_name = self._buttonName()
+        button_name = self._buttonName(data)
 
         buttons = {}
-        TaskInformation(self.data).setButtonControls(buttons)
+        TaskInformation(data).setButtonControls(buttons)
         if not buttons.get(button_name):
-          self.check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON % button_name)
+          check.fail(DEF_NOT_ALLOWED_TO_OPERATE_BUTTON % button_name)
 
-      if 'send_for_review' in self.data.GET:
-        self.check.isBeforeAllWorkStopped()
-        if not task_logic.isOwnerOfTask(self.data.task, self.data.profile) or \
-            not self.data.work_submissions or \
-            self.data.task.status not in TASK_IN_PROGRESS:
-          self.check.fail(DEF_CANT_SEND_FOR_REVIEW)
+      if 'send_for_review' in data.GET:
+        check.isBeforeAllWorkStopped()
+        if not task_logic.isOwnerOfTask(data.task, data.profile) or \
+            not data.work_submissions or \
+            data.task.status not in TASK_IN_PROGRESS:
+          check.fail(DEF_CANT_SEND_FOR_REVIEW)
 
-      if 'delete_submission' in self.data.GET:
-        self.check.isBeforeAllWorkStopped()
-        id = self._submissionId()
-        work = GCIWorkSubmission.get_by_id(id, parent=self.data.task)
+      if 'delete_submission' in data.GET:
+        check.isBeforeAllWorkStopped()
+        id = self._submissionId(data)
+        work = GCIWorkSubmission.get_by_id(id, parent=data.task)
 
         if not work:
-          self.check.fail(DEF_NO_WORK_FOUND %id)
+          check.fail(DEF_NO_WORK_FOUND %id)
 
         time_expired = work.submitted_on - datetime.datetime.now()
-        if work.user.key() != self.data.user.key() or \
+        if work.user.key() != data.user.key() or \
             time_expired > task_logic.DELETE_EXPIRATION:
-          self.check.fail(DEF_NOT_ALLOWED_TO_DELETE)
+          check.fail(DEF_NOT_ALLOWED_TO_DELETE)
 
-  def jsonContext(self):
-    url = '%s?submit_work' %(
-          self.data.redirect.id().urlOf('gci_view_task'))
+  def jsonContext(self, data, check, mutator):
+    url = '%s?submit_work' % (
+          data.redirect.id().urlOf(url_names.GCI_VIEW_TASK))
     return {
         'upload_link': blobstore.create_upload_url(url),
         }
 
-  def context(self):
-    """Returns the context for this view.
-    """
-    task = self.data.task
+  def context(self, data, check, mutator):
+    """Returns the context for this view."""
+    task = data.task
 
     context = {
-      'page_name': '%s - %s' %(task.title, task.org.name),
+      'page_name': '%s - %s' % (task.title, task.org.name),
       'task': task,
-      'is_mentor': self.data.mentorFor(task.org),
-      'task_info': TaskInformation(self.data),
+      'is_mentor': data.mentorFor(task.org),
+      'task_info': TaskInformation(data),
     }
 
     if task.deadline:
+      # TODO(nathaniel): This is math - move it to a helper function.
       context['complete_percentage'] = timeline_helper.completePercentage(
           end=task.deadline, duration=(task.time_to_complete*3600))
 
-    if self.data.is_visible:
-      context['work_submissions'] = WorkSubmissions(self.data)
-      context['comment_ids'] = [i.key().id() for i in self.data.comments]
-      context['comments'] = CommentsTemplate(self.data)
+    if data.is_visible:
+      context['work_submissions'] = WorkSubmissions(data)
+      context['comment_ids'] = [i.key().id() for i in data.comments]
+      context['comments'] = CommentsTemplate(data)
 
     if not context['is_mentor']:
       # Programmatically change css for non-mentors, to for instance show
       # the open cog when a task can be claimed.
       if task.status == 'Closed':
         block_type = 'completed'
-      elif task_logic.isOwnerOfTask(task, self.data.profile):
+      elif task_logic.isOwnerOfTask(task, data.profile):
         block_type = 'owned'
       elif task.status in ACTIVE_CLAIMED_TASK:
         block_type = 'claimed'
@@ -286,47 +284,48 @@ class TaskViewPage(GCIRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles all POST calls for the TaskViewPage."""
-    if self.data.is_visible and 'reply' in self.data.GET:
-      return self._postComment()
-    elif 'button' in self.data.GET:
-      return self._postButton()
-    elif 'send_for_review' in self.data.GET:
-      return self._postSendForReview()
-    elif 'delete_submission' in self.data.GET:
-      return self._postDeleteSubmission()
-    elif 'work_file_submit' in self.data.POST or 'submit_work' in self.data.GET:
-      return self._postSubmitWork()
+    # TODO(nathaniel): What? Why is data.GET being read in this POST handler?
+    if data.is_visible and 'reply' in data.GET:
+      return self._postComment(data, check, mutator)
+    elif 'button' in data.GET:
+      return self._postButton(data)
+    elif 'send_for_review' in data.GET:
+      return self._postSendForReview(data)
+    elif 'delete_submission' in data.GET:
+      return self._postDeleteSubmission(data)
+    elif 'work_file_submit' in data.POST or 'submit_work' in data.GET:
+      return self._postSubmitWork(data, check, mutator)
     else:
-      return self.error(httplib.METHOD_NOT_ALLOWED)
+      raise exceptions.BadRequest()
 
-  def _postComment(self):
-    """Handles the POST call for the form that creates comments.
-    """
-    reply = self.data.GET.get('reply', '')
+  def _postComment(self, data, check, mutator):
+    """Handles the POST call for the form that creates comments."""
+    reply = data.GET.get('reply', '')
     reply = int(reply) if reply.isdigit() else None
-    comment_form = CommentForm(reply, self.data.POST)
+    comment_form = CommentForm(reply, data.POST)
 
     if not comment_form.is_valid():
-      return self.get()
+      # TODO(nathaniel): problematic self-call.
+      return self.get(data, check, mutator)
 
     comment_form.cleaned_data['reply'] = reply
-    comment_form.cleaned_data['created_by'] = self.data.user
-    comment_form.cleaned_data['modified_by'] = self.data.user
+    comment_form.cleaned_data['created_by'] = data.user
+    comment_form.cleaned_data['modified_by'] = data.user
 
-    comment = comment_form.create(commit=False, parent=self.data.task)
+    comment = comment_form.create(commit=False, parent=data.task)
     comment_logic.storeAndNotify(comment)
 
     # TODO(ljvderijk): Indicate that a comment was successfully created to the
     # user.
-    return self.redirect.id().to('gci_view_task')
+    return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
-  def _postButton(self):
+  def _postButton(self, data):
     """Handles the POST call for any of the control buttons on the task page.
     """
-    button_name = self._buttonName()
-    task = self.data.task
+    button_name = self._buttonName(data)
+    task = data.task
     task_key = task.key()
 
     if button_name == 'button_unpublish':
@@ -334,31 +333,31 @@ class TaskViewPage(GCIRequestHandler):
     elif button_name == 'button_publish':
       task_logic.setTaskStatus(task.key(), 'Open')
     elif button_name == 'button_edit':
-      r = self.redirect.id(id=task.key().id_or_name())
-      return r.to('gci_edit_task')
+      data.redirect.id(id=task.key().id_or_name())
+      return data.redirect.to('gci_edit_task')
     elif button_name == 'button_delete':
       task_logic.delete(task)
-      return self.redirect.homepage().to()
+      return data.redirect.homepage().to()
     elif button_name == 'button_assign':
-      task_logic.assignTask(task, task.student, self.data.profile)
+      task_logic.assignTask(task, task.student, data.profile)
     elif button_name == 'button_unassign':
-      task_logic.unassignTask(task, self.data.profile)
+      task_logic.unassignTask(task, data.profile)
     elif button_name == 'button_close':
-      task_logic.closeTask(task, self.data.profile)
+      task_logic.closeTask(task, data.profile)
     elif button_name == 'button_needs_work':
-      task_logic.needsWorkTask(task, self.data.profile)
+      task_logic.needsWorkTask(task, data.profile)
     elif button_name == 'button_extend_deadline':
-      hours = self.data.POST.get('hours', '')
+      hours = data.POST.get('hours', '')
       hours = int(hours) if hours.isdigit() else 0
       if hours > 0:
         delta = datetime.timedelta(hours=hours)
-        task_logic.extendDeadline(task, delta, self.data.profile)
+        task_logic.extendDeadline(task, delta, data.profile)
     elif button_name == 'button_claim':
-      task_logic.claimRequestTask(task, self.data.profile)
+      task_logic.claimRequestTask(task, data.profile)
     elif button_name == 'button_unclaim':
       task_logic.unclaimTask(task)
     elif button_name == 'button_subscribe':
-      profile_key = self.data.profile.key()
+      profile_key = data.profile.key()
       def txn():
         task = db.get(task_key)
         if profile_key not in task.subscribers:
@@ -366,7 +365,7 @@ class TaskViewPage(GCIRequestHandler):
           task.put()
       db.run_in_transaction(txn)
     elif button_name == 'button_unsubscribe':
-      profile_key = self.data.profile.key()
+      profile_key = data.profile.key()
       def txn():
         task = db.get(task_key)
         if profile_key in task.subscribers:
@@ -374,64 +373,64 @@ class TaskViewPage(GCIRequestHandler):
           task.put()
       db.run_in_transaction(txn)
 
-    return self.redirect.id().to('gci_view_task')
+    return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
-  def _buttonName(self):
-    """Returns the name of the button specified in the POST dict.
-    """
-    for key in self.data.POST.keys():
+  def _buttonName(self, data):
+    """Returns the name of the button specified in the POST dict."""
+    for key in data.POST.keys():
       if key.startswith('button'):
         return key
 
     return None
 
-  def _postSubmitWork(self):
-    """POST handler for the work submission form.
-    """
-    if 'url_to_work' in self.data.POST:
-      form = WorkSubmissionURLForm(data=self.data.POST)
+  def _postSubmitWork(self, data, check, mutator):
+    """POST handler for the work submission form."""
+    if 'url_to_work' in data.POST:
+      form = WorkSubmissionURLForm(data=data.POST)
       if not form.is_valid():
-        return self.get()
-    elif self.data.request.file_uploads:
+        # TODO(nathaniel): Problematic self-call.
+        return self.get(data, check, mutator)
+    elif data.request.file_uploads:
       form = WorkSubmissionFileForm(
-          data=self.data.POST,
-          files=self.data.request.file_uploads)
+          data=data.POST, files=data.request.file_uploads)
       if not form.is_valid():
         # we are not storing this form, remove the uploaded blob from the cloud
-        for f in self.data.request.file_uploads.itervalues():
+        for f in data.request.file_uploads.itervalues():
           f.delete()
-        return self.redirect.id().to('gci_view_task', extra=['file=0'])
+        return data.redirect.id().to(
+            url_names.GCI_VIEW_TASK, extra=['file=0'])
     else:
+      # TODO(nathaniel): Is this user error? If so, we shouldn't be logging
+      # it at server-warning level.
       logging.warning('Neither the URL nor the files were provided for work '
                       'submission.')
-      return self.redirect.id().to('gci_view_task', extra=['ws_error=1'])
+      return data.redirect.id().to(
+          url_names.GCI_VIEW_TASK, extra=['ws_error=1'])
 
-    task = self.data.task
+    task = data.task
     # TODO(ljvderijk): Add a non-required profile property?
-    form.cleaned_data['user'] = self.data.profile.user
+    form.cleaned_data['user'] = data.user
     form.cleaned_data['org'] =  task.org
     form.cleaned_data['program'] = task.program
 
     # store the submission, parented by the task
     form.create(parent=task)
 
-    return self.redirect.id().to('gci_view_task')
+    return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
-  def _postSendForReview(self):
+  def _postSendForReview(self, data):
     """POST handler for the mark as complete button."""
-    task_logic.sendForReview(self.data.task, self.data.profile)
+    task_logic.sendForReview(data.task, data.profile)
 
-    return self.redirect.id().to('gci_view_task')
+    return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
-  def _postDeleteSubmission(self):
-    """POST handler to delete a GCIWorkSubmission.
-    """
-    submission_id = self._submissionId()
-    work = GCIWorkSubmission.get_by_id(submission_id, parent=self.data.task)
+  def _postDeleteSubmission(self, data):
+    """POST handler to delete a GCIWorkSubmission."""
+    submission_id = self._submissionId(data)
+    work = GCIWorkSubmission.get_by_id(submission_id, parent=data.task)
 
     if not work:
-      return self.error(
-          httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % submission_id)
+      raise exceptions.BadRequest(DEF_NO_WORK_FOUND % submission_id)
 
     # Deletion of blobs always runs separately from transaction so it has no
     # added value to use it here.
@@ -440,12 +439,12 @@ class TaskViewPage(GCIRequestHandler):
     if upload:
       upload.delete()
 
-    return self.redirect.id().to('gci_view_task')
+    # TODO(nathaniel): Redirection to self.
+    return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
-  def _submissionId(self):
-    """Retrieves the submission id from the POST data.
-    """
-    for key in self.data.POST.keys():
+  def _submissionId(self, data):
+    """Retrieves the submission id from the POST data."""
+    for key in data.POST.keys():
       if key.isdigit():
         return int(key)
 
@@ -627,7 +626,7 @@ class WorkSubmissions(Template):
         context['ws_error'] = True
 
       url = '%s?submit_work' %(
-          self.data.redirect.id().urlOf('gci_view_task'))
+          self.data.redirect.id().urlOf(url_names.GCI_VIEW_TASK))
       context['direct_post_url'] = url
 
     return context
@@ -680,9 +679,6 @@ class CommentsTemplate(Template):
     context = {
         'profile': self.data.profile,
         'comments': comments,
-        'login': self.data.redirect.login().url(),
-        'student_reg_link': self.data.redirect.createProfile('student')
-            .urlOf('create_gci_profile', secure=True),
     }
 
     if self._commentingAllowed():
@@ -714,24 +710,21 @@ class WorkSubmissionDownload(GCIRequestHandler):
             name='gci_download_work'),
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Checks whether this task is visible to the public."""
-    self.mutator.taskFromKwargs()
-    self.check.isTaskVisible()
+    mutator.taskFromKwargs()
+    check.isTaskVisible()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Attempts to download the blob in the worksubmission that is specified
     in the GET argument.
     """
-    id_string = self.request.GET.get('id', '')
+    id_string = data.request.GET.get('id', '')
     submission_id = int(id_string) if id_string.isdigit() else -1
 
-    work = GCIWorkSubmission.get_by_id(submission_id, self.data.task)
+    work = GCIWorkSubmission.get_by_id(submission_id, data.task)
 
     if work and work.upload_of_work:
       return bs_helper.sendBlob(work.upload_of_work)
     else:
-      # TODO(nathaniel): This should probably be the raising of some sort
-      # of exception rather than a self-call.
-      return self.error(
-          httplib.BAD_REQUEST, message=DEF_NO_WORK_FOUND % id_string)
+      raise exceptions.BadRequest(DEF_NO_WORK_FOUND % id_string)

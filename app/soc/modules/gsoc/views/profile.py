@@ -211,85 +211,82 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
             self, name=self._getCreateConnectedProfileURLName())
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isProgramVisible()
-    self.check.isProgramRunning()
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isProgramVisible()
+    check.isProgramRunning()
 
-    if 'key' in self.data.kwargs:
-      self.mutator.anonymousConnectionFromKwargs()
+    if 'key' in data.kwargs:
+      mutator.anonymousConnectionFromKwargs()
     else:
-      self.data.anonymous_connection = None
+      data.anonymous_connection = None
 
-    if 'role' in self.data.kwargs:
-      role = self.data.kwargs['role']
-      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+    if 'role' in data.kwargs:
+      role = data.kwargs['role']
+      kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
       edit_url = reverse('edit_gsoc_profile', kwargs=kwargs)
       if role == 'student':
-        self.check.canApplyStudent(edit_url)
+        check.canApplyStudent(edit_url)
       else:
-        self.check.canApplyNonStudent(role, edit_url)
+        check.canApplyNonStudent(role, edit_url)
     else:
-      self.check.isProfileActive()
+      check.isProfileActive()
 
-  def context(self):
-    """Context for the profile page.
-    """
-    context = super(GSoCProfilePage, self).context()
+  def context(self, data, check, mutator):
+    """Context for the profile page."""
+    context = super(GSoCProfilePage, self).context(data, check, mutator)
 
     # GSoC has a special "you are logged in" message on top of the form
-    context['form_top_msg'] = LoggedInMsg(self.data, apply_role=True)
+    context['form_top_msg'] = LoggedInMsg(data, apply_role=True)
 
     return context
 
   def templatePath(self):
     return 'v2/modules/gsoc/profile/base.html'
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     return UNIVERSITIES
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if not self.validate():
+    if not self.validate(data):
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
-    if self.data.anonymous_connection:
+    if data.anonymous_connection:
       self._handleAnonymousConnection()
 
-    link_id = self.data.GET.get('org')
+    link_id = data.GET.get('org')
+
     if link_id:
-      key_name = '%s/%s' % (
-          self.data.program.key().name(), link_id
-          )
+      key_name = '%s/%s' % (data.program.key().name(), link_id)
       organization = GSoCOrganization.get_by_key_name(key_name)
     else:
       organization = None
 
     if not organization:
       # TODO(nathaniel): make this .program() call unnecessary.
-      self.redirect.program()
+      data.redirect.program()
 
-      return self.redirect.to('edit_gsoc_profile', validated=True, secure=True)
+      return data.redirect.to('edit_gsoc_profile', validated=True, secure=True)
 
     if self.data.anonymous_connection:
       self.redirect.dashboard()
     else:
       self.redirect.organization(organization)
 
-    if self.data.student_info:
+    if data.student_info:
       link = 'submit_gsoc_proposal'
       extra_get_args = []
     else:
       link = url_names.GSOC_USER_CONNECTION
       extra_get_args.append('profile=created')
 
-    user = User.get_by_key_name(self.data.request.POST['public_name'])
+    user = User.get_by_key_name(data.request.POST['public_name'])
     
-    self.redirect.connect(user, organization)
-    # (dcrodman): May need to add return in front of this line - removed
-    # from master during merge.
-    self.redirect.to(link, extra=extra_get_args)
+    data.redirect.connect(user, organization)
+
+    return data.redirect.to(link, extra=extra_get_args)
 
   def _handleAnonymousConnection(self):
     """ Handler for automatically created and accepting a new connection.
@@ -298,13 +295,13 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
     @db.transactional(xg=True)
     def activate_new_connection_txn():
       # This should be the profile that was just created.
-      user = User.get_by_key_name(self.data.request.POST['public_name'])
+      user = User.get_by_key_name(data.request.POST['public_name'])
       profile = GSoCProfile.all().ancestor(user.key()).get()
       # Create the new connection based on the values of the placeholder.
       connection = GSoCConnection(parent=user.key(), 
-          organization=self.data.anonymous_connection.parent(),
+          organization=data.anonymous_connection.parent(),
           profile=profile,
-          role=self.data.anonymous_connection.role)
+          role=sdata.anonymous_connection.role)
       # Set the apropriate fields to automatically accept the connection.
       connection.org_state = connection.user_state = RESPONSE_STATE_ACCEPTED
       connection.put()
@@ -322,70 +319,69 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
 
     activate_new_connection_txn()
 
-  def _getModulePrefix(self):
+  def _getModulePrefix(self, data):
     return 'gsoc'
 
-  def _getEditProfileURLName(self):
+  def _getEditProfileURLName(self, data):
     return 'edit_gsoc_profile'
 
-  def _getCreateProfileURLName(self):
+  def _getCreateProfileURLName(self, data):
     return 'create_gsoc_profile'
 
-  def _getCreateConnectedProfileURLName(self):
+  def _getCreateConnectedProfileURLName(self, data):
     return url_names.GSOC_ANONYMOUS_CONNECTION
 
-  def _getEditProfileURLPattern(self):
+  def _getEditProfileURLPattern(self, data):
     return url_patterns.PROGRAM
 
-  def _getCreateProfileURLPattern(self):
+  def _getCreateProfileURLPattern(self, data):
     return url_patterns.CREATE_PROFILE
 
-  def _getCreateConnectedProfileURLPattern(self):
+  def _getCreateConnectedProfileURLPattern(self, data):
     return url_patterns.ANONYMOUS_CONNECTION
 
-  def _getCreateUserForm(self):
-    return GSoCUserForm(self.data.POST or None)
+  def _getCreateUserForm(self, data):
+    return GSoCUserForm(data.POST or None)
 
-  def _getEditProfileForm(self, check_age):
+  def _getEditProfileForm(self, data, check_age):
     if check_age:
-      return GSoCStudentProfileForm(data=self.data.POST or None,
-        instance=self.data.profile, request_data=self.data)
+      return GSoCStudentProfileForm(
+          data=data.POST or None, instance=data.profile, request_data=data)
     else:
-      return GSoCProfileForm(data=self.data.POST or None,
-        instance=self.data.profile, request_data=self.data)
+      return GSoCProfileForm(
+          data=data.POST or None, instance=data.profile, request_data=data)
 
-  def _getCreateProfileForm(self, check_age, save=False, prefill_data=False):
-    tos_content = self._getTOSContent()
+  def _getCreateProfileForm(
+      self, data, check_age, save=False, prefill_data=False):
+    tos_content = self._getTOSContent(data)
 
     if prefill_data:
-      prefilled_data = self.prefilledProfileData()
+      prefilled_data = self.prefilledProfileData(data)
     else:
       prefilled_data = None
 
     if check_age:
-      form = CreateGSoCStudentProfileForm(tos_content, request_data=self.data,
-        data=self.data.POST or prefilled_data)
+      form = CreateGSoCStudentProfileForm(
+          tos_content, request_data=data, data=data.POST or prefilled_data)
     else:
-      form = CreateGSoCProfileForm(tos_content, request_data=self.data,
-        data=self.data.POST or prefilled_data)
+      form = CreateGSoCProfileForm(
+          tos_content, request_data=data, data=data.POST or prefilled_data)
 
     return form
 
-  def _getNotificationForm(self):
-    if self.data.student_info or self.data.kwargs.get('role') == 'student':
+  def _getNotificationForm(self, data):
+    if data.student_info or data.kwargs.get('role') == 'student':
       return StudentNotificationForm
-
-    if self.data.is_org_admin or self.data.kwargs.get('role') == 'org_admin':
+    elif data.is_org_admin or data.kwargs.get('role') == 'org_admin':
       return AdminNotificationForm
+    else:
+      return MentorNotificationForm
 
-    return MentorNotificationForm
+  def _getStudentInfoForm(self, data):
+    return GSoCStudentInfoForm(data.POST or None, instance=data.student_info)
 
-  def _getStudentInfoForm(self):
-    return GSoCStudentInfoForm(self.data.POST or None, 
-        instance=self.data.student_info)
-
-  def _getProfileForCurrentUser(self):
-    query = profile_logic.queryProfilesForUser(self.data.user)
+  def _getProfileForCurrentUser(self, data):
+    query = profile_logic.queryProfilesForUser(data.user)
     profiles = query.fetch(1000)
 
     return profiles[-1] if profiles else None

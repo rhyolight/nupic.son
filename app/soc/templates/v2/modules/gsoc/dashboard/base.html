@@ -27,7 +27,13 @@ limitations under the License.
     </div>
   {% endif %}
 
-  <h1 id="main-page-title">{{ user_name }}'s Dashboard</h1>
+  <h1 id="main-page-title">
+  {% if user_name %}
+    {{ user_name }}'s Dashboard
+  {% else %}
+    Dashboard
+  {% endif %}
+  </h1>
   {{ logged_in_msg.render }}
 
   {{ program_select.render }}

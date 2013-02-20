@@ -34,6 +34,9 @@ class TestLinker(unittest.TestCase):
   def setUp(self):
     self.linker = links.Linker()
 
+  def testSite(self):
+    self.assertEqual('/site/edit', self.linker.site('edit_site_settings'))
+
   def testProgram(self):
     self.assertEqual(
         '/gci/homepage/%s/%s' % (TEST_PROGRAM_SPONSOR, TEST_PROGRAM_NAME),

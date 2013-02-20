@@ -141,8 +141,7 @@ class OrgCreateProfileForm(OrgProfileForm):
 
 
 class OrgProfilePage(GSoCRequestHandler):
-  """View for the Organization Profile page.
-  """
+  """View for the Organization Profile page."""
 
   def djangoURLPatterns(self):
     return [
@@ -152,97 +151,96 @@ class OrgProfilePage(GSoCRequestHandler):
          self, name='edit_gsoc_org_profile'),
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
-    self.check.isProgramVisible()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
+    check.isProgramVisible()
 
-    if 'organization' in self.data.kwargs:
-      self.check.isOrgAdminForOrganization(self.data.organization)
+    if 'organization' in data.kwargs:
+      check.isOrgAdminForOrganization(data.organization)
       #probably check if the org is active
     else:
-      self.data.org_id = self.request.GET.get('org_id')
+      data.org_id = data.request.GET.get('org_id')
 
-      self.mutator.orgAppRecord(self.data.org_id)
+      mutator.orgAppRecord(data.org_id)
 
-      if not self.data.org_id:
-        self.check.fail(DEF_NO_ORG_ID_FOR_CREATE)
+      if not data.org_id:
+        check.fail(DEF_NO_ORG_ID_FOR_CREATE)
         return
 
       # For the creation of a new organization profile the org should not
       # exist yet.
-      self.check.orgDoesnotExist(self.data.org_id)
-      self.check.canCreateOrgProfile()
+      check.orgDoesnotExist(data.org_id)
+      check.canCreateOrgProfile()
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_profile/base.html'
 
-  def context(self):
-    if not self.data.organization:
-      form = OrgCreateProfileForm(self.data.POST or None)
+  def context(self, data, check, mutator):
+    if not data.organization:
+      form = OrgCreateProfileForm(data.POST or None)
     else:
-      form = OrgProfileForm(self.data.POST or None,
-                            instance=self.data.organization)
+      form = OrgProfileForm(data.POST or None, instance=data.organization)
 
     context = {
         'page_name': "Organization profile",
-        'form_top_msg': LoggedInMsg(self.data, apply_link=False),
+        'form_top_msg': LoggedInMsg(data, apply_link=False),
         'forms': [form],
         'error': bool(form.errors),
         }
 
-    if self.data.organization:
+    if data.organization:
       # TODO(nathaniel): make this .organization() unnecessary.
-      self.data.redirect.organization()
+      data.redirect.organization()
 
-      context['org_home_page_link'] = self.data.redirect.urlOf('gsoc_org_home')
-      if (self.data.program.allocations_visible and
-            self.data.timeline.beforeStudentsAnnounced()):
-        context['slot_transfer_page_link'] = self.data.redirect.urlOf(
+      context['org_home_page_link'] = data.redirect.urlOf('gsoc_org_home')
+      if (data.program.allocations_visible and
+          data.timeline.beforeStudentsAnnounced()):
+        context['slot_transfer_page_link'] = data.redirect.urlOf(
             'gsoc_slot_transfer')
 
     return context
 
-  def post(self):
-    org_profile = self.createOrgProfileFromForm()
+  def post(self, data, check, mutator):
+    org_profile = self.createOrgProfileFromForm(data)
     if org_profile:
-      self.redirect.organization(organization=org_profile)
-      return self.redirect.to('edit_gsoc_org_profile', validated=True)
+      data.redirect.organization(organization=org_profile)
+      return data.redirect.to('edit_gsoc_org_profile', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
-  def createOrgProfileFromForm(self):
+  def createOrgProfileFromForm(self, data):
     """Creates a new organization based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created organization entity or None
     """
-
-    if self.data.organization:
-      form = OrgProfileForm(self.data.POST, instance=self.data.organization)
+    if data.organization:
+      form = OrgProfileForm(data.POST, instance=data.organization)
     else:
-      form = OrgCreateProfileForm(self.data.POST)
+      form = OrgCreateProfileForm(data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.organization:
-      form.cleaned_data['founder'] = self.data.user
-      form.cleaned_data['scope'] = self.data.program
-      form.cleaned_data['scope_path'] = self.data.program.key().name()
-      form.cleaned_data['link_id'] = self.data.org_id
-      form.cleaned_data['new_org'] = self.data.org_app_record.new_org
+    if not data.organization:
+      form.cleaned_data['founder'] = data.user
+      form.cleaned_data['scope'] = data.program
+      form.cleaned_data['scope_path'] = data.program.key().name()
+      form.cleaned_data['link_id'] = data.org_id
+      form.cleaned_data['new_org'] = data.org_app_record.new_org
       key_name = '%s/%s' % (
-          self.data.program.key().name(),
-          form.cleaned_data['link_id']
-          )
+          data.program.key().name(), form.cleaned_data['link_id'])
       # TODO(ljv): The backup admin is not assigned a role?
       entity = form.create(commit=True, key_name=key_name)
-      self.data.profile.org_admin_for.append(entity.key())
-      self.data.profile.is_org_admin = True
-      self.data.profile.mentor_for.append(entity.key())
-      self.data.profile.is_mentor = True
-      self.data.profile.put()
+      data.profile.org_admin_for.append(entity.key())
+      data.profile.is_org_admin = True
+      data.profile.mentor_for.append(entity.key())
+      data.profile.is_mentor = True
+      data.profile.put()
     else:
       entity = form.save(commit=True)
 

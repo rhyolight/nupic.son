@@ -43,6 +43,11 @@ GCI forms specific CSS.
     background-color: transparent;
     cursor: pointer;
 }
+.preform-header-description {
+    clear: both;
+    margin: 0 25px 0 5px;
+    text-align: justify;
+}
 
 /* Following CSS is taken from bootstrap */
 .btn {

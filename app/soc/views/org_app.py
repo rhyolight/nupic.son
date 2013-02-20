@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for the org applications.
-"""
-
+"""Module for the org applications."""
 
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from soc.logic import exceptions
-
+from soc.logic import validate
+from soc.models import user
 from soc.views import forms
 from soc.views import survey
 from soc.views.helper import access_checker
@@ -34,9 +31,12 @@ from soc.models.org_app_survey import OrgAppSurvey
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
 
+DEF_BACKUP_ADMIN_NO_PROFILE = ugettext(
+    'Backup admin does not have an org admin profile for the program. Please '
+    'ask your backup admin to register a profile for %s at %s')
+
 PROCESS_ORG_APPS_FORM_BUTTON_VALUE = \
     'Finalize decisions and send acceptance/rejection emails'
-
 
 NEW_ORG_CHOICES = [('Veteran', 'Veteran'), ('New', 'New')]
 
@@ -68,9 +68,10 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
   # field cleaner.
   new_org = forms.CharField(widget=django_forms.Select(choices=NEW_ORG_CHOICES))
 
-  def __init__(self, survey, tos_content, bound_class_field, *args, **kwargs):
-    super(OrgAppTakeForm, self).__init__(survey, bound_class_field, *args,
-                                         **kwargs)
+  def __init__(self, request_data, bound_class_field, *args, **kwargs):
+    self.request_data = request_data
+    super(OrgAppTakeForm, self).__init__(
+        self.request_data.org_app, bound_class_field, *args, **kwargs)
     if self.instance:
       self.fields['backup_admin_id'].initial = \
           self.instance.backup_admin.link_id
@@ -78,16 +79,32 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     # not marked required by data model for backwards compatibility
     self.fields['org_id'].required = True
 
-    self.fields['agreed_to_admin_agreement'].widget = forms.TOSWidget(
-        tos_content)
-
   class Meta:
     model = OrgAppRecord
     css_prefix = 'org-app-record'
     exclude = ['main_admin', 'backup_admin', 'status', 'user', 'survey',
-               'created', 'modified', 'program']
+               'created', 'modified', 'program', 'agreed_to_admin_agreement']
     widgets = forms.choiceWidgets(model,
         ['license'])
+
+  def validateBackupAdminProfile(self, backup_admin_user, profile_model):
+    """Validates if backup admin has a profile for the current program.
+
+    Args:
+      backup_admin_user: User entity for the backup admin.
+      profile_model: Model class from which the profile must be fetched.
+
+    Raises:
+      django_forms.ValidationError if the backup admin does not have a profile.
+    """
+    if not validate.hasNonStudentProfileForProgram(
+        backup_admin_user, self.request_data.program, profile_model):
+      redirector = self.request_data.redirect.createProfile('org_admin')
+
+      raise django_forms.ValidationError(
+          DEF_BACKUP_ADMIN_NO_PROFILE % (
+              self.request_data.program.short_name,
+              redirector.urlOf('create_gsoc_profile', full=True, secure=True)))
 
   def clean_org_id(self):
     org_id = cleaning.clean_link_id('org_id')(self)
@@ -139,8 +156,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
 
 
 class OrgAppRecordsList(object):
-  """View for listing all records of a Organization Applications.
-  """
+  """View for listing all records of a Organization Applications."""
 
   def __init__(self, read_only_view):
     """Initializes the OrgAppRecordsList.
@@ -151,42 +167,40 @@ class OrgAppRecordsList(object):
     """
     self.read_only_view = read_only_view
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Defines access checks for this list, all hosts should be able to see it.
     """
-    if not self.data.org_app:
+    if not data.org_app:
       raise exceptions.NotFound(
-          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+          access_checker.DEF_NO_ORG_APP % data.program.name)
 
-    self.check.isHost()
+    check.isHost()
 
-  def context(self):
-    """Returns the context of the page to render.
-    """
-    record_list = self._createOrgAppsList()
+  def context(self, data, check, mutator):
+    """Returns the context of the page to render."""
+    record_list = self._createOrgAppsList(data)
 
-    page_name = ugettext('Records - %s' % (self.data.org_app.title))
+    page_name = ugettext('Records - %s' % (data.org_app.title))
     context = {
         'page_name': page_name,
         'record_list': record_list,
         }
     return context
 
-  def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    idx = lists.getListIndex(self.request)
+  def jsonContext(self, data, check, mutator):
+    """Handler for JSON requests."""
+    idx = lists.getListIndex(data.request)
     if idx == 0:
-      record_list = self._createOrgAppsList()
-      return record_list.listContentResponse(self.request).content()
+      record_list = self._createOrgAppsList(data)
+      return record_list.listContentResponse(data.request).content()
     else:
-      super(OrgAppRecordsList, self).jsonContext()
+      # TODO(nathaniel): This needs to be a return statement, right?
+      super(OrgAppRecordsList, self).jsonContext(data, check, mutator)
 
-  def _createOrgAppsList(self):
-    """Creates a SurveyRecordList for the requested survey.
-    """
+  def _createOrgAppsList(self, data):
+    """Creates a SurveyRecordList for the requested survey."""
     record_list = survey.SurveyRecordList(
-        self.data, self.data.org_app, OrgAppRecord, idx=0)
+        data, data.org_app, OrgAppRecord, idx=0)
     record_list.list_config.addSimpleColumn('name', 'Name')
     record_list.list_config.addSimpleColumn('org_id', 'Organization ID')
 
@@ -207,7 +221,7 @@ class OrgAppRecordsList(object):
     record_list.list_config.addPostEditButton('save', 'Save')
 
     record_list.list_config.setRowAction(
-        lambda e, *args: self.redirect.id(e.key().id_or_name()).
+        lambda e, *args: data.redirect.id(e.key().id_or_name()).
             urlOf(self.read_only_view))
 
     return record_list
@@ -223,6 +237,5 @@ class OrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
   class Meta:
     model = OrgAppRecord
     css_prefix = 'org-app-show'
-    fields = ['org_id', 'name', 'description', 'home_page', 'license',
-              'agreed_to_admin_agreement']
+    fields = ['org_id', 'name', 'description', 'home_page', 'license']
     survey_name = 'Organization Application'

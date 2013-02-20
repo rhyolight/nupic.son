@@ -16,7 +16,6 @@
 into a GSoC program.
 """
 
-
 import logging
 
 from google.appengine.ext import db
@@ -41,15 +40,13 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class ProposalList(Template):
-  """Template for listing the student proposals submitted to the program.
-  """
+  """Template for listing the student proposals submitted to the program."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addPlainTextColumn('student', 'Student',
@@ -98,25 +95,23 @@ class ProposalList(Template):
         }
 
   def post(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
-    data = self.data.POST.get('data')
+    list_data = self.data.POST.get('data')
 
-    if not data:
+    if not list_data:
       raise BadRequest("Missing data")
-
-    parsed = simplejson.loads(data)
 
     button_id = self.data.POST.get('button_id')
 
-    if not button_id:
+    if button_id == 'accept':
+      return self.postHandler(simplejson.loads(list_data))
+    elif button_id:
+      raise BadRequest('Unknown button_id')
+    else:
       raise BadRequest("Missing button_id")
-    elif button_id == 'accept':
-      return self.postHandler(parsed)
-
-    raise BadRequest("Unknown button_id")
 
   def postHandler(self, data):
     for properties in data:
@@ -135,7 +130,7 @@ class ProposalList(Template):
         logging.warning("Proposal '%s' already accepted" % proposal_key)
         continue
 
-      # organization for the proposal 
+      # organization for the proposal
       org = proposal.org
       # key of the student profile for the project
       profile_key = proposal.parent_key()
@@ -199,7 +194,7 @@ class ProposalList(Template):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       list_query = proposal_logic.getProposalsQuery(program=self.data.program)
 
@@ -208,7 +203,7 @@ class ProposalList(Template):
           parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
+          self.data.request, self._list_config, list_query,
           starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
@@ -219,55 +214,47 @@ class ProposalList(Template):
 
 
 class AcceptProposals(GSoCRequestHandler):
-  """View for accepting individual proposals.
-  """
+  """View for accepting individual proposals."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/accept_withdraw_projects/base.html'
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
+    """Returns the list of tuples for containing URL to view method mapping."""
 
     return [
         url(r'admin/proposals/accept/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_admin_accept_proposals')
     ]
 
-  def checkAccess(self):
-    """Access checks for the view.
-    """
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    """Access checks for the view."""
+    check.isHost()
 
-  def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    list_content = ProposalList(self.request, self.data).getListData()
+  def jsonContext(self, data, check, mutator):
+    """Handler for JSON requests."""
+    list_content = ProposalList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-
-  def post(self):
-    list_content = ProposalList(self.request, self.data)
-
+  def post(self, data, check, mutator):
+    list_content = ProposalList(data)
     if list_content.post():
       return http.HttpResponse()
     else:
       raise AccessViolation('You cannot change this data')
 
-  def context(self):
-    """Builds the context for GSoC proposals List page HTTP get request.
-    """
-    program = self.data.program
+  def context(self, data, check, mutator):
+    """Builds the context for GSoC proposals List page HTTP get request."""
+    program = data.program
 
     return {
         'page_name': '%s - Proposals' % program.short_name,
         'program_name': program.name,
-        'list': ProposalList(self.request, self.data),
-        'program_select': ProgramSelect(self.data,
-                                        'gsoc_admin_accept_proposals'),
+        'list': ProposalList(data),
+        'program_select': ProgramSelect(data, 'gsoc_admin_accept_proposals'),
     }
 
 
@@ -275,12 +262,11 @@ class ProjectList(Template):
   """Template for listing the student projects accepted in the program.
   """
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addPlainTextColumn('student', 'Student',
@@ -330,7 +316,7 @@ class ProjectList(Template):
         }
 
   def post(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
 
@@ -353,8 +339,6 @@ class ProjectList(Template):
     raise BadRequest("Unknown button_id")
 
   def postHandler(self, data, withdraw=True):
-    program = self.data.program
-
     for properties in data:
       if 'full_project_key' not in properties:
         logging.warning("Missing key in '%s'" % properties)
@@ -375,7 +359,7 @@ class ProjectList(Template):
         logging.warning("Project '%s' already accepted" % project_key)
         continue
 
-      # key of the organization for the project 
+      # key of the organization for the project
       org_key = GSoCProject.org.get_value_for_datastore(project)
       # key of the student profile for the project
       profile_key = project.parent_key()
@@ -412,7 +396,7 @@ class ProjectList(Template):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       list_query = project_logic.getProjectsQuery(program=self.data.program)
 
@@ -421,7 +405,7 @@ class ProjectList(Template):
           parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
+          self.data.request, self._list_config, list_query,
           starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
@@ -447,32 +431,31 @@ class WithdrawProjects(GSoCRequestHandler):
             name='gsoc_withdraw_projects')
     ]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Access checks for the view."""
-    self.check.isHost()
+    check.isHost()
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
-    list_content = ProjectList(self.request, self.data).getListData()
+    list_content = ProjectList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-
-  def post(self):
-    list_content = ProjectList(self.request, self.data)
-
+  def post(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.post for specification."""
+    list_content = ProjectList(data)
     if list_content.post():
       return http.HttpResponse()
     else:
       raise AccessViolation('You cannot change this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler for GSoC Accepted Projects List page HTTP get request."""
     return {
-        'page_name': '%s - Projects' % self.data.program.short_name,
-        'program_name': self.data.program.name,
-        'list': ProjectList(self.request, self.data),
-        'program_select': ProgramSelect(self.data, 'gsoc_withdraw_projects'),
+        'page_name': '%s - Projects' % data.program.short_name,
+        'program_name': data.program.name,
+        'list': ProjectList(data),
+        'program_select': ProgramSelect(data, 'gsoc_withdraw_projects'),
     }

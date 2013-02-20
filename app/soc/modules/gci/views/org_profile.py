@@ -64,30 +64,30 @@ class OrgProfilePage(GCIRequestHandler):
          self, name=url_names.EDIT_GCI_ORG_PROFILE),
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isProgramVisible()
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isProgramVisible()
 
-    if 'organization' in self.data.kwargs:
-      self.check.isProfileActive()
-      self.check.isOrgAdminForOrganization(self.data.organization)
+    if 'organization' in data.kwargs:
+      check.isProfileActive()
+      check.isOrgAdminForOrganization(data.organization)
       #probably check if the org is active
     else:
-      self.data.organization = None
-      self.mutator.orgAppFromOrgId()
-      self.check.isOrgAppAccepted()
-      self.check.isUserAdminForOrgApp()
-      self.check.hasProfileOrRedirectToCreate()
+      data.organization = None
+      mutator.orgAppFromOrgId()
+      check.isOrgAppAccepted()
+      check.isUserAdminForOrgApp()
+      check.hasProfileOrRedirectToCreate()
 
   def templatePath(self):
     return 'v2/modules/gci/org_profile/base.html'
 
-  def context(self):
-    if not self.data.organization:
-      form = OrgCreateProfileForm(self.data.POST or None)
+  def context(self, data, check, mutator):
+    if not data.organization:
+      form = OrgCreateProfileForm(data.POST or None)
     else:
-      form = OrgProfileForm(self.data.POST or None,
-                            instance=self.data.organization)
+      form = OrgProfileForm(data.POST or None,
+                            instance=data.organization)
 
     context = {
         'page_name': "Organization profile",
@@ -95,51 +95,54 @@ class OrgProfilePage(GCIRequestHandler):
         'error': bool(form.errors),
         }
 
-    if self.data.organization:
+    if data.organization:
       # TODO(nathaniel): make this .organization() call unnecessary.
-      self.data.redirect.organization()
-      context['org_home_page_link'] = self.data.redirect.urlOf('gci_org_home')
+      data.redirect.organization()
+      context['org_home_page_link'] = data.redirect.urlOf('gci_org_home')
 
     return context
 
-  def post(self):
-    org_profile = self.createOrgProfileFromForm()
+  def post(self, data, check, mutator):
+    org_profile = self.createOrgProfileFromForm(data)
     if org_profile:
       # TODO(nathaniel): make this .organization call unnecessary.
-      self.redirect.organization(organization=org_profile)
+      data.redirect.organization(organization=org_profile)
 
-      return self.redirect.to('edit_gci_org_profile', validated=True)
+      return data.redirect.to('edit_gci_org_profile', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
-  def createOrgProfileFromForm(self):
+  def createOrgProfileFromForm(self, data):
     """Creates a new organization based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created organization entity or None
     """
-    if self.data.organization:
-      form = OrgProfileForm(self.data.POST, instance=self.data.organization)
+    if data.organization:
+      form = OrgProfileForm(data.POST, instance=data.organization)
     else:
-      form = OrgCreateProfileForm(self.data.POST)
+      form = OrgCreateProfileForm(data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.organization:
-      org_id = self.data.GET['org_id']
-      form.cleaned_data['founder'] = self.data.user
-      form.cleaned_data['scope'] = self.data.program
-      form.cleaned_data['scope_path'] = self.data.program.key().name()
+    if not data.organization:
+      org_id = data.GET['org_id']
+      form.cleaned_data['founder'] = data.user
+      form.cleaned_data['scope'] = data.program
+      form.cleaned_data['scope_path'] = data.program.key().name()
       form.cleaned_data['link_id'] = org_id
-      key_name = '%s/%s' % (self.data.program.key().name(), org_id)
+      key_name = '%s/%s' % (data.program.key().name(), org_id)
       entity = form.create(key_name=key_name)
-      self.data.profile.org_admin_for.append(entity.key())
-      self.data.profile.mentor_for.append(entity.key())
-      self.data.profile.is_mentor = True
-      self.data.profile.is_org_admin = True
-      self.data.profile.put()
+      data.profile.org_admin_for.append(entity.key())
+      data.profile.mentor_for.append(entity.key())
+      data.profile.is_mentor = True
+      data.profile.is_org_admin = True
+      data.profile.put()
     else:
       entity = form.save()
 

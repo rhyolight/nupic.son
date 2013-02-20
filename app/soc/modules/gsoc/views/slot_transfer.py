@@ -78,29 +78,29 @@ class SlotTransferPage(GSoCRequestHandler):
             self, name='gsoc_slot_transfer'),
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isProgramVisible()
-    self.check.isOrganizationInURLActive()
-    self.check.isOrgAdminForOrganization(self.data.organization)
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isProgramVisible()
+    check.isOrganizationInURLActive()
+    check.isOrgAdminForOrganization(data.organization)
 
-    self.check.isSlotTransferActive()
-    self.mutator.slotTransferEntities()
-    if not self.data.slot_transfer_entities:
-      if 'new' not in self.data.kwargs:
+    check.isSlotTransferActive()
+    mutator.slotTransferEntities()
+    if not data.slot_transfer_entities:
+      if 'new' not in data.kwargs:
         # TODO(nathaniel): make this .organization() call unnecessary.
-        self.data.redirect.organization()
+        data.redirect.organization()
 
-        new_url = self.data.redirect.urlOf('gsoc_update_slot_transfer')
+        new_url = data.redirect.urlOf('gsoc_update_slot_transfer')
         raise RedirectRequest(new_url)
 
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     requests = []
     require_new_link = True
-    for i, ent in enumerate(self.data.slot_transfer_entities):
+    for i, ent in enumerate(data.slot_transfer_entities):
       requests.append(SlotTransferReadOnlyTemplate(i, instance=ent))
       if ent.status == 'pending':
         require_new_link = False
@@ -110,12 +110,12 @@ class SlotTransferPage(GSoCRequestHandler):
         'requests': requests,
         }
 
-    if (self.data.program.allocations_visible and
-        self.data.timeline.beforeStudentsAnnounced()):
+    if (data.program.allocations_visible and
+        data.timeline.beforeStudentsAnnounced()):
       # TODO(nathaniel): make this .organization() call unnecessary.
-      self.data.redirect.organization()
+      data.redirect.organization()
 
-      edit_url = self.data.redirect.urlOf('gsoc_update_slot_transfer')
+      edit_url = data.redirect.urlOf('gsoc_update_slot_transfer')
       if require_new_link:
         context['new_slot_transfer_page_link'] = edit_url
       else:
@@ -125,8 +125,7 @@ class SlotTransferPage(GSoCRequestHandler):
 
 
 class UpdateSlotTransferPage(GSoCRequestHandler):
-  """View for transferring the slots.
-  """
+  """View for transferring the slots."""
 
   def djangoURLPatterns(self):
     return [
@@ -134,34 +133,32 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
             self, name='gsoc_update_slot_transfer'),
     ]
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.isProgramVisible()
-    self.check.isOrganizationInURLActive()
-    self.check.isOrgAdminForOrganization(self.data.organization)
+  def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+    check.isProgramVisible()
+    check.isOrganizationInURLActive()
+    check.isOrgAdminForOrganization(data.organization)
 
-    self.check.isSlotTransferActive()
-    self.mutator.slotTransferEntities()
+    check.isSlotTransferActive()
+    mutator.slotTransferEntities()
 
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer/form.html'
 
-  def context(self):
-    slots = self.data.organization.slots
+  def context(self, data, check, mutator):
+    slots = data.organization.slots
 
-    if self.data.POST:
-      slot_transfer_form = SlotTransferForm(slots, self.data.POST)
+    if data.POST:
+      slot_transfer_form = SlotTransferForm(slots, data.POST)
     else:
       slot_transfer_form = SlotTransferForm(slots)
 
-    for ent in self.data.slot_transfer_entities:
+    for ent in data.slot_transfer_entities:
       if ent.status == 'pending':
-        if self.data.POST:
-          slot_transfer_form = SlotTransferForm(slots, self.data.POST,
-                                                instance=ent)
+        if data.POST:
+          slot_transfer_form = SlotTransferForm(slots, data.POST, instance=ent)
         else:
-          slot_transfer_form = SlotTransferForm(slots,
-                                                instance=ent)
+          slot_transfer_form = SlotTransferForm(slots, instance=ent)
 
     context = {
         'page_name': 'Transfer slots to pool',
@@ -171,31 +168,34 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
         }
 
     # TODO(nathaniel): make this .organization() call unnecessary.
-    self.data.redirect.organization()
+    data.redirect.organization()
 
-    context['org_home_page_link'] = self.data.redirect.urlOf('gsoc_org_home')
-    context['slot_transfer_page_link'] = self.data.redirect.urlOf(
+    context['org_home_page_link'] = data.redirect.urlOf('gsoc_org_home')
+    context['slot_transfer_page_link'] = data.redirect.urlOf(
         'gsoc_slot_transfer')
 
     return context
 
-  def createOrUpdateFromForm(self):
+  def createOrUpdateFromForm(self, data):
     """Creates a new proposal based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created proposal entity or None
     """
     slot_transfer_entity = None
 
-    slot_transfer_form = SlotTransferForm(self.data.organization.slots,
-                                          self.data.POST)
+    slot_transfer_form = SlotTransferForm(
+         data.organization.slots, data.POST)
 
     if not slot_transfer_form.is_valid():
       return None
 
-    slot_transfer_form.cleaned_data['program'] = self.data.program
+    slot_transfer_form.cleaned_data['program'] = data.program
 
-    for ent in self.data.slot_transfer_entities:
+    for ent in data.slot_transfer_entities:
       if ent.status == 'pending':
         slot_transfer_entity = ent
         break
@@ -206,7 +206,7 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
     # without reference to their user entities as parents, so we don't
     # have a way to get the relationship between the user entities and
     # the host entities. So use the user entities for now.
-    host_users = host_logic.getHostsForProgram(self.data.program)
+    host_users = host_logic.getHostsForProgram(data.program)
     to_emails = [u.account.email() for u in host_users]
 
     def create_or_update_slot_transfer_trx():
@@ -219,11 +219,10 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
         update = True
       else:
         slot_transfer = slot_transfer_form.create(
-            commit=True, parent=self.data.organization)
+            commit=True, parent=data.organization)
 
       context = notifications.createOrUpdateSlotTransferContext(
-          self.data, slot_transfer,
-          to_emails, update)
+          data, slot_transfer, to_emails, update)
       sub_txn = mailer.getSpawnMailTaskTxn(
           context, parent=slot_transfer.parent())
       sub_txn()
@@ -232,14 +231,14 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
 
     return db.run_in_transaction(create_or_update_slot_transfer_trx)
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    slot_transfer_entity = self.createOrUpdateFromForm()
+    slot_transfer_entity = self.createOrUpdateFromForm(data)
     if slot_transfer_entity:
       # TODO(nathaniel): make this .organization call unnecessary.
-      self.redirect.organization(organization=self.data.organization)
+      data.redirect.organization(organization=data.organization)
 
-      return self.redirect.to('gsoc_update_slot_transfer', validated=True)
+      return data.redirect.to('gsoc_update_slot_transfer', validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)

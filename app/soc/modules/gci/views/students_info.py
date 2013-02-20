@@ -29,8 +29,8 @@ from soc.modules.gci.views.helper import url_patterns as gci_url_patterns
 class AllParticipatingStudentsList(student_list.StudentList):
   """Component for listing all the students participating in GCI."""
 
-  def __init__(self, request, data):
-    super(AllParticipatingStudentsList, self).__init__(request, data)
+  def __init__(self, data):
+    super(AllParticipatingStudentsList, self).__init__(data)
 
     def formVerified(verified_prop):
       """Returns Yes/No based on whether the form verified property's value."""
@@ -77,22 +77,19 @@ class StudentsInfoPage(base.GCIRequestHandler):
                              self, name=url_names.GCI_STUDENTS_INFO),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
-  def jsonContext(self):
-    all_participating_students_list = AllParticipatingStudentsList(
-        self.request, self.data)
+  def jsonContext(self, data, check, mutator):
+    all_participating_students_list = AllParticipatingStudentsList(data)
     list_content = all_participating_students_list.getListData()
-
     if list_content:
       return list_content.content()
     else:
       raise exceptions.AccessViolation('You do not have access to this data')
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': 'List of Students for %s' % self.data.program.name,
-        'students_info_list': AllParticipatingStudentsList(
-            self.request, self.data),
+        'page_name': 'List of Students for %s' % data.program.name,
+        'students_info_list': AllParticipatingStudentsList(data),
     }

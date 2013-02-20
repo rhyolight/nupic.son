@@ -31,8 +31,7 @@ from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
 
 class GSoCDocumentForm(GSoCModelForm):
-  """Django form for creating documents.
-  """
+  """Django form for creating documents."""
 
   class Meta:
     model = Document
@@ -57,18 +56,18 @@ class EditDocumentPage(GSoCRequestHandler):
             name='edit_gsoc_document'),
     ]
 
-  def checkAccess(self):
-    self.mutator.documentKeyNameFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.documentKeyNameFromKwargs()
 
-    assert isSet(self.data.key_name)
+    assert isSet(data.key_name)
 
-    self.check.canEditDocument()
+    check.canEditDocument()
 
-  def context(self):
-    form = GSoCDocumentForm(self.data.POST or None, instance=self.data.document)
+  def context(self, data, check, mutator):
+    form = GSoCDocumentForm(data.POST or None, instance=data.document)
 
-    if self.data.document:
-      page_name = 'Edit %s' % self.data.document.title
+    if data.document:
+      page_name = 'Edit %s' % data.document.title
     else:
       page_name = 'Create new Document'
 
@@ -77,21 +76,21 @@ class EditDocumentPage(GSoCRequestHandler):
         'document_form': form,
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    form = GSoCDocumentForm(self.data.POST or None, instance=self.data.document)
-    validated_document = document.validateForm(self.data, form)
+    form = GSoCDocumentForm(data.POST or None, instance=data.document)
+    validated_document = document.validateForm(data, form)
     if validated_document:
-      self.redirect.document(validated_document)
-      return self.redirect.to('edit_gsoc_document')
+      data.redirect.document(validated_document)
+      # TODO(nathaniel): Redirection to self?
+      return data.redirect.to('edit_gsoc_document')
     else:
       # TODO(nathaniel): problematic self-use.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class DocumentPage(GSoCRequestHandler):
-  """Encapsulate all the methods required to show documents.
-  """
+  """Encapsulate all the methods required to show documents."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/base.html'
@@ -108,24 +107,23 @@ class DocumentPage(GSoCRequestHandler):
                    self),
     ]
 
-  def checkAccess(self):
-    self.mutator.documentKeyNameFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    mutator.documentKeyNameFromKwargs()
 
-    if not self.data.document:
-      raise NotFound("No such document: '%s'" % self.data.key_name)
+    if not data.document:
+      raise NotFound("No such document: '%s'" % data.key_name)
 
-    self.check.canViewDocument()
+    check.canViewDocument()
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'tmpl': document.Document(self.data, self.data.document),
-        'page_name': self.data.document.title,
+        'tmpl': document.Document(data, data.document),
+        'page_name': data.document.title,
     }
 
 
 class EventsPage(GSoCRequestHandler):
-  """Encapsulates all the methods required to show the events page.
-  """
+  """Encapsulates all the methods required to show the events page."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/document/events.html'
@@ -136,32 +134,30 @@ class EventsPage(GSoCRequestHandler):
             name='gsoc_events')
     ]
 
-  def checkAccess(self):
-    self.data.document = self.data.program.events_page
-    self.check.canViewDocument()
+  def checkAccess(self, data, check, mutator):
+    data.document = data.program.events_page
+    check.canViewDocument()
 
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'document': self.data.program.events_page,
-        'frame_url': self.data.program.events_frame_url,
+        'document': data.program.events_page,
+        'frame_url': data.program.events_frame_url,
         'page_name': 'Events and Timeline',
     }
 
 
-class DocumentList(document.DocumentList):
-  """Template for list of documents.
-  """
+class GSoCDocumentList(document.DocumentList):
+  """Template for list of documents."""
 
-  def __init__(self, request, data):
-    super(DocumentList, self).__init__(request, data, 'edit_gsoc_document')
+  def __init__(self, data):
+    super(GSoCDocumentList, self).__init__(data, 'edit_gsoc_document')
 
   def templatePath(self):
     return 'v2/modules/gsoc/document/_document_list.html'
 
 
 class DocumentListPage(GSoCRequestHandler):
-  """View for the list documents page.
-  """
+  """View for the list documents page."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/document/document_list.html'
@@ -172,20 +168,19 @@ class DocumentListPage(GSoCRequestHandler):
             name='list_gsoc_documents'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
-  def jsonContext(self):
-    list_content = DocumentList(self.request, self.data).getListData()
+  def jsonContext(self, data, check, mutator):
+    list_content = GSoCDocumentList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-
-  def context(self):
+  def context(self, data, check, mutator):
     return {
-        'page_name': "Documents for %s" % self.data.program.name,
-        'document_list': DocumentList(self.request, self.data),
-        'program_select': ProgramSelect(self.data, 'list_gsoc_documents'),
+        'page_name': "Documents for %s" % data.program.name,
+        'document_list': GSoCDocumentList(data),
+        'program_select': ProgramSelect(data, 'list_gsoc_documents'),
     }

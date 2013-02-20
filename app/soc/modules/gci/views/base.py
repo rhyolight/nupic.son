@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the boiler plate required to construct GCI views."""
+"""Module containing the boilerplate required to construct GCI views."""
 
 import httplib
 
@@ -28,40 +28,41 @@ from soc.modules.gci.views.helper import request_data
 class GCIRequestHandler(base.RequestHandler):
   """Customization required by GCI to handle HTTP requests."""
 
-  def render(self, template_path, context):
+  def render(self, data, template_path, context):
     """Renders the page using the specified context.
 
     See soc.views.base.RequestHandler for specification.
 
     The context object is extended with the following values:
       base_layout: path to the base template.
-      header: a rendered header.Header template for the current self.data
-      mainmenu: a rendered site_menu.MainMenu template for the current self.data
-      footer: a rendered site_menu.Footer template for the current self.data
+      header: a rendered header.Header template for the passed data.
+      mainmenu: a rendered site_menu.MainMenu template for the passed data.
+      footer: a rendered site_menu.Footer template for the passed data.
     """
     context['base_layout'] = 'v2/modules/gci/base.html'
-    if self.data.user:
-      context['status'] = base_templates.Status(self.data)
-    context['header'] = base_templates.Header(self.data)
-    context['mainmenu'] = base_templates.MainMenu(self.data)
-    context['footer'] = base_templates.Footer(self.data)
-    return super(GCIRequestHandler, self).render(template_path, context)
+    if data.user:
+      context['status'] = base_templates.Status(data)
+    context['header'] = base_templates.Header(data)
+    context['mainmenu'] = base_templates.MainMenu(data)
+    context['footer'] = base_templates.Footer(data)
+    return super(GCIRequestHandler, self).render(data, template_path, context)
 
   def init(self, request, args, kwargs):
-    self.data = request_data.RequestData(request, args, kwargs)
-    self.redirect = self.data.redirect
-    if self.data.is_developer:
-      self.mutator = access_checker.DeveloperMutator(self.data)
-      self.check = access_checker.DeveloperAccessChecker(self.data)
+    """See base.RequestHandler.init for specification."""
+    data = request_data.RequestData(request, args, kwargs)
+    if data.is_developer:
+      mutator = access_checker.DeveloperMutator(data)
+      check = access_checker.DeveloperAccessChecker(data)
     else:
-      self.mutator = access_checker.Mutator(self.data)
-      self.check = access_checker.AccessChecker(self.data)
-    super(GCIRequestHandler, self).init(request, args, kwargs)
+      mutator = access_checker.Mutator(data)
+      check = access_checker.AccessChecker(data)
+    return data, check, mutator
 
-  def error(self, status, message=None):
+  def error(self, data, status, message=None):
     """See base.RequestHandler.error for specification."""
-    if not self.data.program:
-      return super(GCIRequestHandler, self).error(status, message)
+    if not data.program:
+      return super(GCIRequestHandler, self).error(
+          data, status, message=message)
 
     # If message is not set, set it to the default associated with the
     # given status (such as "Method Not Allowed" or "Service Unavailable").
@@ -74,4 +75,4 @@ class GCIRequestHandler(base.RequestHandler):
     }
 
     return http.HttpResponse(
-        content=self.render(template_path, context), status=status)
+        content=self.render(data, template_path, context), status=status)

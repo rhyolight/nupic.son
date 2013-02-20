@@ -16,6 +16,8 @@
 
 from google.appengine.ext import db
 
+from django import http
+
 from soc.models.user import User
 from soc.views import readonly_template
 from soc.views.helper import url_patterns
@@ -82,8 +84,7 @@ class HostActions(Template):
 
 
 class BanProfilePost(object):
-  """Handles banning/unbanning of profiles.
-  """
+  """Handles banning/unbanning of profiles."""
 
   def djangoURLPatterns(self):
     return [
@@ -93,15 +94,17 @@ class BanProfilePost(object):
              self, name=self._getURLName()),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
-    self.mutator.profileFromKwargs()
+  def checkAccess(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.checkAccess for specification."""
+    check.isHost()
+    mutator.profileFromKwargs()
 
-  def post(self):
-    assert isSet(self.data.url_profile)
+  def post(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.post for specification."""
+    assert isSet(data.url_profile)
 
-    value = self.data.POST.get('value')
-    profile_key = self.data.url_profile.key()
+    value = data.POST.get('value')
+    profile_key = data.url_profile.key()
 
     def banProfileTxn(value):
       profile_model = self._getProfileModel()
@@ -114,6 +117,8 @@ class BanProfilePost(object):
         profile.put()
 
     db.run_in_transaction(banProfileTxn, value)
+
+    return http.HttpResponse()
 
   def _getModulePrefix(self):
     raise NotImplementedError
@@ -129,21 +134,22 @@ class BanProfilePost(object):
 
 
 class ProfileShowPage(object):
-  """View to display the read-only profile page.
-  """
+  """View to display the read-only profile page."""
 
-  def checkAccess(self):
-    self.check.isLoggedIn()
-    self.check.hasProfile()
+  def checkAccess(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.checkAccess for specification."""
+    check.isLoggedIn()
+    check.hasProfile()
 
-  def context(self):
-    assert isSet(self.data.program)
-    assert isSet(self.data.user)
+  def context(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.context for specification."""
+    assert isSet(data.program)
+    assert isSet(data.user)
 
-    profile = self._getProfile()
-    program = self.data.program
+    profile = self._getProfile(data)
+    program = data.program
 
-    user_template = self._getUserReadOnlyTemplate(self.data.user)
+    user_template = self._getUserReadOnlyTemplate(data.user)
     profile_template = self._getProfileReadOnlyTemplate(profile)
     css_prefix = profile_template.Meta.css_prefix
 
@@ -161,7 +167,7 @@ class ProfileShowPage(object):
   def _getProfileReadOnlyTemplate(self, profile):
     raise NotImplementedError
 
-  def _getProfile(self):
+  def _getProfile(self, data):
     """Returns the profile entity whose information should be displayed.
 
     Some subclasses of this class like profile pages that admin have access
@@ -169,6 +175,12 @@ class ProfileShowPage(object):
     subclasses should be able to use the profile entity that it needs
     depending on the view it is rendering. So this method provides the
     required abstraction which can be overridden in the subclasses.
+
+    Args:
+      data: A RequestData describing the current request.
+
+    Returns:
+      The profile entity whose information should be displayed.
     """
-    assert isSet(self.data.profile)
-    return self.data.profile
+    assert isSet(data.profile)
+    return data.profile

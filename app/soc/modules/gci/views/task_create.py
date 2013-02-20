@@ -296,80 +296,83 @@ class TaskCreatePage(GCIRequestHandler):
             self, name='gci_edit_task'),
     ]
 
-  def checkAccess(self):
-    self.mutator.taskFromKwargsIfId()
+  def checkAccess(self, data, check, mutator):
+    mutator.taskFromKwargsIfId()
 
-    self.check.isLoggedIn()
+    check.isLoggedIn()
 
-    assert access_checker.isSet(self.data.task)
+    assert access_checker.isSet(data.task)
 
-    if self.data.task:
-      self.check.checkCanUserEditTask()
-      self.check.checkTimelineAllowsTaskEditing()
+    if data.task:
+      check.checkCanUserEditTask()
+      check.checkTimelineAllowsTaskEditing()
 
       # Set full_edit status depending on the task status
-      self.mutator.fullEdit(self.check.hasTaskEditableStatus())
+      mutator.fullEdit(check.hasTaskEditableStatus())
     else:
-      self.check.canCreateTask()
+      check.canCreateTask()
 
   def templatePath(self):
     return 'v2/modules/gci/task_create/base.html'
 
-  def context(self):
-    if self.data.task:
-      page_name = "Edit task - %s" % (self.data.task.title)
+  def context(self, data, check, mutator):
+    if data.task:
+      page_name = "Edit task - %s" % data.task.title
     else:
       page_name = "Create a new task"
 
     return {
       'page_name':  page_name,
-      'task_edit_form_template': TaskEditFormTemplate(self.data),
+      'task_edit_form_template': TaskEditFormTemplate(data),
     }
 
-  def createTaskFromForm(self):
+  def createTaskFromForm(self, data):
     """Creates a new task based on the data inserted in the form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created task entity or None.
     """
-    if self.data.task:
-      if self.data.full_edit:
+    if data.task:
+      if data.full_edit:
         form_class = TaskCreateForm
       else:
         form_class = TaskEditPostClaimForm
 
-      form = form_class(self.data, self.data.POST, instance=self.data.task)
+      form = form_class(data, data.POST, instance=data.task)
     else:
-      form = TaskCreateForm(self.data, self.data.POST)
+      form = TaskCreateForm(data, data.POST)
 
     if not form.is_valid():
       return None
 
-    form.cleaned_data['program'] = self.data.program
+    form.cleaned_data['program'] = data.program
 
     # The creator of the task and all the mentors for the task who have
     # have enabled "Subscribe automatically for the tasks" should be
     # subscribed to this task.
     mentor_keys = form.cleaned_data.get('mentors', None)
     mentor_entities = db.get(mentor_keys)
-    subscribers = mentor_entities + [self.data.profile]
+    subscribers = mentor_entities + [data.profile]
 
     keys = [i.key() for i in subscribers if i.automatic_task_subscription]
 
     form.cleaned_data['subscribers'] = list(set(keys))
 
-    if not self.data.task:
+    if not data.task:
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
 
     return entity
 
-  def post(self):
-    task = self.createTaskFromForm()
+  def post(self, data, check, mutator):
+    task = self.createTaskFromForm(data)
     if task:
-      r = self.redirect.id(id=task.key().id_or_name())
-      return r.to('gci_edit_task', validated=True)
+      data.redirect.id(id=task.key().id_or_name())
+      return data.redirect.to('gci_edit_task', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)

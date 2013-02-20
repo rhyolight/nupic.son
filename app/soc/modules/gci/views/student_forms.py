@@ -15,20 +15,19 @@
 """Module for students in GCI to upload their forms."""
 
 from google.appengine.ext import blobstore
-from google.appengine.dist import httplib
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
 from soc.logic import dicts
-from soc.logic.exceptions import BadRequest
+from soc.logic import exceptions
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.profile import GCIStudentInfo
+from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -111,7 +110,7 @@ class UploadForm(gci_forms.GCIModelForm):
     return student_info
 
 
-class StudentFormUpload(GCIRequestHandler):
+class StudentFormUpload(base.GCIRequestHandler):
   """View for uploading your student forms."""
 
   def djangoURLPatterns(self):
@@ -121,60 +120,58 @@ class StudentFormUpload(GCIRequestHandler):
         url(r'student/forms/%s$' % url_patterns.PROGRAM, self,
             name=url_names.GCI_STUDENT_FORM_UPLOAD)]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Denies access if you are not a student or the program is not running.
     """
-    self.check.isActiveStudent()
-    if self.data.POST:
-      self.check.isProgramRunning()
+    check.isActiveStudent()
+    if data.POST:
+      check.isProgramRunning()
 
   def templatePath(self):
     """Returns the path to the template.
     """
     return 'v2/modules/gci/student_forms/base.html'
 
-  def jsonContext(self):
+  def jsonContext(self, data, check, mutator):
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.redirect.program()
+    data.redirect.program()
 
-    url = self.redirect.urlOf('gci_student_form_upload', secure=True)
+    url = data.redirect.urlOf('gci_student_form_upload', secure=True)
     return {
         'upload_link': blobstore.create_upload_url(url),
         }
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Handles download of the forms otherwise resumes normal rendering."""
-    if 'consent_form' in self.data.GET:
-      download = self.data.student_info.consent_form
-    elif 'student_id_form' in self.data.GET:
-      download = self.data.student_info.student_id_form
+    if 'consent_form' in data.GET:
+      download = data.student_info.consent_form
+    elif 'student_id_form' in data.GET:
+      download = data.student_info.student_id_form
     else:
-      return super(StudentFormUpload, self).get()
+      return super(StudentFormUpload, self).get(data, check, mutator)
 
     # download has been requested
     if download:
       return bs_helper.sendBlob(download)
     else:
-      # TODO(nathaniel): this should probably be some sort of exception
-      # rather than a self-call.
-      return self.error(httplib.NOT_FOUND, message='File not found')
+      raise exceptions.NotFound('File not found')
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
     context = {
         'page_name': 'Student form upload'
         }
 
-    upload_form = UploadForm(self.data, instance=self.data.student_info)
+    upload_form = UploadForm(data, instance=data.student_info)
 
-    if profile_logic.hasStudentFormsUploaded(self.data.student_info):
-      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+    if profile_logic.hasStudentFormsUploaded(data.student_info):
+      kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
       claim_tasks_url = reverse('gci_list_tasks', kwargs=kwargs)
       context['form_instructions'] = CLAIM_TASKS_NOW % claim_tasks_url
     # TODO(ljvderijk): This can be removed when AppEngine supports 200 response
     # in the BlobStore API.
-    if self.data.GET:
-      for key, error in self.data.GET.iteritems():
+    if data.GET:
+      for key, error in data.GET.iteritems():
         if not key.startswith('error_'):
           continue
         field_name = key.split('error_', 1)[1]
@@ -184,15 +181,15 @@ class StudentFormUpload(GCIRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles POST requests for the bulk create page."""
     form = UploadForm(
-        self.data, data=self.data.POST, instance=self.data.student_info,
-        files=self.data.request.file_uploads)
+        data, data=data.POST, instance=data.student_info,
+        files=data.request.file_uploads)
 
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blobs from the cloud
-      for f in self.data.request.file_uploads.itervalues():
+      for f in data.request.file_uploads.itervalues():
         f.delete()
 
       # since this is a file upload we must return a 300 response
@@ -200,25 +197,25 @@ class StudentFormUpload(GCIRequestHandler):
       for field, error in form.errors.iteritems():
         extra_args.append('error_%s=%s' %(field, error.as_text()))
 
-      return self.data.redirect.to('gci_student_form_upload', extra=extra_args)
+      return data.redirect.to('gci_student_form_upload', extra=extra_args)
 
     # delete existing data
     cleaned_data = form.cleaned_data
-    for field_name in self.data.request.file_uploads.keys():
+    for field_name in data.request.file_uploads.keys():
       if field_name in cleaned_data:
-        existing = getattr(self.data.student_info, field_name)
+        existing = getattr(data.student_info, field_name)
         if existing:
           existing.delete()
 
     form.save()
 
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.redirect.program()
+    data.redirect.program()
 
-    return self.redirect.to('gci_student_form_upload')
+    return data.redirect.to('gci_student_form_upload')
 
 
-class StudentFormDownload(GCIRequestHandler):
+class StudentFormDownload(base.GCIRequestHandler):
   """View for uploading your student forms."""
 
   def djangoURLPatterns(self):
@@ -227,24 +224,22 @@ class StudentFormDownload(GCIRequestHandler):
         url(r'student/forms/%s$' % url_patterns.PROFILE, self,
             name=url_names.GCI_STUDENT_FORM_DOWNLOAD)]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Denies access if you are not a host."""
-    self.check.isHost()
-    self.mutator.studentFromKwargs()
+    check.isHost()
+    mutator.studentFromKwargs()
 
-  def get(self):
+  def get(self, data, check, mutator):
     """Allows hosts to download the student forms."""
-    if url_names.CONSENT_FORM_GET_PARAM in self.data.GET:
-      download = self.data.url_student_info.consent_form
-    elif url_names.STUDENT_ID_FORM_GET_PARAM in self.data.GET:
-      download = self.data.url_student_info.student_id_form
+    if url_names.CONSENT_FORM_GET_PARAM in data.GET:
+      download = data.url_student_info.consent_form
+    elif url_names.STUDENT_ID_FORM_GET_PARAM in data.GET:
+      download = data.url_student_info.student_id_form
     else:
-      raise BadRequest('No file requested')
+      raise exceptions.BadRequest('No file requested')
 
     # download has been requested
     if download:
       return bs_helper.sendBlob(download)
     else:
-      # TODO(nathaniel): This should probably be some sort of exception
-      # rather than a self-call.
-      return self.error(httplib.NOT_FOUND, 'File not found')
+      raise exceptions.NotFound('File not found')

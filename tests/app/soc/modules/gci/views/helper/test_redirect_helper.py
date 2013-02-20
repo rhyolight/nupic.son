@@ -24,17 +24,16 @@ from tests.test_utils import MockRequest
 
 
 class RedirectHelperTest(GCITestCase):
-  """Unit tests for RedirectHelper class.
-  """
+  """Unit tests for RedirectHelper class."""
 
   def setUp(self):
     self.init()
     request = MockRequest(path="/")
 
     self.handler = GCIRequestHandler()
-    self.handler.init(request, (), {})
+    data, _, _ = self.handler.init(request, (), {})
 
-    self.redirect = self.handler.redirect
+    self.redirect = data.redirect
 
   def testProgram(self):
     expected = {

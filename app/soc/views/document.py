@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the template for documents.
-"""
-
+"""Module containing the template for documents."""
 
 from soc.views.template import Template
 from soc.logic.helper import prefixes
@@ -63,11 +59,9 @@ def validateForm(data, document_form):
 
 
 class DocumentList(Template):
-  """Template for list of documents.
-  """
+  """Template for list of documents."""
 
-  def __init__(self, request, data, edit_name):
-    self.request = request
+  def __init__(self, data, edit_name):
     self.data = data
     r = data.redirect
 
@@ -95,13 +89,13 @@ class DocumentList(Template):
     }
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       q = soc.models.document.Document.all()
       q.filter('scope', self.data.program)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, q, lists.keyStarter)
+          self.data.request, self._list_config, q, lists.keyStarter)
 
       return response_builder.build()
     else:

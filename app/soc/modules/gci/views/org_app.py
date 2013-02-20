@@ -35,8 +35,7 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 class GCIOrgAppEditPage(GCIRequestHandler):
-  """View for creating/editing organization application.
-  """
+  """View for creating/editing organization application."""
 
   def djangoURLPatterns(self):
     return [
@@ -44,71 +43,71 @@ class GCIOrgAppEditPage(GCIRequestHandler):
              self, name='gci_edit_org_app'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/edit.html'
 
-  def context(self):
-    if self.data.org_app:
-      form = gci_forms.OrgAppEditForm(
-          self.data.POST or None, instance=self.data.org_app)
+  def context(self, data, check, mutator):
+    if data.org_app:
+      form = gci_forms.OrgAppEditForm(data.POST or None, instance=data.org_app)
     else:
-      form = gci_forms.OrgAppEditForm(self.data.POST or None)
+      form = gci_forms.OrgAppEditForm(data.POST or None)
 
-    if self.data.org_app:
-      page_name = ugettext('Edit - %s' % (self.data.org_app.title))
+    if data.org_app:
+      page_name = ugettext('Edit - %s' % data.org_app.title)
     else:
       page_name = 'Create new organization application'
 
     context = {
         'page_name': page_name,
-        'post_url': self.linker.program(
-            self.data.program, 'gci_edit_org_app'),
+        'post_url': self.linker.program(data.program, 'gci_edit_org_app'),
         'forms': [form],
         'error': bool(form.errors),
         }
 
     return context
 
-  def orgAppFromForm(self):
+  def orgAppFromForm(self, data):
     """Create/edit the organization application entity from form.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated organization application entity or None.
     """
-    if self.data.org_app:
-      form = gci_forms.OrgAppEditForm(
-          self.data.POST, instance=self.data.org_app)
+    if data.org_app:
+      form = gci_forms.OrgAppEditForm(data.POST, instance=data.org_app)
     else:
-      form = gci_forms.OrgAppEditForm(self.data.POST)
+      form = gci_forms.OrgAppEditForm(data.POST)
 
     if not form.is_valid():
       return None
 
-    form.cleaned_data['modified_by'] = self.data.user
+    form.cleaned_data['modified_by'] = data.user
 
-    if not self.data.org_app:
-      form.cleaned_data['created_by'] = self.data.user
-      form.cleaned_data['program'] = self.data.program
-      key_name = 'gci_program/%s/orgapp' % self.data.program.key().name()
+    if not data.org_app:
+      form.cleaned_data['created_by'] = data.user
+      form.cleaned_data['program'] = data.program
+      key_name = 'gci_program/%s/orgapp' % data.program.key().name()
       entity = form.create(key_name=key_name, commit=True)
     else:
       entity = form.save(commit=True)
 
     return entity
 
-  def post(self):
-    org_app = self.orgAppFromForm()
+  def post(self, data, check, mutator):
+    org_app = self.orgAppFromForm(data)
     if org_app:
       # TODO(nathaniel): make unnecessary this .program() call.
-      self.redirect.program()
+      data.redirect.program()
 
-      return self.redirect.to('gci_edit_org_app', validated=True)
+      return data.redirect.to('gci_edit_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GCIOrgAppPreviewPage(GCIRequestHandler):
@@ -124,18 +123,18 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
              self, name='gci_preview_org_app'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'
 
-  def context(self):
-    form = gci_forms.OrgAppTakeForm(
-        self.data.org_app, self.data.program.org_admin_agreement.content)
+  def context(self, data, check, mutator):
+    form = gci_forms.OrgAppTakeForm(data)
 
     context = {
-        'page_name': '%s' % (self.data.org_app.title),
+        'page_name': '%s' % data.org_app.title,
+        'description': data.org_app.content,
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -144,8 +143,7 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
 
 
 class GCIOrgAppTakePage(GCIRequestHandler):
-  """View for organizations to submit their application.
-  """
+  """View for organizations to submit their application."""
 
   def djangoURLPatterns(self):
     return [
@@ -155,88 +153,85 @@ class GCIOrgAppTakePage(GCIRequestHandler):
              self, name='gci_retake_org_app'),
     ]
 
-  def checkAccess(self):
-    if not self.data.org_app:
+  def checkAccess(self, data, check, mutator):
+    if not data.org_app:
       raise exceptions.NotFound(
-          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+          access_checker.DEF_NO_ORG_APP % data.program.name)
 
-    self.mutator.orgAppRecordIfIdInKwargs()
-    assert access_checker.isSet(self.data.org_app)
+    mutator.orgAppRecordIfIdInKwargs()
+    assert access_checker.isSet(data.org_app)
 
     # FIXME: There will never be organization in kwargs
     show_url = None
-    if 'organization' in self.kwargs:
+    if 'organization' in data.kwargs:
       # TODO(nathaniel): make this .organization() call unnecessary. Like,
       # more than it already is (see the note above).
-      self.data.redirect.organization()
+      data.redirect.organization()
 
-      show_url = self.data.redirect.urlOf('gci_show_org_app')
+      show_url = data.redirect.urlOf('gci_show_org_app')
 
-    self.check.isSurveyActive(self.data.org_app, show_url)
+    check.isSurveyActive(data.org_app, show_url)
 
-    if self.data.org_app_record:
-      self.check.canRetakeOrgApp()
+    if data.org_app_record:
+      check.canRetakeOrgApp()
     else:
-      self.check.canTakeOrgApp()
+      check.canTakeOrgApp()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/take.html'
 
-  def _getTOSContent(self):
-    return self.data.program.org_admin_agreement.content if \
-        self.data.program.org_admin_agreement else ''
-
-  def context(self):
-    if self.data.org_app_record:
-      form = gci_forms.OrgAppTakeForm(self.data.org_app, self._getTOSContent(),
-          self.data.POST or None, instance=self.data.org_app_record)
+  def context(self, data, check, mutator):
+    if data.org_app_record:
+      form = gci_forms.OrgAppTakeForm(
+          data, data.POST or None, instance=data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(self.data.org_app, self._getTOSContent(),
-          self.data.POST or None)
+      form = gci_forms.OrgAppTakeForm(data, data.POST or None)
 
     context = {
-        'page_name': '%s' % (self.data.org_app.title),
+        'page_name': '%s' % data.org_app.title,
+        'description': data.org_app.content,
         'forms': [form],
         'error': bool(form.errors),
         }
 
     return context
 
-  def recordOrgAppFromForm(self):
+  def recordOrgAppFromForm(self, data):
     """Create/edit a new student evaluation record based on the form input.
+
+    Args:
+      data: A RequestData describing the current request.
 
     Returns:
       a newly created or updated evaluation record entity or None
     """
-    if self.data.org_app_record:
+    if data.org_app_record:
       form = gci_forms.OrgAppTakeForm(
-          self.data.org_app, self._getTOSContent(),
-          self.data.POST, instance=self.data.org_app_record)
+          data, data.POST, instance=data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(
-          self.data.org_app, self._getTOSContent(), self.data.POST)
+      form = gci_forms.OrgAppTakeForm(data, data.POST)
 
     if not form.is_valid():
       return None
 
-    if not self.data.org_app_record:
-      form.cleaned_data['user'] = self.data.user
-      form.cleaned_data['main_admin'] = self.data.user
-      form.cleaned_data['survey'] = self.data.org_app
+    if not data.org_app_record:
+      form.cleaned_data['user'] = data.user
+      form.cleaned_data['main_admin'] = data.user
+      form.cleaned_data['survey'] = data.org_app
       entity = form.create(commit=True)
     else:
       entity = form.save(commit=True)
 
     return entity
 
-  def post(self):
-    org_app_record = self.recordOrgAppFromForm()
+  def post(self, data, check, mutator):
+    org_app_record = self.recordOrgAppFromForm(data)
     if org_app_record:
-      r = self.redirect.id(org_app_record.key().id())
-      return r.to('gci_retake_org_app', validated=True)
+      data.redirect.id(org_app_record.key().id())
+      return data.redirect.to('gci_retake_org_app', validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
@@ -254,31 +249,31 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
              self, name=url_names.GCI_LIST_ORG_APP_RECORDS)
          ]
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Edits records from commands received by the list code."""
-    post_data = self.request.POST
+    post_dict = data.request.POST
 
-    self.data.redirect.program()
+    data.redirect.program()
 
-    if (post_data.get('process', '') ==
+    if (post_dict.get('process', '') ==
         org_app.PROCESS_ORG_APPS_FORM_BUTTON_VALUE):
       mapreduce_control.start_map('ProcessOrgApp', {
           'program_type': 'gci',
-          'program_key': self.data.program.key().name()
+          'program_key': data.program.key().name()
           })
-      return self.redirect.to(
+      return data.redirect.to(
           url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
 
-    if not post_data.get('button_id', None) == 'save':
+    if post_dict.get('button_id', None) != 'save':
       raise exceptions.BadRequest('No valid POST data found')
 
-    data = self.data.POST.get('data')
-    if not data:
+    post_data = post_dict.get('data')
+    if not post_data:
       raise exceptions.BadRequest('Missing data')
 
-    parsed = simplejson.loads(data)
-    self.data.redirect.program()
-    url = self.data.redirect.urlOf('create_gci_org_profile', full=True)
+    parsed = simplejson.loads(post_data)
+    data.redirect.program()
+    url = data.redirect.urlOf('create_gci_org_profile', full=True)
 
     for oaid, properties in parsed.iteritems():
       record = OrgAppRecord.get_by_id(long(oaid))
@@ -287,13 +282,13 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
         logging.warning('%s is an invalid OrgAppRecord ID' % oaid)
         continue
 
-      if record.survey.key() != self.data.org_app.key():
+      if record.survey.key() != data.org_app.key():
         logging.warning(
             '%s is not a record for the Org App in the URL' % record.key())
         continue
 
       new_status = properties['status']
-      org_app_logic.setStatus(self.data, record, new_status, url)
+      org_app_logic.setStatus(data, record, new_status, url)
 
     return http.HttpResponse()
 
@@ -313,21 +308,21 @@ class GCIOrgAppShowPage(GCIRequestHandler):
             self, name='gci_show_org_app'),
     ]
 
-  def checkAccess(self):
-    if not self.data.org_app:
+  def checkAccess(self, data, check, mutator):
+    if not data.org_app:
       raise exceptions.NotFound(
-          access_checker.DEF_NO_ORG_APP % self.data.program.name)
+          access_checker.DEF_NO_ORG_APP % data.program.name)
 
-    self.mutator.orgAppRecordIfIdInKwargs()
-    assert access_checker.isSet(self.data.org_app_record)
+    mutator.orgAppRecordIfIdInKwargs()
+    assert access_checker.isSet(data.org_app_record)
 
-    self.check.canViewOrgApp()
+    check.canViewOrgApp()
 
   def templatePath(self):
     return 'v2/modules/gci/org_app/show.html'
 
-  def context(self):
-    record = self.data.org_app_record
+  def context(self, data, check, mutator):
+    record = data.org_app_record
 
     context = {
         'page_name': 'Organization application - %s' % (record.name),

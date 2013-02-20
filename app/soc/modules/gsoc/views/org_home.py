@@ -38,8 +38,7 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 
 class Apply(Template):
-  """Apply template.
-  """
+  """Apply template."""
 
   def __init__(self, data, current_timeline):
     self.data = data
@@ -138,16 +137,14 @@ class Contact(Template):
 
 
 class ProjectList(Template):
-  """Template for list of student projects accepted under the organization.
-  """
+  """Template for list of student projects accepted under the organization."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
 
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addPlainTextColumn('student', 'Student',
@@ -179,7 +176,7 @@ class ProjectList(Template):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == 0:
       list_query = project_logic.getAcceptedProjectsQuery(
           program=self.data.program, org=self.data.organization)
@@ -189,7 +186,7 @@ class ProjectList(Template):
           GSoCProject, [],  ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
+          self.data.request, self._list_config, list_query,
           starter, prefetcher=prefetcher)
       return response_builder.build()
     else:
@@ -231,15 +228,13 @@ class GSoCHostActions(HostActions):
 
 
 class OrgHome(GSoCRequestHandler):
-  """View methods for Organization Home page.
-  """
+  """View methods for Organization Home page."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_home/base.html'
 
   def djangoURLPatterns(self):
-    """Returns the list of tuples for containing URL to view method mapping.
-    """
+    """Returns the list of tuples for containing URL to view method mapping."""
 
     return [
         url(r'org/%s$' % url_patterns.ORG, self,
@@ -250,37 +245,32 @@ class OrgHome(GSoCRequestHandler):
         django_url(r'^org/home/%s$' % url_patterns.ORG, self),
     ]
 
-  def checkAccess(self):
-    """Access checks for GSoC Organization Homepage.
-    """
+  def checkAccess(self, data, check, mutator):
+    """Access checks for GSoC Organization Homepage."""
     pass
 
-  def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    assert isSet(self.data.organization)
-    list_content = ProjectList(self.request, self.data).getListData()
+  def jsonContext(self, data, check, mutator):
+    """Handler for JSON requests."""
+    assert isSet(data.organization)
+    list_content = ProjectList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-
-
-  def context(self):
-    """Handler to for GSoC Organization Home page HTTP get request.
-    """
+  def context(self, data, check, mutator):
+    """Handler to for GSoC Organization Home page HTTP get request."""
     current_timeline = self.getCurrentTimeline(
-        self.data.program_timeline, self.data.org_app)
+        data.program_timeline, data.org_app)
 
-    assert isSet(self.data.organization)
-    organization = self.data.organization
+    assert isSet(data.organization)
+    organization = data.organization
 
     context = {
         'page_name': '%s - Homepage' % organization.short_name,
         'organization': organization,
-        'contact': Contact(self.data),
-        'apply': Apply(self.data, current_timeline),
+        'contact': Contact(data),
+        'apply': Apply(data, current_timeline),
     }
 
     ideas = organization.ideas
@@ -289,28 +279,29 @@ class OrgHome(GSoCRequestHandler):
       context['ideas_link'] = ideas
       context['ideas_link_trimmed'] = url_helper.trim_url_to(ideas, 50)
 
-    if self.data.orgAdminFor(organization):
-      r = self.redirect
-      r.organization(organization)
-      context['edit_link'] =  r.urlOf('edit_gsoc_org_profile')
-      context['start_connection_link'] = r.urlOf(
+    if data.orgAdminFor(organization):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      data.redirect.organization(organization=organization)
+
+      context['edit_link'] = data.redirect.urlOf('edit_gsoc_org_profile')
+      context['start_connection_link'] = data.redirect.urlOf(
           url_names.GSOC_ORG_CONNECTION)
 
-      if (self.data.program.allocations_visible and
-          self.data.timeline.beforeStudentsAnnounced()):
+      if (data.program.allocations_visible and
+          data.timeline.beforeStudentsAnnounced()):
         # TODO(nathaniel): make this .organization call unnecessary.
-        self.redirect.organization(organization=organization)
+        data.redirect.organization(organization=organization)
 
-        context['slot_transfer_link'] = self.redirect.urlOf(
+        context['slot_transfer_link'] = data.redirect.urlOf(
             'gsoc_slot_transfer')
 
-    if self.data.timeline.studentsAnnounced():
+    if data.timeline.studentsAnnounced():
       context['students_announced'] = True
 
-      context['project_list'] = ProjectList(self.request, self.data)
+      context['project_list'] = ProjectList(data)
 
-    if self.data.is_host or accounts.isDeveloper():
-      context['host_actions'] = GSoCHostActions(self.data)
+    if data.is_host or accounts.isDeveloper():
+      context['host_actions'] = GSoCHostActions(data)
 
     return context
 

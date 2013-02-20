@@ -83,28 +83,27 @@ class DashboardPage(GCIRequestHandler):
          self, name='gci_admin_dashboard'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/admin/base.html'
 
-  def context(self):
-    """Context for dashboard page.
-    """
+  def context(self, data, check, mutator):
+    """Context for dashboard page."""
     dashboards = []
 
-    dashboards.append(MainDashboard(self.request, self.data))
-    dashboards.append(ProgramSettingsDashboard(self.request, self.data))
-    dashboards.append(OrgDashboard(self.request, self.data))
-    dashboards.append(ParticipantsDashboard(self.request, self.data))
+    dashboards.append(MainDashboard(data))
+    dashboards.append(ProgramSettingsDashboard(data))
+    dashboards.append(OrgDashboard(data))
+    dashboards.append(ParticipantsDashboard(data))
 
     return {
         'dashboards': dashboards,
         'page_name': 'Admin dashboard',
     }
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles a post request.
 
     Do nothing, since toggle button posting to this handler
@@ -114,17 +113,15 @@ class DashboardPage(GCIRequestHandler):
 
 
 class MainDashboard(Dashboard):
-  """Dashboard for admin's main-dashboard
-  """
+  """Dashboard for admin's main-dashboard."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MainDashboard, self).__init__(request, data)
+    super(MainDashboard, self).__init__(data)
 
   def context(self):
     """Returns the context of main dashboard.
@@ -132,9 +129,9 @@ class MainDashboard(Dashboard):
     r = self.data.redirect
     r.program()
 
-    program_settings = ProgramSettingsDashboard(self.request, self.data)
-    organizations = OrgDashboard(self.request, self.data)
-    participants = ParticipantsDashboard(self.request, self.data)
+    program_settings = ProgramSettingsDashboard(self.data)
+    organizations = OrgDashboard(self.data)
+    participants = ParticipantsDashboard(self.data)
 
     subpages = [
         {
@@ -181,11 +178,10 @@ class ProgramSettingsDashboard(Dashboard):
   """Dashboard for admin's program-settings-dashboard
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -198,7 +194,7 @@ class ProgramSettingsDashboard(Dashboard):
                 'Edit your program settings such as information, slots, '
                 'documents, etc.'),
             'title': 'Edit program settings',
-            'link': r.urlOf('edit_gci_program')
+            'link': r.urlOf(url_names.GCI_PROGRAM_EDIT)
         },
         {
             'name': 'edit_timeline',
@@ -225,7 +221,7 @@ class ProgramSettingsDashboard(Dashboard):
         },
     ]
 
-    super(ProgramSettingsDashboard, self).__init__(request, data, subpages)
+    super(ProgramSettingsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of program settings dashboard.
@@ -251,11 +247,10 @@ class OrgDashboard(Dashboard):
   This page includes links for Org app surveys, mentoring org info, etc.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -315,7 +310,7 @@ class OrgDashboard(Dashboard):
         },
     ]
 
-    super(OrgDashboard, self).__init__(request, data, subpages)
+    super(OrgDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of organization dashboard.
@@ -339,11 +334,10 @@ class ParticipantsDashboard(Dashboard):
   """Dashboard for admin's all participants dashboard
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
     r = data.redirect
@@ -373,7 +367,7 @@ class ParticipantsDashboard(Dashboard):
         },
     ]
 
-    super(ParticipantsDashboard, self).__init__(request, data, subpages)
+    super(ParticipantsDashboard, self).__init__(data, subpages)
 
   def context(self):
     """Returns the context of participants dashboard.
@@ -403,30 +397,30 @@ class LookupLinkIdPage(GCIRequestHandler):
          self, name='lookup_gci_profile'),
     ]
 
-  def checkAccess(self):
-    self.check.isHost()
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
 
   def templatePath(self):
     return 'v2/modules/gci/admin/lookup.html'
 
-  def post(self):
+  def post(self, data, check, mutator):
     # TODO(nathaniel): problematic self-call.
-    return self.get()
+    return self.get(data, check, mutator)
 
-  def context(self):
-    form = LookupForm(self.data, self.data.POST or None)
+  def context(self, data, check, mutator):
+    form = LookupForm(data, data.POST or None)
     error = bool(form.errors)
 
     forms = [form]
     profile = None
 
-    if not form.errors and self.data.request.method == 'POST':
+    if not form.errors and data.request.method == 'POST':
       profile = form.cleaned_data.get('profile')
 
     if profile:
       # TODO(nathaniel): setting redirection in a context() method?
-      self.redirect.profile(profile.link_id)
-      self.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN, secure=True)
+      data.redirect.profile(profile.link_id)
+      data.redirect.to(url_names.GCI_PROFILE_SHOW_ADMIN, secure=True)
 
     return {
       'forms': forms,

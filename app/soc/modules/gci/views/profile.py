@@ -59,13 +59,15 @@ SCHOOL_NAME_HELP_TEXT = ugettext(
 GCI_PROFILE_EXCLUDE = ['automatic_task_subscription', 'notify_comments',
                        'photo_url']
 
+GCI_STUDENT_EXCLUDE = ['is_winner', 'winner_for']
+
 PROFILE_EXCLUDE = profile.PROFILE_EXCLUDE + GCI_PROFILE_EXCLUDE
 
 PREFILL_PROFILE_EXCLUDE = profile.PREFILL_PROFILE_EXCLUDE + GCI_PROFILE_EXCLUDE
 
-STUDENT_EXCLUDE = PROFILE_EXCLUDE
+STUDENT_EXCLUDE = PROFILE_EXCLUDE + GCI_STUDENT_EXCLUDE
 
-PREFILL_STUDENT_EXCLUDE = PREFILL_PROFILE_EXCLUDE
+PREFILL_STUDENT_EXCLUDE = PREFILL_PROFILE_EXCLUDE + GCI_STUDENT_EXCLUDE
 
 SHOW_STUDENT_EXCLUDE = STUDENT_EXCLUDE + [
     'birth_date',
@@ -256,7 +258,7 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
         'number_of_completed_tasks', 'task_closed', 'parental_form_mail',
         'consent_form', 'consent_form_verified', 'consent_form_two',
         'student_id_form', 'major', 'student_id_form_verified', 'degree',
-        'school', 'school_type', 'program',
+        'school', 'school_type', 'program', 'is_winner', 'winner_for'
     ]
     widgets = forms.choiceWidgets(
         model, ['school_country', 'school_type', 'degree'])
@@ -268,35 +270,35 @@ class GCIStudentInfoForm(gci_forms.GCIModelForm):
 class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
   """View for the GCI participant profile."""
 
-  def checkAccess(self):
-    self.check.isProgramVisible()
-    self.check.isProgramRunning()
+  def checkAccess(self, data, check, mutator):
+    check.isProgramVisible()
+    check.isProgramRunning()
 
-    if 'role' in self.data.kwargs:
-      role = self.data.kwargs['role']
-      kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+    if 'role' in data.kwargs:
+      role = data.kwargs['role']
+      kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
       edit_url = reverse('edit_gci_profile', kwargs=kwargs)
       if role == 'student':
-        self.check.canApplyStudent(edit_url)
+        check.canApplyStudent(edit_url)
       else:
-        self.check.isLoggedIn()
-        self.check.canApplyNonStudent(role, edit_url)
+        check.isLoggedIn()
+        check.canApplyNonStudent(role, edit_url)
     else:
-      self.check.isProfileActive()
+      check.isProfileActive()
 
   def templatePath(self):
     return 'v2/modules/gci/profile/base.html'
 
-  def context(self):
-    context = super(GCIProfilePage, self).context()
+  def context(self, data, check, mutator):
+    context = super(GCIProfilePage, self).context(data, check, mutator)
 
-    if self.isCreateProfileRequest():
-      if self.isStudentRequest():
+    if self.isCreateProfileRequest(data):
+      if self.isStudentRequest(data):
         context['form_instructions'] = PARENTAL_CONSENT_ADVICE
     else:
-      if self.data.is_student and \
-          not profile_logic.hasStudentFormsUploaded(self.data.student_info):
-        kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
+      if data.is_student and \
+          not profile_logic.hasStudentFormsUploaded(data.student_info):
+        kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
         upload_forms_url = reverse(
             url_names.GCI_STUDENT_FORM_UPLOAD, kwargs=kwargs)
 
@@ -305,40 +307,39 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for HTTP POST request.
 
     Based on the action, the request is dispatched to a specific handler.
     """
-    if 'delete_account' in self.data.POST:
-      return self.deleteAccountPostAction()
+    if 'delete_account' in data.POST:
+      return self.deleteAccountPostAction(data)
     else: # regular POST request
-      return self.editProfilePostAction()
+      return self.editProfilePostAction(data, check, mutator)
 
-  def deleteAccountPostAction(self):
+  def deleteAccountPostAction(self, data):
     """Handler for Delete Account POST action."""
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.redirect.program()
+    data.redirect.program()
 
-    return self.redirect.to('gci_delete_account', secure=True)
+    return data.redirect.to('gci_delete_account', secure=True)
 
-  def editProfilePostAction(self):
+  def editProfilePostAction(self, data, check, mutator):
     """Handler for regular (edit/create profile) POST action."""
-    if not self.validate():
+    if not self.validate(data):
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
-    org_id = self.data.GET.get('new_org')
+    org_id = data.GET.get('new_org')
 
     if org_id:
-      create_url = self.linker.program(
-          self.data.program, 'create_gci_org_profile')
+      create_url = self.linker.program(data.program, 'create_gci_org_profile')
       raise RedirectRequest(create_url + '?org_id=' + org_id)
     else:
       # TODO(nathaniel): make this .program() call unnecessary.
-      self.redirect.program()
+      data.redirect.program()
 
-      return self.redirect.to(
+      return data.redirect.to(
           self._getEditProfileURLName(), validated=True, secure=True)
 
   def _getModulePrefix(self):
@@ -356,36 +357,35 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
   def _getCreateProfileURLPattern(self):
     return url_patterns.CREATE_PROFILE
 
-  def _getCreateUserForm(self):
-    return GCIUserForm(self.data.POST or None)
+  def _getCreateUserForm(self, data):
+    return GCIUserForm(data.POST or None)
 
-  def _getEditProfileForm(self, is_student):
+  def _getEditProfileForm(self, data, is_student):
     if is_student:
       form = GCIStudentProfileForm
     else:
       form = GCIProfileForm
-    return form(data=self.data.POST or None,
-        request_data=self.data, instance=self.data.profile)
+    return form(
+        data=data.POST or None, request_data=data, instance=data.profile)
 
-  def _getCreateProfileForm(self, is_student, save=False, prefill_data=False):
+  def _getCreateProfileForm(
+      self, data, is_student, save=False, prefill_data=False):
     if is_student:
       if save:
         form = GCICreateStudentProfileForm
       else:
         form = GCIShowCreateStudentProfileForm
-      if self.data.POST:
-        birth_date = self.data.request.COOKIES.get('age_check')
-        self.data.POST['birth_date'] = birth_date
+      if data.POST:
+        birth_date = data.request.COOKIES.get('age_check')
+        data.POST['birth_date'] = birth_date
     else:
       form = GCICreateProfileForm
 
-    tos_content = self._getTOSContent()
-    return form(tos_content, data=self.data.POST or None,
-                      request_data=self.data)
+    tos_content = self._getTOSContent(data)
+    return form(tos_content, data=data.POST or None, request_data=data)
 
-  def _getNotificationForm(self):
+  def _getNotificationForm(self, data):
     return NotificationForm
 
-  def _getStudentInfoForm(self):
-    return GCIStudentInfoForm(self.data.POST or None,
-                              instance=self.data.student_info)
+  def _getStudentInfoForm(self, data):
+    return GCIStudentInfoForm(data.POST or None, instance=data.student_info)

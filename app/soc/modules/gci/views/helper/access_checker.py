@@ -23,6 +23,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
 from soc.logic import dicts
+from soc.logic import validate
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
@@ -278,7 +279,6 @@ class AccessChecker(access_checker.AccessChecker):
     A user can take the GCI org app if he/she participated in GSoC or GCI as
     a non-student and has a non-student profile for the current program.
     """
-
     # TODO(daniel): make this a program setting - sometimes it may be possible
     # to accept organizations which have not participated before
     self.hasNonStudentProfileInAProgram()
@@ -288,13 +288,8 @@ class AccessChecker(access_checker.AccessChecker):
     msg = DEF_NO_ORG_ADMIN_PROFILE % (
         program.short_name, r.urlOf('create_gci_profile', secure=True))
 
-    q = GCIProfile.all(keys_only=True)
-    q.ancestor(self.data.user)
-    q.filter('scope', self.data.program)
-    q.filter('is_student', False)
-    q.filter('status', 'active')
-    gci_org_admin_profile = q.get()
-    if not gci_org_admin_profile:
+    if not validate.hasNonStudentProfileForProgram(
+        self.data.user, program, GCIProfile):
       raise AccessViolation(msg)
 
   def isOrgAppAccepted(self):

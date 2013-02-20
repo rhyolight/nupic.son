@@ -410,9 +410,15 @@ class GCIProfileHelper(ProfileHelper):
 
     self.createProfile()
 
-    properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
-                  'school': None, 'number_of_completed_tasks': 0,
-                  'program': self.program}
+    properties = {
+        'key_name': self.profile.key().name(),
+        'parent': self.profile,
+        'school': None,
+        'number_of_completed_tasks': 0,
+        'program': self.program,
+        'is_winner': False,
+        'winner_for': None
+    }
     properties.update(kwargs)
 
     self.profile.student_info = self.seed(GCIStudentInfo, properties)

@@ -55,11 +55,10 @@ from soc.modules.gsoc.models.project_survey_record import \
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.score import GSoCScore
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
-
 
 DATETIME_FORMAT = 'Y-m-d H:i:s'
 BIRTHDATE_FORMAT = 'd-m-Y'
@@ -83,8 +82,7 @@ CONN_ROLE_OPTS = [('Org Admin|Mentor', 'All'),
     ('Mentor', 'Mentor'),]
 
 def colorize(choice, yes, no):
-  """Differentiate between yes and no status with green and red colors.
-  """
+  """Differentiate between yes and no status with green and red colors."""
   if choice:
     return """<font color="green">%s</font>""" % yes
   else:
@@ -92,17 +90,15 @@ def colorize(choice, yes, no):
 
 
 class MainDashboard(Dashboard):
-  """ Main dashboard that shows all component dashboard icons
-  """
+  """Main dashboard that shows all component dashboard icons."""
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
     """
-    super(MainDashboard, self).__init__(request, data)
+    super(MainDashboard, self).__init__(data)
     self.subpages = []
 
   def context(self):
@@ -120,26 +116,23 @@ class MainDashboard(Dashboard):
 
 
 class ComponentsDashboard(Dashboard):
-  """Dashboard that holds component list
-  """
+  """Dashboard that holds component list."""
 
-  def __init__(self, request, data, component_property):
+  def __init__(self, data, component_property):
     """Initializes the dashboard.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
       component_property: Component property
     """
-    super(ComponentsDashboard, self).__init__(request, data)
+    super(ComponentsDashboard, self).__init__(data)
     self.name = component_property.get('name')
     self.title = component_property.get('title')
     self.components = [component_property.get('component'),]
     self.backlinks = [component_property.get('backlinks'),]
 
   def context(self):
-    """Returns the context of components dashboard.
-    """
+    """Returns the context of components dashboard."""
     return {
         'title': self.title,
         'name': self.name,
@@ -148,63 +141,50 @@ class ComponentsDashboard(Dashboard):
     }
 
 
-class DashboardPage(GSoCRequestHandler):
-  """View for the participant dashboard.
-  """
+class DashboardPage(base.GSoCRequestHandler):
+  """View for the participant dashboard."""
 
   def djangoURLPatterns(self):
-    """The URL pattern for the dashboard.
-    """
+    """The URL pattern for the dashboard."""
     return [
         url(r'dashboard/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_dashboard')]
 
-  def checkAccess(self):
-    """Denies access if you don't have a role in the current program.
-    """
-    self.check.isLoggedIn()
+  def checkAccess(self, data, check, mutator):
+    """Denies access if you don't have a role in the current program."""
+    check.isLoggedIn()
 
   def templatePath(self):
-    """Returns the path to the template.
-    """
+    """Returns the path to the template."""
     return 'v2/modules/gsoc/dashboard/base.html'
 
-  def jsonContext(self):
-    """Handler for JSON requests.
-    """
-    components = self.components()
-
-    list_content = None
-    for component in components:
+  def jsonContext(self, data, check, mutator):
+    """Handler for JSON requests."""
+    for component in self.components(data):
       list_content = component.getListData()
       if list_content:
-        break
+        return list_content.content()
+    else:
+      raise AccessViolation('You do not have access to this data')
 
-    if not list_content:
-      raise AccessViolation(
-          'You do not have access to this data')
-    return list_content.content()
-
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler for POST requests."""
-    for component in self.components():
+    for component in self.components(data):
       if component.post():
         return http.HttpResponse()
     else:
-      raise AccessViolation(
-          'You cannot change this data')
+      raise AccessViolation('You cannot change this data')
 
-  def context(self):
-    """Handler for default HTTP GET request.
-    """
+  def context(self, data, check, mutator):
+    """Handler for default HTTP GET request."""
     # dashboard container, will hold each component list
     dashboards = []
 
     # main container that contains all component list
-    main = MainDashboard(self.request, self.data)
+    main = MainDashboard(data)
 
     # retrieve active component(s) for currently logged-in user
-    components = self.components()
+    components = self.components(data)
 
     # add components as children of main dashboard and treat the component
     # as dashboard element
@@ -217,7 +197,7 @@ class DashboardPage(GSoCRequestHandler):
           }
       main.addSubpages(c)
 
-      dashboards.append(ComponentsDashboard(self.request, self.data, {
+      dashboards.append(ComponentsDashboard(data, {
           'name': component.context().get('name'),
           'title': component.context().get('title'),
           'component': component,
@@ -227,111 +207,103 @@ class DashboardPage(GSoCRequestHandler):
     dashboards.append(main)
 
     return {
-        'page_name': self.data.program.name,
-        'user_name': self.data.profile.name() if self.data.profile else None,
-        'logged_in_msg': LoggedInMsg(self.data),
-        'program_select': ProgramSelect(self.data, 'gsoc_dashboard'),
+        'page_name': data.program.name,
+        'user_name': data.profile.name() if data.profile else None,
+        'logged_in_msg': LoggedInMsg(data),
+        'program_select': ProgramSelect(data, 'gsoc_dashboard'),
     # TODO(ljvderijk): Implement code for setting dashboard messages.
     #   'alert_msg': 'Default <strong>alert</strong> goes here',
         'dashboards': dashboards,
     }
 
-  def components(self):
-    """Returns the components that are active on the page.
-    """
+  def components(self, data):
+    """Returns the components that are active on the page."""
     components = []
 
-    if self.data.student_info:
-      components += self._getStudentComponents()
-    elif self.data.is_mentor:
-      components.append(TodoComponent(self.request, self.data))
-      components += self._getOrgMemberComponents()
+    if data.student_info:
+      components += self._getStudentComponents(data)
+    elif data.is_mentor:
+      components.append(TodoComponent(data))
+      components += self._getOrgMemberComponents(data)
+      components.append(OrgConnectionComponent(data, False))
     else:
-      components += self._getLoneUserComponents()
+      components += self._getLoneUserComponents(data)
+      components.append(OrgconnectionComponent(data, False))
 
     return components
 
-  def _getStudentComponents(self):
-    """Get the dashboard components for a student.
-    """
+  def _getStudentComponents(self, data):
+    """Get the dashboard components for a student."""
     components = []
 
-    info = self.data.student_info
+    info = data.student_info
 
-    if self.data.is_student and info.number_of_projects:
-      components.append(TodoComponent(self.request, self.data))
+    if data.is_student and info.number_of_projects:
+      components.append(TodoComponent(data))
       # Add a component to show the evaluations
       evals = dictForSurveyModel(
-          ProjectSurvey, self.data.program, ['midterm', 'final'])
-      if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):
-        components.append(MyEvaluationsComponent(
-            self.request, self.data, evals))
+          ProjectSurvey, data.program, ['midterm', 'final'])
+      if evals and data.timeline.afterFirstSurveyStart(evals.values()):
+        components.append(MyEvaluationsComponent(data, evals))
 
       # Add a component to show all the projects
-      components.append(MyProjectsComponent(self.request, self.data))
+      components.append(MyProjectsComponent(data))
 
     # Add all the proposals of this current user
-    components.append(MyProposalsComponent(self.request, self.data))
+    components.append(MyProposalsComponent(data))
 
     return components
 
-  def _getOrgMemberComponents(self):
-    """Get the dashboard components for Organization members.
-    """
+  def _getOrgMemberComponents(self, data):
+    """Get the dashboard components for Organization members."""
     components = []
 
-    component = self._getMyOrgApplicationsComponent()
+    component = self._getMyOrgApplicationsComponent(data)
     if component:
       components.append(component)
 
     components.append(UserConnectionComponent(self.request, self.data))
-
-    evals = dictForSurveyModel(GradingProjectSurvey, self.data.program,
+    evals = dictForSurveyModel(GradingProjectSurvey, data.program,
                                ['midterm', 'final'])
 
-    if (evals and self.data.timeline.afterFirstSurveyStart(evals.values())):
-      components.append(OrgEvaluationsComponent(
-          self.request, self.data, evals))
+    if evals and data.timeline.afterFirstSurveyStart(evals.values()):
+      components.append(OrgEvaluationsComponent(data, evals))
 
-    if self.data.is_mentor:
-      if self.data.timeline.studentsAnnounced():
+    if data.is_mentor:
+      if data.timeline.studentsAnnounced():
         # add a component to show all projects a user is mentoring
-        components.append(
-            ProjectsIMentorComponent(self.request, self.data))
+        components.append(ProjectsIMentorComponent(data))
 
-    orgs = OrganizationsIParticipateInComponent(self.request, self.data)
+    orgs = OrganizationsIParticipateInComponent(data)
 
     # move to the top during student signup
-    if self.data.timeline.studentSignup():
+    if data.timeline.studentSignup():
       components.append(orgs)
 
-    if self.data.timeline.afterStudentSignupStart():
+    if data.timeline.afterStudentSignupStart():
       # Add the submitted proposals component
-      components.append(
-          SubmittedProposalsComponent(self.request, self.data))
+      components.append(SubmittedProposalsComponent(data))
 
-    if self.data.is_org_admin:
+    if data.is_org_admin:
       # add a component for all organization that this user administers
-      components.append(OrgConnectionComponent(self.request, self.data))
-      components.append(ParticipantsComponent(self.request, self.data))
+      components.append(OrgConnectionComponent(data, True))
+      components.append(ParticipantsComponent(data))
 
     # move to the bottom after student signup
-    if not self.data.timeline.studentSignup():
+    if not data.timeline.studentSignup():
       components.append(orgs)
 
-    if self.data.is_org_admin:
+    if data.is_org_admin:
       mentor_evals = dictForSurveyModel(
-          GradingProjectSurvey, self.data.program, ['midterm', 'final'])
+          GradingProjectSurvey, data.program, ['midterm', 'final'])
       student_evals = dictForSurveyModel(
-          ProjectSurvey, self.data.program, ['midterm', 'final'])
-      components.append(
-          MentorEvaluationComponent(self.request, self.data, mentor_evals))
-      components.append(
-          StudentEvaluationComponent(self.request, self.data, student_evals))
+          ProjectSurvey, data.program, ['midterm', 'final'])
+      components.append(MentorEvaluationComponent(data, mentor_evals))
+      components.append(StudentEvaluationComponent(data, student_evals))
 
     return components
 
-  def _getLoneUserComponents(self):
+  def _getLoneUserComponents(self, data):
     """Get the dashboard components for users without any role.
     """
     components = []
@@ -344,28 +316,28 @@ class DashboardPage(GSoCRequestHandler):
 
     return components
 
-  def _getMyOrgApplicationsComponent(self):
+  def _getMyOrgApplicationsComponent(self, data):
     """Returns MyOrgApplicationsComponent iff this user is main_admin or
     backup_admin in an application.
     """
-    survey = org_app_logic.getForProgram(self.data.program)
+    survey = org_app_logic.getForProgram(data.program)
 
     # Test if this user is main admin or backup admin
     q = OrgAppRecord.all()
     q.filter('survey', survey)
-    q.filter('main_admin', self.data.user)
+    q.filter('main_admin', data.user)
 
     record = q.get()
 
     q = OrgAppRecord.all()
     q.filter('survey', survey)
-    q.filter('backup_admin', self.data.user)
+    q.filter('backup_admin', data.user)
 
     if record or q.get():
       # add a component showing the organization application of the user
-      return MyOrgApplicationsComponent(self.request, self.data, survey)
-
-    return None
+      return MyOrgApplicationsComponent(data, survey)
+    else:
+      return None
 
 
 class MyOrgApplicationsComponent(Component):
@@ -374,15 +346,13 @@ class MyOrgApplicationsComponent(Component):
 
   IDX = 0
 
-  def __init__(self, request, data, survey):
+  def __init__(self, data, survey):
     """Initializes the component.
 
     Args:
-      request: The HTTPRequest object
       data: The RequestData object
       survey: the OrgApplicationSurvey entity
     """
-    self.request = request
     self.data = data
     # passed in so we don't have to do double queries
     self.survey = survey
@@ -409,11 +379,10 @@ class MyOrgApplicationsComponent(Component):
 
     self._list_config = list_config
 
-    super(MyOrgApplicationsComponent, self).__init__(request, data)
+    super(MyOrgApplicationsComponent, self).__init__(data)
 
   def templatePath(self):
-    """Returns the path to the template that should be used in render().
-    """
+    """Returns the path to the template that should be used in render()."""
     return 'v2/modules/gsoc/dashboard/list_component.html'
 
   def context(self):
@@ -435,7 +404,7 @@ class MyOrgApplicationsComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != self.IDX:
+    if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
     q = OrgAppRecord.all()
@@ -450,7 +419,7 @@ class MyOrgApplicationsComponent(Component):
 
     records.extend(q.fetch(1000))
 
-    response = lists.ListContentResponse(self.request, self._list_config)
+    response = lists.ListContentResponse(self.data.request, self._list_config)
 
     for record in records:
       response.addRow(record)
@@ -466,9 +435,8 @@ class MyProposalsComponent(Component):
   DESCRIPTION = ugettext(
       'Click on a proposal in this list to see the comments or update your proposal.')
 
-  def __init__(self, request, data):
-    """Initializes this component.
-    """
+  def __init__(self, data):
+    """Initializes this component."""
     r = data.redirect
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
@@ -479,7 +447,7 @@ class MyProposalsComponent(Component):
         urlOf('review_gsoc_proposal'))
     self._list_config = list_config
 
-    super(MyProposalsComponent, self).__init__(request, data)
+    super(MyProposalsComponent, self).__init__(data)
 
 
   def templatePath(self):
@@ -506,7 +474,7 @@ class MyProposalsComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 1:
+    if lists.getListIndex(self.data.request) != 1:
       return None
 
     q = GSoCProposal.all()
@@ -517,21 +485,20 @@ class MyProposalsComponent(Component):
     prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter,
+        prefetcher=prefetcher)
     return response_builder.build()
 
 
 class MyProjectsComponent(Component):
-  """Component for listing all the projects of the current Student.
-  """
+  """Component for listing all the projects of the current Student."""
 
-  def __init__(self, request, data):
-    """Initializes this component.
-    """
+  def __init__(self, data):
+    """Initializes this component."""
     r = data.redirect
 
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
@@ -542,7 +509,7 @@ class MyProjectsComponent(Component):
         urlOf('gsoc_project_details'))
     self._list_config = list_config
 
-    super(MyProjectsComponent, self).__init__(request, data)
+    super(MyProjectsComponent, self).__init__(data)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
@@ -555,7 +522,7 @@ class MyProjectsComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 2:
+    if lists.getListIndex(self.data.request) != 2:
       return None
 
     list_query = project_logic.getAcceptedProjectsQuery(
@@ -565,7 +532,7 @@ class MyProjectsComponent(Component):
     prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, list_query,
+        self.data.request, self._list_config, list_query,
         starter, prefetcher=prefetcher)
     return response_builder.build()
 
@@ -586,11 +553,10 @@ class MyEvaluationsComponent(Component):
   """Component for listing all the Evaluations of the current Student.
   """
 
-  def __init__(self, request, data, evals):
+  def __init__(self, data, evals):
     """Initializes this component.
 
     Args:
-      request: The Django HTTP Request object
       data: The RequestData object containing the entities from the request
       evals: Dictionary containing evaluations for which the list must be built
     """
@@ -625,7 +591,7 @@ class MyEvaluationsComponent(Component):
     list_config.setRowAction(rowAction)
     self._list_config = list_config
 
-    super(MyEvaluationsComponent, self).__init__(request, data)
+    super(MyEvaluationsComponent, self).__init__(data)
 
   def _getStatus(self, entity, eval, *args):
     eval_ent = self.evals.get(eval)
@@ -643,7 +609,7 @@ class MyEvaluationsComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 3:
+    if lists.getListIndex(self.data.request) != 3:
       return None
 
     list_query = project_logic.getProjectsQueryForEval(
@@ -657,7 +623,7 @@ class MyEvaluationsComponent(Component):
     row_adder = evaluationRowAdder(self.evals)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, list_query,
+        self.data.request, self._list_config, list_query,
         starter, prefetcher=prefetcher, row_adder=row_adder)
     return response_builder.build()
 
@@ -679,15 +645,14 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
   """Component for listing all the Evaluations for the mentor.
   """
 
-  def __init__(self, request, data, evals):
+  def __init__(self, data, evals):
     """Initializes this component.
 
     Args:
-      request: The Django HTTP Request object
       data: The RequestData object containing the entities from the request
       evals: Dictionary containing evaluations for which the list must be built
     """
-    super(OrgEvaluationsComponent, self).__init__(request, data, evals)
+    super(OrgEvaluationsComponent, self).__init__(data, evals)
 
     self._list_config.addPlainTextColumn(
         'student', 'Student',
@@ -713,7 +678,7 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 3:
+    if lists.getListIndex(self.data.request) != 3:
       return None
 
     list_query = project_logic.getProjectsQueryForEval(
@@ -727,7 +692,7 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
     row_adder = evaluationRowAdder(self.evals)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, list_query,
+        self.data.request, self._list_config, list_query,
         starter, prefetcher=prefetcher, row_adder=row_adder)
     return response_builder.build()
 
@@ -762,12 +727,12 @@ class SubmittedProposalsComponent(Component):
       '<br/> Note: Due to a bug you cannot edit a row after '
       'having just edited it, click a different row first.</p>')
 
-  def __init__(self, request, data):
-    """Initializes this component.
-    """
+  # TODO(nathaniel): Wait, is this seriously a 100+-line *constructor*?
+  def __init__(self, data):
+    """Initializes this component."""
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
@@ -918,7 +883,7 @@ class SubmittedProposalsComponent(Component):
 
     self._list_config = list_config
 
-    super(SubmittedProposalsComponent, self).__init__(request, data)
+    super(SubmittedProposalsComponent, self).__init__(data)
 
   def templatePath(self):
     return'v2/modules/gsoc/dashboard/list_component.html'
@@ -941,7 +906,7 @@ class SubmittedProposalsComponent(Component):
         }
 
   def post(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 4:
       return None
 
@@ -1046,7 +1011,7 @@ class SubmittedProposalsComponent(Component):
     return True
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx != 4:
       return None
 
@@ -1080,20 +1045,19 @@ class SubmittedProposalsComponent(Component):
     prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter,
+        prefetcher=prefetcher)
     return response_builder.build(accepted, duplicates)
 
 
 class ProjectsIMentorComponent(Component):
-  """Component for listing all the Projects mentored by the current user.
-  """
+  """Component for listing all the Projects mentored by the current user."""
 
-  def __init__(self, request, data):
-    """Initializes this component.
-    """
+  def __init__(self, data):
+    """Initializes this component."""
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', 
+    list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
             ent.parent().key().name(), ent.key().id())), hidden=True)
     list_config.addSimpleColumn('title', 'Title')
@@ -1107,7 +1071,7 @@ class ProjectsIMentorComponent(Component):
         urlOf('gsoc_project_details'))
     self._list_config = list_config
 
-    super(ProjectsIMentorComponent, self).__init__(request, data)
+    super(ProjectsIMentorComponent, self).__init__(data)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
@@ -1120,7 +1084,7 @@ class ProjectsIMentorComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 5:
+    if lists.getListIndex(self.data.request) != 5:
       return None
 
     list_query = project_logic.getAcceptedProjectsQuery(
@@ -1135,7 +1099,7 @@ class ProjectsIMentorComponent(Component):
     prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, list_query,
+        self.data.request, self._list_config, list_query,
         starter, prefetcher=prefetcher)
     return response_builder.build()
 
@@ -1162,7 +1126,7 @@ class OrganizationsIParticipateInComponent(Component):
   """Component listing all the Organizations the current user participates in.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes this component."""
     # TODO(nathaniel): put this back into a lambda expression in the
     # setRowAction call below.
@@ -1199,7 +1163,7 @@ class OrganizationsIParticipateInComponent(Component):
     list_config.setDefaultSort('name')
     self._list_config = list_config
 
-    super(OrganizationsIParticipateInComponent, self).__init__(request, data)
+    super(OrganizationsIParticipateInComponent, self).__init__(data)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
@@ -1212,10 +1176,10 @@ class OrganizationsIParticipateInComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    if lists.getListIndex(self.request) != 6:
+    if lists.getListIndex(self.data.request) != 6:
       return None
 
-    response = lists.ListContentResponse(self.request, self._list_config)
+    response = lists.ListContentResponse(self.data.request, self._list_config)
 
     if response.start == 'done' or (
         response.start and not response.start.isdigit()):
@@ -1263,7 +1227,7 @@ class OrgConnectionComponent(Component):
   admin.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data, for_admin):
     """Initializes this component.
     """
     list_config = lists.ListConfiguration(add_key_column=False)
@@ -1288,13 +1252,13 @@ class OrgConnectionComponent(Component):
             user=e.parent(), connection=e).url())
     self._list_config = list_config
 
-    super(OrgConnectionComponent, self).__init__(request, data)
+    super(OrgConnectionComponent, self).__init__(data)
 
   def templatePath(self):
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
-    if lists.getListIndex(self.request) != 7:
+    if lists.getListIndex(self.data.request) != self.idx:
       return None
 
     q = GSoCConnection.all()
@@ -1374,8 +1338,8 @@ class UserConnectionComponent(Component):
         GSoCConnection, ['user', 'organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
-
+        self.data.request, self._list_config, q, starter,
+        prefetcher=prefetcher)
     return response_builder.build()
 
   def context(self):
@@ -1399,7 +1363,7 @@ class ParticipantsComponent(Component):
   """Component for listing all the participants for all organizations.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes this component.
     """
     self.data = data
@@ -1430,14 +1394,15 @@ class ParticipantsComponent(Component):
 
     self._list_config = list_config
 
-    super(ParticipantsComponent, self).__init__(request, data)
+    super(ParticipantsComponent, self).__init__(data)
 
   def templatePath(self):
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
 
+    # TODO(nathaniel): Magic number. What does this 9 really mean?
     if idx != 9:
       return None
 
@@ -1456,7 +1421,7 @@ class ParticipantsComponent(Component):
     starter = lists.keyStarter
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter,
+        self.data.request, self._list_config, q, starter,
         prefetcher=prefetcher)
     return response_builder.build()
 
@@ -1477,7 +1442,7 @@ class TodoComponent(Component):
   """Component listing all the Todos for the current user.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn(
@@ -1505,16 +1470,17 @@ class TodoComponent(Component):
     list_config.setRowAction(rowAction)
     self._list_config = list_config
 
-    super(TodoComponent, self).__init__(request, data)
+    super(TodoComponent, self).__init__(data)
 
   def templatePath(self):
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
-    if lists.getListIndex(self.request) != 11:
+    # TODO(nathaniel): Magic number.
+    if lists.getListIndex(self.data.request) != 11:
       return None
 
-    response = lists.ListContentResponse(self.request, self._list_config)
+    response = lists.ListContentResponse(self.data.request, self._list_config)
 
     if response.start == 'done':
       return response
@@ -1576,16 +1542,16 @@ class StudentEvaluationComponent(Component):
 
   IDX = 12
 
-  def __init__(self, request, data, evals):
+  # TODO(nathaniel): This __init__ doesn't make a super call like
+  # all other subclasses of Component do. What's up with that?
+  def __init__(self, data, evals):
     """Initializes this component.
 
     Args:
-      request: The Django HTTP Request object
       data: The RequestData object containing the entities from the request
       evals: Dictionary containing evaluations for which the list must be built
       idx: The id for this list component
     """
-    self.request = request
     self.data = data
     self.evals = evals
 
@@ -1662,7 +1628,7 @@ class StudentEvaluationComponent(Component):
     If the lists as requested is not supported by this component None is
     returned.
     """
-    idx = lists.getListIndex(self.request)
+    idx = lists.getListIndex(self.data.request)
     if idx == self.IDX:
       list_query = project_logic.getProjectsQueryForEvalForOrgs(
           orgs=self.data.org_admin_for)
@@ -1675,7 +1641,7 @@ class StudentEvaluationComponent(Component):
       row_adder = evaluationRowAdder(self.evals)
 
       response_builder = lists.RawQueryContentResponseBuilder(
-          self.request, self._list_config, list_query,
+          self.data.request, self._list_config, list_query,
           starter, prefetcher=prefetcher, row_adder=row_adder)
       return response_builder.build()
     else:
@@ -1686,21 +1652,19 @@ class StudentEvaluationComponent(Component):
 
 
 class MentorEvaluationComponent(StudentEvaluationComponent):
-  """Component for listing mentor evaluations for organizations.
-  """
+  """Component for listing mentor evaluations for organizations."""
 
   IDX = 13
 
-  def __init__(self, request, data, evals):
+  def __init__(self, data, evals):
     """Initializes this component.
 
     Args:
-      request: The Django HTTP Request object
       data: The RequestData object containing the entities from the request
       evals: Dictionary containing evaluations for which the list must be built
       idx: The id for this list component
     """
-    super(MentorEvaluationComponent, self).__init__(request, data, evals)
+    super(MentorEvaluationComponent, self).__init__(data, evals)
 
     self.record = None
 

@@ -45,24 +45,24 @@ class AgeCheck(gci_base.GCIRequestHandler):
     return [gci_url_patterns.url(r'age_check/%s$' % url_patterns.PROGRAM,
                                  self, name='gci_age_check')]
 
-  def checkAccess(self):
+  def checkAccess(self, data, check, mutator):
     """Ensures that student sign up is active and the user is logged out."""
-    self.check.studentSignupActive()
-    self.check.isLoggedOut()
+    check.studentSignupActive()
+    check.isLoggedOut()
 
   def templatePath(self):
     """Returns the path to the template."""
     return 'v2/modules/gci/age_check/base.html'
 
-  def context(self):
+  def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
     context = {
-        'page_name': 'Age Verification for %s' % self.data.program.name,
-        'program': self.data.program,
+        'page_name': 'Age Verification for %s' % data.program.name,
+        'program': data.program,
         'failed_check': False
         }
 
-    age_check_result =  self.request.COOKIES.get('age_check', None)
+    age_check_result = data.request.COOKIES.get('age_check', None)
 
     if age_check_result == '0':
       context['failed_check'] = True
@@ -70,33 +70,33 @@ class AgeCheck(gci_base.GCIRequestHandler):
       # age check passed, redirect to create profile page
       # TODO(nathaniel): Can this be cleaned up at all? Creating and
       # discarding a response feels weird.
-      response = self.redirect.createProfile('student').to(
+      response = data.redirect.createProfile('student').to(
           'create_gci_profile', secure=True)
       raise exceptions.RedirectRequest(response['Location'])
 
-    if self.data.POST:
-      context['form'] = AgeCheckForm(self.data.POST)
+    if data.POST:
+      context['form'] = AgeCheckForm(data.POST)
     else:
       context['form'] = AgeCheckForm()
 
     return context
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handles POST requests."""
-    form = AgeCheckForm(self.data.POST)
+    form = AgeCheckForm(data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
-    program = self.data.program
+    program = data.program
     birth_date = form.cleaned_data['birth_date']
 
     # redirect to the same page and have the cookies sent across
     # TODO(nathaniel): make this .program() call unnecessary.
-    self.redirect.program()
+    data.redirect.program()
 
-    response = self.redirect.to('gci_age_check')
+    response = data.redirect.to('gci_age_check')
 
     age_sufficient = validate.isAgeSufficientForProgram(birth_date, program)
     response.set_cookie('age_check', birth_date if age_sufficient else '0')

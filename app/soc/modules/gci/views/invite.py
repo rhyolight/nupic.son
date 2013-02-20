@@ -179,8 +179,7 @@ class ManageInviteForm(gci_forms.GCIModelForm):
 
 
 class InvitePage(GCIRequestHandler):
-  """Encapsulate all the methods required to generate Invite page.
-  """
+  """Encapsulate all the methods required to generate Invite page."""
 
   def templatePath(self):
     return 'v2/modules/gci/invite/base.html'
@@ -191,77 +190,76 @@ class InvitePage(GCIRequestHandler):
             self, name=url_names.GCI_SEND_INVITE)
     ]
 
-  def checkAccess(self):
-    """Access checks for GCI Invite page.
-    """
+  def checkAccess(self, data, check, mutator):
+    """Access checks for GCI Invite page."""
+    check.isProgramVisible()
+    check.isOrgAdmin()
 
-    self.check.isProgramVisible()
-    self.check.isOrgAdmin()
+  def context(self, data, check, mutator):
+    """Handler to for GCI Invitation Page HTTP get request."""
 
-  def context(self):
-    """Handler to for GCI Invitation Page HTTP get request.
-    """
+    role = 'Org Admin' if data.kwargs['role'] == 'org_admin' else 'Mentor'
 
-    role = 'Org Admin' if self.data.kwargs['role'] == 'org_admin' else 'Mentor'
-
-    invite_form = InviteForm(self.data, self.data.POST or None)
+    invite_form = InviteForm(data, data.POST or None)
 
     return {
-        'logout_link': self.data.redirect.logout(),
+        'logout_link': data.redirect.logout(),
         'page_name': 'Invite a new %s' % role,
-        'program': self.data.program,
+        'program': data.program,
         'forms': [invite_form]
     }
 
-  def validate(self):
+  def validate(self, data):
     """Creates new invitation based on the data inserted in the form.
+
+    Args:
+      data: A RequestHandler describing the current request.
 
     Returns:
       True if the new invitations have been successfully saved; False otherwise
     """
 
-    assert isSet(self.data.organization)
+    assert isSet(data.organization)
 
-    invite_form = InviteForm(self.data, self.data.POST)
+    invite_form = InviteForm(data, data.POST)
 
     if not invite_form.is_valid():
       return False
 
-    assert isSet(self.data.users_to_invite)
-    assert len(self.data.users_to_invite)
+    assert isSet(data.users_to_invite)
+    assert len(data.users_to_invite)
 
     # create a new invitation entity
 
-    invite_form.cleaned_data['org'] = self.data.organization
-    invite_form.cleaned_data['role'] = self.data.kwargs['role']
+    invite_form.cleaned_data['org'] = data.organization
+    invite_form.cleaned_data['role'] = data.kwargs['role']
     invite_form.cleaned_data['type'] = 'Invitation'
 
     def create_invite_txn(user):
       invite = invite_form.create(commit=True, parent=user)
-      context = notifications.inviteContext(self.data, invite)
+      context = notifications.inviteContext(data, invite)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=invite)
       sub_txn()
       return invite
 
-    for user in self.data.users_to_invite:
+    for user in data.users_to_invite:
       invite_form.instance = None
       invite_form.cleaned_data['user'] = user
       db.run_in_transaction(create_invite_txn, user)
 
     return True
 
-  def post(self):
+  def post(self, data, check, mutator):
     """Handler to for GCI Invitation Page HTTP post request."""
-    if self.validate():
-      return self.redirect.dashboard().to()
+    if self.validate(data):
+      return data.redirect.dashboard().to()
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 
 class ManageInvite(GCIRequestHandler):
-  """View to manage the invitation by organization admins.
-  """
+  """View to manage the invitation by organization admins."""
 
   def templatePath(self):
     return 'v2/modules/gci/invite/base.html'
@@ -272,43 +270,42 @@ class ManageInvite(GCIRequestHandler):
             name=url_names.GCI_MANAGE_INVITE)
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
 
-    key_name = self.data.kwargs['user']
+    key_name = data.kwargs['user']
     user_key = db.Key.from_path('User', key_name)
 
-    invite_id = int(self.data.kwargs['id'])
-    self.data.invite = GCIRequest.get_by_id(invite_id, parent=user_key)
-    self.check.isInvitePresent(invite_id)
+    invite_id = int(data.kwargs['id'])
+    data.invite = GCIRequest.get_by_id(invite_id, parent=user_key)
+    check.isInvitePresent(invite_id)
 
     # get invited user and check if it is not deleted
-    self.data.invited_user = self.data.invite.user
-    if not self.data.invited_user:
+    data.invited_user = data.invite.user
+    if not data.invited_user:
       logging.warning(
           'User entity does not exist for request with id %s', invite_id)
       raise NotFound('Invited user does not exist')
 
     # get the organization and check if the current user can manage the invite
-    self.data.organization = self.data.invite.org
-    self.check.isOrgAdmin()
+    data.organization = data.invite.org
+    check.isOrgAdmin()
 
-    if self.data.POST:
-      if 'withdraw' in self.data.POST:
-        self.check.canInviteBeWithdrawn()
-      elif 'resubmit' in self.data.POST:
-        self.check.canInviteBeResubmitted()
+    if data.POST:
+      if 'withdraw' in data.POST:
+        check.canInviteBeWithdrawn()
+      elif 'resubmit' in data.POST:
+        check.canInviteBeResubmitted()
       else:
         raise BadRequest('No action specified in manage_gci_invite request.')
 
-  def context(self):
-    page_name = self._constructPageName()
+  def context(self, data, check, mutator):
+    page_name = self._constructPageName(data)
 
-    form = ManageInviteForm(
-        self.data.POST or None, instance=self.data.invite)
+    form = ManageInviteForm(data.POST or None, instance=data.invite)
 
-    button_name = self._constructButtonName()
-    button_value = self._constructButtonValue()
+    button_name = self._constructButtonName(data)
+    button_value = self._constructButtonValue(data)
 
     return {
         'page_name': page_name,
@@ -317,45 +314,44 @@ class ManageInvite(GCIRequestHandler):
         'button_value': button_value
         }
 
-  def post(self):
+  def post(self, data, check, mutator):
     # it is needed to handle notifications
-    self.data.invited_profile = self._getInvitedProfile()
+    data.invited_profile = self._getInvitedProfile(data)
 
-    if 'withdraw' in self.data.POST:
-      invite_logic.withdrawInvite(self.data)
-    elif 'resubmit' in self.data.POST:
-      invite_logic.resubmitInvite(self.data)
+    if 'withdraw' in data.POST:
+      invite_logic.withdrawInvite(data)
+    elif 'resubmit' in data.POST:
+      invite_logic.resubmitInvite(data)
 
-    return self.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
+    return data.redirect.userId().to(url_names.GCI_MANAGE_INVITE)
 
-  def _constructPageName(self):
-    invite = self.data.invite
-    return "%s Invite For %s" % (invite.role, self.data.invited_user.name)
+  def _constructPageName(self, data):
+    invite = data.invite
+    return "%s Invite For %s" % (invite.role, data.invited_user.name)
 
-  def _constructButtonName(self):
-    invite = self.data.invite
+  def _constructButtonName(self, data):
+    invite = data.invite
     if invite.status == 'pending':
       return 'withdraw'
     if invite.status in ['withdrawn', 'rejected']:
       return 'resubmit'
 
-  def _constructButtonValue(self):
-    invite = self.data.invite
+  def _constructButtonValue(self, data):
+    invite = data.invite
     if invite.status == 'pending':
       return 'Withdraw'
     if invite.status in ['withdrawn', 'rejected']:
       return 'Resubmit'
 
-  def _getInvitedProfile(self):
+  def _getInvitedProfile(self, data):
     key_name = '/'.join([
-        self.data.program.key().name(),
-        self.data.invited_user.link_id])
-    return GCIProfile.get_by_key_name(key_name, parent=self.data.invited_user)
+        data.program.key().name(),
+        data.invited_user.link_id])
+    return GCIProfile.get_by_key_name(key_name, parent=data.invited_user)
 
 
 class RespondInvite(GCIRequestHandler):
-  """View to respond to the invitation by the user.
-  """
+  """View to respond to the invitation by the user."""
 
   def templatePath(self):
     return 'v2/modules/gci/invite/show.html'
@@ -366,56 +362,54 @@ class RespondInvite(GCIRequestHandler):
             name=url_names.GCI_RESPOND_INVITE)
     ]
 
-  def checkAccess(self):
-    self.check.isUser()
+  def checkAccess(self, data, check, mutator):
+    check.isUser()
 
-    invite_id = int(self.data.kwargs['id'])
-    self.data.invite = GCIRequest.get_by_id(invite_id, parent=self.data.user)
-    self.check.isInvitePresent(invite_id)
+    invite_id = int(data.kwargs['id'])
+    data.invite = GCIRequest.get_by_id(invite_id, parent=data.user)
+    check.isInvitePresent(invite_id)
 
-    self.check.canRespondInvite()
-    self.data.is_respondable = self.data.invite.status == 'pending'
+    check.canRespondInvite()
+    data.is_respondable = data.invite.status == 'pending'
 
     # actual response may be sent only to pending requests
-    if self.data.POST:
-      if 'accept' not in self.data.POST and 'reject' not in self.data.POST:
+    if data.POST:
+      if 'accept' not in data.POST and 'reject' not in data.POST:
         raise BadRequest('Valid action is not specified in the request.')
-      self.check.isInviteRespondable()
+      check.isInviteRespondable()
 
-  def context(self):
-    page_name = self._constructPageName()
+  def context(self, data, check, mutator):
+    page_name = self._constructPageName(data)
     return {
-        'is_respondable': self.data.is_respondable,
+        'is_respondable': data.is_respondable,
         'page_name': page_name,
-        'request': self.data.invite
+        'request': data.invite
         }
 
-  def post(self):
-    if 'accept' in self.data.POST:
-      if not self.data.profile:
+  def post(self, data, check, mutator):
+    if 'accept' in data.POST:
+      if not data.profile:
         # TODO(nathaniel): is this dead code? How is this not overwritten
-        # by the self.redirect.id().to(url_names.GCI_RESPOND_INVITE) at the
+        # by the data.redirect.id().to(url_names.GCI_RESPOND_INVITE) at the
         # bottom of this method?
-        self.redirect.program()
-        self.redirect.to('edit_gci_profile')
+        data.redirect.program()
+        data.redirect.to('edit_gci_profile')
 
-      invite_logic.acceptInvite(self.data)
+      invite_logic.acceptInvite(data)
     else: # reject
-      invite_logic.rejectInvite(self.data)
+      invite_logic.rejectInvite(data)
 
-    return self.redirect.id().to(url_names.GCI_RESPOND_INVITE)
+    return data.redirect.id().to(url_names.GCI_RESPOND_INVITE)
 
-  def _constructPageName(self):
-    invite = self.data.invite
+  def _constructPageName(self, data):
+    invite = data.invite
     return "%s Invite" % (invite.role.capitalize())
 
 
 class UserInvitesList(Template):
-  """Template for list of invites that have been sent to the current user.
-  """
+  """Template for list of invites that have been sent to the current user."""
 
-  def __init__(self, request, data):
-    self.request = request
+  def __init__(self, data):
     self.data = data
     r = data.redirect
 
@@ -435,7 +429,7 @@ class UserInvitesList(Template):
     q.filter('user', self.data.user)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, lists.keyStarter)
+        self.data.request, self._list_config, q, lists.keyStarter)
 
     return response_builder.build()
 
@@ -465,19 +459,18 @@ class ListUserInvitesPage(GCIRequestHandler):
             name=url_names.GCI_LIST_INVITES),
     ]
 
-  def checkAccess(self):
-    self.check.isProfileActive()
+  def checkAccess(self, data, check, mutator):
+    check.isProfileActive()
 
-  def jsonContext(self):
-    list_content = UserInvitesList(self.request, self.data).getListData()
-
-    if not list_content:
+  def jsonContext(self, data, check, mutator):
+    list_content = UserInvitesList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
       raise AccessViolation('You do not have access to this data')
 
-    return list_content.content()
-
-  def context(self):
+  def context(self, data, check, mutator):
     return {
         'page_name': 'Invitations to you',
-        'invite_list': UserInvitesList(self.request, self.data),
+        'invite_list': UserInvitesList(data),
     }
