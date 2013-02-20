@@ -35,8 +35,7 @@ DEF_NO_HOST = ugettext(
 
 
 class HostProfileForm(ModelForm):
-  """Django form for the site settings.
-  """
+  """Django form for the site settings."""
 
   class Meta:
     model = Host
@@ -44,8 +43,7 @@ class HostProfileForm(ModelForm):
 
 
 class HostProfilePage(SiteRequestHandler):
-  """View for the host profile.
-  """
+  """View for the host profile."""
 
   def djangoURLPatterns(self):
     return [
@@ -55,16 +53,23 @@ class HostProfilePage(SiteRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
+    check.isLoggedIn()
+
     if data.is_developer:
       mutator.hostFromKwargs()
       return
 
-    link_id = data.kwargs.get('link_id')
-    if link_id and data.user.link_id != link_id:
-      raise AccessViolation(DEF_DEVELOPER_ONLY)
+    # TODO(nathaniel): This shouldn't be necessary, but at the moment
+    # mutator.host() is not safe for calls when a user is logged in
+    # but does not have a profile.
+    if not data.user:
+      raise AccessViolation(DEF_NO_HOST)
 
     mutator.host()
-    if not data.is_host:
+    if data.is_host:
+      if data.user.link_id != data.kwargs.get('link_id'):
+        raise AccessViolation(DEF_DEVELOPER_ONLY)
+    else:
       raise AccessViolation(DEF_NO_HOST)
 
   def templatePath(self):
