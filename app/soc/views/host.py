@@ -61,7 +61,7 @@ class HostProfilePage(SiteRequestHandler):
 
     # TODO(nathaniel): This shouldn't be necessary, but at the moment
     # mutator.host() is not safe for calls when a user is logged in
-    # but does not have a profile.
+    # but does not have a user entity.
     if not data.user:
       raise AccessViolation(DEF_NO_HOST)
 
