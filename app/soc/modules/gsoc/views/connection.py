@@ -28,7 +28,7 @@ from django.utils.translation import ugettext
 
 from soc.logic import accounts
 from soc.logic import cleaning
-from soc.logic.exceptions import AccessViolation
+from soc.logic import exceptions
 from soc.logic.helper import notifications
 from soc.models.connection import RESPONSE_STATE_ACCEPTED
 from soc.models.connection import RESPONSE_STATE_REJECTED
@@ -324,7 +324,7 @@ class OrgConnectionPage(GSoCRequestHandler):
 
     def create_connection_txn(user, email):
       if not check_existing_connection_txn(user, data.organization):
-        raise AccessViolation(DEF_CONNECTION_EXISTS)
+        raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
 
       connection = connection_form.create(parent=user, commit=False)
       # An organization admin is always a mentor, so regardless of the admin's
@@ -463,7 +463,7 @@ class UserConnectionPage(GSoCRequestHandler):
 
     def create_connection(org):
       if not check_existing_connection_txn(data.user, data.organization):
-        raise AccessViolation(DEF_CONNECTION_EXISTS)
+        raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
 
       connection = ConnectionForm.create(
           connection_form, parent=data.user, commit=False)
@@ -887,4 +887,4 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
       self.response = request_handler(data.request, *self.args, **self.kwargs)
 
   def get(self, data, check, mutator):
-    self.error(405)
+    raise exceptions.MethodNotAllowed()
