@@ -426,7 +426,9 @@ class RequestHandler(object):
       return data.redirect.toUrl('%s?%s' % (
           data.redirect.urlOf(e.url_name), urllib.urlencode({'next': e.path})))
     except exceptions.Error, e:
-      return self.error(data, e.status, message=e.args[0])
+      # TODO(nathaniel): Use a purpose-designated attribute of the exception
+      # for the message rather than the could-be-and-mean-anything "args[0]".
+      return self.error(data, e.status, message=e.args[0] if e.args else None)
 
 
 class SiteRequestHandler(RequestHandler):
