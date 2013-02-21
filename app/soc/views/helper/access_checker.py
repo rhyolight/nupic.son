@@ -385,7 +385,7 @@ class DeveloperMutator(Mutator):
   def canRespondForUser(self):
     self.data.can_respond = True
 
-  def commentVisible(self):
+  def commentVisible(self, organization):
     self.data.public_comments_visible = True
     self.data.private_comments_visible = True
 
