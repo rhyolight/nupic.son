@@ -27,13 +27,13 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.init()
 
   def assertMainMenuCommonLinks(self, mainmenu_context):
-    self.assertTrue('home_link' in mainmenu_context)
-    self.assertTrue('search_link' in mainmenu_context)
-    self.assertTrue('about_link' in mainmenu_context)
-    self.assertTrue('events_link' in mainmenu_context)
-    self.assertTrue('connect_link' in mainmenu_context)
-    self.assertTrue('help_link' in mainmenu_context)
-    self.assertTrue('logout_link' in mainmenu_context)
+    self.assertIn('home_link', mainmenu_context)
+    self.assertIn('search_link', mainmenu_context)
+    self.assertIn('about_link', mainmenu_context)
+    self.assertIn('events_link', mainmenu_context)
+    self.assertIn('connect_link', mainmenu_context)
+    self.assertIn('help_link', mainmenu_context)
+    self.assertIn('logout_link', mainmenu_context)
 
   def testMainMenuDuringKickoff(self):
     """Tests the main menu before the org signup period.
@@ -45,11 +45,11 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
 
     self.assertMainMenuCommonLinks(mainmenu_context)
 
-    self.assertTrue('accepted_orgs_link' not in mainmenu_context)
-    self.assertTrue('projects_link' not in mainmenu_context)
+    self.assertNotIn('accepted_orgs_link', mainmenu_context)
+    self.assertNotIn('projects_link', mainmenu_context)
 
     # No profile.
-    self.assertTrue('dashboard_link' not in mainmenu_context)
+    self.assertNotIn('dashboard_link', mainmenu_context)
 
     # Create profile.
     self.data.createProfile()
@@ -58,7 +58,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     mainmenu_context = response.context['mainmenu'].context()
 
     self.assertMainMenuCommonLinks(mainmenu_context)
-    self.assertTrue('dashboard_link' in mainmenu_context)
+    self.assertIn('dashboard_link', mainmenu_context)
 
     # Make the current user the host.
     self.data.createHost()
@@ -67,8 +67,8 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     mainmenu_context = response.context['mainmenu'].context()
 
     self.assertMainMenuCommonLinks(mainmenu_context)
-    self.assertTrue('dashboard_link' in mainmenu_context)
-    self.assertTrue('admin_link' in mainmenu_context)
+    self.assertIn('dashboard_link', mainmenu_context)
+    self.assertIn('admin_link', mainmenu_context)
 
   def testMainMenuDuringOrgSignup(self):
     """Tests the main menu during the org signup period.
@@ -80,8 +80,8 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
 
     self.assertMainMenuCommonLinks(mainmenu_context)
 
-    self.assertTrue('accepted_orgs_link' not in mainmenu_context)
-    self.assertTrue('projects_link' not in mainmenu_context)
+    self.assertNotIn('accepted_orgs_link', mainmenu_context)
+    self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuDuringOrgsAnnounced(self):
     """Tests the main menu after organizations have been announced.
@@ -92,9 +92,9 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     mainmenu_context = response.context['mainmenu'].context()
 
     self.assertMainMenuCommonLinks(mainmenu_context)
-    self.assertTrue('accepted_orgs_link' in mainmenu_context)
 
-    self.assertTrue('projects_link' not in mainmenu_context)
+    self.assertIn('accepted_orgs_link', mainmenu_context)
+    self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuDuringStudentSignup(self):
     """Tests the main menu during student signup period.
@@ -105,9 +105,9 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     mainmenu_context = response.context['mainmenu'].context()
 
     self.assertMainMenuCommonLinks(mainmenu_context)
-    self.assertTrue('accepted_orgs_link' in mainmenu_context)
 
-    self.assertTrue('projects_link' not in mainmenu_context)
+    self.assertIn('accepted_orgs_link', mainmenu_context)
+    self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuPostStudentSignup(self):
     """Tests the main menu after student signup period i.e. during proposal
@@ -119,9 +119,9 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     mainmenu_context = response.context['mainmenu'].context()
 
     self.assertMainMenuCommonLinks(mainmenu_context)
-    self.assertTrue('accepted_orgs_link' in mainmenu_context)
 
-    self.assertTrue('projects_link' not in mainmenu_context)
+    self.assertIn('accepted_orgs_link', mainmenu_context)
+    self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuPostStudentsAnnounced(self):
     """Tests the main menu after accepted students have been announced.
@@ -132,5 +132,5 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     mainmenu_context = response.context['mainmenu'].context()
 
     self.assertMainMenuCommonLinks(mainmenu_context)
-    self.assertTrue('accepted_orgs_link' in mainmenu_context)
-    self.assertTrue('projects_link' in mainmenu_context)
+    self.assertIn('accepted_orgs_link', mainmenu_context)
+    self.assertIn('projects_link', mainmenu_context)
