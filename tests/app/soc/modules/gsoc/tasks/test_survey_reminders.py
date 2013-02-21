@@ -117,7 +117,7 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
 
     response = self.post(self.SPAWN_URL, post_data)
 
-    self.assertEqual(response.status_code, httplib.OK)
+    self.assertResponseOK(response)
     self.assertTasksInQueue(n=2)
     self.assertTasksInQueue(n=1, url=self.SPAWN_URL)
     self.assertTasksInQueue(n=1, url=self.SEND_URL)
@@ -132,7 +132,7 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
 
     response = self.post(self.SPAWN_URL, post_data)
 
-    self.assertEqual(response.status_code, httplib.OK)
+    self.assertResponseOK(response)
     self.assertTasksInQueue(n=2)
     self.assertTasksInQueue(n=1, url=self.SPAWN_URL)
     self.assertTasksInQueue(n=1, url=self.SEND_URL)
@@ -147,7 +147,7 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
 
     response = self.post(self.SEND_URL, post_data)
 
-    self.assertEqual(response.status_code, httplib.OK)
+    self.assertResponseOK(response)
     # URL explicitly added since the email task is in there
     self.assertTasksInQueue(n=0, url=self.SEND_URL)
     self.assertEmailSent(to=self.student.email)
@@ -163,7 +163,7 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
 
     response = self.post(self.SEND_URL, post_data)
 
-    self.assertEqual(response.status_code, httplib.OK)
+    self.assertResponseOK(response)
     # URL explicitly added since the email task is in there
     self.assertTasksInQueue(n=0, url=self.SEND_URL)
     self.assertEmailSent(to=self.mentor.email)
@@ -183,7 +183,7 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
 
     response = self.post(self.SPAWN_URL, post_data)
 
-    self.assertEqual(response.status_code, httplib.OK)
+    self.assertResponseOK(response)
     self.assertTasksInQueue(n=2)
     self.assertTasksInQueue(n=1, url=self.SPAWN_URL)
     # We have two projects in datastore and one is withdrawn, so we expect
@@ -205,7 +205,7 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
 
     response = self.post(self.SPAWN_URL, post_data)
 
-    self.assertEqual(response.status_code, httplib.OK)
+    self.assertResponseOK(response)
     self.assertTasksInQueue(n=2)
     self.assertTasksInQueue(n=1, url=self.SPAWN_URL)
     # We have two projects in datastore and one is withdrawn, so we expect
