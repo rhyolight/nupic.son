@@ -14,7 +14,6 @@
 
 """Module containing the core callback."""
 
-from soc.tasks.updates import project_conversion
 from soc.tasks.updates import proposal_conversion
 from soc.views import host
 from soc.views import legacy
@@ -58,4 +57,3 @@ class Callback(object):
       self.core.registerSitemapEntry(view.djangoURLPatterns())
 
     self.core.registerSitemapEntry(proposal_conversion.getDjangoURLPatterns())
-    self.core.registerSitemapEntry(project_conversion.getDjangoURLPatterns())
