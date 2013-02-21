@@ -80,5 +80,8 @@ class RedirectHelperTest(GCITestCase):
     self._assertAssertionError(self.redirect.userOrg)
 
   def _assertAssertionError(self, callable, *args, **kwargs):
-    with self.assertRaises(AssertionError):
-      callable(*args, **kwargs)
+    # TODO(daniel): replace this with the commented code
+    # when app is updated to 2.7 runtime
+    self.assertRaises(AssertionError, callable, *args, **kwargs)
+    #with self.assertRaises(AssertionError):
+    #  callable(*args, **kwargs)
