@@ -23,6 +23,7 @@ from soc.modules.gsoc.views import accept_proposals
 from soc.modules.gsoc.views import accept_withdraw_projects
 from soc.modules.gsoc.views import accepted_orgs
 from soc.modules.gsoc.views import admin
+from soc.modules.gsoc.views import connection
 from soc.modules.gsoc.views import dashboard
 from soc.modules.gsoc.views import document
 from soc.modules.gsoc.views import duplicates

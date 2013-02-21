@@ -319,25 +319,25 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
 
     activate_new_connection_txn()
 
-  def _getModulePrefix(self, data):
+  def _getModulePrefix(self):
     return 'gsoc'
 
-  def _getEditProfileURLName(self, data):
+  def _getEditProfileURLName(self):
     return 'edit_gsoc_profile'
 
-  def _getCreateProfileURLName(self, data):
+  def _getCreateProfileURLName(self):
     return 'create_gsoc_profile'
 
-  def _getCreateConnectedProfileURLName(self, data):
+  def _getCreateConnectedProfileURLName(self):
     return url_names.GSOC_ANONYMOUS_CONNECTION
 
-  def _getEditProfileURLPattern(self, data):
+  def _getEditProfileURLPattern(self):
     return url_patterns.PROGRAM
 
-  def _getCreateProfileURLPattern(self, data):
+  def _getCreateProfileURLPattern(self):
     return url_patterns.CREATE_PROFILE
 
-  def _getCreateConnectedProfileURLPattern(self, data):
+  def _getCreateConnectedProfileURLPattern(self):
     return url_patterns.ANONYMOUS_CONNECTION
 
   def _getCreateUserForm(self, data):

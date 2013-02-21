@@ -228,7 +228,7 @@ class DashboardPage(base.GSoCRequestHandler):
       components.append(OrgConnectionComponent(data, False))
     else:
       components += self._getLoneUserComponents(data)
-      components.append(OrgconnectionComponent(data, False))
+      components.append(OrgConnectionComponent(data, False))
 
     return components
 
@@ -262,7 +262,7 @@ class DashboardPage(base.GSoCRequestHandler):
     if component:
       components.append(component)
 
-    components.append(UserConnectionComponent(self.request, self.data))
+    components.append(UserConnectionComponent(data))
     evals = dictForSurveyModel(GradingProjectSurvey, data.program,
                                ['midterm', 'final'])
 
@@ -308,11 +308,11 @@ class DashboardPage(base.GSoCRequestHandler):
     """
     components = []
 
-    component = self._getMyOrgApplicationsComponent()
+    component = self._getMyOrgApplicationsComponent(data)
     if component:
       components.append(component)
 
-    components.append(UserConnectionComponent(self.request, self.data))
+    components.append(UserConnectionComponent(data))
 
     return components
 
@@ -1303,7 +1303,7 @@ class UserConnectionComponent(Component):
 
   IDX = 8
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes this component.
     """
     list_config = lists.ListConfiguration(add_key_column=False)
@@ -1321,13 +1321,13 @@ class UserConnectionComponent(Component):
             user=e.parent(), connection=e).url())
     self._list_config = list_config
 
-    super(UserConnectionComponent, self).__init__(request, data)
+    super(UserConnectionComponent, self).__init__(data)
 
   def templatePath(self):
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
-    if lists.getListIndex(self.request) != self.IDX:
+    if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
     q = GSoCConnection.all().ancestor(self.data.user)
