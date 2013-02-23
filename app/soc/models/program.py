@@ -12,45 +12,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the Program Model.
-"""
-
+"""This module contains the Program Model."""
 
 from google.appengine.ext import db
 
-from django.utils.translation import ugettext
+from django.utils import translation
 
-import soc.models.document
-import soc.models.linkable
-import soc.models.timeline
+from soc.models import document as document_model
+from soc.models import linkable as linkable_model
+from soc.models import timeline as timeline_model
 
 
-class Program(soc.models.linkable.Linkable):
-  """The Program model, representing a Program ran by a Sponsor.
-  """
+class Program(linkable_model.Linkable):
+  """The Program model, representing a Program ran by a Sponsor."""
 
   #: Required field storing name of the group.
   name = db.StringProperty(required=True,
-      verbose_name=ugettext('Name'))
-  name.help_text = ugettext('Complete, formal name of the program.')
+      verbose_name=translation.ugettext('Name'))
+  name.help_text = translation.ugettext(
+      'Complete, formal name of the program.')
 
   #: Required field storing short name of the group.
   #: It can be used for displaying group as sidebar menu item.
   short_name = db.StringProperty(required=True,
-      verbose_name=ugettext('Short name'))
-  short_name.help_text = ugettext('Short name used for sidebar menu')
+      verbose_name=translation.ugettext('Short name'))
+  short_name.help_text = translation.ugettext(
+      'Short name used for sidebar menu')
 
   #: Optional field used to relate it to other programs
   #: For example, GSoC would be a group label for GSoC2008/GSoC2009
   group_label = db.StringProperty(
-      verbose_name=ugettext('Group label'))
-  group_label.help_text = ugettext(
+      verbose_name=translation.ugettext('Group label'))
+  group_label.help_text = translation.ugettext(
       'Optional name used to relate this program to others.')
 
   #: Required field storing description of the group.
   description = db.TextProperty(required=True,
-      verbose_name=ugettext('Description'))
-  description.help_text = ugettext(
+      verbose_name=translation.ugettext('Description'))
+  description.help_text = translation.ugettext(
       '<small><i>for example:</i></small><br>'
       '<tt><b>GSoC 2009</b> is the <i>Google Summer of Code</i>,'
       ' but in <u>2009</u>!</tt><br><br>'
@@ -58,16 +57,16 @@ class Program(soc.models.linkable.Linkable):
 
   #: Number of accepted organizations
   nr_accepted_orgs = db.IntegerProperty(
-      required=False, verbose_name=ugettext('#accepted orgs'))
-  nr_accepted_orgs.help_text = ugettext(
+      required=False, verbose_name=translation.ugettext('#accepted orgs'))
+  nr_accepted_orgs.help_text = translation.ugettext(
       'The number of accepted organizations.')
 
   #: Property that contains the minimum age of a student allowed to
   #: participate
   student_min_age = db.IntegerProperty(
-      required=False, verbose_name=ugettext('Student minimum age'))
-  student_min_age.group = ugettext('Age Requirements')
-  student_min_age.help_text = ugettext(
+      required=False, verbose_name=translation.ugettext('Student minimum age'))
+  student_min_age.group = translation.ugettext('Age Requirements')
+  student_min_age.help_text = translation.ugettext(
       'Minimum age (in years) of the student participate.')
 
   # TODO(nathaniel): In the offseason, fix this to be the maximum
@@ -76,50 +75,51 @@ class Program(soc.models.linkable.Linkable):
   #: Property that contains the maximum age of a student allowed to
   #: participate
   student_max_age = db.IntegerProperty(default=100,
-      required=False, verbose_name=ugettext('Student age ceiling'))
-  student_max_age.group = ugettext('Age Requirements')
-  student_max_age.help_text = ugettext(
+      required=False, verbose_name=translation.ugettext('Student age ceiling'))
+  student_max_age.group = translation.ugettext('Age Requirements')
+  student_max_age.help_text = translation.ugettext(
       'Youngest disallowed age (in years).')
 
   #: Property that contains the date as of which above student
   #: minimum/maximum age requirement holds.
   student_min_age_as_of = db.DateProperty(
-      required=False, verbose_name=ugettext('Minimum age as of'))
-  student_min_age_as_of.group = ugettext('Age Requirements')
-  student_min_age_as_of.help_text = ugettext(
+      required=False, verbose_name=translation.ugettext('Minimum age as of'))
+  student_min_age_as_of.group = translation.ugettext('Age Requirements')
+  student_min_age_as_of.help_text = translation.ugettext(
       'Date as of which the student minimum age requirement '
       'should be reached.')
 
   #: Required 1:1 relationship indicating the Program the Timeline
   #: belongs to.
-  timeline = db.ReferenceProperty(reference_class=soc.models.timeline.Timeline,
-                                  required=True, collection_name="program",
-                                  verbose_name=ugettext('Timeline'))
+  timeline = db.ReferenceProperty(
+      reference_class=timeline_model.Timeline,
+      required=True, collection_name="program",
+      verbose_name=translation.ugettext('Timeline'))
 
   #: Document reference property used for the Org Admin Agreement
   org_admin_agreement = db.ReferenceProperty(
-    reference_class=soc.models.document.Document,
-    verbose_name=ugettext('Organization Admin Agreement'),
+    reference_class=document_model.Document,
+    verbose_name=translation.ugettext('Organization Admin Agreement'),
     collection_name='org_admin_agreement')
-  org_admin_agreement.help_text = ugettext(
+  org_admin_agreement.help_text = translation.ugettext(
       'Document containing optional Mentor Agreement for participating as a '
       'Organization admin.')
 
   #: Document reference property used for the Mentor Agreement
   mentor_agreement = db.ReferenceProperty(
-    reference_class=soc.models.document.Document,
-    verbose_name=ugettext('Mentor Agreement'),
+    reference_class=document_model.Document,
+    verbose_name=translation.ugettext('Mentor Agreement'),
     collection_name='mentor_agreement')
-  mentor_agreement.help_text = ugettext(
+  mentor_agreement.help_text = translation.ugettext(
       'Document containing optional Mentor Agreement for participating as a '
       'Mentor.')
 
   #: Document reference property used for the Student Agreement
   student_agreement = db.ReferenceProperty(
-    reference_class=soc.models.document.Document,
-    verbose_name=ugettext('Student Agreement'),
+    reference_class=document_model.Document,
+    verbose_name=translation.ugettext('Student Agreement'),
     collection_name='student_agreement')
-  student_agreement.help_text = ugettext(
+  student_agreement.help_text = translation.ugettext(
       'Document containing optional Student Agreement for participating as a '
       'Student.')
 
@@ -128,9 +128,9 @@ class Program(soc.models.linkable.Linkable):
   #: Visible: Visible to everyone.
   #: Invalid: Not visible or editable by anyone
   status = db.StringProperty(required=True, default='invisible',
-      verbose_name=ugettext('Program Status'),
+      verbose_name=translation.ugettext('Program Status'),
       choices=['invisible', 'visible', 'invalid'])
-  status.help_text = ugettext(
+  status.help_text = translation.ugettext(
       '<tt>Invisible: Program Stealth-Mode Visible to Hosts and Devs only.<br/>'
       'Visible: Visible to everyone.<br/>'
       'Inactive: Not visible in sidebar, not editable.<br/>'
@@ -138,77 +138,81 @@ class Program(soc.models.linkable.Linkable):
 
   #: The document entity which contains the "About" page for the program
   about_page = db.ReferenceProperty(
-      reference_class=soc.models.document.Document,
-      verbose_name=ugettext('About page document'))
+      reference_class=document_model.Document,
+      verbose_name=translation.ugettext('About page document'))
   about_page.collection_name = 'about_page'
-  about_page.help_text = ugettext('The document with <b>About</b>')
+  about_page.help_text = translation.ugettext('The document with <b>About</b>')
 
   #: The document entity which contains "Events & Timeline" page
   #: for the program
   events_page = db.ReferenceProperty(
-      reference_class=soc.models.document.Document,
-      verbose_name=ugettext('Events page document'))
+      reference_class=document_model.Document,
+      verbose_name=translation.ugettext('Events page document'))
   events_page.collection_name = 'events_page'
-  events_page.help_text = ugettext(
+  events_page.help_text = translation.ugettext(
       'The document for the <b>Events & Timeline</b> page')
 
   #: The url which contains the "Events & Timeline" frame
   events_frame_url = db.LinkProperty(
-      verbose_name=ugettext('Events page iframe url'))
-  events_frame_url.help_text = ugettext(
+      verbose_name=translation.ugettext('Events page iframe url'))
+  events_frame_url.help_text = translation.ugettext(
       'The iframe url for the <b>Events & Timeline</b> page')
 
   #: The document entity which contains the "Connect With Us" page
   #: for the program
   connect_with_us_page = db.ReferenceProperty(
-      reference_class=soc.models.document.Document,
-      verbose_name=ugettext('Connect with us document'))
+      reference_class=document_model.Document,
+      verbose_name=translation.ugettext('Connect with us document'))
   connect_with_us_page.collection_name = 'connect_with_us_page'
-  connect_with_us_page.help_text = ugettext(
+  connect_with_us_page.help_text = translation.ugettext(
       'The document for the <b>Connect With Us</b> page')
 
   #: The document entity which contains the "Help" page
   #: for the program
   help_page = db.ReferenceProperty(
-      reference_class=soc.models.document.Document,
-      verbose_name=ugettext('Help document'))
+      reference_class=document_model.Document,
+      verbose_name=translation.ugettext('Help document'))
   help_page.collection_name = 'help_page'
-  help_page.help_text = ugettext(
+  help_page.help_text = translation.ugettext(
       'The document for the <b>Help</b> page')
 
   privacy_policy_url = db.LinkProperty(
-      verbose_name=ugettext("Privacy Policy"))
-  privacy_policy_url.help_text = ugettext(
+      verbose_name=translation.ugettext("Privacy Policy"))
+  privacy_policy_url.help_text = translation.ugettext(
       "The url for the <b>Privacy Policy</b>")
 
   #: ATOM or RSS feed URL. Feed entries are shown on the site
   #: page using Google's JavaScript blog widget
-  feed_url = db.LinkProperty(verbose_name=ugettext('Feed URL'))
-  feed_url.help_text = ugettext(
+  feed_url = db.LinkProperty(verbose_name=translation.ugettext('Feed URL'))
+  feed_url.help_text = translation.ugettext(
       'The URL should be a valid ATOM or RSS feed. '
       'Feed entries are shown on the program home page.')
-  feed_url.group = ugettext("1. Public Info")
+  feed_url.group = translation.ugettext("1. Public Info")
 
   blogger = db.LinkProperty(
-      required=False, verbose_name=ugettext("Blogger URL"))
-  blogger.help_text = ugettext("URL of the Blogger home page for the program")
-  blogger.group = ugettext("1. Public Info")
+      required=False, verbose_name=translation.ugettext("Blogger URL"))
+  blogger.help_text = translation.ugettext(
+      "URL of the Blogger home page for the program")
+  blogger.group = translation.ugettext("1. Public Info")
 
   gplus = db.LinkProperty(
-      required=False, verbose_name=ugettext("Google+ URL"))
-  gplus.help_text = ugettext("URL of the Google+ home page for the program")
-  gplus.group = ugettext("1. Public Info")
+      required=False, verbose_name=translation.ugettext("Google+ URL"))
+  gplus.help_text = translation.ugettext(
+      "URL of the Google+ home page for the program")
+  gplus.group = translation.ugettext("1. Public Info")
 
   email = db.EmailProperty(
-      required=False, verbose_name=ugettext("Program email"))
-  email.help_text = ugettext("Contact email address for the program")
-  email.group = ugettext("1. Public Info")
+      required=False, verbose_name=translation.ugettext("Program email"))
+  email.help_text = translation.ugettext(
+      "Contact email address for the program")
+  email.group = translation.ugettext("1. Public Info")
 
   irc = db.EmailProperty(
-      required=False, verbose_name=ugettext("IRC URL"))
-  irc.help_text = ugettext("URL of the irc channel for the program in "
-                           "the format irc://<channel>@server")
-  irc.group = ugettext("1. Public Info")
+      required=False, verbose_name=translation.ugettext("IRC URL"))
+  irc.help_text = translation.ugettext(
+      "URL of the irc channel for the program in "
+      "the format irc://<channel>@server")
+  irc.group = translation.ugettext("1. Public Info")
 
   def getProgramMessages(self):
     def get_or_create_txn():
@@ -232,12 +236,12 @@ class ProgramMessages(db.Model):
 
   #: Message sent to the organizations that are accepted for the program.
   accepted_orgs_msg = db.TextProperty(required=False,
-      verbose_name=ugettext('Accepted Organizations Message'))
+      verbose_name=translation.ugettext('Accepted Organizations Message'))
 
   #: Message sent to the organizations that are rejected for the program.
   rejected_orgs_msg = db.TextProperty(required=False,
-      verbose_name=ugettext('Rejected Organizations Message'))
+      verbose_name=translation.ugettext('Rejected Organizations Message'))
 
   #: Message sent to a mentor/org admin the first time they join the program.
   mentor_welcome_msg = db.TextProperty(required=False,
-      verbose_name=ugettext('Mentor Welcome Message'))
+      verbose_name=translation.ugettext('Mentor Welcome Message'))
