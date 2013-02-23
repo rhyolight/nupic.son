@@ -19,12 +19,10 @@ from soc.logic import validate
 
 
 class ValidateTest(unittest.TestCase):
-  """Tests related to the validation helper functions.
-  """
+  """Tests related to the validation helper functions."""
 
   def testIsFeedURLValid(self):
-    """Tests whether the urls are valid feed urls.
-    """
+    """Tests whether the urls are valid feed urls."""
     #invalid: not a feed url
     self.assertFalse(validate.isFeedURLValid('http://www.google.com'))
 
@@ -39,8 +37,7 @@ class ValidateTest(unittest.TestCase):
         'htp://googlesummerofcode.blogspot.com/feeds/posts/default'))
 
   def testIsLinkIdFormatValid(self):
-    """Tests the validity of Link Ids.
-    """
+    """Tests the validity of Link Ids."""
     #valid: starts with lowercase, no double underscores, does not end
     #with an underscore
     self.assertTrue(validate.isLinkIdFormatValid('sfd32'))
@@ -107,10 +104,7 @@ class ValidateTest(unittest.TestCase):
   def testIsAgeSufficientForProgram(self):
     test_program_start = datetime.date(2012, 11, 26)
     test_min_age = 13
-    # TODO(nathaniel): This should be the highest allowed age in years,
-    # not the lowest disallowed age (but the code under test would have
-    # to change to support that).
-    test_max_age = 18
+    test_max_age = 20
 
     # TODO(nathaniel): Use a real program.
     class MockProgram(object):
@@ -153,41 +147,41 @@ class ValidateTest(unittest.TestCase):
 
     # Someone's right in the sweet spot.
     test_birth_date = test_program_start.replace(
-        year=test_program_start.year - (test_min_age + test_max_age) / 2)
+        year=test_program_start.year - (test_min_age + test_max_age - 1) / 2)
     test_birth_date = test_birth_date + datetime.timedelta(173)
     self.assertTrue(validate.isAgeSufficientForProgram(
         test_birth_date, mock_program))
 
     # Someone's young enough by six months.
     test_birth_date = test_program_start.replace(
-        year=test_program_start.year - test_max_age)
+        year=test_program_start.year - test_max_age - 1)
     test_birth_date = test_birth_date + datetime.timedelta(180)
     self.assertTrue(validate.isAgeSufficientForProgram(
         test_birth_date, mock_program))
 
     # Someone's just young enough.
     test_birth_date = test_program_start.replace(
-        year=test_program_start.year - test_max_age)
+        year=test_program_start.year - test_max_age - 1)
     test_birth_date = test_birth_date + datetime.timedelta(1)
     self.assertTrue(validate.isAgeSufficientForProgram(
         test_birth_date, mock_program))
 
     # Someone's having a birthday! Sadly they are too old.
     test_birth_date = test_program_start.replace(
-        year=test_program_start.year - test_max_age)
+        year=test_program_start.year - test_max_age - 1)
     self.assertFalse(validate.isAgeSufficientForProgram(
         test_birth_date, mock_program))
 
     # Someone's too old by a full day.
     test_birth_date = test_program_start.replace(
-        year=test_program_start.year - test_max_age)
+        year=test_program_start.year - test_max_age - 1)
     test_birth_date = test_birth_date - datetime.timedelta(1)
     self.assertFalse(validate.isAgeSufficientForProgram(
         test_birth_date, mock_program))
 
     # Someone's too old by six months.
     test_birth_date = test_program_start.replace(
-        year=test_program_start.year - test_max_age)
+        year=test_program_start.year - test_max_age - 1)
     test_birth_date = test_birth_date - datetime.timedelta(180)
     self.assertFalse(validate.isAgeSufficientForProgram(
         test_birth_date, mock_program))

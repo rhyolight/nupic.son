@@ -67,27 +67,23 @@ class Program(linkable_model.Linkable):
       required=False, verbose_name=translation.ugettext('Student minimum age'))
   student_min_age.group = translation.ugettext('Age Requirements')
   student_min_age.help_text = translation.ugettext(
-      'Minimum age (in years) of the student participate.')
+      'Minimum age of students.')
 
-  # TODO(nathaniel): In the offseason, fix this to be the maximum
-  # allowed age (rounded down to year) rather than user-unfriendly
-  # "youngest disallowed age".
   #: Property that contains the maximum age of a student allowed to
   #: participate
-  student_max_age = db.IntegerProperty(default=100,
-      required=False, verbose_name=translation.ugettext('Student age ceiling'))
+  student_max_age = db.IntegerProperty(default=200,
+      required=False, verbose_name=translation.ugettext('Student maximum age'))
   student_max_age.group = translation.ugettext('Age Requirements')
   student_max_age.help_text = translation.ugettext(
-      'Youngest disallowed age (in years).')
+      'Maximum whole-year age of students.')
 
   #: Property that contains the date as of which above student
   #: minimum/maximum age requirement holds.
   student_min_age_as_of = db.DateProperty(
-      required=False, verbose_name=translation.ugettext('Minimum age as of'))
+      required=False, verbose_name=translation.ugettext('Age as of'))
   student_min_age_as_of.group = translation.ugettext('Age Requirements')
   student_min_age_as_of.help_text = translation.ugettext(
-      'Date as of which the student minimum age requirement '
-      'should be reached.')
+      'Date on which students must satisfy age requirements.')
 
   #: Required 1:1 relationship indicating the Program the Timeline
   #: belongs to.

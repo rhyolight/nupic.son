@@ -71,9 +71,6 @@ def isScopePathFormatValid(scope_path):
   return bool(linkable.SCOPE_PATH_REGEX.match(scope_path))
 
 
-# TODO(nathaniel): In the offseason, change this so that the program host-
-# supplied age values both represent allowed ages, rather than student_max_age
-# representing "youngest disallowed age".
 def isAgeSufficientForProgram(birth_date, program):
   """Returns True if a student with birth_date can participate in program.
 
@@ -100,10 +97,13 @@ def isAgeSufficientForProgram(birth_date, program):
 
   if program.student_max_age:
     earliest_allowed_birth_year = (
-        program.student_min_age_as_of.year - program.student_max_age)
+        # Because student_max_age represents the oldest allowed whole-year
+        # age and not the youngest disallowed age another year must be
+        # subtracted.
+        program.student_min_age_as_of.year - program.student_max_age - 1)
     earliest_allowed_birth_date = program.student_min_age_as_of.replace(
         year=earliest_allowed_birth_year)
-    # Yes - if it's your birthday on the program student-welcome date,
+    # Sorry - if it's your birthday on the program student-welcome date,
     # you're out of luck.
     if birth_date <= earliest_allowed_birth_date:
       return False
