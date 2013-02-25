@@ -40,6 +40,8 @@ class Document(soc.models.work.Work):
 
   DOCUMENT_ACCESS = ['admin', 'restricted', 'member', 'user']
 
+  VISIBILITY = ['org_admin', 'mentor', 'student']
+
   #: field storing the prefix of this document
   prefix = db.StringProperty(default='user', required=True,
       choices=['site', 'club', 'sponsor',
@@ -66,6 +68,13 @@ class Document(soc.models.work.Work):
   write_access.help_text = ugettext(
       'Indicates the state of the document, '
       'determines the access scheme.')
+
+  #: field which indicates on whose dashboard's documents list should this
+  #: document be listed.
+  dashboard_visibility = db.StringListProperty(
+      default=[], verbose_name=ugettext('Dashboard visibility'))
+  dashboard_visibility.help_text = ugettext(
+      'Indicates on whose dashboard the document should be listed.')
 
   #: field storing whether a link to the Document should be featured in
   #: the sidebar menu (and possibly elsewhere); FAQs, Terms of Service,
