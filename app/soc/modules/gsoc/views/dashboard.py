@@ -1528,8 +1528,8 @@ class StudentEvaluationComponent(Component):
 
     self._list_config = list_config
 
-  def _getStatus(self, entity, eval, *args):
-    eval_ent = self.evals.get(eval)
+  def _getStatus(self, entity, evaluation, *args):
+    eval_ent = self.evals.get(evaluation)
     self.record = getEvalRecord(GSoCProjectSurveyRecord, eval_ent, entity)
     return colorize(bool(self.record), "Submitted", "Not submitted")
 
@@ -1594,20 +1594,20 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
 
     self._list_config.addHtmlColumn(
         'grade', 'Grade', self._getGrade)
-    self._list_config.setRowAction(lambda entity, eval, *args:
+    self._list_config.setRowAction(lambda entity, evaluation, *args:
         data.redirect.survey_record(
-            eval, entity.key().id_or_name(),
+            evaluation, entity.key().id_or_name(),
             entity.parent().link_id).urlOf(
                 'gsoc_take_mentor_evaluation'))
 
-  def _getStatus(self, entity, eval, *args):
-    eval_ent = self.evals.get(eval)
+  def _getStatus(self, entity, evaluation, *args):
+    eval_ent = self.evals.get(evaluation)
     self.record = getEvalRecord(GSoCGradingProjectSurveyRecord,
                                 eval_ent, entity)
     return colorize(
         bool(self.record), "Submitted", "Not submitted")
 
-  def _getGrade(self, entity, eval, *args):
+  def _getGrade(self, entity, evaluation, *args):
     if self.record:
       return colorize(
         self.record.grade, "Pass", "Fail")
