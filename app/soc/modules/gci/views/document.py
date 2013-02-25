@@ -22,22 +22,21 @@ from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 
 from soc.modules.gci.views.base import GCIRequestHandler
-from soc.modules.gci.views.forms import GCIModelForm
+from soc.modules.gci.views import forms
 #from soc.modules.gci.views.base_templates import ProgramSelect
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_patterns as gci_url_patterns
 
 
-class GCIDocumentForm(GCIModelForm):
-  """Django form for creating documents.
-  """
+class GCIDocumentForm(forms.GCIModelForm, document.DocumentForm):
+  """Django form for creating documents."""
 
-  class Meta:
-    model = Document
-    exclude = [
-        'scope', 'scope_path', 'author', 'modified_by', 'prefix', 'home_for',
-        'link_id', 'read_access', 'write_access', 'is_featured'
-    ]
+  dashboard_visibility = forms.MultipleChoiceField(
+      choices=[(v, v) for v in document_model.Document.VISIBILITY],
+      widget=forms.CheckboxSelectMultiple)
+
+  class Meta(document.DocumentForm.Meta):
+    pass
 
 
 class EditDocumentPage(GCIRequestHandler):
