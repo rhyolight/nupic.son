@@ -40,6 +40,7 @@ DateTimeInput = forms.DateTimeInput
 FileField = forms.FileField
 FileInput = forms.FileInput
 HiddenInput = forms.HiddenInput
+MultipleChoiceField = forms.MultipleChoiceField
 RadioFieldRenderer = forms.RadioFieldRenderer
 RadioSelect = forms.RadioSelect
 Select = forms.Select
