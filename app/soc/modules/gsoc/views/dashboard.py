@@ -27,6 +27,7 @@ from soc.logic import cleaning
 from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
+from soc.models import document as soc_document_model
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
@@ -221,6 +222,8 @@ class DashboardPage(base.GSoCRequestHandler):
 
     info = data.student_info
 
+    components.append(DocumentComponent(data))
+
     if data.is_student and info.number_of_projects:
       components.append(TodoComponent(data))
       # Add a component to show the evaluations
@@ -240,6 +243,8 @@ class DashboardPage(base.GSoCRequestHandler):
   def _getOrgMemberComponents(self, data):
     """Get the dashboard components for Organization members."""
     components = []
+
+    components.append(DocumentComponent(data))
 
     component = self._getMyOrgApplicationsComponent(data)
     if component:
@@ -1616,3 +1621,66 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
         'List of mentor evaluations for my organizations')
     context['name'] = 'mentor_evaluations'
     return context
+
+
+class DocumentComponent(Component):
+  """Component listing all the documents for the current user.
+  """
+
+  IDX = 14
+
+  def __init__(self, data):
+    """Initializes this component.
+    """
+    self.data = data
+    list_config = lists.ListConfiguration()
+    list_config.addPlainTextColumn(
+        'title', 'Title', lambda ent, *args: ent.name())
+
+    list_config.setRowAction(
+        lambda e, *args: self.data.redirect.document(e).urlOf(
+            'show_gsoc_document'))
+
+    self._list_config = list_config
+
+    super(DocumentComponent, self).__init__(data)
+
+  def templatePath(self):
+    return'v2/modules/gsoc/dashboard/list_component.html'
+
+  def getListData(self):
+    idx = lists.getListIndex(self.data.request)
+
+    if idx != self.IDX:
+      return None
+
+    q = soc_document_model.Document.all()
+    q.filter('scope', self.data.program)
+
+    if self.data.is_student:
+      q.filter('dashboard_visibility', 'student')
+    elif self.data.is_org_admin:
+      # NOTE 1: It is important to check for org admin before mentor because
+      # all org admins are mentors by default in Melange, so checking for
+      # is_mentor first may cause the code to never go to is_org_admin block.
+      #
+      # NOTE 2: Since all the org admins are mentors by default in Melange,
+      # we show both the org admin and mentor documents for org admins.
+      q.filter('dashboard_visibility IN', ['org_admin', 'mentor'])
+    elif self.data.is_mentor:
+      q.filter('dashboard_visibility', 'mentor')
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.data.request, self._list_config, q, lists.keyStarter)
+    return response_builder.build()
+
+  def context(self):
+    list_config = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.IDX, preload_list=False)
+
+    return {
+        'name': 'documents',
+        'title': 'Important documents',
+        'lists': [list_config],
+        'description': ugettext('List of important documents'),
+    }
