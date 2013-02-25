@@ -15,11 +15,10 @@
 """Module containing the views for GCI documents page."""
 
 from soc.logic.exceptions import AccessViolation
-from soc.models.document import Document
+from soc.models import document as document_model
 from soc.views import document
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
-from soc.views.template import Template
 
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms

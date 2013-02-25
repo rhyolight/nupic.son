@@ -18,7 +18,6 @@ from django.conf.urls.defaults import url as django_url
 
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
-from soc.models.document import Document
 from soc.views import document
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import url_patterns

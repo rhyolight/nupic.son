@@ -14,7 +14,6 @@
 
 """Module containing the template for documents."""
 
-from soc.views.template import Template
 
 from soc.models import document as document_model
 from soc.logic.helper import prefixes
@@ -22,7 +21,6 @@ from soc.views import forms
 from soc.views import template
 from soc.views.helper import lists
 
-import soc.models.document
 
 class DocumentForm(forms.ModelForm):
   """Django form for creating documents."""
@@ -44,7 +42,7 @@ class DocumentForm(forms.ModelForm):
     ]
 
 
-class Document(Template):
+class Document(template.Template):
   def __init__(self, data, entity):
     assert(entity != None)
     self.data = data
@@ -81,7 +79,7 @@ def validateForm(data, document_form):
   return document
 
 
-class DocumentList(Template):
+class DocumentList(template.Template):
   """Template for list of documents."""
 
   def __init__(self, data, edit_name):
@@ -114,7 +112,7 @@ class DocumentList(Template):
   def getListData(self):
     idx = lists.getListIndex(self.data.request)
     if idx == 0:
-      q = soc.models.document.Document.all()
+      q = document_model.Document.all()
       q.filter('scope', self.data.program)
 
       response_builder = lists.RawQueryContentResponseBuilder(
