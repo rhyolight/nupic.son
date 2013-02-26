@@ -1657,18 +1657,14 @@ class DocumentComponent(Component):
     q = soc_document_model.Document.all()
     q.filter('scope', self.data.program)
 
+    roles = []
     if self.data.is_student:
-      q.filter('dashboard_visibility', 'student')
-    elif self.data.is_org_admin:
-      # NOTE 1: It is important to check for org admin before mentor because
-      # all org admins are mentors by default in Melange, so checking for
-      # is_mentor first may cause the code to never go to is_org_admin block.
-      #
-      # NOTE 2: Since all the org admins are mentors by default in Melange,
-      # we show both the org admin and mentor documents for org admins.
-      q.filter('dashboard_visibility IN', ['org_admin', 'mentor'])
-    elif self.data.is_mentor:
-      q.filter('dashboard_visibility', 'mentor')
+      roles.append('student')
+    if self.data.is_org_admin:
+      roles.append('org_admin')
+    if self.data.is_mentor:
+      roles.append('mentor')
+    q.filter('dashboard_visibility IN', roles)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, lists.keyStarter)
