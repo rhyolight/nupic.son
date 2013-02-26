@@ -1664,7 +1664,11 @@ class DocumentComponent(Component):
       roles.append('org_admin')
     if self.data.is_mentor:
       roles.append('mentor')
-    q.filter('dashboard_visibility IN', roles)
+
+    if (len(roles) == 1):
+      q.filter('dashboard_visibility', roles[0])
+    else:
+      q.filter('dashboard_visibility IN', roles)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, lists.keyStarter)
