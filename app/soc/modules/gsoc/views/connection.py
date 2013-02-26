@@ -151,11 +151,11 @@ class OrgConnectionForm(ConnectionForm):
     field = 'current_user'
     for id in id_list:
       self.cleaned_data[field] = id.strip(' ')
-      user, anon_user = self._clean_one_id(field)
-      if anon_user is None:
+      user, anonymous_user = self._clean_one_id(field)
+      if anonymous_user is None:
         self.request_data.user_connections.append(user)
       else:
-        self.request_data.anonymous_users.append(anon_user)
+        self.request_data.anonymous_users.append(anonymous_user)
     del self.cleaned_data[field]
     
   def _clean_one_id(self, field):
@@ -327,8 +327,6 @@ class OrgConnectionPage(GSoCRequestHandler):
         raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
 
       connection = connection_form.create(parent=user, commit=False)
-      # An organization admin is always a mentor, so regardless of the admin's
-      # choice the user will be offered a mentoring position.
       connection.org_state = RESPONSE_STATE_ACCEPTED
       connection.role =  connection_form.cleaned_data['role_choice']
       connection.put()
@@ -368,7 +366,6 @@ class OrgConnectionPage(GSoCRequestHandler):
 
       # Notify the user that they have a pending connection and can register
       # to accept the elevated role.
-      role = 'org_admin' if connection.role == 'Org Admin' else 'mentor'
       context = notifications.anonymousConnectionContext(data, email, 
           connection.role, connection.hash_id, 
           connection_form.cleaned_data['message'])
@@ -467,7 +464,7 @@ class UserConnectionPage(GSoCRequestHandler):
 
       connection = ConnectionForm.create(
           connection_form, parent=data.user, commit=False)
-      connection.user_state = 'Accepted'
+      connection.user_state = RESPONSE_STATE_ACCEPTED
       connection.put()
 
       if message_provided:

@@ -254,7 +254,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
       return self.get(data, check, mutator)
 
     if data.anonymous_connection:
-      self._handleAnonymousConnection()
+      self._handleAnonymousConnection(data)
 
     link_id = data.GET.get('org')
 
@@ -288,7 +288,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
 
     return data.redirect.to(link, extra=extra_get_args)
 
-  def _handleAnonymousConnection(self):
+  def _handleAnonymousConnection(self, data):
     """ Handler for automatically created and accepting a new connection.
     """
     
