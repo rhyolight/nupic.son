@@ -13,12 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 {% block content %}
-{{ requester }} has tried to establish a connection with you for {{ org }} to grant you the role
+Hello, {{ requester }} has tried to establish a connection with you for {{ org }} to grant you the role
 of {{ role }}. 
 {% if message %}
-They added the following message:
+They provided the following message:
 	{{ message }}
 {% endif %}
 
-To accept, click <a href="{{ url }}">this link to create a Profile</a> for Google Summer of Code.
+To accept, please click the link bewlow to create a Profile for Google Summer of Code. Once complete, 
+you will be automatically promoted to the offered role.
+<a href="{{ url }}"></a>
 {% endblock %}
