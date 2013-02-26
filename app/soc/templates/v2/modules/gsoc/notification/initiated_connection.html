@@ -21,6 +21,12 @@ limitations under the License.
 {% if message %}
 {{ message }}
 {% endif %}
+{% if is_user %}
+An org admin for {{ org }} has established a connection with you.
+{% else %}
+A user has established a connection with {{ org }}.
+{% endif %}
 
-Please visit <a href="{{ request_url }}">this URL</a> to respond to this connection.
+You can respond to the connection by visiting the following URL.
+<a href="{{ request_url }}"></a>
 {% endblock %}
