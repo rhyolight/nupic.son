@@ -24,10 +24,10 @@ from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
+from soc.logic import document as soc_document_logic
 from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
-from soc.models import document as soc_document_model
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
@@ -1654,21 +1654,7 @@ class DocumentComponent(Component):
     if idx != self.IDX:
       return None
 
-    q = soc_document_model.Document.all()
-    q.filter('scope', self.data.program)
-
-    roles = []
-    if self.data.is_student:
-      roles.append('student')
-    if self.data.is_org_admin:
-      roles.append('org_admin')
-    if self.data.is_mentor:
-      roles.append('mentor')
-
-    if (len(roles) == 1):
-      q.filter('dashboard_visibility', roles[0])
-    else:
-      q.filter('dashboard_visibility IN', roles)
+    q = soc_document_logic.getDocumentQueryForRoles(self.data)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, lists.keyStarter)

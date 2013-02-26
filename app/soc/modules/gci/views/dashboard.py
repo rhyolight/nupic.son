@@ -23,6 +23,7 @@ from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from soc.logic import document as soc_document_logic
 from soc.logic import exceptions
 from soc.logic import org_app as org_app_logic
 from soc.models import document as soc_document_model
@@ -1151,17 +1152,7 @@ class DocumentComponent(Component):
     if idx != self.IDX:
       return None
 
-    q = soc_document_model.Document.all()
-    q.filter('scope', self.data.program)
-
-    roles = []
-    if self.data.is_student:
-      roles.add('student')
-    if self.data.is_org_admin:
-      roles.add('org_admin')
-    if self.data.is_mentor:
-      roles.add('mentor')
-    q.filter('dashboard_visibility IN', roles)
+    q = soc_document_logic.getDocumentQueryForRoles(self.data)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, lists.keyStarter)
