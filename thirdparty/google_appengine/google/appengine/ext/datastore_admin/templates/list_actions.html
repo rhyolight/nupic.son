@@ -20,7 +20,7 @@
           {% else %}
             Entity statistics unavailable.
           {% endif %}
-          <a target="_top"
+          <a target="_blank"
              href="http://developers.google.com/appengine/kb/adminconsole.html#datastore_stats">
             <img class="ae-help-icon" src="{{ base_path }}/static/img/help.gif"
               height="14" width="14" alt="help">
@@ -258,6 +258,7 @@
           <th scope="col" class="id">Description</th>
           <th scope="col" class="id">Completed steps</th>
           <th scope="col" class="id">Status</th>
+          <th scope="col" class="id">Status info</th>
         </tr>
       </thead>
       <tbody>
@@ -271,6 +272,9 @@
             </td>
             <td class="id">
               {{operation.status}}
+            </td>
+            <td class="id">
+              {{operation.status_info}}
             </td>
           </tr>
         {% endfor %}

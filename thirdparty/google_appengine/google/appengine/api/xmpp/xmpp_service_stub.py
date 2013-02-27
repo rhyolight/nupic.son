@@ -33,8 +33,8 @@ import os
 
 from google.appengine.api import apiproxy_stub
 from google.appengine.api import app_identity
-from google.appengine.api import xmpp
 from google.appengine.api.xmpp import xmpp_service_pb
+from google.appengine.runtime import apiproxy_errors
 
 
 class XmppServiceStub(apiproxy_stub.APIProxyStub):
@@ -64,12 +64,20 @@ class XmppServiceStub(apiproxy_stub.APIProxyStub):
       request: A PresenceRequest.
       response: A PresenceResponse.
     """
-    jid = request.jid()
     self._GetFrom(request.from_jid())
-    if jid[0] < 'm':
-      response.set_is_available(True)
-    else:
-      response.set_is_available(False)
+    self._FillInPresenceResponse(request.jid(), response)
+
+  def _Dynamic_BulkGetPresence(self, request, response):
+    self._GetFrom(request.from_jid())
+    for jid in request.jid_list():
+      subresponse = response.add_presence_response()
+      self._FillInPresenceResponse(jid, subresponse)
+
+  def _FillInPresenceResponse(self, jid, response):
+    """Arbitrarily fill in a presence response or subresponse."""
+    response.set_is_available(jid[0] < 'm')
+    response.set_valid(jid.count('@') == 1)
+    response.set_presence(1)
 
   def _Dynamic_SendMessage(self, request, response):
     """Implementation of XmppService::SendMessage.
@@ -146,7 +154,7 @@ class XmppServiceStub(apiproxy_stub.APIProxyStub):
       string, The from JID.
 
     Raises:
-      xmpp.InvalidJidError if the requested JID is invalid.
+      apiproxy_errors.ApplicationError if the requested JID is invalid.
     """
 
     full_appid = os.environ.get('APPLICATION_ID')
@@ -160,7 +168,8 @@ class XmppServiceStub(apiproxy_stub.APIProxyStub):
     at = requested.find('@')
     if at == -1:
       self.log('Invalid From JID: No \'@\' character found. JID: %s', requested)
-      raise xmpp.InvalidJidError()
+      raise apiproxy_errors.ApplicationError(
+          xmpp_service_pb.XmppServiceError.INVALID_JID)
 
     node = requested[:at]
     rest = requested[at+1:]
@@ -168,7 +177,8 @@ class XmppServiceStub(apiproxy_stub.APIProxyStub):
     if rest.find('@') > -1:
       self.log('Invalid From JID: Second \'@\' character found. JID: %s',
                requested)
-      raise xmpp.InvalidJidError()
+      raise apiproxy_errors.ApplicationError(
+          xmpp_service_pb.XmppServiceError.INVALID_JID)
 
     slash = rest.find('/')
     if slash == -1:
@@ -181,7 +191,8 @@ class XmppServiceStub(apiproxy_stub.APIProxyStub):
     if resource.find('/') > -1:
       self.log('Invalid From JID: Second \'/\' character found. JID: %s',
                requested)
-      raise xmpp.InvalidJidError()
+      raise apiproxy_errors.ApplicationError(
+          xmpp_service_pb.XmppServiceError.INVALID_JID)
 
     if domain == 'appspot.com' and node == display_app_id:
       return node + '@' + domain + '/' + resource
@@ -190,7 +201,8 @@ class XmppServiceStub(apiproxy_stub.APIProxyStub):
 
     self.log('Invalid From JID: Must be appid@appspot.com[/resource] or '
              'node@appid.appspotchat.com[/resource]. JID: %s', requested)
-    raise xmpp.InvalidJidError()
+    raise apiproxy_errors.ApplicationError(
+        xmpp_service_pb.XmppServiceError.INVALID_JID)
 
   def _Dynamic_CreateChannel(self, request, response):
     """Implementation of XmppService::CreateChannel.
