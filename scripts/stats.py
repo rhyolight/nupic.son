@@ -337,140 +337,6 @@ def setOrganizationInSurveyRecords():
   addOrganizationToSurveyRecords(GradingProjectSurveyRecord)
 
 
-def exportStudentsWithProjects(csv_filename, scope_path_start=''):
-  """Exports all Students who have a project assigned.
-
-  Args:
-    csv_filename: the name of the file where to save the CSV export
-    scope_path_start: The string with which the scope_path of the project
-      should start with. Can be used to select which sponsor, program or org
-      the projects should belong to.
-  """
-  # TODO(Pawel.Solyga): Add additional Program parameter to this method 
-  # so we export students from different programs
-  # TODO(Pawel.Solyga): Make it universal so it works with both GCI 
-  # and GSoC programs
-
-  from soc.models.student_project import StudentProject
-  from soc.models.student import Student
-  from soc.models.organization import Organization
-
-  # get all projects
-  student_projects = getEntities(StudentProject)()
-
-  student_projects_amount = len(student_projects)
-  print "Fetched %d Student Projects." % student_projects_amount
-
-  print "Fetching Student entities from Student Projects."
-  accepted_students = {}
-  student_extra_data = {}
-  counter = 0
-
-  for student_project in student_projects.values():
-    counter += 1
-
-    if student_project.status == 'invalid' or not \
-        student_project.scope_path.startswith(scope_path_start):
-      # no need to export this project
-      continue
-
-    student_entity = student_project.student
-
-    student_key = student_entity.key().id_or_name()
-    accepted_students[student_key] = student_entity
-
-    org_name = student_project.scope.name
-
-    extra_data = {}
-    extra_data['organization'] = org_name
-    extra_data['project_status'] = student_project.status
-    student_extra_data[student_key] = extra_data
-
-    print '%s/%s %s (%s)' %(counter, student_projects_amount,
-                            student_key, org_name)
-
-  print "All Student entities fetched."
-
-  students_key_order = ['link_id', 'given_name', 'surname', 
-      'document_name', 'email', 'res_street', 'res_city', 'res_state',
-      'res_country', 'res_postalcode', 'phone', 'shipping_street',
-      'shipping_city', 'shipping_state', 'shipping_country',
-      'shipping_postalcode', 'birth_date', 'tshirt_size', 'tshirt_style',
-      'school_name', 'school_country', 'major', 'degree']
-
-  print "Preparing Students data for export."
-  students_data = []
-
-  for student_key, student_entity in accepted_students.iteritems():
-    # transform the Student into a set of dict entries
-    prepared_data = dicts.toDict(student_entity, students_key_order)
-
-    # add the additional fields
-    extra_data = student_extra_data[student_key]
-    prepared_data['organization'] = extra_data['organization']
-    prepared_data['project_status'] = extra_data['project_status']
-
-    # append the prepared data to the collected data
-    students_data.append(prepared_data)
-
-  # append the extra fields to the key_order
-  students_key_order.append('organization')
-  students_key_order.append('project_status')
-
-  saveDataToCSV(csv_filename, students_data, students_key_order)
-  print "Students with Projects exported to %s file." % csv_filename
-
-
-def exportUniqueOrgAdminsAndMentors(csv_filename, scope_path_start=''):
-  """Exports Org Admins and Mentors to a CSV file, one per User.
-
-  Args:
-    csv_filename: the name of the csv file to save
-    scope_path_start: the start of the scope path of the roles to get could be
-      google/gsoc2009 if you want to export all GSoC 2009 Org Admins and
-      Mentors.
-  """
-
-  from soc.models.mentor import Mentor
-  from soc.models.org_admin import OrgAdmin
-
-  print 'Retrieving all Mentors'
-  mentors = getEntities(Mentor)()
-  all_mentors = mentors.values()
-
-  print 'Retrieving all Org Admins'
-  org_admins = getEntities(OrgAdmin)()
-  all_org_admins = org_admins.values()
-
-  print 'Combining the list of Mentors and Org Admins'
-  unique_users = {}
-  all_users = []
-  all_users.extend(all_mentors)
-  all_users.extend(all_org_admins)
-
-  for user in all_users:
-    if not user.scope_path.startswith(scope_path_start) or \
-        user.status == 'invalid':
-      # not the correct program or valid user
-      continue
-
-    unique_users[user.link_id] = user
-
-  export_fields = ['link_id', 'given_name', 'surname', 
-      'document_name', 'email', 'res_street', 'res_city', 'res_state',
-      'res_country', 'res_postalcode', 'phone', 'shipping_street',
-      'shipping_city', 'shipping_state', 'shipping_country',
-      'shipping_postalcode', 'birth_date', 'tshirt_size', 'tshirt_style']
-
-  print 'Preparing the data for export'
-  data = [dicts.toDict(user, field_names=export_fields) for user in \
-          unique_users.values()]
-
-  print 'Exporting the data to CSV'
-  saveDataToCSV(csv_filename, data, export_fields)
-  print "Exported Org admins and Mentors (1 per User) to %s file." % csv_filename
-
-
 def saveDataToCSV(csv_filename, data, key_order):
   """Saves data in order into CSV file.
 
@@ -904,8 +770,6 @@ def main(args):
   from soc.modules.gsoc.models.profile import GSoCStudentInfo
   from soc.modules.gsoc.models.proposal import GSoCProposal
   from soc.modules.gsoc.models.project import GSoCProject
-  from soc.modules.gsoc.models.student_proposal import StudentProposal
-  from soc.modules.gsoc.models.student_project import StudentProject
   from soc.modules.gsoc.tasks.accept_proposals import ProposalAcceptanceTask
 
   from soc.modules.gci.models.task import GCITask
@@ -962,8 +826,6 @@ def main(args):
       'deleteEntities': deleteEntities,
       'getOrgs': getEntities(GSoCOrganization),
       'getUsers': getEntities(User),
-      'getStudentProjects': getEntities(StudentProject),
-      'getStudentProjects': getEntities(StudentProposal),
       'getProps': getProps,
       'countStudentsWithProposals': countStudentsWithProposals,
       'setOrganizationInSurveyRecords': setOrganizationInSurveyRecords,
@@ -989,13 +851,9 @@ def main(args):
       'GSoCProposal': GSoCProposal,
       'GSoCProject': GSoCProject,
       'gci_tasks': gci_tasks,
-      'StudentProject': StudentProject,
-      'StudentProposal': StudentProposal,
       'slotSaver': slotSaver,
       'popSaver': popSaver,
       'rawSaver': rawSaver,
-      'exportStudentsWithProjects': exportStudentsWithProjects,
-      'exportUniqueOrgAdminsAndMentors': exportUniqueOrgAdminsAndMentors,
       'exportOrgsForGoogleCode': exportOrgsForGoogleCode,
       'exportRolesForGoogleCode': exportRolesForGoogleCode,
       'surveyRecordCSVExport': surveyRecordCSVExport,
