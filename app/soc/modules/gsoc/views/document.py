@@ -32,8 +32,7 @@ from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 class GSoCDocumentForm(forms.GSoCModelForm, document.DocumentForm):
   """Django form for creating documents."""
 
-  class Meta(document.DocumentForm.Meta):
-    pass
+  Meta = document.DocumentForm.Meta
 
 
 class EditDocumentPage(GSoCRequestHandler):

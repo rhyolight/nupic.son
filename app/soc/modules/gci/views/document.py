@@ -34,8 +34,7 @@ class GCIDocumentForm(forms.GCIModelForm, document.DocumentForm):
       choices=[(v, v) for v in document_model.Document.VISIBILITY],
       widget=forms.CheckboxSelectMultiple)
 
-  class Meta(document.DocumentForm.Meta):
-    pass
+  Meta = document.DocumentForm.Meta
 
 
 class EditDocumentPage(GCIRequestHandler):
