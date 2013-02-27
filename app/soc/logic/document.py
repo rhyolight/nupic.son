@@ -40,9 +40,13 @@ def getDocumentQueryForRoles(data):
   if data.is_mentor:
     roles.append('mentor')
 
-  if (len(roles) == 1):
+  num_roles = len(roles)
+
+  # When number of roles is 0, then the profile should belong to a host, so
+  # we apply no filtering.
+  if num_roles == 1:
     q.filter('dashboard_visibility', roles[0])
-  else:
+  elif num_roles > 1:
     q.filter('dashboard_visibility IN', roles)
 
   return q
