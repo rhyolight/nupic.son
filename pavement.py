@@ -326,7 +326,7 @@ def tinymce_zip(options):
     tinymce_zip_fp = StringIO()
   else:
     # Ensure the parent directories exist.
-    tinymce_zip_filename.dirname().makedirs()
+    tinymce_zip_filename.dirname().makedirs_p()
     tinymce_zip_fp = open(tinymce_zip_filename, mode='w')
 
   try:
