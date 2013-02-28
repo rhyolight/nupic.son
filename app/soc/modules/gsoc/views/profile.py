@@ -301,7 +301,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
       connection = GSoCConnection(parent=user.key(), 
           organization=data.anonymous_connection.parent(),
           profile=profile,
-          role=sdata.anonymous_connection.role)
+          role=data.anonymous_connection.role)
       # Set the apropriate fields to automatically accept the connection.
       connection.org_state = connection.user_state = RESPONSE_STATE_ACCEPTED
       connection.put()
@@ -315,7 +315,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
         profile.org_admin_for = list(set(profile.org_admin_for))
       profile.put()
       # We no longer need the placeholder.
-      self.data.anonymous_connection.delete()
+      data.anonymous_connection.delete()
 
     activate_new_connection_txn()
 
