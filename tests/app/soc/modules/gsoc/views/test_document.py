@@ -72,6 +72,7 @@ class EditProgramTest(GSoCDjangoTestCase):
         'key_name': DocumentKeyNameProvider(), 'modified_by': self.data.user,
         'home_for': None, 'author': self.data.user, 'is_featured': None,
         'write_access': 'admin', 'read_access': 'public',
+        'dashboard_visibility': ['student', 'mentor'],
     }
     properties = seeder_logic.seed_properties(Document, properties=override)
     response = self.post(url, properties)
