@@ -43,7 +43,7 @@ STATUS_STATES = {
     }
 
 class Connection(db.Model):
-  """ Connection model.
+  """Connection model.
   This model is intended to be used to represent either an invitation or 
   request between a User and an Organization. The type of role to be granted
   to the user is determined by the role field and promotion is handled
@@ -126,7 +126,7 @@ class Connection(db.Model):
     return '/'.join([self.parent_key().name(), str(self.key().id())])
 
   def status(self):
-    """ Returns a simple status string based on which of the user/org
+    """Returns a simple status string based on which of the user/org
     properties has been set. 
     """
     if self.user_state == 'Accepted' and self.org_state == 'Accepted':
@@ -143,9 +143,9 @@ class Connection(db.Model):
       return ''
 
 class AnonymousConnection(db.Model):
-  """ This model is intended for use as a placeholder Connection for the
+  """This model is intended for use as a placeholder Connection for the
   scenario in which an org admin attempts to send an email invitation to
-  a person who does not have both a User entity and GSoCProfile. This 
+  a person who does not have both a User entity and program Profile. This 
   model is deleted and 'replaced' by an actual Connection object should
   the user decide to register.
 
