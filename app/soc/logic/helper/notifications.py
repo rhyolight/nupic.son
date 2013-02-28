@@ -34,7 +34,7 @@ DEF_NEW_REQUEST = ugettext(
     '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
 DEF_NEW_CONNECTION = ugettext(
-  'New connection to [%(org)s]' )
+  'New connection to %(org)s' )
 
 DEF_NEW_ANONYMOUS_CONNECTION = ugettext(
   'New Google Summer of Code Connection')
@@ -56,7 +56,7 @@ DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
 DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
     'soc/notification/invitation.html'
 
-#(dcrodman): This needs to be removed once connection is stable.
+#TODO(dcrodman): This needs to be removed once connection is stable.
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
     'soc/notification/new_request.html'
 
@@ -82,16 +82,19 @@ DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'soc/notification/mentor_welcome_mail.html'
 
 def connectionContext(data, connection, receivers, message, is_user=False):
-  """ Sends out a notification email to all individuals involved in the newly 
+  """Sends out a notification email to all individuals involved in the newly 
   created connection.
 
   Args: 
     data: RequestData object with organization and user set
-    connection: an instance of GSoCConnection
-    receivers: the email(s) of the org or user who is will be "receiving"
+    connection: An instance of GSoCConnection
+    receivers: The email(s) of the org or user who is will be "receiving"
         the connection. should be the opposite of sender
-    message: the contents of the message field from the connection form
+    message: The contents of the message field from the connection form
     is_user: True if a user is the one who initiated the connection
+  Returns:
+    A dictionary containing a context for the mail message to be sent to
+    the receiver(s) regarding a new connection.
   """
 
   subject = DEF_NEW_CONNECTION % {'org' : connection.organization.name}
@@ -108,16 +111,19 @@ def connectionContext(data, connection, receivers, message, is_user=False):
   return getContext(data, receivers, message_properties, subject, template)
 
 def anonymousConnectionContext(data, email, role, hash, message):
-  """ Sends out a notification email to users who have neither user nor 
+  """Sends out a notification email to users who have neither user nor 
   profile entities alerting them that an org admin has attempted to 
   initiate a connection with them. 
 
   Args:
-    data: a RequestData object for the connection views
-    email: email address of the user meeting the above criteria
-    role: a string role ('mentor' or 'org_admin') to grant the
+    data: A RequestData object for the connection views
+    email: Email address of the user meeting the above criteria
+    role: A string role ('mentor' or 'org_admin') to grant the
         user when they register
-    message: the contents of the message field from the connection form
+    message: The contents of the message field from the connection form
+  Returns:
+    A dictionary containing a context for the mail message to be sent to
+    the receiver(s) regarding a new anonymous connection.
   """
 
   assert isSet(data.profile)
@@ -139,6 +145,7 @@ def anonymousConnectionContext(data, email, role, hash, message):
 
   return getContext(data, email, message_properties, subject, template)
 
+#TODO(dcrodman): This needs to be removed once connection is stable.
 def inviteContext(data, invite):
   """Sends out an invite notification to the user the request is for.
 
@@ -172,7 +179,7 @@ def inviteContext(data, invite):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
-#(dcrodman): This needs to be removed once connection is stable.
+#TODO(dcrodman): This needs to be removed once connection is stable.
 def requestContext(data, request, admin_emails):
   """Sends out a notification to the persons who can process this Request.
 
@@ -200,6 +207,7 @@ def requestContext(data, request, admin_emails):
   return getContext(data, admin_emails, message_properties, subject, template)
 
 
+#TODO(dcrodman): This needs to be removed once connection is stable.
 def handledRequestContext(data, status):
   """Sends a message that the request to get a role has been handled.
 
@@ -232,6 +240,7 @@ def handledRequestContext(data, status):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
+#TODO(dcrodman): This needs to be removed once connection is stable.
 def handledInviteContext(data):
   """Sends a message that the invite to obtain a role has been handled.
 
@@ -329,8 +338,11 @@ def orgAppContext(data, record, new_status, apply_url):
 
 
 def getDefaultContext(request_data, emails, subject, extra_context=None):
-  """Returns a dictionary with the default context for the emails that
-  are sent in this module.
+  """Generate a dictionary with a default context.
+
+  Returns:
+    A dictionary with the default context for the emails that are sent 
+    in this module.
   """
   default_context  = {}
   default_context['sender_name'] = 'The %s Team' % (
@@ -357,10 +369,13 @@ def getContext(data, receivers, message_properties, subject, template):
   """Sends out a notification to the specified user.
 
   Args:
-    receivers: email addresses to which the notification should be sent
-    message_properties : message properties
-    subject : subject of notification email
-    template : template used for generating notification
+    receivers: Email addresses to which the notification should be sent
+    message_properties : Message properties
+    subject : Subject of notification email
+    template : Template used for generating notification
+  Returns:
+    A dictionary containing the context for a message to be sent to one
+    or more recipients.
   """
   message_properties['sender_name'] = 'The %s Team' % (data.site.site_name)
   message_properties['program_name'] = data.program.name
