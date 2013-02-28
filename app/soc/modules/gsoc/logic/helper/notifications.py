@@ -149,13 +149,15 @@ def newReviewContext(data, comment, to_emails):
 
 
 def newConnectionMessageContext(data, message, to_emails):
-  """Returns a context for a notification email that should be sent out,
-  when new message is submitted for a connection.
-
+  """Generate a mail context for a new message.
+  
   Args:
-    data: a RequestData object
+    data: A RequestData object
     message: GSoCConnectionMessage object that represent the new message
-    to_emails: list of e-mails to which a notification should be sent
+    to_emails: List of e-mails to which a notification should be sent
+  Returns:
+    A  context for a notification email that should be sent out, when new
+    message is submitted for a connection.
   """
   assert isSet(data.connection)
 
