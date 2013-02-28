@@ -23,8 +23,10 @@ from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from soc.logic import document as soc_document_logic
 from soc.logic import exceptions
 from soc.logic import org_app as org_app_logic
+from soc.models import document as soc_document_model
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
@@ -232,11 +234,13 @@ class DashboardPage(GCIRequestHandler):
 
   def _getStudentComponents(self, data):
     """Get the dashboard components for a student."""
-    return []
+    return [DocumentComponent(data)]
 
   def _getMentorComponents(self, data):
     """Get the dashboard components for Organization members."""
     components = []
+
+    components.append(DocumentComponent(data))
 
     component = self._getMyOrgApplicationsComponent(data)
     if component:
@@ -1115,3 +1119,52 @@ class OrgAdminInvitesList(Component):
 
   def templatePath(self):
     return 'v2/modules/gci/dashboard/list_component.html'
+
+
+class DocumentComponent(Component):
+  """Component listing all the documents for the current user.
+  """
+
+  IDX = 10
+
+  def __init__(self, data):
+    """Initializes this component.
+    """
+    self.data = data
+    list_config = lists.ListConfiguration()
+    list_config.addPlainTextColumn(
+        'title', 'Title', lambda ent, *args: ent.name())
+
+    list_config.setRowAction(
+        lambda e, *args: self.data.redirect.document(e).urlOf(
+            'show_gci_document'))
+
+    self._list_config = list_config
+
+    super(DocumentComponent, self).__init__(data)
+
+  def templatePath(self):
+    return'v2/modules/gci/dashboard/list_component.html'
+
+  def getListData(self):
+    idx = lists.getListIndex(self.data.request)
+
+    if idx != self.IDX:
+      return None
+
+    q = soc_document_logic.getDocumentQueryForRoles(self.data)
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.data.request, self._list_config, q, lists.keyStarter)
+    return response_builder.build()
+
+  def context(self):
+    list_config = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.IDX, preload_list=False)
+
+    return {
+        'name': 'documents',
+        'title': 'Important documents',
+        'lists': [list_config],
+        'description': ugettext('List of important documents'),
+    }

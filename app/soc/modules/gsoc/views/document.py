@@ -18,27 +18,21 @@ from django.conf.urls.defaults import url as django_url
 
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
-from soc.models.document import Document
 from soc.views import document
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.views.base import GSoCRequestHandler
-from soc.modules.gsoc.views.forms import GSoCModelForm
+from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
 
-class GSoCDocumentForm(GSoCModelForm):
+class GSoCDocumentForm(forms.GSoCModelForm, document.DocumentForm):
   """Django form for creating documents."""
 
-  class Meta:
-    model = Document
-    exclude = [
-        'scope', 'scope_path', 'author', 'modified_by', 'prefix', 'home_for',
-        'link_id', 'read_access', 'write_access', 'is_featured'
-    ]
+  Meta = document.DocumentForm.Meta
 
 
 class EditDocumentPage(GSoCRequestHandler):

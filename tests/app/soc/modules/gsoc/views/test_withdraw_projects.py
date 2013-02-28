@@ -18,6 +18,13 @@
 """
 
 
+from google.appengine.ext import db
+
+from django.utils import simplejson
+
+from soc.modules.gsoc.models import project as project_model
+from soc.modules.gsoc.models import proposal as proposal_model
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -69,3 +76,57 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
     data = response.context['data']['']
     self.assertEqual(1, len(data))
+
+  def testWithdrawProject(self):
+    """Test if withdrawing a project updates all the datastore properties."""
+    self.data.createHost()
+    self.timeline.studentsAnnounced()
+
+    # list response with projects
+    mentor_profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor_profile_helper.createOtherUser('mentor@example.com')
+    mentor = mentor_profile_helper.createMentor(self.org)
+    self.data.createStudentWithProposal(self.org, mentor)
+    student = self.data.createStudentWithProject(self.org, mentor)
+    student_key = student.key()
+    orig_number_of_projects = student.student_info.number_of_projects
+    orig_project_for_orgs = student.student_info.project_for_orgs
+
+    project_q = project_model.GSoCProject.all().ancestor(student)
+    project = project_q.get()
+
+    data_payload = [{
+        'full_project_key': str(project.key()),
+        }
+    ]
+
+    json_data = simplejson.dumps(data_payload)
+
+    postdata = {
+        'data': json_data,
+        'button_id': 'withdraw'
+        }
+
+    list_idx = 0
+    url = '/gsoc/withdraw_projects/%s?fmt=json&marker=1&&idx=%s' % (
+        self.gsoc.key().name(), str(list_idx))
+
+    response = self.post(url, postdata)
+    self.assertResponseOK(response)
+
+    student = db.get(student_key)
+    project_q = project_model.GSoCProject.all().ancestor(student)
+    project = project_q.get()
+
+    proposal_q = proposal_model.GSoCProposal.all().ancestor(student)
+    proposal = proposal_q.get()
+
+    self.assertEqual(project.status, 'withdrawn')
+    self.assertEqual(proposal.status, 'withdrawn')
+
+    self.assertEqual(student.student_info.number_of_projects,
+                     orig_number_of_projects - 1)
+
+    orig_project_for_orgs.remove(self.org.key())
+    self.assertEqual(list(student.student_info.project_for_orgs),
+                     orig_project_for_orgs)

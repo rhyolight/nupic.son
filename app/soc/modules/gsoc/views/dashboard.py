@@ -24,6 +24,7 @@ from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
+from soc.logic import document as soc_document_logic
 from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
@@ -238,6 +239,8 @@ class DashboardPage(base.GSoCRequestHandler):
 
     info = data.student_info
 
+    components.append(DocumentComponent(data))
+
     if data.is_student and info.number_of_projects:
       components.append(TodoComponent(data))
       # Add a component to show the evaluations
@@ -257,6 +260,8 @@ class DashboardPage(base.GSoCRequestHandler):
   def _getOrgMemberComponents(self, data):
     """Get the dashboard components for Organization members."""
     components = []
+
+    components.append(DocumentComponent(data))
 
     component = self._getMyOrgApplicationsComponent(data)
     if component:
@@ -1604,8 +1609,8 @@ class StudentEvaluationComponent(Component):
 
     self._list_config = list_config
 
-  def _getStatus(self, entity, eval, *args):
-    eval_ent = self.evals.get(eval)
+  def _getStatus(self, entity, evaluation, *args):
+    eval_ent = self.evals.get(evaluation)
     self.record = getEvalRecord(GSoCProjectSurveyRecord, eval_ent, entity)
     return colorize(bool(self.record), "Submitted", "Not submitted")
 
@@ -1670,20 +1675,20 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
 
     self._list_config.addHtmlColumn(
         'grade', 'Grade', self._getGrade)
-    self._list_config.setRowAction(lambda entity, eval, *args:
+    self._list_config.setRowAction(lambda entity, evaluation, *args:
         data.redirect.survey_record(
-            eval, entity.key().id_or_name(),
+            evaluation, entity.key().id_or_name(),
             entity.parent().link_id).urlOf(
                 'gsoc_take_mentor_evaluation'))
 
-  def _getStatus(self, entity, eval, *args):
-    eval_ent = self.evals.get(eval)
+  def _getStatus(self, entity, evaluation, *args):
+    eval_ent = self.evals.get(evaluation)
     self.record = getEvalRecord(GSoCGradingProjectSurveyRecord,
                                 eval_ent, entity)
     return colorize(
         bool(self.record), "Submitted", "Not submitted")
 
-  def _getGrade(self, entity, eval, *args):
+  def _getGrade(self, entity, evaluation, *args):
     if self.record:
       return colorize(
         self.record.grade, "Pass", "Fail")
@@ -1697,3 +1702,52 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
         'List of mentor evaluations for my organizations')
     context['name'] = 'mentor_evaluations'
     return context
+
+
+class DocumentComponent(Component):
+  """Component listing all the documents for the current user.
+  """
+
+  IDX = 14
+
+  def __init__(self, data):
+    """Initializes this component.
+    """
+    self.data = data
+    list_config = lists.ListConfiguration()
+    list_config.addPlainTextColumn(
+        'title', 'Title', lambda ent, *args: ent.name())
+
+    list_config.setRowAction(
+        lambda e, *args: self.data.redirect.document(e).urlOf(
+            'show_gsoc_document'))
+
+    self._list_config = list_config
+
+    super(DocumentComponent, self).__init__(data)
+
+  def templatePath(self):
+    return'v2/modules/gsoc/dashboard/list_component.html'
+
+  def getListData(self):
+    idx = lists.getListIndex(self.data.request)
+
+    if idx != self.IDX:
+      return None
+
+    q = soc_document_logic.getDocumentQueryForRoles(self.data)
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.data.request, self._list_config, q, lists.keyStarter)
+    return response_builder.build()
+
+  def context(self):
+    list_config = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.IDX, preload_list=False)
+
+    return {
+        'name': 'documents',
+        'title': 'Important documents',
+        'lists': [list_config],
+        'description': ugettext('List of important documents'),
+    }

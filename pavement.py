@@ -299,7 +299,7 @@ def clean_build(options):
   # non-existent file.
   if path(options.app_build).exists():
     path(options.app_build).rmtree()
-  path(options.app_build).makedirs()
+  path(options.app_build).makedirs_p()
 
 
 @task
@@ -326,7 +326,7 @@ def tinymce_zip(options):
     tinymce_zip_fp = StringIO()
   else:
     # Ensure the parent directories exist.
-    tinymce_zip_filename.dirname().makedirs()
+    tinymce_zip_filename.dirname().makedirs_p()
     tinymce_zip_fp = open(tinymce_zip_filename, mode='w')
 
   try:

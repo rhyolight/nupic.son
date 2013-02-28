@@ -20,22 +20,21 @@
 
 import httplib
 
-from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import GSoCDjangoTestCase
-from tests.test_utils import MailTestCase
-from tests.test_utils import TaskQueueTestCase
+from tests import profile_utils
+from tests import test_utils
 
-from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
-from soc.modules.gsoc.models.grading_project_survey_record import \
-    GSoCGradingProjectSurveyRecord
-from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
-from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
-from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.models.project_survey import ProjectSurvey
-from soc.modules.gsoc.models.project_survey_record import GSoCProjectSurveyRecord
+from soc.modules.gsoc.models import grading_project_survey as gps_model
+from soc.modules.gsoc.models import grading_project_survey_record as gpsr_model
+from soc.modules.gsoc.models import grading_record as gr_model
+from soc.modules.gsoc.models import grading_survey_group as gsg_model
+from soc.modules.gsoc.models import project as project_model
+from soc.modules.gsoc.models import project_survey as ps_model
+from soc.modules.gsoc.models import project_survey_record as psr_model
 
 
-class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
+class GradingSurveyGroupTest(
+    test_utils.MailTestCase, test_utils.GSoCDjangoTestCase,
+    test_utils.TaskQueueTestCase):
   """Tests for accept_proposals task.
   """
 
@@ -53,18 +52,18 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
   def createMentor(self):
     """Creates a new mentor.
     """
-    profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     profile_helper.createOtherUser('mentor@example.com')
     self.mentor = profile_helper.createMentor(self.org)
 
   def createStudent(self):
     """Creates a Student with a project.
     """
-    profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     profile_helper.createOtherUser('student@example.com')
     self.student = profile_helper.createStudentWithProject(self.org,
                                                            self.mentor)
-    self.project = GSoCProject.all().ancestor(self.student).get()
+    self.project = project_model.GSoCProject.all().ancestor(self.student).get()
 
   def createSurveys(self):
     """Creates the surveys and records required for the tests.
@@ -77,12 +76,12 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
         'scope': self.gsoc,
         'scope_path': self.gsoc.key().id_or_name()}
 
-    self.project_survey = ProjectSurvey(key_name='key_name',
-                                        **survey_values)
+    self.project_survey = ps_model.ProjectSurvey(key_name='key_name',
+                                                 **survey_values)
     self.project_survey.put()
 
-    self.grading_survey = GradingProjectSurvey(key_name='key_name',
-                                               **survey_values)
+    self.grading_survey = gps_model.GradingProjectSurvey(key_name='key_name',
+                                                         **survey_values)
     self.grading_survey.put()
 
     record_values = {
@@ -90,10 +89,11 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
         'org': self.org,
         'project': self.project,
         'survey': self.project_survey}
-    self.project_survey_record = GSoCProjectSurveyRecord(**record_values)
+    self.project_survey_record = psr_model.GSoCProjectSurveyRecord(
+        **record_values)
     self.project_survey_record.put()
 
-    self.grading_survey = GradingProjectSurvey(**survey_values)
+    self.grading_survey = gps_model.GradingProjectSurvey(**survey_values)
     self.grading_survey.put()
 
     record_values = {
@@ -102,7 +102,7 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
         'project': self.project,
         'survey': self.grading_survey,
         'grade': True}
-    self.grading_survey_record = GSoCGradingProjectSurveyRecord(
+    self.grading_survey_record = gpsr_model.GSoCGradingProjectSurveyRecord(
         **record_values)
     self.grading_survey_record.put()
 
@@ -111,7 +111,7 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
         'grading_survey': self.grading_survey,
         'student_survey': self.project_survey,
         'program': self.gsoc}
-    self.survey_group = GSoCGradingSurveyGroup(**group_values)
+    self.survey_group = gsg_model.GSoCGradingSurveyGroup(**group_values)
     self.survey_group.put()
 
     record_values = {
@@ -119,8 +119,8 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
         'mentor_record': self.grading_survey_record,
         'student_record': self.project_survey_record,
         'grade_decision': 'pass'}
-    self.grading_record = GSoCGradingRecord(parent=self.project,
-                                            **record_values)
+    self.grading_record = gr_model.GSoCGradingRecord(parent=self.project,
+                                                     **record_values)
     self.grading_record.put()
 
   def testCreateGradingRecord(self):
@@ -134,12 +134,56 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
 
     response = self.post(self.UPDATE_RECORDS_URL, post_data)
 
-    self.assertEqual(response.status_code, httplib.OK)
+    self.assertResponseOK(response)
     self.assertTasksInQueue(n=1, url=self.UPDATE_RECORDS_URL)
 
-    record = GSoCGradingRecord.all().get()
+    record = gr_model.GSoCGradingRecord.all().get()
     self.assertFalse(record is None)
     self.assertEqual(record.grade_decision, 'pass')
+
+  def testDoesNotCreateGradingRecordForWithdrawnProject(self):
+    # list response with projects
+    mentor_profile_helper = profile_utils.GSoCProfileHelper(
+        self.gsoc, self.dev_test)
+    mentor_profile_helper.createOtherUser('mentor@example.com')
+    mentor = mentor_profile_helper.createMentor(self.org)
+
+    # create another project and mark it withdrawn
+    student_profile_helper = profile_utils.GSoCProfileHelper(
+        self.gsoc, self.dev_test)
+    student_profile_helper.createStudentWithProposal(self.org, mentor)
+    student_profile = student_profile_helper.createStudentWithProject(
+        self.org, mentor)
+
+    # Retrieve the project, corresponding proposal.
+    project = project_model.GSoCProject.all().ancestor(student_profile).get()
+    proposal = project.proposal
+
+    # Update the properties for withdrawing the project.
+    student_profile.student_info.number_of_projects -= 1
+    student_profile.student_info.project_for_orgs.remove(self.org.key())
+    project.status = 'withdrawn'
+    proposal.status = 'withdrawn'
+
+    # Update the entities.
+    student_profile.student_info.put()
+    project.put()
+    proposal.put()
+
+    post_data = {
+        'group_key': self.survey_group.key().id_or_name()
+        }
+
+    response = self.post(self.UPDATE_RECORDS_URL, post_data)
+
+    self.assertResponseOK(response)
+    self.assertTasksInQueue(n=1, url=self.UPDATE_RECORDS_URL)
+
+    records = gr_model.GSoCGradingRecord.all().fetch(limit=1000)
+
+    # Only one record is expected of the two projects since no record should
+    # be created for the withdrawn project
+    self.assertEqual(len(records), 1)
 
   def testUpdateGradingRecord(self):
     """Test updating a GradingRecord.
@@ -156,7 +200,7 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
     self.assertEqual(response.status_code, httplib.OK)
     self.assertTasksInQueue(n=1, url=self.UPDATE_RECORDS_URL)
 
-    record = GSoCGradingRecord.all().get()
+    record = gr_model.GSoCGradingRecord.all().get()
     self.assertFalse(record is None)
     self.assertEqual(record.grade_decision, 'pass')
 
@@ -172,7 +216,7 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
     self.assertEqual(response.status_code, httplib.OK)
     self.assertTasksInQueue(n=1, url=self.UPDATE_PROJECTS_URL)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
     self.assertFalse(project is None)
     self.assertEqual(project.passed_evaluations, [self.grading_record.key()])
     self.assertEqual(1, project.parent().student_info.passed_evaluations)
@@ -191,7 +235,7 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
     self.assertTasksInQueue(n=1, url=self.UPDATE_PROJECTS_URL)
     self.assertTasksInQueue(n=1, url=self.SEND_URL)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
     self.assertFalse(project is None)
     self.assertEqual(project.passed_evaluations, [self.grading_record.key()])
     self.assertEqual(1, project.parent().student_info.passed_evaluations)
@@ -205,7 +249,7 @@ class GradingSurveyGroupTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase
 
     response = self.post(self.SEND_URL, post_data)
 
-    self.assertEqual(response.status_code, httplib.OK)
+    self.assertResponseOK(response)
     # URL explicitly added since the email task is in there
     self.assertTasksInQueue(n=0, url=self.SEND_URL)
     self.assertEmailSent(to=self.student.email)

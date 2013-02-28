@@ -14,7 +14,6 @@
 
 """Module for the GSoC project student survey."""
 
-from soc.views import forms
 from soc.views import survey
 from soc.views.helper import lists
 

@@ -318,6 +318,11 @@ class GSoCProfileHelper(ProfileHelper):
     proposal = GSoCProposal.all().ancestor(student).get()
 
     student.student_info.number_of_projects = n
+
+    # We add an organization entry for each project even if the projects belong
+    # to the same organization, we add the organization multiple times. We do
+    # this to make project removal easy.
+    student.student_info.project_for_orgs += [org.key()] * n
     student.student_info.put()
     from soc.modules.gsoc.models.project import GSoCProject
     properties = {'program': self.program, 'org': org, 'status': 'accepted',
