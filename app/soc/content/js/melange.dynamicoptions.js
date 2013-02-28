@@ -48,12 +48,14 @@
 
       var field = '<label class="form-label">' + opts.label + '</label>';
 
-      var initial = JSON.parse(opts.initial);
+      if (opts.initial !== undefined && opts.initial !== "") {
+        var initial = JSON.parse(opts.initial);
 
-      jQuery.each(initial, function(index, item) {
-        field += addFieldHtml(item);
-      });
-
+        jQuery.each(initial, function(index, item) {
+          field += addFieldHtml(item);
+        });
+      }
+        
       field += '<div class="add-area clearfix"><a id=add-' + opts.id + ' href="#" class="add">Add</a></div>';
 
       jQuery(this).append(field);
