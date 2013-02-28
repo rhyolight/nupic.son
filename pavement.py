@@ -299,7 +299,7 @@ def clean_build(options):
   # non-existent file.
   if path(options.app_build).exists():
     path(options.app_build).rmtree()
-  path(options.app_build).makedirs()
+  path(options.app_build).makedirs_p()
 
 
 @task
