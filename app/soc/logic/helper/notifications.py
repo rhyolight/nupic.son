@@ -87,11 +87,11 @@ def connectionContext(data, connection, receivers, message, is_user=False):
 
   Args: 
     data: RequestData object with organization and user set
-    connection: An instance of GSoCConnection
+    connection: An instance of GSoCConnection.
     receivers: The email(s) of the org or user who is will be "receiving"
-        the connection. should be the opposite of sender
-    message: The contents of the message field from the connection form
-    is_user: True if a user is the one who initiated the connection
+        the connection. should be the opposite of sender.
+    message: The contents of the message field from the connection form.
+    is_user: True if a user is the one who initiated the connection.
   Returns:
     A dictionary containing a context for the mail message to be sent to
     the receiver(s) regarding a new connection.
@@ -116,11 +116,11 @@ def anonymousConnectionContext(data, email, role, hash, message):
   initiate a connection with them. 
 
   Args:
-    data: A RequestData object for the connection views
-    email: Email address of the user meeting the above criteria
+    data: A RequestData object for the connection views.
+    email: Email address of the user meeting the above criteria.
     role: A string role ('mentor' or 'org_admin') to grant the
-        user when they register
-    message: The contents of the message field from the connection form
+        user when they register.
+    message: The contents of the message field from the connection form.
   Returns:
     A dictionary containing a context for the mail message to be sent to
     the receiver(s) regarding a new anonymous connection.
@@ -150,7 +150,7 @@ def inviteContext(data, invite):
   """Sends out an invite notification to the user the request is for.
 
   Args:
-    data: a RequestData object with 'invite' and 'invite_profile' set
+    data: a RequestData object with 'invite' and 'invite_profile' set.
   """
 
   assert isSet(data.invite_profile)
@@ -184,7 +184,7 @@ def requestContext(data, request, admin_emails):
   """Sends out a notification to the persons who can process this Request.
 
   Args:
-    request_entity: an instance of Request model
+    request_entity: an instance of Request model.
   """
 
   assert isSet(data.organization)
@@ -212,7 +212,7 @@ def handledRequestContext(data, status):
   """Sends a message that the request to get a role has been handled.
 
   Args:
-    data: a RequestData object
+    data: a RequestData object.
   """
   assert isSet(data.request_entity)
   assert isSet(data.requester_profile)
@@ -245,7 +245,7 @@ def handledInviteContext(data):
   """Sends a message that the invite to obtain a role has been handled.
 
   Args:
-    data: a RequestData object
+    data: a RequestData object.
   """
 
   assert isSet(data.invite)
@@ -281,7 +281,7 @@ def getMentorWelcomeMailContext(profile, data, messages):
 
   Args:
     profile: Profile of the user to who will receive the welcome email.
-    data: RequestData object
+    data: RequestData object.
     messages: ProgramMessages instance containing the message to be sent.
 
   Returns:
@@ -369,10 +369,10 @@ def getContext(data, receivers, message_properties, subject, template):
   """Sends out a notification to the specified user.
 
   Args:
-    receivers: Email addresses to which the notification should be sent
-    message_properties : Message properties
-    subject : Subject of notification email
-    template : Template used for generating notification
+    receivers: Email addresses to which the notification should be sent.
+    message_properties : Message properties.
+    subject : Subject of notification email.
+    template : Template used for generating notification.
   Returns:
     A dictionary containing the context for a message to be sent to one
     or more recipients.
