@@ -58,7 +58,7 @@ def newProposalContext(data, proposal, to_emails):
   """Sends out a notification to alert the user of a new comment.
 
   Args:
-    data: a RequestData object
+    data: a RequestData object.
   """
   data.redirect.review(proposal.key().id(), data.user.link_id)
   proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
@@ -85,7 +85,7 @@ def updatedProposalContext(data, proposal, to_emails):
   """Sends out a notification to alert the user of an updated proposal.
 
   Args:
-    data: a RequestData object
+    data: a RequestData object.
   """
   assert isSet(data.organization)
 
@@ -114,7 +114,7 @@ def newReviewContext(data, comment, to_emails):
   """Sends out a notification to alert the user of a new review.
 
   Args:
-    data: a RequestData object
+    data: a RequestData object.
   """
   assert isSet(data.proposal)
   assert isSet(data.proposer)
@@ -152,11 +152,11 @@ def newConnectionMessageContext(data, message, to_emails):
   """Generate a mail context for a new message.
   
   Args:
-    data: A RequestData object
-    message: GSoCConnectionMessage object that represent the new message
-    to_emails: List of e-mails to which a notification should be sent
+    data: A RequestData object.
+    message: GSoCConnectionMessage object that represent the new message.
+    to_emails: List of e-mails to which a notification should be sent.
   Returns:
-    A  context for a notification email that should be sent out, when new
+    A context for a notification email that should be sent out, when new
     message is submitted for a connection.
   """
   assert isSet(data.connection)
@@ -186,9 +186,9 @@ def createOrUpdateSlotTransferContext(data, slot_transfer,
   """Mail context to be sent to program host upon slot transfer request
 
   Args:
-    data: a RequestData object
-    slot_transfer: entity that holds the slot transfer request information
-    update: True if the request was updated, False if the new one was created
+    data: a RequestData object.
+    slot_transfer: entity that holds the slot transfer request information.
+    update: True if the request was updated, False if the new one was created.
   """
   # TODO(nathaniel): make unnecessary this .program() call.
   data.redirect.program()
