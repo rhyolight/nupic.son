@@ -22,6 +22,8 @@ from google.appengine.ext import db
 from soc.models.organization import Organization
 from soc.models.profile import Profile
 
+ORG_ADMIN_STATE = 'Org Admin'
+MENTOR_STATE = 'Mentor'
 
 RESPONSE_STATE_ACCEPTED = 'Accepted'
 RESPONSE_STATE_REJECTED = 'Rejected'
@@ -29,17 +31,20 @@ RESPONSE_STATE_UNREPLIED = 'Unreplied'
 RESPONSE_STATE_WITHDRAWN = 'Withdrawn'
 
 RESPONSE_STATES = [
-    RESPONSE_STATE_UNREPLIED, RESPONSE_STATE_ACCEPTED,
-    RESPONSE_STATE_REJECTED,RESPONSE_STATE_WITHDRAWN
+    RESPONSE_STATE_UNREPLIED, 
+    RESPONSE_STATE_ACCEPTED,
+    RESPONSE_STATE_REJECTED,
+    RESPONSE_STATE_WITHDRAWN
     ]
 
+# Strings used in the dashboard (via the stauts() method below) to display
+# short, simple status messages for connections based on its state.
 STATUS_STATES = {
     'withdrawn':'Withdrawn',
     'accepted':'Accepted',
     'rejected':'Rejected',
     'user_action_req':'User Action Required', 
     'org_action_req' : 'Org Action Required',
-    'withdrawn' : 'Withdrawn'
     }
 
 class Connection(db.Model):
@@ -55,15 +60,15 @@ class Connection(db.Model):
   """
 
   #: The User's state with respect to a given role.
-  user_state = db.StringProperty(default='Unreplied', 
+  user_state = db.StringProperty(default=RESPONSE_STATE_UNREPLIED, 
       choices=RESPONSE_STATES)
 
   #: The Org's state with respect to a given role.
-  org_state = db.StringProperty(default='Unreplied',
+  org_state = db.StringProperty(default=RESPONSE_STATE_UNREPLIED,
       choices=RESPONSE_STATES)
 
-  role = db.StringProperty(default='Mentor', 
-      choices=['Mentor', 'Org Admin'])
+  role = db.StringProperty(default=MENTOR_STATE, 
+      choices=[MENTOR_STATE, ORG_ADMIN_STATE])
 
   #: The organization entity involved in the connection for which a user
   #: may gain heightened privileges.
@@ -129,15 +134,18 @@ class Connection(db.Model):
     """Returns a simple status string based on which of the user/org
     properties has been set. 
     """
-    if self.user_state == 'Accepted' and self.org_state == 'Accepted':
+    if self.user_state == RESPONSE_STATE_ACCEPTED and  \
+        self.org_state == RESPONSE_STATE_ACCEPTED:
       return STATUS_STATES['accepted']
-    elif self.user_state == 'Withdrawn' or self.org_state == 'Withdrawn':
+    elif self.user_state == RESPONSE_STATE_WITHDRAWN or \
+        self.org_state == RESPONSE_STATE_WITHDRAWN:
       return STATUS_STATES['withdrawn']
-    elif self.user_state == 'Rejected' or self.org_state == 'Rejected':
+    elif self.user_state == RESPONSE_STATE_REJECTED or \
+        self.org_state == RESPONSE_STATE_REJECTED:
       return STATUS_STATES['rejected']
-    elif self.user_state == 'Accepted':
+    elif self.user_state == RESPONSE_STATE_ACCEPTED:
       return STATUS_STATES['org_action_req']
-    elif self.org_state == 'Accepted':
+    elif self.org_state == RESPONSE_STATE_ACCEPTED:
       return STATUS_STATES['user_action_req']
     else:
       return ''
@@ -154,7 +162,7 @@ class AnonymousConnection(db.Model):
 
   #: A string to designate the role that will be recreated for the actual
   #: connection object.
-  role = db.StringProperty(choices=['Mentor', 'Org Admin'])
+  role = db.StringProperty(choices=[MENTOR_STATE, ORG_ADMIN_STATE])
 
   #: Hash hexdigest() of this object's key to save time when validating
   #: when the user registers.
