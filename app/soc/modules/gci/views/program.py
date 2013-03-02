@@ -65,7 +65,7 @@ class CreateProgramForm(gci_forms.GCIModelForm):
 
     # TODO(daniel): get rid of this check
     # this is an ugly hack which is needed by the test runner
-    # request data POST is not represented by QeuryDict, but by a regular
+    # request data POST is not represented by QueryDict, but by a regular
     # dict which does not have getlist method
     if isinstance(self.request_data.POST, http.QueryDict):
       self.cleaned_data['task_types'] = self.request_data.POST.getlist(
