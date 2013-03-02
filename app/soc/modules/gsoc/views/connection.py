@@ -58,7 +58,7 @@ DEF_MAX_PENDING_CONNECTIONS = 3
 
 @db.transactional
 def check_existing_connection_txn(user, org):
-  """ Helper method to check for an existing GSoCConnection between a user
+  """Helper method to check for an existing GSoCConnection between a user
     and an organization transactionally. 
   """
   query = connection_logic.queryForAncestorAndOrganization(user, org, True)
@@ -68,7 +68,7 @@ def check_existing_connection_txn(user, org):
 
 @db.transactional
 def send_message_txn(form, profile, connection):
-  """ Helper method to generate a GSoCConnectionMessage sent from a user.
+  """Helper method to generate a GSoCConnectionMessage sent from a user.
   """
   properties = {
     'author': profile,
@@ -79,7 +79,7 @@ def send_message_txn(form, profile, connection):
 
 @db.transactional
 def generate_message_txn(connection, content):
-  """ Helper method to generate a GSoCConnectionMessage with programatically
+  """Helper method to generate a GSoCConnectionMessage with programatically
       generated content.
   """
   properties = {
@@ -90,7 +90,7 @@ def generate_message_txn(connection, content):
   message.put()
 
 class ConnectionForm(GSoCModelForm):
-  """ Django form for the Connection page. """
+  """Django form for the Connection page. """
 
   role_choice = ChoiceField(widget=django_forms.Select(),
       choices=(('Mentor', 'Mentor'),))
@@ -113,7 +113,7 @@ class ConnectionForm(GSoCModelForm):
     model = GSoCConnection
 
 class OrgConnectionForm(ConnectionForm):
-  """ Django form to show specific fields for an organization. """
+  """Django form to show specific fields for an organization. """
 
   users = gsoc_forms.CharField(label='Link_Id/Email')
 
@@ -141,7 +141,7 @@ class OrgConnectionForm(ConnectionForm):
         'Your message to the user(s)') 
 
   def clean_users(self):
-    """ Overrides the default cleaning of the link_ids field to add custom
+    """Overrides the default cleaning of the link_ids field to add custom
     validation to the users field. 
     """
     id_list = self.cleaned_data['users'].split(',')
@@ -159,9 +159,18 @@ class OrgConnectionForm(ConnectionForm):
     del self.cleaned_data[field]
     
   def _clean_one_id(self, field):
-    """ Apply validation filters to a single link id from the user field.
+    """Apply validation filters to a single link id from the user field.
     If a link_id or email is found to be valid, return the User account
     associated with it.
+      Args:
+        field: Django TextField instance containing the email address(es)
+            or link ids of users with whom connections should be established.
+
+      Returns:
+        connected_user will be the user account affiliated with the email
+        address found in field or None if no such user exists, at which 
+        point the email address will be returned as anonymous_user (None
+        if the email address corresponds to an existing User).
     """
 
     id = None
@@ -236,7 +245,8 @@ class ConnectionResponseForm(GSoCModelForm):
     return 'v2/modules/gsoc/connection/_response_form.html'
 
 class UserConnectionForm(ConnectionForm):
-  """ Django form to show specific fields for a user. """
+  """Django form to show specific fields for a user.
+  """
 
   def __init__(self, request_data=None, message=None, *args, **kwargs):
     super(UserConnectionForm, self).__init__(*args, **kwargs)
@@ -250,7 +260,7 @@ class UserConnectionForm(ConnectionForm):
 
 
 class OrgConnectionPage(GSoCRequestHandler):
-  """ Class to encapsulate the methods for an org admin to initiate a
+  """Class to encapsulate the methods for an org admin to initiate a
   connection between the organization and a given user. """
   
   def templatePath(self):
@@ -270,7 +280,8 @@ class OrgConnectionPage(GSoCRequestHandler):
     check.isOrgAdminForOrganization(data.organization)
   
   def context(self, data, check, mutator):
-    """ Handler for GSoCConnection page request for an org. """
+    """Handler for GSoCConnection page request for an org.
+    """
     
     connection_form = OrgConnectionForm(
         request_data=data,
@@ -294,7 +305,13 @@ class OrgConnectionPage(GSoCRequestHandler):
     }
   
   def post(self, data, check, mutator):
-    """ Handler for GSoCConnecton post request. """
+    """Handler for GSoCConnecton post request.
+
+      Returns:
+        A get request to this same page that will display a confirmation
+        message and indicate whether or not emails were sent inviting new
+        users to join the program (via anonymous connections).
+    """
     
     if self.generate(data):
       data.redirect.organization()
@@ -311,7 +328,12 @@ class OrgConnectionPage(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
   def generate(self, data):
-    """ Create a GSoCConnection instance and notify all parties involved """
+    """Create a GSoCConnection instance and notify all parties involved. If
+    the org admin provided email addresses of users who do not have profiles
+    for the current program, AnonymousConnection instances will be generated
+    and emails dispatched inviting them to join the program and accept the 
+    offered role.
+    """
     
     connection_form = OrgConnectionForm(request_data=data, 
         data=data.POST)
@@ -387,8 +409,9 @@ class OrgConnectionPage(GSoCRequestHandler):
 
 
 class UserConnectionPage(GSoCRequestHandler):
-  """ Class to encapsulate the methods for a user to initiate a connection
-  between him or her self and an organization. """
+  """Class to encapsulate the methods for a user to initiate a connection
+  between him or her self and an organization.
+  """
   
   def templatePath(self):
     return 'v2/modules/gsoc/connection/base.html'
@@ -407,7 +430,8 @@ class UserConnectionPage(GSoCRequestHandler):
     check.notMentor()
 
   def context(self, data, check, mutator):
-    """ Handler for GSoCConnection page request. """
+    """Handler for GSoCConnection page request.
+    """
 
     connection_form = UserConnectionForm(request_data=data,
         message=data.organization.role_request_message, 
@@ -423,7 +447,8 @@ class UserConnectionPage(GSoCRequestHandler):
     }
     
   def post(self, data, check, mutator):
-    """ Handler for a GSoC Connection post request for a user. """
+    """Handler for a GSoC Connection post request for a user.
+    """
     
     if self.generate(data):
       self.redirect.connect(user=data.user)
@@ -432,7 +457,8 @@ class UserConnectionPage(GSoCRequestHandler):
       return self.get()
     
   def generate(self, data):
-    """ Create a GSoCConnection instance and notify all parties involved. """
+    """Create a GSoCConnection instance and notify all parties involved.
+    """
     
     assert isSet(data.organization)
     assert isSet(data.user)
@@ -481,7 +507,8 @@ class UserConnectionPage(GSoCRequestHandler):
 
 class ShowConnection(GSoCRequestHandler):
   """Class to encapsulate the methods required to display information
-  about a GSoCConnection for both Users and Org Admins."""
+  about a GSoCConnection for both Users and Org Admins.
+  """
   
   # The actions that will be made available to the user in the dropdown.
   RESPONSES = {
@@ -531,6 +558,10 @@ class ShowConnection(GSoCRequestHandler):
       rejected, withdrawn=True):
     """Helper method to clean up the logic for determining what options a
       user or org admin has for responding to a connection.
+
+      Returns:
+        A list of possible responses that will be used by the page's template
+        to determine which buttons (response actions) to display to the user.
     """
     responses = []
     if unreplied:
@@ -545,7 +576,8 @@ class ShowConnection(GSoCRequestHandler):
     return responses
     
   def context(self, data, check, mutator):
-    """ Handler for Show GSoCConnection get request. """
+    """Handler for Show GSoCConnection get request.
+    """
 
     header_name = data.url_user.link_id \
         if self.is_org_admin_for_org else data.organization.name
@@ -633,7 +665,8 @@ class ShowConnection(GSoCRequestHandler):
         }
     
   def post(self, data, check, mutator):
-    """ Handler for Show GSoC Connection post request. """
+    """Handler for Show GSoC Connection post request.
+    """
 
     response = data.POST['responses']
     
@@ -658,8 +691,9 @@ class ShowConnection(GSoCRequestHandler):
     return data.redirect.to()
 
   def _acceptMentor(self, data):
-    """ The User has accepted the Mentoring role, so we need to add the user
-    to the organization's list of mentors. """
+    """The User has accepted the Mentoring role, so we need to add the user
+    to the organization's list of mentors.
+    """
     
     profile_key = data.url_profile.key()
     connection_key = data.connection.key()
@@ -841,7 +875,7 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
     """Creates a new message based on the data inserted in the form.
 
     Returns:
-      a newly created message entity or None
+      A newly created message entity or None.
     """
 
     assert isSet(data.connection)
