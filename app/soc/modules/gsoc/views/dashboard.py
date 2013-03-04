@@ -1132,7 +1132,7 @@ class OrganizationsIParticipateInComponent(Component):
       list_config.addSimpleColumn('slots', 'Slots allowed')
       list_config.addNumericalColumn(
           'slots_used', 'Slots used', lambda ent, s, *args: s)
-      list_config.addNumericalColumn(
+      list_config.addHtmlColumn(
           'delta', 'Slots difference',
           lambda ent, s, *args: c(ent, s, (ent.slots - s)))
       list_config.addNumericalColumn(
