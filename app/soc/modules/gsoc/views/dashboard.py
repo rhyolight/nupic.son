@@ -1174,10 +1174,8 @@ class OrganizationsIParticipateInComponent(Component):
 
     if pos < len(orgs):
       org = orgs[pos]
-      q = db.Query(GSoCProposal, keys_only=False).filter('org', org)
-      q.filter('has_mentor', True).filter('accept_as_project', True)
-      slots_used = q.count()
-      response.addRow(org, slots_used)
+      used_slots = self._getUsedSlots(org)
+      response.addRow(org, used_slots)
 
     if (pos + 1) < len(orgs):
       response.next = str(pos + 1)
@@ -1199,6 +1197,32 @@ class OrganizationsIParticipateInComponent(Component):
         'description': ugettext(
             'List of organizations which I participate in'),
     }
+
+  def _getUsedSlots(self, org):
+    """Returns number of slots which were used by the specified organization.
+
+    The meaning of the returned integer differs between various points in
+    program's timeline.
+
+    Before student proposals are transformed into projects, the number is
+    defined as number of proposals which are going to be accepted. After that,
+    the number represents the number of proposals which were accepted for the
+    specified organization.
+
+    Args:
+      org: the specified GSoCOrganization entity
+
+    Returns:
+      number of slots used by the organization
+    """
+    if self.data.timeline.studentsAnnounced():
+      query = db.Query(GSoCProposal, keys_only=True).filter('org', org)
+      query.filter('status', 'accepted')
+      return query.count()
+    else:
+      query = db.Query(GSoCProposal, keys_only=True).filter('org', org)
+      query.filter('has_mentor', True).filter('accept_as_project', True)
+      return query.count()
 
 
 class RequestComponent(Component):
