@@ -570,8 +570,7 @@ class RedirectHelper(request_data.RedirectHelper):
     return self
   
   def connect(self, user=None, organization=None):
-    """ Sets the _url_name for a gsoc_user_connection redirect.
-     """  
+    """Sets the _url_name for a gsoc_user_connection redirect."""  
     if not user:
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
@@ -583,9 +582,10 @@ class RedirectHelper(request_data.RedirectHelper):
   
   def show_connection(self, user, connection):
     """ Sets up kwargs for a gsoc_show_connection redirect.
+    
     Args:
-      user: the user involved in the connection 
-      connection: the connection entity to be viewed
+        user: the user involved in the connection 
+        connection: the connection entity to be viewed
     """
     self.sponsor()
     self.program()
@@ -597,8 +597,11 @@ class RedirectHelper(request_data.RedirectHelper):
 
   def profile_anonymous_connection(self, role, hash):
     """ Sets up kwargs for the gsoc_profile_anonymous_connection reirect.
+    
     Args:
-
+      role: Role (org admin | mentor, see connection module for constants)
+          to which the user will be promoted after their profile is created.
+      hash: The hashed key of an AnonymousConnection object.
     """
     self.createProfile(role)
     self.kwargs['key'] = hash

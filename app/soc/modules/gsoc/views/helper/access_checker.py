@@ -189,9 +189,7 @@ class Mutator(access_checker.Mutator):
       self.data.project_owner = self.data.project.parent()
 
   def connectionFromKwargs(self):
-    """ Set the connection entity in the RequestData object.
-    """
-
+    """Set the connection entity in the RequestData object."""
     self.userFromKwargs()
 
     self.data.connection = GSoCConnection.get_by_id(
@@ -200,9 +198,8 @@ class Mutator(access_checker.Mutator):
       raise AccessViolation('This connection does not exist.')
 
   def anonymousConnectionFromKwargs(self):
-    """ Set the anonymous_connection entity in the RequestData object.
+    """Set the anonymous_connection entity in the RequestData object.
     """
-
     q = GSoCAnonymousConnection.all().filter('hash_id =', self.data.kwargs['key'])
     self.data.anonymous_connection = q.get()
     if not self.data.anonymous_connection:
