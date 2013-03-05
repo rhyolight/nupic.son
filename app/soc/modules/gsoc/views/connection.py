@@ -90,7 +90,7 @@ def generate_message_txn(connection, content):
   message.put()
 
 class ConnectionForm(GSoCModelForm):
-  """Django form for the Connection page. """
+  """Django form for the Connection page."""
 
   role_choice = ChoiceField(widget=django_forms.Select(),
       choices=(('Mentor', 'Mentor'),))
@@ -113,7 +113,7 @@ class ConnectionForm(GSoCModelForm):
     model = GSoCConnection
 
 class OrgConnectionForm(ConnectionForm):
-  """Django form to show specific fields for an organization. """
+  """Django form to show specific fields for an organization."""
 
   users = gsoc_forms.CharField(label='Link_Id/Email')
 
@@ -201,8 +201,7 @@ class OrgConnectionForm(ConnectionForm):
 
 
 class MessageForm(GSoCModelForm):
-  """Django form for the message.
-  """
+  """Django form for the message."""
 
   def __init__(self, *args, **kwargs):
     super(MessageForm, self).__init__(*args, **kwargs)
@@ -245,8 +244,7 @@ class ConnectionResponseForm(GSoCModelForm):
     return 'v2/modules/gsoc/connection/_response_form.html'
 
 class UserConnectionForm(ConnectionForm):
-  """Django form to show specific fields for a user.
-  """
+  """Django form to show specific fields for a user."""
 
   def __init__(self, request_data=None, message=None, *args, **kwargs):
     super(UserConnectionForm, self).__init__(*args, **kwargs)
@@ -261,7 +259,8 @@ class UserConnectionForm(ConnectionForm):
 
 class OrgConnectionPage(GSoCRequestHandler):
   """Class to encapsulate the methods for an org admin to initiate a
-  connection between the organization and a given user. """
+  connection between the organization and a given user. 
+  """
   
   def templatePath(self):
     return 'v2/modules/gsoc/connection/base.html'
@@ -280,8 +279,7 @@ class OrgConnectionPage(GSoCRequestHandler):
     check.isOrgAdminForOrganization(data.organization)
   
   def context(self, data, check, mutator):
-    """Handler for GSoCConnection page request for an org.
-    """
+    """Handler for GSoCConnection page request for an org."""
     
     connection_form = OrgConnectionForm(
         request_data=data,
@@ -430,8 +428,7 @@ class UserConnectionPage(GSoCRequestHandler):
     check.notMentor()
 
   def context(self, data, check, mutator):
-    """Handler for GSoCConnection page request.
-    """
+    """Handler for GSoCConnection page request."""
 
     connection_form = UserConnectionForm(request_data=data,
         message=data.organization.role_request_message, 
@@ -447,8 +444,7 @@ class UserConnectionPage(GSoCRequestHandler):
     }
     
   def post(self, data, check, mutator):
-    """Handler for a GSoC Connection post request for a user.
-    """
+    """Handler for a GSoC Connection post request for a user."""
     
     if self.generate(data):
       self.redirect.connect(user=data.user)
@@ -545,8 +541,7 @@ class ShowConnection(GSoCRequestHandler):
         data.profile.org_admin_for 
 
   def getMessages(self, data, limit=1000):
-    """Gets all the messages for the connection.
-    """
+    """Gets all the messages for the connection."""
     assert isSet(data.connection)
 
     query = db.Query(GSoCConnectionMessage).ancestor(data.connection)
@@ -576,8 +571,7 @@ class ShowConnection(GSoCRequestHandler):
     return responses
     
   def context(self, data, check, mutator):
-    """Handler for Show GSoCConnection get request.
-    """
+    """Handler for Show GSoCConnection get request."""
 
     header_name = data.url_user.link_id \
         if self.is_org_admin_for_org else data.organization.name
@@ -665,8 +659,7 @@ class ShowConnection(GSoCRequestHandler):
         }
     
   def post(self, data, check, mutator):
-    """Handler for Show GSoC Connection post request.
-    """
+    """Handler for Show GSoC Connection post request."""
 
     response = data.POST['responses']
     
@@ -852,8 +845,7 @@ class ShowConnection(GSoCRequestHandler):
     db.run_in_transaction(delete_connection_txn)
 
 class SubmitConnectionMessagePost(GSoCRequestHandler):
-  """POST request handler for submission of connection messages.
-  """
+  """POST request handler for submission of connection messages."""
 
   def djangoURLPatterns(self):
     return [
