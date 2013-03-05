@@ -50,4 +50,5 @@ class GSoCConnectionMessage(db.Model):
   def getAuthor(self):
     if self.is_auto_generated:
       return "Automatically Generated"
-    return self.author.name()
+    else:
+      return self.author.name()
