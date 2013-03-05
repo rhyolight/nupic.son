@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for constructing core URL patterns
-"""
+"""Module for constructing core URL patterns."""
 
 
 from django.conf.urls.defaults import url as django_url
@@ -89,13 +88,16 @@ SPONSOR   = namedLinkIdPattern(['sponsor'])
 PROGRAM   = namedLinkIdPattern(['sponsor', 'program'])
 CREATE_PROFILE = _role + namedLinkIdPattern(['sponsor', 'program'])
 PROFILE   = namedLinkIdPattern(['sponsor', 'program', 'user'])
+MESSAGE = namedIdBasedPattern(['sponsor', 'program', 'user'])
 DOCUMENT_FMT      = _document
 ORG_DOCUMENT_FMT  = _org_document
 ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
 INVITE    = _mentor_role + ORG
 REQUEST   = _mentor_role + ORG
-USER_ID	  = namedIdBasedPattern(['sponsor', 'program', 'user'])
-USER_ORG  = namedLinkIdPattern(['sponsor', 'program', 'user', 'organization'])
-
 
 USER = namedLinkIdPattern(['link_id'])
+USER_ID	  = namedIdBasedPattern(['sponsor', 'program', 'user'])
+USER_ORG  = namedLinkIdPattern(['sponsor', 'program', 'user', 'organization'])
+CONNECT = namedLinkIdPattern(['sponsor', 'program', 'organization', 'link_id'])
+CONNECTION = namedIdBasedPattern(['sponsor', 'program', 'user'])
+ANONYMOUS_CONNECTION = _role + namedKeyBasedPattern(['sponsor', 'program'])
