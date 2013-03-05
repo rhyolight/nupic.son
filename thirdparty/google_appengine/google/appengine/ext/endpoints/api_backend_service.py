@@ -22,9 +22,17 @@ Contains the implementation for BackendService as defined in api_backend.py.
 """
 
 
-import json
+
+try:
+  import json
+except ImportError:
+  import simplejson as json
+import logging
+
+from protorpc import message_types
 
 from google.appengine.ext.endpoints import api_backend
+from google.appengine.ext.endpoints import api_exceptions
 
 
 __all__ = [
@@ -42,10 +50,8 @@ class ApiConfigRegistry(object):
 
     self.__api_configs = []
 
-    self.__api_methods = {
 
-        'BackendService.getApiConfigs': 'BackendService.getApiConfigs'
-    }
+    self.__api_methods = {}
 
 
 
@@ -101,13 +107,15 @@ class ApiConfigRegistry(object):
 class BackendServiceImpl(api_backend.BackendService):
   """Implementation of BackendService."""
 
-  def __init__(self, api_config_registry):
+  def __init__(self, api_config_registry, app_revision):
     """Create a new BackendService implementation.
 
     Args:
       api_config_registry: ApiConfigRegistry to register and look up configs.
+      app_revision: string containing the current app revision.
     """
     self.__api_config_registry = api_config_registry
+    self.__app_revision = app_revision
 
 
 
@@ -117,14 +125,35 @@ class BackendServiceImpl(api_backend.BackendService):
     """Override definition_name so that it is not BackendServiceImpl."""
     return api_backend.BackendService.definition_name()
 
-  def getApiConfigs(self, unused_request):
+  def getApiConfigs(self, request):
     """Return a list of active APIs and their configuration files.
 
     Args:
-      unused_request: Empty request message, unused
+      request: A request which may contain an app revision
 
     Returns:
-      List of ApiConfigMessages
+      ApiConfigList: A list of API config strings
     """
+    if request.appRevision and request.appRevision != self.__app_revision:
+      raise api_exceptions.BadRequestException(
+          message='API backend app revision %s not the same as expected %s' % (
+              self.__app_revision, request.appRevision))
+
     configs = self.__api_config_registry.all_api_configs()
     return api_backend.ApiConfigList(items=configs)
+
+  def logMessages(self, request):
+    """Write a log message from the Swarm FE to the log.
+
+    Args:
+      request: A log message request.
+
+    Returns:
+      Void message.
+    """
+    Level = api_backend.LogMessagesRequest.LogMessage.Level
+    for message in request.messages:
+      level = message.level if message.level is not None else Level.info
+      logging.log(level.number, message.message)
+
+    return message_types.VoidMessage()

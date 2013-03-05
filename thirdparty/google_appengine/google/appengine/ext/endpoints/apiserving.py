@@ -65,6 +65,7 @@ import cgi
 import cStringIO
 import httplib
 import logging
+import os
 
 from protorpc import messages
 from protorpc import protojson
@@ -73,6 +74,7 @@ from protorpc.wsgi import service
 
 from google.appengine.ext.endpoints import api_backend_service
 from google.appengine.ext.endpoints import api_config
+from google.appengine.ext.endpoints import api_exceptions
 
 package = 'google.appengine.endpoints'
 
@@ -80,55 +82,16 @@ package = 'google.appengine.endpoints'
 __all__ = [
     'api_server',
     'EndpointsErrorMessage',
-    'BadRequestException',
-    'ForbiddenException',
-    'InternalServerErrorException',
-    'NotFoundException',
     'package',
-    'ServiceException',
-    'UnauthorizedException',
 ]
 
 
-class ServiceException(remote.ApplicationError):
-  """Base class for exceptions in endpoints."""
-
-  def __init__(self, message=None):
-    super(ServiceException, self).__init__(message,
-                                           httplib.responses[self.http_status])
-
-
-class BadRequestException(ServiceException):
-  """Bad request exception that is mapped to a 400 response."""
-  http_status = httplib.BAD_REQUEST
-
-
-class ForbiddenException(ServiceException):
-  """Forbidden exception that is mapped to a 403 response."""
-  http_status = httplib.FORBIDDEN
-
-
-class InternalServerErrorException(ServiceException):
-  """Internal server exception that is mapped to a 500 response."""
-  http_status = httplib.INTERNAL_SERVER_ERROR
-
-
-class NotFoundException(ServiceException):
-  """Not found exception that is mapped to a 404 response."""
-  http_status = httplib.NOT_FOUND
-
-
-class UnauthorizedException(ServiceException):
-  """Unauthorized exception that is mapped to a 401 response."""
-  http_status = httplib.UNAUTHORIZED
-
-
 _ERROR_NAME_MAP = dict((httplib.responses[c.http_status], c) for c in [
-    BadRequestException,
-    ForbiddenException,
-    InternalServerErrorException,
-    NotFoundException,
-    UnauthorizedException,
+    api_exceptions.BadRequestException,
+    api_exceptions.ForbiddenException,
+    api_exceptions.InternalServerErrorException,
+    api_exceptions.NotFoundException,
+    api_exceptions.UnauthorizedException,
     ])
 
 _ALL_JSON_CONTENT_TYPES = frozenset([protojson.CONTENT_TYPE] +
@@ -169,6 +132,22 @@ class EndpointsErrorMessage(messages.Message):
 
   state = messages.EnumField(State, 1, required=True)
   error_message = messages.StringField(2)
+
+
+
+def _get_app_revision(environ=os.environ):
+  """Gets the app revision (minor app version) of the current app.
+
+  Args:
+    environ: A dictionary with a key CURRENT_VERSION_ID that maps to a version
+      string of the format <major>.<minor>.
+
+  Returns:
+    The app revision (minor version) of the current app, or None if one couldn't
+    be found.
+  """
+  if 'CURRENT_VERSION_ID' in environ:
+    return environ['CURRENT_VERSION_ID'].split('.')[1]
 
 
 class _ApiServer(object):
@@ -243,7 +222,7 @@ class _ApiServer(object):
 
 
     backend_service = api_backend_service.BackendServiceImpl.new_factory(
-        self.api_config_registry)
+        self.api_config_registry, _get_app_revision())
     protorpc_services.insert(0, (self.__BACKEND_SERVICE_ROOT, backend_service))
 
     if 'protocols' in kwargs:
@@ -388,10 +367,9 @@ class _ApiServer(object):
       if api_path.startswith(self.__SPI_PREFIX):
         protorpc_method_name = self.api_config_registry.lookup_api_method(
             api_path[len(self.__SPI_PREFIX):])
-        if protorpc_method_name is None:
-          logging.warning('API method not found for: %s',
+        if protorpc_method_name is not None:
+          logging.warning('API method rerouted (old protocol) for: %s',
                           api_path[len(self.__SPI_PREFIX):])
-        else:
           environ['PATH_INFO'] = self.__SPI_PREFIX + protorpc_method_name
       body_iter = self.service_app(environ, StartResponse)
       status = call_context['status']

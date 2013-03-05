@@ -25,10 +25,6 @@ import sys
 # Must set this env var before importing any part of Django
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
-# Declare the Django version we need.
-from google.appengine.dist import use_library
-use_library('django', '1.2')
-
 import django.core.signals
 import django.db
 
