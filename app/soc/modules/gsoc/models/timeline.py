@@ -26,11 +26,11 @@ import soc.models.timeline
 
 
 class GSoCTimeline(soc.models.timeline.Timeline):
-  """GSoC Timeline model extends the basic Program Timeline model.
-  """
+  """GSoC Timeline model extends the basic Program Timeline model."""
 
   application_review_deadline = db.DateTimeProperty(
-      verbose_name=ugettext('Organizations Review Student Applications Deadline'))
+      verbose_name=ugettext(
+          'Organizations Review Student Applications Deadline'))
 
   student_application_matched_deadline = db.DateTimeProperty(
       verbose_name=ugettext('Students Matched to Mentors Deadline'))
