@@ -37,3 +37,6 @@ class GSoCTimeline(soc.models.timeline.Timeline):
 
   accepted_students_announced_deadline = db.DateTimeProperty(
       verbose_name=ugettext('Accepted Students Announced Deadline'))
+
+  form_submission_start = db.DateTimeProperty(
+      verbose_name=ugettext('Students Start Submitting Their Forms'))
