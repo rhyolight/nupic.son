@@ -66,41 +66,6 @@ class ValidateTest(unittest.TestCase):
     #invalid: a capital letter in the middle
     self.assertFalse(validate.isLinkIdFormatValid('aBc'))
 
-  def testIsScopePathFormatValid(self):
-    """Tests the validity of Scope Paths.
-
-    Scope paths are group of Link Ids separated by '/'.
-    """
-    #invalid: empty string
-    self.assertFalse(validate.isScopePathFormatValid(''))
-
-    #valid: single chunk
-    self.assertTrue(validate.isScopePathFormatValid('addvw'))
-
-    #invalid: starts with an underscore
-    self.assertFalse(validate.isScopePathFormatValid('_jhads/sdafsa'))
-
-    #valid: chunks separated by '/'
-    self.assertTrue(validate.isScopePathFormatValid('adhcd/dfds'))
-
-    #valid: has a double underscore
-    self.assertTrue(validate.isScopePathFormatValid('ndfnsj__nj'))
-
-    #invalid: starts with a capital letter
-    self.assertFalse(validate.isScopePathFormatValid('Usdn_/sdfa'))
-
-    #invalid: second chunk ends with '/'
-    self.assertFalse(validate.isScopePathFormatValid('adsf/sdfgr/'))
-
-    #invalid: first chunk should not start with a '/'
-    self.assertFalse(validate.isScopePathFormatValid('/abc'))
-
-    #invalid: has a capital letter
-    self.assertFalse(validate.isScopePathFormatValid('aBc/def'))
-
-    #valid: underscore in the middle and rest of the letters in lowercase
-    self.assertTrue(validate.isScopePathFormatValid('a_b/cde'))
-
   def testIsAgeSufficientForProgram(self):
     test_program_start = datetime.date(2012, 11, 26)
     test_min_age = 13
