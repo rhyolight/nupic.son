@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -116,4 +114,3 @@ class ProposalTest(unittest.TestCase):
     expected = []
     actual = proposal_logic.getProposalsToBeAcceptedForOrg(organization)
     self.assertEqual(actual, expected)
-

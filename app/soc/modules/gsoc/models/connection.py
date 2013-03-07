@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2009 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +17,8 @@ requests between a user and an organization
 '''
 from soc.models.connection import Connection
 
+
+# TODO(nathaniel): Empty subclass.
 class GSoCConnection(Connection):
   """ GSoCConnection Model. See Connection model for details """
   pass

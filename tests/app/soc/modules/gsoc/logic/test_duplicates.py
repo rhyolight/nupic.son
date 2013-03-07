@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -174,4 +172,3 @@ class DuplicatesTest(unittest.TestCase):
     expected = [entity.key() for entity in self.other_proposal_duplicates[:3]]
     actual = [entity.key() for entity in q_result]
     self.assertEqual(actual, expected)
-

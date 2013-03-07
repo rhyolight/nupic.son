@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +27,7 @@ class OAuthRedirectPage(oauth.OAuthRedirectPage):
     return 'v2/modules/gsoc/oauth/redirect_page.html'
 
 
+# TODO(nathaniel): Empty subclass.
 class OAuthVerifyToken(oauth.OAuthVerifyToken):
   """Verify request token and redirect user.
   """

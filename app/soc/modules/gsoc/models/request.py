@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2008 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +18,7 @@
 from soc.models.request import Request
 
 
+# TODO(nathaniel): Empty subclass.
 class GSoCRequest(Request):
   """GSoCequest model.
 

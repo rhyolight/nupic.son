@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -253,4 +251,3 @@ class SystemTest(unittest.TestCase):
         del os.environ['CURRENT_VERSION_ID']
       else:
         os.environ['CURRENT_VERSION_ID'] = self.default_current_version_id
-

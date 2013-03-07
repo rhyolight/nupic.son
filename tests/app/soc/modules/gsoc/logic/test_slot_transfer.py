@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -84,4 +82,3 @@ class SlotTransferTest(unittest.TestCase):
                                      {'scope': self.gsoc_program})
     actual = slot_transfer_logic.getSlotTransferEntitiesForOrg(organization)
     self.assertEqual(expected, actual)
-
