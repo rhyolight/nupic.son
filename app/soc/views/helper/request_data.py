@@ -395,7 +395,8 @@ class RedirectHelper(object):
       assert access_checker.isSet(self._data.program)
       program = self._data.program
     self._clear()
-    self.kwargs['sponsor'] = program.scope_path
+    sponsor_key = program_model.Program.scope.get_value_for_datastore(program)
+    self.kwargs['sponsor'] = sponsor_key.name()
 
   def program(self, program=None):
     """Sets kwargs for an url_patterns.PROGRAM redirect."""
