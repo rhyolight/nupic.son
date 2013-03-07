@@ -30,6 +30,7 @@ from django.utils.translation import ugettext
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import exceptions
+from soc.logic import links
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
 from soc.views.helper import addresses
@@ -269,6 +270,8 @@ class ProgramSettingsDashboard(Dashboard):
     r = data.redirect
     r.program()
 
+    linker = links.Linker()
+
     subpages = [
         {
             'name': 'edit_program',
@@ -300,6 +303,14 @@ class ProgramSettingsDashboard(Dashboard):
                 'List of documents from various program.'),
             'title': 'List of documents',
             'link': r.urlOf('list_gsoc_documents')
+        },
+        {
+            'name': 'create_program',
+            'description': ugettext(
+                'Create a new program.'),
+            'title': 'Create a program',
+            'link': linker.sponsor(
+                data.sponsor, url_names.GSOC_PROGRAM_CREATE),
         },
     ]
 

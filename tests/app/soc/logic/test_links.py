@@ -18,8 +18,10 @@ import unittest
 
 from soc.logic import links
 
+
 TEST_PROGRAM_SPONSOR = 'test_sponsor'
 TEST_PROGRAM_NAME = 'test_program'
+TEST_SPONSOR_KEY_NAME = 'test_sponsor_key_name'
 
 
 # TODO(nathaniel): use a real program here.
@@ -28,6 +30,22 @@ class MockProgram(object):
   link_id = TEST_PROGRAM_NAME
 
 
+class MockKey(object):
+
+  def __init__(self, name):
+    self._name = name
+
+  def name(self):
+    return self._name
+
+
+class MockSponsor(object):
+  def key(self):
+    return MockKey(TEST_SPONSOR_KEY_NAME)
+
+
+# TODO(daniel): this class is on a non-specific level, but it refers
+# to GCI specific names. Make it generic.
 class TestLinker(unittest.TestCase):
   """Tests the Linker class."""
 
@@ -41,3 +59,8 @@ class TestLinker(unittest.TestCase):
     self.assertEqual(
         '/gci/homepage/%s/%s' % (TEST_PROGRAM_SPONSOR, TEST_PROGRAM_NAME),
         self.linker.program(MockProgram(), 'gci_homepage'))
+
+  def testSponsor(self):
+    self.assertEqual(
+        '/gci/program/create/%s' % TEST_SPONSOR_KEY_NAME,
+        self.linker.sponsor(MockSponsor(), 'gci_program_create'))
