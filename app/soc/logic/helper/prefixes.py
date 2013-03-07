@@ -16,20 +16,6 @@
 """
 
 
-def getOrSetScope(entity):
-  """Gets or sets scope for the given entity.
-
-  params:
-    entity = Entity which uses document prefix.
-  """
-
-  if getattr(entity, 'scope', None):
-    return entity.scope
-
-  entity.scope = getScopeForPrefix(entity.prefix, entity.scope_path)
-  entity.put()
-
-
 def getScopeForPrefix(prefix, key_name):
   """Gets the scope for the given prefix and key_name.
 
