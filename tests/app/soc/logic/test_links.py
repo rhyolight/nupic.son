@@ -24,12 +24,6 @@ TEST_PROGRAM_NAME = 'test_program'
 TEST_SPONSOR_KEY_NAME = 'test_sponsor_key_name'
 
 
-# TODO(nathaniel): use a real program here.
-class MockProgram(object):
-  scope_path = TEST_PROGRAM_SPONSOR
-  link_id = TEST_PROGRAM_NAME
-
-
 class MockKey(object):
 
   def __init__(self, name):
@@ -42,6 +36,12 @@ class MockKey(object):
 class MockSponsor(object):
   def key(self):
     return MockKey(TEST_SPONSOR_KEY_NAME)
+
+
+# TODO(nathaniel): use a real program here.
+class MockProgram(object):
+  scope = MockSponsor()
+  link_id = TEST_PROGRAM_NAME
 
 
 # TODO(daniel): this class is on a non-specific level, but it refers
@@ -57,7 +57,7 @@ class TestLinker(unittest.TestCase):
 
   def testProgram(self):
     self.assertEqual(
-        '/gci/homepage/%s/%s' % (TEST_PROGRAM_SPONSOR, TEST_PROGRAM_NAME),
+        '/gci/homepage/%s/%s' % (TEST_SPONSOR_KEY_NAME, TEST_PROGRAM_NAME),
         self.linker.program(MockProgram(), 'gci_homepage'))
 
   def testSponsor(self):

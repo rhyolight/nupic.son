@@ -16,6 +16,8 @@
 
 from django.core import urlresolvers
 
+from soc.models import program as program_model
+
 
 class Linker(object):
   """URL creator for Melange."""
@@ -37,14 +39,14 @@ class Linker(object):
 
     Args:
       program: A program.
-      url_name: The name with which a url was registered with Django.
+      url_name: The name with which a URL was registered with Django.
 
     Returns:
-      The url of the page matching the given name for the given program.
+      The URL of the page matching the given name for the given program.
     """
     kwargs = {
         'program': program.link_id,
-        'sponsor': program.scope_path,
+        'sponsor': program.scope.key().name()
     }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
