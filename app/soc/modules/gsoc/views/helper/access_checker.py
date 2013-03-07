@@ -109,6 +109,9 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
 DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM = ugettext(
     'You are not allowed to download the form.')
 
+DEF_NOT_ALLOWED_TO_UPLOAD_FORM = ugettext(
+    'You are not allowed to upload forms.')
+
 DEF_PROJECT_NOT_COMPLETED = ugettext(
     'The specified project has not been completed')
 
@@ -410,6 +413,24 @@ class AccessChecker(access_checker.AccessChecker):
 
     raise AccessViolation(
         DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT % self.data.program.name)
+
+  def canStudentUploadForms(self):
+    """Checks if the current user can upload student forms.
+
+    Raises:
+      exceptions.AccessViolation: if the current user is not allowed to
+        upload forms
+    """
+    self.isStudentWithProject()
+
+    # check if the forms can already be submitted
+    if not self.data.timeline.afterFormSubmissionStart():
+      raise AccessViolation(DEF_NOT_ALLOWED_TO_UPLOAD_FORM)
+
+    # POST requests actually uploading a form are not allowed after
+    # the program ends
+    if self.data.POST:
+        self.isProgramRunning()
 
   def canStudentDownloadForms(self):
     """Checks if the user can download the forms.
