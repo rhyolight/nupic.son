@@ -47,3 +47,18 @@ class Linker(object):
         'sponsor': program.scope_path,
     }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
+
+  def sponsor(self, sponsor, url_name):
+    """Returns the URL of a sponsor's named page.
+
+    Args:
+      sponsor: A sponsor.
+      url_name: The name with which a URL was registered with Django.
+
+    Returns:
+      The URL of the page matching the given name for the given sponsor.
+    """
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+    }
+    return urlresolvers.reverse(url_name, kwargs=kwargs)
