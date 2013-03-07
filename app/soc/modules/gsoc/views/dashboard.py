@@ -1396,7 +1396,8 @@ class TodoComponent(Component):
     list_config.addPlainTextColumn(
         'key', 'Key', (lambda d, *args: d['key']), hidden=True)
     list_config.addDictColumn('name', 'Name')
-    list_config.addDictColumn('status', 'Status')
+    list_config.addDictColumn('status', 'Status',
+        column_type=lists.ColumnType.HTML)
     def rowAction(d, *args):
       key = d['key']
       if key == 'tax_form':
@@ -1438,19 +1439,21 @@ class TodoComponent(Component):
     isgood = lambda x: x and x.size and x.filename
 
     if self.data.is_student and info.number_of_projects:
-      status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
-      response.addRow({
-          'key': 'tax_form',
-          'name': 'Tax form',
-          'status': status,
-      })
+      if self.data.timeline.afterFormSubmissionStart():
+        status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
+        response.addRow({
+            'key': 'tax_form',
+            'name': 'Tax form',
+            'status': status,
+        })
 
-      status = colorize(isgood(info.enrollment_form), "Submitted", "Not submitted")
-      response.addRow({
-          'key': 'enrollment_form',
-          'name': 'Enrollment form',
-          'status': status,
-      })
+        status = colorize(
+            isgood(info.enrollment_form), "Submitted", "Not submitted")
+        response.addRow({
+            'key': 'enrollment_form',
+            'name': 'Enrollment form',
+            'status': status,
+        })
 
       matches = info.school_name in UNIVERSITIES.get(info.school_country, [])
       status = colorize(matches, "Yes", "No")
