@@ -28,12 +28,14 @@ GENERAL_INFO_GROUP = translation.ugettext(
 PROGRAM_DOCUMENTS_GROUP = translation.ugettext(
     '2. Program Documents')
 
+
 class Program(linkable_model.Linkable):
   """The Program model, representing a Program ran by a Sponsor."""
 
   #: Required field storing name of the group.
   name = db.StringProperty(required=True,
       verbose_name=translation.ugettext('Name'))
+  name.group = GENERAL_INFO_GROUP
   name.help_text = translation.ugettext(
       'Complete, formal name of the program.')
 
@@ -41,6 +43,7 @@ class Program(linkable_model.Linkable):
   #: It can be used for displaying group as sidebar menu item.
   short_name = db.StringProperty(required=True,
       verbose_name=translation.ugettext('Short name'))
+  short_name.group = GENERAL_INFO_GROUP
   short_name.help_text = translation.ugettext(
       'Short name used for sidebar menu')
 
@@ -48,12 +51,14 @@ class Program(linkable_model.Linkable):
   #: For example, GSoC would be a group label for GSoC2008/GSoC2009
   group_label = db.StringProperty(
       verbose_name=translation.ugettext('Group label'))
+  group_label.group = GENERAL_INFO_GROUP
   group_label.help_text = translation.ugettext(
       'Optional name used to relate this program to others.')
 
   #: Required field storing description of the group.
   description = db.TextProperty(required=True,
       verbose_name=translation.ugettext('Description'))
+  description.group = GENERAL_INFO_GROUP
   description.help_text = translation.ugettext(
       '<small><i>for example:</i></small><br>'
       '<tt><b>GSoC 2009</b> is the <i>Google Summer of Code</i>,'
@@ -63,6 +68,7 @@ class Program(linkable_model.Linkable):
   #: Number of accepted organizations
   nr_accepted_orgs = db.IntegerProperty(
       required=False, verbose_name=translation.ugettext('#accepted orgs'))
+  nr_accepted_orgs.group = GENERAL_INFO_GROUP
   nr_accepted_orgs.help_text = translation.ugettext(
       'The number of accepted organizations.')
 
@@ -99,27 +105,30 @@ class Program(linkable_model.Linkable):
 
   #: Document reference property used for the Org Admin Agreement
   org_admin_agreement = db.ReferenceProperty(
-    reference_class=document_model.Document,
-    verbose_name=translation.ugettext('Organization Admin Agreement'),
-    collection_name='org_admin_agreement')
+      reference_class=document_model.Document,
+      verbose_name=translation.ugettext('Organization Admin Agreement'),
+      collection_name='org_admin_agreement')
+  org_admin_agreement.group = PROGRAM_DOCUMENTS_GROUP
   org_admin_agreement.help_text = translation.ugettext(
       'Document containing optional Mentor Agreement for participating as a '
       'Organization admin.')
 
   #: Document reference property used for the Mentor Agreement
   mentor_agreement = db.ReferenceProperty(
-    reference_class=document_model.Document,
-    verbose_name=translation.ugettext('Mentor Agreement'),
-    collection_name='mentor_agreement')
+      reference_class=document_model.Document,
+      verbose_name=translation.ugettext('Mentor Agreement'),
+      collection_name='mentor_agreement')
+  mentor_agreement.group = PROGRAM_DOCUMENTS_GROUP
   mentor_agreement.help_text = translation.ugettext(
       'Document containing optional Mentor Agreement for participating as a '
       'Mentor.')
 
   #: Document reference property used for the Student Agreement
   student_agreement = db.ReferenceProperty(
-    reference_class=document_model.Document,
-    verbose_name=translation.ugettext('Student Agreement'),
-    collection_name='student_agreement')
+      reference_class=document_model.Document,
+      verbose_name=translation.ugettext('Student Agreement'),
+      collection_name='student_agreement')
+  student_agreement.group = PROGRAM_DOCUMENTS_GROUP
   student_agreement.help_text = translation.ugettext(
       'Document containing optional Student Agreement for participating as a '
       'Student.')
@@ -131,6 +140,7 @@ class Program(linkable_model.Linkable):
   status = db.StringProperty(required=True, default='invisible',
       verbose_name=translation.ugettext('Program Status'),
       choices=['invisible', 'visible', 'invalid'])
+  status.group = GENERAL_INFO_GROUP
   status.help_text = translation.ugettext(
       '<tt>Invisible: Program Stealth-Mode Visible to Hosts and Devs only.<br/>'
       'Visible: Visible to everyone.<br/>'
@@ -140,22 +150,25 @@ class Program(linkable_model.Linkable):
   #: The document entity which contains the "About" page for the program
   about_page = db.ReferenceProperty(
       reference_class=document_model.Document,
-      verbose_name=translation.ugettext('About page document'))
-  about_page.collection_name = 'about_page'
+      verbose_name=translation.ugettext('About page document'),
+      collection_name = 'about_page')
+  about_page.group = PROGRAM_DOCUMENTS_GROUP
   about_page.help_text = translation.ugettext('The document with <b>About</b>')
 
   #: The document entity which contains "Events & Timeline" page
   #: for the program
   events_page = db.ReferenceProperty(
       reference_class=document_model.Document,
-      verbose_name=translation.ugettext('Events page document'))
-  events_page.collection_name = 'events_page'
+      verbose_name=translation.ugettext('Events page document'),
+      collection_name = 'events_page')
+  events_page.group = PROGRAM_DOCUMENTS_GROUP
   events_page.help_text = translation.ugettext(
       'The document for the <b>Events & Timeline</b> page')
 
   #: The url which contains the "Events & Timeline" frame
   events_frame_url = db.LinkProperty(
       verbose_name=translation.ugettext('Events page iframe url'))
+  events_frame_url.group = GENERAL_INFO_GROUP
   events_frame_url.help_text = translation.ugettext(
       'The iframe url for the <b>Events & Timeline</b> page')
 
@@ -163,8 +176,9 @@ class Program(linkable_model.Linkable):
   #: for the program
   connect_with_us_page = db.ReferenceProperty(
       reference_class=document_model.Document,
-      verbose_name=translation.ugettext('Connect with us document'))
-  connect_with_us_page.collection_name = 'connect_with_us_page'
+      verbose_name=translation.ugettext('Connect with us document'),
+      collection_name = 'connect_with_us_page')
+  connect_with_us_page.group = PROGRAM_DOCUMENTS_GROUP
   connect_with_us_page.help_text = translation.ugettext(
       'The document for the <b>Connect With Us</b> page')
 
@@ -172,13 +186,15 @@ class Program(linkable_model.Linkable):
   #: for the program
   help_page = db.ReferenceProperty(
       reference_class=document_model.Document,
-      verbose_name=translation.ugettext('Help document'))
-  help_page.collection_name = 'help_page'
+      verbose_name=translation.ugettext('Help document'),
+      collection_name = 'help_page')
+  help_page.group = PROGRAM_DOCUMENTS_GROUP
   help_page.help_text = translation.ugettext(
       'The document for the <b>Help</b> page')
 
   privacy_policy_url = db.LinkProperty(
       verbose_name=translation.ugettext("Privacy Policy"))
+  privacy_policy_url.group = GENERAL_INFO_GROUP
   privacy_policy_url.help_text = translation.ugettext(
       "The url for the <b>Privacy Policy</b>")
 

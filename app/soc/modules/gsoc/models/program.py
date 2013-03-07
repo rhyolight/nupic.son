@@ -22,10 +22,10 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.program
+from soc.models import program
 
 
-class GSoCProgramMessages(soc.models.program.ProgramMessages):
+class GSoCProgramMessages(program.ProgramMessages):
   """The GSoCProgramMessages model.
   """
 
@@ -38,7 +38,7 @@ class GSoCProgramMessages(soc.models.program.ProgramMessages):
       verbose_name=ugettext('Rejected Students Message'))
 
 
-class GSoCProgram(soc.models.program.Program):
+class GSoCProgram(program.Program):
   """GSoC Program model extends the basic Program model.
   """
 
@@ -49,6 +49,7 @@ class GSoCProgram(soc.models.program.Program):
   #: Required field storing application limit of the program.
   apps_tasks_limit = db.IntegerProperty(required=True,
       verbose_name=ugettext('Application/Tasks Limit'))
+  apps_tasks_limit.group = program.GENERAL_INFO_GROUP
   apps_tasks_limit.help_text = ugettext(
       '<small><i>e.g.</i></small> '
       '<tt><b>20</b> is the student applications limit for <i>Google Summer '
@@ -57,18 +58,21 @@ class GSoCProgram(soc.models.program.Program):
   #: Optional field storing minimum slots per organization
   min_slots = db.IntegerProperty(required=False, default=1,
       verbose_name=ugettext('Min slots per org'))
+  min_slots.group = program.GENERAL_INFO_GROUP
   min_slots.help_text = ugettext(
       'The amount of slots each org should get at the very least.')
 
   #: Optional field storing maximum slots per organization
   max_slots = db.IntegerProperty(required=False, default=50,
       verbose_name=ugettext('Max slots per org'))
+  max_slots.group = program.GENERAL_INFO_GROUP
   max_slots.help_text = ugettext(
       'The amount of slots each organization should get at most.')
 
   #: Required field storing slots limit of the program.
   slots = db.IntegerProperty(required=True,
       verbose_name=ugettext('Slots'))
+  slots.group = program.GENERAL_INFO_GROUP
   slots.help_text = ugettext(
       '<small><i>e.g.</i></small> '
       '<tt><b>500</b> might be an amount of slots for <i>Google Summer '
@@ -81,12 +85,14 @@ class GSoCProgram(soc.models.program.Program):
   #: Whether the slots allocations are visible
   allocations_visible = db.BooleanProperty(default=False,
       verbose_name=ugettext('Slot allocations visible'))
+  allocations_visible.group = program.GENERAL_INFO_GROUP
   allocations_visible.help_text = ugettext(
       'Field used to indicate if the slot allocations should be visible.')
 
   #: Whether the duplicates are visible
   duplicates_visible = db.BooleanProperty(default=False,
       verbose_name=ugettext('Duplicate proposals visible'))
+  duplicates_visible.group = program.GENERAL_INFO_GROUP
   duplicates_visible.help_text = ugettext(
       'Field used to indicate if duplicate proposals should be made visible '
       'to org admins.')
