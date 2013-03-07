@@ -25,8 +25,10 @@ from soc.models import timeline as timeline_model
 
 GENERAL_INFO_GROUP = translation.ugettext(
     '1. General Info')
+AGE_REQUIREMENTS_GROUP = translation.ugettext(
+    '2. Age Requirements')
 PROGRAM_DOCUMENTS_GROUP = translation.ugettext(
-    '2. Program Documents')
+    '3. Program Documents')
 
 
 class Program(linkable_model.Linkable):
@@ -76,7 +78,7 @@ class Program(linkable_model.Linkable):
   #: participate
   student_min_age = db.IntegerProperty(
       required=False, verbose_name=translation.ugettext('Student minimum age'))
-  student_min_age.group = translation.ugettext('Age Requirements')
+  student_min_age.group = AGE_REQUIREMENTS_GROUP
   student_min_age.help_text = translation.ugettext(
       'Minimum age of students.')
 
@@ -84,7 +86,7 @@ class Program(linkable_model.Linkable):
   #: participate
   student_max_age = db.IntegerProperty(default=200,
       required=False, verbose_name=translation.ugettext('Student maximum age'))
-  student_max_age.group = translation.ugettext('Age Requirements')
+  student_max_age.group = AGE_REQUIREMENTS_GROUP
   student_max_age.help_text = translation.ugettext(
       'Maximum whole-year age of students.')
 
@@ -92,7 +94,7 @@ class Program(linkable_model.Linkable):
   #: minimum/maximum age requirement holds.
   student_min_age_as_of = db.DateProperty(
       required=False, verbose_name=translation.ugettext('Age as of'))
-  student_min_age_as_of.group = translation.ugettext('Age Requirements')
+  student_min_age_as_of.group = AGE_REQUIREMENTS_GROUP
   student_min_age_as_of.help_text = translation.ugettext(
       'Date on which students must satisfy age requirements.')
 
