@@ -1396,7 +1396,8 @@ class TodoComponent(Component):
     list_config.addPlainTextColumn(
         'key', 'Key', (lambda d, *args: d['key']), hidden=True)
     list_config.addDictColumn('name', 'Name')
-    list_config.addDictColumn('status', 'Status')
+    list_config.addDictColumn('status', 'Status',
+        column_type=lists.ColumnType.HTML)
     def rowAction(d, *args):
       key = d['key']
       if key == 'tax_form':
