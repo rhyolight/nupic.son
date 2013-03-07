@@ -23,6 +23,11 @@ from soc.models import linkable as linkable_model
 from soc.models import timeline as timeline_model
 
 
+GENERAL_INFO_GROUP = translation.ugettext(
+    '1. General Info')
+PROGRAM_DOCUMENTS_GROUP = translation.ugettext(
+    '2. Program Documents')
+
 class Program(linkable_model.Linkable):
   """The Program model, representing a Program ran by a Sponsor."""
 
