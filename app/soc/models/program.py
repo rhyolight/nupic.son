@@ -25,10 +25,12 @@ from soc.models import timeline as timeline_model
 
 GENERAL_INFO_GROUP = translation.ugettext(
     '1. General Info')
+CONTACT_INFO_GROUP = translation.ugettext(
+    '2. Contact Info')
 AGE_REQUIREMENTS_GROUP = translation.ugettext(
-    '2. Age Requirements')
+    '3. Age Requirements')
 PROGRAM_DOCUMENTS_GROUP = translation.ugettext(
-    '3. Program Documents')
+    '4. Program Documents')
 
 
 class Program(linkable_model.Linkable):
@@ -203,35 +205,35 @@ class Program(linkable_model.Linkable):
   #: ATOM or RSS feed URL. Feed entries are shown on the site
   #: page using Google's JavaScript blog widget
   feed_url = db.LinkProperty(verbose_name=translation.ugettext('Feed URL'))
+  feed_url.group = CONTACT_INFO_GROUP
   feed_url.help_text = translation.ugettext(
       'The URL should be a valid ATOM or RSS feed. '
       'Feed entries are shown on the program home page.')
-  feed_url.group = translation.ugettext("1. Public Info")
 
   blogger = db.LinkProperty(
       required=False, verbose_name=translation.ugettext("Blogger URL"))
+  blogger.group = CONTACT_INFO_GROUP
   blogger.help_text = translation.ugettext(
       "URL of the Blogger home page for the program")
-  blogger.group = translation.ugettext("1. Public Info")
 
   gplus = db.LinkProperty(
       required=False, verbose_name=translation.ugettext("Google+ URL"))
+  gplus.group = CONTACT_INFO_GROUP
   gplus.help_text = translation.ugettext(
       "URL of the Google+ home page for the program")
-  gplus.group = translation.ugettext("1. Public Info")
 
   email = db.EmailProperty(
       required=False, verbose_name=translation.ugettext("Program email"))
+  email.group = CONTACT_INFO_GROUP
   email.help_text = translation.ugettext(
       "Contact email address for the program")
-  email.group = translation.ugettext("1. Public Info")
 
   irc = db.EmailProperty(
       required=False, verbose_name=translation.ugettext("IRC URL"))
+  irc.group = CONTACT_INFO_GROUP
   irc.help_text = translation.ugettext(
       "URL of the irc channel for the program in "
       "the format irc://<channel>@server")
-  irc.group = translation.ugettext("1. Public Info")
 
   def getProgramMessages(self):
     def get_or_create_txn():
