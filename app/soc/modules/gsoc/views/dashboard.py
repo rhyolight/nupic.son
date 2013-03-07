@@ -1438,19 +1438,21 @@ class TodoComponent(Component):
     isgood = lambda x: x and x.size and x.filename
 
     if self.data.is_student and info.number_of_projects:
-      status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
-      response.addRow({
-          'key': 'tax_form',
-          'name': 'Tax form',
-          'status': status,
-      })
+      if self.data.timeline.afterFormSubmissionStart():
+        status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
+        response.addRow({
+            'key': 'tax_form',
+            'name': 'Tax form',
+            'status': status,
+        })
 
-      status = colorize(isgood(info.enrollment_form), "Submitted", "Not submitted")
-      response.addRow({
-          'key': 'enrollment_form',
-          'name': 'Enrollment form',
-          'status': status,
-      })
+        status = colorize(
+            isgood(info.enrollment_form), "Submitted", "Not submitted")
+        response.addRow({
+            'key': 'enrollment_form',
+            'name': 'Enrollment form',
+            'status': status,
+        })
 
       matches = info.school_name in UNIVERSITIES.get(info.school_country, [])
       status = colorize(matches, "Yes", "No")
