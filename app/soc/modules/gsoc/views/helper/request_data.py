@@ -126,6 +126,25 @@ class TimelineHelper(request_data.TimelineHelper):
     first_survey_start = min([s.survey_start for s in surveys])
     return request_data.isAfter(first_survey_start)
 
+  def formSubmissionStartOn(self):
+    """Returns the date after which accepted students may submit their forms.
+
+    Returns:
+      datetime.datetime object representing a point in time after which
+        student forms may be submitted.
+    """
+    return self.timeline.form_submission_start
+
+  def afterFormSubmissionStart(self):
+    """Answers the question if the current point in time is after students can
+    start submitting their forms.
+
+    Returns:
+      A bool value which is True if the current time is after students can
+        start submitting their forms.
+    """
+    return request_data.isAfter(self.formSubmissionStartOn())
+
 
 class RequestData(request_data.RequestData):
   """Object containing data we query for each request in the GSoC module.
