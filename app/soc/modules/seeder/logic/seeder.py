@@ -414,7 +414,7 @@ class Logic(object):
 
     # scope_path is to be produced from scope
     if prop_name == 'scope_path' and not result:
-      return ''
+      return None
 
     # Specially generate link_id because it needs to be unique
     if prop_name == 'link_id' and not result:
