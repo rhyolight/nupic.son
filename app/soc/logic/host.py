@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Logic for Host Model.
-"""
+"""Logic for Host Model."""
 
+from soc.logic import program as program_logic
 
 from soc.models.host import Host
-from soc.models.program import Program
 from soc.models.user import User
 
 
@@ -44,8 +43,7 @@ def getHostsForProgram(program_entity, limit=1000):
   Returns:
     The list of host entities for the specified program entity
   """
-  sponsor_key = Program.scope.get_value_for_datastore(
-      program_entity)
+  sponsor_key = program_logic.getSponsorKey(program_entity)
   q = User.all()
   q.filter('host_for', sponsor_key)
   # TODO(Madhu): Return the host entities once we run the Mapreduce to convert

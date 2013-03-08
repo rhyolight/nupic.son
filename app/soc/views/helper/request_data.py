@@ -24,10 +24,10 @@ from django import http
 from django.core import urlresolvers
 from django.utils import encoding
 
+from soc.logic import program as program_logic
 from soc.logic import system
 from soc.logic import site as site_logic
 from soc.logic import user
-from soc.models import program as program_model
 from soc.models import sponsor as sponsor_model
 from soc.views.helper import access_checker
 
@@ -292,8 +292,7 @@ class RequestData(object):
         # because it requires a program to be fetched first. It seems to
         # be acceptable, because there is a great chance that program has
         # to also be provided at some point of request's life cycle.
-        sponsor_key = program_model.Program.scope.get_value_for_datastore(
-            self.program)
+        sponsor_key = program_logic.getSponsorKey(self.program)
 
       self._sponsor = sponsor_model.Sponsor.get(sponsor_key)
 
@@ -395,8 +394,7 @@ class RedirectHelper(object):
       assert access_checker.isSet(self._data.program)
       program = self._data.program
     self._clear()
-    sponsor_key = program_model.Program.scope.get_value_for_datastore(program)
-    self.kwargs['sponsor'] = sponsor_key.name()
+    self.kwargs['sponsor'] = program_logic.getSponsorKey(program).name()
 
   def program(self, program=None):
     """Sets kwargs for an url_patterns.PROGRAM redirect."""
