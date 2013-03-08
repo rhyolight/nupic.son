@@ -74,7 +74,6 @@ def validateForm(data, document_form):
     cleaned_data['prefix'] = prefix
     cleaned_data['scope'] = prefixes.getScopeForPrefix(
         prefix, data.scope_key_name)
-    cleaned_data['scope_path'] = self.scope_key_name
     document = document_form.create(key_name=data.key_name)
 
   return document
