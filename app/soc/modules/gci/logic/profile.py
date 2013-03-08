@@ -226,9 +226,8 @@ def getOrCreateDummyMelangeDeletedProfile(program):
     key_name = '%s/%s' % (program.key(), user_logic.MELANGE_DELETED_USER)
 
     profile_ent = profile_model.GCIProfile(
-        parent=user_ent, key_name=key_name,
+        parent=user_ent, key_name=key_name, user=user_ent,
         link_id=user_logic.MELANGE_DELETED_USER, scope=program,
-        scope_path=program.key().id_or_name(), user=user_ent,
         public_name=MELANGE_DELETED_USER_PNAME,
         given_name=MELANGE_DELETED_USER_GNAME,
         surname=MELANGE_DELETED_USER_SNAME,
