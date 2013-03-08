@@ -93,15 +93,3 @@ class Linkable(db.Model):
   scope.help_text = ugettext(
       'Reference to another Linkable entity that defines the "scope" of'
       ' this Linkable entity.')
-
-  #: Hidden (not displayed to users or editable in forms) cache of the string
-  #: representation of the transitive closure of scopes, for use in URLs.
-  #: The multiple queries required to produce this string for entities in
-  #: deeply-nested scopes can be prohibitively expensive.  The scope of an
-  #: entity is not expected to change frequently (only for move, copy, and
-  #: maybe re-parenting operations), so this property is not likely to need
-  #: updating.
-  scope_path = db.StringProperty(required=False,
-      verbose_name=ugettext('Scope path'))
-  scope_path.help_text = ugettext(
-      'Cache of the string form of the entity scope.')

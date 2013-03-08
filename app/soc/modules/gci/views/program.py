@@ -41,7 +41,7 @@ class TimelineForm(gci_forms.GCIModelForm):
   class Meta:
     css_prefix = 'timeline_form'
     model = timeline_model.GCITimeline
-    exclude = ['link_id', 'scope', 'scope_path']
+    exclude = ['link_id', 'scope']
 
 
 class CreateProgramForm(gci_forms.GCIModelForm):
@@ -55,8 +55,8 @@ class CreateProgramForm(gci_forms.GCIModelForm):
     css_prefix = 'create_program_form'
     model = program_model.GCIProgram
     exclude = [
-        'scope', 'scope_path', 'timeline', 'org_admin_agreement',
-        'mentor_agreement', 'student_agreement', 'about_page', 'events_page',
+        'scope', 'timeline', 'org_admin_agreement', 'events_page',
+        'mentor_agreement', 'student_agreement', 'about_page',
         'connect_with_us_page', 'help_page', 'task_types']
 
   def clean(self):
@@ -89,7 +89,7 @@ class EditProgramForm(gci_forms.GCIModelForm):
   class Meta:
     css_prefix = 'edit_program_form'
     model = program_model.GCIProgram
-    exclude = ['link_id', 'scope', 'scope_path', 'timeline', 'task_types']
+    exclude = ['link_id', 'scope', 'timeline', 'task_types']
 
   def clean(self):
     """Cleans the data input by the user as a response to the form.

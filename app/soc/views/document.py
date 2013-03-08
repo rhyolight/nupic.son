@@ -37,7 +37,7 @@ class DocumentForm(forms.ModelForm):
   class Meta:
     model = document_model.Document
     exclude = [
-        'scope', 'scope_path', 'author', 'modified_by', 'prefix', 'home_for',
+        'scope', 'author', 'modified_by', 'prefix', 'home_for',
         'link_id', 'read_access', 'write_access', 'is_featured'
     ]
 

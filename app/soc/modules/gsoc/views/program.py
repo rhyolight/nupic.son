@@ -66,7 +66,7 @@ class TimelineForm(forms.GSoCModelForm):
   class Meta:
     css_prefix = 'timeline_form'
     model = timeline_model.GSoCTimeline
-    exclude = ['link_id', 'scope', 'scope_path']
+    exclude = ['link_id', 'scope']
 
 
 class CreateProgramForm(forms.GSoCModelForm):
@@ -80,9 +80,9 @@ class CreateProgramForm(forms.GSoCModelForm):
     css_prefix = 'create_program_form'
     model = program.GSoCProgram
     exclude = [
-        'scope', 'scope_path', 'timeline', 'slots_allocation',
+        'scope', 'timeline', 'slots_allocation', 'events_page',
         'student_max_age', 'min_slots', 'org_admin_agreement',
-        'mentor_agreement', 'student_agreement', 'about_page', 'events_page',
+        'mentor_agreement', 'student_agreement', 'about_page',
         'connect_with_us_page', 'help_page']
 
 
@@ -97,8 +97,8 @@ class EditProgramForm(forms.GSoCModelForm):
     css_prefix = 'edit_program_form'
     model = program.GSoCProgram
     exclude = [
-        'link_id', 'scope', 'scope_path', 'timeline',
-        'slots_allocation', 'student_max_age', 'min_slots']
+        'link_id', 'scope', 'timeline', 'min_slots',
+        'slots_allocation', 'student_max_age']
 
 
 class GSoCProgramMessagesForm(forms.GSoCModelForm):
