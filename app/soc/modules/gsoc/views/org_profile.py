@@ -229,7 +229,6 @@ class OrgProfilePage(GSoCRequestHandler):
     if not data.organization:
       form.cleaned_data['founder'] = data.user
       form.cleaned_data['scope'] = data.program
-      form.cleaned_data['scope_path'] = data.program.key().name()
       form.cleaned_data['link_id'] = data.org_id
       form.cleaned_data['new_org'] = data.org_app_record.new_org
       key_name = '%s/%s' % (
