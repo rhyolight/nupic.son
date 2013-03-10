@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2008 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -128,4 +126,3 @@ class Linkable(db.Model):
       verbose_name=ugettext('Scope path'))
   scope_path.help_text = ugettext(
       'Cache of the string form of the entity scope.')
-

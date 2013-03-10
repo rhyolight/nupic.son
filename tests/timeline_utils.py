@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2010 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -132,12 +130,14 @@ class GSoCTimelineHelper(TimelineHelper):
     """
     super(GSoCTimelineHelper, self)._empty()
     self.timeline.accepted_students_announced_deadline = None
+    self.timeline.form_submission_start = None
 
   def offSeason(self):
     """Sets the current period to off season.
     """
     super(GSoCTimelineHelper, self).offSeason()
     self.timeline.accepted_students_announced_deadline = past()
+    self.timeline.form_submission_start = past()
     self.timeline.put()
     self.org_appl.put()
 
@@ -146,6 +146,7 @@ class GSoCTimelineHelper(TimelineHelper):
     """
     super(GSoCTimelineHelper, self).kickoff()
     self.timeline.accepted_students_announced_deadline = future()
+    self.timeline.form_submission_start = future()
     self.timeline.put()
     self.org_appl.put()
 
@@ -154,6 +155,7 @@ class GSoCTimelineHelper(TimelineHelper):
     """
     super(GSoCTimelineHelper, self).orgSignup()
     self.timeline.accepted_students_announced_deadline = future()
+    self.timeline.form_submission_start = future()
     self.timeline.put()
     self.org_appl.put()
 
@@ -162,6 +164,7 @@ class GSoCTimelineHelper(TimelineHelper):
     """
     super(GSoCTimelineHelper, self).orgsAnnounced()
     self.timeline.accepted_students_announced_deadline = future()
+    self.timeline.form_submission_start = future()
     self.timeline.put()
     self.org_appl.put()
 
@@ -170,6 +173,7 @@ class GSoCTimelineHelper(TimelineHelper):
     """
     super(GSoCTimelineHelper, self).studentSignup()
     self.timeline.accepted_students_announced_deadline = future()
+    self.timeline.form_submission_start = future()
     self.timeline.put()
     self.org_appl.put()
 
@@ -185,11 +189,13 @@ class GSoCTimelineHelper(TimelineHelper):
     self.timeline.student_signup_start = past()
     self.timeline.student_signup_end = past()
     self.timeline.accepted_students_announced_deadline = future()
+    self.timeline.form_submission_start = future()
     self.timeline.put()
     self.org_appl.put()
 
   def studentsAnnounced(self):
     """Sets the current period to be future accepted students announced phase.
+    However, the students are not allowed to sumit their forms yet.
     """
     self._empty()
     self.timeline.program_start = past()
@@ -200,9 +206,25 @@ class GSoCTimelineHelper(TimelineHelper):
     self.timeline.student_signup_start = past()
     self.timeline.student_signup_end = past()
     self.timeline.accepted_students_announced_deadline = past()
+    self.timeline.form_submission_start = future()
     self.timeline.put()
     self.org_appl.put()
 
+  def formSubmission(self):
+    """Sets the current period to be at the point when the students
+    can submit their forms."""
+    self._empty()
+    self.timeline.program_start = past()
+    self.timeline.program_end = future()
+    self.org_appl.survey_start = past()
+    self.org_appl.survey_end = past()
+    self.timeline.accepted_organization_announced_deadline = past()
+    self.timeline.student_signup_start = past()
+    self.timeline.student_signup_end = past()
+    self.timeline.accepted_students_announced_deadline = past()
+    self.timeline.form_submission_start = past()
+    self.timeline.put()
+    self.org_appl.put()
 
 class GCITimelineHelper(TimelineHelper):
   """Helper class to aid in setting the GCI timeline.

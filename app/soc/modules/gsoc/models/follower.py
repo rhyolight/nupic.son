@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2009 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,4 +38,3 @@ class Follower(soc.models.linkable.Linkable):
   #: Required property to tie a user to the entity it is following
   user = db.ReferenceProperty(reference_class=soc.models.user.User,
                               required=True, collection_name='following')
-

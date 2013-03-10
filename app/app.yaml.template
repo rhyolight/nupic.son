@@ -15,7 +15,7 @@
 # TODO(proto): uncomment and supply a Google App Engine application instance
 # application: FIXME
 # TODO(release): see the instructions in README about the "version:" field
-version: 2-0-20130304
+version: 2-1-20130306
 runtime: python27
 api_version: 1
 threadsafe: false

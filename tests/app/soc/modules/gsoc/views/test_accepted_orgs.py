@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -89,4 +87,3 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     self.assertAcceptedOrgsPageTemplatesUsed(response)
     list_data = self.getListData(self.url3, 0)
     self.assertEqual(len(list_data), 3)
-

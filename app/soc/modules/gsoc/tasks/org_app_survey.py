@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2010 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +32,7 @@ def getDjangoURLPatterns():
   return patterns
 
 
+# TODO(nathaniel): Commented-out code?
 #bulk_process = BulkProcessing(program_logic, org_app_logic,
 #                             '/tasks/gsoc/org_app_surveys/bulk_process')
 #run_bulk_process = bulk_process.run

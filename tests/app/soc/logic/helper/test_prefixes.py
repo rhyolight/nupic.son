@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -131,4 +129,3 @@ class TestPrefixes(unittest.TestCase):
     key_name = 'some_key_name'
     self.assertRaises(
         AttributeError, prefixes.getScopeForPrefix, prefix, key_name)
-

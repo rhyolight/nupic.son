@@ -145,10 +145,7 @@ class FormPage(GSoCRequestHandler):
       check.isHost()
       mutator.studentFromKwargs()
     else:
-      check.isStudentWithProject()
-      if data.POST:
-        # No uploading after program ends.
-        check.isProgramRunning()
+      check.canStudentUploadForms()
 
   def templatePath(self):
     return 'v2/modules/gsoc/student_forms/base.html'

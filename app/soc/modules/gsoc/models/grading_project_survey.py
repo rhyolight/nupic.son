@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2009 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +18,7 @@
 from soc.modules.gsoc.models import project_survey as project_survey_model
 
 
+# TODO(nathaniel): Empty subclass.
 class GradingProjectSurvey(project_survey_model.ProjectSurvey):
   """Survey for Mentors for each of their projects.
   """
