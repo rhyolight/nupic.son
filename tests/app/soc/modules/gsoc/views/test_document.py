@@ -58,7 +58,7 @@ class EditProgramTest(GSoCDjangoTestCase):
     # TODO(SRabbelier): test document ACL
     pass
 
-  def testCreateDocument(self):
+  def testCreateDocumentWithDashboardVisibility(self):
     self.data.createHost()
     url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
     response = self.get(url)
@@ -73,6 +73,30 @@ class EditProgramTest(GSoCDjangoTestCase):
         'home_for': None, 'author': self.data.user, 'is_featured': None,
         'write_access': 'admin', 'read_access': 'public',
         'dashboard_visibility': ['student', 'mentor'],
+    }
+    properties = seeder_logic.seed_properties(Document, properties=override)
+    response = self.post(url, properties)
+    self.assertResponseRedirect(response, url)
+
+    key_name = properties['key_name']
+    document = Document.get_by_key_name(key_name)
+    self.assertPropertiesEqual(properties, document)
+
+  def testCreateDocumentNoDashboardVisibility(self):
+    self.data.createHost()
+    url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
+    response = self.get(url)
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/document/base.html')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+
+    # test POST
+    override = {
+        'prefix': 'gsoc_program', 'scope': self.gsoc, 'link_id': 'doc',
+        'key_name': DocumentKeyNameProvider(), 'modified_by': self.data.user,
+        'home_for': None, 'author': self.data.user, 'is_featured': None,
+        'write_access': 'admin', 'read_access': 'public',
+        'dashboard_visibility': [],
     }
     properties = seeder_logic.seed_properties(Document, properties=override)
     response = self.post(url, properties)
