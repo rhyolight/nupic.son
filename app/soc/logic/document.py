@@ -29,24 +29,24 @@ def getDocumentQueryForRoles(data):
     A query object that fetches all the documents that should be visible for
     the profile's roles in the current program.
   """
-  q = document_model.Document.all()
-  q.filter('scope', data.program)
+  query = document_model.Document.all()
+  query.filter('scope', data.program)
 
-  roles = []
+  visibilities = []
   if data.is_student:
-    roles.append('student')
+    visibilities.append(document_model.STUDENT_VISIBILITY.identifier)
   if data.is_org_admin:
-    roles.append('org_admin')
+    visibilities.append(document_model.ORG_ADMIN_VISIBILITY.identifier)
   if data.is_mentor:
-    roles.append('mentor')
+    visibilities.append(document_model.MENTOR_VISIBILITY.identifier)
 
-  num_roles = len(roles)
+  num_visibilities = len(visibilities)
 
-  # When number of roles is 0, then the profile should belong to a host, so
-  # we apply no filtering.
-  if num_roles == 1:
-    q.filter('dashboard_visibility', roles[0])
-  elif num_roles > 1:
-    q.filter('dashboard_visibility IN', roles)
+  # When number of visibilities is 0, then the profile should belong 
+  # to a host, so we apply no filtering.
+  if num_visibilities == 1:
+    query.filter('dashboard_visibility', visibilities[0])
+  elif num_visibilities > 1:
+    query.filter('dashboard_visibility IN', visibilities)
 
-  return q
+  return query

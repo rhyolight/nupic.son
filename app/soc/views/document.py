@@ -25,8 +25,10 @@ from soc.views.helper import lists
 class DocumentForm(forms.ModelForm):
   """Django form for creating documents."""
 
-  dashboard_visibility = forms.MultipleChoiceField(required=False,
-      choices=[(v, v) for v in document_model.Document.VISIBILITY],
+  dashboard_visibility = forms.MultipleChoiceField(
+      required=False,
+      choices=[(c.identifier, c.verbose_name)
+          for c in document_model.Document.DASHBOARD_VISIBILITIES],
       widget=forms.CheckboxSelectMultiple)
 
   def __init__(self, *args, **kwargs):
