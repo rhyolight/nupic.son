@@ -55,6 +55,10 @@ STUDENT_VISIBILITY = DashboardVisibility('student', 'Students')
 MENTOR_VISIBILITY = DashboardVisibility('mentor', 'Mentors')
 ORG_ADMIN_VISIBILITY = DashboardVisibility(
     'org_admin', 'Organization Admins')
+# TODO(daniel): the last one should be moved somewhere to a SoC specific
+# module, as it makes sense only for those programs
+ACCEPTED_STUDENT_VISIBILITY = DashboardVisibility(
+    'accepted_student', 'Accepted Students')
 
 
 class Document(soc.models.work.Work):
@@ -73,6 +77,7 @@ class Document(soc.models.work.Work):
   # list of all possible dashboard visibilities
   DASHBOARD_VISIBILITIES = [
       STUDENT_VISIBILITY, MENTOR_VISIBILITY, ORG_ADMIN_VISIBILITY,
+      ACCEPTED_STUDENT_VISIBILITY,
       ]
 
   DOCUMENT_ACCESS = ['admin', 'restricted', 'member', 'user']

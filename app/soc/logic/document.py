@@ -35,6 +35,9 @@ def getDocumentQueryForRoles(data):
   visibilities = []
   if data.is_student:
     visibilities.append(document_model.STUDENT_VISIBILITY.identifier)
+    if data.student_info.number_of_projects > 0:
+      visibilities.append(
+          document_model.ACCEPTED_STUDENT_VISIBILITY.identifier)
   if data.is_org_admin:
     visibilities.append(document_model.ORG_ADMIN_VISIBILITY.identifier)
   if data.is_mentor:
