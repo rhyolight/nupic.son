@@ -30,7 +30,7 @@ from soc.modules.gci.views.helper import url_patterns as gci_url_patterns
 class GCIDocumentForm(forms.GCIModelForm, document.DocumentForm):
   """Django form for creating documents."""
 
-  dashboard_visibility = forms.MultipleChoiceField(
+  dashboard_visibility = forms.MultipleChoiceField(required=False,
       choices=[(v, v) for v in document_model.Document.VISIBILITY],
       widget=forms.CheckboxSelectMultiple)
 
