@@ -23,6 +23,44 @@ import soc.models.linkable
 import soc.models.work
 
 
+class DashboardVisibility(object):
+  """Represent different categories of visibilities for Document.
+
+  In other words, the main purpose of this class is to specify a group
+  of users for which a document tagged with a specific category will be
+  visible or listed.
+
+  This class should not be instantiated. Clients should use constants
+  which are defined here or in related modules.
+  """
+
+  def __init__(self, identifier, verbose_name):
+    """Constructs a new visibility category with the specified
+    identifier and verbose name.
+
+    This constructor is private to this module and related modules,
+    i.e. containing subclasses of Document model. It should not
+    be called by clients directly.
+
+    Args:
+      identifier: identifier of the category which will be stored
+        in the datastore.
+      verbose_name: verbose name of the category which will be displayed
+        to users.
+    """
+    self.identifier = identifier
+    self.verbose_name = verbose_name
+
+STUDENT_VISIBILITY = DashboardVisibility('student', 'Students')
+MENTOR_VISIBILITY = DashboardVisibility('mentor', 'Mentors')
+ORG_ADMIN_VISIBILITY = DashboardVisibility(
+    'org_admin', 'Organization Admins')
+# TODO(daniel): the last one should be moved somewhere to a SoC specific
+# module, as it makes sense only for those programs
+ACCEPTED_STUDENT_VISIBILITY = DashboardVisibility(
+    'accepted_student', 'Accepted Students')
+
+
 class Document(soc.models.work.Work):
   """Model of a Document.
   
@@ -36,9 +74,13 @@ class Document(soc.models.work.Work):
     work.content:  the rich-text contents of the Document
   """
 
-  DOCUMENT_ACCESS = ['admin', 'restricted', 'member', 'user']
+  # list of all possible dashboard visibilities
+  DASHBOARD_VISIBILITIES = [
+      STUDENT_VISIBILITY, MENTOR_VISIBILITY, ORG_ADMIN_VISIBILITY,
+      ACCEPTED_STUDENT_VISIBILITY,
+      ]
 
-  VISIBILITY = ['org_admin', 'mentor', 'student']
+  DOCUMENT_ACCESS = ['admin', 'restricted', 'member', 'user']
 
   #: field storing the prefix of this document
   prefix = db.StringProperty(default='user', required=True,
