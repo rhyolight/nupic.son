@@ -19,7 +19,6 @@ import unittest
 from soc.logic import links
 
 
-TEST_PROGRAM_SPONSOR = 'test_sponsor'
 TEST_PROGRAM_NAME = 'test_program'
 TEST_SPONSOR_KEY_NAME = 'test_sponsor_key_name'
 
