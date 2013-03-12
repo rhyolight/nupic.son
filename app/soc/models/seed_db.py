@@ -111,7 +111,6 @@ def seed(request, *args, **kwargs):
       'link_id': 'test',
       'public_name': 'test',
       'scope': google,
-      'scope_path': 'google',
       'user': current_user,
       'given_name': 'Test',
       'surname': 'Example',
@@ -143,7 +142,6 @@ def seed(request, *args, **kwargs):
   timeline_properties = {
       'key_name': 'google/gsoc2009',
       'link_id': 'gsoc2009',
-      'scope_path': 'google',
       'scope': google,
       'program_start': before,
       'program_end': after,
@@ -159,7 +157,6 @@ def seed(request, *args, **kwargs):
   program_properties = {
       'key_name': 'google/gsoc2009',
       'link_id': 'gsoc2009',
-      'scope_path': 'google',
       'scope': google,
       'name': 'Google Summer of Code 2009',
       'short_name': 'GSoC 2009',
@@ -198,7 +195,6 @@ def seed(request, *args, **kwargs):
   timeline_properties = {
         'key_name': 'google/gci2009',
         'link_id': 'gci2009',
-        'scope_path': 'google',
         'scope': google,
         'program_start': before,
         'program_end': after,
@@ -236,7 +232,6 @@ def seed(request, *args, **kwargs):
     'link_id': 'melange',
     'name': 'Melange Development Team',
     'short_name': 'Melange',
-    'scope_path': 'google/gci2009',
     'scope': gci2009,
     'home_page': 'http://code.google.com/p/soc',
     'description': 'Melange, share the love!',
@@ -248,14 +243,12 @@ def seed(request, *args, **kwargs):
   melange.put()
 
   group_properties.update({
-    'scope_path': 'google/gsoc2009',
     'scope': gsoc2009,
     })
 
   role_properties.update({
       'key_name': 'google/gsoc2009/test',
       'link_id': 'test',
-      'scope_path': 'google/gsoc2009',
       'scope': gsoc2009,
       'program': gsoc2009,
       'parent': current_user,
@@ -295,7 +288,6 @@ def seed(request, *args, **kwargs):
   role_properties.update({
       'key_name': 'google/gci2009/test',
       'link_id': 'test',
-      'scope_path': 'google/gci2009',
       'scope': gci2009,
       'program': gci2009,
       'org_admin_for': [melange.key()],
@@ -340,7 +332,6 @@ def seed(request, *args, **kwargs):
   student_properties = {
       'key_name': gsoc2009.key().name() + "/" + student_id,
       'link_id': student_id,
-      'scope_path': gsoc2009.key().name(),
       'parent': student_user,
       'scope': gsoc2009,
       'program': gsoc2009,
@@ -473,7 +464,6 @@ def seed(request, *args, **kwargs):
       'key_name': gci2009.key().name() + '/' + student_id,
       'parent': student_user,
       'scope': gci2009,
-      'scope_path': gci2009.key().name(),
   })
   gci_student = GCIProfile(**student_properties)
   gci_student.put()
@@ -500,7 +490,6 @@ def seed(request, *args, **kwargs):
   document_properties = {
       'key_name': 'site/site/home',
       'link_id': 'home',
-      'scope_path': 'site',
       'scope': site,
       'prefix': 'site',
       'author': current_user,
@@ -517,7 +506,6 @@ def seed(request, *args, **kwargs):
   document_properties = {
       'key_name': 'user/test/notes',
       'link_id': 'notes',
-      'scope_path': 'test',
       'scope': current_user,
       'prefix': 'user',
       'author': current_user,

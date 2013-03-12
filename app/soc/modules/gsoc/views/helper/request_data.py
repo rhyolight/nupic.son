@@ -21,6 +21,7 @@ from google.appengine.ext import db
 
 from soc.models import site as site_model
 from soc.logic import exceptions
+from soc.logic import program as program_logic
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
@@ -219,8 +220,7 @@ class RequestData(request_data.RequestData):
         key = db.Key.from_path('Sponsor', self.kwargs.get('sponsor'))
         self._is_host = key in self.user.host_for
       else:
-        key = program_model.GSoCProgram.scope.get_value_for_datastore(
-            self.program)
+        key = program_logic.getSponsorKey(program)
         self._is_host = key in self.user.host_for
     return self._is_host
 

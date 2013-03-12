@@ -158,22 +158,6 @@ def clean_link_id(field_name):
   return wrapper
 
 
-def clean_scope_path(field_name):
-  """Checks if the field_name value is in a valid scope path format.
-  """
-
-  @check_field_is_empty(field_name)
-  def wrapper(self):
-    """Decorator wrapper method.
-    """
-    # convert to lowercase for user comfort
-    scope_path = self.cleaned_data.get(field_name).lower()
-    if not validate.isScopePathFormatValid(scope_path):
-      raise forms.ValidationError("This scope path is in wrong format.")
-    return scope_path
-  return wrapper
-
-
 def clean_existing_user(field_name):
   """Check if the field_name field is a valid user.
   """

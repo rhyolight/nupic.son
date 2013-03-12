@@ -37,7 +37,7 @@ class DocumentForm(forms.ModelForm):
   class Meta:
     model = document_model.Document
     exclude = [
-        'scope', 'scope_path', 'author', 'modified_by', 'prefix', 'home_for',
+        'scope', 'author', 'modified_by', 'prefix', 'home_for',
         'link_id', 'read_access', 'write_access', 'is_featured'
     ]
 
@@ -72,8 +72,8 @@ def validateForm(data, document_form):
     cleaned_data['link_id'] = data.kwargs['document']
     cleaned_data['author'] = data.user
     cleaned_data['prefix'] = prefix
-    cleaned_data['scope'] = prefixes.getScopeForPrefix(prefix, data.scope_path)
-    cleaned_data['scope_path'] = data.scope_path
+    cleaned_data['scope'] = prefixes.getScopeForPrefix(
+        prefix, data.scope_key_name)
     document = document_form.create(key_name=data.key_name)
 
   return document

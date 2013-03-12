@@ -130,28 +130,6 @@ class CleaningTest(GSoCDjangoTestCase):
     self.assertEqual(self.form.cleaned_data, cleaned_data_before)
     self.assertEqual(self.form._errors, {})
 
-  def testCleanScopePath(self):
-    """Tests that scope_path field can be cleaned.
-    """
-    field_name = 'scope_path'
-    clean_field = cleaning.clean_scope_path(field_name)
-    # Test that the value will be returned if the value of field
-    # has a valid scope_path format
-    field_value = 'valid_scope_path'
-    cleaned_data_before = {field_name: field_value}
-    self.form.cleaned_data = cleaned_data_before.copy()
-    self.assertEqual(clean_field(self.form), field_value)
-    self.assertEqual(self.form.cleaned_data, cleaned_data_before)
-    self.assertEqual(self.form._errors, {})
-    # Test that forms.ValidationError will be raised if the value of field
-    # has not a valid scope_path format
-    field_value = 'v1_@?'
-    cleaned_data_before = {field_name: field_value}
-    self.form.cleaned_data = cleaned_data_before.copy()
-    self.assertRaises(forms.ValidationError, clean_field, self.form)
-    self.assertEqual(self.form.cleaned_data, cleaned_data_before)
-    self.assertEqual(self.form._errors, {})
-
   def testCleanExistingUser(self):
     """Tests that the user field can be cleaned for existing users.
     """

@@ -364,12 +364,6 @@
     mpjs + "melange.autocomplete.js"
   ];
 
-  s.melange.graph = [
-    s.google,
-    null,
-    mpjs + "melange.graph.js"
-  ];
-
   s.melange.uploadform = [
     s.fileupload,
     null,

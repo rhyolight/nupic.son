@@ -412,10 +412,6 @@ class Logic(object):
     """
     result = properties.get(prop_name)
 
-    # scope_path is to be produced from scope
-    if prop_name == 'scope_path' and not result:
-      return ''
-
     # Specially generate link_id because it needs to be unique
     if prop_name == 'link_id' and not result:
       result = LinkIDProvider(model_class)

@@ -134,7 +134,6 @@ class OrgProfilePage(GCIRequestHandler):
       org_id = data.GET['org_id']
       form.cleaned_data['founder'] = data.user
       form.cleaned_data['scope'] = data.program
-      form.cleaned_data['scope_path'] = data.program.key().name()
       form.cleaned_data['link_id'] = org_id
       key_name = '%s/%s' % (data.program.key().name(), org_id)
       entity = form.create(key_name=key_name)

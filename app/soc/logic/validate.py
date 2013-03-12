@@ -61,16 +61,6 @@ def isLinkIdFormatValid(link_id):
   return bool(linkable.LINK_ID_REGEX.match(link_id))
 
 
-def isScopePathFormatValid(scope_path):
-  """Returns True if scope_path is in a valid format.
-
-  Args:
-    scope_path: scope path prepended to link ID
-      used for identification.
-  """
-  return bool(linkable.SCOPE_PATH_REGEX.match(scope_path))
-
-
 def isAgeSufficientForProgram(birth_date, program):
   """Returns True if a student with birth_date can participate in program.
 

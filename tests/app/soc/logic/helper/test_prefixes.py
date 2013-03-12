@@ -67,12 +67,6 @@ class TestPrefixes(unittest.TestCase):
     self.gsoc_org_key_name = self.gsoc_organization.key().name()
     self.gci_org_key_name = self.gci_organization.key().name()
 
-  def testGetOrSetScope(self):
-    """Not tested because it is used in soc.logic.models.survey and 
-    soc.logic.models.document and soc.logic.models will be removed.
-    """
-    pass
-
   def testGetScopeForPrefix(self):
     """Tests if the scope for a given prefix and key_name is returned.
     """

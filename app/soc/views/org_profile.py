@@ -20,10 +20,10 @@ from soc.logic import cleaning
 from soc.views import forms
 
 PROFILE_EXCLUDE = [
-    'status', 'scope', 'scope_path', 'founder', 'founder', 'slots', 'note',
+    'status', 'scope', 'founder', 'founder', 'slots', 'note', 'new_org',
     'slots_calculated', 'nr_applications', 'nr_mentors', 'link_id',
-    'proposal_extra', 'new_org',
-]
+    'proposal_extra',
+    ]
 
 HOMEPAGE_INFO_GROUP = translation.ugettext(
     '1. Homepage Info (displayed on org homepage)')
