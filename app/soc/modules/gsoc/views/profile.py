@@ -21,9 +21,7 @@ from django.core.urlresolvers import reverse
 
 from soc.logic import cleaning
 from soc.logic import dicts
-from soc.models.connection import RESPONSE_STATE_ACCEPTED
-from soc.models.connection import RESPONSE_STATE_REJECTED
-from soc.models.connection import RESPONSE_STATE_UNREPLIED
+from soc.models import connection
 from soc.models.user import User
 from soc.views import forms
 from soc.views import profile
@@ -57,7 +55,7 @@ def _handleAnonymousConnection(data):
         profile=profile,
         role=data.anonymous_connection.role)
     # Set the apropriate fields to automatically accept the connection.
-    connection.org_state = connection.user_state = RESPONSE_STATE_ACCEPTED
+    connection.org_state = connection.user_state = STATUS_STATE_ACCEPTED
     connection.put()
     # The user and org should "agree" on a role; promote the user.
     profile.is_mentor = True

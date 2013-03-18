@@ -28,11 +28,9 @@ from django.utils.translation import ugettext
 
 from soc.logic import accounts
 from soc.logic import cleaning
+from soc.models import connection
 from soc.logic import exceptions
 from soc.logic.helper import notifications
-from soc.models.connection import RESPONSE_STATE_ACCEPTED
-from soc.models.connection import RESPONSE_STATE_REJECTED
-from soc.models.connection import RESPONSE_STATE_UNREPLIED
 from soc.models.user import User
 from soc.modules.gsoc.logic import connection as connection_logic
 from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
@@ -93,7 +91,7 @@ class ConnectionForm(GSoCModelForm):
   """Django form for the Connection page."""
 
   role_choice = ChoiceField(widget=django_forms.Select(),
-      choices=(('Mentor', 'Mentor'),))
+      choices=((connection.MENTOR_STATE, connection.MENTOR_STATE),))
   message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
 
   def __init__(self, request_data=None, message=None, is_admin=False, 
@@ -130,8 +128,10 @@ class OrgConnectionForm(ConnectionForm):
     # Place the users field at the top of the form.
     self.fields.insert(0, 'users', field)  
 
-    self.fields['role_choice'].choices = (('Mentor', 'Mentor'), 
-        ('Org Admin', 'Org Admin'))
+    self.fields['role_choice'].choices = (
+        (connection.MENTOR_STATE, connection.MENTOR_STATE), 
+        (connection.ORG_ADMIN_STATE, connection.ORG_ADMIN_STATE)
+        )
     self.fields['role_choice'].label = ugettext('Role to offer the user(s)')
     self.fields['role_choice'].help_text = ugettext(
         'Role that you want to offer to '
@@ -347,7 +347,7 @@ class OrgConnectionPage(GSoCRequestHandler):
         raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
 
       connection = connection_form.create(parent=user, commit=False)
-      connection.org_state = RESPONSE_STATE_ACCEPTED
+      connection.org_state = STATUS_STATE_ACCEPTED
       connection.role =  connection_form.cleaned_data['role_choice']
       connection.put()
 
@@ -486,7 +486,7 @@ class UserConnectionPage(GSoCRequestHandler):
 
       connection = ConnectionForm.create(
           connection_form, parent=data.user, commit=False)
-      connection.user_state = RESPONSE_STATE_ACCEPTED
+      connection.user_state = STATUS_STATE_ACCEPTED
       connection.put()
 
       if message_provided:
@@ -700,12 +700,12 @@ class ShowConnection(GSoCRequestHandler):
       # The user or org admin re-activating the connection will be marked
       # as accepted anyway in the next lines.
       if connection.isWithdrawn():
-        connection.org_state = connection.user_state = RESPONSE_STATE_UNREPLIED
+        connection.org_state = connection.user_state = STATUS_STATE_UNREPLIED
 
       if self.is_org_admin_for_org:
-        connection.org_state = RESPONSE_STATE_ACCEPTED
+        connection.org_state = STATUS_STATE_ACCEPTED
       else:
-        connection.user_state = RESPONSE_STATE_ACCEPTED
+        connection.user_state = STATUS_STATE_ACCEPTED
       connection.put()
       
       # If both the org admin and user agree to a mentoring role, promote
@@ -740,9 +740,9 @@ class ShowConnection(GSoCRequestHandler):
     def decline_mentor_txn():
       connection = db.get(connection_key)
       if self.is_org_admin_for_org:
-        connection.org_state = RESPONSE_STATE_REJECTED
+        connection.org_state = STATUS_STATE_REJECTED
       else:
-        connection.user_state = RESPONSE_STATE_REJECTED
+        connection.user_state = STATUS_STATE_REJECTED
       connection.put()
 
       generate_message_txn(connection, 'Mentor Connection Rejected.')
@@ -761,14 +761,14 @@ class ShowConnection(GSoCRequestHandler):
       # The org accepted a new role for the user, so reset the user's response
       # to give him or her time to review the change.
       if connection.role == 'Mentor':
-        connection.user_state = connection.org_state = RESPONSE_STATE_UNREPLIED
+        connection.user_state = connection.org_state = STATUS_STATE_UNREPLIED
 
       connection.role = 'Org Admin'
 
       if self.is_org_admin_for_org:
-        connection.org_state = RESPONSE_STATE_ACCEPTED
+        connection.org_state = STATUS_STATE_ACCEPTED
       else:
-        connection.user_state = RESPONSE_STATE_ACCEPTED
+        connection.user_state = STATUS_STATE_ACCEPTED
 
       connection.put()
 
@@ -807,10 +807,10 @@ class ShowConnection(GSoCRequestHandler):
       connection = db.get(connection_key)
       if self.is_org_admin_for_org:
         # Org can just 'withdraw' the org admin offer.
-        connection.org_state = RESPONSE_STATE_REJECTED
+        connection.org_state = STATUS_STATE_REJECTED
       else:
         # User rejecting an org admin offer rejects both.
-        connection.user_state = RESPONSE_STATE_REJECTED
+        connection.user_state = STATUS_STATE_REJECTED
       connection.put()
 
       generate_message_txn(connection, 'Org Admin Connection Rejected.')
@@ -825,9 +825,9 @@ class ShowConnection(GSoCRequestHandler):
       # Mark the connection on the user or org side as 'Rejected' and add an auto-comment
       connection = db.get(connection_key)
       if self.is_org_admin_for_org:
-        connection.org_state = RESPONSE_STATE_WITHDRAWN
+        connection.org_state = STATUS_STATE_WITHDRAWN
       else:
-        connection.user_state = RESPONSE_STATE_WITHDRAWN
+        connection.user_state = STATUS_STATE_WITHDRAWN
       connection.put()
 
       generate_message_txn(connection, 'Connection withdrawn.')
