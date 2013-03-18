@@ -82,8 +82,8 @@ CONN_STATUS_OPTS = [(STATUS_TUPLE, 'All'),
     (connection.STATUS_STATE_WITHDRAWN, 'Withdrawn')
     ]
 CONN_ROLE_OPTS = [('Org Admin|Mentor', 'All'),
-    ('Org Admin', 'Org Admin'), 
-    ('Mentor', 'Mentor')
+    (connection.ORG_ADMIN_STATE, 'Org Admin'), 
+    (connection.MENTOR_STATE, 'Mentor')
     ]
 
 def colorize(choice, yes, no):
@@ -230,10 +230,8 @@ class DashboardPage(base.GSoCRequestHandler):
     elif data.is_mentor:
       components.append(TodoComponent(data))
       components += self._getOrgMemberComponents(data)
-      components.append(OrgConnectionComponent(data, False))
     else:
       components += self._getLoneUserComponents(data)
-      components.append(OrgConnectionComponent(data, False))
 
     return components
 
@@ -1236,29 +1234,27 @@ class OrgConnectionComponent(Component):
   admin.
   """
 
+  IDX = 7
+
   def __init__(self, data, for_admin):
     """Initializes this component.
     """
+    self.data = data
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        lambda e, *args: '%s' % e.keyName(), hidden=True)
-    
-    list_config.addPlainTextColumn('username', 'Username',
+
+    list_config.addSimpleColumn('organization', 'Organization')
+    list_config.addPlainTextColumn('link_id', 'Link Id',
         lambda e, *args: e.parent().link_id)
-    list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: e.role,
+    list_config.addSimpleColumn('role', 'Role',
         options=CONN_ROLE_OPTS)
-    list_config.addPlainTextColumn('status', 'Status',
-        lambda e, *args: e.status(), 
+    list_config.addPlainTextColumn('status', 'Status', 
+        lambda e, *args: e.status(),
         options=CONN_STATUS_OPTS)
-    
-    if len(data.org_admin_for) > 1:
-      list_config.addPlainTextColumn('org', 'Organization',
-          lambda e, *args: e.organization.name)
 
     list_config.setRowAction(
         lambda e, *args: data.redirect.show_connection(
-            user=e.parent(), connection=e).url())
+            user=e.parent(), connection=e).url()
+        )
     self._list_config = list_config
 
     super(OrgConnectionComponent, self).__init__(data)
@@ -1267,20 +1263,17 @@ class OrgConnectionComponent(Component):
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
-    if lists.getListIndex(self.data.request) != self.idx:
+    if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
     q = GSoCConnection.all()
     q.filter('organization IN', [org.key() for org in self.data.org_admin_for])
 
     starter = lists.keyStarter
-
-    prefetcher = lists.modelPrefetcher(
-        GSoCConnection, ['user', 'organization'])
+    prefetcher = lists.modelPrefetcher(GSoCConnection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.request, self._list_config, q, starter, prefetcher=prefetcher)
-
+      self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
     return response_builder.build()
 
   def context(self):
@@ -1289,13 +1282,8 @@ class OrgConnectionComponent(Component):
     my_list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=7, preload_list=False)
 
-    if len(self.data.org_admin_for) > 1:
-      title = 'Connections for my organizations'
-      description = ugettext(
-        'List of connections with mentors and admins for my organizations.')
-    else:
-      title = 'Connections for my organization'
-      description = ugettext(
+    title = 'Connections for my organizations'
+    description = ugettext(
         'List of connections with mentors and admins for my organization.')
 
     return {
@@ -1343,8 +1331,7 @@ class UserConnectionComponent(Component):
 
     starter = lists.keyStarter
 
-    prefetcher = lists.modelPrefetcher(
-        GSoCConnection, ['user', 'organization'])
+    prefetcher = lists.modelPrefetcher(GSoCConnection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -1354,7 +1341,7 @@ class UserConnectionComponent(Component):
   def context(self):
     """Returns the context of this component.
     """
-    list = lists.ListConfigurationResponse(
+    my_list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.IDX, preload_list=False)
 
     title = 'My connections'
@@ -1363,7 +1350,7 @@ class UserConnectionComponent(Component):
     return {
         'name': 'connections',
         'title': title,
-        'lists': [list],
+        'lists': [my_list],
         'description': description
     }
 

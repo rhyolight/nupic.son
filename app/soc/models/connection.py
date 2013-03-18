@@ -20,8 +20,8 @@ from google.appengine.ext import db
 from soc.models.organization import Organization
 from soc.models.profile import Profile
 
-ORG_ADMIN_STATE = 'Org Admin'
-MENTOR_STATE = 'Mentor'
+ORG_ADMIN_STATE = 'org_admin'
+MENTOR_STATE = 'mentor'
 
 # Strings used in the dashboard (via the status() method below) to display
 # short, simple status messages for connections based on its state.

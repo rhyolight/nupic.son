@@ -50,20 +50,21 @@ def _handleAnonymousConnection(data):
     user = User.get_by_key_name(data.request.POST['public_name'])
     profile = GSoCProfile.all().ancestor(user.key()).get()
     # Create the new connection based on the values of the placeholder.
-    connection = GSoCConnection(parent=user.key(), 
+    new_connection = GSoCConnection(parent=user.key(), 
         organization=data.anonymous_connection.parent(),
         profile=profile,
         role=data.anonymous_connection.role)
     # Set the apropriate fields to automatically accept the connection.
-    connection.org_state = connection.user_state = STATUS_STATE_ACCEPTED
-    connection.put()
+    new_connection.org_state = connection.STATUS_STATE_ACCEPTED
+    new_connection.user_state = connection.STATUS_STATE_ACCEPTED
+    new_connection.put()
     # The user and org should "agree" on a role; promote the user.
     profile.is_mentor = True
-    profile.mentor_for.append(connection.organization.key())
+    profile.mentor_for.append(new_connection.organization.key())
     profile.mentor_for = list(set(profile.mentor_for))
-    if connection.user_org_admin:  
+    if new_connection.role == connection.ORG_ADMIN_STATE: 
       profile.is_org_admin = True
-      profile.org_admin_for.append(connection.organization.key())
+      profile.org_admin_for.append(new_connection.organization.key())
       profile.org_admin_for = list(set(profile.org_admin_for))
     profile.put()
     # We no longer need the placeholder.
