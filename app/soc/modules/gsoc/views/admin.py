@@ -1632,7 +1632,7 @@ class ProjectsListPage(base.GSoCRequestHandler):
   def jsonContext(self, data, check, mutator):
     list_query = project_logic.getProjectsQuery(program=data.program)
     list_content = ProjectList(
-        data.request, data, list_query, self.LIST_IDX).getListData()
+        data, list_query, self.LIST_IDX).getListData()
     if list_content:
       return list_content.content()
     else:
@@ -1642,8 +1642,7 @@ class ProjectsListPage(base.GSoCRequestHandler):
     list_query = project_logic.getProjectsQuery(program=data.program)
     return {
       'page_name': 'Projects list page',
-      # TODO(nathaniel): Drop the first parameter of ProjectList.
-      'list': ProjectList(data.request, data, list_query, self.LIST_IDX),
+      'list': ProjectList(data, list_query, self.LIST_IDX),
     }
 
 
