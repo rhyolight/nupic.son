@@ -42,6 +42,37 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 
 
+def _handleAnonymousConnection(data):
+  """ Handler for automatically created and accepting a new connection.
+  """
+  
+  @db.transactional(xg=True)
+  def activate_new_connection_txn():
+    # This should be the profile that was just created.
+    user = User.get_by_key_name(data.request.POST['public_name'])
+    profile = GSoCProfile.all().ancestor(user.key()).get()
+    # Create the new connection based on the values of the placeholder.
+    connection = GSoCConnection(parent=user.key(), 
+        organization=data.anonymous_connection.parent(),
+        profile=profile,
+        role=data.anonymous_connection.role)
+    # Set the apropriate fields to automatically accept the connection.
+    connection.org_state = connection.user_state = RESPONSE_STATE_ACCEPTED
+    connection.put()
+    # The user and org should "agree" on a role; promote the user.
+    profile.is_mentor = True
+    profile.mentor_for.append(connection.organization.key())
+    profile.mentor_for = list(set(profile.mentor_for))
+    if connection.user_org_admin:  
+      profile.is_org_admin = True
+      profile.org_admin_for.append(connection.organization.key())
+      profile.org_admin_for = list(set(profile.org_admin_for))
+    profile.put()
+    # We no longer need the placeholder.
+    data.anonymous_connection.delete()
+
+  activate_new_connection_txn()
+
 class StudentNotificationForm(gsoc_forms.GSoCModelForm):
   """Django form for student notification settings.
   """
@@ -254,7 +285,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
       return self.get(data, check, mutator)
 
     if data.anonymous_connection:
-      self._handleAnonymousConnection(data)
+      _handleAnonymousConnection(data)
 
     link_id = data.GET.get('org')
 
@@ -287,37 +318,6 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
     data.redirect.connect(user, organization)
 
     return data.redirect.to(link, extra=extra_get_args)
-
-  def _handleAnonymousConnection(self, data):
-    """ Handler for automatically created and accepting a new connection.
-    """
-    
-    @db.transactional(xg=True)
-    def activate_new_connection_txn():
-      # This should be the profile that was just created.
-      user = User.get_by_key_name(data.request.POST['public_name'])
-      profile = GSoCProfile.all().ancestor(user.key()).get()
-      # Create the new connection based on the values of the placeholder.
-      connection = GSoCConnection(parent=user.key(), 
-          organization=data.anonymous_connection.parent(),
-          profile=profile,
-          role=data.anonymous_connection.role)
-      # Set the apropriate fields to automatically accept the connection.
-      connection.org_state = connection.user_state = RESPONSE_STATE_ACCEPTED
-      connection.put()
-      # The user and org should "agree" on a role; promote the user.
-      profile.is_mentor = True
-      profile.mentor_for.append(connection.organization.key())
-      profile.mentor_for = list(set(profile.mentor_for))
-      if connection.user_org_admin:  
-        profile.is_org_admin = True
-        profile.org_admin_for.append(connection.organization.key())
-        profile.org_admin_for = list(set(profile.org_admin_for))
-      profile.put()
-      # We no longer need the placeholder.
-      data.anonymous_connection.delete()
-
-    activate_new_connection_txn()
 
   def _getModulePrefix(self):
     return 'gsoc'

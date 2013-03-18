@@ -332,11 +332,11 @@ class Mutator(object):
       self.data.can_respond = self.data.invite.type == 'Invitation'
 
   def commentVisible(self, organization):
-    """ Determines whether or not a comment is visible to a user.
+    """Determines whether or not a comment is visible to a user.
 
     Args:
-      organization: the organization for which a mentor or org admin may be
-          attemtping to view a connection
+      organization: The organization for which a mentor or org admin may be
+          attemtping to view a connection.
     """
     assert isSet(self.data.url_user)
 
@@ -357,7 +357,6 @@ class Mutator(object):
     if self.data.mentorFor(organization):
       self.data.public_comments_visible = True
       self.data.private_comments_visible = True
-    return
 
   def host(self):
     assert isSet(self.data.user)

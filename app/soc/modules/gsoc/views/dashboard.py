@@ -28,7 +28,7 @@ from soc.logic import document as soc_document_logic
 from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
-from soc.models.connection import STATUS_STATES
+from soc.models import connection
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
@@ -67,20 +67,24 @@ BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
 # Just a messy tuple to include all states
 STATUS_TUPLE = '%s|%s|%s|%s|%s' % (
-    STATUS_STATES['accepted'],
-    STATUS_STATES['rejected'], 
-    STATUS_STATES['user_action_req'],
-    STATUS_STATES['org_action_req'],
-    STATUS_STATES['withdrawn'])
+    connection.STATUS_STATE_ACCEPTED,
+    connection.STATUS_STATE_REJECTED, 
+    connection.STATUS_STATE_WITHDRAWN,
+    connection.STATUS_STATE_ORG_ACTION_REQ,
+    connection.STATUS_STATE_USER_ACTION_REQ
+    )
+# Include all of the dropdown options for viewing connections by status.
 CONN_STATUS_OPTS = [(STATUS_TUPLE, 'All'),
-    (STATUS_STATES['accepted'], 'Accepted'),
-    (STATUS_STATES['rejected'], 'Rejected'),
-    (STATUS_STATES['user_action_req'], 'User Action Required'),
-    (STATUS_STATES['org_action_req'], 'Org Action Required'),
-    (STATUS_STATES['withdrawn'], 'Withdrawn')]
+    (connection.STATUS_STATE_ACCEPTED, 'Accepted'),
+    (connection.STATUS_STATE_REJECTED, 'Rejected'),
+    (connection.STATUS_STATE_USER_ACTION_REQ, 'User Action Required'),
+    (connection.STATUS_STATE_ORG_ACTION_REQ, 'Org Action Required'),
+    (connection.STATUS_STATE_WITHDRAWN, 'Withdrawn')
+    ]
 CONN_ROLE_OPTS = [('Org Admin|Mentor', 'All'),
     ('Org Admin', 'Org Admin'), 
-    ('Mentor', 'Mentor'),]
+    ('Mentor', 'Mentor')
+    ]
 
 def colorize(choice, yes, no):
   """Differentiate between yes and no status with green and red colors."""
@@ -313,9 +317,9 @@ class DashboardPage(base.GSoCRequestHandler):
     """
     components = []
 
-    component = self._getMyOrgApplicationsComponent(data)
-    if component:
-      components.append(component)
+    my_org_applications_component = self._getMyOrgApplicationsComponent(data)
+    if my_org_applications_component:
+      components.append(my_org_applications_component)
 
     components.append(UserConnectionComponent(data))
 
@@ -1282,7 +1286,7 @@ class OrgConnectionComponent(Component):
   def context(self):
     """Returns the context of this component.
     """
-    list = lists.ListConfigurationResponse(
+    my_list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=7, preload_list=False)
 
     if len(self.data.org_admin_for) > 1:
@@ -1297,7 +1301,7 @@ class OrgConnectionComponent(Component):
     return {
         'name': 'org_connections',
         'title': title,
-        'lists': [list],
+        'lists': [my_list],
         'description': description
     }
 

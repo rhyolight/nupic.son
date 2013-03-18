@@ -107,13 +107,14 @@ class Apply(Template):
       context['invited_role'] = 'an administrator'
       return context
 
-    mentor_connect_link = r.connect(self.data.user).urlOf(
+    mentor_connect_link = self.data.redirect.connect(self.data.user).urlOf(
         url_names.GSOC_USER_CONNECTION)
     context['mentor_connect_link'] = mentor_connect_link
     return context
 
   def templatePath(self):
     return "v2/modules/gsoc/org_home/_apply.html"
+
 
 class Contact(Template):
   """Organization Contact template.

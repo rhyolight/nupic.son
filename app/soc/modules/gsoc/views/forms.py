@@ -61,6 +61,7 @@ class GSoCModelForm(forms.ModelForm):
   def templatePath(self):
     return TEMPLATE_PATH
 
+
 class SurveyEditForm(forms.SurveyEditForm):
   """Django form for creating and/or editing survey.
   """
