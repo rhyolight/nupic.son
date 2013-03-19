@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2010 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,4 +51,3 @@ class GCIBulkCreateData(db.Model):
     """Returns the number of tasks that have been removed from the list.
     """
     return self.total_tasks - len(self.tasks)
-

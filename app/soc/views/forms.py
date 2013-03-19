@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +22,6 @@ import itertools
 import re
 
 from google.appengine.ext import db
-from google.appengine.ext.db import djangoforms
 
 from django import forms
 from django.core.exceptions import ImproperlyConfigured
@@ -34,6 +31,8 @@ from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext
+
+from djangoforms import djangoforms
 
 from soc.views.helper.surveys import SurveySchema
 

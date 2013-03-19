@@ -21,12 +21,12 @@ import datetime
 
 from google.appengine.ext import db
 
+from soc.logic import program as program_logic
 from soc.logic.exceptions import NotFound
 from soc.models.site import Site
 from soc.views.helper import request_data
 
 from soc.modules.gci.logic.helper import timeline as timeline_helper
-from soc.modules.gci.models import program as program_model
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models import organization as org_model
@@ -234,8 +234,7 @@ class RequestData(request_data.RequestData):
         key = db.Key.from_path('Sponsor', self.kwargs.get('sponsor'))
         self._is_host = key in self.user.host_for
       else:
-        key = program_model.GCIProgram.scope.get_value_for_datastore(
-            self.program)
+        key = program_logic.getSponsorKey(self.program)
         self._is_host = key in self.user.host_for
     return self._is_host
 

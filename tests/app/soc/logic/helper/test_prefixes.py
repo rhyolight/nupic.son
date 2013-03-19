@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,12 +67,6 @@ class TestPrefixes(unittest.TestCase):
     self.gsoc_org_key_name = self.gsoc_organization.key().name()
     self.gci_org_key_name = self.gci_organization.key().name()
 
-  def testGetOrSetScope(self):
-    """Not tested because it is used in soc.logic.models.survey and 
-    soc.logic.models.document and soc.logic.models will be removed.
-    """
-    pass
-
   def testGetScopeForPrefix(self):
     """Tests if the scope for a given prefix and key_name is returned.
     """
@@ -131,4 +123,3 @@ class TestPrefixes(unittest.TestCase):
     key_name = 'some_key_name'
     self.assertRaises(
         AttributeError, prefixes.getScopeForPrefix, prefix, key_name)
-

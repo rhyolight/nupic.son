@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2012 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +33,4 @@ GSOC_ORG_BAN = 'gsoc_org_ban'
 
 GSOC_ORG_CONNECTION = 'gsoc_org_connection'
 GSOC_USER_CONNECTION = 'gsoc_user_connection'
-GSOC_SHOW_CONNECTION = 'gsoc_show_connection'
-GSOC_CONNECTION_MESSAGE = 'gsoc_connection_message'
-
-GSOC_ANONYMOUS_CONNECTION = 'create_gsoc_connected_profile'
+GSOC_SHOW_CONNECTION = 'show_gsoc_connection'

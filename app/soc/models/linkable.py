@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2008 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,27 +31,6 @@ LINK_ID_PATTERN_CORE = r'[a-z][0-9a-z_]*'
 LINK_ID_ARG_PATTERN = r'(?P<link_id>%s)' % LINK_ID_PATTERN_CORE
 LINK_ID_PATTERN = r'^%s$' % LINK_ID_PATTERN_CORE
 LINK_ID_REGEX = re.compile(LINK_ID_PATTERN)
-
-# scope path is multiple link_id chunks,
-# each separated by a trailing /
-# (at least 1)
-SCOPE_PATH_ARG_PATTERN = (r'(?P<scope_path>%(link_id)s'
-                             '(?:/%(link_id)s)*)' % {
-                               'link_id': LINK_ID_PATTERN_CORE})
-SCOPE_PATH_PATTERN = r'^%s$' % SCOPE_PATH_ARG_PATTERN
-SCOPE_PATH_REGEX = re.compile(SCOPE_PATH_PATTERN)
-
-# path is multiple link_id chunks,
-#   each separated by a trailing /
-#     (at least 1)
-# followed by a single link_id with no trailing /
-PATH_LINK_ID_ARGS_PATTERN = (
-    r'%(scope_path)s/'
-     '(?P<link_id>%(link_id)s)' % {
-       'scope_path' : SCOPE_PATH_ARG_PATTERN,
-       'link_id': LINK_ID_PATTERN_CORE})
-PATH_LINK_ID_PATTERN = r'^%s$' % PATH_LINK_ID_ARGS_PATTERN
-PATH_LINK_ID_REGEX = re.compile(PATH_LINK_ID_PATTERN)
 
 
 class Linkable(db.Model):
@@ -116,16 +93,3 @@ class Linkable(db.Model):
   scope.help_text = ugettext(
       'Reference to another Linkable entity that defines the "scope" of'
       ' this Linkable entity.')
-
-  #: Hidden (not displayed to users or editable in forms) cache of the string
-  #: representation of the transitive closure of scopes, for use in URLs.
-  #: The multiple queries required to produce this string for entities in
-  #: deeply-nested scopes can be prohibitively expensive.  The scope of an
-  #: entity is not expected to change frequently (only for move, copy, and
-  #: maybe re-parenting operations), so this property is not likely to need
-  #: updating.
-  scope_path = db.StringProperty(required=False,
-      verbose_name=ugettext('Scope path'))
-  scope_path.help_text = ugettext(
-      'Cache of the string form of the entity scope.')
-

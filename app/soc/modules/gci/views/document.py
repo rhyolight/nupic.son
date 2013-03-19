@@ -31,7 +31,9 @@ class GCIDocumentForm(forms.GCIModelForm, document.DocumentForm):
   """Django form for creating documents."""
 
   dashboard_visibility = forms.MultipleChoiceField(
-      choices=[(v, v) for v in document_model.Document.VISIBILITY],
+      required=False,
+      choices=[(c.identifier, c.verbose_name)
+          for c in document_model.Document.DASHBOARD_VISIBILITIES],
       widget=forms.CheckboxSelectMultiple)
 
   Meta = document.DocumentForm.Meta

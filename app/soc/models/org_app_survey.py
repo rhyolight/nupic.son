@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2010 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +19,7 @@
 from soc.models.survey import Survey
 
 
+# TODO(nathaniel): Empty subclass.
 class OrgAppSurvey(Survey):
   """Survey for Users to apply as an Organization.
   """

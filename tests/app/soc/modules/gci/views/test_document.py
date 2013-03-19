@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,7 +73,7 @@ class EditProgramTest(GCIDjangoTestCase):
     # TODO(SRabbelier): test document ACL
     pass
 
-  def testCreateDocument(self):
+  def testCreateDocumentWithDashboardVisibility(self):
     self.data.createHost()
     url = '/gci/document/edit/gci_program/%s/doc' % self.gci.key().name()
     response = self.get(url)
@@ -89,6 +87,31 @@ class EditProgramTest(GCIDjangoTestCase):
         'key_name': DocumentKeyNameProvider(), 'modified_by': self.data.user,
         'home_for': None, 'author': self.data.user, 'is_featured': None,
         'write_access': 'admin', 'read_access': 'public',
+        'dashboard_visibility': ['student', 'mentor'],
+    }
+    properties = seeder_logic.seed_properties(Document, properties=override)
+    response = self.post(url, properties)
+    self.assertResponseRedirect(response, url)
+
+    key_name = properties['key_name']
+    document = Document.get_by_key_name(key_name)
+    self.assertPropertiesEqual(properties, document)
+
+  def testCreateDocumentWithDashboardVisibility(self):
+    self.data.createHost()
+    url = '/gci/document/edit/gci_program/%s/doc' % self.gci.key().name()
+    response = self.get(url)
+    self.assertGCITemplatesUsed(response)
+    self.assertTemplateUsed(response, 'v2/modules/gci/document/base.html')
+    self.assertTemplateUsed(response, 'v2/modules/gci/_form.html')
+
+    # test POST
+    override = {
+        'prefix': 'gci_program', 'scope': self.gci, 'link_id': 'doc',
+        'key_name': DocumentKeyNameProvider(), 'modified_by': self.data.user,
+        'home_for': None, 'author': self.data.user, 'is_featured': None,
+        'write_access': 'admin', 'read_access': 'public',
+        'dashboard_visibility': [],
     }
     properties = seeder_logic.seed_properties(Document, properties=override)
     response = self.post(url, properties)

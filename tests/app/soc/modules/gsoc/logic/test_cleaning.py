@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,4 +61,3 @@ class CleaningTest(unittest.TestCase):
     data_to_clean = {field_name: field_value}
     self.form.cleaned_data = data_to_clean
     self.assertRaises(forms.ValidationError, clean_data, self.form)
-

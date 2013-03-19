@@ -29,7 +29,6 @@ from soc.views.helper import access_checker
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
-from soc.modules.gsoc.models.connection import GSoCConnection, GSoCAnonymousConnection
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -110,6 +109,9 @@ DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
 DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM = ugettext(
     'You are not allowed to download the form.')
 
+DEF_NOT_ALLOWED_TO_UPLOAD_FORM = ugettext(
+    'You are not allowed to upload forms.')
+
 DEF_PROJECT_NOT_COMPLETED = ugettext(
     'The specified project has not been completed')
 
@@ -187,23 +189,6 @@ class Mutator(access_checker.Mutator):
       self.data.project_owner = self.data.profile
     else:
       self.data.project_owner = self.data.project.parent()
-
-  def connectionFromKwargs(self):
-    """Set the connection entity in the RequestData object."""
-    self.userFromKwargs()
-
-    self.data.connection = GSoCConnection.get_by_id(
-        long(self.data.kwargs['id']), self.data.url_user)
-    if not self.data.connection:
-      raise AccessViolation('This connection does not exist.')
-
-  def anonymousConnectionFromKwargs(self):
-    """Set the anonymous_connection entity in the RequestData object.
-    """
-    q = GSoCAnonymousConnection.all().filter('hash_id =', self.data.kwargs['key'])
-    self.data.anonymous_connection = q.get()
-    if not self.data.anonymous_connection:
-      raise AccessViolation('Invalid key in url; unable to establish connection.')
 
   def studentEvaluationFromKwargs(self, raise_not_found=True):
     """Sets the student evaluation in RequestData object.
@@ -428,6 +413,24 @@ class AccessChecker(access_checker.AccessChecker):
 
     raise AccessViolation(
         DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT % self.data.program.name)
+
+  def canStudentUploadForms(self):
+    """Checks if the current user can upload student forms.
+
+    Raises:
+      exceptions.AccessViolation: if the current user is not allowed to
+        upload forms
+    """
+    self.isStudentWithProject()
+
+    # check if the forms can already be submitted
+    if not self.data.timeline.afterFormSubmissionStart():
+      raise AccessViolation(DEF_NOT_ALLOWED_TO_UPLOAD_FORM)
+
+    # POST requests actually uploading a form are not allowed after
+    # the program ends
+    if self.data.POST:
+        self.isProgramRunning()
 
   def canStudentDownloadForms(self):
     """Checks if the user can download the forms.

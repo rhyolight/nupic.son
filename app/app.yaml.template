@@ -15,13 +15,13 @@
 # TODO(proto): uncomment and supply a Google App Engine application instance
 # application: FIXME
 # TODO(release): see the instructions in README about the "version:" field
-version: 2-0-20130221
-runtime: python
+version: 2-1-20130318
+runtime: python27
 api_version: 1
+threadsafe: false
 
 builtins:
 - admin_redirect: on
-- datastore_admin: on
 - remote_api: on
 - appstats: on
 - deferred: on
@@ -100,3 +100,7 @@ handlers:
 
 inbound_services:
 - warmup
+
+libraries:
+- name: django
+  version: "1.2"

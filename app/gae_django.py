@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2008 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,10 +22,6 @@ import sys
 
 # Must set this env var before importing any part of Django
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-
-# Declare the Django version we need.
-from google.appengine.dist import use_library
-use_library('django', '1.2')
 
 import django.core.signals
 import django.db

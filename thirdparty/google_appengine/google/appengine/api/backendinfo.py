@@ -29,17 +29,24 @@ configured for an application. Supports loading the records from backend.yaml.
 
 
 
+import os
 import yaml
 from yaml import representer
 
-from google.appengine.api import validation
-from google.appengine.api import yaml_builder
-from google.appengine.api import yaml_listener
-from google.appengine.api import yaml_object
+if os.environ.get('APPENGINE_RUNTIME') == 'python27':
+  from google.appengine.api import validation
+  from google.appengine.api import yaml_builder
+  from google.appengine.api import yaml_listener
+  from google.appengine.api import yaml_object
+else:
+  from google.appengine.api import validation
+  from google.appengine.api import yaml_builder
+  from google.appengine.api import yaml_listener
+  from google.appengine.api import yaml_object
 
 NAME_REGEX = r'(?!-)[a-z\d\-]{1,100}'
 FILE_REGEX = r'(?!\^).*(?!\$).{1,256}'
-CLASS_REGEX =  r'^[bB](1|2|4|8)$'
+CLASS_REGEX = r'^[bB](1|2|4|8|4_1G)$'
 OPTIONS_REGEX = r'^[a-z, ]*$'
 STATE_REGEX = r'^(START|STOP|DISABLED)$'
 

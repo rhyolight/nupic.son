@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -412,4 +410,3 @@ class TestDicts(unittest.TestCase):
         'param2': u'&lt;1000'}
     self.assertEqual(
         dicts.cleanDict(target, filter_fields, escape_safe=True), expected_dict)
-

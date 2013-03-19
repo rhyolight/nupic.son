@@ -1,5 +1,3 @@
-#!/usr/bin/python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,4 +32,3 @@ def process(project):
 
   yield operation.db.Put(project)
   yield operation.counters.Increment("projects_updated")
-

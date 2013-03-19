@@ -206,8 +206,3 @@ indexes:
   - name: program
   - name: status
   - name: modified_on
-
-- kind: GSoCConnectionMessage
-  ancestor: yes
-  properties:
-  - name: created

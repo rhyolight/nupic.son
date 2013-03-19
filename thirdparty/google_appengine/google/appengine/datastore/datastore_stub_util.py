@@ -116,6 +116,14 @@ _RETRY_DELAY_MULTIPLIER = 2
 _MAX_RETRY_DELAY_MS = 120000
 
 
+
+
+SEQUENTIAL = 'sequential'
+SCATTERED = 'scattered'
+_SCATTERED_ID_BIT = 1 << 62
+_MAX_SCATTERED_ID_COUNTER = 1 << 61
+
+
 def _GetScatterProperty(entity_proto):
   """Gets the scatter property for an object.
 
@@ -185,6 +193,21 @@ def _PrepareSpecialProperties(entity_proto, is_load):
       special_property = property_func(entity_proto)
       if special_property:
         entity_proto.property_list().append(special_property)
+
+
+def _GetPropertyTuple(entity, property_names):
+  """Computes a unique tuple for an entity on the given names of properties.
+
+  Args:
+    entity: The entity_pb.EntityProto to extract values from.
+    property_names: The names of the properties from which to extract values.
+
+  Returns:
+    A tuple containing the desired properties.
+  """
+  return tuple(prop.SerializePartialToString()
+               for prop in entity.property_list()
+               if prop.name() in property_names)
 
 
 def PrepareSpecialPropertiesForStore(entity_proto):
@@ -492,6 +515,17 @@ def CheckQuery(query, filters, orders, max_query_components):
     Check(query.name_space() == ancestor.name_space(),
           'query namespace is %s but ancestor namespace is %s' %
               (query.name_space(), ancestor.name_space()))
+
+
+  if query.group_by_property_name_size():
+    group_by_set = set(query.group_by_property_name_list())
+    for order in orders:
+      if not group_by_set:
+        break
+      Check(order.property() in group_by_set,
+            'items in the group by clause must be specified first '
+            'in the ordering')
+      group_by_set.remove(order.property())
 
 
 
@@ -891,13 +925,18 @@ class BaseCursor(object):
 
     self.keys_only = query.keys_only()
     self.property_names = set(query.property_name_list())
+    self.group_by = set(query.group_by_property_name_list())
     self.app = query.app()
     self.cursor = self._AcquireCursorID()
 
     self.__order_compare_entities = dsquery._order.cmp_for_filter(
         dsquery._filter_predicate)
-    self.__order_property_names = set(
-        order.property() for order in orders if order.property() != '__key__')
+    if self.group_by:
+      self.__cursor_properties = self.group_by
+    else:
+      self.__cursor_properties = set(order.property() for order in orders)
+      self.__cursor_properties.add('__key__')
+      self.__cursor_properties = frozenset(self.__cursor_properties)
     self.__index_list = index_list
 
   def _PopulateResultMetadata(self, query_result, compile,
@@ -931,7 +970,13 @@ class BaseCursor(object):
       entity: a entity_pb.EntityProto entity.
       cursor: a compiled cursor as returned by _DecodeCompiledCursor.
     """
-    x = self.__order_compare_entities(entity, cursor[0])
+    comparison_entity = entity_pb.EntityProto()
+    for prop in entity.property_list():
+      if prop.name() in self.__cursor_properties:
+        comparison_entity.add_property().MergeFrom(prop)
+    if cursor[0].has_key():
+      comparison_entity.mutable_key().MergeFrom(entity.key())
+    x = self.__order_compare_entities(comparison_entity, cursor[0])
     if cursor[1]:
       return x < 0
     else:
@@ -954,9 +999,12 @@ class BaseCursor(object):
 
 
 
-    remaining_properties = self.__order_property_names.copy()
+    remaining_properties = set(self.__cursor_properties)
+
     cursor_entity = entity_pb.EntityProto()
-    cursor_entity.mutable_key().CopyFrom(position.key())
+    if position.has_key():
+      cursor_entity.mutable_key().CopyFrom(position.key())
+      remaining_properties.remove('__key__')
     for indexvalue in position.indexvalue_list():
       property = cursor_entity.add_property()
       property.set_name(indexvalue.property())
@@ -980,9 +1028,12 @@ class BaseCursor(object):
 
 
       position = compiled_cursor.add_position()
-      position.mutable_key().MergeFrom(last_result.key())
+
+
+      if '__key__' in self.__cursor_properties:
+        position.mutable_key().MergeFrom(last_result.key())
       for prop in last_result.property_list():
-        if prop.name() in self.__order_property_names:
+        if prop.name() in self.__cursor_properties:
           indexvalue = position.add_indexvalue()
           indexvalue.set_property(prop.name())
           indexvalue.mutable_value().CopyFrom(prop.value())
@@ -1007,6 +1058,7 @@ class IteratorCursor(BaseCursor):
     self.__last_result = None
     self.__next_result = None
     self.__results = results
+    self.__distincts = set()
     self.__done = False
 
 
@@ -1049,7 +1101,14 @@ class IteratorCursor(BaseCursor):
     if self.__done:
       raise StopIteration
     try:
-      self.__next_result = self.__results.next()
+      while True:
+        self.__next_result = self.__results.next()
+        if not self.group_by:
+          break
+        next_group = _GetPropertyTuple(self.__next_result, self.group_by)
+        if next_group not in self.__distincts:
+          self.__distincts.add(next_group)
+          break
     except StopIteration:
       self._Done()
     if (self.__end_cursor and
@@ -1132,6 +1191,17 @@ class ListCursor(BaseCursor):
       results: list of entity_pb.EntityProto
     """
     super(ListCursor, self).__init__(query, dsquery, orders, index_list)
+
+
+    if self.group_by:
+      distincts = set()
+      new_results = []
+      for result in results:
+        properties = _GetPropertyTuple(result, self.group_by)
+        if properties not in distincts:
+          distincts.add(properties)
+          new_results.append(result)
+      results = new_results
 
     if query.has_compiled_cursor() and query.compiled_cursor().position_list():
       start_cursor = self._DecodeCompiledCursor(query.compiled_cursor())
@@ -2238,12 +2308,13 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
   _MAX_ACTIONS_PER_TXN = 5
 
   def __init__(self, require_indexes=False, consistency_policy=None,
-               use_atexit=True):
+               use_atexit=True, auto_id_policy=SEQUENTIAL):
     BaseTransactionManager.__init__(self, consistency_policy=consistency_policy)
     BaseIndexManager.__init__(self)
 
     self._require_indexes = require_indexes
     self._pseudo_kinds = {}
+    self.SetAutoIdPolicy(auto_id_policy)
 
     if use_atexit:
 
@@ -2451,7 +2522,11 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
         insert = True
 
 
-        last_element.set_id(self._AllocateIds(entity.key())[0])
+        if self._auto_id_policy == SEQUENTIAL:
+          last_element.set_id(self._AllocateIds(entity.key())[0])
+        else:
+          full_key = self._AllocateScatteredIds([entity.key()])[0]
+          last_element.set_id(full_key.path().element_list()[-1].id())
       else:
         insert = False
 
@@ -2591,7 +2666,7 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
     minimal_index = datastore_index.MinimalCompositeIndexForQuery(query,
         (datastore_index.ProtoToIndexDefinition(index)
          for index in self.GetIndexes(query.app(), trusted, calling_app)
-         if index.state() == datastore_pb.CompositeIndex.READ_WRITE))
+         if index.state() == entity_pb.CompositeIndex.READ_WRITE))
     if minimal_index is not None:
       msg = ('This query requires a composite index that is not defined. '
           'You must update the index.yaml file in your application root.')
@@ -2602,6 +2677,23 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
             datastore_index.GetRecommendedIndexProperties(properties))
         msg += '\nThe following index is the minimum index required:\n' + yaml
       raise apiproxy_errors.ApplicationError(datastore_pb.Error.NEED_INDEX, msg)
+
+  def SetAutoIdPolicy(self, auto_id_policy):
+    """Set value of _auto_id_policy flag (default SEQUENTIAL).
+
+    SEQUENTIAL auto ID assignment behavior will eventually be deprecated
+    and the default will be SCATTERED.
+
+    Args:
+      auto_id_policy: string constant.
+    Raises:
+      TypeError: if auto_id_policy is not one of SEQUENTIAL or SCATTERED.
+    """
+    valid_policies = (SEQUENTIAL, SCATTERED)
+    if auto_id_policy not in valid_policies:
+      raise TypeError('auto_id_policy must be in %s, found %s instead',
+                      valid_policies, auto_id_policy)
+    self._auto_id_policy = auto_id_policy
 
 
 
@@ -2834,7 +2926,8 @@ class DatastoreStub(object):
   def _Dynamic_Put(self, req, res):
     transaction = req.has_transaction() and req.transaction() or None
     res.key_list().extend(self._datastore.Put(req.entity_list(),
-                                              res.mutable_cost(), transaction,
+                                              res.mutable_cost(),
+                                              transaction,
                                               self._trusted, self._app_id))
 
   def _Dynamic_Delete(self, req, res):
@@ -3055,6 +3148,67 @@ class DatastoreStub(object):
       self._index_yaml_updater.UpdateIndexYaml()
 
 
+def ReverseBitsInt64(v):
+  """Reverse the bits of a 64-bit integer.
+
+  Args:
+    v: Input integer of type 'int' or 'long'.
+
+  Returns:
+    Bit-reversed input as 'int' on 64-bit machines or as 'long' otherwise.
+  """
+
+  v = ((v >> 1) & 0x5555555555555555) | ((v & 0x5555555555555555) << 1)
+  v = ((v >> 2) & 0x3333333333333333) | ((v & 0x3333333333333333) << 2)
+  v = ((v >> 4) & 0x0F0F0F0F0F0F0F0F) | ((v & 0x0F0F0F0F0F0F0F0F) << 4)
+  v = ((v >> 8) & 0x00FF00FF00FF00FF) | ((v & 0x00FF00FF00FF00FF) << 8)
+  v = ((v >> 16) & 0x0000FFFF0000FFFF) | ((v & 0x0000FFFF0000FFFF) << 16)
+  v = int((v >> 32) | (v << 32) & 0xFFFFFFFFFFFFFFFF)
+  return v
+
+
+def ToScatteredId(v):
+  """Map counter value v to the scattered ID space.
+
+  Reverse bits 0-60 and set bit 62 to prevent collisions with sequential IDs.
+
+  Args:
+    v: Counter value from which to produce ID.
+
+  Returns:
+    Integer ID.
+
+  Raises:
+    datastore_errors.BadArgumentError if counter value exceeds the range of
+  the scattered ID space.
+  """
+  if v >= _MAX_SCATTERED_ID_COUNTER:
+    raise datastore_errors.BadArgumentError('counter value too large (%d)' %v)
+
+  return long(ReverseBitsInt64(v << 3) | _SCATTERED_ID_BIT)
+
+
+def IdToCounter(k):
+  """Map ID k to the counter value from which it was generated.
+
+  Determine whether k is sequential or scattered ID by testing bit 62.
+
+  Args:
+    k: ID from which to infer counter value.
+
+  Returns:
+    Tuple of integers (counter_value, id_space).
+  """
+  if k & _SCATTERED_ID_BIT:
+    counter_value = long(ReverseBitsInt64(k) >> 3)
+    id_space = SCATTERED
+    return counter_value, id_space
+  else:
+    counter_value = long(k)
+    id_space = SEQUENTIAL
+    return counter_value, id_space
+
+
 def CompareEntityPbByKey(a, b):
   """Compare two entity protobuf's by key.
 
@@ -3076,9 +3230,9 @@ def _GuessOrders(filters, orders):
   (which is better then always ordering by __key__ for tests).
 
   Args:
-    filters: The datastore_pb.Query_Filter that have already been normilized and
+    filters: The datastore_pb.Query_Filter that have already been normalized and
       checked.
-    orders: The datastore_pb.Query_Order that have already been normilized and
+    orders: The datastore_pb.Query_Order that have already been normalized and
       checked. Mutated in place.
   """
   orders = orders[:]

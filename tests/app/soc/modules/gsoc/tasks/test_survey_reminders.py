@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
@@ -69,7 +67,7 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
         'modified_by': self.founder,
         'link_id': 'link_id',
         'scope': self.gsoc,
-        'scope_path': self.gsoc.key().id_or_name()}
+    }
 
     self.project_survey = ProjectSurvey(key_name='key_name',
                                         **survey_values)

@@ -107,15 +107,30 @@ def GetFieldCountInDocument(document, field_name):
 
 
 def GetFieldValue(field):
-  """Returns the value of a field as the correct type."""
+  """Returns the value of a field as the correct type.
+
+  Args:
+    field: The field whose value is extracted.  If the given field is None, this
+      function also returns None. This is to make it easier to chain with
+      GetFieldInDocument().
+
+  Returns:
+    The value of the field with the correct type (float for number fields,
+    datetime.datetime for date fields, etc).
+
+  Raises:
+    TypeError: if the type of the field isn't recognized.
+  """
+  if not field:
+    return None
   value = field.value().string_value()
   value_type = field.value().type()
 
   if value_type in TEXT_DOCUMENT_FIELD_TYPES:
     return value
-  if value_type is document_pb.FieldValue.DATE:
+  if value_type == document_pb.FieldValue.DATE:
     return DeserializeDate(value)
-  if value_type is document_pb.FieldValue.NUMBER:
+  if value_type == document_pb.FieldValue.NUMBER:
     return float(value)
   raise TypeError('No conversion defined for type %s' % value_type)
 

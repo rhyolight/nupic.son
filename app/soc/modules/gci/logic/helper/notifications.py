@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2009 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +24,7 @@ from django.utils.translation import ugettext
 from soc.logic import accounts
 from soc.logic import dicts
 from soc.logic import mail_dispatcher
+from soc.logic import program as program_logic
 from soc.logic import site
 from soc.logic import system
 from soc.tasks import mailer
@@ -160,7 +159,7 @@ def getFirstTaskConfirmationContext(student):
   program = student.scope
 
   kwargs = {
-      'sponsor': program.scope_path,
+      'sponsor': program_logic.getSponsorKey(program).name(),
       'program': program.link_id
   }
   url = reverse('gci_student_form_upload', kwargs=kwargs)
@@ -186,7 +185,7 @@ def getTaskCommentContext(task, comment, to_emails):
     to_emails: list of recepients for the notification.
   """
   url_kwargs = {
-    'sponsor': task.program.scope_path,
+    'sponsor': program_logic.getSponsorKey(task.program).name(),
     'program': task.program.link_id,
     'id': task.key().id(),
   }

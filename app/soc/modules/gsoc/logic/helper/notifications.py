@@ -35,9 +35,6 @@ DEF_NEW_REVIEW_SUBJECT = ugettext(
     '[%(org)s] New %(review_visibility)s review on %(reviewed_name)s '
     '(%(proposer_name)s)')
 
-DEF_NEW_CONNECTION_MESSAGE_SUBJECT = ugettext(
-    '[%(org)s] New message on connection.')
-
 DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE = \
     'soc/notification/new_proposal.html'
 
@@ -50,15 +47,12 @@ DEF_SLOT_TRANSFER_NOTIFICATION_TEMPLATE = \
 DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE = \
     'soc/notification/new_review.html'
 
-DEF_NEW_CONNECTION_MESSAGE_NOTIFICATION_TEMPLATE = \
-    'v2/soc/notification/new_connection_message.html'
-
 
 def newProposalContext(data, proposal, to_emails):
   """Sends out a notification to alert the user of a new comment.
 
   Args:
-    data: a RequestData object.
+    data: a RequestData object
   """
   data.redirect.review(proposal.key().id(), data.user.link_id)
   proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
@@ -85,7 +79,7 @@ def updatedProposalContext(data, proposal, to_emails):
   """Sends out a notification to alert the user of an updated proposal.
 
   Args:
-    data: a RequestData object.
+    data: a RequestData object
   """
   assert isSet(data.organization)
 
@@ -114,7 +108,7 @@ def newReviewContext(data, comment, to_emails):
   """Sends out a notification to alert the user of a new review.
 
   Args:
-    data: a RequestData object.
+    data: a RequestData object
   """
   assert isSet(data.proposal)
   assert isSet(data.proposer)
@@ -148,47 +142,14 @@ def newReviewContext(data, comment, to_emails):
   return getContext(data, to_emails, message_properties, subject, template)
 
 
-def newConnectionMessageContext(data, message, to_emails):
-  """Generate a mail context for a new message.
-  
-  Args:
-    data: A RequestData object.
-    message: GSoCConnectionMessage object that represent the new message.
-    to_emails: List of e-mails to which a notification should be sent.
-  Returns:
-    A context for a notification email that should be sent out, when new
-    message is submitted for a connection.
-  """
-  assert isSet(data.connection)
-
-  view_connection_url = data.redirect.connection_comment(
-      message, full=True)
-
-  profile_edit_link = data.redirect.editProfile().url(full=True)
-
-  message_properties = {
-      'view_connection_url': view_connection_url,
-      'message_sender': message.author.name(),
-      'message_content': message.content,
-      'org': data.connection.organization.name,
-      'profile_edit_link': profile_edit_link,
-      }
-
-  subject = DEF_NEW_CONNECTION_MESSAGE_SUBJECT % message_properties
-
-  template = DEF_NEW_CONNECTION_MESSAGE_NOTIFICATION_TEMPLATE
-
-  return getContext(data, to_emails, message_properties, subject, template)
-
-
 def createOrUpdateSlotTransferContext(data, slot_transfer,
                                       to_emails, update=False):
   """Mail context to be sent to program host upon slot transfer request
 
   Args:
-    data: a RequestData object.
-    slot_transfer: entity that holds the slot transfer request information.
-    update: True if the request was updated, False if the new one was created.
+    data: a RequestData object
+    slot_transfer: entity that holds the slot transfer request information
+    update: True if the request was updated, False if the new one was created
   """
   # TODO(nathaniel): make unnecessary this .program() call.
   data.redirect.program()

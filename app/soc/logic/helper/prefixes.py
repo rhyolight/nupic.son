@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2010 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,20 +14,6 @@
 
 """Prefix helper module for models with document prefixes.
 """
-
-
-def getOrSetScope(entity):
-  """Gets or sets scope for the given entity.
-
-  params:
-    entity = Entity which uses document prefix.
-  """
-
-  if getattr(entity, 'scope', None):
-    return entity.scope
-
-  entity.scope = getScopeForPrefix(entity.prefix, entity.scope_path)
-  entity.put()
 
 
 def getScopeForPrefix(prefix, key_name):

@@ -81,6 +81,7 @@ class GCIProgram(soc_program_model.Program):
       reference_class=soc_document_model.Document,
       verbose_name=translation.ugettext('Terms and Conditions'),
       collection_name='terms_and_conditions')
+  terms_and_conditions.group = soc_program_model.PROGRAM_DOCUMENTS_GROUP
   terms_and_conditions.help_text = translation.ugettext(
       'Document containing Terms and Conditions for participants.')
 

@@ -17,6 +17,7 @@
 from google.appengine.ext import db
 
 from django import forms as django_forms
+from django import http
 from django.utils import simplejson as json
 from django.utils.translation import ugettext
 
@@ -40,7 +41,7 @@ class TimelineForm(gci_forms.GCIModelForm):
   class Meta:
     css_prefix = 'timeline_form'
     model = timeline_model.GCITimeline
-    exclude = ['link_id', 'scope', 'scope_path']
+    exclude = ['link_id', 'scope']
 
 
 class CreateProgramForm(gci_forms.GCIModelForm):
@@ -54,9 +55,23 @@ class CreateProgramForm(gci_forms.GCIModelForm):
     css_prefix = 'create_program_form'
     model = program_model.GCIProgram
     exclude = [
-        'scope', 'scope_path', 'timeline', 'org_admin_agreement',
-        'mentor_agreement', 'student_agreement', 'about_page', 'events_page',
+        'scope', 'timeline', 'org_admin_agreement', 'events_page',
+        'mentor_agreement', 'student_agreement', 'about_page',
         'connect_with_us_page', 'help_page', 'task_types']
+
+  def clean(self):
+    """Cleans the data input by the user as a response to the form."""
+    super(CreateProgramForm, self).clean()
+
+    # TODO(daniel): get rid of this check
+    # this is an ugly hack which is needed by the test runner
+    # request data POST is not represented by QueryDict, but by a regular
+    # dict which does not have getlist method
+    if isinstance(self.request_data.POST, http.QueryDict):
+      self.cleaned_data['task_types'] = self.request_data.POST.getlist(
+          'task_type_name')
+
+    return self.cleaned_data
 
 
 class EditProgramForm(gci_forms.GCIModelForm):
@@ -74,7 +89,7 @@ class EditProgramForm(gci_forms.GCIModelForm):
   class Meta:
     css_prefix = 'edit_program_form'
     model = program_model.GCIProgram
-    exclude = ['link_id', 'scope', 'scope_path', 'timeline', 'task_types']
+    exclude = ['link_id', 'scope', 'timeline', 'task_types']
 
   def clean(self):
     """Cleans the data input by the user as a response to the form.

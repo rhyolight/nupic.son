@@ -105,7 +105,6 @@ class KeyNameProvider(StringProvider):
     scope = values.get('scope', None)
     if scope:
       key_name = scope.key().name() + '/' + key_name
-      values['scope_path'] = scope.key().name()
     return key_name
 
 

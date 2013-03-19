@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.5
-#
 # Copyright 2011 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +23,9 @@ from django.template import defaultfilters
 from django.utils.formats import dateformat
 from django.utils.safestring import mark_safe
 
+from soc.models import document as document_model
 from soc.views import forms
+
 
 TEMPLATE_PATH = 'v2/modules/gsoc/_form.html'
 
@@ -208,11 +208,13 @@ class GSoCBoundField(forms.BoundField):
 
     if value:
       document = db.get(value)
-      sponsor, program = document.scope_path.split('/')
+      scope_key_name = document_model.Document.scope.get_value_for_datastore(
+          document).name()
+      sponsor, program = scope_key_name.split('/')
       args = [document.prefix, sponsor, program, document.link_id]
     else:
-      scope_path = self.form.request_data.program.key().id_or_name()
-      sponsor, program = scope_path.split('/')
+      scope_key_name = self.form.request_data.program.key().id_or_name()
+      sponsor, program = scope_key_name.split('/')
       args = ['gsoc_program', sponsor, program, self.name]
 
     edit_document_link = reverse('edit_gsoc_document', args=args)

@@ -1,6 +1,4 @@
-#!/usr/bin/env python2.5
-#
-# Copyright 2012 the Melange authors.
+# Copyright 2009 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +13,12 @@
 # limitations under the License.
 
 ''' This module contains the object used to represent invitations and
-requests between a user and an organization.
+requests between a user and an organization
 '''
+from soc.models.connection import Connection
 
-from soc.models.connection import Connection, AnonymousConnection
 
+# TODO(nathaniel): Empty subclass.
 class GSoCConnection(Connection):
-  """ GSoCConnection Model. See Connection model for details.
-  """
-  pass
-
-
-class GSoCAnonymousConnection(AnonymousConnection):
-  """ GSoCAnonymouSConnection Model. See AnonymousConnection model for details.
-  """
+  """ GSoCConnection Model. See Connection model for details """
   pass
