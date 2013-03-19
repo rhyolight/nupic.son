@@ -35,7 +35,7 @@ from soc.modules.gsoc.models.grading_project_survey_record import \
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
@@ -178,7 +178,7 @@ class Mutator(access_checker.Mutator):
     if not project_id:
       raise NotFound(ugettext('Proposal id must be a positive number'))
 
-    self.data.project = GSoCProject.get_by_id(
+    self.data.project = project_model.GSoCProject.get_by_id(
         project_id, parent=self.data.url_profile)
 
     if not self.data.project:
@@ -541,6 +541,30 @@ class AccessChecker(access_checker.AccessChecker):
     elif status == 'withdrawn':
       self.data.is_pending = False
 
+  def canOrgAdminUpdateProject(self):
+    """Checks if the organization admin can edit the project details."""
+    assert access_checker.isSet(self.data.program)
+    assert access_checker.isSet(self.data.timeline)
+    assert access_checker.isSet(self.data.project)
+    assert access_checker.isSet(self.data.project_owner)
+
+    self.isProjectInURLValid()
+
+    # check if the timeline allows updating project
+    self.isProgramVisible()
+    self.acceptedStudentsAnnounced()
+
+    # check if the person is an organization admin for the organization
+    # to which the project was assigned
+    org_key = project_model.GSoCProject.org.get_value_for_datastore(
+        self.data.project)
+    self.isOrgAdminForOrganization(org_key)
+
+    # check if the status allows the project to be updated
+    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+      raise AccessViolation(access_checker.DEF_CANNOT_UPDATE_ENTITY % {
+          'name': 'project'
+          })
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass
