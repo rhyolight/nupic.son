@@ -409,6 +409,36 @@ class UserActions(Template):
     return "v2/modules/gsoc/project_details/_user_action.html"
 
 
+def _isUpdateLinkVisible(data):
+  """Determines whether the current user is allowed to update the project
+  and therefore if the project update link should visible or not.
+
+  Args:
+    data: a RequestData object
+
+  Returns: True if the update link should be visible, False otherwise.
+  """
+  # program hosts are able to edit project details
+  if data.is_host:
+    return True
+
+  # only passed and valid project can be updated
+  if data.project.status in ['invalid', 'withdrawn', 'failed']:
+    return False
+
+  # a student who own the project can update it
+  if data.project.parent_key() == data.profile.key():
+    return True
+
+  # org admins of the organization that manages the project can update it
+  org_key = GSoCProject.org.get_value_for_datastore(data.project)
+  if data.orgAdminFor(org_key):
+    return True
+
+  # no other users are permitted to update project
+  return False
+
+
 class ProjectDetails(GSoCRequestHandler):
   """Encapsulate all the methods required to generate GSoC project
   details page.
@@ -443,9 +473,7 @@ class ProjectDetails(GSoCRequestHandler):
     if data.orgAdminFor(data.project.org):
       context['user_actions'] = UserActions(data)
 
-    user_is_owner = data.user and \
-        (data.user.key() == data.project_owner.parent_key())
-    if user_is_owner:
+    if _isUpdateLinkVisible(data):
       context['update_link'] = data.redirect.project().urlOf(
           url_names.GSOC_PROJECT_UPDATE)
 
