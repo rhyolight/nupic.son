@@ -1104,6 +1104,9 @@ class AccessChecker(BaseAccessChecker):
     self.isProgramVisible()
     self.acceptedStudentsAnnounced()
 
+    # check if the current used is an active student
+    self.isActiveStudent()
+
     # check if the project belongs to the current user
     expected_profile_key = self.data.project.parent_key()
     if expected_profile_key != self.data.profile.key():
