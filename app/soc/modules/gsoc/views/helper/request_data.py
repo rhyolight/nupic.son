@@ -21,6 +21,7 @@ from google.appengine.ext import db
 
 from soc.models import site as site_model
 from soc.logic import exceptions
+from soc.logic import program as program_logic
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
@@ -126,6 +127,25 @@ class TimelineHelper(request_data.TimelineHelper):
     first_survey_start = min([s.survey_start for s in surveys])
     return request_data.isAfter(first_survey_start)
 
+  def formSubmissionStartOn(self):
+    """Returns the date after which accepted students may submit their forms.
+
+    Returns:
+      datetime.datetime object representing a point in time after which
+        student forms may be submitted.
+    """
+    return self.timeline.form_submission_start
+
+  def afterFormSubmissionStart(self):
+    """Answers the question if the current point in time is after students can
+    start submitting their forms.
+
+    Returns:
+      A bool value which is True if the current time is after students can
+        start submitting their forms.
+    """
+    return request_data.isAfter(self.formSubmissionStartOn())
+
 
 class RequestData(request_data.RequestData):
   """Object containing data we query for each request in the GSoC module.
@@ -200,8 +220,7 @@ class RequestData(request_data.RequestData):
         key = db.Key.from_path('Sponsor', self.kwargs.get('sponsor'))
         self._is_host = key in self.user.host_for
       else:
-        key = program_model.GSoCProgram.scope.get_value_for_datastore(
-            self.program)
+        key = program_logic.getSponsorKey(program)
         self._is_host = key in self.user.host_for
     return self._is_host
 
@@ -580,18 +599,14 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = url_names.GSOC_USER_CONNECTION
     return self
   
-  def show_connection(self, user, connection):
+  def show_connection(self, user, org):
     """ Sets up kwargs for a gsoc_show_connection redirect.
-    
     Args:
-        user: the user involved in the connection 
-        connection: the connection entity to be viewed
+      user: the user involved in the connection 
+      org: the org involved in the connection
     """
-    self.sponsor()
-    self.program()
-
-    self.kwargs['user'] = user.link_id
-    self.kwargs['id'] = connection.key().id()
+    self._data.organization = org
+    self.connect(user)
     self._url_name = url_names.GSOC_SHOW_CONNECTION
     return self
 
