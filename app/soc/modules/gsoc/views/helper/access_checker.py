@@ -596,5 +596,22 @@ class AccessChecker(access_checker.AccessChecker):
           'name': 'project'
           })
 
+  def canUpdateProject(self):
+    """Checks if the current user is allowed to update project details."""
+    self.isLoggedIn()
+    if not self.data.is_host:
+      self.hasProfile()
+      if self.data.profile.is_student:
+        # check if this is a student trying to update their project
+        self.canStudentUpdateProject()
+      elif self.data.is_org_admin:
+        # check if this is an organization admin trying to update a project
+        # belonging to one the students working for their organization
+        self.canOrgAdminUpdateProject()
+      else:
+        raise AccessViolation(access_checker.DEF_CANNOT_UPDATE_ENTITY % {
+            'name': 'project'
+        })
+
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass

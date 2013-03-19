@@ -25,6 +25,7 @@ from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from soc.logic import exceptions
+from soc.views.helper import access_checker
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -184,10 +185,8 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     """Access checks for GSoC project details page."""
-    check.isLoggedIn()
-    check.isActiveStudent()
     mutator.projectFromKwargs()
-    check.canStudentUpdateProject()
+    check.canUpdateProject()
 
   def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
