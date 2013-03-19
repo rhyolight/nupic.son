@@ -15,6 +15,8 @@
 """Tests for project_detail views."""
 
 from tests.profile_utils import GSoCProfileHelper
+from tests import program_utils
+from tests import test_utils
 from tests.test_utils import GSoCDjangoTestCase
 
 from soc.modules.gsoc.models.project import GSoCProject
@@ -235,3 +237,80 @@ class ProjectDetailsUpdateTest(GSoCDjangoTestCase):
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)
+
+
+class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
+  """Unit tests for _isUpdateLinkVisible function."""
+
+  def setUp(self):
+    super(TestIsUpdateLinkVisible, self).setUp()
+    self.init()
+
+  class MockRequestData(object):
+    """Mock class used to simulate RequestData which is passed as argument."""
+
+    def __init__(self, is_host=False, project=None, profile=None):
+      self.is_host = is_host
+      self.project = project
+      self.profile = profile
+
+    def orgAdminFor(self, org_key):
+      return org_key in self.profile.org_admin_for
+
+  def testForHost(self):
+    request_data = TestIsUpdateLinkVisible.MockRequestData(is_host=True)
+    result = project_details._isUpdateLinkVisible(request_data)
+    self.assertTrue(request_data)
+
+  def testForProjectStudent(self):
+    student = self.data.createStudent()
+    project = _createProjectForStudent(
+        self.gsoc, self.org, self.dev_test, student=student)
+
+    request_data = TestIsUpdateLinkVisible.MockRequestData(
+        project=project, profile=student)
+    self.assertTrue(project_details._isUpdateLinkVisible(request_data))
+
+  def testForOtherStudent(self):
+    student = self.data.createStudent()
+    project = _createProjectForStudent(self.gsoc, self.org, self.dev_test)
+
+    request_data = TestIsUpdateLinkVisible.MockRequestData(
+        project=project, profile=student)
+    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+
+  def testForProjectMentor(self):
+    mentor = self.data.createMentor(self.org)
+    project = _createProjectForMentor(
+        self.gsoc, self.org, self.dev_test, mentor=mentor)
+
+    request_data = TestIsUpdateLinkVisible.MockRequestData(
+        project=project, profile=mentor)
+    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+
+  def testForOtherMentor(self):
+    mentor = self.data.createMentor(self.org)
+    project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
+
+    request_data = TestIsUpdateLinkVisible.MockRequestData(
+        project=project, profile=mentor)
+    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+
+  def testForProjectOrgAdmin(self):
+    org_admin = self.data.createOrgAdmin(self.org)
+    project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
+
+    request_data = TestIsUpdateLinkVisible.MockRequestData(
+        project=project, profile=org_admin)
+    self.assertTrue(project_details._isUpdateLinkVisible(request_data))
+
+  def testForOtherOrgAdmin(self):
+    program_helper = program_utils.GSoCProgramHelper()
+    another_org = program_helper.createOrg()
+    org_admin = self.data.createOrgAdmin(self.org)
+    project = _createProjectForMentor(self.gsoc, another_org, self.dev_test)
+
+    request_data = TestIsUpdateLinkVisible.MockRequestData(
+        project=project, profile=org_admin)
+    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+  
