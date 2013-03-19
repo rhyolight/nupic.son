@@ -239,11 +239,9 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isLoggedIn()
-    check.isActiveStudent()
     mutator.projectFromKwargs()
-    check.canStudentUpdateProject()
     check.isProjectCompleted()
+    check.canUpdateProject()
 
   def post(self, data, check, mutator):
     """Post handler for the code sample upload file."""
@@ -327,8 +325,8 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     mutator.projectFromKwargs()
-    check.canStudentUpdateProject()
     check.isProjectCompleted()
+    check.canUpdateProject()
 
   def post(self, data, check, mutator):
     """Get handler for the code sample delete file."""
