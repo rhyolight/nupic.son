@@ -439,6 +439,20 @@ def _isUpdateLinkVisible(data):
   return False
 
 
+def _getUpdateLinkText(data):
+  """Returns text which may be used to display update project link.
+
+  Args:
+    request: a RequestData object
+
+  Returns: a string with the text to be used with update project link 
+  """
+  if data.timeline.afterFormSubmissionStart():
+    return 'Update or Upload Code Samples'
+  else:
+    return 'Update'
+
+
 class ProjectDetails(GSoCRequestHandler):
   """Encapsulate all the methods required to generate GSoC project
   details page.
@@ -474,8 +488,12 @@ class ProjectDetails(GSoCRequestHandler):
       context['user_actions'] = UserActions(data)
 
     if _isUpdateLinkVisible(data):
-      context['update_link'] = data.redirect.project().urlOf(
+      context['update_link_visible'] = True
+      context['update_link_url'] = data.redirect.project().urlOf(
           url_names.GSOC_PROJECT_UPDATE)
+      context['update_link_text'] = _getUpdateLinkText(data)
+    else:
+      context['update_link_visible'] = False
 
     if len(data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
