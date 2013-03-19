@@ -351,7 +351,7 @@ class OrgConnectionPage(GSoCRequestHandler):
         raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
 
       new_connection = connection_form.create(parent=user, commit=False)
-      new_connection.org_state = connection.STATUS_STATE_ACCEPTED
+      new_connection.org_state = connection.STATE_ACCEPTED
       new_connection.role =  connection_form.cleaned_data['role_choice']
       new_connection.put()
 
@@ -490,7 +490,7 @@ class UserConnectionPage(GSoCRequestHandler):
 
       new_connection = ConnectionForm.create(
           connection_form, parent=data.user, commit=False)
-      new_connection.user_state = connection.STATUS_STATE_ACCEPTED
+      new_connection.user_state = connection.STATE_ACCEPTED
       new_connection.put()
 
       if message_provided:
@@ -704,13 +704,13 @@ class ShowConnection(GSoCRequestHandler):
       # The user or org admin re-activating the connection will be marked
       # as accepted anyway in the next lines.
       if connection_entity.isWithdrawn():
-        connection_entity.org_state = connection.STATUS_STATE_UNREPLIED
-        connection_entity.user_state = connection.STATUS_STATE_UNREPLIED
+        connection_entity.org_state = connection.STATE_UNREPLIED
+        connection_entity.user_state = connection.STATE_UNREPLIED
 
       if self.is_org_admin_for_org:
-        connection_entity.org_state = connection.STATUS_STATE_ACCEPTED
+        connection_entity.org_state = connection.STATE_ACCEPTED
       else:
-        connection_entity.user_state = connection.STATUS_STATE_ACCEPTED
+        connection_entity.user_state = connection.STATE_ACCEPTED
       connection_entity.put()
       
       # If both the org admin and user agree to a mentoring role, promote
@@ -746,9 +746,9 @@ class ShowConnection(GSoCRequestHandler):
     def decline_mentor_txn():
       connection_entity = db.get(connection_key)
       if self.is_org_admin_for_org:
-        connection_entity.org_state = connection.STATUS_STATE_REJECTED
+        connection_entity.org_state = connection.STATE_REJECTED
       else:
-        connection_entity.user_state = connection.STATUS_STATE_REJECTED
+        connection_entity.user_state = connection.STATE_REJECTED
       connection_entity.put()
 
       generate_message_txn(connection_entity, 'Mentor Connection Rejected.')
@@ -767,15 +767,15 @@ class ShowConnection(GSoCRequestHandler):
       # The org accepted a new role for the user, so reset the user's response
       # to give him or her time to review the change.
       if connection_entity.role == 'Mentor':
-        connection_entity.user_state = connection.STATUS_STATE_UNREPLIED 
-        connection_entity.org_state = connection.STATUS_STATE_UNREPLIED
+        connection_entity.user_state = connection.STATE_UNREPLIED 
+        connection_entity.org_state = connection.STATE_UNREPLIED
 
       connection_entity.role = 'Org Admin'
 
       if self.is_org_admin_for_org:
-        connection_entity.org_state = connection.STATUS_STATE_ACCEPTED
+        connection_entity.org_state = connection.STATE_ACCEPTED
       else:
-        connection_entity.user_state = connection.STATUS_STATE_ACCEPTED
+        connection_entity.user_state = connection.STATE_ACCEPTED
 
       connection_entity.put()
 
@@ -814,10 +814,10 @@ class ShowConnection(GSoCRequestHandler):
       connection_entity = db.get(connection_key)
       if self.is_org_admin_for_org:
         # Org can just 'withdraw' the org admin offer.
-        connection_entity.org_state = connection.STATUS_STATE_REJECTED
+        connection_entity.org_state = connection.STATE_REJECTED
       else:
         # User rejecting an org admin offer rejects both.
-        connection_entity.user_state = connection.STATUS_STATE_REJECTED
+        connection_entity.user_state = connection.STATE_REJECTED
       connection_entity.put()
 
       generate_message_txn(connection_entity, 'Org Admin Connection Rejected.')
@@ -832,9 +832,9 @@ class ShowConnection(GSoCRequestHandler):
       # Mark the connection on the user or org side as 'Rejected' and add an auto-comment
       connection_entity = db.get(connection_key)
       if self.is_org_admin_for_org:
-        connection_entity.org_state = connection.STATUS_STATE_WITHDRAWN
+        connection_entity.org_state = connection.STATE_WITHDRAWN
       else:
-        connection_entity.user_state = connection.STATUS_STATE_WITHDRAWN
+        connection_entity.user_state = connection.STATE_WITHDRAWN
       connection_entity.put()
 
       generate_message_txn(connection_entity, 'Connection withdrawn.')

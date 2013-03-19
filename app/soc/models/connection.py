@@ -25,19 +25,19 @@ MENTOR_STATE = 'mentor'
 
 # Strings used in the dashboard (via the status() method below) to display
 # short, simple status messages for connections based on its state.
-STATUS_STATE_ACCEPTED = 'Accepted'
-STATUS_STATE_REJECTED = 'Rejected'
-STATUS_STATE_WITHDRAWN = 'Withdrawn'
-STATUS_STATE_UNREPLIED = 'Unreplied'
-STATUS_STATE_USER_ACTION_REQ = 'User Action Required'
-STATUS_STATE_ORG_ACTION_REQ = 'Org Action Required'
+STATE_ACCEPTED = 'Accepted'
+STATE_REJECTED = 'Rejected'
+STATE_WITHDRAWN = 'Withdrawn'
+STATE_UNREPLIED = 'Unreplied'
+STATE_USER_ACTION_REQ = 'User Action Required'
+STATE_ORG_ACTION_REQ = 'Org Action Required'
 
-STATUS_CHOICES = [STATUS_STATE_ACCEPTED,
-    STATUS_STATE_REJECTED,
-    STATUS_STATE_WITHDRAWN,
-    STATUS_STATE_UNREPLIED,
-    STATUS_STATE_USER_ACTION_REQ,
-    STATUS_STATE_ORG_ACTION_REQ
+STATUS_CHOICES = [STATE_ACCEPTED,
+    STATE_REJECTED,
+    STATE_WITHDRAWN,
+    STATE_UNREPLIED,
+    STATE_USER_ACTION_REQ,
+    STATE_ORG_ACTION_REQ
     ]
 
 class Connection(db.Model):
@@ -53,11 +53,11 @@ class Connection(db.Model):
   """
 
   #: The User's state with respect to a given role.
-  user_state = db.StringProperty(default=STATUS_STATE_UNREPLIED, 
+  user_state = db.StringProperty(default=STATE_UNREPLIED, 
       choices=STATUS_CHOICES)
 
   #: The Org's state with respect to a given role.
-  org_state = db.StringProperty(default=STATUS_STATE_UNREPLIED,
+  org_state = db.StringProperty(default=STATE_UNREPLIED,
       choices=STATUS_CHOICES)
 
   role = db.StringProperty(default=MENTOR_STATE, 
@@ -81,42 +81,42 @@ class Connection(db.Model):
         'profile', 'created_on']
 
   def isUserUnreplied(self):
-    return self.user_state == STATUS_STATE_UNREPLIED
+    return self.user_state == STATE_UNREPLIED
 
   def isOrgUnreplied(self):
-    return self.org_state == STATUS_STATE_UNREPLIED
+    return self.org_state == STATE_UNREPLIED
 
   def isUserAccepted(self):
-    return self.user_state == STATUS_STATE_ACCEPTED
+    return self.user_state == STATE_ACCEPTED
 
   def isOrgAccepted(self):
-    return self.org_state == STATUS_STATE_ACCEPTED
+    return self.org_state == STATE_ACCEPTED
 
   def isUserRejected(self):
-    return self.user_state == STATUS_STATE_REJECTED
+    return self.user_state == STATE_REJECTED
 
   def isOrgRejected(self):
-    return self.org_state == STATUS_STATE_REJECTED
+    return self.org_state == STATE_REJECTED
 
   def isUserWithdrawn(self):
-    return self.user_state == STATUS_STATE_WITHDRAWN
+    return self.user_state == STATE_WITHDRAWN
 
   def isOrgWithdrawn(self):
-    return self.org_state == STATUS_STATE_WITHDRAWN
+    return self.org_state == STATE_WITHDRAWN
 
   def isWithdrawn(self):
-    return self.user_state == STATUS_STATE_WITHDRAWN \
-        or self.org_state == STATUS_STATE_WITHDRAWN
+    return self.user_state == STATE_WITHDRAWN \
+        or self.org_state == STATE_WITHDRAWN
 
   def isStalemate(self):
-    return (self.user_state == STATUS_STATE_ACCEPTED \
-        and self.org_state == STATUS_STATE_REJECTED) \
-        or (self.user_state == STATUS_STATE_REJECTED \
-        and self.org_state == STATUS_STATE_ACCEPTED)
+    return (self.user_state == STATE_ACCEPTED \
+        and self.org_state == STATE_REJECTED) \
+        or (self.user_state == STATE_REJECTED \
+        and self.org_state == STATE_ACCEPTED)
 
   def isAccepted(self):
-    return self.user_state == STATUS_STATE_ACCEPTED and \
-        self.org_state == STATUS_STATE_ACCEPTED
+    return self.user_state == STATE_ACCEPTED and \
+        self.org_state == STATE_ACCEPTED
 
   def keyName(self):
     """Returns a string which uniquely represents the entity.
@@ -140,19 +140,19 @@ class Connection(db.Model):
        "User/Org Action Required" if one party has accepted the connection
           and is waiting on a response from the other.
     """
-    if self.user_state == STATUS_STATE_ACCEPTED and  \
-        self.org_state == STATUS_STATE_ACCEPTED:
-      return STATUS_STATE_ACCEPTED
-    elif self.user_state == STATUS_STATE_WITHDRAWN or \
-        self.org_state == STATUS_STATE_WITHDRAWN:
-      return STATUS_STATE_WITHDRAWN
-    elif self.user_state == STATUS_STATE_REJECTED or \
-        self.org_state == STATUS_STATE_REJECTED:
-      return STATUS_STATE_REJECTED
-    elif self.user_state == STATUS_STATE_ACCEPTED:
-      return STATUS_STATE_ORG_ACTION_REQ
-    elif self.org_state == STATUS_STATE_ACCEPTED:
-      return STATUS_STATE_USER_ACTION_REQ
+    if self.user_state == STATE_ACCEPTED and  \
+        self.org_state == STATE_ACCEPTED:
+      return STATE_ACCEPTED
+    elif self.user_state == STATE_WITHDRAWN or \
+        self.org_state == STATE_WITHDRAWN:
+      return STATE_WITHDRAWN
+    elif self.user_state == STATE_REJECTED or \
+        self.org_state == STATE_REJECTED:
+      return STATE_REJECTED
+    elif self.user_state == STATE_ACCEPTED:
+      return STATE_ORG_ACTION_REQ
+    elif self.org_state == STATE_ACCEPTED:
+      return STATE_USER_ACTION_REQ
     else:
       # This should never happen, so we're going to blow up execution.
       raise ValueError()
