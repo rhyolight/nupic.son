@@ -541,6 +541,36 @@ class AccessChecker(access_checker.AccessChecker):
     elif status == 'withdrawn':
       self.data.is_pending = False
 
+  def canStudentUpdateProject(self):
+    """Checks if the student can edit the project details."""
+    assert access_checker.isSet(self.data.program)
+    assert access_checker.isSet(self.data.timeline)
+    assert access_checker.isSet(self.data.project)
+    assert access_checker.isSet(self.data.project_owner)
+
+    self.isProjectInURLValid()
+
+    # check if the timeline allows updating project
+    self.isProgramVisible()
+    self.acceptedStudentsAnnounced()
+
+    # check if the current used is an active student
+    self.isActiveStudent()
+
+    # check if the project belongs to the current user
+    expected_profile_key = self.data.project.parent_key()
+    if expected_profile_key != self.data.profile.key():
+      error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
+          'name': 'project'
+          }
+      raise AccessViolation(error_msg)
+
+    # check if the status allows the project to be updated
+    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+      raise AccessViolation(access_checker.DEF_CANNOT_UPDATE_ENTITY % {
+          'name': 'project'
+          })
+
   def canOrgAdminUpdateProject(self):
     """Checks if the organization admin can edit the project details."""
     assert access_checker.isSet(self.data.program)
