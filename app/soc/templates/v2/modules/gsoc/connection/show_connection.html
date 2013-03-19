@@ -25,7 +25,7 @@ limitations under the License.
 
 <div class="request-summary">
   <p class="connection-organization"><strong>Organization:</strong> {{ connection.organization.name }}</p>
-  <p class="connection-role"><strong>Role:</strong> {{ connection.role }}</p>
+  <p class="connection-role"><strong>Role:</strong> {{ connection.getUserFriendlyRole }}</p>
   <p class="connection-status"><strong>Status:</strong> {{ connection.status }}</p>
   <p class="connection-sent-on"><strong>Created on:</strong> {{ connection.created_on }}</p>
   <div class="rconnection-response">

@@ -81,9 +81,9 @@ CONN_STATUS_OPTS = [(STATUS_TUPLE, 'All'),
     (connection.STATUS_STATE_ORG_ACTION_REQ, 'Org Action Required'),
     (connection.STATUS_STATE_WITHDRAWN, 'Withdrawn')
     ]
-CONN_ROLE_OPTS = [('Org Admin|Mentor', 'All'),
-    (connection.ORG_ADMIN_STATE, 'Org Admin'), 
-    (connection.MENTOR_STATE, 'Mentor')
+CONN_ROLE_OPTS = [('Mentor|Org Admin', 'All'),
+    ('Org Admin', 'Org Admin'), 
+    ('Mentor', 'Mentor')
     ]
 
 def colorize(choice, yes, no):
@@ -1242,10 +1242,14 @@ class OrgConnectionComponent(Component):
     self.data = data
     list_config = lists.ListConfiguration(add_key_column=False)
 
-    list_config.addSimpleColumn('organization', 'Organization')
+    list_config.addPlainTextColumn('key', 'Key',
+        lambda e, *args: '%s' % e.keyName(), hidden=True)
+    list_config.addPlainTextColumn('organization', 'Organization',
+        lambda e, *args: '%s' % e.organization.name)
     list_config.addPlainTextColumn('link_id', 'Link Id',
         lambda e, *args: e.parent().link_id)
-    list_config.addSimpleColumn('role', 'Role',
+    list_config.addPlainTextColumn('role', 'Role',
+        lambda e, *args: e.getUserFriendlyRole(),
         options=CONN_ROLE_OPTS)
     list_config.addPlainTextColumn('status', 'Status', 
         lambda e, *args: e.status(),
@@ -1309,7 +1313,8 @@ class UserConnectionComponent(Component):
     list_config.addPlainTextColumn('org', 'Organization',
         lambda e, *args: e.organization.name)
     list_config.addPlainTextColumn('role', 'Role',
-       lambda e, *args: e.role, options=CONN_ROLE_OPTS)
+       lambda e, *args: e.getUserFriendlyRole(),
+       options=CONN_ROLE_OPTS)
     list_config.addPlainTextColumn('status', 'Status',
         lambda e, *args: e.status(), options=CONN_STATUS_OPTS)
 
@@ -1330,7 +1335,6 @@ class UserConnectionComponent(Component):
     q = GSoCConnection.all().ancestor(self.data.user)
 
     starter = lists.keyStarter
-
     prefetcher = lists.modelPrefetcher(GSoCConnection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(

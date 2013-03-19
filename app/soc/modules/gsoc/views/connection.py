@@ -619,7 +619,7 @@ class ShowConnection(GSoCRequestHandler):
             c.isOrgAccepted(), c.isOrgRejected(), c.isOrgWithdrawn())
         if c.isOrgUnreplied():
           choices.append(self.RESPONSES['accept_org_admin'])
-        if c.role == 'Org Admin':
+        if c.role == connection.ORG_ADMIN_STATE:
           choices = choices + self.getMentorChoices(org_admin_options, 
             c.isOrgUnreplied(), c.isOrgAccepted(), c.isOrgRejected(),
             c.isOrgWithdrawn()
@@ -630,7 +630,7 @@ class ShowConnection(GSoCRequestHandler):
       else:
         choices = self.getMentorChoices(mentor_options, c.isUserUnreplied(),
             c.isUserAccepted(), c.isUserRejected(), c.isUserWithdrawn())
-        if c.role == 'Org Admin':
+        if c.role == connection.ORG_ADMIN_STATE:
           choices = choices + self.getMentorChoices(org_admin_options, 
             c.isUserUnreplied(), c.isUserAccepted(), c.isUserRejected(),
             c.isUserWithdrawn())

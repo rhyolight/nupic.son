@@ -123,6 +123,12 @@ class Connection(db.Model):
     """
     return '/'.join([self.parent_key().name(), str(self.key().id())])
 
+  def getUserFriendlyRole(self):
+    """Converts an internal role representation to a user-friendly version 
+    to be used in templates and dashboard.
+    """
+    return 'Org Admin' if self.role == ORG_ADMIN_STATE else 'Mentor'
+
   def status(self):
     """Determine the state of the connection and select a string to
     indicate a user-facing status message.
