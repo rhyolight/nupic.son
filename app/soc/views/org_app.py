@@ -211,6 +211,9 @@ class OrgAppRecordsList(object):
         data, data.org_app, OrgAppRecord, idx=0)
     record_list.list_config.addSimpleColumn('name', 'Name')
     record_list.list_config.addSimpleColumn('org_id', 'Organization ID')
+    record_list.list_config.addPlainTextColumn(
+        'new_org', 'New Org',
+        lambda ent, *args: 'New' if ent.new_org else 'Veteran')
 
     # TODO(ljvderijk): Poke Mario during all-hands to see if we can separate
     # "search options" and in-line selection options.
