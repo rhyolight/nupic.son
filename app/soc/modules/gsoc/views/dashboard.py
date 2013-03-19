@@ -67,19 +67,19 @@ BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
 # Just a messy tuple to include all states
 STATUS_TUPLE = '%s|%s|%s|%s|%s' % (
-    connection.STATUS_STATE_ACCEPTED,
-    connection.STATUS_STATE_REJECTED, 
-    connection.STATUS_STATE_WITHDRAWN,
-    connection.STATUS_STATE_ORG_ACTION_REQ,
-    connection.STATUS_STATE_USER_ACTION_REQ
+    connection.STATE_ACCEPTED,
+    connection.STATE_REJECTED, 
+    connection.STATE_WITHDRAWN,
+    connection.STATE_ORG_ACTION_REQ,
+    connection.STATE_USER_ACTION_REQ
     )
 # Include all of the dropdown options for viewing connections by status.
 CONN_STATUS_OPTS = [(STATUS_TUPLE, 'All'),
-    (connection.STATUS_STATE_ACCEPTED, 'Accepted'),
-    (connection.STATUS_STATE_REJECTED, 'Rejected'),
-    (connection.STATUS_STATE_USER_ACTION_REQ, 'User Action Required'),
-    (connection.STATUS_STATE_ORG_ACTION_REQ, 'Org Action Required'),
-    (connection.STATUS_STATE_WITHDRAWN, 'Withdrawn')
+    (connection.STATE_ACCEPTED, 'Accepted'),
+    (connection.STATE_REJECTED, 'Rejected'),
+    (connection.STATE_USER_ACTION_REQ, 'User Action Required'),
+    (connection.STATE_ORG_ACTION_REQ, 'Org Action Required'),
+    (connection.STATE_WITHDRAWN, 'Withdrawn')
     ]
 CONN_ROLE_OPTS = [('Mentor|Org Admin', 'All'),
     ('Org Admin', 'Org Admin'), 
