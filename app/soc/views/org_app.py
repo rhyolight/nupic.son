@@ -212,7 +212,7 @@ class OrgAppRecordsList(object):
     record_list.list_config.addSimpleColumn('name', 'Name')
     record_list.list_config.addSimpleColumn('org_id', 'Organization ID')
     record_list.list_config.addPlainTextColumn(
-        'new_org', 'New Org',
+        'new_org', 'New/Veteran',
         lambda ent, *args: 'New' if ent.new_org else 'Veteran')
 
     # TODO(ljvderijk): Poke Mario during all-hands to see if we can separate
