@@ -90,3 +90,137 @@ class ProjectDetailsTest(GSoCDjangoTestCase):
 
     project = GSoCProject.all().get()
     self.assertEqual(project.is_featured, True)
+
+
+class ProjectDetailsUpdateTest(GSoCDjangoTestCase):
+  """Unit tests project details update page."""
+
+  def setUp(self):
+    super(ProjectDetailsUpdateTest, self).setUp()
+    self.init()
+
+  def _createProjectForMentor(self, mentor=None):
+    """Returns a newly created GSoCProject for the specified mentor.
+    If a new mentor instance is not provided, a new profile is created.
+
+    Args:
+      mentor: the specified GSoCProfile mentor instance to mentor the project
+
+    Returns:
+      the newly created GSoCProject instance
+    """
+    if not mentor:
+      mentor_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+      mentor_helper.createOtherUser('mentor@example.com')
+      mentor = mentor_helper.createMentor(self.org)
+
+    student_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student_helper.createOtherUser('student@example.com')
+    student_helper.createStudentWithProject(self.org, mentor)
+    project = GSoCProject.all().get()
+    project.is_featured = False
+    project.status = 'accepted'
+    project.put()
+    return project
+
+  def _createProjectForStudent(self, student=None):
+    """Returns a newly created GSoCProject for the specified student.
+    If a new student instance is not provided, a new profile is created.
+
+    Args:
+      student: the specified GSoCProfile student instance to mentor the project
+
+    Returns:
+      the newly created GSoCProject instance
+    """
+    if not student:
+      student_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+      student_helper.createOtherUser('student@example.com')
+      student = student_helper.createStudent()
+
+    mentor_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor_helper.createOtherUser('mentor@example.com')
+    mentor_helper.createMentorWithProject(self.org, student)
+
+    project = GSoCProject.all().get()
+    project.is_featured = False
+    project.status = 'accepted'
+    project.put()
+    return project
+
+  def _getProjectUpdateUrl(self, project):
+    return '/gsoc/project/update/%s/%s' % (
+        project.parent_key().name(), project.key().id())
+
+  def testLoneUserAccessForbidden(self):
+    self.timeline.studentsAnnounced()
+    project = self._createProjectForMentor()
+
+    url = self._getProjectUpdateUrl(project)
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
+
+  def testMentorAccessForbidden(self):
+    self.timeline.studentsAnnounced()
+
+    mentor = self.data.createMentor(self.org)
+    project = self._createProjectForMentor(mentor=mentor)
+
+    url = self._getProjectUpdateUrl(project)
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
+
+  def testOrgAdminAccessGranted(self):
+    self.timeline.studentsAnnounced()
+
+    self.data.createOrgAdmin(self.org)
+    project = self._createProjectForMentor()
+
+    url = self._getProjectUpdateUrl(project)
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+  def testOrgAdminForAnotherOrgForbidden(self):
+    self.timeline.studentsAnnounced()
+
+    another_org = self.createOrg()
+    self.data.createOrgAdmin(another_org)
+    project = self._createProjectForMentor()
+
+    url = self._getProjectUpdateUrl(project)
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
+
+  def testHostAccessGranted(self):
+    self.timeline.studentsAnnounced()
+
+    self.data.createHost()
+    project = self._createProjectForMentor()
+
+    url = self._getProjectUpdateUrl(project)
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+  def testStudentAccessTheirProjectGranted(self):
+    self.timeline.studentsAnnounced()
+
+    student = self.data.createStudent()
+    project = self._createProjectForStudent(student=student)
+
+    url = self._getProjectUpdateUrl(project)
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+  def testStudentAccessOtherProjectForbidden(self):
+    self.timeline.studentsAnnounced()
+
+    student = self.data.createStudent()
+    project = self._createProjectForStudent()
+
+    url = self._getProjectUpdateUrl(project)
+    response = self.get(url)
+    self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
