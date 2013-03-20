@@ -44,7 +44,7 @@ class LoggedInMsg(Template):
       context['user_email'] = self.data.gae_user.email()
 
     if self.data.user:
-      context['link_id'] = " [link_id: %s]" % self.data.user.link_id
+      context['link_id'] = " [username: %s]" % self.data.user.link_id
 
     if self.apply_link and self.data.timeline.studentSignup() and \
         self.data.student_info:
