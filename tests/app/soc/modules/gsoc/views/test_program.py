@@ -212,6 +212,7 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
   DEF_REJECTED_ORGS_MSG = 'Rejected Orgs Message'
   DEF_MENTOR_WELCOME_MSG = 'Mentor Welcome Message'
   DEF_ACCEPTED_STUDENTS_MSG = 'Accepted Students Messages'
+  DEF_ACCEPTED_STUDENTS_WELCOME_MSG = 'Accepted Students Welcome Messages'
   DEF_REJECTED_STUDENTS_MSG = 'Rejected Students Message'
 
   def assertProgramTemplatesUsed(self, response):
@@ -233,6 +234,7 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
         'rejected_orgs_msg': self.DEF_MENTOR_WELCOME_MSG,
         'mentor_welcome_msg': self.DEF_MENTOR_WELCOME_MSG,
         'accepted_students_msg': self.DEF_ACCEPTED_STUDENTS_MSG,
+        'accepted_students_welcome_msg': self.DEF_ACCEPTED_STUDENTS_WELCOME_MSG,
         'rejected_students_msg': self.DEF_REJECTED_STUDENTS_MSG,
         }
 
