@@ -313,4 +313,11 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     request_data = TestIsUpdateLinkVisible.MockRequestData(
         project=project, profile=org_admin)
     self.assertFalse(project_details._isUpdateLinkVisible(request_data))
-  
+
+  def testForLoneUser(self):
+    self.data.createUser()
+    project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
+
+    request_data = TestIsUpdateLinkVisible.MockRequestData(
+        project=project)
+    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
