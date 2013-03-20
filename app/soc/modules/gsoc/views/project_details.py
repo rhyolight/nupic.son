@@ -422,6 +422,10 @@ def _isUpdateLinkVisible(data):
   if data.is_host:
     return True
 
+  # users without active profiles cannot definitely update projects
+  if not data.profile or data.profile.status != 'active':
+    return False
+
   # only passed and valid project can be updated
   if data.project.status in ['invalid', 'withdrawn', 'failed']:
     return False
