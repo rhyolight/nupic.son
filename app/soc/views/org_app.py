@@ -248,5 +248,9 @@ class OrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
   class Meta:
     model = OrgAppRecord
     css_prefix = 'org-app-show'
-    fields = ['org_id', 'name', 'description', 'home_page', 'license']
+    fields = ['org_id', 'name', 'description', 'home_page', 'license',
+              'new_org']
+    widgets = {
+        'new_org': lambda instance: 'New' if instance.new_org else 'Veteran'
+        }
     survey_name = 'Organization Application'
