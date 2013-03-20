@@ -588,30 +588,46 @@ class RedirectHelper(request_data.RedirectHelper):
       self._url_name = 'gsoc_invitation'
     return self
   
-  def connect(self, user=None):
-    """ Sets the _url_name for a gsoc_user_connection redirect.
-     """  
+  def connect_user(self, user=None):
+    """ Sets the _url_name for a gsoc_user_connection redirect for a redirect
+    to OrgConnectionPage.
+    """  
     if not user:
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
-    
-    self.organization(self._data.organization)
+  
     self.kwargs['link_id'] = user.link_id
+    # OrgConnectionPage and UserConnectionPage share the organization
+    # components, so some of the work can be factored out.
+    self.connect_org()
+    return self
+
+  def connect_org(self):
+    """ Sets the _url_name for a gsoc_user_connection redirect for a redirect
+    to UserConnectionPage.
+    """
+    self.organization(self._data.organization)
     # We need to reassign the kwarg to the org's link_id since it's 
     # being set to the Organization object
     self.kwargs['organization'] = self._data.organization.link_id
     self._url_name = url_names.GSOC_USER_CONNECTION
     return self
   
-  def show_connection(self, user, org):
+  def show_connection(self, user, connection):
     """ Sets up kwargs for a gsoc_show_connection redirect.
     Args:
       user: the user involved in the connection 
-      org: the org involved in the connection
+      connection: the org involved in the connection
     """
-    self._data.organization = org
-    self.connect(user)
+    if not user:
+      assert 'user' in self._data.kwargs
+      user = self._data.kwargs['user']
+
+    self.program()
+    self.kwargs['user'] = user.key().name()
+    self.kwargs['id'] = connection.key().id()
     self._url_name = url_names.GSOC_SHOW_CONNECTION
+    print 'Kwargs: %s' % self.kwargs
     return self
 
   def profile_anonymous_connection(self, role, connection_hash):
