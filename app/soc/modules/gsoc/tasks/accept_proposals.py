@@ -229,6 +229,30 @@ class ProposalAcceptanceTask(object):
         template_string, context, parent=proposal.parent(),
         transactional=transactional)
 
+  def getWelcomeMailTxn(self, proposal, transactional=True):
+    """Returns the function to sent an welcome email for an accepted proposal.
+    """
+    sender_name, sender = mail_dispatcher.getDefaultMailSender()
+
+    student_entity = proposal.parent()
+    program_entity = proposal.program
+
+    context = {
+      'to': student_entity.email,
+      'to_name': student_entity.given_name,
+      'sender': sender,
+      'sender_name': sender_name,
+      'program_name': program_entity.name,
+      'subject': 'Welcome to %s' % program_entity.name,
+      }
+
+    messages = program_entity.getProgramMessages()
+    template_string = messages.accepted_students_welcome_msg
+
+    return mail_dispatcher.getSendMailFromTemplateStringTxn(
+        template_string, context, parent=proposal.parent(),
+        transactional=transactional)
+
   def getRejectProposalMailTxn(self, proposal):
     """Returns the function to sent an rejectance mail for the specified
     proposal.
@@ -275,7 +299,9 @@ class ProposalAcceptanceTask(object):
     project = GSoCProject(parent=student_profile, **fields)
     student_info_key = student_profile.student_info.key()
 
-    mail_txn = self.getAcceptProposalMailTxn(
+    accepted_mail_txn = self.getAcceptProposalMailTxn(
+        proposal, transactional=transactional)
+    welcome_mail_txn = self.getWelcomeMailTxn(
         proposal, transactional=transactional)
 
     proposal_key = proposal.key()
@@ -294,7 +320,7 @@ class ProposalAcceptanceTask(object):
 
       # add a task that performs conversion status per
       # proposal
-      status_task.add(transactional=True)
+      status_task.add(transactional=transactional)
 
       proposal = db.get(proposal_key)
       proposal.status = 'accepted'
@@ -306,7 +332,8 @@ class ProposalAcceptanceTask(object):
       db.put(project)
       db.put(proposal)
       db.put(student_info)
-      mail_txn()
+      accepted_mail_txn()
+      welcome_mail_txn()
 
     db.RunInTransaction(acceptProposalTxn)
 
