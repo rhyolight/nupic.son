@@ -173,11 +173,11 @@ class ProfileViewTest(GSoCDjangoTestCase):
     # hacky
     profile = GSoCProfile.all().get()
 
-    self.assertEquals(postdata.get('given_name'), profile.given_name)
-    self.assertEquals(postdata.get('surname'), profile.surname)
+    self.assertEqual(postdata.get('given_name'), profile.given_name)
+    self.assertEqual(postdata.get('surname'), profile.surname)
 
     # Make sure student info entity is created with right values.
-    self.assertEquals(postdata.get('school_name'),
+    self.assertEqual(postdata.get('school_name'),
                       profile.student_info.school_name)
 
     profile.delete()
