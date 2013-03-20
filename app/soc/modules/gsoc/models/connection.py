@@ -1,3 +1,4 @@
+
 # Copyright 2009 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +16,13 @@
 ''' This module contains the object used to represent invitations and
 requests between a user and an organization
 '''
-from soc.models.connection import Connection
+from soc.models import connection
 
 
 # TODO(nathaniel): Empty subclass.
-class GSoCConnection(Connection):
+class GSoCConnection(connection.Connection):
   """ GSoCConnection Model. See Connection model for details """
   pass
+
+class GSoCAnonymousConnection(connection.AnonymousConnection):
+	pass
