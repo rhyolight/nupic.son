@@ -326,6 +326,8 @@ def main():
 
   if 'js' in tests:
     run_js_tests()
+  """ This has to be the last one to run, since nose seems to terminate
+      everything and prevent any other code in the file to run. """
   if 'pyunit' in tests:
     run_pyunit_tests()
 
