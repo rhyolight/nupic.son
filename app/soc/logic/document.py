@@ -33,23 +33,22 @@ def getDocumentQueryForRoles(data):
   query.filter('scope', data.program)
 
   visibilities = []
-  if data.is_student:
-    visibilities.append(document_model.STUDENT_VISIBILITY.identifier)
-    if data.student_info.number_of_projects > 0:
-      visibilities.append(
-          document_model.ACCEPTED_STUDENT_VISIBILITY.identifier)
-  if data.is_org_admin:
-    visibilities.append(document_model.ORG_ADMIN_VISIBILITY.identifier)
-  if data.is_mentor:
-    visibilities.append(document_model.MENTOR_VISIBILITY.identifier)
+  if not data.is_host:
+    if data.is_student:
+      visibilities.append(document_model.STUDENT_VISIBILITY.identifier)
+      if data.student_info.number_of_projects > 0:
+        visibilities.append(
+            document_model.ACCEPTED_STUDENT_VISIBILITY.identifier)
+    if data.is_org_admin:
+      visibilities.append(document_model.ORG_ADMIN_VISIBILITY.identifier)
+    if data.is_mentor:
+      visibilities.append(document_model.MENTOR_VISIBILITY.identifier)
 
   num_visibilities = len(visibilities)
 
-  # When number of visibilities is 0, then the profile should belong 
-  # to a host, so we apply no filtering.
   if num_visibilities == 1:
     query.filter('dashboard_visibility', visibilities[0])
-  elif num_visibilities > 1:
+  else:
     query.filter('dashboard_visibility IN', visibilities)
 
   return query
