@@ -310,7 +310,7 @@ class ReviewProposal(GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     mutator.proposalFromKwargs()
     check.canAccessProposalEntity()
-    mutator.commentVisible()
+    mutator.commentVisible(data.organization)
 
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/review.html'
@@ -496,7 +496,7 @@ class PostComment(GSoCRequestHandler):
     check.isProgramVisible()
     check.isProfileActive()
     mutator.proposalFromKwargs()
-    mutator.commentVisible()
+    mutator.commentVisible(data.organization)
     assert isSet(data.proposer)
     assert isSet(data.proposal_org)
 

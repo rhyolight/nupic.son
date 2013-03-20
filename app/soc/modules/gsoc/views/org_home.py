@@ -287,7 +287,7 @@ class OrgHome(GSoCRequestHandler):
       data.redirect.organization(organization=organization)
 
       context['edit_link'] = data.redirect.urlOf('edit_gsoc_org_profile')
-      context['start_connection_link'] = data.redirect.urlOf(
+      context['start_connection_link'] = data.redirect.connect(data.user).urlOf(
           url_names.GSOC_ORG_CONNECTION)
 
       if (data.program.allocations_visible and
