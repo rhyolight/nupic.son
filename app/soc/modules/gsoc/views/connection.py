@@ -766,11 +766,11 @@ class ShowConnection(GSoCRequestHandler):
 
       # The org accepted a new role for the user, so reset the user's response
       # to give him or her time to review the change.
-      if connection_entity.role == 'Mentor':
+      if connection_entity.role == connection.MENTOR_STATE:
         connection_entity.user_state = connection.STATE_UNREPLIED 
         connection_entity.org_state = connection.STATE_UNREPLIED
 
-      connection_entity.role = 'Org Admin'
+      connection_entity.role = connection.ORG_ADMIN_STATE
 
       if self.is_org_admin_for_org:
         connection_entity.org_state = connection.STATE_ACCEPTED
@@ -779,7 +779,7 @@ class ShowConnection(GSoCRequestHandler):
 
       connection_entity.put()
 
-      if connection_entity.isOrgAccepted() and connection.isUserAccepted():
+      if connection_entity.isOrgAccepted() and connection_entity.isUserAccepted():
         profile = db.get(profile_key)
 
         # Send out a welcome email to new mentors.
