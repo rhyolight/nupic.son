@@ -1160,7 +1160,7 @@ class OrganizationsIParticipateInComponent(Component):
       list_config.addSimpleColumn('slots', 'Slots allowed')
       list_config.addNumericalColumn(
           'slots_used', 'Slots used', lambda ent, s, *args: s)
-      list_config.addNumericalColumn(
+      list_config.addHtmlColumn(
           'delta', 'Slots difference',
           lambda ent, s, *args: c(ent, s, (ent.slots - s)))
       list_config.addNumericalColumn(
@@ -1202,10 +1202,8 @@ class OrganizationsIParticipateInComponent(Component):
 
     if pos < len(orgs):
       org = orgs[pos]
-      q = db.Query(GSoCProposal, keys_only=False).filter('org', org)
-      q.filter('has_mentor', True).filter('accept_as_project', True)
-      slots_used = q.count()
-      response.addRow(org, slots_used)
+      used_slots = self._getUsedSlots(org)
+      response.addRow(org, used_slots)
 
     if (pos + 1) < len(orgs):
       response.next = str(pos + 1)
@@ -1227,6 +1225,32 @@ class OrganizationsIParticipateInComponent(Component):
         'description': ugettext(
             'List of organizations which I participate in'),
     }
+
+  def _getUsedSlots(self, org):
+    """Returns number of slots which were used by the specified organization.
+
+    The meaning of the returned integer differs between various points in
+    program's timeline.
+
+    Before student proposals are transformed into projects, the number is
+    defined as number of proposals which are going to be accepted. After that,
+    the number represents the number of proposals which were accepted for the
+    specified organization.
+
+    Args:
+      org: the specified GSoCOrganization entity
+
+    Returns:
+      number of slots used by the organization
+    """
+    if self.data.timeline.studentsAnnounced():
+      query = db.Query(GSoCProposal, keys_only=True).filter('org', org)
+      query.filter('status', 'accepted')
+      return query.count()
+    else:
+      query = db.Query(GSoCProposal, keys_only=True).filter('org', org)
+      query.filter('has_mentor', True).filter('accept_as_project', True)
+      return query.count()
 
 
 class OrgConnectionComponent(Component):
@@ -1448,7 +1472,8 @@ class TodoComponent(Component):
     list_config.addPlainTextColumn(
         'key', 'Key', (lambda d, *args: d['key']), hidden=True)
     list_config.addDictColumn('name', 'Name')
-    list_config.addDictColumn('status', 'Status')
+    list_config.addDictColumn('status', 'Status',
+        column_type=lists.ColumnType.HTML)
     def rowAction(d, *args):
       key = d['key']
       if key == 'tax_form':
@@ -1490,19 +1515,21 @@ class TodoComponent(Component):
     isgood = lambda x: x and x.size and x.filename
 
     if self.data.is_student and info.number_of_projects:
-      status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
-      response.addRow({
-          'key': 'tax_form',
-          'name': 'Tax form',
-          'status': status,
-      })
+      if self.data.timeline.afterFormSubmissionStart():
+        status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
+        response.addRow({
+            'key': 'tax_form',
+            'name': 'Tax form',
+            'status': status,
+        })
 
-      status = colorize(isgood(info.enrollment_form), "Submitted", "Not submitted")
-      response.addRow({
-          'key': 'enrollment_form',
-          'name': 'Enrollment form',
-          'status': status,
-      })
+        status = colorize(
+            isgood(info.enrollment_form), "Submitted", "Not submitted")
+        response.addRow({
+            'key': 'enrollment_form',
+            'name': 'Enrollment form',
+            'status': status,
+        })
 
       matches = info.school_name in UNIVERSITIES.get(info.school_country, [])
       status = colorize(matches, "Yes", "No")

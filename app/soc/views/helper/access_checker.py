@@ -250,7 +250,7 @@ class Mutator(object):
     self.data.key_name = unset
     self.data.request_entity = unset
     self.data.requester = unset
-    self.data.scope_path = unset
+    self.data.scope_key_name = unset
     self.data.url_profile = unset
     self.data.url_student_info = unset
     self.data.url_user = unset
@@ -283,7 +283,7 @@ class Mutator(object):
     if not all(fields):
       raise BadRequest("Missing value for document url")
 
-    self.data.scope_path = '/'.join(fields[1:-1])
+    self.data.scope_key_name = '/'.join(fields[1:-1])
     self.data.key_name = '/'.join(fields)
     self.data.document = Document.get_by_key_name(self.data.key_name)
 

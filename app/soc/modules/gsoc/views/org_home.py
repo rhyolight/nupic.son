@@ -107,6 +107,8 @@ class Apply(Template):
       context['invited_role'] = 'an administrator'
       return context
 
+    # TODO(nathaniel): make this .organization() call unnecessary.
+    self.data.redirect.organization()
     mentor_connect_link = self.data.redirect.connect(self.data.user).urlOf(
         url_names.GSOC_USER_CONNECTION)
     context['mentor_connect_link'] = mentor_connect_link
