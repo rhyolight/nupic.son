@@ -14,12 +14,11 @@
 
 """Tests for project_detail views."""
 
-from tests.profile_utils import GSoCProfileHelper
+from tests import profile_utils
 from tests import program_utils
 from tests import test_utils
-from tests.test_utils import GSoCDjangoTestCase
 
-from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.views import project_details
 
 
@@ -37,15 +36,15 @@ def _createProjectForStudent(program, org, dev_test, student=None):
     the newly created GSoCProject instance
   """
   if not student:
-    student_helper = GSoCProfileHelper(program, dev_test)
+    student_helper = profile_utils.GSoCProfileHelper(program, dev_test)
     student_helper.createOtherUser('student@example.com')
     student = student_helper.createStudent()
 
-  mentor_helper = GSoCProfileHelper(program, dev_test)
+  mentor_helper = profile_utils.GSoCProfileHelper(program, dev_test)
   mentor_helper.createOtherUser('mentor@example.com')
   mentor_helper.createMentorWithProject(org, student)
 
-  project = GSoCProject.all().get()
+  project = project_model.GSoCProject.all().get()
   project.is_featured = False
   project.status = 'accepted'
   project.put()
@@ -67,21 +66,21 @@ def _createProjectForMentor(program, org, dev_test, mentor=None):
     the newly created GSoCProject instance
   """
   if not mentor:
-    mentor_helper = GSoCProfileHelper(program, dev_test)
+    mentor_helper = profile_utils.GSoCProfileHelper(program, dev_test)
     mentor_helper.createOtherUser('mentor@example.com')
     mentor = mentor_helper.createMentor(org)
 
-  student_helper = GSoCProfileHelper(program, dev_test)
+  student_helper = profile_utils.GSoCProfileHelper(program, dev_test)
   student_helper.createOtherUser('student@example.com')
   student_helper.createStudentWithProject(org, mentor)
-  project = GSoCProject.all().get()
+  project = project_model.GSoCProject.all().get()
   project.is_featured = False
   project.status = 'accepted'
   project.put()
   return project
 
 
-class ProjectDetailsTest(GSoCDjangoTestCase):
+class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
   """Tests project details page.
   """
 
@@ -97,14 +96,14 @@ class ProjectDetailsTest(GSoCDjangoTestCase):
         response, 'v2/modules/gsoc/project_details/base.html')
 
   def createProject(self):
-    mentor_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor_helper.createOtherUser('mentor@example.com')
     mentor = mentor_helper.createMentor(self.org)
-    student_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     student_helper.createOtherUser('student@example.com')
     student_helper.createStudentWithProject(self.org, mentor)
-    print GSoCProject.all().fetch(100)
-    project = GSoCProject.all().get()
+
+    project = project_model.GSoCProject.all().get()
     project.is_featured = False
     project.status = 'accepted'
     project.put()
@@ -129,7 +128,7 @@ class ProjectDetailsTest(GSoCDjangoTestCase):
   def testFeaturedProjectButton(self):
     self.timeline.studentsAnnounced()
 
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
     student.createStudent()
 
@@ -148,11 +147,11 @@ class ProjectDetailsTest(GSoCDjangoTestCase):
 
     self.assertResponseOK(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
     self.assertEqual(project.is_featured, True)
 
 
-class ProjectDetailsUpdateTest(GSoCDjangoTestCase):
+class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   """Unit tests project details update page."""
 
   def setUp(self):
