@@ -55,8 +55,8 @@ def _handleAnonymousConnection(data):
         profile=profile,
         role=data.anonymous_connection.role)
     # Set the apropriate fields to automatically accept the connection.
-    new_connection.org_state = connection.STATUS_STATE_ACCEPTED
-    new_connection.user_state = connection.STATUS_STATE_ACCEPTED
+    new_connection.org_state = connection.STATE_ACCEPTED
+    new_connection.user_state = connection.STATE_ACCEPTED
     new_connection.put()
     # The user and org should "agree" on a role; promote the user.
     profile.is_mentor = True
