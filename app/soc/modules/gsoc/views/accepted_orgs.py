@@ -15,6 +15,7 @@
 """Module containing the views for GSoC accepted orgs."""
 
 from django.conf.urls.defaults import url as django_url
+from django.utils import html as http_utils
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.base_templates import ProgramSelect
@@ -24,6 +25,7 @@ from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -88,6 +90,77 @@ class AcceptedOrgsList(Template):
     return "v2/modules/gsoc/accepted_orgs/_project_list.html"
 
 
+class AdminAcceptedOrgsList(Template):
+  """Template for list of accepted organizations."""
+
+  def __init__(self, request, data):
+    self.data = data
+
+    list_config = lists.ListConfiguration()
+    list_config.addPlainTextColumn('name', 'Name',
+        (lambda e, *args: e.short_name.strip()), width=75)
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
+
+    list_config = self.extraColumn(list_config)
+    self._list_config = list_config
+
+  def extraColumn(self, list_config):
+    list_config.addHtmlColumn('org_admin', 'Org Admins',
+        (lambda e, *args: args[0][e.key()]))
+
+    # TODO(nathaniel): squeeze this back into a lambda expression
+    # in the call to setRowAction below.
+    def RowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
+
+      return self.data.redirect.urlOf('gsoc_org_home')
+
+    list_config.setRowAction(RowAction)
+
+    return list_config
+
+  def context(self):
+    description = 'List of organizations accepted into %s' % (
+        self.data.program.name)
+
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, description)
+
+    return {
+        'lists': [list],
+    }
+
+  def getListData(self):
+    idx = lists.getListIndex(self.data.request)
+    if idx != 0:
+      return None
+
+    q = GSoCOrganization.all().filter('scope', self.data.program)
+
+    starter = lists.keyStarter
+
+    def prefetcher(orgs):
+      org_admins = {}
+      for org in orgs:
+        oas = profile_model.GSoCProfile.all().filter(
+            'org_admin_for', org).fetch(limit=1000)
+        org_admins[org.key()] = ', '.join(
+            ['"%s" &lt;%s&gt;' % (
+                http_utils.conditional_escape(oa.name()),
+                http_utils.conditional_escape(oa.email)) for oa in oas])
+
+      return ([org_admins], {})
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
+
+    return response_builder.build()
+
+  def templatePath(self):
+    return "v2/modules/gsoc/admin/_accepted_orgs_list.html"
+
+
 class AcceptedOrgsPage(GSoCRequestHandler):
   """View for the accepted organizations page."""
 
@@ -117,4 +190,36 @@ class AcceptedOrgsPage(GSoCRequestHandler):
         'page_name': "Accepted organizations for %s" % data.program.name,
         'accepted_orgs_list': AcceptedOrgsList(data),
         'program_select': ProgramSelect(data, 'gsoc_accepted_orgs'),
+    }
+
+
+class AdminOrgsListPage(GSoCRequestHandler):
+  """View that lists all the projects associated with the program."""
+
+  LIST_IDX = 0
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/accepted_orgs/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_orgs_list_admin'),
+    ]
+
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+
+  def templatePath(self):
+    return 'v2/modules/gsoc/admin/list.html'
+
+  def jsonContext(self, data, check, mutator):
+    list_content = AdminAcceptedOrgsList(data.request, data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exceptions.AccessViolation('You do not have access to this data')
+
+  def context(self, data, check, mutator):
+    return {
+      'page_name': 'Organizations list page',
+      # TODO(nathaniel): Drop the first parameter of AcceptedOrgsList.
+      'list': AdminAcceptedOrgsList(data.request, data)
     }
