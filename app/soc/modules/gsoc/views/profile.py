@@ -41,7 +41,7 @@ from soc.modules.gsoc.views.helper import url_names
 
 
 def _handleAnonymousConnection(data):
-  """ Handler for automatically created and accepting a new connection.
+  """Handler for automatically created and accepting a new connection.
   """
   
   @db.transactional(xg=True)

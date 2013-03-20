@@ -32,13 +32,12 @@ STATE_UNREPLIED = 'Unreplied'
 STATE_USER_ACTION_REQ = 'User Action Required'
 STATE_ORG_ACTION_REQ = 'Org Action Required'
 
-STATUS_CHOICES = [STATE_ACCEPTED,
+STATE_CHOICES = [STATE_ACCEPTED,
     STATE_REJECTED,
     STATE_WITHDRAWN,
     STATE_UNREPLIED,
-    STATE_USER_ACTION_REQ,
-    STATE_ORG_ACTION_REQ
     ]
+
 
 class Connection(db.Model):
   """Connection model.
@@ -54,11 +53,11 @@ class Connection(db.Model):
 
   #: The User's state with respect to a given role.
   user_state = db.StringProperty(default=STATE_UNREPLIED, 
-      choices=STATUS_CHOICES)
+      choices=STATE_CHOICES)
 
   #: The Org's state with respect to a given role.
   org_state = db.StringProperty(default=STATE_UNREPLIED,
-      choices=STATUS_CHOICES)
+      choices=STATE_CHOICES)
 
   role = db.StringProperty(default=MENTOR_STATE, 
       choices=[MENTOR_STATE, ORG_ADMIN_STATE])
@@ -134,24 +133,21 @@ class Connection(db.Model):
     indicate a user-facing status message.
 
     Returns:
-       "Accepted" if both parties have confirmed the connection.
-       "Rejected" if one or both have rejected it.
-       "Withdrawn" if the initiating party has withdrawn the connection.
-       "User/Org Action Required" if one party has accepted the connection
-          and is waiting on a response from the other.
+       STATE_ACCEPTED if both parties have confirmed the connection.
+       STATE_REJECTED if one or both have rejected it.
+       STATE_WITHDRAWN if the initiating party has withdrawn the connection.
+       STATE_ORG_ACTION_REQ or STATE_USER_ACTION_REQ if one party has accepted
+          the connection and is waiting on a response from the other.
     """
-    if self.user_state == STATE_ACCEPTED and  \
-        self.org_state == STATE_ACCEPTED:
+    if self.isUserAccepted() and self.isOrgAccepted():
       return STATE_ACCEPTED
-    elif self.user_state == STATE_WITHDRAWN or \
-        self.org_state == STATE_WITHDRAWN:
+    elif self.isUserWithdrawn() or self.isOrgWithdrawn():
       return STATE_WITHDRAWN
-    elif self.user_state == STATE_REJECTED or \
-        self.org_state == STATE_REJECTED:
+    elif self.isUserRejected or self.isOrgRejected():
       return STATE_REJECTED
-    elif self.user_state == STATE_ACCEPTED:
+    elif self.isUserAccepted():
       return STATE_ORG_ACTION_REQ
-    elif self.org_state == STATE_ACCEPTED:
+    elif isOrgAccepted():
       return STATE_USER_ACTION_REQ
     else:
       # This should never happen, so we're going to blow up execution.
