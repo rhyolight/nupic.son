@@ -16,6 +16,7 @@
 
 import sys
 import os
+import subprocess
 
 HERE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                      '..'))
@@ -252,8 +253,7 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
       break
   log.debug("Worker %s ending", ix)
 
-
-def main():
+def run_pyunit_tests():
   sys.path = extra_paths + sys.path
   os.environ['SERVER_SOFTWARE'] = 'Development via nose'
   os.environ['SERVER_NAME'] = 'Foo'
@@ -310,6 +310,24 @@ def main():
   sys.argv += args
   nose.main(addplugins=plugins)
 
+def run_js_tests():
+  _environ = os.environ.copy()
+  _environ["PATH"] += ':./node_modules/phantomjs/lib/phantom/bin'
+  subprocess.call("./bin/node ./node_modules/testem/testem.js ci", env=_environ, shell=True)
+
+def main():
+  tests = set()
+  if '-t' in sys.argv:
+    i = sys.argv.index('-t')
+    tests.update(sys.argv[i+1].split(','))
+    del sys.argv[i:i+2]
+  else:
+    tests = {'js', 'pyunit'}
+
+  if 'pyunit' in tests:
+    run_pyunit_tests()
+  if 'js' in tests:
+    run_js_tests()
 
 if __name__ == '__main__':
   main()
