@@ -25,6 +25,7 @@ from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from soc.logic import exceptions
+from soc.views.helper import access_checker
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -184,10 +185,8 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     """Access checks for GSoC project details page."""
-    check.isLoggedIn()
-    check.isActiveStudent()
     mutator.projectFromKwargs()
-    check.canStudentUpdateProject()
+    check.canUpdateProject()
 
   def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
@@ -240,11 +239,9 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isLoggedIn()
-    check.isActiveStudent()
     mutator.projectFromKwargs()
-    check.canStudentUpdateProject()
     check.isProjectCompleted()
+    check.canUpdateProject()
 
   def post(self, data, check, mutator):
     """Post handler for the code sample upload file."""
@@ -328,8 +325,8 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     mutator.projectFromKwargs()
-    check.canStudentUpdateProject()
     check.isProjectCompleted()
+    check.canUpdateProject()
 
   def post(self, data, check, mutator):
     """Get handler for the code sample delete file."""
@@ -412,6 +409,54 @@ class UserActions(Template):
     return "v2/modules/gsoc/project_details/_user_action.html"
 
 
+def _isUpdateLinkVisible(data):
+  """Determines whether the current user is allowed to update the project
+  and therefore if the project update link should visible or not.
+
+  Args:
+    data: a RequestData object
+
+  Returns: True if the update link should be visible, False otherwise.
+  """
+  # program hosts are able to edit project details
+  if data.is_host:
+    return True
+
+  # users without active profiles cannot definitely update projects
+  if not data.profile or data.profile.status != 'active':
+    return False
+
+  # only passed and valid project can be updated
+  if data.project.status in ['invalid', 'withdrawn', 'failed']:
+    return False
+
+  # a student who own the project can update it
+  if data.project.parent_key() == data.profile.key():
+    return True
+
+  # org admins of the organization that manages the project can update it
+  org_key = GSoCProject.org.get_value_for_datastore(data.project)
+  if data.orgAdminFor(org_key):
+    return True
+
+  # no other users are permitted to update project
+  return False
+
+
+def _getUpdateLinkText(data):
+  """Returns text which may be used to display update project link.
+
+  Args:
+    request: a RequestData object
+
+  Returns: a string with the text to be used with update project link 
+  """
+  if data.timeline.afterFormSubmissionStart():
+    return 'Update or Upload Code Samples'
+  else:
+    return 'Update'
+
+
 class ProjectDetails(GSoCRequestHandler):
   """Encapsulate all the methods required to generate GSoC project
   details page.
@@ -446,11 +491,13 @@ class ProjectDetails(GSoCRequestHandler):
     if data.orgAdminFor(data.project.org):
       context['user_actions'] = UserActions(data)
 
-    user_is_owner = data.user and \
-        (data.user.key() == data.project_owner.parent_key())
-    if user_is_owner:
-      context['update_link'] = data.redirect.project().urlOf(
+    if _isUpdateLinkVisible(data):
+      context['update_link_visible'] = True
+      context['update_link_url'] = data.redirect.project().urlOf(
           url_names.GSOC_PROJECT_UPDATE)
+      context['update_link_text'] = _getUpdateLinkText(data)
+    else:
+      context['update_link_visible'] = False
 
     if len(data.project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:

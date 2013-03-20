@@ -32,7 +32,9 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 class ProjectList(Template):
   """Template for listing the student projects accepted in the program."""
 
-  def __init__(self, data, query, idx=0):
+  DEFAULT_IDX = 0
+
+  def __init__(self, data, query, idx=ProjectList.DEFAULT_IDX):
     """Initializes a new object.
 
     Args:
