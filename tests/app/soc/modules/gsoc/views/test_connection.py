@@ -88,7 +88,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     response = self.post(url, data)
     self.assertEmailSent(bcc=other_data.profile.email, n=1)
     new_connection = GSoCConnection.all().ancestor(other_data.user).get()
-    self.assertIsNotNone(connection)
+    self.assertIsNotNone(new_connection)
     
   def testConnectionUserAction(self):
     self.data.createProfile()
