@@ -135,7 +135,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
         'agreed_to_admin_agreement': True,
         'backup_admin_id': backup_admin_profile.link_id,
         }
-    
+
   def testOrgAppCreateOrEditByProgramAdmin(self):
     """Tests that program admin can create an organization application.
     """
