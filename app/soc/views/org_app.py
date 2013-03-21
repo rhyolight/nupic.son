@@ -250,7 +250,7 @@ class OrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
     css_prefix = 'org-app-show'
     fields = ['org_id', 'name', 'description', 'home_page', 'license',
               'new_org']
-    widgets = {
+    renderers = {
         'new_org': lambda instance: 'New' if instance.new_org else 'Veteran'
         }
     survey_name = 'Organization Application'

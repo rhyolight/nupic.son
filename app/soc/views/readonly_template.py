@@ -50,7 +50,7 @@ class ModelReadOnlyTemplateOptions(object):
     self.fields = getattr(options, 'fields', None)
     self.hidden_fields = getattr(options, 'hidden_fields', None)
     self.exclude = getattr(options, 'exclude', None)
-    self.widgets = getattr(options, 'widgets', None)
+    self.renderers = getattr(options, 'renderers', None)
 
 
 class ModelReadOnlyTemplateMetaclass(type):
@@ -87,7 +87,7 @@ class ModelReadOnlyTemplateMetaclass(type):
 
       dict['fields'] = model_fields
       dict['hidden_fields'] = model_hidden_fields
-      dict['widgets'] = opts.widgets
+      dict['renderers'] = opts.renderers
 
     if opts.css_prefix:
       dict['css_prefix'] = opts.css_prefix
@@ -173,9 +173,9 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
     """Iterator yielding groups of record instance's properties to be rendered.
     """
     for name, field in self.fields.items():
-      widget = self.widgets.get(name)
-      if widget:
-        val = widget(self.instance)
+      renderer = self.renderers.get(name)
+      if renderer:
+        val = renderer(self.instance)
       else:
         val = getattr(self.instance, name)
       yield field.verbose_name, val
