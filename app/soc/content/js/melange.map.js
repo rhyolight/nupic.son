@@ -64,7 +64,7 @@
     jQuery.each(map_data.projects, function (key, project) {
       var current_student = map_data.students[project.student_key];
       var current_mentor = map_data.mentors[project.mentor_key];
-      if (current_student !== undefined && 
+      if (current_student !== undefined &&
           current_mentor !== undefined &&
           current_student.lat !== null &&
           current_student.lng !== null &&
@@ -166,5 +166,5 @@
         map: map
       });
     });
-  }
+  };
 }());

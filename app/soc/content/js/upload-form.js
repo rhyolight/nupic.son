@@ -45,7 +45,7 @@
       }
     });
     return upload_link;
-  }
+  };
 
   melange.asyncUpload = function(input_ids) {
     // Following two methods upload files asynchronously.
@@ -77,5 +77,5 @@
         filedownload.show();
       }
     });
-  }
+  };
 }(jQuery));

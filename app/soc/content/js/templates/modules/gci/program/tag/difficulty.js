@@ -156,7 +156,7 @@
       "name": current_difficulties[index_to_delete].name,
       "value": current_difficulties[index_to_delete].value
     };
- 
+
     delete current_difficulties[index_to_delete];
 
     var json_for_server = {
