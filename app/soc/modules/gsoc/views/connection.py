@@ -53,7 +53,7 @@ DEF_EXCEED_RATE_LIMIT = 'Exceeded rate limit, too many pending connections.'
 DEF_MAX_PENDING_CONNECTIONS = 3
 
 @db.transactional
-def check_existing_connection_txn(user, org):
+def connectionDoesExistTxn(user, org):
   """Check to see if a GSoCConnection already exists.
 
   Helper method to check for an existing GSoCConnection between a user
@@ -312,6 +312,10 @@ class OrgConnectionPage(GSoCRequestHandler):
 
     Args:
         data: The RequestData object passed with this request.
+    Returns:
+        True if no errors were encountered or False if the form was invalid. 
+        Note that it sets data attributes that are handled in the post()
+        method of this handler below.
     """
     
     connection_form = OrgConnectionForm(request_data=data, 
@@ -324,7 +328,7 @@ class OrgConnectionPage(GSoCRequestHandler):
     message_provided = (connection_form.cleaned_data['message'] != '')
 
     def create_connection_txn(user, email):
-      if check_existing_connection_txn(user, data.organization):
+      if connectionDoesExistTxn_txn(user, data.organization):
         raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
 
       new_connection = connection_form.create(parent=user, commit=False)
@@ -492,7 +496,7 @@ class UserConnectionPage(GSoCRequestHandler):
     message_provided = (connection_form.cleaned_data['message'] != '')
 
     def create_connection(org):
-      if check_existing_connection_txn(data.user, data.organization):
+      if connectionDoesExistTxn(data.user, data.organization):
         raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
 
       new_connection = ConnectionForm.create(
