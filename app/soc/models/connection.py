@@ -157,7 +157,7 @@ class Connection(db.Model):
       return STATE_ACCEPTED
     elif self.isUserWithdrawn() or self.isOrgWithdrawn():
       return STATE_WITHDRAWN
-    elif self.isUserRejected or self.isOrgRejected():
+    elif self.isUserRejected() or self.isOrgRejected():
       return STATE_REJECTED
     elif self.isUserAccepted():
       return STATE_ORG_ACTION_REQ

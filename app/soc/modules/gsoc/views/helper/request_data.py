@@ -601,8 +601,8 @@ class RedirectHelper(request_data.RedirectHelper):
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
   
-    self.kwargs['link_id'] = user.link_id
     self.connect_org()
+    self.kwargs['link_id'] = user.link_id
     return self
 
   def connect_org(self):

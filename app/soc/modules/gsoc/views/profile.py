@@ -299,7 +299,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
 
       return data.redirect.to('edit_gsoc_profile', validated=True, secure=True)
 
-    if self.data.anonymous_connection:
+    if data.anonymous_connection:
       self.redirect.dashboard()
     else:
       self.redirect.organization(organization)

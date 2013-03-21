@@ -65,7 +65,10 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 BIRTHDATE_FORMAT = 'd-m-Y'
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
-# Just a messy tuple to include all states
+# Tuple to include all states for use in CONN_STATUS_OPTS to prevent it from
+# becoming ugly. Note that STATE_UNREPLIED is absent from this list due to the 
+# fact that it is never user-facing; all possible options for the user are
+# computer in Connection.getUserFriendlyStatus().
 STATUS_TUPLE = '%s|%s|%s|%s|%s' % (
     connection.STATE_ACCEPTED,
     connection.STATE_REJECTED, 
@@ -74,16 +77,22 @@ STATUS_TUPLE = '%s|%s|%s|%s|%s' % (
     connection.STATE_USER_ACTION_REQ
     )
 # Include all of the dropdown options for viewing connections by status.
-CONN_STATUS_OPTS = [(STATUS_TUPLE, 'All'),
+# These are constructed with the internal representation of the field on
+# the left and the user-facing choice in the dropdown on the right.
+CONN_STATUS_OPTS = [
+    (STATUS_TUPLE, 'All'),
     (connection.STATE_ACCEPTED, 'Accepted'),
     (connection.STATE_REJECTED, 'Rejected'),
     (connection.STATE_USER_ACTION_REQ, 'User Action Required'),
     (connection.STATE_ORG_ACTION_REQ, 'Org Action Required'),
     (connection.STATE_WITHDRAWN, 'Withdrawn')
     ]
-CONN_ROLE_OPTS = [('Mentor|Org Admin', 'All'),
-    ('Org Admin', 'Org Admin'), 
-    ('Mentor', 'Mentor')
+# Include all dropdown options for viewing connections by roles offered
+# to the users. Same rules apply 
+CONN_ROLE_OPTS = [
+    ('%s|%s' % (connection.MENTOR_ROLE, connection.ORG_ADMIN_ROLE), 'All'),
+    (connection.ORG_ADMIN_ROLE, 'Org Admin'), 
+    (connection.MENTOR_ROLE, 'Mentor')
     ]
 
 def colorize(choice, yes, no):
@@ -1291,6 +1300,15 @@ class OrgConnectionComponent(Component):
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
+    """Generates a list of data for the table in this component.
+
+    See getListData() method of soc.views.dashboard.Component for more details.
+
+    Returns:
+        The list data as requested by the current request. Returns None if there is
+        no data to be shown or the request is not for this component's index (IDX).
+    """
+
     if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
@@ -1353,6 +1371,14 @@ class UserConnectionComponent(Component):
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
+    """Generates a list of data for the table in this component.
+
+    See getListData() method of soc.views.dashboard.Component for more details.
+
+    Returns:
+        The list data as requested by the current request. Returns None if there is
+        no data to be shown or the request is not for this component's index (IDX).
+    """
     if lists.getListIndex(self.data.request) != self.IDX:
       return None
 

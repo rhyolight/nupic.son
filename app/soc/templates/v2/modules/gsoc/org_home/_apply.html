@@ -44,20 +44,17 @@ limitations under the License.
     {% if mentor_apply_block %}
       <h3 id="title-section-apply-mentors">Mentors: Apply!</h3>
       <p id="block-apply-mentors-text-action" class="action">
-        {% if mentor_request_link %}
-          <a href="{{ mentor_request_link }}">Request</a>
+        {% if mentor_connect_link %}
+          <a href="{{ mentor_connect_link }}">Start a Connection</a>
         {% endif %}
         {% if role %}
           <p>You are already {{ role }} for this organization</p>
-        {% endif %}
-        {% if invited_role %}
-          <p>You have already been invited to be a {{ invited_role }} for this organization</p>
         {% endif %}
         {% if mentor_applied %}
           <p>You have already applied to be a mentor for this organization</p>
         {% endif %}
       </p>
-      {% if mentor_request_link %}
+      {% if mentor_connect_link %}
         <p id="block-apply-mentors-text-small" class="small">to become mentor for {{ organization.name }}.</p>
       {% endif %}
     {% endif %}
