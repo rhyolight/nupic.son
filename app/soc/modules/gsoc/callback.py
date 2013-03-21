@@ -70,7 +70,6 @@ class Callback(object):
     self.views.append(accepted_orgs.AdminOrgsListPage())
     self.views.append(admin.DashboardPage())
     self.views.append(admin.LookupLinkIdPage())
-    self.views.append(admin.ProjectsAcceptedOrgsPage())
     self.views.append(admin.ProjectsPage())
     self.views.append(admin.ProjectsListPage())
     self.views.append(admin.ProposalsPage())

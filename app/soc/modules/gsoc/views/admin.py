@@ -349,20 +349,6 @@ class ManageOrganizationsDashboard(Dashboard):
 
     subpages = [
         {
-            'name': 'manage_proposals',
-            'description': ugettext(
-                'Proposals submitted by student to organizations'),
-            'title': 'Proposals',
-            'link': r.urlOf('gsoc_proposals_orgs')
-        },
-        {
-            'name': 'manage_projects',
-            'description': ugettext(
-                'Projects by students'),
-            'title': 'Projects',
-            'link': r.urlOf('gsoc_projects_orgs')
-        },
-        {
             'name': 'edit_org_app',
             'description': ugettext(
                 'Create or edit organization application'),
@@ -776,80 +762,6 @@ class LookupLinkIdPage(base.GSoCRequestHandler):
         'posted': error,
         'page_name': 'Lookup profile',
       }
-
-
-class ProjectsAcceptedOrgsList(org_list.AcceptedOrgsList):
-  """Template for list of accepted organizations."""
-
-  def extraColumn(self, list_config):
-    # TODO(nathaniel): squeeze this back into a lambda expression in
-    # the call to setRowAction below.
-    def RowAction(e, *args):
-      # TODO(nathaniel): make this .organization call unnecessary.
-      self.data.redirect.organization(organization=e)
-
-      return self.data.redirect.urlOf('gsoc_projects_org')
-
-    r = self.data.redirect
-    list_config.setRowAction(RowAction)
-    list_config.addSimpleColumn('slots_desired', 'min', width=20,
-        column_type=lists.ColumnType.NUMERICAL)
-    list_config.addSimpleColumn('max_slots_desired', 'max', width=20,
-        column_type=lists.ColumnType.NUMERICAL)
-    list_config.addSimpleColumn('slots', 'Slots', width=20,
-        column_type=lists.ColumnType.NUMERICAL)
-
-    def getTotalProjects(ent):
-      q = GSoCProject.all()
-      q.filter('program', self.data.program)
-      q.filter('org', ent)
-      return q.count()
-
-    list_config.addNumericalColumn('projects', 'Projects',
-        lambda ent, *a: getTotalProjects(ent))
-
-    return list_config
-
-  def context(self):
-    description = 'List of organizations accepted into %s. Click on ' \
-                  'a organization to see the accepted projects.' % (
-                      self.data.program.name)
-
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
-    return {
-        'lists': [list],
-    }
-
-
-class ProjectsAcceptedOrgsPage(base.GSoCRequestHandler):
-  """View for accepted orgs."""
-
-  def djangoURLPatterns(self):
-    return [
-        url(r'admin/projects/%s$' % url_patterns.PROGRAM, self,
-            name='gsoc_projects_orgs'),
-    ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
-
-  def templatePath(self):
-    return 'v2/modules/gsoc/admin/list.html'
-
-  def jsonContext(self, data, check, mutator):
-    list_content = ProjectsAcceptedOrgsList(data).getListData()
-    if list_content:
-      return list_content.content()
-    else:
-      raise exceptions.AccessViolation('You do not have access to this data')
-
-  def context(self, data, check, mutator):
-    return {
-      'page_name': 'Projects page',
-      'list': ProjectsAcceptedOrgsList(data),
-    }
 
 
 class ProposalsList(Template):
