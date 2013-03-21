@@ -171,7 +171,7 @@
       //TODO (Mario): change the name of the functions to reflect the new editing feature
       enableDisableButtons: (function (list_object) {
         return function (row_id) {
-          var option_name = list_object.jqgrid.object.jqGrid('getGridParam','multiselect') ? 'selarrrow' : 'selrow'
+          var option_name = list_object.jqgrid.object.jqGrid('getGridParam','multiselect') ? 'selarrrow' : 'selrow';
           var selected_ids = list_object.jqgrid.object.jqGrid('getGridParam',option_name);
           if (!(selected_ids instanceof Array)) {
             selected_ids = [selected_ids];
@@ -291,7 +291,7 @@
               }
             }
           });
-        }
+        };
       }(_self)),
       // function defines for global buttons
       global_button_functions : {
@@ -299,12 +299,12 @@
           if (parameters.new_window) {
             return function () {
               window.open(parameters.link);
-            }
+            };
           }
           else {
             return function () {
               window.location.href = parameters.link;
-            }
+            };
           }
         },
         redirect_custom: function (parameters) {
@@ -312,12 +312,12 @@
             if (parameters.new_window) {
               return function () {
                 window.open(link);
-              }
+              };
             }
             else {
               return function () {
                 window.location.href = link;
-              }
+              };
             }
           };
         },
@@ -327,7 +327,7 @@
             var this_button = jQuery(this);
             var this_button_color = this_button.css("color");
             this_button.attr("disabled", "disabled").css("color", "grey");
-            var option_name = list_objects.get(parameters.idx).jqgrid.object.jqGrid('getGridParam','multiselect') ? 'selarrrow' : 'selrow'
+            var option_name = list_objects.get(parameters.idx).jqgrid.object.jqGrid('getGridParam','multiselect') ? 'selarrrow' : 'selrow';
             var selected_ids = list_objects.get(parameters.idx).jqgrid.object.jqGrid('getGridParam',option_name);
             if (!(selected_ids instanceof Array)) {
               if (selected_ids === null) {
@@ -403,7 +403,7 @@
                 // Re-enable button even if an error happens.
                 this_button.removeAttr("disabled").css("color", this_button_color);
             });
-          }
+          };
         },
         post_edit: function (parameters) {
           return function () {
@@ -501,8 +501,8 @@
                   });
                 }
               }
-            )
-          }
+            );
+          };
         }
       },
       row_functions : {
@@ -514,12 +514,12 @@
             if ((parameters.new_window) || (event.which === 2) || ((event.which === 1) && (event.ctrlKey))) {
               return function () {
                 window.open(link);
-              }
+              };
             }
             else {
               return function () {
                 window.location.href = link;
-              }
+              };
             }
           };
          }
@@ -575,7 +575,7 @@
         // Use template to render buttons.
         // TODO(Mario): do not repeat preRenderTemplates' code.
         var match;
-        var re =  /\{\{([^\}]+)\}\}/g
+        var re =  /\{\{([^\}]+)\}\}/g;
         var final_string = template;
         while (match = re.exec(template)) {
           var button_to_replace = jQuery.trim(match[1]);
@@ -586,7 +586,7 @@
         data.columns[column_to_append] += final_string;
       });
       return data;
-    }
+    };
 
     var preRenderTemplates = function (columns) {
       if (_self.templates === undefined) {
@@ -595,7 +595,7 @@
       var columns = columns;
       jQuery.each(_self.templates, function (dest_column, template) {
         var match;
-        var re =  /\{\{([^\}]+)\}\}/g
+        var re =  /\{\{([^\}]+)\}\}/g;
         var final_string = template;
         while (match = re.exec(template)) {
           var column_to_replace = jQuery.trim(match[1]);
@@ -603,7 +603,7 @@
             final_string = final_string.replace(match[0], columns[column_to_replace]);
           }
         }
-        columns[dest_column] = final_string
+        columns[dest_column] = final_string;
       });
       return columns;
     };
@@ -959,7 +959,7 @@
         filtered_data: null
       };
       fetchDataFromServer();
-    }
+    };
 
     var footerAggregates = function () {
       /* Calculate aggregates if requested, using summaryType as a reference, since
@@ -1018,7 +1018,7 @@
           altclass: 'alternate_row',
           // Save the new columns width everytime one column is resized
           resizeStop: function() {
-                        melange.list.cookie_service.saveCurrentTableConfiguration(idx, _self.jqgrid.object, true)
+                        melange.list.cookie_service.saveCurrentTableConfiguration(idx, _self.jqgrid.object, true);
                       }
         }
       );
@@ -1081,7 +1081,7 @@
           'filterToolbar',
           {
             beforeSearch: function() {
-                            melange.list.cookie_service.saveCurrentTableConfiguration(idx, _self.jqgrid.object)
+                            melange.list.cookie_service.saveCurrentTableConfiguration(idx, _self.jqgrid.object);
                           },
             searchOnEnter: false,
             autosearch: true
@@ -1194,7 +1194,7 @@
       // we need to add this list for later retrieval
       list_objects.add(this);
     }
-  };
+  }
 
   $m.loadList = function (div, init, idx, preload_list) {
     var idx = parseInt(idx, 10);

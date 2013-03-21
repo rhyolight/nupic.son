@@ -22,21 +22,21 @@ melange.templates.inherit(
 
     // Dom Objects selectors
     var selectors = {
-      submit_button: function() {return "#form-register-fieldset-button-row"},
-      container: function() {return "#survey_container"},
+      submit_button: function() {return "#form-register-fieldset-button-row";},
+      container: function() {return "#survey_container";},
       menu: {
-        menu: function() {return [selectors.container(), ".survey_menu"].join(" ")},
+        menu: function() {return [selectors.container(), ".survey_menu"].join(" ");},
         buttons: {
           radio: function() {return [selectors.menu.menu(), ".radio"].join(" ");},
           checkbox: function() {return [selectors.menu.menu(), ".checkbox"].join(" ");},
-          short_answer: function() {return [selectors.menu.menu(), ".short_answer"].join(" ")},
-          long_answer: function() {return [selectors.menu.menu(), ".long_answer"].join(" ")}
+          short_answer: function() {return [selectors.menu.menu(), ".short_answer"].join(" ");},
+          long_answer: function() {return [selectors.menu.menu(), ".long_answer"].join(" ");}
         }
       },
 
-      menu_template: function() {return "#survey_menu_template"},
-      widget_template: function() {return "#survey_widget_template"}
-    }
+      menu_template: function() {return "#survey_menu_template";},
+      widget_template: function() {return "#survey_widget_template";}
+    };
 
     var dos = {
       submit_button: function() {return jQuery(selectors.submit_button());},
@@ -46,10 +46,10 @@ melange.templates.inherit(
       menu: {
         menu: function() {return jQuery(selectors.menu.menu())[0];},
         buttons: {
-          radio: function() {return jQuery(selectors.menu.buttons.radio())},
-          checkbox: function() {return jQuery(selectors.menu.buttons.checkbox())},
-          short_answer: function() {return jQuery(selectors.menu.buttons.short_answer())},
-          long_answer: function () {return jQuery(selectors.menu.buttons.long_answer())}
+          radio: function() {return jQuery(selectors.menu.buttons.radio());},
+          checkbox: function() {return jQuery(selectors.menu.buttons.checkbox());},
+          short_answer: function() {return jQuery(selectors.menu.buttons.short_answer());},
+          long_answer: function () {return jQuery(selectors.menu.buttons.long_answer());}
         }
       },
 
@@ -71,7 +71,7 @@ melange.templates.inherit(
       this.button_delete.bind("click", {widget: this.widget}, this.deleteMe);
 
       (this.widget.find(".message")[0]).innerHTML = new Date().getTime();
-    };
+    }
 
     var createRadioWidget = function() {
       var widget_container = new SurveyWidget();
@@ -87,7 +87,7 @@ melange.templates.inherit(
 
     var createLongAnswerWidget = function() {
       var widget_container = new SurveyWidget();
-    }
+    };
 
     var callbacks = {
       menu: {
@@ -108,7 +108,7 @@ melange.templates.inherit(
       jQuery.each(dos.menu.buttons, function (button_key, button_do) {
         button_do().bind("click", callbacks.menu.buttons[button_key]);
       });
-    }
+    };
 
     dos.container().insertBefore(dos.submit_button()).removeClass("hidden");
 

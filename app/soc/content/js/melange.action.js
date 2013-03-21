@@ -52,7 +52,7 @@
         jQuery(name).animate({top: offset},{duration: 500, queue: false});
       });
     });
-  }
+  };
 
   $m.toggleButton = function (id, type, post_url, init_state, labels, callback) {
     var button_id = id;
@@ -81,7 +81,7 @@
           });
       });
     });
-  }
+  };
 
   /* This function exists as a show case function to show that this
    * functionality of chaining the onchange of some other button to
@@ -93,7 +93,7 @@
         'checked', !onchange_checkbox.is(':checked')).change();
       jQuery('span#status').html(onchange_checkbox.is(':checked').toString());
     }, 2500);
-  }
+  };
 
   $m.createCluetip = function () {
     jQuery(document).ready(function() {
@@ -105,6 +105,6 @@
         dropShadow:false
       });
     });
-  }
+  };
 
 }());

@@ -166,7 +166,7 @@
     jQuery(".provider_select").change(onProviderChanged);
     initializeToggle(reference_model_parameters_div);
     addDefaultProviders(reference_model_parameters_div);
-  }
+  };
 
   /**
    * Wrapper for selectedModelChanged for direct references.
@@ -205,7 +205,7 @@
     provider_parameters_div.html(models_selector_html);
     jQuery(".model_select", provider_parameters_div).change(callback);
     jQuery(".model_select", provider_parameters_div).change();
-  }
+  };
 
   /**
    * Fired when the test button for a provider is clicked.
@@ -223,18 +223,18 @@
 	var parameters = {};
 
 	jQuery(".provider_parameter_input", provider_div).each(
-	  function(index, parameter_input) {
-		var name = jQuery(parameter_input).attr("parameter_name");
-		var value = parameter_input.value;
-		if (value !== "") {
-		  parameters[name] = value;
-		}
-	  }
+    function(index, parameter_input) {
+      var name = jQuery(parameter_input).attr("parameter_name");
+      var value = parameter_input.value;
+      if (value !== "") {
+        parameters[name] = value;
+      }
+    }
 	);
 
 	var data = {
-	  "provider_name": provider_name,
-	  "parameters": parameters
+    "provider_name": provider_name,
+    "parameters": parameters
 	};
     json = JSON.stringify(data);
 
@@ -251,7 +251,7 @@
 	jQuery(provider_response_div).text(data.value);
       }
     );
-  }
+  };
 
   /**
    * Update the list of words for model properties that have choices.
@@ -286,7 +286,7 @@
       var choices = property.choices.join(",");
       input.value = property.choices.join(",");
     }
-  }
+  };
 
   /**
    * Update the class of referenced model for reference model properties.
@@ -320,7 +320,7 @@
           provider_parameters_div)[0];
       input.value = property.reference_class;
     }
-  }
+  };
 
   /**
    * Update the parameters input boxes for a provider.
@@ -369,7 +369,7 @@
         addReferenceClassToProvider(property_div);
       }
     }
-  }
+  };
 
   /**
    * Called when the data provider for a model property is changed by the user.
@@ -383,7 +383,7 @@
     melange.seeder.log(5, "Provider changed!");
 
     updateProviderParameters(provider_select);
-  }
+  };
 
   /**
    * Called when the user clicks on the remove model link. Removes the model
@@ -393,7 +393,7 @@
     var link = event.target;
     var model_div = jQuery(link).parent().parent();
     jQuery(model_div).remove();
-  }
+  };
 
 
   /**
@@ -417,7 +417,7 @@
     initializeToggle(model_div);
     addDefaultProviders(model_div);
     return model_div;
-  }
+  };
 
   /**
    * Adds a new model to the DOM and add it to the models list.
@@ -430,7 +430,7 @@
     var model_div = addModel(model_name);
     jQuery("#selected_models").append(model_div);
     return model_div;
-  }
+  };
 
   /**
    * Adds default data providers for required properties.
@@ -461,7 +461,7 @@
         }
       }
     );
-  }
+  };
 
   /**
    * Called when the user clicks the add model button in order to add a new
@@ -473,7 +473,7 @@
     var model_name = jQuery(".model_select")[0].value;
     melange.seeder.log(5, "Adding model " + model_name + "...");
     addModelToRoot(model_name);
-  }
+  };
 
   /**
    * Return a configuration sheet for the seeding operation extracted from the
@@ -542,7 +542,7 @@
     );
     model["properties"] = properties;
     return model;
-  }
+  };
 
   /**
    * Returns a configuration sheet for the seeding operation extracted from the
@@ -563,7 +563,7 @@
     melange.seeder.log(5, "Configuration sheet built:");
     melange.seeder.log(5, sheet);
     return sheet;
-  }
+  };
 
   /**
    * Called when the users clicks the validate configuration sheet button.
@@ -587,7 +587,7 @@
         data = JSON.parse(response);
       }
     );
-  }
+  };
 
   /**
    * Called when the users clicks the get configuration sheet button. Allows the
@@ -598,7 +598,7 @@
     var json = JSON.stringify(sheet);
 
     jQuery("#download_configuration_sheet_data").attr("value", json);
-  }
+  };
 
   /**
    * Callback called after a seeding job has been started.
@@ -617,7 +617,7 @@
       // TODO: Report this to the user
       melange.seeder.log(5, "ERROR!!!");
     }
-  }
+  };
 
   /**
    * Called when the users clicks the send configuration sheet button. Sends the
@@ -626,7 +626,7 @@
   var onSendConfigurationSheetClicked = function () {
     var sheet = getConfigurationSheet();
     melange.seeder.sendConfigurationSheet(sheet, seedingJobStarted);
-  }
+  };
 
   /**
    * Set up the properties of a model and display them.
@@ -692,7 +692,7 @@
         }
       }
     );
-  }
+  };
 
   /**
    * Load a configuration sheet and display it to the user.
@@ -714,7 +714,7 @@
         loadModelProperties(model_data, model_div);
       }
     );
-  }
+  };
 
   /**
    * Initialize toggle operations on the specified element. Hides all containers
@@ -731,7 +731,7 @@
         jQuery(this).toggleClass("active").next().slideToggle("fast");
       }
     );
-  }
+  };
 
   /**
    * Initializes UI elements.
@@ -774,7 +774,7 @@
     jQuery(".reference_model_selector").remove();
 
     initializeToggle();
-  }
+  };
 
   /**
    * Populates the list of models with data received from the server.
@@ -794,7 +794,7 @@
     jQuery("#download_configuration").show();
     jQuery("#load_configuration").show();
     melange.seeder.log(5, "Model list populated!");
-  }
+  };
 
   /**
    * Called when the data from the server has been received.
@@ -807,7 +807,7 @@
     if (configuration_sheet !== "") {
       loadConfigurationSheet(configuration_sheet);
     }
-  }
+  };
 
   jQuery(document).ready(function() {
     melange.logging.setDebug();
