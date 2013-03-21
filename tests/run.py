@@ -322,12 +322,14 @@ def main():
     tests.update(sys.argv[i+1].split(','))
     del sys.argv[i:i+2]
   else:
-    tests = {'js', 'pyunit'}
+    tests = set(['js', 'pyunit'])
 
-  if 'pyunit' in tests:
-    run_pyunit_tests()
   if 'js' in tests:
     run_js_tests()
+  if 'pyunit' in tests:
+    # run_pyunit_tests has to be the last one to run, since nose seems to
+    # terminate everything and prevent any other code in the file to run.
+    run_pyunit_tests()
 
 if __name__ == '__main__':
   main()
