@@ -42,6 +42,7 @@ from soc.modules.gsoc.views import proposal
 from soc.modules.gsoc.views import proposal_review
 from soc.modules.gsoc.views import request
 from soc.modules.gsoc.views import search
+from soc.modules.gsoc.views import slot_allocation
 from soc.modules.gsoc.views import slot_transfer
 from soc.modules.gsoc.views import slot_transfer_admin
 from soc.modules.gsoc.views import student_evaluation
@@ -74,7 +75,6 @@ class Callback(object):
     self.views.append(admin.ProjectsListPage())
     self.views.append(admin.ProposalsAcceptedOrgsPage())
     self.views.append(admin.ProposalsPage())
-    self.views.append(admin.SlotsPage())
     self.views.append(admin.StudentsListPage())
     self.views.append(admin.SurveyReminderPage())
     self.views.append(dashboard.DashboardPage())
@@ -132,6 +132,7 @@ class Callback(object):
     self.views.append(request.RequestPage())
     self.views.append(request.ShowRequest())
     self.views.append(search.SearchGsocPage())
+    self.views.append(slot_allocation.SlotsPage())
     self.views.append(slot_transfer_admin.SlotsTransferAdminPage())
     self.views.append(slot_transfer.SlotTransferPage())
     self.views.append(slot_transfer.UpdateSlotTransferPage())
