@@ -34,7 +34,7 @@ class ProjectList(Template):
 
   DEFAULT_IDX = 0
 
-  def __init__(self, data, query, idx=ProjectList.DEFAULT_IDX):
+  def __init__(self, data, query, idx=None):
     """Initializes a new object.
 
     Args:
@@ -44,7 +44,8 @@ class ProjectList(Template):
     """
     self.data = data
     self.query = query
-    self.idx = idx
+
+    self.idx = self.DEFAULT_IDX if idx is None else idx
 
     r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
