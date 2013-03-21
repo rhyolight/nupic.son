@@ -161,7 +161,7 @@ class Connection(db.Model):
       return STATE_REJECTED
     elif self.isUserAccepted():
       return STATE_ORG_ACTION_REQ
-    elif isOrgAccepted():
+    elif self.isOrgAccepted():
       return STATE_USER_ACTION_REQ
     else:
       # This should never happen, so we're going to blow up execution.

@@ -328,7 +328,7 @@ class OrgConnectionPage(GSoCRequestHandler):
     message_provided = (connection_form.cleaned_data['message'] != '')
 
     def create_connection_txn(user, email):
-      if connectionDoesExistTxn_txn(user, data.organization):
+      if connectionDoesExistTxn(user, data.organization):
         raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
 
       new_connection = connection_form.create(parent=user, commit=False)
@@ -581,7 +581,7 @@ class ShowConnection(GSoCRequestHandler):
     check.canViewConnection()
 
     self.is_org_admin_for_org = data.connection.organization.key() in \
-        data.profile.org_admin_for 
+        data.profile.org_admin_for
 
   def getMessages(self, data, limit=1000):
     """Gets all the messages for the connection."""
