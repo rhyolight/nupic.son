@@ -559,8 +559,7 @@ class ShowConnection(GSoCRequestHandler):
     'withdraw' : ('withdraw', 'Withdraw'),
     'delete' : ('delete', 'Delete')
   }
-  is_org_admin_for_org = False
-  
+
   def templatePath(self):
     return 'v2/modules/gsoc/connection/show_connection.html'
 
@@ -579,9 +578,6 @@ class ShowConnection(GSoCRequestHandler):
     # Add org to request data for access checking methods.
     data.organization = data.connection.organization
     check.canViewConnection()
-
-    self.is_org_admin_for_org = data.connection.organization.key() in \
-        data.profile.org_admin_for
 
   def getMessages(self, data, limit=1000):
     """Gets all the messages for the connection."""
@@ -704,8 +700,11 @@ class ShowConnection(GSoCRequestHandler):
   def post(self, data, check, mutator):
     """Handler for Show GSoC Connection post request."""
 
+    # TODO(dcrodman): Figure out why this needs to be computed differently
+    # than in the context() method above.
+    is_org_admin = data.connection.organization.key() in \
+        data.profile.org_admin_for
     response = data.POST['responses']
-    is_org_admin = self.is_org_admin_for_org
     
     if response == 'accept_mentor':
       self._acceptMentor(data, is_org_admin)
@@ -866,7 +865,7 @@ class ShowConnection(GSoCRequestHandler):
 
 
   def _withdrawConnection(self, data, is_org_admin):
-    connection_key = data.connection_key()
+    connection_key = data.connection.key()
 
     def withdraw_connection_txn():
       # Mark the connection on the user or org side as 'Rejected' and add an auto-comment
