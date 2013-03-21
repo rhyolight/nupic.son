@@ -62,7 +62,7 @@ def _handleAnonymousConnection(data):
     profile.is_mentor = True
     profile.mentor_for.append(new_connection.organization.key())
     profile.mentor_for = list(set(profile.mentor_for))
-    if new_connection.role == connection.ORG_ADMIN_STATE: 
+    if new_connection.role == connection.ORG_ADMIN_ROLE: 
       profile.is_org_admin = True
       profile.org_admin_for.append(new_connection.organization.key())
       profile.org_admin_for = list(set(profile.org_admin_for))
@@ -287,7 +287,6 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
       _handleAnonymousConnection(data)
 
     link_id = data.GET.get('org')
-
     if link_id:
       key_name = '%s/%s' % (data.program.key().name(), link_id)
       organization = GSoCOrganization.get_by_key_name(key_name)

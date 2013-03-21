@@ -589,22 +589,27 @@ class RedirectHelper(request_data.RedirectHelper):
     return self
   
   def connect_user(self, user=None):
-    """ Sets the _url_name for a gsoc_user_connection redirect for a redirect
-    to OrgConnectionPage.
+    """Sets the _url_name for a gsoc_user_connection redirect.
+
+    Intended for use when generating a url for a redirect to OrgConnectionPage.
+
+    Args:
+        user: The User instance for which one wishes to establish a connection to
+            an organization.
     """  
     if not user:
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
   
     self.kwargs['link_id'] = user.link_id
-    # OrgConnectionPage and UserConnectionPage share the organization
-    # components, so some of the work can be factored out.
     self.connect_org()
     return self
 
   def connect_org(self):
-    """ Sets the _url_name for a gsoc_user_connection redirect for a redirect
-    to UserConnectionPage.
+    """ Sets the _url_name for a gsoc_user_connection redirect.
+
+    Intended for use when generating a url for a redirect to 
+    UserConnectionPage.
     """
     self.organization(self._data.organization)
     # We need to reassign the kwarg to the org's link_id since it's 
@@ -627,7 +632,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self.kwargs['user'] = user.key().name()
     self.kwargs['id'] = connection.key().id()
     self._url_name = url_names.GSOC_SHOW_CONNECTION
-    print 'Kwargs: %s' % self.kwargs
     return self
 
   def profile_anonymous_connection(self, role, connection_hash):
@@ -656,7 +660,7 @@ class RedirectHelper(request_data.RedirectHelper):
     """
     self.show_connection(self._data.user, self._data.connection)
     url = self.urlOf(url_names.GSOC_SHOW_CONNECTION, full=full, secure=secure)
-    return "%s" % url
+    return url
     
   def project(self, id=None, student=None):
     """Returns the URL to the Student Project.

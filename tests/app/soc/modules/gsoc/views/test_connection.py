@@ -63,12 +63,12 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     expected = {
         'parent' : other_data.user,
         'organization' : self.org,
-        'role' : connection.ORG_ADMIN_STATE,
+        'role' : connection.ORG_ADMIN_ROLE,
         'org_state' : connection.STATE_ACCEPTED,
         }
     data = {
         'users' : other_data.profile.email,
-        'role_choice' : connection.ORG_ADMIN_STATE,
+        'role_choice' : connection.ORG_ADMIN_ROLE,
         'message' : 'Test message',
         'organization' : self.org
         }
@@ -99,7 +99,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
         'profile' : self.data.profile,
         'organization' : self.org,
         'org_state' : connection.STATE_ACCEPTED,
-        'role' : connection.ORG_ADMIN_STATE
+        'role' : connection.ORG_ADMIN_ROLE
         }
     new_connection = seeder_logic.seed(GSoCConnection, properties)
 
@@ -147,7 +147,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
         'profile' : other_data.profile,
         'organization' : self.org,
         'user_state' : connection.STATE_ACCEPTED,
-        'role' : connection.MENTOR_STATE
+        'role' : connection.MENTOR_ROLE
         }
     new_connection = seeder_logic.seed(GSoCConnection, properties)
 

@@ -93,7 +93,7 @@ class ConnectionForm(GSoCModelForm):
   """Django form for the Connection page."""
 
   role_choice = ChoiceField(widget=django_forms.Select(),
-      choices=((connection.MENTOR_STATE, connection.MENTOR_STATE),))
+      choices=((connection.MENTOR_ROLE, connection.MENTOR_ROLE),))
   message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
 
   def __init__(self, request_data=None, message=None, is_admin=False, 
@@ -131,8 +131,8 @@ class OrgConnectionForm(ConnectionForm):
     self.fields.insert(0, 'users', field)  
 
     self.fields['role_choice'].choices = (
-        (connection.MENTOR_STATE, 'Mentor'), 
-        (connection.ORG_ADMIN_STATE, 'Org Admin')
+        (connection.MENTOR_ROLE, 'Mentor'), 
+        (connection.ORG_ADMIN_ROLE, 'Org Admin')
         )
     self.fields['role_choice'].label = ugettext('Role to offer the user(s)')
     self.fields['role_choice'].help_text = ugettext(
@@ -617,7 +617,7 @@ class ShowConnection(GSoCRequestHandler):
             c.isOrgAccepted(), c.isOrgRejected(), c.isOrgWithdrawn())
         if c.isOrgUnreplied():
           choices.append(self.RESPONSES['accept_org_admin'])
-        if c.role == connection.ORG_ADMIN_STATE:
+        if c.role == connection.ORG_ADMIN_ROLE:
           choices = choices + self.getMentorChoices(org_admin_options, 
             c.isOrgUnreplied(), c.isOrgAccepted(), c.isOrgRejected(),
             c.isOrgWithdrawn()
@@ -628,7 +628,7 @@ class ShowConnection(GSoCRequestHandler):
       else:
         choices = self.getMentorChoices(mentor_options, c.isUserUnreplied(),
             c.isUserAccepted(), c.isUserRejected(), c.isUserWithdrawn())
-        if c.role == connection.ORG_ADMIN_STATE:
+        if c.role == connection.ORG_ADMIN_ROLE:
           choices = choices + self.getMentorChoices(org_admin_options, 
             c.isUserUnreplied(), c.isUserAccepted(), c.isUserRejected(),
             c.isUserWithdrawn())
@@ -764,11 +764,11 @@ class ShowConnection(GSoCRequestHandler):
 
       # The org accepted a new role for the user, so reset the user's response
       # to give him or her time to review the change.
-      if connection_entity.role == connection.MENTOR_STATE:
+      if connection_entity.role == connection.MENTOR_ROLE:
         connection_entity.user_state = connection.STATE_UNREPLIED 
         connection_entity.org_state = connection.STATE_UNREPLIED
 
-      connection_entity.role = connection.ORG_ADMIN_STATE
+      connection_entity.role = connection.ORG_ADMIN_ROLE
 
       if self.is_org_admin_for_org:
         connection_entity.org_state = connection.STATE_ACCEPTED

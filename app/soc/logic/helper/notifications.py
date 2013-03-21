@@ -21,7 +21,6 @@ from django.utils.translation import ugettext
 
 from soc.logic import mail_dispatcher
 from soc.logic.accounts import denormalizeAccount
-from soc.models import connection
 from soc.tasks import mailer
 from soc.views.helper.access_checker import isSet
 
@@ -97,9 +96,8 @@ def connectionContext(data, connection, receivers, message, is_user=False):
   """
 
   subject = DEF_NEW_CONNECTION % {'org' : connection.organization.name}
-  print 'Connection.parent(): %s' % connection.parent()
-  request_url = data.redirect.show_connection(connection.parent(), 
-    connection).url(full=True)
+  request_url = data.redirect.show_connection(connection.parent(),
+      connection).url(full=True)
  
   message_properties = {
       'org' : connection.organization.name, 
@@ -128,7 +126,7 @@ def anonymousConnectionContext(data, email, role, connection_hash, message):
   """
 
   assert isSet(data.profile)
-  assert isSet(data.organization) 
+  assert isSet(data.organization)
 
   url = data.redirect.profile_anonymous_connection(role, 
       connection_hash).url(full=True)
