@@ -39,6 +39,8 @@ class ModelReadOnlyTemplateOptions(object):
         template with 'display: none' style, or None
     exclude: list of appengine model property names to be skipped from the
         template, or None
+    renderers: dictionary of field name and function pairs where the supplied
+        function specifies how the field should be rendered.
   """
 
   def __init__(self, options=None):
