@@ -31,6 +31,12 @@ class GSoCProgramMessages(program.ProgramMessages):
   accepted_students_msg = db.TextProperty(required=False,
       verbose_name=ugettext('Accepted Students Message'))
 
+  #: Message sent to welcome accepted students to the program. This does
+  #: not include any personalized text from the organization they got
+  #: accepted for.
+  accepted_students_welcome_msg = db.TextProperty(required=False,
+      verbose_name=ugettext('Accepted Students Welcome Message'))
+
   #: Message sent to the students that are rejected for the program.
   rejected_students_msg = db.TextProperty(required=False,
       verbose_name=ugettext('Rejected Students Message'))

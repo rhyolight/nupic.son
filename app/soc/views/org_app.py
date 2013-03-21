@@ -63,13 +63,21 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
   # We render this field as a select field instead of a checkbox because
   # of the visibility on the form. The checkbox field because of its location
   # is not correctly visible to the person who fills the form, so we may
-  # have trouble later. As a precaution, we display this field as a select
-  # widget and then convert the data back to boolean value in the corresponding
+  # have trouble later. As a precaution, we display this field as a choice
+  # field and then convert the data back to boolean value in the corresponding
   # field cleaner.
-  new_org = forms.CharField(widget=django_forms.Select(choices=NEW_ORG_CHOICES))
+  new_org = forms.ChoiceField(choices=NEW_ORG_CHOICES)
 
   def __init__(self, request_data, bound_class_field, *args, **kwargs):
     self.request_data = request_data
+
+    # Workaround for Django's limitation of not being able to set initial value
+    # for ChoiceField after calling super.
+    if 'instance' in kwargs:
+      kwargs['initial'] = {
+          'new_org': 'New' if kwargs['instance'].new_org else 'Veteran'
+          }
+
     super(OrgAppTakeForm, self).__init__(
         self.request_data.org_app, bound_class_field, *args, **kwargs)
     if self.instance:
@@ -203,6 +211,9 @@ class OrgAppRecordsList(object):
         data, data.org_app, OrgAppRecord, idx=0)
     record_list.list_config.addSimpleColumn('name', 'Name')
     record_list.list_config.addSimpleColumn('org_id', 'Organization ID')
+    record_list.list_config.addPlainTextColumn(
+        'new_org', 'New/Veteran',
+        lambda ent, *args: 'New' if ent.new_org else 'Veteran')
 
     # TODO(ljvderijk): Poke Mario during all-hands to see if we can separate
     # "search options" and in-line selection options.
@@ -237,5 +248,9 @@ class OrgAppReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
   class Meta:
     model = OrgAppRecord
     css_prefix = 'org-app-show'
-    fields = ['org_id', 'name', 'description', 'home_page', 'license']
+    fields = ['org_id', 'name', 'description', 'home_page', 'license',
+              'new_org']
+    renderers = {
+        'new_org': lambda instance: 'New' if instance.new_org else 'Veteran'
+        }
     survey_name = 'Organization Application'

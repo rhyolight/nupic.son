@@ -34,6 +34,7 @@ setup(
         ],
     entry_points = {'console_scripts': ['run-tests = tests.run:main',
                                         'gen-app-yaml = scripts.gen_app_yaml:main',
+                                        'stats = scripts.stats:main'
                                         ],
                     },
     include_package_data = True,

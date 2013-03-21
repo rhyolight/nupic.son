@@ -161,7 +161,8 @@
 }
 .column-entry.view_mentor_evaluation,
 .column-entry.view_student_evaluation,
-.column-entry.view_evaluation_group
+.column-entry.view_evaluation_group,
+.column-entry.projects
 {
   background-image: url(../../../images/soc/dashboard/view.png);
 }

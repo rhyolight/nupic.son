@@ -53,7 +53,7 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.dashboard import BIRTHDATE_FORMAT
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
-from soc.modules.gsoc.views.projects_list import ProjectList
+from soc.modules.gsoc.views import projects_list
 
 
 class LookupForm(gsoc_forms.GSoCModelForm):
@@ -1631,8 +1631,8 @@ class ProjectsListPage(base.GSoCRequestHandler):
 
   def jsonContext(self, data, check, mutator):
     list_query = project_logic.getProjectsQuery(program=data.program)
-    list_content = ProjectList(
-        data.request, data, list_query, self.LIST_IDX).getListData()
+    list_content = projects_list.ProjectList(
+        data, list_query, idx=self.LIST_IDX).getListData()
     if list_content:
       return list_content.content()
     else:
@@ -1642,8 +1642,7 @@ class ProjectsListPage(base.GSoCRequestHandler):
     list_query = project_logic.getProjectsQuery(program=data.program)
     return {
       'page_name': 'Projects list page',
-      # TODO(nathaniel): Drop the first parameter of ProjectList.
-      'list': ProjectList(data.request, data, list_query, self.LIST_IDX),
+      'list': projects_list.ProjectList(data, list_query, idx=self.LIST_IDX),
     }
 
 

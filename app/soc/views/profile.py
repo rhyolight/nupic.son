@@ -291,7 +291,7 @@ class ProfilePage(object):
     return notification_form
 
   def validateStudent(self, data, dirty, profile):
-    if not data.student_info or data.kwargs.get('role') == 'student':
+    if not (data.student_info or data.kwargs.get('role') == 'student'):
       return EmptyForm(data.POST)
 
     student_form = self._getStudentInfoForm(data)

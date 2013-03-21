@@ -1,1 +1,0 @@
-../rietveld/upload.py

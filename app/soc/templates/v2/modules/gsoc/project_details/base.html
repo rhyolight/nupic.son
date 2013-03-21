@@ -37,8 +37,8 @@ limitations under the License.
   </h3>
 
   <div id="edit-page" class="org-page-link">
-    {% if update_link %}
-      <a href="{{ update_link }}">Update</a>
+    {% if update_link_visible %}
+      <a href="{{ update_link_url }}">{{ update_link_text }}</a>
     {% endif %}
   </div>
 </div>

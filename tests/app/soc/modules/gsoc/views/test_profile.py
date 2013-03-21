@@ -168,11 +168,18 @@ class ProfileViewTest(GSoCDjangoTestCase):
     })
 
     response = self.post(role_url, postdata)
-
     self.assertResponseRedirect(response, url + '?validated')
 
     # hacky
     profile = GSoCProfile.all().get()
+
+    self.assertEqual(postdata.get('given_name'), profile.given_name)
+    self.assertEqual(postdata.get('surname'), profile.surname)
+
+    # Make sure student info entity is created with right values.
+    self.assertEqual(postdata.get('school_name'),
+                      profile.student_info.school_name)
+
     profile.delete()
 
     postdata.update({

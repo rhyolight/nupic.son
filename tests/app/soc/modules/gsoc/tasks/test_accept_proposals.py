@@ -171,6 +171,8 @@ class AcceptProposalsTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
     self.assertEqual(response.status_code, httplib.OK)
     self.assertEmailSent(to=self.student1.profile.email,
                          subject='Congratulations!')
+    self.assertEmailSent(to=self.student1.profile.email,
+                         subject='Welcome to %s' % self.gsoc.name)
     self.assertEmailNotSent(to=self.student2.profile.email)
 
     #assert post status of proposal to be accepted
