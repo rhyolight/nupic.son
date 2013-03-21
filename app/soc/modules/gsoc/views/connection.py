@@ -628,7 +628,7 @@ class ShowConnection(GSoCRequestHandler):
     choices = []
     if c.isWithdrawn():
       # Allow an org to delete or re-open the connection.
-      if self.is_org_admin_for_org:
+      if is_org_admin:
         if c.isOrgWithdrawn():
           choices.append(self.RESPONSES['accept_mentor'])
           choices.append(self.RESPONSES['accept_org_admin'])
@@ -640,7 +640,7 @@ class ShowConnection(GSoCRequestHandler):
     elif c.isStalemate() or c.isAccepted():
       # There's nothing else that can be done to the connection in either 
       # case, so the org admin has the option to delete it.
-      if self.is_org_admin_for_org:
+      if is_org_admin:
         choices.append(self.RESPONSES['delete'])
     else:
       mentor_options = {
@@ -653,7 +653,7 @@ class ShowConnection(GSoCRequestHandler):
           'reject' : self.RESPONSES['reject_org_admin'],
           'withdraw' : self.RESPONSES['withdraw']
           }    
-      if self.is_org_admin_for_org:
+      if is_org_admin:
         choices = self.getMentorChoices(mentor_options, c.isOrgUnreplied(), 
             c.isOrgAccepted(), c.isOrgRejected(), c.isOrgWithdrawn())
         if c.isOrgUnreplied():
@@ -693,7 +693,7 @@ class ShowConnection(GSoCRequestHandler):
 
     return {
         'page_name': 'Viewing Connection',
-        'is_admin' : self.is_org_admin_for_org,
+        'is_admin' : is_org_admin,
         'header_name': header_name,
         'connection' : data.connection,
         'message_box' : message_box,
