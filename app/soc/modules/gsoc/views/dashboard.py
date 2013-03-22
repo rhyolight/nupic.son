@@ -136,8 +136,8 @@ class DashboardPage(base.GSoCRequestHandler):
             name='gsoc_dashboard')]
 
   def checkAccess(self, data, check, mutator):
-    """Denies access if you don't have a role in the current program."""
-    check.isLoggedIn()
+    """Denies access if you don't have a profile in the current program."""
+    check.isProfileActive()
 
   def templatePath(self):
     """Returns the path to the template."""
