@@ -47,8 +47,6 @@ from soc.modules.gci.views.helper.url_patterns import url
 
 
 BACKLINKS_TO_MAIN = {'to': 'main', 'title': 'Main dashboard'}
-BIRTHDATE_FORMAT = 'd-m-Y'
-DATETIME_FORMAT = 'Y-m-d H:i:s'
 
 
 class MainDashboard(Dashboard):
@@ -476,12 +474,10 @@ class MyOrgApplicationsComponent(Component):
 
     list_config.addSimpleColumn('name', 'Name')
     list_config.addSimpleColumn('org_id', 'Organization ID')
-    list_config.addPlainTextColumn(
-        'created', 'Created On',
-        lambda ent, *args: format(ent.created, DATETIME_FORMAT))
-    list_config.addPlainTextColumn(
-        'modified', 'Last Modified On',
-        lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
+    list_config.addSimpleColumn('created', 'Created On',
+                                column_type=lists.DATE)
+    list_config.addSimpleColumn('modified', 'Last Modified On',
+                                column_type=lists.DATE)
 
     if self.data.timeline.surveyPeriod(survey):
       url_name = 'gci_retake_org_app'
@@ -489,7 +485,7 @@ class MyOrgApplicationsComponent(Component):
       url_name = 'gci_show_org_app'
 
     list_config.setRowAction(
-        lambda e, *args: data.redirect.id(e.key().id()).
+        lambda entity, *args: data.redirect.id(entity.key().id()).
             urlOf(url_name))
 
     self._list_config = list_config
@@ -561,7 +557,7 @@ class MyOrgsTaskList(Component):
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn(
-        'org', 'Organization', lambda ent, *args: ent.org.name)
+        'org', 'Organization', lambda entity, *args: entity.org.name)
     list_config.addPlainTextColumn(
         'type', 'Type', lambda entity, *args: ", ".join(entity.types))
     list_config.addPlainTextColumn(
@@ -579,32 +575,24 @@ class MyOrgsTaskList(Component):
     list_config.addSimpleColumn('description', 'Description', hidden=True)
     list_config.addPlainTextColumn(
         'student', 'Student',
-        lambda ent, *args: ent.student.name() if ent.student else '',
+        lambda entity, *args: entity.student.name() if entity.student else '',
         hidden=True)
     list_config.addPlainTextColumn(
         'created_by', 'Created by',
-        lambda entity, *args: entity.created_by.name() \
-            if entity.created_by else '',
+        (lambda entity, *args:
+            entity.created_by.name() if entity.created_by else ''),
         hidden=True)
     list_config.addPlainTextColumn(
         'modified_by', 'Modified by',
-        lambda entity, *args: entity.modified_by.name() \
-            if entity.modified_by else '',
+        (lambda entity, *args:
+            entity.modified_by.name() if entity.modified_by else ''),
         hidden=True)
-    list_config.addPlainTextColumn(
-        'created_on', 'Created on',
-        lambda entity, *args: format(entity.created_on, DATETIME_FORMAT) \
-            if entity.created_on else '',
-        hidden=True)
-    list_config.addPlainTextColumn(
-        'modified_on', 'Modified on',
-        lambda entity, *args: format(entity.modified_on, DATETIME_FORMAT) \
-            if entity.modified_on else '',
-        hidden=True)
-    list_config.addPlainTextColumn('closed_on', 'Closed on',
-        lambda entity, *args: format(
-            entity.closed_on, DATETIME_FORMAT) if entity.closed_on else '',
-        hidden=True)
+    list_config.addSimpleColumn('created_on', 'Created on',
+                                column_type=lists.DATE, hidden=True)
+    list_config.addSimpleColumn('modified_on', 'Modified on',
+                                column_type=lists.DATE, hidden=True)
+    list_config.addSimpleColumn('closed_on', 'Closed on',
+                                column_type=lists.DATE, hidden=True)
     list_config.addSimpleColumn('status', 'Status')
 
     # TODO (madhu): Super temporary solution until the pretty lists are up.
@@ -615,7 +603,7 @@ class MyOrgsTaskList(Component):
               'gci_edit_task'))))
 
     list_config.setRowAction(
-        lambda e, *args: data.redirect.id(e.key().id()).
+        lambda entity, *args: data.redirect.id(entity.key().id()).
             urlOf('gci_view_task'))
 
     # Add publish/unpublish buttons to the list and enable per-row checkboxes.
@@ -906,7 +894,7 @@ class MyOrgsListBeforeInviteMentor(MyOrgsList):
 
   def _setRowAction(self, request, data):
     self._list_config.setRowAction(
-        lambda e, *args: data.redirect.invite('mentor', e)
+        lambda entity, *args: data.redirect.invite('mentor', entity)
             .urlOf(url_names.GCI_SEND_INVITE))
 
 
@@ -932,7 +920,7 @@ class MyOrgsListBeforeInviteOrgAdmin(MyOrgsList):
 
   def _setRowAction(self, request, data):
     self._list_config.setRowAction(
-        lambda e, *args: data.redirect.invite('org_admin', e)
+        lambda entity, *args: data.redirect.invite('org_admin', entity)
             .urlOf(url_names.GCI_SEND_INVITE))
 
 
@@ -1091,8 +1079,8 @@ class OrgAdminInvitesList(Component):
       list_config.addPlainTextColumn('org', 'From',
         lambda entity, *args: entity.org.name)
 
-    list_config.setRowAction(lambda e, *args: data.redirect.userId(
-        e.parent_key().name(), e.key().id()).urlOf(
+    list_config.setRowAction(lambda entity, *args: data.redirect.userId(
+        entity.parent_key().name(), entity.key().id()).urlOf(
         url_names.GCI_MANAGE_INVITE))
 
     self.idx = 9
@@ -1140,10 +1128,10 @@ class DocumentComponent(Component):
     self.data = data
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn(
-        'title', 'Title', lambda ent, *args: ent.name())
+        'title', 'Title', lambda entity, *args: entity.name())
 
     list_config.setRowAction(
-        lambda e, *args: self.data.redirect.document(e).urlOf(
+        lambda entity, *args: self.data.redirect.document(entity).urlOf(
             'show_gci_document'))
 
     self._list_config = list_config

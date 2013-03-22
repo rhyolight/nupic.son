@@ -18,7 +18,6 @@
 
 from google.appengine.ext import db
 
-from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.views.helper import addresses
@@ -29,8 +28,6 @@ from soc.views.template import Template
 from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.score import GCIOrgScore
 from soc.modules.gci.views.helper import url_names
-
-DATE_FORMAT = 'd-m-Y'
 
 
 class StudentList(Template):
@@ -76,56 +73,50 @@ class StudentList(Template):
     list_config = lists.ListConfiguration()
 
     list_config.setRowAction(
-        lambda e, sp, *args: data.redirect.profile(
-            sp[e.parent_key()].link_id).urlOf(url_names.GCI_STUDENT_TASKS))
+        lambda entity, sp, *args: data.redirect.profile(
+            sp[entity.parent_key()].link_id).urlOf(url_names.GCI_STUDENT_TASKS))
 
-    list_config.addPlainTextColumn(
-        'name', 'Name', lambda e, sp, *args: sp[e.parent_key()].name())
-    list_config.addPlainTextColumn(
-        'link_id', 'Username', lambda e, sp, *args: sp[e.parent_key()].link_id)
-    list_config.addPlainTextColumn(
-        'email', 'Email', lambda e, sp, *args: sp[e.parent_key()].email)
-    list_config.addPlainTextColumn('given_name', 'Given name',
-        (lambda e, sp, *args: sp[e.parent_key()].given_name), hidden=True)
-    list_config.addPlainTextColumn('surname', 'Surname',
-        (lambda e, sp, *args: sp[e.parent_key()].surname), hidden=True)
-    list_config.addPlainTextColumn('name_on_documents', 'Legal name',
-        (lambda e, sp, *args: sp[e.parent_key()].name_on_documents),
-        hidden=True)
-    list_config.addPlainTextColumn(
-        'birth_date', 'Birthdate',
-        (lambda e, sp, *args: format(
-            sp[e.parent_key()].birth_date, DATE_FORMAT)),
-        hidden=True)
-    list_config.addPlainTextColumn('gender', 'Gender',
-        (lambda e, sp, *args: sp[e.parent_key()].gender))
+    list_config.addSimpleParentColumn('name', 'Name')
+    list_config.addParentColumn(
+        'name', 'Name', (lambda entity, *args: entity.name()))
+    list_config.addSimpleParentColumn('link_id', 'Username')
+    list_config.addSimpleParentColumn('email', 'Email')
+    list_config.addSimpleParentColumn('given_name', 'Given name', hidden=True)
+    list_config.addSimpleParentColumn('surname', 'Surname', hidden=True)
+    list_config.addSimpleParentColumn('name_on_documents', 'Legal name',
+                                      hidden=True)
+    list_config.addSimpleParentColumn(
+        'birth_date', 'Birthdate', column_type=lists.BIRTHDATE, hidden=True)
+    list_config.addSimpleParentColumn('gender', 'Gender')
 
     self._addAddressColumns(list_config)
 
-    list_config.addPlainTextColumn('school_name', 'School name',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_name),
+    list_config.addParentColumn(
+        'school_name', 'School name',
+        (lambda entity, *args: entity.student_info.school_name),
         hidden=True)
-    list_config.addPlainTextColumn('school_country', 'School Country',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_country),
+    list_config.addParentColumn(
+        'school_country', 'School Country',
+        (lambda entity, *args: entity.student_info.school_country), hidden=True)
+    list_config.addParentColumn(
+        'school_type', 'School Type',
+        (lambda entity, *args: entity.student_info.school_type), hidden=True)
+    list_config.addParentColumn(
+        'major', 'Major',
+        (lambda entity, *args: entity.student_info.major), hidden=True)
+    list_config.addParentColumn(
+        'degree', 'Degree',
+        (lambda entity, *args: entity.student_info.degree), hidden=True)
+    list_config.addParentColumn(
+        'grade', 'Grade',
+        (lambda entity, *args: entity.student_info.grade), hidden=True)
+    list_config.addParentColumn(
+        'expected_graduation', 'Expected Graduation',
+        (lambda entity, *args: entity.student_info.expected_graduation),
         hidden=True)
-    list_config.addPlainTextColumn('school_type', 'School Type',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.school_type),
-        hidden=True)
-    list_config.addPlainTextColumn('major', 'Major',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.major),
-        hidden=True)
-    list_config.addPlainTextColumn('degree', 'Degree',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.degree),
-        hidden=True)
-    list_config.addPlainTextColumn('grade', 'Grade',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.grade),
-        hidden=True)
-    list_config.addPlainTextColumn('expected_graduation', 'Expected Graduation',
-        (lambda e, sp, *args: sp[e.parent_key()].student_info.expected_graduation),
-        hidden=True)
-
-    list_config.addNumericalColumn('completed_tasks', 'Completed tasks',
-        lambda e, *args: e.number_of_completed_tasks)
+    list_config.addSimpleColumn(
+        'number_of_completed_tasks', 'Completed tasks',
+        column_type=lists.NUMERICAL)
 
     def formsSubmitted(e, sp, form):
       """Returns "Yes" if form has been submitted otherwise "No".
@@ -146,39 +137,26 @@ class StudentList(Template):
 
     list_config.addPlainTextColumn(
         'consent_form', 'Consent Form Submitted',
-        (lambda e, sp, *args: formsSubmitted(e, sp, 'consent')))
+        (lambda entity, sp, *args: formsSubmitted(entity, sp, 'consent')))
     list_config.addPlainTextColumn(
         'student_id_form', 'Student ID Form Submitted',
-        (lambda e, sp, *args: formsSubmitted(e, sp, 'student_id')))
+        (lambda entity, sp, *args: formsSubmitted(entity, sp, 'student_id')))
 
-    list_config.addPlainTextColumn('im_network', 'IM Network',
-        (lambda e, sp, *args: sp[e.parent_key()].im_network),
-        hidden=True)
-    list_config.addPlainTextColumn('im_handle', 'IM Handle',
-        (lambda e, sp, *args: sp[e.parent_key()].im_handle),
-        hidden=True)
-    list_config.addPlainTextColumn('home_page', 'Home Page',
-        (lambda e, sp, *args: sp[e.parent_key()].home_page),
-        hidden=True)
-    list_config.addPlainTextColumn('blog', 'Blog',
-        (lambda e, sp, *args: sp[e.parent_key()].blog),
-        hidden=True)
-    list_config.addPlainTextColumn('photo_url', 'Photo URL',
-        (lambda e, sp, *args: urlize(sp[e.parent_key()].photo_url)),
-        hidden=True)
-
-    list_config.addPlainTextColumn('program_knowledge', 'Program Knowledge',
-        (lambda e, sp, *args: sp[e.parent_key()].program_knowledge),
-        hidden=True)
-
-    list_config.addPlainTextColumn('created_on', 'Profile Created On',
-        (lambda e, sp, *args: format(
-            sp[e.parent_key()].created_on, DATE_FORMAT)),
-        hidden=True)
-    list_config.addPlainTextColumn('modified_on', 'Last Modified On',
-        (lambda e, sp, *args: format(
-            sp[e.parent_key()].modified_on, DATE_FORMAT)),
-        hidden=True)
+    list_config.addSimpleParentColumn('im_network', 'IM Network', hidden=True)
+    list_config.addSimpleParentColumn('im_handle', 'IM Handle', hidden=True)
+    list_config.addSimpleParentColumn('home_page', 'Home Page', hidden=True)
+    list_config.addSimpleParentColumn('blog', 'Blog', hidden=True)
+    list_config.addParentColumn(
+        'photo_url', 'Photo URL',
+        (lambda entity, *args: urlize(entity.photo_url)), hidden=True)
+    list_config.addSimpleParentColumn('program_knowledge', 'Program Knowledge',
+                                      hidden=True)
+    list_config.addSimpleParentColumn(
+        'created_on', 'Profile Created On',
+        column_type=lists.DATE, hidden=True)
+    list_config.addSimpleParentColumn(
+        'modified_on', 'Last Modified On',
+        column_type=lists.DATE, hidden=True)
 
     self._list_config = list_config
 
@@ -236,37 +214,36 @@ class StudentList(Template):
       * tshirt_style
       * tshirt_size
     """
-    list_config.addPlainTextColumn('res_street', 'Street',
-        (lambda e, sp, *args: sp[e.parent_key()].res_street), hidden=True)
-    list_config.addPlainTextColumn('res_street_extra', 'Street Extra',
-        (lambda e, sp, *args: sp[e.parent_key()].res_street_extra), hidden=True)
-    list_config.addPlainTextColumn('res_city', 'City',
-        (lambda e, sp, *args: sp[e.parent_key()].res_city), hidden=True)
-    list_config.addPlainTextColumn('res_state', 'State',
-        (lambda e, sp, *args: sp[e.parent_key()].res_state), hidden=True)
-    list_config.addPlainTextColumn('res_country', 'Country',
-        (lambda e, sp, *args: sp[e.parent_key()].res_country), hidden=True)
-    list_config.addPlainTextColumn('res_postalcode', 'Postalcode',
-        (lambda e, sp, *args: sp[e.parent_key()].res_postalcode), hidden=True)
-    list_config.addPlainTextColumn('phone', 'Phone',
-        (lambda e, sp, *args: sp[e.parent_key()].phone), hidden=True)
-    list_config.addPlainTextColumn('ship_name', 'Ship Name',
-        (lambda e, sp, *args: sp[e.parent_key()].shipping_name()), hidden=True)
-    list_config.addPlainTextColumn('ship_street', 'Ship Street',
-        (lambda e, sp, *args: sp[e.parent_key()].shipping_street()), hidden=True)
-    list_config.addPlainTextColumn('ship_street_extra', 'Ship Street Extra',
-        (lambda e, sp, *args: sp[e.parent_key()].shipping_street_extra()),
-        hidden=True)
-    list_config.addPlainTextColumn('ship_city', 'Ship City',
-        (lambda e, sp, *args: sp[e.parent_key()].shipping_city()), hidden=True)
-    list_config.addPlainTextColumn('ship_state', 'Ship State',
-        (lambda e, sp, *args: sp[e.parent_key()].shipping_state()), hidden=True)
-    list_config.addPlainTextColumn('ship_country', 'Ship Country',
-        (lambda e, sp, *args: sp[e.parent_key()].shipping_country()), hidden=True)
-    list_config.addPlainTextColumn('ship_postalcode', 'Ship Postalcode',
-        (lambda e, sp, *args: sp[e.parent_key()].shipping_postalcode()),
-        hidden=True)
-    list_config.addPlainTextColumn('tshirt_style', 'T-Shirt Style',
-        (lambda e, sp, *args: sp[e.parent_key()].tshirt_style), hidden=True)
-    list_config.addPlainTextColumn('tshirt_size', 'T-Shirt Size',
-        (lambda e, sp, *args: sp[e.parent_key()].tshirt_size), hidden=True)
+    list_config.addSimpleParentColumn('res_street', 'Street', hidden=True)
+    list_config.addSimpleParentColumn('res_street_extra', 'Street Extra',
+                                      hidden=True)
+    list_config.addSimpleParentColumn('res_city', 'City', hidden=True)
+    list_config.addSimpleParentColumn('res_state', 'State', hidden=True)
+    list_config.addSimpleParentColumn('res_country', 'Country', hidden=True)
+    list_config.addSimpleParentColumn('res_postalcode', 'Postalcode', hidden=True)
+    list_config.addSimpleParentColumn('phone', 'Phone', hidden=True)
+    list_config.addParentColumn(
+        'ship_name', 'Ship Name',
+        (lambda entity, *args: entity.shipping_name()), hidden=True)
+    list_config.addParentColumn(
+        'ship_street', 'Ship Street',
+        (lambda entity, *args: entity.shipping_street()), hidden=True)
+    list_config.addParentColumn(
+        'ship_street_extra', 'Ship Street Extra',
+        (lambda entity, *args: entity.shipping_street_extra()), hidden=True)
+    list_config.addParentColumn(
+        'ship_city', 'Ship City',
+        (lambda entity, *args: entity.shipping_city()), hidden=True)
+    list_config.addParentColumn(
+        'ship_state', 'Ship State',
+        (lambda entity, *args: entity.shipping_state()), hidden=True)
+    list_config.addParentColumn(
+        'ship_country', 'Ship Country',
+        (lambda entity, *args: entity.shipping_country()), hidden=True)
+    list_config.addParentColumn(
+        'ship_postalcode', 'Ship Postalcode',
+        (lambda entity, *args: entity.shipping_postalcode()), hidden=True)
+    list_config.addSimpleParentColumn('tshirt_style', 'T-Shirt Style',
+                                      hidden=True)
+    list_config.addSimpleParentColumn('tshirt_size', 'T-Shirt Size',
+                                      hidden=True)

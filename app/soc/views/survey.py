@@ -14,13 +14,10 @@
 
 """General Views/Templates for surveys are in this module."""
 
-from django.utils import dateformat
 
 from soc.views.helper import lists
 from soc.views.helper import surveys
 from soc.views.template import Template
-
-DATETIME_FORMAT = 'Y-m-d H:i:s'
 
 
 def field_or_empty(field_id):
@@ -60,12 +57,9 @@ class SurveyRecordList(Template):
       list_config.addPlainTextColumn(
           field_id, label, field_or_empty(field_id), hidden=True)
 
-    list_config.addPlainTextColumn(
-        'created', 'Created On',
-        lambda ent, *args: dateformat.format(ent.created, DATETIME_FORMAT))
-    list_config.addPlainTextColumn(
-        'modified', 'Last Modified On',
-        lambda ent, *args: dateformat.format(ent.modified, DATETIME_FORMAT))
+    list_config.addSimpleColumn('created', 'Created On', column_type=lists.DATE)
+    list_config.addSimpleColumn('modified', 'Last Modified On',
+                                column_type=lists.DATE)
     self.list_config = list_config
 
   def context(self):

@@ -89,12 +89,12 @@ class SlotsList(org_list.OrgList):
     list_config.setColumnEditable('new_org', True, 'select')
 
     list_config.addSimpleColumn('slots_desired', 'Min',
-        width=25, column_type=lists.ColumnType.NUMERICAL)
+        width=25, column_type=lists.NUMERICAL)
     list_config.addSimpleColumn('max_slots_desired', 'Max',
-        width=25, column_type=lists.ColumnType.NUMERICAL)
+        width=25, column_type=lists.NUMERICAL)
 
     list_config.addSimpleColumn('slots', 'Slots',
-        width=50, column_type=lists.ColumnType.NUMERICAL)
+        width=50, column_type=lists.NUMERICAL)
     list_config.setColumnEditable('slots', True)
     list_config.setColumnSummary('slots', 'sum', "<b>Total: {0}</b>")
 

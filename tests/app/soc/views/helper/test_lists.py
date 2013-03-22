@@ -28,15 +28,15 @@ class ColumnTypeFactoryTest(unittest.TestCase):
   """Unit tests for ColumnTypeFactory class."""
 
   def testCreatePlainText(self):
-    column_type = lists.ColumnTypeFactory.create(lists.ColumnType.PLAIN_TEXT)
+    column_type = lists.ColumnTypeFactory.create(lists.PLAIN_TEXT)
     self.assertIsInstance(column_type, lists.PlainTextColumnType)
 
   def testCreateNumerical(self):
-    column_type = lists.ColumnTypeFactory.create(lists.ColumnType.NUMERICAL)
+    column_type = lists.ColumnTypeFactory.create(lists.NUMERICAL)
     self.assertIsInstance(column_type, lists.NumericalColumnType)
 
   def testCreateHtml(self):
-    column_type = lists.ColumnTypeFactory.create(lists.ColumnType.HTML)
+    column_type = lists.ColumnTypeFactory.create(lists.HTML)
     self.assertIsInstance(column_type, lists.HtmlColumnType)
 
   def testCreateWithInvalidArgument(self):

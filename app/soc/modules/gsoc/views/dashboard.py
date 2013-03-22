@@ -62,8 +62,6 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 from summerofcode.logic import survey as survey_logic
 
-DATETIME_FORMAT = 'Y-m-d H:i:s'
-BIRTHDATE_FORMAT = 'd-m-Y'
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
 CONNECTION_ROLES = (
@@ -356,12 +354,10 @@ class MyOrgApplicationsComponent(Component):
 
     list_config.addSimpleColumn('name', 'Name')
     list_config.addSimpleColumn('org_id', 'Organization ID')
-    list_config.addPlainTextColumn(
-        'created', 'Created On',
-        lambda ent, *args: format(ent.created, DATETIME_FORMAT))
-    list_config.addPlainTextColumn(
-        'modified', 'Last Modified On',
-        lambda ent, *args: format(ent.modified, DATETIME_FORMAT))
+    list_config.addSimpleColumn('created', 'Created On',
+                                column_type=lists.DATE)
+    list_config.addSimpleColumn('modified', 'Last Modified On',
+                                column_type=lists.DATE)
 
     if self.data.timeline.surveyPeriod(survey):
       url_name = 'gsoc_retake_org_app'
@@ -555,16 +551,12 @@ class MyEvaluationsComponent(Component):
         lambda ent, eval, *args: eval.capitalize() if eval else '')
     list_config.addSimpleColumn('title', 'Project')
     list_config.addHtmlColumn('status', 'Status', self._getStatus)
-    list_config.addPlainTextColumn(
+    list_config.addDateColumn(
         'created', 'Submitted on',
-        lambda ent, eval, *args: format(
-            self.record.created, DATETIME_FORMAT) if \
-            self.record else 'N/A')
-    list_config.addPlainTextColumn(
+        lambda ent, eval, *args: self.record.created if self.record else None)
+    list_config.addDateColumn(
         'modified', 'Last modified on',
-        lambda ent, eval, *args: format(
-            self.record.modified, DATETIME_FORMAT) if (
-            self.record and self.record.modified) else 'N/A')
+        lambda ent, eval, *args: self.record.modified if self.record else None)
     def rowAction(ent, eval, *args):
       return data.redirect.survey_record(
           eval, ent.key().id_or_name(), ent.parent().link_id).urlOf(
@@ -765,13 +757,10 @@ class SubmittedProposalsComponent(Component):
     list_config.addHtmlColumn('status', 'Status', getStatusOnDashboard,
         options=options)
 
-    list_config.addPlainTextColumn(
-        'last_modified_on', 'Last modified',
-        lambda ent, *args: format(ent.last_modified_on, DATETIME_FORMAT))
-    list_config.addPlainTextColumn(
-        'created_on', 'Created on',
-        (lambda ent, *args: format(ent.created_on, DATETIME_FORMAT)),
-        hidden=True)
+    list_config.addSimpleColumn('last_modified_on', 'Last modified',
+                                column_type=lists.DATE)
+    list_config.addSimpleColumn('created_on', 'Created on',
+                                hidden=True, column_type=lists.DATE)
     list_config.addPlainTextColumn(
         'student', 'Student',
         lambda ent, *args: ent.parent().name())
@@ -1481,8 +1470,7 @@ class TodoComponent(Component):
     list_config.addPlainTextColumn(
         'key', 'Key', (lambda d, *args: d['key']), hidden=True)
     list_config.addDictColumn('name', 'Name')
-    list_config.addDictColumn('status', 'Status',
-        column_type=lists.ColumnType.HTML)
+    list_config.addDictColumn('status', 'Status', column_type=lists.HTML)
     def rowAction(d, *args):
       key = d['key']
       if key == 'tax_form':
@@ -1610,16 +1598,12 @@ class StudentEvaluationComponent(Component):
             [mentors.get(m).name() for m in ent.mentors]))
     list_config.addHtmlColumn(
         'status', 'Status', self._getStatus)
-    list_config.addPlainTextColumn(
+    list_config.addDateColumn(
         'created', 'Submitted on',
-        lambda ent, eval, *args: format(
-            self.record.created, DATETIME_FORMAT) if \
-            self.record else 'N/A')
-    list_config.addPlainTextColumn(
+        lambda ent, eval, *args: self.record.created if self.record else None)
+    list_config.addDateColumn(
         'modified', 'Last modified on',
-        lambda ent, eval, *args: format(
-            self.record.modified, DATETIME_FORMAT) if (
-            self.record and self.record.modified) else 'N/A')
+        lambda ent, eval, *args: self.record.modified if self.record else None)
     list_config.setDefaultSort('student')
 
     def getRowAction(entity, eval, *args):

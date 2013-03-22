@@ -48,7 +48,6 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.dashboard import BIRTHDATE_FORMAT
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views import projects_list
@@ -841,13 +840,10 @@ class ProposalsList(Template):
     list_config.addHtmlColumn('status', 'Status',
         getStatusOnDashboard, options=options)
 
-    list_config.addPlainTextColumn(
-        'last_modified_on', 'Last modified',
-        lambda ent, *args: dateformat.format(ent.last_modified_on, 'Y-m-d H:i:s'))
-    list_config.addPlainTextColumn(
-        'created_on', 'Created on',
-        (lambda ent, *args: dateformat.format(ent.created_on, 'Y-m-d H:i:s')),
-        hidden=True)
+    list_config.addSimpleColumn('last_modified_on', 'Last modified',
+                                column_type=lists.DATE)
+    list_config.addSimpleColumn('created_on', 'Created on',
+                                column_type=lists.DATE, hidden=True)
     list_config.addPlainTextColumn(
         'student', 'Student',
         lambda ent, *args: ent.parent().name())
@@ -1169,12 +1165,11 @@ class StudentsList(Template):
     list_config.addSimpleColumn('surname', "Surname", hidden=True)
     list_config.addSimpleColumn('name_on_documents', "Legal name", hidden=True)
     list_config.addSimpleColumn('gender', 'Gender', hidden=True)
-    list_config.addPlainTextColumn(
-        'birth_date', "Birthdate",
-        (lambda ent, *args: dateformat.format(ent.birth_date, BIRTHDATE_FORMAT)),
-        hidden=True)
-    list_config.setRowAction(lambda e, *args: data.redirect.profile(
-        e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW_ADMIN, secure=True))
+    list_config.addSimpleTextColumn('birth_date', "Birthdate",
+                                    column_type=lists.BIRTHDATE, hidden=True)
+    list_config.setRowAction(
+        lambda e, *args: data.redirect.profile(e.link_id).urlOf(
+            url_names.GSOC_PROFILE_SHOW_ADMIN, secure=True))
 
     def formsSubmitted(ent, si):
       info = si[ent.key()]

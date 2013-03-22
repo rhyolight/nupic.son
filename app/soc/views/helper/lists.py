@@ -12,8 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module that generates the lists."""
+"""Module that generates the lists.
+Methods for adding typed columns:
+addPlainTextColumn(col_id, name, func)
+addDateColumn(col_id, name, func)
+addBirthDateColumn(col_id, name, func)
+addNumericalColumn(col_id, name, func)
+addHtmlColumn(col_id, name, func)
 
+Methods for adding complex columns:
+addSimpleColumn(col_id, name)
+addSimpleParentColumn(col_id, name)
+addParentColumn(col_id, name, trans)
+addDictColumn(col_id, name)
+
+Methods for adding row buttons:
+addSimpleRedirectRowButton(col_id, button_id, caption, url,
+                           classes=None, new_window=False)
+addCustomRedirectRowButton(col_id, button_id, caption, func,
+                           classes=None, new_window=False)
+
+Methods for adding buttons:
+addSimpleRedirectButton(button_id, caption, url, new_window=True)
+addCustomRedirectButton(button_id, caption, func, new_window=True)
+addPostButton(button_id, caption, url, bounds, keys,
+addPostEditButton(button_id, caption, url='', keys=[], refresh='current')
+"""
+
+import datetime
 import json
 import logging
 
@@ -21,17 +47,28 @@ from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from django.utils import html
+from django.utils.dateformat import format
 
 from soc.views.template import Template
 
+DATETIME_FORMAT = 'Y-m-d H:i:s'
+DATE_FORMAT = 'Y-m-d'
+BIRTHDATE_FORMAT = 'd-m-Y'
 
+# These together form the valid Column Types
+# #ifihadenums
+PLAIN_TEXT = 'plain_text'
+NUMERICAL = 'numerical'
+DATE = 'date'
+BIRTHDATE = 'birthdate'
+HTML = 'html'
+
+
+# TODO(nathaniel): look into making these module-private
 class ColumnType(object):
   # TODO(daniel): add doc string
   """
   """
-  PLAIN_TEXT = 'plain_text'
-  NUMERICAL = 'numerical'
-  HTML = 'html'
 
   def safe(self, value):
     """Returns a safe representation of the specified value which can be safely
@@ -53,11 +90,7 @@ class PlainTextColumnType(ColumnType):
   """
 
   def safe(self, value):
-    """Returns HTML escaped representation of the specified value.
-
-    Args:
-      value: the specified value which is to be HTML escaped
-    """
+    """See ColumnType.safe for specification."""
     return html.conditional_escape(value)
 
 
@@ -81,6 +114,7 @@ class NumericalColumnType(ColumnType):
       ValueError: if the specified value is invalid
       TypeError: if the specified value is neither a number nor a string
     """
+    # 0 is a valid value, so 'if not value' is not appropriate here
     if value is None or value == '':
       safe_value = ''
     elif isinstance(value, int) or isinstance(value, long) or \
@@ -93,6 +127,42 @@ class NumericalColumnType(ColumnType):
         safe_value = float(value)
 
     return safe_value
+
+
+class DateColumnType(ColumnType):
+  """Class which represents a column which contains a date value."""
+
+  def __init__(self, birthdate=False):
+    """If birthdate is true, the BIRTHDATE_FORMAT will be used."""
+    self.birthdate = birthdate
+
+  def safe(self, value):
+    """Returns the safe representation of the specified value. It is assumed
+    that only date values are passed here, so the the output is not HTML
+    escaped.
+
+    Args:
+      value: the specified string or a date for which
+          to return the safe representation
+
+    Returns:
+      textual representation of the specified value or the empty string for
+      None and the empty string.
+
+    Raises:
+      ValueError: if the specified value is invalid
+      TypeError: if the specified value is neither a number nor a string
+    """
+    if not value:
+      return 'N/A'
+
+    if self.birthdate:
+      return format(value, BIRTHDATE_FORMAT)
+
+    if isinstance(value, datetime.date):
+      return format(value, DATE_FORMAT)
+
+    return format(value, DATETIME_FORMAT)
 
 
 class HtmlColumnType(ColumnType):
@@ -121,12 +191,16 @@ class ColumnTypeFactory(object):
       column_type: the specified column type which must be one of the constant
           values specified in ColumnType class.
     """
-    if column_type == ColumnType.PLAIN_TEXT:
+    if column_type == PLAIN_TEXT:
       return PlainTextColumnType()
-    elif column_type == ColumnType.NUMERICAL:
+    elif column_type == NUMERICAL:
       return NumericalColumnType()
-    elif column_type == ColumnType.HTML:
+    elif column_type == HTML:
       return HtmlColumnType()
+    elif column_type == DATE:
+      return DateColumnType()
+    elif column_type == BIRTHDATE:
+      return DateColumnType(birthdate=True)
     else:
       raise ValueError("Invalid column_type: %s" % column_type)
 
@@ -389,7 +463,7 @@ class ListConfiguration(object):
 
   def _addColumn(self, col_id, name, func, width=None, resizable=True,
                 hidden=False, searchhidden=True, options=None,
-                column_type=ColumnType.PLAIN_TEXT):
+                column_type=PLAIN_TEXT):
     """Adds a column to the end of the list.
 
     Args:
@@ -446,7 +520,23 @@ class ListConfiguration(object):
     The values may contain arbitrary content which will be HTML escaped.
     """
     self._addColumn(
-        col_id, name, func, column_type=ColumnType.PLAIN_TEXT, **kwargs)
+        col_id, name, func, column_type=PLAIN_TEXT, **kwargs)
+
+  def addDateColumn(self, col_id, name, func, **kwargs):
+    """Adds a date column to the end of the list.
+
+    It is expected that all the values in this columns will be dates.
+    The rendered output will not be HTML escaped.
+    """
+    self._addColumn(col_id, name, func, column_type=DATE, **kwargs)
+
+  def addBirthDateColumn(self, col_id, name, func, **kwargs):
+    """Adds a date column to the end of the list.
+
+    It is expected that all the values in this columns will be dates.
+    The rendered output will not be HTML escaped.
+    """
+    self._addColumn(col_id, name, func, column_type=BIRTHDATE, **kwargs)
 
   def addNumericalColumn(self, col_id, name, func, **kwargs):
     """Adds a numerical column to the end of the list.
@@ -455,7 +545,7 @@ class ListConfiguration(object):
     The rendered output will not be HTML escaped.
     """
     self._addColumn(
-        col_id, name, func, column_type=ColumnType.NUMERICAL, **kwargs)
+        col_id, name, func, column_type=NUMERICAL, **kwargs)
 
   def addHtmlColumn(self, col_id, name, func, **kwargs):
     """Adds a HTML column to the end of the list.
@@ -465,7 +555,82 @@ class ListConfiguration(object):
     inputs, so it should never be used for values which are entered by users.
     """
     self._addColumn(
-        col_id, name, func, column_type=ColumnType.HTML, **kwargs)
+        col_id, name, func, column_type=HTML, **kwargs)
+
+  def addSimpleColumn(self, col_id, name, **kwargs):
+    """Adds a column to the end of the list which uses the id of the column as
+    attribute name of the entity to get the data from.
+
+    This method is basically a shorthand for _addColumn with the function as
+    lambda ent, *args: getattr(ent, id).
+
+    Args:
+      col_id: A unique identifier of this column and name of the field to get
+          the data from.
+      name: The header of the column that is shown to the user.
+      **kwargs: passed on to _addColumn
+    """
+    func = lambda ent, *args: getattr(ent, col_id)
+    self._addColumn(col_id, name, func, **kwargs)
+
+  def addSimpleParentColumn(self, col_id, name, **kwargs):
+    """Adds a column to the end of the list which uses the id of the column as
+    attribute name of the entity to get the data from. Rather than use the
+    entity directory, the entities parent is looked up in an 'ents' dictionary
+    that is passed in by means of a prefetcher.
+
+    This method is basically a shorthand for _addColumn with the function as
+    lambda e, ents, *args: getattr(ents[e.parent_key()], col_id)
+
+    Args:
+      col_id: A unique identifier of this column and name of the field to get
+          the data from.
+      name: The header of the column that is shown to the user.
+      **kwargs: passed on to _addColumn
+    """
+    def func(entity, prefetched_entities, *args):
+      parent_entity = prefetched_entities[entity.parent_key()]
+      return getattr(parent_entity, col_id)
+
+    self._addColumn(col_id, name, func, **kwargs)
+
+  def addParentColumn(self, col_id, name, trans, **kwargs):
+    """Adds a column to the end of the list which uses the passed in trans
+    function to translate the parent entity into the desired data. Rather than
+    use the entity directory, the entities parent is looked up in an 'ents'
+    dictionary that is passed in by means of a prefetcher
+
+    This method is basically a shorthand for _addColumn with the function as
+    lambda e, ents, *args: trans(ents[e.parent_key()], *args)
+
+    Args:
+      col_id: A unique identifier of this column and name of the field to get
+          the data from.
+      name: The header of the column that is shown to the user.
+      trans: The transformation function that is passed the parent entity.
+      **kwargs: passed on to _addColumn
+    """
+    def func(entity, prefetched_entities, *args):
+      parent_entity = prefetched_entities[entity.parent_key()]
+      return trans(parent_entity, *args)
+
+    self._addColumn(col_id, name, func, **kwargs)
+
+  def addDictColumn(self, col_id, name, **kwargs):
+    """Adds a column to the end of the list which uses the id of the column as
+    key of the dictionary to get the data from.
+
+    This method is basically a shorthand for _addColumn with the function as
+    lambda d, *args: d[id].
+
+    Args:
+      col_id: A unique identifier of this column and name of the field to get
+          the data from.
+      name: The header of the column that is shown to the user.
+      **kwargs: passed on to _addColumn
+    """
+    func = lambda d, *args: d[col_id]
+    self._addColumn(col_id, name, func, **kwargs)
 
   def __addRowButton(self, col_id, button_id, caption, type, classes,
                      parameters):
@@ -498,19 +663,6 @@ class ListConfiguration(object):
     column_row_buttons[button_id] = button_config
     self._row_buttons[col_id] = column_row_buttons
 
-  def addCustomRedirectRowButton(self, col_id, button_id, caption, func,
-                                 classes=None, new_window=False):
-    """Adds a custom redirect row button to the specified column.
-    """
-    parameters = {
-        'new_window': new_window
-        }
-    self.__addRowButton(col_id, button_id, caption, 'redirect_simple',
-        classes, parameters)
-    column_row_button_functions = self._row_button_functions.get(col_id, {})
-    column_row_button_functions[button_id] = func
-    self._row_button_functions[col_id] = column_row_button_functions
-
   def addSimpleRedirectRowButton(self, col_id, button_id, caption, url,
                                  classes=None, new_window=False):
     """Adds a simple redirect row button the the specified column with
@@ -523,37 +675,18 @@ class ListConfiguration(object):
     self.addCustomRedirectRowButton(col_id, button_id, caption, func,
         classes, new_window)
 
-  def addSimpleColumn(self, col_id, name, **kwargs):
-    """Adds a column to the end of the list which uses the id of the column as
-    attribute name of the entity to get the data from.
-
-    This method is basically a shorthand for _addColumn with the function as
-    lambda ent, *args: getattr(ent, id).
-
-    Args:
-      col_id: A unique identifier of this column and name of the field to get
-          the data from.
-      name: The header of the column that is shown to the user.
-      **kwargs: passed on to _addColumn
+  def addCustomRedirectRowButton(self, col_id, button_id, caption, func,
+                                 classes=None, new_window=False):
+    """Adds a custom redirect row button to the specified column.
     """
-    func = lambda ent, *args: getattr(ent, col_id)
-    self._addColumn(col_id, name, func, **kwargs)
-
-  def addDictColumn(self, col_id, name, **kwargs):
-    """Adds a column to the end of the list which uses the id of the column as
-    key of the dictionary to get the data from.
-
-    This method is basically a shorthand for _addColumn with the function as
-    lambda d, *args: d[id].
-
-    Args:
-      col_id: A unique identifier of this column and name of the field to get
-          the data from.
-      name: The header of the column that is shown to the user.
-      **kwargs: passed on to _addColumn
-    """
-    func = lambda d, *args: d[col_id]
-    self._addColumn(col_id, name, func, **kwargs)
+    parameters = {
+        'new_window': new_window
+        }
+    self.__addRowButton(col_id, button_id, caption, 'redirect_simple',
+        classes, parameters)
+    column_row_button_functions = self._row_button_functions.get(col_id, {})
+    column_row_button_functions[button_id] = func
+    self._row_button_functions[col_id] = column_row_button_functions
 
   def __addButton(self, col_id, caption, bounds, col_type, parameters):
     """Internal method for adding buttons so that the uniqueness of the id can
