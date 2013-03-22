@@ -19,11 +19,12 @@
 from soc.models import document as document_model
 
 
-def getDocumentQueryForRoles(data):
+def getDocumentQueryForRoles(data, visibilities):
   """Build the query to fetch documents for a given role in a program.
 
   Args:
     data: RequestData object for this request.
+    visibilities: a list of visibilities for the query
 
   Returns:
     A query object that fetches all the documents that should be visible for
@@ -31,17 +32,6 @@ def getDocumentQueryForRoles(data):
   """
   query = document_model.Document.all()
   query.filter('scope', data.program)
-
-  visibilities = []
-  if data.is_student:
-    visibilities.append(document_model.STUDENT_VISIBILITY.identifier)
-    if data.student_info.number_of_projects > 0:
-      visibilities.append(
-          document_model.ACCEPTED_STUDENT_VISIBILITY.identifier)
-  if data.is_org_admin:
-    visibilities.append(document_model.ORG_ADMIN_VISIBILITY.identifier)
-  if data.is_mentor:
-    visibilities.append(document_model.MENTOR_VISIBILITY.identifier)
 
   num_visibilities = len(visibilities)
 

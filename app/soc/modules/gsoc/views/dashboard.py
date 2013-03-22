@@ -24,7 +24,7 @@ from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from soc.logic import cleaning
-from soc.logic import document as soc_document_logic
+from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
@@ -38,6 +38,7 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
 
+from soc.modules.gsoc.logic import document as gsoc_document_logic
 from soc.modules.gsoc.logic.evaluations import evaluationRowAdder
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
@@ -1681,7 +1682,8 @@ class DocumentComponent(Component):
     if idx != self.IDX:
       return None
 
-    q = soc_document_logic.getDocumentQueryForRoles(self.data)
+    visibilities = gsoc_document_logic.getVisibilities(self.data)
+    q = document_logic.getDocumentQueryForRoles(self.data, visibilities)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, lists.keyStarter)
