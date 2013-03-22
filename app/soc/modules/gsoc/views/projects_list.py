@@ -78,10 +78,7 @@ class ProjectList(Template):
 
     self.idx = self.DEFAULT_IDX if idx is None else idx
 
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        (lambda ent, *args: "%s/%s" % (
-            ent.parent_key().name(), ent.key().id())), hidden=True)
+    list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('student', 'Student',
         lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')

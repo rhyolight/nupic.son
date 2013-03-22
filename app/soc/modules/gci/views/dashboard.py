@@ -1080,10 +1080,7 @@ class OrgAdminInvitesList(Component):
 
     # GCIRequest entities have user entities as parents, so the keys
     # for the list items should be parent scoped.
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        (lambda ent, *args: "%s/%s" % (
-            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('to', 'To',
         lambda entity, *args: entity.user.name)
     list_config.addSimpleColumn('status', 'Status')

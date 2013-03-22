@@ -799,10 +799,7 @@ class ProposalsList(Template):
     """Initializes this proposals list."""
     self.data = data
 
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        (lambda ent, *args: "%s/%s" % (
-            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn(
         'email', 'Student Email',
@@ -961,10 +958,7 @@ class ProjectsList(Template):
   def __init__(self, request, data):
     self.data = data
 
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        (lambda ent, *args: "%s/%s" % (
-            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('student', 'Student',
         lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')

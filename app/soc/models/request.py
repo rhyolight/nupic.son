@@ -95,8 +95,3 @@ class Request(db.Model):
     """Return a role name in user friendly format.
     """
     return ROLE_NAMES.get(self.role)
-
-  def keyName(self):
-    """Returns a string which uniquely represents the entity.
-    """
-    return '/'.join([self.parent_key().name(), str(self.key().id())])

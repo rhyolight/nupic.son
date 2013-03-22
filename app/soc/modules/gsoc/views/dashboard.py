@@ -488,10 +488,7 @@ class MyProjectsComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        (lambda ent, *args: "%s/%s" % (
-            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('org', 'Organization Name',
         lambda ent, *args: ent.org.name)
@@ -553,11 +550,7 @@ class MyEvaluationsComponent(Component):
     self.evals = evals
     self.record = None
 
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn(
-        'key', 'Key', (lambda ent, eval, *args: '%s/%s/%s' % (
-            eval, ent.parent().key().name(),
-            ent.key().id())), hidden=True)
+    list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn(
         'evaluation', 'Evaluation',
         lambda ent, eval, *args: eval.capitalize() if eval else '')
@@ -718,10 +711,7 @@ class SubmittedProposalsComponent(Component):
   # TODO(nathaniel): Wait, is this seriously a 100+-line *constructor*?
   def __init__(self, data):
     """Initializes this component."""
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        (lambda ent, *args: "%s/%s" % (
-            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn(
         'email', 'Student Email',
@@ -1044,10 +1034,7 @@ class ProjectsIMentorComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        (lambda ent, *args: "%s/%s" % (
-            ent.parent().key().name(), ent.key().id())), hidden=True)
+    list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('student', 'Student',
                           lambda ent, *args: ent.parent().name())
@@ -1243,10 +1230,8 @@ class OrgConnectionComponent(Component):
     """Initializes this component.
     """
     self.data = data
-    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config = lists.ListConfiguration()
 
-    list_config.addPlainTextColumn('key', 'Key',
-        lambda e, *args: '%s' % e.keyName(), hidden=True)
     list_config.addPlainTextColumn('organization', 'Organization',
         lambda e, *args: e.organization.name)
     list_config.addPlainTextColumn('name', 'Name',
@@ -1610,12 +1595,7 @@ class StudentEvaluationComponent(Component):
 
     self.record = None
 
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn(
-        'key', 'Key',
-        (lambda ent, eval, *args: "%s/%s/%s" % (
-            eval, ent.parent().key().name(),
-            ent.key().id())), hidden=True)
+    list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn(
         'evaluation', 'Evaluation',
         lambda ent, eval, *args: eval.capitalize() if eval else '')
