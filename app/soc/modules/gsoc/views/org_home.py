@@ -107,11 +107,9 @@ class Apply(Template):
       context['invited_role'] = 'an administrator'
       return context
 
-    # TODO(nathaniel): make this .organization() call unnecessary.
-    self.data.redirect.organization()
-
-    request_mentor_link = self.data.redirect.urlOf('gsoc_request')
-    context['mentor_request_link'] = request_mentor_link
+    mentor_connect_link = self.data.redirect.connect_user(
+        self.data.user).urlOf(url_names.GSOC_USER_CONNECTION)
+    context['mentor_connect_link'] = mentor_connect_link
     return context
 
   def templatePath(self):
@@ -287,10 +285,8 @@ class OrgHome(GSoCRequestHandler):
       data.redirect.organization(organization=organization)
 
       context['edit_link'] = data.redirect.urlOf('edit_gsoc_org_profile')
-      context['invite_admin_link'] = data.redirect.invite(
-          'org_admin').urlOf('gsoc_invite')
-      context['invite_mentor_link'] = data.redirect.invite(
-          'mentor').urlOf('gsoc_invite')
+      context['start_connection_link'] = data.redirect.connect_org().urlOf(
+          url_names.GSOC_ORG_CONNECTION)
 
       if (data.program.allocations_visible and
           data.timeline.beforeStudentsAnnounced()):

@@ -20,7 +20,7 @@ from google.appengine.ext import db
 from soc.models.organization import Organization
 from soc.models.profile import Profile
 
-# Constants to represent the role being offered to the recipient of the 
+# Constants to represent the role being offered to the recipient of the
 # connection. These are used internally with the Connection model's
 # getUserFriendlyRole() for user-facing representations.
 ORG_ADMIN_ROLE = 'org_admin'
@@ -35,7 +35,7 @@ STATE_UNREPLIED = 'Unreplied'
 STATE_USER_ACTION_REQ = 'User Action Required'
 STATE_ORG_ACTION_REQ = 'Org Action Required'
 
-# List of possible states for user and org responses to a new connection, 
+# List of possible states for user and org responses to a new connection,
 # used in Connection.user_state and Connection.org_state below.
 STATE_CHOICES = [STATE_ACCEPTED,
     STATE_REJECTED,
@@ -47,7 +47,7 @@ STATE_CHOICES = [STATE_ACCEPTED,
 class Connection(db.Model):
   """Connection model.
 
-  This model is intended to be used to represent either an invitation or 
+  This model is intended to be used to represent either an invitation or
   request between a User and an Organization. The type of role to be granted
   to the user is determined by the role field and promotion is handled
   depending on the states of user and org acceptance. The methods below
@@ -58,7 +58,7 @@ class Connection(db.Model):
   """
 
   #: The User's state with respect to a given role.
-  user_state = db.StringProperty(default=STATE_UNREPLIED, 
+  user_state = db.StringProperty(default=STATE_UNREPLIED,
       choices=STATE_CHOICES)
 
   #: The Org's state with respect to a given role.
@@ -66,15 +66,15 @@ class Connection(db.Model):
       choices=STATE_CHOICES)
 
   #: The role that the user is requesting or being invited to accept.
-  role = db.StringProperty(default=MENTOR_ROLE, 
+  role = db.StringProperty(default=MENTOR_ROLE,
       choices=[MENTOR_ROLE, ORG_ADMIN_ROLE])
 
   #: The organization entity involved in the connection for which a user
   #: may gain heightened privileges.
-  organization = db.ReferenceProperty(Organization, 
+  organization = db.ReferenceProperty(Organization,
       required=True,
       collection_name='connections')
-  
+
   #: Property for the ShowConnection page to keep track of the time that the
   #: connection was initiated.
   created_on = db.DateTimeProperty(auto_now_add=True)
@@ -83,7 +83,7 @@ class Connection(db.Model):
   def allFields():
     """Returns a list of all names of fields in this model.
     """
-    return ['user_state', 'org_state', 'role','organization', 
+    return ['user_state', 'org_state', 'role','organization',
         'profile', 'created_on']
 
   def isUserUnreplied(self):
@@ -116,7 +116,7 @@ class Connection(db.Model):
 
   def isStalemate(self):
     """Indicate whether or not the user and org admin have conflicting
-    responses to the initiated connection, preventing the user from 
+    responses to the initiated connection, preventing the user from
     being promoted to the specified role.
 
     Returns:
@@ -137,7 +137,7 @@ class Connection(db.Model):
     return '/'.join([self.parent_key().name(), str(self.key().id())])
 
   def getUserFriendlyRole(self):
-    """Converts an internal role representation to a user-friendly version 
+    """Converts an internal role representation to a user-friendly version
     to be used in templates and dashboard.
     """
     return 'Org Admin' if self.role == ORG_ADMIN_ROLE else 'Mentor'
@@ -161,7 +161,7 @@ class Connection(db.Model):
       return STATE_REJECTED
     elif self.isUserAccepted():
       return STATE_ORG_ACTION_REQ
-    elif isOrgAccepted():
+    elif self.isOrgAccepted():
       return STATE_USER_ACTION_REQ
     else:
       # This should never happen, so we're going to blow up execution.
@@ -170,7 +170,7 @@ class Connection(db.Model):
 class AnonymousConnection(db.Model):
   """This model is intended for use as a placeholder Connection for the
   scenario in which an org admin attempts to send an email invitation to
-  a person who does not have both a User entity and program Profile. This 
+  a person who does not have both a User entity and program Profile. This
   model is deleted and 'replaced' by an actual Connection object should
   the user decide to register.
 
@@ -185,6 +185,6 @@ class AnonymousConnection(db.Model):
   #: when the user registers.
   hash_id = db.StringProperty()
 
-  #: The email to which the anonymous connection was sent; this should be 
+  #: The email to which the anonymous connection was sent; this should be
   #: queried against to prevent duplicate anonymous connections.
   email = db.StringProperty()

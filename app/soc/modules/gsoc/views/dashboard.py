@@ -28,6 +28,7 @@ from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
+from soc.models import connection
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
@@ -43,6 +44,7 @@ from soc.modules.gsoc.logic.evaluations import evaluationRowAdder
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.logic.survey_record import getEvalRecord
+from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -54,7 +56,6 @@ from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
-from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -65,6 +66,35 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 BIRTHDATE_FORMAT = 'd-m-Y'
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
+# Tuple to include all states for use in CONN_STATUS_OPTS to prevent it from
+# becoming ugly. Note that STATE_UNREPLIED is absent from this list due to the 
+# fact that it is never user-facing; all possible options for the user are
+# computer in Connection.getUserFriendlyStatus().
+STATUS_TUPLE = '%s|%s|%s|%s|%s' % (
+    connection.STATE_ACCEPTED,
+    connection.STATE_REJECTED, 
+    connection.STATE_WITHDRAWN,
+    connection.STATE_ORG_ACTION_REQ,
+    connection.STATE_USER_ACTION_REQ
+    )
+# Include all of the dropdown options for viewing connections by status.
+# These are constructed with the internal representation of the field on
+# the left and the user-facing choice in the dropdown on the right.
+CONN_STATUS_OPTS = [
+    (STATUS_TUPLE, 'All'),
+    (connection.STATE_ACCEPTED, 'Accepted'),
+    (connection.STATE_REJECTED, 'Rejected'),
+    (connection.STATE_USER_ACTION_REQ, 'User Action Required'),
+    (connection.STATE_ORG_ACTION_REQ, 'Org Action Required'),
+    (connection.STATE_WITHDRAWN, 'Withdrawn')
+    ]
+# Include all dropdown options for viewing connections by roles offered
+# to the users. Same rules apply 
+CONN_ROLE_OPTS = [
+    ('%s|%s' % (connection.MENTOR_ROLE, connection.ORG_ADMIN_ROLE), 'All'),
+    (connection.ORG_ADMIN_ROLE, 'Org Admin'), 
+    (connection.MENTOR_ROLE, 'Mentor')
+    ]
 
 def colorize(choice, yes, no):
   """Differentiate between yes and no status with green and red colors."""
@@ -210,10 +240,8 @@ class DashboardPage(base.GSoCRequestHandler):
     elif data.is_mentor:
       components.append(TodoComponent(data))
       components += self._getOrgMemberComponents(data)
-      components.append(RequestComponent(data, False))
     else:
       components += self._getLoneUserComponents(data)
-      components.append(RequestComponent(data, False))
 
     return components
 
@@ -251,6 +279,7 @@ class DashboardPage(base.GSoCRequestHandler):
     if component:
       components.append(component)
 
+    components.append(UserConnectionComponent(data))
     evals = dictForSurveyModel(GradingProjectSurvey, data.program,
                                ['midterm', 'final'])
 
@@ -274,7 +303,7 @@ class DashboardPage(base.GSoCRequestHandler):
 
     if data.is_org_admin:
       # add a component for all organization that this user administers
-      components.append(RequestComponent(data, True))
+      components.append(OrgConnectionComponent(data, True))
       components.append(ParticipantsComponent(data))
 
     # move to the bottom after student signup
@@ -292,9 +321,17 @@ class DashboardPage(base.GSoCRequestHandler):
     return components
 
   def _getLoneUserComponents(self, data):
-    """Get the dashboard components for users without any role."""
-    component = self._getMyOrgApplicationsComponent(data)
-    return [component] if component else []
+    """Get the dashboard components for users without any role.
+    """
+    components = []
+
+    my_org_applications_component = self._getMyOrgApplicationsComponent(data)
+    if my_org_applications_component:
+      components.append(my_org_applications_component)
+
+    components.append(UserConnectionComponent(data))
+
+    return components
 
   def _getMyOrgApplicationsComponent(self, data):
     """Returns MyOrgApplicationsComponent iff this user is main_admin or
@@ -1226,61 +1263,130 @@ class OrganizationsIParticipateInComponent(Component):
       return query.count()
 
 
-class RequestComponent(Component):
-  """Component for listing all the requests for orgs of which the user is an
+class OrgConnectionComponent(Component):
+  """Component for listing all the connections for orgs of which the user is an
   admin.
   """
+
+  IDX = 7
 
   def __init__(self, data, for_admin):
     """Initializes this component.
     """
-    self.for_admin = for_admin
-    self.idx = 7 if for_admin else 8
-    r = data.redirect
-
+    self.data = data
     list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key', (lambda ent, *args: "%s" % (
-        ent.keyName())), hidden=True)
-    list_config.addSimpleColumn('type', 'Request/Invite')
-    if self.for_admin:
-      list_config.addPlainTextColumn(
-          'user', 'User', lambda ent, *args: "%s (%s)" % (
-          ent.user.name, ent.user.link_id))
-    list_config.addPlainTextColumn('role_name', 'Role',
-                          lambda ent, *args: ent.roleName())
 
-    options = [
-        ('pending', 'Needs action'),
-        ('', 'All'),
-        ('(rejected|accepted)', 'Handled'),
-        ('(withdrawn|invalid)', 'Removed'),
-    ]
-    list_config.addSimpleColumn('status', 'Status', options=options)
-    list_config.addPlainTextColumn('org_name', 'Organization',
-        lambda ent, *args: ent.org.name)
+    list_config.addPlainTextColumn('key', 'Key',
+        lambda e, *args: '%s' % e.keyName(), hidden=True)
+    list_config.addPlainTextColumn('organization', 'Organization',
+        lambda e, *args: '%s' % e.organization.name)
+    list_config.addPlainTextColumn('link_id', 'Link Id',
+        lambda e, *args: e.parent().link_id)
+    list_config.addPlainTextColumn('role', 'Role',
+        lambda e, *args: e.getUserFriendlyRole(),
+        options=CONN_ROLE_OPTS)
+    list_config.addPlainTextColumn('status', 'Status', 
+        lambda e, *args: e.status(),
+        options=CONN_STATUS_OPTS)
+
     list_config.setRowAction(
-        lambda ent, *args: r.request(ent).url())
+        lambda e, *args: data.redirect.show_connection(
+            user=e.parent(), connection=e).url()
+        )
     self._list_config = list_config
 
-    super(RequestComponent, self).__init__(data)
+    super(OrgConnectionComponent, self).__init__(data)
 
   def templatePath(self):
     return'v2/modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
-    if lists.getListIndex(self.data.request) != self.idx:
+    """Generates a list of data for the table in this component.
+
+    See getListData() method of soc.views.dashboard.Component for more details.
+
+    Returns:
+        The list data as requested by the current request. Returns None if there is
+        no data to be shown or the request is not for this component's index (IDX).
+    """
+
+    if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
-    q = GSoCRequest.all()
-
-    if self.for_admin:
-      q.filter('org IN', self.data.org_admin_for)
-    else:
-      q.filter('user', self.data.user)
+    q = GSoCConnection.all()
+    q.filter('organization IN', [org.key() for org in self.data.org_admin_for])
 
     starter = lists.keyStarter
+    prefetcher = lists.modelPrefetcher(GSoCConnection, ['organization'])
 
-    prefetcher = lists.modelPrefetcher(GSoCRequest, ['user', 'org'])
+    response_builder = lists.RawQueryContentResponseBuilder(
+      self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
+    return response_builder.build()
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    my_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=7, preload_list=False)
+
+    title = 'Connections for my organizations'
+    description = ugettext(
+        'List of connections with mentors and admins for my organization.')
+
+    return {
+        'name': 'org_connections',
+        'title': title,
+        'lists': [my_list],
+        'description': description
+    }
+
+
+class UserConnectionComponent(Component):
+  """Component for listing all the connections for the current user.
+  """
+
+  IDX = 8
+
+  def __init__(self, data):
+    """Initializes this component.
+    """
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addPlainTextColumn('key', 'Key',
+        lambda e, *args: '%s' % e.keyName(), hidden=True)
+    list_config.addPlainTextColumn('org', 'Organization',
+        lambda e, *args: e.organization.name)
+    list_config.addPlainTextColumn('role', 'Role',
+       lambda e, *args: e.getUserFriendlyRole(),
+       options=CONN_ROLE_OPTS)
+    list_config.addPlainTextColumn('status', 'Status',
+        lambda e, *args: e.status(), options=CONN_STATUS_OPTS)
+
+    list_config.setRowAction(
+        lambda e, *args: data.redirect.show_connection(
+            user=e.parent(), connection=e).url())
+    self._list_config = list_config
+
+    super(UserConnectionComponent, self).__init__(data)
+
+  def templatePath(self):
+    return'v2/modules/gsoc/dashboard/list_component.html'
+
+  def getListData(self):
+    """Generates a list of data for the table in this component.
+
+    See getListData() method of soc.views.dashboard.Component for more details.
+
+    Returns:
+        The list data as requested by the current request. Returns None if there is
+        no data to be shown or the request is not for this component's index (IDX).
+    """
+    if lists.getListIndex(self.data.request) != self.IDX:
+      return None
+
+    q = GSoCConnection.all().ancestor(self.data.user)
+
+    starter = lists.keyStarter
+    prefetcher = lists.modelPrefetcher(GSoCConnection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -1290,20 +1396,16 @@ class RequestComponent(Component):
   def context(self):
     """Returns the context of this component.
     """
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=self.idx, preload_list=False)
+    my_list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.IDX, preload_list=False)
 
-    if self.for_admin:
-      title = 'Requests for my organizations'
-      description = ugettext('List of requests for my organizations.')
-    else:
-      title = 'My requests'
-      description = ugettext('List of my requests.')
+    title = 'My connections'
+    description = ugettext('List of my connections with organizations.')
 
     return {
-        'name': 'org_admin_requests' if self.for_admin else 'requests',
+        'name': 'connections',
         'title': title,
-        'lists': [list],
+        'lists': [my_list],
         'description': description
     }
 
