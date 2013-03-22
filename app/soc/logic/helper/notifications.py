@@ -96,7 +96,7 @@ def connectionContext(data, connection, receivers, message, is_user=False):
   """
 
   subject = DEF_NEW_CONNECTION % {'org' : connection.organization.name}
-  request_url = data.redirect.show_connection(connection.parent(), 
+  request_url = data.redirect.show_connection(connection.parent(),
       connection).url(full=True)
  
   message_properties = {
@@ -108,7 +108,7 @@ def connectionContext(data, connection, receivers, message, is_user=False):
   template = DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE
   return getContext(data, receivers, message_properties, subject, template)
 
-def anonymousConnectionContext(data, email, role, hash, message):
+def anonymousConnectionContext(data, email, role, connection_hash, message):
   """Sends out a notification email to users who have neither user nor 
   profile entities alerting them that an org admin has attempted to 
   initiate a connection with them. 
@@ -118,6 +118,7 @@ def anonymousConnectionContext(data, email, role, hash, message):
     email: Email address of the user meeting the above criteria.
     role: A string role ('mentor' or 'org_admin') to grant the
         user when they register.
+    connection_hash: Hash of the AnonymousConnection object.
     message: The contents of the message field from the connection form.
   Returns:
     A dictionary containing a context for the mail message to be sent to
@@ -127,8 +128,8 @@ def anonymousConnectionContext(data, email, role, hash, message):
   assert isSet(data.profile)
   assert isSet(data.organization)
 
-  url = data.redirect.profile_anonymous_connection(url_role, 
-      hash).url(full=True)
+  url = data.redirect.profile_anonymous_connection(role, 
+      connection_hash).url(full=True)
 
   message_properties = {
       'requester' : data.profile.link_id,

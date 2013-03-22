@@ -37,9 +37,22 @@ limitations under the License.
       {% endif %}
     {% else %}
       <div id="flash-message" class="flash-success">
-      <p>Connection established successfully.</p>
+      <p>Connection(s) established successfully.</p>
+      {% if sent_email_to %}
+        {% for email in sent_email_to %}
+          <p>Invitation sent to: {{ email }}</p>
+        {% endfor %}
+      {% endif %}
     {% endif %}
   </div>
+     {% if dupes %}
+        <div id="flash-message" class="flash-error">
+        <p>Duplicate email invitations not sent.</p>
+        {% for email in dupes %}
+          <p>Invitation already exists for: {{ email }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
   {% endif %}
 
   {% if profile_created %}
@@ -50,7 +63,7 @@ limitations under the License.
 
   {{ logged_in_msg.render }}
 
-  <h2 id="form-register-title">{{ page_name}}</h2> <p id="form-register-req" class="req">* fields required</p>
+  <h2 id="form-register-title">{{ page_name }}</h2> <p id="form-register-req" class="req">* fields required</p>
 
   {{ connection_form.render }}
 
