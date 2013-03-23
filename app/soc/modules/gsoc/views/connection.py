@@ -89,7 +89,7 @@ def send_message_txn(form, profile, connection_entity):
 def generate_message_txn(connection_entity, content):
   """Generate a new GSoCConnection message.
 
-  Helper method to create a new GSoCConnectionMessage object for use when 
+  Helper method to create a new GSoCConnectionMessage object for use when
   programatically generating messages after updating roles.
   """
   properties = {
@@ -106,11 +106,11 @@ class ConnectionForm(GSoCModelForm):
       choices=((connection.MENTOR_ROLE, 'Mentor'),))
   message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
 
-  def __init__(self, request_data=None, message=None, is_admin=False, 
+  def __init__(self, request_data=None, message=None, is_admin=False,
       *args, **kwargs):
     """Initialize ConnectionForm.
 
-    Note that while it appears that message and request_data are not used, 
+    Note that while it appears that message and request_data are not used,
     they are essential for the way connections are generated later through
     the use of this form.
 
@@ -120,10 +120,10 @@ class ConnectionForm(GSoCModelForm):
         is_admin: Boolean indicating whether the requester is or is not an
             org admin for the given organization.
     """
-    super(ConnectionForm, self).__init__(*args, **kwargs) 
-    
+    super(ConnectionForm, self).__init__(*args, **kwargs)
+
     self.is_admin = is_admin
-    
+
     # Set up the user-provided message to the other party (org admin or user).
     self.fields['message'].label = ugettext('Message')
     # Place the message field at the bottom
@@ -150,10 +150,10 @@ class OrgConnectionForm(ConnectionForm):
         'The link_id or email address of the invitee, '
         ' separate multiple values with a comma')
     # Place the users field at the top of the form.
-    self.fields.insert(0, 'users', field)  
+    self.fields.insert(0, 'users', field)
 
     self.fields['role_choice'].choices = (
-        (connection.MENTOR_ROLE, 'Mentor'), 
+        (connection.MENTOR_ROLE, 'Mentor'),
         (connection.ORG_ADMIN_ROLE, 'Org Admin')
         )
     self.fields['role_choice'].label = ugettext('Role to offer the user(s)')
@@ -162,28 +162,28 @@ class OrgConnectionForm(ConnectionForm):
         'the specified users in this organization')
 
     self.fields['message'].help_text = ugettext(
-        'Your message to the user(s)') 
+        'Your message to the user(s)')
 
   def clean_users(self):
     """Generate lists with the provided link_ids/emails sorted into categories.
 
     Overrides the default cleaning of the link_ids field to add custom
-    validation to the users field. 
+    validation to the users field.
     """
     id_list = self.cleaned_data['users'].split(',')
     self.request_data.user_connections = []
     self.request_data.anonymous_users = []
-    
+
     field = 'current_user'
     for id in id_list:
       self.cleaned_data[field] = id.strip(' ')
-      user, anonymous_user = self._clean_one_id(field)
-      if anonymous_user is None:
-        self.request_data.user_connections.append(user)
+      connected_user, anonymous_user = self._clean_one_id(field)
+      if connected_user:
+        self.request_data.user_connections.append(connected_user)
       else:
         self.request_data.anonymous_users.append(anonymous_user)
     del self.cleaned_data[field]
-    
+
   def _clean_one_id(self, field):
     """Apply validation filters to a single link id from the user field.
     If a link_id or email is found to be valid, return the User account
@@ -195,31 +195,34 @@ class OrgConnectionForm(ConnectionForm):
 
     Returns:
         connected_user will be the user account affiliated with the email
-        address found in field or None if no such user exists, at which 
+        address found in field or None if no such user exists, at which
         point the email address will be returned as anonymous_user (None
         if the email address corresponds to an existing User).
     """
 
     id = None
-    connected_user = None
-    anonymous_user = None
+    connected_user = anonymous_user = None,
 
     if '@' in self.cleaned_data[field]:
       # Current id is an email address.
       cleaner = cleaning.clean_email(field)
       email = cleaner(self)
-      
+
       account = users.User(email)
       user_account = accounts.normalizeAccount(account)
       connected_user = User.all().filter('account', user_account).get()
-      if not connected_user or \
-          GSoCProfile.all().ancestor(connected_user).count(limit=1) < 1:
+      query = GSoCProfile.all().ancestor(connected_user)
+      if not connected_user or query.count(limit=1) < 1:
         anonymous_user = self.cleaned_data[field]
     else:
       # Current id is a link_id.
       cleaner = cleaning.clean_existing_user(field)
-      connected_user = cleaner(self)
-      
+      try:
+        connected_user = cleaner(self)
+      except:
+        raise gsoc_forms.ValidationError(
+            '\"%s\" is not a valid link id.' % self.cleaned_data[field])
+
     return connected_user, anonymous_user
 
   class Meta:
@@ -275,7 +278,7 @@ class UserConnectionForm(ConnectionForm):
 
   def __init__(self, request_data=None, message=None, *args, **kwargs):
     super(UserConnectionForm, self).__init__(*args, **kwargs)
-    
+
     self.fields['message'].help_text = ugettext(
         'Your message to the organization')
 
@@ -286,43 +289,42 @@ class UserConnectionForm(ConnectionForm):
 
 class OrgConnectionPage(GSoCRequestHandler):
   """Class to encapsulate the methods for an org admin to initiate a
-  connection between the organization and a given user. 
+  connection between the organization and a given user.
   """
-  
+
   def templatePath(self):
     return 'v2/modules/gsoc/connection/base.html'
-    
+
   def djangoURLPatterns(self):
     return [
         url(r'connect/%s$' % url_patterns.ORG,
             self, name=url_names.GSOC_ORG_CONNECTION)
     ]
-  
-  def _generate(self, data):
-    """Create a GSoCConnection instance and notify all parties involved. 
 
-    Take the link_id(s) and email(s) that the org admin provided via 
+  def _generate(self, data):
+    """Create a GSoCConnection instance and notify all parties involved.
+
+    Take the link_id(s) and email(s) that the org admin provided via
     ConnectionForm instance and create new Connections and AnonymousConnections
-    as necessary, dispatching emails to the relevant parties as necessary. If 
+    as necessary, dispatching emails to the relevant parties as necessary. If
     the org admin provided email addresses of users who do not have profiles
     for the current program, AnonymousConnection instances will be generated
-    and emails dispatched inviting them to join the program and accept the 
+    and emails dispatched inviting them to join the program and accept the
     offered role. Lists are generated and included in a later self.get() call
-    to inform the org admin which connections were established 
+    to inform the org admin which connections were established
 
     Args:
         data: The RequestData object passed with this request.
     Returns:
-        True if no errors were encountered or False if the form was invalid. 
+        True if no errors were encountered or False if the form was invalid.
         Note that it sets data attributes that are handled in the post()
         method of this handler below.
     """
-    
-    connection_form = OrgConnectionForm(request_data=data, 
-        data=data.POST)
+
+    connection_form = OrgConnectionForm(request_data=data, data=data.POST)
     if not connection_form.is_valid():
       return False
-      
+
     connection_form.cleaned_data['organization'] = data.organization
 
     message_provided = (connection_form.cleaned_data['message'] != '')
@@ -339,12 +341,12 @@ class OrgConnectionPage(GSoCRequestHandler):
       if message_provided:
         send_message_txn(connection_form, profile, new_connection)
 
-      context = notifications.connectionContext(data, new_connection, 
+      context = notifications.connectionContext(data, new_connection,
           email, connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=new_connection)
       sub_txn()
       return new_connection
-    
+
     data.connection = None
 
     # Traverse the list of cleaned user ids and generate connections to
@@ -356,12 +358,12 @@ class OrgConnectionPage(GSoCRequestHandler):
       db.run_in_transaction(create_connection_txn, user, profile.email)
 
     def create_anonymous_connection_txn(email):
-      # Create the anonymous connection - a placeholder until the user 
+      # Create the anonymous connection - a placeholder until the user
       # registers and activates the real connection.
       new_connection = GSoCAnonymousConnection(parent=data.organization)
       new_connection.role = connection_form.cleaned_data['role_choice']
       new_connection.put()
-      
+
       # Generate a hash of the object's key for later validation.
       m = hashlib.md5()
       m.update(str(new_connection.key()))
@@ -371,8 +373,8 @@ class OrgConnectionPage(GSoCRequestHandler):
 
       # Notify the user that they have a pending connection and can register
       # to accept the elevated role.
-      context = notifications.anonymousConnectionContext(data, email, 
-          new_connection.role, new_connection.hash_id, 
+      context = notifications.anonymousConnectionContext(data, email,
+          new_connection.role, new_connection.hash_id,
           connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=new_connection)
       sub_txn()
@@ -450,7 +452,7 @@ class UserConnectionPage(GSoCRequestHandler):
   """Class to encapsulate the methods for a user to initiate a connection
   between him or her self and an organization.
   """
-  
+
   def templatePath(self):
     return 'v2/modules/gsoc/connection/base.html'
 
@@ -470,7 +472,7 @@ class UserConnectionPage(GSoCRequestHandler):
   def _generate(self, data):
     """Create a GSoCConnection instance and notify all parties involved.
     """
-    
+
     assert isSet(data.organization)
     assert isSet(data.user)
 
@@ -478,7 +480,7 @@ class UserConnectionPage(GSoCRequestHandler):
         is_admin=False)
     if not connection_form.is_valid():
       return None
-    
+
     # When initiating a connection, the User only has the option of requesting
     # a mentoring position, so we don't need to display any selections or set
     # anything other than the user_mentor property for now.
@@ -507,11 +509,11 @@ class UserConnectionPage(GSoCRequestHandler):
       if message_provided:
         send_message_txn(connection_form, data.profile, new_connection)
 
-      context = notifications.connectionContext(data, new_connection, 
+      context = notifications.connectionContext(data, new_connection,
           receivers, connection_form.cleaned_data['message'], True)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=new_connection)
       sub_txn()
-    
+
     db.run_in_transaction(create_connection, data.organization)
 
     return True
@@ -548,7 +550,7 @@ class ShowConnection(GSoCRequestHandler):
   """Class to encapsulate the methods required to display information
   about a GSoCConnection for both Users and Org Admins.
   """
-  
+
   # The actions that will be made available to the user in the dropdown.
   RESPONSES = {
     'none' : ('none', 'None Available'),
@@ -588,7 +590,7 @@ class ShowConnection(GSoCRequestHandler):
 
     return query.fetch(limit=limit)
 
-  def getMentorChoices(self, choices, unreplied, accepted, 
+  def getMentorChoices(self, choices, unreplied, accepted,
       rejected, withdrawn=True):
     """Helper method to clean up the logic for determining what options a
       user or org admin has for responding to a connection.
@@ -608,17 +610,17 @@ class ShowConnection(GSoCRequestHandler):
       if not withdrawn:
         responses.append(choices['withdraw'])
     return responses
-    
+
   def context(self, data, check, mutator):
     """Handler for Show GSoCConnection get request."""
     # Shortcut for clarity/laziness.
-    c = data.connection 
+    c = data.connection
     is_org_admin = data.organization in data.org_admin_for
     header_name = data.url_user.link_id \
         if is_org_admin else data.organization.name
 
     # This isn't pretty by any stretch of the imagination, but it's going
-    # to stay like this for now in the interest of my time and sanity. The 
+    # to stay like this for now in the interest of my time and sanity. The
     # basic rules for displaying options are in the getMentorChoices() method
     # and the code following includes some tweaks for user/org admin.
     choices = []
@@ -634,7 +636,7 @@ class ShowConnection(GSoCRequestHandler):
         if c.isUserWithdrawn():
           choices.append(self.RESPONSES['accept_mentor'])
     elif c.isStalemate() or c.isAccepted():
-      # There's nothing else that can be done to the connection in either 
+      # There's nothing else that can be done to the connection in either
       # case, so the org admin has the option to delete it.
       if is_org_admin:
         choices.append(self.RESPONSES['delete'])
@@ -648,14 +650,14 @@ class ShowConnection(GSoCRequestHandler):
           'accept' : self.RESPONSES['accept_org_admin'],
           'reject' : self.RESPONSES['reject_org_admin'],
           'withdraw' : self.RESPONSES['withdraw']
-          }    
+          }
       if is_org_admin:
-        choices = self.getMentorChoices(mentor_options, c.isOrgUnreplied(), 
+        choices = self.getMentorChoices(mentor_options, c.isOrgUnreplied(),
             c.isOrgAccepted(), c.isOrgRejected(), c.isOrgWithdrawn())
         if c.isOrgUnreplied():
           choices.append(self.RESPONSES['accept_org_admin'])
         if c.role == connection.ORG_ADMIN_ROLE:
-          choices = choices + self.getMentorChoices(org_admin_options, 
+          choices = choices + self.getMentorChoices(org_admin_options,
             c.isOrgUnreplied(), c.isOrgAccepted(), c.isOrgRejected(),
             c.isOrgWithdrawn()
             )
@@ -666,7 +668,7 @@ class ShowConnection(GSoCRequestHandler):
         choices = self.getMentorChoices(mentor_options, c.isUserUnreplied(),
             c.isUserAccepted(), c.isUserRejected(), c.isUserWithdrawn())
         if c.role == connection.ORG_ADMIN_ROLE:
-          choices = choices + self.getMentorChoices(org_admin_options, 
+          choices = choices + self.getMentorChoices(org_admin_options,
             c.isUserUnreplied(), c.isUserAccepted(), c.isUserRejected(),
             c.isUserWithdrawn())
 
@@ -696,7 +698,7 @@ class ShowConnection(GSoCRequestHandler):
         'messages' : self.getMessages(data),
         'response_form' : response_form
         }
-    
+
   def post(self, data, check, mutator):
     """Handler for Show GSoC Connection post request."""
 
@@ -705,7 +707,7 @@ class ShowConnection(GSoCRequestHandler):
     is_org_admin = data.connection.organization.key() in \
         data.profile.org_admin_for
     response = data.POST['responses']
-    
+
     if response == 'accept_mentor':
       self._acceptMentor(data, is_org_admin)
     elif response == 'reject_mentor':
@@ -718,7 +720,7 @@ class ShowConnection(GSoCRequestHandler):
       self._deleteConnection(data, is_org_admin)
     elif response == 'withdraw':
       self._withdrawConnection(data, is_org_admin)
-    
+
     if response == 'none':
       return data.redirect.show_connection(user=data.connection.parent(),
           connection=data.connection)
@@ -730,15 +732,15 @@ class ShowConnection(GSoCRequestHandler):
     """The User has accepted the Mentoring role, so we need to add the user
     to the organization's list of mentors.
     """
-    
+
     profile_key = data.url_profile.key()
     connection_key = data.connection.key()
     org_key = data.organization.key()
     messages = data.program.getProgramMessages()
-    
+
     def accept_mentor_txn():
       connection_entity = db.get(connection_key)
-      
+
       # Reset both parties' states after a connection becomes active again.
       # The user or org admin re-activating the connection will be marked
       # as accepted anyway in the next lines.
@@ -751,7 +753,7 @@ class ShowConnection(GSoCRequestHandler):
       else:
         connection_entity.user_state = connection.STATE_ACCEPTED
       connection_entity.put()
-      
+
       # If both the org admin and user agree to a mentoring role, promote
       # the user to a mentor. It is possible for a user to accept only a
       # mentoring role from an org admin connection, so there need not be
@@ -774,11 +776,11 @@ class ShowConnection(GSoCRequestHandler):
           profile.mentor_for = list(set(profile.mentor_for))
           profile.put()
 
-          generate_message_txn(connection_entity, 
+          generate_message_txn(connection_entity,
               '%s promoted to Mentor.' % profile.link_id)
 
     db.run_in_transaction(accept_mentor_txn)
-  
+
   def _rejectMentor(self, data, is_org_admin):
     connection_key = data.connection.key()
 
@@ -791,22 +793,22 @@ class ShowConnection(GSoCRequestHandler):
       connection_entity.put()
 
       generate_message_txn(connection_entity, 'Mentor Connection Rejected.')
-      
+
     db.run_in_transaction(decline_mentor_txn)
-    
+
   def _acceptOrgAdmin(self, data, is_org_admin):
     profile_key = data.url_profile.key()
     connection_key = data.connection.key()
     org_key = data.organization.key()
     messages = data.program.getProgramMessages()
-    
+
     def accept_org_admin_txn():
-      connection_entity = db.get(connection_key) 
+      connection_entity = db.get(connection_key)
 
       # The org accepted a new role for the user, so reset the user's response
       # to give him or her time to review the change.
       if connection_entity.role == connection.MENTOR_ROLE:
-        connection_entity.user_state = connection.STATE_UNREPLIED 
+        connection_entity.user_state = connection.STATE_UNREPLIED
         connection_entity.org_state = connection.STATE_UNREPLIED
 
       connection_entity.role = connection.ORG_ADMIN_ROLE
@@ -827,25 +829,25 @@ class ShowConnection(GSoCRequestHandler):
               profile, data, messages)
           if mentor_mail:
             mailer.getSpawnMailTaskTxn(mentor_mail, parent=connection_entity)()
-        
-        # Org Admins are mentors by default, so we have to promote the 
+
+        # Org Admins are mentors by default, so we have to promote the
         # user twice - one to mentor, one to org admin.
         if org_key not in profile.mentor_for:
           profile.is_mentor = True
           profile.mentor_for.append(org_key)
           profile.mentor_for = list(set(profile.mentor_for))
-        
+
         if org_key not in profile.org_admin_for:
           profile.is_org_admin = True
           profile.org_admin_for.append(org_key)
           profile.org_admin_for = list(set(profile.org_admin_for))
           profile.put()
 
-          generate_message_txn(connection_entity, 
+          generate_message_txn(connection_entity,
               '%s promoted to Org Admin.' % profile.link_id)
-      
+
     db.run_in_transaction(accept_org_admin_txn)
-    
+
   def _rejectOrgAdmin(self, data, is_org_admin):
     connection_key = data.connection.key()
 
@@ -860,7 +862,7 @@ class ShowConnection(GSoCRequestHandler):
       connection_entity.put()
 
       generate_message_txn(connection_entity, 'Org Admin Connection Rejected.')
-      
+
     db.run_in_transaction(decline_org_admin_txn)
 
 
@@ -895,7 +897,7 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'connection/message/%s$' % url_patterns.MESSAGE, self, 
+         url(r'connection/message/%s$' % url_patterns.MESSAGE, self,
              name=url_names.GSOC_CONNECTION_MESSAGE),
     ]
 
