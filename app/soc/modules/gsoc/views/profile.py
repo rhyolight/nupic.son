@@ -43,14 +43,14 @@ from soc.modules.gsoc.views.helper import url_names
 def _handleAnonymousConnection(data):
   """Handler for automatically created and accepting a new connection.
   """
-  
+
   @db.transactional(xg=True)
   def activate_new_connection_txn():
     # This should be the profile that was just created.
     user = User.get_by_key_name(data.request.POST['public_name'])
     profile = GSoCProfile.all().ancestor(user.key()).get()
     # Create the new connection based on the values of the placeholder.
-    new_connection = GSoCConnection(parent=user.key(), 
+    new_connection = GSoCConnection(parent=user.key(),
         organization=data.anonymous_connection.parent(),
         profile=profile,
         role=data.anonymous_connection.role)
@@ -62,7 +62,7 @@ def _handleAnonymousConnection(data):
     profile.is_mentor = True
     profile.mentor_for.append(new_connection.organization.key())
     profile.mentor_for = list(set(profile.mentor_for))
-    if new_connection.role == connection.ORG_ADMIN_ROLE: 
+    if new_connection.role == connection.ORG_ADMIN_ROLE:
       profile.is_org_admin = True
       profile.org_admin_for.append(new_connection.organization.key())
       profile.org_admin_for = list(set(profile.org_admin_for))
@@ -300,9 +300,9 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
       return data.redirect.to('edit_gsoc_profile', validated=True, secure=True)
 
     if data.anonymous_connection:
-      self.redirect.dashboard()
+      data.redirect.dashboard()
     else:
-      self.redirect.organization(organization)
+      data.redirect.organization(organization)
 
     if data.student_info:
       link = 'submit_gsoc_proposal'
@@ -312,7 +312,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
       extra_get_args.append('profile=created')
 
     user = User.get_by_key_name(data.request.POST['public_name'])
-    
+
     data.redirect.connect(user, organization)
 
     return data.redirect.to(link, extra=extra_get_args)
