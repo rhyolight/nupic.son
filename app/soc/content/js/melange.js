@@ -107,7 +107,8 @@
         "theme_advanced_statusbar_location": "bottom",
         "theme_advanced_toolbar_align": "left",
         "theme_advanced_toolbar_location": "top",
-        "theme_advanced_buttons1": ["bold,italic,underline,fontsizeselect,|,bullist,numlist,outdent,",
+        "theme_advanced_buttons1": [
+          "bold,italic,underline,fontsizeselect,removeformat,|,bullist,numlist,outdent,",
           "indent,|,undo,redo,|,justifyleft,justifycenter,justifyright,|,link,unlink,anchor"].join(),
         "theme_advanced_buttons2": "",
         "theme_advanced_buttons3": "",
