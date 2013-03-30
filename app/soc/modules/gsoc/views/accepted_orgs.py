@@ -102,11 +102,6 @@ class AdminAcceptedOrgsList(Template):
     list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
 
     list_config = self.extraColumn(list_config)
-    self._list_config = list_config
-
-  def extraColumn(self, list_config):
-    list_config.addHtmlColumn('org_admin', 'Org Admins',
-        (lambda e, *args: args[0][e.key()]))
 
     # TODO(nathaniel): squeeze this back into a lambda expression
     # in the call to setRowAction below.
@@ -117,6 +112,12 @@ class AdminAcceptedOrgsList(Template):
       return self.data.redirect.urlOf('gsoc_org_home')
 
     list_config.setRowAction(RowAction)
+
+    self._list_config = list_config
+
+  def extraColumn(self, list_config):
+    list_config.addHtmlColumn('org_admin', 'Org Admins',
+        (lambda e, *args: args[0][e.key()]))
 
     return list_config
 
