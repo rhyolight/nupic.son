@@ -67,12 +67,12 @@ BIRTHDATE_FORMAT = 'd-m-Y'
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
 # Tuple to include all states for use in CONN_STATUS_OPTS to prevent it from
-# becoming ugly. Note that STATE_UNREPLIED is absent from this list due to the 
+# becoming ugly. Note that STATE_UNREPLIED is absent from this list due to the
 # fact that it is never user-facing; all possible options for the user are
 # computer in Connection.getUserFriendlyStatus().
 STATUS_TUPLE = '%s|%s|%s|%s|%s' % (
     connection.STATE_ACCEPTED,
-    connection.STATE_REJECTED, 
+    connection.STATE_REJECTED,
     connection.STATE_WITHDRAWN,
     connection.STATE_ORG_ACTION_REQ,
     connection.STATE_USER_ACTION_REQ
@@ -89,11 +89,12 @@ CONN_STATUS_OPTS = [
     (connection.STATE_WITHDRAWN, 'Withdrawn')
     ]
 # Include all dropdown options for viewing connections by roles offered
-# to the users. Same rules apply 
+# to the users. Same rules apply as above. Not using constants from
+# connection module because the internal roles != the user-facing ones.
 CONN_ROLE_OPTS = [
-    ('%s|%s' % (connection.MENTOR_ROLE, connection.ORG_ADMIN_ROLE), 'All'),
-    (connection.ORG_ADMIN_ROLE, 'Org Admin'), 
-    (connection.MENTOR_ROLE, 'Mentor')
+    ('Mentor|Org Admin', 'All'),
+    ('Org Admin', 'Org Admin'),
+    ('Mentor', 'Mentor')
     ]
 
 def colorize(choice, yes, no):
@@ -1285,7 +1286,7 @@ class OrgConnectionComponent(Component):
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: e.getUserFriendlyRole(),
         options=CONN_ROLE_OPTS)
-    list_config.addPlainTextColumn('status', 'Status', 
+    list_config.addPlainTextColumn('status', 'Status',
         lambda e, *args: e.status(),
         options=CONN_STATUS_OPTS)
 
