@@ -201,7 +201,7 @@ class OrgConnectionForm(ConnectionForm):
     """
 
     id = None
-    connected_user = anonymous_user = None,
+    connected_user = anonymous_user = None
 
     if '@' in self.cleaned_data[field]:
       # Current id is an email address.
@@ -219,7 +219,7 @@ class OrgConnectionForm(ConnectionForm):
       cleaner = cleaning.clean_existing_user(field)
       try:
         connected_user = cleaner(self)
-      except:
+      except gsoc_forms.ValidationError:
         raise gsoc_forms.ValidationError(
             '\"%s\" is not a valid link id.' % self.cleaned_data[field])
 
