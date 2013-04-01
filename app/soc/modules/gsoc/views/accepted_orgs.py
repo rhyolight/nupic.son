@@ -27,6 +27,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -202,7 +203,7 @@ class AdminOrgsListPage(GSoCRequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'admin/accepted_orgs/%s$' % url_patterns.PROGRAM, self,
-            name='gsoc_orgs_list_admin'),
+            name=url_names.GSOC_ORG_LIST_FOR_HOST),
     ]
 
   def checkAccess(self, data, check, mutator):
