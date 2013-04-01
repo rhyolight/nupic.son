@@ -245,7 +245,12 @@ def getOrCreateDummyMelangeDeletedProfile(program):
 
 
 def insertDummyData(student_info):
-  """Replace the student profile information with dummy data."""
+  """Replace the student profile information with dummy data.
+
+  Args:
+    student_info: GCIStudentInfo entity corresponding to a student profile
+        into which dummy data should be inserted.
+  """
   blobs_to_delete = [student_info.consent_form, student_info.consent_form_two,
                      student_info.student_id_form]
 
@@ -253,7 +258,7 @@ def insertDummyData(student_info):
 
   profile.automatic_task_subscription = False
   profile.avatar = None
-  profile.given_name = 'Melange Deleted User GName'
+  profile.given_name = 'Melange Deleted User Given Name'
   profile.surname = 'Melange Deleted User Surname'
   profile.name_on_documents = None
   profile.im_network = None
@@ -261,7 +266,7 @@ def insertDummyData(student_info):
   profile.home_page = None
   profile.blog = None
   profile.photo_url = None
-  profile.email = 'melange_deleted_user@gmail.com'
+  profile.email = 'melange_deleted_user@example.com'
   profile.res_street = 'No address'
   profile.res_street_extra = None
   profile.res_city = 'No city'
@@ -293,7 +298,6 @@ def insertDummyData(student_info):
   profile.is_org_admin = None
   profile.mentor_for = []
   profile.org_admin_for = []
-  profile.student_info = None
   profile.created_on = datetime.datetime(1, 1, 1)
   profile.modified_on = datetime.datetime(1, 1, 1)
 

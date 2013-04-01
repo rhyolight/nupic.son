@@ -37,7 +37,8 @@ def process(student_info):
     return
 
   entities, blobs = profile_logic.insertDummyData(student_info)
-  blobstore.delete(blobs)
+  blobstore.delete(filter(lambda blob: blob, blobs))
+
   for entity in entities:
     yield operation.db.Put(entity)
   yield operation.counters.Increment("profile dummy data inserted")
