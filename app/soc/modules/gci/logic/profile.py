@@ -250,6 +250,11 @@ def insertDummyData(student_info):
   Args:
     student_info: GCIStudentInfo entity corresponding to a student profile
         into which dummy data should be inserted.
+
+  Returns:
+    A two-tuple where first element of the tuple is the list of datastore
+    entities to be deleted and the second element of the tuple is the list
+    of blobs to be deleted.
   """
   blobs_to_delete = [student_info.consent_form, student_info.consent_form_two,
                      student_info.student_id_form]
