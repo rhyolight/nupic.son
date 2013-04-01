@@ -22,6 +22,8 @@ from soc.models.request import Request
 class GSoCRequest(Request):
   """GSoCequest model.
 
+  Given that Drew's Connection project is merged, this model is now deprecated.
+
   See soc.models.request.Request model for details.
   """
   pass
