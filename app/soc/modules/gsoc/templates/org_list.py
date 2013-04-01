@@ -47,13 +47,12 @@ class AcceptedOrgsList(template.Template):
     if idx != 0:
       return None
 
-    q = org_model.GSoCOrganization.all().filter('scope', self.data.program)
-
     starter = lists.keyStarter
+    query = self._getQuery()
     prefetcher = self._getPrefetcher()
 
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
+    response_builder = lists.RawQueryContentResponseBuilder(self.data.request,
+        self._list_config, query, starter, prefetcher=prefetcher)
 
     return response_builder.build()
 
@@ -75,6 +74,17 @@ class AcceptedOrgsList(template.Template):
 
     It may be overridden by subclasses. By default no prefetcher is returned.
 
-    Returns: a function to prefetch entities for the list or None
+    Returns:
+      a function to prefetch entities for the list or None
     """
     return None
+
+  def _getQuery(self):
+    """Returns a query to fetch organizations for the list.
+
+    It must be overridden by subclasses.
+
+    Returns:
+      a db.Query to fetch entities for the list
+    """
+    raise NotImplementedError
