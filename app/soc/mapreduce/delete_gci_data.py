@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Mapreduce to delete GCI data for safe-harboring.
-"""
+"""Mapreduce to insert dummy data for GCI student data for safe-harboring."""
 
 
 from google.appengine.ext import blobstore
