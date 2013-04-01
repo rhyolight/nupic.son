@@ -29,16 +29,7 @@ class AcceptedOrgsList(template.Template):
   def __init__(self, data):
     self.data = data
 
-    list_config = lists.ListConfiguration()
-    list_config.addPlainTextColumn('name', 'Name',
-        (lambda e, *args: e.short_name.strip()), width=75)
-    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
-
-    list_config = self.extraColumn(list_config)
-    self._list_config = list_config
-
-  def extraColumn(self, list_config):
-    raise NotImplementedError
+    self._list_config = self._getListConfig()
 
   def context(self):
     description = 'List of organizations accepted into %s' % (
@@ -68,6 +59,16 @@ class AcceptedOrgsList(template.Template):
 
   def templatePath(self):
     return "v2/modules/gsoc/admin/_accepted_orgs_list.html"
+
+  def _getListConfig(self):
+    """Returns list configuration for the list.
+
+    It must be overridden by subclasses.
+
+    Returns:
+      new ListConfiguration object.
+    """
+    raise NotImplementedError
 
   def _getPrefetcher(self):
     """Returns a prefetcher for the list.
