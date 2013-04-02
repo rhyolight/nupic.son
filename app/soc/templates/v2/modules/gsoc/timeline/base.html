@@ -13,6 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block form_header_msg %}
+  <div id="pre-form-header">
+    {{ block.super }}
+    <div class="description">
+      {{ description|safe }}
+    </div>
+  </div>
+{% endblock form_header_msg %}
+
 {% block dependencies %}
   [
     dep.melange.datetimepicker,
