@@ -198,6 +198,10 @@ class OrgConnectionForm(ConnectionForm):
         address found in field or None if no such user exists, at which
         point the email address will be returned as anonymous_user (None
         if the email address corresponds to an existing User).
+    
+    Raises:
+        forms.ValidationError if a provided link_id does not correspond to
+        an existing user.
     """
 
     id = None
@@ -220,8 +224,12 @@ class OrgConnectionForm(ConnectionForm):
       try:
         connected_user = cleaner(self)
       except gsoc_forms.ValidationError:
+        # Normally this error would just inform the user that one of the ids
+        # is not valid. Catching this exception and then raising it again
+        # allows the link id to be specified in the error message, which is
+        # more helpful than "One or more Link_ids is not valid."
         raise gsoc_forms.ValidationError(
-            '\"%s\" is not a valid link id.' % self.cleaned_data[field])
+            '"%s" is not a valid link id.' % self.cleaned_data[field])
 
     return connected_user, anonymous_user
 
