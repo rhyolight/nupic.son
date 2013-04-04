@@ -71,7 +71,7 @@ class AcceptedOrgsPublicList(org_list.OrgList):
     return query
 
 
-class AdminAcceptedOrgsList(org_list.OrgList):
+class AcceptedOrgsAdminList(org_list.OrgList):
   """Template for list of accepted organizations."""
 
   def _getDescription(self):
@@ -176,7 +176,7 @@ class AdminOrgsListPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self, data, check, mutator):
-    list_content = AdminAcceptedOrgsList(data).getListData()
+    list_content = AcceptedOrgsAdminList(data).getListData()
     if list_content:
       return list_content.content()
     else:
@@ -185,5 +185,5 @@ class AdminOrgsListPage(GSoCRequestHandler):
   def context(self, data, check, mutator):
     return {
       'page_name': 'Organizations list page',
-      'list': AdminAcceptedOrgsList(data)
+      'list': AcceptedOrgsAdminList(data)
     }
