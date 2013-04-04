@@ -32,34 +32,45 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     self.url1 = '/gsoc/accepted_orgs/' + self.gsoc.key().name()
     self.url2 = '/gsoc/program/accepted_orgs/' + self.gsoc.key().name()
     self.url3 = '/program/accepted_orgs/' + self.gsoc.key().name()
-    
+
   def assertAcceptedOrgsPageTemplatesUsed(self, response):
-    """Asserts that all the required templates to render the page were used.
-    """
+    """Asserts that all the required templates to render the page were used."""
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/accepted_orgs/base.html')
+    self.assertTemplateUsed(response,
+        'v2/modules/gsoc/accepted_orgs/base.html')
     self.assertTemplateUsed(response, 
-                            'v2/modules/gsoc/accepted_orgs/_project_list.html')
-    self.assertTemplateUsed(response, 'soc/_program_select.html')
-    self.assertTemplateUsed(response, 
-                            'v2/modules/gsoc/accepted_orgs/_project_list.html') 
+        'v2/modules/gsoc/admin/_accepted_orgs_list.html')
+    self.assertTemplateUsed(response, 'soc/_program_select.html') 
     self.assertTemplateUsed(response, 'soc/list/lists.html') 
     self.assertTemplateUsed(response, 'soc/list/list.html')
-    
-  def testAcceptedOrgsAreDisplayedOnlyAfterTheyAreAnnounced(self):
-    """Tests that the list of accepted organizations can be accessed only after
-    the organizations have been announced.
-    """
+
+  def testPageForbiddenBeforeOrgsAnnounced(self):
+    self.timeline.kickoff()
+    response = self.get(self.url3)
+    self.assertResponseForbidden(response)
+    self.assertErrorTemplatesUsed(response)
+
+    response = self.get(self.url2)
+    self.assertResponseForbidden(response)
+    self.assertErrorTemplatesUsed(response)
+
+    response = self.get(self.url1)
+    self.assertResponseForbidden(response)
+    self.assertErrorTemplatesUsed(response)
+
     self.timeline.orgSignup()
     response = self.get(self.url3)
     self.assertResponseForbidden(response)
-    
+    self.assertErrorTemplatesUsed(response)
+
     response = self.get(self.url2)
     self.assertResponseForbidden(response)
-    
+    self.assertErrorTemplatesUsed(response)
+
     response = self.get(self.url1)
     self.assertResponseForbidden(response)
-    
+    self.assertErrorTemplatesUsed(response)
+
   def testAcceptedOrgsAreDisplayedAfterOrganizationsHaveBeenAnnounced(self):
     """Tests that the list of the organizations can not be accessed before 
     organizations have been announced.
