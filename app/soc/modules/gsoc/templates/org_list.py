@@ -27,11 +27,12 @@ class OrgList(template.Template):
   """Template for list of organizations."""
 
   def __init__(self, data):
-    self.data = data
-
+    """See template.Template.__init__ for specification."""
+    super(OrgList, self).__init__(data)
     self._list_config = self._getListConfig()
 
   def context(self):
+    """See template.Template.context for specification."""
     description = self._getDescription()
 
     list = lists.ListConfigurationResponse(
@@ -42,6 +43,7 @@ class OrgList(template.Template):
     }
 
   def getListData(self):
+    # TODO(daniel): add missing doc string
     idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return None
@@ -56,6 +58,7 @@ class OrgList(template.Template):
     return response_builder.build()
 
   def templatePath(self):
+    """See template.Template.templatePath for specification."""
     return "v2/modules/gsoc/admin/_accepted_orgs_list.html"
 
   def _getDescription(self):
