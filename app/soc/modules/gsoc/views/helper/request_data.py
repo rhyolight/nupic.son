@@ -469,12 +469,19 @@ class RequestData(request_data.RequestData):
 
 
 class RedirectHelper(request_data.RedirectHelper):
-  """Helper for constructing redirects.
-  """
+  """Helper for constructing redirects."""
+
+  def proposal(self, id=None, student=None):
+    """Sets the kwargs for an url_patterns.PROPOSAL redirect."""
+    if not student:
+      assert 'user' in self._data.kwargs
+      student = self._data.kwargs['user']
+    self.id(id)
+    self.kwargs['user'] = student
+    return self
 
   def review(self, id=None, student=None):
-    """Sets the kwargs for an url_patterns.REVIEW redirect.
-    """
+    """Sets the kwargs for an url_patterns.REVIEW redirect."""
     if not student:
       assert 'user' in self._data.kwargs
       student = self._data.kwargs['user']
@@ -485,8 +492,7 @@ class RedirectHelper(request_data.RedirectHelper):
   # (dcrodman) This method will become obsolete when the connection module
   # is commited to the main branch.
   def invite(self, role=None):
-    """Sets args for an url_patterns.INVITE redirect.
-    """
+    """Sets args for an url_patterns.INVITE redirect."""
     if not role:
       assert 'role' in self._data.kwargs
       role = self._data.kwargs['role']
@@ -495,36 +501,31 @@ class RedirectHelper(request_data.RedirectHelper):
     return self
 
   def orgAppTake(self):
-    """Sets kwargs for an url_patterns.SURVEY redirect for org application.
-    """
+    """Sets kwargs for an url_patterns.SURVEY redirect for org application."""
     self.program()
     return self
 
   def orgAppReTake(self, survey=None):
-    """Sets kwargs for an url_patterns.SURVEY redirect for org application.
-    """
+    """Sets kwargs for an url_patterns.SURVEY redirect for org application."""
     if not survey:
       assert 'id' in self._data.kwargs
       survey = self._data.kwargs['id']
     return self.id(survey)
 
   def document(self, document):
-    """Override this method to set GSoC specific _url_name.
-    """
+    """Override this method to set GSoC specific _url_name."""
     super(RedirectHelper, self).document(document)
     self._url_name = 'show_gsoc_document'
     return self
  
   def acceptedOrgs(self):
-    """Sets the _url_name to the list all the accepted orgs.
-    """
+    """Sets the _url_name to the list all the accepted orgs."""
     super(RedirectHelper, self).acceptedOrgs()
     self._url_name = 'gsoc_accepted_orgs'
     return self
 
   def allProjects(self):
-    """Sets the _url_name to list all GSoC projects.
-    """
+    """Sets the _url_name to list all GSoC projects."""
     self.program()
     self._url_name = 'gsoc_accepted_projects'
     return self
@@ -540,29 +541,25 @@ class RedirectHelper(request_data.RedirectHelper):
     return self
 
   def searchpage(self):
-    """Sets the _url_name for the searchpage of the current GSOC program.
-    """
+    """Sets the _url_name for the searchpage of the current GSOC program."""
     super(RedirectHelper, self).searchpage()
     self._url_name = 'search_gsoc'
     return self
 
   def orgHomepage(self, link_id):
-    """Sets the _url_name for the specified org homepage
-    """
+    """Sets the _url_name for the specified org homepage."""
     super(RedirectHelper, self).orgHomepage(link_id)
     self._url_name = 'gsoc_org_home'
     return self
 
   def dashboard(self):
-    """Sets the _url_name for dashboard page of the current GSOC program.
-    """
+    """Sets the _url_name for dashboard page of the current GSOC program."""
     super(RedirectHelper, self).dashboard()
     self._url_name = 'gsoc_dashboard'
     return self
 
   def events(self):
-    """Sets the _url_name for the events page, if it is set.
-    """
+    """Sets the _url_name for the events page, if it is set."""
     from soc.modules.gsoc.models.program import GSoCProgram
     key = GSoCProgram.events_page.get_value_for_datastore(self._data.program)
 
@@ -577,8 +574,7 @@ class RedirectHelper(request_data.RedirectHelper):
   # (dcrodman) This method will become obsolete when the connection module
   # is commited to the main branch.
   def request(self, request):
-    """Sets the _url_name for a request.
-    """
+    """Sets the _url_name for a request."""
     assert request
     self.id(request.key().id())
     self.kwargs['user'] = request.parent_key().name()
@@ -648,16 +644,14 @@ class RedirectHelper(request_data.RedirectHelper):
     return self
 
   def comment(self, comment, full=False, secure=False):
-    """Creates a direct link to a comment.
-    """
+    """Creates a direct link to a comment."""
     review = comment.parent()
     self.review(review.key().id_or_name(), review.parent().link_id)
     url = self.urlOf('review_gsoc_proposal', full=full, secure=secure)
     return "%s#c%s" % (url, comment.key().id())
 
   def connection_comment(self, comment, full=False, secure=False):
-    """Creates a direct link to a comment.
-    """
+    """Creates a direct link to a comment."""
     self.show_connection(self._data.user, self._data.connection)
     url = self.urlOf(url_names.GSOC_SHOW_CONNECTION, full=full, secure=secure)
     return url
@@ -722,8 +716,7 @@ class RedirectHelper(request_data.RedirectHelper):
     return self
 
   def editProfile(self):
-    """Returns the URL for the edit profile page.
-    """
+    """Returns the URL for the edit profile page."""
     self.program()
     self._url_name = 'edit_gsoc_profile'
 

@@ -156,6 +156,7 @@ class UpdateProposal(GSoCRequestHandler):
 
     data.proposal = GSoCProposal.get_by_id(
         int(data.kwargs['id']), parent=data.profile)
+
     data.organization = data.proposal.org
 
     check.canStudentUpdateProposal()

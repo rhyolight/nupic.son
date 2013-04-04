@@ -139,8 +139,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testUpdateProposal(self):
-    """Test update proposals.
-    """
+    """Test update proposals."""
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor.createOtherUser('mentor@example.com')
     mentor.createMentor(self.org)
@@ -152,8 +151,8 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     proposal = GSoCProposal.all().get()
 
-    url = '/gsoc/proposal/update/%s/%s' % (
-        self.gsoc.key().name(), proposal.key().id())
+    url = '/gsoc/proposal/update/%s/%s/%s' % (
+        self.gsoc.key().name(), self.data.profile.link_id, proposal.key().id())
     response = self.get(url)
     self.assertProposalTemplatesUsed(response)
 
