@@ -107,3 +107,50 @@ class AcceptedOrgsPublicPageTest(test_utils.GSoCDjangoTestCase):
     list_data = self.getListData(self.url1, 0)
     #Third organization is self.gsoc
     self.assertEqual(len(list_data), 3)
+
+
+class AcceptedOrgsAdminPageTest(test_utils.GSoCDjangoTestCase):
+  """Tests the page to display accepted organizations for admins."""
+
+  def setUp(self):
+    self.init()
+    self.url = '/gsoc/admin/accepted_orgs/' + self.gsoc.key().name()
+
+  def assertAcceptedOrgsPageTemplatesUsed(self, response):
+    """Asserts that all the required templates to render the page were used."""
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response,
+        'v2/modules/gsoc/admin/list.html')
+    self.assertTemplateUsed(response,
+        'v2/modules/gsoc/admin/_accepted_orgs_list.html')
+    self.assertTemplateUsed(response, 'soc/list/lists.html')
+    self.assertTemplateUsed(response, 'soc/list/list.html')
+
+  def testPageForbiddenForLoneUsers(self):
+    response = self.get(self.url)
+    self.assertResponseForbidden(response)
+    self.assertErrorTemplatesUsed(response)
+
+  def testPageForbiddenForStudents(self):
+    self.data.createStudent()
+    response = self.get(self.url)
+    self.assertResponseForbidden(response)
+    self.assertErrorTemplatesUsed(response)
+
+  def testPageForbiddenForMentors(self):
+    self.data.createMentor(self.org)
+    response = self.get(self.url)
+    self.assertResponseForbidden(response)
+    self.assertErrorTemplatesUsed(response)
+
+  def testPageForbiddenForOrgAdmins(self):
+    self.data.createOrgAdmin(self.org)
+    response = self.get(self.url)
+    self.assertResponseForbidden(response)
+    self.assertErrorTemplatesUsed(response)
+
+  def testPageAccessibleForHosts(self):
+    self.data.createHost()
+    response = self.get(self.url)
+    self.assertResponseOK(response)
+    self.assertAcceptedOrgsPageTemplatesUsed(response)
