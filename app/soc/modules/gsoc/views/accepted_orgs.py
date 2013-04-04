@@ -50,11 +50,15 @@ class AcceptedOrgsPublicList(org_list.OrgList):
     list_config.addPlainTextColumn('ideas', 'Ideas',
         lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]"),
         hidden=True)
-    
-    list_config.setRowAction(
-        lambda e, *args: (
-            self.data.redirect.organization(e),
-            self.data.redirect.urlOf('gsoc_org_home')))
+
+    # TODO(nathaniel): squeeze this back into a lambda expression    
+    # in the call to setRowAction below.    
+    def _rowAction(e, *args):    
+      # TODO(nathaniel): make this .organization call unnecessary.    
+      self.data.redirect.organization(organization=e)    
+      return self.data.redirect.urlOf('gsoc_org_home')
+
+    list_config.setRowAction(_rowAction)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
 
@@ -67,57 +71,47 @@ class AcceptedOrgsPublicList(org_list.OrgList):
     return query
 
 
-class AdminAcceptedOrgsList(Template):
+class AdminAcceptedOrgsList(org_list.OrgList):
   """Template for list of accepted organizations."""
 
-  def __init__(self, request, data):
-    self.data = data
+  def _getDescription(self):
+    """See org_list.OrgList._getDescription for specification."""
+    return org_list.ACCEPTED_ORG_LIST_DESCRIPTION % self.data.program.name
 
+  def _getListConfig(self):
+    """See org_list.OrgList._getListConfig for specification."""
     list_config = lists.ListConfiguration()
+
     list_config.addPlainTextColumn('name', 'Name',
-        (lambda e, *args: e.short_name.strip()), width=75)
+        lambda e, *args: e.name.strip())
+
     list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
 
-    list_config = self.extraColumn(list_config)
+    list_config.addHtmlColumn('org_admin', 'Org Admins',
+        lambda e, *args: args[0][e.key()])
 
-    # TODO(nathaniel): squeeze this back into a lambda expression
-    # in the call to setRowAction below.
-    def RowAction(e, *args):
-      # TODO(nathaniel): make this .organization call unnecessary.
-      self.data.redirect.organization(organization=e)
-
+    # TODO(nathaniel): squeeze this back into a lambda expression    
+    # in the call to setRowAction below.    
+    def _rowAction(e, *args):    
+      # TODO(nathaniel): make this .organization call unnecessary.    
+      self.data.redirect.organization(organization=e)    
       return self.data.redirect.urlOf('gsoc_org_home')
 
-    list_config.setRowAction(RowAction)
+    list_config.setRowAction(_rowAction)
 
-    self._list_config = list_config
-
-  def extraColumn(self, list_config):
-    list_config.addHtmlColumn('org_admin', 'Org Admins',
-        (lambda e, *args: args[0][e.key()]))
+    list_config.setDefaultPagination(False)
+    list_config.setDefaultSort('name')
 
     return list_config
 
-  def context(self):
-    description = 'List of organizations accepted into %s' % (
-        self.data.program.name)
+  def _getQuery(self):
+    """See org_list.OrgList._getQuery for specification."""
+    query = org_model.GSoCOrganization.all()
+    query.filter('scope', self.data.program)
+    return query
 
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
-    return {
-        'lists': [list],
-    }
-
-  def getListData(self):
-    idx = lists.getListIndex(self.data.request)
-    if idx != 0:
-      return None
-
-    q = org_model.GSoCOrganization.all().filter('scope', self.data.program)
-
-    starter = lists.keyStarter
-
+  def _getPrefetcher(self):
+    """See org_list.OrgList._getPrefetcher for specification."""
     def prefetcher(orgs):
       org_admins = {}
       for org in orgs:
@@ -129,14 +123,7 @@ class AdminAcceptedOrgsList(Template):
                 http_utils.conditional_escape(oa.email)) for oa in oas])
 
       return ([org_admins], {})
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
-
-    return response_builder.build()
-
-  def templatePath(self):
-    return "v2/modules/gsoc/admin/_accepted_orgs_list.html"
+    return prefetcher
 
 
 class AcceptedOrgsPublicPage(GSoCRequestHandler):
@@ -189,7 +176,7 @@ class AdminOrgsListPage(GSoCRequestHandler):
     return 'v2/modules/gsoc/admin/list.html'
 
   def jsonContext(self, data, check, mutator):
-    list_content = AdminAcceptedOrgsList(data.request, data).getListData()
+    list_content = AdminAcceptedOrgsList(data).getListData()
     if list_content:
       return list_content.content()
     else:
@@ -198,6 +185,5 @@ class AdminOrgsListPage(GSoCRequestHandler):
   def context(self, data, check, mutator):
     return {
       'page_name': 'Organizations list page',
-      # TODO(nathaniel): Drop the first parameter of AcceptedOrgsList.
-      'list': AdminAcceptedOrgsList(data.request, data)
+      'list': AdminAcceptedOrgsList(data)
     }
