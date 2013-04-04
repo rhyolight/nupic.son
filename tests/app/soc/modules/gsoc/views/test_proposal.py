@@ -175,3 +175,11 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     self.assertNotEqual(proposal.created_on, proposal.last_modified_on)
 
     self.assertEmailSent(to=mentor.profile.email, n=1)
+
+  def testUpdateNonExistingProposal(self):
+    self.data.createStudent()
+    mock_id = 1
+    url = '/gsoc/proposal/update/%s/%s/%s' % (
+        self.gsoc.key().name(), self.data.profile.link_id, mock_id)
+    response = self.get(url)
+    self.assertResponseNotFound(response)
