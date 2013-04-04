@@ -35,10 +35,22 @@ from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 class SlotsList(org_list.OrgList):
   """Template for list of accepted organizations to allocate slots."""
 
-  def extraColumn(self, list_config):
+  def _getDescription(self):
+    """See org_list.OrgList._getDescription for specification."""
+    return org_list.ACCEPTED_ORG_LIST_DESCRIPTION % self.data.program.name
+
+  def _getListConfig(self):
+    """See org_list.OrgList._getListConfig for specification."""
+    list_config = lists.ListConfiguration()
+
+    list_config.addPlainTextColumn('name', 'Name',
+        lambda e, *args: e.name.strip())
+
+    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
+
     options = [('', 'All'), ('true', 'New'), ('false', 'Veteran')]
     list_config.addPlainTextColumn('new_org', 'New/Veteran',
-        lambda e, *args:'New' if e.new_org else 'Veteran', width=60,
+        lambda e, *args: 'New' if e.new_org else 'Veteran', width=60,
         options=options)
     list_config.setColumnEditable('new_org', True, 'select')
 
@@ -46,23 +58,38 @@ class SlotsList(org_list.OrgList):
         width=25, column_type=lists.ColumnType.NUMERICAL)
     list_config.addSimpleColumn('max_slots_desired', 'Max',
         width=25, column_type=lists.ColumnType.NUMERICAL)
+
     list_config.addSimpleColumn('slots', 'Slots',
         width=50, column_type=lists.ColumnType.NUMERICAL)
     list_config.setColumnEditable('slots', True)
     list_config.setColumnSummary('slots', 'sum', "<b>Total: {0}</b>")
+
     list_config.addHtmlColumn(
-          'slots_unused', 'Unused slots',
-          lambda ent, s, *args: ('<strong><font color="red">%s</font></strong>'
-                                 % (s[ent.key()])))
+        'slots_unused', 'Unused slots',
+        lambda ent, s, *args: ('<strong><font color="red">%s</font></strong>'
+            % (s[ent.key()])))
+
     list_config.addSimpleColumn('note', 'Note')
-    list_config.setColumnEditable('note', True) #, edittype='textarea')
+    list_config.setColumnEditable('note', True)
+
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
     list_config.addPostEditButton('save', "Save", "", [], refresh="none")
 
     return list_config
 
+  def _getQuery(self):
+    """See org_list.OrgList._getQuery for specification."""
+    query = org_model.GSoCOrganization.all()
+    query.filter('scope', self.data.program)
+    return query
+
   def post(self):
+    """POST handler for the list actions.
+
+    Returns:
+      True if the data is successfully modified; False otherwise.
+    """
     idx = lists.getListIndex(self.data.request)
     if idx != 0:
       return False
@@ -116,35 +143,23 @@ class SlotsList(org_list.OrgList):
 
     return True
 
-  def getListData(self):
-    idx = lists.getListIndex(self.data.request)
-    if idx != 0:
-      return None
-
-    q = org_model.GSoCOrganization.all().filter('scope', self.data.program)
-
-    starter = lists.keyStarter
-
+  def _getPrefetcher(self):
+    """See org_list.OrgList._getPrefetcher for specification."""
     def prefetcher(orgs):
       org_slots_unused = {}
 
       for org in orgs:
-        prop_q = db.Query(proposal_model.GSoCProposal, keys_only=False)
-        prop_q.filter('org', org)
-        prop_q.filter('has_mentor', True)
-        prop_q.filter('accept_as_project', True)
-        slots_used = prop_q.count()
+        query = proposal_model.GSoCProposal.all(keys_only=True)
+        query.filter('org', org)
+        query.filter('has_mentor', True)
+        query.filter('accept_as_project', True)
+        slots_used = query.count()
 
         org_slots_unused[org.key()] = org.slots - slots_used if \
             org.slots > slots_used else 0
 
       return ([org_slots_unused], {})
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q,
-        starter, prefetcher=prefetcher)
-
-    return response_builder.build()
+    return prefetcher
 
 
 class SlotsPage(base.GSoCRequestHandler):
