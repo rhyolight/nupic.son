@@ -32,8 +32,7 @@ class AcceptedOrgsList(template.Template):
     self._list_config = self._getListConfig()
 
   def context(self):
-    description = 'List of organizations accepted into %s' % (
-        self.data.program.name)
+    description = self._getDescription()
 
     list = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, description)
@@ -47,17 +46,27 @@ class AcceptedOrgsList(template.Template):
     if idx != 0:
       return None
 
-    starter = lists.keyStarter
     query = self._getQuery()
     prefetcher = self._getPrefetcher()
 
-    response_builder = lists.RawQueryContentResponseBuilder(self.data.request,
-        self._list_config, query, starter, prefetcher=prefetcher)
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.data.request, self._list_config, query,
+        lists.keyStarter, prefetcher=prefetcher)
 
     return response_builder.build()
 
   def templatePath(self):
     return "v2/modules/gsoc/admin/_accepted_orgs_list.html"
+
+  def _getDescription(self):
+    """Returns description of the list.
+
+    It must be overridden by subclasses.
+
+    Returns:
+      description of the list.
+    """
+    raise NotImplementedError
 
   def _getListConfig(self):
     """Returns list configuration for the list.
