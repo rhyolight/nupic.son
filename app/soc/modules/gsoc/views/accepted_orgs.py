@@ -127,7 +127,7 @@ class AcceptedOrgsAdminList(org_list.OrgList):
 
 
 class AcceptedOrgsPublicPage(GSoCRequestHandler):
-  """View for the accepted organizations page."""
+  """View for public page that lists the accepted organizations."""
 
   def templatePath(self):
     return 'v2/modules/gsoc/accepted_orgs/base.html'
@@ -158,8 +158,8 @@ class AcceptedOrgsPublicPage(GSoCRequestHandler):
     }
 
 
-class AdminOrgsListPage(GSoCRequestHandler):
-  """View that lists all the projects associated with the program."""
+class AcceptedOrgsAdminPage(GSoCRequestHandler):
+  """View for admin-only page that lists the accepted organizations."""
 
   LIST_IDX = 0
 
