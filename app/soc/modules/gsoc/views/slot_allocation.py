@@ -32,7 +32,7 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
 
-class SlotsList(org_list.AcceptedOrgsList):
+class SlotsList(org_list.OrgList):
   """Template for list of accepted organizations to allocate slots."""
 
   def extraColumn(self, list_config):

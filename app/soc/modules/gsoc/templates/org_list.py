@@ -23,8 +23,8 @@ from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.models import profile as profile_model
 
 
-class AcceptedOrgsList(template.Template):
-  """Template for list of accepted organizations."""
+class OrgList(template.Template):
+  """Template for list of organizations."""
 
   def __init__(self, data):
     self.data = data
