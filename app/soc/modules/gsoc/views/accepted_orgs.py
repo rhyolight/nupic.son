@@ -139,7 +139,7 @@ class AdminAcceptedOrgsList(Template):
     return "v2/modules/gsoc/admin/_accepted_orgs_list.html"
 
 
-class AcceptedOrgsPage(GSoCRequestHandler):
+class AcceptedOrgsPublicPage(GSoCRequestHandler):
   """View for the accepted organizations page."""
 
   def templatePath(self):

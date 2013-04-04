@@ -21,7 +21,7 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from tests import test_utils
 
 
-class AcceptedOrgsPageTest(test_utils.GSoCDjangoTestCase):
+class AcceptedOrgsPublicPageTest(test_utils.GSoCDjangoTestCase):
   """Tests the page to display accepted organization."""
   
   def setUp(self):
