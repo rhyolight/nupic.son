@@ -13,19 +13,16 @@
 # limitations under the License.
 
 
-"""Tests the view for GSoC accepted orgs.
-"""
+"""Tests the view for GSoC accepted organizations."""
 
-
-from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models import organization as org_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests.test_utils import GSoCDjangoTestCase
+from tests import test_utils
 
 
-class AcceptedOrgsPageTest(GSoCDjangoTestCase):
-  """Tests the page to display accepted organization.
-  """
+class AcceptedOrgsPageTest(test_utils.GSoCDjangoTestCase):
+  """Tests the page to display accepted organization."""
   
   def setUp(self):
     self.init()
@@ -97,30 +94,16 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
       self.assertResponseOK(response)
       self.assertAcceptedOrgsPageTemplatesUsed(response)
 
-  def testAcceptedOrgsAreDisplayedAfterOrganizationsHaveBeenAnnounced(self):
-    """Tests that the list of the organizations can not be accessed before 
-    organizations have been announced.
-    """
-    org_properties = {'scope': self.gsoc, 'status': 'active'}
-    seeder_logic.seed(GSoCOrganization, org_properties)
-    seeder_logic.seed(GSoCOrganization, org_properties)
+  def testAcceptedOrgList(self):
     self.timeline.orgsAnnounced()
-    
-    response = self.get(self.url1)
-    self.assertResponseOK(response)
-    self.assertAcceptedOrgsPageTemplatesUsed(response)
+
+    org_properties = {
+        'scope': self.gsoc,
+        'status': 'active'
+    }
+    seeder_logic.seed(org_model.GSoCOrganization, org_properties)
+    seeder_logic.seed(org_model.GSoCOrganization, org_properties)
+
     list_data = self.getListData(self.url1, 0)
     #Third organization is self.gsoc
-    self.assertEqual(len(list_data), 3)
-    
-    response = self.get(self.url2)
-    self.assertResponseOK(response)
-    self.assertAcceptedOrgsPageTemplatesUsed(response)
-    list_data = self.getListData(self.url2, 0)
-    self.assertEqual(len(list_data), 3)
-
-    response = self.get(self.url3)
-    self.assertResponseOK(response)
-    self.assertAcceptedOrgsPageTemplatesUsed(response)
-    list_data = self.getListData(self.url3, 0)
     self.assertEqual(len(list_data), 3)
