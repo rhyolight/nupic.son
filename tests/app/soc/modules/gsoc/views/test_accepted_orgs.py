@@ -71,6 +71,32 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
+  def testPageAllowedAfterOrgsAnnounced(self):
+    # a list functions which change the timeline properties
+    period_setters = [
+        self.timeline.orgsAnnounced,
+        self.timeline.studentSignup,
+        self.timeline.postStudentSignup,
+        self.timeline.studentsAnnounced,
+        self.timeline.formSubmission
+        ]
+
+    for period_setter in period_setters:
+      # set the environment as defined by the current function
+      period_setter()
+
+      response = self.get(self.url3)
+      self.assertResponseOK(response)
+      self.assertAcceptedOrgsPageTemplatesUsed(response)
+
+      response = self.get(self.url2)
+      self.assertResponseOK(response)
+      self.assertAcceptedOrgsPageTemplatesUsed(response)
+
+      response = self.get(self.url3)
+      self.assertResponseOK(response)
+      self.assertAcceptedOrgsPageTemplatesUsed(response)
+
   def testAcceptedOrgsAreDisplayedAfterOrganizationsHaveBeenAnnounced(self):
     """Tests that the list of the organizations can not be accessed before 
     organizations have been announced.
