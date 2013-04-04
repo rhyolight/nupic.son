@@ -64,7 +64,7 @@ class OrgList(template.Template):
 
   def templatePath(self):
     """See template.Template.templatePath for specification."""
-    return "v2/modules/gsoc/admin/_accepted_orgs_list.html"
+    return 'v2/modules/gsoc/admin/_accepted_orgs_list.html'
 
   def _getDescription(self):
     """Returns description of the list.
