@@ -431,7 +431,8 @@ class ReviewProposal(GSoCRequestHandler):
       is_editable = data.timeline.afterStudentSignupEnd() and \
           data.proposal.is_editable_post_deadline
       if data.timeline.studentSignup() or is_editable:
-        data.redirect.proposal(data.proposal.key().id(), data.proposer.link_id)
+        data.redirect.proposal(
+            id=data.proposal.key().id(), student=data.proposer.link_id)
         context['update_link'] = data.redirect.urlOf('update_gsoc_proposal')
 
     possible_mentors = db.get(data.proposal.possible_mentors)
