@@ -412,6 +412,7 @@ class RedirectHelper(object):
     self.program()
     self.kwargs['organization'] = organization.link_id
 
+  # TODO(daniel): id built-in function should not be shadowed
   def id(self, id=None):
     """Sets the kwargs for an url_patterns.ID redirect."""
     if not id:
@@ -479,6 +480,7 @@ class RedirectHelper(object):
     self.kwargs['organization'] = organization.link_id
     return self
 
+  # TODO(daniel): id built-in function should not be shadowed
   def userId(self, user=None, id=None):
     """Sets args for url_patterns.USER_ID redirect."""
     if not user:

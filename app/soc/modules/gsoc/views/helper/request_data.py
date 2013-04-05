@@ -471,6 +471,7 @@ class RequestData(request_data.RequestData):
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects."""
 
+  # TODO(daniel): id built-in function should not be shadowed
   def proposal(self, id=None, student=None):
     """Sets the kwargs for an url_patterns.PROPOSAL redirect."""
     if not student:
@@ -480,6 +481,7 @@ class RedirectHelper(request_data.RedirectHelper):
     self.kwargs['user'] = student
     return self
 
+  # TODO(daniel): id built-in function should not be shadowed
   def review(self, id=None, student=None):
     """Sets the kwargs for an url_patterns.REVIEW redirect."""
     if not student:
@@ -655,7 +657,8 @@ class RedirectHelper(request_data.RedirectHelper):
     self.show_connection(self._data.user, self._data.connection)
     url = self.urlOf(url_names.GSOC_SHOW_CONNECTION, full=full, secure=secure)
     return url
-    
+
+  # TODO(daniel): id built-in function should not be shadowed
   def project(self, id=None, student=None):
     """Returns the URL to the Student Project.
 
@@ -684,6 +687,7 @@ class RedirectHelper(request_data.RedirectHelper):
 
     return self
 
+  # TODO(daniel): id built-in function should not be shadowed
   def survey_record(self, survey=None, id=None, student=None):
     """Returns the redirector object with the arguments for survey record
 
