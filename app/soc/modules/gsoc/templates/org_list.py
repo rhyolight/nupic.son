@@ -81,7 +81,7 @@ class OrgList(template.Template):
     It must be overridden by subclasses.
 
     Returns:
-      new ListConfiguration object.
+      new lists.ListConfiguration object.
     """
     raise NotImplementedError
 
