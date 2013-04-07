@@ -14,7 +14,6 @@
 
 """Module for templates with organizations list."""
 
-from django.utils import html as http_utils
 from django.utils import translation
 
 from soc.views import template
