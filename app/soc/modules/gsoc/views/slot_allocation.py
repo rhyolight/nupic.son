@@ -194,6 +194,5 @@ class SlotsPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     return {
       'page_name': 'Slots page',
-      # TODO(nathaniel): Drop the first parameter of SlotsList.
       'list': SlotsList(data),
     }
