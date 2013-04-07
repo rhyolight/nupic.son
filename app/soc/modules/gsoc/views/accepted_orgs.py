@@ -56,7 +56,7 @@ class AcceptedOrgsPublicList(org_list.OrgList):
     def _rowAction(e, *args):    
       # TODO(nathaniel): make this .organization call unnecessary.    
       self.data.redirect.organization(organization=e)    
-      return self.data.redirect.urlOf('gsoc_org_home')
+      return self.data.redirect.urlOf(url_names.GSOC_ORG_HOME)
 
     list_config.setRowAction(_rowAction)
     list_config.setDefaultPagination(False)
@@ -95,7 +95,7 @@ class AcceptedOrgsAdminList(org_list.OrgList):
     def _rowAction(e, *args):    
       # TODO(nathaniel): make this .organization call unnecessary.    
       self.data.redirect.organization(organization=e)    
-      return self.data.redirect.urlOf('gsoc_org_home')
+      return self.data.redirect.urlOf(url_names.GSOC_ORG_HOME)
 
     list_config.setRowAction(_rowAction)
 

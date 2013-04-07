@@ -26,6 +26,7 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views import forms as gsoc_forms
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 DEF_NO_ORG_ID_FOR_CREATE = ugettext(
@@ -192,7 +193,8 @@ class OrgProfilePage(GSoCRequestHandler):
       # TODO(nathaniel): make this .organization() unnecessary.
       data.redirect.organization()
 
-      context['org_home_page_link'] = data.redirect.urlOf('gsoc_org_home')
+      context['org_home_page_link'] = data.redirect.urlOf(
+          url_names.GSOC_ORG_HOME)
       if (data.program.allocations_visible and
           data.timeline.beforeStudentsAnnounced()):
         context['slot_transfer_page_link'] = data.redirect.urlOf(

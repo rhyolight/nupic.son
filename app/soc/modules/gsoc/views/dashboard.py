@@ -1113,7 +1113,7 @@ class OrganizationsIParticipateInComponent(Component):
       # TODO(nathaniel): make this .organization call unnecessary.
       data.redirect.organization(organization=e)
 
-      return data.redirect.urlOf('gsoc_org_home')
+      return data.redirect.urlOf(url_names.GSOC_ORG_HOME)
 
     list_config = lists.ListConfiguration()
     list_config.setRowAction(RowAction)

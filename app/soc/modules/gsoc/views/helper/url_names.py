@@ -31,6 +31,7 @@ GSOC_PROJECT_CODE_SAMPLE_DELETE = 'gsoc_project_code_sample_delete'
 
 GSOC_ORG_BAN = 'gsoc_org_ban'
 
+GSOC_ORG_HOME = 'gsoc_org_home'
 GSOC_ORG_LIST_FOR_HOST = 'gsoc_org_list_for_host'
 
 GSOC_ORG_CONNECTION = 'gsoc_org_connection'

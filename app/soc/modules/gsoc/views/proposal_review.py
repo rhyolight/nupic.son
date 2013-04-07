@@ -41,6 +41,7 @@ from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.forms import GSoCModelForm
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -104,7 +105,7 @@ class Duplicate(Template):
       self.data.redirect.organization(organization=org)
 
       data = {'name': org.name,
-              'link': self.data.redirect.urlOf('gsoc_org_home'),
+              'link': self.data.redirect.urlOf(url_names.GSOC_ORG_HOME),
               'admins': admins}
 
       orgs.append(data)
