@@ -15,7 +15,7 @@
 """Module containing the views for GSoC accepted orgs."""
 
 from django.conf.urls.defaults import url as django_url
-from django.utils import html as http_utils
+from django.utils import html as html_utils
 
 from soc.logic.exceptions import AccessViolation
 from soc.views.base_templates import ProgramSelect
@@ -119,8 +119,8 @@ class AcceptedOrgsAdminList(org_list.OrgList):
             'org_admin_for', org).fetch(limit=1000)
         org_admins[org.key()] = ', '.join(
             ['"%s" &lt;%s&gt;' % (
-                http_utils.conditional_escape(oa.name()),
-                http_utils.conditional_escape(oa.email)) for oa in oas])
+                html_utils.conditional_escape(oa.name()),
+                html_utils.conditional_escape(oa.email)) for oa in oas])
 
       return ([org_admins], {})
     return prefetcher
