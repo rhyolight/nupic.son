@@ -304,9 +304,9 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
     else:
       data.redirect.organization(organization)
 
+    extra_get_args = []
     if data.student_info:
       link = 'submit_gsoc_proposal'
-      extra_get_args = []
     else:
       link = url_names.GSOC_USER_CONNECTION
       extra_get_args.append('profile=created')
