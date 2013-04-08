@@ -909,8 +909,11 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
 
     check.isOrgAdmin()
 
-  def createMessageFromForm(self):
+  def createMessageFromForm(self, data):
     """Creates a new message based on the data inserted in the form.
+
+    Args:
+      data: a request_data.RequestData object
 
     Returns:
       A newly created message entity or None.
@@ -943,7 +946,7 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
     return db.run_in_transaction(create_message_txn)
 
   def post(self, data, check, mutator):
-    message = self.createMessageFromForm()
+    message = self.createMessageFromForm(data)
     if message:
       data.redirect.show_connection(data.url_user, data.connection)
       return data.redirect.to(validated=True)
