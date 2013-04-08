@@ -190,7 +190,7 @@ class GSoCProgramHelper(ProgramHelper):
 
     properties = {'timeline': self.program_timeline,
                   'status': 'visible', 'apps_tasks_limit': 20,
-                  'scope': self.sponsor,
+                  'scope': self.sponsor, 'sponsor': self.sponsor,
                   'student_agreement': None, 'events_page': None,
                   'help_page': None, 'connect_with_us_page': None,
                   'mentor_agreement': None, 'org_admin_agreement': None,
@@ -271,7 +271,7 @@ class GCIProgramHelper(ProgramHelper):
     properties = {
         'timeline': self.program_timeline,
         'status': 'visible',
-        'scope': self.sponsor,
+        'scope': self.sponsor, 'sponsor': self.sponsor,
         'student_agreement': None, 'events_page': None,
         'help_page': None, 'connect_with_us_page': None,
         'mentor_agreement': None, 'org_admin_agreement': None,
