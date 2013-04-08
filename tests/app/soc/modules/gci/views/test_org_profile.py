@@ -81,7 +81,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.assertOrgProfilePageTemplatesUsed(response)
     
     postdata = {
-        'founder': self.data.user, 'home': self.createDocument().key(),
+        'home': self.createDocument().key(),
         'scope': self.gci, 'irc_channel': 'irc://example.com',
         'pub_mailing_list': 'http://example.com', 'backup_winner': None,
     }

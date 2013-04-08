@@ -90,7 +90,6 @@ def seed(request, *args, **kwargs):
        'link_id': 'google',
        'name': 'Google Inc.',
        'short_name': 'Google',
-       'founder': current_user,
        'home_page': 'http://www.google.com',
        'email': 'ospo@google.com',
        'description': 'This is the profile for Google.',

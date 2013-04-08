@@ -31,14 +31,13 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 class HostTest(unittest.TestCase):
-  """Tests for logic of Host Model.
-  """
-  def setUp(self):
-    """Set up required for the host logic tests.
-    """
-    self.founder = seeder_logic.seed(User)
+  """Tests for logic of Host Model."""
 
-    properties = {'founder': self.founder, 'home': None}
+  def setUp(self):
+    """Set up required for the host logic tests."""
+    properties = {
+        'home': None
+        }
     self.sponsor = seeder_logic.seed(Sponsor, properties)
 
   def testGetHostForUser(self):

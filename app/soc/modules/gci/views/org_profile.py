@@ -132,7 +132,6 @@ class OrgProfilePage(GCIRequestHandler):
 
     if not data.organization:
       org_id = data.GET['org_id']
-      form.cleaned_data['founder'] = data.user
       form.cleaned_data['scope'] = data.program
       form.cleaned_data['link_id'] = org_id
       key_name = '%s/%s' % (data.program.key().name(), org_id)

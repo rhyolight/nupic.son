@@ -44,10 +44,6 @@ class User(soc.models.linkable.Linkable):
      User.  This relation is implemented as the 'user' back-reference
      Query of the Document model 'user' reference.
 
-   groups)  a 1:many relationship of Group entities "founded" by the User.
-     This relation is implemented as the 'groups' back-reference Query of
-     the Group model 'founder' reference.
-
    responses)  a 1:many relationship of Response entities submitted by the
      User.  This relation is implemented as the 'responses' back-reference
      Query of the Response model 'respondent' reference.

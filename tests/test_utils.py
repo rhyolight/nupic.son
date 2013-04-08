@@ -358,7 +358,6 @@ class GSoCTestCase(SoCTestCase):
     from tests.profile_utils import GSoCProfileHelper
     super(GSoCTestCase, self).init()
     self.program_helper = GSoCProgramHelper()
-    self.founder = self.program_helper.createFounder()
     self.sponsor = self.program_helper.createSponsor()
     self.gsoc = self.program = self.program_helper.createProgram()
     self.site = self.program_helper.createSite()
@@ -390,7 +389,6 @@ class GCITestCase(SoCTestCase):
     from tests.profile_utils import GCIProfileHelper
     super(GCITestCase, self).init()
     self.program_helper = GCIProgramHelper()
-    self.founder = self.program_helper.createFounder()
     self.sponsor = self.program_helper.createSponsor()
     self.gci = self.program = self.program_helper.createProgram()
     self.site = self.program_helper.createSite()
@@ -704,7 +702,6 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
 
     properties = {'scope': self.gsoc, 'status': 'active',
                   'scoring_disabled': False, 'max_score': 5,
-                  'founder': self.founder,
                   'home': None,}
     properties.update(override)
     return self.seed(GSoCOrganization, properties)

@@ -23,9 +23,12 @@ from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
 
+from soc.models import user as user_model
+
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
   """Tests for accept_proposals task.
@@ -61,10 +64,11 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
     """Creates the surveys and records required for the tests in the old
     format.
     """
+    user = seeder_logic.seed(user_model.User)
     survey_values = {
-        'author': self.founder,
+        'author': user,
         'title': 'Title',
-        'modified_by': self.founder,
+        'modified_by': user,
         'link_id': 'link_id',
         'scope': self.gsoc,
     }

@@ -54,7 +54,7 @@ class AcceptedOrgsPageTest(GCIDjangoTestCase):
     """
     self.data.createUser()
     org_properties = {
-        'scope': self.gci, 'status': 'active', 'founder': self.data.user,
+        'scope': self.gci, 'status': 'active',
         'home': None, 'backup_winner': None,
     }
     self.seed(GCIOrganization, org_properties)

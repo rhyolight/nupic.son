@@ -69,7 +69,7 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     self.data.createHost()
 
     org_properties = {
-        'scope': self.gci, 'status': 'active', 'founder': self.data.user,
+        'scope': self.gci, 'status': 'active',
         'home': None, 'backup_winner': None,
     }
     self.seed(GCIOrganization, org_properties)
@@ -86,7 +86,7 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     self.data.createHost()
 
     org_properties = {
-        'scope': self.gci, 'status': 'invalid', 'founder': self.data.user,
+        'scope': self.gci, 'status': 'invalid',
         'home': None, 'backup_winner': None
     }
     self.seed(GCIOrganization, org_properties)

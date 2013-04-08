@@ -227,7 +227,6 @@ class OrgProfilePage(GSoCRequestHandler):
       return None
 
     if not data.organization:
-      form.cleaned_data['founder'] = data.user
       form.cleaned_data['scope'] = data.program
       form.cleaned_data['link_id'] = data.org_id
       form.cleaned_data['new_org'] = data.org_app_record.new_org
