@@ -20,8 +20,6 @@ import logging
 
 from django.conf.urls import defaults
 
-import soc.cache.sidebar
-
 
 class Error(Exception):
   """Error class for the callback module.
