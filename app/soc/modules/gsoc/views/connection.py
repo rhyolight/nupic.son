@@ -936,10 +936,7 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
     def create_message_txn():
       message = message_form.create(commit=True, parent=data.connection)
 
-      context = gsoc_notifications.newConnectionMessageContext(
-          data, message, to_emails)
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=message)
-      sub_txn()
+      # TODO(drew): add notifications
 
       return message
 
