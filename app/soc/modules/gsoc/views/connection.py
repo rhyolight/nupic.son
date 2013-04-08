@@ -613,7 +613,7 @@ class ShowConnection(GSoCRequestHandler):
     """Handler for Show GSoCConnection get request."""
     # Shortcut for clarity/laziness.
     c = data.connection 
-    is_org_admin = data.organization in data.org_admin_for
+    is_org_admin = data.orgAdminFor(data.organization)
     header_name = data.url_user.link_id \
         if is_org_admin else data.organization.name
 
