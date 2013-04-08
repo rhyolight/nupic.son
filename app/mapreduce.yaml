@@ -188,3 +188,19 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.models.user.User
+
+- name: ConvertGSoCProgram
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_program.process
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.program.GSoCProgram
+
+- name: ConvertGCIProgram
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.convert_program.process
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.program.GCIProgram

@@ -34,6 +34,7 @@ PROGRAM_DOCUMENTS_GROUP = translation.ugettext(
     '4. Program Documents')
 
 
+# TODO(daniel): drop inheritance from Linkable
 class Program(linkable_model.Linkable):
   """The Program model, representing a Program ran by a Sponsor."""
 
