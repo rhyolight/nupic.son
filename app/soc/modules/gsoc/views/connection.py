@@ -860,7 +860,7 @@ class ShowConnection(GSoCRequestHandler):
       connection_entity.put()
 
       generate_message_txn(connection_entity, 'Org Admin Connection Rejected.')
-      
+
     db.run_in_transaction(decline_org_admin_txn)
 
 
@@ -895,7 +895,7 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'connection/message/%s$' % url_patterns.MESSAGE, self, 
+         url(r'connection/message/%s$' % url_patterns.MESSAGE, self,
              name=url_names.GSOC_CONNECTION_MESSAGE),
     ]
 
@@ -907,7 +907,7 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
     data.organization = data.connection.organization
     mutator.commentVisible(data.organization)
 
-    self.check.isOrgAdmin()
+    check.isOrgAdmin()
 
   def createMessageFromForm(self):
     """Creates a new message based on the data inserted in the form.
@@ -946,14 +946,14 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
     message = self.createMessageFromForm()
     if message:
       data.redirect.show_connection(data.url_user, data.connection)
-      data.redirect.to(validated=True)
+      return data.redirect.to(validated=True)
     else:
-      self.redirect.show_connection(data.url_user, data.connection)
+      data.redirect.show_connection(data.url_user, data.connection)
 
       # a bit hacky :-( may be changed when possible
       data.request.method = 'GET'
       request_handler = ShowConnection()
-      self.response = request_handler(data.request, *self.args, **self.kwargs)
+      return request_handler(data.request, *self.args, **self.kwargs)
 
   def get(self, data, check, mutator):
     raise exceptions.MethodNotAllowed()
