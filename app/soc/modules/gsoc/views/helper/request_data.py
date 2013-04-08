@@ -586,7 +586,7 @@ class RedirectHelper(request_data.RedirectHelper):
       self._url_name = 'gsoc_invitation'
     return self
   
-  def connect_user(self, user=None):
+  def connect_user(self, user=None, organization=None):
     """Sets the _url_name for a gsoc_user_connection redirect.
 
     Intended for use when generating a url for a redirect to OrgConnectionPage.
@@ -599,20 +599,25 @@ class RedirectHelper(request_data.RedirectHelper):
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
   
-    self.connect_org()
+    self.connect_org(organization)
     self.kwargs['link_id'] = user.link_id
     return self
 
-  def connect_org(self):
-    """ Sets the _url_name for a gsoc_user_connection redirect.
+  def connect_org(self, organization=None):
+    """ Sets the _url_name for a gsoc_org_connection redirect.
 
     Intended for use when generating a url for a redirect to 
     UserConnectionPage.
     """
-    self.organization(self._data.organization)
+    current_org = None
+    if organization:
+        current_org = organization
+    else:
+        current_org = self._data.organization
+    self.organization(current_org)
     # We need to reassign the kwarg to the org's link_id since it's 
     # being set to the Organization object
-    self.kwargs['organization'] = self._data.organization.link_id
+    self.kwargs['organization'] = current_org.link_id
     self._url_name = url_names.GSOC_USER_CONNECTION
     return self
   

@@ -313,7 +313,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
 
     user = User.get_by_key_name(data.request.POST['public_name'])
 
-    data.redirect.connect(user, organization)
+    data.redirect.connect_user(user, organization)
 
     return data.redirect.to(link, extra=extra_get_args)
 
