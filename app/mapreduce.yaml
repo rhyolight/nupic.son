@@ -13,24 +13,6 @@ mapreduce:
     - name: entity_kind
       value: soc.models.org_app_record.OrgAppRecord
 
-- name: ConvertOrgAppSurvey
-  mapper:
-    input_reader: mapreduce.input_readers.DatastoreInputReader
-    handler: soc.mapreduce.convert_surveys.process
-    params:
-    - name: entity_kind
-      value: soc.models.org_app_survey.OrgAppSurvey
-
-- name: ConvertOrgAppSurveySchema
-  mapper:
-    input_reader: mapreduce.input_readers.DatastoreInputReader
-    handler: soc.mapreduce.convert_survey_schema.process
-    params:
-    - name: entity_kind
-      value: soc.models.org_app_survey.OrgAppSurvey
-    - name: program_model
-    - name: program_key
-
 - name: ProcessOrgApp
   mapper:
     input_reader: mapreduce.input_readers.DatastoreInputReader
@@ -42,22 +24,6 @@ mapreduce:
     - name: program_type
 
 # GSoC specific mapreduce jobs
-- name: GSoCConvertGradingProjectSurvey
-  mapper:
-    input_reader: mapreduce.input_readers.DatastoreInputReader
-    handler: soc.mapreduce.convert_surveys.process
-    params:
-    - name: entity_kind
-      value: soc.modules.gsoc.models.grading_project_survey.GradingProjectSurvey
-
-- name: GSoCConvertGradingProjectSurveySchema
-  mapper:
-    input_reader: mapreduce.input_readers.DatastoreInputReader
-    handler: soc.mapreduce.convert_survey_schema.process
-    params:
-    - name: entity_kind
-      value: soc.modules.gsoc.models.grading_project_survey.GradingProjectSurvey
-
 - name: GSoCConvertOrgTags
   mapper:
     input_reader: mapreduce.input_readers.DatastoreInputReader
@@ -81,22 +47,6 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.project.GSoCProject
-
-- name: GSoCConvertProjectSurvey
-  mapper:
-    input_reader: mapreduce.input_readers.DatastoreInputReader
-    handler: soc.mapreduce.convert_surveys.process
-    params:
-    - name: entity_kind
-      value: soc.modules.gsoc.models.project_survey.ProjectSurvey
-
-- name: GSoCConvertProjectSurveySchema
-  mapper:
-    input_reader: mapreduce.input_readers.DatastoreInputReader
-    handler: soc.mapreduce.convert_survey_schema.process
-    params:
-    - name: entity_kind
-      value: soc.modules.gsoc.models.project_survey.ProjectSurvey
 
 - name: GSoCConvertProposal
   mapper:
@@ -157,14 +107,6 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.task.GCITask
     - name: program_key
-
-- name: GCIConvertTask
-  mapper:
-    input_reader: mapreduce.input_readers.DatastoreInputReader
-    handler: soc.mapreduce.convert_gci_task.process_task
-    params:
-    - name: entity_kind
-      value: soc.modules.gci.models.task.GCITask
 
 - name: GCIConvertTaskArbitraryTag
   mapper:
