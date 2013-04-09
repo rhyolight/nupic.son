@@ -551,7 +551,6 @@ class ShowConnection(GSoCRequestHandler):
   
   # The actions that will be made available to the user in the dropdown.
   RESPONSES = {
-    'none' : ('none', 'None Available'),
     'accept_mentor' : ('accept_mentor', 'Accept Mentor'),
     'reject_mentor' : ('reject_mentor', 'Reject Mentor'),
     'accept_org_admin' : ('accept_org_admin', 'Accept Org Admin'),
@@ -673,12 +672,12 @@ class ShowConnection(GSoCRequestHandler):
     if choices.count(self.RESPONSES['withdraw']) > 1:
       choices.remove(self.RESPONSES['withdraw'])
 
-    if len(choices) < 1:
-      choices.append(self.RESPONSES['none'])
-
-    response_form = ConnectionResponseForm(
-        request_data=data.POST or None,
-        choices=choices)
+    response_form = None
+    if len(choices) > 1:
+      response_form = ConnectionResponseForm(
+          request_data=data.POST or None,
+          choices=choices
+          )
 
     message_form = MessageForm(data.POST or None)
     message_box = {
