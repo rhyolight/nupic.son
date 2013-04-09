@@ -592,10 +592,10 @@ class RedirectHelper(request_data.RedirectHelper):
     Intended for use when generating a url for a redirect to OrgConnectionPage.
 
     Args:
-      organization: The GSoCOrganization instance to which a user is trying 
-        to connect.
       user: The User instance for which one wishes to establish a connection to
         an organization.
+      organization: The GSoCOrganization instance to which a user is trying 
+        to connect.
     """  
     if not user:
       assert 'user' in self._data.kwargs
