@@ -673,7 +673,7 @@ class ShowConnection(GSoCRequestHandler):
       choices.remove(self.RESPONSES['withdraw'])
 
     response_form = None
-    if len(choices) > 1:
+    if len(choices) > 0:
       response_form = ConnectionResponseForm(
           request_data=data.POST or None,
           choices=choices
