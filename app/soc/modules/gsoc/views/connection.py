@@ -715,7 +715,7 @@ class ShowConnection(GSoCRequestHandler):
     elif response == 'reject_org_admin':
       self._rejectOrgAdmin(data, is_org_admin)
     elif response == 'delete':
-      self._deleteConnection(data, is_org_admin)
+      self._deleteConnection(data)
     elif response == 'withdraw':
       self._withdrawConnection(data, is_org_admin)
     
