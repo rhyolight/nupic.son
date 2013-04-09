@@ -593,9 +593,9 @@ class RedirectHelper(request_data.RedirectHelper):
 
     Args:
       organization: The GSoCOrganization instance to which a user is trying 
-          to connect.
+        to connect.
       user: The User instance for which one wishes to establish a connection to
-          an organization.
+        an organization.
     """  
     if not user:
       assert 'user' in self._data.kwargs
@@ -612,9 +612,9 @@ class RedirectHelper(request_data.RedirectHelper):
     UserConnectionPage.
     
     Args:
-        organization: Override the current organization (if any) provided
-            by the RequestData object. Intended specifically for the call
-            from connect_user.
+      organization: Override the current organization (if any) provided
+        by the RequestData object. Intended specifically for the call
+        from connect_user.
     """
     if organization:
       current_org = organization
