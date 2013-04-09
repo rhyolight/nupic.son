@@ -950,10 +950,11 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
     else:
       data.redirect.show_connection(data.url_user, data.connection)
 
+      # TODO(nathaniel): calling GET logic from a POST handling path.
       # a bit hacky :-( may be changed when possible
       data.request.method = 'GET'
       request_handler = ShowConnection()
-      return request_handler(data.request, *self.args, **self.kwargs)
+      return request_handler(data.request, *data.args, **data.kwargs)
 
   def get(self, data, check, mutator):
     raise exceptions.MethodNotAllowed()
