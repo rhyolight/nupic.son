@@ -592,28 +592,34 @@ class RedirectHelper(request_data.RedirectHelper):
     Intended for use when generating a url for a redirect to OrgConnectionPage.
 
     Args:
-        user: The User instance for which one wishes to establish a connection to
-            an organization.
+      user: The User instance for which one wishes to establish a connection to
+        an organization.
+      organization: The GSoCOrganization instance to which a user is trying 
+        to connect.
     """  
     if not user:
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
   
-    self.connect_org(organization)
+    self.connect_org(organization=organization)
     self.kwargs['link_id'] = user.link_id
     return self
 
   def connect_org(self, organization=None):
-    """ Sets the _url_name for a gsoc_org_connection redirect.
+    """Sets the _url_name for a gsoc_org_connection redirect.
 
     Intended for use when generating a url for a redirect to 
     UserConnectionPage.
+    
+    Args:
+      organization: Override the current organization (if any) provided
+        by the RequestData object. Intended specifically for the call
+        from connect_user.
     """
-    current_org = None
     if organization:
-        current_org = organization
+      current_org = organization
     else:
-        current_org = self._data.organization
+      current_org = self._data.organization
     self.organization(current_org)
     # We need to reassign the kwarg to the org's link_id since it's 
     # being set to the Organization object

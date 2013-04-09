@@ -178,9 +178,9 @@ class OrgConnectionForm(ConnectionForm):
     for id in id_list:
       self.cleaned_data[field] = id.strip(' ')
       user, anonymous_user = self._clean_one_id(field)
-      if anonymous_user is None:
+      if user is not None:
         self.request_data.user_connections.append(user)
-      else:
+      elif anonymous_user is not None:
         self.request_data.anonymous_users.append(anonymous_user)
     del self.cleaned_data[field]
     
@@ -209,6 +209,7 @@ class OrgConnectionForm(ConnectionForm):
       cleaner = cleaning.clean_email(field)
       email = cleaner(self)
       
+      # If we can't find a user for the given email, it's an anonymous user.
       account = users.User(email)
       user_account = accounts.normalizeAccount(account)
       connected_user = User.all().filter('account', user_account).get()
