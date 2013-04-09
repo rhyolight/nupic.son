@@ -28,19 +28,17 @@ limitations under the License.
   <p class="connection-role"><strong>Role:</strong> {{ connection.getUserFriendlyRole }}</p>
   <p class="connection-status"><strong>Status:</strong> {{ connection.status }}</p>
   <p class="connection-sent-on"><strong>Created on:</strong> {{ connection.created_on }}</p>
-  <div class="rconnection-response">
-    <form action="{{ response_action }}" method="post" id="form" class="form-project-comment">
-    </form>
-  </div>
 </div>
 
-<div class="project-comment-container">
-    <div class="connection-respond">
-      <form method="post" id="form" class="form-project-comment">
-        {{ response_form.render }}
-      </form>
-    </div>
-</div>
+{% if response_form %}
+  <div class="project-comment-container">
+      <div class="connection-respond">
+        <form method="post" id="form" class="form-project-comment">
+          {{ response_form.render }}
+        </form>
+      </div>
+  </div>
+{% endif %}
 
 <div class="project-comment-container">
   <div class="project-comment-box project-comment-public-container">
