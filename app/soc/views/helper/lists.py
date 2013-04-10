@@ -146,6 +146,32 @@ def getListIndex(request):
   return idx
 
 
+class Prefetcher(object):
+  """Class used to prefetch objects on list data construction.
+
+    It is used to obtain arbitrary values that can be used at the point
+    the rows of a list are being constructed in order to achieve
+    better performance.
+
+    Subclasses must implement prefetch() method.
+  """
+
+  def prefetch(self, entities):
+    """Does the prefetching work for the specified list of entities and
+    returns the prefetched data.
+
+    Args:
+      entities: list of entities for which data should be prefetched
+
+    Returns:
+      a tuple that contains two elements:
+          - a list that contains dictionaries with prefetched keys
+          and corresponding values
+          - a dict # TODO(daniel): document this structure
+    """
+    raise NotImplementedError
+
+
 class ListConfiguration(object):
   """Resembles the configuration of a list. This object is sent to the client
   on page load.
@@ -1147,8 +1173,8 @@ class RawQueryContentResponseBuilder(object):
       starter: The function used to retrieve the start entity.
       ender: The function used to retrieve the value for the next start.
       skipper: The function used to determine whether to skip a value.
-      prefetch: The fields that need to be prefetched for increased
-                performance.
+      prefetcher: A function to prefetch various columns that can be used for
+          increased performance.
     """
     if not ender:
       ender = lambda entity, is_last, start: (
