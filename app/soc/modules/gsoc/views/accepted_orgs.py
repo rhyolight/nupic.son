@@ -74,6 +74,15 @@ class AcceptedOrgsPublicList(org_list.OrgList):
 class AcceptedOrgsAdminList(org_list.OrgList):
   """Template for list of accepted organizations."""
 
+  class ListPrefetcher(lists.Prefetcher):
+    """Prefetcher used by AcceptedOrgsAdminList.
+
+    See lists.Prefetcher for specification.
+    """
+
+    def prefetch(self, entities):
+      """See lists.Prefetcher.prefetch for specification."""
+
   def _getDescription(self):
     """See org_list.OrgList._getDescription for specification."""
     return org_list.ACCEPTED_ORG_LIST_DESCRIPTION % self.data.program.name
@@ -112,18 +121,9 @@ class AcceptedOrgsAdminList(org_list.OrgList):
 
   def _getPrefetcher(self):
     """See org_list.OrgList._getPrefetcher for specification."""
-    def prefetcher(orgs):
-      org_admins = {}
-      for org in orgs:
-        oas = profile_model.GSoCProfile.all().filter(
-            'org_admin_for', org).fetch(limit=1000)
-        org_admins[org.key()] = ', '.join(
-            ['"%s" &lt;%s&gt;' % (
-                html_utils.conditional_escape(oa.name()),
-                html_utils.conditional_escape(oa.email)) for oa in oas])
-
-      return ([org_admins], {})
-    return prefetcher
+    prefetcher = AcceptedOrgsAdminList.ListPrefetcher()
+    # TODO(daniel): return prefetcher object rather than a function
+    return prefetcher.prefetch
 
 
 class AcceptedOrgsPublicPage(GSoCRequestHandler):
