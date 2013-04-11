@@ -977,6 +977,10 @@ class ProjectsList(Template):
           program=self.data.program, org=self.data.organization)
 
       starter = lists.keyStarter
+
+      # TODO(daniel): replace prefetchers when the framework is ready
+      #prefetcher = lists.ListModelPrefetcher(
+      #    GSoCProject, ['org'], ['mentors'], parent=True)
       prefetcher = lists.listModelPrefetcher(
           GSoCProject, ['org'], ['mentors'], parent=True)
 

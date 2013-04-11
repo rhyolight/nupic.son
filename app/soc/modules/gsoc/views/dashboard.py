@@ -599,6 +599,7 @@ class MyEvaluationsComponent(Component):
         ancestor=self.data.profile)
 
     starter = lists.keyStarter
+    # TODO(daniel): replace prefetchers when the framework is ready
     prefetcher = lists.listModelPrefetcher(
         GSoCProject, ['org'],
         ['mentors', 'failed_evaluations'],
@@ -668,6 +669,7 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
         mentors=self.data.profile)
 
     starter = lists.keyStarter
+    # TODO(daniel): replace prefetchers when the framework is ready
     prefetcher = lists.listModelPrefetcher(
         GSoCProject, ['org'],
         ['mentors', 'failed_evaluations'],
@@ -1595,6 +1597,7 @@ class StudentEvaluationComponent(Component):
           orgs=self.data.org_admin_for)
 
       starter = lists.keyStarter
+      # TODO(daniel): replace prefetchers when the framework is ready
       prefetcher = lists.listModelPrefetcher(
           GSoCProject, ['org'],
           ['mentors', 'failed_evaluations'],

@@ -32,6 +32,25 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 class ProjectList(Template):
   """Template for listing the student projects accepted in the program."""
 
+  class ProjectListPrefetcher(lists.ListModelPrefetcher):
+    """Prefetcher used to improve performance of when the list is loaded.
+    
+    See lists.Prefetcher for specification.
+    """
+
+    def prefetch(self, entities):
+      """See lists.Prefetcher.prefetch for specification."""
+      prefetched_list, _ = super(
+          ProjectList.ProjectListPrefetcher, self).prefetch(entities)
+
+      mentor_names = {}
+      for e in entities:
+        mentor_names[e.key()] = ', '.join(
+            [prefetched_list[0][m_key].name() for m_key in e.mentors])
+
+      return [mentor_names], {}
+
+
   DEFAULT_IDX = 0
 
   def __init__(self, data, query, idx=None):
@@ -90,6 +109,7 @@ class ProjectList(Template):
       list_model_prefetcher = lists.listModelPrefetcher(
             GSoCProject, ['org'], ['mentors'], parent=True)
 
+      # TODO(daniel): replace prefetchers when the framework is ready
       def prefetcher(entities):
         """Prefetches the specified fields.
 
