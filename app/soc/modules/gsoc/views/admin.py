@@ -1085,6 +1085,30 @@ class StudentsList(Template):
   """List configuration for listing all the students involved with the program.
   """
 
+  class ListPrefetcher(lists.Prefetcher):
+    """Prefetcher used by StudentsList.
+
+    See lists.Prefetcher for specification.
+    """
+
+    def prefetch(self, entities):
+      """See lists.Prefetcher.prefetch for specification."""
+      keys = []
+
+      for entity in entities:
+        key = GSoCProfile.student_info.get_value_for_datastore(entity)
+        if key:
+          keys.append(key)
+
+      student_infos = db.get(keys)
+      si = dict((i.parent_key(), i) for i in student_infos if i)
+
+      entities = db.get(set(sum((i.project_for_orgs for i in entities), [])))
+      o = dict((i.key(), i) for i in entities if i)
+
+      return ([si, o], {})
+
+
   def __init__(self, request, data):
     """Initializes this component."""
     self.data = data
@@ -1178,24 +1202,12 @@ class StudentsList(Template):
 
     starter = lists.keyStarter
 
-    def prefetcher(profiles):
-      keys = []
+    prefetcher = StudentsList.ListPrefetcher()
 
-      for profile in profiles:
-        key = GSoCProfile.student_info.get_value_for_datastore(profile)
-        if key:
-          keys.append(key)
-
-      entities = db.get(keys)
-      si = dict((i.parent_key(), i) for i in entities if i)
-
-      entities = db.get(set(sum((i.project_for_orgs for i in entities), [])))
-      o = dict((i.key(), i) for i in entities if i)
-
-      return ([si, o], {})
-
+    # TODO(daniel): pass prefetcher object rather than a function
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter,
+        prefetcher=prefetcher.prefetch)
 
     return response_builder.build()
 
