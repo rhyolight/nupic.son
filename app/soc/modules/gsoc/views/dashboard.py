@@ -1371,8 +1371,9 @@ class ParticipantsComponent(Component):
     if self.data.is_host:
       q.filter('scope', self.data.program)
       q.filter('is_mentor', True)
-      prefetcher = lists.listPrefetcher(
-          GSoCProfile, ['mentor_for', 'org_admin_for'])
+      # TODO(daniel): use prefetcher object rather than a function
+      prefetcher = lists.ListFieldPrefetcher(
+          GSoCProfile, ['mentor_for', 'org_admin_for']).prefetch
     else:
       org_dict = dict((i.key(), i) for i in self.data.mentor_for)
       q.filter('mentor_for IN', self.data.profile.org_admin_for)
