@@ -884,6 +884,8 @@ class ProposalsList(Template):
     q.filter('program', program)
 
     starter = lists.keyStarter
+    # TODO(daniel): replace prefetchers when the framework is ready
+    #prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
     prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(

@@ -205,6 +205,9 @@ class SlotsTransferAdminList(template.Template):
     q = GSoCSlotTransfer.all().filter('program', self.data.program)
 
     starter = lists.keyStarter
+
+    # TODO(daniel): replace prefetchers when the framework is ready
+    #prefetcher = lists.modelPrefetcher(GSoCSlotTransfer, [], parent=True)
     prefetcher = lists.modelPrefetcher(GSoCSlotTransfer, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(

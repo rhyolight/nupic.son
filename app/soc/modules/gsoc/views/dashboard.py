@@ -461,6 +461,8 @@ class MyProposalsComponent(Component):
     q.ancestor(self.data.profile)
 
     starter = lists.keyStarter
+    # TODO(daniel): replace prefetchers when the framework is ready
+    #prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
     prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
@@ -508,6 +510,8 @@ class MyProjectsComponent(Component):
         ancestor=self.data.profile, program=self.data.program)
 
     starter = lists.keyStarter
+    # TODO(daniel): replace prefetchers when the framework is ready
+    #prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
     prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
@@ -1021,6 +1025,8 @@ class SubmittedProposalsComponent(Component):
         duplicates.extend(dup.duplicates)
 
     starter = lists.keyStarter
+    # TODO(daniel): replace prefetchers when the framework is ready
+    #prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
     prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
@@ -1075,6 +1081,8 @@ class ProjectsIMentorComponent(Component):
       list_query.filter('mentors', self.data.profile)
 
     starter = lists.keyStarter
+    # TODO(daniel): replace prefetchers when the framework is ready
+    #prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
     prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
@@ -1279,6 +1287,8 @@ class RequestComponent(Component):
 
     starter = lists.keyStarter
 
+    # TODO(daniel): replace prefetchers when the framework is ready
+    #prefetcher = lists.modelPrefetcher(GSoCRequest, ['org'], parent=True)
     prefetcher = lists.modelPrefetcher(GSoCRequest, ['user', 'org'])
 
     response_builder = lists.RawQueryContentResponseBuilder(

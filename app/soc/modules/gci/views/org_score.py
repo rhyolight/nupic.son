@@ -70,7 +70,6 @@ class OrgScoresList(Template):
       q.filter('org', self.data.organization)
 
       skipper = lambda entity, start: entity.numberOfTasks() <= 0
-    #  prefetcher = lists.modelPrefetcher(GCIScore, [], True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, q, lists.keyStarter,
