@@ -35,6 +35,28 @@ from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 class SlotsList(org_list.OrgList):
   """Template for list of accepted organizations to allocate slots."""
 
+  class ListPrefetcher(lists.Prefetcher):
+    """Prefetcher used by SlotsList.
+
+    See lists.Prefetcher for specification.
+    """
+
+    def prefetch(self, entities):
+      """See lists.Prefetcher.prefetch for specification."""
+      org_slots_unused = {}
+
+      for entity in entities:
+        query = proposal_model.GSoCProposal.all(keys_only=True)
+        query.filter('org', entity)
+        query.filter('has_mentor', True)
+        query.filter('accept_as_project', True)
+        slots_used = query.count()
+
+        org_slots_unused[entity.key()] = entity.slots - slots_used if \
+            entity.slots > slots_used else 0
+
+      return ([org_slots_unused], {})
+
   def _getDescription(self):
     """See org_list.OrgList._getDescription for specification."""
     return org_list.ACCEPTED_ORG_LIST_DESCRIPTION % self.data.program.name
@@ -145,21 +167,9 @@ class SlotsList(org_list.OrgList):
 
   def _getPrefetcher(self):
     """See org_list.OrgList._getPrefetcher for specification."""
-    def prefetcher(orgs):
-      org_slots_unused = {}
-
-      for org in orgs:
-        query = proposal_model.GSoCProposal.all(keys_only=True)
-        query.filter('org', org)
-        query.filter('has_mentor', True)
-        query.filter('accept_as_project', True)
-        slots_used = query.count()
-
-        org_slots_unused[org.key()] = org.slots - slots_used if \
-            org.slots > slots_used else 0
-
-      return ([org_slots_unused], {})
-    return prefetcher
+    prefetcher = SlotsList.ListPrefetcher()
+    # TODO(daniel): return prefetcher object rather than a function
+    return prefetcher.prefetch
 
 
 class SlotsPage(base.GSoCRequestHandler):
