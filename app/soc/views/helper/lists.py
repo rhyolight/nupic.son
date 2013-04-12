@@ -172,6 +172,17 @@ class Prefetcher(object):
     raise NotImplementedError
 
 
+class EmptyPrefetcher(Prefetcher):
+  """Trivial implementation of Prefetcher that does not prefetch any data."""
+
+  def prefetch(self, entities):
+    """See Prefetcher.prefetch for specification."""
+    return [], {}
+
+
+EMPTY_PREFETCHER = EmptyPrefetcher()
+
+
 class ListConfiguration(object):
   """Resembles the configuration of a list. This object is sent to the client
   on page load.
