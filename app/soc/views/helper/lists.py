@@ -1240,7 +1240,8 @@ class RawQueryContentResponseBuilder(object):
       starter: The function used to retrieve the start entity.
       ender: The function used to retrieve the value for the next start.
       skipper: The function used to determine whether to skip a value.
-      prefetcher: A Prefetch object that can be used for increased performance.
+      prefetcher: A Prefetcher implementation that can be used
+          for increased performance.
     """
     if not ender:
       ender = lambda entity, is_last, start: (
