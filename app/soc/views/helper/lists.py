@@ -232,7 +232,8 @@ class ListFieldPrefetcher(Prefetcher):
 
   def prefetch(self, entities):
     """See Prefetcher.prefetch for specification."""
-    prefetched_entities = prefetchListFields(model, fields, entities)
+    prefetched_entities = prefetchListFields(
+        self._model, self._list_fields, entities)
     return [prefetched_entities], {}
 
 
