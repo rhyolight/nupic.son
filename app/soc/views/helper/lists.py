@@ -212,6 +212,7 @@ class ModelPrefetcher(Prefetcher):
       a tuple which contains an empty list and an empty dictionary
     """
     prefetchFields(self._model, self._fields, entities, self._parent)
+    # TODO(daniel): prefetched entities should be returned here
     return [], {}
 
 
