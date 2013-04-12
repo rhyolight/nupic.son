@@ -183,6 +183,38 @@ class EmptyPrefetcher(Prefetcher):
 EMPTY_PREFETCHER = EmptyPrefetcher()
 
 
+class ModelPrefetcher(Prefetcher):
+  """Prefetcher for the specified model and fields."""
+
+  def __init__(self, model, fields, parent=False):
+    """Initializes a new instance for the specified values.
+    
+    Args:
+      model: model for which data will be prefetched
+      fields: list of model fields which will be prefetched
+      parent: whether the parents of entities should be prefetched or not
+    """
+    self._model = model
+    self._fields = fields
+    self._parent = parent
+
+  def prefetch(self, entities):
+    """Prefetches the requested fields for the specified list of entities.
+
+    Relevant values are automatically assigned to the corresponding fields
+    in the entities.
+
+    Args:
+      entities: a list of entities belonging to the model specified with
+         the prefetcher
+    
+    Returns:
+      a tuple which contains an empty list and an empty dictionary
+    """
+    prefetchFields(self._model, self._fields, entities, self._parent)
+    return [], {}
+
+
 class ListConfiguration(object):
   """Resembles the configuration of a list. This object is sent to the client
   on page load.
@@ -1063,47 +1095,6 @@ def prefetchFields(model, fields, data, parent):
   prefetched_entities = entities_future.get_result()
 
   _processPrefetchedFields(prefetched_entities, model, fields, data, parent)
-
-
-class ModelPrefetcher(Prefetcher):
-  """Prefetcher for the specified model and fields."""
-
-  def __init__(self, model, fields, parent=False):
-    """Initializes a new instance for the specified values.
-    
-    Args:
-      model: model for which data will be prefetched
-      fields: list of model fields which will be prefetched
-      parent: whether the parents of entities should be prefetched or not
-    """
-    self._model = model
-    self._fields = fields
-    self._parent = parent
-
-  def prefetch(self, entities):
-    """Prefetches the requested fields for the specified list of entities.
-
-    Relevant values are automatically assigned to the corresponding fields
-    in the entities.
-
-    Args:
-      entities: a list of entities belonging to the model specified with
-         the prefetcher
-    
-    Returns:
-      a tuple which contains an empty list and an empty dictionary
-    """
-    prefetchFields(self._model, self._fields, entities, self._parent)
-    return [], {}
-
-
-def modelPrefetcher(model, fields, parent=False):
-  """Returns a prefetcher for the specified model and fields.
-  """
-  def prefetcher(entities):
-    prefetchFields(model, fields, entities, parent)
-    return [], {}
-  return prefetcher
 
 
 def _prefetchListFieldsAsync(model, fields, data):
