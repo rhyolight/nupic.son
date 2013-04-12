@@ -82,6 +82,16 @@ class AcceptedOrgsAdminList(org_list.OrgList):
 
     def prefetch(self, entities):
       """See lists.Prefetcher.prefetch for specification."""
+      org_admins = {}
+      for entity in entities:
+        oas = profile_model.GSoCProfile.all().filter(
+            'org_admin_for', entity).fetch(limit=1000)
+        org_admins[entity.key()] = ', '.join(
+            ['"%s" &lt;%s&gt;' % (
+                http_utils.conditional_escape(oa.name()),
+                http_utils.conditional_escape(oa.email)) for oa in oas])
+
+      return ([org_admins], {})
 
   def _getDescription(self):
     """See org_list.OrgList._getDescription for specification."""
