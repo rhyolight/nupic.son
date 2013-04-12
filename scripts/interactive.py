@@ -31,7 +31,6 @@ import getpass
 import os
 import sys
 
-
 def auth_func():
   """Returns a tuple with username and password.
   """
@@ -144,8 +143,7 @@ def remote(args, context=None):
       code.interact('App Engine interactive console for %s' % (app_id,), None, context)
 
 def setup():
-  """Sets up the sys.path and environment for development.
-  """
+  """Sets up the sys.path and environment for development."""
 
   here = os.path.abspath(__file__)
   here = os.path.join(os.path.dirname(here), '..')
@@ -167,15 +165,25 @@ def setup():
 
   os.environ['SERVER_SOFTWARE'] = 'Development Interactive Shell'
 
-  import main as app_main
+
+def setDjango():
+  """Sets Django version used by the application."""
+
+  # TODO(daniel): this should be removed at some point as Interactive Shell
+  # does not use Django. This is currently required, because when main module
+  # is loaded, it always imports gae_django module which requires Django
+  # version to be set. This should be changed so that it is loaded only
+  # for Prod/Dev server.
+  from google.appengine import dist
+  dist.use_library('django', '1.2')
 
 def main(args):
-  """Convenience wrapper that calls setup and remote.
-  """
-
+  """Convenience wrapper that calls setup and remote."""
   setup()
+  setDjango()
   remote(args)
 
+  import main as app_main
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:

@@ -159,7 +159,7 @@
     tpjs + "modernizr/modernizr-svg.js"
   ];
 
-  s.jqueryui = {}
+  s.jqueryui = {};
 
   if (melange.config.is_local !== undefined && melange.config.is_local === true) {
     s.jqueryui.core = [
@@ -463,7 +463,7 @@
             function (context_to_send) {
               return function () {
                 melange.templates.setContextToLast(context_to_send);
-              }
+              };
             }(_queue[i].context)
           ).script(_queue[i].script_template).wait();
       }

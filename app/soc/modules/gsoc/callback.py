@@ -23,6 +23,7 @@ from soc.modules.gsoc.views import accept_proposals
 from soc.modules.gsoc.views import accept_withdraw_projects
 from soc.modules.gsoc.views import accepted_orgs
 from soc.modules.gsoc.views import admin
+from soc.modules.gsoc.views import connection
 from soc.modules.gsoc.views import dashboard
 from soc.modules.gsoc.views import document
 from soc.modules.gsoc.views import duplicates
@@ -75,6 +76,10 @@ class Callback(object):
     self.views.append(admin.ProposalsPage())
     self.views.append(admin.StudentsListPage())
     self.views.append(admin.SurveyReminderPage())
+    self.views.append(connection.OrgConnectionPage())
+    self.views.append(connection.UserConnectionPage())
+    self.views.append(connection.ShowConnection())
+    self.views.append(connection.SubmitConnectionMessagePost())
     self.views.append(dashboard.DashboardPage())
     self.views.append(document.DocumentPage())
     self.views.append(document.DocumentListPage())

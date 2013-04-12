@@ -139,8 +139,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testUpdateProposal(self):
-    """Test update proposals.
-    """
+    """Test update proposals."""
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor.createOtherUser('mentor@example.com')
     mentor.createMentor(self.org)
@@ -152,8 +151,8 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     proposal = GSoCProposal.all().get()
 
-    url = '/gsoc/proposal/update/%s/%s' % (
-        self.gsoc.key().name(), proposal.key().id())
+    url = '/gsoc/proposal/update/%s/%s/%s' % (
+        self.gsoc.key().name(), self.data.profile.link_id, proposal.key().id())
     response = self.get(url)
     self.assertProposalTemplatesUsed(response)
 
@@ -176,3 +175,11 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     self.assertNotEqual(proposal.created_on, proposal.last_modified_on)
 
     self.assertEmailSent(to=mentor.profile.email, n=1)
+
+  def testUpdateNonExistingProposal(self):
+    self.data.createStudent()
+    mock_id = 1
+    url = '/gsoc/proposal/update/%s/%s/%s' % (
+        self.gsoc.key().name(), self.data.profile.link_id, mock_id)
+    response = self.get(url)
+    self.assertResponseNotFound(response)

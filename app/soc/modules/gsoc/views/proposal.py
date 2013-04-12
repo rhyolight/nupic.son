@@ -154,8 +154,7 @@ class UpdateProposal(GSoCRequestHandler):
     check.isLoggedIn()
     check.isActiveStudent()
 
-    data.proposal = GSoCProposal.get_by_id(
-        int(data.kwargs['id']), parent=data.profile)
+    mutator.proposalFromKwargs()
     data.organization = data.proposal.org
 
     check.canStudentUpdateProposal()

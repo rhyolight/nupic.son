@@ -55,7 +55,7 @@
           field += addFieldHtml(item);
         });
       }
-        
+
       field += '<div class="add-area clearfix"><a id=add-' + opts.id + ' href="#" class="add">Add</a></div>';
 
       jQuery(this).append(field);

@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for dashboard view.
-"""
+"""Tests for dashboard view."""
 
 
 from django.utils import simplejson as json
@@ -49,7 +48,8 @@ class DashboardTest(GSoCDjangoTestCase):
   def testDasbhoardNoRole(self):
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
-    self.assertDashboardTemplatesUsed(response)
+    self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
 
   def testDashboardAsLoneUser(self):
     self.data.createProfile()

@@ -39,6 +39,8 @@ class ModelReadOnlyTemplateOptions(object):
         template with 'display: none' style, or None
     exclude: list of appengine model property names to be skipped from the
         template, or None
+    renderers: dictionary of field name and function pairs where the supplied
+        function specifies how the field should be rendered.
   """
 
   def __init__(self, options=None):
@@ -50,6 +52,7 @@ class ModelReadOnlyTemplateOptions(object):
     self.fields = getattr(options, 'fields', None)
     self.hidden_fields = getattr(options, 'hidden_fields', None)
     self.exclude = getattr(options, 'exclude', None)
+    self.renderers = getattr(options, 'renderers', None)
 
 
 class ModelReadOnlyTemplateMetaclass(type):
@@ -86,6 +89,7 @@ class ModelReadOnlyTemplateMetaclass(type):
 
       dict['fields'] = model_fields
       dict['hidden_fields'] = model_hidden_fields
+      dict['renderers'] = opts.renderers
 
     if opts.css_prefix:
       dict['css_prefix'] = opts.css_prefix
@@ -171,7 +175,12 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
     """Iterator yielding groups of record instance's properties to be rendered.
     """
     for name, field in self.fields.items():
-      yield field.verbose_name, getattr(self.instance, name)
+      renderer = self.renderers.get(name)
+      if renderer:
+        val = renderer(self.instance)
+      else:
+        val = getattr(self.instance, name)
+      yield field.verbose_name, val
 
     if self.schema:
       for field in self.schema:

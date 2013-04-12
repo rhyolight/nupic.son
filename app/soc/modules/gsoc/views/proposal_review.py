@@ -311,7 +311,7 @@ class ReviewProposal(GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     mutator.proposalFromKwargs()
     check.canAccessProposalEntity()
-    mutator.commentVisible()
+    mutator.commentVisible(data.organization)
 
   def templatePath(self):
     return 'v2/modules/gsoc/proposal/review.html'
@@ -432,8 +432,9 @@ class ReviewProposal(GSoCRequestHandler):
       is_editable = data.timeline.afterStudentSignupEnd() and \
           data.proposal.is_editable_post_deadline
       if data.timeline.studentSignup() or is_editable:
-        context['update_link'] = data.redirect.id().urlOf(
-            'update_gsoc_proposal')
+        data.redirect.proposal(
+            id=data.proposal.key().id(), student=data.proposer.link_id)
+        context['update_link'] = data.redirect.urlOf('update_gsoc_proposal')
 
     possible_mentors = db.get(data.proposal.possible_mentors)
     possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)
@@ -497,7 +498,7 @@ class PostComment(GSoCRequestHandler):
     check.isProgramVisible()
     check.isProfileActive()
     mutator.proposalFromKwargs()
-    mutator.commentVisible()
+    mutator.commentVisible(data.organization)
     assert isSet(data.proposer)
     assert isSet(data.proposal_org)
 

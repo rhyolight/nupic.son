@@ -32,7 +32,7 @@ def url(regex, view, kwargs=None, name=None):
 
 
 SURVEY    = namedLinkIdPattern(['sponsor', 'program', 'survey'])
-PROPOSAL  = namedIdBasedPattern(['sponsor', 'program'])
+PROPOSAL  = namedIdBasedPattern(['sponsor', 'program', 'user'])
 REVIEW    = namedIdBasedPattern(['sponsor', 'program', 'user'])
 PROJECT   = namedIdBasedPattern(['sponsor', 'program', 'user'])
 COMMENT   = namedIdBasedPattern(['sponsor', 'program', 'user'])

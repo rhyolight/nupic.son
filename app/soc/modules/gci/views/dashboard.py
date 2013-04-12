@@ -23,7 +23,7 @@ from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
-from soc.logic import document as soc_document_logic
+from soc.logic import document as document_logic
 from soc.logic import exceptions
 from soc.logic import org_app as org_app_logic
 from soc.models import document as soc_document_model
@@ -33,6 +33,7 @@ from soc.views.dashboard import Dashboard
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
+from soc.modules.gci.logic import document as gsoc_document_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
@@ -1152,7 +1153,8 @@ class DocumentComponent(Component):
     if idx != self.IDX:
       return None
 
-    q = soc_document_logic.getDocumentQueryForRoles(self.data)
+    visibilities = gsoc_document_logic.getVisibilities(self.data)
+    q = document_logic.getDocumentQueryForRoles(self.data, visibilities)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, lists.keyStarter)

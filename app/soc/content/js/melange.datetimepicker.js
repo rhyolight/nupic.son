@@ -48,7 +48,7 @@
 
         var regular_expression = /^(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
         var tokens = _self.val().match(regular_expression);
- 
+
         if (tokens !== null) {
           _self.val(tokens[1]);
         }
@@ -91,9 +91,9 @@
             new_select_id,
             '" style="margin-top: 3px;">'
           ].join("");
-        
+
           var iterations = selects[select]["max"];
-      
+
           for (var i = 0; i <= iterations; i++) {
             var selected = "";
 
@@ -145,7 +145,7 @@
         });
 
         return _self;
-      }
+      };
     }(config));
-  }
+  };
 }());

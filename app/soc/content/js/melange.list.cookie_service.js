@@ -66,7 +66,7 @@
         "sortname": sortname,
         "sortorder": sortorder
       }
-    }
+    };
   };
 
   var setTableFilters = function (colModel, postData) {
@@ -180,7 +180,7 @@
           if (column !== undefined) {
             column.searchoptions = {
               defaultValue: column_filter
-            }
+            };
           }
         });
       }

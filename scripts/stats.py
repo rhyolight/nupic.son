@@ -754,7 +754,7 @@ class StudentKeyRequest(Request):
     super(StudentKeyRequest, self).__init__(post=dict(student_key=key))
 
 
-def main(args):
+def main():
   """Main routine.
   """
 
@@ -860,11 +860,11 @@ def main(args):
       'turnaroundTime': turnaroundTime,
   }
 
-  interactive.remote(args, context)
+  interactive.remote(sys.argv[1:], context)
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
     print "Usage: %s app_id [host]" % (sys.argv[0],)
     sys.exit(1)
 
-  main(sys.argv[1:])
+  main()

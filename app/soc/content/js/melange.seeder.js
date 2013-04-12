@@ -82,14 +82,14 @@
         callback();
       }
     );
-  }
+  };
 
   /** Returns an array of models information.
    *  @return An object containing models information.
    */
   $m.getModels = function() {
     return data.models;
-  }
+  };
 
   /** Returns information about a specific model.
    *  @param model_name The name of the model.
@@ -104,7 +104,7 @@
       }
     );
     return result;
-  }
+  };
 
   /**
    * Returns a list of the children of the model. The parent model is also
@@ -134,7 +134,7 @@
     });
 
     return result;
-  }
+  };
 
   /** Returns an object containing providers information, mapped by
    *  the type which the provider seeds.
@@ -142,7 +142,7 @@
    */
   $m.getProvidersData = function() {
     return data.providers;
-  }
+  };
 
   /** Returns an object containing information about all data providers,
    *  mapped by data provider name.
@@ -160,7 +160,7 @@
       }
     );
     return result;
-  }
+  };
 
   /** Returns a list of providers matching the specified property_type.
    *  @return A list of providers.
@@ -182,7 +182,7 @@
       }
     );
     return result;
-  }
+  };
 
   /** Returns an object containing properties information about a specific
    *  model. The data is represented as an array containing properties for each
@@ -199,7 +199,7 @@
       properties_data = {
         name: model_name,
         properties: model.properties
-      }
+      };
 
       properties_container.push(properties_data);
       model_name = model.parent;
@@ -207,7 +207,7 @@
     }
 
     return properties_container;
-  }
+  };
 
   /** Sends the configuration sheet to the server to begin seeding.
    */
@@ -221,6 +221,6 @@
       },
       callback
     );
-  }
+  };
 
 }());

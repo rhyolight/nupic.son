@@ -103,7 +103,7 @@ melange.templates.inherit(
       jQuery('#avatar-preview').attr('src', context.prefix_path + color + '/' + value);
     }
 
-    // Bind an event to dynamic link created by jquery.dd so when 
+    // Bind an event to dynamic link created by jquery.dd so when
     // gets clicked it updates options in #avatar-icon, hidden #avatar value,
     // and img preview.
     jQuery('#avatar-color_child a').live('click', function() {
