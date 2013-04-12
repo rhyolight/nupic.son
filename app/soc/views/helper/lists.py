@@ -215,6 +215,27 @@ class ModelPrefetcher(Prefetcher):
     return [], {}
 
 
+# TODO(daniel): this class should be replaced by ListModelPrefetcher
+class ListFieldPrefetcher(Prefetcher):
+  """Prefetcher which handles fields that store list of values."""
+
+  def __init__(self, model, list_fields):
+    """Initializes a new instance for the specified values.
+
+    Args:
+      model: model for which data will be prefetched
+      list_fields: list of fields which are represented by db.ListProperty
+          in the specified model
+    """
+    self._model = model
+    self._list_fields = list_fields
+
+  def prefetch(self, entities):
+    """See Prefetcher.prefetch for specification."""
+    prefetched_entities = prefetchListFields(model, fields, entities)
+    return [prefetched_entities], {}
+
+
 class ListConfiguration(object):
   """Resembles the configuration of a list. This object is sent to the client
   on page load.
@@ -1135,35 +1156,6 @@ def prefetchListFields(model, fields, data):
   prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
 
   return prefetched_dict
-
-# TODO(daniel): this class should be replaced by ListModelPrefetcher
-class ListFieldPrefetcher(Prefetcher):
-  """Prefetcher which handles fields that store list of values."""
-
-  def __init__(self, model, list_fields):
-    """Initializes a new instance for the specified values.
-
-    Args:
-      model: model for which data will be prefetched
-      list_fields: list of fields which are represented by db.ListProperty
-          in the specified model
-    """
-    self._model = model
-    self._list_fields = list_fields
-
-  def prefetch(self, entities):
-    """See Prefetcher.prefetch for specification."""
-    prefetched_entities = prefetchListFields(model, fields, entities)
-    return [prefetched_entities], {}
-
-
-def listPrefetcher(model, fields):
-  """Returns a prefetcher for the specified models and list fields.
-  """
-  def prefetcher(entities):
-    prefetched_entities = prefetchListFields(model, fields, entities)
-    return [prefetched_entities], {}
-  return prefetcher
 
 
 class ListModelPrefetcher(Prefetcher):
