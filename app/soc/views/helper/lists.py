@@ -236,6 +236,53 @@ class ListFieldPrefetcher(Prefetcher):
     return [prefetched_entities], {}
 
 
+class ListModelPrefetcher(Prefetcher):
+  """Prefetcher for the specified model and fields which may also handle
+  fields that store list of values.
+  """
+
+  def __init__(self, model, fields, list_fields, parent=False):
+    """Initializes a new instance for the specified values.
+    
+    Args:
+      model: model for which data will be prefetched
+      fields: list of model fields which will be prefetched
+      list_fields: list of fields which are represented by db.ListProperty
+          in the specified model
+      parent: whether the parents of entities should be prefetched or not
+    """
+    self._model = model
+    self._fields = fields
+    self._list_fields = list_fields
+    self._parent = parent
+
+  def prefetch(self, entities):
+    """Uses async versions of prefetchers and distribute the keys manually.
+
+    See Prefetcher.prefetch for specification.
+    """
+    # Get the future objects for model fields and list fields by using
+    # the async versions of the corresponding prefetch methods.
+    mf_future = _prefetchFieldsAsync(
+        self._model, self._fields, entities, self._parent)
+    lf_future = _prefetchListFieldsAsync(
+        self._model, self._list_fields, entities)
+
+    # now block until model prefetching completes and distribute the keys
+    # once the processing is finished
+    prefetched_mf = mf_future.get_result()
+    _processPrefetchedFields(
+        prefetched_mf, self._model, self._fields, entities, self._parent)
+
+    # block on list prefetching to complete
+    prefetched_lf = lf_future.get_result()
+    prefetched_lf = dict((i.key(), i) for i in prefetched_lf if i)
+
+    # Return the prefetched list fields dict as part of the
+    # prefetching protocol
+    return [prefetched_lf], {}
+
+
 class ListConfiguration(object):
   """Resembles the configuration of a list. This object is sent to the client
   on page load.
@@ -1156,80 +1203,6 @@ def prefetchListFields(model, fields, data):
   prefetched_dict = dict((i.key(), i) for i in prefetched_entities if i)
 
   return prefetched_dict
-
-
-class ListModelPrefetcher(Prefetcher):
-  """Prefetcher for the specified model and fields which may also handle
-  fields that store list of values.
-  """
-
-  def __init__(self, model, fields, list_fields, parent=False):
-    """Initializes a new instance for the specified values.
-    
-    Args:
-      model: model for which data will be prefetched
-      fields: list of model fields which will be prefetched
-      list_fields: list of fields which are represented by db.ListProperty
-          in the specified model
-      parent: whether the parents of entities should be prefetched or not
-    """
-    self._model = model
-    self._fields = fields
-    self._list_fields = list_fields
-    self._parent = parent
-
-  def prefetch(self, entities):
-    """Uses async versions of prefetchers and distribute the keys manually.
-
-    See Prefetcher.prefetch for specification.
-    """
-    # Get the future objects for model fields and list fields by using
-    # the async versions of the corresponding prefetch methods.
-    mf_future = _prefetchFieldsAsync(
-        self._model, self._fields, entities, self._parent)
-    lf_future = _prefetchListFieldsAsync(
-        self._model, self._list_fields, entities)
-
-    # now block until model prefetching completes and distribute the keys
-    # once the processing is finished
-    prefetched_mf = mf_future.get_result()
-    _processPrefetchedFields(
-        prefetched_mf, self._model, self._fields, entities, self._parent)
-
-    # block on list prefetching to complete
-    prefetched_lf = lf_future.get_result()
-    prefetched_lf = dict((i.key(), i) for i in prefetched_lf if i)
-
-    # Return the prefetched list fields dict as part of the
-    # prefetching protocol
-    return [prefetched_lf], {}
-
-
-def listModelPrefetcher(model, fields, list_fields, parent=False):
-  """Returns a prefetcher for the specified model and (list) fields.
-  """
-  def prefetcher(entities):
-    """Uses async versions of prefetchers and distribute the keys manually.
-    """
-    # Get the future objects for model fields and list fields by using
-    # the async versions of the corresponding prefetch methods.
-    mf_future = _prefetchFieldsAsync(model, fields, entities, parent)
-    lf_future = _prefetchListFieldsAsync(model, list_fields, entities)
-
-    # now block until model prefetching completes and distribute the keys
-    # once the processing is finished
-    prefetched_mf = mf_future.get_result()
-    _processPrefetchedFields(prefetched_mf, model, fields, entities, parent)
-
-    # block on list prefetching to complete
-    prefetched_lf = lf_future.get_result()
-    prefetched_lf = dict((i.key(), i) for i in prefetched_lf if i)
-
-    # Return the prefetched list fields dict as part of the
-    # prefetching protocol
-    return [prefetched_lf], {}
-
-  return prefetcher
 
 
 def keyStarter(start, q):
