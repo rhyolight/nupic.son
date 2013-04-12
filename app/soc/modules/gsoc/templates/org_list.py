@@ -86,12 +86,12 @@ class OrgList(template.Template):
     raise NotImplementedError
 
   def _getPrefetcher(self):
-    """Returns a prefetcher for the list.
+    """Returns a lists.Prefetcher for the list.
 
     It may be overridden by subclasses. By default no prefetcher is returned.
 
     Returns:
-      a function to prefetch entities for the list or None
+      a lists.Prefetcher object or None
     """
     return None
 
