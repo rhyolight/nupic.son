@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GSoC logic for program.
-"""
+"""GSoC logic for program."""
 
 
 def getMostRecentProgram(data):
   """Returns the most recent program.
 
   Returns:
-    The program link_id for the most recent gci program.
+    The program link_id for the most recent GSoC program.
   """
   return data.site.latest_gsoc
