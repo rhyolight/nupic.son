@@ -14,6 +14,7 @@
 
 """Unit tests for participants view."""
 
+from tests import profile_utils
 from tests import test_utils
 
 
@@ -60,3 +61,18 @@ class MentorsListAdminPageTest(test_utils.GCIDjangoTestCase):
     self.data.createHost()
     response = self.get(self.url)
     self._assertPageTemplatesUsed(response)
+
+  def testMentorsAreDisplayed(self):
+    self.data.createHost()
+
+    # seed a couple of mentors
+    profile_utils.GCIProfileHelper(self.gci, False).createMentor(self.org)
+    profile_utils.GCIProfileHelper(self.gci, False).createMentor(self.org)
+    profile_utils.GCIProfileHelper(self.gci, False).createMentor(self.org)
+
+    response = self.get(self.url)
+    self._assertPageTemplatesUsed(response)
+    list_data = self.getListData(self.url, 0)
+
+    #The only organization is self.gci
+    self.assertEqual(3, len(list_data))
