@@ -76,14 +76,12 @@ class MentorsList(Template):
     q.filter('is_mentor', True)
 
     starter = lists.keyStarter
-
     prefetcher = lists.ListFieldPrefetcher(
         GCIProfile, ['org_admin_for', 'mentor_for'])
 
-    # TODO(daniel): pass prefetcher object rather than a function
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
-        prefetcher=prefetcher.prefetch)
+        prefetcher=prefetcher)
 
     return response_builder.build()
 

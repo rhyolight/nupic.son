@@ -729,12 +729,8 @@ class MyOrgsTaskList(Component):
     q.filter('program', self.data.program)
     q.filter('org IN', self.data.mentor_for)
 
-    starter = lists.keyStarter
-
-    # TODO(daniel): replace prefetchers when the framework is ready
-    #prefetcher = lists.ListModelPrefetcher(
-    #    GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])    
-    prefetcher = lists.listModelPrefetcher(
+    starter = lists.keyStarter    
+    prefetcher = lists.ListModelPrefetcher(
         GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
 
     response_builder = lists.RawQueryContentResponseBuilder(

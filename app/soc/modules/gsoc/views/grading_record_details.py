@@ -223,10 +223,9 @@ class GradingRecordsList(Template):
     starter = lists.keyStarter
     prefetcher = GradingRecordsList.ListPrefetcher()
 
-    # TODO(daniel): pass prefetcher object rather than a function
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q,
-        starter, prefetcher=prefetcher.prefetch)
+        starter, prefetcher=prefetcher)
     return response_builder.build()
 
   def templatePath(self):

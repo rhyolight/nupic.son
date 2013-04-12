@@ -884,9 +884,7 @@ class ProposalsList(Template):
     q.filter('program', program)
 
     starter = lists.keyStarter
-    # TODO(daniel): replace prefetchers when the framework is ready
-    #prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
-    prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
@@ -977,11 +975,7 @@ class ProjectsList(Template):
           program=self.data.program, org=self.data.organization)
 
       starter = lists.keyStarter
-
-      # TODO(daniel): replace prefetchers when the framework is ready
-      #prefetcher = lists.ListModelPrefetcher(
-      #    GSoCProject, ['org'], ['mentors'], parent=True)
-      prefetcher = lists.listModelPrefetcher(
+      prefetcher = lists.ListModelPrefetcher(
           GSoCProject, ['org'], ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
@@ -1201,13 +1195,11 @@ class StudentsList(Template):
     q.filter('is_student', True)
 
     starter = lists.keyStarter
-
     prefetcher = StudentsList.ListPrefetcher()
 
-    # TODO(daniel): pass prefetcher object rather than a function
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
-        prefetcher=prefetcher.prefetch)
+        prefetcher=prefetcher)
 
     return response_builder.build()
 

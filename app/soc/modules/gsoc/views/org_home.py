@@ -185,8 +185,7 @@ class ProjectList(Template):
           program=self.data.program, org=self.data.organization)
 
       starter = lists.keyStarter
-      # TODO(daniel): replace prefetchers when the framework is ready
-      prefetcher = lists.listModelPrefetcher(
+      prefetcher = lists.ListModelPrefetcher(
           GSoCProject, [],  ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(

@@ -142,9 +142,7 @@ class AcceptedOrgsAdminList(OrgList):
     return list_config
 
   def _getPrefetcher(self):
-    prefetcher = AcceptedOrgsAdminList.ListPrefetcher()
-    # TODO(daniel): return prefetcher object rather than a function
-    return prefetcher.prefetch
+    return AcceptedOrgsAdminList.ListPrefetcher()
 
   def _getQuery(self):
     query = GCIOrganization.all()

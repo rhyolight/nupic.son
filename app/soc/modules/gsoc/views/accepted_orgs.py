@@ -121,9 +121,7 @@ class AcceptedOrgsAdminList(org_list.OrgList):
 
   def _getPrefetcher(self):
     """See org_list.OrgList._getPrefetcher for specification."""
-    prefetcher = AcceptedOrgsAdminList.ListPrefetcher()
-    # TODO(daniel): return prefetcher object rather than a function
-    return prefetcher.prefetch
+    return AcceptedOrgsAdminList.ListPrefetcher()
 
 
 class AcceptedOrgsPublicPage(GSoCRequestHandler):

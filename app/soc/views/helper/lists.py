@@ -1283,8 +1283,7 @@ class RawQueryContentResponseBuilder(object):
       starter: The function used to retrieve the start entity.
       ender: The function used to retrieve the value for the next start.
       skipper: The function used to determine whether to skip a value.
-      prefetcher: A function to prefetch various columns that can be used for
-          increased performance.
+      prefetcher: A Prefetch object that can be used for increased performance.
     """
     if not ender:
       ender = lambda entity, is_last, start: (
@@ -1292,7 +1291,7 @@ class RawQueryContentResponseBuilder(object):
     if not skipper:
       skipper = lambda entity, start: False
     if not prefetcher:
-      prefetcher = lambda entitites: ([], {})
+      prefetcher = EMPTY_PREFETCHER
     if not row_adder:
       row_adder = lambda content_response, entity, *args: \
           content_response.addRow(entity, *args)
@@ -1337,7 +1336,7 @@ class RawQueryContentResponseBuilder(object):
 
     is_last = len(entities) != count
 
-    extra_args, extra_kwargs = self._prefetcher(entities)
+    extra_args, extra_kwargs = self._prefetcher.prefetch(entities)
     args = list(args) + list(extra_args)
     kwargs.update(extra_kwargs)
 

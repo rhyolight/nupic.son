@@ -167,9 +167,7 @@ class SlotsList(org_list.OrgList):
 
   def _getPrefetcher(self):
     """See org_list.OrgList._getPrefetcher for specification."""
-    prefetcher = SlotsList.ListPrefetcher()
-    # TODO(daniel): return prefetcher object rather than a function
-    return prefetcher.prefetch
+    return SlotsList.ListPrefetcher()
 
 
 class SlotsPage(base.GSoCRequestHandler):

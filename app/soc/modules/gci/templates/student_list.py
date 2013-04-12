@@ -182,13 +182,11 @@ class StudentList(Template):
     query.filter('program', self.data.program)
 
     starter = lists.keyStarter
-
     prefetcher = StudentList.ListPrefetcher()
 
-    # TODO(daniel): pass prefetcher object rather than a function
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, query, starter,
-        prefetcher=prefetcher.prefetch)
+        prefetcher=prefetcher)
 
     return response_builder.build()
 

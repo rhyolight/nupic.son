@@ -461,9 +461,7 @@ class MyProposalsComponent(Component):
     q.ancestor(self.data.profile)
 
     starter = lists.keyStarter
-    # TODO(daniel): replace prefetchers when the framework is ready
-    #prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
-    prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -510,9 +508,7 @@ class MyProjectsComponent(Component):
         ancestor=self.data.profile, program=self.data.program)
 
     starter = lists.keyStarter
-    # TODO(daniel): replace prefetchers when the framework is ready
-    #prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
-    prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, list_query,
@@ -599,8 +595,7 @@ class MyEvaluationsComponent(Component):
         ancestor=self.data.profile)
 
     starter = lists.keyStarter
-    # TODO(daniel): replace prefetchers when the framework is ready
-    prefetcher = lists.listModelPrefetcher(
+    prefetcher = lists.ListModelPrefetcher(
         GSoCProject, ['org'],
         ['mentors', 'failed_evaluations'],
         parent=True)
@@ -669,8 +664,7 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
         mentors=self.data.profile)
 
     starter = lists.keyStarter
-    # TODO(daniel): replace prefetchers when the framework is ready
-    prefetcher = lists.listModelPrefetcher(
+    prefetcher = lists.ListModelPrefetcher(
         GSoCProject, ['org'],
         ['mentors', 'failed_evaluations'],
         parent=True)
@@ -1027,9 +1021,7 @@ class SubmittedProposalsComponent(Component):
         duplicates.extend(dup.duplicates)
 
     starter = lists.keyStarter
-    # TODO(daniel): replace prefetchers when the framework is ready
-    #prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
-    prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -1083,9 +1075,7 @@ class ProjectsIMentorComponent(Component):
       list_query.filter('mentors', self.data.profile)
 
     starter = lists.keyStarter
-    # TODO(daniel): replace prefetchers when the framework is ready
-    #prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
-    prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, list_query,
@@ -1288,10 +1278,7 @@ class RequestComponent(Component):
       q.filter('user', self.data.user)
 
     starter = lists.keyStarter
-
-    # TODO(daniel): replace prefetchers when the framework is ready
-    #prefetcher = lists.modelPrefetcher(GSoCRequest, ['org'], parent=True)
-    prefetcher = lists.modelPrefetcher(GSoCRequest, ['user', 'org'])
+    prefetcher = lists.ModelPrefetcher(GSoCRequest, ['user', 'org'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -1371,9 +1358,8 @@ class ParticipantsComponent(Component):
     if self.data.is_host:
       q.filter('scope', self.data.program)
       q.filter('is_mentor', True)
-      # TODO(daniel): use prefetcher object rather than a function
       prefetcher = lists.ListFieldPrefetcher(
-          GSoCProfile, ['mentor_for', 'org_admin_for']).prefetch
+          GSoCProfile, ['mentor_for', 'org_admin_for'])
     else:
       # TODO(daniel): prefetch organizations or get rid of this, if
       # it turns out prefetching is not needed
@@ -1600,8 +1586,7 @@ class StudentEvaluationComponent(Component):
           orgs=self.data.org_admin_for)
 
       starter = lists.keyStarter
-      # TODO(daniel): replace prefetchers when the framework is ready
-      prefetcher = lists.listModelPrefetcher(
+      prefetcher = lists.ListModelPrefetcher(
           GSoCProject, ['org'],
           ['mentors', 'failed_evaluations'],
           parent=True)
