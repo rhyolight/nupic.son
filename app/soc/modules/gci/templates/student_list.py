@@ -63,10 +63,11 @@ class StudentList(Template):
         if key:
           keys.append(key)
 
-      entities = db.get(keys)
-      sp = dict((i.key(), i) for i in entities if i)
+      profiles = db.get(keys)
 
-      return [sp], {}
+      return (
+          [dict((profile.key(), profile) for profile in profiles if profile)],
+          {})
 
   def __init__(self, data):
     self.data = data
