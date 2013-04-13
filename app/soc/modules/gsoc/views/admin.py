@@ -1095,12 +1095,16 @@ class StudentsList(Template):
           keys.append(key)
 
       student_infos = db.get(keys)
-      si = dict((i.parent_key(), i) for i in student_infos if i)
+      prefetched_student_info_dict = dict(
+          (student_info.parent_key(), student_info) 
+          for student_info in student_infos if student_info
+          )
 
-      entities = db.get(set(sum((i.project_for_orgs for i in entities), [])))
-      o = dict((i.key(), i) for i in entities if i)
+      organizations = db.get(
+          set(sum((entity.project_for_orgs for entity in entities), [])))
+      prefetched_organization_dict = dict((i.key(), i) for i in entities if i)
 
-      return ([si, o], {})
+      return ([prefetched_student_info_dict, prefetched_organization_dict], {})
 
 
   def __init__(self, request, data):
