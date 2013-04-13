@@ -42,7 +42,18 @@ class SlotsList(org_list.OrgList):
     """
 
     def prefetch(self, entities):
-      """See lists.Prefetcher.prefetch for specification."""
+      """Prefetches the number of unused slots for each item in the
+      specified list of GSoCOrganization entities.
+
+      See lists.Prefetcher.prefetch for specification.
+
+      Args:
+        entities: the specified list of GSoCOrganization instances
+
+      Returns:
+        prefetched numbers in a structure whose format is described
+        in lists.ListModelPrefetcher.prefetch
+      """
       org_slots_unused = {}
 
       for entity in entities:

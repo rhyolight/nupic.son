@@ -99,7 +99,19 @@ class GradingRecordsList(Template):
     """
 
     def prefetch(self, entities):
-      """See lists.Prefetcher.prefetch for specification."""
+      """Prefetches GSoCProfile entities belonging to a student and a mentor
+      of the projects corresponding to the items in the specified list of
+      GSoCGradingRecord entities.
+
+      See lists.Prefetcher.prefetch for specification.
+
+      Args:
+        entities: the specified list of GSoCGradingRecord instances
+
+      Returns:
+        prefetched GSoCProfile entities in a structure whose format is
+        described in lists.Prefetcher.prefetch
+      """
       prefetcher = lists.prefetchFields(
           GSoCGradingRecord, ['mentor_record', 'student_record'], 
           entities, parent=True)

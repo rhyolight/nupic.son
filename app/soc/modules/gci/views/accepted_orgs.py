@@ -100,13 +100,24 @@ class AcceptedOrgsAdminList(OrgList):
   """Template for list of accepted organizations for admins."""
 
   class ListPrefetcher(lists.Prefetcher):
-    """Prefetcher used for this list.
+    """Prefetcher used for AcceptedOrgsAdminList list.
 
     See lists.Prefetcher for specification.
     """
 
     def prefetch(self, entities):
-      """See lists.Prefetcher.prefetch for specification."""
+      """Prefetches GCIProfiles corresponding to Organization Administrators
+      of the specified list of GCIOrganization entities.
+
+      See lists.Prefetcher.prefetch for specification.
+
+      Args:
+        entities: the specified list of GCIOrganization instances
+
+      Returns:
+        prefetched GCIProfile entities in a structure whose format is
+        described in lists.Prefetcher.prefetch
+      """
       prefetched_dict = {}
       for ent in entities:
         prefetched_dict[ent.key()] = profile_logic.orgAdminsForOrg(ent)

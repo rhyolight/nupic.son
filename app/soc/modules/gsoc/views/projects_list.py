@@ -35,11 +35,22 @@ class ProjectList(Template):
   class ListPrefetcher(lists.ListModelPrefetcher):
     """Prefetcher used to improve performance of when the list is loaded.
     
-    See lists.Prefetcher for specification.
+    See lists.ListModelPrefetcher for specification.
     """
 
     def prefetch(self, entities):
-      """See lists.Prefetcher.prefetch for specification."""
+      """Prefetches GSoCProfiles corresponding to Mentors for the specified
+      list of GSoCProfile entities.
+
+      See lists.ListModelPrefetcher.prefetch for specification.
+
+      Args:
+        entities: the specified list of GSoCProject instances
+
+      Returns:
+        prefetched GSoCProfile entities in a structure whose format is
+        described in lists.ListModelPrefetcher.prefetch
+      """
       prefetched_list, _ = super(
           ProjectList.ListPrefetcher, self).prefetch(entities)
 

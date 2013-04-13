@@ -44,7 +44,18 @@ class StudentList(Template):
     """
 
     def prefetch(self, entities):
-      """See lists.Prefetcher.prefetch for specification."""
+      """Prefetches GCIProfiles corresponding to the specified list of
+      GCIStudentInfo entities.
+
+      See lists.Prefetcher.prefetch for specification.
+
+      Args:
+        entities: the specified list of GCIStudentInfo instances
+
+      Returns:
+        prefetched GCIProfile entities in a structure whose format is
+        described in lists.Prefetcher.prefetch
+      """
       keys = []
 
       for entity in entities:
