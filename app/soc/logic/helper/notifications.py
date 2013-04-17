@@ -32,13 +32,13 @@ DEF_NEW_REQUEST = ugettext(
     '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
 DEF_NEW_USER_CONNECTION = ugettext(
-  'New connection for %(org)s' )
+    'New connection for %(org)s' )
 
 DEF_NEW_ORG_CONNECTION = ugettext(
-  'New connection from %(org)s')
+    'New connection from %(org)s')
 
 DEF_NEW_ANONYMOUS_CONNECTION = ugettext(
-  'New Google Summer of Code Connection')
+    'New Google Summer of Code Connection')
 
 DEF_ACCEPTED_ORG = ugettext(
     '[%(org)s] Your organization application has been accepted.')
