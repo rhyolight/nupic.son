@@ -15,19 +15,9 @@ limitations under the License.
 {% block content %}
 
 Hello,
-	An organization administrator for {{ org_name }} has invited you to join 
-Google Summer of Code as a(n) {{ role }} for their organization. 
+	{{ link_id }} has opened a new connection with {{ org_name }}, for which you are 
+an organization administrator. To respond to this connection, please visit the following url:
 
-{% if message %}
-They provided the following message:
-
-{{ message }}
-
-{% endif %} 
-
-To accept, please click the link below to create a Profile for Google Summer 
-of Code. Once complete, you will be automatically promoted to the specified role.
-
-<a href="{{ url }}">{{ url }}</a>
+{{ connection_url }}
 
 {% endblock %}
