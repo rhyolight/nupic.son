@@ -12,40 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests the view for GCI Dashboard.
-"""
-
+"""Tests the view for GCI Dashboard."""
 
 from django.utils import simplejson as json
 
-from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.views.dashboard import MyOrgsTaskList
+from soc.modules.gci.models import task as task_model
+from soc.modules.gci.views import dashboard as dashboard_view
 
-from tests.gci_task_utils import GCITaskHelper
-from tests.test_utils import GCIDjangoTestCase
+from tests import gci_task_utils
+from tests import test_utils
 
 
-class DashboardTest(GCIDjangoTestCase):
-  """Tests the GCI Dashboard components.
-  """
+class DashboardTest(test_utils.GCIDjangoTestCase):
+  """Tests the GCI Dashboard components."""
 
   def setUp(self):
     self.init()
     self.url = '/gci/dashboard/' + self.gci.key().name()
 
   def assertDashboardTemplatesUsed(self, response):
-    """Asserts that all the templates from the dashboard were used.
-    """
+    """Asserts that all the templates from the dashboard were used."""
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response, 'v2/modules/gci/dashboard/base.html')
 
   def assertDashboardComponentTemplatesUsed(self, response):
-    """Asserts that all the templates to render a component were used.
-    """
+    """Asserts that all the templates to render a component were used."""
     self.assertDashboardTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/dashboard/list_component.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/dashboard/component.html')
+    self.assertTemplateUsed(response,
+        'v2/modules/gci/dashboard/list_component.html')
+    self.assertTemplateUsed(response,
+        'v2/modules/gci/dashboard/component.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 
@@ -110,20 +106,20 @@ class DashboardTest(GCIDjangoTestCase):
       fianl_status: final status which the task should have after POST action
       action: 'publish' if the task should be published or 'unpublish'
     """
-    gci_task_helper = GCITaskHelper(self.gci)
+    task_helper = gci_task_utils.GCITaskHelper(self.gci)
 
-    task = gci_task_helper.createTask(
+    task = task_helper.createTask(
         initial_status, self.org, self.data.profile)
 
     data = json.dumps([{'key': str(task.key().id())}])
 
     if action == 'publish':
-      button_id = MyOrgsTaskList.PUBLISH_BUTTON_ID
+      button_id = dashboard_view.MyOrgsTaskList.PUBLISH_BUTTON_ID
     else:
-      button_id = MyOrgsTaskList.UNPUBLISH_BUTTON_ID
+      button_id = dashboard_view.MyOrgsTaskList.UNPUBLISH_BUTTON_ID
 
     post_data = {
-        'idx': MyOrgsTaskList.IDX,
+        'idx': dashboard_view.MyOrgsTaskList.IDX,
         'data': data,
         'button_id': button_id
         }
@@ -131,22 +127,23 @@ class DashboardTest(GCIDjangoTestCase):
     response = self.post(self._getDashboardUrl(), post_data)
     self.assertResponseOK(response)
 
-    task = GCITask.get(task.key())
+    task = task_model.GCITask.get(task.key())
     self.assertEqual(task.status, final_status)
 
   def testMyOrgsTaskList(self):
     self.data.createMentor(self.org)
 
-    gci_task_helper = GCITaskHelper(self.gci)
+    task_helper = gci_task_utils.GCITaskHelper(self.gci)
 
     # create a couple of tasks
-    gci_task_helper.createTask('Open', self.org, self.data.profile)
-    gci_task_helper.createTask('Reopened', self.org, self.data.profile)
+    task_helper.createTask('Open', self.org, self.data.profile)
+    task_helper.createTask('Reopened', self.org, self.data.profile)
 
     response = self.get(self._getDashboardUrl())
     self.assertResponseOK(response)
 
-    list_data = self.getListData(self._getDashboardUrl(), 1)
+    list_data = self.getListData(self._getDashboardUrl(),
+        dashboard_view.MyOrgsTaskList.IDX)
     self.assertEqual(len(list_data), 2)
 
   def _getDashboardUrl(self):
