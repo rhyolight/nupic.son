@@ -338,7 +338,7 @@ class OrgConnectionPage(GSoCRequestHandler):
       new_connection.put()
 
       if message_provided:
-        send_message_txn(connection_form, profile, new_connection)
+        send_message_txn(connection_form, data.profile, new_connection)
 
       context = notifications.connectionContext(data, new_connection, 
           email, connection_form.cleaned_data['message'])
