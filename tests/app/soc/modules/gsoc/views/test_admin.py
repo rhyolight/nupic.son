@@ -149,18 +149,6 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response,
         'v2/modules/gsoc/admin/_accepted_orgs_list.html')
 
-  def testListOrgs(self):
-    self.data.createHost()
-
-    bases = ['proposals', 'projects']
-    for base in bases:
-      # rendered with default base layout
-      url = ('/gsoc/admin/%s/' % base) + self.gsoc.key().name()
-      response = self.get(url)
-      self.assertAcceptedOrgs(response)
-      response = self.getListResponse(url, 0)
-      self.assertIsJsonResponse(response)
-
 
 class ProposalsPageTest(GSoCDjangoTestCase):
   """Test proposals list page for admin

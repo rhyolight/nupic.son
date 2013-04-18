@@ -500,7 +500,7 @@ class MyProposalsComponent(Component):
     q.ancestor(self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -547,7 +547,7 @@ class MyProjectsComponent(Component):
         ancestor=self.data.profile, program=self.data.program)
 
     starter = lists.keyStarter
-    prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, list_query,
@@ -634,7 +634,7 @@ class MyEvaluationsComponent(Component):
         ancestor=self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.listModelPrefetcher(
+    prefetcher = lists.ListModelPrefetcher(
         GSoCProject, ['org'],
         ['mentors', 'failed_evaluations'],
         parent=True)
@@ -703,7 +703,7 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
         mentors=self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.listModelPrefetcher(
+    prefetcher = lists.ListModelPrefetcher(
         GSoCProject, ['org'],
         ['mentors', 'failed_evaluations'],
         parent=True)
@@ -1060,7 +1060,7 @@ class SubmittedProposalsComponent(Component):
         duplicates.extend(dup.duplicates)
 
     starter = lists.keyStarter
-    prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -1114,7 +1114,7 @@ class ProjectsIMentorComponent(Component):
       list_query.filter('mentors', self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.modelPrefetcher(GSoCProject, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, list_query,
@@ -1152,7 +1152,7 @@ class OrganizationsIParticipateInComponent(Component):
       # TODO(nathaniel): make this .organization call unnecessary.
       data.redirect.organization(organization=e)
 
-      return data.redirect.urlOf('gsoc_org_home')
+      return data.redirect.urlOf(url_names.GSOC_ORG_HOME)
 
     list_config = lists.ListConfiguration()
     list_config.setRowAction(RowAction)
@@ -1318,7 +1318,7 @@ class OrgConnectionComponent(Component):
     q.filter('organization IN', [org.key() for org in self.data.org_admin_for])
 
     starter = lists.keyStarter
-    prefetcher = lists.modelPrefetcher(GSoCConnection, ['organization'])
+    prefetcher = lists.ModelPrefetcher(GSoCConnection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
       self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
@@ -1387,7 +1387,7 @@ class UserConnectionComponent(Component):
     q = GSoCConnection.all().ancestor(self.data.user)
 
     starter = lists.keyStarter
-    prefetcher = lists.modelPrefetcher(GSoCConnection, ['organization'])
+    prefetcher = lists.ModelPrefetcher(GSoCConnection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -1463,12 +1463,14 @@ class ParticipantsComponent(Component):
     if self.data.is_host:
       q.filter('scope', self.data.program)
       q.filter('is_mentor', True)
-      prefetcher = lists.listPrefetcher(
+      prefetcher = lists.ListFieldPrefetcher(
           GSoCProfile, ['mentor_for', 'org_admin_for'])
     else:
-      org_dict = dict((i.key(), i) for i in self.data.mentor_for)
-      q.filter('mentor_for IN', self.data.profile.org_admin_for)
-      prefetcher = lambda entities: ([org_dict], {})
+      # TODO(daniel): prefetch organizations or get rid of this, if
+      # it turns out prefetching is not needed
+      # org_dict = dict((i.key(), i) for i in self.data.mentor_for)
+      # q.filter('mentor_for IN', self.data.profile.org_admin_for)
+      prefetcher = None
 
     starter = lists.keyStarter
 
@@ -1689,7 +1691,7 @@ class StudentEvaluationComponent(Component):
           orgs=self.data.org_admin_for)
 
       starter = lists.keyStarter
-      prefetcher = lists.listModelPrefetcher(
+      prefetcher = lists.ListModelPrefetcher(
           GSoCProject, ['org'],
           ['mentors', 'failed_evaluations'],
           parent=True)

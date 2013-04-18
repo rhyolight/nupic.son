@@ -29,6 +29,7 @@ from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 from soc.modules.gsoc.views import readonly_template
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views import forms
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -170,7 +171,8 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
     # TODO(nathaniel): make this .organization() call unnecessary.
     data.redirect.organization()
 
-    context['org_home_page_link'] = data.redirect.urlOf('gsoc_org_home')
+    context['org_home_page_link'] = data.redirect.urlOf(
+        url_names.GSOC_ORG_HOME)
     context['slot_transfer_page_link'] = data.redirect.urlOf(
         'gsoc_slot_transfer')
 

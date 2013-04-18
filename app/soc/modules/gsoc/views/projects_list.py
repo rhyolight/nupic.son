@@ -32,6 +32,36 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 class ProjectList(Template):
   """Template for listing the student projects accepted in the program."""
 
+  class ListPrefetcher(lists.ListModelPrefetcher):
+    """Prefetcher used to improve performance of when the list is loaded.
+    
+    See lists.ListModelPrefetcher for specification.
+    """
+
+    def prefetch(self, entities):
+      """Prefetches GSoCProfiles corresponding to Mentors for the specified
+      list of GSoCProfile entities.
+
+      See lists.ListModelPrefetcher.prefetch for specification.
+
+      Args:
+        entities: the specified list of GSoCProject instances
+
+      Returns:
+        prefetched GSoCProfile entities in a structure whose format is
+        described in lists.ListModelPrefetcher.prefetch
+      """
+      prefetched_list, _ = super(
+          ProjectList.ListPrefetcher, self).prefetch(entities)
+
+      mentor_names = {}
+      for e in entities:
+        mentor_names[e.key()] = ', '.join(
+            [prefetched_list[0][m_key].name() for m_key in e.mentors])
+
+      return [mentor_names], {}
+
+
   DEFAULT_IDX = 0
 
   def __init__(self, data, query, idx=None):
@@ -86,23 +116,8 @@ class ProjectList(Template):
     idx = lists.getListIndex(self.data.request)
     if idx == self.idx:
       starter = lists.keyStarter
-
-      list_model_prefetcher = lists.listModelPrefetcher(
-            GSoCProject, ['org'], ['mentors'], parent=True)
-
-      def prefetcher(entities):
-        """Prefetches the specified fields.
-
-        For motivation of the code flow and more comments, please see the
-        comments in lists.listModelPrefetcher method.
-        """
-        prefetched_list, _ = list_model_prefetcher(entities)
-        mentor_names = {}
-        for e in entities:
-          mentor_names[e.key()] = ', '.join(
-              [prefetched_list[0][m_key].name() for m_key in e.mentors])
-
-        return [mentor_names], {}
+      prefetcher = ProjectList.ListPrefetcher(
+          GSoCProject, ['org'], ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, self.query,

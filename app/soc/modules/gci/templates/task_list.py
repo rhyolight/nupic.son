@@ -74,7 +74,7 @@ class TaskList(Template):
     if 'mentors' in self._columns:
       list_fields.append('mentors')
 
-    return lists.listModelPrefetcher(GCITask, fields, list_fields)
+    return lists.ListModelPrefetcher(GCITask, fields, list_fields)
 
   def _getListConfig(self):
     r = self.data.redirect

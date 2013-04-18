@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Logic for Document Model.
-"""
-
+"""Logic for Document Model."""
 
 from soc.models import document as document_model
 

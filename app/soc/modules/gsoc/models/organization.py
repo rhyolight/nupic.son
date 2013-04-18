@@ -204,11 +204,6 @@ class GSoCOrganization(soc.models.organization.Organization):
       'there was an unlimited amount of slots available.')
   max_slots_desired.group = ugettext("4. Organization Preferences")
 
-  slots_calculated = db.IntegerProperty(required=False, default=0,
-      verbose_name=ugettext('Slots calculated'))
-  slots_calculated.help_text = ugettext(
-      'The amount of slots calculated for this organization.')
-
   nr_applications = db.IntegerProperty(required=False, default=0,
       verbose_name=ugettext('Amount of applications received'))
   nr_applications.help_text = ugettext(

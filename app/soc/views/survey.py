@@ -87,7 +87,7 @@ class SurveyRecordList(Template):
     starter = lists.keyStarter
 
     if prefetch:
-      prefetcher = lists.modelPrefetcher(self.record_model, prefetch)
+      prefetcher = lists.ModelPrefetcher(self.record_model, prefetch)
     else:
       prefetcher = None
 

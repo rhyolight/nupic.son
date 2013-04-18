@@ -485,7 +485,7 @@ class ProjectDetails(GSoCRequestHandler):
     context = {
         'page_name': 'Project details',
         'project': data.project,
-        'org_home_link': data.redirect.urlOf('gsoc_org_home'),
+        'org_home_link': data.redirect.urlOf(url_names.GSOC_ORG_HOME),
     }
 
     if data.orgAdminFor(data.project.org):

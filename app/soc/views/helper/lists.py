@@ -146,6 +146,145 @@ def getListIndex(request):
   return idx
 
 
+class Prefetcher(object):
+  """Class used to prefetch objects on list data construction.
+
+    It is used to obtain arbitrary values that can be used at the point
+    the rows of a list are being constructed in order to achieve
+    better performance.
+
+    Subclasses must implement prefetch() method.
+  """
+
+  def prefetch(self, entities):
+    """Does the prefetching work for the specified list of entities and
+    returns the prefetched data.
+
+    Args:
+      entities: list of entities for which data should be prefetched
+
+    Returns:
+      a tuple that contains two elements:
+          - a list that contains dictionaries with prefetched keys
+          and corresponding values
+          - a dict # TODO(daniel): document this structure
+    """
+    raise NotImplementedError
+
+
+class EmptyPrefetcher(Prefetcher):
+  """Trivial implementation of Prefetcher that does not prefetch any data."""
+
+  def prefetch(self, entities):
+    """See Prefetcher.prefetch for specification."""
+    return [], {}
+
+
+EMPTY_PREFETCHER = EmptyPrefetcher()
+
+
+class ModelPrefetcher(Prefetcher):
+  """Prefetcher for the specified model and fields."""
+
+  def __init__(self, model, fields, parent=False):
+    """Initializes a new instance for the specified values.
+    
+    Args:
+      model: model for which data will be prefetched
+      fields: list of model fields which will be prefetched
+      parent: whether the parents of entities should be prefetched or not
+    """
+    self._model = model
+    self._fields = fields
+    self._parent = parent
+
+  def prefetch(self, entities):
+    """Prefetches the requested fields for the specified list of entities.
+
+    Relevant values are automatically assigned to the corresponding fields
+    in the entities.
+
+    Args:
+      entities: a list of entities belonging to the model specified with
+         the prefetcher
+    
+    Returns:
+      a tuple which contains an empty list and an empty dictionary
+    """
+    prefetchFields(self._model, self._fields, entities, self._parent)
+    # TODO(daniel): prefetched entities should be returned here
+    return [], {}
+
+
+# TODO(daniel): this class should be replaced by ListModelPrefetcher
+class ListFieldPrefetcher(Prefetcher):
+  """Prefetcher which handles fields that store list of values."""
+
+  def __init__(self, model, list_fields):
+    """Initializes a new instance for the specified values.
+
+    Args:
+      model: model for which data will be prefetched
+      list_fields: list of fields which are represented by db.ListProperty
+          in the specified model
+    """
+    self._model = model
+    self._list_fields = list_fields
+
+  def prefetch(self, entities):
+    """See Prefetcher.prefetch for specification."""
+    prefetched_entities = prefetchListFields(
+        self._model, self._list_fields, entities)
+    return [prefetched_entities], {}
+
+
+class ListModelPrefetcher(Prefetcher):
+  """Prefetcher for the specified model and fields which may also handle
+  fields that store list of values.
+  """
+
+  def __init__(self, model, fields, list_fields, parent=False):
+    """Initializes a new instance for the specified values.
+    
+    Args:
+      model: model for which data will be prefetched
+      fields: list of model fields which will be prefetched
+      list_fields: list of fields which are represented by db.ListProperty
+          in the specified model
+      parent: whether the parents of entities should be prefetched or not
+    """
+    self._model = model
+    self._fields = fields
+    self._list_fields = list_fields
+    self._parent = parent
+
+  def prefetch(self, entities):
+    """Uses async versions of prefetchers and distribute the keys manually.
+
+    See Prefetcher.prefetch for specification.
+    """
+    # Get the future objects for model fields and list fields by using
+    # the async versions of the corresponding prefetch methods.
+    mf_future = _prefetchFieldsAsync(
+        self._model, self._fields, entities, self._parent)
+    lf_future = _prefetchListFieldsAsync(
+        self._model, self._list_fields, entities)
+
+    # now block until model prefetching completes and distribute the keys
+    # once the processing is finished
+    prefetched_mf = mf_future.get_result()
+    _processPrefetchedFields(
+        prefetched_mf, self._model, self._fields, entities, self._parent)
+
+    # block on list prefetching to complete
+    prefetched_lf = lf_future.get_result()
+    prefetched_lf = dict((i.key(), i) for i in prefetched_lf if i)
+
+    # Return the prefetched list fields dict as part of the
+    # prefetching protocol
+    return [prefetched_lf], {}
+
+
 class ListConfiguration(object):
   """Resembles the configuration of a list. This object is sent to the client
   on page load.
@@ -1028,15 +1167,6 @@ def prefetchFields(model, fields, data, parent):
   _processPrefetchedFields(prefetched_entities, model, fields, data, parent)
 
 
-def modelPrefetcher(model, fields, parent=False):
-  """Returns a prefetcher for the specified model and fields.
-  """
-  def prefetcher(entities):
-    prefetchFields(model, fields, entities, parent)
-    return [], {}
-  return prefetcher
-
-
 def _prefetchListFieldsAsync(model, fields, data):
   """Prefetches the specified list fields in data asynchronously.
 
@@ -1077,42 +1207,6 @@ def prefetchListFields(model, fields, data):
   return prefetched_dict
 
 
-def listPrefetcher(model, fields):
-  """Returns a prefetcher for the specified models and list fields.
-  """
-  def prefetcher(entities):
-    prefetched_entities = prefetchListFields(model, fields, entities)
-    return [prefetched_entities], {}
-  return prefetcher
-
-
-def listModelPrefetcher(model, fields, list_fields, parent=False):
-  """Returns a prefetcher for the specified model and (list) fields.
-  """
-  def prefetcher(entities):
-    """Uses async versions of prefetchers and distribute the keys manually.
-    """
-    # Get the future objects for model fields and list fields by using
-    # the async versions of the corresponding prefetch methods.
-    mf_future = _prefetchFieldsAsync(model, fields, entities, parent)
-    lf_future = _prefetchListFieldsAsync(model, list_fields, entities)
-
-    # now block until model prefetching completes and distribute the keys
-    # once the processing is finished
-    prefetched_mf = mf_future.get_result()
-    _processPrefetchedFields(prefetched_mf, model, fields, entities, parent)
-
-    # block on list prefetching to complete
-    prefetched_lf = lf_future.get_result()
-    prefetched_lf = dict((i.key(), i) for i in prefetched_lf if i)
-
-    # Return the prefetched list fields dict as part of the
-    # prefetching protocol
-    return [prefetched_lf], {}
-
-  return prefetcher
-
-
 def keyStarter(start, q):
   """Returns a starter for the specified key-based model.
   """
@@ -1147,8 +1241,8 @@ class RawQueryContentResponseBuilder(object):
       starter: The function used to retrieve the start entity.
       ender: The function used to retrieve the value for the next start.
       skipper: The function used to determine whether to skip a value.
-      prefetch: The fields that need to be prefetched for increased
-                performance.
+      prefetcher: A Prefetcher implementation that can be used
+          for increased performance.
     """
     if not ender:
       ender = lambda entity, is_last, start: (
@@ -1156,7 +1250,7 @@ class RawQueryContentResponseBuilder(object):
     if not skipper:
       skipper = lambda entity, start: False
     if not prefetcher:
-      prefetcher = lambda entitites: ([], {})
+      prefetcher = EMPTY_PREFETCHER
     if not row_adder:
       row_adder = lambda content_response, entity, *args: \
           content_response.addRow(entity, *args)
@@ -1201,7 +1295,7 @@ class RawQueryContentResponseBuilder(object):
 
     is_last = len(entities) != count
 
-    extra_args, extra_kwargs = self._prefetcher(entities)
+    extra_args, extra_kwargs = self._prefetcher.prefetch(entities)
     args = list(args) + list(extra_args)
     kwargs.update(extra_kwargs)
 
