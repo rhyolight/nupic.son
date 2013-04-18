@@ -134,5 +134,20 @@ class DashboardTest(GCIDjangoTestCase):
     task = GCITask.get(task.key())
     self.assertEqual(task.status, final_status)
 
+  def testMyOrgsTaskList(self):
+    self.data.createMentor(self.org)
+
+    gci_task_helper = GCITaskHelper(self.gci)
+
+    # create a couple of tasks
+    gci_task_helper.createTask('Open', self.org, self.data.profile)
+    gci_task_helper.createTask('Reopened', self.org, self.data.profile)
+
+    response = self.get(self._getDashboardUrl())
+    self.assertResponseOK(response)
+
+    list_data = self.getListData(self._getDashboardUrl(), 1)
+    self.assertEqual(len(list_data), 2)
+
   def _getDashboardUrl(self):
     return '/gci/dashboard/' + self.gci.key().name()
