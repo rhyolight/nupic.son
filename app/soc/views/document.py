@@ -91,7 +91,6 @@ class DocumentList(template.Template):
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addSimpleColumn('link_id', 'Document ID', hidden=True)
-    list_config.addSimpleColumn('short_name', 'Short Name')
     list_config.setRowAction(
         lambda e, *args: r.document(e).urlOf(edit_name))
 

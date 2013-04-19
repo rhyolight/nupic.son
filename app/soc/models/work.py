@@ -50,12 +50,6 @@ class Work(soc.models.linkable.Linkable):
   title.help_text = ugettext(
       'title of the document; often used in the window title')
 
-  #: short name used in places such as the sidebar menu and breadcrumb trail
-  #: (optional: title will be used if short_name is not present)
-  short_name = db.StringProperty(verbose_name=ugettext('Short name'))
-  short_name.help_text = ugettext(
-      'short name used, for example, in the sidebar menu')
-
   #: Required db.TextProperty containing the contents of the Work.
   #: The content is only to be displayed to Persons in Roles eligible to
   #: view them (which may be anyone, for example, with the site front page).

@@ -493,7 +493,6 @@ def seed(request, *args, **kwargs):
       'prefix': 'site',
       'author': current_user,
       'title': 'Home Page',
-      'short_name': 'Home',
       'content': 'This is the Home Page',
       'modified_by': current_user,
       }
@@ -509,7 +508,6 @@ def seed(request, *args, **kwargs):
       'prefix': 'user',
       'author': current_user,
       'title': 'My Notes',
-      'short_name': 'Notes',
       'content': 'These are my notes',
       'modified_by': current_user,
       }
