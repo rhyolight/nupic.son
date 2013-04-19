@@ -19,8 +19,9 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from soc.models import user as user_model
+
 import soc.models.linkable
-import soc.models.work
 
 
 class DashboardVisibility(object):
@@ -61,7 +62,7 @@ ACCEPTED_STUDENT_VISIBILITY = DashboardVisibility(
     'accepted_student', 'Accepted Students')
 
 
-class Document(soc.models.work.Work):
+class Document(soc.models.linkable.Linkable):
   """Model of a Document.
   
   Document is used for things like FAQs, front page text, etc.
@@ -81,6 +82,37 @@ class Document(soc.models.work.Work):
       ]
 
   DOCUMENT_ACCESS = ['admin', 'restricted', 'member', 'user']
+
+  #: Required 1:1 relationship indicating the User who initially authored the
+  #: Document (this relationship is needed to keep track of lifetime document
+  #: creation limits, used to prevent spamming, etc.).
+  author = db.ReferenceProperty(
+      reference_class=user_model.User, required=True,
+      collection_name="created_documents", verbose_name=ugettext('Created by'))
+
+  #: Required field indicating the "title" of the document. Entities
+  #: can be indexed, filtered, and sorted by 'title'.
+  title = db.StringProperty(required=True,
+      verbose_name=ugettext('Title'))
+  title.help_text = ugettext(
+      'title of the document; often used in the window title')
+
+  #: Required db.TextProperty containing the content of the Document.
+  #: The content is only to be displayed to people eligible to
+  #: view them (which may be anyone, for example, with the site front page).
+  content = db.TextProperty(verbose_name=ugettext('Content'))
+
+  #: date when the work was created
+  created = db.DateTimeProperty(auto_now_add=True)
+
+  #: date when the work was last modified
+  modified = db.DateTimeProperty(auto_now=True)
+
+  # indicating wich user last modified the work. Used in displaying Work
+  modified_by = db.ReferenceProperty(
+     reference_class=soc.models.user.User, required=True,
+     collection_name="modified_documents",
+     verbose_name=ugettext('Modified by'))
 
   #: field storing the prefix of this document
   prefix = db.StringProperty(default='user', required=True,
@@ -131,3 +163,7 @@ class Document(soc.models.work.Work):
     collection_name='home_docs')
   home_for.help_text = ugettext(
       'The Precense this document is the home document for.')
+
+  def name(self):
+    """Alias 'title' Property as 'name' for use in common templates."""
+    return self.title
