@@ -178,9 +178,9 @@ class OrgConnectionForm(ConnectionForm):
     for id in id_list:
       self.cleaned_data[field] = id.strip(' ')
       user, anonymous_user = self._clean_one_id(field)
-      if anonymous_user is None:
+      if user is not None:
         self.request_data.user_connections.append(user)
-      else:
+      elif anonymous_user is not None:
         self.request_data.anonymous_users.append(anonymous_user)
     del self.cleaned_data[field]
     
@@ -209,6 +209,7 @@ class OrgConnectionForm(ConnectionForm):
       cleaner = cleaning.clean_email(field)
       email = cleaner(self)
       
+      # If we can't find a user for the given email, it's an anonymous user.
       account = users.User(email)
       user_account = accounts.normalizeAccount(account)
       connected_user = User.all().filter('account', user_account).get()
@@ -337,7 +338,7 @@ class OrgConnectionPage(GSoCRequestHandler):
       new_connection.put()
 
       if message_provided:
-        send_message_txn(connection_form, profile, new_connection)
+        send_message_txn(connection_form, data.profile, new_connection)
 
       context = notifications.connectionContext(data, new_connection, 
           email, connection_form.cleaned_data['message'])
@@ -551,7 +552,6 @@ class ShowConnection(GSoCRequestHandler):
   
   # The actions that will be made available to the user in the dropdown.
   RESPONSES = {
-    'none' : ('none', 'None Available'),
     'accept_mentor' : ('accept_mentor', 'Accept Mentor'),
     'reject_mentor' : ('reject_mentor', 'Reject Mentor'),
     'accept_org_admin' : ('accept_org_admin', 'Accept Org Admin'),
@@ -613,7 +613,7 @@ class ShowConnection(GSoCRequestHandler):
     """Handler for Show GSoCConnection get request."""
     # Shortcut for clarity/laziness.
     c = data.connection 
-    is_org_admin = data.organization in data.org_admin_for
+    is_org_admin = data.orgAdminFor(data.organization)
     header_name = data.url_user.link_id \
         if is_org_admin else data.organization.name
 
@@ -673,12 +673,12 @@ class ShowConnection(GSoCRequestHandler):
     if choices.count(self.RESPONSES['withdraw']) > 1:
       choices.remove(self.RESPONSES['withdraw'])
 
-    if len(choices) < 1:
-      choices.append(self.RESPONSES['none'])
-
-    response_form = ConnectionResponseForm(
-        request_data=data.POST or None,
-        choices=choices)
+    response_form = None
+    if len(choices) > 0:
+      response_form = ConnectionResponseForm(
+          request_data=data.POST or None,
+          choices=choices
+          )
 
     message_form = MessageForm(data.POST or None)
     message_box = {
@@ -715,7 +715,7 @@ class ShowConnection(GSoCRequestHandler):
     elif response == 'reject_org_admin':
       self._rejectOrgAdmin(data, is_org_admin)
     elif response == 'delete':
-      self._deleteConnection(data, is_org_admin)
+      self._deleteConnection(data)
     elif response == 'withdraw':
       self._withdrawConnection(data, is_org_admin)
     
@@ -860,7 +860,7 @@ class ShowConnection(GSoCRequestHandler):
       connection_entity.put()
 
       generate_message_txn(connection_entity, 'Org Admin Connection Rejected.')
-      
+
     db.run_in_transaction(decline_org_admin_txn)
 
 
@@ -895,7 +895,7 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'connection/message/%s$' % url_patterns.MESSAGE, self, 
+         url(r'connection/message/%s$' % url_patterns.MESSAGE, self,
              name=url_names.GSOC_CONNECTION_MESSAGE),
     ]
 
@@ -907,10 +907,13 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
     data.organization = data.connection.organization
     mutator.commentVisible(data.organization)
 
-    self.check.isOrgAdmin()
+    check.isOrgAdmin()
 
-  def createMessageFromForm(self):
+  def createMessageFromForm(self, data):
     """Creates a new message based on the data inserted in the form.
+
+    Args:
+      data: a request_data.RequestData object
 
     Returns:
       A newly created message entity or None.
@@ -933,27 +936,25 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
     def create_message_txn():
       message = message_form.create(commit=True, parent=data.connection)
 
-      context = gsoc_notifications.newConnectionMessageContext(
-          data, message, to_emails)
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=message)
-      sub_txn()
+      # TODO(drew): add notifications
 
       return message
 
     return db.run_in_transaction(create_message_txn)
 
   def post(self, data, check, mutator):
-    message = self.createMessageFromForm()
+    message = self.createMessageFromForm(data)
     if message:
       data.redirect.show_connection(data.url_user, data.connection)
-      data.redirect.to(validated=True)
+      return data.redirect.to(validated=True)
     else:
-      self.redirect.show_connection(data.url_user, data.connection)
+      data.redirect.show_connection(data.url_user, data.connection)
 
+      # TODO(nathaniel): calling GET logic from a POST handling path.
       # a bit hacky :-( may be changed when possible
       data.request.method = 'GET'
       request_handler = ShowConnection()
-      self.response = request_handler(data.request, *self.args, **self.kwargs)
+      return request_handler(data.request, *data.args, **data.kwargs)
 
   def get(self, data, check, mutator):
     raise exceptions.MethodNotAllowed()

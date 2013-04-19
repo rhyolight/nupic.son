@@ -37,6 +37,38 @@ class StudentList(Template):
   """Component for listing all the students in GCI.
   """
 
+  class ListPrefetcher(lists.Prefetcher):
+    """Prefetcher for StudentList.
+
+    See lists.Prefetcher for specification.
+    """
+
+    def prefetch(self, entities):
+      """Prefetches GCIProfiles corresponding to the specified list of
+      GCIStudentInfo entities.
+
+      See lists.Prefetcher.prefetch for specification.
+
+      Args:
+        entities: the specified list of GCIStudentInfo instances
+
+      Returns:
+        prefetched GCIProfile entities in a structure whose format is
+        described in lists.Prefetcher.prefetch
+      """
+      keys = []
+
+      for entity in entities:
+        key = entity.parent_key()
+        if key:
+          keys.append(key)
+
+      profiles = db.get(keys)
+
+      return (
+          [dict((profile.key(), profile) for profile in profiles if profile)],
+          {})
+
   def __init__(self, data):
     self.data = data
     self.idx = 1
@@ -162,19 +194,7 @@ class StudentList(Template):
     query.filter('program', self.data.program)
 
     starter = lists.keyStarter
-
-    def prefetcher(entities):
-      keys = []
-
-      for entity in entities:
-        key = entity.parent_key()
-        if key:
-          keys.append(key)
-
-      entities = db.get(keys)
-      sp = dict((i.key(), i) for i in entities if i)
-
-      return ([sp], {})
+    prefetcher = StudentList.ListPrefetcher()
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, query, starter,

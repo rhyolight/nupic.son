@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
 from django import forms
 
 from google.appengine.api import users
@@ -430,3 +428,71 @@ class CleaningTest(GSoCDjangoTestCase):
     expected = set([char.strip() for char in temp])
     actual = set(clean_field(self.form))
     self.assertEqual(expected, actual)
+
+  def testCleanIrc(self):
+    """Tests cleaning.clean_irc."""
+    field_name = 'irc'
+    clean_field = cleaning.clean_irc(field_name)
+
+    # Test that the value of the irc field will be returned
+    # if it is a valid irc url
+    field_value = 'irc://exampleirc.com/'
+    self.form.cleaned_data = {field_name: field_value}
+    self.form.fields = {field_name: forms.URLField()}
+    self.assertEqual(clean_field(self.form), field_value)
+
+    # Test that the value of the irc field will be returned
+    # if it is a valid irc url with channels
+    field_value = 'irc://exampleirc.com/#channel'
+    self.form.cleaned_data = {field_name: field_value}
+    self.form.fields = {field_name: forms.URLField()}
+    self.assertEqual(clean_field(self.form), field_value)
+
+    # Test that empty string will be returned if the value of the irc field
+    # is an empty string
+    field_value = ''
+    self.form.cleaned_data = {field_name: field_value}
+    self.assertEqual(clean_field(self.form), u'')
+
+    # Test that forms.ValidationError  will be raised
+    # if the value of the irc field is not a valid irc url
+    field_value = 'http://exampleirc'
+    self.form.cleaned_data = {field_name: field_value}
+    self.assertRaises(forms.ValidationError, clean_field, self.form)
+
+    # Test that forms.ValidationError  will be raised
+    # if the value of the irc field is not a valid irc url
+    field_value = 'irc://kthxbai$/'
+    self.form.cleaned_data = {field_name: field_value}
+    self.assertRaises(forms.ValidationError, clean_field, self.form)
+
+  def testCleanMailto(self):
+    """Tests cleaning.clean_mailto."""
+    field_name = 'mailto'
+    clean_field = cleaning.clean_mailto(field_name)
+
+    # Test that the value of the mail url field will be returned
+    # if it is a valid mail url
+    field_value = 'mailto:someone@something.com'
+    self.form.cleaned_data = {field_name: field_value}
+    self.form.fields = {field_name: forms.URLField()}
+    self.assertEqual(clean_field(self.form), field_value)
+
+    # Test that empty string will be returned if the value of the mailto field
+    # is an empty string
+    field_value = ''
+    self.form.cleaned_data = {field_name: field_value}
+    self.assertEqual(clean_field(self.form), u'')
+
+    # Test that forms.ValidationError will be raised
+    # if the value of the mailto field is not a valid mailto or http url.
+    field_value = 'someone@something.com'
+    self.form.cleaned_data = {field_name: field_value}
+    self.assertRaises(forms.ValidationError, clean_field, self.form)
+
+    # Test that the value of the mailto field will be returned
+    # if it is a valid http url ( a mailing group, say)
+    field_value = 'http://example.com/hereisawebmailinggroup'
+    self.form.cleaned_data = {field_name: field_value}
+    self.form.fields = {field_name: forms.URLField()}
+    self.assertEqual(clean_field(self.form), field_value)

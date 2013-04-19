@@ -26,6 +26,7 @@ from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -114,7 +115,7 @@ class Duplicate(Template):
 
       orgs_details[org.key().id_or_name()] = {
           'name': org.name,
-          'link': self.data.redirect.urlOf('gsoc_org_home')
+          'link': self.data.redirect.urlOf(url_names.GSOC_ORG_HOME)
           }
       q = GSoCProfile.all()
       q.filter('org_admin_for', org)

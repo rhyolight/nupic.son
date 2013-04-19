@@ -183,7 +183,7 @@ class ProjectList(Template):
           program=self.data.program, org=self.data.organization)
 
       starter = lists.keyStarter
-      prefetcher = lists.listModelPrefetcher(
+      prefetcher = lists.ListModelPrefetcher(
           GSoCProject, [],  ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
@@ -239,7 +239,7 @@ class OrgHome(GSoCRequestHandler):
 
     return [
         url(r'org/%s$' % url_patterns.ORG, self,
-            name='gsoc_org_home'),
+            name=url_names.GSOC_ORG_HOME),
         url(r'org/show/%s$' % url_patterns.ORG, self),
         url(r'org/home/%s$' % url_patterns.ORG, self),
         django_url(r'^org/show/%s$' % url_patterns.ORG, self),

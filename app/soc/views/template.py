@@ -28,6 +28,11 @@ class Template(object):
   """
 
   def __init__(self, data):
+    """Initializes the template.
+
+    Args:
+      data: a RequestData object
+    """
     self.data = data
 
   def render(self):

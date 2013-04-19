@@ -76,8 +76,7 @@ class MentorsList(Template):
     q.filter('is_mentor', True)
 
     starter = lists.keyStarter
-
-    prefetcher = lists.listPrefetcher(
+    prefetcher = lists.ListFieldPrefetcher(
         GCIProfile, ['org_admin_for', 'mentor_for'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
@@ -87,7 +86,7 @@ class MentorsList(Template):
     return response_builder.build()
 
   def templatePath(self):
-    return "v2/modules/gci/participants/_mentors_list.html"
+    return 'v2/modules/gci/participants/_mentors_list.html'
 
 
 class MentorsListAdminPage(GCIRequestHandler):

@@ -68,3 +68,26 @@ class ProfileTest(unittest.TestCase):
 
     actual = profile_logic.queryAllMentorsKeysForOrg(self.bar_org)
     self.assertEqual(expected, actual)
+
+  def testOrgAdminsForOrg(self):
+    """Tests if organisation admins for a given GCI organisation are returned."""
+    org_admin_properties = {'org_admin_for': [self.foo_org.key()],
+                            'is_org_admin': True}
+
+    foo_org_admin1 = seeder_logic.seed(GCIProfile, org_admin_properties)
+    foo_org_admin2 = seeder_logic.seed(GCIProfile, org_admin_properties)
+
+    org_admin_properties['org_admin_for'] = [self.bar_org.key()]
+    bar_org_admin = seeder_logic.seed(GCIProfile, org_admin_properties)
+
+    # Check for self.foo_org (two admins)
+    expected = [foo_org_admin1.key(), foo_org_admin2.key()]
+    actual = [profiles.key()
+              for profiles in profile_logic.orgAdminsForOrg(self.foo_org)]
+    self.assertEqual(expected, actual)
+
+    # Check for self.bar_org (just one admin)
+    expected = [bar_org_admin.key()]
+    actual = [profiles.key()
+              for profiles in profile_logic.orgAdminsForOrg(self.bar_org)]
+    self.assertEqual(expected, actual)

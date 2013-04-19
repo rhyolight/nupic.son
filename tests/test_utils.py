@@ -585,7 +585,7 @@ class DjangoTestCase(TestCase):
   def assertResponseCode(self, response, status_code):
     """Asserts that the response status is status_code.
     """
-    # first ensure that no render failures occured
+    # first ensure that no render failures occurred
     self.assertRenderAll(response)
 
     if response.status_code != status_code:

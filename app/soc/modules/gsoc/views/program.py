@@ -322,6 +322,7 @@ class TimelinePage(base.GSoCRequestHandler):
         'page_name': 'Edit program timeline',
         'forms': [timeline_form],
         'error': timeline_form.errors,
+        'description' : 'Please note that all times are UTC.'
     }
 
   def validate(self, data):

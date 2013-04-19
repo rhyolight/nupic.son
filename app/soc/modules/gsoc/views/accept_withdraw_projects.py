@@ -199,8 +199,7 @@ class ProposalList(Template):
       list_query = proposal_logic.getProposalsQuery(program=self.data.program)
 
       starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProposal, ['org'],
-          parent=True)
+      prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, list_query,
@@ -401,8 +400,7 @@ class ProjectList(Template):
       list_query = project_logic.getProjectsQuery(program=self.data.program)
 
       starter = lists.keyStarter
-      prefetcher = lists.modelPrefetcher(GSoCProject, ['org'],
-          parent=True)
+      prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, list_query,

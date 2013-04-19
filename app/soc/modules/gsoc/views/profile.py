@@ -286,36 +286,10 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
     if data.anonymous_connection:
       _handleAnonymousConnection(data)
 
-    link_id = data.GET.get('org')
-    if link_id:
-      key_name = '%s/%s' % (data.program.key().name(), link_id)
-      organization = GSoCOrganization.get_by_key_name(key_name)
-    else:
-      organization = None
+    data.redirect.program()
 
-    if not organization:
-      # TODO(nathaniel): make this .program() call unnecessary.
-      data.redirect.program()
-
-      return data.redirect.to('edit_gsoc_profile', validated=True, secure=True)
-
-    if data.anonymous_connection:
-      data.redirect.dashboard()
-    else:
-      data.redirect.organization(organization)
-
-    if data.student_info:
-      link = 'submit_gsoc_proposal'
-      extra_get_args = []
-    else:
-      link = url_names.GSOC_USER_CONNECTION
-      extra_get_args.append('profile=created')
-
-    user = User.get_by_key_name(data.request.POST['public_name'])
-
-    data.redirect.connect(user, organization)
-
-    return data.redirect.to(link, extra=extra_get_args)
+    return data.redirect.to(
+        self._getEditProfileURLName(), validated=True, secure=True)
 
   def _getModulePrefix(self):
     return 'gsoc'

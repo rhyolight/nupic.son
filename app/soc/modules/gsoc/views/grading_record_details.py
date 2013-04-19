@@ -92,6 +92,50 @@ class GradingRecordsList(Template):
   """Lists all GradingRecords for a single GradingSurveyGroup.
   """
 
+  class ListPrefetcher(lists.Prefetcher):
+    """Prefetcher used by GradingRecordsList.
+
+    See lists.Prefetcher for specification.
+    """
+
+    def prefetch(self, entities):
+      """Prefetches GSoCProfile entities belonging to a student and a mentor
+      of the projects corresponding to the items in the specified list of
+      GSoCGradingRecord entities.
+
+      See lists.Prefetcher.prefetch for specification.
+
+      Args:
+        entities: the specified list of GSoCGradingRecord instances
+
+      Returns:
+        prefetched GSoCProfile entities in a structure whose format is
+        described in lists.Prefetcher.prefetch
+      """
+      prefetcher = lists.prefetchFields(
+          GSoCGradingRecord, ['mentor_record', 'student_record'], 
+          entities, parent=True)
+
+      mentor_records_map = collections.defaultdict(list)
+      student_profiles = {}
+
+      for entity in entities:
+        project = entity.parent()
+        mentor_key = project.mentors[0]
+        record_key = entity.key()
+        if record_key:
+          mentor_records_map[mentor_key].append(record_key)
+          student_profiles[record_key] = project.parent()
+
+      entities = db.get(mentor_records_map.keys())
+      mentors = {}
+      for mentor in entities:
+        if mentor:
+          for record_key in mentor_records_map[mentor.key()]:
+            mentors[record_key] = mentor
+
+      return ([mentors, student_profiles], {})
+
   def __init__(self, data):
     """Initializes the template.
 
@@ -189,30 +233,7 @@ class GradingRecordsList(Template):
     q.filter('grading_survey_group', self.data.survey_group)
 
     starter = lists.keyStarter
-    def prefetcher(records):
-      prefetcher = lists.prefetchFields(
-          GSoCGradingRecord, ['mentor_record', 'student_record'], 
-          records, parent=True)
-
-      mentor_records_map = collections.defaultdict(list)
-      student_profiles = {}
-
-      for record in records:
-        project = record.parent()
-        mentor_key = project.mentors[0]
-        record_key = record.key()
-        if record_key:
-          mentor_records_map[mentor_key].append(record_key)
-          student_profiles[record_key] = project.parent()
-
-      entities = db.get(mentor_records_map.keys())
-      mentors = {}
-      for mentor in entities:
-        if mentor:
-          for record_key in mentor_records_map[mentor.key()]:
-            mentors[record_key] = mentor
-
-      return ([mentors, student_profiles], {})
+    prefetcher = GradingRecordsList.ListPrefetcher()
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q,

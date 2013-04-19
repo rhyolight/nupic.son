@@ -1,4 +1,4 @@
-# Copyright 2012 the Melange authors.
+# Copyright 2013 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GSoC logic for program."""
-
-
-def getMostRecentProgram(data):
-  """Returns the most recent program.
-
-  Returns:
-    The program link_id for the most recent GSoC program.
-  """
-  return data.site.latest_gsoc
+"""Templates module for GSoC."""
