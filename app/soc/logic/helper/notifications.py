@@ -57,16 +57,19 @@ DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
 DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
     'soc/notification/invitation.html'
 
-#TODO(dcrodman): This needs to be removed once connection is stable.
+# TODO(dcrodman): This needs to be removed once connection is stable.
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
     'soc/notification/new_request.html'
 
+# TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
 DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE = \
     'v2/modules/gsoc/notification/initiated_user_connection.html'
 
+# TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
 DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE = \
     'v2/modules/gsoc/notification/initiated_org_connection.html'
 
+# TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
 DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE = \
     'v2/modules/gsoc/notification/anonymous_connection.html'
 
@@ -85,11 +88,66 @@ DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'soc/notification/mentor_welcome_mail.html'
 
+def getDefaultContext(request_data, emails, subject, extra_context=None):
+  """Generate a dictionary with a default context.
+
+  Returns:
+    A dictionary with the default context for the emails that are sent
+    in this module.
+  """
+  default_context  = {}
+  default_context['sender_name'] = 'The %s Team' % (
+      request_data.site.site_name)
+  default_context['program_name'] = request_data.program.name
+  default_context['subject'] = subject
+
+  sender_name, sender = mail_dispatcher.getDefaultMailSender()
+  default_context['sender_name'] = sender_name
+  default_context['sender'] = sender
+
+  if len(emails) == 1:
+    default_context['to'] = emails[0]
+  else:
+    default_context['bcc'] = emails
+
+  if extra_context:
+    default_context.update(extra_context)
+
+  return default_context
+
+def getContext(data, receivers, message_properties, subject, template):
+  """Sends out a notification to the specified user.
+
+  Args:
+    receivers: Email addresses to which the notification should be sent.
+    message_properties : Message properties.
+    subject : Subject of notification email.
+    template : Template used for generating notification.
+  Returns:
+    A dictionary containing the context for a message to be sent to one
+    or more recipients.
+  """
+  message_properties['sender_name'] = 'The %s Team' % (data.site.site_name)
+  message_properties['program_name'] = data.program.name
+
+  body = loader.render_to_string(template, dictionary=message_properties)
+
+  if len(receivers) == 1:
+    to = receivers[0]
+    bcc = []
+  else:
+    to = []
+    bcc = receivers
+
+  return mailer.getMailContext(to, subject, body, bcc=bcc)
+
+# TODO(nathaniel): "connection" argument description is a "gsoc" reference
+# outside of app/soc/modules/gsoc.
 def userConnectionContext(data, connection, recipients, message):
   """Send out a notification email to the organization administrators for the
   given org when a user opens a connection with the organization.
 
-  Args: 
+  Args:
     data: RequestData object with organization and user set.
     connection: The new instance of GSoCConnection.
     recipients: The email(s) of the org admins for the org.
@@ -102,7 +160,7 @@ def userConnectionContext(data, connection, recipients, message):
   subject = DEF_NEW_USER_CONNECTION % {'org' : connection.organization.name}
   connection_url = data.redirect.show_connection(connection.parent(),
       connection).url(full=True)
- 
+
   message_properties = {
       'connection_url' : connection_url,
       'link_id' : connection.parent().link_id,
@@ -111,6 +169,8 @@ def userConnectionContext(data, connection, recipients, message):
   template = DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE
   return getContext(data, recipients, message_properties, subject, template)
 
+# TODO(nathaniel): "connection" argument description is a "gsoc" reference
+# outside of app/soc/modules/gsoc.
 def orgConnectionContext(data, connection, recipient, message):
   """Send out a notification email to a user with whom an org admin opened
   a new connection.
@@ -139,9 +199,9 @@ def orgConnectionContext(data, connection, recipient, message):
   return getContext(data, recipient, message_properties, subject, template)
 
 def anonymousConnectionContext(data, email, anonymous_connection, message):
-  """Sends out a notification email to users who have neither user nor 
-  profile entities alerting them that an org admin has attempted to 
-  initiate a connection with them. 
+  """Sends out a notification email to users who have neither user nor
+  profile entities alerting them that an org admin has attempted to
+  initiate a connection with them.
 
   Args:
     data: A RequestData object for the connection views.
@@ -173,7 +233,7 @@ def anonymousConnectionContext(data, email, anonymous_connection, message):
 
   return getContext(data, email, message_properties, subject, template)
 
-#TODO(dcrodman): This needs to be removed once connection is stable.
+# TODO(dcrodman): This needs to be removed once connection is stable.
 def inviteContext(data, invite):
   """Sends out an invite notification to the user the request is for.
 
@@ -207,7 +267,7 @@ def inviteContext(data, invite):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
-#TODO(dcrodman): This needs to be removed once connection is stable.
+# TODO(dcrodman): This needs to be removed once connection is stable.
 def requestContext(data, request, admin_emails):
   """Sends out a notification to the persons who can process this Request.
 
@@ -363,58 +423,3 @@ def orgAppContext(data, record, new_status, apply_url):
   context = getDefaultContext(data, emails, subject, context)
 
   return context
-
-
-def getDefaultContext(request_data, emails, subject, extra_context=None):
-  """Generate a dictionary with a default context.
-
-  Returns:
-    A dictionary with the default context for the emails that are sent 
-    in this module.
-  """
-  default_context  = {}
-  default_context['sender_name'] = 'The %s Team' % (
-      request_data.site.site_name)
-  default_context['program_name'] = request_data.program.name
-  default_context['subject'] = subject
-
-  sender_name, sender = mail_dispatcher.getDefaultMailSender()
-  default_context['sender_name'] = sender_name
-  default_context['sender'] = sender
-
-  if len(emails) == 1:
-    default_context['to'] = emails[0]
-  else:
-    default_context['bcc'] = emails
-
-  if extra_context:
-    default_context.update(extra_context)
-
-  return default_context
-
-
-def getContext(data, receivers, message_properties, subject, template):
-  """Sends out a notification to the specified user.
-
-  Args:
-    receivers: Email addresses to which the notification should be sent.
-    message_properties : Message properties.
-    subject : Subject of notification email.
-    template : Template used for generating notification.
-  Returns:
-    A dictionary containing the context for a message to be sent to one
-    or more recipients.
-  """
-  message_properties['sender_name'] = 'The %s Team' % (data.site.site_name)
-  message_properties['program_name'] = data.program.name
-
-  body = loader.render_to_string(template, dictionary=message_properties)
-
-  if len(receivers) == 1:
-    to = receivers[0]
-    bcc = []
-  else:
-    to = []
-    bcc = receivers
-
-  return mailer.getMailContext(to, subject, body, bcc=bcc)
