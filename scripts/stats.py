@@ -93,32 +93,6 @@ def getEntities(model, fields=None):
   return wrapped
 
 
-def getProps(last=None):
-  """Returns all proposals as a list of dictionaries.
-  """
-
-  from soc.logic import dicts
-
-  key_order = [
-      'link_id', 'scope_path', 'title', 'abstract', 'content',
-      'additional_info', '_mentor', 'possible_mentors', 'score',
-      'status', '_org', 'created_on', 'last_modified_on']
-
-  from soc.models.student_proposal import StudentProposal
-
-  gen = lambda: StudentProposal.all()
-
-  it = dateFetch(gen, last)
-
-  proposals = [(i.key().name(), dicts.toDict(i, key_order)) for i in it]
-  if proposals:
-    last = i.last_modified_on # last modified entity
-  else:
-    last = datetime.datetime.now()
-
-  return dict(proposals), last
-
-
 def orgStats(target, orgs):
   """Retrieves org stats.
   """
@@ -134,19 +108,6 @@ def orgStats(target, orgs):
   popularity = [(k.link_id, len(v)) for k, v in grouped]
 
   return dict(grouped), dict(popularity)
-
-
-def countStudentsWithProposals():
-  """Retrieves number of Students who have submitted at least one Student Proposal.
-  """
-
-  proposals = getStudentProposals()
-  students = {}
-
-  for proposal_key in proposals.keys():
-    students[proposals[proposal_key].scope_path] = True
-
-  return len(students)
 
 
 def printPopularity(popularity):
