@@ -25,8 +25,8 @@ import soc.models.profile
 class GSoCComment(db.Model):
   """Model of a comment on a work.
 
-  A comment is usually associated with a Work or a Proposal,
-  for example a Document or a Student Proposal, and with a user, the author.
+  A comment is usually associated with a GSoCProposal, and with a user,
+  the author.
   There are two types of comment, public (i.e. visible to the student), 
   or private (i.e. visible to programme/club staff). Neither type are 
   visible to people who are not connected to the work being commented on.
