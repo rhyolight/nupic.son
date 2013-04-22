@@ -79,6 +79,15 @@ class TimelineHelper(object):
   def beforeProgramStart(self):
     return isBefore(self.timeline.program_start)
 
+  def afterProgramStart(self):
+    """Returns a bool indicating whether the program start date has passed
+    or not.
+
+    Returns:
+      True if the current date is after program start date; False otherwise
+    """
+    return isAfter(self.timeline.program_start)
+
   def programActiveBetween(self):
     return (self.timeline.program_start, self.timeline.program_end)
 
