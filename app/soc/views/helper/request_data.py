@@ -77,6 +77,12 @@ class TimelineHelper(object):
     return self.timeline.accepted_organization_announced_deadline
 
   def beforeProgramStart(self):
+    """Returns a bool indicating whether the program start date has passed
+    or not.
+
+    Returns:
+      True if he current data is before program start date; False otherwise
+    """
     return isBefore(self.timeline.program_start)
 
   def afterProgramStart(self):
