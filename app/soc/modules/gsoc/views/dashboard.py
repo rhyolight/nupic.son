@@ -1469,7 +1469,7 @@ class ParticipantsComponent(Component):
       # TODO(daniel): prefetch organizations or get rid of this, if
       # it turns out prefetching is not needed
       # org_dict = dict((i.key(), i) for i in self.data.mentor_for)
-      # q.filter('mentor_for IN', self.data.profile.org_admin_for)
+      q.filter('mentor_for IN', self.data.profile.org_admin_for)
       prefetcher = None
 
     starter = lists.keyStarter
