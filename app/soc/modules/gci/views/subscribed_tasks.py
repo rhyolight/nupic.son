@@ -52,8 +52,8 @@ class SubscribedTasksPage(base.GCIRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        gci_url_patterns.url(r'subscribed_tasks/%s$' % url_patterns.PROFILE, self,
-            name=url_names.GCI_SUBSCRIBED_TASKS),
+        gci_url_patterns.url(r'subscribed_tasks/%s$' % url_patterns.PROFILE,
+            self, name=url_names.GCI_SUBSCRIBED_TASKS),
     ]
 
   def checkAccess(self, data, check, mutator):
