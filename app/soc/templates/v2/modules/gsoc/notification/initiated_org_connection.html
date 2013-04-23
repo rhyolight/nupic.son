@@ -13,20 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 {% block content %}
-{% if is_user %}
-	New connection with {{ org }}. <br />
-{% else %}
-    New connection for {{ org }}. <br />
-{% endif %}
-{% if message %}
-{{ message }}
-{% endif %}
-{% if is_user %}
-An org admin for {{ org }} has established a connection with you.
-{% else %}
-A user has established a connection with {{ org }}.
-{% endif %}
 
-You can respond to the connection by visiting <a href="{{ request_url }}">this URL</a>.
+Hello {{ link_id }},
+	{{ org_name }} has opened a new connection with you in order to offer you the role of {{ role }}. 
+To respond to this connection, please visit the following url:
+
+<a href="{{ connection_url }}">{{ connection_url }}</a>
 
 {% endblock %}

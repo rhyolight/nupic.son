@@ -231,7 +231,7 @@ class OrgConnectionForm(ConnectionForm):
         # more helpful than "One or more Link_ids is not valid."
         raise gsoc_forms.ValidationError(
             '"%s" is not a valid link id.' % self.cleaned_data[field])
-
+        
     return connected_user, anonymous_user
 
   class Meta:
@@ -329,8 +329,8 @@ class OrgConnectionPage(GSoCRequestHandler):
         Note that it sets data attributes that are handled in the post()
         method of this handler below.
     """
-
     connection_form = OrgConnectionForm(request_data=data, data=data.POST)
+
     if not connection_form.is_valid():
       return False
 
@@ -350,7 +350,7 @@ class OrgConnectionPage(GSoCRequestHandler):
       if message_provided:
         send_message_txn(connection_form, data.profile, new_connection)
 
-      context = notifications.connectionContext(data, new_connection,
+      context = notifications.orgConnectionContext(data, new_connection,
           email, connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=new_connection)
       sub_txn()
@@ -383,8 +383,7 @@ class OrgConnectionPage(GSoCRequestHandler):
       # Notify the user that they have a pending connection and can register
       # to accept the elevated role.
       context = notifications.anonymousConnectionContext(data, email,
-          new_connection.role, new_connection.hash_id,
-          connection_form.cleaned_data['message'])
+          new_connection, connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=new_connection)
       sub_txn()
 
@@ -500,7 +499,7 @@ class UserConnectionPage(GSoCRequestHandler):
     q = GSoCProfile.all().filter('org_admin_for', data.organization)
     q = q.filter('status =', 'active').filter('notify_new_requests =', True)
     admins = q.fetch(50)
-    receivers = [i.email for i in admins]
+    recipients = [i.email for i in admins]
 
     # We don't want to generate a message with empty content in the event that
     # a user does not provide any.
@@ -518,8 +517,8 @@ class UserConnectionPage(GSoCRequestHandler):
       if message_provided:
         send_message_txn(connection_form, data.profile, new_connection)
 
-      context = notifications.connectionContext(data, new_connection,
-          receivers, connection_form.cleaned_data['message'], True)
+      context = notifications.userConnectionContext(data, new_connection,
+          recipients, connection_form.cleaned_data['message'])
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=new_connection)
       sub_txn()
 
