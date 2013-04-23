@@ -1436,7 +1436,7 @@ class ParticipantsComponent(Component):
       Args:
         data: A RequestData describing the current request.
       """
-      self.org_dict = dict((org.key(), org) for org in data.mentor_for)
+      self.org_dict = dict((org.key(), org) for org in data.org_admin_for)
 
     def prefetch(self, entities):
       """Prefetches the organizations that are administered by the current
