@@ -21,6 +21,7 @@ from soc.modules.gci.models import task as task_model
 from soc.modules.seeder.logic import seeder
 
 class SubscribedTasksPageTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for SubscribedTasksPage."""
 
   def setUp(self):
     self.init()
