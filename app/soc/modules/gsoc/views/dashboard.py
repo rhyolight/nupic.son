@@ -1412,8 +1412,46 @@ class UserConnectionComponent(Component):
 
 
 class ParticipantsComponent(Component):
-  """Component for listing all the participants for all organizations.
-  """
+  """Component for listing all the participants for all organizations."""
+
+  class AdministeredOrgsPrefetcher(lists.Prefetcher):
+    """A simple lists.Prefetcher implementation which prefetches organizations
+    for which the current user is an administrator.
+
+    It is used in case the component is created for organization administrator.
+    Only memebers belonging to one of his or her organizations will be listed.
+    Therefore, organization entities, which have already been retrieved
+    and are stored in base.RequestData object, can be reused.
+
+    One of the regular lists.Prefetcher implementations could be used for the
+    same purpose, but since entities are already present, there is no need
+    to contact the database, so a few round trips are saved.
+
+    See lists.Prefetcher for specification.
+    """
+
+    def __init__(self, data):
+      """Initializes instances of this class.
+
+      Args:
+        data: A RequestData describing the current request.
+      """
+      self.org_dict = dict((org.key(), org) for org in data.mentor_for)
+
+    def prefetch(self, entities):
+      """Prefetches the organizations that are administered by the current
+      user.
+
+      Args:
+        entities: list of profile entities (not actually used)
+
+      Returns:
+        prefetched GSoCOrganization entities in a structure whose format is
+        described in lists.Prefetcher.prefetch
+
+      See lists.Prefetcher.prefetch for specification.
+      """
+      return [self.org_dict], {}
 
   def __init__(self, data):
     """Initializes this component.
@@ -1466,11 +1504,8 @@ class ParticipantsComponent(Component):
       prefetcher = lists.ListFieldPrefetcher(
           GSoCProfile, ['mentor_for', 'org_admin_for'])
     else:
-      # TODO(daniel): prefetch organizations or get rid of this, if
-      # it turns out prefetching is not needed
-      # org_dict = dict((i.key(), i) for i in self.data.mentor_for)
       q.filter('mentor_for IN', self.data.profile.org_admin_for)
-      prefetcher = None
+      prefetcher = ParticipantsComponent.AdministeredOrgsPrefetcher(self.data)
 
     starter = lists.keyStarter
 
