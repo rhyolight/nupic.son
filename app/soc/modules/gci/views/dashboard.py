@@ -332,7 +332,9 @@ class DashboardPage(GCIRequestHandler):
   def _getStudentLinks(self, data):
     """Get the main dashboard links for student."""
     links = [
-        self._getStudentFormsLink(data), self._getMyTasksLink(data)
+        self._getStudentFormsLink(data),
+        self._getMyTasksLink(data),
+        self._getMySubscribedTasksLink(data)
         ]
 
     current_task = task_logic.queryCurrentTaskForStudent(data.profile).get()
@@ -423,6 +425,21 @@ class DashboardPage(GCIRequestHandler):
             'The task you are currently working on'),
         'title': 'My current task',
         'link': r.urlOf('gci_view_task')
+        }
+
+  def _getMySubscribedTasksLink(self, data):
+    """Get the link to the list of all the tasks the current logged in user
+    is subscribed to.
+    """
+    # TODO(nathaniel): make this .organization call unnecessary.
+    data.redirect.profile(data.user.link_id)
+
+    return {
+        'name': 'subscribed_tasks',
+        'description': ugettext(
+            'List of the tasks that you have subscribed to'),
+        'title': 'My subscribed tasks',
+        'link': data.redirect.urlOf(url_names.GCI_SUBSCRIBED_TASKS)
         }
 
   def _getProposeWinnersLink(self, data):
