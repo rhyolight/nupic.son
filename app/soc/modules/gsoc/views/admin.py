@@ -1100,9 +1100,11 @@ class StudentsList(Template):
           for student_info in student_infos if student_info
           )
 
-      organizations = db.get(
-          set(sum((entity.project_for_orgs for entity in entities), [])))
-      prefetched_organization_dict = dict((i.key(), i) for i in entities if i)
+      orgs = db.get(set(sum(
+          (student_info.project_for_orgs for student_info in student_infos),
+          [])))
+      prefetched_organization_dict = dict(
+          (org.key(), org) for org in orgs if org)
 
       return ([prefetched_student_info_dict, prefetched_organization_dict], {})
 
