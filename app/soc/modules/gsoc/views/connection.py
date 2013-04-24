@@ -216,8 +216,8 @@ class OrgConnectionForm(ConnectionForm):
       account = users.User(email)
       user_account = accounts.normalizeAccount(account)
       connected_user = User.all().filter('account', user_account).get()
-      query = GSoCProfile.all().ancestor(connected_user)
-      if not connected_user or query.count(limit=1) < 1:
+      if (not connected_user or
+          GSoCProfile.all().ancestor(connected_user).count(limit=1) < 1):
         anonymous_user = self.cleaned_data[field]
     else:
       # Current id is a link_id.
