@@ -60,7 +60,7 @@ class SubscribedTasksPage(base.GCIRequestHandler):
     check.isProfileActive()
     mutator.profileFromKwargs()
     if data.profile.key() != data.url_profile.key():
-       raise exceptions.AccessViolation('You do not have access to this data')
+      raise exceptions.AccessViolation('You do not have access to this data')
 
   def jsonContext(self, data, check, mutator):
     return SubscribedTasksList(data).getListData().content()

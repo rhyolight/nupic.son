@@ -431,7 +431,7 @@ class DashboardPage(GCIRequestHandler):
     """Get the link to the list of all the tasks the current logged in user
     is subscribed to.
     """
-    # TODO(nathaniel): make this .organization call unnecessary.
+    # TODO(nathaniel): make this .profile call unnecessary.
     data.redirect.profile(data.user.link_id)
 
     return {
