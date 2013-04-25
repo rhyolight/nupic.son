@@ -220,7 +220,7 @@ class RequestData(request_data.RequestData):
         key = db.Key.from_path('Sponsor', self.kwargs.get('sponsor'))
         self._is_host = key in self.user.host_for
       else:
-        key = program_logic.getSponsorKey(program)
+        key = program_logic.getSponsorKey(self._program)
         self._is_host = key in self.user.host_for
     return self._is_host
 
