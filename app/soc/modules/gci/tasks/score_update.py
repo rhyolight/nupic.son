@@ -12,25 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Appengine Tasks related to GCI scores.
-"""
-
+"""Appengine Tasks related to GCI scores."""
 
 import logging
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
-from django.conf.urls.defaults import url
+from django.conf.urls import defaults
 
 from soc.tasks import responses
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import org_score as org_score_logic
 from soc.modules.gci.logic import profile as profile_logic
-from soc.modules.gci.models.profile import GCIProfile
-from soc.modules.gci.models.program import GCIProgram
-from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models import profile as profile_model
+from soc.modules.gci.models import program as program_model
+from soc.modules.gci.models import task as task_model
 
 
 def studentIterator(func):
@@ -38,22 +36,22 @@ def studentIterator(func):
   GCIProgram which is specified in the AppEngine task's POST parameters.
 
   Args:
-    func: a function to process each of the students 
+    func: a function to process each of the students
   """
 
   def wrapper(self, request, *args, **kwargs):
     key_name = '%s/%s' % (kwargs['sponsor'], kwargs['program'])
     cursor = request.POST.get('cursor')
 
-    program = GCIProgram.get_by_key_name(key_name)
+    program = program_model.GCIProgram.get_by_key_name(key_name)
     if not program:
       logging.warning(
           'Enqueued recalculate ranking task for non-existing '
-          'program: %s' %key_name)
+          'program: %s' % key_name)
       return responses.terminateTask()
 
     # Retrieve the students for the program
-    q = GCIProfile.all()
+    q = profile_model.GCIProfile.all()
     q.filter('scope', program)
     q.filter('is_student', True)
 
@@ -77,23 +75,22 @@ def studentIterator(func):
   return wrapper
 
 
+# TODO(nathaniel): Fit this into the RequestHandler family of classes?
 class ScoreUpdate(object):
-  """Appengine tasks for updating the scores for GCI program.
-  """
+  """Appengine tasks for updating the scores for GCI program."""
 
   def djangoURLPatterns(self):
-    """Returns the URL patterns for the tasks in this module.
-    """
+    """Returns the URL patterns for the tasks in this module."""
     patterns = [
-        url(r'^tasks/gci/scores/clear/%s$' % url_patterns.PROGRAM,
+        defaults.url(r'^tasks/gci/scores/clear/%s$' % url_patterns.PROGRAM,
             self.clearScore, name='task_clear_gci_scores'),
-        url(r'^tasks/gci/scores/calculate/%s$' % url_patterns.PROGRAM,
+        defaults.url(r'^tasks/gci/scores/calculate/%s$' % url_patterns.PROGRAM,
             self.calculateScore, name='task_calculate_gci_scores')]
-    return patterns  
+    return patterns
 
   @studentIterator
   def clearScore(self, request, profile, *args, **kwargs):
-    """Clears all GCIOrgScore entities associated with 
+    """Clears all GCIOrgScore entities associated with
     the specified GCIProfile.
     """
     if not profile.is_student:
@@ -107,7 +104,7 @@ class ScoreUpdate(object):
     GCIProfile.
     """
     # get all the tasks that the student has completed
-    query = GCITask.all()
+    query = task_model.GCITask.all()
     query.filter('student', profile)
     query.filter('status', 'Closed')
 
