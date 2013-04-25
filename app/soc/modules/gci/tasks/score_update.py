@@ -31,84 +31,98 @@ from soc.modules.gci.models import program as program_model
 from soc.modules.gci.models import task as task_model
 
 
-def studentIterator(func):
-  """Wrapper that iterates through all the students participating in the
-  GCIProgram which is specified in the AppEngine task's POST parameters.
+def clearScore(profile):
+  """Clears all GCIOrgScore entities associated with a GCIProfile.
 
   Args:
-    func: a function to process each of the students
+    profile: A GCIProfile associated with some student.
   """
+  if profile.is_student:
+    db.run_in_transaction(org_score_logic.clearOrgScoresTxn(profile.key()))
+  else:
+    raise ValueError('The specified GCIProfile does not belong to a student!')
 
-  def wrapper(self, request, *args, **kwargs):
-    key_name = '%s/%s' % (kwargs['sponsor'], kwargs['program'])
-    cursor = request.POST.get('cursor')
 
-    program = program_model.GCIProgram.get_by_key_name(key_name)
-    if not program:
-      logging.warning(
-          'Enqueued recalculate ranking task for non-existing '
-          'program: %s' % key_name)
-      return responses.terminateTask()
+def calculateScore(profile):
+  """Calculates the score for the student associated with a GCIProfile.
 
-    # Retrieve the students for the program
-    q = profile_model.GCIProfile.all()
-    q.filter('scope', program)
-    q.filter('is_student', True)
+  Args:
+    profile: A GCIProfile associated with some student.
+  """
+  # TODO(nathaniel): The string literals in this function should be constants
+  # declared somewhere sensible.
+  # Get all the tasks that the student has completed.
+  query = task_model.GCITask.all()
+  query.filter('student', profile)
+  query.filter('status', 'Closed')
 
-    if cursor:
-      q.with_cursor(cursor)
+  tasks = query.fetch(1000)
 
-    profiles = q.fetch(25)
+  # Calculate org score with all the tasks.
+  db.run_in_transaction(org_score_logic.updateOrgScoresTxn(tasks))
 
-    for profile in profiles:
-      func(self, request, profile, *args, **kwargs)
 
-    if profiles:
-      # schedule task to do the rest of the students
-      params = {
-          'cursor': q.cursor(),
-          }
-      taskqueue.add(queue_name='gci-update', url=request.path, params=params)
+def studentIterator(student_profile_function, request, **kwargs):
+  """Applies a function to every student profile in a program.
 
+  Args:
+    student_profile_function: A function that accepts a single
+      student profile_model.GCIProfile as an argument.
+    request: A RequestData object.
+    **kwargs: Keyword arguments associated with the request.
+
+  Returns:
+    An HttpResponse object.
+  """
+  # TODO(nathaniel): Call a utility function for this key_name.
+  key_name = '%s/%s' % (kwargs['sponsor'], kwargs['program'])
+  cursor = request.POST.get('cursor')
+
+  program = program_model.GCIProgram.get_by_key_name(key_name)
+  if not program:
+    logging.warning('Enqueued task for nonexistant program %s' % key_name)
     return responses.terminateTask()
 
-  return wrapper
+  # Retrieve the students for the program.
+  query = profile_model.GCIProfile.all()
+  # TODO(nathaniel): These string literals should be constants somewhere.
+  query.filter('scope', program)
+  query.filter('is_student', True)
+  if cursor:
+    query.with_cursor(cursor)
+
+  student_profiles = query.fetch(25)
+
+  for student_profile in student_profiles:
+    student_profile_function(student_profile)
+
+  if profiles:
+    # Schedule task to do the rest of the students.
+    params = {'cursor': q.cursor()}
+    taskqueue.add(queue_name='gci-update', url=request.path, params=params)
+
+  return responses.terminateTask()
 
 
 # TODO(nathaniel): Fit this into the RequestHandler family of classes?
 class ScoreUpdate(object):
   """Appengine tasks for updating the scores for GCI program."""
 
+  def _clearScores(self, request, *args, **kwargs):
+    """Clears the scores of all students in a program."""
+    return studentIterator(clearScore, request, **kwargs)
+
+  def _calculateScores(self, request, *args, **kwargs):
+    """Calculates the scores of all students in a program."""
+    return studentIterator(calculateScore, request, **kwargs)
+
   def djangoURLPatterns(self):
     """Returns the URL patterns for the tasks in this module."""
-    patterns = [
-        defaults.url(r'^tasks/gci/scores/clear/%s$' % url_patterns.PROGRAM,
-            self.clearScore, name='task_clear_gci_scores'),
-        defaults.url(r'^tasks/gci/scores/calculate/%s$' % url_patterns.PROGRAM,
-            self.calculateScore, name='task_calculate_gci_scores')]
-    return patterns
-
-  @studentIterator
-  def clearScore(self, request, profile, *args, **kwargs):
-    """Clears all GCIOrgScore entities associated with
-    the specified GCIProfile.
-    """
-    if not profile.is_student:
-      raise ValueError("The specified GCIProfile does not belong to a student")
-
-    db.run_in_transaction(org_score_logic.clearOrgScoresTxn(profile.key()))
-
-  @studentIterator
-  def calculateScore(self, request, profile, *args, **kwargs):
-    """Calculates score for the student associated with the specified
-    GCIProfile.
-    """
-    # get all the tasks that the student has completed
-    query = task_model.GCITask.all()
-    query.filter('student', profile)
-    query.filter('status', 'Closed')
-
-    tasks = query.fetch(1000)
-
-    # calculate org score with all the tasks
-    db.run_in_transaction(org_score_logic.updateOrgScoresTxn(tasks))
+    return [
+        defaults.url(
+            r'^tasks/gci/scores/clear/%s$' % url_patterns.PROGRAM,
+            self._clearScores, name='task_clear_gci_scores'),
+        defaults.url(
+            r'^tasks/gci/scores/calculate/%s$' % url_patterns.PROGRAM,
+            self._calculateScores, name='task_calculate_gci_scores'),
+        ]
