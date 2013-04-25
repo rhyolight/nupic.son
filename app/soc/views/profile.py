@@ -314,7 +314,16 @@ class ProfilePage(object):
 
     return student_form
 
-  def validate(self, data):
+  def validate(self, data, entities=None):
+    """Validate the user and profile data from the forms.
+
+    Args:
+      data: RequestData object with the forms to validate.
+      entities: List to which the new profile will be appended.
+
+    Returns:
+      True if all forms were valid, False otherwise.
+    """
     dirty = []
     user_form, user = self.validateUser(data, dirty)
 
@@ -330,6 +339,9 @@ class ProfilePage(object):
     if (user_form.is_valid() and profile_form.is_valid() and
         notification_form.is_valid() and student_form.is_valid()):
       db.run_in_transaction(db.put, dirty)
+      # TODO(dcrodman): This is a pretty hacky fix for issue 1785.
+      if entities:
+        entities.append(profile)
       return True
     else:
       return False
