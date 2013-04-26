@@ -164,7 +164,6 @@ class RequestData(request_data.RequestData):
     is_mentor: is the current user a mentor in the program
     is_student: is the current user a student in the program
     is_org_admin: is the current user an org admin in the program
-    org_map: map of retrieved organizations
     org_admin_for: the organizations the current user is an admin for
     mentor_for: the organizations the current user is a mentor for
     student_info: the StudentInfo for the current user and program
