@@ -20,6 +20,7 @@ import unittest
 
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
@@ -114,3 +115,46 @@ class ProposalTest(unittest.TestCase):
     expected = []
     actual = proposal_logic.getProposalsToBeAcceptedForOrg(organization)
     self.assertEqual(actual, expected)
+
+  def testHasMentorProposalAssigned(self):
+    """Unit test for proposal_logic.hasMentorProposalAssigned function."""
+
+    # seed a new mentor
+    mentor_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.foo_organization.key()],
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'status': 'active',
+    }
+    mentor = seeder_logic.seed(
+        profile_model.GSoCProfile, mentor_properties)
+
+    # mentor has no proposals
+    has_proposal = proposal_logic.hasMentorProposalAssigned(mentor)
+    self.assertFalse(has_proposal)
+
+    # seed a new proposal and assign the mentor
+    proposal_properties = {
+        'status': 'pending',
+        'accept_as_project': False,
+        'has_mentor': True,
+        'mentor': mentor,
+        'program': self.program,
+        'org': self.foo_organization
+        }
+    proposal = seeder_logic.seed(GSoCProposal, proposal_properties)
+
+    # mentor has a proposal now
+    has_proposal = proposal_logic.hasMentorProposalAssigned(mentor)
+    self.assertTrue(has_proposal)
+
+    # mentor has also proposal for foo organization
+    has_proposal = proposal_logic.hasMentorProposalAssigned(
+        mentor, org=self.foo_organization)
+    self.assertTrue(has_proposal)
+
+    # mentor does not have proposal for bar organization
+    has_proposal = proposal_logic.hasMentorProposalAssigned(
+        mentor, org=self.bar_organization)
+    self.assertFalse(has_proposal)

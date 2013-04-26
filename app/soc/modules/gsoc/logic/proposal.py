@@ -88,3 +88,27 @@ def getProposalsQuery(keys_only=False, ancestor=None, **properties):
     query.filter(k, v)
 
   return query
+
+
+def hasMentorProposalAssigned(profile, org=None):
+  """Checks whether the specified profile has a proposal assigned. It also
+  accepts an optional argument to pass a specific organization to which
+  the proposal should belong.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    profile: the specified GSoCProfile entity or its db.Key
+    org: optional GSoCOgranization entity or its db.Key
+
+  Returns:
+    True, if the profile has at least one proposal assigned; False otherwise.
+  """
+  query = proposal_model.GSoCProposal.all(keys_only=True)
+  query.filter('mentor', profile)
+
+  if org:
+    query.filter('org', org)
+
+  return query.count() > 0
