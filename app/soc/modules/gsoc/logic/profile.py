@@ -14,6 +14,9 @@
 
 """GSoC logic for profiles."""
 
+from soc.modules.gsoc.logic import project as project_logic
+from soc.modules.gsoc.logic import proposal as proposal_logic
+
 from soc.modules.gsoc.models import profile as profile_model
 
 
@@ -53,3 +56,39 @@ def queryProfilesForUser(user):
     raise ValueError('User cannot be set to None')
 
   return profile_model.GSoCProfile.all().ancestor(user)
+
+
+# TODO(daniel): make this function transaction safe
+# TODO(daniel): it would be nice if this function returned something more
+# verbose than "False", i.e. explanation why
+def canResignAsMentorForOrg(profile, org):
+  """Tells whether the specified profile can resign from their mentor role
+  for the specified organization.
+
+  A mentor may be removed from the list of mentors of an organization, if
+  he or she does not have a proposal or a project assigned to mentor.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    profile: the specified GSoCProfile entity
+    org: the specified GSoCOrganization entity
+
+  Returns:
+    True, if the mentor is allowed to resign; False otherwise
+  """
+  # TODO(daniel): figure out what to do with "possible_mentors"
+  # user may be asked either to remove herself from those proposals or
+  # its profile has to be removed in a safe way.
+
+  if org.key() not in profile.mentor_for:
+    raise ValueError('The specified profile is not a mentor for %s' % org.name)
+
+  if proposal_logic.hasMentorProposalAssigned(profile, org=org):
+    return False
+
+  if project_logic.hasMentorProjectAssigned(profile, org=org):
+    return False
+
+  return True

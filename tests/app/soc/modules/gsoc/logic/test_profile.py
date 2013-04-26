@@ -19,6 +19,11 @@
 import unittest
 
 from soc.modules.gsoc.logic import profile as profile_logic
+
+from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.models import project as project_model
+from soc.modules.gsoc.models import proposal as proposal_model
+
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
 
@@ -113,3 +118,88 @@ class ProfileTest(unittest.TestCase):
     mentors = []
     org_admins = []
     runTest(org, mentors, org_admins)
+
+
+class CanResignAsMentorForOrgTest(unittest.TestCase):
+  """Unit tests for canResignAsMentorForOrg function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed a couple of organizations
+    self.organization_one = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+    self.organization_two = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # seed a new mentor for organization one
+    mentor_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'status': 'active',
+    }
+    self.mentor = seeder_logic.seed(
+        profile_model.GSoCProfile, mentor_properties)
+
+  def testMentorCanResign(self):
+    # mentor is not involved in organization one
+    can_resign = profile_logic.canResignAsMentorForOrg(
+        self.mentor, self.organization_one)
+    self.assertTrue(can_resign)
+
+  def testMentorWithProject(self):
+    # seed a project for organization one
+    project_properties = {
+        'scope': self.program,
+        'org': self.organization_one,
+        'mentors': [self.mentor.key()]
+        }
+    seeder_logic.seed(project_model.GSoCProject, project_properties)
+
+    # mentor is involved in organization one because of a project
+    can_resign = profile_logic.canResignAsMentorForOrg(
+        self.mentor, self.organization_one)
+    self.assertFalse(can_resign)
+
+    # add mentor role for organization two
+    self.mentor.mentor_for.append(self.organization_two.key())
+
+    # mentor is not involved in organization two
+    can_resign = profile_logic.canResignAsMentorForOrg(
+        self.mentor, self.organization_two)
+    self.assertTrue(can_resign)
+
+  def testMentorWithProposal(self):
+    # seed a new proposal and assign our mentor
+    proposal_properties = {
+        'status': 'pending',
+        'accept_as_project': False,
+        'has_mentor': True,
+        'mentor': self.mentor,
+        'program': self.program,
+        'org': self.organization_one,
+        }
+    proposal = seeder_logic.seed(
+        proposal_model.GSoCProposal, proposal_properties)
+
+    # mentor is involved in organization one because of a proposal
+    can_resign = profile_logic.canResignAsMentorForOrg(
+        self.mentor, self.organization_one)
+    self.assertFalse(can_resign)
+
+    # add mentor role for organization two
+    self.mentor.mentor_for.append(self.organization_two.key())
+
+    # mentor is not involved in organization two
+    can_resign = profile_logic.canResignAsMentorForOrg(
+        self.mentor, self.organization_two)
+    self.assertTrue(can_resign)
+
+  def testNotMentorForOrg(self):
+    # profile is not a mentor for organization two
+    with self.assertRaises(ValueError):
+      profile_logic.canResignAsMentorForOrg(
+          self.mentor, self.organization_two)
