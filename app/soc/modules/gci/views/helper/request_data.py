@@ -211,11 +211,14 @@ class RequestData(request_data.RequestData):
     self._is_mentor = self._unset
     self._is_student = self._unset
     self._is_org_admin = self._unset
-    self._org_map = self._unset
     self._mentor_for = self._unset
     self._org_admin_for = self._unset
     self._student_info = self._unset
     self._organization = self._unset
+
+    # _org_map contains only those organizations for which the current user
+    # is a mentor or org admin.
+    self._org_map = self._unset
 
   @property
   def css_path(self):
