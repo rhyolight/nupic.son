@@ -1055,11 +1055,10 @@ class AccessChecker(BaseAccessChecker):
       # Prevent a User from viewing their own connection as an org admin.
       if connection.organization.key() in self.data.url_profile.org_admin_for:
         raise AccessViolation(DEF_CONNECTION_CANNOT_BE_ACCESSED)
-        
+
   def canAccessProposalEntity(self):
     """Checks if the current user is allowed to access a Proposal entity.
     """
-
     assert isSet(self.data.proposal)
     assert isSet(self.data.proposal_org)
     assert isSet(self.data.url_user)
