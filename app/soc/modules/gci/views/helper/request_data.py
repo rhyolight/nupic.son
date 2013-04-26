@@ -429,7 +429,7 @@ class RequestData(request_data.RequestData):
     self._initOrgMap()
     if org_key not in self._org_map:
       org = db.get(org_key)
-      self._org_map[org_key] = org
+      return org
 
     return self._org_map[org_key]
 
