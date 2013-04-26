@@ -27,20 +27,26 @@ import soc.models.profile
 import soc.modules.gci.models.organization
 import soc.modules.gci.models.program
 
+# state that the task is in when it is open
+OPEN = 'Open'
+# state that the task is in when it is claimed
+CLAIMED = 'Claimed'
+
+# TODO(piyush.devel): Define constants for the rest of the statuses.
 
 # states in which a task does not show up publicly
 UNPUBLISHED = ['Unpublished', 'Unapproved']
 # states in which a student can claim a task
-CLAIMABLE = ['Open', 'Reopened']
+CLAIMABLE = [OPEN, 'Reopened']
 # States in which we consider the task to count towards the task quota of
 # the student.
-ACTIVE_CLAIMED_TASK = ['ClaimRequested', 'Claimed', 'ActionNeeded',
+ACTIVE_CLAIMED_TASK = ['ClaimRequested', CLAIMED, 'ActionNeeded',
                        'AwaitingRegistration', 'NeedsWork', 'NeedsReview']
 # States in which we consider that the student can work on a task as long
 # as the deadline has not passed.
-TASK_IN_PROGRESS = ['Claimed', 'ActionNeeded', 'NeedsWork', 'NeedsReview']
+TASK_IN_PROGRESS = [CLAIMED, 'ActionNeeded', 'NeedsWork', 'NeedsReview']
 # states in which the student is allowed to transition the task to NeedsReview
-SEND_FOR_REVIEW_ALLOWED = ['Claimed', 'ActionNeeded', 'NeedsWork']
+SEND_FOR_REVIEW_ALLOWED = [CLAIMED, 'ActionNeeded', 'NeedsWork']
 
 
 class DifficultyLevel(object):
@@ -122,11 +128,11 @@ class GCITask(db.Model):
   #: Unapproved: If Task is created by a Mentor, this is the automatically
   #:   assigned state.
   #: Unpublished: This Task is not published yet.
-  #: Open: This Task is open and ready to be claimed.
+  #: OPEN: This Task is open and ready to be claimed.
   #: Reopened: This Task has been claimed but never finished and has been
   #:   reopened.
   #: ClaimRequested: A Student has requested to claim this task.
-  #: Claimed: This Task has been claimed and someone is working on it.
+  #: CLAIMED: This Task has been claimed and someone is working on it.
   #: ActionNeeded: Work on this Task must be submitted for review within
   #:   24 hours.
   #: Closed: Work on this Task has been completed to the org's content.
@@ -140,8 +146,8 @@ class GCITask(db.Model):
   #: Invalid: The Task is deleted either by an Org Admin/Mentor
   status = db.StringProperty(
       required=True, verbose_name=ugettext('Status'),
-      choices=['Unapproved', 'Unpublished', 'Open', 'Reopened',
-               'ClaimRequested', 'Claimed', 'ActionNeeded',
+      choices=['Unapproved', 'Unpublished', OPEN, 'Reopened',
+               'ClaimRequested', CLAIMED, 'ActionNeeded',
                'Closed', 'AwaitingRegistration', 'NeedsWork',
                'NeedsReview', 'Invalid'],
       default='Unapproved')
