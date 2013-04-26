@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Logic for GSoC Project Model.
-"""
-
+"""Logic for project."""
 
 import datetime
 
 from google.appengine.api import memcache
 from google.appengine.ext import db
 
-from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models import project as project_model
 
 
 NUMBER_OF_EVALUATIONS = 2
@@ -40,7 +38,7 @@ def getFeaturedProject(current_timeline, program):
   expiry_time = datetime.timedelta(seconds=7200)
 
   def queryForProject():
-    query = GSoCProject.all()
+    query = project_model.GSoCProject.all()
     query.filter('is_featured', True)
     query.filter('program', program)
     if current_timeline == 'coding_period':
@@ -75,7 +73,7 @@ def getFeaturedProject(current_timeline, program):
 
 
 def getProjectsQuery(keys_only=False, ancestor=None, **properties):
-  """Returns the Appengine GSoCProject query object for the given set
+  """Returns project_model.GSoCProject query object for the given set
   of properties.
 
   Args:
@@ -83,7 +81,7 @@ def getProjectsQuery(keys_only=False, ancestor=None, **properties):
     properties: keyword arguments containing the properties for which the
         query must be constructed.
   """
-  q = db.Query(GSoCProject, keys_only=keys_only)
+  q = db.Query(project_model.GSoCProject, keys_only=keys_only)
 
   if ancestor:
     q.ancestor(ancestor)
@@ -95,7 +93,7 @@ def getProjectsQuery(keys_only=False, ancestor=None, **properties):
 
 
 def getAcceptedProjectsQuery(keys_only=False, ancestor=None, **properties):
-  """Returns the Appengine GSoCProject query object for the given
+  """Returns project_model.GSoCProject query object for the given
   set of properties for accepted projects.
 
   Args:
