@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GSOC logic for profiles.
-"""
+"""GSoC logic for profiles."""
 
-
-from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models import profile as profile_model
 
 
 def queryAllMentorsKeysForOrg(org, limit=1000):
@@ -31,12 +29,12 @@ def queryAllMentorsKeysForOrg(org, limit=1000):
   """
 
   # get all mentors keys first
-  query = GSoCProfile.all(keys_only=True)
+  query = profile_model.GSoCProfile.all(keys_only=True)
   query.filter('mentor_for', org)
   mentors_keys = query.fetch(limit=limit)
 
   # get all org admins keys first
-  query = GSoCProfile.all(keys_only=True)
+  query = profile_model.GSoCProfile.all(keys_only=True)
   query.filter('org_admin_for', org)
   oa_keys = query.fetch(limit=limit)
 
@@ -54,4 +52,4 @@ def queryProfilesForUser(user):
   if not user:
     raise ValueError('User cannot be set to None')
 
-  return GSoCProfile.all().ancestor(user)
+  return profile_model.GSoCProfile.all().ancestor(user)
