@@ -66,7 +66,9 @@ def canResignAsMentorForOrg(profile, org):
   for the specified organization.
 
   A mentor may be removed from the list of mentors of an organization, if
-  he or she does not have a proposal or a project assigned to mentor.
+  he or she does not have a proposal or a project assigned to mentor. Also,
+  organization administrators have cannot resign from mentorship. They have
+  to give up that role first.
 
   Please note that this function executes a non-ancestor query, so it cannot
   be safely used within transactions.
@@ -84,6 +86,9 @@ def canResignAsMentorForOrg(profile, org):
 
   if org.key() not in profile.mentor_for:
     raise ValueError('The specified profile is not a mentor for %s' % org.name)
+
+  if org.key() in profile.org_admin_for:
+    return False
 
   if proposal_logic.hasMentorProposalAssigned(profile, org=org):
     return False
