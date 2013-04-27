@@ -27,6 +27,7 @@ from soc.views import forms
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import url_patterns
 
+from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.request import GSoCRequest
 from soc.modules.gsoc.views.base import GSoCRequestHandler
@@ -148,9 +149,7 @@ class RequestPage(GSoCRequestHandler):
     request_form.cleaned_data['role'] = 'mentor'
     request_form.cleaned_data['type'] = 'Request'
 
-    q = GSoCProfile.all().filter('org_admin_for', data.organization)
-    q = q.filter('status', 'active').filter('notify_new_requests', True)
-    admins = q.fetch(1000)
+    admins = profile_logic.getOrgAdmins(data.organization)
     admin_emails = [i.email for i in admins]
 
     def create_request_txn():

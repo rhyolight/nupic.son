@@ -30,6 +30,7 @@ from soc.logic import system
 from soc.logic import site
 from soc.tasks.helper import error_handler
 
+from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -237,10 +238,7 @@ class SurveyReminderTask(object):
       # find all org admins for the project's organization
       org = project.org
 
-      q = GSoCProfile.all()
-      q.filter('status', 'active')
-      q.filter('org_admin_for', org)
-      org_admins = q.fetch(1000)
+      org_admins = profile_logic.getOrgAdmins(org)
 
       # collect email addresses for all found org admins
       org_admin_addresses = []

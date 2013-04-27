@@ -96,10 +96,7 @@ class Duplicate(Template):
     """The context for this template used in render()."""
     orgs = []
     for org in db.get(self.duplicate.orgs):
-      q = GSoCProfile.all()
-      q.filter('org_admin_for', org)
-      q.filter('status', 'active')
-      admins = q.fetch(1000)
+      admins = profile_logic.getOrgAdmins(org)
 
       # TODO(nathaniel): make this .organization call unnecessary.
       self.data.redirect.organization(organization=org)

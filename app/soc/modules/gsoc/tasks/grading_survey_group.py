@@ -30,6 +30,7 @@ from soc.logic import site
 from soc.tasks.helper import error_handler
 
 from soc.modules.gsoc.logic import grading_record
+from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -228,9 +229,7 @@ class GradingRecordTasks(object):
     mail_context['subject'] = '%s results processed for %s' %(
         survey_group_entity.name, project_entity.title)
 
-    q = GSoCProfile.all()
-    q.filter('org_admin_for', org_entity)
-    org_admins = q.fetch(1000)
+    org_admins = profile_logic.getOrgAdmins(org_entity)
 
     # collect all mentors
     mentors = db.get(project_entity.mentors)
