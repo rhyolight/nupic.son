@@ -205,6 +205,59 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
           self.mentor, self.organization_two)
 
 
+class CanResignAsOrgAdmin(unittest.TestCase):
+  """Unit tests for canResignAsOrgAdmin function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed a couple of organizations
+    self.organization_one = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+    self.organization_two = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # seed a new org admin for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'active',
+    }
+    self.org_admin = seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
+
+  def testOnlyOrgAdmin(self):
+    # the only org admin cannot resign
+    can_resign = profile_logic.canResignAsOrgAdminForOrg(
+        self.org_admin, self.organization_one)
+    self.assertFalse(can_resign)
+
+  def testMoreOrgAdmins(self):
+    # seed another org admin for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'active',
+    }
+    self.org_admin = seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
+
+    # now the org admin can resign, as there is another admin
+    can_resign = profile_logic.canResignAsOrgAdminForOrg(
+        self.org_admin, self.organization_one)
+    self.assertTrue(can_resign)
+
+  def testNotOrgAdminForOrg(self):
+    # profile is not an org admin for organization two
+    with self.assertRaises(ValueError):
+      profile_logic.canResignAsOrgAdminForOrg(
+          self.org_admin, self.organization_two)
+
 class GetOrgAdminsTest(unittest.TestCase):
   """Unit tests for getOrgAdmins function."""
 

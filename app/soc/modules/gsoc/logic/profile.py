@@ -94,6 +94,34 @@ def canResignAsMentorForOrg(profile, org):
   return True
 
 
+# TODO(daniel): make this function transaction safe
+# TODO(daniel): it would be nice if this function returned something more
+# verbose than "False", i.e. explanation why
+def canResignAsOrgAdminForOrg(profile, org):
+  """Tells whether the specified profile can resign from their organization
+  administrator role for the specified organization.
+
+  An organization administrator may be removed from the list of administrators
+  of an organization, if there is at least one other user with this role.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    profile: the specified GSoCProfile entity
+    org: the specified GSoCOrganization entity
+
+  Returns:
+    True, if the mentor is allowed to resign; False otherwise
+  """
+  if org.key() not in profile.org_admin_for:
+    raise ValueError(
+        'The specified profile is not an organization administrator for %s' % 
+        org.name)
+
+  return countOrgAdmins(org) > 1
+
+
 def getOrgAdmins(organization):
   """Returns organization administrators for the specified organization.
 
