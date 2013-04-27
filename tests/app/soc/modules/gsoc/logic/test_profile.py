@@ -203,3 +203,150 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
     with self.assertRaises(ValueError):
       profile_logic.canResignAsMentorForOrg(
           self.mentor, self.organization_two)
+
+
+class GetOrgAdminsTest(unittest.TestCase):
+  """Unit tests for getOrgAdmins function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed a couple of organizations
+    self.organization_one = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+    self.organization_two = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+  def testNoOrgAdmin(self):
+    org_admins = profile_logic.getOrgAdmins(self.organization_one)
+    self.assertEqual(org_admins, [])
+
+  def testOneOrgAdmin(self):
+    # seed a new org admin for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'active',
+    }
+    org_admin = seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
+
+    # the org admin should be returned
+    org_admins = profile_logic.getOrgAdmins(self.organization_one)
+    self.assertEqual(len(org_admins), 1)
+    self.assertEqual(org_admins[0].key(), org_admin.key())
+
+    # there is still no org admin for organization two
+    org_admins = profile_logic.getOrgAdmins(self.organization_two)
+    self.assertEqual(org_admins, [])
+
+  def testManyOrgAdmins(self):
+    # seed  org admins for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'active',
+    }
+    seeded_org_admins = set()
+    for _ in range(5):
+      seeded_org_admins.add(seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties).key())
+
+    # all org admins should be returned
+    org_admins = profile_logic.getOrgAdmins(self.organization_one)
+    self.assertEqual(len(org_admins), 5)
+    self.assertEqual(seeded_org_admins,
+        set([org_admin.key() for org_admin in org_admins]))
+
+  def testNotActiveOrgAdmin(self):
+    # seed invalid org admins for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'invalid',
+    }
+    org_admin = seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
+
+    # not active org admin not returned
+    org_admins = profile_logic.getOrgAdmins(self.organization_one)
+    self.assertEqual(org_admins, [])
+
+
+class CountOrgAdminsTest(unittest.TestCase):
+  """Unit tests for countOrgAdmins function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed a couple of organizations
+    self.organization_one = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+    self.organization_two = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+  def testNoOrgAdmin(self):
+    number = profile_logic.countOrgAdmins(self.organization_one)
+    self.assertEqual(number, 0)
+
+  def testManyOrgAdmins(self):
+    # seed  org admins for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'active',
+    }
+    seeded_org_admins = set()
+    for _ in range(5):
+      seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
+
+    # seed  org admins for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_two.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_two.key()],
+        'status': 'active',
+    }
+    seeded_org_admins = set()
+    for _ in range(3):
+      seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
+
+    # all org admins for organization one should be returned
+    number = profile_logic.countOrgAdmins(self.organization_one)
+    self.assertEqual(number, 5)
+
+    # all org admins for organization two should be returned
+    number = profile_logic.countOrgAdmins(self.organization_two)
+    self.assertEqual(number, 3)
+
+    def testNotActiveOrgAdmin(self):
+      # seed invalid org admins for organization one
+      org_admin_properties = {
+          'is_mentor': True,
+          'mentor_for': [self.organization_one.key()],
+          'is_org_admin': True,
+          'org_admin_for': [self.organization_one.key()],
+          'status': 'invalid',
+      }
+      org_admin = seeder_logic.seed(
+          profile_model.GSoCProfile, org_admin_properties)
+  
+      # seed the other org admin who is active
+      org_admin_properties['status'] = 'active'
+      org_admin = seeder_logic.seed(
+          profile_model.GSoCProfile, org_admin_properties)  
+  
+      # only active org admin counted
+      org_admins = profile_logic.countOrgAdmins(self.organization_one)
+      self.assertEqual(org_admins, 1) 

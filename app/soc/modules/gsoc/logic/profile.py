@@ -92,3 +92,39 @@ def canResignAsMentorForOrg(profile, org):
     return False
 
   return True
+
+
+def getOrgAdmins(organization):
+  """Returns organization administrators for the specified organization.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    organization: organization entity or key
+
+  Returns:
+    list of profiles of organization administrators
+  """
+  query = profile_model.GSoCProfile.all()
+  query.filter('org_admin_for', organization)
+  query.filter('status', 'active')
+  return query.fetch(limit=1000)
+
+
+def countOrgAdmins(organization):
+  """Returns the number of organization administrators for the specified
+  organization.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    organization: organization entity or key
+
+  Returns:
+    number of organization administrators
+  """
+  query = profile_model.GSoCProfile.all()
+  query.filter('org_admin_for', organization)
+  return query.count()
