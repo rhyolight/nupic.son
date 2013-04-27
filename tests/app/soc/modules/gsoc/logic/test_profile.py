@@ -402,4 +402,77 @@ class CountOrgAdminsTest(unittest.TestCase):
   
       # only active org admin counted
       org_admins = profile_logic.countOrgAdmins(self.organization_one)
-      self.assertEqual(org_admins, 1) 
+      self.assertEqual(org_admins, 1)
+
+
+class ResignAsMentorForOrgTest(unittest.TestCase):
+  """Unit tests for resignAsMentorForOrg function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed a couple of organizations
+    self.organization = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # seed a new mentor for organization one
+    mentor_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()],
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'status': 'active',
+    }
+    self.mentor = seeder_logic.seed(
+        profile_model.GSoCProfile, mentor_properties)
+
+  def testForOrgAdmin(self):
+    # make the profile an org admin for organization
+    self.mentor.is_org_admin = True
+    self.mentor.org_admin_for = [self.organization.key()]
+
+    profile_logic.resignAsMentorForOrg(self.mentor, self.organization)
+
+    # the profile should still be a mentor because of being org admin
+    self.assertTrue(self.mentor.is_mentor)
+    self.assertIn(self.organization.key(), self.mentor.mentor_for)
+
+  def testForMentorWithoutProject(self):
+    profile_logic.resignAsMentorForOrg(self.mentor, self.organization)
+
+    # the profile is not a mentor anymore
+    self.assertFalse(self.mentor.is_mentor)
+    self.assertNotIn(self.organization.key(), self.mentor.mentor_for)
+
+  def testForMentorWithProject(self):
+    # seed a project for organization one and set a mentor
+    project_properties = {
+        'scope': self.program,
+        'org': self.organization,
+        'mentors': [self.mentor.key()]
+        }
+    seeder_logic.seed(project_model.GSoCProject, project_properties)
+
+    profile_logic.resignAsMentorForOrg(self.mentor, self.organization)
+
+    # the profile should still be a mentor because of the project
+    self.assertTrue(self.mentor.is_mentor)
+    self.assertIn(self.organization.key(), self.mentor.mentor_for)
+
+  def testForMentorForTwoOrgs(self):
+    # seed another organization
+    organization_two = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # make the profile a mentor for organization two
+    self.mentor.mentor_for.append(organization_two.key())
+
+    profile_logic.resignAsMentorForOrg(self.mentor, self.organization)
+
+    # the profile is not a mentor for organization anymore
+    self.assertNotIn(self.organization.key(), self.mentor.mentor_for)
+
+    # the profile should still be a mentor for organization_two
+    self.assertTrue(self.mentor.is_mentor)
+    self.assertIn(organization_two.key(), self.mentor.mentor_for)

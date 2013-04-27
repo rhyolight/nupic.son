@@ -95,6 +95,32 @@ def canResignAsMentorForOrg(profile, org):
 
 
 # TODO(daniel): make this function transaction safe
+def resignAsMentorForOrg(profile, org):
+  """Removes mentor role for the specified organization from the specified
+  profile.
+
+  The change will take effect only if it is legal for the mentor to resign
+  from their mentorship.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    profile: profile entity or key
+    org: organization entity or key
+  """
+  if org.key() not in profile.mentor_for:
+    return
+
+  if canResignAsMentorForOrg(profile, org):
+    profile.mentor_for = [
+        key for key in profile.mentor_for if key != org.key()]
+    if not profile.mentor_for:
+      profile.is_mentor = False
+    profile.put()
+
+
+# TODO(daniel): make this function transaction safe
 # TODO(daniel): it would be nice if this function returned something more
 # verbose than "False", i.e. explanation why
 def canResignAsOrgAdminForOrg(profile, org):
