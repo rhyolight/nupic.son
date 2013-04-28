@@ -640,6 +640,88 @@ class CanBecomeMentorTest(unittest.TestCase):
     self.assertTrue(can_become)
 
 
+class CanBecomeOrgAdminTest(unittest.TestCase):
+  """Unit tests for canBecomeOrgAdmin function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed an organization
+    self.organization = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # seed a new profile
+    profile_properties = {
+        'is_mentor': False,
+        'mentor_for': [],
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'status': 'active',
+        'is_student': False
+    }
+    self.profile = seeder_logic.seed(
+        profile_model.GSoCProfile, profile_properties)
+
+  def testForInvalidProfile(self):
+    # make the profile invalid
+    self.profile.status = 'invalid'
+    self.profile.put()
+
+    # invalid profiles cannot become org admins
+    can_become = profile_logic.canBecomeOrgAdmin(self.profile)
+    self.assertFalse(can_become)
+
+  def testForStudentProfile(self):
+    # make the profile a student
+    self.profile.is_student = True
+    self.profile.put()
+
+    # student profiles cannot become org admins
+    can_become = profile_logic.canBecomeOrgAdmin(self.profile)
+    self.assertFalse(can_become)
+
+  def testForLoneProfile(self):
+    # profile with no roles can become org admins
+    can_become = profile_logic.canBecomeOrgAdmin(self.profile)
+    self.assertTrue(can_become)
+
+  def testForMentor(self):
+    # make the profile a mentor for organization
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.organization.key()]
+
+    # profile with a mentor role can become an org admin
+    can_become = profile_logic.canBecomeOrgAdmin(self.profile)
+    self.assertTrue(can_become)
+
+  def testForOrgAdmin(self):
+    # make the profile an org admin for organization
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.organization.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.organization.key()]
+
+    # profile with an org admin role can still become an org admin
+    can_become = profile_logic.canBecomeOrgAdmin(self.profile)
+    self.assertTrue(can_become)
+
+  def testForOrgAdminForAnotherOrg(self):
+    # seed another organization
+    organization_two = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # make the profile an org admin for organization two
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [organization_two.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [organization_two.key()]
+
+    # profile with an org admin role can still become an org admin
+    can_become = profile_logic.canBecomeOrgAdmin(self.profile)
+    self.assertTrue(can_become)
+
+
 class BecomeMentorForOrgTest(unittest.TestCase):
   """Unit tests for becomeMentorForOrg function."""
 
