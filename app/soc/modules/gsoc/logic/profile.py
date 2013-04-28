@@ -127,7 +127,6 @@ def resignAsMentorForOrg(profile, org):
     profile.put()
 
 
-# TODO(daniel): make this function transaction safe
 # TODO(daniel): it would be nice if this function returned something more
 # verbose than "False", i.e. explanation why
 def canResignAsOrgAdminForOrg(profile, org):
@@ -136,9 +135,6 @@ def canResignAsOrgAdminForOrg(profile, org):
 
   An organization administrator may be removed from the list of administrators
   of an organization, if there is at least one other user with this role.
-
-  Please note that this function executes a non-ancestor query, so it cannot
-  be safely used within transactions.
 
   Args:
     profile: the specified GSoCProfile entity
@@ -154,19 +150,27 @@ def canResignAsOrgAdminForOrg(profile, org):
         'The specified profile is not an organization administrator for %s' % 
         org_key.name())
 
-  return countOrgAdmins(org) > 1
+  # retrieve keys of other org admins
+  org_admin_keys = getOrgAdmins(org_key, keys_only=True)
+  org_admin_keys.remove(profile.key())
+
+  if org_admin_keys:
+    # try to retrieve the first org admin from the list
+    # therefore, it can be safely used within a XG transaction
+    if profile_model.GSoCProfile.get(org_admin_keys[0]):
+      return True
+    else:
+      return False
+  else:
+    return False
 
 
-# TODO(daniel): make this function transaction safe
 def resignAsOrgAdminForOrg(profile, org):
   """Removes organization administrator role for the specified organization
   from the specified profile.
 
   The change will take effect only if it is legal for the administrator
   to resign from the role.
-
-  Please note that this function executes a non-ancestor query, so it cannot
-  be safely used within transactions.
 
   Args:
     profile: profile entity
