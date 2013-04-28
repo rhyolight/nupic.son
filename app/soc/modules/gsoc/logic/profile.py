@@ -185,7 +185,7 @@ def resignAsOrgAdminForOrg(profile, org):
     profile.put()
 
 
-def getOrgAdmins(organization):
+def getOrgAdmins(organization, keys_only=False):
   """Returns organization administrators for the specified organization.
 
   Please note that this function executes a non-ancestor query, so it cannot
@@ -193,11 +193,12 @@ def getOrgAdmins(organization):
 
   Args:
     organization: organization entity or key
+    keys_only: If true, return only keys instead of complete entities
 
   Returns:
-    list of profiles of organization administrators
+    list of profiles entities or keys of organization administrators
   """
-  query = profile_model.GSoCProfile.all()
+  query = profile_model.GSoCProfile.all(keys_only=keys_only)
   query.filter('org_admin_for', organization)
   query.filter('status', 'active')
   return query.fetch(limit=1000)

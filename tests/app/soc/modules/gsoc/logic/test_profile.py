@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for soc.modules.gsoc.logic.profile.
-"""
-
+"""Tests for soc.modules.gsoc.logic.profile."""
 
 import unittest
 
@@ -317,6 +315,8 @@ class ResignAsOrgAdminForOrgTest(unittest.TestCase):
         'org_admin_for': [self.organization.key()],
         'status': 'active',
     }
+    seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
 
     # seed another organization
     organization_two = seeder_logic.seed(GSoCOrganization,
@@ -370,6 +370,12 @@ class GetOrgAdminsTest(unittest.TestCase):
     self.assertEqual(len(org_admins), 1)
     self.assertEqual(org_admins[0].key(), org_admin.key())
 
+    # keys_only set to True should return only the key
+    org_admins_keys = profile_logic.getOrgAdmins(
+        self.organization_one, keys_only=True)
+    self.assertEqual(len(org_admins_keys), 1)
+    self.assertEqual(org_admins_keys[0], org_admin.key())
+
     # there is still no org admin for organization two
     org_admins = profile_logic.getOrgAdmins(self.organization_two)
     self.assertEqual(org_admins, [])
@@ -394,6 +400,12 @@ class GetOrgAdminsTest(unittest.TestCase):
     self.assertEqual(seeded_org_admins,
         set([org_admin.key() for org_admin in org_admins]))
 
+    # all org admins keys should be returned if keys_only set
+    org_admins_keys = profile_logic.getOrgAdmins(
+        self.organization_one, keys_only=True)
+    self.assertEqual(len(org_admins_keys), 5)
+    self.assertEqual(seeded_org_admins, set(org_admins_keys))
+
   def testNotActiveOrgAdmin(self):
     # seed invalid org admins for organization one
     org_admin_properties = {
@@ -410,6 +422,9 @@ class GetOrgAdminsTest(unittest.TestCase):
     org_admins = profile_logic.getOrgAdmins(self.organization_one)
     self.assertEqual(org_admins, [])
 
+    # keys_only set to True does not return any keys
+    org_admins_keys = profile_logic.getOrgAdmins(self.organization_one)
+    self.assertEqual(org_admins_keys, [])
 
 class CountOrgAdminsTest(unittest.TestCase):
   """Unit tests for countOrgAdmins function."""
