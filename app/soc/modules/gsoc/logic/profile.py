@@ -74,6 +74,25 @@ def canBecomeMentor(profile):
   return profile.status == 'active' and not profile.is_student
 
 
+def becomeMentorForOrg(profile, org):
+  """Adds the specified profile as a mentor for the specified organization.
+
+  Args:
+    profile: profile entity
+    org: organization entity or key
+  """
+  if not canBecomeMentor(profile):
+    return
+
+  org_key = org if isinstance(org, db.Key) else org.key()
+
+  # the operation is idempotent: adding a mentor more than once has no effect
+  if org_key not in profile.mentor_for:
+    profile.mentor_for.append(org_key)
+    profile.is_mentor = True
+    profile.put()
+
+
 # TODO(daniel): make this function transaction safe
 # TODO(daniel): it would be nice if this function returned something more
 # verbose than "False", i.e. explanation why

@@ -580,7 +580,7 @@ class CanBecomeMentorTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+     # seed an organization
     self.organization = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
 
@@ -638,3 +638,91 @@ class CanBecomeMentorTest(unittest.TestCase):
     # profile with an org admin role can still become a mentor
     can_become = profile_logic.canBecomeMentor(self.profile)
     self.assertTrue(can_become)
+
+
+class BecomeMentorForOrgTest(unittest.TestCase):
+  """Unit tests for becomeMentorForOrg function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed a couple of organizations
+    self.organization_one = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+    self.organization_two = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # seed a new profile
+    profile_properties = {
+        'is_mentor': False,
+        'mentor_for': [],
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'status': 'active',
+        'is_student': False
+    }
+    self.profile = seeder_logic.seed(
+        profile_model.GSoCProfile, profile_properties)
+
+  def testMentorAdded(self):
+    profile_logic.becomeMentorForOrg(self.profile, self.organization_one)
+
+    # the profile should be a mentor for organization one
+    self.assertTrue(self.profile.is_mentor)
+    self.assertIn(self.organization_one.key(), self.profile.mentor_for)
+
+    # the profile is not a mentor for organization two
+    self.assertNotIn(self.organization_two.key(), self.profile.mentor_for)
+
+  def testMentorForAnotherOrgAdded(self):
+    # make the profile a mentor for organization two
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.organization_two.key()]
+    self.profile.put()
+
+    profile_logic.becomeMentorForOrg(self.profile, self.organization_one)
+
+    # the profile should be a mentor for organization one
+    self.assertTrue(self.profile.is_mentor)
+    self.assertIn(self.organization_one.key(), self.profile.mentor_for)
+
+  def testForExistingMentor(self):
+    # make the profile a mentor for organization one
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.organization_one.key()]
+    self.profile.put()
+
+    profile_logic.becomeMentorForOrg(self.profile, self.organization_one)
+
+    # the profile should still be a mentor for organization one
+    self.assertTrue(self.profile.is_mentor)
+    self.assertIn(self.organization_one.key(), self.profile.mentor_for)
+
+  def testForOrgAdminForAnotherOrgAdded(self):
+    # make the profile an org admin for organization two
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.organization_two.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.organization_two.key()]
+    self.profile.put()
+
+    profile_logic.becomeMentorForOrg(self.profile, self.organization_one)
+
+    # the profile should now be mentor for organization one
+    self.assertTrue(self.profile.is_mentor)
+    self.assertIn(self.organization_one.key(), self.profile.mentor_for)
+
+  def testProfileNotAllowedToBecomeMentor(self):
+    # make the profile a student
+    self.profile.is_student = True
+    self.profile.put()
+
+    profile_logic.becomeMentorForOrg(self.profile, self.organization_one)
+
+    # the profile should not become a mentor
+    self.assertFalse(self.profile.is_mentor)
+    self.assertNotIn(self.organization_one.key(), self.profile.mentor_for)
+
+    # the profile should still be a student
+    self.assertTrue(self.profile.is_student)
