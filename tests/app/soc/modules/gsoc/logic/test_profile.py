@@ -205,7 +205,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
           self.mentor, self.organization_two)
 
 
-class CanResignAsOrgAdmin(unittest.TestCase):
+class CanResignAsOrgAdminTest(unittest.TestCase):
   """Unit tests for canResignAsOrgAdmin function."""
 
   def setUp(self):
@@ -257,6 +257,84 @@ class CanResignAsOrgAdmin(unittest.TestCase):
     with self.assertRaises(ValueError):
       profile_logic.canResignAsOrgAdminForOrg(
           self.org_admin, self.organization_two)
+
+
+class ResignAsOrgAdminForOrgTest(unittest.TestCase):
+  """Unit tests for resignAsOrgAdminForOrg function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed a couple of organizations
+    self.organization = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+    self.organization = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # seed a new org admin for organization
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization.key()],
+        'status': 'active',
+    }
+    self.org_admin = seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
+
+  def testForOnlyOrgAdmin(self):
+    profile_logic.resignAsOrgAdminForOrg(self.org_admin, self.organization)
+
+    # the profile should still be an org admin
+    self.assertTrue(self.org_admin.is_org_admin)
+    self.assertIn(self.organization.key(), self.org_admin.org_admin_for)
+
+  def testForTwoOrgAdmins(self):
+    # seed another org admin for organization
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization.key()],
+        'status': 'active',
+    }
+    seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
+
+    profile_logic.resignAsOrgAdminForOrg(self.org_admin, self.organization)
+
+    # the profile should not be an org admin anymore
+    self.assertFalse(self.org_admin.is_org_admin)
+    self.assertNotIn(self.organization.key(), self.org_admin.org_admin_for)
+
+  def testForOrgAdminForTwoOrgs(self):
+    # seed another org admin for organization
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization.key()],
+        'status': 'active',
+    }
+
+    # seed another organization
+    organization_two = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # make the profile an org admin for organization two
+    self.org_admin.mentor_for.append(organization_two.key())
+    self.org_admin.org_admin_for.append(organization_two.key())
+
+    profile_logic.resignAsOrgAdminForOrg(self.org_admin, self.organization)
+
+    # the profile is not an org admin for organization anymore
+    self.assertNotIn(self.organization.key(), self.org_admin.org_admin_for)
+
+    # the profile should still be an org admin for organization two
+    self.assertTrue(self.org_admin.is_org_admin)
+    self.assertIn(organization_two.key(), self.org_admin.org_admin_for)
+
 
 class GetOrgAdminsTest(unittest.TestCase):
   """Unit tests for getOrgAdmins function."""

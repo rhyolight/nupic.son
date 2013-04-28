@@ -14,6 +14,8 @@
 
 """GSoC logic for profiles."""
 
+from google.appengine.ext import db
+
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 
@@ -145,12 +147,42 @@ def canResignAsOrgAdminForOrg(profile, org):
   Returns:
     True, if the mentor is allowed to resign; False otherwise
   """
-  if org.key() not in profile.org_admin_for:
+  org_key = org if isinstance(org, db.Key) else org.key()
+
+  if org_key not in profile.org_admin_for:
     raise ValueError(
         'The specified profile is not an organization administrator for %s' % 
-        org.name)
+        org_key.name())
 
   return countOrgAdmins(org) > 1
+
+
+# TODO(daniel): make this function transaction safe
+def resignAsOrgAdminForOrg(profile, org):
+  """Removes organization administrator role for the specified organization
+  from the specified profile.
+
+  The change will take effect only if it is legal for the administrator
+  to resign from the role.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    profile: profile entity
+    org: organization entity or key
+  """
+  org_key = org if isinstance(org, db.Key) else org.key()
+
+  if org_key not in profile.org_admin_for:
+    return
+
+  if canResignAsOrgAdminForOrg(profile, org_key):
+    profile.org_admin_for = [
+        key for key in profile.org_admin_for if key != org_key]
+    if not profile.org_admin_for:
+      profile.is_org_admin = False
+    profile.put()
 
 
 def getOrgAdmins(organization):
