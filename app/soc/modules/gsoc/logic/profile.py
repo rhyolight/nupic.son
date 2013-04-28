@@ -60,6 +60,20 @@ def queryProfilesForUser(user):
   return profile_model.GSoCProfile.all().ancestor(user)
 
 
+def canBecomeMentor(profile):
+  """Tells whether the specified profile can become a mentor.
+
+  Args:
+    profile: profile entity
+
+  Returns:
+    True, if the profile is allowed to become a mentor; False otherwise
+  """
+  # TODO(daniel): take into account and simplify somehow checking if
+  # the profile has signed mentor agreement
+  return profile.status == 'active' and not profile.is_student
+
+
 # TODO(daniel): make this function transaction safe
 # TODO(daniel): it would be nice if this function returned something more
 # verbose than "False", i.e. explanation why

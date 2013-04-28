@@ -524,6 +524,7 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
     # make the profile an org admin for organization
     self.mentor.is_org_admin = True
     self.mentor.org_admin_for = [self.organization.key()]
+    self.mentor.put()
 
     profile_logic.resignAsMentorForOrg(self.mentor, self.organization)
 
@@ -560,6 +561,7 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
 
     # make the profile a mentor for organization two
     self.mentor.mentor_for.append(organization_two.key())
+    self.mentor.put()
 
     profile_logic.resignAsMentorForOrg(self.mentor, self.organization)
 
@@ -569,3 +571,70 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
     # the profile should still be a mentor for organization_two
     self.assertTrue(self.mentor.is_mentor)
     self.assertIn(organization_two.key(), self.mentor.mentor_for)
+
+
+class CanBecomeMentorTest(unittest.TestCase):
+  """Unit tests for canBecomeMentor function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed a couple of organizations
+    self.organization = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # seed a new profile
+    profile_properties = {
+        'is_mentor': False,
+        'mentor_for': [],
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'status': 'active',
+        'is_student': False
+    }
+    self.profile = seeder_logic.seed(
+        profile_model.GSoCProfile, profile_properties)
+
+  def testForInvalidProfile(self):
+    # make the profile invalid
+    self.profile.status = 'invalid'
+    self.profile.put()
+
+    # invalid profiles cannot become mentors
+    can_become = profile_logic.canBecomeMentor(self.profile)
+    self.assertFalse(can_become)
+
+  def testForStudentProfile(self):
+    # make the profile invalid
+    self.profile.is_student = True
+    self.profile.put()
+
+    # student profiles cannot become mentors
+    can_become = profile_logic.canBecomeMentor(self.profile)
+    self.assertFalse(can_become)
+
+  def testForLoneProfile(self):
+    # profile with no roles can become mentors
+    can_become = profile_logic.canBecomeMentor(self.profile)
+    self.assertTrue(can_become)
+
+  def testForMentor(self):
+    # make the profile a mentor for organization
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.organization.key()]
+
+    # profile with a mentor role can still become a mentor
+    can_become = profile_logic.canBecomeMentor(self.profile)
+    self.assertTrue(can_become)
+
+  def testForOrgAdmin(self):
+    # make the profile an org admin for organization
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.organization.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.organization.key()]
+
+    # profile with an org admin role can still become a mentor
+    can_become = profile_logic.canBecomeMentor(self.profile)
+    self.assertTrue(can_become)
