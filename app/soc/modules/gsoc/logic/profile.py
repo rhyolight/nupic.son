@@ -108,6 +108,29 @@ def canBecomeOrgAdmin(profile):
   return profile.status == 'active' and not profile.is_student
 
 
+def becomeOrgAdminForOrg(profile, org):
+  """Adds the specified profile as an organization administrator
+  for the specified organization.
+
+  Args:
+    profile: profile entity
+    org: organization entity or key
+  """
+  if not canBecomeMentor(profile) or not canBecomeOrgAdmin(profile):
+    return
+
+  org_key = org if isinstance(org, db.Key) else org.key()
+
+  # the operation is idempotent: adding more than once has no effect
+  if org_key not in profile.org_admin_for:
+    profile.org_admin_for.append(org_key)
+    profile.is_org_admin = True
+    profile.mentor_for.append(org_key)
+    profile.mentor_for = list(set(profile.mentor_for))
+    profile.is_mentor = True
+    profile.put()
+
+
 # TODO(daniel): make this function transaction safe
 # TODO(daniel): it would be nice if this function returned something more
 # verbose than "False", i.e. explanation why

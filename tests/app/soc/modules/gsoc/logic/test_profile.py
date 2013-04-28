@@ -808,3 +808,115 @@ class BecomeMentorForOrgTest(unittest.TestCase):
 
     # the profile should still be a student
     self.assertTrue(self.profile.is_student)
+
+
+class BecomeOrgAdminForOrgTest(unittest.TestCase):
+  """Unit tests for becomeOrgAdminForOrg function."""
+
+  def _assertOrgAdmin(self, profile, org):
+    self.assertTrue(profile.is_org_admin)
+    self.assertIn(org.key(), profile.org_admin_for)
+    self.assertTrue(profile.is_mentor)
+    self.assertIn(org.key(), profile.mentor_for)
+
+  def _assertNoRole(self, profile, org):
+    self.assertNotIn(org.key(), profile.org_admin_for)
+    if self.profile.is_org_admin:
+      self.assertNotEqual(len(profile.org_admin_for), 0)
+    else:
+      self.assertEqual(profile.org_admin_for, [])
+
+    self.assertNotIn(org.key(), profile.mentor_for)
+    if self.profile.is_mentor:
+      self.assertNotEqual(len(profile.mentor_for), 0)
+    else:
+      self.assertEqual(profile.mentor_for, [])
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed a couple of organizations
+    self.organization_one = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+    self.organization_two = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+    # seed a new profile
+    profile_properties = {
+        'is_mentor': False,
+        'mentor_for': [],
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'status': 'active',
+        'is_student': False
+    }
+    self.profile = seeder_logic.seed(
+        profile_model.GSoCProfile, profile_properties)
+
+  def testOrgAdminAdded(self):
+    profile_logic.becomeOrgAdminForOrg(self.profile, self.organization_one)
+
+    # profile should become org admin for organization one
+    self._assertOrgAdmin(self.profile, self.organization_one)
+
+    # profile should not have any role for organization two
+    self._assertNoRole(self.profile, self.organization_two)
+
+  def testMentorForAnotherOrgAdded(self):
+    # make the profile a mentor for organization two
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.organization_two.key()]
+    self.profile.put()
+
+    profile_logic.becomeOrgAdminForOrg(self.profile, self.organization_one)
+
+    # profile should become org admin for organization one
+    self._assertOrgAdmin(self.profile, self.organization_one)
+
+    # profile should still be only mentor for organization two
+    self.assertNotIn(self.organization_two.key(), self.profile.org_admin_for)
+    self.assertTrue(self.profile.is_mentor)
+    self.assertIn(self.organization_two.key(), self.profile.mentor_for)
+
+  def testOrgAdminForAnotherOrgAdded(self):
+    # make the profile an org admin for organization two
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.organization_two.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.organization_two.key()]
+    self.profile.put()
+
+    profile_logic.becomeOrgAdminForOrg(self.profile, self.organization_one)
+
+    # profile should become org admin for organization one
+    self._assertOrgAdmin(self.profile, self.organization_one)
+
+    # profile should still be an org admin for organization two
+    self._assertOrgAdmin(self.profile, self.organization_two)
+
+  def testForExistingOrgAdmin(self):
+    # make the profile an org admin for organization one
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.organization_one.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.organization_one.key()]
+    self.profile.put()
+
+    profile_logic.becomeOrgAdminForOrg(self.profile, self.organization_one)
+
+    # profile should still be an org admin for organization one
+    self._assertOrgAdmin(self.profile, self.organization_one)
+
+  def testProfileNotAllowedToBecomeOrgAdmin(self):
+    # make the profile a student
+    self.profile.is_student = True
+    self.profile.put()
+
+    profile_logic.becomeOrgAdminForOrg(self.profile, self.organization_one)
+
+    # the profile should not become org admin for ogranization one
+    self._assertNoRole(self.profile, self.organization_one)
+
+    # the profile should still be a student
+    self.assertTrue(self.profile.is_student)
