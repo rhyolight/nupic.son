@@ -49,6 +49,16 @@ class User(soc.models.linkable.Linkable):
      Query of the Response model 'respondent' reference.
   """
 
+  @property
+  def url_id(self):
+    """Property that a unique identifier of the user that is to be used
+    as a part of various URLs.
+
+    Returns:
+      URL id property
+    """
+    return self.key().name()
+
   #: A Google Account, which also provides a "private" email address.
   #: This email address is only used in an automated fashion by 
   #: Melange web applications and is not made visible to other users 
