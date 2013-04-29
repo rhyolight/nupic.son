@@ -137,7 +137,7 @@ class ProfileTest(unittest.TestCase):
 
     # Task is created by another mentor, but modified by given mentor.
     task_properties = {'modified_by': foo_mentor, 'created_by': bar_mentor}
-    task = gci_task_utils.GCITaskHelper(student.scope.createTask(
+    task = gci_task_utils.GCITaskHelper(student.scope).createTask(
         task_model.CLAIMED, self.foo_org, bar_mentor,
 	student, task_properties)
     self.assertTrue(profile_logic.hasCreatedOrModifiedTask(foo_mentor))
