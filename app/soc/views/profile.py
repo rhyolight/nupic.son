@@ -340,7 +340,7 @@ class ProfilePage(object):
         notification_form.is_valid() and student_form.is_valid()):
       db.run_in_transaction(db.put, dirty)
       # TODO(dcrodman): This is a pretty hacky fix for issue 1785.
-      if entities:
+      if entities is not None:
         entities.append(profile)
       return True
     else:
