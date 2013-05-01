@@ -483,6 +483,7 @@ class StringListProperty(db.StringListProperty):
     return value
 
 
+# TODO(daniel): remove this class when django is updated to at least 1.4
 class URLField(forms.URLField):
   """Custom implementation of URLField.
 
