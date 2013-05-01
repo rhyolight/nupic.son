@@ -1283,6 +1283,8 @@ class OrgConnectionComponent(Component):
         lambda e, *args: '%s' % e.organization.name)
     list_config.addPlainTextColumn('link_id', 'Link Id',
         lambda e, *args: e.parent().link_id)
+    list_config.addPlainTextColumn('name', 'Name',
+        lambda e, *args: '%s' % e.parent().name, hidden=True)
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: e.getUserFriendlyRole(),
         options=CONN_ROLE_OPTS)
