@@ -51,11 +51,14 @@ class User(soc.models.linkable.Linkable):
 
   @property
   def url_id(self):
-    """Property that a unique identifier of the user that is to be used
-    as a part of various URLs.
+    """URL ID property.
+
+    It provides a unique string identifier of the user that is to be used
+    as a part of various URLs. The returned string is URL safe and can be
+    validated by linkable.LINK_ID_REGEX regular expression.
 
     Returns:
-      URL id property
+      a string containing URL ID property
     """
     return self.key().name()
 
