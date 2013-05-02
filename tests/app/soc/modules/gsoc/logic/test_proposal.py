@@ -151,10 +151,10 @@ class ProposalTest(unittest.TestCase):
 
     # mentor has also proposal for foo organization
     has_proposal = proposal_logic.hasMentorProposalAssigned(
-        mentor, org=self.foo_organization)
+        mentor, org_key=self.foo_organization.key())
     self.assertTrue(has_proposal)
 
     # mentor does not have proposal for bar organization
     has_proposal = proposal_logic.hasMentorProposalAssigned(
-        mentor, org=self.bar_organization)
+        mentor, org_key=self.bar_organization.key())
     self.assertFalse(has_proposal)

@@ -145,7 +145,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
   def testMentorCanResign(self):
     # mentor is not involved in organization one
     can_resign = profile_logic.canResignAsMentorForOrg(
-        self.mentor, self.organization_one)
+        self.mentor, self.organization_one.key())
     self.assertTrue(can_resign)
 
   def testMentorWithProject(self):
@@ -159,7 +159,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
 
     # mentor is involved in organization one because of a project
     can_resign = profile_logic.canResignAsMentorForOrg(
-        self.mentor, self.organization_one)
+        self.mentor, self.organization_one.key())
     self.assertFalse(can_resign)
 
     # add mentor role for organization two
@@ -167,7 +167,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
 
     # mentor is not involved in organization two
     can_resign = profile_logic.canResignAsMentorForOrg(
-        self.mentor, self.organization_two)
+        self.mentor, self.organization_two.key())
     self.assertTrue(can_resign)
 
   def testMentorWithProposal(self):
@@ -185,7 +185,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
 
     # mentor is involved in organization one because of a proposal
     can_resign = profile_logic.canResignAsMentorForOrg(
-        self.mentor, self.organization_one)
+        self.mentor, self.organization_one.key())
     self.assertFalse(can_resign)
 
     # add mentor role for organization two
@@ -193,14 +193,14 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
 
     # mentor is not involved in organization two
     can_resign = profile_logic.canResignAsMentorForOrg(
-        self.mentor, self.organization_two)
+        self.mentor, self.organization_two.key())
     self.assertTrue(can_resign)
 
   def testNotMentorForOrg(self):
     # profile is not a mentor for organization two
     with self.assertRaises(ValueError):
       profile_logic.canResignAsMentorForOrg(
-          self.mentor, self.organization_two)
+          self.mentor, self.organization_two.key())
 
 
 class CanResignAsOrgAdminTest(unittest.TestCase):
@@ -230,7 +230,7 @@ class CanResignAsOrgAdminTest(unittest.TestCase):
   def testOnlyOrgAdmin(self):
     # the only org admin cannot resign
     can_resign = profile_logic.canResignAsOrgAdminForOrg(
-        self.org_admin, self.organization_one)
+        self.org_admin, self.organization_one.key())
     self.assertFalse(can_resign)
 
   def testMoreOrgAdmins(self):
@@ -247,14 +247,14 @@ class CanResignAsOrgAdminTest(unittest.TestCase):
 
     # now the org admin can resign, as there is another admin
     can_resign = profile_logic.canResignAsOrgAdminForOrg(
-        self.org_admin, self.organization_one)
+        self.org_admin, self.organization_one.key())
     self.assertTrue(can_resign)
 
   def testNotOrgAdminForOrg(self):
     # profile is not an org admin for organization two
     with self.assertRaises(ValueError):
       profile_logic.canResignAsOrgAdminForOrg(
-          self.org_admin, self.organization_two)
+          self.org_admin, self.organization_two.key())
 
 
 class ResignAsOrgAdminForOrgTest(unittest.TestCase):
@@ -282,7 +282,8 @@ class ResignAsOrgAdminForOrgTest(unittest.TestCase):
         profile_model.GSoCProfile, org_admin_properties)
 
   def testForOnlyOrgAdmin(self):
-    profile_logic.resignAsOrgAdminForOrg(self.org_admin, self.organization)
+    profile_logic.resignAsOrgAdminForOrg(
+        self.org_admin, self.organization.key())
 
     # the profile should still be an org admin
     self.assertTrue(self.org_admin.is_org_admin)
@@ -300,7 +301,8 @@ class ResignAsOrgAdminForOrgTest(unittest.TestCase):
     seeder_logic.seed(
         profile_model.GSoCProfile, org_admin_properties)
 
-    profile_logic.resignAsOrgAdminForOrg(self.org_admin, self.organization)
+    profile_logic.resignAsOrgAdminForOrg(
+        self.org_admin, self.organization.key())
 
     # the profile should not be an org admin anymore
     self.assertFalse(self.org_admin.is_org_admin)
@@ -326,7 +328,8 @@ class ResignAsOrgAdminForOrgTest(unittest.TestCase):
     self.org_admin.mentor_for.append(organization_two.key())
     self.org_admin.org_admin_for.append(organization_two.key())
 
-    profile_logic.resignAsOrgAdminForOrg(self.org_admin, self.organization)
+    profile_logic.resignAsOrgAdminForOrg(
+        self.org_admin, self.organization.key())
 
     # the profile is not an org admin for organization anymore
     self.assertNotIn(self.organization.key(), self.org_admin.org_admin_for)
@@ -350,7 +353,7 @@ class GetOrgAdminsTest(unittest.TestCase):
         {'program': self.program})
 
   def testNoOrgAdmin(self):
-    org_admins = profile_logic.getOrgAdmins(self.organization_one)
+    org_admins = profile_logic.getOrgAdmins(self.organization_one.key())
     self.assertEqual(org_admins, [])
 
   def testOneOrgAdmin(self):
@@ -366,18 +369,18 @@ class GetOrgAdminsTest(unittest.TestCase):
         profile_model.GSoCProfile, org_admin_properties)
 
     # the org admin should be returned
-    org_admins = profile_logic.getOrgAdmins(self.organization_one)
+    org_admins = profile_logic.getOrgAdmins(self.organization_one.key())
     self.assertEqual(len(org_admins), 1)
     self.assertEqual(org_admins[0].key(), org_admin.key())
 
     # keys_only set to True should return only the key
     org_admins_keys = profile_logic.getOrgAdmins(
-        self.organization_one, keys_only=True)
+        self.organization_one.key(), keys_only=True)
     self.assertEqual(len(org_admins_keys), 1)
     self.assertEqual(org_admins_keys[0], org_admin.key())
 
     # there is still no org admin for organization two
-    org_admins = profile_logic.getOrgAdmins(self.organization_two)
+    org_admins = profile_logic.getOrgAdmins(self.organization_two.key())
     self.assertEqual(org_admins, [])
 
   def testManyOrgAdmins(self):
@@ -395,14 +398,14 @@ class GetOrgAdminsTest(unittest.TestCase):
         profile_model.GSoCProfile, org_admin_properties).key())
 
     # all org admins should be returned
-    org_admins = profile_logic.getOrgAdmins(self.organization_one)
+    org_admins = profile_logic.getOrgAdmins(self.organization_one.key())
     self.assertEqual(len(org_admins), 5)
     self.assertEqual(seeded_org_admins,
         set([org_admin.key() for org_admin in org_admins]))
 
     # all org admins keys should be returned if keys_only set
     org_admins_keys = profile_logic.getOrgAdmins(
-        self.organization_one, keys_only=True)
+        self.organization_one.key(), keys_only=True)
     self.assertEqual(len(org_admins_keys), 5)
     self.assertEqual(seeded_org_admins, set(org_admins_keys))
 
@@ -419,11 +422,12 @@ class GetOrgAdminsTest(unittest.TestCase):
         profile_model.GSoCProfile, org_admin_properties)
 
     # not active org admin not returned
-    org_admins = profile_logic.getOrgAdmins(self.organization_one)
+    org_admins = profile_logic.getOrgAdmins(self.organization_one.key())
     self.assertEqual(org_admins, [])
 
     # keys_only set to True does not return any keys
-    org_admins_keys = profile_logic.getOrgAdmins(self.organization_one)
+    org_admins_keys = profile_logic.getOrgAdmins(
+        self.organization_one.key(), keys_only=True)
     self.assertEqual(org_admins_keys, [])
 
 class CountOrgAdminsTest(unittest.TestCase):
@@ -440,7 +444,7 @@ class CountOrgAdminsTest(unittest.TestCase):
         {'program': self.program})
 
   def testNoOrgAdmin(self):
-    number = profile_logic.countOrgAdmins(self.organization_one)
+    number = profile_logic.countOrgAdmins(self.organization_one.key())
     self.assertEqual(number, 0)
 
   def testManyOrgAdmins(self):
@@ -469,11 +473,11 @@ class CountOrgAdminsTest(unittest.TestCase):
       seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
 
     # all org admins for organization one should be returned
-    number = profile_logic.countOrgAdmins(self.organization_one)
+    number = profile_logic.countOrgAdmins(self.organization_one.key())
     self.assertEqual(number, 5)
 
     # all org admins for organization two should be returned
-    number = profile_logic.countOrgAdmins(self.organization_two)
+    number = profile_logic.countOrgAdmins(self.organization_two.key())
     self.assertEqual(number, 3)
 
     def testNotActiveOrgAdmin(self):
@@ -494,7 +498,7 @@ class CountOrgAdminsTest(unittest.TestCase):
           profile_model.GSoCProfile, org_admin_properties)  
   
       # only active org admin counted
-      org_admins = profile_logic.countOrgAdmins(self.organization_one)
+      org_admins = profile_logic.countOrgAdmins(self.organization_one.key())
       self.assertEqual(org_admins, 1)
 
 
@@ -526,14 +530,14 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
     self.mentor.org_admin_for = [self.organization.key()]
     self.mentor.put()
 
-    profile_logic.resignAsMentorForOrg(self.mentor, self.organization)
+    profile_logic.resignAsMentorForOrg(self.mentor, self.organization.key())
 
     # the profile should still be a mentor because of being org admin
     self.assertTrue(self.mentor.is_mentor)
     self.assertIn(self.organization.key(), self.mentor.mentor_for)
 
   def testForMentorWithoutProject(self):
-    profile_logic.resignAsMentorForOrg(self.mentor, self.organization)
+    profile_logic.resignAsMentorForOrg(self.mentor, self.organization.key())
 
     # the profile is not a mentor anymore
     self.assertFalse(self.mentor.is_mentor)
@@ -548,7 +552,7 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
         }
     seeder_logic.seed(project_model.GSoCProject, project_properties)
 
-    profile_logic.resignAsMentorForOrg(self.mentor, self.organization)
+    profile_logic.resignAsMentorForOrg(self.mentor, self.organization.key())
 
     # the profile should still be a mentor because of the project
     self.assertTrue(self.mentor.is_mentor)
@@ -563,7 +567,7 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
     self.mentor.mentor_for.append(organization_two.key())
     self.mentor.put()
 
-    profile_logic.resignAsMentorForOrg(self.mentor, self.organization)
+    profile_logic.resignAsMentorForOrg(self.mentor, self.organization.key())
 
     # the profile is not a mentor for organization anymore
     self.assertNotIn(self.organization.key(), self.mentor.mentor_for)
@@ -748,7 +752,7 @@ class BecomeMentorForOrgTest(unittest.TestCase):
         profile_model.GSoCProfile, profile_properties)
 
   def testMentorAdded(self):
-    profile_logic.becomeMentorForOrg(self.profile, self.organization_one)
+    profile_logic.becomeMentorForOrg(self.profile, self.organization_one.key())
 
     # the profile should be a mentor for organization one
     self.assertTrue(self.profile.is_mentor)
@@ -763,7 +767,7 @@ class BecomeMentorForOrgTest(unittest.TestCase):
     self.profile.mentor_for = [self.organization_two.key()]
     self.profile.put()
 
-    profile_logic.becomeMentorForOrg(self.profile, self.organization_one)
+    profile_logic.becomeMentorForOrg(self.profile, self.organization_one.key())
 
     # the profile should be a mentor for organization one
     self.assertTrue(self.profile.is_mentor)
@@ -775,7 +779,7 @@ class BecomeMentorForOrgTest(unittest.TestCase):
     self.profile.mentor_for = [self.organization_one.key()]
     self.profile.put()
 
-    profile_logic.becomeMentorForOrg(self.profile, self.organization_one)
+    profile_logic.becomeMentorForOrg(self.profile, self.organization_one.key())
 
     # the profile should still be a mentor for organization one
     self.assertTrue(self.profile.is_mentor)
@@ -789,7 +793,7 @@ class BecomeMentorForOrgTest(unittest.TestCase):
     self.profile.org_admin_for = [self.organization_two.key()]
     self.profile.put()
 
-    profile_logic.becomeMentorForOrg(self.profile, self.organization_one)
+    profile_logic.becomeMentorForOrg(self.profile, self.organization_one.key())
 
     # the profile should now be mentor for organization one
     self.assertTrue(self.profile.is_mentor)
@@ -800,7 +804,7 @@ class BecomeMentorForOrgTest(unittest.TestCase):
     self.profile.is_student = True
     self.profile.put()
 
-    profile_logic.becomeMentorForOrg(self.profile, self.organization_one)
+    profile_logic.becomeMentorForOrg(self.profile, self.organization_one.key())
 
     # the profile should not become a mentor
     self.assertFalse(self.profile.is_mentor)
@@ -855,7 +859,8 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
         profile_model.GSoCProfile, profile_properties)
 
   def testOrgAdminAdded(self):
-    profile_logic.becomeOrgAdminForOrg(self.profile, self.organization_one)
+    profile_logic.becomeOrgAdminForOrg(
+        self.profile, self.organization_one.key())
 
     # profile should become org admin for organization one
     self._assertOrgAdmin(self.profile, self.organization_one)
@@ -869,7 +874,8 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
     self.profile.mentor_for = [self.organization_two.key()]
     self.profile.put()
 
-    profile_logic.becomeOrgAdminForOrg(self.profile, self.organization_one)
+    profile_logic.becomeOrgAdminForOrg(
+        self.profile, self.organization_one.key())
 
     # profile should become org admin for organization one
     self._assertOrgAdmin(self.profile, self.organization_one)
@@ -887,7 +893,8 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
     self.profile.org_admin_for = [self.organization_two.key()]
     self.profile.put()
 
-    profile_logic.becomeOrgAdminForOrg(self.profile, self.organization_one)
+    profile_logic.becomeOrgAdminForOrg(
+        self.profile, self.organization_one.key())
 
     # profile should become org admin for organization one
     self._assertOrgAdmin(self.profile, self.organization_one)
@@ -903,7 +910,8 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
     self.profile.org_admin_for = [self.organization_one.key()]
     self.profile.put()
 
-    profile_logic.becomeOrgAdminForOrg(self.profile, self.organization_one)
+    profile_logic.becomeOrgAdminForOrg(
+        self.profile, self.organization_one.key())
 
     # profile should still be an org admin for organization one
     self._assertOrgAdmin(self.profile, self.organization_one)
@@ -913,7 +921,8 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
     self.profile.is_student = True
     self.profile.put()
 
-    profile_logic.becomeOrgAdminForOrg(self.profile, self.organization_one)
+    profile_logic.becomeOrgAdminForOrg(
+        self.profile, self.organization_one.key())
 
     # the profile should not become org admin for ogranization one
     self._assertNoRole(self.profile, self.organization_one)

@@ -176,7 +176,7 @@ def getProjectsForOrgs(orgs, limit=1000):
   return q.fetch(limit)
 
 
-def hasMentorProjectAssigned(profile, org=None):
+def hasMentorProjectAssigned(profile, org_key=None):
   """Checks whether the specified profile has a project assigned. It also
   accepts an optional argument to pass a specific organization to which
   the project should belong.
@@ -186,7 +186,7 @@ def hasMentorProjectAssigned(profile, org=None):
 
   Args:
     profile: the specified GSoCProfile entity or its db.Key
-    org: optional GSoCOgranization entity or its db.Key
+    org_key: optional organization key
 
   Returns:
     True, if the profile has at least one project assigned; False otherwise.
@@ -194,7 +194,7 @@ def hasMentorProjectAssigned(profile, org=None):
   query = project_model.GSoCProject.all()
   query.filter('mentors', profile)
 
-  if org:
-    query.filter('org', org)
+  if org_key:
+    query.filter('org', org_key)
 
   return query.count() > 0

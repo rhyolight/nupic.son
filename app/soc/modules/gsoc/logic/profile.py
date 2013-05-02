@@ -74,17 +74,15 @@ def canBecomeMentor(profile):
   return profile.status == 'active' and not profile.is_student
 
 
-def becomeMentorForOrg(profile, org):
+def becomeMentorForOrg(profile, org_key):
   """Adds the specified profile as a mentor for the specified organization.
 
   Args:
     profile: profile entity
-    org: organization entity or key
+    org_key: organization key
   """
   if not canBecomeMentor(profile):
     return
-
-  org_key = org if isinstance(org, db.Key) else org.key()
 
   # the operation is idempotent: adding a mentor more than once has no effect
   if org_key not in profile.mentor_for:
@@ -108,18 +106,16 @@ def canBecomeOrgAdmin(profile):
   return profile.status == 'active' and not profile.is_student
 
 
-def becomeOrgAdminForOrg(profile, org):
+def becomeOrgAdminForOrg(profile, org_key):
   """Adds the specified profile as an organization administrator
   for the specified organization.
 
   Args:
     profile: profile entity
-    org: organization entity or key
+    org_key: organization key
   """
   if not canBecomeMentor(profile) or not canBecomeOrgAdmin(profile):
     return
-
-  org_key = org if isinstance(org, db.Key) else org.key()
 
   # the operation is idempotent: adding more than once has no effect
   if org_key not in profile.org_admin_for:
@@ -134,7 +130,7 @@ def becomeOrgAdminForOrg(profile, org):
 # TODO(daniel): make this function transaction safe
 # TODO(daniel): it would be nice if this function returned something more
 # verbose than "False", i.e. explanation why
-def canResignAsMentorForOrg(profile, org):
+def canResignAsMentorForOrg(profile, org_key):
   """Tells whether the specified profile can resign from their mentor role
   for the specified organization.
 
@@ -148,7 +144,7 @@ def canResignAsMentorForOrg(profile, org):
 
   Args:
     profile: the specified GSoCProfile entity
-    org: the specified GSoCOrganization entity
+    org_key: organization key
 
   Returns:
     True, if the mentor is allowed to resign; False otherwise
@@ -157,23 +153,23 @@ def canResignAsMentorForOrg(profile, org):
   # user may be asked either to remove herself from those proposals or
   # its profile has to be removed in a safe way.
 
-  if org.key() not in profile.mentor_for:
+  if org_key not in profile.mentor_for:
     raise ValueError('The specified profile is not a mentor for %s' % org.name)
 
-  if org.key() in profile.org_admin_for:
+  if org_key in profile.org_admin_for:
     return False
 
-  if proposal_logic.hasMentorProposalAssigned(profile, org=org):
+  if proposal_logic.hasMentorProposalAssigned(profile, org_key=org_key):
     return False
 
-  if project_logic.hasMentorProjectAssigned(profile, org=org):
+  if project_logic.hasMentorProjectAssigned(profile, org_key=org_key):
     return False
 
   return True
 
 
 # TODO(daniel): make this function transaction safe
-def resignAsMentorForOrg(profile, org):
+def resignAsMentorForOrg(profile, org_key):
   """Removes mentor role for the specified organization from the specified
   profile.
 
@@ -184,15 +180,15 @@ def resignAsMentorForOrg(profile, org):
   be safely used within transactions.
 
   Args:
-    profile: profile entity or key
-    org: organization entity or key
+    profile: profile entity
+    org_key: organization key
   """
-  if org.key() not in profile.mentor_for:
+  if org_key not in profile.mentor_for:
     return
 
-  if canResignAsMentorForOrg(profile, org):
+  if canResignAsMentorForOrg(profile, org_key):
     profile.mentor_for = [
-        key for key in profile.mentor_for if key != org.key()]
+        key for key in profile.mentor_for if key != org_key]
     if not profile.mentor_for:
       profile.is_mentor = False
     profile.put()
@@ -200,7 +196,7 @@ def resignAsMentorForOrg(profile, org):
 
 # TODO(daniel): it would be nice if this function returned something more
 # verbose than "False", i.e. explanation why
-def canResignAsOrgAdminForOrg(profile, org):
+def canResignAsOrgAdminForOrg(profile, org_key):
   """Tells whether the specified profile can resign from their organization
   administrator role for the specified organization.
 
@@ -209,13 +205,11 @@ def canResignAsOrgAdminForOrg(profile, org):
 
   Args:
     profile: the specified GSoCProfile entity
-    org: the specified GSoCOrganization entity
+    org_key: the specified GSoCOrganization entity
 
   Returns:
     True, if the mentor is allowed to resign; False otherwise
   """
-  org_key = org if isinstance(org, db.Key) else org.key()
-
   if org_key not in profile.org_admin_for:
     raise ValueError(
         'The specified profile is not an organization administrator for %s' % 
@@ -236,7 +230,7 @@ def canResignAsOrgAdminForOrg(profile, org):
     return False
 
 
-def resignAsOrgAdminForOrg(profile, org):
+def resignAsOrgAdminForOrg(profile, org_key):
   """Removes organization administrator role for the specified organization
   from the specified profile.
 
@@ -245,10 +239,8 @@ def resignAsOrgAdminForOrg(profile, org):
 
   Args:
     profile: profile entity
-    org: organization entity or key
+    org_key: organization key
   """
-  org_key = org if isinstance(org, db.Key) else org.key()
-
   if org_key not in profile.org_admin_for:
     return
 
@@ -260,21 +252,21 @@ def resignAsOrgAdminForOrg(profile, org):
     profile.put()
 
 
-def getOrgAdmins(organization, keys_only=False):
+def getOrgAdmins(org_key, keys_only=False):
   """Returns organization administrators for the specified organization.
 
   Please note that this function executes a non-ancestor query, so it cannot
   be safely used within transactions.
 
   Args:
-    organization: organization entity or key
+    org_key: organization key
     keys_only: If true, return only keys instead of complete entities
 
   Returns:
     list of profiles entities or keys of organization administrators
   """
   query = profile_model.GSoCProfile.all(keys_only=keys_only)
-  query.filter('org_admin_for', organization)
+  query.filter('org_admin_for', org_key)
   query.filter('status', 'active')
   return query.fetch(limit=1000)
 

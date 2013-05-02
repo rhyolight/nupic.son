@@ -59,7 +59,7 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
     self.assertFalse(has_projects)
 
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org=self.organization_one)
+        self.mentor, org_key=self.organization_one.key())
     self.assertFalse(has_projects)
 
   def testMentorWithProject(self):
@@ -73,12 +73,12 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
     # the mentor has a project for organization one
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org=self.organization_one)
+        self.mentor, org_key=self.organization_one.key())
     self.assertTrue(has_projects)
 
     # the mentor still does not have projects for organization two
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org=self.organization_two)
+        self.mentor, org_key=self.organization_two.key())
     self.assertFalse(has_projects)
 
   def testProjectWithMoreMentors(self):
@@ -106,12 +106,12 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
     # the mentor has a project for organization one
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org=self.organization_one)
+        self.mentor, org_key=self.organization_one)
     self.assertTrue(has_projects)
 
     # the mentor still does not have projects for organization two
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org=self.organization_two)
+        self.mentor, org_key=self.organization_two.key())
     self.assertFalse(has_projects)
 
   def testMentorWithMoreProjects(self):
@@ -126,7 +126,7 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
     # the mentor has projects for organization one
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org=self.organization_one)
+        self.mentor, org_key=self.organization_one.key())
     self.assertTrue(has_projects)
 
   def testMentorWithProjectForOtherOrg(self):
@@ -148,5 +148,5 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
     # the mentor has only a project for organization two
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org=self.organization_one)
+        self.mentor, org_key=self.organization_one.key())
     self.assertFalse(has_projects)
