@@ -51,7 +51,7 @@ def _handleAnonymousConnection(data, profile):
   @db.transactional(xg=True)
   def activate_new_connection_txn():
     # Create the new connection based on the values of the placeholder.
-    new_connection = GSoCConnection(parent=user.key(),
+    new_connection = GSoCConnection(parent=data.user.key(),
         organization=data.anonymous_connection.parent(),
         profile=profile,
         role=data.anonymous_connection.role)
