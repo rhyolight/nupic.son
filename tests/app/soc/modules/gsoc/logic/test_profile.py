@@ -430,6 +430,36 @@ class GetOrgAdminsTest(unittest.TestCase):
         self.organization_one.key(), keys_only=True)
     self.assertEqual(org_admins_keys, [])
 
+  def testExtraAttrs(self):
+    # seed male org admin for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'active',
+        'gender': 'male',
+      }
+    org_admin = seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
+
+    # seed female org admin for organization one
+    org_admin_properties['gender'] = 'female'
+    seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
+
+    # retrieve only org admins with extra attrs
+    extra_attrs = {
+        profile_model.GSoCProfile.gender: 'male',
+        }
+    org_admins = profile_logic.getOrgAdmins(self.organization_one.key(),
+        extra_attrs=extra_attrs)
+
+    # only the male org admin should be returned
+    self.assertEqual(1, len(org_admins))
+    self.assertEqual(org_admins[0].key(), org_admin.key())
+
+
 class CountOrgAdminsTest(unittest.TestCase):
   """Unit tests for countOrgAdmins function."""
 

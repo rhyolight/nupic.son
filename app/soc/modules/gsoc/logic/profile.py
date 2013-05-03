@@ -154,7 +154,8 @@ def canResignAsMentorForOrg(profile, org_key):
   # its profile has to be removed in a safe way.
 
   if org_key not in profile.mentor_for:
-    raise ValueError('The specified profile is not a mentor for %s' % org.name)
+    raise ValueError(
+        'The specified profile is not a mentor for %s' % org_key.name())
 
   if org_key in profile.org_admin_for:
     return False
@@ -252,8 +253,12 @@ def resignAsOrgAdminForOrg(profile, org_key):
     profile.put()
 
 
-def getOrgAdmins(org_key, keys_only=False):
+def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
   """Returns organization administrators for the specified organization.
+
+  Additional constraints on administrators may be specified by passing a custom
+  extra_attrs dictionary. Each element of the dictionary maps a property
+  with a requested value. The value may be a single object or a list/tuple.
 
   Please note that this function executes a non-ancestor query, so it cannot
   be safely used within transactions.
@@ -261,6 +266,8 @@ def getOrgAdmins(org_key, keys_only=False):
   Args:
     org_key: organization key
     keys_only: If true, return only keys instead of complete entities
+    extra_args: a dictionary containing additional constraints on
+        organization administrators to retrieve
 
   Returns:
     list of profiles entities or keys of organization administrators
@@ -268,6 +275,15 @@ def getOrgAdmins(org_key, keys_only=False):
   query = profile_model.GSoCProfile.all(keys_only=keys_only)
   query.filter('org_admin_for', org_key)
   query.filter('status', 'active')
+
+  if extra_attrs:
+    for attribute, value in extra_attrs.iteritems():
+      # list and tuples are supported by IN queries
+      if isinstance(value, list) or isinstance(value, tuple):
+        query.filter('%s IN' % attribute.name, value)
+      else:
+        query.filter(attribute.name, value)
+
   return query.fetch(limit=1000)
 
 
