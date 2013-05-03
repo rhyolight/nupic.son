@@ -540,7 +540,7 @@ class AccessChecker(access_checker.AccessChecker):
     expected_profile = self.data.proposal.parent()
     if expected_profile.key().name() != self.data.profile.key().name():
       error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'model': 'GSoCProposal'
+          'name': 'proposal'
           }
       raise AccessViolation(error_msg)
 

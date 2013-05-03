@@ -88,8 +88,8 @@ class AcceptedOrgsAdminList(org_list.OrgList):
             'org_admin_for', entity).fetch(limit=1000)
         org_admins[entity.key()] = ', '.join(
             ['"%s" &lt;%s&gt;' % (
-                http_utils.conditional_escape(oa.name()),
-                http_utils.conditional_escape(oa.email)) for oa in oas])
+                html_utils.conditional_escape(oa.name()),
+                html_utils.conditional_escape(oa.email)) for oa in oas])
 
       return ([org_admins], {})
 

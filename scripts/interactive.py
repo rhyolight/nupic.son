@@ -174,6 +174,8 @@ def setDjango():
   # is loaded, it always imports gae_django module which requires Django
   # version to be set. This should be changed so that it is loaded only
   # for Prod/Dev server.
+  os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+
   from google.appengine import dist
   dist.use_library('django', '1.2')
 

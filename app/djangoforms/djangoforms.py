@@ -483,6 +483,30 @@ class StringListProperty(db.StringListProperty):
     return value
 
 
+# TODO(daniel): remove this class when django is updated to at least 1.4
+class URLField(forms.URLField):
+  """Custom implementation of URLField.
+
+  It inherits all the behavior from original Django implementation.
+  The only difference is that ValueError which can be raised by to_python
+  function is caught here and a validation error is raised instead.
+
+  ValidationError is initially thrown by urlsplit function and it is
+  Django's fault that their implementation does not handle it properly.
+
+  This issue has been fixed in Django 1.4. When the app upgrades to that
+  specific version or higher, this class can be removed.
+  """
+  def to_python(self, value):
+    try:
+      return super(URLField, self).to_python(value)
+    except ValueError:
+      # urlparse.urlsplit can raise a ValueError with some
+      # misformatted URLs.
+      raise django.core.exceptions.ValidationError(
+          self.error_messages['invalid'])
+
+
 class LinkProperty(db.LinkProperty):
   __metaclass__ = monkey_patch
 
@@ -491,7 +515,7 @@ class LinkProperty(db.LinkProperty):
 
     This defaults to a URLField instance.
     """
-    defaults = {'form_class': forms.URLField}
+    defaults = {'form_class': URLField}
     defaults.update(kwargs)
     return super(LinkProperty, self).get_form_field(**defaults)
 

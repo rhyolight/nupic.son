@@ -46,6 +46,7 @@ from soc.modules.gci.views import students_info
 from soc.modules.gci.views import task
 from soc.modules.gci.views import task_list
 from soc.modules.gci.views import task_create
+from soc.modules.gci.views import subscribed_tasks
 
 
 class Callback(object):
@@ -81,6 +82,7 @@ class Callback(object):
     self.views.append(invite.ListUserInvitesPage())
     self.views.append(leaderboard.LeaderboardPage())
     self.views.append(leaderboard.StudentTasksPage())
+    self.views.append(subscribed_tasks.SubscribedTasksPage())
     self.views.append(moderate_delete_account.ModerateDeleteAccountPage())
     self.views.append(org_app.GCIOrgAppEditPage())
     self.views.append(org_profile.OrgProfilePage())

@@ -28,8 +28,11 @@ DEF_INVITATION = ugettext(
 DEF_NEW_REQUEST = ugettext(
     '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
-DEF_NEW_CONNECTION = ugettext(
-    'New connection to %(org)s' )
+DEF_NEW_USER_CONNECTION = ugettext(
+    'New connection for %(org)s' )
+
+DEF_NEW_ORG_CONNECTION = ugettext(
+    'New connection from %(org)s')
 
 DEF_NEW_ANONYMOUS_CONNECTION = ugettext(
     'New Google Summer of Code Connection')
@@ -56,8 +59,12 @@ DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
     'soc/notification/new_request.html'
 
 # TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
-DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE = \
-    'v2/modules/gsoc/notification/initiated_connection.html'
+DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE = \
+    'v2/modules/gsoc/notification/initiated_user_connection.html'
+
+# TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
+DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE = \
+    'v2/modules/gsoc/notification/initiated_org_connection.html'
 
 # TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
 DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE = \
@@ -77,7 +84,6 @@ DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
 
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'soc/notification/mentor_welcome_mail.html'
-
 
 def getContext(data, receivers, message_properties, subject, template):
   """Sends out a notification to the specified user.
@@ -108,7 +114,6 @@ def getContext(data, receivers, message_properties, subject, template):
 
   return mailer.getMailContext(to, subject, body, bcc=bcc)
 
-
 def getDefaultContext(request_data, emails, subject, extra_context=None):
   """Generate a dictionary with a default context.
 
@@ -136,40 +141,64 @@ def getDefaultContext(request_data, emails, subject, extra_context=None):
 
   return default_context
 
-
 # TODO(nathaniel): "connection" argument description is a "gsoc" reference
 # outside of app/soc/modules/gsoc.
-def connectionContext(data, connection, receivers, message, is_user=False):
-  """Sends out a notification email to all individuals involved in the newly
-  created connection.
+def userConnectionContext(data, connection, recipients, message):
+  """Send out a notification email to the organization administrators for the
+  given org when a user opens a connection with the organization.
 
   Args:
-    data: RequestData object with organization and user set
-    connection: An instance of GSoCConnection.
-    receivers: The email(s) of the org or user who is will be "receiving"
-        the connection. should be the opposite of sender.
+    data: RequestData object with organization and user set.
+    connection: The new instance of GSoCConnection.
+    recipients: The email(s) of the org admins for the org.
     message: The contents of the message field from the connection form.
-    is_user: True if a user is the one who initiated the connection.
   Returns:
     A dictionary containing a context for the mail message to be sent to
-    the receiver(s) regarding a new connection.
+    the recipients regarding a new connection.
   """
 
-  subject = DEF_NEW_CONNECTION % {'org': connection.organization.name}
-  request_url = data.redirect.show_connection(connection.parent(),
+  subject = DEF_NEW_USER_CONNECTION % {'org' : connection.organization.name}
+  connection_url = data.redirect.show_connection(connection.parent(),
       connection).url(full=True)
 
   message_properties = {
-      'org': connection.organization.name,
-      'request_url': request_url,
-      'is_user': is_user,
-      'message': message
-  }
-  template = DEF_NEW_CONNECTION_NOTIFICATION_TEMPLATE
-  return getContext(data, receivers, message_properties, subject, template)
+      'connection_url' : connection_url,
+      'link_id' : connection.parent().link_id,
+      'org_name' : connection.organization.name
+      }
+  template = DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE
+  return getContext(data, recipients, message_properties, subject, template)
 
+# TODO(nathaniel): "connection" argument description is a "gsoc" reference
+# outside of app/soc/modules/gsoc.
+def orgConnectionContext(data, connection, recipient, message):
+  """Send out a notification email to a user with whom an org admin opened
+  a new connection.
 
-def anonymousConnectionContext(data, email, role, connection_hash, message):
+  Args:
+    data: RequestData object with organization and user set.
+    connection: The new instance of GSoCConnection.
+    recipient: The email address of the user.
+    message: The contents of the message field from the connection form.
+  Returns:
+    A dictionary containing a context for the mail message to be sent to
+    the recipient regarding a new connection.
+  """
+
+  subject = DEF_NEW_ORG_CONNECTION % {'org' : connection.organization.name}
+  connection_url = data.redirect.show_connection(connection.parent(),
+      connection).url(full=True)
+
+  message_properties = {
+      'connection_url' : connection_url,
+      'link_id' : connection.parent().link_id,
+      'org_name' : connection.organization.name,
+      'role' : connection.getUserFriendlyRole()
+      }
+  template = DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE
+  return getContext(data, recipient, message_properties, subject, template)
+
+def anonymousConnectionContext(data, email, anonymous_connection, message):
   """Sends out a notification email to users who have neither user nor
   profile entities alerting them that an org admin has attempted to
   initiate a connection with them.
@@ -177,9 +206,7 @@ def anonymousConnectionContext(data, email, role, connection_hash, message):
   Args:
     data: A RequestData object for the connection views.
     email: Email address of the user meeting the above criteria.
-    role: A string role ('mentor' or 'org_admin') to grant the
-        user when they register.
-    connection_hash: Hash of the AnonymousConnection object.
+    anonymous_connection: A AnonymousConnection placeholder object. 
     message: The contents of the message field from the connection form.
   Returns:
     A dictionary containing a context for the mail message to be sent to
@@ -189,22 +216,22 @@ def anonymousConnectionContext(data, email, role, connection_hash, message):
   assert isSet(data.profile)
   assert isSet(data.organization)
 
-  url = data.redirect.profile_anonymous_connection(role,
-      connection_hash).url(full=True)
+  url = data.redirect.profile_anonymous_connection(
+      anonymous_connection.role,
+      anonymous_connection.hash_id
+      ).url(full=True)
 
   message_properties = {
-      'requester': data.profile.link_id,
-      'org': data.organization.name,
-      'role': role,
-      'url': url,
-      'message': message
-  }
+      'org_name' : anonymous_connection.parent().name,
+      'role' : anonymous_connection.getUserFriendlyRole(),
+      'message' : message,
+      'url' : url
+      }
 
   subject = DEF_NEW_ANONYMOUS_CONNECTION
   template = DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE
 
   return getContext(data, email, message_properties, subject, template)
-
 
 # TODO(dcrodman): This needs to be removed once connection is stable.
 def inviteContext(data, invite):

@@ -188,3 +188,9 @@ class AnonymousConnection(db.Model):
   #: The email to which the anonymous connection was sent; this should be
   #: queried against to prevent duplicate anonymous connections.
   email = db.StringProperty()
+  
+  def getUserFriendlyRole(self):
+    """Converts an internal role representation to a user-friendly version
+    to be used in templates and dashboard.
+    """
+    return 'Org Admin' if self.role == ORG_ADMIN_ROLE else 'Mentor'
