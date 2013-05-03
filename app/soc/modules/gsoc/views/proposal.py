@@ -23,6 +23,7 @@ from soc.logic.exceptions import AccessViolation
 from soc.views.helper import url_patterns
 from soc.tasks import mailer
 
+from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -231,12 +232,12 @@ class UpdateProposal(GSoCRequestHandler):
 
   def _withdraw(self, data):
     """Withdraws a proposal."""
-    proposal_key = data.proposal.key()
 
     def withdraw_proposal_txn():
-      proposal = db.get(proposal_key)
-      proposal.status = 'withdrawn'
-      proposal.put()
+      proposal = db.get(data.proposal.key())
+      student_info = db.get(data.student_info.key())
+
+      proposal_logic.withdrawProposal(proposal, student_info)
 
     db.run_in_transaction(withdraw_proposal_txn)
 
