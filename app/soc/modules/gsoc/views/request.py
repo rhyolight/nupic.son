@@ -149,7 +149,11 @@ class RequestPage(GSoCRequestHandler):
     request_form.cleaned_data['role'] = 'mentor'
     request_form.cleaned_data['type'] = 'Request'
 
-    admins = profile_logic.getOrgAdmins(data.organization)
+    extra_attrs = {
+        GSoCProfile.notify_new_requests: True,
+        }
+    admins = profile_logic.getOrgAdmins(data.organization,
+        extra_attrs=extra_attrs)
     admin_emails = [i.email for i in admins]
 
     def create_request_txn():
