@@ -494,3 +494,71 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
     can_resubmit = proposal_logic.canProposalBeResubmitted(
         self.proposal, self.student_info, self.program)
     self.assertFalse(can_resubmit)
+
+
+class ResubmitProposalTest(unittest.TestCase):
+  """Unit tests for resubmitProposal function."""
+
+  def setUp(self):
+    # seed a timeline and set student app period for now
+    timeline_properties = {
+        'student_signup_start': timeline_utils.past(),
+        'student_signup_end': timeline_utils.future(),
+        }
+    self.timeline = seeder_logic.seed(
+        timeline_model.GSoCTimeline, timeline_properties)
+
+    # seed a new program
+    program_properties = {
+        'timeline': self.timeline,
+        'apps_tasks_limit': 3,
+        }
+    self.program = seeder_logic.seed(GSoCProgram, program_properties)
+
+    # seed a new student info
+    student_info_properties = {
+        'number_of_proposals': 0,
+        }
+    self.student_info = seeder_logic.seed(
+        profile_model.GSoCStudentInfo, student_info_properties)
+
+    # seed a new proposal
+    proposal_properties = {'status': proposal_model.STATUS_WITHDRAWN}
+    self.proposal = seeder_logic.seed(
+        proposal_model.GSoCProposal, proposal_properties)
+
+  def testResubmitProposal(self):
+    result = proposal_logic.resubmitProposal(
+        self.proposal, self.student_info, self.program)
+
+    # it should have been possible to resubmit proposal
+    self.assertEqual(result, True)
+    self.assertEqual(self.proposal.status, proposal_model.STATUS_PENDING)
+    self.assertEqual(self.student_info.number_of_proposals, 1)
+
+  def testResubmitProposalTwice(self):
+    # resubmit proposal twice
+    proposal_logic.resubmitProposal(
+        self.proposal, self.student_info, self.program)
+    result = proposal_logic.resubmitProposal(
+        self.proposal, self.student_info, self.program)
+
+    # proposal should be resubmitted but no side effects are present
+    self.assertEqual(result, True)
+    self.assertEqual(self.proposal.status, proposal_model.STATUS_PENDING)
+    self.assertEqual(self.student_info.number_of_proposals, 1)
+
+  def testCannotResubmitProposal(self):
+    # make it forbidden to resubmit proposal
+    self.proposal.status = proposal_model.STATUS_ACCEPTED
+    self.proposal.put()
+    self.student_info.number_of_proposals = 1
+    self.student_info.put()
+
+    result = proposal_logic.resubmitProposal(
+        self.proposal, self.student_info, self.program)
+
+    # proposal should not be resubmitted
+    self.assertEqual(result, False)
+    self.assertEqual(self.proposal.status, proposal_model.STATUS_ACCEPTED)
+    self.assertEqual(self.student_info.number_of_proposals, 1)

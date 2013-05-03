@@ -200,3 +200,31 @@ def withdrawProposal(proposal, student_info):
   db.put([proposal, student_info])
 
   return True
+
+
+def resubmitProposal(proposal, student_info, program):
+  """Resubmits (changes status from 'withdrawn' to 'pending')
+  the specified proposal for the specified student and program.
+
+  Args:
+    proposal: proposal entity
+    student_info: student info entity
+    program: program entity
+
+  Returns:
+    True, if the proposal is effectively resubmitted (i.e. its status
+    is pending) after this function; False otherwise
+  """
+  if not canProposalBeResubmitted(proposal, student_info, program):
+    # check if the proposal is not already pending
+    if proposal.status == proposal_model.STATUS_PENDING:
+      return True
+    else:
+      return False
+
+  proposal.status = proposal_model.STATUS_PENDING
+  student_info.number_of_proposals += 1
+
+  db.put([proposal, student_info])
+
+  return True
