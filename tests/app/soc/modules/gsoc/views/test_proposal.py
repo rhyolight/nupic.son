@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for proposal view.
-"""
+"""Tests for proposal view."""
 
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 
-from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.models import proposal as proposal_model
 
 
 class ProposalTest(MailTestCase, GSoCDjangoTestCase):
@@ -63,13 +63,14 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
         'org': self.org, 'status': 'pending', 'accept_as_project': False,
         'is_editable_post_deadline': False, 'extra': None, 'has_mentor': False,
     }
-    response, properties = self.modelPost(url, GSoCProposal, override)
+    response, properties = self.modelPost(
+        url, proposal_model.GSoCProposal, override)
     self.assertResponseRedirect(response)
 
     self.assertEmailSent(to=mentor.profile.email, n=1)
     self.assertEmailNotSent(to=other_mentor.profile.email)
 
-    proposal = GSoCProposal.all().get()
+    proposal = proposal_model.GSoCProposal.all().get()
     self.assertPropertiesEqual(properties, proposal)
 
   def testProposalsSubmissionLimit(self):
@@ -101,10 +102,12 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     # Try to submit proposals four times.
     for i in range(5):
-      response, properties = self.modelPost(url, GSoCProposal, override)
+      response, properties = self.modelPost(
+          url, proposal_model.GSoCProposal, override)
       self.assertResponseRedirect(response)
 
-    response, properties = self.modelPost(url, GSoCProposal, override)
+    response, properties = self.modelPost(
+        url, proposal_model.GSoCProposal, override)
     self.assertResponseForbidden(response)
 
 
@@ -149,7 +152,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     self.data.notificationSettings()
     self.timeline.studentSignup()
 
-    proposal = GSoCProposal.all().get()
+    proposal = proposal_model.GSoCProposal.all().get()
 
     url = '/gsoc/proposal/update/%s/%s/%s' % (
         self.gsoc.key().name(), self.data.profile.link_id, proposal.key().id())
@@ -162,12 +165,13 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
         'action': 'Update', 'is_publicly_visible': False, 'extra': None,
         'accept_as_project': False, 'is_editable_post_deadline': False
     }
-    response, properties = self.modelPost(url, GSoCProposal, override)
+    response, properties = self.modelPost(
+        url, proposal_model.GSoCProposal, override)
     self.assertResponseRedirect(response)
 
     properties.pop('action')
 
-    proposal = GSoCProposal.all().get()
+    proposal = proposal_model.GSoCProposal.all().get()
     self.assertPropertiesEqual(properties, proposal)
 
     # after update last_modified_on should be updated which is not equal
@@ -183,3 +187,33 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
         self.gsoc.key().name(), self.data.profile.link_id, mock_id)
     response = self.get(url)
     self.assertResponseNotFound(response)
+
+  def testWithdrawProposal(self):
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com')
+    mentor.createMentor(self.org)
+    mentor.notificationSettings(proposal_updates=True)
+
+    self.data.createStudentWithProposal(self.org, mentor.profile)
+    self.data.notificationSettings()
+    self.timeline.studentSignup()
+
+    proposal = proposal_model.GSoCProposal.all().get()
+
+    url = '/gsoc/proposal/update/%s/%s/%s' % (
+        self.gsoc.key().name(), self.data.profile.link_id, proposal.key().id())
+
+    # withdraw proposal
+    postdata = {
+        'action': 'Withdraw',
+        }
+    response = self.post(url, postdata)
+
+    # check if the proposal is withdrawn
+    proposal = proposal_model.GSoCProposal.get(proposal.key())
+    self.assertEqual(proposal_model.STATUS_WITHDRAWN, proposal.status)
+
+    # check if number of proposals is decreased
+    student_info = profile_model.GSoCStudentInfo.get(
+        self.data.profile.student_info.key())
+    self.assertEqual(0, student_info.number_of_proposals)
