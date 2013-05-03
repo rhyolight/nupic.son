@@ -16,6 +16,8 @@
 
 from google.appengine.ext import db
 
+from soc.views.helper import request_data
+
 from soc.modules.gsoc.models import proposal as proposal_model
 
 
@@ -112,6 +114,29 @@ def hasMentorProposalAssigned(profile, org_key=None):
     query.filter('org', org_key)
 
   return query.count() > 0
+
+
+def canSubmitProposal(student_info, program):
+  """Tells whether the specified student can submit a proposal for
+  the specified program.
+
+  Args:
+    student_info: student info entity
+    program program entity
+
+  Returns:
+    True if a new proposal may be submitted; False otherwise
+  """
+  # check the student application period is open
+  timeline_helper = request_data.TimelineHelper(program.timeline, None)
+  if not timeline_helper.studentSignup():
+    return False
+
+  # check if the student has not reached the limit of apps per program
+  if student_info.number_of_proposals >= program.apps_tasks_limit:
+    return False
+
+  return True
 
 
 def canProposalBeWithdrawn(proposal):

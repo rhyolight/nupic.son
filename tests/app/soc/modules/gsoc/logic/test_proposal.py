@@ -21,10 +21,12 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models import proposal as proposal_model
+from soc.modules.gsoc.models import timeline as timeline_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import timeline_utils
 
 
 class ProposalTest(unittest.TestCase):
@@ -234,7 +236,7 @@ class WithdrawProposalTest(unittest.TestCase):
     self.student_info = seeder_logic.seed(
         profile_model.GSoCStudentInfo, student_info_properties)
 
-    # seed a new proposal and assign the mentor
+    # seed a new proposal and assign
     proposal_properties = {'parent': self.profile}
     self.proposal = seeder_logic.seed(
         proposal_model.GSoCProposal, proposal_properties)
@@ -304,3 +306,77 @@ class WithdrawProposalTest(unittest.TestCase):
     self.assertFalse(result)
     self.assertEqual(proposal_model.STATUS_ACCEPTED, self.proposal.status)
     self.assertEqual(1, self.student_info.number_of_proposals)
+
+
+class CanSubmitProposalTest(unittest.TestCase):
+  """Unit tests for canSubmitProposal function."""
+
+  def setUp(self):
+    # seed a timeline and set student app period for now
+    timeline_properties = {
+        'student_signup_start': timeline_utils.past(),
+        'student_signup_end': timeline_utils.future(),
+        }
+    self.timeline = seeder_logic.seed(
+        timeline_model.GSoCTimeline, timeline_properties)
+
+    # seed a proggram
+    program_properties = {
+        'timeline': self.timeline,
+        'apps_tasks_limit': 3
+        }
+    self.program = seeder_logic.seed(GSoCProgram, program_properties)
+
+    # seed a new student info
+    student_info_properties = {
+        'number_of_proposals': 0,
+        }
+    self.student_info = seeder_logic.seed(
+        profile_model.GSoCStudentInfo, student_info_properties)
+
+  def testForStudentWithNoProposals(self):
+    # it is possible to submit proposal during the student app period
+    # and the student has not proposals
+    can_submit = proposal_logic.canSubmitProposal(
+        self.student_info, self.program)
+    self.assertTrue(can_submit)
+
+  def testForStudentWithMaxMinusOneProposals(self):
+    # change the student so that already max - 1 proposals are submitted
+    self.student_info.number_of_proposals = self.program.apps_tasks_limit - 1
+    self.student_info.put()
+
+    # it is still possible for the student to submit a proposal
+    can_submit = proposal_logic.canSubmitProposal(
+        self.student_info, self.program)
+    self.assertTrue(can_submit)
+
+  def testForStudentWithMaxProposals(self):
+    # change the student so that max proposals are already submitted
+    self.student_info.number_of_proposals = self.program.apps_tasks_limit
+    self.student_info.put()
+
+    # it is not possible to submit a next proposal
+    can_submit = proposal_logic.canSubmitProposal(
+        self.student_info, self.program)
+    self.assertFalse(can_submit)
+
+  def testBeforeStudentAppPeriod(self):
+    # move the student app period to the future
+    self.timeline.student_signup_start = timeline_utils.future()
+    self.timeline.put()
+
+    # it is not possible to submit a proposal now
+    can_submit = proposal_logic.canSubmitProposal(
+        self.student_info, self.program)
+    self.assertFalse(can_submit)
+
+  def testAfterStudentAppPeriod(self):
+    # move the student app period to the future
+    self.timeline.student_signup_end = timeline_utils.past()
+    self.timeline.put()
+
+    # it is not possible to submit a proposal now
+    can_submit = proposal_logic.canSubmitProposal(
+        self.student_info, self.program)
+    self.assertFalse(can_submit)
