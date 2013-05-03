@@ -112,3 +112,46 @@ def hasMentorProposalAssigned(profile, org_key=None):
     query.filter('org', org_key)
 
   return query.count() > 0
+
+
+def canProposalBeWithdrawn(proposal):
+  """Tells whether the specified proposal can be withdrawn.
+
+  Args:
+    proposal: proposal entity
+
+  Returns:
+    True, if the proposal can be withdrawn; False otherwise
+  """
+  # only pending proposals can be withdrawn
+  # TODO(daniel): discuss with the team what to do with 'ignored' proposals
+  # TODO(daniel): discuss with the team if it should be possible to withdraw
+  # proposals after student application period is over. No?
+  return proposal.status == proposal_model.STATUS_PENDING
+
+
+def withdrawProposal(proposal, student_info):
+  """Withdraws proposal for the specified student profile.
+
+  Args:
+    proposal: proposal entity
+    student_info: student info entity
+
+  Returns:
+    True, if the proposal is withdrawn upon returning from this function;
+    False otherwise
+  """
+  if not canProposalBeWithdrawn(proposal):
+    # check if the proposal is already withdrawn
+    if proposal.status == proposal_model.STATUS_WITHDRAWN:
+      return True
+    else:
+      return False
+
+  proposal.status = proposal_model.STATUS_WITHDRAWN
+  student_info.number_of_proposals -= 1
+
+  # student info and proposal are in the same entity group
+  db.put([proposal, student_info])
+
+  return True
