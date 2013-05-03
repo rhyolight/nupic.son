@@ -302,4 +302,5 @@ def countOrgAdmins(organization):
   """
   query = profile_model.GSoCProfile.all()
   query.filter('org_admin_for', organization)
+  query.filter('status', 'active')
   return query.count()
