@@ -510,26 +510,26 @@ class CountOrgAdminsTest(unittest.TestCase):
     number = profile_logic.countOrgAdmins(self.organization_two.key())
     self.assertEqual(number, 3)
 
-    def testNotActiveOrgAdmin(self):
-      # seed invalid org admins for organization one
-      org_admin_properties = {
-          'is_mentor': True,
-          'mentor_for': [self.organization_one.key()],
-          'is_org_admin': True,
-          'org_admin_for': [self.organization_one.key()],
-          'status': 'invalid',
-      }
-      org_admin = seeder_logic.seed(
-          profile_model.GSoCProfile, org_admin_properties)
-  
-      # seed the other org admin who is active
-      org_admin_properties['status'] = 'active'
-      org_admin = seeder_logic.seed(
-          profile_model.GSoCProfile, org_admin_properties)  
-  
-      # only active org admin counted
-      org_admins = profile_logic.countOrgAdmins(self.organization_one.key())
-      self.assertEqual(org_admins, 1)
+  def testNotActiveOrgAdmin(self):
+    # seed invalid org admins for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'invalid',
+    }
+    org_admin = seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
+
+    # seed the other org admin who is active
+    org_admin_properties['status'] = 'active'
+    org_admin = seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)  
+
+    # only active org admin counted
+    org_admins = profile_logic.countOrgAdmins(self.organization_one.key())
+    self.assertEqual(org_admins, 1)
 
 
 class ResignAsMentorForOrgTest(unittest.TestCase):
