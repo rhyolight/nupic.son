@@ -19,6 +19,7 @@ from google.appengine.ext import db
 from soc.views.helper import request_data
 
 from soc.modules.gsoc.models import proposal as proposal_model
+from soc.modules.gsoc.models import timeline as timeline_model
 
 
 def getProposalsToBeAcceptedForOrg(org_entity, step_size=25):
@@ -128,6 +129,12 @@ def canSubmitProposal(student_info, program, timeline):
   Returns:
     True if a new proposal may be submitted; False otherwise
   """
+  # check if given timeline corresponds to the given program
+  program_key = timeline_model.GSoCTimeline.scope.get_value_for_datastore(
+      timeline)
+  if program_key != program.key():
+    raise ValueError('The specified timeline is not related to program')
+
   # check the student application period is open
   timeline_helper = request_data.TimelineHelper(timeline, None)
   if not timeline_helper.studentSignup():

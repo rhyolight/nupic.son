@@ -326,6 +326,8 @@ class CanSubmitProposalTest(unittest.TestCase):
         'apps_tasks_limit': 3
         }
     self.program = seeder_logic.seed(GSoCProgram, program_properties)
+    self.timeline.scope = self.program
+    self.timeline.put()
 
     # seed a new student info
     student_info_properties = {
@@ -400,6 +402,8 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
         'apps_tasks_limit': 3,
         }
     self.program = seeder_logic.seed(GSoCProgram, program_properties)
+    self.timeline.scope = self.program
+    self.timeline.put()
 
     # seed a new student info
     student_info_properties = {
@@ -514,6 +518,8 @@ class ResubmitProposalTest(unittest.TestCase):
         'apps_tasks_limit': 3,
         }
     self.program = seeder_logic.seed(GSoCProgram, program_properties)
+    self.timeline.scope = self.program
+    self.timeline.put()
 
     # seed a new student info
     student_info_properties = {
