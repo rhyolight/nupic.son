@@ -163,7 +163,7 @@ def canProposalBeWithdrawn(proposal):
   return proposal.status == proposal_model.STATUS_PENDING
 
 
-def canProposalBeResubmitted(proposal, student_info, program):
+def canProposalBeResubmitted(proposal, student_info, program, timeline):
   """Tells whether the specified proposal can be resubmitted by the specified
   student for the given program.
 
@@ -171,6 +171,7 @@ def canProposalBeResubmitted(proposal, student_info, program):
     proposal: proposal entity
     student_info: student info entity
     program: program entity
+    timeline: timeline entity for the program
 
   Returns:
     True, if the proposal can be resubmitted; False otherwise
@@ -180,7 +181,7 @@ def canProposalBeResubmitted(proposal, student_info, program):
     return False
 
   # resubmitting a proposal is just like submitting a new one
-  return canSubmitProposal(student_info, program, program.timeline)
+  return canSubmitProposal(student_info, program, timeline)
 
 
 def withdrawProposal(proposal, student_info):
@@ -223,7 +224,8 @@ def resubmitProposal(proposal, student_info, program):
     True, if the proposal is effectively resubmitted (i.e. its status
     is pending) after this function; False otherwise
   """
-  if not canProposalBeResubmitted(proposal, student_info, program):
+  if not canProposalBeResubmitted(
+      proposal, student_info, program, program.timeline):
     # check if the proposal is not already pending
     if proposal.status == proposal_model.STATUS_PENDING:
       return True
