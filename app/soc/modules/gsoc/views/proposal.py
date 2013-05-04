@@ -243,12 +243,11 @@ class UpdateProposal(GSoCRequestHandler):
 
   def _resubmit(self, data):
     """Resubmits a proposal."""
-    proposal_key = data.proposal.key()
 
     def resubmit_proposal_txn():
-      proposal = db.get(proposal_key)
-      proposal.status = 'pending'
-      proposal.put()
+      proposal = db.get(data.proposal.key())
+      student_info = db.get(data.student_info.key())
+      proposal_logic.resubmitProposal(proposal, student_info, data.program)
 
     db.run_in_transaction(resubmit_proposal_txn)
 

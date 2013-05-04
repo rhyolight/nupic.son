@@ -217,3 +217,41 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     student_info = profile_model.GSoCStudentInfo.get(
         self.data.profile.student_info.key())
     self.assertEqual(0, student_info.number_of_proposals)
+
+  def testResubmitProposal(self):
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com')
+    mentor.createMentor(self.org)
+    mentor.notificationSettings(proposal_updates=True)
+
+    self.data.createStudentWithProposal(self.org, mentor.profile)
+    self.data.notificationSettings()
+    self.timeline.studentSignup()
+
+    proposal = proposal_model.GSoCProposal.all().get()
+
+    # make the proposal withdrawn so that it can be resubmitted
+    proposal.status = proposal_model.STATUS_WITHDRAWN
+    proposal.put()
+    self.data.profile.student_info.number_of_proposals -= 1
+    self.data.profile.student_info.put()
+
+    url = '/gsoc/proposal/update/%s/%s/%s' % (
+        self.gsoc.key().name(), self.data.profile.link_id, proposal.key().id())
+
+    # resubmit proposal
+    postdata = {
+        'action': 'Resubmit',
+        }
+    response = self.post(url, postdata)
+
+    # check if the proposal is resubmitted
+    proposal = proposal_model.GSoCProposal.get(proposal.key())
+    self.assertEqual(proposal_model.STATUS_PENDING, proposal.status)
+
+    # check if number of proposals is increased
+    student_info = profile_model.GSoCStudentInfo.get(
+        self.data.profile.student_info.key())
+    self.assertEqual(
+        self.data.profile.student_info.number_of_proposals + 1,
+        student_info.number_of_proposals)
