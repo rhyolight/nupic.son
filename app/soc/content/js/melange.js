@@ -108,7 +108,7 @@
         "theme_advanced_toolbar_align": "left",
         "theme_advanced_toolbar_location": "top",
         "theme_advanced_buttons1": [
-          "bold,italic,underline,fontsizeselect,removeformat,|,bullist,numlist,outdent,",
+          "bold,italic,underline,fontsizeselect,|,code,removeformat,|,bullist,numlist,outdent,",
           "indent,|,undo,redo,|,justifyleft,justifycenter,justifyright,|,link,unlink,anchor"].join(),
         "theme_advanced_buttons2": "",
         "theme_advanced_buttons3": "",
@@ -121,7 +121,7 @@
           "|,fontselect,formatselect,fontsizeselect,forecolor"].join(),
         "theme_advanced_buttons3": "",
         "theme_advanced_buttons2": ["undo,redo,|,justifyleft,justifycenter,justifyright,|,",
-          "link,unlink,anchor,code,image,|,bullist,numlist,outdent,indent"].join(),
+          "link,unlink,anchor,code,removeformat,image,|,bullist,numlist,outdent,indent"].join(),
         "theme_advanced_fonts": ["Andale Mono=andale mono,times;",
           "Arial=arial,helvetica,sans-serif;",
           "Arial Black=arial black,avant garde;",
