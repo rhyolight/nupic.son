@@ -338,7 +338,7 @@ class CanSubmitProposalTest(unittest.TestCase):
     # it is possible to submit proposal during the student app period
     # and the student has not proposals
     can_submit = proposal_logic.canSubmitProposal(
-        self.student_info, self.program)
+        self.student_info, self.program, self.timeline)
     self.assertTrue(can_submit)
 
   def testForStudentWithMaxMinusOneProposals(self):
@@ -348,7 +348,7 @@ class CanSubmitProposalTest(unittest.TestCase):
 
     # it is still possible for the student to submit a proposal
     can_submit = proposal_logic.canSubmitProposal(
-        self.student_info, self.program)
+        self.student_info, self.program, self.timeline)
     self.assertTrue(can_submit)
 
   def testForStudentWithMaxProposals(self):
@@ -358,7 +358,7 @@ class CanSubmitProposalTest(unittest.TestCase):
 
     # it is not possible to submit a next proposal
     can_submit = proposal_logic.canSubmitProposal(
-        self.student_info, self.program)
+        self.student_info, self.program, self.timeline)
     self.assertFalse(can_submit)
 
   def testBeforeStudentAppPeriod(self):
@@ -368,7 +368,7 @@ class CanSubmitProposalTest(unittest.TestCase):
 
     # it is not possible to submit a proposal now
     can_submit = proposal_logic.canSubmitProposal(
-        self.student_info, self.program)
+        self.student_info, self.program, self.timeline)
     self.assertFalse(can_submit)
 
   def testAfterStudentAppPeriod(self):
@@ -378,7 +378,7 @@ class CanSubmitProposalTest(unittest.TestCase):
 
     # it is not possible to submit a proposal now
     can_submit = proposal_logic.canSubmitProposal(
-        self.student_info, self.program)
+        self.student_info, self.program, self.timeline)
     self.assertFalse(can_submit)
 
 

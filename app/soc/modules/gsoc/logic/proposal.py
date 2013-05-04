@@ -116,19 +116,20 @@ def hasMentorProposalAssigned(profile, org_key=None):
   return query.count() > 0
 
 
-def canSubmitProposal(student_info, program):
+def canSubmitProposal(student_info, program, timeline):
   """Tells whether the specified student can submit a proposal for
   the specified program.
 
   Args:
     student_info: student info entity
-    program program entity
+    program: program entity
+    timeline: timeline entity for the program
 
   Returns:
     True if a new proposal may be submitted; False otherwise
   """
   # check the student application period is open
-  timeline_helper = request_data.TimelineHelper(program.timeline, None)
+  timeline_helper = request_data.TimelineHelper(timeline, None)
   if not timeline_helper.studentSignup():
     return False
 
@@ -172,7 +173,7 @@ def canProposalBeResubmitted(proposal, student_info, program):
     return False
 
   # resubmitting a proposal is just like submitting a new one
-  return canSubmitProposal(student_info, program)
+  return canSubmitProposal(student_info, program, program.timeline)
 
 
 def withdrawProposal(proposal, student_info):
