@@ -208,7 +208,8 @@ class UpdateProposal(GSoCRequestHandler):
     if not proposal_form.is_valid():
       return None
 
-    q = GSoCProfile.all().filter('mentor_for', data.proposal.org)
+    org_key = GSoCProposal.org.get_value_for_datastore(data.proposal)
+    q = GSoCProfile.all().filter('mentor_for', org_key)
     q = q.filter('status', 'active')
     q.filter('notify_proposal_updates', True)
     mentors = q.fetch(1000)
