@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
 from django import forms
 
 from google.appengine.api import users
@@ -19,6 +21,7 @@ from google.appengine.api import users
 from soc.models.user import User
 from soc.logic import cleaning
 from tests.test_utils import GSoCDjangoTestCase
+from tests import program_utils
 
 
 class Form(object):
@@ -496,3 +499,63 @@ class CleaningTest(GSoCDjangoTestCase):
     self.form.cleaned_data = {field_name: field_value}
     self.form.fields = {field_name: forms.URLField()}
     self.assertEqual(clean_field(self.form), field_value)
+	
+  def testCleanBirthdate(self):
+    """Tests cleaning.clean_birth_date."""
+    field_name = 'test_dob'
+    clean_field = cleaning.clean_birth_date(field_name)
+
+    test_program_start = datetime.date(2013, 5, 31)
+    test_min_age = 13
+    test_max_age = 20
+
+    program_properties = {'student_min_age_as_of': test_program_start,
+	                  'student_min_age': test_min_age,
+	                  'student_max_age': test_max_age}
+
+    # TODO(piyush.devel): Use a Program rather than CGIProgram
+    test_program = program_utils.GCIProgramHelper().createProgram(
+        override=program_properties)
+    self.form.program = test_program
+
+    # Test that forms.ValidationError is raised
+    # if the student is born after one year of program start
+    test_birth_date = test_program_start.replace(
+        year=test_program_start.year + 1)
+    field_value = test_birth_date
+    self.form.cleaned_data = {field_name: field_value}
+    self.form.fields = {field_name: forms.DateField()}
+    self.assertRaises(forms.ValidationError, clean_field, self.form)
+
+    # Test that forms.ValidationError is raised
+    # if the student is younger than allowed age
+    test_birth_date = test_program_start.replace(
+        year=test_program_start.year - 1)
+    field_value = test_birth_date
+    self.form.cleaned_data = {field_name: field_value}
+    self.assertRaises(forms.ValidationError, clean_field, self.form)
+
+    # Test that the correct value would be returned
+    # if the date of birth is program's start day
+    test_birth_date = test_program_start.replace(
+        year=test_program_start.year - test_min_age)
+    field_value = test_birth_date
+    self.form.cleaned_data = {field_name: field_value}
+    self.assertEqual(clean_field(self.form), field_value)
+
+    # Test that the correct value would be returned
+    # if the student is old enough by six months
+    test_birth_date = test_program_start.replace(
+        year=test_program_start.year - test_min_age - 1)
+    test_birth_date = test_birth_date + datetime.timedelta(180)
+    field_value = test_birth_date
+    self.form.cleaned_data = {field_name: field_value}
+    self.assertEqual(clean_field(self.form), field_value)
+
+    # Test that forms.ValidationError is raised
+    # if the student is one year older than max age
+    test_birth_date = test_program_start.replace(
+        year=test_program_start.year - test_max_age - 1)
+    field_value = test_birth_date
+    self.form.cleaned_data = {field_name: field_value}
+    self.assertRaises(forms.ValidationError, clean_field, self.form)
