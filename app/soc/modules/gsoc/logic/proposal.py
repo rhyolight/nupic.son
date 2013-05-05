@@ -16,6 +16,8 @@
 
 from google.appengine.ext import db
 
+from soc.logic import timeline as timeline_logic
+
 from soc.views.helper import request_data
 
 from soc.modules.gsoc.models import proposal as proposal_model
@@ -130,9 +132,7 @@ def canSubmitProposal(student_info, program, timeline):
     True if a new proposal may be submitted; False otherwise
   """
   # check if given timeline corresponds to the given program
-  program_key = timeline_model.GSoCTimeline.scope.get_value_for_datastore(
-      timeline)
-  if program_key != program.key():
+  if not timeline_logic.isTimelineForProgram(timeline.key(), program.key()):
     raise ValueError('The specified timeline is not related to program')
 
   # check the student application period is open
@@ -176,6 +176,10 @@ def canProposalBeResubmitted(proposal, student_info, program, timeline):
   Returns:
     True, if the proposal can be resubmitted; False otherwise
   """
+  # check if given timeline corresponds to the given program
+  if not timeline_logic.isTimelineForProgram(timeline.key(), program.key()):
+    raise ValueError('The specified timeline is not related to program')
+
   # only withdrawn proposals can be resubmitted
   if proposal.status != proposal_model.STATUS_WITHDRAWN:
     return False
@@ -225,6 +229,10 @@ def resubmitProposal(proposal, student_info, program, timeline):
     True, if the proposal is effectively resubmitted (i.e. its status
     is pending) after this function; False otherwise
   """
+  # check if given timeline corresponds to the given program
+  if not timeline_logic.isTimelineForProgram(timeline.key(), program.key()):
+    raise ValueError('The specified timeline is not related to program')
+
   if not canProposalBeResubmitted(
       proposal, student_info, program, timeline):
     # check if the proposal is not already pending
