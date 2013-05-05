@@ -578,6 +578,15 @@ class ModelForm(djangoforms.ModelForm):
       instance.put()
     return instance
 
+  def asDict(self):
+    """Returns a dictionary that maps all the form fields with
+    the corresponding values.
+
+    Returns:
+      a dictionary mapping all the fields with the values.
+    """
+    return self._cleaned_data()
+
   def render(self):
     """Renders the template to a string.
 
