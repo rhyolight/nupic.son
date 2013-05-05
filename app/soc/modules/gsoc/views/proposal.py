@@ -23,6 +23,7 @@ from soc.logic.exceptions import AccessViolation
 from soc.views.helper import url_patterns
 from soc.tasks import mailer
 
+from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.proposal import GSoCProposal
@@ -102,10 +103,11 @@ class ProposalPage(GSoCRequestHandler):
 
     student_info_key = data.student_info.key()
 
-    q = GSoCProfile.all().filter('mentor_for', data.organization)
-    q = q.filter('status', 'active')
-    q.filter('notify_new_proposals', True)
-    mentors = q.fetch(1000)
+    extra_attrs = {
+        GSoCProfile.notify_new_proposals: True
+        }
+    mentors = profile_logic.getMentors(
+        data.organization.key(), extra_attrs=extra_attrs)
 
     to_emails = [i.email for i in mentors]
 
@@ -209,10 +211,10 @@ class UpdateProposal(GSoCRequestHandler):
       return None
 
     org_key = GSoCProposal.org.get_value_for_datastore(data.proposal)
-    q = GSoCProfile.all().filter('mentor_for', org_key)
-    q = q.filter('status', 'active')
-    q.filter('notify_proposal_updates', True)
-    mentors = q.fetch(1000)
+    extra_attrs = {
+        GSoCProfile.notify_proposal_updates: True
+        }
+    mentors = profile_logic.getMentors(org_key, extra_attrs=extra_attrs)
 
     to_emails = [i.email for i in mentors]
 
