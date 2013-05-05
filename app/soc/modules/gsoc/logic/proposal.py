@@ -211,7 +211,7 @@ def withdrawProposal(proposal, student_info):
   return True
 
 
-def resubmitProposal(proposal, student_info, program):
+def resubmitProposal(proposal, student_info, program, timeline):
   """Resubmits (changes status from 'withdrawn' to 'pending')
   the specified proposal for the specified student and program.
 
@@ -219,13 +219,14 @@ def resubmitProposal(proposal, student_info, program):
     proposal: proposal entity
     student_info: student info entity
     program: program entity
+    timeline: timeline entity for the program
 
   Returns:
     True, if the proposal is effectively resubmitted (i.e. its status
     is pending) after this function; False otherwise
   """
   if not canProposalBeResubmitted(
-      proposal, student_info, program, program.timeline):
+      proposal, student_info, program, timeline):
     # check if the proposal is not already pending
     if proposal.status == proposal_model.STATUS_PENDING:
       return True

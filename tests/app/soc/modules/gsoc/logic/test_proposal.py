@@ -535,7 +535,7 @@ class ResubmitProposalTest(unittest.TestCase):
 
   def testResubmitProposal(self):
     result = proposal_logic.resubmitProposal(
-        self.proposal, self.student_info, self.program)
+        self.proposal, self.student_info, self.program, self.timeline)
 
     # it should have been possible to resubmit proposal
     self.assertEqual(result, True)
@@ -545,9 +545,9 @@ class ResubmitProposalTest(unittest.TestCase):
   def testResubmitProposalTwice(self):
     # resubmit proposal twice
     proposal_logic.resubmitProposal(
-        self.proposal, self.student_info, self.program)
+        self.proposal, self.student_info, self.program, self.timeline)
     result = proposal_logic.resubmitProposal(
-        self.proposal, self.student_info, self.program)
+        self.proposal, self.student_info, self.program, self.timeline)
 
     # proposal should be resubmitted but no side effects are present
     self.assertEqual(result, True)
@@ -562,7 +562,7 @@ class ResubmitProposalTest(unittest.TestCase):
     self.student_info.put()
 
     result = proposal_logic.resubmitProposal(
-        self.proposal, self.student_info, self.program)
+        self.proposal, self.student_info, self.program, self.timeline)
 
     # proposal should not be resubmitted
     self.assertEqual(result, False)

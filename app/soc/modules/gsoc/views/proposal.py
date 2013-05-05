@@ -247,7 +247,8 @@ class UpdateProposal(GSoCRequestHandler):
     def resubmit_proposal_txn():
       proposal = db.get(data.proposal.key())
       student_info = db.get(data.student_info.key())
-      proposal_logic.resubmitProposal(proposal, student_info, data.program)
+      proposal_logic.resubmitProposal(
+          proposal, student_info, data.program, data.program_timeline)
 
     db.run_in_transaction(resubmit_proposal_txn)
 
