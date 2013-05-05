@@ -60,6 +60,26 @@ def queryProfilesForUser(user):
   return profile_model.GSoCProfile.all().ancestor(user)
 
 
+def _handleExtraAttrs(query, extra_attrs):
+  """Extends the specified query by handling extra attributes.
+
+  The attributes are specified in the passed dictionary. Each element of
+  the dictionary maps a property with a requested value. The value may
+  be a single object or a list/tuple.
+
+  Args:
+    query: query to extend
+    extra_attrs: a dictionary containing additional constraints on the query
+  """
+  if extra_attrs:
+    for attribute, value in extra_attrs.iteritems():
+      # list and tuples are supported by IN queries
+      if isinstance(value, list) or isinstance(value, tuple):
+        query.filter('%s IN' % attribute.name, value)
+      else:
+        query.filter(attribute.name, value)
+
+
 def canBecomeMentor(profile):
   """Tells whether the specified profile can become a mentor.
 
@@ -276,13 +296,7 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
   query.filter('org_admin_for', org_key)
   query.filter('status', 'active')
 
-  if extra_attrs:
-    for attribute, value in extra_attrs.iteritems():
-      # list and tuples are supported by IN queries
-      if isinstance(value, list) or isinstance(value, tuple):
-        query.filter('%s IN' % attribute.name, value)
-      else:
-        query.filter(attribute.name, value)
+  _handleExtraAttrs(query, extra_attrs)
 
   return query.fetch(limit=1000)
 
@@ -304,3 +318,31 @@ def countOrgAdmins(organization):
   query.filter('org_admin_for', organization)
   query.filter('status', 'active')
   return query.count()
+
+
+def getMentors(org_key, keys_only=False, extra_attrs=None):
+  """Returns mentors for the specified organization.
+
+  Additional constraints on mentors may be specified by passing a custom
+  extra_attrs dictionary. Each element of the dictionary maps a property
+  with a requested value. The value may be a single object or a list/tuple.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    org_key: organization key
+    keys_only: If true, return only keys instead of complete entities
+    extra_args: a dictionary containing additional constraints on
+        mentors to retrieve
+
+  Returns:
+    list of profiles entities or keys of mentors
+  """
+  query = profile_model.GSoCProfile.all(keys_only=keys_only)
+  query.filter('mentor_for', org_key)
+  query.filter('status', 'active')
+
+  _handleExtraAttrs(query, extra_attrs)
+
+  return query.fetch(1000)

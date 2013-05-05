@@ -532,6 +532,146 @@ class CountOrgAdminsTest(unittest.TestCase):
     self.assertEqual(org_admins, 1)
 
 
+class GetMentorsTest(unittest.TestCase):
+  """Unit tests for getMentors function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+     # seed a couple of organizations
+    self.organization_one = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+    self.organization_two = seeder_logic.seed(GSoCOrganization,
+        {'program': self.program})
+
+  def testNoMentors(self):
+    mentors = profile_logic.getOrgAdmins(self.organization_one.key())
+    self.assertEqual(mentors, [])
+
+  def testOneMentor(self):
+    # seed a new mentor for organization one
+    mentor_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'status': 'active',
+    }
+    mentor = seeder_logic.seed(
+        profile_model.GSoCProfile, mentor_properties)
+
+    # the mentor should be returned
+    mentors = profile_logic.getMentors(self.organization_one.key())
+    self.assertEqual(len(mentors), 1)
+    self.assertEqual(mentors[0].key(), mentor.key())
+
+    # keys_only set to True should return only the key
+    mentor_keys = profile_logic.getMentors(
+        self.organization_one.key(), keys_only=True)
+    self.assertEqual(len(mentor_keys), 1)
+    self.assertEqual(mentor_keys[0], mentor.key())
+
+    # there is still no mentor for organization two
+    mentors = profile_logic.getMentors(self.organization_two.key())
+    self.assertEqual(mentors, [])
+
+  def testManyMentors(self):
+    # seed a few mentors for organization one
+    mentor_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'status': 'active',
+    }
+    seeded_mentors = set()
+    for _ in range(5):
+      seeded_mentors.add(seeder_logic.seed(
+        profile_model.GSoCProfile, mentor_properties).key())
+
+    # all mentors should be returned
+    mentors = profile_logic.getMentors(self.organization_one.key())
+    self.assertEqual(len(mentors), 5)
+    self.assertEqual(seeded_mentors, set([mentor.key() for mentor in mentors]))
+
+    # all mentors keys should be returned if keys_only set
+    mentor_keys = profile_logic.getMentors(
+        self.organization_one.key(), keys_only=True)
+    self.assertEqual(len(mentor_keys), 5)
+    self.assertEqual(seeded_mentors, set(mentor_keys))
+
+  def testNotActiveMentor(self):
+    # seed invalid mentor for organization one
+    mentor_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'status': 'invalid',
+    }
+    mentor = seeder_logic.seed(profile_model.GSoCProfile, mentor_properties)
+
+    # not active mentor not returned
+    mentors = profile_logic.getMentors(self.organization_one.key())
+    self.assertEqual(mentors, [])
+
+    # keys_only set to True does not return any keys
+    mentors_keys = profile_logic.getMentors(
+        self.organization_one.key(), keys_only=True)
+    self.assertEqual(mentors_keys, [])
+
+  def testExtraAttrs(self):
+    # seed female mentor for organization one
+    mentor_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [],
+        'status': 'active',
+        'gender': 'female',
+      }
+    mentor = seeder_logic.seed(profile_model.GSoCProfile, mentor_properties)
+
+    # seed male mentor for organization one
+    mentor_properties['gender'] = 'male'
+    seeder_logic.seed(profile_model.GSoCProfile, mentor_properties)
+
+    # retrieve only mentors with extra attrs
+    extra_attrs = {
+        profile_model.GSoCProfile.gender: 'female',
+        }
+    mentors = profile_logic.getMentors(self.organization_one.key(),
+        extra_attrs=extra_attrs)
+
+    # only the female mentor should be returned
+    self.assertEqual(1, len(mentors))
+    self.assertEqual(mentors[0].key(), mentor.key())
+
+  def testForOrgAdmin(self):
+    # seed a new org admin for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'active',
+    }
+    org_admin = seeder_logic.seed(
+        profile_model.GSoCProfile, org_admin_properties)
+
+    # the org admin should be returned as it is also a mentor
+    mentors = profile_logic.getMentors(self.organization_one.key())
+    self.assertEqual(len(mentors), 1)
+    self.assertEqual(mentors[0].key(), org_admin.key())
+
+    # keys_only set to True should return only the key
+    mentor_keys = profile_logic.getMentors(
+        self.organization_one.key(), keys_only=True)
+    self.assertEqual(len(mentor_keys), 1)
+    self.assertEqual(mentor_keys[0], org_admin.key())
+
+
 class ResignAsMentorForOrgTest(unittest.TestCase):
   """Unit tests for resignAsMentorForOrg function."""
 
