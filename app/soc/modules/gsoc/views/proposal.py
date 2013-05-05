@@ -98,8 +98,9 @@ class ProposalPage(GSoCRequestHandler):
       return None
 
     # set the organization and program references
-    proposal_form.cleaned_data['org'] = data.organization
-    proposal_form.cleaned_data['program'] = data.program
+    proposal_properties = proposal_form.asDict()
+    proposal_properties['org'] = data.organization
+    proposal_properties['program'] = data.program
 
     student_info_key = data.student_info.key()
 
@@ -116,7 +117,8 @@ class ProposalPage(GSoCRequestHandler):
       student_info.number_of_proposals += 1
       student_info.put()
 
-      proposal = proposal_form.create(commit=True, parent=data.profile)
+      proposal = GSoCProposal(parent=data.profile, **proposal_properties)
+      proposal.put()
 
       context = notifications.newProposalContext(data, proposal, to_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=proposal)
