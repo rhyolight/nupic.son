@@ -87,7 +87,8 @@ class StudentInfo(db.Model):
 
   expected_graduation = db.IntegerProperty(required=True,
       verbose_name=ugettext('Expected Graduation Year'))
-  expected_graduation.help_text = ugettext("Pick your expected graduation year")
+  expected_graduation.help_text = ugettext(
+      "Please enter your expected graduation year")
   expected_graduation.group = EDUCATION_GROUP
 
   #: Property containing the Grade of the student if the school type
