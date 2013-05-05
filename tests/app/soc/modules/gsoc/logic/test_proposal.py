@@ -314,6 +314,7 @@ class CanSubmitProposalTest(unittest.TestCase):
   def setUp(self):
     # seed a timeline and set student app period for now
     timeline_properties = {
+        'key_name': 'test_keyname',
         'student_signup_start': timeline_utils.past(),
         'student_signup_end': timeline_utils.future(),
         }
@@ -322,12 +323,11 @@ class CanSubmitProposalTest(unittest.TestCase):
 
     # seed a proggram
     program_properties = {
+        'key_name': 'test_keyname',
         'timeline': self.timeline,
         'apps_tasks_limit': 3
         }
     self.program = seeder_logic.seed(GSoCProgram, program_properties)
-    self.timeline.scope = self.program
-    self.timeline.put()
 
     # seed a new student info
     student_info_properties = {
@@ -390,6 +390,7 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
   def setUp(self):
     # seed a timeline and set student app period for now
     timeline_properties = {
+        'key_name': 'test_keyname',
         'student_signup_start': timeline_utils.past(),
         'student_signup_end': timeline_utils.future(),
         }
@@ -398,12 +399,11 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
 
     # seed a new program
     program_properties = {
+        'key_name': 'test_keyname',
         'timeline': self.timeline,
         'apps_tasks_limit': 3,
         }
     self.program = seeder_logic.seed(GSoCProgram, program_properties)
-    self.timeline.scope = self.program
-    self.timeline.put()
 
     # seed a new student info
     student_info_properties = {
@@ -506,6 +506,7 @@ class ResubmitProposalTest(unittest.TestCase):
   def setUp(self):
     # seed a timeline and set student app period for now
     timeline_properties = {
+        'key_name': 'test_keyname',
         'student_signup_start': timeline_utils.past(),
         'student_signup_end': timeline_utils.future(),
         }
@@ -514,12 +515,11 @@ class ResubmitProposalTest(unittest.TestCase):
 
     # seed a new program
     program_properties = {
+        'key_name': 'test_keyname',
         'timeline': self.timeline,
         'apps_tasks_limit': 3,
         }
     self.program = seeder_logic.seed(GSoCProgram, program_properties)
-    self.timeline.scope = self.program
-    self.timeline.put()
 
     # seed a new student info
     student_info_properties = {
