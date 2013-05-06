@@ -201,10 +201,7 @@ def withdrawProposal(proposal, student_info):
   """
   if not canProposalBeWithdrawn(proposal):
     # check if the proposal is already withdrawn
-    if proposal.status == proposal_model.STATUS_WITHDRAWN:
-      return True
-    else:
-      return False
+    return proposal.status == proposal_model.STATUS_WITHDRAWN
 
   proposal.status = proposal_model.STATUS_WITHDRAWN
   student_info.number_of_proposals -= 1
@@ -236,10 +233,7 @@ def resubmitProposal(proposal, student_info, program, timeline):
   if not canProposalBeResubmitted(
       proposal, student_info, program, timeline):
     # check if the proposal is not already pending
-    if proposal.status == proposal_model.STATUS_PENDING:
-      return True
-    else:
-      return False
+    return proposal.status == proposal_model.STATUS_PENDING
 
   proposal.status = proposal_model.STATUS_PENDING
   student_info.number_of_proposals += 1

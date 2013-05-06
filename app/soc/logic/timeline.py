@@ -28,7 +28,4 @@ def isTimelineForProgram(timeline_key, program_key):
   Returns:
     True, if the timeline is related to the program; False otherwise
   """
-  if timeline_key.name() == program_key.name():
-    return True
-  else:
-    return False
+  return timeline_key.name() == program_key.name()
