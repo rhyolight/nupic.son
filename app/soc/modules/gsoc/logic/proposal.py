@@ -133,7 +133,9 @@ def canSubmitProposal(student_info, program, timeline):
   """
   # check if given timeline corresponds to the given program
   if not timeline_logic.isTimelineForProgram(timeline.key(), program.key()):
-    raise ValueError('The specified timeline is not related to program')
+    raise ValueError('The specified timeline (key_name: %s) is '
+        'not related to program (key_name: %s).' % (
+            timeline.key().name(), program.key().name()))
 
   # check the student application period is open
   timeline_helper = request_data.TimelineHelper(timeline, None)
@@ -178,7 +180,9 @@ def canProposalBeResubmitted(proposal, student_info, program, timeline):
   """
   # check if given timeline corresponds to the given program
   if not timeline_logic.isTimelineForProgram(timeline.key(), program.key()):
-    raise ValueError('The specified timeline is not related to program')
+    raise ValueError('The specified timeline (key_name: %s) is '
+        'not related to program (key_name: %s).' % (
+            timeline.key().name(), program.key().name()))
 
   # only withdrawn proposals can be resubmitted
   if proposal.status != proposal_model.STATUS_WITHDRAWN:
@@ -228,7 +232,9 @@ def resubmitProposal(proposal, student_info, program, timeline):
   """
   # check if given timeline corresponds to the given program
   if not timeline_logic.isTimelineForProgram(timeline.key(), program.key()):
-    raise ValueError('The specified timeline is not related to program')
+    raise ValueError('The specified timeline (key_name: %s) is '
+        'not related to program (key_name: %s).' % (
+            timeline.key().name(), program.key().name()))
 
   if not canProposalBeResubmitted(
       proposal, student_info, program, timeline):
