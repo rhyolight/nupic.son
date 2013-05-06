@@ -404,6 +404,11 @@ class ReviewProposal(GSoCRequestHandler):
     comment_action = reverse('comment_gsoc_proposal', kwargs=data.kwargs)
 
     if data.private_comments_visible:
+
+      # only mentors and org admins can see that the proposal is ignored
+      # TODO(daniel): replace status literals with constants
+      context['proposal_ignored'] = data.proposal.status == 'ignored'
+
       form = PrivateCommentForm(data.POST or None)
       if data.orgAdminFor(data.proposal.org):
         user_role = 'org_admin'
@@ -475,7 +480,6 @@ class ReviewProposal(GSoCRequestHandler):
         'scoring_visible': scoring_visible,
         'student_email': data.url_profile.email,
         'student_name': data.url_profile.name(),
-        'proposal_ignored': data.proposal.status == 'ignored',
         'user_role': user_role,
         })
 
