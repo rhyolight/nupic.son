@@ -47,12 +47,7 @@ limitations under the License.
   <div id="user-message" class="error">
     <strong>ALERT:</strong> This proposal has been flagged as
     <strong>ignored</strong> by
-    {% if user_role == 'proposer' %}
-      the organization administrators. You will <strong>NOT</strong> be
-      allowed to update or withdraw the proposal now. If you think this is
-      incorrect, contact your organization administrators to resolve this
-      situation.
-    {% else %}{% if user_role == 'mentor' %}
+    {% if user_role == 'mentor' %}
       the organization administrators. You will <strong>NOT</strong> be
       allowed to perform any action on this proposal now. If you think this
       is incorrect, contact your organization administrators to resolve this
