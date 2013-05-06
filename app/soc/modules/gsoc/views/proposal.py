@@ -23,6 +23,8 @@ from soc.logic.exceptions import AccessViolation
 from soc.views.helper import url_patterns
 from soc.tasks import mailer
 
+from soc.modules.gsoc.logic import profile as profile_logic
+from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -96,15 +98,17 @@ class ProposalPage(GSoCRequestHandler):
       return None
 
     # set the organization and program references
-    proposal_form.cleaned_data['org'] = data.organization
-    proposal_form.cleaned_data['program'] = data.program
+    proposal_properties = proposal_form.asDict()
+    proposal_properties['org'] = data.organization
+    proposal_properties['program'] = data.program
 
     student_info_key = data.student_info.key()
 
-    q = GSoCProfile.all().filter('mentor_for', data.organization)
-    q = q.filter('status', 'active')
-    q.filter('notify_new_proposals', True)
-    mentors = q.fetch(1000)
+    extra_attrs = {
+        GSoCProfile.notify_new_proposals: True
+        }
+    mentors = profile_logic.getMentors(
+        data.organization.key(), extra_attrs=extra_attrs)
 
     to_emails = [i.email for i in mentors]
 
@@ -113,7 +117,8 @@ class ProposalPage(GSoCRequestHandler):
       student_info.number_of_proposals += 1
       student_info.put()
 
-      proposal = proposal_form.create(commit=True, parent=data.profile)
+      proposal = GSoCProposal(parent=data.profile, **proposal_properties)
+      proposal.put()
 
       context = notifications.newProposalContext(data, proposal, to_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=proposal)
@@ -207,10 +212,11 @@ class UpdateProposal(GSoCRequestHandler):
     if not proposal_form.is_valid():
       return None
 
-    q = GSoCProfile.all().filter('mentor_for', data.proposal.org)
-    q = q.filter('status', 'active')
-    q.filter('notify_proposal_updates', True)
-    mentors = q.fetch(1000)
+    org_key = GSoCProposal.org.get_value_for_datastore(data.proposal)
+    extra_attrs = {
+        GSoCProfile.notify_proposal_updates: True
+        }
+    mentors = profile_logic.getMentors(org_key, extra_attrs=extra_attrs)
 
     to_emails = [i.email for i in mentors]
 
@@ -231,23 +237,23 @@ class UpdateProposal(GSoCRequestHandler):
 
   def _withdraw(self, data):
     """Withdraws a proposal."""
-    proposal_key = data.proposal.key()
 
     def withdraw_proposal_txn():
-      proposal = db.get(proposal_key)
-      proposal.status = 'withdrawn'
-      proposal.put()
+      proposal = db.get(data.proposal.key())
+      student_info = db.get(data.student_info.key())
+
+      proposal_logic.withdrawProposal(proposal, student_info)
 
     db.run_in_transaction(withdraw_proposal_txn)
 
   def _resubmit(self, data):
     """Resubmits a proposal."""
-    proposal_key = data.proposal.key()
 
     def resubmit_proposal_txn():
-      proposal = db.get(proposal_key)
-      proposal.status = 'pending'
-      proposal.put()
+      proposal = db.get(data.proposal.key())
+      student_info = db.get(data.student_info.key())
+      proposal_logic.resubmitProposal(
+          proposal, student_info, data.program, data.program_timeline)
 
     db.run_in_transaction(resubmit_proposal_txn)
 

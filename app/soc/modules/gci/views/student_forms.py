@@ -96,12 +96,11 @@ class UploadForm(gci_forms.GCIModelForm):
 
   def save(self, commit=True):
     student_info = super(UploadForm, self).save(commit=False)
-    cleaned_data = self._cleaned_data()
 
-    if cleaned_data.get('consent_form'):
+    if self.cleaned_data.get('consent_form'):
       student_info.consent_form_verified = False
 
-    if cleaned_data.get('student_id_form'):
+    if self.cleaned_data.get('student_id_form'):
       student_info.student_id_form_verified = False
 
     if commit:

@@ -25,6 +25,27 @@ import soc.modules.gsoc.models.profile
 import soc.modules.gsoc.models.program
 
 
+# constants with possible statuses of proposals
+
+# the proposal has been assigned a project slot
+STATUS_ACCEPTED = 'accepted'
+
+# the org admin has ignored the proposal may be because it is spam
+STATUS_IGNORED = 'ignored'
+
+# the student or an org admin marked this as an invalid proposal
+STATUS_INVALID = 'invalid'
+
+# the proposal is in the process of being ranked/scored
+STATUS_PENDING = 'pending'
+
+# the proposal has not been assigned a slot
+STATUS_REJECTED = 'rejected'
+
+# the proposal has been withdrawn by the student
+STATUS_WITHDRAWN = 'withdrawn'
+
+
 class GSoCProposal(db.Model):
   """Model for a student proposal used in the GSoC workflow.
 
@@ -93,15 +114,9 @@ class GSoCProposal(db.Model):
   accept_as_project = db.BooleanProperty(default=False)
 
   #: the status of this proposal
-  #: pending: the proposal is in the process of being ranked/scored
-  #: accepted: the proposal has been assigned a project slot
-  #: rejected: the proposal has not been assigned a slot
-  #: invalid: the student or org admin marked this as an invalid proposal.
-  #: withdrawn: the proposal has been withdrawn by the student
-  #: ignored: the org admin has ignored the proposal may be because it is spam
-  status = db.StringProperty(required=True, default='pending',
-      choices=['pending', 'accepted', 'rejected', 'invalid',
-               'withdrawn', 'ignored'])
+  status = db.StringProperty(required=True, default=STATUS_PENDING,
+      choices=[STATUS_ACCEPTED, STATUS_IGNORED, STATUS_INVALID,
+          STATUS_PENDING, STATUS_REJECTED, STATUS_WITHDRAWN])
 
   #: organization to which this proposal is directed
   org = db.ReferenceProperty(

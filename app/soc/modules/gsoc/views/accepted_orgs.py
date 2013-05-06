@@ -24,6 +24,7 @@ from soc.views.template import Template
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 
+from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.templates import org_list
@@ -84,12 +85,12 @@ class AcceptedOrgsAdminList(org_list.OrgList):
       """See lists.Prefetcher.prefetch for specification."""
       org_admins = {}
       for entity in entities:
-        oas = profile_model.GSoCProfile.all().filter(
-            'org_admin_for', entity).fetch(limit=1000)
+        org_admins_for_org = profile_logic.getOrgAdmins(entity)
         org_admins[entity.key()] = ', '.join(
             ['"%s" &lt;%s&gt;' % (
-                html_utils.conditional_escape(oa.name()),
-                html_utils.conditional_escape(oa.email)) for oa in oas])
+                html_utils.conditional_escape(org_admin_for_org.name()),
+                html_utils.conditional_escape(org_admin_for_org.email))
+                for org_admin_for_org in org_admins_for_org])
 
       return ([org_admins], {})
 
