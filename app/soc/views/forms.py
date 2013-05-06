@@ -561,10 +561,10 @@ class ModelForm(djangoforms.ModelForm):
     if self.errors:
       raise ValueError("The %s could not be created because the data didn't "
                        'validate.' % opts.model.kind())
-    cleaned_data = self._cleaned_data()
+
     converted_data = {}
     for name, prop in opts.model.properties().iteritems():
-      value = cleaned_data.get(name)
+      value = self.cleaned_data.get(name)
       if value is not None:
         converted_data[name] = prop.make_value_from_form(value)
     try:
@@ -587,7 +587,7 @@ class ModelForm(djangoforms.ModelForm):
     Returns:
       a dictionary mapping all the fields with the values.
     """
-    return copy.deepcopy(self._cleaned_data())
+    return copy.deepcopy(self.cleaned_data)
 
   def render(self):
     """Renders the template to a string.
@@ -692,13 +692,12 @@ class SurveyTakeForm(ModelForm):
     instance = super(SurveyTakeForm, self).save(commit=False)
 
     opts = self._meta
-    cleaned_data = self._cleaned_data()
-    additional_names = set(cleaned_data.keys() +
+    additional_names = set(self.cleaned_data.keys() +
         self.instance.dynamic_properties())
 
     try:
       for name in additional_names:
-        value = cleaned_data.get(name)
+        value = self.cleaned_data.get(name)
         field = self.fields.get(name, None)
         if field and isinstance(field.widget, forms.Textarea):
           value = db.Text(value)
