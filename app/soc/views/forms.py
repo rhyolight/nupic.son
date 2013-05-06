@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the boiler plate required to construct templates
-"""
+"""Module containing the boiler plate required to construct templates."""
 
-
+import copy
 import collections
 import datetime
 import itertools
@@ -582,10 +581,13 @@ class ModelForm(djangoforms.ModelForm):
     """Returns a dictionary that maps all the form fields with
     the corresponding values.
 
+    Please note that a copy of the internal structure is returned, so
+    modifications made to it are not reflected in the form data.
+
     Returns:
       a dictionary mapping all the fields with the values.
     """
-    return self._cleaned_data()
+    return copy.deepcopy(self._cleaned_data())
 
   def render(self):
     """Renders the template to a string.
