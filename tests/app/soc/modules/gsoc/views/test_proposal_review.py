@@ -20,6 +20,7 @@ from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
 
+from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
 
@@ -294,11 +295,11 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertTrue(proposal.is_publicly_visible)
 
   def testWithdrawProposalButton(self):
-    self.data.createStudent()
+    self.data.createStudentWithProposal(self.org, None)
     self.timeline.studentSignup()
 
-    proposal = self.createProposal({'scope': self.data.profile,
-                                    'parent': self.data.profile})
+    proposal = GSoCProposal.all().ancestor(self.data.profile).get()
+    number_of_proposals = self.data.profile.student_info.number_of_proposals
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
@@ -311,8 +312,14 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseOK(response)
 
+    # check that the student proposal is withdrawn
     proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(proposal.status, 'withdrawn')
+
+    # check that number of proposals is updated
+    student_info = profile_model.GSoCStudentInfo.get(
+        self.data.profile.student_info.key())
+    self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
 
     url = '/gsoc/proposal/withdraw/' + suffix
     postdata = {'value': 'unchecked'}
@@ -320,8 +327,14 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseBadRequest(response)
 
+    # check that the student proposal is still withdrawn
     proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(proposal.status, 'withdrawn')
+
+    # check that number of proposals is still the same
+    student_info = profile_model.GSoCStudentInfo.get(
+        self.data.profile.student_info.key())
+    self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
 
     url = '/gsoc/proposal/withdraw/' + suffix
     postdata = {'value': 'checked'}
@@ -329,8 +342,14 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertResponseOK(response)
 
+    # check that the student proposal is pending
     proposal = GSoCProposal.get(proposal.key())
     self.assertEqual(proposal.status, 'pending')
+
+    # check that number of proposals is increased again
+    student_info = profile_model.GSoCStudentInfo.get(
+        self.data.profile.student_info.key())
+    self.assertEqual(number_of_proposals, student_info.number_of_proposals)
 
   def testAssignMentor(self):
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
