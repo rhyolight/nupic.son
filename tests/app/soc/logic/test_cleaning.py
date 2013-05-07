@@ -65,7 +65,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanEmptyField(self):
     """Tests that empty field can be cleaned.
     """
-    field_name = 'field'
+    field_name = 'test_empty_field'
     clean_field = cleaning.clean_empty_field(field_name)
     # Test that the same value will be returned, the cleaned_data of form
     # does not change and there is no error message if the value of field
@@ -88,7 +88,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanEmail(self):
     """Tests that an email is cleaned.
     """
-    field_name = 'email'
+    field_name = 'test_email'
     clean_field = cleaning.clean_email(field_name)
     #Test that the same value is returned, the cleaned_data of the from does
     #not change and there is no error message if the value of the field has a
@@ -110,7 +110,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanLinkId(self):
     """Tests that link_id field can be cleaned.
     """
-    field_name = 'link_id'
+    field_name = 'test_link_id'
     clean_field = cleaning.clean_link_id(field_name)
     # Test that the value will be returned, the cleaned_data of form does not
     # change and there is no error message if the value of field has a valid
@@ -134,7 +134,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanExistingUser(self):
     """Tests that the user field can be cleaned for existing users.
     """
-    field_name = 'user'
+    field_name = 'test_existing_user'
     clean_field = cleaning.clean_existing_user(field_name)
     # Test that the user will be returned if the value of field
     # is an existent user's link_id
@@ -151,7 +151,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanUserIsCurrent(self):
     """Tests that the user field can be cleaned for current users.
     """
-    field_name = 'user'
+    field_name = 'test_user_is_current'
     clean_field = cleaning.clean_user_is_current(field_name)
     # Test that the user will be returned if the value of field is
     # an existent user's link_id
@@ -173,7 +173,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanUserNotExist(self):
     """Tests that the user field can be cleaned for non-existent users.
     """
-    field_name = 'user'
+    field_name = 'test_user_not_exist'
     clean_field = cleaning.clean_user_not_exist(field_name)
     # Test that the value will be returned if the value of field
     # is not an existent user's link_id
@@ -189,7 +189,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanUsersNotSame(self):
     """Tests that the user field can be cleaned for non current users.
     """
-    field_name = 'not_current_user'
+    field_name = 'test_not_current_user'
     clean_field = cleaning.clean_users_not_same(field_name)
     # Test that forms.ValidationError will be raised if the value of field
     # is the current user's link_id
@@ -210,7 +210,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanUserAccount(self):
     """Test that user account can be cleaned.
     """
-    field_name = 'user_account'
+    field_name = 'test_user_account'
     clean_field = cleaning.clean_user_account(field_name)
     # Test that a new account will be returned if the value of field is
     # a valid new email address
@@ -234,7 +234,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanUserAccountNotInUse(self):
     """Tests that user account can be cleaned for non-existent user accounts.
     """
-    field_name = 'user_account_not_in_use'
+    field_name = 'test_user_account_not_in_use'
     clean_field = cleaning.clean_user_account_not_in_use(field_name)
     # Test that a new account will be created and returned
     # if the value of field is a valid new email address
@@ -257,7 +257,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanValidShippingChars(self):
     """Tests that the shipping fields can be cleaned.
     """
-    field_name = 'ascii'
+    field_name = 'test_ascii'
     clean_field = cleaning.clean_valid_shipping_chars(field_name)
     # Test that the value will be returned if the value of field is valid
     field_value = 'ab12'
@@ -272,7 +272,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanContentLength(self):
     """Tests that content length can be cleaned.
     """
-    field_name = 'content_length'
+    field_name = 'test_content_length'
     clean_field = cleaning.clean_content_length(field_name, 3, 5)
     # Test that the value will be returned if the length of the value of field
     # is within min_length and max_length
@@ -293,7 +293,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanPhoneNumber(self):
     """Tests that phone number can be cleaned.
     """
-    field_name = 'phone'
+    field_name = 'test_phone_number'
     clean_field = cleaning.clean_phone_number(field_name)
     # Test that the phone number will be returned if it contains digits only
     field_value = '0010208636479'
@@ -322,12 +322,8 @@ class CleaningTest(GSoCDjangoTestCase):
     self.assertRaises(forms.ValidationError, clean_field, self.form)
 
   def testCleanFeedUrl(self):
-    """Tests that feed url can be cleaned.
-
-    Note: unlike other cleaning functions, it has not used a decorator.
-    So, the field name 'feed_url' is hardwired in the code.
-    """
-    field_name = 'feed_url'
+    """Tests that feed url can be cleaned."""
+    field_name = 'test_feed_url'
     clean_field = cleaning.clean_feed_url(field_name)
     # Test that the value of the feed url field will be returned if
     # the value of the feed url field is an existent feed url
@@ -348,7 +344,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanHtmlContent(self):
     """Tests that html content can be cleaned.
     """
-    field_name = 'html'
+    field_name = 'test_html'
     clean_field = cleaning.clean_html_content(field_name)
     # Test that normal html can be cleaned
     expected = html = '<div>f9-+@4</div>'
@@ -379,7 +375,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testCleanUrl(self):
     """Tests that url can be cleaned.
     """
-    field_name = 'url'
+    field_name = 'test_url'
     clean_field = cleaning.clean_url(field_name)
     # Test that the value of the url field will be returned
     # if it is a valid url
@@ -401,7 +397,7 @@ class CleaningTest(GSoCDjangoTestCase):
   def testStr2Set(self):
     """Tests if symbol separated strings are cleaned.
     """
-    string_field = 'string_field'
+    string_field = 'test_string_field'
     clean_field = cleaning.str2set(string_field, separator=',')
 
     string_field_value = "a,b,c"
@@ -434,7 +430,7 @@ class CleaningTest(GSoCDjangoTestCase):
 
   def testCleanIrc(self):
     """Tests cleaning.clean_irc."""
-    field_name = 'irc'
+    field_name = 'test_irc'
     clean_field = cleaning.clean_irc(field_name)
 
     # Test that the value of the irc field will be returned
@@ -471,7 +467,7 @@ class CleaningTest(GSoCDjangoTestCase):
 
   def testCleanMailto(self):
     """Tests cleaning.clean_mailto."""
-    field_name = 'mailto'
+    field_name = 'test_mailto'
     clean_field = cleaning.clean_mailto(field_name)
 
     # Test that the value of the mail url field will be returned
@@ -502,7 +498,7 @@ class CleaningTest(GSoCDjangoTestCase):
 	
   def testCleanBirthdate(self):
     """Tests cleaning.clean_birth_date."""
-    field_name = 'test_dob'
+    field_name = 'test_date_of_birth'
     clean_field = cleaning.clean_birth_date(field_name)
 
     test_program_start = datetime.date(2013, 5, 31)
