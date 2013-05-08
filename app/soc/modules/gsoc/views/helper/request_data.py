@@ -40,7 +40,26 @@ class TimelineHelper(request_data.TimelineHelper):
   """
 
   def currentPeriod(self):
-    """Return where we are currently on the timeline."""
+    """Returns where we are currently on the timeline.
+
+    Here is detailed description and definitions of how the resulting string
+    is generated based on the current date and program timeline:
+
+    - 'offseason' is returned before the program start date and after
+      program end date
+    - 'kickoff_period' is returned after the program start date and before
+      organization application start date
+    - 'org_signup_period' is returned after organization application start
+      date and before student sign-up start date
+    - 'student_signup_period' is returned after student sign-up start date
+      and before students announced date
+    - 'coding_period' is returned after students announced date and before
+      program end date
+
+    Returns:
+      name of the current period on the timeline as described in this method's
+      documentation
+    """
     if not self.programActive():
       return 'offseason'
 
