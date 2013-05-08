@@ -44,14 +44,23 @@ class User(soc.models.linkable.Linkable):
      User.  This relation is implemented as the 'user' back-reference
      Query of the Document model 'user' reference.
 
-   groups)  a 1:many relationship of Group entities "founded" by the User.
-     This relation is implemented as the 'groups' back-reference Query of
-     the Group model 'founder' reference.
-
    responses)  a 1:many relationship of Response entities submitted by the
      User.  This relation is implemented as the 'responses' back-reference
      Query of the Response model 'respondent' reference.
   """
+
+  @property
+  def url_id(self):
+    """URL ID property.
+
+    It provides a unique string identifier of the user that is to be used
+    as a part of various URLs. The returned string is URL safe and can be
+    validated by linkable.LINK_ID_REGEX regular expression.
+
+    Returns:
+      a string containing URL ID property
+    """
+    return self.key().name()
 
   #: A Google Account, which also provides a "private" email address.
   #: This email address is only used in an automated fashion by 

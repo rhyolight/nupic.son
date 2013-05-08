@@ -40,22 +40,13 @@ class Group(soc.models.linkable.Linkable):
   short_name.help_text = ugettext('Short name used for sidebar menu')
   short_name.group = ugettext("1. Public Info")
 
-  #: Required many:1 relationship indicating the founding User of the
-  #: Group (this relationship is needed to keep track of lifetime group
-  #: creation limits, used to prevent spamming, etc.).
-  founder = db.ReferenceProperty(reference_class=soc.models.user.User,
-                                 required=True, collection_name="groups",
-                                 verbose_name=ugettext('Registered by'))
-  founder.group = ugettext("1. Public Info")
-
   #: Required field storing a home page URL of the group.
   home_page = db.LinkProperty(required=True,
       verbose_name=ugettext('Home Page URL'))
   home_page.group = ugettext("1. Public Info")
 
   #: Required email address used as the "public" contact mechanism for
-  #: the Group (as opposed to the founder.account email address which is
-  #: kept secret, revealed only to Developers).
+  #: the Group
   email = db.EmailProperty(required=True,
       verbose_name=ugettext('Email'))
   email.help_text = ugettext(

@@ -45,6 +45,7 @@ GCI_STUDENT_TASKS = 'gci_student_tasks'
 GCI_STUDENT_TASKS_FOR_ORG = 'gci_student_tasks_for_org'
 GCI_STUDENT_FORM_DOWNLOAD = 'gci_student_form_download'
 GCI_STUDENT_FORM_UPLOAD = 'gci_student_form_upload'
+GCI_SUBSCRIBED_TASKS = 'gci_subscribed_tasks'
 
 CREATE_GCI_ORG_PROFILE = 'create_gci_org_profile'
 EDIT_GCI_ORG_PROFILE = 'edit_gci_org_profile'

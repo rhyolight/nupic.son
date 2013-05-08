@@ -52,7 +52,6 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.student_proposal import StudentProposal
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 
 
@@ -90,7 +89,6 @@ def seed(request, *args, **kwargs):
        'link_id': 'google',
        'name': 'Google Inc.',
        'short_name': 'Google',
-       'founder': current_user,
        'home_page': 'http://www.google.com',
        'email': 'ospo@google.com',
        'description': 'This is the profile for Google.',
@@ -494,7 +492,6 @@ def seed(request, *args, **kwargs):
       'prefix': 'site',
       'author': current_user,
       'title': 'Home Page',
-      'short_name': 'Home',
       'content': 'This is the Home Page',
       'modified_by': current_user,
       }
@@ -510,7 +507,6 @@ def seed(request, *args, **kwargs):
       'prefix': 'user',
       'author': current_user,
       'title': 'My Notes',
-      'short_name': 'Notes',
       'content': 'These are my notes',
       'modified_by': current_user,
       }
@@ -536,7 +532,6 @@ def clear(*args, **kwargs):
   entities = itertools.chain(*[
       Survey.all(),
       SurveyRecord.all(),
-      StudentProposal.all(),
       GSoCOrganization.all(),
       GCIOrganization.all(),
       GSoCTimeline.all(),

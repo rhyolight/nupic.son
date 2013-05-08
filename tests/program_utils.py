@@ -52,7 +52,6 @@ class ProgramHelper(object):
       org: an organization
       site: a site
     """
-    self.founder = None
     self.sponsor = None
     self.program = None
     self.org_app = None
@@ -70,24 +69,14 @@ class ProgramHelper(object):
     return seeder_logic.seedn(model, n, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
 
-  def createFounder(self, override={}):
-    """Creates a founder for the defined properties.
-    """
-    if self.founder:
-      return self.founder
-    properties = {}
-    properties.update(override)
-    self.founder = self.seed(User, properties)
-    return self.founder
-
   def createSponsor(self, override={}):
     """Creates a sponsor for the defined properties.
     """
     if self.sponsor:
       return self.sponsor
-    if self.founder is None:
-      self.createFounder()
-    properties = {'founder': self.founder, 'home': None}
+    properties = {
+        'home': None,
+        }
     properties.update(override)
     self.sponsor = self.seed(Sponsor, properties)
     return self.sponsor
@@ -105,13 +94,14 @@ class ProgramHelper(object):
       return self.org_app
     if self.program is None:
       self.createProgram()
-    # TODO (Madhu): Remove scope and author fields once the data
-    # conversion is done.
+
+    user = seeder_logic.seed(User)
     properties = {
-        'scope': self.program, 'program': self.program,
-        'modified_by': self.founder,
-        'created_by': self.founder,
-        'author': self.founder,
+        'scope': self.program,
+        'program': self.program,
+        'modified_by': user,
+        'created_by': user,
+        'author': user,
         'schema': ('[["item"],{"item":{"field_type":"input_text",'
                    '"required":false, "label":"test"}}]'),
         'survey_content': None,
@@ -190,7 +180,7 @@ class GSoCProgramHelper(ProgramHelper):
 
     properties = {'timeline': self.program_timeline,
                   'status': 'visible', 'apps_tasks_limit': 20,
-                  'scope': self.sponsor,
+                  'scope': self.sponsor, 'sponsor': self.sponsor,
                   'student_agreement': None, 'events_page': None,
                   'help_page': None, 'connect_with_us_page': None,
                   'mentor_agreement': None, 'org_admin_agreement': None,
@@ -198,12 +188,16 @@ class GSoCProgramHelper(ProgramHelper):
                   'home': None, 'about_page': None,
                   'student_min_age': 18, 'student_max_age': 999}
     properties.update(override)
-    self.program = self.seed(GSoCProgram, properties)
 
+    self.program = self.seed(GSoCProgram, properties)
+    user = seeder_logic.seed(User)
     properties = {
-        'prefix': 'gsoc_program', 'scope': self.program,
-        'read_access': 'public', 'key_name': DocumentKeyNameProvider(),
-        'modified_by': self.founder, 'author': self.founder,
+        'prefix': 'gsoc_program',
+        'scope': self.program,
+        'read_access': 'public',
+        'key_name': DocumentKeyNameProvider(),
+        'modified_by': user,
+        'author': user,
         'home_for': None,
     }
     document = self.seed(Document, properties=properties)
@@ -233,8 +227,7 @@ class GSoCProgramHelper(ProgramHelper):
     """
     super(GSoCProgramHelper, self).createNewOrg(override)
     properties = {'scope': self.program, 'status': 'active',
-                  'scoring_disabled': False, 'max_score': 5,
-                  'founder': self.founder, 'home': None,}
+                  'scoring_disabled': False, 'max_score': 5, 'home': None}
     properties.update(override)
     return self.seed(GSoCOrganization, properties)
 
@@ -271,7 +264,7 @@ class GCIProgramHelper(ProgramHelper):
     properties = {
         'timeline': self.program_timeline,
         'status': 'visible',
-        'scope': self.sponsor,
+        'scope': self.sponsor, 'sponsor': self.sponsor,
         'student_agreement': None, 'events_page': None,
         'help_page': None, 'connect_with_us_page': None,
         'mentor_agreement': None, 'org_admin_agreement': None,
@@ -282,12 +275,13 @@ class GCIProgramHelper(ProgramHelper):
         'task_types': ['code', 'documentation', 'design'],
     }
     properties.update(override)
-    self.program = self.seed(GCIProgram, properties)
 
+    self.program = self.seed(GCIProgram, properties)
+    user = seeder_logic.seed(User)
     properties = {
         'prefix': 'gci_program', 'scope': self.program,
         'read_access': 'public', 'key_name': DocumentKeyNameProvider(),
-        'modified_by': self.founder, 'author': self.founder,
+        'modified_by': user, 'author': user,
         'home_for': None,
     }
     document = self.seed(Document, properties=properties)
@@ -316,11 +310,13 @@ class GCIProgramHelper(ProgramHelper):
     This new organization will not be stored in self.org but returned.
     """
     super(GCIProgramHelper, self).createNewOrg(override)
-    properties = {'scope': self.program, 'status': 'active',
-                  'founder': self.founder,
-                  'home': None,
-                  'task_quota_limit': 100,
-                  'backup_winner': None}
+    properties = {
+        'scope': self.program,
+        'status': 'active',
+        'home': None,
+        'task_quota_limit': 100,
+        'backup_winner': None
+        }
     properties.update(override)
     return self.seed(GCIOrganization, properties)
 

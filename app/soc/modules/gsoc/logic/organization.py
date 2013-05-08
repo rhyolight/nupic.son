@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Organization (Model) query functions.
-"""
-
+"""Logic for organization."""
 
 from soc.logic import organization as org_logic
 
-from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models import organization as org_model
 
 
 def participating(program):
@@ -28,6 +26,9 @@ def participating(program):
   organizations.
 
   Args:
-    program: GSoCProgram entity for which the orgs need to be fetched.
+    program: GSoCProgram entity for which the organizations need to be fetched.
+
+  Returns:
+    list of GSoCOrganization entities
   """
-  return org_logic.participating(GSoCOrganization, program)
+  return org_logic.participating(org_model.GSoCOrganization, program)

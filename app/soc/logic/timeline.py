@@ -1,4 +1,4 @@
-# Copyright 2011 the Melange authors.
+# Copyright 2013 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Logic for timeline model."""
 
-"""Surveys model updating MapReduce.
-"""
-
-
-from mapreduce import operation
-
-from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gci.models.program import GCIProgram
+from soc.models import timeline as timeline_model
 
 
-def process(survey):
-  survey.created_by = survey.author
-  survey.program = survey.scope
+def isTimelineForProgram(timeline_key, program_key):
+  """Checks whether the specified timeline is related to the specified
+  program.
 
-  yield operation.db.Put(survey)
-  yield operation.counters.Increment("survey_updated")
+  Args:
+    timeline_key: timeline key
+    program_key: program key
+
+  Returns:
+    True, if the timeline is related to the program; False otherwise
+  """
+  return timeline_key.name() == program_key.name()

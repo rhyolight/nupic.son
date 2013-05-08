@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for the GradingSurveyGroup.
-"""
-
+"""Test for the GradingSurveyGroup."""
 
 import httplib
 
 from tests import profile_utils
 from tests import test_utils
+
+from soc.models import user as user_model
 
 from soc.modules.gsoc.models import grading_project_survey as gps_model
 from soc.modules.gsoc.models import grading_project_survey_record as gpsr_model
@@ -28,6 +28,7 @@ from soc.modules.gsoc.models import grading_survey_group as gsg_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import project_survey as ps_model
 from soc.modules.gsoc.models import project_survey_record as psr_model
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 class GradingSurveyGroupTest(
@@ -66,10 +67,11 @@ class GradingSurveyGroupTest(
   def createSurveys(self):
     """Creates the surveys and records required for the tests.
     """
+    user = seeder_logic.seed(user_model.User)
     survey_values = {
-        'author': self.founder,
+        'author': user,
         'title': 'Title',
-        'modified_by': self.founder,
+        'modified_by': user,
         'link_id': 'link_id',
         'scope': self.gsoc,
     }

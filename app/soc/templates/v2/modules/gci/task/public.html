@@ -90,7 +90,12 @@ limitations under the License.
           jQuery('#task_form').data('unpublish_button', true);
         });
 
+        jQuery('input[name="button_delete"]').click(function(event) {
+          jQuery('#task_form').data('delete_button', true);
+        });
+
         jQuery('#task_form').submit(function(event) {
+
           var unpublish_clicked = !!jQuery('#task_form').data('unpublish_button');
           var unpublish_allowed = !!jQuery('#task_form').data('unpublish_allow');
           if (unpublish_clicked && unpublish_allowed) {
@@ -102,7 +107,8 @@ limitations under the License.
             jQuery('#task_form').data('unpublish_button', false);
             event.preventDefault();
             event.stopPropagation();
-            $("#dialog-confirm").dialog({
+            $("#unpublish-confirm-dialog").dialog({
+              title: "Confirm Unpublish",
               resizable: false,
               height:140,
               modal: true,
@@ -118,6 +124,36 @@ limitations under the License.
               }
             });
           }
+
+          var delete_clicked = !!jQuery('#task_form').data('delete_button');
+          var delete_allowed = !!jQuery('#task_form').data('delete_allow');
+          if (delete_clicked && delete_allowed) {
+            jQuery('#task_form').data('delete_allow', false);
+            jQuery('#task_form').data('delete_button', false);
+            return true;
+          }
+          if (delete_clicked) {
+            jQuery('#task_form').data('delete_button', false);
+            event.preventDefault();
+            event.stopPropagation();
+            $("#delete-confirm-dialog").dialog({
+              title: "Confirm Delete",
+              resizable: false,
+              height:140,
+              modal: true,
+              buttons: {
+                "Delete": function() {
+                  $(this).dialog("close");
+                  jQuery('#task_form').data('delete_allow', true);
+                  jQuery('input[name="button_delete"]').click();
+                },
+                Cancel: function() {
+                  $(this).dialog("close");
+                }
+              }
+            });
+          }
+
         });
       });
     }

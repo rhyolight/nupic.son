@@ -483,6 +483,30 @@ class StringListProperty(db.StringListProperty):
     return value
 
 
+# TODO(daniel): remove this class when django is updated to at least 1.4
+class URLField(forms.URLField):
+  """Custom implementation of URLField.
+
+  It inherits all the behavior from original Django implementation.
+  The only difference is that ValueError which can be raised by to_python
+  function is caught here and a validation error is raised instead.
+
+  ValidationError is initially thrown by urlsplit function and it is
+  Django's fault that their implementation does not handle it properly.
+
+  This issue has been fixed in Django 1.4. When the app upgrades to that
+  specific version or higher, this class can be removed.
+  """
+  def to_python(self, value):
+    try:
+      return super(URLField, self).to_python(value)
+    except ValueError:
+      # urlparse.urlsplit can raise a ValueError with some
+      # misformatted URLs.
+      raise django.core.exceptions.ValidationError(
+          self.error_messages['invalid'])
+
+
 class LinkProperty(db.LinkProperty):
   __metaclass__ = monkey_patch
 
@@ -491,7 +515,7 @@ class LinkProperty(db.LinkProperty):
 
     This defaults to a URLField instance.
     """
-    defaults = {'form_class': forms.URLField}
+    defaults = {'form_class': URLField}
     defaults.update(kwargs)
     return super(LinkProperty, self).get_form_field(**defaults)
 
@@ -888,14 +912,14 @@ class BaseModelForm(forms.BaseForm):
     if self.errors:
       raise ValueError("The %s could not be %s because the data didn't "
                        'validate.' % (opts.model.kind(), fail_message))
-    cleaned_data = self._cleaned_data()
+
     converted_data = {}
     propiter = itertools.chain(
       opts.model.properties().iteritems(),
       iter([('key_name', StringProperty(name='key_name'))])
       )
     for name, prop in propiter:
-      value = cleaned_data.get(name)
+      value = self.cleaned_data.get(name)
       if value is not None:
         converted_data[name] = prop.make_value_from_form(value)
     try:
@@ -917,19 +941,6 @@ class BaseModelForm(forms.BaseForm):
 
       instance.put()
     return instance
-
-  def _cleaned_data(self):
-    """Helper to retrieve the cleaned data attribute.
-
-    In Django 0.96 this attribute was called self.clean_data.  In 0.97
-    and later it's been renamed to self.cleaned_data, to avoid a name
-    conflict.  This helper abstracts the difference between the
-    versions away from its caller.
-    """
-    try:
-      return self.cleaned_data
-    except AttributeError:
-      return self.clean_data
 
 
 class ModelForm(BaseModelForm):

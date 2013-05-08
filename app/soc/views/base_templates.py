@@ -77,14 +77,14 @@ class ProgramSelect(Template):
     program_key = Site.active_program.get_value_for_datastore(self.data.site)
 
     programs = []
-    for p in self.data.programs:
-      if p.status == 'invisible':
+    for program in self.data.programs:
+      if program.status == 'invisible':
         continue
 
-      name = p.short_name
-      if p.key() == program_key:
+      name = program.short_name
+      if program.key() == program_key:
         name += ' (current)'
-      programs.append((name, url(p), attr(p)))
+      programs.append((name, url(program), attr(program)))
 
     return {
         'programs': programs,

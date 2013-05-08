@@ -14,7 +14,6 @@
 
 """Module containing the core callback."""
 
-from soc.tasks.updates import proposal_conversion
 from soc.views import host
 from soc.views import legacy
 from soc.tasks import mailer
@@ -55,5 +54,3 @@ class Callback(object):
     # Redesigned view registration
     for view in self.views:
       self.core.registerSitemapEntry(view.djangoURLPatterns())
-
-    self.core.registerSitemapEntry(proposal_conversion.getDjangoURLPatterns())

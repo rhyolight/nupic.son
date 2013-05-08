@@ -20,8 +20,9 @@ from soc.logic import cleaning
 from soc.views import forms
 
 PROFILE_EXCLUDE = [
-    'status', 'scope', 'founder', 'founder', 'slots', 'note', 'new_org',
-    'nr_applications', 'nr_mentors', 'link_id', 'proposal_extra',
+    'status', 'scope', 'slots', 'note', 'new_org',
+    'slots_calculated', 'nr_applications', 'nr_mentors', 'link_id',
+    'proposal_extra',
     ]
 
 HOMEPAGE_INFO_GROUP = translation.ugettext(

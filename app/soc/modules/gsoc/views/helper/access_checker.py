@@ -342,9 +342,11 @@ class AccessChecker(access_checker.AccessChecker):
     # check if the timeline allows submitting proposals
     self.studentSignupActive()
 
-    # check how many proposals the student has already submitted 
+    # check how many proposals the student has already submitted
+    # TODO(daniel): replace this query with checking on number_of_proposals
     query = GSoCProposal.all()
     query.ancestor(self.data.profile)
+    query.filter(GSoCProposal.status.name, 'pending')
 
     if query.count() >= self.data.program.apps_tasks_limit:
       # too many proposals access denied
@@ -540,7 +542,7 @@ class AccessChecker(access_checker.AccessChecker):
     expected_profile = self.data.proposal.parent()
     if expected_profile.key().name() != self.data.profile.key().name():
       error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'model': 'GSoCProposal'
+          'name': 'proposal'
           }
       raise AccessViolation(error_msg)
 

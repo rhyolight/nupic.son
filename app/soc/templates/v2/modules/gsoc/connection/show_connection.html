@@ -24,6 +24,7 @@ limitations under the License.
 <h1 id="show-review-page-title">Connection with {{ header_name }}</h1>
 
 <div class="request-summary">
+  <p class="connection-organization"><strong>Requester:</strong> {{ connection.parent.name }}</p>
   <p class="connection-organization"><strong>Organization:</strong> {{ connection.organization.name }}</p>
   <p class="connection-role"><strong>Role:</strong> {{ connection.getUserFriendlyRole }}</p>
   <p class="connection-status"><strong>Status:</strong> {{ connection.status }}</p>
@@ -47,7 +48,7 @@ limitations under the License.
     {% endif %}
     {% for message in messages %}
       <div class="project-comment-single" id="c{{ message.key.id_or_name }}">
-        <p class="project-comment-meta"><strong>{{ message.getAuthor }}</strong> <a href="#c{{ message.key.id_or_name }}">{{ message.created }}</a></p>
+        <p class="project-comment-meta"><strong title="{{ message.getAuthorId }}">{{ message.getAuthor }}</strong> <a href="#c{{ message.key.id_or_name }}">{{ message.created }}</a></p>
         {{ message.content|safe }}
       </div>
     {% endfor %}

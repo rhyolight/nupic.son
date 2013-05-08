@@ -1,4 +1,4 @@
-{% extends "soc/notification/base.html" %}
+{% extends "v2/modules/gci/base.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,22 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
-{% block content %}
 
-Hello,
-	An organization administrator for {{ org_name }} has invited you to join 
-Google Summer of Code as a(n) {{ role }} for their organization. 
+{% block page_content %}
+  {{ tasks_list.render|safe }}
+{% endblock page_content %}
 
-{% if message %}
-They provided the following message:
-
-{{ message }}
-
-{% endif %} 
-
-To accept, please click the link below to create a Profile for Google Summer 
-of Code. Once complete, you will be automatically promoted to the specified role.
-
-<a href="{{ url }}">{{ url }}</a>
-
-{% endblock %}
+{% block dependencies %}
+  [
+    dep.melange.list,
+    null,
+  ]
+{% endblock dependencies %}

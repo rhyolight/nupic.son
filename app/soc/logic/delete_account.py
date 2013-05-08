@@ -31,13 +31,13 @@ from soc.modules.gci.models import task as task_model
 
 
 ADMIN_REQUEST_EMAIL_SUBJEST = """
-User %(link_id)s has requested account deletion.
+User %(url_id)s has requested account deletion.
 """
 
 ADMIN_REQUEST_EMAIL_BODY = """
 Dear application admin,
 
-User %(name)s (%(email)s), whose username is %(link_id)s, has 
+User %(name)s (%(email)s), whose username is %(url_id)s, has
 requested their account to be deleted. 
 """
 
@@ -52,12 +52,12 @@ def request_account_deletion(user):
   sender = system.getApplicationNoReplyEmail()
 
   subject = ADMIN_REQUEST_EMAIL_SUBJEST % {
-      'link_id': user.link_id
+      'url_id': user.url_id
       }
   body = ADMIN_REQUEST_EMAIL_BODY % {
       'name': user.name,
       'email': account.email(),
-      'link_id': user.link_id
+      'url_id': user.url_id,
       }
 
   mail.send_mail_to_admins(sender, subject, body)

@@ -40,15 +40,16 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 
 
-def _handleAnonymousConnection(data):
+def _handleAnonymousConnection(data, profile):
   """Handler for automatically created and accepting a new connection.
+
+  Args:
+    data: RequestData object for the current request.
+    profile: The profile that should have just been created.
   """
 
   @db.transactional(xg=True)
   def activate_new_connection_txn():
-    # This should be the profile that was just created.
-    user = User.get_by_key_name(data.request.POST['public_name'])
-    profile = GSoCProfile.all().ancestor(user.key()).get()
     # Create the new connection based on the values of the placeholder.
     new_connection = GSoCConnection(parent=user.key(),
         organization=data.anonymous_connection.parent(),
@@ -279,12 +280,15 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if not self.validate(data):
+    profile_entity = []
+
+    if not self.validate(data=data, entities=profile_entity):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
 
     if data.anonymous_connection:
-      _handleAnonymousConnection(data)
+      # profile_entity should contain the profile that was just created.
+      _handleAnonymousConnection(data, profile_entity[0])
 
     data.redirect.program()
 
