@@ -40,18 +40,17 @@ class TimelineHelper(request_data.TimelineHelper):
   """
 
   def currentPeriod(self):
-    """Return where we are currently on the timeline.
-    """
+    """Return where we are currently on the timeline."""
     if not self.programActive():
       return 'offseason'
 
     if self.beforeOrgSignupStart():
       return 'kickoff_period'
 
-    if self.orgSignup():
+    if self.beforeStudentSignup():
       return 'org_signup_period'
 
-    if self.studentSignup():
+    if self.beforeStudentsAnnounced():
       return 'student_signup_period'
 
     if self.studentsAnnounced():
