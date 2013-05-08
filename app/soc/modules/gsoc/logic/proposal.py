@@ -308,3 +308,14 @@ def acceptProposal(proposal):
   db.put([proposal, project, student_info])
 
   return project
+
+
+def rejectProposal(proposal):
+  """Rejects the specified proposal.
+
+  Args:
+    proposal: proposal entity
+  """
+  # update proposal's status
+  proposal.status = proposal_model.STATUS_REJECTED
+  proposal.put()

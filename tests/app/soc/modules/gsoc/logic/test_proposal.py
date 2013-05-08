@@ -594,6 +594,8 @@ class AcceptProposalTest(unittest.TestCase):
         }
     self.student_info = seeder_logic.seed(
         profile_model.GSoCStudentInfo, student_info_properties)
+    self.profile.student_info = self.student_info
+    self.profile.put()
 
     # seed anther profile and make it a mentor
     mentor_properties = {
@@ -679,3 +681,48 @@ class AcceptProposalTest(unittest.TestCase):
     student_info = profile_model.GSoCStudentInfo.get(self.student_info.key())
     self.assertEqual(student_info.number_of_projects, 2)
     self.assertEqual(student_info.project_for_orgs, [self.organization.key()])
+
+
+class RejectProposalTest(unittest.TestCase):
+  """Unit tests for rejectProposal function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+    # seed a new profile and make it a student
+    self.profile = seeder_logic.seed(profile_model.GSoCProfile, {})
+
+    student_info_properties = {
+        'parent': self.profile,
+        'number_of_proposals': 1,
+        'number_of_projects': 0,
+        'project_for_orgs': [],
+        }
+    self.student_info = seeder_logic.seed(
+        profile_model.GSoCStudentInfo, student_info_properties)
+    self.profile.student_info = self.student_info
+    self.profile.put()
+
+    mentor = seeder_logic.seed(profile_model.GSoCProfile, {})
+
+    # seed a new proposal
+    self.proposal_properties = {
+        'status': 'pending',
+        'accept_as_project': False,
+        'has_mentor': True,
+        'program': self.program,
+        'parent': self.profile,
+        'mentor': mentor,
+        }
+    self.proposal = seeder_logic.seed(
+        proposal_model.GSoCProposal, self.proposal_properties)
+
+  def testRejectProposal(self):
+    # reject the proposal
+    proposal_logic.rejectProposal(self.proposal)
+
+    # make sure the proposal is rejected and there is no project for it
+    self.assertEqual(self.proposal.status, proposal_model.STATUS_REJECTED)
+    self.assertEqual(self.student_info.number_of_projects, 0)
+    self.assertEqual(self.student_info.project_for_orgs, [])
