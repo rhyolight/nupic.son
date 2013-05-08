@@ -110,6 +110,15 @@ class TimelineHelper(object):
   def studentSignupStart(self):
     return self.timeline.student_signup_start
 
+  def beforeStudentSignup(self):
+    """Returns a bool indicating whether the student signup start date
+    has already passed or not.
+
+    Returns:
+      True if he current data is before student signup date; False otherwise
+    """
+    return isBefore(self.studentSignupStart())
+
   def studentSignupEnd(self):
     return self.timeline.student_signup_end
 
