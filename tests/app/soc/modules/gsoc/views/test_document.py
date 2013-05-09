@@ -107,7 +107,6 @@ class EditProgramTest(GSoCDjangoTestCase):
     self.assertPropertiesEqual(properties, document)
 
 
-# TODO(nathaniel): More than just a simple smoke test.
 class EventsPageTest(GSoCDjangoTestCase):
   """Tests the events page."""
 
@@ -116,4 +115,7 @@ class EventsPageTest(GSoCDjangoTestCase):
 
   def testEventsPageLoads(self):
     response = self.get('/gsoc/events/%s' % self.gsoc.key().name())
+    self.assertResponseOK(response)
+    self.assertEqual(response.context['page_name'],'Events and Timeline')
+    self.assertTemplateUsed(response, 'v2/modules/gsoc/document/events.html')
     self.assertGSoCTemplatesUsed(response)
