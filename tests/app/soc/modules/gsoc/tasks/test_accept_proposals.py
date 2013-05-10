@@ -22,18 +22,21 @@ from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models import organization as org_model
 
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
 from tests import profile_utils
+from tests import program_utils
 from tests import test_utils
 
+
+ACCEPT_URL = '/tasks/gsoc/accept_proposals/accept'
+REJECT_URL = '/tasks/gsoc/accept_proposals/reject'
+MAIN_URL = '/tasks/gsoc/accept_proposals/main'
 
 class AcceptProposalsTest(
     test_utils.MailTestCase, test_utils.GSoCDjangoTestCase,
     test_utils.TaskQueueTestCase):
   """Tests for accept proposals task."""
-
-  ACCEPT_URL = '/tasks/gsoc/accept_proposals/accept'
-  REJECT_URL = '/tasks/gsoc/accept_proposals/reject'
-  MAIN_URL = '/tasks/gsoc/accept_proposals/main'
 
   def setUp(self):
     super(AcceptProposalsTest, self).setUp()
@@ -102,24 +105,24 @@ class AcceptProposalsTest(
   def testConvertProposals(self):
     """Tests convert proposal task runs successfully."""
     post_data = {'program_key': self.gsoc.key().name()}
-    response = self.post(self.MAIN_URL, post_data)
+    response = self.post(MAIN_URL, post_data)
     self.assertEqual(response.status_code, httplib.OK)
 
     # assert accept task started for first org
-    self.assertTasksInQueue(n=1, url=self.ACCEPT_URL)
+    self.assertTasksInQueue(n=1, url=ACCEPT_URL)
 
     # assert main task started for next org
-    self.assertTasksInQueue(n=1, url=self.MAIN_URL)
+    self.assertTasksInQueue(n=1, url=MAIN_URL)
 
     # assert parameters to tasks
     for task in self.get_tasks():
-      if task['url'] == self.ACCEPT_URL:
+      if task['url'] == ACCEPT_URL:
         expected_params = {
             'org_key': urllib.quote_plus(self.org.key().id_or_name())
             }
         self.assertEqual(expected_params, task['params'])
 
-      elif task['url'] == self.MAIN_URL:
+      elif task['url'] == MAIN_URL:
         q = org_model.GSoCOrganization.all()
         q.filter('scope', self.gsoc)
         q.filter('status', 'active')
@@ -136,14 +139,6 @@ class AcceptProposalsTest(
 
         self.assertEqual(expected_params, task_params)
 
-  def testConverProposalsWithMissingParemeters(self):
-    """Tests no tasks are queued if program_key is not supplied."""
-    post_data = {}
-    response = self.post(self.MAIN_URL, post_data)
-
-    # assert no task started
-    self.assertTasksInQueue(n=0, url=self.ACCEPT_URL)
-
   def testAcceptProposals(self):
     """Tests accept task for an organization."""
     properties = {
@@ -156,7 +151,7 @@ class AcceptProposalsTest(
 
     post_data = {'org_key': self.org.key().name(),
                  'program_key': self.gsoc.key().name()}
-    response = self.post(self.ACCEPT_URL, post_data)
+    response = self.post(ACCEPT_URL, post_data)
 
     # assert accepted student got proper emails
     self.assertEqual(response.status_code, httplib.OK)
@@ -177,11 +172,11 @@ class AcceptProposalsTest(
     self.assertEqual(project.status, 'accepted')
 
     # assert reject task is queued
-    self.assertTasksInQueue(n=1, url=self.REJECT_URL)
+    self.assertTasksInQueue(n=1, url=REJECT_URL)
 
     # assert parameters to task
     for task in self.get_tasks():
-      if task['url'] == self.REJECT_URL:
+      if task['url'] == REJECT_URL:
         expected_params = {
             'org_key': urllib.quote_plus(self.org.key().name()),
             'program_key': urllib.quote_plus(self.gsoc.key().name())
@@ -197,7 +192,7 @@ class AcceptProposalsTest(
     # test reject proposals
     post_data = {'org_key': self.org.key().name(),
                  'program_key': self.gsoc.key().name()}
-    response = self.post(self.REJECT_URL, post_data)
+    response = self.post(REJECT_URL, post_data)
     self.assertEqual(response.status_code, httplib.OK)
 
     # assert post status of proposals
@@ -225,3 +220,91 @@ class AcceptProposalsTest(
     # assert no projects are created for rejected student
     projects = project_model.GSoCProject.all().ancestor(self.student2.profile)
     self.assertEqual(projects.count(), 0)
+
+
+class ConvertProposalsTest(
+    test_utils.GSoCDjangoTestCase, test_utils.TaskQueueTestCase):
+  """Unit tests for convertProposals function."""
+
+  def setUp(self):
+    super(ConvertProposalsTest, self).setUp()
+    self.init()
+
+    # seed a new program
+    program = self.program = program_utils.GSoCProgramHelper().createProgram()
+
+    # seed a few organizations
+    org_properties = {
+        'scope': program,
+        'status': 'active',
+        }
+    self.org_keys = []
+    for _ in range(5):
+      self.org_keys.append(seeder_logic.seed(
+          org_model.GSoCOrganization, org_properties).key())
+
+    # create post data that will be sent to tasks
+    self.post_data = {
+        'program_key': program.key().name()
+        }
+
+  def testNoProgramKey(self):
+    # program_key is missing in POST params
+    response = self.post(MAIN_URL, {})
+
+    # assert no task started
+    self.assertTasksInQueue(n=0, url=ACCEPT_URL)
+
+  def testTaskExecutedForAllOrgs(self):
+    # this set will store key names of organizations for which accept
+    # proposals task has been enqueued
+    org_key_names = set()
+
+    post_data = self.post_data
+    while post_data is not None:
+      response = self.post(MAIN_URL, post_data)
+
+      # assert task completed with OK status
+      self.assertEqual(response.status_code, httplib.OK)
+
+      # try getting a convert task for the next organization 
+      convert_tasks = self.get_tasks(url=MAIN_URL)
+
+      if convert_tasks:
+        # assert that exactly one task was enqueued
+        self.assertEqual(len(convert_tasks), 1)
+
+        # this task should be executed next so take its POST data
+        post_data = convert_tasks[0]['params'].copy()
+
+        # this is necessary, as get_tasks returns quoted strings
+        # the program_key has to be "fixed" here
+        post_data.update({
+            'program_key': urllib.unquote(post_data['program_key'])
+            })
+
+        # assert there is an accept proposals task another organization
+        self.assertTasksInQueue(n=1, url=ACCEPT_URL)
+
+        # get an accept proposals task for the organization
+        accept_tasks = self.get_tasks(url=ACCEPT_URL)
+        params = accept_tasks[0]['params']
+
+        # org_key must be in its params
+        self.assertIn('org_key', params)
+
+        # add key to set of enqueued key names
+        org_key_names.add(urllib.unquote(params['org_key']))
+
+      else:
+        post_data = None
+
+      # remove all the enqueued tasks
+      self.clear_task_queue()
+
+    # there should be key name for every organization in the set
+    self.assertEqual(len(org_key_names), 5)
+
+    # there should be an entry for every org
+    expected_org_key_names = set([org_key.name() for org_key in self.org_keys])
+    self.assertEqual(expected_org_key_names, org_key_names)
