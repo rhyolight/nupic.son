@@ -14,7 +14,6 @@
 
 """Tasks related to accepting and rejecting student proposals"""
 
-
 import datetime
 import logging
 
@@ -287,18 +286,6 @@ class ProposalAcceptanceTask(object):
       proposal: The GSoCProposal entity to accept.
       transactional: Whether the mail task should run transactionally.
     """
-    fields = {
-      'proposal': proposal,
-      'org': proposal.org,
-      'program': proposal.program,
-      'title': proposal.title,
-      'abstract': proposal.abstract,
-      'mentors': [proposal.mentor.key()],
-      }
-    student_profile = proposal.parent()
-    project = GSoCProject(parent=student_profile, **fields)
-    student_info_key = student_profile.student_info.key()
-
     accepted_mail_txn = self.getAcceptProposalMailTxn(
         proposal, transactional=transactional)
     welcome_mail_txn = self.getWelcomeMailTxn(
@@ -318,35 +305,32 @@ class ProposalAcceptanceTask(object):
       and mails the lucky student.
       """
 
-      # add a task that performs conversion status per
-      # proposal
+      # add a task that performs conversion status per proposal
       status_task.add(transactional=transactional)
 
       proposal = db.get(proposal_key)
-      proposal.status = 'accepted'
-      student_info = db.get(student_info_key)
-      student_info.number_of_projects += 1
-      orgs = student_info.project_for_orgs + [proposal_org_key]
-      student_info.project_for_orgs = list(set(orgs))
+      proposal_logic.acceptProposal(proposal)
 
-      db.put(project)
-      db.put(proposal)
-      db.put(student_info)
       accepted_mail_txn()
       welcome_mail_txn()
 
     db.RunInTransaction(acceptProposalTxn)
 
   def rejectProposal(self, proposal):
-    """Reject a single proposal.
+    """Rejects a single proposal.
+
+    Args:
+      proposal: proposal entity
     """
     mail_txn = self.getRejectProposalMailTxn(proposal)
+    proposal_key = proposal.key()
 
     def rejectProposalTxn():
       """Transaction that sets the proposal to rejected and mails the student.
       """
-      proposal.status = 'rejected'
-      db.put(proposal)
+      proposal = db.get(proposal_key)
+      proposal_logic.rejectProposal(proposal)
+
       mail_txn()
 
     db.RunInTransaction(rejectProposalTxn)
