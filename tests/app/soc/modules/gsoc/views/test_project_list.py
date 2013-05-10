@@ -52,3 +52,9 @@ class ProjectListTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
     data = response.context['data']['']
     self.assertEqual(1, len(data))
+    columns = response.context['data'][''][0]['columns']
+    self.assertIn('key', columns)
+    self.assertIn('title', columns)
+    self.assertIn('mentors', columns)
+    self.assertIn('student', columns)
+    self.assertIn('org', columns)
