@@ -20,6 +20,8 @@ from soc.logic import timeline as timeline_logic
 
 from soc.views.helper import request_data
 
+from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models import timeline as timeline_model
 
@@ -247,3 +249,73 @@ def resubmitProposal(proposal, student_info, program, timeline):
   db.put([proposal, student_info])
 
   return True
+
+
+def acceptProposal(proposal):
+  """Accepts the specified proposal as a project and creates a new project
+  entity if one has not been created so far.
+
+  Args:
+    proposal: proposal entity
+
+  Returns:
+    project entity created for the specified proposal
+  """
+  profile_key = proposal.parent_key()
+
+  # check if a project for the proposal has already been created
+  query = project_model.GSoCProject.all()
+  query.ancestor(profile_key)
+  current_projects = query.fetch(1000)
+
+  for current_project in current_projects:
+    proposal_key = project_model.GSoCProject.proposal.get_value_for_datastore(
+        current_project)
+    # if a project exists, return it rather than create a new one
+    if proposal_key == proposal.key():
+      return current_project
+
+  org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(proposal)
+  program_key = proposal_model.GSoCProposal.program.get_value_for_datastore(
+      proposal)
+  mentor_key = proposal_model.GSoCProposal.mentor.get_value_for_datastore(
+      proposal)
+  if not mentor_key:
+    raise ValueError('The proposal for profile %s with id %s has no '
+        'mentor specified' % (proposal.parent_key().name, proposal.key().id()))
+
+  # create new project entity
+  properties = {
+      'abstract': proposal.abstract,
+      'mentors': [mentor_key],
+      'org': org_key,
+      'proposal': proposal,
+      'program': program_key,
+      'title': proposal.title,
+      }
+  project = project_model.GSoCProject(parent=profile_key, **properties)
+
+  # get student info and update its related properties
+  student_info = profile_model.GSoCStudentInfo.all().ancestor(
+      profile_key).get()
+  student_info.number_of_projects += 1
+  student_info.project_for_orgs.append(org_key)
+  student_info.project_for_orgs = list(set(student_info.project_for_orgs))
+
+  # update proposal's status
+  proposal.status = proposal_model.STATUS_ACCEPTED
+
+  db.put([proposal, project, student_info])
+
+  return project
+
+
+def rejectProposal(proposal):
+  """Rejects the specified proposal.
+
+  Args:
+    proposal: proposal entity
+  """
+  # update proposal's status
+  proposal.status = proposal_model.STATUS_REJECTED
+  proposal.put()

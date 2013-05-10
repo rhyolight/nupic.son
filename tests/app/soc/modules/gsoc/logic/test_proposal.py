@@ -16,6 +16,8 @@
 
 import unittest
 
+from google.appengine.ext import db
+
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models import profile as profile_model
@@ -568,3 +570,159 @@ class ResubmitProposalTest(unittest.TestCase):
     self.assertEqual(result, False)
     self.assertEqual(self.proposal.status, proposal_model.STATUS_ACCEPTED)
     self.assertEqual(self.student_info.number_of_proposals, 1)
+
+
+class AcceptProposalTest(unittest.TestCase):
+  """Unit tests for acceptProposal function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+    # seed a new organization
+    org_properties = {'program': self.program}
+    self.organization = seeder_logic.seed(GSoCOrganization, org_properties)
+
+    # seed a new profile and make it a student
+    self.profile = seeder_logic.seed(profile_model.GSoCProfile, {})
+
+    student_info_properties = {
+        'parent': self.profile,
+        'number_of_proposals': 1,
+        'number_of_projects': 0,
+        'project_for_orgs': [],
+        }
+    self.student_info = seeder_logic.seed(
+        profile_model.GSoCStudentInfo, student_info_properties)
+    self.profile.student_info = self.student_info
+    self.profile.put()
+
+    # seed anther profile and make it a mentor
+    mentor_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()]
+        }
+    self.mentor = seeder_logic.seed(
+        profile_model.GSoCProfile, mentor_properties)
+
+    # seed a new proposal and assign the mentor
+    self.proposal_properties = {
+        'status': 'pending',
+        'accept_as_project': True,
+        'has_mentor': True,
+        'mentor': self.mentor,
+        'program': self.program,
+        'org': self.organization,
+        'parent': self.profile,
+        'abstract': 'test abstract',
+        }
+    self.proposal = seeder_logic.seed(
+        proposal_model.GSoCProposal, self.proposal_properties)
+
+  def testAcceptProposal(self):
+    # accept proposal as project
+    project = proposal_logic.acceptProposal(self.proposal)
+
+    # proposal should be accepted
+    self.assertEqual(self.proposal.status, proposal_model.STATUS_ACCEPTED)
+
+    # number of projects should be increased
+    student_info = profile_model.GSoCStudentInfo.get(self.student_info.key())
+    self.assertEqual(student_info.number_of_projects, 1)
+
+    # project should be created correctly
+    self.assertIsNotNone(project)
+    self.assertEqual(self.proposal_properties['abstract'], project.abstract)
+    self.assertEqual(self.organization.key(), project.org.key())
+    self.assertEqual(self.program.key(), project.program.key())
+    self.assertEqual(self.profile.key(), project.parent_key())
+    self.assertEqual([self.mentor.key()], project.mentors)
+
+  def testAcceptProposalInTxn(self):
+    # the function should safely execute within a single entity group txn
+    db.run_in_transaction(proposal_logic.acceptProposal, self.proposal)
+
+  def testAcceptProposalWithoutMentor(self):
+    self.proposal.mentor = None
+
+    with self.assertRaises(ValueError):
+      proposal_logic.acceptProposal(self.proposal)
+
+  def testAcceptProposalTwice(self):
+    # accept proposal as project
+    project_one = proposal_logic.acceptProposal(self.proposal)
+
+    # and again
+    project_two = proposal_logic.acceptProposal(self.proposal)
+
+    # the same entity should actually be returned
+    self.assertEqual(project_one.key(), project_two.key())
+
+  def testAcceptTwoProposalsForStudent(self):
+    # seed another proposal
+    proposal_properties = {
+        'status': 'pending',
+        'accept_as_project': True,
+        'has_mentor': True,
+        'mentor': self.mentor,
+        'program': self.program,
+        'org': self.organization,
+        'parent': self.profile,
+        'abstract': 'test abstract',
+        }
+    proposal_two = seeder_logic.seed(
+        proposal_model.GSoCProposal, self.proposal_properties)
+
+    # accept both proposals
+    proposal_logic.acceptProposal(self.proposal)
+    proposal_logic.acceptProposal(proposal_two)
+
+    # student info should reflect that
+    student_info = profile_model.GSoCStudentInfo.get(self.student_info.key())
+    self.assertEqual(student_info.number_of_projects, 2)
+    self.assertEqual(student_info.project_for_orgs, [self.organization.key()])
+
+
+class RejectProposalTest(unittest.TestCase):
+  """Unit tests for rejectProposal function."""
+
+  def setUp(self):
+    # seed a new program
+    self.program = seeder_logic.seed(GSoCProgram)
+
+    # seed a new profile and make it a student
+    self.profile = seeder_logic.seed(profile_model.GSoCProfile, {})
+
+    student_info_properties = {
+        'parent': self.profile,
+        'number_of_proposals': 1,
+        'number_of_projects': 0,
+        'project_for_orgs': [],
+        }
+    self.student_info = seeder_logic.seed(
+        profile_model.GSoCStudentInfo, student_info_properties)
+    self.profile.student_info = self.student_info
+    self.profile.put()
+
+    mentor = seeder_logic.seed(profile_model.GSoCProfile, {})
+
+    # seed a new proposal
+    self.proposal_properties = {
+        'status': 'pending',
+        'accept_as_project': False,
+        'has_mentor': True,
+        'program': self.program,
+        'parent': self.profile,
+        'mentor': mentor,
+        }
+    self.proposal = seeder_logic.seed(
+        proposal_model.GSoCProposal, self.proposal_properties)
+
+  def testRejectProposal(self):
+    # reject the proposal
+    proposal_logic.rejectProposal(self.proposal)
+
+    # make sure the proposal is rejected and there is no project for it
+    self.assertEqual(self.proposal.status, proposal_model.STATUS_REJECTED)
+    self.assertEqual(self.student_info.number_of_projects, 0)
+    self.assertEqual(self.student_info.project_for_orgs, [])
