@@ -121,6 +121,36 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertIsNone(comment.reply)
     self.assertMailSentToSubscribers(comment)
 
+  def testPostCommentWithEmptyTitle(self):
+    """Tests leaving a comment with an empty title."""
+    self.data.createMentor(self.org)
+
+    self.assertLength(self.task.comments(), 0)
+
+    comment_content = 'Test Comment Content'
+
+    comment_data_with_empty_title = {
+        'title': '',
+        'content': comment_content,
+    }
+
+    url = '%s?reply' %self._taskPageUrl(self.task)
+    response = self.post(url, comment_data_with_empty_title)
+
+    self.assertResponseRedirect(response)
+
+    comments = self.task.comments()
+    self.assertLength(comments, 1)
+
+    comment = comments[0]
+    self.assertIsNone(comment.title)
+    self.assertEqual(comment_content, comment.content)
+    self.assertEqual(self.data.user.key(), comment.created_by.key())
+    self.assertEqual(self.data.user.key(), comment.modified_by.key())
+    self.assertEqual(self.task.key(), comment.parent_key())
+    self.assertIsNone(comment.reply)
+    self.assertMailSentToSubscribers(comment)
+
   def testPostButtonUnpublish(self):
     """Tests the unpublish button.
     """

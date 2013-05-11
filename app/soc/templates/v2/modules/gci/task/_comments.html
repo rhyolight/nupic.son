@@ -19,16 +19,18 @@
 
   {% for comment_item in comments %}
     <div id="c{{ comment.key.id }}" class="single-comment">
-
-      <span class="single-comment-title">{{ comment_item.entity.title|default:"No Title" }}</span>
-      <span class="single-comment-meta">by 
+      
+      <span class="single-comment-author">
       {% if comment_item.author_link %}
       <a href="{{ comment_item.author_link }}">{{ comment_item.entity.created_by.name }}</a>
       {% else %}
         {% if comment_item.entity.created_by %}{{ comment_item.entity.created_by.name }}{% else %}Melange{% endif %}
-      {% endif %}
+      {% endif %}</span>
+      <span class="single-comment-meta">on
       {{ comment_item.entity.created_on|date:"F j Y H:i"}} UTC</span>
-
+      {% if comment_item.entity.title %}
+      <span class="single-comment-title">{{ comment_item.entity.title }}</span>
+      {% endif %}
       <p>{{ comment_item.entity.content|default:""|safe|linebreaks }}</p>
       {% if comment_item.entity.changes %}
         <p><b>Changes:</b> {{ comment_item.entity.changes|join:"; " }}</p>
