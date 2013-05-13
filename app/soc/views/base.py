@@ -29,6 +29,7 @@ from soc.logic import exceptions
 from soc.logic import links
 from soc.views.helper import access_checker
 from soc.views.helper import context as context_helper
+from soc.views.helper import error as error_helper
 from soc.views.helper import request_data
 
 
@@ -268,16 +269,12 @@ class RequestHandler(object):
     Returns:
       An http.HttpResponse indicating an error.
     """
-    message = message or httplib.responses.get(status, '')
-
-    template_path = 'error.html'
-    context = {
-        'page_name': message,
-        'message': message,
-    }
-
-    return http.HttpResponse(
-        content=self.render(data, template_path, context), status=status)
+    # TODO(nathaniel): Break clients of this method into separate
+    # "user error" and "server error" code paths.
+    if status < 500:
+      return error_helper.handleUserError(data, status, message=message)
+    else:
+      return error_helper.handleServerError(data, status, message=message)
 
   def djangoURLPatterns(self):
     """Returns a list of Django URL pattern tuples.

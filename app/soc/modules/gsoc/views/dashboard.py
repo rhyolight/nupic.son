@@ -757,8 +757,10 @@ class SubmittedProposalsComponent(Component):
     list_config.addPlainTextColumn(
         'email', 'Student Email',
         (lambda ent, *args: ent.parent().email), hidden=True)
-    list_config.addSimpleColumn('score', 'Score')
-    list_config.addSimpleColumn('nr_scores', '#scores', hidden=True)
+    list_config.addNumericalColumn('score', 'Score',
+        lambda e, *args: e.score)
+    list_config.addNumericalColumn('nr_scores', '#scores',
+        lambda e, *args: e.nr_scores, hidden=True)
 
     def getAverage(ent):
       if not ent.nr_scores:

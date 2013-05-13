@@ -342,9 +342,11 @@ class AccessChecker(access_checker.AccessChecker):
     # check if the timeline allows submitting proposals
     self.studentSignupActive()
 
-    # check how many proposals the student has already submitted 
+    # check how many proposals the student has already submitted
+    # TODO(daniel): replace this query with checking on number_of_proposals
     query = GSoCProposal.all()
     query.ancestor(self.data.profile)
+    query.filter(GSoCProposal.status.name, 'pending')
 
     if query.count() >= self.data.program.apps_tasks_limit:
       # too many proposals access denied

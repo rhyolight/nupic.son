@@ -13,26 +13,19 @@ limitations under the License.
 {% endcomment %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
-<head profile="http://gmpg.org/xfn/11">
-    <title>{{ page_name }}</title>
-
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-
-    <link type="text/css" rel="stylesheet" href="/soc/content/{{ app_version }}/css/v2/style.css">
-</head>
-
-<body class="error">
-
-<div id="error-not-found">
-	<div id="error-not-found-content">
-		<h1>{{ code }}</h1>
-    <p>
+ <head profile="http://gmpg.org/xfn/11">
+  <title>{{ page_name }}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link type="text/css" rel="stylesheet" href="/soc/content/{{ app_version }}/css/{{ style_file }}">
+ </head>
+ <body class="error">
+  <div id="error-content">
+   <h1>{{ code }}</h1>
+   <p>
     {{ message|safe }}
     <br/>
     <a href="/">Click here to return to the homepage ></a>
-    </p>
+   </p>
   </div>
-</div>
-
-</body>
+ </body>
 </html>

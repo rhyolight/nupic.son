@@ -33,6 +33,7 @@ from soc.views.toggle_button import ToggleButtonTemplate
 from soc.tasks import mailer
 
 from soc.modules.gsoc.logic import profile as profile_logic
+from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
@@ -96,10 +97,7 @@ class Duplicate(Template):
     """The context for this template used in render()."""
     orgs = []
     for org in db.get(self.duplicate.orgs):
-      q = GSoCProfile.all()
-      q.filter('org_admin_for', org)
-      q.filter('status', 'active')
-      admins = q.fetch(1000)
+      admins = profile_logic.getOrgAdmins(org)
 
       # TODO(nathaniel): make this .organization call unnecessary.
       self.data.redirect.organization(organization=org)
@@ -407,6 +405,11 @@ class ReviewProposal(GSoCRequestHandler):
     comment_action = reverse('comment_gsoc_proposal', kwargs=data.kwargs)
 
     if data.private_comments_visible:
+
+      # only mentors and org admins can see that the proposal is ignored
+      # TODO(daniel): replace status literals with constants
+      context['proposal_ignored'] = data.proposal.status == 'ignored'
+
       form = PrivateCommentForm(data.POST or None)
       if data.orgAdminFor(data.proposal.org):
         user_role = 'org_admin'
@@ -478,7 +481,6 @@ class ReviewProposal(GSoCRequestHandler):
         'scoring_visible': scoring_visible,
         'student_email': data.url_profile.email,
         'student_name': data.url_profile.name(),
-        'proposal_ignored': data.proposal.status == 'ignored',
         'user_role': user_role,
         })
 
@@ -1066,24 +1068,27 @@ class WithdrawProposal(GSoCRequestHandler):
       value: can be either "checked" or "unchecked".
     """
     assert isSet(data.proposal)
+    assert isSet(data.student_info)
 
     if value != 'checked' and value != 'unchecked':
       raise exceptions.BadRequest("Invalid post data.")
 
+    # TODO(daniel): get some constants for that: meaning of 
+    # checked and unchecked is not obvious at all :-/
     if value == 'checked' and not data.proposal.status == 'withdrawn':
       raise exceptions.BadRequest("Invalid post data.")
     if value == 'unchecked' and data.proposal.status == 'withdrawn':
       raise exceptions.BadRequest("Invalid post data.")
 
-    proposal_key = data.proposal.key()
-
     def update_withdraw_status_txn():
-      # transactionally get latest version of the proposal
-      proposal = db.get(proposal_key)
+      proposal = db.get(data.proposal.key())
+      student_info = db.get(data.student_info.key())
+
       if value == 'unchecked':
-        proposal.status = 'withdrawn'
+        proposal_logic.withdrawProposal(proposal, student_info)
       elif value == 'checked':
-        proposal.status = 'pending'
+        proposal_logic.resubmitProposal(
+            proposal, student_info, data.program, data.program_timeline)
 
       db.put(proposal)
 

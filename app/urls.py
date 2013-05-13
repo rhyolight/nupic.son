@@ -21,5 +21,5 @@ from soc.modules import callback
 urlpatterns = callback.getCore().getPatterns()
 
 # define the error handlers
-handler404 = 'django.views.defaults.page_not_found'
-handler500 = 'django.views.defaults.server_error'
+handler404 = 'soc.views.errors.handle404'
+handler500 = 'soc.views.errors.handle500'

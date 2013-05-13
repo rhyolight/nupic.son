@@ -912,14 +912,14 @@ class BaseModelForm(forms.BaseForm):
     if self.errors:
       raise ValueError("The %s could not be %s because the data didn't "
                        'validate.' % (opts.model.kind(), fail_message))
-    cleaned_data = self._cleaned_data()
+
     converted_data = {}
     propiter = itertools.chain(
       opts.model.properties().iteritems(),
       iter([('key_name', StringProperty(name='key_name'))])
       )
     for name, prop in propiter:
-      value = cleaned_data.get(name)
+      value = self.cleaned_data.get(name)
       if value is not None:
         converted_data[name] = prop.make_value_from_form(value)
     try:
@@ -941,19 +941,6 @@ class BaseModelForm(forms.BaseForm):
 
       instance.put()
     return instance
-
-  def _cleaned_data(self):
-    """Helper to retrieve the cleaned data attribute.
-
-    In Django 0.96 this attribute was called self.clean_data.  In 0.97
-    and later it's been renamed to self.cleaned_data, to avoid a name
-    conflict.  This helper abstracts the difference between the
-    versions away from its caller.
-    """
-    try:
-      return self.cleaned_data
-    except AttributeError:
-      return self.clean_data
 
 
 class ModelForm(BaseModelForm):

@@ -290,6 +290,7 @@ class GSoCProfileHelper(ProfileHelper):
     self.createStudent()
     self.profile.student_info.number_of_proposals = n
     self.profile.put()
+    self.profile.student_info.put()
     from soc.modules.gsoc.models.proposal import GSoCProposal
     properties = {
         'scope': self.profile, 'score': 0, 'nr_scores': 0,
