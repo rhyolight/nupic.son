@@ -15,7 +15,12 @@ limitations under the License.
 {% block content %}
 
 Hello {{ link_id }},
-	{{ org_name }} has opened a new connection with you in order to offer you the role of {{ role }}. 
+	{{ org_name }} has opened a new connection with you in order to offer you the role of {{ role }}.
+
+{% if message %}
+	They provided the following message:
+		{{ message }}
+{% endif %}
 To respond to this connection, please visit the following url:
 
 <a href="{{ connection_url }}">{{ connection_url }}</a>
