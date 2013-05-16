@@ -27,7 +27,7 @@ from google.appengine.runtime.apiproxy_errors import DeadlineExceededError
 from django.conf.urls.defaults import url as django_url
 from django.utils import simplejson
 
-from soc.logic import system
+from melange.appengine import system
 from soc.models import email
 from soc.tasks import responses
 from soc.tasks.helper import error_handler

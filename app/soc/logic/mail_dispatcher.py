@@ -63,8 +63,8 @@ from django.template import loader
 from google.appengine.api import mail
 from google.appengine.ext import db
 
+from melange.appengine import system
 from soc.logic import dicts
-from soc.logic import system
 from soc.tasks import mailer
 
 

@@ -19,8 +19,8 @@
 from google.appengine.api import mail
 from google.appengine.ext import db
 
+from melange.appengine import system
 from soc.logic import accounts
-from soc.logic import system
 from soc.logic import user as user_logic
 from soc.models import user
 
@@ -38,7 +38,7 @@ ADMIN_REQUEST_EMAIL_BODY = """
 Dear application admin,
 
 User %(name)s (%(email)s), whose username is %(url_id)s, has
-requested their account to be deleted. 
+requested their account to be deleted.
 """
 
 

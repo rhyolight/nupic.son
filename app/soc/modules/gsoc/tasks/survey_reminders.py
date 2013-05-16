@@ -26,7 +26,6 @@ from django.conf.urls.defaults import url
 from django.core.urlresolvers import reverse
 
 from soc.logic import mail_dispatcher
-from soc.logic import system
 from soc.logic import site
 from soc.tasks.helper import error_handler
 
@@ -205,7 +204,7 @@ class SurveyReminderTask(object):
             'v2/modules/gsoc/reminder/mentor_eval_reminder.html'
 
       program = project.program
-      hostname = system.getHostname()
+      hostname = site.getHostname()
       url_kwargs = {
           'sponsor': program.scope.link_id,
           'program': program.link_id,

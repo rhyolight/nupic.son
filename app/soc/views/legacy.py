@@ -16,7 +16,7 @@
 """
 
 
-from soc.logic import system
+from melange.appengine import system
 
 
 class Legacy(object):

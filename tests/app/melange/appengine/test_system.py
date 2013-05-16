@@ -12,30 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests for app.soc.logic.system
-"""
-
+"""Tests for melange.appengine.system."""
 
 import os
 import unittest
 
-from soc.logic import system
-from soc.models import site
-from soc.views.helper.request_data import RequestData
+from melange.appengine import system
 
 
 class SystemTest(unittest.TestCase):
-  """Tests for basic system information functions.
-  """
+  """Tests for basic system information functions."""
+
   def setUp(self):
     self.default_host = os.environ.get('HTTP_HOST', None)
     self.default_application_id = os.environ.get('APPLICATION_ID', None)
     self.default_current_version_id = os.environ.get('CURRENT_VERSION_ID', None)
 
   def testGetApplicationId(self):
-    """Tests that a correct application id is returned.
-    """
+    """Tests that a correct application id is returned."""
     try:
       expected_id = os.environ['APPLICATION_ID'] = 'test-app-run'
       self.assertEqual(system.getApplicationId(), expected_id)
@@ -55,9 +49,7 @@ class SystemTest(unittest.TestCase):
         os.environ['APPLICATION_ID'] = self.default_application_id
 
   def testGetApplicationEmail(self):
-    """Tests that a correct application email is returned.
-    """
-
+    """Tests that a correct application email is returned."""
     try:
       os.environ['APPLICATION_ID'] = 'test-app-run'
       expected_email = "simple-test@test-app-run.appspotmail.com"
@@ -68,7 +60,7 @@ class SystemTest(unittest.TestCase):
       else:
         os.environ['APPLICATION_ID'] = self.default_application_id
 
-    #Check if an exception is raised if no app-id is set
+    # Check if an exception is raised if no app-id is set
     try:
       os.environ['APPLICATION_ID'] = ''
       self.assertRaises(AssertionError, system.getApplicationEmail, 'test')
@@ -78,12 +70,11 @@ class SystemTest(unittest.TestCase):
       else:
         os.environ['APPLICATION_ID'] = self.default_application_id
 
-    #Check if an exception is raised when no argument passed  
+    # Check if an exception is raised when no argument passed
     self.assertRaises(TypeError, system.getApplicationEmail,)
 
   def testGetApplicationNoReplyEmail(self):
-    """Tests that a correct no-reply email is returned.
-    """
+    """Tests that a correct no-reply email is returned."""
     if self.default_application_id is None:
       let_current_app_id = 'test-app-run'
       try:
@@ -98,8 +89,7 @@ class SystemTest(unittest.TestCase):
       self.assertEqual(system.getApplicationNoReplyEmail(), expected)
 
   def testGetRawHostName(self):
-    """Tests that a correct raw host name is returned.
-    """
+    """Tests that a correct raw host name is returned."""
     try:
       host = os.environ['HTTP_HOST'] = 'some.testing.host.tld'
       expected_current_host = host
@@ -119,38 +109,8 @@ class SystemTest(unittest.TestCase):
       else:
         os.environ['HTTP_HOST'] = self.default_host
 
-  def testGetHostName(self):
-    """Tests that a correct host name is returned.
-    """
-    test_data = RequestData(None, None, None)
-    test_data._site = site.Site(link_id='test', hostname='test_host')
-
-    try:
-      expected_host = os.environ['HTTP_HOST'] = 'some.testing.host.tld'
-      self.assertEqual(system.getHostname(), expected_host)
-    finally:
-      if self.default_host is None:
-        del os.environ['HTTP_HOST']
-      else:
-        os.environ['HTTP_HOST'] = self.default_host
-
-    #test a data object    
-    expected_host = 'test_host'
-    self.assertEqual(system.getHostname(data=test_data), expected_host)
-
-    test_data.site.hostname = ''
-    try:
-      expected_host = os.environ['HTTP_HOST'] = 'some.testing.host.tld'
-      self.assertEqual(system.getHostname(data=test_data), expected_host)
-    finally:
-      if self.default_host is None:
-        del os.environ['HTTP_HOST']
-      else:
-        os.environ['HTTP_HOST'] = self.default_host
-
   def testGetSecureHostName(self):
-    """Tests that a hostname suitable for https requests is returned.
-    """
+    """Tests that a hostname suitable for https requests is returned."""
     try:
       os.environ['APPLICATION_ID'] = 'test-app-run'
       expected_host = 'test-app-run.appspot.com'
@@ -161,29 +121,8 @@ class SystemTest(unittest.TestCase):
       else:
         os.environ['APPLICATION_ID'] = self.default_application_id
 
-  def testIsSecondaryHostName(self):
-    """Tests if a request is from a secondary hostname.
-    """
-    test_data = RequestData(None, None, None)
-    test_data._site = site.Site(link_id='test', hostname='test_host')
-
-    try:
-      os.environ['HTTP_HOST'] = 'some.testing.host.tld'
-      self.assertFalse(system.isSecondaryHostname())
-  
-      self.assertFalse(system.isSecondaryHostname(data=test_data))
-  
-      test_data.site.hostname = "testing"
-      self.assertTrue(system.isSecondaryHostname(data=test_data))
-    finally:
-      if self.default_host is None:
-        del os.environ['HTTP_HOST']
-      else:
-        os.environ['HTTP_HOST'] = self.default_host
-
   def testGetAppVersion(self):
-    """Tests if a google-app-version is returned.
-    """
+    """Tests if a google-app-version is returned."""
     try:
       expected_version = os.environ['CURRENT_VERSION_ID'] = 'testing-version'
       self.assertEqual(system.getAppVersion(), expected_version)
@@ -194,8 +133,7 @@ class SystemTest(unittest.TestCase):
         os.environ['CURRENT_VERSION_ID'] = self.default_current_version_id
 
   def testGetMelangeVersion(self):
-    """Tests if the Melange part of GAE version is returned.
-    """
+    """Tests if the Melange part of GAE version is returned."""
     try:
       expected_version = os.environ['CURRENT_VERSION_ID'] = 'testing-version'
       self.assertEqual(system.getMelangeVersion(), expected_version)
@@ -225,13 +163,11 @@ class SystemTest(unittest.TestCase):
         os.environ['CURRENT_VERSION_ID'] = self.default_current_version_id
 
   def testIsLocal(self):
-    """Tests if the current Melange application is running locally.
-    """
+    """Tests if the current Melange application is running locally."""
     self.assertTrue(system.isLocal())
 
   def testIsDebug(self):
-    """Tests if Melange is running in debug mode.
-    """
+    """Tests if Melange is running in debug mode."""
     self.assertTrue(system.isDebug())
 
     try:
