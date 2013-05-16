@@ -16,26 +16,20 @@
 for checking access.
 """
 
-
 from django.utils.translation import ugettext
 
 from google.appengine.api import users
 from google.appengine.ext import db
 
+from soc.logic import exceptions
 from soc.logic import host as host_logic
-from soc.logic.exceptions import LoginRequest
-from soc.logic.exceptions import RedirectRequest
-from soc.logic.exceptions import BadRequest
-from soc.logic.exceptions import NotFound
 from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import GDocsLoginRequest
-from soc.models.org_app_record import OrgAppRecord
-from soc.models.org_app_survey import OrgAppSurvey
+from soc.models import document
+from soc.models import org_app_record
+from soc.models import user as user_model
 from soc.models.request import INVITATION_TYPE
 from soc.models.request import REQUEST_TYPE
-from soc.models.user import User
 from soc.views.helper.gdata_apis import oauth as oauth_helper
-
 
 DEF_AGREE_TO_TOS = ugettext(
     'You must agree to the <a href="%(tos_link)s">site-wide Terms of'
@@ -223,8 +217,7 @@ unset = object()
 
 
 def isSet(value):
-  """Returns true iff value is not unset.
-  """
+  """Returns true iff value is not unset."""
   return value is not unset
 
 
@@ -258,8 +251,6 @@ class Mutator(object):
 
     Returns False if not all fields were supplied/consumed.
     """
-    from soc.models.document import Document
-
     fields = []
     kwargs = self.data.kwargs.copy()
 
@@ -276,23 +267,22 @@ class Mutator(object):
     fields.append(kwargs.pop('document', None))
 
     if any(kwargs.values()):
-      raise BadRequest("Unexpected value for document url")
+      raise exceptions.BadRequest("Unexpected value for document url")
 
     if not all(fields):
-      raise BadRequest("Missing value for document url")
+      raise exceptions.BadRequest("Missing value for document url")
 
     self.data.scope_key_name = '/'.join(fields[1:-1])
     self.data.key_name = '/'.join(fields)
-    self.data.document = Document.get_by_key_name(self.data.key_name)
+    self.data.document = document.Document.get_by_key_name(self.data.key_name)
 
   def userFromKwargs(self):
-    """Retrieves a User from kwargs.
-    """
+    """Retrieves a user_model.User from kwargs."""
     key_name = self.data.kwargs['user']
-    self.data.url_user = User.get_by_key_name(key_name)
+    self.data.url_user = user_model.User.get_by_key_name(key_name)
 
     if not self.data.url_user:
-      raise NotFound('Requested user does not exist')
+      raise exceptions.NotFound('Requested user does not exist')
 
   def profileFromKwargs(self, profile_model):
     """Retrieves a profile from kwargs.
@@ -309,14 +299,14 @@ class Mutator(object):
         key_name, parent=self.data.url_user)
 
     if not self.data.url_profile:
-      raise NotFound('Requested user does not have a profile')
+      raise exceptions.NotFound('Requested user does not have a profile')
 
   def studentFromKwargs(self):
     self.profileFromKwargs()
     self.data.url_student_info = self.data.url_profile.student_info
 
     if not self.data.url_student_info:
-      raise NotFound('Requested user is not a student')
+      raise exceptions.NotFound('Requested user is not a student')
 
   def canRespondForUser(self):
     assert isSet(self.data.invited_user)
@@ -364,18 +354,18 @@ class Mutator(object):
       self.data.is_host = True
 
   def orgAppRecordIfIdInKwargs(self):
-    """Sets the organization application in RequestData object.
-    """
+    """Sets the organization application in RequestData object."""
     assert self.data.org_app
 
     self.data.org_app_record = None
 
-    id = self.data.kwargs.get('id')
-    if id:
-      self.data.org_app_record = OrgAppRecord.get_by_id(int(id))
+    org_app_id = self.data.kwargs.get('id')
+    if org_app_id:
+      self.data.org_app_record = org_app_record.OrgAppRecord.get_by_id(
+          int(org_app_id))
 
       if not self.data.org_app_record:
-        raise NotFound(DEF_NO_ORG_APP % self.data.program.name)
+        raise exceptions.NotFound(DEF_NO_ORG_APP % self.data.program.name)
 
 
 class DeveloperMutator(Mutator):
@@ -397,12 +387,12 @@ class DeveloperMutator(Mutator):
       if self.data.is_host:
         return
       else:
-        raise NotFound(DEF_NO_USERNAME)
+        raise exceptions.NotFound(DEF_NO_USERNAME)
 
     user_key = db.Key.from_path('User', key_name)
 
     if not user_key:
-      raise NotFound(DEF_NO_USER % key_name)
+      raise exceptions.NotFound(DEF_NO_USER % key_name)
 
     self.data.host_user_key = user_key
     self.data.host = host_logic.getHostForUser(user_key)
@@ -435,7 +425,7 @@ class BaseAccessChecker(object):
     if self.gae_user:
       return
 
-    raise LoginRequest()
+    raise exceptions.LoginRequest()
 
   def isLoggedOut(self):
     """Ensures that the user is logged out.
@@ -444,7 +434,7 @@ class BaseAccessChecker(object):
     if not self.gae_user:
       return
 
-    raise RedirectRequest(self.data.logout_url)
+    raise exceptions.RedirectRequest(self.data.logout_url)
 
   def isUser(self):
     """Checks if the current user has an User entity.
@@ -514,7 +504,7 @@ class BaseAccessChecker(object):
     access_token = oauth_helper.getAccessToken(self.data.user)
     if not access_token: #TODO(orc.avs):check token is valid
       next = self.data.request.get_full_path()
-      raise GDocsLoginRequest(next)
+      raise exceptions.GDocsLoginRequest(next)
 
 
 class DeveloperAccessChecker(BaseAccessChecker):
@@ -547,7 +537,7 @@ class AccessChecker(BaseAccessChecker):
     normal users.
     """
     if not self.data.program:
-      raise NotFound(DEF_NO_SUCH_PROGRAM)
+      raise exceptions.NotFound(DEF_NO_SUCH_PROGRAM)
 
     self.isProgramVisible()
 
@@ -564,7 +554,7 @@ class AccessChecker(BaseAccessChecker):
     Programs are always visible to hosts.
     """
     if not self.data.program:
-      raise NotFound(DEF_NO_SUCH_PROGRAM)
+      raise exceptions.NotFound(DEF_NO_SUCH_PROGRAM)
 
     if self.data.program.status == 'visible':
       return
@@ -606,7 +596,7 @@ class AccessChecker(BaseAccessChecker):
     self.isLoggedIn()
 
     if self.data.profile and not self.data.profile.student_info:
-      raise RedirectRequest(edit_url)
+      raise exceptions.RedirectRequest(edit_url)
 
     if role == 'org_admin' and self.data.timeline.beforeOrgSignupStart():
       period = self.data.timeline.orgSignupStart()
@@ -1019,7 +1009,7 @@ class AccessChecker(BaseAccessChecker):
   # (dcrodman) This method will be obsolete with the connection module.
   def _canAccessRequestEntity(self, entity, user, org):
     """Checks if the current user is allowed to access a Request entity.
-    
+
     Args:
       entity: an entity which belongs to Request model
       user: user entity that the Request refers to
@@ -1031,24 +1021,22 @@ class AccessChecker(BaseAccessChecker):
       self.isOrgAdmin()
 
   def canViewConnection(self):
-    """Checks if the current user can view the connection.
-    """
+    """Checks if the current user can view the connection."""
     assert isSet(self.data.user)
     assert isSet(self.data.organization)
     assert isSet(self.data.connection)
-    
+
     self._canAccessConnectionEntity(self.data.connection)
-    
+
   def _canAccessConnectionEntity(self, connection):
     """ Checks if the current iser is allowed to access the Connection entity.
-    To do so, the current User must either be the one involved in the 
+    To do so, the current User must either be the one involved in the
     connection or an org admin for the Organization.
-    
+
     Args:
       connection: a Connection entity
       org: the Organization entity to which the Connection refers
     """
-    
     if self.data.user.key() != connection.parent().key():
       self.isOrgAdmin()
     else:
@@ -1090,7 +1078,7 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.document)
 
     if not self.data.document:
-      raise NotFound(DEF_NO_DOCUMENT)
+      raise exceptions.NotFound(DEF_NO_DOCUMENT)
 
     self.isProgramVisible()
 
@@ -1187,7 +1175,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     if self.data.timeline.afterSurveyEnd(survey) and show_url:
-      raise RedirectRequest(show_url)
+      raise exceptions.RedirectRequest(show_url)
 
     raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE %
         (survey.survey_start, survey.survey_end))
