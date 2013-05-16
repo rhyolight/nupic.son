@@ -415,7 +415,6 @@ class RequestHandler(object):
       self.checkAccess(data, check, mutator)
       return self._dispatch(data, check, mutator)
     except exceptions.LoginRequest, e:
-      request.get_full_path().encode('utf-8')
       return data.redirect.login().to()
     except exceptions.RedirectRequest, e:
       return data.redirect.toUrl(e.url)
