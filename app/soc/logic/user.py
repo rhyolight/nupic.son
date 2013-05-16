@@ -54,7 +54,7 @@ def forCurrentAccount():
     try:
       user_ent.user_id = account.user_id()
       user_ent.put()
-    except apiproxy_errors.CapabilityDisabledError, _:
+    except apiproxy_errors.CapabilityDisabledError:
       # readonly mode, that's fine
       pass
 
@@ -81,7 +81,7 @@ def forCurrentUserId():
     try:
       user_ent.account = current_account
       user_ent.put()
-    except apiproxy_errors.CapabilityDisabledError, _:
+    except apiproxy_errors.CapabilityDisabledError:
       # readonly mode, that's fine
       pass
 

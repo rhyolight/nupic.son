@@ -37,10 +37,10 @@ def task(func):
 
     try:
       return func(request, *args, **kwargs)
-    except task_responses.FatalTaskError, error:
+    except task_responses.FatalTaskError as error:
       logging.exception(error)
       return task_responses.terminateTask()
-    except Exception, exception:
+    except Exception as exception:
       logging.exception(exception)
       return task_responses.repeatTask()
 
@@ -99,13 +99,13 @@ def iterative_task(logic, repeat_in=None, **task_default):
 
       try:
         func(request, entities=entities, context=context, *args, **kwargs)
-      except task_responses.DoNotRepeatException, exception:
+      except task_responses.DoNotRepeatException as exception:
         do_not_repeat = True
-      except task_responses.FatalTaskError, error:
+      except task_responses.FatalTaskError as error:
         logging.debug(post_dict)
         logging.error(error)
         return task_responses.terminateTask()
-      except Exception, exception:
+      except Exception as exception:
         logging.debug(post_dict)
         logging.error(exception)
         return task_responses.repeatTask()

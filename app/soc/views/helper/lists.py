@@ -1109,7 +1109,7 @@ def distributeParentKeys(data, prefetched_dict):
     try:
       # BAD BAD BAD
       i._parent = value
-    except Exception, e:
+    except Exception as e:
       logging.exception(e)
 
 
@@ -1216,7 +1216,7 @@ def keyStarter(start, q):
     return False
   try:
     start_entity = db.get(start)
-  except db.BadKeyError, e:
+  except db.BadKeyError as e:
     return False
   if not start_entity:
     return False

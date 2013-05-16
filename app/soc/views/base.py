@@ -414,15 +414,15 @@ class RequestHandler(object):
       self.checkMaintenanceMode(data)
       self.checkAccess(data, check, mutator)
       return self._dispatch(data, check, mutator)
-    except exceptions.LoginRequest, e:
+    except exceptions.LoginRequest as e:
       request.get_full_path().encode('utf-8')
       return data.redirect.login().to()
-    except exceptions.RedirectRequest, e:
+    except exceptions.RedirectRequest as e:
       return data.redirect.toUrl(e.url)
-    except exceptions.GDocsLoginRequest, e:
+    except exceptions.GDocsLoginRequest as e:
       return data.redirect.toUrl('%s?%s' % (
           data.redirect.urlOf(e.url_name), urllib.urlencode({'next': e.path})))
-    except exceptions.Error, e:
+    except exceptions.Error as e:
       # TODO(nathaniel): Use a purpose-designated attribute of the exception
       # for the message rather than the could-be-and-mean-anything "args[0]".
       return self.error(data, e.status, message=e.args[0] if e.args else None)

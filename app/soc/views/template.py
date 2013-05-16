@@ -45,7 +45,7 @@ class Template(object):
       context = context_helper.default(self.data)
       context.update(self.context())
       rendered = loader.render_to_string(self.templatePath(), dictionary=context)
-    except Exception, e:
+    except Exception as e:
       logging.exception(e)
       raise e
 

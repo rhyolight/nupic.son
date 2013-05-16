@@ -162,5 +162,5 @@ class SiteHomepage(base.SiteRequestHandler):
           return http.HttpResponseRedirect(program_url)
         else:
           return data.redirect.to('edit_site_settings')
-    except exceptions.Error, e:
+    except exceptions.Error as e:
       return self.error(data, e.status, message=e.args[0])

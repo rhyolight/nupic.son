@@ -86,7 +86,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
 
     try:
       link_id = link_id_cleaner(self)
-    except djangoforms.ValidationError, e:
+    except djangoforms.ValidationError as e:
       if e.code != 'invalid':
         raise
 
@@ -94,7 +94,7 @@ class InviteForm(gsoc_forms.GSoCModelForm):
 
       try:
         email_address = email_cleaner(self)
-      except djangoforms.ValidationError, e:
+      except djangoforms.ValidationError as e:
         if e.code != 'invalid':
           raise
         msg = ugettext(u'Enter a valid link_id or email address.')

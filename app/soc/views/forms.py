@@ -371,7 +371,7 @@ class ReferenceProperty(djangoforms.ReferenceProperty):
     if not isinstance(value, db.Model):
       try:
         value = db.get(value)
-      except db.BadKeyError, e:
+      except db.BadKeyError as e:
         raise forms.ValidationError(unicode(e))
     return value
 
@@ -570,7 +570,7 @@ class ModelForm(djangoforms.ModelForm):
     try:
       instance = opts.model(key_name=key_name, parent=parent, **converted_data)
       self.instance = instance
-    except db.BadValueError, err:
+    except db.BadValueError as err:
       raise ValueError('The %s could not be created (%s)' %
                        (opts.model.kind(), err))
     if commit:
@@ -702,7 +702,7 @@ class SurveyTakeForm(ModelForm):
         if field and isinstance(field.widget, forms.Textarea):
           value = db.Text(value)
         setattr(instance, name, value)
-    except db.BadValueError, err:
+    except db.BadValueError as err:
       raise ValueError('The %s could not be updated (%s)' %
                        (opts.model.kind(), err))
 
