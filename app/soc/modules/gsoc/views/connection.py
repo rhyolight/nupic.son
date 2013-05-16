@@ -364,9 +364,7 @@ class OrgConnectionPage(GSoCRequestHandler):
       profile = GSoCProfile.all().ancestor(user).get()
 
       connection_form.cleaned_data['profile'] = profile
-      create_connection_txn(form=connection_form, user=user,
-          org_state=connection.STATE_ACCEPTED, mail_func=dispatch_email_txn,
-          mail_recipients=profile.email)
+      db.run_in_transaction(create_connection_txn, user, profile.email)
 
     def create_anonymous_connection_txn(email):
       # Create the anonymous connection - a placeholder until the user
