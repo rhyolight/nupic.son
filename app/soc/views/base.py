@@ -25,6 +25,7 @@ from django import http
 from django.utils import simplejson
 from django.template import loader
 
+from melange.request import render
 from soc.logic import exceptions
 from soc.logic import links
 from soc.views.helper import access_checker
@@ -36,9 +37,10 @@ from soc.views.helper import request_data
 class RequestHandler(object):
   """Base class managing HTTP Requests."""
 
-  # TODO(nathaniel): Pass this as a construction parameter like
-  # a real injected dependency.
+  # TODO(nathaniel): Pass these as construction parameters like
+  # real injected dependencies.
   linker = links.Linker()
+  renderer = render.MELANGE_RENDERER
 
   def context(self, data, check, mutator):
     """Provides a dictionary of values needed to render a template.
@@ -77,7 +79,7 @@ class RequestHandler(object):
     """
     context = self.context(data, check, mutator)
     template_path = self.templatePath()
-    response_content = self.render(data, template_path, context)
+    response_content = self.renderer.render(data, template_path, context)
     return http.HttpResponse(content=response_content)
 
   def json(self, data, check, mutator):
@@ -305,25 +307,6 @@ class RequestHandler(object):
         any reason.
     """
     raise NotImplementedError()
-
-  def render(self, data, template_path, render_context):
-    """Renders the page content from the specified template and context.
-
-    Values supplied by helper.context.default are used in the rendering in
-    addition to those supplied by render_context (render_context overrides
-    in cases of conflict).
-
-    Args:
-      data: The RequestData that should be used.
-      template_path: The path of the template that should be used.
-      render_context: The context dictionary that should be used.
-
-    Returns:
-      The page content.
-    """
-    context = context_helper.default(data)
-    context.update(render_context)
-    return loader.render_to_string(template_path, dictionary=context)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
