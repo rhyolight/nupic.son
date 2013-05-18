@@ -53,9 +53,9 @@ options(
     app_files = ['app.yaml', 'index.yaml', 'queue.yaml', 'cron.yaml',
                  'mapreduce.yaml', 'main.py', 'settings.py', 'urls.py',
                  'gae_django.py', 'profiler.py', 'appengine_config.py'],
-    app_dirs =  ["soc", "feedparser", "djangoforms",
+    app_dirs =  ["melange", "soc", "feedparser", "djangoforms",
                  "jquery.min", "ranklist", "shell", "json.min", "jlinq",
-                 "modernizr.min", "html5lib", "LABjs.min", "gviz","webmaster",
+                 "modernizr.min", "html5lib", "LABjs.min", "gviz", "webmaster",
                  "gdata", "atom", "mapreduce"],
     css_dirs = ["soc/content/css/v2/gsoc/", "soc/content/css/v2/gci"],
     css_files = {
