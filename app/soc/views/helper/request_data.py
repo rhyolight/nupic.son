@@ -24,8 +24,8 @@ from django import http
 from django.core import urlresolvers
 from django.utils import encoding
 
+from melange.appengine import system
 from soc.logic import program as program_logic
-from soc.logic import system
 from soc.logic import site as site_logic
 from soc.logic import user
 from soc.models import sponsor as sponsor_model
@@ -564,7 +564,7 @@ class RedirectHelper(object):
       hostname = system.getSecureHostname()
     else:
       protocol = 'http'
-      hostname = system.getHostname(self._data)
+      hostname = site_logic.getHostname(self._data)
 
     return '%s://%s%s' % (protocol, hostname, url)
 

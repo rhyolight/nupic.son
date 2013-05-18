@@ -24,7 +24,7 @@ from google.appengine.api import memcache
 
 from django.conf import settings
 
-from soc.logic import system
+from melange.appengine import system
 
 
 def createDocsService(data):

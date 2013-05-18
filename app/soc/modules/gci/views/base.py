@@ -18,34 +18,54 @@ import httplib
 
 from django import http
 
+from melange.request import render
 from soc.views import base
 
 from soc.modules.gci.views import base_templates
 from soc.modules.gci.views.helper import access_checker
 from soc.modules.gci.views.helper import request_data
 
+_BASE_TEMPLATE = 'v2/modules/gci/base.html'
+
+
+class GCIRenderer(render.Renderer):
+  """A Renderer customized for GCI."""
+
+  def __init__(self, delegate):
+    """Constructs a GCIRenderer.
+
+    Args:
+      delegate: A Renderer to which this Renderer may delegate
+        some portion of its functionality.
+    """
+    self._delegate = delegate
+
+  def render(self, data, template_path, context):
+    """See render.Renderer.render for specification.
+
+    The template is rendered against the given context content augmented
+    by the following items:
+      base_layout: The path to the base template.
+      header: A rendered header.Header template for the passed data.
+      mainmenu: A rendered site_menu.MainMenu template for the passed data.
+      footer: A rendered site_menu.Footer template for the passed data.
+    """
+    augmented_context = dict(context)
+    augmented_context.update({
+        'base_layout': _BASE_TEMPLATE,
+        'header': base_templates.Header(data),
+        'mainmenu': base_templates.MainMenu(data),
+        'footer': base_templates.Footer(data),
+    })
+    if data.user:
+      context['status'] = base_templates.Status(data)
+    return self._delegate.render(data, template_path, augmented_context)
+
 
 class GCIRequestHandler(base.RequestHandler):
   """Customization required by GCI to handle HTTP requests."""
 
-  def render(self, data, template_path, context):
-    """Renders the page using the specified context.
-
-    See soc.views.base.RequestHandler for specification.
-
-    The context object is extended with the following values:
-      base_layout: path to the base template.
-      header: a rendered header.Header template for the passed data.
-      mainmenu: a rendered site_menu.MainMenu template for the passed data.
-      footer: a rendered site_menu.Footer template for the passed data.
-    """
-    context['base_layout'] = 'v2/modules/gci/base.html'
-    if data.user:
-      context['status'] = base_templates.Status(data)
-    context['header'] = base_templates.Header(data)
-    context['mainmenu'] = base_templates.MainMenu(data)
-    context['footer'] = base_templates.Footer(data)
-    return super(GCIRequestHandler, self).render(data, template_path, context)
+  renderer = GCIRenderer(render.MELANGE_RENDERER)
 
   def init(self, request, args, kwargs):
     """See base.RequestHandler.init for specification."""
@@ -75,4 +95,5 @@ class GCIRequestHandler(base.RequestHandler):
     }
 
     return http.HttpResponse(
-        content=self.render(data, template_path, context), status=status)
+        content=self.renderer.render(data, template_path, context),
+        status=status)

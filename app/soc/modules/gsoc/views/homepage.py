@@ -16,7 +16,7 @@
 
 from django.conf.urls.defaults import url as django_url
 
-from soc.logic import system
+from melange.appengine import system
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 

@@ -12,20 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Site (Model) query functions.
-"""
-
+"""Site (Model) query functions."""
 
 from google.appengine.api import memcache
 
-from soc.models.site import Site
+from melange.appengine import system
 from soc.logic.helper import xsrfutil
+from soc.models import site
 
 
 def singleton():
-  """Return singleton Site settings entity, since there is always only one.
-  """
-  return Site.get_or_insert('site', link_id='site')
+  """Return singleton Site settings entity, since there is always only one."""
+  return site.Site.get_or_insert('site', link_id='site')
 
 
 def xsrfSecretKey(settings):
@@ -47,3 +45,30 @@ def xsrfSecretKey(settings):
     settings.xsrf_secret_key = key
     settings.put()
   return settings.xsrf_secret_key
+
+
+def getHostname(data=None):
+  """Returns the hostname (taking into account site hostname settings).
+
+  Args:
+    data: A RequestData object.
+
+  Returns:
+    The site hostname.
+  """
+  settings = data.site if data else singleton()
+  return settings.hostname if settings.hostname else system.getRawHostname()
+
+
+def isSecondaryHostname(data=None):
+  """Identifies if the current request is from the secondary hostname.
+
+  Args:
+    data: A RequestData object.
+
+  Returns:
+    True if the current request is from the secondary hostname; False
+      otherwise.
+  """
+  settings = data.site if data else singleton()
+  return settings.hostname and settings.hostname in system.getRawHostname()

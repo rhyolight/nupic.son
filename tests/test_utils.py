@@ -678,7 +678,7 @@ class DjangoTestCase(TestCase):
 
       try:
         self.assertEqual(value, prop, msg=msg)
-      except AssertionError, e:
+      except AssertionError as e:
         errors.append(msg)
 
     if errors:

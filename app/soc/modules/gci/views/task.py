@@ -91,7 +91,6 @@ class CommentForm(gci_forms.GCIModelForm):
 
     # For UI purposes we need to set this required, validation does not pick
     # it up.
-    self.fields['title'].required = True
     self.fields['content'].required = True
 
   def clean_content(self):
@@ -101,15 +100,6 @@ class CommentForm(gci_forms.GCIModelForm):
     else:
       raise django_forms.ValidationError(
           ugettext('Comment content cannot be empty.'), code='invalid')
-
-  def clean_title(self):
-    title = self.cleaned_data.get('title')
-
-    if not title:
-      raise django_forms.ValidationError(
-          ugettext('Comment title cannot be empty.'), code='invalid')
-
-    return title
 
 
 class WorkSubmissionFileForm(gci_forms.GCIModelForm):

@@ -52,7 +52,7 @@ class LookupForm(gci_forms.GCIModelForm):
 
     try:
       email_address = email_cleaner(self)
-    except djangoforms.ValidationError, e:
+    except djangoforms.ValidationError as e:
       if e.code != 'invalid':
         raise
       msg = ugettext(u'Enter a valid email address.')

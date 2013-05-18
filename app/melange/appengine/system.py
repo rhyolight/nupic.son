@@ -12,23 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Basic system information functions.
-"""
-
+"""App Engine platform information functions."""
 
 import os
 import settings
 
 from google.appengine.api import app_identity
 
-from soc.logic import site
-
-
-
 
 def getApplicationId():
-  """Returns the current application id.
-  """
+  """Returns the current application id."""
   return app_identity.get_application_id()
 
 
@@ -45,60 +38,33 @@ def getApplicationEmail(name):
 
 
 def getApplicationNoReplyEmail():
-  """Returns the applications no-reply email address.
-  """
+  """Returns the applications no-reply email address."""
   return getApplicationEmail('no-reply')
 
 
 def getRawHostname():
-  """Returns the actual hostname.
-  """
+  """Returns the actual hostname."""
   return os.environ.get('HTTP_HOST', '')
 
 
-def getHostname(data=None):
-  """Returns the hostname, taking in account site hostname settings.
-  """
-  settings = data.site if data else site.singleton()
-
-  if settings.hostname:
-    return settings.hostname
-
-  return getRawHostname()
-
-
 def getSecureHostname():
-  """Returns the hostname suitable for https requests.
-  """
+  """Returns the hostname suitable for https requests."""
   return "%s.appspot.com" % getApplicationId()
 
 
-def isSecondaryHostname(data=None):
-  """Returns if the current request is from the secondary hostname.
-  """
-  settings = data.site if data else site.singleton()
-
-  if not settings.hostname:
-    return False
-
-  return getRawHostname().find(settings.hostname) >= 0
-
-
 def getAppVersion():
-  """Returns the Google App Engine "version" of the running instance.
-  """
+  """Returns the Google App Engine "version" of the running instance."""
   return os.environ.get('CURRENT_VERSION_ID')
 
 
 def getMelangeVersion():
-  """Returns the Melange part of the GAE version.
-  """
+  """Returns the Melange part of the GAE version."""
   return getAppVersion().split('.', 1)[0]
 
 
 def isLocal():
   """Returns True if Melange application is running locally.
-  
+
   "Local mode" is currently determined from settings.DEBUG but may become
   more sophisticated in the future.
   """

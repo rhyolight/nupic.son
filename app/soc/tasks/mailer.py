@@ -27,7 +27,7 @@ from google.appengine.runtime.apiproxy_errors import DeadlineExceededError
 from django.conf.urls.defaults import url as django_url
 from django.utils import simplejson
 
-from soc.logic import system
+from melange.appengine import system
 from soc.models import email
 from soc.tasks import responses
 from soc.tasks.helper import error_handler
@@ -128,7 +128,7 @@ class MailerTask(object):
 
     try:
       message.check_initialized()
-    except Exception, e:
+    except Exception as e:
       logging.exception(e)
       context['body'] = context.get('body', '')[:10]
       logging.error('This message was not properly initialized: "%s"' % context)
@@ -144,11 +144,11 @@ class MailerTask(object):
 
     try:
       db.RunInTransaction(txn)
-    except mail.Error, exception:
+    except mail.Error as exception:
       # shouldn't happen because validate has been called, keeping the Email
       # entity for study purposes.
       return error_handler.logErrorAndReturnOK(exception)
-    except (OverQuotaError, DeadlineExceededError), e:
+    except (OverQuotaError, DeadlineExceededError) as e:
       return responses.repeatTask()
 
     # mail successfully sent

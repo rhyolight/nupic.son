@@ -19,7 +19,7 @@ import httplib
 from django import http
 from django.template import loader
 
-from soc.logic import system
+from melange.appengine import system
 
 _TEMPLATE = 'error.html'
 

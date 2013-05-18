@@ -198,7 +198,7 @@ class BulkCreateTask(object):
       parsed = parser.parseFragment(task['description'], encoding='utf-8')
       cleaned_string = ''.join([tag.toxml() for tag in parsed.childNodes])
       task['description'] = cleaned_string.strip().replace('\r\n', '\n')
-    except (HTMLParseError, ParseError, TypeError), e:
+    except (HTMLParseError, ParseError, TypeError) as e:
       logging.warning('Cleaning of description failed with: %s' %e)
       errors.append(
           'Failed to clean the description, do not use naughty HTML such as '
@@ -207,7 +207,7 @@ class BulkCreateTask(object):
     # clean time to complete
     try:
       task['time_to_complete'] = int(task['time_to_complete'])
-    except (ValueError, TypeError), e:
+    except (ValueError, TypeError) as e:
       errors.append('No valid time to completion found, given was: %s.'
                     % task['time_to_complete'])
 

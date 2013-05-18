@@ -26,7 +26,6 @@ from soc.logic import dicts
 from soc.logic import mail_dispatcher
 from soc.logic import program as program_logic
 from soc.logic import site
-from soc.logic import system
 from soc.tasks import mailer
 
 
@@ -165,7 +164,7 @@ def getFirstTaskConfirmationContext(student):
   url = reverse('gci_student_form_upload', kwargs=kwargs)
 
   protocol = 'http'
-  hostname = system.getHostname()
+  hostname = site.getHostname()
 
   context = {
       'student_forms_link': '%s://%s%s' % (protocol, hostname, url),
@@ -191,7 +190,7 @@ def getTaskCommentContext(task, comment, to_emails):
   }
 
   task_url = 'http://%(host)s%(task)s' % {
-      'host': system.getHostname(),
+      'host': site.getHostname(),
       'task': reverse('gci_view_task', kwargs=url_kwargs)}
 
   commented_by = comment.created_by.name if comment.created_by else "Melange"

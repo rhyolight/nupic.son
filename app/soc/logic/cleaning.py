@@ -131,7 +131,7 @@ def clean_email(field_name):
 
     try:
       validator(email)
-    except forms.ValidationError, e:
+    except forms.ValidationError as e:
       if e.code == 'invalid':
         msg = ugettext(u'The email address %s is not valid.' % email)
         raise forms.ValidationError(msg, code='invalid')
@@ -404,7 +404,7 @@ def sanitize_html_string(content):
     parser = HTMLParser(tokenizer=sanitizer.HTMLSanitizer)
     parsed = parser.parseFragment(content, encoding='utf-8')
     cleaned_content = ''.join([tag.toxml() for tag in parsed.childNodes])
-  except (HTMLParseError, ParseError), msg:
+  except (HTMLParseError, ParseError) as msg:
     raise forms.ValidationError(msg)
 
   return cleaned_content
@@ -450,7 +450,7 @@ def clean_url(field_name):
     # properly clean/validate this field
     try:
       validator(value)
-    except forms.ValidationError, e:
+    except forms.ValidationError as e:
       if e.code == 'invalid':
         msg = ugettext(u'Enter a valid URL.')
         raise forms.ValidationError(msg, code='invalid')
@@ -479,7 +479,7 @@ def clean_irc(field_name):
     # properly clean/validate this field
     try:
       validator(to_clean)
-    except forms.ValidationError, e:
+    except forms.ValidationError as e:
       if e.code == 'invalid':
         msg = ugettext(u'Enter a valid URL or irc:// url.')
         raise forms.ValidationError(msg, code='invalid')
@@ -506,7 +506,7 @@ def clean_mailto(field_name):
     # properly clean/validate this field
     try:
       validator(to_clean)
-    except forms.ValidationError, e:
+    except forms.ValidationError as e:
       if e.code == 'invalid':
         msg = ugettext(u'Enter a valid URL or mailto: link.')
         raise forms.ValidationError(msg, code='invalid')

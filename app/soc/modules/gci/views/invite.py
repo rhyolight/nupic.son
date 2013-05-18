@@ -102,7 +102,7 @@ class InviteForm(gci_forms.GCIModelForm):
     try:
       existing_user_cleaner = cleaning.clean_existing_user('identifier')
       user_to_invite = existing_user_cleaner(self)
-    except gci_forms.ValidationError, e:
+    except gci_forms.ValidationError as e:
       if e.code != 'invalid':
         raise
 
@@ -110,7 +110,7 @@ class InviteForm(gci_forms.GCIModelForm):
       email_cleaner = cleaning.clean_email('identifier')
       try:
         email = email_cleaner(self)
-      except gci_forms.ValidationError, e:
+      except gci_forms.ValidationError as e:
         if e.code != 'invalid':
           raise
         msg = ugettext(u'Enter a valid link_id or email address.')

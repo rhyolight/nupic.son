@@ -475,6 +475,11 @@ body {
                 font-weight: bold;
                 line-height: 19px;
             }
+            .single-comment-author {
+                font-size: 14px;
+                font-weight: bold;
+                line-height: 19px;
+            }
             .block-comments .single-comment .single-comment-meta {
                 display: block;
                 font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
