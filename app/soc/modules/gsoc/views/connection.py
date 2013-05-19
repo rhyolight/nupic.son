@@ -171,16 +171,19 @@ class OrgConnectionForm(ConnectionForm):
     validation to the users field.
     """
     id_list = self.cleaned_data['users'].split(',')
+    # List containing User entities referenced via link ids or emails from 
+    # the form data provided by the org admin.
     self.request_data.valid_users = []
+    # List of emails that do not correspond to valid Users.
     self.request_data.anonymous_users = []
     
     field = 'current_user'
-    for id in id_list:
-      self.cleaned_data[field] = id.strip()
+    for user_id in id_list:
+      self.cleaned_data[field] = user_id.strip()
       if '@' in self.cleaned_data[field]:
         user = self._clean_one_email(field)
         if user is None:
-          self.request_data.anonymous_users.append(id)
+          self.request_data.anonymous_users.append(user_id)
         else:
           self.request_data.valid_users.append(user)
       else:
@@ -192,6 +195,8 @@ class OrgConnectionForm(ConnectionForm):
   def _clean_link_id(self, field):
     """Apply validation filters to a single link id from the user field.
     
+    Returns:
+        User instance to which the link_id corresponds.
     Raises:
         forms.ValidationError if a provided link_id is invalid or does 
         not correspond to an existing user.
@@ -201,7 +206,7 @@ class OrgConnectionForm(ConnectionForm):
       user = cleaner(self)
     except gsoc_forms.ValidationError:
       # Catch and re-raise the exception to provide a more helpful error
-      #message than "One or more Link_ids is not valid."
+      # message than "One or more Link_ids is not valid."
       raise gsoc_forms.ValidationError(
           '"%s" is not a valid link id.' % self.cleaned_data[field])
     return user
