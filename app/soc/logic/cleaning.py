@@ -12,69 +12,74 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generic cleaning methods.
-"""
+"""Generic cleaning methods."""
 
-
+import HTMLParser
 import re
 
-from HTMLParser import HTMLParseError
-
-from html5lib import HTMLParser
-from html5lib import sanitizer
-from html5lib.html5parser import ParseError
-
-from google.appengine.api import users
+from google.appengine.api import users as appengine_users
 
 from django import forms
 from django.core import validators
-from django.utils.translation import ugettext
+from django.utils import translation
 
-from soc.models.user import User
+import html5lib
+from html5lib import sanitizer
+from html5lib import html5parser
+
+from soc.models import user as user_model
 from soc.logic import validate
-from soc.logic import user
+from soc.logic import user as user_logic
 
+DEF_INVALID_EMAIL_ADDRESS = translation.ugettext(
+    '"%s" is not a valid email address.')
+
+DEF_INVALID_LINK_ID = translation.ugettext(
+    '"%s" is not a properly-formed username.')
 
 DEF_VALID_SHIPPING_CHARS = re.compile('^[A-Za-z0-9\s-]+$')
 
-DEF_LINK_ID_IN_USE = ugettext(
+DEF_LINK_ID_IN_USE = translation.ugettext(
     'This username is already in use, please specify another one')
 
-DEF_NO_RIGHTS_FOR_ACL = ugettext(
+DEF_NO_RIGHTS_FOR_ACL = translation.ugettext(
     'You do not have the required rights for that ACL.')
 
-DEF_ORGANZIATION_NOT_ACTIVE = ugettext(
+DEF_ORGANZIATION_NOT_ACTIVE = translation.ugettext(
     "This organization is not active or doesn't exist.")
 
-DEF_NO_SUCH_DOCUMENT = ugettext(
-    "There is no such document with that username under this entity.")
+DEF_NO_SUCH_DOCUMENT = translation.ugettext(
+    'There is no such document with that username under this entity.')
 
-DEF_MUST_BE_ABOVE_AGE_LIMIT = ugettext(
-    "To sign up as a student for this program, you "
-    "must be at least %d years of age, as of %s.")
+DEF_MUST_BE_ABOVE_AGE_LIMIT = translation.ugettext(
+    'To sign up as a student for this program, you '
+    'must be at least %d years of age, as of %s.')
 
-DEF_MUST_BE_ABOVE_LIMIT = ugettext(
-    "Must be at least %d characters, it has %d characters.")
+DEF_MUST_BE_ABOVE_LIMIT = translation.ugettext(
+    'Must be at least %d characters, it has %d characters.')
 
-DEF_MUST_BE_UNDER_LIMIT = ugettext(
-    "Must be under %d characters, it has %d characters.")
+DEF_MUST_BE_UNDER_LIMIT = translation.ugettext(
+    'Must be under %d characters, it has %d characters.')
 
-DEF_2_LETTER_STATE = ugettext(
-    "State should be 2-letter field since country is '%s'.")
+DEF_2_LETTER_STATE = translation.ugettext(
+    'State should be 2-letter field since country is "%s".')
 
-
-DEF_INVALID_SHIPPING_CHARS = ugettext(
+DEF_INVALID_SHIPPING_CHARS = translation.ugettext(
     'Invalid characters, only A-z, 0-9, - and whitespace are allowed. '
     'See also <a href="http://code.google.com/p/soc/issues/detail?id=903">'
     'Issue 903</a>, in particular <a href="'
     'http://code.google.com/p/soc/issues/detail?id=903#c16">comment 16</a>. '
     'Please <em>do not</em> create a new issue about this.')
 
+DEF_ROLE_TARGET_COUNTRY = 'United States'
 
-DEF_ROLE_TARGET_COUNTRY = "United States"
+DEF_ROLE_COUNTRY_PAIRS = [('res_country', 'res_state'),
+                          ('ship_country', 'ship_state')]
 
-DEF_ROLE_COUNTRY_PAIRS = [("res_country", "res_state"),
-                          ("ship_country", "ship_state")]
+# The Django documentation is unclear on why ValidationErrors carry a
+# "code" and what that code is supposed to signify, but for some reason
+# this seems to be necessary.
+_INVALID_CODE = 'invalid'
 
 
 def check_field_is_empty(field_name):
@@ -118,6 +123,28 @@ def clean_empty_field(field_name):
   return wrapper
 
 
+def cleanEmail(email):
+  """Validates that a string is a properly formed email address.
+
+  Args:
+    email: Any string.
+
+  Raises:
+    forms.ValidationError: The string is not a valid email address.
+  """
+  try:
+    validators.validate_email(email)
+  except forms.ValidationError as e:
+    # NOTE(nathaniel): The message that Django supplies in its raised
+    # ValidationError does not include the string that generated it,
+    # so for user-friendliness we substitute our own message that
+    # does include the input string.
+    message = translation.ugettext(DEF_INVALID_EMAIL_ADDRESS % email)
+    raise forms.ValidationError(message, code=e.code)
+
+
+# TODO(nathaniel): Find some terms with which to document this. It's
+# like a mixin... function... method... thing?
 def clean_email(field_name):
   """Checks if the field_name value is in an email format.
   """
@@ -127,19 +154,28 @@ def clean_email(field_name):
     """
     # convert to lowercase for user comfort
     email = self.cleaned_data.get(field_name)
-    validator = validators.validate_email
-
-    try:
-      validator(email)
-    except forms.ValidationError as e:
-      if e.code == 'invalid':
-        msg = ugettext(u'The email address %s is not valid.' % email)
-        raise forms.ValidationError(msg, code='invalid')
+    cleanEmail(email)
     return email
 
   return wrapper
 
 
+def cleanLinkID(link_id):
+  """Validates that a string fits the form required of a link ID.
+
+  Args:
+    link_id: Any string.
+
+  Raises:
+    forms.ValidationError: The string does not fit the form required
+      of a link ID.
+  """
+  if not validate.isLinkIdFormatValid(link_id):
+    raise forms.ValidationError(
+        DEF_INVALID_LINK_ID % link_id, code=_INVALID_CODE)
+
+
+# TODO(nathaniel): Document this too in some form or another.
 def clean_link_id(field_name):
   """Checks if the field_name value is in a valid link ID format.
   """
@@ -150,10 +186,7 @@ def clean_link_id(field_name):
     """
     # convert to lowercase for user comfort
     link_id = self.cleaned_data.get(field_name).lower()
-    if not validate.isLinkIdFormatValid(link_id):
-      raise forms.ValidationError(
-                                "The username %s is in wrong format." % link_id,
-                                  code='invalid')
+    cleanLinkID(link_id)
     return link_id
   return wrapper
 
@@ -168,11 +201,11 @@ def clean_existing_user(field_name):
     """
     link_id = clean_link_id(field_name)(self)
 
-    user_entity = User.get_by_key_name(link_id)
+    user_entity = user_model.User.get_by_key_name(link_id)
 
     if not user_entity:
       # user does not exist
-      raise forms.ValidationError("This user does not exist.")
+      raise forms.ValidationError('This user does not exist.')
 
     return user_entity
   return wrapped
@@ -189,11 +222,11 @@ def clean_user_is_current(field_name, as_user=True):
     """
     link_id = clean_link_id(field_name)(self)
 
-    user_entity = user.current()
+    user_entity = user_logic.current()
     # pylint: disable=E1103
     if not user_entity or user_entity.link_id != link_id:
       # this user is not the current user
-      raise forms.ValidationError("This user is not you.")
+      raise forms.ValidationError('This user is not you.')
 
     return user_entity if as_user else link_id
   return wrapped
@@ -210,11 +243,11 @@ def clean_user_not_exist(field_name):
     """
     link_id = clean_link_id(field_name)(self)
 
-    user_entity = User.get_by_key_name(link_id)
+    user_entity = user_model.User.get_by_key_name(link_id)
 
     if user_entity:
       # user exists already
-      raise forms.ValidationError("There is already a user with this username.")
+      raise forms.ValidationError('There is already a user with this username.')
 
     return link_id
   return wrapped
@@ -232,11 +265,11 @@ def clean_users_not_same(field_name):
     clean_user_field = clean_existing_user(field_name)
     user_entity = clean_user_field(self)
 
-    current_user_entity = user.current()
+    current_user_entity = user_logic.current()
     # pylint: disable=E1103
     if user_entity.key() == current_user_entity.key():
       # users are equal
-      raise forms.ValidationError("You cannot enter yourself here.")
+      raise forms.ValidationError('You cannot enter yourself here.')
 
     return user_entity
   return wrapped
@@ -251,7 +284,7 @@ def clean_user_account(field_name):
     """Decorator wrapper method.
     """
     email_adress = self.cleaned_data[field_name]
-    return users.User(email_adress)
+    return appengine_users.User(email_adress)
 
   return wrapped
 
@@ -268,13 +301,13 @@ def clean_user_account_not_in_use(field_name):
     email_adress = self.cleaned_data.get(field_name).lower()
 
     # get the user account for this email and check if it's in use
-    user_account = users.User(email_adress)
+    user_account = appengine_users.User(email_adress)
 
-    user_entity = User.all().filter('account', user_account).get()
+    user_entity = user_model.User.all().filter('account', user_account).get()
 
-    if user_entity or user.isFormerAccount(user_account):
-      raise forms.ValidationError("There is already a user "
-          "with this email address.")
+    if user_entity or user_logic.isFormerAccount(user_account):
+      raise forms.ValidationError(
+          'There is already a user with this email address.')
 
     return user_account
   return wrapped
@@ -344,7 +377,7 @@ def clean_phone_number(field_name):
       value = '00' + value[1:]
 
     if not value.isdigit():
-      raise forms.ValidationError("Only numerical characters are allowed")
+      raise forms.ValidationError('Only numerical characters are allowed')
 
     return value
   return wrapper
@@ -401,10 +434,10 @@ def sanitize_html_string(content):
     forms.ValidationError in case of an error.
   """
   try:
-    parser = HTMLParser(tokenizer=sanitizer.HTMLSanitizer)
+    parser = html5lib.HTMLParser(tokenizer=sanitizer.HTMLSanitizer)
     parsed = parser.parseFragment(content, encoding='utf-8')
     cleaned_content = ''.join([tag.toxml() for tag in parsed.childNodes])
-  except (HTMLParseError, ParseError) as msg:
+  except (HTMLParser.HTMLParseError, html5parser.ParseError) as msg:
     raise forms.ValidationError(msg)
 
   return cleaned_content
@@ -424,7 +457,7 @@ def clean_html_content(field_name):
     # when reading data from GAE. This short-circuiting of the sanitizer
     # only affects html authored by developers. The isDeveloper test for
     # example allows developers to add javascript.
-    if user.isDeveloper():
+    if user_logic.isDeveloper():
       return content
 
     content = sanitize_html_string(content)
@@ -452,7 +485,7 @@ def clean_url(field_name):
       validator(value)
     except forms.ValidationError as e:
       if e.code == 'invalid':
-        msg = ugettext(u'Enter a valid URL.')
+        msg = translation.ugettext(u'Enter a valid URL.')
         raise forms.ValidationError(msg, code='invalid')
     return value
   return wrapped
@@ -472,8 +505,8 @@ def clean_irc(field_name):
 
     to_clean = value
 
-    if value.startswith("irc://"):
-      to_clean = value.replace("irc://", "http://", 1)
+    if value.startswith('irc://'):
+      to_clean = value.replace('irc://', 'http://', 1)
 
     # call the Django URLField cleaning method to
     # properly clean/validate this field
@@ -481,7 +514,7 @@ def clean_irc(field_name):
       validator(to_clean)
     except forms.ValidationError as e:
       if e.code == 'invalid':
-        msg = ugettext(u'Enter a valid URL or irc:// url.')
+        msg = translation.ugettext(u'Enter a valid URL or irc:// url.')
         raise forms.ValidationError(msg, code='invalid')
     return value
   return wrapped
@@ -498,8 +531,8 @@ def clean_mailto(field_name):
 
     to_clean = value
 
-    if value.startswith("mailto:"):
-      to_clean = value.replace("mailto:", "", 1)
+    if value.startswith('mailto:'):
+      to_clean = value.replace('mailto:', '', 1)
       validator = validators.validate_email
 
     # call the Django URLField cleaning method to
@@ -508,7 +541,7 @@ def clean_mailto(field_name):
       validator(to_clean)
     except forms.ValidationError as e:
       if e.code == 'invalid':
-        msg = ugettext(u'Enter a valid URL or mailto: link.')
+        msg = translation.ugettext(u'Enter a valid URL or mailto: link.')
         raise forms.ValidationError(msg, code='invalid')
     return value
   return wrapped
