@@ -15,9 +15,9 @@
 """Tests of soc.logic.linker."""
 
 import unittest
+import urllib
 
 from soc.logic import links
-
 
 TEST_PROGRAM_NAME = 'test_program'
 TEST_SPONSOR_KEY_NAME = 'test_sponsor_key_name'
@@ -43,6 +43,27 @@ class MockProgram(object):
   link_id = TEST_PROGRAM_NAME
 
 
+class _PathOnlyMockHttpRequest(object):
+  """A mock HttpRequest supporting only the get_full_path method.
+
+  Why Django doesn't provide an instantiable HttpRequest
+  implementation is completely beyond me.
+  """
+
+  def __init__(self, path):
+    """Creates a _PathOnlyMockHttpRequest.
+
+    Args:
+      path: Any string intended to represent the path portion of
+        a requested URL.
+    """
+    self._path = path
+
+  def get_full_path(self):
+    """See http.HttpRequest.get_full_path for specification."""
+    return self._path
+
+
 # TODO(daniel): this class is on a non-specific level, but it refers
 # to GCI specific names. Make it generic.
 class TestLinker(unittest.TestCase):
@@ -50,6 +71,30 @@ class TestLinker(unittest.TestCase):
 
   def setUp(self):
     self.linker = links.Linker()
+
+  def testLogin(self):
+    """Tests that some reasonable value is created by Linker.login."""
+    test_path = '/a/fake/test/path'
+    # NOTE(nathaniel): The request parameter and value are just here
+    # for coverage; I don't actually have sufficient familiarity with
+    # them to assert that their quoting and escaping are completely
+    # correct.
+    test_arg = 'some_test_arg'
+    test_arg_value = 'some_test_value'
+
+    request = _PathOnlyMockHttpRequest(
+        '%s?%s=%s' % (test_path, test_arg, test_arg_value))
+    login_url = self.linker.login(request)
+    self.assertIn(test_path, login_url)
+    self.assertIn(
+        urllib.quote('%s=%s' % (test_arg, test_arg_value)), login_url)
+
+  def testLogout(self):
+    """Tests that some reasonable value is created by Linker.logout."""
+    test_path = 'a/fake/test/path/to/visit/after/logout'
+    request = _PathOnlyMockHttpRequest(test_path)
+    logout_path = self.linker.logout(request)
+    self.assertIn(test_path, logout_path)
 
   def testSite(self):
     self.assertEqual('/site/edit', self.linker.site('edit_site_settings'))

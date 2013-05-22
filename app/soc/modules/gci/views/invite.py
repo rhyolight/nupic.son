@@ -203,10 +203,10 @@ class InvitePage(GCIRequestHandler):
     invite_form = InviteForm(data, data.POST or None)
 
     return {
-        'logout_link': data.redirect.logout(),
+        'logout_link': self.linker.logout(data.request),
         'page_name': 'Invite a new %s' % role,
         'program': data.program,
-        'forms': [invite_form]
+        'forms': [invite_form],
     }
 
   def validate(self, data):

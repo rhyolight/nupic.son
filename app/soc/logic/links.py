@@ -14,6 +14,8 @@
 
 """Module for managing URL generation."""
 
+from google.appengine.api import users
+
 from django.core import urlresolvers
 
 from soc.models import program as program_model
@@ -21,6 +23,29 @@ from soc.models import program as program_model
 
 class Linker(object):
   """URL creator for Melange."""
+
+  def login(self, request):
+    """Returns the URL to which the user should be directed to log in.
+
+    Args:
+      request: An http.HttpRequest describing the current request.
+
+    Returns:
+      The URL to which the user should be directed to log in.
+    """
+    return users.create_login_url(
+        dest_url=request.get_full_path().encode('utf-8'))
+
+  def logout(self, request):
+    """Returns the URL to which the user should be directed to log out.
+
+    Args:
+      request: An http.HttpRequest describing the current request.
+
+    Returns:
+      The URL to which the user should be directed to log out.
+    """
+    return users.create_logout_url(request.get_full_path().encode('utf-8'))
 
   def site(self, url_name):
     """Returns the URL of a named page on the site.

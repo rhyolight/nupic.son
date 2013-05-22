@@ -174,11 +174,11 @@ class InvitePage(GSoCRequestHandler):
     invite_form = InviteForm(data, data.POST or None)
 
     return {
-        'logout_link': data.redirect.logout(),
+        'logout_link': self.linker.logout(data.request),
         'page_name': 'Invite a new %s' % role,
         'program': data.program,
         'invite_form': invite_form,
-        'error': bool(invite_form.errors)
+        'error': bool(invite_form.errors),
     }
 
   def _createFromForm(self, data):

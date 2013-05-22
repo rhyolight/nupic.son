@@ -23,6 +23,7 @@ from google.appengine.ext import db
 
 from soc.logic import exceptions
 from soc.logic import host as host_logic
+from soc.logic import links
 from soc.logic.exceptions import AccessViolation
 from soc.models import document
 from soc.models import org_app_record
@@ -428,13 +429,11 @@ class BaseAccessChecker(object):
     raise exceptions.LoginRequest()
 
   def isLoggedOut(self):
-    """Ensures that the user is logged out.
-    """
-
-    if not self.gae_user:
-      return
-
-    raise exceptions.RedirectRequest(self.data.logout_url)
+    """Ensures that the user is logged out."""
+    if self.gae_user:
+      # TODO(nathaniel): One-off linker object.
+      linker = links.Linker()
+      raise exceptions.RedirectRequest(linker.logout(self.data.request))
 
   def isUser(self):
     """Checks if the current user has an User entity.

@@ -14,7 +14,7 @@
 
 """Module for the site error-handling pages."""
 
-from soc.views.helper import error as error_helper
+from melange.request import error
 
 
 def handle404(request, *args, **kwargs):
@@ -31,7 +31,7 @@ def handle404(request, *args, **kwargs):
   Returns:
     An http.HttpResponse appropriate for a nonexistent path.
   """
-  return error_helper.handle404()
+  return error.handle404()
 
 
 def handle500(request, *args, **kwargs):
@@ -49,4 +49,4 @@ def handle500(request, *args, **kwargs):
   Returns:
     An http.HttpResponse indicating a failure within the server.
   """
-  return error_helper.handle500()
+  return error.handle500()

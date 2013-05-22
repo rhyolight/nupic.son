@@ -187,8 +187,6 @@ class RequestData(object):
     kwargs: the request kwargs (as provided by django)
     path: the url of the current query, encoded as utf-8 string
     full_path: same as path, but including any GET args
-    login_url: login url that redirects to the current path
-    logout_url: logout url that redirects to the current path
     GET: the GET dictionary (from the request object)
     POST: the POST dictionary (from the request object)
     is_developer: is the current user a developer
@@ -223,8 +221,6 @@ class RequestData(object):
     self._is_developer = self._unset
     self._gae_user = self._unset
     self._css_path = self._unset
-    self._login_url = self._unset
-    self._logout_url = self._unset
     self._ds_write_disabled = self._unset
 
     # explicitly copy POST and GET dictionaries so they can be modified
@@ -342,22 +338,6 @@ class RequestData(object):
     if not self._isSet(self._POST):
       self._POST = self.request.POST
     return self._POST
-
-  @property
-  def login_url(self):
-    """Memoizes and returns the login_url for the current path."""
-    if not self._isSet(self._login_url):
-      self._login_url = users.create_login_url(
-          self.request.get_full_path().encode('utf-8'))
-    return self._login_url
-
-  @property
-  def logout_url(self):
-    """Memoizes and returns the logout_url for the current path."""
-    if not self._isSet(self._logout_url):
-      self._logout_url = users.create_logout_url(
-          self.request.get_full_path().encode('utf-8'))
-    return self._logout_url
 
   @property
   def ds_write_disabled(self):
@@ -634,18 +614,6 @@ class RedirectHelper(object):
     """
     url = self._fullUrl(url, full, secure)
     return http.HttpResponseRedirect(url)
-
-  def login(self):
-    """Sets the _url to the login url."""
-    self._clear()
-    self._url = self._data.login_url
-    return self
-
-  def logout(self):
-    """Sets the _url to the logout url."""
-    self._clear()
-    self._url = self._data.logout_url
-    return self
 
   def acceptedOrgs(self):
     """Sets the _url_name to the list of all accepted orgs."""

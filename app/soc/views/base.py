@@ -25,12 +25,12 @@ from django import http
 from django.utils import simplejson
 from django.template import loader
 
+from melange.request import error
+from melange.request import exception
 from melange.request import render
 from soc.logic import exceptions
 from soc.logic import links
 from soc.views.helper import access_checker
-from soc.views.helper import context as context_helper
-from soc.views.helper import error as error_helper
 from soc.views.helper import request_data
 
 
@@ -41,6 +41,7 @@ class RequestHandler(object):
   # real injected dependencies.
   linker = links.Linker()
   renderer = render.MELANGE_RENDERER
+  error_handler = error.MELANGE_ERROR_HANDLER
 
   def context(self, data, check, mutator):
     """Provides a dictionary of values needed to render a template.
@@ -54,8 +55,19 @@ class RequestHandler(object):
       A dictionary of values to be used in rendering a template.
 
     Raises:
-      An exceptions.Error describing a response appropriate for the
-        given request parameters.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     return {}
 
@@ -74,8 +86,19 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for the given request parameters.
 
     Raises:
-      An exceptions.Error describing a response appropriate for the
-        given request parameters.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     context = self.context(data, check, mutator)
     template_path = self.templatePath()
@@ -94,8 +117,19 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for the given request parameters.
 
     Raises:
-      An exceptions.Error describing a response appropriate for the
-        given request parameters.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     context = self.jsonContext(data, check, mutator)
 
@@ -144,8 +178,19 @@ class RequestHandler(object):
         or unicode object.
 
     Raises:
-      An exceptions.Error describing a response appropriate for the given
-        request parameters.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     # TODO(nathaniel): That return value description is a travesty. Just make
     # this method return "a dictionary to be serialized into JSON response
@@ -166,8 +211,19 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for the given request parameters.
 
     Raises:
-      An exceptions.Error describing a response appropriate for the
-        given request parameters.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     raise exceptions.MethodNotAllowed()
 
@@ -183,8 +239,19 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for the given request parameters.
 
     Raises:
-      An exceptions.Error describing a response appropriate for the
-        given request parameters.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     # TODO(nathaniel): This probably wouldn't be all that unreasonable to
     # implement?
@@ -202,8 +269,19 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for the given request parameters.
 
     Raises:
-      An exceptions.Error describing a response appropriate for the
-        given request parameters.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     raise exceptions.MethodNotAllowed()
 
@@ -219,8 +297,19 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for the given request parameters.
 
     Raises:
-      An exceptions.Error describing a response appropriate for the
-        given request parameters.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     raise exceptions.MethodNotAllowed()
 
@@ -236,8 +325,19 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for the given request parameters.
 
     Raises:
-      An exceptions.Error describing a response appropriate for the
-        given request parameters.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     raise exceptions.MethodNotAllowed()
 
@@ -253,8 +353,19 @@ class RequestHandler(object):
       An http.HttpResponse appropriate for the given request parameters.
 
     Raises:
-      An exceptions.Error describing a response appropriate for the
-        given request parameters.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     raise exceptions.MethodNotAllowed()
 
@@ -274,9 +385,9 @@ class RequestHandler(object):
     # TODO(nathaniel): Break clients of this method into separate
     # "user error" and "server error" code paths.
     if status < 500:
-      return error_helper.handleUserError(data, status, message=message)
+      return error.handleUserError(data, status, message=message)
     else:
-      return error_helper.handleServerError(data, status, message=message)
+      return error.handleServerError(data, status, message=message)
 
   def djangoURLPatterns(self):
     """Returns a list of Django URL pattern tuples.
@@ -303,8 +414,19 @@ class RequestHandler(object):
       mutator: An access_checker.Mutator.
 
     Raises:
-      exceptions.Error: If the user's request should not be satisfied for
-        any reason.
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     raise NotImplementedError()
 
@@ -327,6 +449,21 @@ class RequestHandler(object):
 
     Returns:
       An http.HttpResponse appropriate for the current request.
+
+    Raises:
+      exception.LoginRequired: An exception.LoginRequired indicating
+        that the user is not logged in, but must log in to access the
+        resource specified in their request.
+      exception.Redirect: An exception.Redirect indicating that the
+        user is to be redirected to another URL.
+      exception.UserError: An exception.UserError describing what was
+        erroneous about the user's request and describing an appropriate
+        response.
+      exception.ServerError: An exception.ServerError describing some
+        problem that arose during request processing and describing an
+        appropriate response.
+      exceptions.Error: An exceptions.Error describing a response
+        appropriate for the given request parameters.
     """
     if data.request.method == 'GET':
       if data.request.GET.get('fmt') == 'json':
@@ -339,7 +476,6 @@ class RequestHandler(object):
       else:
         referrer = data.request.META.get('HTTP_REFERER', '')
         params = urllib.urlencode({'dsw_disabled': 1})
-        url_with_params = '%s?%s' % (referrer, params)
         return http.HttpResponseRedirect('%s?%s' % (referrer, params))
     elif data.request.method == 'HEAD':
       return self.head(data, check, mutator)
@@ -352,7 +488,7 @@ class RequestHandler(object):
     elif data.request.method == 'TRACE':
       return self.trace(data, check, mutator)
     else:
-      return self.error(data, httplib.NOT_IMPLEMENTED)
+      raise exception.MethodNotAllowed()
 
   def init(self, request, args, kwargs):
     """Creates objects necessary for serving the request.
@@ -375,8 +511,8 @@ class RequestHandler(object):
     """Checks whether or not the site is in maintenance mode.
 
     Raises:
-      exceptions.MaintainceMode: If the site is in maintenance mode and the
-        user is not a developer.
+      exceptions.MaintainceMode: If the site is in maintenance mode and
+        the user is not a developer.
     """
     if data.site.maintenance_mode and not data.is_developer:
       raise exceptions.MaintainceMode(
@@ -397,10 +533,10 @@ class RequestHandler(object):
       self.checkMaintenanceMode(data)
       self.checkAccess(data, check, mutator)
       return self._dispatch(data, check, mutator)
-    except exceptions.LoginRequest as e:
-      return data.redirect.login().to()
-    except exceptions.RedirectRequest as e:
-      return data.redirect.toUrl(e.url)
+    except (exception.LoginRequired, exceptions.LoginRequest):
+      return data.redirect.toUrl(self.linker.login(request))
+    except (exception.Redirect, exceptions.RedirectRequest) as redirect:
+      return data.redirect.toUrl(redirect.url)
     except exceptions.GDocsLoginRequest as e:
       return data.redirect.toUrl('%s?%s' % (
           data.redirect.urlOf(e.url_name), urllib.urlencode({'next': e.path})))
@@ -408,6 +544,10 @@ class RequestHandler(object):
       # TODO(nathaniel): Use a purpose-designated attribute of the exception
       # for the message rather than the could-be-and-mean-anything "args[0]".
       return self.error(data, e.status, message=e.args[0] if e.args else None)
+    except exception.UserError as user_error:
+      return self.error_handler(user_error, data)
+    except exception.ServerError as server_error:
+      return self.error_handler(server_error, data)
 
 
 class SiteRequestHandler(RequestHandler):

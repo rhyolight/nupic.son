@@ -21,6 +21,7 @@ from google.appengine.api import users
 from django.core.urlresolvers import reverse
 
 from soc.logic import accounts
+from soc.logic import links
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic.program import getMostRecentProgram
@@ -50,10 +51,13 @@ def siteMenuContext(data):
       'help_link': redirect.document(help_page).url(),
   }
 
+  # TODO(nathaniel): This should be the one canonical application-wide
+  # linker object rather than a one-off instantiation.
+  linker = links.Linker()
   if data.gae_user:
-    context['logout_link'] = redirect.logout().url()
+    context['logout_link'] = linker.logout(data.request)
   else:
-    context['login_link'] = redirect.login().url()
+    context['login_link'] = linker.login(data.request)
 
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
@@ -186,8 +190,9 @@ class Status(Template):
     context = {
         'user_email': accounts.denormalizeAccount(self.data.user.account).email(),
         'link_id': self.data.user.link_id,
-        'logout_link': self.data.redirect.logout().url(),
-        'dashboard_link': self.data.redirect.dashboard().url()
+        # TODO(nathaniel): one-off linker object.
+        'logout_link': links.Linker().logout(self.data.request),
+        'dashboard_link': self.data.redirect.dashboard().url(),
     }
 
     if self.data.profile:

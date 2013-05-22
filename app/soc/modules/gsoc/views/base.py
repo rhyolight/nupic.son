@@ -18,6 +18,7 @@ import httplib
 
 from django import http
 
+from melange.request import error
 from melange.request import render
 from soc.views import base
 
@@ -25,7 +26,8 @@ from soc.modules.gsoc.views import base_templates
 from soc.modules.gsoc.views.helper import access_checker
 from soc.modules.gsoc.views.helper import request_data
 
-_BASE_TEMPLATE = 'v2/modules/gsoc/base.html'
+_GSOC_BASE_TEMPLATE = 'v2/modules/gsoc/base.html'
+_GSOC_ERROR_TEMPLATE = 'v2/modules/gsoc/error.html'
 
 
 class GSoCRenderer(render.Renderer):
@@ -52,7 +54,7 @@ class GSoCRenderer(render.Renderer):
     """
     augmented_context = dict(context)
     augmented_context.update({
-        'base_layout': _BASE_TEMPLATE,
+        'base_layout': _GSOC_BASE_TEMPLATE,
         'header': base_templates.Header(data),
         'mainmenu': base_templates.MainMenu(data),
         'footer': base_templates.Footer(data),
@@ -60,10 +62,52 @@ class GSoCRenderer(render.Renderer):
     return self._delegate.render(data, template_path, augmented_context)
 
 
+class GSoCErrorHandler(error.ErrorHandler):
+  """A GSoC implementation of error.ErrorHandler."""
+
+  def __init__(self, renderer, delegate):
+    """Constructs a GSoCErrorHandler.
+
+    Args:
+      renderer: A render.Renderer to be used to render
+        response content.
+      delegate: An error.ErrorHandler to be used to handle
+        errors that this GSoCErrorHandler does not wish or
+        is not able to handle.
+    """
+    self._renderer = renderer
+    self._delegate = delegate
+
+  def handleUserError(self, user_error, data):
+    """See error.ErrorHandler.handleUserError for specification."""
+    if not data.program:
+      return self._delgate.handleUserError(user_error, data)
+
+    # If message is not set, set it to the default associated with the
+    # given status (such as "Method Not Allowed" or "Service Unavailable").
+    message = user_error.message if user_error.message else (
+        httplib.responses.get(user_error.status, ''))
+
+    context = {
+        'page_name': message,
+        'message': message,
+        'logged_in_msg': base_templates.LoggedInMsg(data, apply_link=False)
+    }
+
+    return http.HttpResponse(
+        content=self._renderer.render(data, _GSOC_ERROR_TEMPLATE, context),
+        status=user_error.status)
+
+  def handleServerError(self, server_error, data):
+    """See error.ErrorHandler.handleServerError for specification."""
+    return self._delegate.handleServerError(server_error, data)
+
+
 class GSoCRequestHandler(base.RequestHandler):
   """Customization required by GSoC to handle HTTP requests."""
 
   renderer = GSoCRenderer(render.MELANGE_RENDERER)
+  error_handler = GSoCErrorHandler(renderer, error.MELANGE_ERROR_HANDLER)
 
   def init(self, request, args, kwargs):
     """See base.RequestHandler.init for specification."""

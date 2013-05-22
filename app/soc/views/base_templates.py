@@ -14,6 +14,7 @@
 
 """This module contains the view for the site menus."""
 
+from soc.logic import links
 from soc.models.site import Site
 
 from soc.views.template import Template
@@ -30,9 +31,13 @@ class LoggedInMsg(Template):
     self.apply_role = apply_role
     self.div_name = div_name
 
+    # TODO(nathaniel): Of course, this should be "the one application-wide
+    # linker object", but that unification will have to come later.
+    self._linker = links.Linker()
+
   def context(self):
     context = {
-        'logout_link': self.data.redirect.logout().url(),
+        'logout_link': self._linker.logout(self.data.request),
         'has_profile': bool(self.data.profile),
         'div_name': self.div_name,
     }
