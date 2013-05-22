@@ -66,9 +66,9 @@ class SendRequestPage(GCIRequestHandler):
     request_form = RequestForm(data.POST or None)
 
     return {
-        'logout_link': data.redirect.logout(),
+        'logout_link': self.linker.logout(data.request),
         'forms': [request_form],
-        'page_name': self._constructPageName(data)
+        'page_name': self._constructPageName(data),
         }
 
   def _constructPageName(self, data):

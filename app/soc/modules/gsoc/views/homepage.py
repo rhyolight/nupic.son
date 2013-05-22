@@ -17,6 +17,7 @@
 from django.conf.urls.defaults import url as django_url
 
 from melange.appengine import system
+from soc.logic import links
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
@@ -108,7 +109,8 @@ class Apply(Template):
 
     # signup block
     if signup and not self.data.gae_user:
-      context['login_link'] = redirector.login().url()
+      # TODO(nathaniel): One-off linker object.
+      context['login_link'] = links.Linker().login(self.data.request)
     if signup and not self.data.profile:
       if self.data.timeline.orgSignup():
         redirector.createProfile('org_admin')

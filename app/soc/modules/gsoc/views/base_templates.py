@@ -14,9 +14,9 @@
 
 """This module contains the view for the site menus."""
 
-
 from django.core.urlresolvers import reverse
 
+from soc.logic import links
 from soc.views.base_templates import LoggedInMsg
 from soc.views.template import Template
 
@@ -41,10 +41,13 @@ def siteMenuContext(data):
       'help_link': redirect.document(help_page).url(),
   }
 
+  # TODO(nathaniel): This should be "the one application-wide linker object"
+  # rather than a one-off instantiation.
+  linker = links.Linker()
   if data.gae_user:
-    context['logout_link'] = redirect.logout().url()
+    context['logout_link'] = linker.logout(data.request)
   else:
-    context['login_link'] = redirect.login().url()
+    context['login_link'] = linker.login(data.request)
 
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
