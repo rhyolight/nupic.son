@@ -19,6 +19,7 @@ from google.appengine.ext import blobstore
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import dicts
 from soc.logic import exceptions
 from soc.views.helper import blobstore as bs_helper
@@ -235,7 +236,7 @@ class StudentFormDownload(base.GCIRequestHandler):
     elif url_names.STUDENT_ID_FORM_GET_PARAM in data.GET:
       download = data.url_student_info.student_id_form
     else:
-      raise exceptions.BadRequest('No file requested')
+      raise exception.BadRequest(message='No file requested')
 
     # download has been requested
     if download:

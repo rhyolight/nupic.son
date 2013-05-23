@@ -289,7 +289,7 @@ class TaskViewPage(GCIRequestHandler):
     elif 'work_file_submit' in data.POST or 'submit_work' in data.GET:
       return self._postSubmitWork(data, check, mutator)
     else:
-      raise exceptions.BadRequest()
+      raise exception.BadRequest()
 
   def _postComment(self, data, check, mutator):
     """Handles the POST call for the form that creates comments."""
@@ -421,7 +421,7 @@ class TaskViewPage(GCIRequestHandler):
     work = GCIWorkSubmission.get_by_id(submission_id, parent=data.task)
 
     if not work:
-      raise exceptions.BadRequest(DEF_NO_WORK_FOUND % submission_id)
+      raise exception.BadRequest(message=DEF_NO_WORK_FOUND % submission_id)
 
     # Deletion of blobs always runs separately from transaction so it has no
     # added value to use it here.
@@ -718,4 +718,4 @@ class WorkSubmissionDownload(GCIRequestHandler):
     if work and work.upload_of_work:
       return bs_helper.sendBlob(work.upload_of_work)
     else:
-      raise exceptions.BadRequest(DEF_NO_WORK_FOUND % id_string)
+      raise exception.BadRequest(message=DEF_NO_WORK_FOUND % id_string)

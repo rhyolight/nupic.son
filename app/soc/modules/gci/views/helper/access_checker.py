@@ -16,7 +16,6 @@
 for checking access.
 """
 
-
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
@@ -24,7 +23,6 @@ from melange.request import exception
 from soc.logic import dicts
 from soc.logic import validate
 from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
@@ -142,7 +140,7 @@ class Mutator(access_checker.Mutator):
     org_id = self.data.GET.get('org_id')
 
     if not org_id:
-      raise BadRequest('Missing org_id')
+      raise exception.BadRequest(message='Missing org_id')
 
     q = OrgAppRecord.all()
     q.filter('survey', self.data.org_app)

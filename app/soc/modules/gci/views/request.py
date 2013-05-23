@@ -16,6 +16,7 @@
 
 from google.appengine.ext import db
 
+from melange.request import exception
 from soc.logic import exceptions
 from soc.logic.helper import notifications
 
@@ -145,8 +146,8 @@ class ManageRequestPage(GCIRequestHandler):
     # check if the submitted action is legal
     if data.POST:
       if 'withdraw' not in data.POST and 'resubmit' not in data.POST:
-        raise exceptions.BadRequest(
-            'Valid action is not specified in the request.')
+        raise exception.BadRequest(
+            message='Valid action is not specified in the request.')
       check.isRequestManageable()
 
   def context(self, data, check, mutator):

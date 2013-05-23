@@ -23,6 +23,7 @@ from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import document as document_logic
 from soc.logic import exceptions
 from soc.logic import org_app as org_app_logic
@@ -657,14 +658,14 @@ class MyOrgsTaskList(Component):
     data = self.data.POST.get('data')
 
     if not data:
-      raise exceptions.BadRequest('Missing data')
+      raise exception.BadRequest(message='Missing data')
 
     parsed = simplejson.loads(data)
 
     button_id = self.data.POST.get('button_id')
 
     if not button_id:
-      raise exceptions.BadRequest('Missing button_id')
+      raise exception.BadRequest(message='Missing button_id')
 
     if button_id == self.PUBLISH_BUTTON_ID:
       return self.postPublish(parsed, True)
@@ -672,7 +673,7 @@ class MyOrgsTaskList(Component):
     if button_id == self.UNPUBLISH_BUTTON_ID:
       return self.postPublish(parsed, False)
 
-    raise exceptions.BadRequest("Unknown button_id")
+    raise exception.BadRequest(message="Unknown button_id")
 
   def postPublish(self, data, publish):
     """Publish or unpublish tasks based on the value in the publish parameter.

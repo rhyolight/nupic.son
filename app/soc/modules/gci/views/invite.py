@@ -21,11 +21,11 @@ from django.utils.translation import ugettext
 from google.appengine.api import users
 from google.appengine.ext import db
 
+from melange.request import exception
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import invite as invite_logic
 from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
 from soc.logic.helper import notifications
 
@@ -297,7 +297,8 @@ class ManageInvite(GCIRequestHandler):
       elif 'resubmit' in data.POST:
         check.canInviteBeResubmitted()
       else:
-        raise BadRequest('No action specified in manage_gci_invite request.')
+        raise exception.BadRequest(
+            message='No action specified in manage_gci_invite request.')
 
   def context(self, data, check, mutator):
     page_name = self._constructPageName(data)
@@ -375,7 +376,8 @@ class RespondInvite(GCIRequestHandler):
     # actual response may be sent only to pending requests
     if data.POST:
       if 'accept' not in data.POST and 'reject' not in data.POST:
-        raise BadRequest('Valid action is not specified in the request.')
+        raise exception.BadRequest(
+            message='Valid action is not specified in the request.')
       check.isInviteRespondable()
 
   def context(self, data, check, mutator):

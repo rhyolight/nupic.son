@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for invite related views."""
 
-"""Tests for invite related views.
-"""
+import httplib
 
-
-from soc.logic.exceptions import BadRequest
 from soc.modules.gci.models.request import GCIRequest
 
 from tests.profile_utils import GCIProfileHelper
@@ -26,8 +24,7 @@ from tests.utils.invite_utils import GCIInviteHelper
 
 
 class BaseInviteTest(GCIDjangoTestCase):
-  """Base class for invite tests.
-  """ 
+  """Base class for invite tests."""
 
   def _invitee(self):
     invitee_data = GCIProfileHelper(self.gci, self.dev_test)
@@ -307,20 +304,20 @@ class ManageInviteTest(BaseInviteTest):
     response = self.get(url)
     self.assertInviteTemplatesUsed(response)
 
-  def testInvalidPostDataForbidden(self):
+  def testInvalidPostDataGetsBadRequestResponse(self):
     self.data.createOrgAdmin(self.org)
 
     # empty post data
     post_data = {}
     response = self.post(self._manageInviteUrl(self.invite), post_data)
-    self.assertResponseCode(response, BadRequest.status)
+    self.assertResponseCode(response, httplib.BAD_REQUEST)
 
     # only invalid data
     post_data = {
         'invalid_field': ''
         }
     response = self.post(self._manageInviteUrl(self.invite), post_data)
-    self.assertResponseCode(response, BadRequest.status)
+    self.assertResponseCode(response, httplib.BAD_REQUEST)
 
   def testWithdrawInvite(self):
     self.data.createOrgAdmin(self.org)

@@ -20,6 +20,7 @@ from django import http
 from django.utils import simplejson
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import exceptions
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
@@ -265,11 +266,11 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
           url_names.GCI_LIST_ORG_APP_RECORDS, validated=True)
 
     if post_dict.get('button_id', None) != 'save':
-      raise exceptions.BadRequest('No valid POST data found')
+      raise exception.BadRequest(message='No valid POST data found')
 
     post_data = post_dict.get('data')
     if not post_data:
-      raise exceptions.BadRequest('Missing data')
+      raise exception.BadRequest(message='Missing data')
 
     parsed = simplejson.loads(post_data)
     data.redirect.program()

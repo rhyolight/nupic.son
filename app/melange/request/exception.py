@@ -62,6 +62,15 @@ class UserError(Exception):
     self.message = message
 
 
+def BadRequest(message=None):
+  """Returns a UserError indicating a 400 Bad Request response.
+
+  Args:
+    message: An optional message for the user.
+  """
+  return UserError(httplib.BAD_REQUEST, message=message)
+
+
 def Forbidden(message=None):
   """Returns a UserError indicating a 403 Forbidden response.
 
@@ -83,11 +92,6 @@ def NotFound(message=None):
 def MethodNotAllowed():
   """Returns a UserError indicating a 405 Method Not Allowed response."""
   return UserError(httplib.METHOD_NOT_ALLOWED)
-
-
-def BadRequest():
-  """Returns a UserError indicating a 400 Bad Request response."""
-  return UserError(httplib.BAD_REQUEST)
 
 
 class ServerError(Exception):
