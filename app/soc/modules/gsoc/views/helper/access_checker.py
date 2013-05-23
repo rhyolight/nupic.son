@@ -22,7 +22,6 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import validate
-from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
@@ -198,7 +197,7 @@ class Mutator(access_checker.Mutator):
     self.data.connection = GSoCConnection.get_by_id(
         long(self.data.kwargs['id']), self.data.url_user)
     if not self.data.connection:
-      raise AccessViolation('This connection does not exist.')
+      raise exception.Forbidden(message='This connection does not exist.')
 
   def anonymousConnectionFromKwargs(self):
     """Set the anonymous_connection entity in the RequestData object.
@@ -206,7 +205,8 @@ class Mutator(access_checker.Mutator):
     q = GSoCAnonymousConnection.all().filter('hash_id =', self.data.kwargs['key'])
     self.data.anonymous_connection = q.get()
     if not self.data.anonymous_connection:
-      raise AccessViolation('Invalid key in url; unable to establish connection.')
+      raise exception.Forbidden(
+          message='Invalid key in url; unable to establish connection.')
 
   def studentEvaluationFromKwargs(self, raise_not_found=True):
     """Sets the student evaluation in RequestData object.
@@ -350,7 +350,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     if query.count() >= self.data.program.apps_tasks_limit:
       # too many proposals access denied
-      raise AccessViolation(DEF_MAX_PROPOSALS_REACHED % (
+      raise exception.Forbidden(message=DEF_MAX_PROPOSALS_REACHED % (
           self.data.program.apps_tasks_limit))
 
   def isStudentForSurvey(self):
@@ -367,11 +367,12 @@ class AccessChecker(access_checker.AccessChecker):
     # can access the survey
     expected_profile_key = project.parent_key()
     if expected_profile_key != self.data.profile.key():
-      raise AccessViolation(DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU)
+      raise exception.Forbidden(
+          message=DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU)
 
     # check if the project is still ongoing
     if project.status in ['invalid', 'withdrawn']:
-      raise AccessViolation(DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT)
+      raise exception.Forbidden(message=DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT)
 
     # check if the project has failed in a previous evaluation
     # TODO(Madhu): This still has a problem that when the project fails
@@ -382,7 +383,7 @@ class AccessChecker(access_checker.AccessChecker):
       fe_keynames = [f.grading_survey_group.grading_survey.key(
           ).id_or_name() for f in failed_evals]
       if self.data.student_evaluation.key().id_or_name() not in fe_keynames:
-        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL % (
+        raise exception.Forbidden(message=DEF_FAILED_PREVIOUS_EVAL % (
             self.data.student_evaluation.short_name.lower()))
 
   def isMentorForSurvey(self):
@@ -396,7 +397,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check if the project is still ongoing
     if project.status in ['invalid', 'withdrawn']:
-      raise AccessViolation(DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT)
+      raise exception.Forbidden(message=DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT)
 
     # check if the project has failed in a previous evaluation
     # TODO(Madhu): This still has a problem that when the project fails
@@ -407,7 +408,7 @@ class AccessChecker(access_checker.AccessChecker):
       fe_keynames = [f.grading_survey_group.grading_survey.key(
           ).id_or_name() for f in failed_evals]
       if self.data.mentor_evaluation.key().id_or_name() not in fe_keynames:
-        raise AccessViolation(DEF_FAILED_PREVIOUS_EVAL % (
+        raise exception.Forbidden(message=DEF_FAILED_PREVIOUS_EVAL % (
             self.data.mentor_evaluation.short_name.lower()))
 
     if self.data.orgAdminFor(self.data.organization):
@@ -416,7 +417,7 @@ class AccessChecker(access_checker.AccessChecker):
     # check if the currently logged in user is the mentor or co-mentor
     # for the project in request or the org admin for the org
     if self.data.profile.key() not in project.mentors:
-      raise AccessViolation(DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU)
+      raise exception.Forbidden(message=DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU)
 
   def canApplyStudent(self, edit_url):
     """Checks if the user can apply as a student.
@@ -431,21 +432,21 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.profile:
       return
 
-    raise AccessViolation(
+    raise exception.Forbidden(message=
         DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT % self.data.program.name)
 
   def canStudentUploadForms(self):
     """Checks if the current user can upload student forms.
 
     Raises:
-      exceptions.AccessViolation: if the current user is not allowed to
-        upload forms
+      exception.UserError: If the current user is not allowed
+          to upload forms.
     """
     self.isStudentWithProject()
 
     # check if the forms can already be submitted
     if not self.data.timeline.afterFormSubmissionStart():
-      raise AccessViolation(DEF_NOT_ALLOWED_TO_UPLOAD_FORM)
+      raise exception.Forbidden(message=DEF_NOT_ALLOWED_TO_UPLOAD_FORM)
 
     # POST requests actually uploading a form are not allowed after
     # the program ends
@@ -460,7 +461,7 @@ class AccessChecker(access_checker.AccessChecker):
     if si:
       if si.number_of_projects > 0:
         return
-    raise AccessViolation(DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM)
+    raise exception.Forbidden(message=DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM)
 
   def canTakeOrgApp(self):
     """A user can take the GSoC org app if he has org admin profile in the
@@ -474,11 +475,11 @@ class AccessChecker(access_checker.AccessChecker):
           program.short_name, r.urlOf('create_gsoc_profile', secure=True))
 
     if not self.data.user:
-      raise AccessViolation(msg)
+      raise exception.Forbidden(message=msg)
 
     if not validate.hasNonStudentProfileForProgram(
         self.data.user, program, GSoCProfile):
-      raise AccessViolation(msg)
+      raise exception.Forbidden(message=msg)
 
   def orgDoesnotExist(self, org_id):
     """Checks if the organization with the given ID doesn't exist.
@@ -499,7 +500,7 @@ class AccessChecker(access_checker.AccessChecker):
 
       edit_url = self.data.redirect.urlOf('edit_gsoc_org_profile')
 
-      raise AccessViolation(DEF_ORG_EXISTS % (org_id, edit_url))
+      raise exception.Forbidden(message=DEF_ORG_EXISTS % (org_id, edit_url))
 
   def canCreateOrgProfile(self):
     """Checks if the current user is an admin or a backup admin for the org app
@@ -512,17 +513,18 @@ class AccessChecker(access_checker.AccessChecker):
 
     if self.data.user.key() not in [
         app_record.main_admin.key(), app_record.backup_admin.key()]:
-      raise AccessViolation(DEF_NOT_ADMIN_FOR_ORG_APP)
+      raise exception.Forbidden(message=DEF_NOT_ADMIN_FOR_ORG_APP)
 
     if app_record.status != 'accepted':
-      raise AccessViolation(DEF_ORG_APP_NOT_ACCEPTED % (app_record.org_id))
+      raise exception.Forbidden(
+          message=DEF_ORG_APP_NOT_ACCEPTED % (app_record.org_id))
 
   def isProjectCompleted(self):
     """Checks whether the project specified in the request is completed.
     """
     if len(self.data.project.passed_evaluations) < \
         project_logic.NUMBER_OF_EVALUATIONS:
-      raise AccessViolation(DEF_PROJECT_NOT_COMPLETED)
+      raise exception.Forbidden(message=DEF_PROJECT_NOT_COMPLETED)
 
   def canStudentUpdateProposal(self):
     """Checks if the student is eligible to submit a proposal.
@@ -533,9 +535,10 @@ class AccessChecker(access_checker.AccessChecker):
     self.isProposalInURLValid()
 
     # check if the timeline allows updating proposals
+    # TODO(nathaniel): Yep, this is weird.
     try:
       self.studentSignupActive()
-    except AccessViolation:
+    except UserError:
       self.canStudentUpdateProposalPostSignup()
 
     # check if the proposal belongs to the current user
@@ -544,16 +547,17 @@ class AccessChecker(access_checker.AccessChecker):
       error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'proposal'
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the proposal to be updated
     status = self.data.proposal.status
     if status == 'ignored':
-      raise AccessViolation(DEF_PROPOSAL_IGNORED_MESSAGE)
+      raise exception.Forbidden(message=DEF_PROPOSAL_IGNORED_MESSAGE)
     elif status in ['invalid', 'accepted', 'rejected']:
-      raise AccessViolation(access_checker.DEF_CANNOT_UPDATE_ENTITY % {
-          'name': 'proposal'
-          })
+      raise exception.Forbidden(
+          message=access_checker.DEF_CANNOT_UPDATE_ENTITY % {
+             'name': 'proposal'
+              })
 
     # determine what can be done with the proposal
     if status == 'new' or status == 'pending':
@@ -583,13 +587,14 @@ class AccessChecker(access_checker.AccessChecker):
       error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'project'
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the project to be updated
     if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
-      raise AccessViolation(access_checker.DEF_CANNOT_UPDATE_ENTITY % {
-          'name': 'project'
-          })
+      raise exception.Forbidden(
+          message=access_checker.DEF_CANNOT_UPDATE_ENTITY % {
+              'name': 'project'
+              })
 
   def canOrgAdminUpdateProject(self):
     """Checks if the organization admin can edit the project details."""
@@ -612,9 +617,10 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check if the status allows the project to be updated
     if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
-      raise AccessViolation(access_checker.DEF_CANNOT_UPDATE_ENTITY % {
-          'name': 'project'
-          })
+      raise exception.Forbidden(
+          message=access_checker.DEF_CANNOT_UPDATE_ENTITY % {
+              'name': 'project'
+              })
 
   def canUpdateProject(self):
     """Checks if the current user is allowed to update project details."""
@@ -629,9 +635,12 @@ class AccessChecker(access_checker.AccessChecker):
         # belonging to one the students working for their organization
         self.canOrgAdminUpdateProject()
       else:
-        raise AccessViolation(access_checker.DEF_CANNOT_UPDATE_ENTITY % {
-            'name': 'project'
-        })
+        raise exception.Forbidden(
+            message=access_checker.DEF_CANNOT_UPDATE_ENTITY % {
+                'name': 'project'
+            })
 
+
+# TODO(nathaniel): Silly class.
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
   pass
