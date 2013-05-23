@@ -28,7 +28,6 @@ from melange.request import exception
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.models import connection
-from soc.logic import exceptions
 from soc.logic.helper import notifications
 from soc.models.user import User
 from soc.modules.gsoc.logic import connection as connection_logic
@@ -967,4 +966,4 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
       return request_handler(data.request, *data.args, **data.kwargs)
 
   def get(self, data, check, mutator):
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()

@@ -26,7 +26,6 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import cleaning
-from soc.logic import exceptions
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -579,7 +578,7 @@ class PostComment(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
 
 class PostScore(GSoCRequestHandler):
@@ -670,7 +669,7 @@ class PostScore(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
 
 class WishToMentor(GSoCRequestHandler):
@@ -733,7 +732,7 @@ class WishToMentor(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
 
 class AssignMentor(GSoCRequestHandler):
@@ -822,7 +821,7 @@ class AssignMentor(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
 
 class IgnoreProposal(GSoCRequestHandler):
@@ -881,7 +880,7 @@ class IgnoreProposal(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
 
 class ProposalModificationPostDeadline(GSoCRequestHandler):
@@ -936,7 +935,7 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
 
 class AcceptProposal(GSoCRequestHandler):
@@ -991,7 +990,7 @@ class AcceptProposal(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
 
 class ProposalPubliclyVisible(GSoCRequestHandler):
@@ -1045,7 +1044,7 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
 
 class WithdrawProposal(GSoCRequestHandler):
@@ -1103,4 +1102,4 @@ class WithdrawProposal(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()

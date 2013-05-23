@@ -20,7 +20,6 @@ from django import http
 from django.utils import translation
 
 from melange.request import exception
-from soc.logic import exceptions
 from soc.views import profile_show
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
@@ -154,7 +153,7 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
       # TODO(nathaniel): Is this user error? If so, should it be
       # logged at server warning level, or even at all?
       logging.warn(NON_STUDENT_ERR_MSG)
-      raise exceptions.MethodNotAllowed()
+      raise exception.MethodNotAllowed()
 
     post_data = data.POST
     button_id = post_data.get('id')

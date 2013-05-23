@@ -35,9 +35,3 @@ class GDocsLoginRequest(Error):
       path: The path to which to direct the user after log-in.
     """
     self.path = path
-
-
-class MethodNotAllowed(Error):
-  """Indicates that a response of 405 Method Not Allowed is appropriate."""
-
-  status = httplib.METHOD_NOT_ALLOWED

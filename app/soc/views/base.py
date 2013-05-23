@@ -225,7 +225,7 @@ class RequestHandler(object):
       exceptions.Error: An exceptions.Error describing a response
         appropriate for the given request parameters.
     """
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
   def head(self, data, check, mutator):
     """Handler for HTTP HEAD request.
@@ -255,7 +255,7 @@ class RequestHandler(object):
     """
     # TODO(nathaniel): This probably wouldn't be all that unreasonable to
     # implement?
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
   def options(self, data, check, mutator):
     """Handler for HTTP OPTIONS request.
@@ -283,7 +283,7 @@ class RequestHandler(object):
       exceptions.Error: An exceptions.Error describing a response
         appropriate for the given request parameters.
     """
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
   def put(self, data, check, mutator):
     """Handler for HTTP PUT request.
@@ -311,7 +311,7 @@ class RequestHandler(object):
       exceptions.Error: An exceptions.Error describing a response
         appropriate for the given request parameters.
     """
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
   def delete(self, data, check, mutator):
     """Handler for HTTP DELETE request.
@@ -339,7 +339,7 @@ class RequestHandler(object):
       exceptions.Error: An exceptions.Error describing a response
         appropriate for the given request parameters.
     """
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
   def trace(self, data, check, mutator):
     """Handler for HTTP TRACE request.
@@ -367,7 +367,7 @@ class RequestHandler(object):
       exceptions.Error: An exceptions.Error describing a response
         appropriate for the given request parameters.
     """
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
   def error(self, data, status, message=None):
     """Constructs an HttpResponse indicating an error.

@@ -25,7 +25,6 @@ from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from melange.request import exception
-from soc.logic import exceptions
 from soc.views.helper import access_checker
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper.access_checker import isSet
@@ -576,7 +575,7 @@ class AssignMentors(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
 
 
 class FeaturedProject(GSoCRequestHandler):
@@ -630,4 +629,4 @@ class FeaturedProject(GSoCRequestHandler):
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
-    raise exceptions.MethodNotAllowed()
+    raise exception.MethodNotAllowed()
