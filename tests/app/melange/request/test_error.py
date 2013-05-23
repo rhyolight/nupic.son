@@ -39,26 +39,6 @@ class ErrorFunctionsTest(unittest.TestCase):
     self.assertEqual(httplib.INTERNAL_SERVER_ERROR, response.status_code)
     self.assertTrue(response.content)
 
-  def testUserError(self):
-    """Tests that a reasonable response is returned for any user error."""
-    data = request_data.RequestData(http.HttpRequest(), [], {})
-    status_code = httplib.GONE
-    message = 'test-user-error-message'
-
-    response = error.handleUserError(data, status_code, message=message)
-    self.assertEqual(status_code, response.status_code)
-    self.assertIn(message, response.content)
-
-  def testServerError(self):
-    """Tests that a reasonable response is returned for any server error."""
-    data = request_data.RequestData(http.HttpRequest(), [], {})
-    status_code = httplib.NOT_IMPLEMENTED
-    message = 'test-server-error-message'
-
-    response = error.handleServerError(data, status_code, message=message)
-    self.assertEqual(status_code, response.status_code)
-    self.assertIn(message, response.content)
-
 
 class MelangeErrorHandlerTest(unittest.TestCase):
   """Tests the MelangeErrorHandler implementation of ErrorHandler."""

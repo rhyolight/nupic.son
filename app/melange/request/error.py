@@ -117,31 +117,3 @@ class MelangeErrorHandler(ErrorHandler):
 
 # Since MelangeErrorHandler is stateless there might as well be just one of it.
 MELANGE_ERROR_HANDLER = MelangeErrorHandler()
-
-
-def handleUserError(data, status, message=None):
-  """Returns a response appropriate for a given user error.
-
-  Args:
-    data: A RequestData describing a request.
-    status: A numeric HTTP status code.
-    message: An optional message for the user.
-
-  Returns:
-    An http.HttpResponse appropriate for the given user error.
-  """
-  return _handle(status, _USER_ERROR_STYLE, message=message)
-
-
-def handleServerError(data, status, message=None):
-  """Returns a response appropriate for a given server error.
-
-  Args:
-    data: A RequestData describing a request.
-    status: A numeric HTTP status code.
-    message: An optional message for the user.
-
-  Returns:
-    An http.HttpResponse appropriate for the given server error.
-  """
-  return _handle(status, _SERVER_ERROR_STYLE, message=message)

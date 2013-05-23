@@ -26,7 +26,6 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import cleaning
-from soc.logic import exceptions
 from soc.logic import site as site_logic
 from soc.models import document
 from soc.models import site
@@ -163,8 +162,6 @@ class SiteHomepage(base.SiteRequestHandler):
           return http.HttpResponseRedirect(program_url)
         else:
           return data.redirect.to('edit_site_settings')
-    except exceptions.Error as e:
-      return self.error(data, e.status, message=e.args[0])
     except exception.UserError as user_error:
       return self.error_handler.handleUserError(user_error, data)
     except exception.ServerError as server_error:

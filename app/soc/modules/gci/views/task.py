@@ -26,7 +26,6 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import cleaning
-from soc.logic import exceptions
 from soc.views.helper import blobstore as bs_helper
 from soc.views.template import Template
 

@@ -29,7 +29,7 @@ from django import http
 
 from google.appengine.ext import blobstore
 
-from soc.logic import exceptions
+from melange.request import exception
 
 
 def _parseField(request, key, field):

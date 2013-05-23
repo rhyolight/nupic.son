@@ -119,24 +119,3 @@ class GSoCRequestHandler(base.RequestHandler):
       mutator = access_checker.Mutator(data)
       check = access_checker.AccessChecker(data)
     return data, check, mutator
-
-  def error(self, data, status, message=None):
-    """See base.RequestHandler.error for specification."""
-    if not data.program:
-      return super(GSoCRequestHandler, self).error(
-          data, status, message=message)
-
-    # If message is not set, set it to the default associated with the
-    # given status (such as "Method Not Allowed" or "Service Unavailable").
-    message = message or httplib.responses.get(status, '')
-
-    template_path = 'v2/modules/gsoc/error.html'
-    context = {
-        'page_name': message,
-        'message': message,
-        'logged_in_msg': base_templates.LoggedInMsg(data, apply_link=False),
-    }
-
-    return http.HttpResponse(
-        content=self.renderer.render(data, template_path, context),
-        status=status)
