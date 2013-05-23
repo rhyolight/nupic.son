@@ -533,7 +533,7 @@ class RequestHandler(object):
       self.checkMaintenanceMode(data)
       self.checkAccess(data, check, mutator)
       return self._dispatch(data, check, mutator)
-    except (exception.LoginRequired, exceptions.LoginRequest):
+    except exception.LoginRequired:
       return data.redirect.toUrl(self.linker.login(request))
     except (exception.Redirect, exceptions.RedirectRequest) as redirect:
       return data.redirect.toUrl(redirect.url)

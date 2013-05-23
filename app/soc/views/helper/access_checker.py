@@ -21,6 +21,7 @@ from django.utils.translation import ugettext
 from google.appengine.api import users
 from google.appengine.ext import db
 
+from melange.request import exception
 from soc.logic import exceptions
 from soc.logic import host as host_logic
 from soc.logic import links
@@ -426,7 +427,7 @@ class BaseAccessChecker(object):
     if self.gae_user:
       return
 
-    raise exceptions.LoginRequest()
+    raise exception.LoginRequired()
 
   def isLoggedOut(self):
     """Ensures that the user is logged out."""

@@ -23,12 +23,6 @@ class Error(Exception):
   status = httplib.INTERNAL_SERVER_ERROR
 
 
-class LoginRequest(Error):
-  """User needs to be logged in to view this page."""
-
-  pass
-
-
 class RedirectRequest(Error):
   """User should be redirected to specific url."""
 
