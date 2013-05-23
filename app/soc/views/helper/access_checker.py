@@ -269,10 +269,10 @@ class Mutator(object):
     fields.append(kwargs.pop('document', None))
 
     if any(kwargs.values()):
-      raise exceptions.BadRequest("Unexpected value for document url")
+      raise exception.BadRequest(message="Unexpected value for document url")
 
     if not all(fields):
-      raise exceptions.BadRequest("Missing value for document url")
+      raise exception.BadRequest(message="Missing value for document url")
 
     self.data.scope_key_name = '/'.join(fields[1:-1])
     self.data.key_name = '/'.join(fields)

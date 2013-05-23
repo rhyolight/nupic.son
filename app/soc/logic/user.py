@@ -12,17 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""User (Model) query functions.
-"""
-
+"""User (Model) query functions."""
 
 from google.appengine.api import users
 from google.appengine.runtime import apiproxy_errors
 
+from melange.request import exception
 from soc.logic import accounts
-from soc.logic import exceptions
 from soc.models import user
-
 
 MELANGE_DELETED_USER = 'melange_deleted_user'
 
@@ -111,7 +108,7 @@ def forAccount(account):
   entity, None is returned.
   """
   if not account:
-    raise exceptions.BadRequest("Missing argument 'account'")
+    raise exception.BadRequest(message="Missing argument 'account'")
 
   account = accounts.normalizeAccount(account)
 
@@ -128,7 +125,7 @@ def forUserId(user_id):
   entity, None is returned.
   """
   if not user_id:
-    raise exceptions.BadRequest("Missing argument 'user_id'")
+    raise exception.BadRequest(message="Missing argument 'user_id'")
 
   q = user.User.all()
   q.filter('user_id', user_id)

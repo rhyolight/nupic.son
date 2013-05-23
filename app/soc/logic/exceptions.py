@@ -53,9 +53,3 @@ class MethodNotAllowed(Error):
   """Indicates that a response of 405 Method Not Allowed is appropriate."""
 
   status = httplib.METHOD_NOT_ALLOWED
-
-
-class BadRequest(Error):
-  """Bad Request."""
-
-  status = httplib.BAD_REQUEST

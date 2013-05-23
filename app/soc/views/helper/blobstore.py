@@ -123,7 +123,7 @@ def sendBlob(blob_info):
       "Content-Disposition", and blobstore.BLOB_KEY_HEADER headers set.
 
   Raises:
-    exceptions.BadRequest: If blob_info is missing a file name.
+    exception.UserError: If blob_info is missing a file name.
   """
   logging.debug(blob_info)
   assert isinstance(blob_info, blobstore.BlobInfo)
@@ -137,7 +137,8 @@ def sendBlob(blob_info):
     content_type = content_type.encode('utf-8')
 
   if not filename:
-    raise exceptions.BadRequest('No filename in blob_info.')
+    # TODO(nathaniel): This is not an appropriate message "for the user".
+    raise exception.BadRequest(message='No filename in blob_info.')
 
   if isinstance(filename, unicode):
     filename = filename.encode('utf-8')
