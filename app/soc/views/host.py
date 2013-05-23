@@ -21,7 +21,7 @@ from django.conf.urls.defaults import url as django_url
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
-from soc.logic.exceptions import AccessViolation
+from melange.request import exception
 from soc.models.host import Host
 from soc.views.base import SiteRequestHandler
 from soc.views.helper import url_patterns
@@ -63,14 +63,14 @@ class HostProfilePage(SiteRequestHandler):
     # mutator.host() is not safe for calls when a user is logged in
     # but does not have a user entity.
     if not data.user:
-      raise AccessViolation(DEF_NO_HOST)
+      raise exception.Forbidden(message=DEF_NO_HOST)
 
     mutator.host()
     if data.is_host:
       if data.user.link_id != data.kwargs.get('link_id'):
-        raise AccessViolation(DEF_DEVELOPER_ONLY)
+        raise exception.Forbidden(message=DEF_DEVELOPER_ONLY)
     else:
-      raise AccessViolation(DEF_NO_HOST)
+      raise exception.Forbidden(message=DEF_NO_HOST)
 
   def templatePath(self):
     return 'soc/host/base.html'

@@ -23,12 +23,6 @@ class Error(Exception):
   status = httplib.INTERNAL_SERVER_ERROR
 
 
-class AccessViolation(Error):
-  """An access requirement was not met."""
-
-  status = httplib.FORBIDDEN
-
-
 class GDocsLoginRequest(Error):
   """GDocs login required."""
 

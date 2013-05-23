@@ -88,7 +88,7 @@ class EditSitePage(base.SiteRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     if not data.is_developer:
-      raise exceptions.AccessViolation(DEF_NO_DEVELOPER)
+      raise exception.Forbidden(message=DEF_NO_DEVELOPER)
 
   def templatePath(self):
     # TODO: make this specific to the current active program
