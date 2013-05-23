@@ -16,7 +16,7 @@
 
 from django.conf.urls.defaults import url as django_url
 
-from soc.logic.exceptions import AccessViolation
+from melange.request import exception
 from soc.views.helper import lists
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
@@ -86,7 +86,7 @@ class AcceptedOrgsPage(GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {
@@ -183,7 +183,7 @@ class AcceptedOrgsAdminPage(GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {

@@ -14,7 +14,7 @@
 
 """Module for the GCI organization score page."""
 
-from soc.logic import exceptions
+from melange.request import exception
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -110,7 +110,7 @@ class OrgScoresForOrgzanizationPage(GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
 
 class OrganizationsForOrgScoreList(BasicOrgList):
@@ -153,7 +153,7 @@ class ChooseOrganizationForOrgScorePage(GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {

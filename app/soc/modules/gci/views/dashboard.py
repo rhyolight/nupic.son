@@ -25,7 +25,6 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import document as document_logic
-from soc.logic import exceptions
 from soc.logic import org_app as org_app_logic
 from soc.models import document as soc_document_model
 from soc.models.org_app_record import OrgAppRecord
@@ -203,7 +202,7 @@ class DashboardPage(GCIRequestHandler):
       if list_content:
         return list_content.content()
     else:
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def post(self, data, check, mutator):
     """Handler for POST requests for each component."""
@@ -211,7 +210,7 @@ class DashboardPage(GCIRequestHandler):
       if component.post():
         return http.HttpResponse()
     else:
-      raise exceptions.AccessViolation('You cannot change this data')
+      raise exception.Forbidden(message='You cannot change this data')
 
   def components(self, data):
     """Returns the list components that are active on the page.

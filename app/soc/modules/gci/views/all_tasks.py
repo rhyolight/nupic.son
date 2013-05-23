@@ -14,7 +14,7 @@
 
 """Module containing the view for GCI tasks list page."""
 
-from soc.logic.exceptions import AccessViolation
+from melange.request import exception
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import task as task_logic
@@ -65,7 +65,7 @@ class TaskListPage(GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {

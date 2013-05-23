@@ -25,7 +25,6 @@ from melange.request import exception
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import invite as invite_logic
-from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
 from soc.logic.helper import notifications
 
@@ -469,7 +468,7 @@ class ListUserInvitesPage(GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {

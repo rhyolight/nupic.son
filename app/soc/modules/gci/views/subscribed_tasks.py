@@ -14,7 +14,7 @@
 
 """Module containing the view for list of a users' subscribed tasks """
 
-from soc.logic import exceptions
+from melange.request import exception
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import task as task_logic
@@ -60,7 +60,7 @@ class SubscribedTasksPage(base.GCIRequestHandler):
     check.isProfileActive()
     mutator.profileFromKwargs()
     if data.profile.key() != data.url_profile.key():
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def jsonContext(self, data, check, mutator):
     return SubscribedTasksList(data).getListData().content()

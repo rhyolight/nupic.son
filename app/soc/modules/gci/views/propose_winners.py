@@ -19,7 +19,7 @@ from google.appengine.ext import db
 from django import forms
 from django.utils.translation import ugettext
 
-from soc.logic import exceptions
+from melange.request import exception
 
 from soc.modules.gci.views.base import GCIRequestHandler
 
@@ -129,8 +129,8 @@ class ProposeWinnersPage(GCIRequestHandler):
   def checkAccess(self, data, check, mutator):
     check.isOrgAdmin()
     if not data.timeline.allReviewsStopped():
-      raise exceptions.AccessViolation(
-          'This page may be accessed when the review period is over')
+      raise exception.Forbidden(
+          message='This page may be accessed when the review period is over')
 
   def context(self, data, check, mutator):
     form = ProposeWinnersForm(data, data.POST or None)
@@ -287,7 +287,7 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {
@@ -364,7 +364,7 @@ class ViewProposedWinnersPage(GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {

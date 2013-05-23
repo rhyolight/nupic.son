@@ -14,7 +14,7 @@
 
 """Module containing the views for GCI documents page."""
 
-from soc.logic.exceptions import AccessViolation
+from melange.request import exception
 from soc.models import document as document_model
 from soc.views import document
 from soc.views.helper import url_patterns
@@ -168,7 +168,7 @@ class DocumentListPage(GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {

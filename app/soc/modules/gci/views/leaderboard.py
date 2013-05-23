@@ -14,8 +14,7 @@
 
 """Module containing the view for GCI leaderboard page."""
 
-from soc.logic.exceptions import AccessViolation
-
+from melange.request import exception
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -130,7 +129,7 @@ class LeaderboardPage(GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     context = {
@@ -165,18 +164,19 @@ class StudentTasksPage(GCIRequestHandler):
     mutator.studentFromKwargs()
     try:
       check.isHost()
-    except AccessViolation:
+    except exception.UserError:
       check.hasProfile()
       # check if the profile in URL kwargs is the current profile
       if data.profile.key() != data.url_profile.key():
-        raise AccessViolation('You do not have access to this data')
+        raise exception.Forbidden(
+            message='You do not have access to this data')
 
   def jsonContext(self, data, check, mutator):
     list_content = AllStudentTasksList(data).getListData()
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {
