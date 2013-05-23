@@ -16,13 +16,14 @@
 for checking access.
 """
 
+import urllib
+
 from django.utils.translation import ugettext
 
 from google.appengine.api import users
 from google.appengine.ext import db
 
 from melange.request import exception
-from soc.logic import exceptions
 from soc.logic import host as host_logic
 from soc.logic import links
 from soc.models import document
@@ -500,13 +501,14 @@ class BaseAccessChecker(object):
           message=DEF_REQUEST_DOES_NOT_EXIST % request_id)
 
   def canAccessGoogleDocs(self):
-    """Checks if user has a valid access token to access Google Documents.
-    """
+    """Checks if user has a valid access token to access Google Documents."""
     self.isUser()
     access_token = oauth_helper.getAccessToken(self.data.user)
     if not access_token: #TODO(orc.avs):check token is valid
-      next = self.data.request.get_full_path()
-      raise exceptions.GDocsLoginRequest(next)
+      # TODO(nathaniel): This is complicated - add it to links.Linker?
+      raise exception.Redirect('%s?%s' % (
+          self.data.redirect.urlOf('gdata_oauth_redirect'),
+          urllib.urlencode({'next': self.data.request.get_full_path()})))
 
 
 class DeveloperAccessChecker(BaseAccessChecker):
