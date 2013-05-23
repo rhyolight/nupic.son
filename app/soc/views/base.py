@@ -535,7 +535,7 @@ class RequestHandler(object):
       return self._dispatch(data, check, mutator)
     except exception.LoginRequired:
       return data.redirect.toUrl(self.linker.login(request))
-    except (exception.Redirect, exceptions.RedirectRequest) as redirect:
+    except exception.Redirect as redirect:
       return data.redirect.toUrl(redirect.url)
     except exceptions.GDocsLoginRequest as e:
       return data.redirect.toUrl('%s?%s' % (

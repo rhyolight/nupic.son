@@ -20,12 +20,12 @@ for checking access.
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import dicts
 from soc.logic import validate
 from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import BadRequest
 from soc.logic.exceptions import NotFound
-from soc.logic.exceptions import RedirectRequest
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 from soc.views.helper import request_data
@@ -227,10 +227,10 @@ class AccessChecker(access_checker.AccessChecker):
     """
     if self.data.profile:
       if self.data.profile.student_info:
-        raise RedirectRequest(edit_url)
+        raise exception.Redirect(edit_url)
       else:
         raise AccessViolation(
-            DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT % 
+            DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT %
             self.data.program.name)
 
     self.studentSignupActive()
@@ -241,7 +241,7 @@ class AccessChecker(access_checker.AccessChecker):
       # no age check done or it failed
       kwargs = dicts.filter(self.data.kwargs, ['sponsor', 'program'])
       age_check_url = reverse('gci_age_check', kwargs=kwargs)
-      raise RedirectRequest(age_check_url)
+      raise exception.Redirect(age_check_url)
     else:
       self.isLoggedIn()
 
@@ -319,7 +319,7 @@ class AccessChecker(access_checker.AccessChecker):
       org_id = self.data.GET['org_id']
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
           'create_gci_profile', secure=True)
-      raise RedirectRequest(profile_url + '?new_org=' + org_id)
+      raise exception.Redirect(profile_url + '?new_org=' + org_id)
 
   def isBeforeAllWorkStopped(self):
     """Raises AccessViolation if all work on tasks has stopped.

@@ -23,15 +23,6 @@ class Error(Exception):
   status = httplib.INTERNAL_SERVER_ERROR
 
 
-class RedirectRequest(Error):
-  """User should be redirected to specific url."""
-
-  status = httplib.FOUND
-
-  def __init__(self, url):
-    self.url = url
-
-
 class AccessViolation(Error):
   """An access requirement was not met."""
 

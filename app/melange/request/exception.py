@@ -33,7 +33,7 @@ class Redirect(Exception):
   """
 
   def __init__(self, url):
-    """Constructs a new RedirectRequest.
+    """Constructs a new Redirect.
 
     Args:
       url: The URL to which the user should be redirected.

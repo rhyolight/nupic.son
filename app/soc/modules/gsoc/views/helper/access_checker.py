@@ -20,10 +20,10 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import validate
 from soc.logic.exceptions import AccessViolation, BadRequest
 from soc.logic.exceptions import NotFound
-from soc.logic.exceptions import RedirectRequest
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
@@ -424,7 +424,7 @@ class AccessChecker(access_checker.AccessChecker):
     self.isLoggedIn()
 
     if self.data.profile and self.data.profile.student_info:
-      raise RedirectRequest(edit_url)
+      raise exception.Redirect(edit_url)
 
     self.studentSignupActive()
 

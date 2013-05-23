@@ -16,7 +16,7 @@
 
 from django import forms
 
-from soc.logic import exceptions
+from melange.request import exception
 from soc.logic import validate
 from soc.views.helper import url_patterns
 
@@ -72,7 +72,7 @@ class AgeCheck(gci_base.GCIRequestHandler):
       # discarding a response feels weird.
       response = data.redirect.createProfile('student').to(
           'create_gci_profile', secure=True)
-      raise exceptions.RedirectRequest(response['Location'])
+      raise exception.Redirect(response['Location'])
 
     if data.POST:
       context['form'] = AgeCheckForm(data.POST)

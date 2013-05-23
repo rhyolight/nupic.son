@@ -434,7 +434,7 @@ class BaseAccessChecker(object):
     if self.gae_user:
       # TODO(nathaniel): One-off linker object.
       linker = links.Linker()
-      raise exceptions.RedirectRequest(linker.logout(self.data.request))
+      raise exception.Redirect(linker.logout(self.data.request))
 
   def isUser(self):
     """Checks if the current user has an User entity.
@@ -596,7 +596,7 @@ class AccessChecker(BaseAccessChecker):
     self.isLoggedIn()
 
     if self.data.profile and not self.data.profile.student_info:
-      raise exceptions.RedirectRequest(edit_url)
+      raise exception.Redirect(edit_url)
 
     if role == 'org_admin' and self.data.timeline.beforeOrgSignupStart():
       period = self.data.timeline.orgSignupStart()
@@ -1175,7 +1175,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     if self.data.timeline.afterSurveyEnd(survey) and show_url:
-      raise exceptions.RedirectRequest(show_url)
+      raise exception.Redirect(show_url)
 
     raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE %
         (survey.survey_start, survey.survey_end))

@@ -24,6 +24,7 @@ from django import forms as django_forms
 from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import cleaning
 from soc.logic import exceptions
 from soc.views.helper import blobstore as bs_helper
@@ -181,7 +182,7 @@ class TaskViewPage(GCIRequestHandler):
     if task_logic.updateTaskStatus(data.task):
       # The task logic updated the status of the task since the deadline passed
       # and the GAE task was late to run. Reload the page.
-      raise exceptions.RedirectRequest('')
+      raise exception.Redirect('')
 
     if data.request.method == 'POST':
       # Access checks for the different forms on this page. Note that there

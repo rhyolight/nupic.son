@@ -18,9 +18,9 @@ from django import forms as django_forms
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import cleaning
 from soc.logic import dicts
-from soc.logic.exceptions import RedirectRequest
 from soc.models.sponsor import Sponsor
 from soc.models.user import User
 from soc.views import forms
@@ -334,7 +334,7 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
 
     if org_id:
       create_url = self.linker.program(data.program, 'create_gci_org_profile')
-      raise RedirectRequest(create_url + '?org_id=' + org_id)
+      raise exception.Redirect(create_url + '?org_id=' + org_id)
     else:
       # TODO(nathaniel): make this .program() call unnecessary.
       data.redirect.program()

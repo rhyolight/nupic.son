@@ -26,6 +26,7 @@ from django.utils import dateformat
 from django.utils import simplejson
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import exceptions
@@ -753,7 +754,7 @@ class LookupLinkIdPage(base.GSoCRequestHandler):
       # generating a response and then tossing it.
       data.redirect.profile(profile.link_id)
       response = data.redirect.to(url_names.GSOC_PROFILE_SHOW, secure=True)
-      raise exceptions.RedirectRequest(response['Location'])
+      raise exception.Redirect(response['Location'])
     else:
       return {
         'forms': forms,

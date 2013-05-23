@@ -19,8 +19,8 @@ from soc.views.helper import lists
 
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import RedirectRequest
 from soc.views.helper.access_checker import isSet
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
@@ -168,7 +168,7 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
 
     check.isProfileActive()
     if data.orgAdminFor(data.project.org):
-      raise RedirectRequest(show_url)
+      raise exception.Redirect(show_url)
 
     check.canUserTakeSurvey(data.student_evaluation, 'student')
     check.isStudentForSurvey()

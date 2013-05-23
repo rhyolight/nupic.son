@@ -18,9 +18,9 @@ from google.appengine.ext import db
 
 from django import forms as django_forms
 
+from melange.request import exception
 from soc.logic import cleaning
 from soc.logic import host as host_logic
-from soc.logic.exceptions import RedirectRequest
 from soc.tasks import mailer
 from soc.views.helper import url_patterns
 
@@ -93,7 +93,7 @@ class SlotTransferPage(GSoCRequestHandler):
         data.redirect.organization()
 
         new_url = data.redirect.urlOf('gsoc_update_slot_transfer')
-        raise RedirectRequest(new_url)
+        raise exception.Redirect(new_url)
 
   def templatePath(self):
     return 'v2/modules/gsoc/slot_transfer/base.html'
