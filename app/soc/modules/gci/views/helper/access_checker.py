@@ -22,7 +22,6 @@ from django.utils.translation import ugettext
 from melange.request import exception
 from soc.logic import dicts
 from soc.logic import validate
-from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
@@ -174,27 +173,27 @@ class AccessChecker(access_checker.AccessChecker):
     """
     assert access_checker.isSet(self.data.task)
 
+    # TODO(nathaniel): Yep, this is weird.
     can_edit = False
     try:
       self.checkCanUserEditTask()
       self.checkHasTaskEditableStatus()
       self.checkTimelineAllowsTaskEditing()
       can_edit = True
-    except AccessViolation:
+    except exception.UserError:
       pass
 
     if not self.data.timeline.tasksPubliclyVisible():
       if can_edit:
         return False
       period = self.data.timeline.tasksPubliclyVisibleOn()
-      raise AccessViolation(
-          access_checker.DEF_PAGE_INACTIVE_BEFORE % period)
+      raise exception.Forbidden(
+          message=access_checker.DEF_PAGE_INACTIVE_BEFORE % period)
 
     if not self.data.task.isPublished():
       if can_edit:
         return False
-      error_msg = access_checker.DEF_PAGE_INACTIVE
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=access_checker.DEF_PAGE_INACTIVE)
 
     return True
 
@@ -207,7 +206,7 @@ class AccessChecker(access_checker.AccessChecker):
     assert access_checker.isSet(self.data.task)
 
     if self.data.task.status not in states:
-      raise AccessViolation(DEF_TASK_MUST_BE_IN_STATES %states)
+      raise exception.Forbidden(message=DEF_TASK_MUST_BE_IN_STATES % states)
 
   def isTaskNotInStates(self, states):
     """Checks if the task is not in any of the given states.
@@ -218,7 +217,7 @@ class AccessChecker(access_checker.AccessChecker):
     assert access_checker.isSet(self.data.task)
 
     if self.data.task.status in states:
-      raise AccessViolation(DEF_TASK_MAY_NOT_BE_IN_STATES %states)
+      raise exception.Forbidden(message=DEF_TASK_MAY_NOT_BE_IN_STATES % states)
 
   def canApplyStudent(self, edit_url):
     """Checks if a user may apply as a student to the program.
@@ -227,9 +226,9 @@ class AccessChecker(access_checker.AccessChecker):
       if self.data.profile.student_info:
         raise exception.Redirect(edit_url)
       else:
-        raise AccessViolation(
-            DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT %
-            self.data.program.name)
+        raise exception.Forbidden(
+            message=DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT % (
+            self.data.program.name))
 
     self.studentSignupActive()
 
@@ -252,7 +251,7 @@ class AccessChecker(access_checker.AccessChecker):
     from soc.modules.gsoc.models.profile import GSoCProfile
 
     if not self.data.user:
-      raise AccessViolation(DEF_NO_PREV_ORG_MEMBER)
+      raise exception.Forbidden(message=DEF_NO_PREV_ORG_MEMBER)
 
     q = GSoCProfile.all(keys_only=True)
     q.filter('is_student', False)
@@ -267,7 +266,7 @@ class AccessChecker(access_checker.AccessChecker):
     gci_profile = q.get()
 
     if not (gsoc_profile or gci_profile):
-      raise AccessViolation(DEF_NO_PREV_ORG_MEMBER)
+      raise exception.Forbidden(message=DEF_NO_PREV_ORG_MEMBER)
 
   def canTakeOrgApp(self):
     """Check if the user can take the org app.
@@ -286,7 +285,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     if not validate.hasNonStudentProfileForProgram(
         self.data.user, program, GCIProfile):
-      raise AccessViolation(msg)
+      raise exception.Forbidden(message=msg)
 
   def isOrgAppAccepted(self):
     """Checks if the org app stored in request data is accepted.
@@ -294,7 +293,7 @@ class AccessChecker(access_checker.AccessChecker):
     assert self.data.org_app_record
 
     if self.data.org_app_record.status != 'accepted':
-      raise AccessViolation(DEF_ORG_APP_REJECTED)
+      raise exception.Forbidden(message=DEF_ORG_APP_REJECTED)
 
   def isUserAdminForOrgApp(self):
     """Checks if the user is listed as an admin for the org app in RequestData.
@@ -305,7 +304,7 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.user or self.data.user.key() not in [
         self.data.org_app_record.main_admin.key(),
         self.data.org_app_record.backup_admin.key()]:
-      raise AccessViolation(DEF_NOT_ORG_ADMIN_FOR_ORG_APP % {
+      raise exception.Forbidden(message=DEF_NOT_ORG_ADMIN_FOR_ORG_APP % {
           'org_name': self.data.org_app_record.name})
 
   def hasProfileOrRedirectToCreate(self):
@@ -320,22 +319,20 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Redirect(profile_url + '?new_org=' + org_id)
 
   def isBeforeAllWorkStopped(self):
-    """Raises AccessViolation if all work on tasks has stopped.
-    """
+    """Raises exception.UserError if all work on tasks has stopped."""
     if not self.data.timeline.allWorkStopped():
       return
 
-    raise AccessViolation(DEF_ALL_WORK_STOPPED)
+    raise exception.Forbidden(message=DEF_ALL_WORK_STOPPED)
 
   def isCommentingAllowed(self):
-    """Raises AccessViolation if commenting is not allowed.
-    """
+    """Raises exception.UserError if commenting is not allowed."""
     if not self.data.timeline.allWorkStopped() or (
         not self.data.timeline.allReviewsStopped() and
         self.data.mentorFor(self.data.task.org)):
       return
 
-    raise AccessViolation(DEF_COMMENTING_NOT_ALLOWED)
+    raise exception.Forbidden(message=DEF_COMMENTING_NOT_ALLOWED)
 
   def canCreateTask(self):
     """Checks whether the currently logged in user can edit the task.
@@ -363,12 +360,12 @@ class AccessChecker(access_checker.AccessChecker):
       raise ValueError('Invalid required_role argument ' + str(required_role))
 
     if self.data.organization.key() not in valid_org_keys:
-      raise AccessViolation(DEF_NO_TASK_CREATE_PRIV % (
+      raise exception.Forbidden(message=DEF_NO_TASK_CREATE_PRIV % (
           self.data.organization.name))
 
     if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
         or self.data.timeline.tasksClaimEnded()):
-      raise AccessViolation(access_checker.DEF_PAGE_INACTIVE)
+      raise exception.Forbidden(message=access_checker.DEF_PAGE_INACTIVE)
 
   def canUserEditTask(self):
     """Returns True/False depending on whether the currently logged in user
@@ -391,7 +388,8 @@ class AccessChecker(access_checker.AccessChecker):
     assert access_checker.isSet(self.data.task)
 
     if not self.canUserEditTask():
-      raise AccessViolation(DEF_NO_TASK_EDIT_PRIV % (self.data.task.org.name))
+      raise exception.Forbidden(
+          message=DEF_NO_TASK_EDIT_PRIV % (self.data.task.org.name))
 
   def hasTaskEditableStatus(self):
     """Returns True/False depending on whether the task is in one of the
@@ -412,7 +410,7 @@ class AccessChecker(access_checker.AccessChecker):
     We specifically do not allow editing of tasks which are already claimed.
     """
     if not self.hasTaskEditableStatus():
-      raise AccessViolation(DEF_TASK_UNEDITABLE_STATUS)
+      raise exception.Forbidden(message=DEF_TASK_UNEDITABLE_STATUS)
 
   def timelineAllowsTaskEditing(self):
     """Returns True/False depending on whether orgs can edit task depending
@@ -429,7 +427,7 @@ class AccessChecker(access_checker.AccessChecker):
     the program.
     """
     if not self.timelineAllowsTaskEditing():
-      raise AccessViolation(access_checker.DEF_PAGE_INACTIVE)
+      raise exception.Forbidden(message=access_checker.DEF_PAGE_INACTIVE)
 
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
