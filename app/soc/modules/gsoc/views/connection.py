@@ -99,6 +99,52 @@ def generate_message_txn(connection_entity, content):
   message = GSoCConnectionMessage(parent=connection_entity, **properties)
   message.put()
 
+def clean_link_id(link_id):
+  """Apply validation filters to a single link id from the user field.
+
+  Returns:
+      User instance to which the link_id corresponds or None if the
+      link_id does not correspond to an existing User instance.
+  Raises:
+      forms.ValidationError if a provided link_id is invalid or does
+      not correspond to an existing user.
+  """
+  try:
+    cleaning.cleanLinkID(link_id)
+  except gsoc_forms.ValidationError:
+    # Catch and re-raise the exception to provide a more helpful error
+    # message than "One or more Link_ids is not valid."
+    raise gsoc_forms.ValidationError(
+        '"%s" is not a valid link id.' % link_id)
+  user = User.get_by_key_name(link_id)
+  if not user:
+    raise gsoc_forms.ValidationError(
+        '%s does not correspond to a profile.' % link_id)
+  return user
+
+def clean_email(email):
+  """Apply validation filters to an email from the user field.
+
+  Returns:
+      User entity affiliated with the given email address or None if
+      either no User with that email address exists or they do not
+      have a profile for the current program.
+
+  Raises:
+      forms.ValidationError if the email address is invalid.
+  """
+  # Current id is an email address.
+  cleaning.cleanEmail(email)
+  # If we can't find a user for the given email, it's an anonymous user.
+  account = users.User(email)
+  user_account = accounts.normalizeAccount(account)
+  user = User.all().filter('account', user_account).get()
+  if user and GSoCProfile.all().ancestor(user).count(limit=1) >= 1:
+    return user
+  else:
+    # The User entity does not exist or they do not have a profile.
+    return None
+
 class ConnectionForm(GSoCModelForm):
   """Django form for the Connection page."""
 
@@ -179,63 +225,16 @@ class OrgConnectionForm(ConnectionForm):
     
     for user_id in id_list:
       if '@' in user_id:
-        user = self._clean_email(user_id)
+        user = clean_email(user_id)
         if user:
           self.request_data.valid_users.append(user)
         else:
           self.request_data.anonymous_users.append(user_id)
       else:
-        user = self._clean_link_id(user_id)
+        user = clean_link_id(user_id)
         self.request_data.valid_users.append(user)
-        
-  def _clean_link_id(self, link_id):
-    """Apply validation filters to a single link id from the user field.
-    
-    Returns:
-        User instance to which the link_id corresponds or None if the
-        link_id does not correspond to an existing User instance.
-    Raises:
-        forms.ValidationError if a provided link_id is invalid or does
-        not correspond to an existing user.
-    """
-    try:
-      cleaning.cleanLinkID(link_id)
-    except gsoc_forms.ValidationError:
-      # Catch and re-raise the exception to provide a more helpful error
-      # message than "One or more Link_ids is not valid."
-      raise gsoc_forms.ValidationError(
-          '"%s" is not a valid link id.' % link_id)
-    user = User.get_by_key_name(link_id)
-    if not user:
-      raise gsoc_forms.ValidationError(
-          '%s does not correspond to a profile.' % link_id)
-    return user
-    
 
-  def _clean_email(self, email):
-    """Apply validation filters to an email from the user field.
-    
-    Returns:
-        User entity affiliated with the given email address or None if
-        either no User with that email address exists or they do not
-        have a profile for the current program.
-    
-    Raises:
-        forms.ValidationError if the email address is invalid.
-    """
-    # Current id is an email address.
-    cleaning.cleanEmail(email)
-    # If we can't find a user for the given email, it's an anonymous user.
-    account = users.User(email)
-    user_account = accounts.normalizeAccount(account)
-    user = User.all().filter('account', user_account).get()
-    if user and GSoCProfile.all().ancestor(user).count(limit=1) >= 1:
-      return user
-    else:
-      # The User entity does not exist or they do not have a profile. 
-      return None
-        
-        
+
   class Meta:
     model = GSoCConnection
     exclude = GSoCConnection.allFields()
