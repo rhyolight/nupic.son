@@ -117,13 +117,7 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
   def checkAccess(self, data, check, mutator):
     check.isHost()
     mutator.userFromKwargs()
-    try:
-      mutator.profileFromKwargs()
-    except exception.UserError:
-      # it is not a terminal error, when Profile does not exist
-      # TODO(nathaniel): Why is it not a terminal error when a profile
-      # does not exist for this page?
-      pass
+    mutator.profileFromKwargs()
 
   def context(self, data, check, mutator):
     context = super(GCIProfileShowAdminPage, self).context(data, check, mutator)

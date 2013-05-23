@@ -466,7 +466,7 @@ class RequestHandler(object):
     """Checks whether or not the site is in maintenance mode.
 
     Raises:
-      exception.MaintenanceMode: If the site is in maintenance mode and
+      exception.ServerError: If the site is in maintenance mode and
         the user is not a developer.
     """
     if data.site.maintenance_mode and not data.is_developer:

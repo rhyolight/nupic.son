@@ -110,9 +110,9 @@ class GSoCProfileAdminPage(GSoCRequestHandler):
     try:
       mutator.profileFromKwargs()
     except exception.UserError:
-      # it is not a terminal error, when Profile does not exist
-      # TODO(nathaniel): This is weird. Why is it not a terminal
-      # error? What is shown instead?
+      # If the user does not have a profile a page will
+      # still be rendered with just the user portion of
+      # the data.
       pass
 
   def templatePath(self):
