@@ -23,8 +23,8 @@ from google.appengine.ext import db
 from django import http
 from django.utils import simplejson
 
+from melange.request import exception
 from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import BadRequest
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -102,16 +102,16 @@ class ProposalList(Template):
     list_data = self.data.POST.get('data')
 
     if not list_data:
-      raise BadRequest("Missing data")
+      raise exception.BadRequest(message="Missing data")
 
     button_id = self.data.POST.get('button_id')
 
     if button_id == 'accept':
       return self.postHandler(simplejson.loads(list_data))
     elif button_id:
-      raise BadRequest('Unknown button_id')
+      raise exception.BadRequest(message='Unknown button_id')
     else:
-      raise BadRequest("Missing button_id")
+      raise exception.BadRequest(message="Missing button_id")
 
   def postHandler(self, data):
     for properties in data:
@@ -322,20 +322,20 @@ class ProjectList(Template):
     data = self.data.POST.get('data')
 
     if not data:
-      raise BadRequest("Missing data")
+      raise exception.BadRequest(message="Missing data")
 
     parsed = simplejson.loads(data)
 
     button_id = self.data.POST.get('button_id')
 
     if not button_id:
-      raise BadRequest("Missing button_id")
+      raise exception.BadRequest(message="Missing button_id")
     elif button_id == 'withdraw':
       return self.postHandler(parsed)
     elif button_id == 'accept':
       return self.postHandler(parsed, withdraw=False)
-
-    raise BadRequest("Unknown button_id")
+    else:
+      raise exception.BadRequest(message="Unknown button_id")
 
   def postHandler(self, data, withdraw=True):
     for properties in data:

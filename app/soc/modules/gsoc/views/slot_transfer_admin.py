@@ -21,6 +21,7 @@ from google.appengine.ext import db
 from django import http
 from django.utils import simplejson
 
+from melange.request import exception
 from soc.logic import exceptions
 from soc.views import template
 from soc.views.helper import lists
@@ -95,7 +96,7 @@ class SlotsTransferAdminList(template.Template):
     button_id = self.data.POST.get('button_id')
 
     if not data:
-      raise exceptions.BadRequest("Missing data")
+      raise exception.BadRequest(message="Missing data")
 
     parsed = simplejson.loads(data)
 

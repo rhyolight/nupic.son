@@ -24,6 +24,7 @@ from django.core.urlresolvers import reverse
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import cleaning
 from soc.logic import exceptions
 from soc.views.helper import url as url_helper
@@ -597,7 +598,8 @@ class PostScore(GSoCRequestHandler):
     org = data.proposal_org
 
     if not data.orgAdminFor(org) and org.scoring_disabled:
-      raise exceptions.BadRequest('Scoring is disabled for this organization')
+      raise exception.BadRequest(
+          message='Scoring is disabled for this organization')
 
     check.isMentorForOrganization(org)
 
@@ -621,8 +623,8 @@ class PostScore(GSoCRequestHandler):
     max_score = data.proposal_org.max_score
 
     if value < 0 or value > max_score:
-      raise exceptions.BadRequest(
-          "Score must not be higher than %d" % max_score)
+      raise exception.BadRequest(
+          message="Score must not be higher than %d" % max_score)
 
     query = db.Query(GSoCScore)
     query.filter('author = ', data.profile)
@@ -697,12 +699,12 @@ class WishToMentor(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     if value == 'checked' and not data.isPossibleMentorForProposal():
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
     if value == 'unchecked' and data.isPossibleMentorForProposal():
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     proposal_key = data.proposal.key()
     profile_key = data.profile.key()
@@ -800,7 +802,7 @@ class AssignMentor(GSoCRequestHandler):
           org)):
         return mentor_entity
       else:
-        raise exceptions.BadRequest("Invalid post data.")
+        raise exception.BadRequest(message="Invalid post data.")
 
     return None
 
@@ -850,13 +852,13 @@ class IgnoreProposal(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     if value == 'checked' and data.proposal.status != 'ignored':
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
     if value == 'unchecked' and data.proposal.status not in [
         'pending', 'withdrawn']:
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     proposal_key = data.proposal.key()
 
@@ -906,12 +908,12 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     if value == 'checked' and not data.proposal.is_editable_post_deadline:
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
     if value == 'unchecked' and data.proposal.is_editable_post_deadline:
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     proposal_key = data.proposal.key()
 
@@ -961,12 +963,12 @@ class AcceptProposal(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     if value == 'checked' and not data.proposal.accept_as_project:
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
     if value == 'unchecked' and data.proposal.accept_as_project:
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     proposal_key = data.proposal.key()
 
@@ -1015,12 +1017,12 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if value != 'checked' and value != 'unchecked':
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     if value == 'checked' and not data.proposal.is_publicly_visible:
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
     if value == 'unchecked' and data.proposal.is_publicly_visible:
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     proposal_key = data.proposal.key()
 
@@ -1071,14 +1073,14 @@ class WithdrawProposal(GSoCRequestHandler):
     assert isSet(data.student_info)
 
     if value != 'checked' and value != 'unchecked':
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
-    # TODO(daniel): get some constants for that: meaning of 
+    # TODO(daniel): get some constants for that: meaning of
     # checked and unchecked is not obvious at all :-/
     if value == 'checked' and not data.proposal.status == 'withdrawn':
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
     if value == 'unchecked' and data.proposal.status == 'withdrawn':
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     def update_withdraw_status_txn():
       proposal = db.get(data.proposal.key())

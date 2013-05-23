@@ -23,11 +23,11 @@ from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import cleaning
 from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
 from soc.logic.exceptions import AccessViolation
-from soc.logic.exceptions import BadRequest
 from soc.models import connection
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
@@ -933,14 +933,14 @@ class SubmittedProposalsComponent(Component):
     data = self.data.POST.get('data')
 
     if not data:
-      raise BadRequest("Missing data")
+      raise exception.BadRequest(message="Missing data")
 
     parsed = simplejson.loads(data)
 
     button_id = self.data.POST.get('button_id')
 
     if not button_id:
-      raise BadRequest("Missing button_id")
+      raise exception.BadRequest(message="Missing button_id")
 
     if button_id == 'save':
       return self.postSave(parsed)
@@ -951,7 +951,7 @@ class SubmittedProposalsComponent(Component):
     if button_id == 'unaccept':
       return self.postAccept(parsed, False)
 
-    raise BadRequest("Unknown button_id")
+    raise exception.BadRequest(message="Unknown button_id")
 
   def postSave(self, parsed):
     extra_columns = {}

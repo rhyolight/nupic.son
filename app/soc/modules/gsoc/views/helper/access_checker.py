@@ -22,7 +22,7 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import validate
-from soc.logic.exceptions import AccessViolation, BadRequest
+from soc.logic.exceptions import AccessViolation
 from soc.logic.exceptions import NotFound
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
@@ -273,7 +273,7 @@ class Mutator(access_checker.Mutator):
     self.projectFromKwargs()
 
     if not ('group' in self.data.kwargs and 'id' in self.data.kwargs):
-      raise BadRequest(access_checker.DEF_NOT_VALID_REQUEST)
+      raise exception.BadRequest(message=access_checker.DEF_NOT_VALID_REQUEST)
 
     # url regexp ensures that it is a digit
     record_id = long(self.data.kwargs['record'])

@@ -24,6 +24,7 @@ from django import http
 from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import exceptions
 from soc.views.helper import access_checker
 from soc.views.helper import blobstore as bs_helper
@@ -303,14 +304,15 @@ class CodeSampleDownloadFileGet(GSoCRequestHandler):
       id_value = int(data.request.GET['id'])
       code_sample = GSoCCodeSample.get_by_id(id_value, data.project)
       if not code_sample or not code_sample.upload_of_work:
-        raise exceptions.BadRequest(
-            'Requested project or code sample not found')
+        raise exception.BadRequest(
+            message='Requested project or code sample not found')
       else:
         return bs_helper.sendBlob(code_sample.upload_of_work)
     except KeyError:
-      raise exceptions.BadRequest('id argument missing in GET data')
+      raise exception.BadRequest(message='id argument missing in GET data')
     except ValueError:
-      raise exceptions.BadRequest('id argument in GET data is not a number')
+      raise exception.BadRequest(
+          message='id argument in GET data is not a number')
 
 
 class CodeSampleDeleteFilePost(GSoCRequestHandler):
@@ -337,7 +339,7 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
       code_sample = GSoCCodeSample.get_by_id(id_value, data.project)
 
       if not code_sample:
-        raise exceptions.BadRequest('Requested code sample not found')
+        raise exception.BadRequest(message='Requested code sample not found')
 
       upload_of_work = code_sample.upload_of_work
 
@@ -357,9 +359,10 @@ class CodeSampleDeleteFilePost(GSoCRequestHandler):
       data.redirect.project()
       return data.redirect.to(url_names.GSOC_PROJECT_UPDATE)
     except KeyError:
-      raise exceptions.BadRequest('id argument missing in POST data')
+      raise exception.BadRequest(message='id argument missing in POST data')
     except ValueError:
-      raise exceptions.BadRequest('id argument in POST data is not a number')
+      raise exception.BadRequest(
+          message='id argument in POST data is not a number')
 
 
 class UserActions(Template):
@@ -555,7 +558,7 @@ class AssignMentors(GSoCRequestHandler):
           profile_logic.queryAllMentorsKeysForOrg(org)):
         return list(mentor_keys)
       else:
-        raise exceptions.BadRequest("Invalid post data.")
+        raise exception.BadRequest(message="Invalid post data.")
 
     return None
 
@@ -600,11 +603,11 @@ class FeaturedProject(GSoCRequestHandler):
     assert isSet(data.project)
 
     if value != 'checked' and value != 'unchecked':
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
     if value == 'checked' and not data.project.is_featured:
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
     if value == 'unchecked' and data.project.is_featured:
-      raise exceptions.BadRequest("Invalid post data.")
+      raise exception.BadRequest(message="Invalid post data.")
 
     project_key = data.project.key()
 
