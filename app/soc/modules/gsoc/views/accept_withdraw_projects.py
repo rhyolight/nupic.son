@@ -24,7 +24,6 @@ from django import http
 from django.utils import simplejson
 
 from melange.request import exception
-from soc.logic.exceptions import AccessViolation
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -236,14 +235,14 @@ class AcceptProposals(GSoCRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def post(self, data, check, mutator):
     list_content = ProposalList(data)
     if list_content.post():
       return http.HttpResponse()
     else:
-      raise AccessViolation('You cannot change this data')
+      raise exception.Forbidden(message='You cannot change this data')
 
   def context(self, data, check, mutator):
     """Builds the context for GSoC proposals List page HTTP get request."""
@@ -439,7 +438,7 @@ class WithdrawProjects(GSoCRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def post(self, data, check, mutator):
     """See soc.views.base.RequestHandler.post for specification."""
@@ -447,7 +446,7 @@ class WithdrawProjects(GSoCRequestHandler):
     if list_content.post():
       return http.HttpResponse()
     else:
-      raise AccessViolation('You cannot change this data')
+      raise exception.Forbidden(message='You cannot change this data')
 
   def context(self, data, check, mutator):
     """Handler for GSoC Accepted Projects List page HTTP get request."""

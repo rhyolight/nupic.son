@@ -20,7 +20,6 @@ from soc.views.helper import lists
 from django.utils.translation import ugettext
 
 from melange.request import exception
-from soc.logic.exceptions import AccessViolation
 from soc.views.helper.access_checker import isSet
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
@@ -359,7 +358,7 @@ class GSoCStudentEvaluationShowPage(GSoCRequestHandler):
       if data.timeline.afterSurveyEnd(data.student_evaluation):
         return
       else:
-        raise AccessViolation(DEF_CANNOT_ACCESS_EVALUATION)
+        raise exception.Forbidden(message=DEF_CANNOT_ACCESS_EVALUATION)
 
     check.isStudentForSurvey()
     data.role = 'student'

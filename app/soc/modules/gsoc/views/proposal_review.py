@@ -839,8 +839,8 @@ class IgnoreProposal(GSoCRequestHandler):
     assert isSet(data.proposal_org)
     check.isOrgAdminForOrganization(data.proposal_org)
     if data.proposal.status == 'withdrawn':
-      raise exceptions.AccessViolation(
-          "You cannot ignore a withdrawn proposal")
+      raise exception.Forbidden(
+          message="You cannot ignore a withdrawn proposal")
 
   def toggleIgnoreProposal(self, data, value):
     """Toggles the ignore status of the proposal.

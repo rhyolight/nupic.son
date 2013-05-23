@@ -29,7 +29,6 @@ from django.utils.translation import ugettext
 from melange.request import exception
 from soc.logic import accounts
 from soc.logic import cleaning
-from soc.logic import exceptions
 from soc.logic import links
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
@@ -911,7 +910,7 @@ class ProposalsPage(base.GSoCRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def post(self, data, check, mutator):
     """Handler for POST requests."""
@@ -919,7 +918,7 @@ class ProposalsPage(base.GSoCRequestHandler):
     if proposals_list.post():
       return http.HttpResponse()
     else:
-      raise exceptions.AccessViolation('You cannot change this data')
+      raise exception.Forbidden(message='You cannot change this data')
 
   def context(self, data, check, mutator):
     return {
@@ -1009,7 +1008,7 @@ class ProjectsPage(base.GSoCRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def post(self, data, check, mutator):
     """Handler for POST requests."""
@@ -1017,7 +1016,7 @@ class ProjectsPage(base.GSoCRequestHandler):
     if projects_list.post():
       return http.HttpResponse()
     else:
-      raise exceptions.AccessViolation('You cannot change this data')
+      raise exception.Forbidden(message='You cannot change this data')
 
   def context(self, data, check, mutator):
     return {
@@ -1241,7 +1240,7 @@ class StudentsListPage(base.GSoCRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {
@@ -1275,7 +1274,7 @@ class ProjectsListPage(base.GSoCRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     list_query = project_logic.getProjectsQuery(program=data.program)

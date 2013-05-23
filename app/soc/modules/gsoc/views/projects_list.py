@@ -17,7 +17,7 @@ into a GSoC program, excluding those which have been withdrawn
 or failed one of the evaluations.
 """
 
-from soc.logic.exceptions import AccessViolation
+from melange.request import exception
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -34,7 +34,7 @@ class ProjectList(Template):
 
   class ListPrefetcher(lists.ListModelPrefetcher):
     """Prefetcher used to improve performance of when the list is loaded.
-    
+
     See lists.ListModelPrefetcher for specification.
     """
 
@@ -157,7 +157,7 @@ class ListProjects(GSoCRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     """Handler for GSoC Accepted Projects List page HTTP get request."""

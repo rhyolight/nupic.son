@@ -18,7 +18,7 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.logic.exceptions import AccessViolation
+from melange.request import exception
 from soc.logic.helper import notifications
 from soc.logic import accounts
 from soc.models.user import User
@@ -101,8 +101,8 @@ class RequestPage(GSoCRequestHandler):
     query.filter('user = ', data.user)
     query.filter('org = ', data.organization)
     if query.get():
-      raise AccessViolation(
-          'You have already sent a request to this organization.')
+      raise exception.Forbidden(
+          message='You have already sent a request to this organization.')
 
   def context(self, data, check, mutator):
     """Handler for GSoC Request Page HTTP get request."""

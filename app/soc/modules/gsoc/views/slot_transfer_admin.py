@@ -22,7 +22,6 @@ from django import http
 from django.utils import simplejson
 
 from melange.request import exception
-from soc.logic import exceptions
 from soc.views import template
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -239,14 +238,14 @@ class SlotsTransferAdminPage(base.GSoCRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exceptions.AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def post(self, data, check, mutator):
     slots_list = SlotsTransferAdminList(data)
     if slots_list.post():
       return http.HttpResponse()
     else:
-      raise exceptions.AccessViolation('You cannot change this data')
+      raise exception.Forbidden(message='You cannot change this data')
 
   def context(self, data, check, mutator):
     return {

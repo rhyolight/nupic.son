@@ -16,7 +16,7 @@
 
 from django.conf.urls.defaults import url as django_url
 
-from soc.logic.exceptions import AccessViolation
+from melange.request import exception
 from soc.logic.exceptions import NotFound
 from soc.views import document
 from soc.views.base_templates import ProgramSelect
@@ -170,7 +170,7 @@ class DocumentListPage(GSoCRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
     return {

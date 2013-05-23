@@ -24,6 +24,7 @@ from django.forms.fields import ChoiceField
 from django.forms.widgets import RadioSelect
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.models import connection
@@ -340,7 +341,7 @@ class OrgConnectionPage(GSoCRequestHandler):
 
     def create_connection_txn(user, email):
       if connectionDoesExistTxn(user, data.organization):
-        raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
+        raise exception.Forbidden(message=DEF_CONNECTION_EXISTS)
 
       new_connection = connection_form.create(parent=user, commit=False)
       new_connection.org_state = connection.STATE_ACCEPTED
@@ -507,7 +508,7 @@ class UserConnectionPage(GSoCRequestHandler):
 
     def create_connection(org):
       if connectionDoesExistTxn(data.user, data.organization):
-        raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
+        raise exception.Forbidden(message=DEF_CONNECTION_EXISTS)
 
       new_connection = ConnectionForm.create(
           connection_form, parent=data.user, commit=False)

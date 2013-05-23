@@ -18,8 +18,8 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
+from melange.request import exception
 from soc.logic import cleaning
-from soc.logic.exceptions import AccessViolation
 from soc.views.helper import url_patterns
 from soc.tasks import mailer
 
@@ -170,13 +170,13 @@ class UpdateProposal(GSoCRequestHandler):
       status = data.proposal.status
       if status == 'pending' and action == self.ACTIONS['resubmit']:
         error_msg = ugettext('You cannot resubmit a pending proposal')
-        raise AccessViolation(error_msg)
+        raise exception.Forbidden(message=error_msg)
       if status == 'withdrawn' and action == self.ACTIONS['withdraw']:
         error_msg = ugettext('This proposal has already been withdrawn')
-        raise AccessViolation(error_msg)
+        raise exception.Forbidden(message=error_msg)
       if status == 'withdrawn' and action == self.ACTIONS['update']:
         error_msg = ugettext('This proposal has been withdrawn')
-        raise AccessViolation(error_msg)
+        raise exception.Forbidden(message=error_msg)
       data.action = action
 
   def templatePath(self):

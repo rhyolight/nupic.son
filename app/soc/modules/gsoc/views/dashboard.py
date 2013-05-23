@@ -27,7 +27,6 @@ from melange.request import exception
 from soc.logic import cleaning
 from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
-from soc.logic.exceptions import AccessViolation
 from soc.models import connection
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
@@ -181,7 +180,7 @@ class DashboardPage(base.GSoCRequestHandler):
       if list_content:
         return list_content.content()
     else:
-      raise AccessViolation('You do not have access to this data')
+      raise exception.Forbidden(message='You do not have access to this data')
 
   def post(self, data, check, mutator):
     """Handler for POST requests."""
@@ -189,7 +188,7 @@ class DashboardPage(base.GSoCRequestHandler):
       if component.post():
         return http.HttpResponse()
     else:
-      raise AccessViolation('You cannot change this data')
+      raise exception.Forbidden(message='You cannot change this data')
 
   def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
