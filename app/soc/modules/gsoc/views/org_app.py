@@ -22,7 +22,6 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import org_app as org_app_logic
-from soc.logic.exceptions import NotFound
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
@@ -170,7 +169,8 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     check.isHost()
     if not data.org_app:
-      raise NotFound(access_checker.DEF_NO_ORG_APP % data.program.name)
+      raise exception.NotFound(
+          message=access_checker.DEF_NO_ORG_APP % data.program.name)
 
   def templatePath(self):
     return 'v2/modules/gsoc/org_app/take.html'
@@ -201,7 +201,8 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     if not data.org_app:
-      raise NotFound(access_checker.DEF_NO_ORG_APP % data.program.name)
+      raise exception.NotFound(
+          message=access_checker.DEF_NO_ORG_APP % data.program.name)
     mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(data.org_app)
 
@@ -351,7 +352,8 @@ class GSoCOrgAppShowPage(GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     if not data.org_app:
-      raise NotFound(access_checker.DEF_NO_ORG_APP % data.program.name)
+      raise exception.NotFound(
+          message=access_checker.DEF_NO_ORG_APP % data.program.name)
     mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(data.org_app_record)
 

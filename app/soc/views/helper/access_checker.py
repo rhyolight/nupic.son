@@ -283,7 +283,7 @@ class Mutator(object):
     self.data.url_user = user_model.User.get_by_key_name(key_name)
 
     if not self.data.url_user:
-      raise exceptions.NotFound('Requested user does not exist')
+      raise exception.NotFound(message='Requested user does not exist')
 
   def profileFromKwargs(self, profile_model):
     """Retrieves a profile from kwargs.
@@ -300,14 +300,15 @@ class Mutator(object):
         key_name, parent=self.data.url_user)
 
     if not self.data.url_profile:
-      raise exceptions.NotFound('Requested user does not have a profile')
+      raise exception.NotFound(
+          message='Requested user does not have a profile')
 
   def studentFromKwargs(self):
     self.profileFromKwargs()
     self.data.url_student_info = self.data.url_profile.student_info
 
     if not self.data.url_student_info:
-      raise exceptions.NotFound('Requested user is not a student')
+      raise exception.NotFound(message='Requested user is not a student')
 
   def canRespondForUser(self):
     assert isSet(self.data.invited_user)
@@ -366,7 +367,8 @@ class Mutator(object):
           int(org_app_id))
 
       if not self.data.org_app_record:
-        raise exceptions.NotFound(DEF_NO_ORG_APP % self.data.program.name)
+        raise exception.NotFound(
+            message=DEF_NO_ORG_APP % self.data.program.name)
 
 
 class DeveloperMutator(Mutator):
@@ -388,12 +390,12 @@ class DeveloperMutator(Mutator):
       if self.data.is_host:
         return
       else:
-        raise exceptions.NotFound(DEF_NO_USERNAME)
+        raise exception.NotFound(message=DEF_NO_USERNAME)
 
     user_key = db.Key.from_path('User', key_name)
 
     if not user_key:
-      raise exceptions.NotFound(DEF_NO_USER % key_name)
+      raise exception.NotFound(message=DEF_NO_USER % key_name)
 
     self.data.host_user_key = user_key
     self.data.host = host_logic.getHostForUser(user_key)
@@ -537,7 +539,7 @@ class AccessChecker(BaseAccessChecker):
     normal users.
     """
     if not self.data.program:
-      raise exceptions.NotFound(DEF_NO_SUCH_PROGRAM)
+      raise exception.NotFound(message=DEF_NO_SUCH_PROGRAM)
 
     self.isProgramVisible()
 
@@ -554,7 +556,7 @@ class AccessChecker(BaseAccessChecker):
     Programs are always visible to hosts.
     """
     if not self.data.program:
-      raise exceptions.NotFound(DEF_NO_SUCH_PROGRAM)
+      raise exception.NotFound(message=DEF_NO_SUCH_PROGRAM)
 
     if self.data.program.status == 'visible':
       return
@@ -1086,7 +1088,7 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.document)
 
     if not self.data.document:
-      raise exceptions.NotFound(DEF_NO_DOCUMENT)
+      raise exception.NotFound(message=DEF_NO_DOCUMENT)
 
     self.isProgramVisible()
 

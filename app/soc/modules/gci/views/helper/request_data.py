@@ -21,8 +21,10 @@ import datetime
 
 from google.appengine.ext import db
 
+# TODO(nathaniel): Still reticent about having the RequestData object
+# allowed to raise exceptions from the exception module.
+from melange.request import exception
 from soc.logic import program as program_logic
-from soc.logic.exceptions import NotFound
 from soc.models.site import Site
 from soc.views.helper import request_data
 
@@ -294,16 +296,16 @@ class RequestData(request_data.RequestData):
         self._organization = org_model.GCIOrganization.get_by_key_name(
             org_key_name)
         if not self._organization:
-          raise NotFound(
-              "There is no organization for url '%s'" % org_key_name)
+          raise exception.NotFound(
+              message="There is no organization for url '%s'" % org_key_name)
       else:
         self._organization = None
     return self._organization
- 
+
   def _setOrganization(self, organization):
     """Sets the organization field to the specified value."""
     self._organization = organization
- 
+
   # TODO(daniel): organization should be immutable. All the parts, which
   # actually try to override this value, should be changed
   organization = property(_getOrganization, _setOrganization)
@@ -424,7 +426,8 @@ class RequestData(request_data.RequestData):
 
     # raise an exception if no program is found
     if not self._program:
-      raise NotFound("There is no program for url '%s'" % program_key_name)
+      raise exception.NotFound(
+          message="There is no program for url '%s'" % program_key_name)
 
   def getOrganization(self, org_key):
     """Retrieves the specified organization.

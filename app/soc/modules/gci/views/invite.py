@@ -25,7 +25,6 @@ from melange.request import exception
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import invite as invite_logic
-from soc.logic.exceptions import NotFound
 from soc.logic.helper import notifications
 
 from soc.models.user import User
@@ -284,7 +283,7 @@ class ManageInvite(GCIRequestHandler):
     if not data.invited_user:
       logging.warning(
           'User entity does not exist for request with id %s', invite_id)
-      raise NotFound('Invited user does not exist')
+      raise exception.NotFound(message='Invited user does not exist')
 
     # get the organization and check if the current user can manage the invite
     data.organization = data.invite.org

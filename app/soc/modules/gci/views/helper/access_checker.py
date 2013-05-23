@@ -22,7 +22,6 @@ from django.utils.translation import ugettext
 from melange.request import exception
 from soc.logic import dicts
 from soc.logic import validate
-from soc.logic.exceptions import NotFound
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 from soc.views.helper import request_data
@@ -116,7 +115,7 @@ class Mutator(access_checker.Mutator):
           'model': 'GCITask',
           'id': id,
           }
-      raise NotFound(error_msg)
+      raise exception.NotFound(message=error_msg)
 
     self.data.task = task
 
@@ -148,7 +147,8 @@ class Mutator(access_checker.Mutator):
     self.data.org_app_record = q.get()
 
     if not self.data.org_app_record:
-      raise NotFound("There is no org_app for the org_id %s" % org_id)
+      raise exception.NotFound(
+          message="There is no org_app for the org_id %s" % org_id)
 
   def fullEdit(self, full_edit=False):
     """Sets full_edit to True/False depending on the status of the task.

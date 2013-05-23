@@ -17,7 +17,7 @@
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
-from soc.logic import exceptions
+from melange.request import exception
 from soc.logic import validate
 from soc.models import user
 from soc.views import forms
@@ -179,8 +179,8 @@ class OrgAppRecordsList(object):
     """Defines access checks for this list, all hosts should be able to see it.
     """
     if not data.org_app:
-      raise exceptions.NotFound(
-          access_checker.DEF_NO_ORG_APP % data.program.name)
+      raise exception.NotFound(
+          message=access_checker.DEF_NO_ORG_APP % data.program.name)
 
     check.isHost()
 

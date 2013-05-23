@@ -16,8 +16,7 @@
 
 from django.utils.translation import ugettext
 
-from soc.logic.exceptions import NotFound
-
+from melange.request import exception
 from soc.views import profile_show
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
@@ -110,8 +109,10 @@ class GSoCProfileAdminPage(GSoCRequestHandler):
     mutator.userFromKwargs()
     try:
       mutator.profileFromKwargs()
-    except NotFound:
+    except exception.UserError:
       # it is not a terminal error, when Profile does not exist
+      # TODO(nathaniel): This is weird. Why is it not a terminal
+      # error? What is shown instead?
       pass
 
   def templatePath(self):

@@ -37,12 +37,6 @@ class GDocsLoginRequest(Error):
     self.path = path
 
 
-class NotFound(Error):
-  """Item Not Found."""
-
-  status = httplib.NOT_FOUND
-
-
 class MethodNotAllowed(Error):
   """Indicates that a response of 405 Method Not Allowed is appropriate."""
 

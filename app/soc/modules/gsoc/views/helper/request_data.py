@@ -19,8 +19,11 @@ request in the GSoC module.
 
 from google.appengine.ext import db
 
+# TODO(nathaniel): I'm not sure how I feel about the exception module
+# being important here, but that just goes hand-in-hand with my skepticism
+# about the RequestData object raising exceptions generally.
+from melange.request import exception
 from soc.models import site as site_model
-from soc.logic import exceptions
 from soc.logic import program as program_logic
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
@@ -297,8 +300,8 @@ class RequestData(request_data.RequestData):
         self._organization = org_model.GSoCOrganization.get_by_key_name(
             org_key_name)
         if not self._organization:
-          raise exceptions.NotFound(
-              "There is no organization for url '%s'" % org_key_name)
+          raise exception.NotFound(
+              message="There is no organization for url '%s'" % org_key_name)
       else:
         self._organization = None
     return self._organization
@@ -428,8 +431,8 @@ class RequestData(request_data.RequestData):
 
     # raise an exception if no program is found
     if not self._program:
-      raise exceptions.NotFound(
-          "There is no program for url '%s'" % program_key_name)
+      raise exception.NotFound(
+          message="There is no program for url '%s'" % program_key_name)
 
   def getOrganization(self, org_key):
     """Retrieves the specified organization.

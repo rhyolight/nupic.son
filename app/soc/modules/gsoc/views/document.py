@@ -17,7 +17,6 @@
 from django.conf.urls.defaults import url as django_url
 
 from melange.request import exception
-from soc.logic.exceptions import NotFound
 from soc.views import document
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import url_patterns
@@ -105,7 +104,8 @@ class DocumentPage(GSoCRequestHandler):
     mutator.documentKeyNameFromKwargs()
 
     if not data.document:
-      raise NotFound("No such document: '%s'" % data.key_name)
+      raise exception.NotFound(
+          message="No such document: '%s'" % data.key_name)
 
     check.canViewDocument()
 

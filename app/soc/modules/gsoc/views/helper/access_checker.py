@@ -22,7 +22,6 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import validate
-from soc.logic.exceptions import NotFound
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
@@ -148,13 +147,13 @@ class Mutator(access_checker.Mutator):
     proposal_id = int(self.data.kwargs['id'])
 
     if not proposal_id:
-      raise NotFound('Proposal id must be a positive number')
+      raise exception.NotFound(message='Proposal id must be a positive number')
 
     self.data.proposal = GSoCProposal.get_by_id(
         proposal_id, parent=self.data.url_profile)
 
     if not self.data.proposal:
-      raise NotFound('Requested proposal does not exist')
+      raise exception.NotFound(message='Requested proposal does not exist')
 
     org_key = GSoCProposal.org.get_value_for_datastore(self.data.proposal)
 
@@ -176,13 +175,14 @@ class Mutator(access_checker.Mutator):
     project_id = int(self.data.kwargs['id'])
 
     if not project_id:
-      raise NotFound(ugettext('Proposal id must be a positive number'))
+      raise exception.NotFound(
+          message=ugettext('Proposal id must be a positive number'))
 
     self.data.project = project_model.GSoCProject.get_by_id(
         project_id, parent=self.data.url_profile)
 
     if not self.data.project:
-      raise NotFound(DEF_NO_PROJECT)
+      raise exception.NotFound(message=DEF_NO_PROJECT)
 
     parent_key = self.data.project.parent_key()
     if self.data.profile and parent_key == self.data.profile.key():
@@ -222,7 +222,7 @@ class Mutator(access_checker.Mutator):
     self.data.student_evaluation = ProjectSurvey.get_by_key_name(key_name)
 
     if raise_not_found and not self.data.student_evaluation:
-      raise NotFound(DEF_NO_STUDENT_EVALUATION % key_name)
+      raise exception.NotFound(message=DEF_NO_STUDENT_EVALUATION % key_name)
 
   def studentEvaluationRecordFromKwargs(self):
     """Sets the student evaluation record in RequestData object.
@@ -252,7 +252,7 @@ class Mutator(access_checker.Mutator):
         key_name)
 
     if raise_not_found and not self.data.mentor_evaluation:
-      raise NotFound(DEF_NO_MENTOR_EVALUATION % key_name)
+      raise exception.NotFound(message=DEF_NO_MENTOR_EVALUATION % key_name)
 
   def mentorEvaluationRecordFromKwargs(self):
     """Sets the mentor evaluation record in RequestData object.
@@ -282,7 +282,7 @@ class Mutator(access_checker.Mutator):
     record = GSoCGradingRecord.get_by_id(record_id, parent=self.data.project)
 
     if not record or record.grading_survey_group.key().id() != group_id:
-      raise NotFound(DEF_NO_RECORD_FOUND)
+      raise exception.NotFound(message=DEF_NO_RECORD_FOUND)
 
     self.data.record = record
 
@@ -300,7 +300,7 @@ class Mutator(access_checker.Mutator):
     record = q.get()
 
     if not record:
-      raise NotFound(DEF_NO_ORG_APP_RECORD_FOUND)
+      raise exception.NotFound(message=DEF_NO_ORG_APP_RECORD_FOUND)
 
     self.data.org_app_record = record
 
@@ -312,11 +312,13 @@ class Mutator(access_checker.Mutator):
     survey_group = GSoCGradingSurveyGroup.get_by_id(int(self.data.kwargs['id']))
 
     if not survey_group:
-      raise NotFound('Requested GSoCGradingSurveyGroup does not exist')
+      raise exception.NotFound(
+          message='Requested GSoCGradingSurveyGroup does not exist')
 
     if survey_group.program.key() != self.data.program.key():
-      raise NotFound(
-          'Requested GSoCGradingSurveyGroup does not exist in this program')
+      raise exception.NotFound(
+          message=('Requested GSoCGradingSurveyGroup '
+                   'does not exist in this program'))
 
     self.data.survey_group = survey_group
 
@@ -509,7 +511,8 @@ class AccessChecker(access_checker.AccessChecker):
     app_record = self.data.org_app_record
 
     if not app_record:
-      raise NotFound(DEF_ORG_APP_NOT_FOUND % app_record.org_id)
+      raise exception.NotFound(
+          message=DEF_ORG_APP_NOT_FOUND % app_record.org_id)
 
     if self.data.user.key() not in [
         app_record.main_admin.key(), app_record.backup_admin.key()]:

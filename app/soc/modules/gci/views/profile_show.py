@@ -19,6 +19,7 @@ import logging
 from django import http
 from django.utils import translation
 
+from melange.request import exception
 from soc.logic import exceptions
 from soc.views import profile_show
 from soc.views.helper import access_checker
@@ -119,8 +120,10 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
     mutator.userFromKwargs()
     try:
       mutator.profileFromKwargs()
-    except exceptions.NotFound:
+    except exception.UserError:
       # it is not a terminal error, when Profile does not exist
+      # TODO(nathaniel): Why is it not a terminal error when a profile
+      # does not exist for this page?
       pass
 
   def context(self, data, check, mutator):

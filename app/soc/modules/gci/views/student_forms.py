@@ -21,7 +21,6 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import dicts
-from soc.logic import exceptions
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
@@ -154,7 +153,7 @@ class StudentFormUpload(base.GCIRequestHandler):
     if download:
       return bs_helper.sendBlob(download)
     else:
-      raise exceptions.NotFound('File not found')
+      raise exception.NotFound(message='File not found')
 
   def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
@@ -242,4 +241,4 @@ class StudentFormDownload(base.GCIRequestHandler):
     if download:
       return bs_helper.sendBlob(download)
     else:
-      raise exceptions.NotFound('File not found')
+      raise exception.NotFound(message='File not found')

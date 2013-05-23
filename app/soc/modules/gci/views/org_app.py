@@ -21,7 +21,6 @@ from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from melange.request import exception
-from soc.logic import exceptions
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
@@ -156,8 +155,8 @@ class GCIOrgAppTakePage(GCIRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     if not data.org_app:
-      raise exceptions.NotFound(
-          access_checker.DEF_NO_ORG_APP % data.program.name)
+      raise exception.NotFound(
+          message=access_checker.DEF_NO_ORG_APP % data.program.name)
 
     mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(data.org_app)
@@ -311,8 +310,8 @@ class GCIOrgAppShowPage(GCIRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     if not data.org_app:
-      raise exceptions.NotFound(
-          access_checker.DEF_NO_ORG_APP % data.program.name)
+      raise exception.NotFound(
+          message=access_checker.DEF_NO_ORG_APP % data.program.name)
 
     mutator.orgAppRecordIfIdInKwargs()
     assert access_checker.isSet(data.org_app_record)
