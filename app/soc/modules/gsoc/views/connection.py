@@ -229,9 +229,11 @@ class OrgConnectionForm(ConnectionForm):
     account = users.User(email)
     user_account = accounts.normalizeAccount(account)
     user = User.all().filter('account', user_account).get()
-    if not user or GSoCProfile.all().ancestor(user).count(limit=1) < 1:
+    if user and GSoCProfile.all().ancestor(user).count(limit=1) >= 1:
+      return user
+    else:
+      # The User entity does not exist or they do not have a profile. 
       return None
-    return user
         
         
   class Meta:
