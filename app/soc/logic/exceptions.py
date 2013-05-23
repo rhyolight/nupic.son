@@ -59,9 +59,3 @@ class BadRequest(Error):
   """Bad Request."""
 
   status = httplib.BAD_REQUEST
-
-
-class MaintainceMode(Error):
-  """Maintaince Mode."""
-
-  status = httplib.SERVICE_UNAVAILABLE

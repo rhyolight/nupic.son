@@ -113,4 +113,4 @@ class ServerError(Exception):
 
 def MaintenanceMode():
   """Returns a ServerError indicating that Melange is in maintenance."""
-  return ServerError(httplib.SERVICE_UNAVAILABLE, message=_MAINTENANCE)
+  return ServerError(httplib.SERVICE_UNAVAILABLE, message=_MAINTENANCE_MESSAGE)

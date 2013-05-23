@@ -511,12 +511,11 @@ class RequestHandler(object):
     """Checks whether or not the site is in maintenance mode.
 
     Raises:
-      exceptions.MaintainceMode: If the site is in maintenance mode and
+      exception.MaintenanceMode: If the site is in maintenance mode and
         the user is not a developer.
     """
     if data.site.maintenance_mode and not data.is_developer:
-      raise exceptions.MaintainceMode(
-          'The site is currently in maintenance mode. Please try again later.')
+      raise exception.MaintenanceMode()
 
   def __call__(self, request, *args, **kwargs):
     """Returns the response object for the requested URL.
@@ -545,9 +544,9 @@ class RequestHandler(object):
       # for the message rather than the could-be-and-mean-anything "args[0]".
       return self.error(data, e.status, message=e.args[0] if e.args else None)
     except exception.UserError as user_error:
-      return self.error_handler(user_error, data)
+      return self.error_handler.handleUserError(user_error, data)
     except exception.ServerError as server_error:
-      return self.error_handler(server_error, data)
+      return self.error_handler.handleServerError(server_error, data)
 
 
 class SiteRequestHandler(RequestHandler):
