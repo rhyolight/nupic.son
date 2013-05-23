@@ -25,7 +25,6 @@ from melange.request import exception
 from soc.logic import exceptions
 from soc.logic import host as host_logic
 from soc.logic import links
-from soc.logic.exceptions import AccessViolation
 from soc.models import document
 from soc.models import org_app_record
 from soc.models import user as user_model
@@ -416,9 +415,8 @@ class BaseAccessChecker(object):
     self.gae_user = data.gae_user
 
   def fail(self, message):
-    """Raises an AccessViolation with the specified message.
-    """
-    raise AccessViolation(message)
+    """Raises an appropriate exception.UserError with the specified message."""
+    raise exception.Forbidden(message=message)
 
   def isLoggedIn(self):
     """Ensures that the user is logged in.
@@ -444,7 +442,7 @@ class BaseAccessChecker(object):
     if self.data.user:
       return
 
-    raise AccessViolation(DEF_NO_USER_LOGIN)
+    raise exception.Forbidden(message=DEF_NO_USER_LOGIN)
 
   def isNotUser(self):
     """Checks if the current user does not have an User entity.
@@ -456,7 +454,7 @@ class BaseAccessChecker(object):
     if not self.data.user:
       return
 
-    raise AccessViolation(DEF_NO_USER_PROFILE)
+    raise exception.Forbidden(message=DEF_NO_USER_PROFILE)
 
 
   def isDeveloper(self):
@@ -464,7 +462,7 @@ class BaseAccessChecker(object):
     if self.data.is_developer:
       return
 
-    raise AccessViolation(DEF_NOT_DEVELOPER)
+    raise exception.Forbidden(message=DEF_NOT_DEVELOPER)
 
   def hasProfile(self):
     """Checks if the user has a profile for the current program.
@@ -474,7 +472,7 @@ class BaseAccessChecker(object):
     if self.data.profile:
       return
 
-    raise AccessViolation(DEF_NO_PROFILE)
+    raise exception.Forbidden(message=DEF_NO_PROFILE)
 
   def isProfileActive(self):
     """Checks if the profile of the current user is active.
@@ -484,7 +482,7 @@ class BaseAccessChecker(object):
     if self.data.profile.status == 'active':
       return
 
-    raise AccessViolation(DEF_PROFILE_INACTIVE)
+    raise exception.Forbidden(message=DEF_PROFILE_INACTIVE)
 
   def isRequestPresent(self, request_id):
     """Checks if the invite entity is not None.
@@ -492,10 +490,12 @@ class BaseAccessChecker(object):
     assert isSet(self.data.request_entity)
 
     if self.data.request_entity is None:
-      raise AccessViolation(DEF_REQUEST_DOES_NOT_EXIST % request_id)
+      raise exception.Forbidden(
+          message=DEF_REQUEST_DOES_NOT_EXIST % request_id)
 
     if self.data.request_entity.type != REQUEST_TYPE:
-      raise AccessViolation(DEF_REQUEST_DOES_NOT_EXIST % request_id)
+      raise exception.Forbidden(
+          message=DEF_REQUEST_DOES_NOT_EXIST % request_id)
 
   def canAccessGoogleDocs(self):
     """Checks if user has a valid access token to access Google Documents.
@@ -529,11 +529,11 @@ class AccessChecker(BaseAccessChecker):
     if self.data.is_host:
       return
 
-    raise AccessViolation(DEF_NOT_HOST)
+    raise exception.Forbidden(message=DEF_NOT_HOST)
 
   def isProgramRunning(self):
-    """Checks whether the program is running now by making sure the current 
-    data is between program start and end and the program is visible to 
+    """Checks whether the program is running now by making sure the current
+    data is between program start and end and the program is visible to
     normal users.
     """
     if not self.data.program:
@@ -544,11 +544,11 @@ class AccessChecker(BaseAccessChecker):
     if self.data.timeline.programActive():
       return
 
-    raise AccessViolation(
-        DEF_PROGRAM_NOT_RUNNING % self.data.program.name)
+    raise exception.Forbidden(
+        message=DEF_PROGRAM_NOT_RUNNING % self.data.program.name)
 
   def isProgramVisible(self):
-    """Checks whether the program exists and is visible to the user. 
+    """Checks whether the program exists and is visible to the user.
     Visible programs are either in the visible.
 
     Programs are always visible to hosts.
@@ -559,14 +559,15 @@ class AccessChecker(BaseAccessChecker):
     if self.data.program.status == 'visible':
       return
 
+    # TODO(nathaniel): Sure this is weird, but it's a consequence
+    # of boolean-question-named methods having return-None-or-raise-
+    # exception semantics.
     try:
       self.isHost()
       return
-    except AccessViolation:
-      pass
-
-    raise AccessViolation(
-        DEF_PROGRAM_NOT_VISIBLE % self.data.program.name)
+    except exception.UserError:
+      raise exception.Forbidden(
+          message=DEF_PROGRAM_NOT_VISIBLE % self.data.program.name)
 
   def acceptedOrgsAnnounced(self):
     """Checks if the accepted orgs have been announced.
@@ -577,7 +578,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     period = self.data.timeline.orgsAnnouncedOn()
-    raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE % period)
+    raise exception.Forbidden(message=DEF_PAGE_INACTIVE_BEFORE % period)
 
   def acceptedStudentsAnnounced(self):
     """Checks if the accepted students have been announced.
@@ -588,7 +589,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     period = self.data.timeline.studentsAnnouncedOn()
-    raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE % period)
+    raise exception.Forbidden(message=DEF_PAGE_INACTIVE_BEFORE % period)
 
   def canApplyNonStudent(self, role, edit_url):
     """Checks if the user can apply as a mentor or org admin.
@@ -600,16 +601,16 @@ class AccessChecker(BaseAccessChecker):
 
     if role == 'org_admin' and self.data.timeline.beforeOrgSignupStart():
       period = self.data.timeline.orgSignupStart()
-      raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE % period)
+      raise exception.Forbidden(message=DEF_PAGE_INACTIVE_BEFORE % period)
 
     if role == 'mentor' and not self.data.timeline.orgsAnnounced():
       period = self.data.timeline.orgsAnnouncedOn()
-      raise AccessViolation(DEF_PAGE_INACTIVE_BEFORE % period)
+      raise exception.Forbidden(message=DEF_PAGE_INACTIVE_BEFORE % period)
 
     if not self.data.profile:
       return
 
-    raise AccessViolation(DEF_ALREADY_PARTICIPATING_AS_STUDENT % (
+    raise exception.Forbidden(message=DEF_ALREADY_PARTICIPATING_AS_STUDENT % (
         role, self.data.program.name))
 
   def isActiveStudent(self):
@@ -620,7 +621,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.student_info:
       return
 
-    raise AccessViolation(DEF_IS_NOT_STUDENT)
+    raise exception.Forbidden(message=DEF_IS_NOT_STUDENT)
 
   def isStudentWithProject(self):
     self.isActiveStudent()
@@ -628,7 +629,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.student_info.number_of_projects > 0:
       return
 
-    raise AccessViolation(DEF_HAS_NO_PROJECT)
+    raise exception.Forbidden(message=DEF_HAS_NO_PROJECT)
 
   def notStudent(self):
     """Checks if the current user has a non-student profile.
@@ -638,7 +639,7 @@ class AccessChecker(BaseAccessChecker):
     if not self.data.student_info:
       return
 
-    raise AccessViolation(DEF_IS_STUDENT)
+    raise exception.Forbidden(message=DEF_IS_STUDENT)
 
   def notOrgAdmin(self):
     """Checks if the user is not an admin.
@@ -649,7 +650,8 @@ class AccessChecker(BaseAccessChecker):
     if self.data.organization.key() not in self.data.profile.org_admin_for:
       return
 
-    raise AccessViolation(DEF_ALREADY_ADMIN % self.data.organization.name)
+    raise exception.Forbidden(
+        message=DEF_ALREADY_ADMIN % self.data.organization.name)
 
   def notMentor(self):
     """Checks if the user is not a mentor.
@@ -660,7 +662,8 @@ class AccessChecker(BaseAccessChecker):
     if not self.data.mentorFor(self.data.organization):
       return
 
-    raise AccessViolation(DEF_ALREADY_MENTOR % self.data.organization.name)
+    raise exception.Forbidden(
+        message=DEF_ALREADY_MENTOR % self.data.organization.name)
 
   def isOrgAdmin(self):
     """Checks if the user is an org admin.
@@ -682,7 +685,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.orgAdminFor(org):
       return
 
-    raise AccessViolation(DEF_NOT_ADMIN % org.name)
+    raise exception.Forbidden(message=DEF_NOT_ADMIN % org.name)
 
   def isMentorForOrganization(self, org):
     """Checks if the user is a mentor for the specified organiztaion.
@@ -692,7 +695,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.mentorFor(org):
       return
 
-    raise AccessViolation(DEF_NOT_MENTOR % org.name)
+    raise exception.Forbidden(message=DEF_NOT_MENTOR % org.name)
 
   def isOrganizationInURLActive(self):
     """Checks if the organization in URL exists and if its status is active.
@@ -704,7 +707,7 @@ class AccessChecker(BaseAccessChecker):
           'link_id': self.data.kwargs['organization'],
           'program': self.data.program.name
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
     self.isOrganizationActive(self.data.organization)
 
@@ -716,7 +719,7 @@ class AccessChecker(BaseAccessChecker):
           'name': organization.name,
           'program': self.data.program.name
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
   def isProposalInURLValid(self):
     """Checks if the proposal in URL exists.
@@ -728,14 +731,14 @@ class AccessChecker(BaseAccessChecker):
           'model': 'GSoCProposal',
           'id': self.data.kwargs['id']
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
     if self.data.proposal.status == 'invalid':
       error_msg = DEF_ID_BASED_ENTITY_INVALID % {
           'model': 'GSoCProposal',
           'id': self.data.kwargs['id'],
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
   def studentSignupActive(self):
     """Checks if the student signup period is active.
@@ -745,8 +748,8 @@ class AccessChecker(BaseAccessChecker):
     if self.data.timeline.studentSignup():
       return
 
-    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE %
-        self.data.timeline.studentsSignupBetween())
+    raise exception.Forbidden(message=DEF_PAGE_INACTIVE_OUTSIDE % (
+        self.data.timeline.studentsSignupBetween()))
 
   def canStudentUpdateProposalPostSignup(self):
     """Checks if the student signup deadline has passed.
@@ -760,7 +763,7 @@ class AccessChecker(BaseAccessChecker):
     violation_message = '%s %s'% ((DEF_PAGE_INACTIVE_OUTSIDE %
         self.data.timeline.studentsSignupBetween()),
         DEF_PROPOSAL_MODIFICATION_REQUEST)
-    raise AccessViolation(violation_message)
+    raise exception.Forbidden(message=violation_message)
 
   def canStudentUpdateProposal(self):
     """Checks if the student is eligible to submit a proposal.
@@ -771,9 +774,10 @@ class AccessChecker(BaseAccessChecker):
     self.isProposalInURLValid()
 
     # check if the timeline allows updating proposals
+    # TODO(nathaniel): This remains weird.
     try:
       self.studentSignupActive()
-    except AccessViolation:
+    except exception.UserError:
       self.canStudentUpdateProposalPostSignup()
 
     # check if the proposal belongs to the current user
@@ -783,14 +787,14 @@ class AccessChecker(BaseAccessChecker):
           'model': 'GSoCProposal',
           'name': 'request'
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the proposal to be updated
     status = self.data.proposal.status
     if status == 'ignored':
-      raise AccessViolation(DEF_PROPOSAL_IGNORED_MESSAGE)
+      raise exception.Forbidden(message=DEF_PROPOSAL_IGNORED_MESSAGE)
     elif status in ['invalid', 'accepted', 'rejected']:
-      raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
+      raise exception.Forbidden(message=DEF_CANNOT_UPDATE_ENTITY % {
           'model': 'GSoCProposal'
           })
 
@@ -808,11 +812,11 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the entity represents an invitation
     if self.data.invite.type != INVITATION_TYPE:
-      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
+      raise exception.Forbidden(message=DEF_INVITE_DOES_NOT_EXIST)
 
     # only the invited user may respond to the invitation
     if self.data.user.key() != self.data.invite.user.key():
-      raise AccessViolation(DEF_INVITE_CANNOT_BE_ACCESSED)
+      raise exception.Forbidden(message=DEF_INVITE_CANNOT_BE_ACCESSED)
 
   # (dcrodman) This method will be obsolete with the connection module.
   def canViewInvite(self):
@@ -832,10 +836,12 @@ class AccessChecker(BaseAccessChecker):
       assert isSet(self.data.invite)
 
       if self.data.invite is None:
-        raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST % invite_id)
+        raise exception.Forbidden(
+            message=DEF_INVITE_DOES_NOT_EXIST % invite_id)
 
       if self.data.invite.type != INVITATION_TYPE:
-        raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST % invite_id)
+        raise exception.Forbidden(
+            message=DEF_INVITE_DOES_NOT_EXIST % invite_id)
 
   # (dcrodman) This method will be obsolete with the connection module.
   def isInviteRespondable(self):
@@ -845,11 +851,11 @@ class AccessChecker(BaseAccessChecker):
 
     # only pending invites may be responded
     if self.data.invite.status == 'accepted':
-      raise AccessViolation(DEF_INVITE_ACCEPTED)
+      raise exception.Forbidden(message=DEF_INVITE_ACCEPTED)
     if self.data.invite.status == 'rejected':
-      raise AccessViolation(DEF_INVITE_REJECTED)
+      raise exception.Forbidden(message=DEF_INVITE_REJECTED)
     if self.data.invite.status == 'withdrawn':
-      raise AccessViolation(DEF_INVITE_WITHDRAWN)
+      raise exception.Forbidden(message=DEF_INVITE_WITHDRAWN)
 
   # (dcrodman) This method will be obsolete with the connection module.
   def canResubmitInvite(self):
@@ -860,11 +866,11 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the entity represents an invitation
     if self.data.invite.type != INVITATION_TYPE:
-      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
+      raise exception.Forbidden(message=DEF_INVITE_DOES_NOT_EXIST)
 
     # only withdrawn requests may be resubmitted
     if self.data.invite.status != 'withdrawn':
-      raise AccessViolation(DEF_NOT_VALID_REQUEST)
+      raise exception.Forbidden(message=DEF_NOT_VALID_REQUEST)
 
     # check if the user is an admin for the organization
     self.isOrgAdmin()
@@ -878,11 +884,11 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the entity represents an invitation
     if self.data.invite.type != INVITATION_TYPE:
-      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
+      raise exception.Forbidden(message=DEF_INVITE_DOES_NOT_EXIST)
 
     # only withdrawn requests may be resubmitted
     if self.data.invite.status != 'withdrawn':
-      raise AccessViolation(DEF_INVITE_CANNOT_BE_RESUBMITTED)
+      raise exception.Forbidden(message=DEF_INVITE_CANNOT_BE_RESUBMITTED)
 
     #TODO(dhans): actually it needs to be checked if the user has not accepted
     # a request in the meantime.
@@ -896,25 +902,25 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the entity represents an invitation
     if self.data.invite.type != 'Invitation':
-      raise AccessViolation(DEF_NOT_VALID_INVITATION)
+      raise exception.Forbidden(message=DEF_NOT_VALID_INVITATION)
 
     # check if the entity can be responded
     if self.data.invite.status not in ['pending', 'rejected']:
-      raise AccessViolation(DEF_NOT_VALID_INVITATION)
+      raise exception.Forbidden(message=DEF_NOT_VALID_INVITATION)
 
     # check if the entity is addressed to the current user
     if self.data.invited_user.key() != self.data.user.key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'model': 'Request'
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
     # check if the user does not have this role
     if self.data.invite.role == 'org_admin':
       self.notOrgAdmin()
     else:
       self.notMentor()
-  
+
   # (dcrodman) This method will be obsolete with the connection module.
   def canManageRequest(self):
     """Checks if the current user may manage the specified request.
@@ -923,11 +929,11 @@ class AccessChecker(BaseAccessChecker):
 
     # only the author may manage their request
     if self.data.user.key() != self.data.request_entity.user.key():
-      raise AccessViolation(DEF_REQUEST_CANNOT_BE_ACCESSED)
+      raise exception.Forbidden(message=DEF_REQUEST_CANNOT_BE_ACCESSED)
 
     # accepted requests cannot be managed
     if self.data.request_entity.status == 'accepted':
-      raise AccessViolation(DEF_ACCEPTED_REQUEST_CANNOT_BE_MANAGED)
+      raise exception.Forbidden(message=DEF_ACCEPTED_REQUEST_CANNOT_BE_MANAGED)
 
   # (dcrodman) This method will be obsolete with the connection module.
   def isRequestManageable(self):
@@ -937,11 +943,13 @@ class AccessChecker(BaseAccessChecker):
     current_status = self.data.request_entity.status
 
     if 'withdraw' in self.data.POST and current_status != 'pending':
-      raise AccessViolation(DEF_REQUEST_CANNOT_BE_WITHDRAWN % current_status)
+      raise exception.Forbidden(
+          message=DEF_REQUEST_CANNOT_BE_WITHDRAWN % current_status)
 
     if 'resubmit' in self.data.POST and \
         current_status not in ['rejected', 'withdrawn']:
-      raise AccessViolation(DEF_REQUEST_CANNOT_BE_RESUBMITTED % current_status)
+      raise exception.Forbidden(
+          message=DEF_REQUEST_CANNOT_BE_RESUBMITTED % current_status)
 
   # (dcrodman) This method will be obsolete with the connection module.
   def canRespondToRequest(self):
@@ -952,33 +960,33 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the entity represents an invitation
     if self.data.request_entity.type != 'Request':
-      raise AccessViolation(DEF_NOT_VALID_CONNECTION)
+      raise exception.Forbidden(message=DEF_NOT_VALID_CONNECTION)
 
     # check if the entity can be responded
     if self.data.request_entity.status not in ['pending', 'rejected']:
-      raise AccessViolation(DEF_NOT_VALID_CONNECTION)
+      raise exception.Forbidden(message=DEF_NOT_VALID_CONNECTION)
 
     # check if the user is an admin for the organization
     self.isOrgAdmin()
-    
+
   # (dcrodman) This method will be obsolete with the connection module.
   def canResubmitRequest(self):
     """Checks if the current user can resubmit the request.
     """
 
-    assert isSet(self.data.request_entity) 
+    assert isSet(self.data.request_entity)
     assert isSet(self.data.requester)
 
     # only withdrawn requests may be resubmitted
     if self.data.request_entity.status != 'withdrawn':
-      raise AccessViolation(DEF_NOT_VALID_CONNECTION)
+      raise exception.Forbidden(message=DEF_NOT_VALID_CONNECTION)
 
     # check if the request belongs to the current user
     if self.data.requester.key() != self.data.user.key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'request'
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
   # (dcrodman) This method will be obsolete with the connection module.
   def canViewRequest(self):
@@ -1000,11 +1008,11 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the entity represents an invitation
     if self.data.invite.type != INVITATION_TYPE:
-      raise AccessViolation(DEF_INVITE_DOES_NOT_EXIST)
+      raise exception.Forbidden(message=DEF_INVITE_DOES_NOT_EXIST)
 
     # only pending requests may be withdrawn
     if self.data.invite.status != 'pending':
-      raise AccessViolation(DEF_INVITE_CANNOT_BE_WITHDRAWN)
+      raise exception.Forbidden(message=DEF_INVITE_CANNOT_BE_WITHDRAWN)
 
   # (dcrodman) This method will be obsolete with the connection module.
   def _canAccessRequestEntity(self, entity, user, org):
@@ -1042,7 +1050,7 @@ class AccessChecker(BaseAccessChecker):
     else:
       # Prevent a User from viewing their own connection as an org admin.
       if connection.organization.key() in self.data.url_profile.org_admin_for:
-        raise AccessViolation(DEF_CONNECTION_CANNOT_BE_ACCESSED)
+        raise exception.Forbidden(message=DEF_CONNECTION_CANNOT_BE_ACCESSED)
 
   def canAccessProposalEntity(self):
     """Checks if the current user is allowed to access a Proposal entity.
@@ -1056,7 +1064,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     if not self.data.user:
-      raise AccessViolation(DEF_PROPOSAL_NOT_PUBLIC)
+      raise exception.Forbidden(message=DEF_PROPOSAL_NOT_PUBLIC)
 
     self.isProfileActive()
     # if the current user is the proposer, he or she may access it
@@ -1067,7 +1075,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.mentorFor(self.data.proposal_org):
       return
 
-    raise AccessViolation(DEF_PROPOSAL_NOT_PUBLIC)
+    raise exception.Forbidden(message=DEF_PROPOSAL_NOT_PUBLIC)
 
   def canEditDocument(self):
     self.isHost()
@@ -1085,7 +1093,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.document.read_access == 'public':
       return
 
-    raise AccessViolation(DEF_NOT_PUBLIC_DOCUMENT)
+    raise exception.Forbidden(message=DEF_NOT_PUBLIC_DOCUMENT)
 
   def isProposer(self):
     """Checks if the current user is the author of the proposal.
@@ -1098,7 +1106,7 @@ class AccessChecker(BaseAccessChecker):
     if self.data.proposer.key() == self.data.profile.key():
       return
 
-    raise AccessViolation(DEF_NOT_PROPOSER)
+    raise exception.Forbidden(message=DEF_NOT_PROPOSER)
 
   def isSlotTransferActive(self):
     """Checks if the slot transfers are active at the time.
@@ -1110,7 +1118,7 @@ class AccessChecker(BaseAccessChecker):
         self.data.timeline.beforeStudentsAnnounced()):
       return
 
-    raise AccessViolation(DEF_NO_SLOT_TRANSFER % (
+    raise exception.Forbidden(message=DEF_NO_SLOT_TRANSFER % (
         self.data.timeline.studentsAnnouncedOn()))
 
   def isProjectInURLValid(self):
@@ -1123,14 +1131,14 @@ class AccessChecker(BaseAccessChecker):
           'model': 'GSoCProject',
           'id': self.data.kwargs['id']
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
     if self.data.project.status == 'invalid':
       error_msg = DEF_ID_BASED_ENTITY_INVALID % {
           'model': 'GSoCProject',
           'id': self.data.kwargs['id'],
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
   def canStudentUpdateProject(self):
     """Checks if the student can edit the project details.
@@ -1152,11 +1160,11 @@ class AccessChecker(BaseAccessChecker):
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'project'
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the project to be updated
     if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
-      raise AccessViolation(DEF_CANNOT_UPDATE_ENTITY % {
+      raise exception.Forbidden(message=DEF_CANNOT_UPDATE_ENTITY % {
           'name': 'project'
           })
 
@@ -1177,8 +1185,8 @@ class AccessChecker(BaseAccessChecker):
     if self.data.timeline.afterSurveyEnd(survey) and show_url:
       raise exception.Redirect(show_url)
 
-    raise AccessViolation(DEF_PAGE_INACTIVE_OUTSIDE %
-        (survey.survey_start, survey.survey_end))
+    raise exception.Forbidden(message=DEF_PAGE_INACTIVE_OUTSIDE % (
+        survey.survey_start, survey.survey_end))
 
   def canUserTakeSurvey(self, survey, taking_access='user'):
     """Checks if the user with the given profile can take the survey.
@@ -1203,7 +1211,7 @@ class AccessChecker(BaseAccessChecker):
       self.isUser()
       return
 
-    raise AccessViolation(DEF_NO_SURVEY_ACCESS)
+    raise exception.Forbidden(message=DEF_NO_SURVEY_ACCESS)
 
   def isStatisticValid(self):
     """Checks if the URL refers to an existing statistic.
@@ -1214,7 +1222,7 @@ class AccessChecker(BaseAccessChecker):
       error_msg = DEF_STATISTIC_DOES_NOT_EXIST % {
           'key_name': self.data.kwargs['id']
           }
-      raise AccessViolation(error_msg)
+      raise exception.Forbidden(mesasge=error_msg)
 
   def canRetakeOrgApp(self):
     """Checks if the user can edit the org app record.
@@ -1226,7 +1234,7 @@ class AccessChecker(BaseAccessChecker):
     allowed_keys = [self.data.org_app_record.main_admin.key(),
                     self.data.org_app_record.backup_admin.key()]
     if self.data.user.key() not in allowed_keys:
-      raise AccessViolation(DEF_CANNOT_ACCESS_ORG_APP)
+      raise exception.Forbidden(message=DEF_CANNOT_ACCESS_ORG_APP)
 
   def canViewOrgApp(self):
     """Checks if the user can view the org app record. Only the org admins and
@@ -1234,10 +1242,11 @@ class AccessChecker(BaseAccessChecker):
     """
     assert isSet(self.data.org_app_record)
 
+    # TODO(nathaniel): Yep, this is weird.
     try:
       self.canRetakeOrgApp()
       return
-    except AccessViolation:
+    except exception.UserError:
       pass
 
     self.isHost()
