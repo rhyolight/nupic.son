@@ -27,6 +27,7 @@ from django.template import loader
 
 from melange.request import error
 from melange.request import exception
+from melange.request import initialize
 from melange.request import render
 from soc.logic import links
 from soc.views.helper import access_checker
@@ -38,6 +39,7 @@ class RequestHandler(object):
 
   # TODO(nathaniel): Pass these as construction parameters like
   # real injected dependencies.
+  initializer = initialize.MELANGE_INITIALIZER
   linker = links.Linker()
   renderer = render.MELANGE_RENDERER
   error_handler = error.MELANGE_ERROR_HANDLER
@@ -445,22 +447,6 @@ class RequestHandler(object):
     else:
       raise exception.MethodNotAllowed()
 
-  def init(self, request, args, kwargs):
-    """Creates objects necessary for serving the request.
-
-    Subclasses must override this abstract method.
-
-    Args:
-      request: The http.HttpRequest for the current request.
-      args: Additional arguments passed to this request handler.
-      kwargs: Additional keyword arguments passed to this request handler.
-
-    Returns:
-      A triplet of the RequestData, Check, and Mutator to be used to
-        service the request.
-    """
-    raise NotImplementedError()
-
   # TODO(nathaniel): Migrate this elsewhere.
   def checkMaintenanceMode(self, data):
     """Checks whether or not the site is in maintenance mode.
@@ -483,7 +469,7 @@ class RequestHandler(object):
     5. Returns the response.
     """
     try:
-      data, check, mutator = self.init(request, args, kwargs)
+      data, check, mutator = self.initializer.initialize(request, args, kwargs)
       self.checkMaintenanceMode(data)
       self.checkAccess(data, check, mutator)
       return self._dispatch(data, check, mutator)
@@ -495,17 +481,3 @@ class RequestHandler(object):
       return self.error_handler.handleUserError(user_error, data)
     except exception.ServerError as server_error:
       return self.error_handler.handleServerError(server_error, data)
-
-
-class SiteRequestHandler(RequestHandler):
-  """Customization required by global site pages to handle HTTP requests."""
-
-  def init(self, request, args, kwargs):
-    data = request_data.RequestData(request, args, kwargs)
-    if data.is_developer:
-      mutator = access_checker.DeveloperMutator(data)
-      check = access_checker.DeveloperAccessChecker(data)
-    else:
-      mutator = access_checker.Mutator(data)
-      check = access_checker.AccessChecker(data)
-    return data, check, mutator

@@ -19,6 +19,7 @@ import httplib
 from django import http
 
 from melange.request import error
+from melange.request import initialize
 from melange.request import render
 from soc.views import base
 
@@ -28,6 +29,38 @@ from soc.modules.gci.views.helper import request_data
 
 _GCI_BASE_TEMPLATE = 'v2/modules/gci/base.html'
 _GCI_ERROR_TEMPLATE = 'v2/modules/gci/error.html'
+
+
+class GCIInitializer(initialize.Initializer):
+  """An Initializer customized for GCI.
+
+  This Initializer creates GCI-specific subclasses of RequestData,
+  AccessChecker, and Mutator.
+  """
+
+  def initialize(self, request, args, kwargs):
+    """See initialize.Initializer.initialize for specification.
+
+    Args:
+      request: An http.HttpRequest object describing the current request.
+      args: Additional positional arguments passed with the request.
+      kwargs: Additional keyword arguments passed with the request.
+
+    Returns:
+      A trio of instances of GCI-specific subclasses of RequestData,
+        AccessChecker, and Mutator.
+    """
+    data = request_data.RequestData(request, args, kwargs)
+    if data.is_developer:
+      mutator = access_checker.DeveloperMutator(data)
+      check = access_checker.DeveloperAccessChecker(data)
+    else:
+      mutator = access_checker.Mutator(data)
+      check = access_checker.AccessChecker(data)
+    return data, check, mutator
+
+# Since GCIInitializer is stateless, there might as well be just one of it.
+_GCI_INITIALIZER = GCIInitializer()
 
 
 class GCIRenderer(render.Renderer):
@@ -107,16 +140,6 @@ class GCIErrorHandler(error.ErrorHandler):
 class GCIRequestHandler(base.RequestHandler):
   """Customization required by GCI to handle HTTP requests."""
 
+  initializer = _GCI_INITIALIZER
   renderer = GCIRenderer(render.MELANGE_RENDERER)
   error_handler = GCIErrorHandler(renderer, error.MELANGE_ERROR_HANDLER)
-
-  def init(self, request, args, kwargs):
-    """See base.RequestHandler.init for specification."""
-    data = request_data.RequestData(request, args, kwargs)
-    if data.is_developer:
-      mutator = access_checker.DeveloperMutator(data)
-      check = access_checker.DeveloperAccessChecker(data)
-    else:
-      mutator = access_checker.Mutator(data)
-      check = access_checker.AccessChecker(data)
-    return data, check, mutator
