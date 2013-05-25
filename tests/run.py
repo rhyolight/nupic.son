@@ -312,8 +312,8 @@ def run_pyunit_tests():
 
 def run_js_tests():
   _environ = os.environ.copy()
-  _environ["PATH"] += ':./node_modules/phantomjs/bin'
-  subprocess.call("./bin/node ./node_modules/testem/testem.js ci", env=_environ, shell=True)
+  _environ["PATH"] += ':./node_modules/phantomjs/bin:./bin'
+  subprocess.call("node ./node_modules/testem/testem.js ci", env=_environ, shell=True)
 
 def main():
   tests = set()
