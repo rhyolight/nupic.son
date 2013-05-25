@@ -315,21 +315,29 @@ def run_js_tests():
   _environ["PATH"] += ':./node_modules/phantomjs/bin:./bin'
   subprocess.call("node ./node_modules/testem/testem.js ci", env=_environ, shell=True)
 
+def run_js_dev():
+  _environ = os.environ.copy()
+  _environ["PATH"] += ':./node_modules/phantomjs/bin:./bin'
+  subprocess.call("node ./node_modules/testem/testem.js -l phantomjs -g", env=_environ, shell=True)
+
 def main():
   tests = set()
-  if '-t' in sys.argv:
-    i = sys.argv.index('-t')
-    tests.update(sys.argv[i+1].split(','))
-    del sys.argv[i:i+2]
+  if '-js-dev' in sys.argv:
+    run_js_dev()
   else:
-    tests = set(['js', 'pyunit'])
+    if '-t' in sys.argv:
+      i = sys.argv.index('-t')
+      tests.update(sys.argv[i+1].split(','))
+      del sys.argv[i:i+2]
+    else:
+      tests = set(['js', 'pyunit'])
 
-  if 'js' in tests:
-    run_js_tests()
-  if 'pyunit' in tests:
-    # run_pyunit_tests has to be the last one to run, since nose seems to
-    # terminate everything and prevent any other code in the file to run.
-    run_pyunit_tests()
+    if 'js' in tests:
+      run_js_tests()
+    if 'pyunit' in tests:
+      # run_pyunit_tests has to be the last one to run, since nose seems to
+      # terminate everything and prevent any other code in the file to run.
+      run_pyunit_tests()
 
 if __name__ == '__main__':
   main()
