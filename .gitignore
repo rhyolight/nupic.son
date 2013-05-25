@@ -4,6 +4,7 @@
 /build
 /develop-eggs/
 /eggs/
+/js_reports/
 /node_modules/
 /parts/
 /scripts/.appengine_auth
