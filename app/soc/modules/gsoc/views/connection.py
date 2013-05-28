@@ -99,6 +99,52 @@ def generate_message_txn(connection_entity, content):
   message = GSoCConnectionMessage(parent=connection_entity, **properties)
   message.put()
 
+def clean_link_id(link_id):
+  """Apply validation filters to a single link id from the user field.
+
+  Returns:
+      User instance to which the link_id corresponds or None if the
+      link_id does not correspond to an existing User instance.
+  Raises:
+      forms.ValidationError if a provided link_id is invalid or does
+      not correspond to an existing user.
+  """
+  try:
+    cleaning.cleanLinkID(link_id)
+  except gsoc_forms.ValidationError:
+    # Catch and re-raise the exception to provide a more helpful error
+    # message than "One or more Link_ids is not valid."
+    raise gsoc_forms.ValidationError(
+        '"%s" is not a valid link id.' % link_id)
+  user = User.get_by_key_name(link_id)
+  if not user:
+    raise gsoc_forms.ValidationError(
+        '%s does not correspond to a profile.' % link_id)
+  return user
+
+def clean_email(email):
+  """Apply validation filters to an email from the user field.
+
+  Returns:
+      User entity affiliated with the given email address or None if
+      either no User with that email address exists or they do not
+      have a profile for the current program.
+
+  Raises:
+      forms.ValidationError if the email address is invalid.
+  """
+  # Current id is an email address.
+  cleaning.cleanEmail(email)
+  # If we can't find a user for the given email, it's an anonymous user.
+  account = users.User(email)
+  user_account = accounts.normalizeAccount(account)
+  user = User.all().filter('account', user_account).get()
+  if user and GSoCProfile.all().ancestor(user).count(limit=1) >= 1:
+    return user
+  else:
+    # The User entity does not exist or they do not have a profile.
+    return None
+
 class ConnectionForm(GSoCModelForm):
   """Django form for the Connection page."""
 
@@ -171,68 +217,23 @@ class OrgConnectionForm(ConnectionForm):
     validation to the users field.
     """
     id_list = self.cleaned_data['users'].split(',')
-    self.request_data.user_connections = []
+    # List containing User entities referenced via link ids or emails from 
+    # the form data provided by the org admin.
+    self.request_data.valid_users = []
+    # List of emails that do not correspond to valid Users.
     self.request_data.anonymous_users = []
-
-    field = 'current_user'
-    for id in id_list:
-      self.cleaned_data[field] = id.strip(' ')
-      connected_user, anonymous_user = self._clean_one_id(field)
-      if connected_user:
-        self.request_data.user_connections.append(connected_user)
+    
+    for user_id in id_list:
+      if '@' in user_id:
+        user = clean_email(user_id)
+        if user:
+          self.request_data.valid_users.append(user)
+        else:
+          self.request_data.anonymous_users.append(user_id)
       else:
-        self.request_data.anonymous_users.append(anonymous_user)
-    del self.cleaned_data[field]
+        user = clean_link_id(user_id)
+        self.request_data.valid_users.append(user)
 
-  def _clean_one_id(self, field):
-    """Apply validation filters to a single link id from the user field.
-    If a link_id or email is found to be valid, return the User account
-    associated with it.
-
-    Args:
-        field: Django TextField instance containing the email address(es)
-            or link ids of users with whom connections should be established.
-
-    Returns:
-        connected_user will be the user account affiliated with the email
-        address found in field or None if no such user exists, at which
-        point the email address will be returned as anonymous_user (None
-        if the email address corresponds to an existing User).
-
-    Raises:
-        forms.ValidationError if a provided link_id does not correspond to
-        an existing user.
-    """
-
-    id = None
-    connected_user = anonymous_user = None
-
-    if '@' in self.cleaned_data[field]:
-      # Current id is an email address.
-      cleaner = cleaning.clean_email(field)
-      email = cleaner(self)
-
-      # If we can't find a user for the given email, it's an anonymous user.
-      account = users.User(email)
-      user_account = accounts.normalizeAccount(account)
-      connected_user = User.all().filter('account', user_account).get()
-      if (not connected_user or
-          GSoCProfile.all().ancestor(connected_user).count(limit=1) < 1):
-        anonymous_user = self.cleaned_data[field]
-    else:
-      # Current id is a link_id.
-      cleaner = cleaning.clean_existing_user(field)
-      try:
-        connected_user = cleaner(self)
-      except gsoc_forms.ValidationError:
-        # Normally this error would just inform the user that one of the ids
-        # is not valid. Catching this exception and then raising it again
-        # allows the link id to be specified in the error message, which is
-        # more helpful than "One or more Link_ids is not valid."
-        raise gsoc_forms.ValidationError(
-            '"%s" is not a valid link id.' % self.cleaned_data[field])
-        
-    return connected_user, anonymous_user
 
   class Meta:
     model = GSoCConnection
@@ -358,12 +359,14 @@ class OrgConnectionPage(GSoCRequestHandler):
 
     data.connection = None
 
-    # Traverse the list of cleaned user ids and generate connections to
-    # each of them. The current user is the org admin, so we need to get
-    # the user object and their profile to populate the Connection instance.
-    for user in data.user_connections:
+    # The valid_users field should contain a list of User instances populated 
+    # by the form's cleaning methods.
+    # TODO(drew): Use form.valid_users
+    for user in data.valid_users:
       connection_form.instance = None
       profile = GSoCProfile.all().ancestor(user).get()
+
+      connection_form.cleaned_data['profile'] = profile
       db.run_in_transaction(create_connection_txn, user, profile.email)
 
     def create_anonymous_connection_txn(email):
@@ -525,7 +528,6 @@ class UserConnectionPage(GSoCRequestHandler):
     db.run_in_transaction(create_connection, data.organization)
 
     return True
-
 
   def context(self, data, check, mutator):
     """Handler for GSoCConnection page request."""
