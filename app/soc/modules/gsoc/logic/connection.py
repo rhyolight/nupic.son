@@ -38,7 +38,7 @@ def connectionExists(user, organization):
   """Returns True if a GSoCConnection object exists for the given User and
   Organization, else False.
   """
-  query = queryforAncestorAndOrganization(user, organization, True)
+  query = queryForAncestorAndOrganization(user, organization, True)
   return query.count(limit=1) > 0
 
 def createConnection(profile, org, user_state, org_state, role):
