@@ -59,7 +59,7 @@ def createConnection(profile, org, user_state, org_state, role):
       AccessViolation if a connection exists between the user and organization.
   """
   if connectionExists(profile.parent(), org):
-    raise exceptions.AccessViolation(DEF_CONNECTION_EXISTS)
+    raise exceptions.AccessViolation('This connection already exists.')
 
   connection = GSoCConnection(
       parent=profile.parent(), organization=org
