@@ -16,6 +16,7 @@
 """
 
 from soc.logic import exceptions
+from soc.modules.gsoc.logic import connection_message as connection_message_logic
 from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.models.connection_message import GSoCConnectionMessage
 
@@ -94,3 +95,17 @@ def createConnectionMessage(connection, author, content, auto_generated=False):
   message.put()
 
   return message
+
+def getConnectionMessages(connection, limit=1000):
+  """Returns messages for the specified connection
+
+  Args:
+    connection: the specified Connection entity
+    limit: maximal number of results to return
+
+  Returns:
+    list of messages corresponding to the specified connection
+  """
+  builder = connection_message_logic.QueryBuilder()
+  return builder.addAncestor(connection).setOrder('created').build().fetch(
+      limit=limit)

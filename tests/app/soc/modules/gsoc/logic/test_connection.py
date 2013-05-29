@@ -32,13 +32,15 @@ from tests.test_utils import GSoCTestCase
 class ConnectionTest(unittest.TestCase):
   
   def setUp(self):
-    program = seeder_logic.seed(GSoCProgram)
+    self.program = seeder_logic.seed(GSoCProgram)
     
-    profile_helper = GSoCProfileHelper(program, None)
-    self.user = profile_helper.createUser()
-    self.profile = profile_helper.createProfile()
+    self.profile_helper = GSoCProfileHelper(self.program, dev_test=False)
+    self.user = self.profile_helper.createUser()
+    self.profile = self.profile_helper.createProfile()
     
-    self.org = GSoCProgramHelper().createNewOrg(override={'program' : program})
+    self.program_helper = GSoCProgramHelper()
+    self.org = self.program_helper.createNewOrg(
+      override={'program' : self.program})
     self.connection = connection_utils.seed_new_connection(self.user, self.org)
   
   def testConnectionExists(self):
@@ -46,12 +48,10 @@ class ConnectionTest(unittest.TestCase):
     Organizations can be fetched with this helper.
     """
     self.assertTrue(
-      connection_logic.connectionExists(self.profile.parent(), self.org)
-      ) 
+      connection_logic.connectionExists(self.profile.parent(), self.org)) 
     self.connection.delete()
     self.assertFalse(
-      connection_logic.connectionExists(self.profile.parent(), self.org)
-      )
+      connection_logic.connectionExists(self.profile.parent(), self.org))
   
   def testCreateConnection(self):
     """Tests that a GSoCConnection object can be generated successfully.
@@ -93,3 +93,27 @@ class ConnectionTest(unittest.TestCase):
     self.assertTrue(isinstance(message, GSoCConnectionMessage))
     self.assertEqual(self.profile.key(), message.author.key())
     self.assertEqual('Test message!', message.content)
+  
+  def testGetConnectionMessages(self):
+    # create a couple of messages for the connection
+    message1 = connection_utils.seed_new_connection_message(
+        self.connection, author=self.profile)
+    message2 = connection_utils.seed_new_connection_message(
+        self.connection, author=self.profile)
+
+    # create another organization and a connection
+    organization2 = self.program_helper.createNewOrg(
+        {'program' : self.program})
+    connection2 = connection_utils.seed_new_connection(
+      self.user, organization2)
+
+    # create a few messages for the other connection
+    for _ in range(10):
+      connection_utils.seed_new_connection_message(
+          connection2, author=self.profile)
+
+    # check that correct messages are returned
+    messages = connection_logic.getConnectionMessages(self.connection)
+    self.assertEquals(2, len(messages))
+    self.assertEquals(message1.key(), messages[0].key())
+    self.assertEquals(message2.key(), messages[1].key())
