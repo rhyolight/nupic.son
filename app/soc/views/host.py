@@ -23,7 +23,7 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.models.host import Host
-from soc.views.base import SiteRequestHandler
+from soc.views import base
 from soc.views.helper import url_patterns
 from soc.views.forms import ModelForm
 
@@ -42,7 +42,7 @@ class HostProfileForm(ModelForm):
     fields = ['notify_slot_transfer']
 
 
-class HostProfilePage(SiteRequestHandler):
+class HostProfilePage(base.RequestHandler):
   """View for the host profile."""
 
   def djangoURLPatterns(self):

@@ -21,7 +21,7 @@ from django.conf.urls.defaults import url as django_url
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.models.user import User
-from soc.views.base import SiteRequestHandler
+from soc.views import base
 from soc.views.forms import ModelForm
 
 
@@ -53,7 +53,7 @@ class UserEditForm(ModelForm):
     return 'v2/modules/gsoc/_form.html'
 
 
-class CreateUserPage(SiteRequestHandler):
+class CreateUserPage(base.RequestHandler):
   """View for creating the user profile.
   """
 
@@ -101,7 +101,7 @@ class CreateUserPage(SiteRequestHandler):
     return data.redirect.to('edit_user', validated=True)
 
 
-class EditUserPage(SiteRequestHandler):
+class EditUserPage(base.RequestHandler):
   """View to edit the user profile."""
 
   def djangoURLPatterns(self):

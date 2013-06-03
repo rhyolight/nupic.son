@@ -67,7 +67,7 @@ class SiteForm(views_forms.ModelForm):
   clean_noreply_email = cleaning.clean_empty_field('noreply_email')
 
 
-class EditSitePage(base.SiteRequestHandler):
+class EditSitePage(base.RequestHandler):
   """View for the participant profile."""
 
   def djangoURLPatterns(self):
@@ -131,7 +131,7 @@ class EditSitePage(base.SiteRequestHandler):
         content=response_content)
 
 
-class SiteHomepage(base.SiteRequestHandler):
+class SiteHomepage(base.RequestHandler):
   """View for the site home page."""
 
   def djangoURLPatterns(self):
@@ -144,7 +144,7 @@ class SiteHomepage(base.SiteRequestHandler):
   def __call__(self, request, *args, **kwargs):
     """Custom call implementation that avoids looking up unneeded data."""
     try:
-      data, _, _ = self.init(request, args, kwargs)
+      data, _, _ = self.initializer.initialize(request, args, kwargs)
 
       self.checkMaintenanceMode(data)
 
