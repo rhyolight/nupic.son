@@ -150,27 +150,9 @@ class ProposalList(Template):
                         'project' % profile_key)
         continue
 
-      fields = {
-          'org': proposal.org,
-          'program': proposal.program,
-          'title': proposal.title,
-          'abstract': proposal.abstract,
-          'mentors': [proposal.mentor.key()],
-          }
-      project = GSoCProject(parent=profile_key, **fields)
-
       def accept_proposal_txn():
-        student_info = GSoCStudentInfo.all().ancestor(profile_key).get()
-        orgs = student_info.project_for_orgs
-
-        orgs = list(set(orgs + [org.key()]))
-
-        proposal.status = 'accepted'
-
-        student_info.project_for_orgs = orgs
-        student_info.number_of_projects = 1
-
-        db.put([proposal, project, student_info])
+        proposal = db.get(proposal_key)
+        proposal_logic.acceptProposal(proposal)
 
       db.run_in_transaction(accept_proposal_txn)
 
