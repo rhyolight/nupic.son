@@ -169,7 +169,7 @@ class AcceptProposalsTest(
     projects = project_model.GSoCProject.all().ancestor(self.student1.profile)
     self.assertEqual(projects.count(), 1)
     project = projects.get()
-    self.assertEqual(project.status, 'accepted')
+    self.assertEqual(project.status, project_model.STATUS_ACCEPTED)
 
     # assert reject task is queued
     self.assertTasksInQueue(n=1, url=REJECT_URL)

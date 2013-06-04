@@ -41,8 +41,12 @@ class ProposalTest(unittest.TestCase):
     org_properties = {'scope':self.program, 'slots': 2}
     self.foo_organization = seeder_logic.seed(GSoCOrganization, org_properties)
 
-    proposal_properties = {'program': self.program, 'org': self.foo_organization,
-                           'mentor': None, 'status': 'accepted'}
+    proposal_properties = {
+        'program': self.program,
+        'org': self.foo_organization,
+        'mentor': None,
+        'status': proposal_model.STATUS_ACCEPTED,
+    }
     self.foo_proposals = seeder_logic.seedn(
         proposal_model.GSoCProposal, 2, proposal_properties)
 
@@ -51,8 +55,12 @@ class ProposalTest(unittest.TestCase):
     org_properties = {'scope':self.program, 'slots': 5}
     self.bar_organization = seeder_logic.seed(GSoCOrganization, org_properties)
     #Create some already accepted proposals for bar_organization.
-    proposal_properties = {'program': self.program, 'org': self.bar_organization,
-                           'mentor': None, 'status': 'accepted'}
+    proposal_properties = {
+        'program': self.program,
+        'org': self.bar_organization,
+        'mentor': None,
+        'status': proposal_model.STATUS_ACCEPTED,
+        }
     self.bar_accepted_proposals = seeder_logic.seedn(
         proposal_model.GSoCProposal, 2, proposal_properties)
     #proposals which are yet to be accepted.

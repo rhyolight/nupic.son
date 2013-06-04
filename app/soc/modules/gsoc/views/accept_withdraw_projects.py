@@ -32,7 +32,7 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
-from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -60,7 +60,7 @@ class ProposalList(Template):
     def status(proposal):
       """Status to show on the list with color.
       """
-      if proposal.status == 'accepted':
+      if proposal.status == proposal_model.STATUS_ACCEPTED:
         return """<strong><font color="green">Accepted</font><strong>"""
       elif proposal.status == 'withdrawn':
         return """<strong><font color="red">Withdrawn</font></strong>"""
@@ -129,7 +129,7 @@ class ProposalList(Template):
 
         if not proposal:
           logging.warning("Proposal '%s' doesn't exist" % proposal_key)
-        elif proposal.status == 'accepted':
+        elif proposal.status == proposal_model.STATUS_ACCEPTED:
           logging.warning("Proposal '%s' already accepted" % proposal_key)
         else:
           # check if the proposal has been assigned a mentor
@@ -236,7 +236,7 @@ class ProjectList(Template):
     def status(project):
       """Status to show on the list with color.
       """
-      if project.status == 'accepted':
+      if project.status == project_model.STATUS_ACCEPTED:
         return """<strong><font color="green">Accepted</font><strong>"""
       elif project.status == 'withdrawn':
         return """<strong><font color="red">Withdrawn</font></strong>"""
@@ -313,12 +313,12 @@ class ProjectList(Template):
         logging.warning("Project '%s' already withdrawn" % project_key)
         continue
 
-      if not withdraw and project.status == 'accepted':
+      if not withdraw and project.status == project_model.STATUS_ACCEPTED:
         logging.warning("Project '%s' already accepted" % project_key)
         continue
 
       # key of the organization for the project
-      org_key = GSoCProject.org.get_value_for_datastore(project)
+      org_key = project_model.GSoCProject.org.get_value_for_datastore(project)
       # key of the student profile for the project
       profile_key = project.parent_key()
 
@@ -333,7 +333,7 @@ class ProjectList(Template):
           new_number = 0
           orgs.remove(org_key)
         else:
-          new_status = 'accepted'
+          new_status = project_model.STATUS_ACCEPTED
           new_number = 1
           orgs = list(set(orgs + [org_key]))
 
@@ -359,7 +359,8 @@ class ProjectList(Template):
       list_query = project_logic.getProjectsQuery(program=self.data.program)
 
       starter = lists.keyStarter
-      prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
+      prefetcher = lists.ModelPrefetcher(
+          project_model.GSoCProject, ['org'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, list_query,

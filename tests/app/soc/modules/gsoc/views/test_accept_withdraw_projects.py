@@ -103,7 +103,7 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
 
     # check if a project is created
     project = project_model.GSoCProject.all().ancestor(student).get()
-    self.assertEqual(project.status, 'accepted')
+    self.assertEqual(project.status, project_model.STATUS_ACCEPTED)
     self.assertEqual(project.proposal.key(), proposal.key())
 
     # check if number of projects is updated

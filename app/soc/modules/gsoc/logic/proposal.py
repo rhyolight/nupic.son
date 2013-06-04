@@ -42,7 +42,7 @@ def getProposalsToBeAcceptedForOrg(org_entity, step_size=25):
   # check if there are already slots taken by this org
   query = proposal_model.GSoCProposal.all()
   query.filter('org', org_entity)
-  query.filter('status', 'accepted')
+  query.filter('status', proposal_model.STATUS_ACCEPTED)
 
   slots_left_to_assign = max(0, org_entity.slots - query.count())
   if slots_left_to_assign == 0:

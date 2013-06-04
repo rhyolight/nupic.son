@@ -313,8 +313,8 @@ class GSoCProfileHelper(ProfileHelper):
     projects for the current program.
     """
     student = self.createStudentWithProposal(org, mentor)
-    from soc.modules.gsoc.models.proposal import GSoCProposal
-    proposal = GSoCProposal.all().ancestor(student).get()
+    from soc.modules.gsoc.models import proposal as proposal_model
+    proposal = proposal_model.GSoCProposal.all().ancestor(student).get()
 
     student.student_info.number_of_projects = n
 
@@ -323,10 +323,16 @@ class GSoCProfileHelper(ProfileHelper):
     # this to make project removal easy.
     student.student_info.project_for_orgs += [org.key()] * n
     student.student_info.put()
-    from soc.modules.gsoc.models.project import GSoCProject
-    properties = {'program': self.program, 'org': org, 'status': 'accepted',
-        'parent': self.profile, 'mentors': [mentor.key()], 'proposal': proposal}
-    self.seedn(GSoCProject, properties, n)
+    from soc.modules.gsoc.models import project as project_model
+    properties = {
+        'program': self.program,
+        'org': org,
+        'status': project_model.STATUS_ACCEPTED,
+        'parent': self.profile,
+        'mentors': [mentor.key()],
+        'proposal': proposal
+        }
+    self.seedn(project_model.GSoCProject, properties, n)
     return self.profile
 
   def createMentorWithProject(self, org, student):

@@ -42,7 +42,7 @@ def getFeaturedProject(current_timeline, program):
     query.filter('is_featured', True)
     query.filter('program', program)
     if current_timeline == 'coding_period':
-      project_status = 'accepted'
+      project_status = project_model.STATUS_ACCEPTED
     else:
       project_status = 'completed'
     query.filter('status', project_status)
@@ -102,7 +102,7 @@ def getAcceptedProjectsQuery(keys_only=False, ancestor=None, **properties):
         query must be constructed.
   """
   q = getProjectsQuery(keys_only, ancestor, **properties)
-  q.filter('status', 'accepted')
+  q.filter('status', project_model.STATUS_ACCEPTED)
 
   return q
 
@@ -144,7 +144,7 @@ def getProjectsQueryForEval(keys_only=False, ancestor=None, **properties):
   This is a special query needed to build evaluation lists.
   """
   q = getProjectsQuery(keys_only, ancestor, **properties)
-  q.filter('status IN', ['accepted', 'failed', 'completed'])
+  q.filter('status IN', [project_model.STATUS_ACCEPTED, 'failed', 'completed'])
   return q
 
 
@@ -158,7 +158,7 @@ def getProjectsQueryForEvalForOrgs(orgs):
         should be queried.
   """
   q = getProjectsQueryForOrgs(orgs)
-  q.filter('status IN', ['accepted', 'failed', 'completed'])
+  q.filter('status IN', [project_model.STATUS_ACCEPTED, 'failed', 'completed'])
   return q
 
 

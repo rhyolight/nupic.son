@@ -103,10 +103,12 @@ class StudentEvaluationTest(GSoCDjangoTestCase):
 
   def createProject(self, override_properties={}):
     properties = {
-        'is_featured': False, 'mentors': [],
-        'status': 'accepted', 'program': self.gsoc, 'org': self.org,
-
-    }
+        'is_featured': False,
+        'mentors': [],
+        'status': project_model.STATUS_ACCEPTED,
+        'program': self.gsoc,
+        'org': self.org,
+        }
     properties.update(override_properties)
     return self.seed(GSoCProject, properties)
 

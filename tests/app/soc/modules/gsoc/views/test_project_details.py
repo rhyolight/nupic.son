@@ -46,7 +46,7 @@ def _createProjectForStudent(program, org, dev_test, student=None):
 
   project = project_model.GSoCProject.all().get()
   project.is_featured = False
-  project.status = 'accepted'
+  project.status = project_model.STATUS_ACCEPTED
   project.put()
 
   return project
@@ -75,7 +75,7 @@ def _createProjectForMentor(program, org, dev_test, mentor=None):
   student_helper.createStudentWithProject(org, mentor)
   project = project_model.GSoCProject.all().get()
   project.is_featured = False
-  project.status = 'accepted'
+  project.status = project_model.STATUS_ACCEPTED
   project.put()
   return project
 
@@ -105,7 +105,7 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
 
     project = project_model.GSoCProject.all().get()
     project.is_featured = False
-    project.status = 'accepted'
+    project.status = project_model.STATUS_ACCEPTED
     project.put()
     return project
 
