@@ -168,7 +168,7 @@ class ProposalList(Template):
       return None
 
   def templatePath(self):
-    return "v2/modules/gsoc/accept_withdraw_projects/_project_list.html"
+    return 'v2/modules/gsoc/accept_withdraw_projects/_project_list.html'
 
 
 class AcceptProposals(GSoCRequestHandler):
