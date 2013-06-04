@@ -33,7 +33,7 @@ from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -122,30 +122,25 @@ class ProposalList(Template):
         continue
 
       proposal_key = properties[_PROPOSAL_KEY]
-      proposal = db.get(db.Key(proposal_key))
-
-      if not proposal:
-        logging.warning("Proposal '%s' doesn't exist" % proposal_key)
-        continue
-
-      if proposal.status == 'accepted':
-        logging.warning("Proposal '%s' already accepted" % proposal_key)
-        continue
-
-      # organization for the proposal
-      org = proposal.org
-      # key of the student profile for the project
-      profile_key = proposal.parent_key()
-
-      if not proposal.mentor:
-        logging.warning(
-            'Proposal with key %s cannot be accepted because no mentor has '
-            'been assigned to it.' % (proposal_key))
-        continue
 
       def accept_proposal_txn():
+        """Accept the proposal within a transaction."""
         proposal = db.get(proposal_key)
-        proposal_logic.acceptProposal(proposal)
+
+        if not proposal:
+          logging.warning("Proposal '%s' doesn't exist" % proposal_key)
+        elif proposal.status == 'accepted':
+          logging.warning("Proposal '%s' already accepted" % proposal_key)
+        else:
+          # check if the proposal has been assigned a mentor
+          mentor_key = (proposal_model.GSoCProposal.mentor
+              .get_value_for_datastore(proposal))
+          if not mentor_key:
+            logging.warning(
+                'Proposal with key %s cannot be accepted because no mentor has'
+                ' been assigned to it.' % proposal_key)
+          else:
+            proposal_logic.acceptProposal(proposal)
 
       db.run_in_transaction(accept_proposal_txn)
 
@@ -162,7 +157,8 @@ class ProposalList(Template):
       list_query = proposal_logic.getProposalsQuery(program=self.data.program)
 
       starter = lists.keyStarter
-      prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
+      prefetcher = lists.ModelPrefetcher(
+          proposal_model.GSoCProposal, ['org'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, list_query,
