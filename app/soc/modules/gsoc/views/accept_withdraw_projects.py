@@ -38,6 +38,9 @@ from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
+# key to map proposal with and its full key in list data
+_PROPOSAL_KEY = 'full_proposal_key'
+
 class ProposalList(Template):
   """Template for listing the student proposals submitted to the program."""
 
@@ -72,12 +75,12 @@ class ProposalList(Template):
 
     # hidden keys
     list_config.addHtmlColumn(
-        'full_proposal_key', 'Full proposal key',
+        _PROPOSAL_KEY, 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
 
     # action button
     bounds = [1,'all']
-    keys = ['full_proposal_key']
+    keys = [_PROPOSAL_KEY]
     list_config.addPostButton('accept', "Accept", "", bounds, keys)
 
     self._list_config = list_config
@@ -114,11 +117,11 @@ class ProposalList(Template):
 
   def postHandler(self, data):
     for properties in data:
-      if 'full_proposal_key' not in properties:
+      if _PROPOSAL_KEY not in properties:
         logging.warning("Missing key in '%s'" % properties)
         continue
 
-      proposal_key = properties['full_proposal_key']
+      proposal_key = properties[_PROPOSAL_KEY]
       proposal = db.get(db.Key(proposal_key))
 
       if not proposal:
@@ -138,16 +141,6 @@ class ProposalList(Template):
         logging.warning(
             'Proposal with key %s cannot be accepted because no mentor has '
             'been assigned to it.' % (proposal_key))
-        continue
-
-      qp = GSoCProject.all()
-      qp.ancestor(profile_key)
-      qp.filter('org', org)
-      qp.filter('status', 'withdrawn')
-
-      if qp.count() > 0:
-        logging.warning('Student with key %s already has an accepted '
-                        'project' % profile_key)
         continue
 
       def accept_proposal_txn():
