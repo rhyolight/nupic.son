@@ -150,17 +150,6 @@ class ProposalList(Template):
                         'project' % profile_key)
         continue
 
-      qorgp = GSoCProject.all()
-      qorgp.filter('org', org)
-      # TODO: The list save should actually fail, but no clue how to do this.
-      if qorgp.count() >= org.slots:
-        logging.warning('%d >= %d' % (qorgp.count(), org.slots))
-        logging.warning(
-            'Organization %s has all the slots used up. No more '
-            'projects can be accepted into the organization.' % (
-            org.name))
-        continue
-
       fields = {
           'org': proposal.org,
           'program': proposal.program,
