@@ -12,52 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GSoCProfile updating MapReduce.
-"""
-
+"""GSoCProfile updating MapReduce."""
 
 import logging
 
 from google.appengine.ext import db
-
 from mapreduce import operation
-
-from soc.models.user import User
-from soc.modules.gsoc.models.profile import GSoCProfile
 
 
 def process(profile_key):
   def convert_profile_txn():
     profile = db.get(profile_key)
     if not profile:
-      logging.error("Missing profile for key '%s'." % profile_key)
+      logging.error('Missing profile for key %s.' % profile_key)
       return False
-    profile._fix_name(commit=False)
-    profile.is_student = bool(profile.student_info)
-    profile.org_admin_for = list(set(profile.org_admin_for))
-    profile.mentor_for = list(set(profile.org_admin_for + profile.mentor_for))
-    profile.is_org_admin = bool(profile.org_admin_for)
-    profile.is_mentor = bool(profile.mentor_for)
+    
+    profile.program = profile.scope
     profile.put()
-    return (profile.is_student, profile.is_org_admin, profile.is_mentor)
+    return True
 
   result = db.run_in_transaction(convert_profile_txn)
 
-  if not result:
-    yield operation.counters.Increment("missing_profile")
-    return
-
-  is_student, is_admin, is_mentor = result
-
-  if is_student:
-    yield operation.counters.Increment("student_profiles_converted")
-
-  if is_admin:
-    yield operation.counters.Increment("admin_profiles_converted")
-  elif is_mentor:
-    yield operation.counters.Increment("mentor_profiles_converted")
-
-  if is_mentor:
-    yield operation.counters.Increment("only_mentor_profiles_converted")
-
-  yield operation.counters.Increment("profiles_converted")
+  if result:
+    yield operation.counters.Increment('updated_profile')
+  else:
+    yield operation.counters.Increment('missing_profile')
