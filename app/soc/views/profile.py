@@ -42,7 +42,7 @@ class EmptyForm(forms.ModelForm):
 PROFILE_EXCLUDE = [
     # identification fields
     'link_id', 'user', 'scope', 'status',
-    'agreed_to_tos_on', 'name_on_documents',
+    'agreed_to_tos_on', 'name_on_documents', 'program',
     # notification fields
     'notify_new_requests', 'notify_new_invites',
     'notify_invite_handled', 'notify_request_handled',

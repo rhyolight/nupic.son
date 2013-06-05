@@ -121,6 +121,16 @@ class Profile(soc.models.linkable.Linkable):
   user = db.ReferenceProperty(reference_class=soc.models.user.User,
                               required=True, collection_name='roles')
 
+  #: A reference to program entity to which the profile corresponds.
+  #: Each profile is created for exactly one program. If the same
+  #: user participates in more of them, a separate profile must be created
+  #: for each.
+  # TODO(daniel): make this field required when it is updated for
+  # all existing entities
+  program = db.ReferenceProperty(
+      reference_class=soc.models.program.Program, required=False,
+      collection_name='profiles')
+
   #: Required field storing publicly-displayed name.  Can be a real name
   #: (though this is not recommended), or a nick name or some other public
   #: alias.  Public names can be any valid UTF-8 text.
