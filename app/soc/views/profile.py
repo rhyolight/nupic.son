@@ -258,6 +258,7 @@ class ProfilePage(object):
     profile_form.cleaned_data['user'] = user
     profile_form.cleaned_data['link_id'] = user.link_id
     profile_form.cleaned_data['scope'] = data.program
+    profile_form.cleaned_data['program'] = data.program
 
     if data.profile:
       profile = profile_form.save(commit=False)

@@ -88,3 +88,5 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.assertResponseRedirect(response, url + '/new_org?validated')
     profile = db.get(self.data.profile.key())
     self.assertEqual(1, len(profile.org_admin_for))
+    self.assertSameEntity(self.gci, profile.program)
+
