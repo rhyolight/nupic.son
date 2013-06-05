@@ -52,7 +52,7 @@ class SiteForm(views_forms.ModelForm):
 
   class Meta:
     model = site.Site
-    exclude = ['link_id', 'scope', 'xsrf_secret_key']
+    exclude = ['xsrf_secret_key']
     # NOTE(nathaniel): There aren't really no choices, it's just that we
     # can't know what the choices are at module-load-time. For the moment
     # we have to set the available choices below in EditSitePage.context.

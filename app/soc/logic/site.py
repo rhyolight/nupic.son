@@ -23,7 +23,7 @@ from soc.models import site
 
 def singleton():
   """Return singleton Site settings entity, since there is always only one."""
-  return site.Site.get_or_insert('site', link_id='site')
+  return site.Site.get_or_insert('site')
 
 
 def xsrfSecretKey(settings):

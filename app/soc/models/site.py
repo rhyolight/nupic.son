@@ -19,11 +19,10 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.models.linkable
 import soc.models.program
 
 
-class Site(soc.models.linkable.Linkable):
+class Site(db.Model):
   """Model of a Site, which stores per site configuration.
 
   The Site Model stores configuration information unique to the Melange

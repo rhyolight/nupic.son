@@ -61,7 +61,6 @@ def seed(request, *args, **kwargs):
 
   site_properties = {
       'key_name': 'site',
-      'link_id': 'site',
       'latest_gsoc': 'google/gsoc2009',
       'latest_gci': 'google/gci2009',
       }
