@@ -38,7 +38,11 @@ class ProposalTest(unittest.TestCase):
   def setUp(self):
     self.program = seeder_logic.seed(GSoCProgram)
     #An organization which has all its slots allocated.
-    org_properties = {'scope':self.program, 'slots': 2}
+    org_properties = {
+        'scope': self.program,
+        'slots': 2,
+        'program': self.program
+        }
     self.foo_organization = seeder_logic.seed(GSoCOrganization, org_properties)
 
     proposal_properties = {
@@ -122,7 +126,11 @@ class ProposalTest(unittest.TestCase):
     self.assertEqual(actual, expected)
 
     #Create an organization which has empty slots but no accepted projects.
-    properties = {'scope': self.program, 'slots': 5}
+    properties = {
+        'scope': self.program,
+        'slots': 5,
+        'program': self.program
+        }
     organization = seeder_logic.seed(GSoCOrganization, properties)
     expected = []
     actual = proposal_logic.getProposalsToBeAcceptedForOrg(organization)

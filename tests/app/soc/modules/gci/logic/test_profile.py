@@ -21,6 +21,7 @@ import unittest
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models import program as program_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.gci.models import task as task_model
 
@@ -29,12 +30,16 @@ from tests import program_utils
 
 
 class ProfileTest(unittest.TestCase):
-  """Tests the logic for GCI profiles.
-  """
+  """Tests the logic for GCI profiles."""
   
   def setUp(self):
-    self.foo_org = seeder_logic.seed(GCIOrganization)
-    self.bar_org = seeder_logic.seed(GCIOrganization)
+    program = seeder_logic.seed(program_model.GCIProgram)
+
+    org_properties = {
+        'program': program
+        }
+    self.foo_org = seeder_logic.seed(GCIOrganization, org_properties)
+    self.bar_org = seeder_logic.seed(GCIOrganization, org_properties)
 
   def testQueryAllMentorKeysForOrg(self):
     """Tests if a list of keys of all the mentors for an organization is

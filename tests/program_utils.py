@@ -226,8 +226,14 @@ class GSoCProgramHelper(ProgramHelper):
     This new organization will not be stored in self.org but returned.
     """
     super(GSoCProgramHelper, self).createNewOrg(override)
-    properties = {'scope': self.program, 'status': 'active',
-                  'scoring_disabled': False, 'max_score': 5, 'home': None}
+    properties = {
+        'scope': self.program,
+        'status': 'active',
+        'scoring_disabled': False,
+        'max_score': 5,
+        'home': None,
+        'program': self.program,
+        }
     properties.update(override)
     return self.seed(GSoCOrganization, properties)
 
@@ -315,7 +321,8 @@ class GCIProgramHelper(ProgramHelper):
         'status': 'active',
         'home': None,
         'task_quota_limit': 100,
-        'backup_winner': None
+        'backup_winner': None,
+        'program': self.program,
         }
     properties.update(override)
     return self.seed(GCIOrganization, properties)

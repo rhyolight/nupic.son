@@ -73,7 +73,8 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
 
     org_properties = {
         'status': 'active',
-        'scope': self.gsoc
+        'scope': self.gsoc,
+        'program': self.gsoc,
         }
     other_org = seeder_logic.seed(org_model.GSoCOrganization, org_properties)
 

@@ -702,7 +702,7 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
 
     properties = {'scope': self.gsoc, 'status': 'active',
                   'scoring_disabled': False, 'max_score': 5,
-                  'home': None,}
+                  'home': None, 'program': self.gsoc}
     properties.update(override)
     return self.seed(GSoCOrganization, properties)
 
