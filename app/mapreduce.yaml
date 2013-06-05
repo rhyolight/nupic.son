@@ -203,4 +203,4 @@ mapreduce:
     handler: soc.mapreduce.convert_program.process
     params:
     - name: entity_kind
-      value: soc.modules.gsoc.models.program.GCIProgram
+      value: soc.modules.gci.models.program.GCIProgram

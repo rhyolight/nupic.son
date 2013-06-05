@@ -22,5 +22,5 @@ def process(program):
   program.program_id = program.link_id
   program.sponsor = program.scope
 
-  yield operation.db.Put(survey)
+  yield operation.db.Put(program)
   yield operation.counters.Increment("program_updated")
