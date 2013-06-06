@@ -114,7 +114,7 @@ class GSoCErrorHandler(error.ErrorHandler):
   def handleUserError(self, user_error, data):
     """See error.ErrorHandler.handleUserError for specification."""
     if not data.program:
-      return self._delgate.handleUserError(user_error, data)
+      return self._delegate.handleUserError(user_error, data)
 
     # If message is not set, set it to the default associated with the
     # given status (such as "Method Not Allowed" or "Service Unavailable").
