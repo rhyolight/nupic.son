@@ -410,29 +410,21 @@ class BaseAccessChecker(object):
   """
 
   def __init__(self, data):
-    """Initializes the access checker object.
-    """
+    """Initializes the access checker object."""
     self.data = data
-
-    # TODO(daniel): get rid of it and use request_data directly
-    self.gae_user = data.gae_user
 
   def fail(self, message):
     """Raises an appropriate exception.UserError with the specified message."""
     raise exception.Forbidden(message=message)
 
   def isLoggedIn(self):
-    """Ensures that the user is logged in.
-    """
-
-    if self.gae_user:
-      return
-
-    raise exception.LoginRequired()
+    """Ensures that the user is logged in."""
+    if not self.data.gae_user:
+      raise exception.LoginRequired()
 
   def isLoggedOut(self):
     """Ensures that the user is logged out."""
-    if self.gae_user:
+    if self.data.gae_user:
       # TODO(nathaniel): One-off linker object.
       linker = links.Linker()
       raise exception.Redirect(linker.logout(self.data.request))
