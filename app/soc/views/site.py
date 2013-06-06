@@ -125,7 +125,7 @@ class EditSitePage(base.RequestHandler):
     post_accepted = self.validate(data)
     context = self.context(data, check, mutator)
     template_path = self.templatePath()
-    response_content = self.render(data, template_path, context)
+    response_content = self.renderer.render(data, template_path, context)
     return http.HttpResponse(
         status=httplib.OK if post_accepted else httplib.BAD_REQUEST,
         content=response_content)
