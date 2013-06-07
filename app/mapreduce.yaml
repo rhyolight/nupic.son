@@ -32,7 +32,14 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gsoc.models.organization.GSoCOrganization
 
-- name: GSoCConvertProgramScopedModel
+- name: ConvertProgramScopedModel
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.convert_program_scoped_model.process
+    params:
+    - name: entity_kind
+
+- name: ConvertSponsorScopedModel
   mapper:
     input_reader: mapreduce.input_readers.DatastoreKeyInputReader
     handler: soc.mapreduce.convert_program_scoped_model.process
