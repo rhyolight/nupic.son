@@ -155,7 +155,7 @@ def getFirstTaskConfirmationContext(student):
 
   subject = DEF_FIRST_TASK_CONFIRMATION_SUBJECT
 
-  program = student.scope
+  program = student.program
 
   kwargs = {
       'sponsor': program_logic.getSponsorKey(program).name(),

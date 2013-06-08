@@ -137,7 +137,9 @@ class BulkCreateTask(object):
 
         # set other properties
         task['org'] = org
-        task['program'] = org_admin.scope
+
+        # TODO(daniel): access program in more efficient way
+        task['program'] = org_admin.program
         task['status'] = 'Unpublished'
         task['created_by'] = org_admin
         task['modified_by'] = org_admin
@@ -231,7 +233,7 @@ class BulkCreateTask(object):
     task['mentors'] = mentors
     task['mentor_entities'] = mentor_entities
 
-    program_entity = org.scope
+    program_entity = org.program
 
     # clean task types
     types = []

@@ -235,7 +235,7 @@ class ConvertProposalsTest(
 
     # seed a few organizations
     org_properties = {
-        'scope': program,
+        'program': program,
         'status': 'active',
         }
     self.org_keys = []

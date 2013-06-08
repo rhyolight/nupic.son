@@ -63,7 +63,7 @@ def participating(program, org_count=None):
 
 def queryForProgramAndStatus(program, status, keys_only=False):
   query = GCIOrganization.all()
-  query.filter('scope', program)
+  query.filter('program', program)
 
   if isinstance(status, list):
     query.filter('status IN', status)

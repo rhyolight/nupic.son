@@ -156,7 +156,7 @@ class ProposalDuplicatesTask(object):
     # get the organization and update the cursor if possible
     q = GSoCOrganization.all()
     q.filter('status', 'active')
-    q.filter('scope', program_entity)
+    q.filter('program', program_entity)
     q.filter('slots >', 0)
 
     # retrieve the org_cursor from POST data

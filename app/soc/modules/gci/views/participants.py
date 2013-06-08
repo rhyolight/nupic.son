@@ -72,7 +72,7 @@ class MentorsList(Template):
       return None
 
     q = GCIProfile.all()
-    q.filter('scope', self.data.program)
+    q.filter('program', self.data.program)
     q.filter('is_mentor', True)
 
     starter = lists.keyStarter
