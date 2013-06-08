@@ -231,7 +231,7 @@ def seed(request, *args, **kwargs):
     'name': 'Melange Development Team',
     'short_name': 'Melange',
     'scope': gci2009,
-    'sponsor': gci2009,
+    'sponsor': google,
     'home_page': 'http://code.google.com/p/soc',
     'description': 'Melange, share the love!',
     'license_name': 'Apache License',
