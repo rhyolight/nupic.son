@@ -16,6 +16,11 @@ import datetime
 import unittest
 
 from soc.logic import validate
+from soc.models import profile as profile_model
+from soc.models import program as program_model
+from soc.models import user as user_model
+
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 class ValidateTest(unittest.TestCase):
@@ -156,3 +161,63 @@ class ValidateTest(unittest.TestCase):
         year=test_program_start.year - test_max_age * 12)
     self.assertFalse(validate.isAgeSufficientForProgram(
         test_birth_date, mock_program))
+
+
+class HasNonStudentProfileForProgramTest(unittest.TestCase):
+
+  def setUp(self):
+    # seed a program
+    self.program = seeder_logic.seed(program_model.Program)
+
+    # seed a user
+    self.user = seeder_logic.seed(user_model.User)
+
+    # seed a profile
+    profile_properties = {
+        'is_student': False,
+        'program': self.program,
+        'parent': self.user,
+        'status': 'active',
+        }
+    self.profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+
+  def testForNonStudentProfile(self):
+    """Tests that True is returned if a non-student profile exists."""
+    result = validate.hasNonStudentProfileForProgram(
+        self.user, self.program, profile_model.Profile)
+    self.assertTrue(result)
+
+  def testForStudentProfile(self):
+    """Tests that False is returned if a student profile exists."""
+    # set the profile to be a student profile
+    self.profile.is_student = True
+    self.profile.put()
+
+    result = validate.hasNonStudentProfileForProgram(
+        self.user, self.program, profile_model.Profile)
+    self.assertFalse(result)
+
+  def testForNoProfile(self):
+    """Tests that False is returned if no profile for the user exists."""
+    # seed another program for which the user does not have a profile
+    other_program = seeder_logic.seed(program_model.Program)
+    result = validate.hasNonStudentProfileForProgram(
+        self.user, other_program, profile_model.Profile)
+    self.assertFalse(result)
+
+    # delete the existing profile and check for the that program
+    self.profile.delete()
+
+    result = validate.hasNonStudentProfileForProgram(
+        self.user, self.program, profile_model.Profile)
+    self.assertFalse(result)
+
+  def testForNonActiveProfile(self):
+    """Tests that False is returned if a profile is not active."""
+    # set the profile status to invalid
+    self.profile.status = 'invalid'
+    self.profile.put()
+
+    result = validate.hasNonStudentProfileForProgram(
+        self.user, self.program, profile_model.Profile)
+    self.assertFalse(result)

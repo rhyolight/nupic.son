@@ -86,7 +86,7 @@ def studentIterator(student_profile_function, request, **kwargs):
   # Retrieve the students for the program.
   query = profile_model.GCIProfile.all()
   # TODO(nathaniel): These string literals should be constants somewhere.
-  query.filter('scope', program)
+  query.filter('program', program)
   query.filter('is_student', True)
   if cursor:
     query.with_cursor(cursor)

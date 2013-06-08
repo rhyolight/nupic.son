@@ -154,6 +154,7 @@ def seed(request, *args, **kwargs):
   program_properties = {
       'key_name': 'google/gsoc2009',
       'link_id': 'gsoc2009',
+      'sponsor': google,
       'scope': google,
       'name': 'Google Summer of Code 2009',
       'short_name': 'GSoC 2009',
@@ -230,6 +231,7 @@ def seed(request, *args, **kwargs):
     'name': 'Melange Development Team',
     'short_name': 'Melange',
     'scope': gci2009,
+    'sponsor': google,
     'home_page': 'http://code.google.com/p/soc',
     'description': 'Melange, share the love!',
     'license_name': 'Apache License',
@@ -461,6 +463,7 @@ def seed(request, *args, **kwargs):
       'key_name': gci2009.key().name() + '/' + student_id,
       'parent': student_user,
       'scope': gci2009,
+      'program': gci2009,
   })
   gci_student = GCIProfile(**student_properties)
   gci_student.put()

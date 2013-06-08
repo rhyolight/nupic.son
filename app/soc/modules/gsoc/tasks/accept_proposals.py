@@ -72,7 +72,7 @@ class ProposalAcceptanceTask(object):
       return responses.terminateTask()
 
     q = GSoCOrganization.all()
-    q.filter('scope', program)
+    q.filter('program', program)
     q.filter('status', 'active')
 
     # Continue from the next organization

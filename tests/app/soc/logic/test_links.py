@@ -39,7 +39,7 @@ class MockSponsor(object):
 
 # TODO(nathaniel): use a real program here.
 class MockProgram(object):
-  scope = MockSponsor()
+  sponsor = MockSponsor()
   link_id = TEST_PROGRAM_NAME
 
 

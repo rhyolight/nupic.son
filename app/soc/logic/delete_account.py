@@ -115,7 +115,7 @@ def confirm_delete(profile):
 
   dummy_user = user_logic.getOrCreateDummyMelangeDeletedUser()
   dummy_profile = profile_logic.getOrCreateDummyMelangeDeletedProfile(
-      profile.scope)
+      profile.program)
 
   options = db.create_transaction_options(xg=True)
 

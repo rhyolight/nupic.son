@@ -92,7 +92,7 @@ class RankingUpdater(object):
 
     # Retrieve the students for the program
     q = GCIProfile.all()
-    q.filter('scope', program)
+    q.filter('program', program)
     q.filter('is_student', True)
 
     if cursor:
