@@ -349,7 +349,6 @@ class Logic(object):
     from soc.modules.gsoc.models.program import GSoCProgram
     scopes_dict = {'User': None,
                    'Sponsor': None,
-                   'Host': Sponsor,
                    'Program': Sponsor,
                    'Organization': Program,
                    'Timeline': Sponsor,
