@@ -210,3 +210,10 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.modules.gci.models.program.GCIProgram
+
+- name: ModelPacifier
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.model_pacifier.process
+    params:
+    - name: entity_kind
