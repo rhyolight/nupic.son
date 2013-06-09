@@ -16,13 +16,11 @@
 
 import unittest
 
-from nose.plugins import skip
-
 from soc.logic import host as host_logic
-from soc.models.host import Host
-from soc.models.program import Program
-from soc.models.sponsor import Sponsor
-from soc.models.user import User
+
+from soc.models import program as program_model
+from soc.models import sponsor as sponsor_model
+from soc.models import user as user_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -32,71 +30,28 @@ class HostTest(unittest.TestCase):
 
   def setUp(self):
     """Set up required for the host logic tests."""
-    properties = {
-        'home': None
-        }
-    self.sponsor = seeder_logic.seed(Sponsor, properties)
-
-  def testGetHostForUser(self):
-    """Tests if a host entity for the user entity is returned."""
-    # create an entity group. The entity at index i in the list is the parent
-    # of the entity at index i+1.
-    user_entities = []
-    user_entities.append(seeder_logic.seed(User))
-    for i in range(4):
-      properties = {'parent': user_entities[i].key()}
-      entity = seeder_logic.seed(User, properties)
-      user_entities.append(entity)
-
-    # create a Host entity with parent as an entity in user_entities
-    properties = {'parent': user_entities[4]}
-    host = seeder_logic.seed(Host, properties)
-
-    # root entity
-    expected = host.key()
-    user_entity = user_entities[0]
-    self.assertEqual(host_logic.getHostForUser(user_entity).key(), expected)
-
-    # all entities in the ancestral path
-    expected = host.key()
-    for entity in user_entities:
-      self.assertEqual(host_logic.getHostForUser(entity).key(), expected)
-
-    # an entity not in the same entity group
-    expected = None
-    entity = seeder_logic.seed(User)
-    self.assertEqual(host_logic.getHostForUser(entity), expected)
+    properties = {'home': None}
+    self.sponsor = seeder_logic.seed(sponsor_model.Sponsor, properties)
 
   def testGetHostsForProgram(self):
     """Tests if a host entity for a program is returned."""
-    program_properties = {'scope': self.sponsor, }
-    program = seeder_logic.seed(Program, program_properties)
+    program_properties = {'sponsor': self.sponsor}
+    program = seeder_logic.seed(program_model.Program, program_properties)
 
     # hosts of the program
     user_entities = []
     for _ in range(5):
-      user_properties = { 'host_for': [self.sponsor.key()]}
-      user_entity = seeder_logic.seed(User, user_properties)
+      user_properties = {'host_for': [self.sponsor.key()]}
+      user_entity = seeder_logic.seed(user_model.User, user_properties)
       user_entities.append(user_entity)
 
-    host_entities = []
-    for user_entity in user_entities:
-      host_properties = {'parent': user_entity}
-      host_entity = seeder_logic.seed(Host, host_properties)
-      host_entities.append(host_entity)
-
-    expected = [entity.key() for entity in host_entities]
+    expected_host_keys = set(user.key() for user in user_entities)
     hosts_list = host_logic.getHostsForProgram(program)
-    actual = [host.key() for host in hosts_list]
+    actual_host_keys = set(host.key() for host in hosts_list)
+    self.assertEqual(actual_host_keys, expected_host_keys)
 
-    # TODO(Leo): enable it after code fix (issue 1824)
-    raise skip.SkipTest("TODO(Leo): issue 1824.")
-
-    self.assertEqual(actual, expected)
-
-    # program with a different scope
-    program = seeder_logic.seed(Program)
-    expected = []
+    # program with a different sponsor
+    program = seeder_logic.seed(program_model.Program)
     hosts_list = host_logic.getHostsForProgram(program)
-    actual = [host.key() for host in hosts_list]
-    self.assertEqual(actual, expected)
+    actual_host_keys = [host.key() for host in hosts_list]
+    self.assertEqual(actual_host_keys, [])
