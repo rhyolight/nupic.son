@@ -24,7 +24,6 @@ from google.appengine.api import users
 from google.appengine.ext import db
 
 from melange.request import exception
-from soc.logic import host as host_logic
 from soc.logic import links
 from soc.models import document
 from soc.models import org_app_record
@@ -352,8 +351,7 @@ class Mutator(object):
   def host(self):
     assert isSet(self.data.user)
 
-    self.data.host = host_logic.getHostForUser(self.data.user)
-    if self.data.host or self.data.user.host_for:
+    if self.data.user.host_for:
       self.data.is_host = True
 
   def orgAppRecordIfIdInKwargs(self):
@@ -399,7 +397,6 @@ class DeveloperMutator(Mutator):
       raise exception.NotFound(message=DEF_NO_USER % key_name)
 
     self.data.host_user_key = user_key
-    self.data.host = host_logic.getHostForUser(user_key)
 
 
 class BaseAccessChecker(object):

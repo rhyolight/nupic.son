@@ -12,26 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Logic for Host Model."""
+"""Logic related to program hosts."""
 
 from soc.logic import program as program_logic
-
-from soc.models.host import Host
 from soc.models.user import User
-
-
-def getHostForUser(user_entity):
-  """Returns the host entity for the given user.
-
-  Args:
-    user_entity: the user for whom the Host entity must be fetched.
-
-  returns:
-    The host entity for the given user_entity
-  """
-
-  q = Host.all().ancestor(user_entity)
-  return q.get()
 
 
 def getHostsForProgram(program_entity, limit=1000):
@@ -41,11 +25,11 @@ def getHostsForProgram(program_entity, limit=1000):
     program_entity: The Program entity for which the hosts must be determined
 
   Returns:
-    The list of host entities for the specified program entity
+    The list of user entities for the specified program entity
   """
   sponsor_key = program_logic.getSponsorKey(program_entity)
-  q = User.all()
-  q.filter('host_for', sponsor_key)
+  query = User.all()
+  query.filter('host_for', sponsor_key)
   # TODO(Madhu): Return the host entities once we run the Mapreduce to convert
   # host entities to refer to their corresponding user entities.
-  return q.fetch(1000)
+  return query.fetch(1000)

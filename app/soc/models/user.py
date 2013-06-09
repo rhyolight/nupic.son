@@ -93,7 +93,7 @@ class User(soc.models.linkable.Linkable):
   is_developer.help_text = ugettext(
       'Field used to indicate user with site-wide Developer access.')
 
-  #: List of Sponsors that the user is a Host for
+  #: List of Sponsors that the user is a host for
   host_for = db.ListProperty(item_type=db.Key, default=[])
   host_for.help_text = ugettext('List of program owners which '
       'the user is a program administrator for.')

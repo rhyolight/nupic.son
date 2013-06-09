@@ -17,7 +17,6 @@
 import unittest
 
 from soc.logic import host as host_logic
-
 from soc.models import program as program_model
 from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
