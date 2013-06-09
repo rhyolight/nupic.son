@@ -47,7 +47,7 @@ class HostTest(unittest.TestCase):
     expected_host_keys = set(user.key() for user in user_entities)
     hosts_list = host_logic.getHostsForProgram(program)
     actual_host_keys = set(host.key() for host in hosts_list)
-    self.assertEqual(actual_host_keys, expected_host_keys)
+    self.assertSetEqual(actual_host_keys, expected_host_keys)
 
     # program with a different sponsor
     program = seeder_logic.seed(program_model.Program)
