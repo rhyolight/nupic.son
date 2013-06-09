@@ -14,10 +14,10 @@
 
 """Module for the GCI Organization application."""
 
+import json
 import logging
 
 from django import http
-from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from melange.request import exception
@@ -271,7 +271,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
     if not post_data:
       raise exception.BadRequest(message='Missing data')
 
-    parsed = simplejson.loads(post_data)
+    parsed = json.loads(post_data)
     data.redirect.program()
     url = data.redirect.urlOf('create_gci_org_profile', full=True)
 

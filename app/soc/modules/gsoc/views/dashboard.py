@@ -14,12 +14,12 @@
 
 """Module for the GSoC participant dashboard."""
 
+import json
 import logging
 
 from google.appengine.ext import db
 
 from django import http
-from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
@@ -872,7 +872,7 @@ class SubmittedProposalsComponent(Component):
       def getter(ent, *args):
         if not ent.extra:
           return ""
-        extra = simplejson.loads(ent.extra)
+        extra = json.loads(ent.extra)
         return extra.get(column, "")
       return getter
 
@@ -934,7 +934,7 @@ class SubmittedProposalsComponent(Component):
     if not data:
       raise exception.BadRequest(message="Missing data")
 
-    parsed = simplejson.loads(data)
+    parsed = json.loads(data)
 
     button_id = self.data.POST.get('button_id')
 
@@ -993,11 +993,11 @@ class SubmittedProposalsComponent(Component):
 
         if proposal.extra:
           # we have to loads in the txn, should be fast enough
-          data = simplejson.loads(proposal.extra)
+          data = json.loads(proposal.extra)
 
         data.update(properties)
 
-        proposal.extra = simplejson.dumps(data)
+        proposal.extra = json.dumps(data)
         proposal.put()
 
       db.run_in_transaction(update_proposal_txn)

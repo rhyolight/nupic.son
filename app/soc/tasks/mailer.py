@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Task to send out an email message.
-"""
+"""Task to send out an email message."""
 
-
+import json
 import logging
 
 from google.appengine.api import mail
@@ -25,7 +24,6 @@ from google.appengine.runtime.apiproxy_errors import OverQuotaError
 from google.appengine.runtime.apiproxy_errors import DeadlineExceededError
 
 from django.conf.urls.defaults import url as django_url
-from django.utils import simplejson
 
 from melange.appengine import system
 from soc.models import email
@@ -66,7 +64,7 @@ def getSpawnMailTaskTxn(context, parent=None, transactional=True):
     # no-one cares :(
     return lambda: None
 
-  mail_entity = email.Email(context=simplejson.dumps(context), parent=parent)
+  mail_entity = email.Email(context=json.dumps(context), parent=parent)
 
   def txn():
     """Transaction to ensure that a task get enqueued for each mail stored.
@@ -115,7 +113,7 @@ class MailerTask(object):
           'No email entity found for key %s' % mail_key)
 
     # construct the EmailMessage from the given context
-    loaded_context = simplejson.loads(mail_entity.context)
+    loaded_context = json.loads(mail_entity.context)
 
     context = {}
     for key, value in loaded_context.iteritems():

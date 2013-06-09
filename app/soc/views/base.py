@@ -16,13 +16,13 @@
 module is largely based on appengine's webapp framework's code.
 """
 
+import json
 import httplib
 import urllib
 
 from google.appengine.ext import db
 
 from django import http
-from django.utils import simplejson
 from django.template import loader
 
 from melange.request import error
@@ -131,7 +131,7 @@ class RequestHandler(object):
     if isinstance(context, unicode) or isinstance(context, str):
       json_formatted_context = context
     else:
-      json_formatted_context = simplejson.dumps(context)
+      json_formatted_context = json.dumps(context)
 
     # NOTE(nathaniel): The Django documentation and code disagree
     # on what the default value of content_type is, so the best way
@@ -169,7 +169,7 @@ class RequestHandler(object):
 
     Returns:
       An object to be used as the content in a response to a json GET request
-        after having been put through simplejson.dumps if it is not a string
+        after having been put through json.dumps if it is not a string
         or unicode object.
 
     Raises:

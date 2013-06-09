@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Appengine Tasks related to GCI Task bulk create.
-"""
-
+"""Appengine Tasks related to GCI Task bulk create."""
 
 import csv
+import json
 import logging
 import StringIO
 import time
@@ -33,7 +32,6 @@ from google.appengine.runtime import DeadlineExceededError
 
 from django import http
 from django.conf.urls.defaults import url
-from django.utils import simplejson
 
 from soc.tasks.helper import error_handler
 from soc.tasks.helper.timekeeper import Timekeeper
@@ -109,7 +107,7 @@ class BulkCreateTask(object):
         # remove the first task
         task_as_string = tasks.pop(0)
 
-        loaded_task = simplejson.loads(task_as_string)
+        loaded_task = json.loads(task_as_string)
         task = {}
         for key, value in loaded_task.iteritems():
           # If we don't do this python will complain about kwargs not being
@@ -278,7 +276,7 @@ def spawnBulkCreateTasks(data, org, org_admin):
   for task in tasks:
     # pop any extra columns
     task.pop(None,None)
-    task_list.append(db.Text(simplejson.dumps(task)))
+    task_list.append(db.Text(json.dumps(task)))
 
   bulk_data = GCIBulkCreateData(
       tasks=task_list, org=org, created_by=org_admin,

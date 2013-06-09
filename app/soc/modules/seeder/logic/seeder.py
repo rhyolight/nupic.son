@@ -16,7 +16,7 @@
 """Logic for data seeding operations.
 """
 
-
+import json
 import random
 
 from google.appengine.ext import db
@@ -24,8 +24,6 @@ from google.appengine.ext.db import _ReverseReferenceProperty
 from google.appengine.ext.db import ReferenceProperty
 
 from mapreduce.control import start_map
-
-from django.utils import simplejson
 
 from soc.modules.seeder.logic.models import logic as seeder_models_logic
 from soc.modules.seeder.logic.providers import logic as seeder_providers_logic
@@ -174,21 +172,21 @@ class Logic(object):
         raise ConfigurationValueError('Required property %s for model %s is'
                                       ' missing' % (prop.name, model_name))
 
-  def validateConfiguration(self, json):
+  def validateConfiguration(self, json_data):
     """Validates the JSON data received from the client.
     """
-    for model in json:
+    for model in json_data:
       self.validateModel(model)
 
   def getScopeLogic(self):
     return None
-  
+
   def getKeyFieldNames(self):
     return []
-  
+
   def getScopeDepth(self):
     return 0
-  
+
   def getProvider(self, provider_data):
     """Returns a data provider instance based on the supplied configuration.
     """
@@ -297,24 +295,24 @@ class Logic(object):
 
     return models
 
-  def seedFromJSON(self, json):
+  def seedFromJSON(self, json_data):
     """Starts a seeding operation based on the supplied JSON configuration
     sheet.
     """
     try:
-      data = simplejson.loads(json)
+      data = json.loads(json_data)
     except ValueError:
       raise JSONFormatError()
 
     self.validateConfiguration(data)
 
-    #for model_data in json:
+    #for model_data in json_data:
       #self.seedModel(model_data)
 
-    return self.startMapReduce(json)
+    return self.startMapReduce(json_data)
 
-  def startMapReduce(self, json):
-    configuration_sheet = DataSeederConfigurationSheet(json=json)
+  def startMapReduce(self, json_data):
+    configuration_sheet = DataSeederConfigurationSheet(json=json_data)
     configuration_sheet.put()
 
     reader_parameters = {'configuration_sheet_key': str(configuration_sheet.key())}
