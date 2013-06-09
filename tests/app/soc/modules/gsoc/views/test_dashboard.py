@@ -14,8 +14,7 @@
 
 """Tests for dashboard view."""
 
-
-from django.utils import simplejson as json
+import json
 
 from nose.plugins import skip
 

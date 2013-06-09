@@ -13,16 +13,14 @@
 # limitations under the License.
 
 
-"""Tests for organization applications.
-"""
+"""Tests for organization applications."""
 
+import json
 
 from datetime import datetime
 from datetime import timedelta
 
 from google.appengine.ext import db
-
-from django.utils import simplejson
 
 from soc.models import org_app_survey
 from soc.models import org_app_record
@@ -244,7 +242,7 @@ class GCIOrgAppRecordsPageTest(test_utils.MailTestCase,
 
       values[record_id] = record_data
 
-    data = simplejson.dumps(values)
+    data = json.dumps(values)
 
     postdata = {
         'data': data,
