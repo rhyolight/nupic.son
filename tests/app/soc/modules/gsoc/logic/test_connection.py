@@ -30,7 +30,9 @@ from tests.program_utils import GSoCProgramHelper
 from tests.test_utils import GSoCTestCase
 
 class ConnectionTest(unittest.TestCase):
-  
+  """Base class for this module to encapsulate a setUp method that will
+  initialize data common to each of the test classes in this module.
+  """
   def setUp(self):
     self.program = seeder_logic.seed(GSoCProgram)
     
@@ -42,7 +44,9 @@ class ConnectionTest(unittest.TestCase):
     self.org = self.program_helper.createNewOrg(
       override={'program' : self.program})
     self.connection = connection_utils.seed_new_connection(self.user, self.org)
-  
+
+class ConnectionExistsTest(ConnectionTest): 
+
   def testConnectionExists(self):
     """Tests that existing GSoCConnection objects between Profiles and
     Organizations can be fetched with this helper.
@@ -52,6 +56,8 @@ class ConnectionTest(unittest.TestCase):
     self.connection.delete()
     self.assertFalse(
       connection_logic.connectionExists(self.profile.parent(), self.org))
+
+class CreateConnectionTest(ConnectionTest):
   
   def testCreateConnection(self):
     """Tests that a GSoCConnection object can be generated successfully.
@@ -79,7 +85,9 @@ class ConnectionTest(unittest.TestCase):
         org_state=connection.STATE_UNREPLIED,
         role=connection.MENTOR_ROLE
         )
-      
+
+class CreateConnectionMessageTest(ConnectionTest):
+  
   def testCreateConnectionMessage(self):
     """Tests that a GSoCConnectionMessage can be added to an existing
     GSoCConnection object.
@@ -93,8 +101,13 @@ class ConnectionTest(unittest.TestCase):
     self.assertTrue(isinstance(message, GSoCConnectionMessage))
     self.assertEqual(self.profile.key(), message.author.key())
     self.assertEqual('Test message!', message.content)
+
+class GetConnectionMessagesTest(ConnectionTest):
   
   def testGetConnectionMessages(self):
+    """Tests that all messages affiliated with a given Connection will
+    be returned by the query in connection logic.
+    """
     # create a couple of messages for the connection
     message1 = connection_utils.seed_new_connection_message(
         self.connection, author=self.profile)
