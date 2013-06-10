@@ -114,6 +114,6 @@ class ConnectionTest(unittest.TestCase):
 
     # check that correct messages are returned
     messages = connection_logic.getConnectionMessages(self.connection)
-    self.assertEquals(2, len(messages))
-    self.assertEquals(message1.key(), messages[0].key())
-    self.assertEquals(message2.key(), messages[1].key())
+    expected_keys = set(message1.key(), message2.key())
+    actual_keys = set([m.key() for m in messages])
+    self.assertEqual(actual_keys, expected_keys)
