@@ -14,12 +14,11 @@
 """Defines a Mapper API input reader for the data seeder.
 """
 
+import json
 
 from google.appengine.ext.db import Key
 
 from mapreduce.input_readers import InputReader, BadReaderParamsError
-
-from django.utils import simplejson
 
 from soc.modules.seeder.models.configuration_sheet import DataSeederConfigurationSheet
 
@@ -56,7 +55,7 @@ class JSONInputReader(InputReader):
       raise StopIteration()
 
   @classmethod
-  def from_json(cls, json):
+  def from_json(cls, json_dictionary):
     """Creates an instance of the InputReader for the given input shard state.
 
     Args:
@@ -65,9 +64,9 @@ class JSONInputReader(InputReader):
     Returns:
       An instance of the InputReader configured using the values of json.
     """
-    return cls(json[cls.CONFIGURATION_SHEET_KEY_PARAM],
-               json[cls.CURRENT_POSITION_PARAM],
-               json[cls.END_POSITION_PARAM])
+    return cls(json_dictionary[cls.CONFIGURATION_SHEET_KEY_PARAM],
+               json_dictionary[cls.CURRENT_POSITION_PARAM],
+               json_dictionary[cls.END_POSITION_PARAM])
 
   def to_json(self):
     """Returns an input shard state for the remaining inputs.
@@ -85,7 +84,7 @@ class JSONInputReader(InputReader):
   @classmethod
   def validate(cls, mapper_spec):
     pass
-    
+
   @classmethod
   def split_input(cls, mapper_spec):
     """Returns a list of input readers for the input spec.
@@ -112,14 +111,14 @@ class JSONInputReader(InputReader):
     configuration_sheet = DataSeederConfigurationSheet.get(
       Key(configuration_sheet_key))
 
-    data = simplejson.loads(configuration_sheet.json)
+    data = json.loads(configuration_sheet.json)
 
     shards = []
 
     for model in data:
-      json = simplejson.dumps(model)
+      model_json = json.dumps(model)
 
-      model_configuration_sheet = DataSeederConfigurationSheet(json=json)
+      model_configuration_sheet = DataSeederConfigurationSheet(json=model_json)
       model_configuration_sheet.put()
       key = str(model_configuration_sheet.key())
 

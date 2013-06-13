@@ -14,11 +14,12 @@
 
 """Module for the program settings pages."""
 
+import json
+
 from google.appengine.ext import db
 
 from django import forms as django_forms
 from django import http
-from django.utils import simplejson as json
 from django.utils.translation import ugettext
 
 from soc.logic import tags as tags_logic

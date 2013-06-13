@@ -14,12 +14,12 @@
 
 """Module for slot allocation."""
 
+import json
 import logging
 
 from google.appengine.ext import db
 
 from django import http
-from django.utils import simplejson
 
 from melange.request import exception
 from soc.views.helper import lists
@@ -132,7 +132,7 @@ class SlotsList(org_list.OrgList):
     if not data:
       raise exception.BadRequest(message="Missing data")
 
-    parsed = simplejson.loads(data)
+    parsed = json.loads(data)
 
     for key_name, properties in parsed.iteritems():
       note = properties.get('note')

@@ -14,10 +14,10 @@
 
 """Module containing the views for GSoC Organization Application."""
 
+import json
 import logging
 
 from django import http
-from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from melange.request import exception
@@ -312,7 +312,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
     if not post_data:
       raise exception.BadRequest(message='Missing data')
 
-    parsed = simplejson.loads(post_data)
+    parsed = json.loads(post_data)
     url = data.redirect.urlOf('create_gsoc_org_profile', full=True)
 
     for oaid, properties in parsed.iteritems():

@@ -14,14 +14,12 @@
 """Contains logic for seeding data using the Mapper API.
 """
 
-
+import json
 import logging
 
 from google.appengine.ext import db
 
 from mapreduce import operation as op
-
-from django.utils import simplejson
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.seeder.models.configuration_sheet import DataSeederConfigurationSheet
@@ -34,7 +32,7 @@ def seed_model(configuration_sheet_key):
   configuration_sheet = DataSeederConfigurationSheet.get(
       configuration_sheet_key)
 
-  data = simplejson.loads(configuration_sheet.json)
+  data = json.loads(configuration_sheet.json)
 
   seeder_logic.processReferences(data)
   seeder_logic.validateModel(data)
@@ -73,10 +71,10 @@ def processBackReferences(model, model_data):
       # Start seeding the related models
 
   if configuration_sheet:
-    json = simplejson.dumps(configuration_sheet)
+    json_dump = json.dumps(configuration_sheet)
     logging.error('Starting new map: %r' % configuration_sheet)
 
     try:
-      seeder_logic.startMapReduce(json)
+      seeder_logic.startMapReduce(json_dump)
     except Exception, e:
       logging.error('Cannot start mapreduce: %r' % e)

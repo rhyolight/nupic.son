@@ -16,12 +16,12 @@
 into a GSoC program.
 """
 
+import json
 import logging
 
 from google.appengine.ext import db
 
 from django import http
-from django.utils import simplejson
 
 from melange.request import exception
 from soc.views.base_templates import ProgramSelect
@@ -109,7 +109,7 @@ class ProposalList(Template):
     button_id = self.data.POST.get('button_id')
 
     if button_id == 'accept':
-      return self.postHandler(simplejson.loads(list_data))
+      return self.postHandler(json.loads(list_data))
     elif button_id:
       raise exception.BadRequest(message='Unknown button_id')
     else:
@@ -283,7 +283,7 @@ class ProjectList(Template):
     if not data:
       raise exception.BadRequest(message="Missing data")
 
-    parsed = simplejson.loads(data)
+    parsed = json.loads(data)
 
     button_id = self.data.POST.get('button_id')
 

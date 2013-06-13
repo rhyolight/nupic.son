@@ -14,12 +14,12 @@
 
 """Module for the GSoC slot transfer admin page."""
 
+import json
 import logging
 
 from google.appengine.ext import db
 
 from django import http
-from django.utils import simplejson
 
 from melange.request import exception
 from soc.views import template
@@ -97,7 +97,7 @@ class SlotsTransferAdminList(template.Template):
     if not data:
       raise exception.BadRequest(message="Missing data")
 
-    parsed = simplejson.loads(data)
+    parsed = json.loads(data)
 
     if button_id == 'accept':
       return self.postAccept(parsed, True)

@@ -12,14 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the organization applications process."""
 
-"""Tests for the organization applications process.
-"""
-
-
+import json
 import os
-
-from django.utils import simplejson
 
 from soc.models import org_app_record
 from soc.models import org_app_survey
@@ -28,9 +24,8 @@ from tests import profile_utils
 from tests import test_utils
 from tests import timeline_utils
 
-
 ORG_APP_SCHEMA = ([
-    ["frm-t1359271954246-item","frm-t1359347613687-item", 
+    ["frm-t1359271954246-item","frm-t1359347613687-item",
      "frm-t1359347873346-item","frm-t1359347876071-item"],
     {
         "frm-t1359271954246-item": {
@@ -114,7 +109,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
         'content': 'Organization application for GSoC',
         'survey_start': timeline_utils.past().strftime(time_fmt),
         'survey_end': timeline_utils.future().strftime(time_fmt),
-        'schema': simplejson.dumps(ORG_APP_SCHEMA),
+        'schema': json.dumps(ORG_APP_SCHEMA),
         }
 
   def getOrgAppTakePostData(self):

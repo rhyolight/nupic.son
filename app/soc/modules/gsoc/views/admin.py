@@ -23,7 +23,6 @@ from google.appengine.ext import db
 from django import forms as djangoforms
 from django import http
 from django.utils import dateformat
-from django.utils import simplejson
 from django.utils.translation import ugettext
 
 from melange.request import exception
