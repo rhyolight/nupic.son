@@ -114,7 +114,7 @@ def hasNonStudentProfileForProgram(user, program, profile_model):
   """
   q = profile_model.all(keys_only=True)
   q.ancestor(user)
-  q.filter('scope', program)
+  q.filter('program', program)
   q.filter('is_student', False)
   q.filter('status', 'active')
 

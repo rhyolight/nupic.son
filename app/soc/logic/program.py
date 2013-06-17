@@ -12,20 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Logic for programs.
-"""
+"""Logic for programs."""
 
 from soc.models import program as program_model
 
 
 def getSponsorKey(program):
-  """Returns Key which represents Sponsor of the specified program.
+  """Returns key which represents Sponsor of the specified program.
 
   Args:
-    program: the specified Program entity
+    program: program entity
 
   Returns:
     db.Key instance of the sponsor for the specified program
   """
-
-  return program_model.Program.scope.get_value_for_datastore(program)
+  return program_model.Program.sponsor.get_value_for_datastore(program)

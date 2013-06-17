@@ -222,6 +222,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     student = GCIProfile.all().get()
 
     self.assertEqual(self.birth_date, str(student.birth_date))
+    self.assertSameEntity(self.gci, student.program)
 
   def testCreateUserNoLinkId(self):
     self.timeline.studentSignup()

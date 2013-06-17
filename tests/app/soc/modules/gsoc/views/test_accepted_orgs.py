@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """Tests the view for GSoC accepted organizations."""
 
 from soc.modules.gsoc.models import organization as org_model

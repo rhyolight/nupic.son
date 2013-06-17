@@ -16,12 +16,12 @@
 into a GSoC program.
 """
 
+import json
 import logging
 
 from google.appengine.ext import db
 
 from django import http
-from django.utils import simplejson
 
 from melange.request import exception
 from soc.views.base_templates import ProgramSelect
@@ -32,11 +32,14 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
-from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models import project as project_model
+from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+
+# key to map proposal with and its full key in list data
+_PROPOSAL_KEY = 'full_proposal_key'
 
 class ProposalList(Template):
   """Template for listing the student proposals submitted to the program."""
@@ -57,7 +60,7 @@ class ProposalList(Template):
     def status(proposal):
       """Status to show on the list with color.
       """
-      if proposal.status == 'accepted':
+      if proposal.status == proposal_model.STATUS_ACCEPTED:
         return """<strong><font color="green">Accepted</font><strong>"""
       elif proposal.status == 'withdrawn':
         return """<strong><font color="red">Withdrawn</font></strong>"""
@@ -72,12 +75,12 @@ class ProposalList(Template):
 
     # hidden keys
     list_config.addHtmlColumn(
-        'full_proposal_key', 'Full proposal key',
+        _PROPOSAL_KEY, 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
 
     # action button
     bounds = [1,'all']
-    keys = ['full_proposal_key']
+    keys = [_PROPOSAL_KEY]
     list_config.addPostButton('accept', "Accept", "", bounds, keys)
 
     self._list_config = list_config
@@ -106,7 +109,7 @@ class ProposalList(Template):
     button_id = self.data.POST.get('button_id')
 
     if button_id == 'accept':
-      return self.postHandler(simplejson.loads(list_data))
+      return self.postHandler(json.loads(list_data))
     elif button_id:
       raise exception.BadRequest(message='Unknown button_id')
     else:
@@ -114,74 +117,30 @@ class ProposalList(Template):
 
   def postHandler(self, data):
     for properties in data:
-      if 'full_proposal_key' not in properties:
+      if _PROPOSAL_KEY not in properties:
         logging.warning("Missing key in '%s'" % properties)
         continue
 
-      proposal_key = properties['full_proposal_key']
-      proposal = db.get(db.Key(proposal_key))
-
-      if not proposal:
-        logging.warning("Proposal '%s' doesn't exist" % proposal_key)
-        continue
-
-      if proposal.status == 'accepted':
-        logging.warning("Proposal '%s' already accepted" % proposal_key)
-        continue
-
-      # organization for the proposal
-      org = proposal.org
-      # key of the student profile for the project
-      profile_key = proposal.parent_key()
-
-      if not proposal.mentor:
-        logging.warning(
-            'Proposal with key %s cannot be accepted because no mentor has '
-            'been assigned to it.' % (proposal_key))
-        continue
-
-      qp = GSoCProject.all()
-      qp.ancestor(profile_key)
-      qp.filter('org', org)
-      qp.filter('status', 'withdrawn')
-
-      if qp.count() > 0:
-        logging.warning('Student with key %s already has an accepted '
-                        'project' % profile_key)
-        continue
-
-      qorgp = GSoCProject.all()
-      qorgp.filter('org', org)
-      # TODO: The list save should actually fail, but no clue how to do this.
-      if qorgp.count() >= org.slots:
-        logging.warning('%d >= %d' % (qorgp.count(), org.slots))
-        logging.warning(
-            'Organization %s has all the slots used up. No more '
-            'projects can be accepted into the organization.' % (
-            org.name))
-        continue
-
-      fields = {
-          'org': proposal.org,
-          'program': proposal.program,
-          'title': proposal.title,
-          'abstract': proposal.abstract,
-          'mentors': [proposal.mentor.key()],
-          }
-      project = GSoCProject(parent=profile_key, **fields)
+      proposal_key = properties[_PROPOSAL_KEY]
 
       def accept_proposal_txn():
-        student_info = GSoCStudentInfo.all().ancestor(profile_key).get()
-        orgs = student_info.project_for_orgs
+        """Accept the proposal within a transaction."""
+        proposal = db.get(proposal_key)
 
-        orgs = list(set(orgs + [org.key()]))
-
-        proposal.status = 'accepted'
-
-        student_info.project_for_orgs = orgs
-        student_info.number_of_projects = 1
-
-        db.put([proposal, project, student_info])
+        if not proposal:
+          logging.warning("Proposal '%s' doesn't exist" % proposal_key)
+        elif proposal.status == proposal_model.STATUS_ACCEPTED:
+          logging.warning("Proposal '%s' already accepted" % proposal_key)
+        else:
+          # check if the proposal has been assigned a mentor
+          mentor_key = (proposal_model.GSoCProposal.mentor
+              .get_value_for_datastore(proposal))
+          if not mentor_key:
+            logging.warning(
+                'Proposal with key %s cannot be accepted because no mentor has'
+                ' been assigned to it.' % proposal_key)
+          else:
+            proposal_logic.acceptProposal(proposal)
 
       db.run_in_transaction(accept_proposal_txn)
 
@@ -198,7 +157,8 @@ class ProposalList(Template):
       list_query = proposal_logic.getProposalsQuery(program=self.data.program)
 
       starter = lists.keyStarter
-      prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
+      prefetcher = lists.ModelPrefetcher(
+          proposal_model.GSoCProposal, ['org'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, list_query,
@@ -208,7 +168,7 @@ class ProposalList(Template):
       return None
 
   def templatePath(self):
-    return "v2/modules/gsoc/accept_withdraw_projects/_project_list.html"
+    return 'v2/modules/gsoc/accept_withdraw_projects/_project_list.html'
 
 
 class AcceptProposals(GSoCRequestHandler):
@@ -276,7 +236,7 @@ class ProjectList(Template):
     def status(project):
       """Status to show on the list with color.
       """
-      if project.status == 'accepted':
+      if project.status == project_model.STATUS_ACCEPTED:
         return """<strong><font color="green">Accepted</font><strong>"""
       elif project.status == 'withdrawn':
         return """<strong><font color="red">Withdrawn</font></strong>"""
@@ -323,7 +283,7 @@ class ProjectList(Template):
     if not data:
       raise exception.BadRequest(message="Missing data")
 
-    parsed = simplejson.loads(data)
+    parsed = json.loads(data)
 
     button_id = self.data.POST.get('button_id')
 
@@ -353,12 +313,12 @@ class ProjectList(Template):
         logging.warning("Project '%s' already withdrawn" % project_key)
         continue
 
-      if not withdraw and project.status == 'accepted':
+      if not withdraw and project.status == project_model.STATUS_ACCEPTED:
         logging.warning("Project '%s' already accepted" % project_key)
         continue
 
       # key of the organization for the project
-      org_key = GSoCProject.org.get_value_for_datastore(project)
+      org_key = project_model.GSoCProject.org.get_value_for_datastore(project)
       # key of the student profile for the project
       profile_key = project.parent_key()
 
@@ -373,7 +333,7 @@ class ProjectList(Template):
           new_number = 0
           orgs.remove(org_key)
         else:
-          new_status = 'accepted'
+          new_status = project_model.STATUS_ACCEPTED
           new_number = 1
           orgs = list(set(orgs + [org_key]))
 
@@ -399,7 +359,8 @@ class ProjectList(Template):
       list_query = project_logic.getProjectsQuery(program=self.data.program)
 
       starter = lists.keyStarter
-      prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
+      prefetcher = lists.ModelPrefetcher(
+          project_model.GSoCProject, ['org'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, list_query,

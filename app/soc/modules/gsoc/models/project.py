@@ -12,20 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the GSoCProject Model.
-"""
-
+"""This module contains the GSoCProject Model."""
 
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.modules.gsoc.models.code_sample import GSoCCodeSample
-from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models import code_sample as code_sample_model
+from soc.modules.gsoc.models import profile as profile_model
 
 import soc.modules.gsoc.models.proposal
 import soc.models.program
 import soc.models.organization
+
+# constants with possible statuses of projects
+
+# the project has been accepted into the program
+STATUS_ACCEPTED = 'accepted'
+
+# the project has failed one of evaluations
+STATUS_FAILED = 'failed'
+
+# the project has been withdrawn
+STATUS_WITHDRAWN = 'withdrawn'
+
+# the project has been marked as invalid
+STATUS_INVALID = 'invalid'
 
 
 class GSoCProject(db.Model):
@@ -47,7 +59,7 @@ class GSoCProject(db.Model):
       'Short abstract, summary, or snippet;'
       ' 500 characters or less, plain text displayed publicly')
 
-  #: Optional, text field containing all kinds of information about this project
+  #: Text field containing all kinds of information about this project
   public_info = db.TextProperty(
       required=False, default ='',
       verbose_name=ugettext('Additional information'))
@@ -77,20 +89,18 @@ class GSoCProject(db.Model):
   mentors = db.ListProperty(item_type=db.Key, default=[], required=True)
 
   def getMentors(self):
-    """Returns a list of GSoCProfile entities which 
+    """Returns a list of profile_model.GSoCProfile entities which 
     are mentors for this project.
+
+    Returns:
+      list of mentors for this project
     """
-    return [m for m in GSoCProfile.get(self.mentors) if m]
+    return [m for m in profile_model.GSoCProfile.get(self.mentors) if m]
 
   #: The status of this project
-  #: accepted: This project has been accepted into the program
-  #: failed: This project has failed an evaluation.
-  #: withdrawn: This project has been withdrawn from the program by a Program
-  #:            Administrator or higher.
-  #: invalid: This project has been marked as invalid because it was deleted
-  status = db.StringProperty(
-      required=True, default='accepted',
-      choices=['accepted', 'failed', 'withdrawn', 'invalid'])
+  status = db.StringProperty(required=True, default=STATUS_ACCEPTED,
+      choices=[STATUS_ACCEPTED, STATUS_FAILED,
+          STATUS_WITHDRAWN, STATUS_INVALID])
 
   #: List of all processed GradingRecords which state a pass for this project.
   #: This property can be used to determine how many evaluations someone has
@@ -109,9 +119,9 @@ class GSoCProject(db.Model):
       required=True, collection_name='student_projects')
 
   #: Program in which this project has been created
-  program = db.ReferenceProperty(reference_class=soc.models.program.Program,
-                                 required=True,
-                                 collection_name='projects')
+  program = db.ReferenceProperty(
+      reference_class=soc.models.program.Program, required=True,
+      collection_name='projects')
 
   #: Proposal to which this project corresponds to
   proposal = db.ReferenceProperty(
@@ -123,15 +133,22 @@ class GSoCProject(db.Model):
   code_samples_submitted = db.BooleanProperty(default=False)
 
   def codeSamples(self):
-    """Returns GSoCCodeSample entities uploaded for this project.
+    """Returns code_sample.GSoCCodeSample entities uploaded for this project.
+
+    Returns:
+      code sample entities for this project
     """
-    query = GSoCCodeSample.all()
+    query = code_sample_model.GSoCCodeSample.all()
     query.ancestor(self)
     return query.fetch(1000)
 
   def countCodeSamples(self):
-    """Returns number of GSoCCodeSample entities uploaded for this project.
+    """Returns number of code_sample.GSoCCodeSample entities uploaded
+    for this project.
+
+    Returns:
+      number of code samples uploaded for this project
     """
-    query = GSoCCodeSample.all(keys_only=True)
+    query = code_sample_model.GSoCCodeSample.all(keys_only=True)
     query.ancestor(self)
     return query.count()

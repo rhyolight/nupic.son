@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for program related views.
-"""
+"""Unit tests for program related views."""
 
 import datetime
 
@@ -26,8 +25,7 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
-  """Tests GSoCCreateProgramPage view.
-  """
+  """Tests GSoCCreateProgramPage view."""
 
   DEF_LINK_ID = 'melange'
 
@@ -130,6 +128,7 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
 
     self.assertEqual(self._getProgramKeyName(), program.key().name())
     self.assertSameEntity(program.scope, self.sponsor)
+    self.assertSameEntity(program.sponsor, self.sponsor)
     self.assertPropertiesEqual(properties, program)
 
   def testCreateProgramWithInsufficientData(self):
@@ -165,6 +164,7 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
 
     self.assertEqual(self._getProgramKeyName(), program.key().name())
     self.assertSameEntity(program.scope, self.sponsor)
+    self.assertSameEntity(program.sponsor, self.sponsor)
     self.assertPropertiesEqual(properties, program)
 
 

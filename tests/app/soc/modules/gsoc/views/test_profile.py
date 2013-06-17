@@ -175,6 +175,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
 
     self.assertEqual(postdata.get('given_name'), profile.given_name)
     self.assertEqual(postdata.get('surname'), profile.surname)
+    self.assertSameEntity(self.gsoc, profile.program)
 
     # Make sure student info entity is created with right values.
     self.assertEqual(postdata.get('school_name'),

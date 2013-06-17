@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for student_evaluation views.
-"""
+"""Tests for student_evaluation views."""
 
-
+import json
 import urllib
 
 from django import forms as django_forms
-from django.utils import simplejson as json
 from django.utils.html import escape
 
 from tests import timeline_utils
@@ -103,10 +101,12 @@ class StudentEvaluationTest(GSoCDjangoTestCase):
 
   def createProject(self, override_properties={}):
     properties = {
-        'is_featured': False, 'mentors': [],
-        'status': 'accepted', 'program': self.gsoc, 'org': self.org,
-
-    }
+        'is_featured': False,
+        'mentors': [],
+        'status': project_model.STATUS_ACCEPTED,
+        'program': self.gsoc,
+        'org': self.org,
+        }
     properties.update(override_properties)
     return self.seed(GSoCProject, properties)
 

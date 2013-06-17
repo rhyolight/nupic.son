@@ -24,7 +24,6 @@ from google.appengine.api import users
 from google.appengine.ext import db
 
 from melange.request import exception
-from soc.logic import host as host_logic
 from soc.logic import links
 from soc.models import document
 from soc.models import org_app_record
@@ -352,8 +351,7 @@ class Mutator(object):
   def host(self):
     assert isSet(self.data.user)
 
-    self.data.host = host_logic.getHostForUser(self.data.user)
-    if self.data.host or self.data.user.host_for:
+    if self.data.user.host_for:
       self.data.is_host = True
 
   def orgAppRecordIfIdInKwargs(self):
@@ -399,7 +397,6 @@ class DeveloperMutator(Mutator):
       raise exception.NotFound(message=DEF_NO_USER % key_name)
 
     self.data.host_user_key = user_key
-    self.data.host = host_logic.getHostForUser(user_key)
 
 
 class BaseAccessChecker(object):
@@ -410,29 +407,21 @@ class BaseAccessChecker(object):
   """
 
   def __init__(self, data):
-    """Initializes the access checker object.
-    """
+    """Initializes the access checker object."""
     self.data = data
-
-    # TODO(daniel): get rid of it and use request_data directly
-    self.gae_user = data.gae_user
 
   def fail(self, message):
     """Raises an appropriate exception.UserError with the specified message."""
     raise exception.Forbidden(message=message)
 
   def isLoggedIn(self):
-    """Ensures that the user is logged in.
-    """
-
-    if self.gae_user:
-      return
-
-    raise exception.LoginRequired()
+    """Ensures that the user is logged in."""
+    if not self.data.gae_user:
+      raise exception.LoginRequired()
 
   def isLoggedOut(self):
     """Ensures that the user is logged out."""
-    if self.gae_user:
+    if self.data.gae_user:
       # TODO(nathaniel): One-off linker object.
       linker = links.Linker()
       raise exception.Redirect(linker.logout(self.data.request))

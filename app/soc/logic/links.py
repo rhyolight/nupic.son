@@ -69,9 +69,10 @@ class Linker(object):
     Returns:
       The URL of the page matching the given name for the given program.
     """
+    # TODO(daniel): sponsor's key should be acquired in a more efficient way
     kwargs = {
         'program': program.link_id,
-        'sponsor': program.scope.key().name()
+        'sponsor': program.sponsor.key().name()
     }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 

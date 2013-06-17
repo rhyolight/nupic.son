@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module that generates the lists.
-"""
+"""Module that generates the lists."""
 
-
+import json
 import logging
 
 from google.appengine.ext import db
 
 from django.utils import html
-from django.utils import simplejson
 
 from soc.views.template import Template
 
@@ -71,7 +69,7 @@ class NumericalColumnType(ColumnType):
     escaped.
 
     Args:
-      value: the specified string or a number for which 
+      value: the specified string or a number for which
           to return the safe representation
 
     Returns:
@@ -919,7 +917,7 @@ class ListConfigurationResponse(Template):
 
     context = {
         'idx': self._idx,
-        'configuration': simplejson.dumps(configuration),
+        'configuration': json.dumps(configuration),
         'description': self._description,
         'preload_list': self._preload_list
         }

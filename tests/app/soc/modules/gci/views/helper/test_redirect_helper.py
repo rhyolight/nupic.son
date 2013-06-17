@@ -31,7 +31,7 @@ class RedirectHelperTest(GCITestCase):
     request = MockRequest(path="/")
 
     self.handler = GCIRequestHandler()
-    data, _, _ = self.handler.init(request, (), {})
+    data, _, _ = self.handler.initializer.initialize(request, (), {})
 
     self.redirect = data.redirect
 

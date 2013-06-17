@@ -52,7 +52,7 @@ class SiteForm(views_forms.ModelForm):
 
   class Meta:
     model = site.Site
-    exclude = ['link_id', 'scope', 'xsrf_secret_key']
+    exclude = ['xsrf_secret_key']
     # NOTE(nathaniel): There aren't really no choices, it's just that we
     # can't know what the choices are at module-load-time. For the moment
     # we have to set the available choices below in EditSitePage.context.
@@ -67,7 +67,7 @@ class SiteForm(views_forms.ModelForm):
   clean_noreply_email = cleaning.clean_empty_field('noreply_email')
 
 
-class EditSitePage(base.SiteRequestHandler):
+class EditSitePage(base.RequestHandler):
   """View for the participant profile."""
 
   def djangoURLPatterns(self):
@@ -125,13 +125,13 @@ class EditSitePage(base.SiteRequestHandler):
     post_accepted = self.validate(data)
     context = self.context(data, check, mutator)
     template_path = self.templatePath()
-    response_content = self.render(data, template_path, context)
+    response_content = self.renderer.render(data, template_path, context)
     return http.HttpResponse(
         status=httplib.OK if post_accepted else httplib.BAD_REQUEST,
         content=response_content)
 
 
-class SiteHomepage(base.SiteRequestHandler):
+class SiteHomepage(base.RequestHandler):
   """View for the site home page."""
 
   def djangoURLPatterns(self):
@@ -144,7 +144,7 @@ class SiteHomepage(base.SiteRequestHandler):
   def __call__(self, request, *args, **kwargs):
     """Custom call implementation that avoids looking up unneeded data."""
     try:
-      data, _, _ = self.init(request, args, kwargs)
+      data, _, _ = self.initializer.initialize(request, args, kwargs)
 
       self.checkMaintenanceMode(data)
 

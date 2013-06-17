@@ -14,7 +14,6 @@
 
 """Module containing the core callback."""
 
-from soc.views import host
 from soc.views import legacy
 from soc.tasks import mailer
 from soc.views import oauth
@@ -36,7 +35,6 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
-    self.views.append(host.HostProfilePage())
     self.views.append(legacy.Legacy())
     self.views.append(mailer.MailerTask())
     self.views.append(oauth.PopupOAuthRedirectPage())

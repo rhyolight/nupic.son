@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Helper classes that abstract survey form structure and fields meta data.
-"""
+"""Helper classes that abstract survey form structure and fields meta data."""
 
-
+import json
 import urllib
 
 from django.utils.datastructures import SortedDict
-from django.utils.simplejson import loads
 
 from soc.modules.gsoc.logic.survey import getSurveysForProgram
 
@@ -107,13 +105,11 @@ class SurveyField(object):
 
 
 class SurveySchema(object):
-  """Meta data containing the form elements needed to build surveys.
-  """
+  """Meta data containing the form elements needed to build surveys."""
 
   def __init__(self, survey):
-    """Intialize the Survey Schema from the provided survey entity.
-    """
-    self.order, self.fields = loads(survey.schema)
+    """Intialize the Survey Schema from the provided survey entity."""
+    self.order, self.fields = json.loads(survey.schema)
 
   def __iter__(self):
     """Iterator for providing the fields in order to be used to build surveys.

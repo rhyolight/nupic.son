@@ -11,16 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# TODO(daniel): this mapper may be removed once the update is done
 
-"""Program model updating MapReduce."""
+"""MapReduce that removes all entities of the model which is specified
+as its parameter."""
+
 
 from mapreduce import operation
 
+def process(entity):
+  """Processes the entity by deleting it.
 
-def process(program):
-  program.program_id = program.link_id
-  program.sponsor = program.scope
-
-  yield operation.db.Put(program)
-  yield operation.counters.Increment("program_updated")
+  Args:
+    entity: the specified entity
+  """
+  yield operation.db.Delete(entity)
+  yield operation.counters.Increment('entity_deleted')

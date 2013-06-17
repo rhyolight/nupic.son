@@ -14,12 +14,12 @@
 
 """Module for the GCI participant dashboard."""
 
+import json
 import logging
 
 from google.appengine.ext import db
 
 from django import http
-from django.utils import simplejson
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
@@ -659,7 +659,7 @@ class MyOrgsTaskList(Component):
     if not data:
       raise exception.BadRequest(message='Missing data')
 
-    parsed = simplejson.loads(data)
+    parsed = json.loads(data)
 
     button_id = self.data.POST.get('button_id')
 

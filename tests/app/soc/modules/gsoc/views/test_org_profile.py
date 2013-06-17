@@ -145,6 +145,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
 
     org = organization.GSoCOrganization.get_by_key_name(org_key_name)
     self.assertEqual(org.link_id, record.org_id)
+    self.assertSameEntity(self.gsoc, org.program)
 
     # Make sure that the new org/veteran value is copied from the organization
     # application

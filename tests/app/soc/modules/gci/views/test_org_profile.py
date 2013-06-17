@@ -13,9 +13,7 @@
 # limitations under the License.
 
 
-"""Tests for GCI Organization profile related views.
-"""
-
+"""Tests for GCI Organization profile related views."""
 
 from google.appengine.ext import db
 
@@ -81,7 +79,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.assertOrgProfilePageTemplatesUsed(response)
     
     postdata = {
-        'home': self.createDocument().key(),
+        'home': self.createDocument().key(), 'program': self.gci,
         'scope': self.gci, 'irc_channel': 'irc://example.com',
         'pub_mailing_list': 'http://example.com', 'backup_winner': None,
     }
@@ -90,3 +88,5 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.assertResponseRedirect(response, url + '/new_org?validated')
     profile = db.get(self.data.profile.key())
     self.assertEqual(1, len(profile.org_admin_for))
+    self.assertSameEntity(self.gci, profile.program)
+

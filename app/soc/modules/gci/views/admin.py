@@ -69,7 +69,7 @@ class LookupForm(gci_forms.GCIModelForm):
     self.cleaned_data['user'] = user
 
     q = GCIProfile.all()
-    q.filter('scope', self.request_data.program)
+    q.filter('program', self.request_data.program)
     q.ancestor(user)
     self.cleaned_data['profile'] = q.get()
 

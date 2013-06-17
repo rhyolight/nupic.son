@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for withdraw projects view.
-"""
+"""Tests for withdraw projects view."""
 
+import json
 
 from google.appengine.ext import db
-
-from django.utils import simplejson
 
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
@@ -98,7 +96,7 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
         }
     ]
 
-    json_data = simplejson.dumps(data_payload)
+    json_data = json.dumps(data_payload)
 
     postdata = {
         'data': json_data,

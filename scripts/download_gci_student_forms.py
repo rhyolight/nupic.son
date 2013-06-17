@@ -29,7 +29,7 @@ parser = optparse.OptionParser(usage="usage: %prog [options] app_id")
 parser.add_option("-o", "--output", dest="outputdir", default="forms",
                   help="write files to target DIR", metavar="DIR")
 parser.add_option("-p", "--program", dest="program_path", default="",
-                  help="scope path of the program", metavar="DIR")
+                  help="full key name of the program", metavar="DIR")
 
 def downloadStudentForms(options):
   from google.appengine.ext import db

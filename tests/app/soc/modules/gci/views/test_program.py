@@ -135,6 +135,7 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
 
     self.assertEqual(self._getProgramKeyName(), program.key().name())
     self.assertSameEntity(program.scope, self.sponsor)
+    self.assertSameEntity(program.sponsor, self.sponsor)
     self.assertPropertiesEqual(properties, program)
 
   def testCreateProgramWithInsufficientData(self):
@@ -170,6 +171,7 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
 
     self.assertEqual(self._getProgramKeyName(), program.key().name())
     self.assertSameEntity(program.scope, self.sponsor)
+    self.assertSameEntity(program.sponsor, self.sponsor)
     self.assertPropertiesEqual(properties, program)
 
 

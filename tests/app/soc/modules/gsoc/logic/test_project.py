@@ -35,9 +35,9 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
     # seed a couple of organizations
     self.organization_one = seeder_logic.seed(org_model.GSoCOrganization,
-        {'scope': self.program})
+        {'scope': self.program, 'program': self.program})
     self.organization_two = seeder_logic.seed(org_model.GSoCOrganization,
-        {'scope': self.program})
+        {'scope': self.program, 'program': self.program})
 
     # seed a couple of projects for the organizations
     self.project_one = seeder_logic.seed(project_model.GSoCProject,

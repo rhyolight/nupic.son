@@ -19,6 +19,7 @@ import httplib
 from django import http
 
 from melange.request import error
+from melange.request import initialize
 from melange.request import render
 from soc.views import base
 
@@ -28,6 +29,38 @@ from soc.modules.gsoc.views.helper import request_data
 
 _GSOC_BASE_TEMPLATE = 'v2/modules/gsoc/base.html'
 _GSOC_ERROR_TEMPLATE = 'v2/modules/gsoc/error.html'
+
+
+class GSoCInitializer(initialize.Initializer):
+  """An Initializer customized for GSoC.
+
+  This Initializer creates GSoC-specific subclasses of RequestData,
+  AccessChecker, and Mutator.
+  """
+
+  def initialize(self, request, args, kwargs):
+    """See initialize.Initializer.initialize for specification.
+
+    Args:
+      request: An http.HttpRequest object describing the current request.
+      args: Additional positional arguments passed with the request.
+      kwargs: Additional keyword arguments passed with the request.
+
+    Returns:
+      A trio of instances of GSoC-specific subclasses of RequestData,
+        AccessChecker, and Mutator.
+    """
+    data = request_data.RequestData(request, args, kwargs)
+    if data.is_developer:
+      mutator = access_checker.DeveloperMutator(data)
+      check = access_checker.DeveloperAccessChecker(data)
+    else:
+      mutator = access_checker.Mutator(data)
+      check = access_checker.AccessChecker(data)
+    return data, check, mutator
+
+# Since GSoCInitializer is stateless, there might as well be just one of it.
+_GSOC_INITIALIZER = GSoCInitializer()
 
 
 class GSoCRenderer(render.Renderer):
@@ -81,7 +114,7 @@ class GSoCErrorHandler(error.ErrorHandler):
   def handleUserError(self, user_error, data):
     """See error.ErrorHandler.handleUserError for specification."""
     if not data.program:
-      return self._delgate.handleUserError(user_error, data)
+      return self._delegate.handleUserError(user_error, data)
 
     # If message is not set, set it to the default associated with the
     # given status (such as "Method Not Allowed" or "Service Unavailable").
@@ -106,16 +139,6 @@ class GSoCErrorHandler(error.ErrorHandler):
 class GSoCRequestHandler(base.RequestHandler):
   """Customization required by GSoC to handle HTTP requests."""
 
+  initializer = _GSOC_INITIALIZER
   renderer = GSoCRenderer(render.MELANGE_RENDERER)
   error_handler = GSoCErrorHandler(renderer, error.MELANGE_ERROR_HANDLER)
-
-  def init(self, request, args, kwargs):
-    """See base.RequestHandler.init for specification."""
-    data = request_data.RequestData(request, args, kwargs)
-    if data.is_developer:
-      mutator = access_checker.DeveloperMutator(data)
-      check = access_checker.DeveloperAccessChecker(data)
-    else:
-      mutator = access_checker.Mutator(data)
-      check = access_checker.AccessChecker(data)
-    return data, check, mutator

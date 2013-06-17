@@ -27,6 +27,7 @@ from soc.views.helper import access_checker
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
+from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models.connection import GSoCConnection, GSoCAnonymousConnection
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
@@ -38,7 +39,6 @@ from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
-from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.organization import GSoCOrganization
 
 
@@ -149,13 +149,14 @@ class Mutator(access_checker.Mutator):
     if not proposal_id:
       raise exception.NotFound(message='Proposal id must be a positive number')
 
-    self.data.proposal = GSoCProposal.get_by_id(
+    self.data.proposal = proposal_model.GSoCProposal.get_by_id(
         proposal_id, parent=self.data.url_profile)
 
     if not self.data.proposal:
       raise exception.NotFound(message='Requested proposal does not exist')
 
-    org_key = GSoCProposal.org.get_value_for_datastore(self.data.proposal)
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        self.data.proposal)
 
     self.data.proposal_org = self.data.getOrganization(org_key)
 
@@ -346,9 +347,9 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check how many proposals the student has already submitted
     # TODO(daniel): replace this query with checking on number_of_proposals
-    query = GSoCProposal.all()
+    query = proposal_model.GSoCProposal.all()
     query.ancestor(self.data.profile)
-    query.filter(GSoCProposal.status.name, 'pending')
+    query.filter(proposal_model.GSoCProposal.status.name, 'pending')
 
     if query.count() >= self.data.program.apps_tasks_limit:
       # too many proposals access denied
@@ -556,7 +557,7 @@ class AccessChecker(access_checker.AccessChecker):
     status = self.data.proposal.status
     if status == 'ignored':
       raise exception.Forbidden(message=DEF_PROPOSAL_IGNORED_MESSAGE)
-    elif status in ['invalid', 'accepted', 'rejected']:
+    elif status in ['invalid', proposal_model.STATUS_ACCEPTED, 'rejected']:
       raise exception.Forbidden(
           message=access_checker.DEF_CANNOT_UPDATE_ENTITY % {
              'name': 'proposal'

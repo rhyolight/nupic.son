@@ -122,7 +122,8 @@ def queryProfileForUserAndProgram(user, program):
     user: User entity for which the profile should be found
     program: GCIProgram entity for which the profile should be found
   """
-  return profile_model.GCIProfile.all().ancestor(user).filter('scope = ', program)
+  return profile_model.GCIProfile.all().ancestor(user).filter(
+      'program', program)
 
 
 def queryStudentInfoForParent(parent):
@@ -217,7 +218,7 @@ def getOrCreateDummyMelangeDeletedProfile(program):
   """
   q = profile_model.GCIProfile.all()
   q.filter('link_id', user_logic.MELANGE_DELETED_USER)
-  q.filter('scope', program)
+  q.filter('program', program)
   profile_ent = q.get()
 
   # If the requested user does not exist, create one.
@@ -227,7 +228,8 @@ def getOrCreateDummyMelangeDeletedProfile(program):
 
     profile_ent = profile_model.GCIProfile(
         parent=user_ent, key_name=key_name, user=user_ent,
-        link_id=user_logic.MELANGE_DELETED_USER, scope=program,
+        link_id=user_logic.MELANGE_DELETED_USER,
+        scope=program, program=program,
         public_name=MELANGE_DELETED_USER_PNAME,
         given_name=MELANGE_DELETED_USER_GNAME,
         surname=MELANGE_DELETED_USER_SNAME,

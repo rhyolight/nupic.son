@@ -14,7 +14,7 @@
 
 """Tests the view for GCI Dashboard."""
 
-from django.utils import simplejson as json
+import json
 
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.views import dashboard as dashboard_view

@@ -61,7 +61,7 @@ class AcceptedOrgsList(OrgList):
 
   def _getQuery(self):
     query = GCIOrganization.all()
-    query.filter('scope', self.data.program)
+    query.filter('program', self.data.program)
     query.filter('status IN', ['new', 'active'])
     return query
 
@@ -157,7 +157,7 @@ class AcceptedOrgsAdminList(OrgList):
 
   def _getQuery(self):
     query = GCIOrganization.all()
-    query.filter('scope', self.data.program)
+    query.filter('program', self.data.program)
     query.filter('status IN', ['new', 'active'])
     return query
 

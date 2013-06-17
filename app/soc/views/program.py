@@ -46,6 +46,7 @@ class CreateProgramPage(object):
       timeline = self._createTimelineFromForm(data, form)
       form.cleaned_data['timeline'] = timeline
       form.cleaned_data['scope'] = data.sponsor
+      form.cleaned_data['sponsor'] = data.sponsor
 
       key_name = '%s/%s' % (
           data.sponsor.key().name(), form.cleaned_data['link_id'])

@@ -27,7 +27,6 @@ from django import http
 
 from soc.logic import accounts
 from soc.models.document import Document
-from soc.models.host import Host
 
 from soc.models.site import Site
 from soc.models.sponsor import Sponsor
@@ -61,7 +60,6 @@ def seed(request, *args, **kwargs):
 
   site_properties = {
       'key_name': 'site',
-      'link_id': 'site',
       'latest_gsoc': 'google/gsoc2009',
       'latest_gci': 'google/gci2009',
       }
@@ -130,9 +128,6 @@ def seed(request, *args, **kwargs):
   current_user.host_for = [google.key()]
   current_user.put()
 
-  google_host = Host(**role_properties)
-  google_host.put()
-
   now = datetime.datetime.now()
   before = now - datetime.timedelta(365)
   after = now + datetime.timedelta(365)
@@ -155,6 +150,7 @@ def seed(request, *args, **kwargs):
   program_properties = {
       'key_name': 'google/gsoc2009',
       'link_id': 'gsoc2009',
+      'sponsor': google,
       'scope': google,
       'name': 'Google Summer of Code 2009',
       'short_name': 'GSoC 2009',
@@ -231,6 +227,7 @@ def seed(request, *args, **kwargs):
     'name': 'Melange Development Team',
     'short_name': 'Melange',
     'scope': gci2009,
+    'sponsor': google,
     'home_page': 'http://code.google.com/p/soc',
     'description': 'Melange, share the love!',
     'license_name': 'Apache License',
@@ -244,13 +241,29 @@ def seed(request, *args, **kwargs):
     'scope': gsoc2009,
     })
 
-  role_properties.update({
+  role_properties = {
       'key_name': 'google/gsoc2009/test',
+      'parent': current_user,
       'link_id': 'test',
+      'public_name': 'test',
       'scope': gsoc2009,
       'program': gsoc2009,
-      'parent': current_user,
-      })
+      'user': current_user,
+      'given_name': 'Test',
+      'surname': 'Example',
+      'name_on_documents': 'Test Example',
+      'email': 'test@example.com',
+      'res_street': 'Some Street',
+      'res_city': 'Some City',
+      'res_state': 'Some State',
+      'res_country': 'United States',
+      'res_postalcode': '12345',
+      'phone': '1-555-BANANA',
+      'birth_date': db.DateProperty.now(),
+      'agreed_to_tos': True,
+      'is_org_admin': True,
+      'is_mentor': True,
+      }
 
   profile = GSoCProfile(**role_properties)
   role_properties.pop('parent')
@@ -462,6 +475,7 @@ def seed(request, *args, **kwargs):
       'key_name': gci2009.key().name() + '/' + student_id,
       'parent': student_user,
       'scope': gci2009,
+      'program': gci2009,
   })
   gci_student = GCIProfile(**student_properties)
   gci_student.put()
@@ -546,7 +560,6 @@ def clear(*args, **kwargs):
       GSoCStudentInfo.all(),
       GCIStudentInfo.all(),
       GCITask.all(),
-      Host.all(),
       Sponsor.all(),
       User.all(),
       Site.all(),

@@ -12,20 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the Organization Model.
-"""
-
+"""This module contains the Organization Model."""
 
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
 import soc.models.group
+import soc.models.program
 
 
 class Organization(soc.models.group.Group):
-  """Organization details.
-  """
+  """Organization details."""
+
+  #: A reference to program entity to which the organization corresponds.
+  #: A single organization profile corresponds only to one program.
+  #: A new one has to exist for each program if the organization still
+  #: participates.
+  # TODO(daniel): make this field required when it is updated for
+  # all existing entities
+  program = db.ReferenceProperty(
+      reference_class=soc.models.program.Program, required=False,
+      collection_name='organizations')
 
   #: Optional development mailing list.     
   dev_mailing_list = db.StringProperty(required=False,

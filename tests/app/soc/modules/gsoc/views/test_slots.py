@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for slots view.
-"""
+"""Tests for slots view."""
 
-
-from django.utils import simplejson
+import json
 
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -53,7 +51,7 @@ class SlotsTest(GSoCDjangoTestCase):
     }
     org_name = self.org.key().name()
 
-    data = simplejson.dumps({org_name: org_data})
+    data = json.dumps({org_name: org_data})
 
     postdata = {
         'data': data,

@@ -42,10 +42,9 @@ def _orgsWithLogoForQuery(query, batch_size):
 
 
 def _orgWithLogoQuery(model, program):
-  """Returns a query for Organizations in the specified program with logo.
-  """
+  """Returns a query for Organizations in the specified program with logo."""
   q = model.all()
-  q.filter('scope', program)
+  q.filter('program', program)
   q.filter('status', 'active')
   q.filter('logo_url >=', '')
 
