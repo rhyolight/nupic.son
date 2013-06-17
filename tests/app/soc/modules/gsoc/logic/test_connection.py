@@ -46,6 +46,7 @@ class ConnectionTest(unittest.TestCase):
     self.connection = connection_utils.seed_new_connection(self.user, self.org)
 
 class ConnectionExistsTest(ConnectionTest): 
+  """Unit tests for the connection_logic.connectionExists function."""
 
   def testConnectionExists(self):
     """Tests that existing GSoCConnection objects between Profiles and
@@ -58,6 +59,7 @@ class ConnectionExistsTest(ConnectionTest):
       connection_logic.connectionExists(self.profile.parent(), self.org))
 
 class CreateConnectionTest(ConnectionTest):
+  """Unit tests for the connection_logic.createConnection function."""
   
   def testCreateConnection(self):
     """Tests that a GSoCConnection object can be generated successfully.
@@ -87,6 +89,7 @@ class CreateConnectionTest(ConnectionTest):
         )
 
 class CreateConnectionMessageTest(ConnectionTest):
+  """Unit tests for the connection_logic.createConnectionMessage function."""
   
   def testCreateConnectionMessage(self):
     """Tests that a GSoCConnectionMessage can be added to an existing
@@ -103,6 +106,7 @@ class CreateConnectionMessageTest(ConnectionTest):
     self.assertEqual('Test message!', message.content)
 
 class GetConnectionMessagesTest(ConnectionTest):
+  """Unit tests for the connection_logic.getConnectionMessage function."""
   
   def testGetConnectionMessages(self):
     """Tests that all messages affiliated with a given Connection will
