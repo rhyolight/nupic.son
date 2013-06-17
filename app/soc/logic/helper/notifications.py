@@ -172,14 +172,14 @@ def userConnectionContext(data, connection, recipients, message):
 
 # TODO(nathaniel): "connection" argument description is a "gsoc" reference
 # outside of app/soc/modules/gsoc.
-def orgConnectionContext(data, connection, recipient, message):
+def orgConnectionContext(data, connection, recipients, message):
   """Send out a notification email to a user with whom an org admin opened
   a new connection.
 
   Args:
     data: RequestData object with organization and user set.
     connection: The new instance of GSoCConnection.
-    recipient: The email address of the user.
+    recipients: List containing the email address of the user. 
     message: The contents of the message field from the connection form.
   Returns:
     A dictionary containing a context for the mail message to be sent to
@@ -198,7 +198,7 @@ def orgConnectionContext(data, connection, recipient, message):
       'message' : message
       }
   template = DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE
-  return getContext(data, recipient, message_properties, subject, template)
+  return getContext(data, recipients, message_properties, subject, template)
 
 def anonymousConnectionContext(data, email, anonymous_connection, message):
   """Sends out a notification email to users who have neither user nor
