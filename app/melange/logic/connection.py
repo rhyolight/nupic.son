@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Query and functions for GSoCConnection.
+"""Query and functions for Connection.
 """
 
 from melange.request import exception
-from soc.modules.gsoc.logic import connection_message as connection_message_logic
-from soc.modules.gsoc.models.connection import GSoCConnection
-from soc.modules.gsoc.models.connection_message import GSoCConnectionMessage
+from soc.logic import connection_message as connection_message_logic
+from soc.models.connection import Connection
+from soc.models.connection_message import ConnectionMessage
 
 CONNECTION_EXISTS_ERROR = \
     "Connection between %s and %s already exists."
@@ -26,14 +26,14 @@ CONNECTION_EXISTS_ERROR = \
 def queryForAncestor(ancestor, keys_only=False):
   """Returns a Query object for Connections with the specified ancestor.
   """
-  return GSoCConnection.all(keys_only=keys_only).ancestor(ancestor)
+  return Connection.all(keys_only=keys_only).ancestor(ancestor)
 
 
 def queryForAncestorAndOrganization(ancestor, organization, keys_only=False):
   """Returns a Query object for Connections with the specified ancestor and
   Organization.
   """
-  query = GSoCConnection.all(keys_only=keys_only).ancestor(ancestor)
+  query = Connection.all(keys_only=keys_only).ancestor(ancestor)
   query.filter('organization', organization)
   return query
 
@@ -43,28 +43,28 @@ def connectionExists(user, organization):
 
   Args:
     user: User instance for the connection
-    organization: GSoCOrganization for the connection.
+    organization: Organization for the connection.
 
   Returns:
-    True if a GSoCConnection object exists for the given User and
+    True if a Connection object exists for the given User and
     Organization, else False.
   """
   query = queryForAncestorAndOrganization(user, organization, True)
   return query.count(limit=1) > 0
 
 def createConnection(profile, org, user_state, org_state, role):
-  """Create a new GSoCConnection instance based on the contents of the form
+  """Create a new Connection instance based on the contents of the form
   and the roles provided.
 
   Args:
-    profile: GSoCProfile with which to establish the connection.
+    profile: Profile with which to establish the connection.
     org: Organization with which to establish the connection.
     user_state: The user's response state for the connection.
     org_state: The org's response state for the connection.
     role: Role to offer the user (see soc.models.Connection for opts).
 
   Returns:
-      Newly created GSoCConnection instance.
+      Newly created Connection instance.
 
   Raises:
       AccessViolation if a connection exists between the user and organization.
@@ -73,7 +73,7 @@ def createConnection(profile, org, user_state, org_state, role):
     raise exception.Forbidden(
         CONNECTION_EXISTS_ERROR % (profile.name, org.name))
 
-  connection = GSoCConnection(
+  connection = Connection(
       parent=profile.parent(), organization=org
       )
   connection.user_state = user_state
@@ -84,20 +84,20 @@ def createConnection(profile, org, user_state, org_state, role):
   return connection
 
 def createConnectionMessage(connection, author, content, auto_generated=False):
-  """Create a new GSoCConnectionMessage to represent a message left
-  on a GSoCConnection entity.
+  """Create a new ConnectionMessage to represent a message left
+  on a Connection entity.
 
   Args:
-    connection: GSoCConnection on which the message was left.
+    connection: Connection on which the message was left.
     author: Profile of the user leaving the message.
     content: String content of the message.
     auto_generated: True if the message was system-generated, False if the
         message contains a user-provided message,
 
   Returns:
-    Newly created GSoCConnectionMessage entity.
+    Newly created ConnectionMessage entity.
   """
-  message = GSoCConnectionMessage(parent=connection)
+  message = ConnectionMessage(parent=connection)
   message.content = content
   if auto_generated:
     message.is_auto_generated = True

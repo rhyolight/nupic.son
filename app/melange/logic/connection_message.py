@@ -16,11 +16,11 @@
 
 from google.appengine.ext import db
 
-from soc.modules.gsoc.models import connection_message as connection_message_model
+from soc.models import connection_message as connection_message_model
 
 
 class QueryBuilder(object):
-  """Query builder class for connection_message_model.GSoCConnectionMessage
+  """Query builder class for connection_message_model.ConnectionMessage
   model.
   """
 
@@ -47,7 +47,7 @@ class QueryBuilder(object):
     """Sets author for the query.
 
     Args:
-      author: profile_model.GSoCProfile entity
+      author: profile_model.Profile entity
 
     Returns:
       self object
@@ -86,7 +86,7 @@ class QueryBuilder(object):
     Returns:
       a built db.Query obejct
     """
-    query = db.Query(connection_message_model.GSoCConnectionMessage,
+    query = db.Query(connection_message_model.ConnectionMessage,
         keys_only=self._keys_only)
     if self._author is not None:
       query.filter('author', self._author)
