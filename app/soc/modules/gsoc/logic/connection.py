@@ -15,7 +15,7 @@
 """Query and functions for GSoCConnection.
 """
 
-from soc.logic import exceptions
+from melange.request import exception
 from soc.modules.gsoc.logic import connection_message as connection_message_logic
 from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.models.connection_message import GSoCConnectionMessage
@@ -70,8 +70,8 @@ def createConnection(profile, org, user_state, org_state, role):
       AccessViolation if a connection exists between the user and organization.
   """
   if connectionExists(profile.parent_key(), org):
-    raise exceptions.AccessViolation(
-        CONNECTION_EXISTS_ERROR % (profile.name(), org.name()))
+    raise exception.Forbidden(
+        CONNECTION_EXISTS_ERROR % (profile.name, org.name))
 
   connection = GSoCConnection(
       parent=profile.parent(), organization=org

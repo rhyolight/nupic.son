@@ -16,7 +16,7 @@
 
 import unittest
 
-from soc.logic import exceptions
+from melange.request import exception
 from soc.models import connection
 from soc.modules.gsoc.logic import connection as connection_logic
 from soc.modules.gsoc.models.connection import GSoCConnection
@@ -81,7 +81,7 @@ class CreateConnectionTest(ConnectionTest):
     # Also test to ensure that a connection will not be created if a logically
     # equivalent connection already exists.
     self.assertRaises(
-        exceptions.AccessViolation, connection_logic.createConnection,
+        exception.UserError, connection_logic.createConnection,
         profile=self.profile, org=self.org, 
         user_state=connection.STATE_UNREPLIED, 
         org_state=connection.STATE_UNREPLIED,
@@ -131,6 +131,6 @@ class GetConnectionMessagesTest(ConnectionTest):
 
     # check that correct messages are returned
     messages = connection_logic.getConnectionMessages(self.connection)
-    expected_keys = set(message1.key(), message2.key())
+    expected_keys = set([message1.key(), message2.key()])
     actual_keys = set([m.key() for m in messages])
     self.assertEqual(actual_keys, expected_keys)
