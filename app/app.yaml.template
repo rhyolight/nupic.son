@@ -46,7 +46,7 @@ handlers:
   expiration: 30d
 
 - url: /soc/content/(.*?)/js/(.*)
-  static_files: soc/content/js.min/\2
+  static_files: soc/content/js/\2
   upload: soc/content/(.*)
   expiration: 30d
 
@@ -56,22 +56,22 @@ handlers:
   expiration: 30d
 
 - url: /js/(.*?)/jquery/(.*)
-  static_files: jquery.min/\2
+  static_files: jquery/\2
   upload: jquery\.min/(.*)
   expiration: 1d
 
 - url: /js/(.*?)/json/(.*)
-  static_files: json.min/\2
+  static_files: json/\2
   upload: json\.min/(.*)
   expiration: 30d
 
 - url: /js/(.*?)/modernizr/(.*)
-  static_files: modernizr.min/\2
+  static_files: modernizr/\2
   upload: modernizr\.min/(.*)
   expiration: 30d
 
 - url: /js/(.*?)/LABjs/(.*)
-  static_files: LABjs.min/\2
+  static_files: LABjs/\2
   upload: LABjs\.min/(.*)
   expiration: 30d
 
