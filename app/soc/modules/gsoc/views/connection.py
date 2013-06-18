@@ -143,8 +143,7 @@ class ConnectionForm(GSoCModelForm):
       choices=((connection.MENTOR_ROLE, 'Mentor'),))
   message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
 
-  def __init__(self, request_data=None, message=None, is_admin=False,
-      *args, **kwargs):
+  def __init__(self, request_data=None, message=None, *args, **kwargs):
     """Initialize ConnectionForm.
 
     Note that while it appears that message and request_data are not used,
@@ -159,14 +158,15 @@ class ConnectionForm(GSoCModelForm):
     """
     super(ConnectionForm, self).__init__(*args, **kwargs)
 
-    self.is_admin = is_admin
+    self.request_data = request_data
 
     # Set up the user-provided message to the other party (org admin or user).
     self.fields['message'].label = ugettext('Message')
     # Place the message field at the bottom
     self.fields['message'].group = ugettext('1. ')
-    # Do not require users/org admins to include a message.
     self.fields['message'].required = False
+    self.fields['message'].help_text = ugettext(
+        'Your message to the recipient(s)')
 
   class Meta:
     model = connection.Connection
@@ -179,14 +179,10 @@ class OrgConnectionForm(ConnectionForm):
   def __init__(self, request_data=None, message=None, *args, **kwargs):
     super(OrgConnectionForm, self).__init__(*args, **kwargs)
 
-    self.request_data = request_data
-    self.is_admin = True
-
     field = self.fields.pop('users')
     field.help_text = ugettext(
         'The link_id or email address of the invitee, '
         ' separate multiple values with a comma')
-    # Place the users field at the top of the form.
     self.fields.insert(0, 'users', field)
 
     self.fields['role_choice'].choices = (
@@ -195,11 +191,8 @@ class OrgConnectionForm(ConnectionForm):
         )
     self.fields['role_choice'].label = ugettext('Role to offer the user(s)')
     self.fields['role_choice'].help_text = ugettext(
-        'Role that you want to offer to '
+        'Role that you are offering to '
         'the specified users in this organization')
-
-    self.fields['message'].help_text = ugettext(
-        'Your message to the user(s)')
 
   def clean_users(self):
     """Generate lists with the provided link_ids/emails sorted into categories.
@@ -224,7 +217,6 @@ class OrgConnectionForm(ConnectionForm):
       else:
         user = clean_link_id(user_id)
         self.request_data.valid_users.append(user)
-
 
   class Meta:
     model = connection.Connection
@@ -273,19 +265,6 @@ class ConnectionResponseForm(GSoCModelForm):
 
   def templatePath(self):
     return 'v2/modules/gsoc/connection/_response_form.html'
-
-class UserConnectionForm(ConnectionForm):
-  """Django form to show specific fields for a user."""
-
-  def __init__(self, request_data=None, message=None, *args, **kwargs):
-    super(UserConnectionForm, self).__init__(*args, **kwargs)
-
-    self.fields['message'].help_text = ugettext(
-        'Your message to the organization')
-
-  class Meta:
-    model = connection.Connection
-    exclude = connection.Connection.allFields()
 
 
 class OrgConnectionPage(GSoCRequestHandler):
@@ -338,6 +317,9 @@ class OrgConnectionPage(GSoCRequestHandler):
           context=notifications.orgConnectionContext,
           recipients=[profile.email], org_state=connection.STATE_ACCEPTED)
 
+    # TODO(drew): This entire section below needs to be replaced with code
+    # similar to the lines immediately above or to something else entirely
+    # once the new Connection model is implemented.
     def create_anonymous_connection_txn(email):
       # Create the anonymous connection - a placeholder until the user
       # registers and activates the real connection.
@@ -456,8 +438,7 @@ class UserConnectionPage(GSoCRequestHandler):
     assert isSet(data.organization)
     assert isSet(data.user)
 
-    connection_form = UserConnectionForm(
-        request_data=data, data=data.POST, is_admin=False)
+    connection_form = ConnectionForm(request_data=data, data=data.POST)
     if not connection_form.is_valid():
       return False
 
