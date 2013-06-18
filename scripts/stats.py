@@ -788,8 +788,6 @@ def main():
       'deleteEntities': deleteEntities,
       'getOrgs': getEntities(GSoCOrganization),
       'getUsers': getEntities(User),
-      'getProps': getProps,
-      'countStudentsWithProposals': countStudentsWithProposals,
       'setOrganizationInSurveyRecords': setOrganizationInSurveyRecords,
       'convertProposals': convertProposals,
       'addFollower': addFollower,
