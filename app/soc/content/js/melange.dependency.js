@@ -97,28 +97,12 @@
     "/tiny_mce/tiny_mce.js"
   ];
 
-  s.purr = [
-    tpjs + "jquery/jquery-purr.js"
-  ];
-
   s.counter = [
     tpjs + "jquery/jquery-counter.js"
   ];
 
-  s.spin = [
-    tpjs + "jquery/jquery-spin-1.1.1.js"
-  ];
-
   s.bgiframe = [
     tpjs + "jquery/jquery-bgiframe.js"
-  ];
-
-  s.ajaxQueue = [
-    tpjs + "jquery/jquery-ajaxQueue.js"
-  ];
-
-  s.progressbar = [
-    tpjs + "jquery/jquery-progressbar.js"
   ];
 
   s.uniform = [
@@ -309,25 +293,10 @@
     mpjs + "melange.js"
   ];
 
-  s.melange.gdata = {};
-
-  s.melange.gdata.core = [
-    mpjs + "melange.gdata.core.js"
-  ];
-
   s.melange.datetimepicker = [
     s.jqueryui.datepicker,
     null,
     mpjs + "melange.datetimepicker.js"
-  ];
-
-  s.melange.duplicates = [
-    s.progressbar,
-    null,
-    mpjs + "duplicate-slots.js"
-  ];
-
-  s.melange.form = [
   ];
 
   s.melange.list = [
@@ -351,11 +320,6 @@
         });
       }
     }
-  ];
-
-  s.melange.tooltip = [
-    s.purr,
-    null
   ];
 
   s.melange.autocomplete = [
@@ -382,10 +346,6 @@
     s.jqueryui.checkboxes,
     null,
     mpjs + "melange.action.js"
-  ];
-
-  s.melange.map = [
-    mpjs + "melange.map.js"
   ];
 
   s.melange.program_select = [
