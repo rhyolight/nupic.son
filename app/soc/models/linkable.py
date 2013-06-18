@@ -88,8 +88,7 @@ class Linkable(db.Model):
   #: Optional Self Reference property to another Linkable entity which defines
   #: the "scope" of this Linkable entity. The back-reference in the Linkable 
   #: model is a Query named 'links'.
-  scope = db.SelfReferenceProperty(required=False,
-      collection_name='links', verbose_name=ugettext('Link Scope'))
+  scope = db.ReferenceProperty(required=False, verbose_name=ugettext('Link Scope'))
   scope.help_text = ugettext(
       'Reference to another Linkable entity that defines the "scope" of'
       ' this Linkable entity.')

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the GSoCConnectionMessage model."""
+"""This module contains the ConnectionMessage model."""
 
 
 from google.appengine.ext import db
@@ -22,12 +22,12 @@ from django.utils.translation import ugettext
 import soc.models.profile
 
 
-class GSoCConnectionMessage(db.Model):
+class ConnectionMessage(db.Model):
   """Model of a message that may be sent along with or in response to
   connections.
 
   Parent:
-    soc.modules.gsoc.connection.GSoCConnection
+    soc.models.connection.Connection
   """
 
   #: A required many:1 relationship with a comment entity indicating

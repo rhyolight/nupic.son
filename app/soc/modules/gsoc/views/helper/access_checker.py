@@ -25,10 +25,10 @@ from soc.logic import validate
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
+from melange.models.connection import Connection, AnonymousConnection
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models import proposal as proposal_model
-from soc.modules.gsoc.models.connection import GSoCConnection, GSoCAnonymousConnection
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -195,7 +195,7 @@ class Mutator(access_checker.Mutator):
     """Set the connection entity in the RequestData object."""
     self.userFromKwargs()
 
-    self.data.connection = GSoCConnection.get_by_id(
+    self.data.connection = Connection.get_by_id(
         long(self.data.kwargs['id']), self.data.url_user)
     if not self.data.connection:
       raise exception.Forbidden(message='This connection does not exist.')
@@ -203,7 +203,7 @@ class Mutator(access_checker.Mutator):
   def anonymousConnectionFromKwargs(self):
     """Set the anonymous_connection entity in the RequestData object.
     """
-    q = GSoCAnonymousConnection.all().filter('hash_id =', self.data.kwargs['key'])
+    q = AnonymousConnection.all().filter('hash_id =', self.data.kwargs['key'])
     self.data.anonymous_connection = q.get()
     if not self.data.anonymous_connection:
       raise exception.Forbidden(

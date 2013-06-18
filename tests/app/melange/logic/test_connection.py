@@ -17,39 +17,49 @@
 import unittest
 
 from melange.request import exception
-from soc.models import connection
-from soc.modules.gsoc.logic import connection as connection_logic
-from soc.modules.gsoc.models.connection import GSoCConnection
-from soc.modules.gsoc.models.connection_message import GSoCConnectionMessage
-from soc.modules.gsoc.models.program import GSoCProgram
+from melange.logic import connection as connection_logic
+from melange.models import connection
+from melange.models.connection_message import ConnectionMessage
+from soc.models.organization import Organization
+from soc.models.profile import Profile
+from soc.models.program import Program
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests.utils import connection_utils
-from tests.profile_utils import GSoCProfileHelper
-from tests.program_utils import GSoCProgramHelper
-from tests.test_utils import GSoCTestCase
+from tests.profile_utils import ProfileHelper
+from tests.program_utils import ProgramHelper
 
 class ConnectionTest(unittest.TestCase):
   """Base class for this module to encapsulate a setUp method that will
   initialize data common to each of the test classes in this module.
   """
   def setUp(self):
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = seeder_logic.seed(Program)
     
-    self.profile_helper = GSoCProfileHelper(self.program, dev_test=False)
+    self.profile_helper = ProfileHelper(self.program, dev_test=False)
     self.user = self.profile_helper.createUser()
-    self.profile = self.profile_helper.createProfile()
+    profile_properties = {'link_id': self.user.link_id, 'student_info': None, 
+        'user': self.user,'parent': self.user, 'scope': self.program, 
+        'status': 'active','email': self.user.account.email(),
+        'program': self.program,'mentor_for': [], 'org_admin_for': [],
+        'is_org_admin': False, 'is_mentor': False, 'is_student': False
+        }
+    self.profile = self.profile_helper.seed(Profile, profile_properties)
     
-    self.program_helper = GSoCProgramHelper()
-    self.org = self.program_helper.createNewOrg(
-      override={'program' : self.program})
+    self.program_helper = ProgramHelper()
+    org_properties = {
+        'scope': self.program, 'status': 'active',
+        'scoring_disabled': False, 'max_score': 5,
+        'home': None, 'program': self.program,
+        }
+    self.org = self.program_helper.seed(Organization, org_properties)
     self.connection = connection_utils.seed_new_connection(self.user, self.org)
 
 class ConnectionExistsTest(ConnectionTest): 
   """Unit tests for the connection_logic.connectionExists function."""
 
   def testConnectionExists(self):
-    """Tests that existing GSoCConnection objects between Profiles and
+    """Tests that existing Connection objects between Profiles and
     Organizations can be fetched with this helper.
     """
     self.assertTrue(
@@ -62,7 +72,7 @@ class CreateConnectionTest(ConnectionTest):
   """Unit tests for the connection_logic.createConnection function."""
   
   def testCreateConnection(self):
-    """Tests that a GSoCConnection object can be generated successfully.
+    """Tests that a Connection object can be generated successfully.
     """
     self.connection.delete()
     connection_logic.createConnection(
@@ -71,7 +81,7 @@ class CreateConnectionTest(ConnectionTest):
         org_state=connection.STATE_UNREPLIED,
         role=connection.MENTOR_ROLE
         )
-    new_connection = GSoCConnection.all().get()
+    new_connection = connection.Connection.all().get()
     self.assertEqual(self.user.key(), new_connection.parent().key())
     self.assertEqual(self.org.key(), new_connection.organization.key())
     self.assertEqual(connection.STATE_ACCEPTED, new_connection.user_state)
@@ -92,7 +102,7 @@ class CreateConnectionMessageTest(ConnectionTest):
   """Unit tests for the connection_logic.createConnectionMessage function."""
   
   def testCreateConnectionMessage(self):
-    """Tests that a GSoCConnectionMessage can be added to an existing
+    """Tests that a onnectionMessage can be added to an existing
     GSoCConnection object.
     """
     message = connection_logic.createConnectionMessage(
@@ -100,8 +110,8 @@ class CreateConnectionMessageTest(ConnectionTest):
         author=self.profile,
         content='Test message!'
         )
-    message = GSoCConnectionMessage.all().ancestor(self.connection).get()
-    self.assertTrue(isinstance(message, GSoCConnectionMessage))
+    message = ConnectionMessage.all().ancestor(self.connection).get()
+    self.assertTrue(isinstance(message, ConnectionMessage))
     self.assertEqual(self.profile.key(), message.author.key())
     self.assertEqual('Test message!', message.content)
 
