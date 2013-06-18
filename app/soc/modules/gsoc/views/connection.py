@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Module containing the view for the GSoCConnection page """
+""" Module containing the view for the Connection page """
 
 import hashlib
 
@@ -78,8 +78,8 @@ def create_connection_txn(data, profile, organization,
         profile=profile, org=organization,
         org_state=org_state, user_state=user_state,
         role = connection_form.cleaned_data['role'])
-    # Attach any admin-provided messages to the connection.
-    if message != '':
+    # Attach any user-provided messages to the connection.
+    if message:
       connection_logic.createConnectionMessage(
         connection=new_connection, author=profile, content=message)
     # Dispatch an email to the user.
@@ -153,8 +153,6 @@ class ConnectionForm(GSoCModelForm):
     Args:
         request_data: The RequestData instance for the current request.
         message: A string containing a message to be sent to the other party.
-        is_admin: Boolean indicating whether the requester is or is not an
-            org admin for the given organization.
     """
     super(ConnectionForm, self).__init__(*args, **kwargs)
 
@@ -282,7 +280,7 @@ class OrgConnectionPage(GSoCRequestHandler):
     ]
 
   def _generate(self, data):
-    """Create a GSoCConnection instance and notify all parties involved.
+    """Create a Connection instance and notify all parties involved.
 
     Take the link_id(s) and email(s) that the org admin provided via
     ConnectionForm instance and create new Connections and AnonymousConnections
@@ -362,7 +360,7 @@ class OrgConnectionPage(GSoCRequestHandler):
     check.isOrgAdminForOrganization(data.organization)
 
   def context(self, data, check, mutator):
-    """Handler for GSoCConnection page request for an org."""
+    """Handler for Connection page request for an org."""
 
     connection_form = OrgConnectionForm(
         request_data=data,
@@ -432,7 +430,7 @@ class UserConnectionPage(GSoCRequestHandler):
     check.notMentor()
 
   def _generate(self, data):
-    """Create a GSoCConnection instance and notify all parties involved.
+    """Create a Connection instance and notify all parties involved.
     """
 
     assert isSet(data.organization)
@@ -486,7 +484,7 @@ class UserConnectionPage(GSoCRequestHandler):
 
 class ShowConnection(GSoCRequestHandler):
   """Class to encapsulate the methods required to display information
-  about a GSoCConnection for both Users and Org Admins.
+  about a Connection for both Users and Org Admins.
   """
 
   # The actions that will be made available to the user in the dropdown.
@@ -522,7 +520,7 @@ class ShowConnection(GSoCRequestHandler):
     """Gets all the messages for the connection."""
     assert isSet(data.connection)
 
-    query = db.Query(GSoCConnectionMessage).ancestor(data.connection)
+    query = db.Query(ConnectionMessage).ancestor(data.connection)
     query.order('created')
 
     return query.fetch(limit=limit)
@@ -549,7 +547,7 @@ class ShowConnection(GSoCRequestHandler):
     return responses
 
   def context(self, data, check, mutator):
-    """Handler for Show GSoCConnection get request."""
+    """Handler for Show Connection get request."""
     # Shortcut for clarity/laziness.
     c = data.connection
     is_org_admin = data.orgAdminFor(data.organization)
@@ -824,7 +822,7 @@ class ShowConnection(GSoCRequestHandler):
 
     def delete_connection_txn():
       connection_entity = db.get(connection_key)
-      db.delete(GSoCConnectionMessage.all().ancestor(connection_entity))
+      db.delete(ConnectionMessage.all().ancestor(connection_entity))
       connection_entity.delete()
 
     db.run_in_transaction(delete_connection_txn)
