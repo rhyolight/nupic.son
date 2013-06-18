@@ -38,6 +38,7 @@ indexes:
   - name: grading_survey_group
   - name: __key__
 
+# TODO(nathaniel): Drop this when we are sure that "scope" is gone everywhere.
 # used to order the accepted GCIorganizations on there name
 - kind: GCIOrganization
   properties:
@@ -45,6 +46,14 @@ indexes:
   - name: status
   - name: name
 
+# Used to order accepted GCI Organizations by name.
+- kind: GCIOrganization
+  properties:
+  - name: program
+  - name: status
+  - name: name
+
+# TODO(nathaniel): Drop this when we are sure that "scope" is gone everywhere.
 # used to fetch organizations accepted to GSoC program
 - kind: GSoCOrganization
   properties:
@@ -52,6 +61,14 @@ indexes:
   - name: status
   - name: name
 
+# Used to order GSoC organizations by name.
+- kind: GSoCOrganization
+  properties:
+  - name: program
+  - name: status
+  - name: name
+
+# TODO(nathaniel): Drop this when we are sure that "scope" is gone everywhere.
 # used to determine which orgs have more then 0 slots assigned
 - kind: GSoCOrganization
   properties:
@@ -59,10 +76,25 @@ indexes:
   - name: status
   - name: slots
 
+# Used to determine which orgs have more than zero slots assigned.
+- kind: GSoCOrganization
+  properties:
+  - name: program
+  - name: status
+  - name: slots
+
+# TODO(nathaniel): Drop this when we are sure that "scope" is gone everywhere.
 # used to determine whether a logo has been set
 - kind: GSoCOrganization
   properties:
   - name: scope
+  - name: status
+  - name: logo_url
+
+# Used to find accepted organizations for which a logo has been set.
+- kind: GSoCOrganization
+  properties:
+  - name: program
   - name: status
   - name: logo_url
 
@@ -93,10 +125,18 @@ indexes:
   - name: program
   - name: status
 
+# TODO(nathaniel): Drop this when we are sure that "scope" is gone everywhere.
 # used to determine whether a logo has been set for GCIOrganization
 - kind: GCIOrganization
   properties:
   - name: scope
+  - name: status
+  - name: logo_url
+
+# Used to determine organizations for which a logo has been set.
+- kind: GCIOrganization
+  properties:
+  - name: program
   - name: status
   - name: logo_url
 
