@@ -72,8 +72,7 @@ class Connection(db.Model):
   #: The organization entity involved in the connection for which a user
   #: may gain heightened privileges.
   organization = db.ReferenceProperty(Organization,
-      required=True,
-      collection_name='connections')
+      collection_name='user_connections')
 
   #: Property for the ShowConnection page to keep track of the time that the
   #: connection was initiated.

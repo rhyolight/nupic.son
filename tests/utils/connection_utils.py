@@ -14,8 +14,8 @@
 
 """ Utilities to manipulate Connection data."""
 
-from soc.modules.gsoc.models import connection as connection_model
-from soc.modules.gsoc.models import connection_message as connection_message_model
+from melange.models import connection as connection_model
+from melange.models import connection_message as connection_message_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -37,7 +37,7 @@ def seed_new_connection(user, organization, **kwargs):
       }
   properties.update(kwargs)
   
-  return seeder_logic.seed(connection_model.GSoCConnection, properties,
+  return seeder_logic.seed(connection_model.Connection, properties,
       recurse=False, auto_seed_optional_properties=True)
 
 
@@ -46,7 +46,7 @@ def seed_new_connection_message(connection, **kwargs):
   connection and other properties.
 
   Args:
-    connection: GSoCConnection entity to seed a message for
+    connection: Connection entity to seed a message for
 
   Returns:
     the newly seeded GSoCConnectionMessage entity
@@ -57,5 +57,5 @@ def seed_new_connection_message(connection, **kwargs):
       }
   properties.update(kwargs)
 
-  return seeder_logic.seed(connection_message_model.GSoCConnectionMessage,
+  return seeder_logic.seed(connection_message_model.ConnectionMessage,
       properties, recurse=False, auto_seed_optional_properties=True)
