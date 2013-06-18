@@ -38,6 +38,9 @@ from paver.path import path
 # Paver comes with Jason Orendorff's 'path' module; this makes path
 # manipulation easy and far more readable.
 PROJECT_DIR = path(__file__).dirname().abspath()
+JS_THIRDPARTY_DIRS = ['jlinq', 'jquery', 'json', 'LABjs', 'modernizr']
+JS_MELANGE_DIRS = ['soc/content/js']
+JS_DIRS = JS_THIRDPARTY_DIRS + JS_MELANGE_DIRS
 
 
 # Set some default options. Having the options at the top of the file cleans
@@ -47,16 +50,16 @@ options(
     project_dir = PROJECT_DIR,
     app_build = PROJECT_DIR / 'build',
     app_folder = PROJECT_DIR / 'app',
+    copy_dirs = JS_DIRS,
     overrides_folder = PROJECT_DIR / 'overrides',
-    overrides_dirs = ['soc', 'soc/models'],
+    overrides_dirs = ['soc', 'soc/models', 'soc/content'],
     overrides_files = ['soc/models/universities.py'],
     app_files = ['app.yaml', 'index.yaml', 'queue.yaml', 'cron.yaml',
                  'mapreduce.yaml', 'main.py', 'settings.py', 'urls.py',
                  'gae_django.py', 'profiler.py', 'appengine_config.py'],
-    app_dirs =  ["melange", "soc", "feedparser", "djangoforms",
-                 "jquery.min", "ranklist", "shell", "json.min", "jlinq",
-                 "modernizr.min", "html5lib", "LABjs.min", "gviz", "webmaster",
-                 "gdata", "atom", "mapreduce"],
+    app_dirs =  ["melange", "soc", "feedparser", "djangoforms", "ranklist",
+                 "shell", "html5lib", "gviz", "webmaster", "gdata", "atom",
+                 "mapreduce"] + JS_THIRDPARTY_DIRS,
     css_dirs = ["soc/content/css/v2/gsoc/", "soc/content/css/v2/gci"],
     css_files = {
         "jquery-ui/jquery.ui.merged.css": [
@@ -117,10 +120,10 @@ options(
   closure = Bunch(
     js_filter = None,
     js_dir = None,
-    js_dirs = ["soc/content/js", "jquery", "jlinq",
-               "modernizr", "json", "LABjs"],
+    output_to_build = False,
+    js_dirs = JS_DIRS,
     closure_bin = PROJECT_DIR / "thirdparty/closure/compiler.jar",
-    no_optimize = ["jquery-jqgrid.base.js"],
+    no_optimize = ["jquery-jqgrid.base.js", "jLinq-2.2.1.js"],
     **options.build
   )
 )
@@ -256,6 +259,13 @@ def build(options):
   # Handle overrides
   overrides(options)
 
+  # Handle deep overrides (copy)
+  deep_overrides(options)
+
+  # Run closure over JS files
+  options.closure.build = True
+  closure(options)
+
 
 @task
 @cmdopts([
@@ -367,19 +377,23 @@ def closure(options):
   if options.js_dir:
     dirs = [options.app_folder / options.js_dir]
   else:
-    dirs = [options.app_folder / i for i in options.js_dirs]
+    if options.closure.build:
+      dirs = [options.app_build / i for i in options.js_dirs]
+    else:
+      dirs = [options.app_folder / i for i in options.js_dirs]
   old_size = 0
   new_size = 0
 
   js_filter = options.js_filter if options.js_filter else "*.js"
 
   for js_dir in dirs:
-    min_dir = js_dir + ".min"
-
-    if not options.js_filter:
-      min_dir.rmtree()
-
-    js_dir.copytree(min_dir)
+    if options.closure.build:
+      min_dir = js_dir
+    else:
+      min_dir = js_dir + ".min"
+      if not options.js_filter:
+        min_dir.rmtree()
+        js_dir.copytree(min_dir)
 
     for f in min_dir.walkfiles(js_filter):
       if f.name in options.no_optimize:
@@ -400,6 +414,19 @@ def closure(options):
   paver.tasks.environment.info(
       "%-4sCLOSURE: Source file sizes: %s, Dest file sizes: %s, Rate: %s",
       '', old_size, new_size, rate)
+
+
+@task
+def deep_overrides(options):
+  """Copies files from the copy structure to the build directory.
+  """
+  dirs = [options.app_folder / i for i in options.copy_dirs]
+
+  for source_dir in dirs:
+    dest_dir = options.app_build / options.app_folder.relpathto(source_dir)
+    deref = dest_dir.readlinkabs()
+    dest_dir.remove()
+    source_dir.copytree(dest_dir)
 
 
 @task
