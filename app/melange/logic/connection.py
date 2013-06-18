@@ -16,9 +16,9 @@
 """
 
 from melange.request import exception
-from soc.logic import connection_message as connection_message_logic
-from soc.models.connection import Connection
-from soc.models.connection_message import ConnectionMessage
+from melange.logic import connection_message as connection_message_logic
+from melange.models.connection import Connection
+from melange.models.connection_message import ConnectionMessage
 
 CONNECTION_EXISTS_ERROR = \
     "Connection between %s and %s already exists."
@@ -27,7 +27,6 @@ def queryForAncestor(ancestor, keys_only=False):
   """Returns a Query object for Connections with the specified ancestor.
   """
   return Connection.all(keys_only=keys_only).ancestor(ancestor)
-
 
 def queryForAncestorAndOrganization(ancestor, organization, keys_only=False):
   """Returns a Query object for Connections with the specified ancestor and
@@ -73,9 +72,7 @@ def createConnection(profile, org, user_state, org_state, role):
     raise exception.Forbidden(
         CONNECTION_EXISTS_ERROR % (profile.name, org.name))
 
-  connection = Connection(
-      parent=profile.parent(), organization=org
-      )
+  connection = Connection(parent=profile.parent(), organization=org)
   connection.user_state = user_state
   connection.org_state = org_state
   connection.role = role

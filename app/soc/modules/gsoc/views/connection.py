@@ -25,17 +25,14 @@ from django.forms.widgets import RadioSelect
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.logic import connection as connection_logic
+from melange.models import connection
 from soc.logic import accounts
 from soc.logic import cleaning
-from soc.models import connection
 from soc.logic.helper import notifications
 from soc.models.user import User
-from soc.modules.gsoc.logic import connection as connection_logic
 from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.models.connection import GSoCAnonymousConnection
-from soc.modules.gsoc.models.connection import GSoCConnection
-from soc.modules.gsoc.models.connection_message import GSoCConnectionMessage
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
@@ -53,51 +50,45 @@ DEF_EXCEED_RATE_LIMIT = 'Exceeded rate limit, too many pending connections.'
 DEF_MAX_PENDING_CONNECTIONS = 3
 
 @db.transactional
-def connectionDoesExistTxn(user, org):
-  """Check to see if a GSoCConnection already exists.
-
-  Helper method to check for an existing GSoCConnection between a user
-  and an organization transactionally.
+def create_connection_txn(data, profile, organization,
+    role, message, context, recipients,
+    org_state=connection.STATE_UNREPLIED,
+    user_state=connection.STATE_UNREPLIED):
+  """ Create a new Connection entity, attach any messages provided by the
+  initiator and send a notification email to the recipient(s).
 
   Args:
-      user: The User instance that should be the recipient of the connection.
-      org: The org instance involved in the other end of the connection.
-
+    data: RequestData object for the current request.
+    profile: Profile with which to connect.
+    organization: Organization with which to connect.
+    message: User-provided message for the connection.
+    context: The notification context method.
+    recipients: List of one or more recipients for the notification email.
+    org_state: Org state for the connection.
+    user_state: User state for the connection.
+  
   Returns:
-      True if a GSoCConnection exists between the user and org, else False.
+    The newly created Connection entity.
   """
-  query = connection_logic.queryForAncestorAndOrganization(user, org, True)
-  return query.count(limit=1) > 0
 
-@db.transactional
-def send_message_txn(form, profile, connection_entity):
-  """Helper method to generate a GSoCConnectionMessage sent from a user.
+  if connection_logic.connectionExists(profile.parent(), organization):
+    raise exception.Forbidden(message=DEF_CONNECTION_EXISTS)
+    # Generate the new connection.
+    new_connection = connection_logic.createConnection(
+        profile=profile, org=organization,
+        org_state=org_state, user_state=user_state,
+        role = connection_form.cleaned_data['role'])
+    # Attach any admin-provided messages to the connection.
+    if message != '':
+      connection_logic.createConnectionMessage(
+        connection=connection, author=profile, content=message)
+    # Dispatch an email to the user.
+    notification = context(data=data, connection=new_connection, email=email,
+        recipients=recipients, message=message)
+    sub_txn = mailer.getSpawnMailTaskTxn(notification, parent=new_connection)
+    sub_txn()
 
-  Args:
-      form: ConnectionForm with the post data.
-      profile: GSoCProfile instance.
-      connection: GSoCConnection instance.
-  """
-  properties = {
-    'author': profile,
-    'content': form.cleaned_data['message']
-    }
-  message = GSoCConnectionMessage(parent=connection_entity, **properties)
-  message.put()
-
-@db.transactional
-def generate_message_txn(connection_entity, content):
-  """Generate a new GSoCConnection message.
-
-  Helper method to create a new GSoCConnectionMessage object for use when
-  programatically generating messages after updating roles.
-  """
-  properties = {
-      'is_auto_generated' : True,
-      'content': content
-      }
-  message = GSoCConnectionMessage(parent=connection_entity, **properties)
-  message.put()
+    return new_connection  
 
 def clean_link_id(link_id):
   """Apply validation filters to a single link id from the user field.
@@ -335,39 +326,17 @@ class OrgConnectionPage(GSoCRequestHandler):
     if not connection_form.is_valid():
       return False
 
-    connection_form.cleaned_data['organization'] = data.organization
-
-    message_provided = (connection_form.cleaned_data['message'] != '')
-
-    def create_connection_txn(user, email):
-      if connectionDoesExistTxn(user, data.organization):
-        raise exception.Forbidden(message=DEF_CONNECTION_EXISTS)
-
-      new_connection = connection_form.create(parent=user, commit=False)
-      new_connection.org_state = connection.STATE_ACCEPTED
-      new_connection.role =  connection_form.cleaned_data['role_choice']
-      new_connection.put()
-
-      if message_provided:
-        send_message_txn(connection_form, data.profile, new_connection)
-
-      context = notifications.orgConnectionContext(data, new_connection,
-          email, connection_form.cleaned_data['message'])
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=new_connection)
-      sub_txn()
-      return new_connection
-
-    data.connection = None
-
     # The valid_users field should contain a list of User instances populated 
     # by the form's cleaning methods.
-    # TODO(drew): Use form.valid_users
     for user in data.valid_users:
       connection_form.instance = None
       profile = GSoCProfile.all().ancestor(user).get()
-
-      connection_form.cleaned_data['profile'] = profile
-      db.run_in_transaction(create_connection_txn, user, profile.email)
+      create_connection_txn(
+          data=data, profile=profile, organization=data.organization,
+          role=connection_form.cleaned_data['role'],
+          message=connection_form.cleaned_data['message'],
+          context=notifications.orgConnectionContext,
+          recipients=[profile.email], org_state=connection.STATE_ACCEPTED)
 
     def create_anonymous_connection_txn(email):
       # Create the anonymous connection - a placeholder until the user
@@ -487,16 +456,10 @@ class UserConnectionPage(GSoCRequestHandler):
     assert isSet(data.organization)
     assert isSet(data.user)
 
-    connection_form = UserConnectionForm(request_data=data, data=data.POST,
-        is_admin=False)
+    connection_form = UserConnectionForm(
+        request_data=data, data=data.POST, is_admin=False)
     if not connection_form.is_valid():
       return None
-
-    # When initiating a connection, the User only has the option of requesting
-    # a mentoring position, so we don't need to display any selections or set
-    # anything other than the user_mentor property for now.
-    connection_form.cleaned_data['profile'] = data.profile
-    connection_form.cleaned_data['organization'] = data.organization
 
     # Get the sender and recipient for the notification email.
     q = GSoCProfile.all().filter('org_admin_for', data.organization)
@@ -504,28 +467,12 @@ class UserConnectionPage(GSoCRequestHandler):
     admins = q.fetch(50)
     recipients = [i.email for i in admins]
 
-    # We don't want to generate a message with empty content in the event that
-    # a user does not provide any.
-    message_provided = (connection_form.cleaned_data['message'] != '')
-
-    def create_connection(org):
-      if connectionDoesExistTxn(data.user, data.organization):
-        raise exception.Forbidden(message=DEF_CONNECTION_EXISTS)
-
-      new_connection = ConnectionForm.create(
-          connection_form, parent=data.user, commit=False)
-      new_connection.user_state = connection.STATE_ACCEPTED
-      new_connection.put()
-
-      if message_provided:
-        send_message_txn(connection_form, data.profile, new_connection)
-
-      context = notifications.userConnectionContext(data, new_connection,
-          recipients, connection_form.cleaned_data['message'])
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=new_connection)
-      sub_txn()
-
-    db.run_in_transaction(create_connection, data.organization)
+    create_connection_txn(
+        data=data, profile=profile, organization=data.organization,
+        role=connection.MENTOR_ROLE,
+        message=connection_form.cleaned_data['message'],
+        context=notifications.userConnectionContext,
+        recipients=[profile.email], user_state=connection.STATE_ACCEPTED)
 
     return True
 

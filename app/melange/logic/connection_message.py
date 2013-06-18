@@ -16,7 +16,7 @@
 
 from google.appengine.ext import db
 
-from soc.models import connection_message as connection_message_model
+from melange.models import connection_message as connection_message_model
 
 
 class QueryBuilder(object):
