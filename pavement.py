@@ -120,7 +120,7 @@ options(
     js_dirs = ["soc/content/js", "jquery", "jlinq",
                "modernizr", "json", "LABjs"],
     closure_bin = PROJECT_DIR / "thirdparty/closure/compiler.jar",
-    no_optimize = ["jquery-spin-1.1.1.js", "jquery-jqgrid.base.js"],
+    no_optimize = ["jquery-jqgrid.base.js"],
     **options.build
   )
 )
