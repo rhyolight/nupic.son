@@ -70,8 +70,8 @@ def create_connection_txn(data, profile, organization,
   """
 
   if connection_logic.connectionExists(profile.parent(), organization):
-    error = connection.CONNECTION_EXISTS_ERROR % \
-        (profile.name, organization.name)
+    error = (connection.CONNECTION_EXISTS_ERROR %
+        profile.name, organization.name)
     raise exception.Forbidden(message=error)
     # Generate the new connection.
     new_connection = connection_logic.createConnection(
