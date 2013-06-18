@@ -19,9 +19,10 @@ from google.appengine.ext import db
 from django.forms import fields
 from django.core.urlresolvers import reverse
 
+from melange.models import connection
+from melange.models.connection import Connection
 from soc.logic import cleaning
 from soc.logic import dicts
-from soc.models import connection
 from soc.models.user import User
 from soc.views import forms
 from soc.views import profile
@@ -30,7 +31,6 @@ from soc.views.helper import url_patterns
 from soc.models.universities import UNIVERSITIES
 
 from soc.modules.gsoc.logic import profile as profile_logic
-from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
@@ -51,7 +51,7 @@ def _handleAnonymousConnection(data, profile):
   @db.transactional(xg=True)
   def activate_new_connection_txn():
     # Create the new connection based on the values of the placeholder.
-    new_connection = GSoCConnection(parent=data.user.key(),
+    new_connection = Connection(parent=data.user.key(),
         organization=data.anonymous_connection.parent(),
         profile=profile,
         role=data.anonymous_connection.role)

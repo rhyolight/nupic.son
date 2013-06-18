@@ -23,11 +23,12 @@ from django import http
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from melange.models import connection
+from melange.models.connection import Connection
 from melange.request import exception
 from soc.logic import cleaning
 from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
-from soc.models import connection
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
@@ -43,7 +44,6 @@ from soc.modules.gsoc.logic.evaluations import evaluationRowAdder
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.logic.survey_record import getEvalRecord
-from soc.modules.gsoc.models.connection import GSoCConnection
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -1317,11 +1317,11 @@ class OrgConnectionComponent(Component):
     if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
-    q = GSoCConnection.all()
+    q = Connection.all()
     q.filter('organization IN', [org.key() for org in self.data.org_admin_for])
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCConnection, ['organization'])
+    prefetcher = lists.ModelPrefetcher(Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
       self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
@@ -1387,10 +1387,10 @@ class UserConnectionComponent(Component):
     if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
-    q = GSoCConnection.all().ancestor(self.data.user)
+    q = Connection.all().ancestor(self.data.user)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCConnection, ['organization'])
+    prefetcher = lists.ModelPrefetcher(Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
