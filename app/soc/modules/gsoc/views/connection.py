@@ -21,7 +21,6 @@ from google.appengine.api import users
 from django import forms as django_forms
 from django.core.urlresolvers import reverse
 from django.forms.fields import ChoiceField
-from django.forms.widgets import RadioSelect
 from django.utils.translation import ugettext
 
 from melange.request import exception
@@ -68,27 +67,25 @@ def create_connection_txn(data, profile, organization,
   Returns:
     The newly created Connection entity.
   """
-
   if connection_logic.connectionExists(profile.parent(), organization):
-    error = (connection.CONNECTION_EXISTS_ERROR %
-        profile.name, organization.name)
-    raise exception.Forbidden(message=error)
+    raise exception.Forbidden(message=connection.CONNECTION_EXISTS_ERROR %
+        (profile.name, organization.name))
     # Generate the new connection.
-    new_connection = connection_logic.createConnection(
-        profile=profile, org=organization,
-        org_state=org_state, user_state=user_state,
-        role = connection_form.cleaned_data['role'])
-    # Attach any user-provided messages to the connection.
-    if message:
-      connection_logic.createConnectionMessage(
-        connection=new_connection, author=profile, content=message)
-    # Dispatch an email to the user.
-    notification = context(data=data, connection=new_connection, email=email,
-        recipients=recipients, message=message)
-    sub_txn = mailer.getSpawnMailTaskTxn(notification, parent=new_connection)
-    sub_txn()
+  new_connection = connection_logic.createConnection(
+      profile=profile, org=organization,
+      org_state=org_state, user_state=user_state,
+      role=role)
+  # Attach any user-provided messages to the connection.
+  if message:
+    connection_logic.createConnectionMessage(
+      connection=new_connection, author=profile, content=message)
+  # Dispatch an email to the user.
+  notification = context(data=data, connection=new_connection,
+      recipients=recipients, message=message)
+  sub_txn = mailer.getSpawnMailTaskTxn(notification, parent=new_connection)
+  sub_txn()
 
-    return new_connection  
+  return new_connection
 
 def clean_link_id(link_id):
   """Apply validation filters to a single link id from the user field.
@@ -139,8 +136,6 @@ def clean_email(email):
 class ConnectionForm(GSoCModelForm):
   """Django form for the Connection page."""
 
-  role_choice = ChoiceField(widget=django_forms.Select(),
-      choices=((connection.MENTOR_ROLE, 'Mentor'),))
   message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
 
   def __init__(self, request_data=None, message=None, *args, **kwargs):
@@ -168,6 +163,7 @@ class ConnectionForm(GSoCModelForm):
 
   class Meta:
     model = connection.Connection
+    exclude = connection.Connection.allFields()
 
 class OrgConnectionForm(ConnectionForm):
   """Django form to show specific fields for an organization."""
@@ -177,18 +173,21 @@ class OrgConnectionForm(ConnectionForm):
   def __init__(self, request_data=None, message=None, *args, **kwargs):
     super(OrgConnectionForm, self).__init__(*args, **kwargs)
 
+    self.request_data = request_data
+
     field = self.fields.pop('users')
     field.help_text = ugettext(
-        'The link_id or email address of the invitee, '
+        'The link_id or email address of the invitee(s), '
         ' separate multiple values with a comma')
     self.fields.insert(0, 'users', field)
 
-    self.fields['role_choice'].choices = (
-        (connection.MENTOR_ROLE, 'Mentor'),
-        (connection.ORG_ADMIN_ROLE, 'Org Admin')
-        )
-    self.fields['role_choice'].label = ugettext('Role to offer the user(s)')
-    self.fields['role_choice'].help_text = ugettext(
+    role_choices = (
+      (connection.MENTOR_ROLE, 'Mentor'),
+      (connection.ORG_ADMIN_ROLE, 'Org Admin'))
+    self.fields['role'].widget = django_forms.fields.Select(
+        choices=role_choices)
+    self.fields['role'].label = ugettext('Role to offer the user(s)')
+    self.fields['role'].help_text = ugettext(
         'Role that you are offering to '
         'the specified users in this organization')
 
@@ -199,12 +198,12 @@ class OrgConnectionForm(ConnectionForm):
     validation to the users field.
     """
     id_list = self.cleaned_data['users'].split(',')
-    # List containing User entities referenced via link ids or emails from 
+    # List containing User entities referenced via link ids or emails from
     # the form data provided by the org admin.
     self.request_data.valid_users = []
     # List of emails that do not correspond to valid Users.
     self.request_data.anonymous_users = []
-    
+
     for user_id in id_list:
       if '@' in user_id:
         user = clean_email(user_id)
@@ -218,7 +217,7 @@ class OrgConnectionForm(ConnectionForm):
 
   class Meta:
     model = connection.Connection
-    exclude = connection.Connection.allFields()
+    fields = ['role']
 
 
 class MessageForm(GSoCModelForm):
@@ -248,7 +247,7 @@ class MessageForm(GSoCModelForm):
 class ConnectionResponseForm(GSoCModelForm):
   """Django form to provide Connection responses in ShowConnection.
   """
-  responses = ChoiceField(widget=django_forms.Select())
+  responses = django_forms.fields.ChoiceField(widget=django_forms.Select())
 
   def __init__(self, request_data=None, choices=None, *args, **kwargs):
     super(ConnectionResponseForm, self).__init__(*args, **kwargs)
@@ -303,7 +302,7 @@ class OrgConnectionPage(GSoCRequestHandler):
     if not connection_form.is_valid():
       return False
 
-    # The valid_users field should contain a list of User instances populated 
+    # The valid_users field should contain a list of User instances populated
     # by the form's cleaning methods.
     for user in data.valid_users:
       connection_form.instance = None
@@ -321,8 +320,8 @@ class OrgConnectionPage(GSoCRequestHandler):
     def create_anonymous_connection_txn(email):
       # Create the anonymous connection - a placeholder until the user
       # registers and activates the real connection.
-      new_connection = GSoCAnonymousConnection(parent=data.organization)
-      new_connection.role = connection_form.cleaned_data['role_choice']
+      new_connection = connection.AnonymousConnection(parent=data.organization)
+      new_connection.role = connection_form.cleaned_data['role']
       new_connection.put()
 
       # Generate a hash of the object's key for later validation.
@@ -339,7 +338,7 @@ class OrgConnectionPage(GSoCRequestHandler):
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=new_connection)
       sub_txn()
 
-    q = GSoCAnonymousConnection.all()
+    q = connection.AnonymousConnection.all()
     data.sent_email_to = []
     data.duplicate_email = []
     for email in data.anonymous_users:
@@ -447,20 +446,19 @@ class UserConnectionPage(GSoCRequestHandler):
     recipients = [i.email for i in admins]
 
     create_connection_txn(
-        data=data, profile=profile, organization=data.organization,
+        data=data, profile=data.profile, organization=data.organization,
         role=connection.MENTOR_ROLE,
         message=connection_form.cleaned_data['message'],
         context=notifications.userConnectionContext,
-        recipients=[profile.email], user_state=connection.STATE_ACCEPTED)
+        recipients=recipients, user_state=connection.STATE_ACCEPTED)
 
     return True
 
   def context(self, data, check, mutator):
     """Handler for Connection page request."""
 
-    connection_form = UserConnectionForm(request_data=data,
+    connection_form = ConnectionForm(request_data=data,
         message=data.organization.role_request_message,
-        is_admin=False,
         data=data.POST or None)
 
     return {
