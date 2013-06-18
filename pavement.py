@@ -123,7 +123,7 @@ options(
     output_to_build = False,
     js_dirs = JS_DIRS,
     closure_bin = PROJECT_DIR / "thirdparty/closure/compiler.jar",
-    no_optimize = ["jquery-jqgrid.base.js"],
+    no_optimize = ["jquery-jqgrid.base.js", "jLinq-2.2.1.js"],
     **options.build
   )
 )
