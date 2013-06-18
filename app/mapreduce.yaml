@@ -42,7 +42,7 @@ mapreduce:
 - name: ConvertSponsorScopedModel
   mapper:
     input_reader: mapreduce.input_readers.DatastoreKeyInputReader
-    handler: soc.mapreduce.convert_program_scoped_model.process
+    handler: soc.mapreduce.convert_sponsor_scoped_model.process
     params:
     - name: entity_kind
 
