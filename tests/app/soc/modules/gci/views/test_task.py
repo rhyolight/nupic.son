@@ -12,18 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests for GCITask public view.
-"""
-
+"""Tests for GCITask public view."""
 
 import datetime
+
+from django.utils import html
 
 from soc.modules.gci.logic import org_score as org_score_logic
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.logic.helper.notifications import (
     DEF_NEW_TASK_COMMENT_SUBJECT)
-from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.profile import GCIProfile
 
 from tests.gci_task_utils import GCITaskHelper
@@ -47,7 +46,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     # Create a task, status published
     profile = GCIProfileHelper(self.gci, self.dev_test)
     self.task = profile.createOtherUser('mentor@example.com').\
-        createMentorWithTask('Open', self.org)
+        createMentorWithTask(task_model.OPEN, self.org)
     self.createSubscribersForTask()
 
   #TODO(orc.avs): move notification tests to logic
@@ -159,7 +158,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_unpublish')
 
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Unpublished')
 
@@ -171,13 +170,13 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = self._taskPageUrl(self.task)
 
     # try to unpublish a reopened task
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     task.status = 'Reopened'
     task.put()
 
     response = self.buttonPost(url, 'button_unpublish')
 
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
 
     self.assertResponseForbidden(response)
     self.assertEqual(task.status, 'Reopened')
@@ -221,9 +220,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_publish')
 
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertEqual(task.status, 'Open')
+    self.assertEqual(task.status, task_model.OPEN)
 
   def testPostButtonPublishUnapprovedTask(self):
     """Tests the publish button.
@@ -236,9 +235,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_publish')
 
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertEqual(task.status, 'Open')
+    self.assertEqual(task.status, task_model.OPEN)
 
   def testPostButtonPublishByUserWithNoRole(self):
     """Tests the publish button pressed by a user with no role.
@@ -285,7 +284,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_delete')
 
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task, None)
 
@@ -306,7 +305,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     response = self.buttonPost(url, 'button_assign')
 
     # check if the task is properly assigned and a deadline has been set
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Claimed')
     self.assertEqual(task.student.key(), student.key())
@@ -339,7 +338,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     response = self.buttonPost(url, 'button_unassign')
 
     # check if the task is properly unassigned
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Reopened')
     self.assertEqual(task.student, None)
@@ -367,7 +366,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     response = self.buttonPost(url, 'button_close')
 
     # check if the task is properly closed
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Closed')
     self.assertEqual(task.student.key(), student.key())
@@ -408,7 +407,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     response = self.buttonPost(url, 'button_needs_work')
 
     # check if the task is properly closed
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'NeedsWork')
     self.assertEqual(task.student.key(), student.key())
@@ -440,7 +439,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     response = self.buttonPost(
         url, 'button_extend_deadline', {'hours': 1})
 
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
 
     delta = task.deadline - deadline
@@ -461,7 +460,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     response = self.buttonPost(url, 'button_claim')
 
     # check if the task is properly claimed
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'ClaimRequested')
     self.assertEqual(task.student.key(), self.data.profile.key())
@@ -484,7 +483,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     response = self.buttonPost(url, 'button_unclaim')
 
     # check if the task is properly opened
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Reopened')
     self.assertEqual(task.student, None)
@@ -506,7 +505,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_subscribe')
 
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertTrue(profile.key() in task.subscribers)
 
@@ -523,7 +522,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_unsubscribe')
 
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertFalse(profile.key() in task.subscribers)
 
@@ -575,7 +574,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
 
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'NeedsReview')
 
@@ -599,7 +598,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     self.assertResponseForbidden(response)
 
-    task = GCITask.get(self.task.key())
+    task = task_model.GCITask.get(self.task.key())
     self.assertEqual(task.status, 'Closed')
 
   def testPostDeleteSubmission(self):
@@ -631,3 +630,27 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """Returns the url to the task update GAE Task.
     """
     return '/tasks/gci/task/update/%s' %task.key().id()
+
+
+class WorkSubmissionDownloadTest(GCIDjangoTestCase):
+  """Tests the WorkSubmissionDownload class."""
+
+  def setUp(self):
+    """Creates a published task for self.org."""
+    super(WorkSubmissionDownloadTest, self).setUp()
+    self.init()
+    self.timeline.tasksPubliclyVisible()
+
+    # Create a status-published task.
+    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
+    profile_helper.createOtherUser('mentor@example.com')
+    self.task = profile_helper.createMentorWithTask(task_model.OPEN, self.org)
+
+  def testXSS(self):
+    xss_payload = '><img src=http://www.google.com/images/srpr/logo4w.png>'
+    url = '/gci/work/download/%s/%s?id=%s' % (
+        self.task.program.key().name(), self.task.key().id(), xss_payload)
+    response = self.get(url)
+    self.assertResponseBadRequest(response)
+    self.assertNotIn(xss_payload, response.content)
+    self.assertIn(html.escape(xss_payload), response.content)
