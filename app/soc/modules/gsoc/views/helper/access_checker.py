@@ -542,7 +542,7 @@ class AccessChecker(access_checker.AccessChecker):
     # TODO(nathaniel): Yep, this is weird.
     try:
       self.studentSignupActive()
-    except UserError:
+    except exception.UserError:
       self.canStudentUpdateProposalPostSignup()
 
     # check if the proposal belongs to the current user

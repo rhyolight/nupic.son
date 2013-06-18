@@ -180,6 +180,22 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     self.assertEmailSent(to=mentor.profile.email, n=1)
 
+  def testUpdateProposalAfterDeadline(self):
+    """Tests attempting to update a proposal after the deadline has passed."""
+    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor.createOtherUser('mentor@example.com')
+    mentor.createMentor(self.org)
+
+    self.data.createStudentWithProposal(self.org, mentor.profile)
+    self.timeline.studentsAnnounced()
+
+    proposal = proposal_model.GSoCProposal.all().get()
+
+    url = '/gsoc/proposal/update/%s/%s/%s' % (
+        self.gsoc.key().name(), self.data.profile.link_id, proposal.key().id())
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
   def testUpdateNonExistingProposal(self):
     self.data.createStudent()
     mock_id = 1
