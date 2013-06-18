@@ -57,22 +57,22 @@ handlers:
 
 - url: /js/(.*?)/jquery/(.*)
   static_files: jquery/\2
-  upload: jquery\.min/(.*)
+  upload: jquery/(.*)
   expiration: 1d
 
 - url: /js/(.*?)/json/(.*)
   static_files: json/\2
-  upload: json\.min/(.*)
+  upload: json/(.*)
   expiration: 30d
 
 - url: /js/(.*?)/modernizr/(.*)
   static_files: modernizr/\2
-  upload: modernizr\.min/(.*)
+  upload: modernizr/(.*)
   expiration: 30d
 
 - url: /js/(.*?)/LABjs/(.*)
   static_files: LABjs/\2
-  upload: LABjs\.min/(.*)
+  upload: LABjs/(.*)
   expiration: 30d
 
 - url: /admin/shell.*
