@@ -27,6 +27,7 @@ from django.utils.translation import ugettext
 from melange.request import exception
 from melange.logic import connection as connection_logic
 from melange.models import connection
+from melange.models.connection_message import ConnectionMessage
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic.helper import notifications
@@ -45,9 +46,6 @@ from soc.tasks import mailer
 
 
 DEF_NONEXISTANT_USER = 'The user with the email %s does not exist.'
-DEF_CONNECTION_EXISTS = 'This connection already exists.'
-DEF_EXCEED_RATE_LIMIT = 'Exceeded rate limit, too many pending connections.'
-DEF_MAX_PENDING_CONNECTIONS = 3
 
 @db.transactional
 def create_connection_txn(data, profile, organization,
@@ -72,7 +70,9 @@ def create_connection_txn(data, profile, organization,
   """
 
   if connection_logic.connectionExists(profile.parent(), organization):
-    raise exception.Forbidden(message=DEF_CONNECTION_EXISTS)
+    error = connection.CONNECTION_EXISTS_ERROR % \
+        (profile.name, organization.name)
+    raise exception.Forbidden(message=error)
     # Generate the new connection.
     new_connection = connection_logic.createConnection(
         profile=profile, org=organization,
@@ -81,7 +81,7 @@ def create_connection_txn(data, profile, organization,
     # Attach any admin-provided messages to the connection.
     if message != '':
       connection_logic.createConnectionMessage(
-        connection=connection, author=profile, content=message)
+        connection=new_connection, author=profile, content=message)
     # Dispatch an email to the user.
     notification = context(data=data, connection=new_connection, email=email,
         recipients=recipients, message=message)
@@ -169,7 +169,7 @@ class ConnectionForm(GSoCModelForm):
     self.fields['message'].required = False
 
   class Meta:
-    model = GSoCConnection
+    model = connection.Connection
 
 class OrgConnectionForm(ConnectionForm):
   """Django form to show specific fields for an organization."""
@@ -227,8 +227,8 @@ class OrgConnectionForm(ConnectionForm):
 
 
   class Meta:
-    model = GSoCConnection
-    exclude = GSoCConnection.allFields()
+    model = connection.Connection
+    exclude = connection.Connection.allFields()
 
 
 class MessageForm(GSoCModelForm):
@@ -239,7 +239,7 @@ class MessageForm(GSoCModelForm):
     self.fields['content'].label = ugettext(' ')
 
   class Meta:
-    model = GSoCConnectionMessage
+    model = ConnectionMessage
     fields = ['content']
 
   def clean_content(self):
@@ -284,8 +284,8 @@ class UserConnectionForm(ConnectionForm):
         'Your message to the organization')
 
   class Meta:
-    model = GSoCConnection
-    exclude = GSoCConnection.allFields()
+    model = connection.Connection
+    exclude = connection.Connection.allFields()
 
 
 class OrgConnectionPage(GSoCRequestHandler):
@@ -459,7 +459,7 @@ class UserConnectionPage(GSoCRequestHandler):
     connection_form = UserConnectionForm(
         request_data=data, data=data.POST, is_admin=False)
     if not connection_form.is_valid():
-      return None
+      return False
 
     # Get the sender and recipient for the notification email.
     q = GSoCProfile.all().filter('org_admin_for', data.organization)
@@ -477,7 +477,7 @@ class UserConnectionPage(GSoCRequestHandler):
     return True
 
   def context(self, data, check, mutator):
-    """Handler for GSoCConnection page request."""
+    """Handler for Connection page request."""
 
     connection_form = UserConnectionForm(request_data=data,
         message=data.organization.role_request_message,
