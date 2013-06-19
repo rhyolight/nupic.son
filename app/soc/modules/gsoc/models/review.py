@@ -22,6 +22,8 @@ import soc.models.comment
 
 class Review(soc.models.comment.Comment):
   """Model of a Review.
+
+  This model is now deprecated.
   """
 
   #: the score given by the reviewer

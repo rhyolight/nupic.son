@@ -146,6 +146,15 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.task.GCITask
 
+- name: GCIInsertDummyStudentProfileDataForSafeHarboring
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreInputReader
+    handler: soc.mapreduce.gci_insert_dummy_data.process
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.profile.GCIStudentInfo
+    - name: program_key
+
 - name: GCIInitTaskAuthorship
   mapper:
     input_reader: mapreduce.input_readers.DatastoreInputReader
