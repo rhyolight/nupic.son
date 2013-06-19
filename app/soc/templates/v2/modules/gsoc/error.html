@@ -23,6 +23,6 @@ limitations under the License.
   {{ logged_in_msg.render }}
 
   <div id="flash-message" class="flash-error">
-        <p>{{ message|safe }}</p>
+        <p>{{ message|escape }}</p>
   </div>
 {% endblock page_content %}

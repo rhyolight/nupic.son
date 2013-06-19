@@ -20,6 +20,6 @@ limitations under the License.
 
 {% block page_content %}
   <div id="flash-message" class="flash-error">
-        <p>{{ message|safe }}</p>
+        <p>{{ message|escape }}</p>
   </div>
 {% endblock page_content %}
