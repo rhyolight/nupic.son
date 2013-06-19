@@ -4,7 +4,7 @@ module.exports = function(grunt) {
 			package: grunt.file.readJSON('package.json'),
 			src: {
         css_dir: 'app/soc/content/css',
-        less_dir: 'app/soc/content/less',
+        less_dir: 'app/soc/content/less/gsoc',
 				js_dir: './app/soc/content/js',
         tests_dir: './tests',
 				js_files: '<%= meta.src.js_dir %>/**/*.js',
