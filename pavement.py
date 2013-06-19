@@ -50,7 +50,7 @@ options(
     project_dir = PROJECT_DIR,
     app_build = PROJECT_DIR / 'build',
     app_folder = PROJECT_DIR / 'app',
-    copy_dirs = JS_DIRS,
+    copy_dirs = JS_DIRS + ['soc/content/css'],
     overrides_folder = PROJECT_DIR / 'overrides',
     overrides_dirs = ['soc', 'soc/models', 'soc/content'],
     overrides_files = ['soc/models/universities.py'],
@@ -265,6 +265,16 @@ def build(options):
   # Run closure over JS files
   options.closure.build = True
   closure(options)
+
+  #Run grunt for production
+  run_grunt(options)
+
+
+@task
+def run_grunt(options):
+  """Run Grunt for build"""
+
+  sh("grunt build")
 
 
 @task
