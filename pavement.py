@@ -274,7 +274,7 @@ def build(options):
 def run_grunt(options):
   """Run Grunt for build"""
 
-  sh("grunt build")
+  sh("bin/grunt build")
 
 
 @task
