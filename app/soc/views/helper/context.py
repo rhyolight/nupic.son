@@ -47,7 +47,7 @@ def default(data):
     google_api_key = data.site.google_api_key
 
   css_path = '/'.join([
-      'soc', 'content', app_version, 'css', 'v2', data.css_path])
+      'soc', 'content', app_version, 'css', data.css_path])
 
   gdata_is_logged_in = data.user and oauth_helper.getAccessToken(data.user)
 

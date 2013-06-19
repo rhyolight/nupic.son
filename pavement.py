@@ -60,7 +60,7 @@ options(
     app_dirs =  ["melange", "soc", "feedparser", "djangoforms", "ranklist",
                  "shell", "html5lib", "gviz", "webmaster", "gdata", "atom",
                  "mapreduce"] + JS_THIRDPARTY_DIRS,
-    css_dirs = ["soc/content/css/v2/gsoc/", "soc/content/css/v2/gci"],
+    css_dirs = ["soc/content/css/gsoc/", "soc/content/css/gci"],
     css_files = {
         "jquery-ui/jquery.ui.merged.css": [
             "jquery-ui/jquery.ui.core.css",

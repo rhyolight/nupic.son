@@ -202,7 +202,7 @@ button::-moz-focus-inner, input[type="button"]::-moz-focus-inner, input[type="su
 a.btn, 
 input.button,
 input.btn {
-    background: #c53926 url(../../../images/gci/arrow-white-lg.png) 95% 50% no-repeat;
+    background: #c53926 url(../../images/gci/arrow-white-lg.png) 95% 50% no-repeat;
     border: none;
         border-radius: 3px;
         -moz-border-radius: 3px;
@@ -228,7 +228,7 @@ input.btn {
 form input[type="submit"].task-btn,
 a.task-btn,
 input.task-btn {
-    background: #fff url(../../../images/gci/dashboard-task-icons.png) 7px 5px no-repeat;
+    background: #fff url(../../images/gci/dashboard-task-icons.png) 7px 5px no-repeat;
     border: none;
     border-radius: 10px;
     -moz-border-radius: 10px;
@@ -317,7 +317,7 @@ input.delete-btn {
 
 /* @group Layout */
 body {
-    background:url(../../../images/gci/body-bg.gif) top center no-repeat;
+    background:url(../../images/gci/body-bg.gif) top center no-repeat;
 }
 .header {
     height: 143px;
@@ -446,12 +446,12 @@ body {
         padding: 4px 0 4px 25px;
     }
     .block .block-footer a {
-        background:url(../../../images/gci/arrow-white-sm.png) right center no-repeat;
+        background:url(../../images/gci/arrow-white-sm.png) right center no-repeat;
         color: #fff;
         padding-right: 9px;
     }
     .block-comments {
-        background: #e0e0e0 url(../../../images/gci/block-comments-bg.gif) 0 0 repeat-x;
+        background: #e0e0e0 url(../../images/gci/block-comments-bg.gif) 0 0 repeat-x;
         padding: 15px 20px 20px 38px;
     }
         .block-comments .block-comments-title {
@@ -539,7 +539,7 @@ body {
             padding-left: 10px;
         }
     .block-task-uploaded-code {
-        background: #52b8ef url(../../../images/gci/block-task-uploaded-code-bg.gif) 0 0 repeat-x;
+        background: #52b8ef url(../../images/gci/block-task-uploaded-code-bg.gif) 0 0 repeat-x;
         color: #fff;
         padding: 15px 18px 20px 38px;
     }
@@ -646,7 +646,7 @@ body {
 
 /* BEGIN Stopwatch and countdown*/
 .stopwatch .stopwatch-watch {
-    background:url(../../../images/gci/block-timeline-watch.png) 0 0 no-repeat;
+    background:url(../../images/gci/block-timeline-watch.png) 0 0 no-repeat;
     height: 85px;
     width: 79px;
     float: left;
@@ -654,7 +654,7 @@ body {
     margin-left: -15px;
 }
 .stopwatch-svgcanvas {
-  background-image:url(../../../images/gci/block-timeline-watch-back.png);
+  background-image:url(../../images/gci/block-timeline-watch-back.png);
   height: 91px;
   width: 91px;
   position: relative;
@@ -663,25 +663,25 @@ body {
   margin-left: -15px;
 }
 .stopwatch-front {
-  background-image:url(../../../images/gci/block-timeline-watch-front.png);
+  background-image:url(../../images/gci/block-timeline-watch-front.png);
   display: none;
 }
 .stopwatch-dial {
-  background-image:url(../../../images/gci/block-timeline-watch-dial.png);
+  background-image:url(../../images/gci/block-timeline-watch-dial.png);
   display: none;
 }
 
     .stopwatch.percent-25 .stopwatch-watch {
-        background-image:url(../../../images/gci/block-timeline-watch-percent-25.png);
+        background-image:url(../../images/gci/block-timeline-watch-percent-25.png);
     }
     .stopwatch.percent-33 .stopwatch-watch {
-        background-image:url(../../../images/gci/block-timeline-watch-percent-33.png);
+        background-image:url(../../images/gci/block-timeline-watch-percent-33.png);
     }
     .stopwatch.percent-50 .stopwatch-watch {
-        background-image:url(../../../images/gci/block-timeline-watch-percent-50.png);
+        background-image:url(../../images/gci/block-timeline-watch-percent-50.png);
     }
     .stopwatch.percent-75 .stopwatch-watch {
-        background-image:url(../../../images/gci/block-timeline-watch-percent-75.png);
+        background-image:url(../../images/gci/block-timeline-watch-percent-75.png);
     }
     .stopwatch .stopwatch-remaining {
         float: right;
@@ -775,7 +775,7 @@ body {
 
 /* BEGIN accepted organizations block */
 .block-accepted-organizations {
-  background: #E0E0E0 url(../../../images/gci/block-form-bg.png) 0 0 repeat-x;
+  background: #E0E0E0 url(../../images/gci/block-form-bg.png) 0 0 repeat-x;
   border: 1px solid #B4B4B4;
   padding: 13px 20px;
 }
@@ -826,7 +826,7 @@ body {
 
 /*Difficulties*/
 .block-featured-task .cog {/*Featured task, homepage block*/
-    background-image:url(../../../images/gci/block-cog-featured.png);
+    background-image:url(../../images/gci/block-cog-featured.png);
     height: 77px;
     width: 73px;
 }
@@ -840,7 +840,7 @@ body {
         background-position: 0 -155px;
     }
 .block-student-featured-task .cog {/*Featured task, student dashboard block*/
-    background-image:url(../../../images/gci/block-cog-featured-student.png);
+    background-image:url(../../images/gci/block-cog-featured-student.png);
     height: 79px;
     width: 78px;
 }
@@ -854,7 +854,7 @@ body {
         background-position: 0 -158px;
     }
 .block-status .cog {/*Sidebar current task block*/
-    background-image:url(../../../images/gci/block-cog-current-task.png);
+    background-image:url(../../images/gci/block-cog-current-task.png);
     height: 62px;
     width: 62px;
 }
@@ -877,25 +877,25 @@ body {
     width: 70px;
 }
     .task-single.level-hard .cog {
-        background-image:url(../../../images/gci/dashboard-task-cog-hard.png);
+        background-image:url(../../images/gci/dashboard-task-cog-hard.png);
     }
     .task-single.level-medium .cog {
-        background-image:url(../../../images/gci/dashboard-task-cog-medium.png);
+        background-image:url(../../images/gci/dashboard-task-cog-medium.png);
     }
     .task-single.level-easy .cog {
-        background-image:url(../../../images/gci/dashboard-task-cog-easy.png);
+        background-image:url(../../images/gci/dashboard-task-cog-easy.png);
     }
 .block-completed-tasks .task-single {/*Student completed tasks*/
     
 }
     .block-completed-tasks .task-single.level-hard .cog {
-        background-image:url(../../../images/gci/dashboard-task-cog-hard-complete.png);
+        background-image:url(../../images/gci/dashboard-task-cog-hard-complete.png);
     }
     .block-completed-tasks .task-single.level-medium .cog {
-        background-image:url(../../../images/gci/dashboard-task-cog-medium-complete.png);
+        background-image:url(../../images/gci/dashboard-task-cog-medium-complete.png);
     }
     .block-completed-tasks .task-single.level-easy .cog {
-        background-image:url(../../../images/gci/dashboard-task-cog-easy-complete.png);
+        background-image:url(../../images/gci/dashboard-task-cog-easy-complete.png);
     }
 .block-pager {/*Generic pager*/
     padding: 5px 0;
@@ -937,7 +937,7 @@ body {
         line-height: 15px;
     }
 .block-page {/*General page*/
-  background: #e0e0e0 url(../../../images/gci/block-form-bg.png) 0 0 repeat-x;
+  background: #e0e0e0 url(../../images/gci/block-form-bg.png) 0 0 repeat-x;
   border: 1px solid #b4b4b4;
   padding: 13px 20px;
 }
@@ -995,7 +995,7 @@ body {
 	text-transform: uppercase;
 }
 	.block-filter-sort a.block-filter-sort-link {
-		background:url(../../../images/gci/arrow-blue-sm.png) right center no-repeat;
+		background:url(../../images/gci/arrow-blue-sm.png) right center no-repeat;
 		color: #0f649d;
 		font-weight: bold;
 		padding-right: 13px;
@@ -1123,7 +1123,7 @@ body {
             border-bottom: 1px solid #b62f23;
         }
         .block-status .block-status-action a span {
-            background:url(../../../images/gci/arrow-white-sm.png) right center no-repeat;
+            background:url(../../images/gci/arrow-white-sm.png) right center no-repeat;
             padding-right: 10px;
         }
         .block-status .block-status-action a:first-child {
@@ -1180,7 +1180,7 @@ body {
 
 /* @group Homepage blocks */
 .block-how-it-works {/*How Code-In Works*/
-    background: #e0e0e0 url(../../../images/gci/block-how-it-works-bg.gif) 0 0 repeat-x;
+    background: #e0e0e0 url(../../images/gci/block-how-it-works-bg.gif) 0 0 repeat-x;
     border: 1px solid #b4b4b4;
     padding: 8px 18px 18px 18px;
 }
@@ -1234,11 +1234,11 @@ body {
             -o-transition: all 1s ease-in-out;
         }
         .block-how-it-works-step1 .cog {
-            background-image:url(../../../images/gci/block-how-it-works-step1-cog.png);
+            background-image:url(../../images/gci/block-how-it-works-step1-cog.png);
         }
         .block-how-it-works-step2 .cog, 
         .block-how-it-works-step3 .cog {
-            background-image:url(../../../images/gci/block-how-it-works-step2-3-cog.png);
+            background-image:url(../../images/gci/block-how-it-works-step2-3-cog.png);
         }
         .block-how-it-works-step .cog-center {
             height: 45px;
@@ -1249,10 +1249,10 @@ body {
             z-index: 100;
         }
         .block-how-it-works-step2 .cog-center {
-            background-image:url(../../../images/gci/block-how-it-works-step2-cog-center.png);
+            background-image:url(../../images/gci/block-how-it-works-step2-cog-center.png);
         }
         .block-how-it-works-step3 .cog-center {
-            background-image:url(../../../images/gci/block-how-it-works-step3-cog-center.png);
+            background-image:url(../../images/gci/block-how-it-works-step3-cog-center.png);
         }
         .block-how-it-works-step:hover .cog {
             -webkit-transform: rotate(180deg);
@@ -1260,14 +1260,14 @@ body {
             -o-transform: rotate(180deg);
         }
         .block-how-it-works-step1 {
-            background: #0c99e5 url(../../../images/gci/block-how-it-works-step1.png) 8% 82% no-repeat;
+            background: #0c99e5 url(../../images/gci/block-how-it-works-step1.png) 8% 82% no-repeat;
             width: 220px;
         }
         .block-how-it-works-step2 {
-            background: #52b8ef url(../../../images/gci/block-how-it-works-step2.png) 16% 85% no-repeat;
+            background: #52b8ef url(../../images/gci/block-how-it-works-step2.png) 16% 85% no-repeat;
         }
         .block-how-it-works-step3 {
-            background: #7ccffb url(../../../images/gci/block-how-it-works-step3.png) 16% 85% no-repeat;
+            background: #7ccffb url(../../images/gci/block-how-it-works-step3.png) 16% 85% no-repeat;
         }
         .block-how-it-works-repeat {
             background: #cd402c;
@@ -1288,7 +1288,7 @@ body {
                 margin: 0 auto;
             }
             .block-how-it-works-repeat .block-how-it-works-repeat-caption .repeat-icon {
-                background:url(../../../images/gci/block-how-it-works-repeat.png) 0 0 no-repeat;
+                background:url(../../images/gci/block-how-it-works-repeat.png) 0 0 no-repeat;
                 float: left;
                 height: 19px;
                 margin: 11px 7px 0 0;
@@ -1325,20 +1325,20 @@ body {
                 width: 23px;
             }
             .block-how-it-works-step1 .arrow {
-                background-image:url(../../../images/gci/block-how-it-works-step1-arrow.png);
+                background-image:url(../../images/gci/block-how-it-works-step1-arrow.png);
             }
             .block-how-it-works-step2 .arrow {
-                background-image:url(../../../images/gci/block-how-it-works-step2-arrow.png);
+                background-image:url(../../images/gci/block-how-it-works-step2-arrow.png);
             }
             .block-how-it-works-step3 .arrow {
-                background-image:url(../../../images/gci/block-how-it-works-step3-arrow.png);
+                background-image:url(../../images/gci/block-how-it-works-step3-arrow.png);
                 height: 14px;
                 width: 26px;
                 left: 96px;
                 bottom: -14px;
             }
             .block-how-it-works-repeat .arrow {
-                background-image:url(../../../images/gci/block-how-it-works-repeat-arrow.png);
+                background-image:url(../../images/gci/block-how-it-works-repeat-arrow.png);
                 height: 15px;
                 width: 28px;
                 top: -11px;
@@ -1351,7 +1351,7 @@ body {
         width: 320px;
     }
         .block-how-it-works .block-how-it-works-more {
-            background:url(../../../images/gci/block-how-it-works-more.jpg) 0 0 no-repeat;
+            background:url(../../images/gci/block-how-it-works-more.jpg) 0 0 no-repeat;
         }
         .block-how-it-works .block-how-it-works-more .block-how-it-works-more-caption {
             background:rgba(0, 130, 200, 0.9);
@@ -1375,7 +1375,7 @@ body {
             padding: 4px 8px;
         }
     .block-how-it-works .block-how-it-works-start {
-        background:url(../../../images/gci/block-how-it-works-start.png) top right no-repeat;
+        background:url(../../images/gci/block-how-it-works-start.png) top right no-repeat;
         float: right;
         height: 133px;
         width: 320px;
@@ -1406,7 +1406,7 @@ body {
             margin: 0px auto;
         }
         .block-start-link a.start-link {
-            background: #c53926 url(../../../images/gci/arrow-white-lg.png) 95% 50% no-repeat;
+            background: #c53926 url(../../images/gci/arrow-white-lg.png) 95% 50% no-repeat;
                 border-radius: 3px;
                 -moz-border-radius: 3px;
                 -webkit-border-radius: 3px;
@@ -1514,7 +1514,7 @@ body {
         padding: 4px 0 4px 25px;
     }
     .block .readmore a {
-        background:url(../../../images/gci/arrow-white-sm.png) right center no-repeat;
+        background:url(../../images/gci/arrow-white-sm.png) right center no-repeat;
         color: #fff;
         padding-right: 9px;
     }
@@ -1558,12 +1558,12 @@ body {
         color: #d14936;
     }
     .block-user-message a.more {
-        background:url(../../../images/gci/arrow-red-sm.png) right center no-repeat;
+        background:url(../../images/gci/arrow-red-sm.png) right center no-repeat;
         font-weight: bold;
         padding-right: 11px;
     }
 .block-user-welcome {
-    background: #e0e0e0 url(../../../images/gci/block-user-welcome-bg.png) 0 0 repeat-x;
+    background: #e0e0e0 url(../../images/gci/block-user-welcome-bg.png) 0 0 repeat-x;
     border: 1px solid #b4b4b4;
     padding: 18px 38px 18px 13px;
 }
@@ -1666,7 +1666,7 @@ body {
         padding: 3px 0 3px 12px;
     }
     .task-single {
-        background:url(../../../images/gci/dashboard-task-single-bg.gif) 0 0 repeat-y;
+        background:url(../../images/gci/dashboard-task-single-bg.gif) 0 0 repeat-y;
         background-color: #e0e0e0;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         padding: 3px 0;
@@ -1816,7 +1816,7 @@ body {
                 padding-left: 2px;
             }
         .block-task .block-title .block-task-action {
-            background:url(../../../images/gci/block-task-action-bg.png) center left no-repeat;
+            background:url(../../images/gci/block-task-action-bg.png) center left no-repeat;
             float: right;
             padding: 6px 0 10px 0;
             width: 229px;
@@ -1907,7 +1907,7 @@ body {
 		width: 213px;
         }
 		.block-task .block-task-countdown #deadline-extend .deadline-extend-top {
-			background:url(../../../images/gci/extend-deadline-top-arrow.png) top center no-repeat;
+			background:url(../../images/gci/extend-deadline-top-arrow.png) top center no-repeat;
 			display: block;
 			height: 20px;
 			width: 100%;
@@ -1965,7 +1965,7 @@ body {
 			margin: 0 7px;
 		}
 		.block-task .block-task-countdown #deadline-extend form .task-btn {
-			background: #fff url(../../../images/gci/dashboard-task-icons.png) no-repeat scroll 8px -81px;
+			background: #fff url(../../images/gci/dashboard-task-icons.png) no-repeat scroll 8px -81px;
 			-moz-box-shadow: none;
 			-webkit-box-shadow: none;
 			box-shadow: none;
@@ -2018,7 +2018,7 @@ body {
 }
     .block-task-mentor .cog, 
     .block-task-student .cog  {
-        background-image:url(../../../images/gci/block-cog-task.png);
+        background-image:url(../../images/gci/block-cog-task.png);
         height: 103px;
         width: 98px;
     }
@@ -2036,7 +2036,7 @@ body {
         }
     .block-task-mentor .block-title, 
     .block-task-student .block-title {
-        background: #0082c8 url(../../../images/gci/block-task-title-bg.gif) top right repeat-y;
+        background: #0082c8 url(../../images/gci/block-task-title-bg.gif) top right repeat-y;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         font-size: 12px;
         font-weight: normal;
@@ -2094,7 +2094,7 @@ body {
 }
     .block-task-mentor.block-task-open .cog, 
     .block-task-student.block-task-open .cog {
-        background-image: url(../../../images/gci/block-cog-task-open.png);
+        background-image: url(../../images/gci/block-cog-task-open.png);
     }
     .block-task-open .block-task-action {
         text-align: center;
@@ -2154,7 +2154,7 @@ body {
 			float: right;
 		}
 		.block-leaderboard-top .block-leaderboard-top-title .trophy {
-			background:url(../../../images/gci/block-leaderboard-top-trophy.png) 0 0 no-repeat;
+			background:url(../../images/gci/block-leaderboard-top-trophy.png) 0 0 no-repeat;
 			height: 160px;
 			width: 500px;
 			position: absolute;
@@ -2163,7 +2163,7 @@ body {
 		}
 
 	.block-leaderboard-top .block-leaderboard-top-content {
-		background: #d0e8f9 url(../../../images/gci/block-leaderboard-content-bg.png) 0 0 repeat-x;
+		background: #d0e8f9 url(../../images/gci/block-leaderboard-content-bg.png) 0 0 repeat-x;
 		border-left: 1px solid #cae2f2;
 		border-right: 1px solid #cae2f2;
 		border-bottom: 1px solid #98a9b6;
@@ -2335,7 +2335,7 @@ body {
 
 /* @group Forms */
 .block-form {
-    background: #e0e0e0 url(../../../images/gci/block-form-bg.png) 0 0 repeat-x;
+    background: #e0e0e0 url(../../images/gci/block-form-bg.png) 0 0 repeat-x;
     border: 1px solid #b4b4b4;
     padding: 13px 20px;
 }
@@ -2533,7 +2533,7 @@ div.tos {
     width: 220px;
 }
     .form-row-task-completion-time .form-row-task-completion-time-inner {
-        background: #b6dcf7 url(../../../images/gci/stopwatch-sm.png) 5px 5px no-repeat;
+        background: #b6dcf7 url(../../images/gci/stopwatch-sm.png) 5px 5px no-repeat;
         font-size: 18px;
         padding: 10px 0 10px 50px;
     }
@@ -2545,7 +2545,7 @@ div.tos {
     width: 165px;
 }
     .form-row-task-difficulty-inner {
-        background: #b6dcf7 url(../../../images/gci/cog-grey-sm.png) 5px 5px no-repeat;
+        background: #b6dcf7 url(../../images/gci/cog-grey-sm.png) 5px 5px no-repeat;
         padding: 10px 0 10px 50px;
     }
 .form-row-task-assigned-mentor {
