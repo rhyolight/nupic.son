@@ -4,6 +4,7 @@ module.exports = function(grunt) {
 			package: grunt.file.readJSON('package.json'),
 			src: {
         css_dir: 'app/soc/content/css',
+        less_dir: 'app/soc/content/less',
 				js_dir: './app/soc/content/js',
         tests_dir: './tests',
 				js_files: '<%= meta.src.js_dir %>/**/*.js',
@@ -53,20 +54,20 @@ module.exports = function(grunt) {
     less: {
       development: {
         options: {
-          paths: ['<%= meta.src.css_dir %>']
+          paths: ['<%= meta.src.less_dir %>']
         },
         files: {
-          '<%= meta.src.css_dir %>/gsoc/buttons.css': '<%= meta.src.css_dir %>/less/buttons.less',
-          '<%= meta.src.css_dir %>/gsoc/forms.css': '<%= meta.src.css_dir %>/less/forms.less',
-          '<%= meta.src.css_dir %>/gsoc/global.css': '<%= meta.src.css_dir %>/less/global.less',
-          '<%= meta.src.css_dir %>/gsoc/map.css': '<%= meta.src.css_dir %>/less/map.less',
-          '<%= meta.src.css_dir %>/gsoc/menu.css': '<%= meta.src.css_dir %>/less/menu.less',
-          '<%= meta.src.css_dir %>/gsoc/readonly.css': '<%= meta.src.css_dir %>/less/readonly.less',
-          '<%= meta.src.css_dir %>/gsoc/structure.css': '<%= meta.src.css_dir %>/less/structure.less',
-          '<%= meta.src.css_dir %>/gsoc/surveys.css': '<%= meta.src.css_dir %>/less/surveys.less',
-          '<%= meta.src.css_dir %>/gsoc/tables.css': '<%= meta.src.css_dir %>/less/tables.less',
-          '<%= meta.src.css_dir %>/gsoc/typography.css': '<%= meta.src.css_dir %>/less/typography.less',
-          '<%= meta.src.css_dir %>/gsoc/user-messages.css': '<%= meta.src.css_dir %>/less/user-messages.less'
+          '<%= meta.src.css_dir %>/gsoc/buttons.css': '<%= meta.src.less_dir %>/buttons.less',
+          '<%= meta.src.css_dir %>/gsoc/forms.css': '<%= meta.src.less_dir %>/forms.less',
+          '<%= meta.src.css_dir %>/gsoc/global.css': '<%= meta.src.less_dir %>/global.less',
+          '<%= meta.src.css_dir %>/gsoc/map.css': '<%= meta.src.less_dir %>/map.less',
+          '<%= meta.src.css_dir %>/gsoc/menu.css': '<%= meta.src.less_dir %>/menu.less',
+          '<%= meta.src.css_dir %>/gsoc/readonly.css': '<%= meta.src.less_dir %>/readonly.less',
+          '<%= meta.src.css_dir %>/gsoc/structure.css': '<%= meta.src.less_dir %>/structure.less',
+          '<%= meta.src.css_dir %>/gsoc/surveys.css': '<%= meta.src.less_dir %>/surveys.less',
+          '<%= meta.src.css_dir %>/gsoc/tables.css': '<%= meta.src.less_dir %>/tables.less',
+          '<%= meta.src.css_dir %>/gsoc/typography.css': '<%= meta.src.less_dir %>/typography.less',
+          '<%= meta.src.css_dir %>/gsoc/user-messages.css': '<%= meta.src.less_dir %>/user-messages.less'
         }
       },
       production: {
@@ -74,17 +75,17 @@ module.exports = function(grunt) {
           paths: ['<%= meta.src.css_dir %>']
         },
         files: {
-          '<%= meta.build.css_dir %>/buttons.css': '<%= meta.src.css_dir %>/less/buttons.less',
-          '<%= meta.build.css_dir %>/forms.css': '<%= meta.src.css_dir %>/less/forms.less',
-          '<%= meta.build.css_dir %>/global.css': '<%= meta.src.css_dir %>/less/global.less',
-          '<%= meta.build.css_dir %>/map.css': '<%= meta.src.css_dir %>/less/map.less',
-          '<%= meta.build.css_dir %>/menu.css': '<%= meta.src.css_dir %>/less/menu.less',
-          '<%= meta.build.css_dir %>/readonly.css': '<%= meta.src.css_dir %>/less/readonly.less',
-          '<%= meta.build.css_dir %>/structure.css': '<%= meta.src.css_dir %>/less/structure.less',
-          '<%= meta.build.css_dir %>/surveys.css': '<%= meta.src.css_dir %>/less/surveys.less',
-          '<%= meta.build.css_dir %>/tables.css': '<%= meta.src.css_dir %>/less/tables.less',
-          '<%= meta.build.css_dir %>/typography.css': '<%= meta.src.css_dir %>/less/typography.less',
-          '<%= meta.build.css_dir %>/user-messages.css': '<%= meta.src.css_dir %>/less/user-messages.less'
+          '<%= meta.build.css_dir %>/buttons.css': '<%= meta.src.less_dir %>/buttons.less',
+          '<%= meta.build.css_dir %>/forms.css': '<%= meta.src.less_dir %>/forms.less',
+          '<%= meta.build.css_dir %>/global.css': '<%= meta.src.less_dir %>/global.less',
+          '<%= meta.build.css_dir %>/map.css': '<%= meta.src.less_dir %>/map.less',
+          '<%= meta.build.css_dir %>/menu.css': '<%= meta.src.less_dir %>/menu.less',
+          '<%= meta.build.css_dir %>/readonly.css': '<%= meta.src.less_dir %>/readonly.less',
+          '<%= meta.build.css_dir %>/structure.css': '<%= meta.src.less_dir %>/structure.less',
+          '<%= meta.build.css_dir %>/surveys.css': '<%= meta.src.less_dir %>/surveys.less',
+          '<%= meta.build.css_dir %>/tables.css': '<%= meta.src.less_dir %>/tables.less',
+          '<%= meta.build.css_dir %>/typography.css': '<%= meta.src.less_dir %>/typography.less',
+          '<%= meta.build.css_dir %>/user-messages.css': '<%= meta.src.less_dir %>/user-messages.less'
         }
       }
     },
