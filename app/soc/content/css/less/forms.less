@@ -440,7 +440,7 @@
     }
 }
 
-form {/*form defaults*/
+#form, .form-register {/*form defaults*/
     margin: 0 auto;
 
     .note {/*for adding a note below a text field*/
@@ -511,6 +511,7 @@ form {/*form defaults*/
                 vertical-align: baseline;
             }
             .text, .textarea {/*text fields and textareas*/
+                color: #000;
                 background: #fff;
                 border: 1px solid #d2d2d2;
                 box-shadow: inset 2px 2px 10px #e6e6e6;
@@ -583,7 +584,6 @@ form {/*form defaults*/
                   width: auto;
                 }
             }
-            
         }
         .row.error {/*error on submission*/
             .error-message {
@@ -602,12 +602,18 @@ form {/*form defaults*/
                 -webkit-box-shadow: inset 2px 2px 10px #fccaca;
             }
         }
-        
     }
-    .row.button-row {/*submit btn row*/
-        input {
-            .input-submit-mixin(40px, 40px);
-        }
+}
+fieldset .row.error .textarea {
+    background: #fce6e6;
+    border: 1px solid #ff0000;
+    box-shadow: inset 2px 2px 10px #fccaca;
+    -moz-box-shadow: inset 2px 2px 10px #fccaca;
+    -webkit-box-shadow: inset 2px 2px 10px #fccaca;
+}
+.row.button-row {/*submit btn row*/
+    input {
+        #form.input-submit-mixin(40px, 40px);
     }
 }
 
@@ -676,6 +682,8 @@ form {/*form defaults*/
     }
     .description {
         clear: both;
-        margin-left: 23px;
+        padding-top: 10px;
+        margin: 0 25px 0 25px;
+        text-align: justify;
     }
 }
