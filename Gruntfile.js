@@ -130,14 +130,14 @@ module.exports = function(grunt) {
     }
 	});
 
-	grunt.loadNpmTasks('grunt-contrib-jasmine');
+  grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-yuidoc');
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-plato');
 
-	grunt.registerTask('coverage', ['jasmine:coverage']);
+  grunt.registerTask('coverage', ['jasmine:coverage']);
   grunt.registerTask('documentation', ['yuidoc']);
-	grunt.registerTask('plato_source', ['plato:source_files']);
+  grunt.registerTask('plato_source', ['plato:source_files']);
   grunt.registerTask('plato_tests', ['plato:test_files']);
-	grunt.registerTask('build', ['less:production']);
+  grunt.registerTask('build', ['less:production']);
 };
