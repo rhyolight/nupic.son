@@ -34,30 +34,31 @@ a, a:link {
     text-decoration: underline;
 }
 
-#main .grid_9 {
 
-    h1, h2, h3, h4, h5, h6, p, ul, ol, pre, code, dl {
-        line-height: 1.5em;
-        margin: 0 0 1.5em 0;
-    }
-    h1, h2, h3, h4, h5, h6 {
-        color: @lightblue;
-        font-weight: bold;
-    }
-    h1 {
-        font-size: 27px;
-        margin: 0 0 5px 0;
-    }
-    h1.dashboard-title {
-        margin: 0;
-    }
-    h6 {
-        font-size: 14px;
-        margin: 0;  
-    }
-    p {
-        font-size: 12px;
-    }
+h1, h2, h3, h4, h5, h6, p, ul, ol, pre, code, dl {
+    line-height: 1.5em;
+    margin: 0 0 1.5em 0;
+}
+h1, h2, h3, h4, h5, h6 {
+    color: @lightblue;
+    font-weight: bold;
+}
+h1 {
+    font-size: 27px;
+    margin: 0 0 5px 0;
+}
+h1.dashboard-title {
+    margin: 0;
+}
+h6 {
+    font-size: 14px;
+    margin: 0;  
+}
+p {
+    font-size: 12px;
+}
+
+#main .grid_9 {
     ul, ol { margin-left: 1.1em; }
     ol { margin-left: 1.5em; }
     ul li, ol li { list-style-position: outside; }
@@ -138,10 +139,29 @@ a, a:link {
 ////////////////*/
 
 
+h1#project-page-title {
+  margin: 0;
+}
+h2#project-page-student-name {
+  font-size: 21px;
+  font-weight: normal;
+  line-height: 1.3em;
+  margin: 0 0 1em 0;
+}
 /* Override color for embedded document */
-#document_content {
-  span {
+#document-content div {
+  color: black;
+}
+#document-content {
+  padding-top: 0.5em;
+}
+#tos-content div {
     color: black;
-  }
-  padding-top: 1em;
+    font-size: 10px;
+}
+#tos-content {
+  padding-top: 0.5em;
+    height: 400px;
+    overflow: auto;
+    margin-bottom:10px;
 }
