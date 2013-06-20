@@ -65,11 +65,14 @@ module.exports = function(grunt) {
         },
         files: {
           /* Development GSOC files */
+          '<%= meta.src.css_gsoc_dir %>/admin.css': '<%= meta.src.less_gsoc_dir %>/admin.less',
           '<%= meta.src.css_gsoc_dir %>/buttons.css': '<%= meta.src.less_gsoc_dir %>/buttons.less',
+          '<%= meta.src.css_gsoc_dir %>/dashboard.css': '<%= meta.src.less_gsoc_dir %>/dashboard.less',
           '<%= meta.src.css_gsoc_dir %>/forms.css': '<%= meta.src.less_gsoc_dir %>/forms.less',
           '<%= meta.src.css_gsoc_dir %>/global.css': '<%= meta.src.less_gsoc_dir %>/global.less',
           '<%= meta.src.css_gsoc_dir %>/map.css': '<%= meta.src.less_gsoc_dir %>/map.less',
           '<%= meta.src.css_gsoc_dir %>/menu.css': '<%= meta.src.less_gsoc_dir %>/menu.less',
+          '<%= meta.src.css_gsoc_dir %>/others.css': '<%= meta.src.less_gsoc_dir %>/others.less',
           '<%= meta.src.css_gsoc_dir %>/readonly.css': '<%= meta.src.less_gsoc_dir %>/readonly.less',
           '<%= meta.src.css_gsoc_dir %>/structure.css': '<%= meta.src.less_gsoc_dir %>/structure.less',
           '<%= meta.src.css_gsoc_dir %>/surveys.css': '<%= meta.src.less_gsoc_dir %>/surveys.less',
@@ -84,11 +87,14 @@ module.exports = function(grunt) {
         },
         files: {
           /* Build GSOC files */
+          '<%= meta.build.css_gsoc_dir %>/admin.css': '<%= meta.src.less_gsoc_dir %>/admin.less',
           '<%= meta.build.css_gsoc_dir %>/buttons.css': '<%= meta.src.less_gsoc_dir %>/buttons.less',
+          '<%= meta.build.css_gsoc_dir %>/dashboard.css': '<%= meta.src.less_gsoc_dir %>/dashboard.less',
           '<%= meta.build.css_gsoc_dir %>/forms.css': '<%= meta.src.less_gsoc_dir %>/forms.less',
           '<%= meta.build.css_gsoc_dir %>/global.css': '<%= meta.src.less_gsoc_dir %>/global.less',
           '<%= meta.build.css_gsoc_dir %>/map.css': '<%= meta.src.less_gsoc_dir %>/map.less',
           '<%= meta.build.css_gsoc_dir %>/menu.css': '<%= meta.src.less_gsoc_dir %>/menu.less',
+          '<%= meta.build.css_gsoc_dir %>/others.css': '<%= meta.src.less_gsoc_dir %>/others.less',
           '<%= meta.build.css_gsoc_dir %>/readonly.css': '<%= meta.src.less_gsoc_dir %>/readonly.less',
           '<%= meta.build.css_gsoc_dir %>/structure.css': '<%= meta.src.less_gsoc_dir %>/structure.less',
           '<%= meta.build.css_gsoc_dir %>/surveys.css': '<%= meta.src.less_gsoc_dir %>/surveys.less',
