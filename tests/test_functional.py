@@ -47,7 +47,7 @@ class TestBranding(MelangeFunctionalTestCase):
     tb = browser.Browser()
     tb.open("http://127.0.0.1:8080/site/show/site")
 
-    self.assertTrue("Powered by Melange" in tb.contents)
+    self.assertIn("Powered by Melange", tb.contents)
 
 
 class TestLogin(MelangeFunctionalTestCase):
@@ -66,7 +66,7 @@ class TestLogin(MelangeFunctionalTestCase):
     tb.open("http://127.0.0.1:8080")
 
     tb.getLink("Sign in").click()
-    self.assertTrue("login" in tb.url)
+    self.assertIn("login", tb.url)
 
     # fill in dev_appserver login form
     tb.getForm().getControl("Email").value = "newuser@example.com"
@@ -85,7 +85,7 @@ class TestLogin(MelangeFunctionalTestCase):
     cp.getControl("Save").click()
 
     # if all is well, we go to the edit page
-    self.assertTrue("edit_profile" in tb.url)
+    self.assertIn("edit_profile", tb.url)
 
     tb.open("http://127.0.0.1:8080")
 

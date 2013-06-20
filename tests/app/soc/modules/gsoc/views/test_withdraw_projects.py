@@ -36,7 +36,7 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     """Asserts that all templates from the withdraw projects page were used
     and all contexts were passed
     """
-    self.assertTrue('base_layout' in response.context)
+    self.assertIn('base_layout', response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')

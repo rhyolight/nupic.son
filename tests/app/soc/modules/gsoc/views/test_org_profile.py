@@ -136,7 +136,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     org_key_name = '%s/%s' % (self.gsoc.key().name(), record.org_id)
     org = organization.GSoCOrganization.get_by_key_name(org_key_name)
 
-    self.assertEqual(org, None)
+    self.assertIsNone(org)
 
     response = self.post(url, TEST_ORG_POST_DATA)
     self.assertResponseRedirect(
@@ -173,7 +173,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     org_key_name = '%s/%s' % (self.gsoc.key().name(), record.org_id)
     org = organization.GSoCOrganization.get_by_key_name(org_key_name)
 
-    self.assertEqual(org, None)
+    self.assertIsNone(org)
 
     response = self.post(url, TEST_ORG_POST_DATA)
     self.assertResponseRedirect(
@@ -227,8 +227,8 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
 
     context = response.context
     self.assertEqual(context['page_name'], 'Organization profile')
-    self.assertTrue('org_home_page_link' in context)
-    self.assertTrue('page_name' in context)
+    self.assertIn('org_home_page_link', context)
+    self.assertIn('page_name', context)
     self.assertFalse('slot_transfer_page_link' in context)
 
     self.gsoc.allocations_visible = True
@@ -236,7 +236,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertOrgProfilePageTemplatesUsed(response)
-    self.assertTrue('slot_transfer_page_link' in response.context)
+    self.assertIn('slot_transfer_page_link', response.context)
 
     self.timeline.studentsAnnounced()
     response = self.get(url)

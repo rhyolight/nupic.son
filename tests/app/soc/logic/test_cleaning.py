@@ -334,7 +334,7 @@ class CleaningTest(GSoCDjangoTestCase):
     # an empty string
     field_value = ''
     self.form.cleaned_data = {field_name: field_value}
-    self.assertEqual(clean_field(self.form), None)
+    self.assertIsNone(clean_field(self.form))
     # Test that forms.ValidationError error will be raised if the value of
     # the feed url field is not an existent feed url
     field_value = 'http://example.com/invalidfeed/'

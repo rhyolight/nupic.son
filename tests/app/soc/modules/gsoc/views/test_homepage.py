@@ -76,7 +76,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     timeline_tmpl = response.context['timeline']
     apply_context = response.context['apply'].context()
     self.assertEqual(timeline_tmpl.current_timeline, 'coding_period')
-    self.assertTrue('profile_link' in apply_context)
+    self.assertIn('profile_link', apply_context)
 
     # Show featured_project
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
@@ -110,7 +110,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     timeline_tmpl = response.context['timeline']
     apply_context = response.context['apply'].context()
     self.assertEqual(timeline_tmpl.current_timeline, 'coding_period')
-    self.assertTrue('profile_link' in apply_context)
+    self.assertIn('profile_link', apply_context)
 
   def testHomepageDuringSignupExistingUser(self):
     """Tests the student hompepage during the signup period with an existing user.

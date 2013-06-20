@@ -244,3 +244,86 @@ def getOrCreateDummyMelangeDeletedProfile(program):
     profile_ent.put()
 
   return profile_ent
+
+
+def insertDummyData(student_info):
+  """Replace the student profile information with dummy data.
+
+  Args:
+    student_info: GCIStudentInfo entity corresponding to a student profile
+        into which dummy data should be inserted.
+
+  Returns:
+    A two-tuple where first element of the tuple is the list of datastore
+    entities to be deleted and the second element of the tuple is the list
+    of blobs to be deleted.
+  """
+  blobs_to_delete = [student_info.consent_form, student_info.consent_form_two,
+                     student_info.student_id_form]
+
+  profile = student_info.parent()
+
+  profile.automatic_task_subscription = False
+  profile.avatar = None
+  profile.given_name = 'Melange Deleted User Given Name'
+  profile.surname = 'Melange Deleted User Surname'
+  profile.name_on_documents = None
+  profile.im_network = None
+  profile.im_handle = None
+  profile.home_page = None
+  profile.blog = None
+  profile.photo_url = None
+  profile.email = 'melange_deleted_user@example.com'
+  profile.res_street = 'No address'
+  profile.res_street_extra = None
+  profile.res_city = 'No city'
+  profile.res_state = None
+  profile.res_country = 'United States'
+  profile.res_postalcode = '0'
+  profile.phone = '0'
+  profile.ship_name = None
+  profile.ship_street = None
+  profile.ship_street_extra = None
+  profile.ship_city = None
+  profile.ship_state = None
+  profile.ship_country = 'United States'
+  profile.ship_postalcode = None
+  profile.birth_date = datetime.date(1, 1, 1)
+  profile.tshirt_style = None
+  profile.tshirt_size = None
+  profile.gender = None
+  profile.program_knowledge = None
+  profile.agreed_to_tos = None
+  profile.agreed_to_tos_on = datetime.datetime(1, 1, 1)
+  profile.status = 'invalid'
+  profile.notify_new_requests = None
+  profile.notify_invite_handled = None
+  profile.notify_request_handled = None
+  profile.notify_new_invites = None
+  profile.is_student = None
+  profile.is_mentor = None
+  profile.is_org_admin = None
+  profile.mentor_for = []
+  profile.org_admin_for = []
+  profile.created_on = datetime.datetime(1, 1, 1)
+  profile.modified_on = datetime.datetime(1, 1, 1)
+
+  student_info.school_name = 'No school name'
+  student_info.school_country = 'United States'
+  student_info.school_type = None
+  student_info.major = None
+  student_info.degree = None
+  student_info.expected_graduation = 0
+  student_info.grade = 0
+  student_info.number_of_completed_tasks = 0
+  student_info.task_closed = False
+  student_info.parental_form_mail = False
+  student_info.consent_form = None
+  student_info.consent_form_verified = False
+  student_info.consent_form_two = None
+  student_info.student_id_form = None
+  student_info.student_id_form_verified = False
+  student_info.winner_for = None
+  student_info.is_winner = False
+
+  return [profile, student_info], blobs_to_delete

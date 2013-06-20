@@ -16,7 +16,7 @@ limitations under the License.
 
 {% block stylesheets %}
   {{ block.super }}
-  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/v2/gsoc/uniform.default.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/gsoc/uniform.default.css" />
 {% endblock stylesheets %}
 
 <!-- begin block -->
@@ -32,7 +32,7 @@ limitations under the License.
   [
     dep.uniform,
     dep.melange.list,
-    css("/soc/content/{{ app_version }}/css/v2/gsoc/user-messages.css"),
+    css("/soc/content/{{ app_version }}/css/gsoc/user-messages.css"),
     dep.melange.program_select,
     null,
     function() {

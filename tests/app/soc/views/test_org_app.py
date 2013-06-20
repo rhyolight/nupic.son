@@ -146,7 +146,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     org_app_key_name = 'gsoc_program/%s/orgapp' % (self.gsoc.key().name(),)
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)
 
-    self.assertEqual(org_app, None)
+    self.assertIsNone(org_app)
 
     response = self.post(url, self.getOrgAppCreatePostData())
     print response.content
@@ -194,13 +194,13 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     org_app_key_name = 'gsoc_program/%s/orgapp' % (self.gsoc.key().name(),)
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)
 
-    self.assertEqual(org_app, None)
+    self.assertIsNone(org_app)
 
     response = self.post(url, self.getOrgAppCreatePostData())
     self.assertResponseForbidden(response)
 
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)
-    self.assertEqual(org_app, None)
+    self.assertIsNone(org_app)
 
   def testOrgAppCreateOrEditByOrgAdmin(self):
     """Tests that an org admin cannot create an organization application.
@@ -216,13 +216,13 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     org_app_key_name = 'gsoc_program/%s/orgapp' % (self.gsoc.key().name(),)
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)
 
-    self.assertEqual(org_app, None)
+    self.assertIsNone(org_app)
 
     response = self.post(url, self.getOrgAppCreatePostData())
     self.assertResponseForbidden(response)
 
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)
-    self.assertEqual(org_app, None)
+    self.assertIsNone(org_app)
 
   def testOrgAppCreateOrEditByMentor(self):
     """Tests that a mentor cannot create an organization application.
@@ -238,13 +238,13 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     org_app_key_name = 'gsoc_program/%s/orgapp' % (self.gsoc.key().name(),)
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)
 
-    self.assertEqual(org_app, None)
+    self.assertIsNone(org_app)
 
     response = self.post(url, self.getOrgAppCreatePostData())
     self.assertResponseForbidden(response)
 
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)
-    self.assertEqual(org_app, None)
+    self.assertIsNone(org_app)
 
   def testOrgAppCreateOrEditByStudent(self):
     """Tests that a student cannot create an organization application.
@@ -260,13 +260,13 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     org_app_key_name = 'gsoc_program/%s/orgapp' % (self.gsoc.key().name(),)
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)
 
-    self.assertEqual(org_app, None)
+    self.assertIsNone(org_app)
 
     response = self.post(url, self.getOrgAppCreatePostData())
     self.assertResponseForbidden(response)
 
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)
-    self.assertEqual(org_app, None)
+    self.assertIsNone(org_app)
 
   def testOrgAppTakeNoProfile(self):
     """Tests that anybody with profile for the program should be able to apply.

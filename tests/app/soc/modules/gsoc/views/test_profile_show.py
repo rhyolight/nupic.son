@@ -73,10 +73,10 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     self.assertProfileShowTemplateUsed(response)
 
     context = response.context
-    self.assertTrue('page_name' in context)
-    self.assertTrue('program_name' in context)
-    self.assertTrue('profile' in context)
-    self.assertTrue('css_prefix' in context)
+    self.assertIn('page_name', context)
+    self.assertIn('program_name', context)
+    self.assertIn('profile', context)
+    self.assertIn('css_prefix', context)
     self.assertFalse('submit_tax_link' in context)
     self.assertFalse('submit_enrollment_link' in context)
 
@@ -175,14 +175,14 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     self.assertProfileShowPageTemplatesUsed(response)
 
     context = response.context
-    self.assertTrue('page_name' in context)
-    self.assertTrue('program_name' in context)
-    self.assertTrue('profile' in context)
-    self.assertTrue('user' in context)
-    self.assertTrue('links' in context)
-    self.assertTrue('css_prefix' in context)
-    self.assertTrue('submit_tax_link' in context)
-    self.assertTrue('submit_enrollment_link' in context)
+    self.assertIn('page_name', context)
+    self.assertIn('program_name', context)
+    self.assertIn('profile', context)
+    self.assertIn('user', context)
+    self.assertIn('links', context)
+    self.assertIn('css_prefix', context)
+    self.assertIn('submit_tax_link', context)
+    self.assertIn('submit_enrollment_link', context)
 
     self.assertEqual(1, len(context['links']))
     

@@ -91,7 +91,7 @@ class HomepageViewTest(GCIDjangoTestCase):
     current_timeline = response.context['current_timeline']
     self.assertEqual(current_timeline, 'student_signup_period')
     #apply_context = response.context['apply'].context()
-    #self.assertTrue('profile_link' in apply_context)
+    #self.assertIn('profile_link', apply_context)
 
   def testHomepageDuringSignupExistingUser(self):
     """Tests the student hompepage during the signup period with an existing user.

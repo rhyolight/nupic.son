@@ -59,18 +59,18 @@ class AdminDashboardTest(GSoCDjangoTestCase):
     self.assertUserActionsTemplatesUsed(response)
 
     context = self.adminDashboardContext()
-    self.assertTrue('dashboards' in context)
+    self.assertIn('dashboards', context)
 
     # dashboards template context
     for dashboard in context['dashboards']:
       dashboard_context = dashboard.context()
-      self.assertTrue('title' in dashboard_context)
-      self.assertTrue('name' in dashboard_context)
-      self.assertTrue('subpages' in dashboard_context)
+      self.assertIn('title', dashboard_context)
+      self.assertIn('name', dashboard_context)
+      self.assertIn('subpages', dashboard_context)
       subpages = dashboard_context['subpages']
       self.assertTrue(2 == len(subpages))
 
-    self.assertTrue('page_name' in context)
+    self.assertIn('page_name', context)
 
 
 class LookupProfileTest(GSoCDjangoTestCase):
@@ -84,7 +84,7 @@ class LookupProfileTest(GSoCDjangoTestCase):
     """Asserts that all templates from the lookup profile page were used
     and all contexts were passed
     """
-    self.assertTrue('base_layout' in response.context)
+    self.assertIn('base_layout', response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
@@ -140,7 +140,7 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     """Asserts that all the templates from the accepted orgs list were used
     and all contexts were passed.
     """
-    self.assertTrue('base_layout' in response.context)
+    self.assertIn('base_layout', response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
       'v2/modules/gsoc/base.html')
@@ -161,7 +161,7 @@ class ProposalsPageTest(GSoCDjangoTestCase):
     """Asserts that all the templates from the submitted proposals list
     were used and all contexts were passed.
     """
-    self.assertTrue('base_layout' in response.context)
+    self.assertIn('base_layout', response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
@@ -204,7 +204,7 @@ class ProjectsPageTest(GSoCDjangoTestCase):
     """Asserts that all the templates from the accepted projects list were used
     and all contexts were passed.
     """
-    self.assertTrue('base_layout' in response.context)
+    self.assertIn('base_layout', response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
         'v2/modules/gsoc/base.html')
