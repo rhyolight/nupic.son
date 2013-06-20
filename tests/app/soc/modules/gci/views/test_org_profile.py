@@ -34,7 +34,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
 
   def assertOrgProfilePageTemplatesUsed(self, response):
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/org_profile/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/org_profile/base.html')
 
   def testCreateOrgNoLinkid(self):
     url = '/gci/profile/organization/' + self.gci.key().name()

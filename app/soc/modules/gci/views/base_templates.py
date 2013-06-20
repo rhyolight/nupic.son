@@ -81,7 +81,7 @@ class Header(Template):
     self.data = data
 
   def templatePath(self):
-    return "v2/modules/gci/_header.html"
+    return "modules/gci/_header.html"
 
   def context(self):
     # Need this import to make sponsor visible for sponsor link_id
@@ -139,7 +139,7 @@ class MainMenu(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gci/_mainmenu.html"
+    return "modules/gci/_mainmenu.html"
 
 
 class Footer(Template):
@@ -163,7 +163,7 @@ class Footer(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gci/_footer.html"
+    return "modules/gci/_footer.html"
 
 
 class Status(Template):
@@ -210,4 +210,4 @@ class Status(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gci/_status_block.html"
+    return "modules/gci/_status_block.html"

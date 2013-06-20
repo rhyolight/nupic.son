@@ -28,7 +28,7 @@ from soc.models import document as document_model
 from soc.views import forms
 
 
-TEMPLATE_PATH = 'v2/modules/gsoc/_form.html'
+TEMPLATE_PATH = 'modules/gsoc/_form.html'
 
 # The standard input fields should be available to all importing modules
 AsyncFileInput = forms.AsyncFileInput

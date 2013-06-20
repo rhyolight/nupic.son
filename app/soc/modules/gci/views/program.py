@@ -141,7 +141,7 @@ class GCIEditProgramPage(base.GCIRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gci/program/base.html'
+    return 'modules/gci/program/base.html'
 
   def context(self, data, check, mutator):
     program_form = EditProgramForm(data, data.POST or None,
@@ -187,7 +187,7 @@ class GCICreateProgramPage(soc_program_view.CreateProgramPage,
 
   def templatePath(self):
     """See soc.views.base.RequestHandler.templatePath for specification."""
-    return 'v2/modules/gci/program/base.html'
+    return 'modules/gci/program/base.html'
 
   def _getForm(self, data):
     """See soc.views.program.CreateProgram._getForm for specification."""
@@ -222,7 +222,7 @@ class TimelinePage(base.GCIRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gci/timeline/base.html'
+    return 'modules/gci/timeline/base.html'
 
   def context(self, data, check, mutator):
     timeline_form = TimelineForm(data.POST or None,
@@ -264,7 +264,7 @@ class GCIProgramMessagesPage(
     ]
 
   def templatePath(self):
-    return 'v2/modules/gci/program/messages.html'
+    return 'modules/gci/program/messages.html'
 
   def _getForm(self, data, entity):
     return GCIProgramMessagesForm(data, data.POST or None, instance=entity)

@@ -23,4 +23,4 @@ class GSoCModelReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
   """Class to render readonly templates for GSoC models.
   """
 
-  template_path = 'v2/modules/gsoc/_readonly_template.html'
+  template_path = 'modules/gsoc/_readonly_template.html'

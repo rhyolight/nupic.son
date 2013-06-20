@@ -93,8 +93,8 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/student_forms/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+        'modules/gsoc/student_forms/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def _createNewMentor(self):
     """Returns a newly created mentor."""

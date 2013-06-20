@@ -48,7 +48,7 @@ class AboutUs(Template):
     }
 
   def templatePath(self):
-    return 'v2/modules/gci/org_home/_about_us.html'
+    return 'modules/gci/org_home/_about_us.html'
 
 
 class ContactUs(Template):
@@ -63,7 +63,7 @@ class ContactUs(Template):
     }
 
   def templatePath(self):
-    return "v2/modules/gci/org_home/_contact_us.html"
+    return "modules/gci/org_home/_contact_us.html"
 
 
 class OpenTasksList(Template):
@@ -110,7 +110,7 @@ class OpenTasksList(Template):
     return response_builder.build()
 
   def templatePath(self):
-    return 'v2/modules/gci/org_home/_open_tasks.html'
+    return 'modules/gci/org_home/_open_tasks.html'
 
 class CompletedTasksList(Template):
   """List to display all the closed/completed tasks for the current organization."""
@@ -153,7 +153,7 @@ class CompletedTasksList(Template):
     return response_builder.build()
 
   def templatePath(self):
-    return 'v2/modules/gci/org_home/_closed_tasks.html'
+    return 'modules/gci/org_home/_closed_tasks.html'
 
 
 class GCIBanOrgPost(BanOrgPost, GCIRequestHandler):
@@ -189,7 +189,7 @@ class OrgHomepage(GCIRequestHandler):
   """Encapsulates all the methods required to render the org homepage."""
 
   def templatePath(self):
-    return 'v2/modules/gci/org_home/base.html'
+    return 'modules/gci/org_home/base.html'
 
   def djangoURLPatterns(self):
     return [

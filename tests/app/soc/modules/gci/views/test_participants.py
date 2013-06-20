@@ -29,9 +29,9 @@ class MentorsListAdminPageTest(test_utils.GCIDjangoTestCase):
     """Asserts that all the required templates to render the page were used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/participants/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/participants/base.html')
     self.assertTemplateUsed(
-        response, 'v2/modules/gci/participants/_mentors_list.html')
+        response, 'modules/gci/participants/_mentors_list.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 

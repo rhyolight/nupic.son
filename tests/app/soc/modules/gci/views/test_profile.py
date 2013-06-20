@@ -92,8 +92,8 @@ class ProfileViewTest(GCIDjangoTestCase):
 
   def assertProfileTemplatesUsed(self, response):
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/profile/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/_form.html')
+    self.assertTemplateUsed(response, 'modules/gci/profile/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/_form.html')
 
   def testCreateProfilePage(self):
     self.timeline.studentSignup()

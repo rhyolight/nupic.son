@@ -49,7 +49,7 @@ class TaskListPage(GCIRequestHandler):
   TASK_LIST_COLUMNS = ['title', 'organization', 'mentors', 'status']
 
   def templatePath(self):
-    return 'v2/modules/gci/task/task_list.html'
+    return 'modules/gci/task/task_list.html'
 
   def djangoURLPatterns(self):
     return [

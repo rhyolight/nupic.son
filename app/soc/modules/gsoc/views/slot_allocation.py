@@ -194,7 +194,7 @@ class SlotsPage(base.GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/list.html'
+    return 'modules/gsoc/admin/list.html'
 
   def jsonContext(self, data, check, mutator):
     list_content = SlotsList(data).getListData()

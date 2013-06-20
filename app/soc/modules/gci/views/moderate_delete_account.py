@@ -27,7 +27,7 @@ class ModerateDeleteAccountPage(base.GCIRequestHandler):
   """View for the GCI delete account page."""
 
   def templatePath(self):
-    return 'v2/modules/gci/moderate_delete_account/base.html'
+    return 'modules/gci/moderate_delete_account/base.html'
 
   def djangoURLPatterns(self):
     return [

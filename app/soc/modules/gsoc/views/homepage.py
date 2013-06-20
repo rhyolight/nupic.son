@@ -66,7 +66,7 @@ class Timeline(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/homepage/_timeline.html"
+    return "modules/gsoc/homepage/_timeline.html"
 
 
 class Apply(Template):
@@ -145,7 +145,7 @@ class Apply(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/homepage/_apply.html"
+    return "modules/gsoc/homepage/_apply.html"
 
 
 class FeaturedProject(Template):
@@ -172,7 +172,7 @@ class FeaturedProject(Template):
     }
 
   def templatePath(self):
-    return "v2/modules/gsoc/homepage/_featured_project.html"
+    return "modules/gsoc/homepage/_featured_project.html"
 
 
 class ConnectWithUs(Template):
@@ -191,7 +191,7 @@ class ConnectWithUs(Template):
     }
 
   def templatePath(self):
-    return "v2/modules/gsoc/_connect_with_us.html"
+    return "modules/gsoc/_connect_with_us.html"
 
 
 class Homepage(GSoCRequestHandler):
@@ -199,7 +199,7 @@ class Homepage(GSoCRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/homepage/base.html'
+    return 'modules/gsoc/homepage/base.html'
 
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping.

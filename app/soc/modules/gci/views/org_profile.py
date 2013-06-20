@@ -80,7 +80,7 @@ class OrgProfilePage(GCIRequestHandler):
       check.hasProfileOrRedirectToCreate()
 
   def templatePath(self):
-    return 'v2/modules/gci/org_profile/base.html'
+    return 'modules/gci/org_profile/base.html'
 
   def context(self, data, check, mutator):
     if not data.organization:

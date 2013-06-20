@@ -168,14 +168,14 @@ class ProposalList(Template):
       return None
 
   def templatePath(self):
-    return 'v2/modules/gsoc/accept_withdraw_projects/_project_list.html'
+    return 'modules/gsoc/accept_withdraw_projects/_project_list.html'
 
 
 class AcceptProposals(GSoCRequestHandler):
   """View for accepting individual proposals."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/accept_withdraw_projects/base.html'
+    return 'modules/gsoc/accept_withdraw_projects/base.html'
 
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping."""
@@ -370,7 +370,7 @@ class ProjectList(Template):
       return None
 
   def templatePath(self):
-    return "v2/modules/gsoc/accept_withdraw_projects/_project_list.html"
+    return "modules/gsoc/accept_withdraw_projects/_project_list.html"
 
 
 class WithdrawProjects(GSoCRequestHandler):
@@ -378,7 +378,7 @@ class WithdrawProjects(GSoCRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/accept_withdraw_projects/base.html'
+    return 'modules/gsoc/accept_withdraw_projects/base.html'
 
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping.

@@ -37,12 +37,12 @@ class OrgHomeTest(GCIDjangoTestCase):
     were used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/org_home/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/org_home/base.html')
     self.assertTemplateUsed(
-        response, 'v2/modules/gci/org_home/_open_tasks.html')
+        response, 'modules/gci/org_home/_open_tasks.html')
     self.assertTemplateUsed(
-        response, "v2/modules/gci/org_home/_contact_us.html")
-    self.assertTemplateUsed(response, 'v2/modules/gci/org_home/_about_us.html')
+        response, "modules/gci/org_home/_contact_us.html")
+    self.assertTemplateUsed(response, 'modules/gci/org_home/_about_us.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
     

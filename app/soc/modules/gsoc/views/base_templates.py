@@ -69,7 +69,7 @@ class Header(Template):
     self.data = data
 
   def templatePath(self):
-    return "v2/modules/gsoc/header.html"
+    return "modules/gsoc/header.html"
 
   def context(self):
     # Need this import to make sponsor visible for sponsor link_id
@@ -128,7 +128,7 @@ class MainMenu(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/mainmenu.html"
+    return "modules/gsoc/mainmenu.html"
 
 
 class Footer(Template):
@@ -153,7 +153,7 @@ class Footer(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/footer.html"
+    return "modules/gsoc/footer.html"
 
 
 class LoggedInMsg(LoggedInMsg):
@@ -161,4 +161,4 @@ class LoggedInMsg(LoggedInMsg):
   """
 
   def templatePath(self):
-    return "v2/modules/gsoc/_loggedin_msg.html"
+    return "modules/gsoc/_loggedin_msg.html"

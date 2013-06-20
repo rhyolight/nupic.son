@@ -35,8 +35,8 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     """Asserts that all the templates from the proposal were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/proposal/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def testSubmitProposal(self):
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)

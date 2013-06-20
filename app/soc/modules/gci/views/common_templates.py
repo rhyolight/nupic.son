@@ -51,7 +51,7 @@ class Timeline(Template):
     }
 
   def templatePath(self):
-    return "v2/modules/gci/common_templates/_timeline.html"
+    return "modules/gci/common_templates/_timeline.html"
 
 
 class YourScore(Template):
@@ -84,7 +84,7 @@ class YourScore(Template):
     return super(YourScore, self).render()
 
   def templatePath(self):
-    return 'v2/modules/gci/common_templates/_your_score.html'
+    return 'modules/gci/common_templates/_your_score.html'
 
 
 class ProgramSelect(ProgramSelect):
@@ -92,7 +92,7 @@ class ProgramSelect(ProgramSelect):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/common_templates/_program_select.html'
+    return 'modules/gci/common_templates/_program_select.html'
 
 
 class GlobalRankingWinners(Template):
@@ -107,7 +107,7 @@ class GlobalRankingWinners(Template):
         }
 
   def templatePath(self):
-    return 'v2/modules/gci/common_templates/_winners.html'
+    return 'modules/gci/common_templates/_winners.html'
 
 
 class OrgNominatedWinners(Template):
@@ -152,7 +152,7 @@ class OrgNominatedWinners(Template):
         }
 
   def templatePath(self):
-    return 'v2/modules/gci/common_templates/_org_nominated_winners.html'
+    return 'modules/gci/common_templates/_org_nominated_winners.html'
 
   def _getWinnersForProgram(self, program):
     """Returns the Grand Prize Winners for the specified program.

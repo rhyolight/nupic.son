@@ -62,7 +62,7 @@ class SiteForm(views_forms.ModelForm):
     return '' if self.cleaned_data['tos'] is None else self.cleaned_data['tos']
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_form.html'
+    return 'modules/gsoc/_form.html'
 
   clean_noreply_email = cleaning.clean_empty_field('noreply_email')
 

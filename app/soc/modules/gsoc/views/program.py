@@ -234,7 +234,7 @@ class GSoCEditProgramPage(base.GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/program/base.html'
+    return 'modules/gsoc/program/base.html'
 
   def context(self, data, check, mutator):
     program_form = EditProgramForm(
@@ -280,7 +280,7 @@ class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
 
   def templatePath(self):
     """See soc.views.base.RequestHandler.templatePath for specification."""
-    return 'v2/modules/gsoc/program/base.html'
+    return 'modules/gsoc/program/base.html'
 
   def _getForm(self, data):
     """See soc.views.program.CreateProgram._getForm for specification."""
@@ -313,7 +313,7 @@ class TimelinePage(base.GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/timeline/base.html'
+    return 'modules/gsoc/timeline/base.html'
 
   def context(self, data, check, mutator):
     timeline_form = TimelineForm(data.POST or None,
@@ -355,7 +355,7 @@ class GSoCProgramMessagesPage(
     ]
 
   def templatePath(self):
-    return 'v2/modules/gsoc/program/messages.html'
+    return 'modules/gsoc/program/messages.html'
 
   def _getForm(self, data, entity):
     return GSoCProgramMessagesForm(data, data.POST or None, instance=entity)

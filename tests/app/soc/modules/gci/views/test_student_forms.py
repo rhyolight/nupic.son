@@ -32,7 +32,7 @@ class StudentFormUploadTest(GCIDjangoTestCase):
     """Asserts that all the templates from student form upload page are used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/student_forms/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/student_forms/base.html')
 
   def testStudentFormUpload(self):
     """Tests the studentsInfoList component of the dashboard.

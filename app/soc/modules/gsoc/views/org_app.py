@@ -48,7 +48,7 @@ class GSoCOrgAppEditForm(org_app.OrgAppEditForm):
         gsoc_forms.GSoCBoundField, *args, **kwargs)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_form.html'
+    return 'modules/gsoc/_form.html'
 
 
 class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
@@ -74,7 +74,7 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
     self.validateBackupAdminProfile(backup_admin, profile_model.GSoCProfile)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_form.html'
+    return 'modules/gsoc/_form.html'
 
 
 class GSoCOrgAppEditPage(GSoCRequestHandler):
@@ -90,7 +90,7 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/org_app/edit.html'
+    return 'modules/gsoc/org_app/edit.html'
 
   def context(self, data, check, mutator):
     if data.org_app:
@@ -173,7 +173,7 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
           message=access_checker.DEF_NO_ORG_APP % data.program.name)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/org_app/take.html'
+    return 'modules/gsoc/org_app/take.html'
 
   def context(self, data, check, mutator):
     form = GSoCOrgAppTakeForm(data)
@@ -218,7 +218,7 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
       check.canTakeOrgApp()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/org_app/take.html'
+    return 'modules/gsoc/org_app/take.html'
 
   def context(self, data, check, mutator):
     if data.org_app_record:
@@ -337,7 +337,7 @@ class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):
   """Template to construct readonly organization application record.
   """
 
-  template_path = 'v2/modules/gsoc/org_app/readonly_template.html'
+  template_path = 'modules/gsoc/org_app/readonly_template.html'
 
 
 class GSoCOrgAppShowPage(GSoCRequestHandler):
@@ -360,7 +360,7 @@ class GSoCOrgAppShowPage(GSoCRequestHandler):
     check.canViewOrgApp()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/org_app/show.html'
+    return 'modules/gsoc/org_app/show.html'
 
   def context(self, data, check, mutator):
     record = data.org_app_record

@@ -32,9 +32,9 @@ class SlotsTest(GSoCDjangoTestCase):
     """Asserts that all the templates from the dashboard were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/admin/list.html')
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/admin/_accepted_orgs_list.html')
+        'modules/gsoc/admin/_accepted_orgs_list.html')
 
   def testAllocateSlots(self):
     self.data.createHost()

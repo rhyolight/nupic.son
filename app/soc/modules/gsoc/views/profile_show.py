@@ -88,7 +88,7 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, GSoCRequestHandler):
     ]
 
   def templatePath(self):
-    return 'v2/modules/gsoc/profile_show/base.html'
+    return 'modules/gsoc/profile_show/base.html'
 
   def _getProfileReadOnlyTemplate(self, profile):
     return GSoCProfileReadOnlyTemplate(profile)
@@ -116,7 +116,7 @@ class GSoCProfileAdminPage(GSoCRequestHandler):
       pass
 
   def templatePath(self):
-    return 'v2/modules/gsoc/profile_show/base.html'
+    return 'modules/gsoc/profile_show/base.html'
 
   def context(self, data, check, mutator):
     assert isSet(data.program)

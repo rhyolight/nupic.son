@@ -86,14 +86,14 @@ class MentorsList(Template):
     return response_builder.build()
 
   def templatePath(self):
-    return 'v2/modules/gci/participants/_mentors_list.html'
+    return 'modules/gci/participants/_mentors_list.html'
 
 
 class MentorsListAdminPage(GCIRequestHandler):
   """View for the organization admin and mentors page for admin."""
 
   def templatePath(self):
-    return 'v2/modules/gci/participants/base.html'
+    return 'modules/gci/participants/base.html'
 
   def djangoURLPatterns(self):
     return [

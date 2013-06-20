@@ -138,7 +138,7 @@ class ListCodeSamples(Template):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return 'v2/modules/gsoc/project_details/_list_code_samples.html'
+    return 'modules/gsoc/project_details/_list_code_samples.html'
 
 
 class UploadCodeSamples(Template):
@@ -166,7 +166,7 @@ class UploadCodeSamples(Template):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return 'v2/modules/gsoc/project_details/_upload_code_samples.html'
+    return 'modules/gsoc/project_details/_upload_code_samples.html'
 
 
 class ProjectDetailsUpdate(GSoCRequestHandler):
@@ -174,7 +174,7 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/project_details/update.html'
+    return 'modules/gsoc/project_details/update.html'
 
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping."""
@@ -408,7 +408,7 @@ class UserActions(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/project_details/_user_action.html"
+    return "modules/gsoc/project_details/_user_action.html"
 
 
 def _isUpdateLinkVisible(data):
@@ -465,7 +465,7 @@ class ProjectDetails(GSoCRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/project_details/base.html'
+    return 'modules/gsoc/project_details/base.html'
 
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping."""

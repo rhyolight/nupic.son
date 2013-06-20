@@ -664,10 +664,10 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
     """Asserts that all the templates from the base view were used.
     """
     self.assertResponseOK(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/footer.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/header.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/mainmenu.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/footer.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/header.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/mainmenu.html')
 
 
 class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
@@ -691,10 +691,10 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
           # make it easier to debug render failures
           if hasattr(value, 'render'):
             value.render()
-    self.assertTemplateUsed(response, 'v2/modules/gci/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/_footer.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/_header.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/_mainmenu.html')
+    self.assertTemplateUsed(response, 'modules/gci/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/_footer.html')
+    self.assertTemplateUsed(response, 'modules/gci/_header.html')
+    self.assertTemplateUsed(response, 'modules/gci/_mainmenu.html')
 
   def createDocument(self, override={}):
     return self.createDocumentForPrefix('gci_program', override)

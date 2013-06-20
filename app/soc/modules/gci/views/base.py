@@ -27,8 +27,8 @@ from soc.modules.gci.views import base_templates
 from soc.modules.gci.views.helper import access_checker
 from soc.modules.gci.views.helper import request_data
 
-_GCI_BASE_TEMPLATE = 'v2/modules/gci/base.html'
-_GCI_ERROR_TEMPLATE = 'v2/modules/gci/error.html'
+_GCI_BASE_TEMPLATE = 'modules/gci/base.html'
+_GCI_ERROR_TEMPLATE = 'modules/gci/error.html'
 
 
 class GCIInitializer(initialize.Initializer):

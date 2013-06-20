@@ -40,7 +40,7 @@ AVATAR_LOWER_BOUND = 1
 AVATAR_UPPER_BOUND = 26
 AVATAR_DEFAULT_COLOR = 'blue'
 RE_AVATAR_COLOR = re.compile(r'(\d\d?)-(\w+)\.jpg$')
-TEMPLATE_PATH = 'v2/modules/gci/_form.html'
+TEMPLATE_PATH = 'modules/gci/_form.html'
 
 # The standard input fields should be available to all importing modules
 AsyncFileInput = forms.AsyncFileInput

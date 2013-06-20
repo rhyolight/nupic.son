@@ -33,9 +33,9 @@ class AcceptedOrgsPublicPageTest(test_utils.GSoCDjangoTestCase):
     """Asserts that all the required templates to render the page were used."""
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/accepted_orgs/base.html')
+        'modules/gsoc/accepted_orgs/base.html')
     self.assertTemplateUsed(response, 
-        'v2/modules/gsoc/admin/_accepted_orgs_list.html')
+        'modules/gsoc/admin/_accepted_orgs_list.html')
     self.assertTemplateUsed(response, 'soc/_program_select.html') 
     self.assertTemplateUsed(response, 'soc/list/lists.html') 
     self.assertTemplateUsed(response, 'soc/list/list.html')
@@ -119,9 +119,9 @@ class AcceptedOrgsAdminPageTest(test_utils.GSoCDjangoTestCase):
     """Asserts that all the required templates to render the page were used."""
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/admin/list.html')
+        'modules/gsoc/admin/list.html')
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/admin/_accepted_orgs_list.html')
+        'modules/gsoc/admin/_accepted_orgs_list.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 

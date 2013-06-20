@@ -273,7 +273,7 @@ class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
     return context
 
   def templatePath(self):
-    return 'v2/modules/gsoc/profile/base.html'
+    return 'modules/gsoc/profile/base.html'
 
   def jsonContext(self, data, check, mutator):
     return UNIVERSITIES

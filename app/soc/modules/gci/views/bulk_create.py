@@ -60,7 +60,7 @@ class BulkCreate(GCIRequestHandler):
   def templatePath(self):
     """Returns the path to the template.
     """
-    return 'v2/modules/gci/bulk_create/base.html'
+    return 'modules/gci/bulk_create/base.html'
 
   def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""

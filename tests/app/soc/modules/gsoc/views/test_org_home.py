@@ -42,15 +42,15 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     """Asserts that all the org home templates were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_connect_with_us.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/org_home/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_connect_with_us.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/org_home/base.html')
 
     if show_project_list:
       self.assertTemplateUsed(
-          response, 'v2/modules/gsoc/org_home/_project_list.html')
+          response, 'modules/gsoc/org_home/_project_list.html')
     else:
       self.assertTemplateNotUsed(
-          response, 'v2/modules/gsoc/org_home/_project_list.html')
+          response, 'modules/gsoc/org_home/_project_list.html')
 
   def testOrgHomeDuringOrgSignup(self):
     """Tests the the org home page during the organization signup period.

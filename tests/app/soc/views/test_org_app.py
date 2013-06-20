@@ -97,8 +97,8 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     """Asserts that all the templates from the org app create were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/org_app/edit.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/org_app/edit.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def getOrgAppCreatePostData(self):
     """Returns the post data dictionary for creating or editing org app."""

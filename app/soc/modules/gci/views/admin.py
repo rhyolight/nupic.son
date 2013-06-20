@@ -88,7 +88,7 @@ class DashboardPage(GCIRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gci/admin/base.html'
+    return 'modules/gci/admin/base.html'
 
   def context(self, data, check, mutator):
     """Context for dashboard page."""
@@ -412,7 +412,7 @@ class LookupLinkIdPage(GCIRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gci/admin/lookup.html'
+    return 'modules/gci/admin/lookup.html'
 
   def post(self, data, check, mutator):
     # TODO(nathaniel): problematic self-call.

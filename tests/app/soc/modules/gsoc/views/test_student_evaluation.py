@@ -46,23 +46,23 @@ class StudentEvaluationTest(GSoCDjangoTestCase):
     """Asserts that all the evaluation create/edit templates were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/form_base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_evaluation.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/form_base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_evaluation.html')
 
   def assertEvaluationTakeTemplateUsed(self, response):
     """Asserts that all the evaluation take templates were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/form_base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_evaluation_take.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/form_base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_evaluation_take.html')
 
   def assertEvaluationShowTemplateUsed(self, response):
     """Asserts that all the evaluation show templates were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_survey/show.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_survey/show.html')
 
   def assertFieldChoices(self, schema_choices, form_choices):
     """Asserts if the form field has the same choices as defined in the schema.

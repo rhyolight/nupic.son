@@ -92,7 +92,7 @@ class HowItWorks(Template):
     }
 
   def templatePath(self):
-    return "v2/modules/gci/homepage/_how_it_works.html"
+    return "modules/gci/homepage/_how_it_works.html"
 
   def _getMainText(self):
     if self.data.timeline.beforeStudentSignupStart():
@@ -123,7 +123,7 @@ class FeaturedTask(Template):
         }
 
   def templatePath(self):
-    return "v2/modules/gci/homepage/_featured_task.html"
+    return "modules/gci/homepage/_featured_task.html"
 
 
 class ParticipatingOrgs(Template):
@@ -172,7 +172,7 @@ class ParticipatingOrgs(Template):
     }
 
   def templatePath(self):
-    return "v2/modules/gci/homepage/_participating_orgs.html"
+    return "modules/gci/homepage/_participating_orgs.html"
 
 
 class Leaderboard(Template):
@@ -190,7 +190,7 @@ class Leaderboard(Template):
     }
 
   def templatePath(self):
-    return "v2/modules/gci/homepage/_leaderboard.html"
+    return "modules/gci/homepage/_leaderboard.html"
 
 
 class ConnectWithUs(Template):
@@ -206,14 +206,14 @@ class ConnectWithUs(Template):
     }
 
   def templatePath(self):
-    return "v2/modules/gci/homepage/_connect_with_us.html"
+    return "modules/gci/homepage/_connect_with_us.html"
 
 
 class Homepage(GCIRequestHandler):
   """Encapsulate all the methods required to generate GCI Home page."""
 
   def templatePath(self):
-    return 'v2/modules/gci/homepage/base.html'
+    return 'modules/gci/homepage/base.html'
 
   def djangoURLPatterns(self):
     return [

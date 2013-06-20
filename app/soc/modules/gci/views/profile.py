@@ -287,7 +287,7 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
       check.isProfileActive()
 
   def templatePath(self):
-    return 'v2/modules/gci/profile/base.html'
+    return 'modules/gci/profile/base.html'
 
   def context(self, data, check, mutator):
     context = super(GCIProfilePage, self).context(data, check, mutator)

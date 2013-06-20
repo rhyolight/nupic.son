@@ -23,4 +23,4 @@ class GCIModelReadOnlyTemplate(readonly_template.ModelReadOnlyTemplate):
   """Class to render readonly templates for GCI models.
   """
 
-  template_path = 'v2/modules/gci/_readonly_template.html'
+  template_path = 'modules/gci/_readonly_template.html'

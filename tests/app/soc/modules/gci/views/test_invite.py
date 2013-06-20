@@ -46,7 +46,7 @@ class InviteViewTest(BaseInviteTest):
     """Asserts that all the templates are used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/invite/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/invite/base.html')
 
   def testLoggedInCannotInvite(self):
     url = self._inviteMentorUrl()
@@ -276,7 +276,7 @@ class ManageInviteTest(BaseInviteTest):
     """Asserts that all the templates are used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/invite/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/invite/base.html')
 
   def testLoggedInCannotManageInvite(self):
     url = self._manageInviteUrl(self.invite)

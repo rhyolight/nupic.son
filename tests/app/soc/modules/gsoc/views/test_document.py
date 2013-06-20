@@ -63,8 +63,8 @@ class EditProgramTest(GSoCDjangoTestCase):
     url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
     response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/document/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/document/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
     # test POST
     override = {
@@ -87,8 +87,8 @@ class EditProgramTest(GSoCDjangoTestCase):
     url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
     response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/document/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/document/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
     # test POST
     override = {
@@ -117,5 +117,5 @@ class EventsPageTest(GSoCDjangoTestCase):
     response = self.get('/gsoc/events/%s' % self.gsoc.key().name())
     self.assertResponseOK(response)
     self.assertEqual(response.context['page_name'],'Events and Timeline')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/document/events.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/document/events.html')
     self.assertGSoCTemplatesUsed(response)

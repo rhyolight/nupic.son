@@ -33,14 +33,14 @@ class DashboardTest(GSoCDjangoTestCase):
     """Asserts that all the templates from the dashboard were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/dashboard/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/dashboard/base.html')
 
   def assertDashboardComponentTemplatesUsed(self, response):
     """Asserts that all the templates to render a component were used.
     """
     self.assertDashboardTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/dashboard/list_component.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/dashboard/component.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/dashboard/list_component.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/dashboard/component.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 

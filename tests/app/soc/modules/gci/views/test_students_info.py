@@ -36,7 +36,7 @@ class StudentsInfoTest(GCIDjangoTestCase):
     """Asserts that all the templates from the dashboard were used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/students_info/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/students_info/base.html')
   
   def testAccessToTheList(self):
     """Tests only the host can access the list.

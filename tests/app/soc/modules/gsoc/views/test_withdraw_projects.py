@@ -39,12 +39,12 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     self.assertIn('base_layout', response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base.html')
+        'modules/gsoc/base.html')
 
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/accept_withdraw_projects/base.html')
+        'modules/gsoc/accept_withdraw_projects/base.html')
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/accept_withdraw_projects/base.html')
+        'modules/gsoc/accept_withdraw_projects/base.html')
 
   def testWithdrawProjects(self):
     self.data.createHost()

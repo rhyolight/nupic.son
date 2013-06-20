@@ -31,8 +31,8 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     """Asserts that correct templates were used to render the view.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/profile_show/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_readonly_template.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/profile_show/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_readonly_template.html')
 
   def testUserWithoutAProfileCanNotAccessItsProfile(self):
     """Tests that a user which has no profile can not access its profile.
@@ -101,8 +101,8 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     """Asserts that correct templates were used to render the view.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/profile_show/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_readonly_template.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/profile_show/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_readonly_template.html')
 
   def testAUserNotLoggedInIsRedirectedToLoginPage(self):
     """Tests that a user who is not logged in and trying to access its profile

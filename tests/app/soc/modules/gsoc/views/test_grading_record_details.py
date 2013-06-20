@@ -56,7 +56,7 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
     self.assertIn('base_layout', response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/grading_record/overview.html')
+        'modules/gsoc/grading_record/overview.html')
 
   def testGradingRecordsOverviewGet(self):
     grading_survey_group = self.createGradingSurveyGroup()

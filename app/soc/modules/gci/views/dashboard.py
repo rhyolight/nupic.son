@@ -121,7 +121,7 @@ class DashboardPage(GCIRequestHandler):
 
   def templatePath(self):
     """Returns the path to the template."""
-    return 'v2/modules/gci/dashboard/base.html'
+    return 'modules/gci/dashboard/base.html'
 
   def populateDashboards(self, data):
     """Populates the various dashboard subpages and components for each subpage.
@@ -500,7 +500,7 @@ class MyOrgApplicationsComponent(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return 'v2/modules/gci/dashboard/list_component.html'
+    return 'modules/gci/dashboard/list_component.html'
 
   def context(self):
     """Returns the context of this component.
@@ -645,7 +645,7 @@ class MyOrgsTaskList(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return'v2/modules/gci/dashboard/list_component.html'
+    return'modules/gci/dashboard/list_component.html'
 
   def post(self):
     """Processes the form post data by checking what buttons were pressed.
@@ -797,7 +797,7 @@ class MyOrgsList(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return'v2/modules/gci/dashboard/list_component.html'
+    return'modules/gci/dashboard/list_component.html'
 
   def context(self):
     """Returns the context of this component.
@@ -1009,7 +1009,7 @@ class MyOrgsMentorsList(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return'v2/modules/gci/dashboard/list_component.html'
+    return'modules/gci/dashboard/list_component.html'
 
   def context(self):
     """Returns the context of this component.
@@ -1136,7 +1136,7 @@ class OrgAdminInvitesList(Component):
     }
 
   def templatePath(self):
-    return 'v2/modules/gci/dashboard/list_component.html'
+    return 'modules/gci/dashboard/list_component.html'
 
 
 class DocumentComponent(Component):
@@ -1162,7 +1162,7 @@ class DocumentComponent(Component):
     super(DocumentComponent, self).__init__(data)
 
   def templatePath(self):
-    return'v2/modules/gci/dashboard/list_component.html'
+    return'modules/gci/dashboard/list_component.html'
 
   def getListData(self):
     idx = lists.getListIndex(self.data.request)

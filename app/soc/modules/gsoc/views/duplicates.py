@@ -35,7 +35,7 @@ class DuplicatesPage(GSoCRequestHandler):
   """View for the host to see duplicates."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/duplicates/base.html'
+    return 'modules/gsoc/duplicates/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -144,4 +144,4 @@ class Duplicate(Template):
 
   def templatePath(self):
     """Returns the path to the template that should be used in render()."""
-    return 'v2/modules/gsoc/duplicates/proposal_duplicate.html'
+    return 'modules/gsoc/duplicates/proposal_duplicate.html'

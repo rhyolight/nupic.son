@@ -48,7 +48,7 @@ class SubscribedTasksPage(base.GCIRequestHandler):
   """View for the list of the tasks the specified profile is subscribed to."""
 
   def templatePath(self):
-    return 'v2/modules/gci/subscribed_tasks/subscribed_tasks.html'
+    return 'modules/gci/subscribed_tasks/subscribed_tasks.html'
 
   def djangoURLPatterns(self):
     return [

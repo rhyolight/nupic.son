@@ -120,4 +120,4 @@ class AssignMentorFields(template.Template):
         }
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_assign_mentor/base.html'
+    return 'modules/gsoc/_assign_mentor/base.html'

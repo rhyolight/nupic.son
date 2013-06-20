@@ -56,7 +56,7 @@ class TaskList(Template):
       return None
 
   def templatePath(self):
-    return 'v2/modules/gci/task/_task_list.html'
+    return 'modules/gci/task/_task_list.html'
 
   def _getColumns(self):
     raise NotImplementedError

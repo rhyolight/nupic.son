@@ -39,7 +39,7 @@ class EditDocumentPage(GSoCRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/document/base.html'
+    return 'modules/gsoc/document/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -86,7 +86,7 @@ class DocumentPage(GSoCRequestHandler):
   """Encapsulate all the methods required to show documents."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/base.html'
+    return 'modules/gsoc/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -120,7 +120,7 @@ class EventsPage(GSoCRequestHandler):
   """Encapsulates all the methods required to show the events page."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/document/events.html'
+    return 'modules/gsoc/document/events.html'
 
   def djangoURLPatterns(self):
     return [
@@ -147,14 +147,14 @@ class GSoCDocumentList(document.DocumentList):
     super(GSoCDocumentList, self).__init__(data, 'edit_gsoc_document')
 
   def templatePath(self):
-    return 'v2/modules/gsoc/document/_document_list.html'
+    return 'modules/gsoc/document/_document_list.html'
 
 
 class DocumentListPage(GSoCRequestHandler):
   """View for the list documents page."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/document/document_list.html'
+    return 'modules/gsoc/document/document_list.html'
 
   def djangoURLPatterns(self):
     return [

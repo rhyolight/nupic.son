@@ -66,7 +66,7 @@ class CommentForm(GSoCModelForm):
           ugettext('Comment content cannot be empty.'), code='invalid')
 
   def templatePath(self):
-    return 'v2/modules/gsoc/proposal/_comment_form.html'
+    return 'modules/gsoc/proposal/_comment_form.html'
 
 
 class PrivateCommentForm(CommentForm):
@@ -113,7 +113,7 @@ class Duplicate(Template):
     return context
 
   def templatePath(self):
-    return 'v2/modules/gsoc/duplicates/proposal_duplicate_review.html'
+    return 'modules/gsoc/duplicates/proposal_duplicate_review.html'
 
 
 class UserActions(Template):
@@ -294,7 +294,7 @@ class UserActions(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/proposal/_user_action.html"
+    return "modules/gsoc/proposal/_user_action.html"
 
 
 class ReviewProposal(GSoCRequestHandler):
@@ -312,7 +312,7 @@ class ReviewProposal(GSoCRequestHandler):
     mutator.commentVisible(data.proposal_org)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/proposal/review.html'
+    return 'modules/gsoc/proposal/review.html'
 
   def getScores(self, data):
     """Gets all the scores for the proposal."""

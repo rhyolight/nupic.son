@@ -139,7 +139,7 @@ class AcceptedOrgsPublicPage(GSoCRequestHandler):
   """View for public page that lists the accepted organizations."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/accepted_orgs/base.html'
+    return 'modules/gsoc/accepted_orgs/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -182,7 +182,7 @@ class AcceptedOrgsAdminPage(GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/list.html'
+    return 'modules/gsoc/admin/list.html'
 
   def jsonContext(self, data, check, mutator):
     list_content = AcceptedOrgsAdminList(data).getListData()

@@ -51,8 +51,8 @@ class GCIOrgAppEditPageTest(test_utils.GCIDjangoTestCase):
     """
 
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/org_app/edit.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/_form.html')
+    self.assertTemplateUsed(response, 'modules/gci/org_app/edit.html')
+    self.assertTemplateUsed(response, 'modules/gci/_form.html')
 
   def testAccessCheck(self):
     """Asserts only the host can access the page.
@@ -116,7 +116,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     """
 
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/org_app/take.html')
+    self.assertTemplateUsed(response, 'modules/gci/org_app/take.html')
 
   def updateOrgAppSurvey(self, survey_start=None, survey_end=None):
     """Create an organization application survey.

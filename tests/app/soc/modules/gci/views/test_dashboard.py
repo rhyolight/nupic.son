@@ -33,15 +33,15 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
   def assertDashboardTemplatesUsed(self, response):
     """Asserts that all the templates from the dashboard were used."""
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/dashboard/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/dashboard/base.html')
 
   def assertDashboardComponentTemplatesUsed(self, response):
     """Asserts that all the templates to render a component were used."""
     self.assertDashboardTemplatesUsed(response)
     self.assertTemplateUsed(response,
-        'v2/modules/gci/dashboard/list_component.html')
+        'modules/gci/dashboard/list_component.html')
     self.assertTemplateUsed(response,
-        'v2/modules/gci/dashboard/component.html')
+        'modules/gci/dashboard/component.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 

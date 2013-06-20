@@ -32,8 +32,8 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
   def assertProgramTemplatesUsed(self, response):
     """Asserts that all the templates from the program were used."""
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/program/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/_form.html')
+    self.assertTemplateUsed(response, 'modules/gci/program/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/_form.html')
 
   def _getCreateProgramFormRequiredProperties(self):
     """Returns all properties to be sent in a POST dictionary that are required
@@ -186,8 +186,8 @@ class EditProgramTest(GCIDjangoTestCase):
     """Asserts that all the templates from the program were used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/program/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/_form.html')
+    self.assertTemplateUsed(response, 'modules/gci/program/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/_form.html')
 
   def testEditProgramHostOnly(self):
     url = '/gci/program/edit/' + self.gci.key().name()

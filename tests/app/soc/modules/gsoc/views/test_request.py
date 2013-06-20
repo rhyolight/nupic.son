@@ -48,8 +48,8 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     """Asserts that all the request templates were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/invite/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/invite/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def testRequestMentor(self):
     admin = GSoCProfileHelper(self.gsoc, self.dev_test)

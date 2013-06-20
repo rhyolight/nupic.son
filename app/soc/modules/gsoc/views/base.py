@@ -27,8 +27,8 @@ from soc.modules.gsoc.views import base_templates
 from soc.modules.gsoc.views.helper import access_checker
 from soc.modules.gsoc.views.helper import request_data
 
-_GSOC_BASE_TEMPLATE = 'v2/modules/gsoc/base.html'
-_GSOC_ERROR_TEMPLATE = 'v2/modules/gsoc/error.html'
+_GSOC_BASE_TEMPLATE = 'modules/gsoc/base.html'
+_GSOC_ERROR_TEMPLATE = 'modules/gsoc/error.html'
 
 
 class GSoCInitializer(initialize.Initializer):

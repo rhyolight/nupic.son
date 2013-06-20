@@ -44,7 +44,7 @@ class EditDocumentPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/document/base.html'
+    return 'modules/gci/document/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -92,7 +92,7 @@ class DocumentPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/base.html'
+    return 'modules/gci/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -118,7 +118,7 @@ class EventsPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/document/events.html'
+    return 'modules/gci/document/events.html'
 
   def djangoURLPatterns(self):
     return [
@@ -145,14 +145,14 @@ class GCIDocumentList(document.DocumentList):
     super(GCIDocumentList, self).__init__(data, 'edit_gci_document')
 
   def templatePath(self):
-    return 'v2/modules/gci/document/_document_list.html'
+    return 'modules/gci/document/_document_list.html'
 
 
 class DocumentListPage(GCIRequestHandler):
   """View for the list documents page."""
 
   def templatePath(self):
-    return 'v2/modules/gci/document/document_list.html'
+    return 'modules/gci/document/document_list.html'
 
   def djangoURLPatterns(self):
     return [

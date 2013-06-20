@@ -63,10 +63,10 @@ class ProposalPage(GSoCRequestHandler):
     check.canStudentPropose()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/proposal/base.html'
+    return 'modules/gsoc/proposal/base.html'
 
   def buttonsTemplate(self):
-    return 'v2/modules/gsoc/proposal/_buttons_create.html'
+    return 'modules/gsoc/proposal/_buttons_create.html'
 
   def context(self, data, check, mutator):
     if data.POST:
@@ -180,10 +180,10 @@ class UpdateProposal(GSoCRequestHandler):
       data.action = action
 
   def templatePath(self):
-    return 'v2/modules/gsoc/proposal/base.html'
+    return 'modules/gsoc/proposal/base.html'
 
   def buttonsTemplate(self):
-    return 'v2/modules/gsoc/proposal/_buttons_update.html'
+    return 'modules/gsoc/proposal/_buttons_update.html'
 
   def context(self, data, check, mutator):
     proposal = data.proposal
