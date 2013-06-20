@@ -29,7 +29,8 @@ module.exports = function(grunt) {
         build_dir: './build',
         css_dir: '<%= meta.build.build_dir %>/soc/content/css',
         css_gsoc_dir: '<%= meta.build.css_dir %>/gsoc',
-        css_soc_dir: '<%= meta.build.css_dir %>/soc'
+        css_soc_dir: '<%= meta.build.css_dir %>/soc',
+        css_gci_dir: '<%= meta.build.css_dir %>/gci'
       }
 		},
 		jasmine: {
@@ -83,7 +84,17 @@ module.exports = function(grunt) {
           '<%= meta.src.css_gsoc_dir %>/surveys.css': '<%= meta.src.less_gsoc_dir %>/surveys.less',
           '<%= meta.src.css_gsoc_dir %>/tables.css': '<%= meta.src.less_gsoc_dir %>/tables.less',
           '<%= meta.src.css_gsoc_dir %>/typography.css': '<%= meta.src.less_gsoc_dir %>/typography.less',
-          '<%= meta.src.css_gsoc_dir %>/user-messages.css': '<%= meta.src.less_gsoc_dir %>/user-messages.less'
+          '<%= meta.src.css_gsoc_dir %>/user-messages.css': '<%= meta.src.less_gsoc_dir %>/user-messages.less',
+          /* Development GCI files */
+          '<%= meta.src.css_gci_dir %>/account_deletion.css': '<%= meta.src.less_gci_dir %>/account_deletion.less',
+          '<%= meta.src.css_gci_dir %>/buttons.css': '<%= meta.src.less_gci_dir %>/buttons.less',
+          '<%= meta.src.css_gci_dir %>/dashboard.css': '<%= meta.src.less_gci_dir %>/dashboard.less',
+          '<%= meta.src.css_gci_dir %>/document.css': '<%= meta.src.less_gci_dir %>/document.less',
+          '<%= meta.src.css_gci_dir %>/forms.css': '<%= meta.src.less_gci_dir %>/forms.less',
+          '<%= meta.src.css_gci_dir %>/ie.css': '<%= meta.src.less_gci_dir %>/ie.less',
+          '<%= meta.src.css_gci_dir %>/others.css': '<%= meta.src.less_gci_dir %>/others.less',
+          '<%= meta.src.css_gci_dir %>/readonly.css': '<%= meta.src.less_gci_dir %>/readonly.less',
+          '<%= meta.src.css_gci_dir %>/style.css': '<%= meta.src.less_gci_dir %>/style.less'
         }
       },
       production: {
@@ -109,7 +120,17 @@ module.exports = function(grunt) {
           '<%= meta.build.css_gsoc_dir %>/surveys.css': '<%= meta.src.less_gsoc_dir %>/surveys.less',
           '<%= meta.build.css_gsoc_dir %>/tables.css': '<%= meta.src.less_gsoc_dir %>/tables.less',
           '<%= meta.build.css_gsoc_dir %>/typography.css': '<%= meta.src.less_gsoc_dir %>/typography.less',
-          '<%= meta.build.css_gsoc_dir %>/user-messages.css': '<%= meta.src.less_gsoc_dir %>/user-messages.less'
+          '<%= meta.build.css_gsoc_dir %>/user-messages.css': '<%= meta.src.less_gsoc_dir %>/user-messages.less',
+          /* Development GCI files */
+          '<%= meta.build.css_gci_dir %>/account_deletion.css': '<%= meta.src.less_gci_dir %>/account_deletion.less',
+          '<%= meta.build.css_gci_dir %>/buttons.css': '<%= meta.src.less_gci_dir %>/buttons.less',
+          '<%= meta.build.css_gci_dir %>/dashboard.css': '<%= meta.src.less_gci_dir %>/dashboard.less',
+          '<%= meta.build.css_gci_dir %>/document.css': '<%= meta.src.less_gci_dir %>/document.less',
+          '<%= meta.build.css_gci_dir %>/forms.css': '<%= meta.src.less_gci_dir %>/forms.less',
+          '<%= meta.build.css_gci_dir %>/ie.css': '<%= meta.src.less_gci_dir %>/ie.less',
+          '<%= meta.build.css_gci_dir %>/others.css': '<%= meta.src.less_gci_dir %>/others.less',
+          '<%= meta.build.css_gci_dir %>/readonly.css': '<%= meta.src.less_gci_dir %>/readonly.less',
+          '<%= meta.build.css_gci_dir %>/style.css': '<%= meta.src.less_gci_dir %>/style.less'
         }
       }
     },
