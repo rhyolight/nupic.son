@@ -20,6 +20,8 @@ class Callback(object):
   """Callback object that handles interaction between the core.
   """
 
+  # This constant is required by soc.modules.core module. If its values
+  # does not match the one defined there, the callback is rejected.
   API_VERSION = 1
 
   def __init__(self, core):
