@@ -20,6 +20,7 @@ from google.appengine.ext import db
 
 from django.core.urlresolvers import reverse
 from django.template import defaultfilters
+from django.utils import html
 from django.utils.formats import dateformat
 from django.utils.safestring import mark_safe
 
@@ -186,7 +187,7 @@ class GSoCBoundField(forms.BoundField):
     return mark_safe('%s%s%s%s' % (
         self._render_label(),
         self.as_widget(attrs=attrs),
-        self._render_error(),  
+        self._render_error(),
         self._render_note(),
     ))
 
@@ -331,11 +332,12 @@ class GSoCBoundField(forms.BoundField):
     ) if self.field.label else ''
 
   def _render_error(self):
-    if not self.errors:
+    if self.errors:
+      # TODO(nathaniel): HTML in Python.
+      return '<div class="error-message">%s</div>' % html.escape(
+          self.errors[0])
+    else:
       return ''
-
-    return '<div class="error-message">%s</div>' % (
-        self.errors[0])
 
   def _render_is_required(self):
     if not self.field.required:

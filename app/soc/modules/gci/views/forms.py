@@ -25,8 +25,7 @@ from django.core.urlresolvers import reverse
 from django.utils.datastructures import MergeDict
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_unicode
-from django.utils.html import conditional_escape
-from django.utils.html import escape
+from django.utils import html
 from django.utils.safestring import mark_safe
 from django.template import defaultfilters
 from django.utils.formats import dateformat
@@ -177,8 +176,8 @@ class MultipleSelectWidget(Select):
     if self.disabled_option:
       disabled_value, disabled_label = self.disabled_option
       output.append(u'<option value="%s" disabled=disabled>%s</option>' % (
-          escape(disabled_value),
-          conditional_escape(force_unicode(disabled_label))))
+          html.escape(disabled_value),
+          html.conditional_escape(force_unicode(disabled_label))))
 
     output.append(super(MultipleSelectWidget, self).render_options(
         choices, selected_choices))
@@ -194,7 +193,7 @@ class RadioInput(forms.RadioInput):
       label_for = ' for="%s_%s"' % (self.attrs['id'], self.index)
     else:
       label_for = ''
-    choice_label = conditional_escape(force_unicode(self.choice_label))
+    choice_label = html.conditional_escape(force_unicode(self.choice_label))
     return mark_safe(
         u'%s <label%s>%s</label>' % (
         self.tag(), label_for, choice_label))
@@ -239,7 +238,7 @@ class CheckboxSelectMultiple(CheckboxSelectMultiple):
           final_attrs, check_test=lambda value: value in str_values)
       option_value = force_unicode(option_value)
       rendered_cb = cb.render(name, option_value)
-      option_label = conditional_escape(force_unicode(option_label))
+      option_label = html.conditional_escape(force_unicode(option_label))
       output.append(
           u'<div id="form-row-checkbox-%s" class="form-checkbox-item">'
           '%s<label%s>%s</label></div>' % (
@@ -251,7 +250,7 @@ class CheckboxSelectMultiple(CheckboxSelectMultiple):
 class GCIModelForm(forms.ModelForm):
   """Django ModelForm class which uses our implementation of BoundField.
   """
-  
+
   def __init__(self, *args, **kwargs):
     super(GCIModelForm, self).__init__(
         GCIBoundField, *args, **kwargs)
@@ -529,11 +528,12 @@ class GCIBoundField(forms.BoundField):
     return '<em>*</em>' if self.field.required else ''
 
   def _render_error(self):
-    if not self.errors:
+    if self.errors:
+      # TODO(nathaniel): HTML in Python.
+      return '<span class="form-row-error-msg">%s</span>' % html.escape(
+          self.errors[0])
+    else:
       return ''
-
-    return '<span class="form-row-error-msg">%s</span>' % (
-        self.errors[0])
 
   def _render_note(self, note=None):
     return '<span class="note">%s</span>' % (
