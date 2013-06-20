@@ -1,6 +1,6 @@
-diff --git a/app/jquery/jquery.formbuilder.js b/app/jquery/jquery.formbuilder.js
---- a/app/jquery/jquery.formbuilder.js
-+++ b/app/jquery/jquery.formbuilder.js
+diff --git a/app/soc/content/js/thirdparty/jquery/jquery.formbuilder.js b/app/soc/content/js/thirdparty/jquery/jquery.formbuilder.js
+--- a/app/soc/content/js/thirdparty/jquery/jquery.formbuilder.js
++++ b/app/soc/content/js/thirdparty/jquery/jquery.formbuilder.js
 @@ -381,7 +381,7 @@
  					$.ajax({
  						type: "POST",
