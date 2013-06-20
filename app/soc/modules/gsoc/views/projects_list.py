@@ -127,14 +127,14 @@ class ProjectList(Template):
       return None
 
   def templatePath(self):
-    return "v2/modules/gsoc/projects_list/_project_list.html"
+    return "modules/gsoc/projects_list/_project_list.html"
 
 
 class ListProjects(GSoCRequestHandler):
   """View methods for listing all the projects accepted into a program."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/projects_list/base.html'
+    return 'modules/gsoc/projects_list/base.html'
 
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping."""

@@ -32,10 +32,10 @@ class HomepageViewTest(GSoCDjangoTestCase):
     """Asserts that all the templates from the homepage view were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_connect_with_us.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/homepage/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/homepage/_apply.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/homepage/_timeline.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_connect_with_us.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/homepage/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/homepage/_apply.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/homepage/_timeline.html')
 
   def testHomepageAnonymous(self):
     """Tests the homepage as an anonymous user throughout the program.
@@ -94,7 +94,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
     self.assertTemplateUsed(
-        response, 'v2/modules/gsoc/homepage/_featured_project.html')
+        response, 'modules/gsoc/homepage/_featured_project.html')
 
     featured_project_tmpl = response.context['featured_project']
     self.assertEqual(featured_project_tmpl.featured_project.key(),

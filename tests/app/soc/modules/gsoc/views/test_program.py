@@ -33,8 +33,8 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     """Asserts that all the templates from the program were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/program/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/program/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def _getCreateProgramFormRequiredProperties(self):
     """Returns all properties to be sent in a POST dictionary that are required
@@ -179,8 +179,8 @@ class EditProgramTest(test_utils.GSoCDjangoTestCase):
     """Asserts that all the templates from the program were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/program/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/program/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def testEditProgramHostOnly(self):
     url = '/gsoc/program/edit/' + self.gsoc.key().name()
@@ -219,8 +219,8 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
     """Asserts that all the templates from the program were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/program/messages.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/program/messages.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def _getUrl(self, validated=False):
     return ''.join([

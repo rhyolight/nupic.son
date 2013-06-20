@@ -24,7 +24,7 @@ class OAuthRedirectPage(oauth.OAuthRedirectPage):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/oauth/redirect_page.html'
+    return 'modules/gsoc/oauth/redirect_page.html'
 
 
 # TODO(nathaniel): Empty subclass.

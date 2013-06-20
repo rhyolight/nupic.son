@@ -107,7 +107,7 @@ class DashboardPage(base.GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/base.html'
+    return 'modules/gsoc/admin/base.html'
 
   def context(self, data, check, mutator):
     """Context for dashboard page."""
@@ -731,7 +731,7 @@ class LookupLinkIdPage(base.GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/lookup.html'
+    return 'modules/gsoc/admin/lookup.html'
 
   def post(self, data, check, mutator):
     # TODO(nathaniel): problematic self-call.
@@ -841,7 +841,7 @@ class ProposalsList(Template):
     self._list_config = list_config
 
   def templatePath(self):
-    return'v2/modules/gsoc/admin/_proposals_list.html'
+    return'modules/gsoc/admin/_proposals_list.html'
 
   def context(self):
     description = 'List of proposals submitted into %s' % self.data.organization.name
@@ -902,7 +902,7 @@ class ProposalsPage(base.GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/list.html'
+    return 'modules/gsoc/admin/list.html'
 
   def jsonContext(self, data, check, mutator):
     list_content = ProposalsList(data.request, data).getListData()
@@ -984,7 +984,7 @@ class ProjectsList(Template):
       return None
 
   def templatePath(self):
-    return "v2/modules/gsoc/admin/_projects_list.html"
+    return "modules/gsoc/admin/_projects_list.html"
 
 
 class ProjectsPage(base.GSoCRequestHandler):
@@ -1000,7 +1000,7 @@ class ProjectsPage(base.GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/list.html'
+    return 'modules/gsoc/admin/list.html'
 
   def jsonContext(self, data, check, mutator):
     list_content = ProjectsList(data.request, data).getListData()
@@ -1038,7 +1038,7 @@ class SurveyReminderPage(base.GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/survey_reminder.html'
+    return 'modules/gsoc/admin/survey_reminder.html'
 
   def post(self, data, check, mutator):
     post_dict = data.request.POST
@@ -1185,7 +1185,7 @@ class StudentsList(Template):
     self._list_config = list_config
 
   def templatePath(self):
-    return 'v2/modules/gsoc/dashboard/list_component.html'
+    return 'modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     idx = lists.getListIndex(self.data.request)
@@ -1232,7 +1232,7 @@ class StudentsListPage(base.GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/list.html'
+    return 'modules/gsoc/admin/list.html'
 
   def jsonContext(self, data, check, mutator):
     list_content = StudentsList(data.request, data).getListData()
@@ -1264,7 +1264,7 @@ class ProjectsListPage(base.GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/admin/list.html'
+    return 'modules/gsoc/admin/list.html'
 
   def jsonContext(self, data, check, mutator):
     list_query = project_logic.getProjectsQuery(program=data.program)

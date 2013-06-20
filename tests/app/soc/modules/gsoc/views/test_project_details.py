@@ -93,7 +93,7 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(
-        response, 'v2/modules/gsoc/project_details/base.html')
+        response, 'modules/gsoc/project_details/base.html')
 
   def createProject(self):
     mentor_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)

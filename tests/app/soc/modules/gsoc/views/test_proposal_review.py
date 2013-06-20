@@ -36,8 +36,8 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     """Asserts that all the proposal review were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/review.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/_comment_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/proposal/review.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/proposal/_comment_form.html')
 
   def createMentorWithSettings(self, email, notification_settings={}):
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
@@ -148,7 +148,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     url = '/gsoc/proposal/review/' + suffix
     response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/proposal/review.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/proposal/review.html')
 
   def testIgnoreProposalButton(self):
     student = GSoCProfileHelper(self.gsoc, self.dev_test)

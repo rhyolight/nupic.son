@@ -60,15 +60,15 @@ DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
 
 # TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
 DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE = \
-    'v2/modules/gsoc/notification/initiated_user_connection.html'
+    'modules/gsoc/notification/initiated_user_connection.html'
 
 # TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
 DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE = \
-    'v2/modules/gsoc/notification/initiated_org_connection.html'
+    'modules/gsoc/notification/initiated_org_connection.html'
 
 # TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
 DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE = \
-    'v2/modules/gsoc/notification/anonymous_connection.html'
+    'modules/gsoc/notification/anonymous_connection.html'
 
 DEF_ACCEPTED_ORG_TEMPLATE = \
     'soc/notification/org_accepted.html'

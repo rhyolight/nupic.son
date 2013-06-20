@@ -242,7 +242,7 @@ class MessageForm(GSoCModelForm):
           ugettext('Message content cannot be empty.'), code='invalid')
 
   def templatePath(self):
-    return 'v2/modules/gsoc/connection/_message_form.html'
+    return 'modules/gsoc/connection/_message_form.html'
 
 class ConnectionResponseForm(GSoCModelForm):
   """Django form to provide Connection responses in ShowConnection.
@@ -261,7 +261,7 @@ class ConnectionResponseForm(GSoCModelForm):
     self.fields['responses'].required = False
 
   def templatePath(self):
-    return 'v2/modules/gsoc/connection/_response_form.html'
+    return 'modules/gsoc/connection/_response_form.html'
 
 
 class OrgConnectionPage(GSoCRequestHandler):
@@ -270,7 +270,7 @@ class OrgConnectionPage(GSoCRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/connection/base.html'
+    return 'modules/gsoc/connection/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -413,7 +413,7 @@ class UserConnectionPage(GSoCRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gsoc/connection/base.html'
+    return 'modules/gsoc/connection/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -496,7 +496,7 @@ class ShowConnection(GSoCRequestHandler):
   }
 
   def templatePath(self):
-    return 'v2/modules/gsoc/connection/show_connection.html'
+    return 'modules/gsoc/connection/show_connection.html'
 
   def djangoURLPatterns(self):
     return [

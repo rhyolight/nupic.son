@@ -49,7 +49,7 @@ class GradingRecordsOverview(GSoCRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/grading_record/overview.html'
+    return 'modules/gsoc/grading_record/overview.html'
 
   def context(self, data, check, mutator):
     return {
@@ -318,4 +318,4 @@ class GradingRecordDetails(GSoCRequestHandler):
     return data.redirect.to('gsoc_grading_record_overview')
 
   def templatePath(self):
-    return 'v2/modules/gsoc/grading_record/details.html'
+    return 'modules/gsoc/grading_record/details.html'

@@ -74,7 +74,7 @@ class RequestPage(GSoCRequestHandler):
   """Encapsulate all the methods required to generate Request page."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/invite/base.html'
+    return 'modules/gsoc/invite/base.html'
 
   def djangoURLPatterns(self):
     return [

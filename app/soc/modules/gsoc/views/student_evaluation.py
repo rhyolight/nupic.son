@@ -72,7 +72,7 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
     mutator.studentEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_evaluation.html'
+    return 'modules/gsoc/_evaluation.html'
 
   def context(self, data, check, mutator):
     if data.student_evaluation:
@@ -173,7 +173,7 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
     check.isStudentForSurvey()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_evaluation_take.html'
+    return 'modules/gsoc/_evaluation_take.html'
 
   def context(self, data, check, mutator):
     if data.student_evaluation_record:
@@ -252,7 +252,7 @@ class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
     mutator.studentEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_evaluation_take.html'
+    return 'modules/gsoc/_evaluation_take.html'
 
   def context(self, data, check, mutator):
     form = GSoCStudentEvaluationTakeForm(data.student_evaluation)
@@ -322,7 +322,7 @@ class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
     return record_list
 
   def templatePath(self):
-    return 'v2/modules/gsoc/student_eval/record_list.html'
+    return 'modules/gsoc/student_eval/record_list.html'
 
 
 class GSoCStudentEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
@@ -364,7 +364,7 @@ class GSoCStudentEvaluationShowPage(GSoCRequestHandler):
     data.role = 'student'
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_survey/show.html'
+    return 'modules/gsoc/_survey/show.html'
 
   def context(self, data, check, mutator):
     assert isSet(data.program)

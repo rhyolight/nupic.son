@@ -113,7 +113,7 @@ class Apply(Template):
     return context
 
   def templatePath(self):
-    return "v2/modules/gsoc/org_home/_apply.html"
+    return "modules/gsoc/org_home/_apply.html"
 
 
 class Contact(Template):
@@ -134,7 +134,7 @@ class Contact(Template):
     }
 
   def templatePath(self):
-    return "v2/modules/gsoc/_connect_with_us.html"
+    return "modules/gsoc/_connect_with_us.html"
 
 
 class ProjectList(Template):
@@ -194,7 +194,7 @@ class ProjectList(Template):
       return None
 
   def templatePath(self):
-    return "v2/modules/gsoc/org_home/_project_list.html"
+    return "modules/gsoc/org_home/_project_list.html"
 
 
 class GSoCBanOrgPost(BanOrgPost, GSoCRequestHandler):
@@ -232,7 +232,7 @@ class OrgHome(GSoCRequestHandler):
   """View methods for Organization Home page."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/org_home/base.html'
+    return 'modules/gsoc/org_home/base.html'
 
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping."""

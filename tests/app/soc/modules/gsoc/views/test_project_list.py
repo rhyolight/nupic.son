@@ -31,8 +31,8 @@ class ProjectListTest(GSoCDjangoTestCase):
     """Asserts that all the templates from the dashboard were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/projects_list/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/projects_list/_project_list.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/projects_list/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/projects_list/_project_list.html')
 
   def testListProjects(self):
     self.timeline.studentsAnnounced()

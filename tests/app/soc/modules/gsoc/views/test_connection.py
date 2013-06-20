@@ -38,14 +38,14 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
 
   def assertConnectionTemplatesUsed(self, response):
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/connection/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/connection/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def assertConnectionShowTemplatesUsed(self, response):
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 
-        'v2/modules/gsoc/connection/show_connection.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/base.html')
+        'modules/gsoc/connection/show_connection.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/base.html')
 
   def testConnectionCreate(self):
     # Test GET call.

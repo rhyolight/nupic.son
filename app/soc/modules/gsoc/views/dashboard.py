@@ -171,7 +171,7 @@ class DashboardPage(base.GSoCRequestHandler):
 
   def templatePath(self):
     """Returns the path to the template."""
-    return 'v2/modules/gsoc/dashboard/base.html'
+    return 'modules/gsoc/dashboard/base.html'
 
   def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
@@ -400,7 +400,7 @@ class MyOrgApplicationsComponent(Component):
 
   def templatePath(self):
     """Returns the path to the template that should be used in render()."""
-    return 'v2/modules/gsoc/dashboard/list_component.html'
+    return 'modules/gsoc/dashboard/list_component.html'
 
   def context(self):
     """Returns the context of this component.
@@ -470,7 +470,7 @@ class MyProposalsComponent(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def context(self):
     """Returns the context of this component.
@@ -531,7 +531,7 @@ class MyProjectsComponent(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     """Returns the list data as requested by the current request.
@@ -618,7 +618,7 @@ class MyEvaluationsComponent(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     """Returns the list data as requested by the current request.
@@ -905,7 +905,7 @@ class SubmittedProposalsComponent(Component):
     super(SubmittedProposalsComponent, self).__init__(data)
 
   def templatePath(self):
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def context(self):
     description = self.DESCRIPTION
@@ -1095,7 +1095,7 @@ class ProjectsIMentorComponent(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     """Returns the list data as requested by the current request.
@@ -1187,7 +1187,7 @@ class OrganizationsIParticipateInComponent(Component):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     """Returns the list data as requested by the current request.
@@ -1302,7 +1302,7 @@ class OrgConnectionComponent(Component):
     super(OrgConnectionComponent, self).__init__(data)
 
   def templatePath(self):
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     """Generates a list of data for the table in this component.
@@ -1373,7 +1373,7 @@ class UserConnectionComponent(Component):
     super(UserConnectionComponent, self).__init__(data)
 
   def templatePath(self):
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     """Generates a list of data for the table in this component.
@@ -1490,7 +1490,7 @@ class ParticipantsComponent(Component):
     super(ParticipantsComponent, self).__init__(data)
 
   def templatePath(self):
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     idx = lists.getListIndex(self.data.request)
@@ -1566,7 +1566,7 @@ class TodoComponent(Component):
     super(TodoComponent, self).__init__(data)
 
   def templatePath(self):
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     # TODO(nathaniel): Magic number.
@@ -1743,7 +1743,7 @@ class StudentEvaluationComponent(Component):
       return None
 
   def templatePath(self):
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
 
 class MentorEvaluationComponent(StudentEvaluationComponent):
@@ -1817,7 +1817,7 @@ class DocumentComponent(Component):
     super(DocumentComponent, self).__init__(data)
 
   def templatePath(self):
-    return'v2/modules/gsoc/dashboard/list_component.html'
+    return'modules/gsoc/dashboard/list_component.html'
 
   def getListData(self):
     idx = lists.getListIndex(self.data.request)

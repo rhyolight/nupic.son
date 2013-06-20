@@ -57,7 +57,7 @@ class SlotTransferReadOnlyTemplate(readonly_template.GSoCModelReadOnlyTemplate):
   """Template to display readonly information from previous requests.
   """
 
-  template_path = 'v2/modules/gsoc/slot_transfer/_readonly_template.html'
+  template_path = 'modules/gsoc/slot_transfer/_readonly_template.html'
 
   def __init__(self, counter, *args, **kwargs):
     super(SlotTransferReadOnlyTemplate, self).__init__(*args, **kwargs)
@@ -96,7 +96,7 @@ class SlotTransferPage(GSoCRequestHandler):
         raise exception.Redirect(new_url)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/slot_transfer/base.html'
+    return 'modules/gsoc/slot_transfer/base.html'
 
   def context(self, data, check, mutator):
     requests = []
@@ -144,7 +144,7 @@ class UpdateSlotTransferPage(GSoCRequestHandler):
     mutator.slotTransferEntities()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/slot_transfer/form.html'
+    return 'modules/gsoc/slot_transfer/form.html'
 
   def context(self, data, check, mutator):
     slots = data.organization.slots

@@ -713,10 +713,10 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
     """Asserts that all the templates from the base view were used.
     """
     self.assertResponseOK(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/footer.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/header.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/mainmenu.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/footer.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/header.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/mainmenu.html')
 
 
 class GCIDjangoTestCase(DjangoTestCase, GCITestCase):

@@ -154,7 +154,7 @@ class InvitePage(GSoCRequestHandler):
   """Encapsulate all the methods required to generate Invite page."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/invite/base.html'
+    return 'modules/gsoc/invite/base.html'
 
   def djangoURLPatterns(self):
     return [

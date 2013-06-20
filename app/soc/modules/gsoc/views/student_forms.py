@@ -148,7 +148,7 @@ class FormPage(GSoCRequestHandler):
       check.canStudentUploadForms()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/student_forms/base.html'
+    return 'modules/gsoc/student_forms/base.html'
 
   def context(self, data, check, mutator):
     Form = self._form(data)

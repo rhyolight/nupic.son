@@ -159,7 +159,7 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
   templates but the schema read from the survey schema rather than the model.
   """
 
-  template_path = 'v2/modules/gsoc/_survey/readonly_template.html'
+  template_path = 'modules/gsoc/_survey/readonly_template.html'
 
   def __init__(self, instance=None):
     """Constructor to initialize the model instance.

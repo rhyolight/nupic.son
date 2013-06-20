@@ -174,7 +174,7 @@ class OrgProfilePage(GSoCRequestHandler):
       check.canCreateOrgProfile()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/org_profile/base.html'
+    return 'modules/gsoc/org_profile/base.html'
 
   def context(self, data, check, mutator):
     if not data.organization:

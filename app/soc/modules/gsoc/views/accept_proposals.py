@@ -29,7 +29,7 @@ class AcceptProposalsPage(GSoCRequestHandler):
   """View for the host to trigger proposals to projets conversion."""
 
   def templatePath(self):
-    return 'v2/modules/gsoc/accept_proposals/base.html'
+    return 'modules/gsoc/accept_proposals/base.html'
 
   def djangoURLPatterns(self):
     return [

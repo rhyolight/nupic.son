@@ -67,7 +67,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
 
   def assertOrgProfilePageTemplatesUsed(self, response):
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/org_profile/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/org_profile/base.html')
 
   def testOrgProfileCreateOffSeason(self):
     """Tests that it is Ok to create an org profile during off season.

@@ -96,7 +96,7 @@ class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
     mutator.mentorEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_evaluation.html'
+    return 'modules/gsoc/_evaluation.html'
 
   def context(self, data, check, mutator):
     if data.mentor_evaluation:
@@ -188,7 +188,7 @@ class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
     check.isMentorForSurvey()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_evaluation_take.html'
+    return 'modules/gsoc/_evaluation_take.html'
 
   def context(self, data, check, mutator):
     if data.mentor_evaluation_record:
@@ -267,7 +267,7 @@ class GSoCMentorEvaluationPreviewPage(GSoCRequestHandler):
     mutator.mentorEvaluationFromKwargs(raise_not_found=False)
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_evaluation_take.html'
+    return 'modules/gsoc/_evaluation_take.html'
 
   def context(self, data, check, mutator):
     form = GSoCMentorEvaluationTakeForm(data.mentor_evaluation)
@@ -339,7 +339,7 @@ class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
     return record_list
 
   def templatePath(self):
-    return 'v2/modules/gsoc/mentor_eval/record_list.html'
+    return 'modules/gsoc/mentor_eval/record_list.html'
 
 
 class GSoCMentorEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
@@ -372,7 +372,7 @@ class GSoCMentorEvaluationShowPage(GSoCRequestHandler):
     check.isMentorForSurvey()
 
   def templatePath(self):
-    return 'v2/modules/gsoc/_survey/show.html'
+    return 'modules/gsoc/_survey/show.html'
 
   def context(self, data, check, mutator):
     assert isSet(data.mentor_evaluation_record)

@@ -45,8 +45,8 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     """Asserts that all the templates from the dashboard were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/invite/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/invite/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def testInviteOrgAdminNoAdmin(self):
     url = '/gsoc/invite/org_admin/' + self.org.key().name()

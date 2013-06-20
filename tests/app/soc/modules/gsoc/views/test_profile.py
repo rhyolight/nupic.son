@@ -33,8 +33,8 @@ class ProfileViewTest(GSoCDjangoTestCase):
 
   def assertProfileTemplatesUsed(self, response):
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/profile/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/profile/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def testCreateProfilePage(self):
     self.timeline.studentSignup()

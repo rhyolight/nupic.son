@@ -37,7 +37,7 @@ class UserCreateForm(ModelForm):
 
   def templatePath(self):
     # TODO: This needs a more generic form.
-    return 'v2/modules/gsoc/_form.html'
+    return 'modules/gsoc/_form.html'
 
 
 class UserEditForm(ModelForm):
@@ -50,7 +50,7 @@ class UserEditForm(ModelForm):
 
   def templatePath(self):
     # TODO: This needs a more generic form.
-    return 'v2/modules/gsoc/_form.html'
+    return 'modules/gsoc/_form.html'
 
 
 class CreateUserPage(base.RequestHandler):
@@ -76,7 +76,7 @@ class CreateUserPage(base.RequestHandler):
     form = UserCreateForm(GSoCBoundField, data.POST or None)
 
     return {
-        'base_layout': 'v2/modules/gsoc/base.html',
+        'base_layout': 'modules/gsoc/base.html',
         'app_version': os.environ.get('CURRENT_VERSION_ID', '').split('.')[0],
         'page_name': 'Create User profile',
         'forms': [form],
@@ -122,7 +122,7 @@ class EditUserPage(base.RequestHandler):
     form = UserEditForm(GSoCBoundField, data.POST or None, instance=data.user)
 
     return {
-        'base_layout': 'v2/modules/gsoc/base.html',
+        'base_layout': 'modules/gsoc/base.html',
         'app_version': os.environ.get('CURRENT_VERSION_ID', '').split('.')[0],
         'page_name': 'Edit User profile',
         'forms': [form],

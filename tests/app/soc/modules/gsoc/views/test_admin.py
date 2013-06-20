@@ -37,7 +37,7 @@ class AdminDashboardTest(GSoCDjangoTestCase):
     """Asserts that all the templates from the admin page were used.
     """
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/admin/base.html')
 
   def assertDashboardTemplatesUsed(self, response):
     """Asserts that all the templates to render a dashboard were used.
@@ -87,9 +87,9 @@ class LookupProfileTest(GSoCDjangoTestCase):
     self.assertTrue('base_layout' in response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base.html')
+        'modules/gsoc/base.html')
 
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/lookup.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/admin/lookup.html')
 
   def testLookupProfile(self):
     self.data.createHost()
@@ -143,11 +143,11 @@ class AcceptedOrgsPageTest(GSoCDjangoTestCase):
     self.assertTrue('base_layout' in response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
-      'v2/modules/gsoc/base.html')
+      'modules/gsoc/base.html')
 
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/admin/list.html')
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/admin/_accepted_orgs_list.html')
+        'modules/gsoc/admin/_accepted_orgs_list.html')
 
 
 class ProposalsPageTest(GSoCDjangoTestCase):
@@ -164,11 +164,11 @@ class ProposalsPageTest(GSoCDjangoTestCase):
     self.assertTrue('base_layout' in response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base.html')
+        'modules/gsoc/base.html')
 
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/admin/list.html')
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/admin/_proposals_list.html')
+        'modules/gsoc/admin/_proposals_list.html')
 
   def testListProposals(self):
     self.data.createHost()
@@ -207,11 +207,11 @@ class ProjectsPageTest(GSoCDjangoTestCase):
     self.assertTrue('base_layout' in response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
-        'v2/modules/gsoc/base.html')
+        'modules/gsoc/base.html')
 
-    self.assertTemplateUsed(response, 'v2/modules/gsoc/admin/list.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/admin/list.html')
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/admin/_projects_list.html')
+        'modules/gsoc/admin/_projects_list.html')
 
   def testListProjects(self):
     self.data.createHost()

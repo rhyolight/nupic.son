@@ -35,9 +35,9 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
   def _assertTemplatesUsed(self, response):
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/accept_withdraw_projects/_project_list.html')
+        'modules/gsoc/accept_withdraw_projects/_project_list.html')
     self.assertTemplateUsed(response,
-        'v2/modules/gsoc/accept_withdraw_projects/base.html')
+        'modules/gsoc/accept_withdraw_projects/base.html')
     self.assertTemplateUsed(response, 'soc/_program_select.html') 
     self.assertTemplateUsed(response, 'soc/list/lists.html') 
     self.assertTemplateUsed(response, 'soc/list/list.html')
