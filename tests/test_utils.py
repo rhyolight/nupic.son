@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Common testing utilities."""
 
+"""Common testing utilities."""
 
 import collections
 import hashlib
@@ -164,6 +164,17 @@ class SoCTestCase(unittest.TestCase):
   Common data are seeded and common helpers are created to make testing easier.
   """
 
+  def programType(self):
+    """Returns a string identifying the type of the program being tested.
+
+    Extending classes must override this abstract method.
+
+    Returns:
+      A string such as "gsoc" or "gci" identifying the type of program being
+        tested.
+    """
+    raise NotImplementedError()
+
   def init(self):
     """Performs test setup.
 
@@ -271,6 +282,11 @@ class GSoCTestCase(SoCTestCase):
 
   Common data are seeded and common helpers are created to make testing easier.
   """
+
+  def programType(self):
+    """See SoCTestCase.programType for specification."""
+    return 'gsoc'
+
   def init(self):
     """Performs test setup.
 
@@ -302,6 +318,11 @@ class GCITestCase(SoCTestCase):
 
   Common data are seeded and common helpers are created to make testing easier.
   """
+
+  def programType(self):
+    """See SoCTestCase.programType for specification."""
+    return 'gci'
+
   def init(self):
     """Performs test setup.
 

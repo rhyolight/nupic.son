@@ -26,10 +26,6 @@ class ProfileXSSTest(object):
   one of) GCIDjangoTestCase or GSoCDjangoTestCase.
   """
 
-  # Either "gci" or "gsoc".
-  # TODO(nathaniel): Move this field to the SoCTestCase class hierarchy.
-  _PROGRAM_TYPE = 'this value must be overriden in a subclass!'
-
   def setUp(self):
     self.init()
     self.timeline.studentSignup()
@@ -38,7 +34,7 @@ class ProfileXSSTest(object):
     xss_payload = '><img src=http://www.google.com/images/srpr/logo4w.png>'
 
     role_url = '/%(program_type)s/profile/%(role)s/%(suffix)s' % {
-        'program_type': self._PROGRAM_TYPE,
+        'program_type': self.programType(),
         'role': 'mentor',
         'suffix': self.program.key().name(),
         }
@@ -63,8 +59,8 @@ class ProfileXSSTest(object):
 
 
 class GSoCProfileXSSTest(ProfileXSSTest, test_utils.GSoCDjangoTestCase):
-  _PROGRAM_TYPE = 'gsoc'
+  pass
 
 
 class GCIProfileXSSTest(ProfileXSSTest, test_utils.GCIDjangoTestCase):
-  _PROGRAM_TYPE = 'gci'
+  pass
