@@ -86,6 +86,7 @@ class Callback(object):
     self.views.append(document.EditDocumentPage())
     self.views.append(document.EventsPage())
     self.views.append(duplicates.DuplicatesPage())
+    self.views.append(grading_record_details.GradingGroupCreate())
     self.views.append(grading_record_details.GradingRecordDetails())
     self.views.append(grading_record_details.GradingRecordsOverview())
     self.views.append(homepage.Homepage())
