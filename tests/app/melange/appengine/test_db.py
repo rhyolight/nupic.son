@@ -40,24 +40,22 @@ class EmailValidatorTest(unittest.TestCase):
       db.email_validator(None, 'invalid_email_address')
 
 
-class UrlValidatorTest(unittest.TestCase):
-  """Unit tests for url_validator function.
+class LinkValidatorTest(unittest.TestCase):
+  """Unit tests for link_validator function.
 
   The class contains only very simple test cases to demonstrate that the
   tested function throws an exception on invalid input and returns normally
   otherwise.
 
-  The reason is that url_validator function simply uses a thirdparty
+  The reason is that link_validator function simply uses a thirdparty
   validator to do the actual job. It is assumed that it works correctly.
   """
 
-  def testValidUrl(self):
+  def testValidLink(self):
     """Tests that the function returns normally on a valid URL."""
-    db.url_validator(None, 'http://www.melange.com')
+    db.link_validator(None, 'http://www.melange.com')
 
-  def testInvalidEmail(self):
+  def testInvalidLink(self):
     """Tests that the function returns ValueError on an invalid URL."""
     with self.assertRaises(ValueError):
-      db.url_validator(None, 'invalid_url_address')
-
-  
+      db.link_validator(None, 'invalid_url_address')
