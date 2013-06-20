@@ -69,7 +69,7 @@ class StudentsInfoPage(base.GCIRequestHandler):
   """View for the students info page for the admin."""
 
   def templatePath(self):
-    return 'v2/modules/gci/students_info/base.html'
+    return 'modules/gci/students_info/base.html'
 
   def djangoURLPatterns(self):
     return [

@@ -41,7 +41,7 @@ class SubscribedTasksPageTest(test_utils.GCIDjangoTestCase):
     self.assertResponseOK(response)
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response,
-        'v2/modules/gci/leaderboard/student_tasks.html')
+        'modules/gci/leaderboard/student_tasks.html')
 
   def testSubscribedListAsStudent(self):
     student = self.profile_helper.createStudent()

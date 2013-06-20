@@ -69,7 +69,7 @@ class TaskList2(Template):
       return None
 
   def templatePath(self):
-    return 'v2/modules/gci/task/_task_list.html'
+    return 'modules/gci/task/_task_list.html'
 
 
 class TaskListPage(GCIRequestHandler):
@@ -77,7 +77,7 @@ class TaskListPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/task/task_list.html'
+    return 'modules/gci/task/task_list.html'
 
   def djangoURLPatterns(self):
     return [
@@ -127,7 +127,7 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/task/task_list.html'
+    return 'modules/gci/task/task_list.html'
 
   def djangoURLPatterns(self):
     return [
@@ -177,7 +177,7 @@ class ChooseOrganizationPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/org_list/base.html'
+    return 'modules/gci/org_list/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -224,7 +224,7 @@ class AllOrganizationTasksPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/task/task_list.html'
+    return 'modules/gci/task/task_list.html'
 
   def djangoURLPatterns(self):
     return [

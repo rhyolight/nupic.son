@@ -62,7 +62,7 @@ class StudentFormsTemplate(Template):
         }
 
   def templatePath(self):
-    return 'v2/modules/gci/profile_show/_student_forms.html'
+    return 'modules/gci/profile_show/_student_forms.html'
 
 
 class GCIProfileReadOnlyTemplate(readonly_template.GCIModelReadOnlyTemplate):
@@ -99,7 +99,7 @@ class GCIProfileShowPage(profile_show.ProfileShowPage, base.GCIRequestHandler):
     return context
 
   def templatePath(self):
-    return 'v2/modules/gci/profile_show/base.html'
+    return 'modules/gci/profile_show/base.html'
 
   def _getProfileReadOnlyTemplate(self, profile):
     return GCIProfileReadOnlyTemplate(profile)

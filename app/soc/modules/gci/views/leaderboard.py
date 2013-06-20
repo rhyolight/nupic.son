@@ -84,7 +84,7 @@ class LeaderboardList(Template):
       return None
 
   def templatePath(self):
-    return 'v2/modules/gci/leaderboard/_leaderboard_list.html'
+    return 'modules/gci/leaderboard/_leaderboard_list.html'
 
 
 class AllStudentTasksList(TaskList):
@@ -113,7 +113,7 @@ class LeaderboardPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/leaderboard/base.html'
+    return 'modules/gci/leaderboard/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -152,7 +152,7 @@ class StudentTasksPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/leaderboard/student_tasks.html'
+    return 'modules/gci/leaderboard/student_tasks.html'
 
   def djangoURLPatterns(self):
     return [

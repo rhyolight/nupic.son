@@ -34,9 +34,9 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     """Asserts that all the required templates to render the page were used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/org_list/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/org_list/base.html')
     self.assertTemplateUsed(
-        response, 'v2/modules/gci/accepted_orgs/_project_list.html')
+        response, 'modules/gci/accepted_orgs/_project_list.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 

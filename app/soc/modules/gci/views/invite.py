@@ -180,7 +180,7 @@ class InvitePage(GCIRequestHandler):
   """Encapsulate all the methods required to generate Invite page."""
 
   def templatePath(self):
-    return 'v2/modules/gci/invite/base.html'
+    return 'modules/gci/invite/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -260,7 +260,7 @@ class ManageInvite(GCIRequestHandler):
   """View to manage the invitation by organization admins."""
 
   def templatePath(self):
-    return 'v2/modules/gci/invite/base.html'
+    return 'modules/gci/invite/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -353,7 +353,7 @@ class RespondInvite(GCIRequestHandler):
   """View to respond to the invitation by the user."""
 
   def templatePath(self):
-    return 'v2/modules/gci/invite/show.html'
+    return 'modules/gci/invite/show.html'
 
   def djangoURLPatterns(self):
     return [
@@ -442,7 +442,7 @@ class UserInvitesList(Template):
     }
 
   def templatePath(self):
-    return 'v2/modules/gci/invite/_invite_list.html'
+    return 'modules/gci/invite/_invite_list.html'
 
 
 class ListUserInvitesPage(GCIRequestHandler):
@@ -451,7 +451,7 @@ class ListUserInvitesPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/invite/invite_list.html'
+    return 'modules/gci/invite/invite_list.html'
 
   def djangoURLPatterns(self):
     return [

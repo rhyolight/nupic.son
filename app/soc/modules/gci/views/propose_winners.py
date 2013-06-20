@@ -118,7 +118,7 @@ class ProposeWinnersPage(GCIRequestHandler):
   """Page to propose winners by organization admins"""
 
   def templatePath(self):
-    return 'v2/modules/gci/propose_winners/base.html'
+    return 'modules/gci/propose_winners/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -270,7 +270,7 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/org_list/base.html'
+    return 'modules/gci/org_list/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -347,7 +347,7 @@ class ViewProposedWinnersPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/org_list/base.html'
+    return 'modules/gci/org_list/base.html'
 
   def djangoURLPatterns(self):
     return [

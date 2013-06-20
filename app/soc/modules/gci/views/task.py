@@ -441,7 +441,7 @@ class TaskViewPage(GCIRequestHandler):
     return -1
 
   def templatePath(self):
-    return 'v2/modules/gci/task/public.html'
+    return 'modules/gci/task/public.html'
 
 
 class TaskInformation(Template):
@@ -542,7 +542,7 @@ class TaskInformation(Template):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return 'v2/modules/gci/task/_task_information.html'
+    return 'modules/gci/task/_task_information.html'
 
 
 class WorkSubmissions(Template):
@@ -624,7 +624,7 @@ class WorkSubmissions(Template):
   def templatePath(self):
     """Returns the path to the template that should be used in render().
     """
-    return 'v2/modules/gci/task/_work_submissions.html'
+    return 'modules/gci/task/_work_submissions.html'
 
 
 class CommentsTemplate(Template):
@@ -687,7 +687,7 @@ class CommentsTemplate(Template):
 
   def templatePath(self):
     """Returns the path to the template that should be used in render()."""
-    return 'v2/modules/gci/task/_comments.html'
+    return 'modules/gci/task/_comments.html'
 
 
 class WorkSubmissionDownload(GCIRequestHandler):

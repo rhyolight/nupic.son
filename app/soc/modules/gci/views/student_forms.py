@@ -129,7 +129,7 @@ class StudentFormUpload(base.GCIRequestHandler):
   def templatePath(self):
     """Returns the path to the template.
     """
-    return 'v2/modules/gci/student_forms/base.html'
+    return 'modules/gci/student_forms/base.html'
 
   def jsonContext(self, data, check, mutator):
     # TODO(nathaniel): make this .program() call unnecessary.

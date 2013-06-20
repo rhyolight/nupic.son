@@ -70,7 +70,7 @@ class AcceptedOrgsPage(GCIRequestHandler):
   """View for the accepted organizations page."""
 
   def templatePath(self):
-    return 'v2/modules/gci/accepted_orgs/base.html'
+    return 'modules/gci/accepted_orgs/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -167,7 +167,7 @@ class AcceptedOrgsAdminPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/accepted_orgs/base.html'
+    return 'modules/gci/accepted_orgs/base.html'
 
   def djangoURLPatterns(self):
     return [

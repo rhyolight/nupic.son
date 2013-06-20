@@ -247,7 +247,7 @@ class TaskFormErrorTemplate(Template):
     }
 
   def templatePath(self):
-    return "v2/modules/gci/task_create/_error_msg.html"
+    return "modules/gci/task_create/_error_msg.html"
 
 
 class TaskEditFormTemplate(Template):
@@ -280,9 +280,9 @@ class TaskEditFormTemplate(Template):
 
   def templatePath(self):
     if self.data.task and not self.data.full_edit:
-      return "v2/modules/gci/task_create/_post_claim_edit.html"
+      return "modules/gci/task_create/_post_claim_edit.html"
     else:
-      return "v2/modules/gci/task_create/_full_edit.html"
+      return "modules/gci/task_create/_full_edit.html"
 
 
 class TaskCreatePage(GCIRequestHandler):
@@ -313,7 +313,7 @@ class TaskCreatePage(GCIRequestHandler):
       check.canCreateTask()
 
   def templatePath(self):
-    return 'v2/modules/gci/task_create/base.html'
+    return 'modules/gci/task_create/base.html'
 
   def context(self, data, check, mutator):
     if data.task:

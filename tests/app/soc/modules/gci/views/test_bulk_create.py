@@ -36,7 +36,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(
-        response, 'v2/modules/gci/bulk_create/base.html')
+        response, 'modules/gci/bulk_create/base.html')
 
   def testBulkTaskCreatekBeforeOrgsAnnouncedForNoRole(self):
     """Tests the bulk task create view before the program is public

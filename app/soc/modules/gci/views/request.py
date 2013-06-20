@@ -46,7 +46,7 @@ class SendRequestPage(GCIRequestHandler):
   """Encapsulate all the methods required to generate Send Request page."""
 
   def templatePath(self):
-    return 'v2/modules/gci/request/base.html'
+    return 'modules/gci/request/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -124,7 +124,7 @@ class ManageRequestPage(GCIRequestHandler):
   """View to manage the invitation by the sender."""
 
   def templatePath(self):
-    return 'v2/modules/gci/request/base.html'
+    return 'modules/gci/request/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -203,7 +203,7 @@ class RespondRequestPage(GCIRequestHandler):
   """View to accept or reject requests by organization admins."""
 
   def templatePath(self):
-    return 'v2/modules/gci/request/show.html'
+    return 'modules/gci/request/show.html'
 
   def djangoURLPatterns(self):
     return [
@@ -336,7 +336,7 @@ class UserRequestsList(Template):
     }
 
   def templatePath(self):
-    return 'v2/modules/gci/request/_request_list.html'
+    return 'modules/gci/request/_request_list.html'
 
 
 class ListUserRequestsPage(GCIRequestHandler):
@@ -345,7 +345,7 @@ class ListUserRequestsPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/request/request_list.html'
+    return 'modules/gci/request/request_list.html'
 
   def djangoURLPatterns(self):
     return [

@@ -34,14 +34,14 @@ class HomepageViewTest(GCIDjangoTestCase):
     """Asserts that all the templates from the homepage view were used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/homepage/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/homepage/base.html')
     # not always
-    # self.assertTemplateUsed(response, 'v2/modules/gci/homepage/_featured_task.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/homepage/_participating_orgs.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/homepage/_connect_with_us.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/homepage/_how_it_works.html')
+    # self.assertTemplateUsed(response, 'modules/gci/homepage/_featured_task.html')
+    self.assertTemplateUsed(response, 'modules/gci/homepage/_participating_orgs.html')
+    self.assertTemplateUsed(response, 'modules/gci/homepage/_connect_with_us.html')
+    self.assertTemplateUsed(response, 'modules/gci/homepage/_how_it_works.html')
     # not always
-    self.assertTemplateUsed(response, 'v2/modules/gci/common_templates/_timeline.html')
+    self.assertTemplateUsed(response, 'modules/gci/common_templates/_timeline.html')
 
   def testHomepageAnonymous(self):
     """Tests the homepage as an anonymous user throughout the program.

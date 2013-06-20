@@ -80,7 +80,7 @@ class OrgScoresList(Template):
       return None
 
   def templatePath(self):
-    return 'v2/modules/gci/leaderboard/_leaderboard_list.html'
+    return 'modules/gci/leaderboard/_leaderboard_list.html'
 
 
 class OrgScoresForOrgzanizationPage(GCIRequestHandler):
@@ -88,7 +88,7 @@ class OrgScoresForOrgzanizationPage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/org_score/base.html'
+    return 'modules/gci/org_score/base.html'
 
   def djangoURLPatterns(self):
     return [
@@ -136,7 +136,7 @@ class ChooseOrganizationForOrgScorePage(GCIRequestHandler):
   """
 
   def templatePath(self):
-    return 'v2/modules/gci/org_list/base.html'
+    return 'modules/gci/org_list/base.html'
 
   def djangoURLPatterns(self):
     return [

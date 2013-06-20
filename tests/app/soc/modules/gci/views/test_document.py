@@ -78,8 +78,8 @@ class EditProgramTest(GCIDjangoTestCase):
     url = '/gci/document/edit/gci_program/%s/doc' % self.gci.key().name()
     response = self.get(url)
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/document/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/_form.html')
+    self.assertTemplateUsed(response, 'modules/gci/document/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/_form.html')
 
     # test POST
     override = {
@@ -102,8 +102,8 @@ class EditProgramTest(GCIDjangoTestCase):
     url = '/gci/document/edit/gci_program/%s/doc' % self.gci.key().name()
     response = self.get(url)
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/document/base.html')
-    self.assertTemplateUsed(response, 'v2/modules/gci/_form.html')
+    self.assertTemplateUsed(response, 'modules/gci/document/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/_form.html')
 
     # test POST
     override = {

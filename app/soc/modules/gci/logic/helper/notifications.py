@@ -32,13 +32,13 @@ from soc.tasks import mailer
 DEF_BULK_CREATE_COMPLETE_SUBJECT = ugettext(
     'Bulk creation of tasks completed')
 
-DEF_BULK_CREATE_COMPLETE_TEMPLATE = 'v2/modules/gci/reminder/bulk_create.html'
+DEF_BULK_CREATE_COMPLETE_TEMPLATE = 'modules/gci/reminder/bulk_create.html'
 
 DEF_FIRST_TASK_CONFIRMATION_SUBJECT = ugettext(
     'You have completed your first task in Google Code In program')
 
 DEF_FIRST_TASK_CONFIRMATION_TEMPLATE = \
-    'v2/modules/gci/notification/first_task_confirmation.html'
+    'modules/gci/notification/first_task_confirmation.html'
 
 DEF_PARENTAL_FORM_SUBJECT = ugettext(
     '[%(program_name)s]: Parental Consent Form - Please Respond')
@@ -47,7 +47,7 @@ DEF_NEW_TASK_COMMENT_SUBJECT = ugettext(
     '[%(program_name)s] New comment on %(task_title)s')
 
 DEF_NEW_TASK_COMMENT_NOTIFICATION_TEMPLATE = \
-    'v2/modules/gci/notification/new_task_comment.html'
+    'modules/gci/notification/new_task_comment.html'
 
 
 def sendMail(to_user, subject, message_properties, template):

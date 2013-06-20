@@ -35,7 +35,7 @@ class AgeCheckTest(GCIDjangoTestCase):
     """Asserts that all the templates were used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/age_check/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/age_check/base.html')
 
   def testAgeCheckLogsOut(self):
     url = '/gci/age_check/' + self.gci.key().name()

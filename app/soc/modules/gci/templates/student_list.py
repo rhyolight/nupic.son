@@ -203,7 +203,7 @@ class StudentList(Template):
     return response_builder.build()
 
   def templatePath(self):
-    return'v2/modules/gci/students_info/_students_list.html'
+    return'modules/gci/students_info/_students_list.html'
 
   def context(self):
     list = lists.ListConfigurationResponse(

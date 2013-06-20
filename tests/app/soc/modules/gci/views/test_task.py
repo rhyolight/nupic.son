@@ -85,7 +85,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     # Expect a proper response (200)
     self.assertResponseOK(response)
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/task/public.html')
+    self.assertTemplateUsed(response, 'modules/gci/task/public.html')
 
   def testPostComment(self):
     """Tests leaving a comment on a task.

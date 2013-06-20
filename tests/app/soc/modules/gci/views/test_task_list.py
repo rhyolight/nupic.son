@@ -31,9 +31,9 @@ class AllOrganizationTasksPageTest(GCIDjangoTestCase):
     """Asserts that all the required templates to render the page were used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/task/task_list.html')
+    self.assertTemplateUsed(response, 'modules/gci/task/task_list.html')
     self.assertTemplateUsed(
-        response, 'v2/modules/gci/task/_task_list.html')
+        response, 'modules/gci/task/_task_list.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 

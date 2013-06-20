@@ -47,7 +47,7 @@ class GCIOrgAppEditPage(GCIRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gci/org_app/edit.html'
+    return 'modules/gci/org_app/edit.html'
 
   def context(self, data, check, mutator):
     if data.org_app:
@@ -127,7 +127,7 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
     check.isHost()
 
   def templatePath(self):
-    return 'v2/modules/gci/org_app/take.html'
+    return 'modules/gci/org_app/take.html'
 
   def context(self, data, check, mutator):
     form = gci_forms.OrgAppTakeForm(data)
@@ -178,7 +178,7 @@ class GCIOrgAppTakePage(GCIRequestHandler):
       check.canTakeOrgApp()
 
   def templatePath(self):
-    return 'v2/modules/gci/org_app/take.html'
+    return 'modules/gci/org_app/take.html'
 
   def context(self, data, check, mutator):
     if data.org_app_record:
@@ -296,7 +296,7 @@ class GCIOrgAppRecordsList(org_app.OrgAppRecordsList, GCIRequestHandler):
 class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):
   """Template to construct readonly organization application record."""
 
-  template_path = 'v2/modules/gci/org_app/readonly_template.html'
+  template_path = 'modules/gci/org_app/readonly_template.html'
 
 
 class GCIOrgAppShowPage(GCIRequestHandler):
@@ -319,7 +319,7 @@ class GCIOrgAppShowPage(GCIRequestHandler):
     check.canViewOrgApp()
 
   def templatePath(self):
-    return 'v2/modules/gci/org_app/show.html'
+    return 'modules/gci/org_app/show.html'
 
   def context(self, data, check, mutator):
     record = data.org_app_record

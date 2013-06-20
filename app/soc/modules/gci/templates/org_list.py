@@ -54,7 +54,7 @@ class OrgList(Template):
       return None
 
   def templatePath(self):
-    return "v2/modules/gci/accepted_orgs/_project_list.html"
+    return "modules/gci/accepted_orgs/_project_list.html"
 
   def _getDescription(self):
     raise NotImplementedError

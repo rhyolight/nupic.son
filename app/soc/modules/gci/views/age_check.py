@@ -52,7 +52,7 @@ class AgeCheck(gci_base.GCIRequestHandler):
 
   def templatePath(self):
     """Returns the path to the template."""
-    return 'v2/modules/gci/age_check/base.html'
+    return 'modules/gci/age_check/base.html'
 
   def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""

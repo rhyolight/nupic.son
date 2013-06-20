@@ -64,18 +64,18 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     template is used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/task_create/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/task_create/base.html')
     self.assertTemplateUsed(
-        response, 'v2/modules/gci/task_create/_full_edit.html')
+        response, 'modules/gci/task_create/_full_edit.html')
 
   def assertPostClaimEditTemplatesUsed(self, response):
     """Asserts that all the task creation base templates along with post claim
     edit template is used.
     """
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'v2/modules/gci/task_create/base.html')
+    self.assertTemplateUsed(response, 'modules/gci/task_create/base.html')
     self.assertTemplateUsed(
-        response, 'v2/modules/gci/task_create/_post_claim_edit.html')
+        response, 'modules/gci/task_create/_post_claim_edit.html')
 
   def testCreateTaskBeforeOrgsAnnouncedForNoRole(self):
     """Tests the task creation view before the program is public for user with
