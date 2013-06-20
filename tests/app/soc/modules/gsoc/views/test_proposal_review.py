@@ -254,7 +254,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     response = self.post(url, postdata)
 
     proposal = GSoCProposal.get(proposal.key())
-    self.assertTrue(self.data.profile.key() in proposal.possible_mentors)
+    self.assertIn(self.data.profile.key(), proposal.possible_mentors)
 
     postdata = {'value': 'checked'}
     response = self.post(url, postdata)

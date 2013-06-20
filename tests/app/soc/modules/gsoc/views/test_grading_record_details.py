@@ -53,7 +53,7 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
     """Asserts that all templates from the withdraw projects page were used
     and all contexts were passed
     """
-    self.assertTrue('base_layout' in response.context)
+    self.assertIn('base_layout', response.context)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response,
         'v2/modules/gsoc/grading_record/overview.html')

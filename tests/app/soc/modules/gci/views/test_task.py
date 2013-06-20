@@ -507,7 +507,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertTrue(profile.key() in task.subscribers)
+    self.assertIn(profile.key(), task.subscribers)
 
   def testPostButtonUnsubscribe(self):
     """Tests the unsubscribe button.

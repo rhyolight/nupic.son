@@ -232,7 +232,7 @@ class ProfileViewTest(GCIDjangoTestCase):
 
     response = self.post(self.student_url, self.default_props)
     self.assertResponseOK(response)
-    self.assertTrue('link_id' in response.context['error'])
+    self.assertIn('link_id', response.context['error'])
 
   def testCreateProfile(self):
     from soc.modules.gci.models.profile import GCIStudentInfo
@@ -263,4 +263,4 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.assertResponseOK(response)
 
     error_dict = response.context['error']
-    self.assertTrue('email' in error_dict)
+    self.assertIn('email', error_dict)

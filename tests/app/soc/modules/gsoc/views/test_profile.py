@@ -197,4 +197,4 @@ class ProfileViewTest(GSoCDjangoTestCase):
     self.assertResponseOK(response)
 
     error_dict = response.context['error']
-    self.assertTrue('email' in error_dict)
+    self.assertIn('email', error_dict)

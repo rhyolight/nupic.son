@@ -122,7 +122,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     context = self.homepageContext()
     self.assertNoStudent(context)
 
-    self.assertTrue('mentor_apply_block' in context)
+    self.assertIn('mentor_apply_block', context)
     self.assertFalse('mentor_profile_link' in context)
     self.assertEqual('a mentor', context['role'])
     self.assertFalse('mentor_applied' in context)
@@ -134,8 +134,8 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     context = self.homepageContext()
     self.assertNoStudent(context)
 
-    self.assertTrue('mentor_apply_block' in context)
-    self.assertTrue('mentor_profile_link' in context)
+    self.assertIn('mentor_apply_block', context)
+    self.assertIn('mentor_profile_link', context)
     self.assertFalse('role' in context)
     self.assertFalse('mentor_applied' in context)
     self.assertFalse('invited_role' in context)
@@ -144,12 +144,12 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
   def testAnonymousDuringSignup(self):
     self.timeline.studentSignup()
     context = self.homepageContext()
-    self.assertTrue('student_apply_block' in context)
-    self.assertTrue('student_profile_link' in context)
+    self.assertIn('student_apply_block', context)
+    self.assertIn('student_profile_link', context)
     self.assertFalse('submit_proposal_link' in context)
 
     self.assertFalse('mentor_apply_block' in context)
-    self.assertTrue('mentor_profile_link' in context)
+    self.assertIn('mentor_profile_link', context)
     self.assertFalse('role' in context)
     self.assertFalse('mentor_applied' in context)
     self.assertFalse('invited_role' in context)
@@ -160,8 +160,8 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     context = self.homepageContext()
     self.assertNoStudent(context)
 
-    self.assertTrue('mentor_apply_block' in context)
-    self.assertTrue('mentor_profile_link' in context)
+    self.assertIn('mentor_apply_block', context)
+    self.assertIn('mentor_profile_link', context)
     self.assertFalse('role' in context)
     self.assertFalse('mentor_applied' in context)
     self.assertFalse('invited_role' in context)
@@ -200,7 +200,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     context = self.homepageContext()
     self.assertNoStudent(context)
 
-    self.assertTrue('mentor_apply_block' in context)
+    self.assertIn('mentor_apply_block', context)
     self.assertFalse('mentor_profile_link' in context)
     self.assertEqual('an administrator', context['role'])
     self.assertFalse('mentor_applied' in context)
@@ -212,10 +212,10 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     context = self.homepageContext()
     self.assertNoStudent(context)
 
-    self.assertTrue('mentor_apply_block' in context)
+    self.assertIn('mentor_apply_block', context)
     self.assertFalse('mentor_profile_link' in context)
     self.assertFalse('role' in context)
-    self.assertTrue('mentor_applied' in context)
+    self.assertIn('mentor_applied', context)
     self.assertFalse('invited_role' in context)
     self.assertFalse('mentor_request_link' in context)
 
@@ -224,7 +224,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     context = self.homepageContext()
     self.assertNoStudent(context)
 
-    self.assertTrue('mentor_apply_block' in context)
+    self.assertIn('mentor_apply_block', context)
     self.assertFalse('mentor_profile_link' in context)
     self.assertFalse('role' in context)
     self.assertFalse('mentor_applied' in context)
@@ -236,7 +236,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     context = self.homepageContext()
     self.assertNoStudent(context)
 
-    self.assertTrue('mentor_apply_block' in context)
+    self.assertIn('mentor_apply_block', context)
     self.assertFalse('mentor_profile_link' in context)
     self.assertFalse('role' in context)
     self.assertFalse('mentor_applied' in context)
@@ -247,9 +247,9 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.timeline.studentSignup()
     self.data.createStudent()
     context = self.homepageContext()
-    self.assertTrue('student_apply_block' in context)
+    self.assertIn('student_apply_block', context)
     self.assertFalse('student_profile_link' in context)
-    self.assertTrue('submit_proposal_link' in context)
+    self.assertIn('submit_proposal_link', context)
     self.assertNoMentor(context)
 
   def testStudentPostSignup(self):

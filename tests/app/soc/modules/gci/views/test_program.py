@@ -151,7 +151,7 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
       response = self.post(url, properties)
 
       self.assertResponseOK(response)
-      self.assertTrue(k in response.context['error'])
+      self.assertIn(k, response.context['error'])
 
       # restore the property
       properties[k] = v
