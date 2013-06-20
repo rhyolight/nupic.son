@@ -38,9 +38,7 @@ from paver.path import path
 # Paver comes with Jason Orendorff's 'path' module; this makes path
 # manipulation easy and far more readable.
 PROJECT_DIR = path(__file__).dirname().abspath()
-JS_THIRDPARTY_DIRS = ['jlinq', 'jquery', 'json', 'LABjs', 'modernizr']
-JS_MELANGE_DIRS = ['soc/content/js']
-JS_DIRS = JS_THIRDPARTY_DIRS + JS_MELANGE_DIRS
+JS_DIRS = ['soc/content/js']
 
 
 # Set some default options. Having the options at the top of the file cleans
@@ -51,6 +49,7 @@ options(
     app_build = PROJECT_DIR / 'build',
     app_folder = PROJECT_DIR / 'app',
     copy_dirs = JS_DIRS + ['soc/content/css'],
+    dont_copy_dirs = ['soc/content/js/thirdparty/tiny_mce'],
     overrides_folder = PROJECT_DIR / 'overrides',
     overrides_dirs = ['soc', 'soc/models', 'soc/content'],
     overrides_files = ['soc/models/universities.py'],
@@ -59,7 +58,7 @@ options(
                  'gae_django.py', 'profiler.py', 'appengine_config.py'],
     app_dirs =  ["melange", "soc", "feedparser", "djangoforms", "ranklist",
                  "shell", "html5lib", "gviz", "webmaster", "gdata", "atom",
-                 "mapreduce"] + JS_THIRDPARTY_DIRS,
+                 "mapreduce"],
     css_dirs = ["soc/content/css/gsoc/", "soc/content/css/gci"],
     css_files = {
         "jquery-ui/jquery.ui.merged.css": [
@@ -340,7 +339,7 @@ def clean_zip(options):
 ])
 def tinymce_zip(options):
   """Create the zip file containing TinyMCE."""
-  tinymce_dir = path(options.app_folder) / 'tiny_mce'
+  tinymce_dir = path(options.app_folder) / 'soc/content/js/thirdparty/tiny_mce'
   tinymce_zip_filename = path(options.app_folder) / 'tiny_mce.zip'
   if paver.tasks.environment.dry_run:
     tinymce_zip_fp = StringIO()
@@ -431,12 +430,17 @@ def deep_overrides(options):
   """Copies files from the copy structure to the build directory.
   """
   dirs = [options.app_folder / i for i in options.copy_dirs]
+  dont_copy_dirs = [options.app_folder / i for i in options.dont_copy_dirs]
 
   for source_dir in dirs:
     dest_dir = options.app_build / options.app_folder.relpathto(source_dir)
     deref = dest_dir.readlinkabs()
     dest_dir.remove()
     source_dir.copytree(dest_dir)
+
+  for remove_dir in dont_copy_dirs:
+    dest_dir = options.app_build / options.app_folder.relpathto(remove_dir)
+    dest_dir.rmtree()
 
 
 @task

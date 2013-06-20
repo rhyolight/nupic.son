@@ -50,29 +50,9 @@ handlers:
   upload: soc/content/(.*)
   expiration: 30d
 
-- url: /js/(.*?)/jlinq/(.*)
-  static_files: jlinq/\2
-  upload: jlinq/(.*)
-  expiration: 30d
-
-- url: /js/(.*?)/jquery/(.*)
-  static_files: jquery/\2
-  upload: jquery/(.*)
-  expiration: 1d
-
-- url: /js/(.*?)/json/(.*)
-  static_files: json/\2
-  upload: json/(.*)
-  expiration: 30d
-
-- url: /js/(.*?)/modernizr/(.*)
-  static_files: modernizr/\2
-  upload: modernizr/(.*)
-  expiration: 30d
-
-- url: /js/(.*?)/LABjs/(.*)
-  static_files: LABjs/\2
-  upload: LABjs/(.*)
+- url: /js/(.*?)/(.*)
+  static_files: soc/content/js/thirdparty/\2
+  upload: soc/content/js/(.*)
   expiration: 30d
 
 - url: /admin/shell.*

@@ -54,8 +54,8 @@ module.exports = function(grunt) {
 						]
 					},
           helpers: [
-            './app/jquery/jquery-1.6.4.js',
-            './app/jlinq/jLinq-2.2.1.js'
+            './app/soc/content/js/thirdparty/jquery/jquery-1.6.4.js',
+            './app/soc/content/js/thirdparty/jlinq/jLinq-2.2.1.js'
           ]
 				}
 			}
