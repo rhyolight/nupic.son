@@ -80,81 +80,81 @@
   color: #999;
 }
 .column-entry.lookup_profile {
-  background-image: url(../../../images/gsoc/admin/lookup.png);
+  background-image: url(../../images/gsoc/admin/lookup.png);
 }
 .column-entry.allocate_slots,
 .column-entry.slots_allocation
 {
-  background-image: url(../../../images/gsoc/admin/allocate.png);
+  background-image: url(../../images/gsoc/admin/allocate.png);
 }
 .column-entry.slots_transfer {
-  background-image: url(../../../images/gsoc/admin/transfer.png);
+  background-image: url(../../images/gsoc/admin/transfer.png);
 }
 .column-entry.duplicates {
-  background-image: url(../../../images/gsoc/admin/duplicates.png);
+  background-image: url(../../images/gsoc/admin/duplicates.png);
 }
 .column-entry.manage_proposals {
-  background-image: url(../../../images/gsoc/admin/proposals.png);
+  background-image: url(../../images/gsoc/admin/proposals.png);
 }
 .column-entry.accept_proposals,
 .column-entry.manage_projects
 {
-  background-image: url(../../../images/gsoc/admin/accept_proposals.png);
+  background-image: url(../../images/gsoc/admin/accept_proposals.png);
 }
 .column-entry.withdraw_projects {
-  background-image: url(../../../images/gsoc/admin/withdraw.png);
+  background-image: url(../../images/gsoc/admin/withdraw.png);
 }
 .column-entry.reminder_emails {
-  background-image: url(../../../images/gsoc/admin/mail.png);
+  background-image: url(../../images/gsoc/admin/mail.png);
 }
 .column-entry.program_settings,
 .column-entry.edit_program
 {
-  background-image: url(../../../images/gsoc/admin/settings.png);
+  background-image: url(../../images/gsoc/admin/settings.png);
 }
 .column-entry.edit_timeline {
-  background-image: url(../../../images/gsoc/admin/date.png);
+  background-image: url(../../images/gsoc/admin/date.png);
 }
 .column-entry.manage_organizations {
-  background-image: url(../../../images/gsoc/admin/users.png);
+  background-image: url(../../images/gsoc/admin/users.png);
 }
 .column-entry.participant_locations {
-  background-image: url(../../../images/gsoc/admin/marker.png);
+  background-image: url(../../images/gsoc/admin/marker.png);
 }
 .column-entry.report_statistic {
-  background-image: url(../../../images/gsoc/admin/report.png);
+  background-image: url(../../images/gsoc/admin/report.png);
 }
 .column-entry.documents,
 .column-entry.evaluations,
 .column-entry.mentor_evaluations,
 .column-entry.student_evaluations
 {
-  background-image: url(../../../images/gsoc/admin/evaluations.png);
+  background-image: url(../../images/gsoc/admin/evaluations.png);
 }
 .column-entry.evaluation_group
 {
-  background-image: url(../../../images/gsoc/admin/grade.png);
+  background-image: url(../../images/gsoc/admin/grade.png);
 }
 .column-entry.create_mentor_evaluation,
 .column-entry.create_student_evaluation,
 .column-entry.create_evaluation_group
 {
-  background-image: url(../../../images/gsoc/admin/create.png);
+  background-image: url(../../images/gsoc/admin/create.png);
 }
 .column-entry.edit_mentor_evaluation,
 .column-entry.edit_student_evaluation,
 .column-entry.edit_evaluation_group
 {
-  background-image: url(../../../images/gsoc/admin/edit.png);
+  background-image: url(../../images/gsoc/admin/edit.png);
 }
 .column-entry.preview_mentor_evaluation,
 .column-entry.preview_student_evaluation
 {
-  background-image: url(../../../images/gsoc/admin/preview.png);
+  background-image: url(../../images/gsoc/admin/preview.png);
 }
 .column-entry.view_mentor_evaluation,
 .column-entry.view_student_evaluation,
 .column-entry.view_evaluation_group
 {
-  background-image: url(../../../images/gsoc/admin/view.png);
+  background-image: url(../../images/gsoc/admin/view.png);
 }

@@ -20,7 +20,7 @@ module.exports = function(grunt) {
 			},
       build: {
         build_dir: './build',
-        css_dir: '<%= meta.build.build_dir %>/soc/content/css/v2/gsoc'
+        css_dir: '<%= meta.build.build_dir %>/soc/content/css/gsoc'
       }
 		},
 		jasmine: {
@@ -56,17 +56,17 @@ module.exports = function(grunt) {
           paths: ['<%= meta.src.css_dir %>']
         },
         files: {
-          '<%= meta.src.css_dir %>/v2/gsoc/buttons.css': '<%= meta.src.css_dir %>/less/buttons.less',
-          '<%= meta.src.css_dir %>/v2/gsoc/forms.css': '<%= meta.src.css_dir %>/less/forms.less',
-          '<%= meta.src.css_dir %>/v2/gsoc/global.css': '<%= meta.src.css_dir %>/less/global.less',
-          '<%= meta.src.css_dir %>/v2/gsoc/map.css': '<%= meta.src.css_dir %>/less/map.less',
-          '<%= meta.src.css_dir %>/v2/gsoc/menu.css': '<%= meta.src.css_dir %>/less/menu.less',
-          '<%= meta.src.css_dir %>/v2/gsoc/readonly.css': '<%= meta.src.css_dir %>/less/readonly.less',
-          '<%= meta.src.css_dir %>/v2/gsoc/structure.css': '<%= meta.src.css_dir %>/less/structure.less',
-          '<%= meta.src.css_dir %>/v2/gsoc/surveys.css': '<%= meta.src.css_dir %>/less/surveys.less',
-          '<%= meta.src.css_dir %>/v2/gsoc/tables.css': '<%= meta.src.css_dir %>/less/tables.less',
-          '<%= meta.src.css_dir %>/v2/gsoc/typography.css': '<%= meta.src.css_dir %>/less/typography.less',
-          '<%= meta.src.css_dir %>/v2/gsoc/user-messages.css': '<%= meta.src.css_dir %>/less/user-messages.less'
+          '<%= meta.src.css_dir %>/gsoc/buttons.css': '<%= meta.src.css_dir %>/less/buttons.less',
+          '<%= meta.src.css_dir %>/gsoc/forms.css': '<%= meta.src.css_dir %>/less/forms.less',
+          '<%= meta.src.css_dir %>/gsoc/global.css': '<%= meta.src.css_dir %>/less/global.less',
+          '<%= meta.src.css_dir %>/gsoc/map.css': '<%= meta.src.css_dir %>/less/map.less',
+          '<%= meta.src.css_dir %>/gsoc/menu.css': '<%= meta.src.css_dir %>/less/menu.less',
+          '<%= meta.src.css_dir %>/gsoc/readonly.css': '<%= meta.src.css_dir %>/less/readonly.less',
+          '<%= meta.src.css_dir %>/gsoc/structure.css': '<%= meta.src.css_dir %>/less/structure.less',
+          '<%= meta.src.css_dir %>/gsoc/surveys.css': '<%= meta.src.css_dir %>/less/surveys.less',
+          '<%= meta.src.css_dir %>/gsoc/tables.css': '<%= meta.src.css_dir %>/less/tables.less',
+          '<%= meta.src.css_dir %>/gsoc/typography.css': '<%= meta.src.css_dir %>/less/typography.less',
+          '<%= meta.src.css_dir %>/gsoc/user-messages.css': '<%= meta.src.css_dir %>/less/user-messages.less'
         }
       },
       production: {

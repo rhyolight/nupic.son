@@ -12,7 +12,7 @@
 }
 /* dashboard head or title */
 .dashboard-head {
-  border-top: 1px solid #238BD2;
+  border-top: 1px solid #E0E0E0;
   font-weight:bold;
   line-height:1.7em;
   margin-bottom:0;
@@ -21,17 +21,22 @@
   margin-top:1.2em;
 }
 .dashboard-head span {
-  background-color: #F6F6F6;
+  background-color: #FFF;
   color: #238BD2;
   left: 0;
   padding-right: 0.4em;
   position: relative;
   top: -0.8em;
 }
+.dashboard-head span a {
+  text-decoration: underline;
+}
 /* admin dashboard container */
 .block-dashboard {
   width: 100%;
   display: inline-block;
+  background: #e0e0e0 url(../../images/gci/block-form-bg.png) 0 0 repeat-x;
+  border: 1px solid #b4b4b4;
   box-shadow: 0 4px 18px #C8C8C8;
 }
 /* column for admin dashboard that take half block-dashboard */
@@ -61,7 +66,7 @@
   padding-left: 10px;
 }
 /* title for column-entry */
-#main .column-entry h4 {
+.main .column-entry h4 {
   background: transparent;
   text-transform: none;
   padding: 0 0 0 10px;
@@ -70,54 +75,68 @@
   font-weight: bold;
 }
 /* description of column-entry */
-#main .column-entry p {
+.main .column-entry p {
   margin-bottom: 0;
 }
 /* container for column-entry's sublinks */
-#main .column-entry div {
+.main .column-entry div {
   font-size: 10px;
   color: #999;
+}
+/* content inside the dashboard */
+.block-dashboard .block-content {
+  padding-left: 15px;
+}
+.block-dashboard .block-text h4 {
+  padding-left: 15px;
+  background: #E0E0E0;
+  color: #333;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px #fff;
+  font-size: 15px;
+  line-height: 30px;
 }
 
 /* icons entry */
 .column-entry.lookup_profile {
-  background-image: url(../../../images/soc/dashboard/lookup.png);
+  background-image: url(../../images/soc/dashboard/lookup.png);
 }
 .column-entry.allocate_slots,
 .column-entry.slots_allocation
 {
-  background-image: url(../../../images/soc/dashboard/allocate.png);
+  background-image: url(../../images/soc/dashboard/allocate.png);
 }
-.column-entry.slots_transfer {
-  background-image: url(../../../images/soc/dashboard/transfer.png);
+.column-entry.slots_transfer,
+.column-entry.bulk_create_tasks
+{
+  background-image: url(../../images/soc/dashboard/transfer.png);
 }
 .column-entry.duplicates {
-  background-image: url(../../../images/soc/dashboard/duplicates.png);
+  background-image: url(../../images/soc/dashboard/duplicates.png);
 }
 .column-entry.proposals_submitted,
 .column-entry.manage_proposals,
 .column-entry.proposals {
-  background-image: url(../../../images/soc/dashboard/proposals.png);
+  background-image: url(../../images/soc/dashboard/proposals.png);
 }
 .column-entry.accept_proposals,
-.column-entry.manage_projects,
-.column-entry.mentoring_projects
+.column-entry.manage_projects
 {
-  background-image: url(../../../images/soc/dashboard/accept_proposals.png);
+  background-image: url(../../images/soc/dashboard/accept_proposals.png);
 }
 .column-entry.withdraw_projects {
-  background-image: url(../../../images/soc/dashboard/withdraw.png);
+  background-image: url(../../images/soc/dashboard/withdraw.png);
 }
 .column-entry.reminder_emails {
-  background-image: url(../../../images/soc/dashboard/mail.png);
+  background-image: url(../../images/soc/dashboard/mail.png);
 }
 .column-entry.program_settings,
 .column-entry.edit_program
 {
-  background-image: url(../../../images/soc/dashboard/settings.png);
+  background-image: url(../../images/soc/dashboard/settings.png);
 }
 .column-entry.edit_timeline {
-  background-image: url(../../../images/soc/dashboard/date.png);
+  background-image: url(../../images/soc/dashboard/date.png);
 }
 
 .column-entry.adminning_organizations,
@@ -125,50 +144,59 @@
 .column-entry.students,
 .column-entry.manage_organizations
 {
-  background-image: url(../../../images/soc/dashboard/users.png);
+  background-image: url(../../images/soc/dashboard/users.png);
 }
 .column-entry.participant_locations {
-  background-image: url(../../../images/soc/dashboard/marker.png);
+  background-image: url(../../images/soc/dashboard/marker.png);
 }
 .column-entry.report_statistic {
-  background-image: url(../../../images/soc/dashboard/report.png);
+  background-image: url(../../images/soc/dashboard/report.png);
 }
 .column-entry.todo,
-.column-entry.org_app,
 .column-entry.documents,
 .column-entry.evaluations,
 .column-entry.mentor_evaluations,
-.column-entry.student_evaluations
+.column-entry.student_evaluations,
+.column-entry.org_app,
+.column-entry.take_org_app,
+.column-entry.edit_org_app,
+.column-entry.org_app_records,
+.column-entry.create_tasks,
+.column-entry.edit_org_profile
 {
-  background-image: url(../../../images/soc/dashboard/todo.png);
+  background-image: url(../../images/soc/dashboard/todo.png);
 }
 .column-entry.evaluation_group
 {
-  background-image: url(../../../images/soc/dashboard/grade.png);
+  background-image: url(../../images/soc/dashboard/grade.png);
 }
 .column-entry.create_mentor_evaluation,
 .column-entry.create_student_evaluation,
 .column-entry.create_evaluation_group
 {
-  background-image: url(../../../images/soc/dashboard/create.png);
+  background-image: url(../../images/soc/dashboard/create.png);
 }
 .column-entry.edit_mentor_evaluation,
 .column-entry.edit_student_evaluation,
 .column-entry.edit_evaluation_group
 {
-  background-image: url(../../../images/soc/dashboard/edit.png);
+  background-image: url(../../images/soc/dashboard/edit.png);
 }
 .column-entry.view_mentor_evaluation,
 .column-entry.view_student_evaluation,
 .column-entry.view_evaluation_group,
-.column-entry.projects
+.column-entry.all_org_tasks,
+.column-entry.all_orgs_mentors,
+.column-entry.list_invites,
+.column-entry.list_org_invites
 {
-  background-image: url(../../../images/soc/dashboard/view.png);
+  background-image: url(../../images/soc/dashboard/view.png);
 }
 .column-entry.requests,
-.column-entry.org_admin_requests
+.column-entry.invite_mentor,
+.column-entry.invite_org_admin
 {
-  background-image: url(../../../images/soc/dashboard/requests.png);
+  background-image: url(../../images/soc/dashboard/requests.png);
 }
 
 /* notify icon */

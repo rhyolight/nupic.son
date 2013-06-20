@@ -40,7 +40,7 @@
 }
 label.iPhoneCheckLabelOn {
   color: white;
-  background: url(../../../images/gsoc/ui_switch_on.png) no-repeat;
+  background: url(../../images/gsoc/ui_switch_on.png) no-repeat;
   text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.6);
   left: 0;
   padding-top: 5px;
@@ -50,7 +50,7 @@ label.iPhoneCheckLabelOn span {
 }
 label.iPhoneCheckLabelOff {
   color: #8b8b8b;
-  background: url(../../../images/gsoc/ui_switch_off.png) no-repeat right 0;
+  background: url(../../images/gsoc/ui_switch_off.png) no-repeat right 0;
   text-shadow: 0px 0px 2px rgba(255, 255, 255, 0.6);
   text-align: right;
   right: 0;
@@ -66,19 +66,19 @@ label.iPhoneCheckLabelOff span {
   top: 0;
   left: 0;
   width: 0;
-  background: url(../../../images/gsoc/ui_switch_slider_left.png) no-repeat;
+  background: url(../../images/gsoc/ui_switch_slider_left.png) no-repeat;
   padding-left: 3px;
 }
 .iPhoneCheckHandleRight {
   height: 100%;
   width: 100%;
   padding-right: 3px;
-  background: url(../../../images/gsoc/ui_switch_slider_right.png) no-repeat right 0;
+  background: url(../../images/gsoc/ui_switch_slider_right.png) no-repeat right 0;
 }
 .iPhoneCheckHandleCenter {
   height: 100%;
   width: 100%;
-  background: url(../../../images/gsoc/ui_switch_slider_center.png);
+  background: url(../../images/gsoc/ui_switch_slider_center.png);
 }
 
 .verify_togglebutton {
