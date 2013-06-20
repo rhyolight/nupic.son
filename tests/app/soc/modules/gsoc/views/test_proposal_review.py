@@ -373,4 +373,4 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
     proposal = GSoCProposal.all().get()
-    self.assertEqual(proposal.mentor, None)
+    self.assertIsNone(proposal.mentor)

@@ -286,7 +286,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertEqual(task, None)
+    self.assertIsNone(task)
 
   def testPostButtonAssign(self):
     """Tests the assign button.
@@ -341,8 +341,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Reopened')
-    self.assertEqual(task.student, None)
-    self.assertEqual(task.deadline, None)
+    self.assertIsNone(task.student)
+    self.assertIsNone(task.deadline)
 
     # check if a comment has been created
     comments = self.task.comments()
@@ -370,7 +370,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Closed')
     self.assertEqual(task.student.key(), student.key())
-    self.assertEqual(task.deadline, None)
+    self.assertIsNone(task.deadline)
 
     # check if a comment has been created
     comments = self.task.comments()
@@ -411,7 +411,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'NeedsWork')
     self.assertEqual(task.student.key(), student.key())
-    self.assertEqual(task.deadline, None)
+    self.assertIsNone(task.deadline)
 
     # check if a comment has been created
     comments = self.task.comments()
@@ -486,8 +486,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Reopened')
-    self.assertEqual(task.student, None)
-    self.assertEqual(task.deadline, None)
+    self.assertIsNone(task.student)
+    self.assertIsNone(task.deadline)
 
     # check if a comment has been created
     comments = self.task.comments()

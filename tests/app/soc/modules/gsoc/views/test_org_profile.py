@@ -136,7 +136,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     org_key_name = '%s/%s' % (self.gsoc.key().name(), record.org_id)
     org = organization.GSoCOrganization.get_by_key_name(org_key_name)
 
-    self.assertEqual(org, None)
+    self.assertIsNone(org)
 
     response = self.post(url, TEST_ORG_POST_DATA)
     self.assertResponseRedirect(
@@ -173,7 +173,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     org_key_name = '%s/%s' % (self.gsoc.key().name(), record.org_id)
     org = organization.GSoCOrganization.get_by_key_name(org_key_name)
 
-    self.assertEqual(org, None)
+    self.assertIsNone(org)
 
     response = self.post(url, TEST_ORG_POST_DATA)
     self.assertResponseRedirect(
