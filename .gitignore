@@ -26,6 +26,9 @@
 /app/soc/content/css/gsoc/tables.css
 /app/soc/content/css/gsoc/typography.css
 /app/soc/content/css/gsoc/user-messages.css
+/app/soc/content/css/soc/search_page.css
+/app/soc/content/css/soc/server-error-style.css
+/app/soc/content/css/soc/user-error-style.css
 ### CSS FILES END ###
 *.pyc
 *.zip

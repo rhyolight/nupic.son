@@ -28,7 +28,8 @@ module.exports = function(grunt) {
       build: {
         build_dir: './build',
         css_dir: '<%= meta.build.build_dir %>/soc/content/css',
-        css_gsoc_dir: '<%= meta.build.css_dir %>/gsoc'
+        css_gsoc_dir: '<%= meta.build.css_dir %>/gsoc',
+        css_soc_dir: '<%= meta.build.css_dir %>/soc'
       }
 		},
 		jasmine: {
@@ -64,6 +65,10 @@ module.exports = function(grunt) {
           paths: ['<%= meta.src.less_dir %>']
         },
         files: {
+          /* Development common SOC files */
+          '<%= meta.src.css_soc_dir %>/search_page.css': '<%= meta.src.less_soc_dir %>/search_page.less',
+          '<%= meta.src.css_soc_dir %>/server-error-style.css': '<%= meta.src.less_soc_dir %>/server-error-style.less',
+          '<%= meta.src.css_soc_dir %>/user-error-style.css': '<%= meta.src.less_soc_dir %>/user-error-style.less',
           /* Development GSOC files */
           '<%= meta.src.css_gsoc_dir %>/admin.css': '<%= meta.src.less_gsoc_dir %>/admin.less',
           '<%= meta.src.css_gsoc_dir %>/buttons.css': '<%= meta.src.less_gsoc_dir %>/buttons.less',
@@ -86,6 +91,10 @@ module.exports = function(grunt) {
           paths: ['<%= meta.src.css_dir %>']
         },
         files: {
+          /* Build common SOC files */
+          '<%= meta.build.css_soc_dir %>/search_page.css': '<%= meta.src.less_soc_dir %>/search_page.less',
+          '<%= meta.build.css_soc_dir %>/server-error-style.css': '<%= meta.src.less_soc_dir %>/server-error-style.less',
+          '<%= meta.build.css_soc_dir %>/user-error-style.css': '<%= meta.src.less_soc_dir %>/user-error-style.less',
           /* Build GSOC files */
           '<%= meta.build.css_gsoc_dir %>/admin.css': '<%= meta.src.less_gsoc_dir %>/admin.less',
           '<%= meta.build.css_gsoc_dir %>/buttons.css': '<%= meta.src.less_gsoc_dir %>/buttons.less',
