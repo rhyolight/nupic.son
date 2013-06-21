@@ -54,25 +54,25 @@ class GradingGroupCreate(GSoCRequestHandler):
   def context(self, data, check, mutator):
     return {
         'page_name': 'Grading Group Create Page',
-        'err': data.GET.get('err', None)
+        'err': bool(data.GET.get('err', False))
         }
 
   def post(self, data, check, mutator):
     """Handles the POST request when creating a Grading Group"""
     student_survey = None
     grading_survey = None
-    type = None
+    survey_type = None
 
     if 'midterm' in data.POST:
       student_survey = survey.getMidtermProjectSurveyForProgram(data.program)
       grading_survey = survey.getMidtermGradingProjectSurveyForProgram(
           data.program)
-      type = 'Midterm'
+      survey_type = 'Midterm'
     elif 'final' in data.POST:
       student_survey = survey.getFinalProjectSurveyForProgram(data.program)
       grading_survey = survey.getFinalGradingProjectSurveyForProgram(
           data.program)
-      type = 'Final'
+      survey_type = 'Final'
     else:
       raise exception.BadRequest('No valid evaluation type present')
 
@@ -90,7 +90,7 @@ class GradingGroupCreate(GSoCRequestHandler):
       data.redirect.id(existing_group.key().id())
     else:
       props = {
-          'name': '%s - %s Evaluation' %(data.program.short_name, type),
+          'name': '%s - %s Evaluation' %(data.program.name, survey_type),
           'program': data.program,
           'grading_survey': grading_survey,
           'student_survey': student_survey,

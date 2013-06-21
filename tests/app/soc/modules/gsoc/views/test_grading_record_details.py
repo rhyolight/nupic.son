@@ -61,7 +61,7 @@ class GradingGroupCreateTest(test_utils.GSoCDjangoTestCase):
     group = gsg_model.GSoCGradingSurveyGroup.all().get()
     self.assertResponseRedirect(response, self.getOverviewUrl(group))
 
-    expected_name = '%s - Midterm Evaluation' %self.program.short_name
+    expected_name = '%s - Midterm Evaluation' %self.program.name
     self.assertEqual(group.name, expected_name)
     self.assertEqual(group.program.key(), self.program.key())
     self.assertEqual(group.grading_survey.key(), self.grading_survey.key())
