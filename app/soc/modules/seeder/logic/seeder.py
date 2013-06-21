@@ -451,8 +451,10 @@ class Logic(object):
     #print prop_name, vars(prop)
     if hasattr(prop, '_repeated') and prop._repeated:
       property_class_name = 'ListProperty'
-    if isinstance(prop, ndb.StringProperty) and hasattr(prop, '_validator') and prop._validator:
+    if isinstance(prop, ndb.StringProperty) and hasattr(prop, '_validator') \
+        and prop._validator:
       name = prop._validator.__name__
+      # Deduce which provider to use from the name of validator
       property_class_name = name[0].upper() + name[1:name.find('_')] + 'Property'
     if isinstance(prop, ndb.KeyProperty):
       raise KeyPropertyNotSpecifiedError(
