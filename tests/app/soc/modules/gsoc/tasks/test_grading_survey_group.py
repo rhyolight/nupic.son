@@ -18,6 +18,7 @@ import httplib
 
 from tests import profile_utils
 from tests import test_utils
+from tests import timeline_utils
 
 from soc.models import user as user_model
 
@@ -74,6 +75,8 @@ class GradingSurveyGroupTest(
         'modified_by': user,
         'link_id': 'link_id',
         'scope': self.gsoc,
+        'survey_start': timeline_utils.past(),
+        'survey_end': timeline_utils.past(),
     }
 
     self.project_survey = ps_model.ProjectSurvey(key_name='key_name',

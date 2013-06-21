@@ -18,6 +18,7 @@
 
 import httplib
 
+from tests import timeline_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import MailTestCase
@@ -71,6 +72,8 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
         'modified_by': user,
         'link_id': 'link_id',
         'scope': self.gsoc,
+        'survey_start': timeline_utils.past(),
+        'survey_end': timeline_utils.past(),
     }
 
     self.project_survey = ProjectSurvey(key_name='key_name',
