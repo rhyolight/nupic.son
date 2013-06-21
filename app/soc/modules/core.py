@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The Melange Core module.
-"""
+"""The Melange Core module."""
 
-
+import importlib
 import logging
 
 from django.conf.urls import defaults
@@ -182,22 +181,25 @@ class Core(object):
   ### Called by other setup code to get the Core in a desired state.
   ###
 
-  def registerModuleCallbacks(self, modules, fmt):
+  def registerModuleCallbacks(self, callback_module_names):
     """Retrieves all callbacks for the modules of this site.
 
     Callbacks for modules without a version number or the wrong API_VERSION
-    number are dropped.  They won't be called.
+    number are dropped. They won't be called.
+
+    Args:
+      callback_module_names: a list of strings corresponding to callback
+          modules that ought to be registered.
     """
+    callback_modules = [
+        importlib.import_module(module_name)
+        for module_name in callback_module_names]
 
-    modules = ['soc_core'] + modules
-    modules = [__import__(fmt % i, fromlist=['']) for i in modules]
-
-    for callback_class in [i.Callback for i in modules]:
+    for callback_module in callback_modules:
+      callback_class = callback_module.Callback
       if callback_class.API_VERSION != self.API_VERSION:
         raise APIVersionMismatch(self.API_VERSION,
-                                 callback_class.API_VERSION)
-
-
+            callback_class.API_VERSION)
       callback = callback_class(self)
       self.registered_callbacks.append(callback)
 

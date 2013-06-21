@@ -111,10 +111,14 @@ def load_melange():
   # Register a core for the test modules to use
   callback.registerCore(Core())
   current_core = callback.getCore()
-  #modules = ['gsoc', 'gci', 'seeder', 'statistic']
-  modules = ['gsoc', 'gci', 'seeder']
-  fmt = 'soc.modules.%s.callback'
-  current_core.registerModuleCallbacks(modules, fmt)
+
+  callback_module_names = [
+      'soc.modules.soc_core.callback',
+      'soc.modules.gsoc.callback',
+      'soc.modules.gci.callback',
+      ]
+
+  current_core.registerModuleCallbacks(callback_module_names)
 
   # Make sure all services are called
   current_core.callService('registerViews', True)

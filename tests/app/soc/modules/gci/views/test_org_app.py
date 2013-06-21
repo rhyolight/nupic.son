@@ -42,7 +42,7 @@ class GCIOrgAppEditPageTest(test_utils.GCIDjangoTestCase):
         'short_name': 'Test Short Name',
         'content': 'Test Content',
         'survey_start': '2011-10-13 00:00:00',
-        'survey_finish': '2011-10-13 00:00:00',
+        'survey_end': '2011-10-13 00:00:00',
         'schema': 'Test Scheme',
     }
 

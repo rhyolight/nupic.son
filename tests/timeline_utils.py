@@ -49,8 +49,8 @@ class TimelineHelper(object):
     """
     self.timeline.program_start = None
     self.timeline.program_end = None
-    self.org_appl.survey_start = None
-    self.org_appl.survey_end = None
+    self.org_appl.survey_start = past()
+    self.org_appl.survey_end = past()
     self.timeline.accepted_organization_announced_deadline = None
     self.timeline.student_signup_start = None
     self.timeline.student_signup_end = None

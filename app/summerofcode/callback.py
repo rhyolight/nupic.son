@@ -1,40 +1,43 @@
-#
-# Copyright 2010 the Melange authors.
+# Copyright 2013 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing the Data Seeder Callback.
-"""
+
+"""Module containing the Summer Of Code callback."""
+
+from summerofcode.views import project_manage
 
 
 class Callback(object):
-  """Callback object that handles interaction between the core.
-  """
+  """Callback object that handles interaction between the core."""
 
   # This constant is required by soc.modules.core module. If its values
   # does not match the one defined there, the callback is rejected.
   API_VERSION = 1
 
   def __init__(self, core):
-    """Initializes a new Callback object for the specified core.
-    """
+    """Initializes a new Callback object for the specified core."""
 
     self.core = core
+    self.views = []
+
+  def registerViews(self):
+    """Instantiates all view objects."""
+    pass
 
   def registerWithSitemap(self):
-    """Called by the server when sitemap entries should be registered.
-    """
-
+    """Called by the server when sitemap entries should be registered."""
     self.core.requireUniqueService('registerWithSitemap')
 
-    #from soc.modules.seeder.views import seeder
-    #self.core.registerSitemapEntry(seeder.view.getDjangoURLPatterns())
+    # Redesigned view registration
+    for view in self.views:
+      self.core.registerSitemapEntry(view.djangoURLPatterns())

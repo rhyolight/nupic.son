@@ -105,9 +105,12 @@ INSTALLED_APPS = (
 
 GCI_TASK_QUOTA_LIMIT_ENABLED = False
 
-MODULE_FMT = 'soc.modules.%s.callback'
-#MODULES = ['gsoc', 'statistic', 'gci']
-MODULES = ['gsoc', 'gci']
+CALLBACK_MODULE_NAMES = [
+    'soc.modules.soc_core.callback',
+    'soc.modules.gsoc.callback',
+    'soc.modules.gci.callback',
+    'summerofcode.callback'
+    ]
 
 #GData APIs Source:
 GDATA_SOURCE = 'Google-Melange-v1'

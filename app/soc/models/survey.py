@@ -94,7 +94,7 @@ class Survey(db.Model):
 
   #: Date at which the survey becomes available for taking.
   survey_start = db.DateTimeProperty(
-      required=False,
+      required=True,
       verbose_name=ugettext('Evaluation start date and time'))
   survey_start.help_text = ugettext(
       'Indicates a date before which this evaluation'
@@ -102,7 +102,7 @@ class Survey(db.Model):
 
   #: Deadline for taking survey.
   survey_end = db.DateTimeProperty(
-      required=False,
+      required=True,
       verbose_name=ugettext('Evaluation end date and time'))
   survey_end.help_text = ugettext(
       'Indicates a date after which this evaluation'
