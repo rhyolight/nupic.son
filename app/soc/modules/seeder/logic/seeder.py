@@ -22,6 +22,7 @@ import random
 from google.appengine.ext import db
 from google.appengine.ext.db import _ReverseReferenceProperty
 from google.appengine.ext.db import ReferenceProperty
+from google.appengine.ext import ndb
 
 from mapreduce.control import start_map
 
@@ -64,6 +65,12 @@ class SeedingError(Error):
 
 class RecurseError(Error):
   """Raised when needing to recurse while recurse=False.
+  """
+  pass
+
+
+class KeyPropertyNotSpecifiedError(Error):
+  """Raised when the value of a KeyProperty is not specifed while should.
   """
   pass
 
@@ -436,12 +443,23 @@ class Logic(object):
       return result
 
     # If the property has choices, choose one of them randomly
-    if prop.choices:
+    if hasattr(prop, 'choices') and prop.choices:
       return prop.choices[random.randint(0, len(prop.choices)-1)]
 
+    # Special handling for ndb
+    property_class_name = prop.__class__.__name__
+    #print prop_name, vars(prop)
+    if hasattr(prop, '_repeated') and prop._repeated:
+      property_class_name = 'ListProperty'
+    if isinstance(prop, ndb.StringProperty) and hasattr(prop, '_validator') and prop._validator:
+      name = prop._validator.__name__
+      property_class_name = name[0].upper() + name[1:name.find('_')] + 'Property'
+    if isinstance(prop, ndb.KeyProperty):
+      raise KeyPropertyNotSpecifiedError(
+          "The value of %s needs to be specified in properties" % prop_name)
     # Use relavant data provider to generate other properties
     # automatically
-    return self.genRandomValueForPropertyClass(prop.__class__)
+    return self.genRandomValueForPropertyClass(property_class_name)
 
   def seed_properties(self, model_class, properties=None, recurse=True,
           auto_seed_optional_properties=True):
@@ -466,10 +484,12 @@ class Logic(object):
       properties = {}
     else:
       properties = properties.copy()
-
-    items = model_class.properties().items()
-    if 'link_id' in model_class.properties().keys():
-      items += [('key_name', None)]
+    if issubclass(model_class, ndb.Model):
+      items = model_class._properties.items()
+    else:
+      items = model_class.properties().items()
+      if 'link_id' in model_class.properties().keys():
+        items += [('key_name', None)]
 
     # Produce all properties of model_class
     for prop_name, prop in items:
@@ -508,15 +528,16 @@ class Logic(object):
       data.put()
     return data
 
-  def genRandomValueForPropertyClass(self, property_class):
-    """Generates a value for property_class randomly.
+  def genRandomValueForPropertyClass(self, property_class_name):
+    """Generates a value for property_class_name randomly.
 
-    The generator uses any of the data provider of property_class
-    starting with 'Random'.
+    The generator uses any of the data provider of property_class_name
+    starting with 'Random' if there is any;
+    otherwise the first provider is used.
     """
     value = None
     providers_dict = seeder_providers_logic.getProviders()
-    providers_list = providers_dict[property_class.__name__]
+    providers_list = providers_dict[property_class_name]
     provider_class = None
     for provider_class in providers_list:
       if provider_class.__name__.startswith('Random'):
