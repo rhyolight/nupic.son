@@ -1,7 +1,26 @@
+/*
+Copyright 2011 the Melange authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 /* @group Typography */
-body, button, input, select, textarea {
-    color: #000;
-    font: ~"12px/1.5" Arial, "Helvetica Neue", "Liberation Sans", FreeSans, sans-serif;
+body,
+button,
+input,
+select,
+textarea {
+  color: #000000;
+  font: ~"12px/1.5" Arial, "Helvetica Neue", "Liberation Sans", FreeSans, sans-serif;
 }
 
 h1 {
@@ -28,16 +47,20 @@ h6 {
   font-size: 15px;
 }
 
-ul, ol {
-    margin: 1em 0;
-    padding: 0 0 0 40px;
+ul,
+ol {
+  margin: 1em 0em;
+  padding: 0px 0px 0px 40px;
 }
+
 ol {
   list-style: decimal;
 }
+
 ul {
   list-style: disc;
 }
+
 li {
   margin-left: 30px;
 }
@@ -58,42 +81,50 @@ table,
 address,
 fieldset,
 figure {
-    margin-top: 0;
-    margin-bottom: 10px;
+  margin-top: 0px;
+  margin-bottom: 10px;
 }
 
-a, a:visited, .ui-widget-content a { color: #0f649d; text-decoration: none; }
-a:hover {  }
+a,
+a:visited,
+.ui-widget-content a {
+  color: #0f649d;
+  text-decoration: none;
+}
 
 /* @group error */
-
 body.error {
 	background: url(../images/melange-user-error-background.png) top center no-repeat;
 	background-color: #fff;
 }
 
 #error-content {
-        color: #666;
-	margin: 275px auto 0 auto;
+  color: #666666;
+	margin: 275px auto 0px auto;
 	width: 650px;
-}
-#error-content h1 {
-	font-size:80px;
-	display:inline;
-	float:left;
-	padding-right:20px;
-	margin-top:0px;
-}
-#error-content p {
-	font-size:20px;
-	padding-top:15px;
-	font-weight:bold;
-	line-height:130%;
-}
-#error-content a:link,
-#error-content a:hover,
-#error-content a:visited,
-#error-content a:active {
-	color: #0074c1;
+
+  h1 {
+    display: inline;
+    float: left;
+    font-size: 80px;
+    margin-top: 0px;
+    padding-right: 20px;
+  }
+
+  p {
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 130%;
+    padding-top: 15px;
+  }
+
+  a {
+    &:active,
+    &:hover,
+    &:link,
+    &:visited {
+      color: #0074c1;
+    }
+  }
 }
 /* @end */
