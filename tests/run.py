@@ -116,6 +116,7 @@ def load_melange():
       'soc.modules.soc_core.callback',
       'soc.modules.gsoc.callback',
       'soc.modules.gci.callback',
+      'summerofcode.callback'
       ]
 
   current_core.registerModuleCallbacks(callback_module_names)
