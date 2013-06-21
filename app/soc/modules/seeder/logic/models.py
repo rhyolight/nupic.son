@@ -56,12 +56,15 @@ class Logic():
     """
     modules = set()
 
-    packages = ['soc.models']
-    packages.extend(['soc.modules.%s.models' % module_name
-                     for module_name in settings.MODULES])
+    model_package_names = [
+        'soc.models',
+        'soc.modules.gsoc.models',
+        'soc.modules.gci.models',
+        'summerofcode.models'
+        ]
 
     packages = [(__import__(module_name, fromlist=['']), module_name)
-                for module_name in packages]
+                for module_name in model_package_names]
 
     for package, packagename in packages:
       for module_file in os.listdir(os.path.dirname(package.__file__)):
