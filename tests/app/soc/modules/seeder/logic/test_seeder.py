@@ -16,6 +16,8 @@
 
 import unittest
 
+from google.appengine.ext import ndb
+
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.seeder.logic import seeder
 
@@ -41,3 +43,5 @@ class SeederTest(unittest.TestCase):
     entity = seeder_logic.seed(ndb_models.NdbKeyProperty,
         properties={'key': ndb_dummy_entity.key})
     self.assertIsNotNone(entity)
+    self.assertIsInstance(entity.key, ndb.Key)
+    self.assertIsInstance(entity._properties['key'], ndb.KeyProperty)
